@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**212 harness files, 24,845 labelled assertions.** AllChecks runs 212 of them.
+**213 harness files, 24,862 labelled assertions.** AllChecks runs 213 of them.
 
 ## Which harnesses read which class
 
@@ -41,10 +41,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalRecipeCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, PostwarRecipeCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -132,8 +132,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, TruckRouteCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, GoldMiningCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -192,7 +192,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandDrawing](map/LandDrawing.md) | EarthTerrainCheck, LandCheck, MiningCheck, OilCheck, SaveFileCheck, ScaleCheck |
 | [LandFactors](map/LandFactors.md) | LandNationsCheck, PartnersCheck |
 | [LandGrid](map/LandGrid.md) | EarthTerrainCheck, GridCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MapCheck |
-| [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ER1Check, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [LandManager](map/LandManager.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ER1Check, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ER1Check, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ER1Check, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
@@ -254,7 +254,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, StaffingDrawCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
@@ -305,7 +305,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SavedCities](map/SavedCities.md) | HistoryCheck, RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, PrizeCheck, ReloadCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, KeptCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
@@ -334,7 +334,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -361,9 +361,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
-| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
+| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
 | [WageLadder](map/WageLadder.md) | LabourCheck, PrizeCheck, WageLadderCheck |
-| [WantedPosts](map/WantedPosts.md) | WantedPostsCheck |
+| [WantedPosts](map/WantedPosts.md) | StaffingTieCheck, WantedPostsCheck |
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BankFailureCheck, BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
@@ -1271,260 +1271,260 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L2807 ...so its next loan's price reads the restructured books, what it owes now over what it owns now
   - L2810 ...which is far under what the quarter before the backstop would have charged
 - **L2858 (19) the branches, by their customers**
-  - L2996 the founding branch never closes on the rule, however far its fees are from its cost
-  - L3000 fixture: the charter's template carries an operating cost
-  - L3002 ...and the charter, standing alone, is charged none of it
-  - L3009 the fixture placed five branches
-  - L3013 fixture: the branch's operating cost is what makes the fees cover two, not nothing
-  - L3015 every branch past what the fees cover closed at once, the month after: two stand
-  - L3020 ...before the month paid them: it ran two branches, not five, and paid the operating cost of
-  - L3024 ...and that month closes the audit, the operating cost in it
-  - L3029 while what a branch costs held still, the fees covered the branches the rule kept
-  - L3035 ...and the next month the rule, reading that cost, closed the one the fees no longer cover
-  - L3039 every month the fees fell short of the branches standing, the next month's rule closed one
-- **L3064 (17) the desk bids for the bank's own shares only with what it holds over its target**
-  - L3075 fixture: a bank a little over its target
-  - L3076 fixture: ...which by its own rule buys its shares back
-  - L3080 fixture: its shares have a record neither new nor bad
-  - L3089 its desk bids half a spread under fair value
-  - L3090 ...for what its spare capital pays for at the bid, under the pace
-  - L3096 fixture: the household offers more than the pace, and the pace more than the spare
-  - L3105 a bank a little over its target, offered more than its spare capital, buys back exactly the spare
-  - L3107 ...and ends at its target
-  - L3108 ...not under it
-  - L3109 ...so the household raised what the desk took, and no more - the rest of its need goes on to credit
-  - L3111 ...and the rest of what it offered waits on the book: the desk is not obliged
-  - L3114 a second offer the same month, at its target, finds no bid
-- **L3116 (17) ...and other companies' shares only on the capital it has to spare, at the desk's weight**
-  - L3130 its desk bids for what its spare capital carries at RISK_EQUITY, marked at the price it pays
-  - L3134 fixture: the household offers more than that
-  - L3140 a bank a little over its target buys only what its spare capital carries at the weight
-  - L3143 ...the weight the weighted book already gives the desk, RISK_EQUITY, at the price it paid
-  - L3145 ...and marked, it holds its target
-  - L3146 ...its ratio at or over the target
-  - L3147 ...the household raised what the desk paid
-  - L3148 ...and the rest of its offer waits on the book
-  - L3153 its selling is unchanged: at its target it still asks for what it holds
-  - L3155 ...and bids for no more than rounding
-  - L3164 fixture: a bank under its target, its desk still posting
-  - L3165 ...bids for nothing
-  - L3168 a bank under its target buys none: the household raises nothing from its shares
-  - L3169 ...and the desk holds none
-  - L3182 fixture: twenty households leave with their shares
-  - L3189 fixture: the desk was posting
-  - L3190 the leavers' shares a bank under its target will not bid for stay abroad with them, as with no market
-  - L3192 ...resting on the book, unpaid
-- **L3214 (13) the ladder's four parts are its prime, at every dial**
-  - L3232 the funds-transfer price, running costs, expected loss and capital charge add up to prime, at six dials
-  - L3234 ...and every other rung is the bank's own rate for it
-  - L3235 fixture: at 3% every part is priced
-  - L3237 ...and past the owners' return the capital part is nothing
-  - L3238 the step from the policy rate is the window's penalty on its share and the term premium
-  - L3241 ...and the step to prime is the three costs over it
-- **L3244 (13) the weight table foots to the weighted book, term and desk included**
-  - L3265 the weight table's weighed column foots to the weighted book capacity reads
-  - L3267 fixture: the desk's shares are on it, at RISK_EQUITY
-  - L3268 ...a book halfway through its loans' terms shows the share its term counts for
-  - L3270 ...and every row is its face, term and risk weight multiplied
-  - L3271 ...where face times risk, with no term and no desk, did not foot
-- **L3282 (13) what it gathers is in today's money after a reform**
-  - L3286 three branches gather all the city has banked, whatever their number
-  - L3289 ...and after a hundred-for-one reform, a hundredth of it
-  - L3291 ...which is the city's own savings with it, all of them
-  - L3293 ...and their owners' capital for a branch
-- **L3296 (13) the bank's state in a sentence, with the figure that decides it**
-  - L3299 with no branch: there is no bank
-  - L3306 fixture: the four banks are healthy, rebuilding, under the minimum and failed
-  - L3311 a bank at or over its target is healthy and lending freely, at its ratio and its target
-  - L3315 ...one under its target is rebuilding, at the growth its rule allows
-  - L3318 ...one under the minimum lends only to keep its borrowers going, at its ratio
-  - L3321 ...and a failed one says what it must hold again
-- **L3326 (13) on a played city: the interest by who paid it, last month, the year, and the equity's movement**
-  - L3334 the city's coupons, the businesses', the families' and the discount each on its own line
-  - L3338 ...and together they are its interest
-  - L3516 fixture: the played city's first branch opened in it
-  - L3517 fixture: the bank paid its owners in it
-  - L3518 fixture: the treasury bought paper back from it, at a gain or a loss
-  - L3519 fixture: the city put capital into it
-  - L3520 its equity's movement left nothing unexplained, every month
-  - L3522 ...nor between two presses, after a buyback and after a rescue
-  - L3524 fixture: the city and the businesses paid it interest
-  - L3525 its interest by who paid it is the whole of its interest, every month
-  - L3526 fixture: last month and the year were read in most months
-  - L3527 last month's column is what that month read, whole
-  - L3528 ...and the last twelve months add up to the last twelve read
-  - L3529 the played bank's weight table foots every month
-- **L3531 (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save**
-  - L3534 fixture: a year ago was on file in most of the months played
-  - L3535 fixture: the businesses owed the bank in most of them
-  - L3539 its asset lines are what totalAssets() sums
-  - L3540 ...its liability lines what totalLiabilities() sums
-  - L3541 so its lines foot, assets less liabilities less equity, every month
-  - L3542 ...and a year ago, every month one was on file
-  - L3543 a year ago is the sheet as it stood twelve months before, line for line
-  - L3544 the businesses' loans by sector add to their line, and the interim financing to its
-  - L3566 the year of sheets survives a save, whole
-  - L3568 ...so the reloaded page has a year ago
-  - L3569 ...the same equity a year ago
-  - L3571 ...and the same loans to the businesses a year ago
-  - L3573 a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"
-- **L3576 (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month**
-  - L3580 fixture: a branch opened, its capital sold as shares
-  - L3581 fixture: it bought its own shares back
-  - L3582 fixture: it paid a dividend
-  - L3583 fixture: it lost money in a month
-  - L3584 a bank founded in this build keeps the split, every month
-  - L3585 paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses
-  - L3587 paid in moved by what its owners and the city put in: offerings, new shares, a resolution, less buybacks
-  - L3589 ...and retained by everything else: what it kept, less dividends, and the rest of the causes
-  - L3591 both survive a save
-  - L3594 ...and still add up to the reloaded bank's equity
-  - L3595 ...and the page's lines read them - with the city's preferred, equity's third part since 0.7.14
-  - L3598 a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"
-  - L3601 ...its equity the same total
-  - L3608 ...and a month played does not invent them
-- **L3624 (13) the interest margin is on what earns it interest: its loans, its paper and bonds, and its reserves**
-  - L3627 fixture: the played bank has lent
-  - L3647 fixture: its reserves are at least a hundred times its book, and it still lends
-  - L3654 its earning assets are the eight sheet lines that earn it interest: its reserves, loans, interim financing,
-  - L3658 ...which are its assets less the desk's shares, which earn no interest, and the allowance, which is negative
-  - L3661 the month's margin is its net interest, a year of it, over its earning assets
-  - L3669 a margin on what earns it interest cannot pass the best rate any of it earned that month
-  - L3670 ...where the old reading, over the book alone, passed it - the absurd figure the issue saw
-  - L3680 fixture: a whole year is on file, more months were played than that, and its window holds months before the capital
-  - L3683 the earning assets averaged over the year are the mean of those read at the close of each of its months
-  - L3686 ...and the year's margin is its average net interest, a year of it, over them
-- **L3698 (13) the rescue's guard is the model's**
-  - L3699 fixture: the bank stands and needs nothing
-  - L3700 a bank that needs nothing is not offered a rescue
-  - L3704 fixture: the bank is under water
-  - L3705 ...a treasury holding half of what it needs resolves it all the same
-  - L3706 ...paying the hole and the capital to reopen, the whole of what it is asked
-  - L3707 ...half of it from its cash and the rest for the central bank to advance
-  - L3709 ...and doing it stands the bank back up
-- **L3743 (7) a loan is met by its year's allowance, a weakening borrower by its lifetime loss, a write-off by the allowance first**
-  - L3756 a new loan to a sound borrower is met by its year's expected loss, BASE_LOSS_RATE of it
-  - L3758 ...a stage-1 book
-  - L3759 ...and that is the month's provision
-  - L3777 a borrower past SECTOR_WATCH_LEVERAGE moves to stage 2
-  - L3778 ...and its allowance rises toward its lifetime loss: a loan's term of defaults on the share of its firms past the line
-  - L3780 ...which is more than a year's loss
-  - L3781 ...and the rise is the month's provision, before anything is written off
-  - L3797 fixture: the month's slice is written off, and the sector is not restructured
-  - L3804 a write-off is drawn against the allowance its book held first
-  - L3806 ...and only what that did not cover reaches the month
-  - L3808 ...so the provision is the allowance's move plus the write-off
-  - L3810 ...and the month's hit to equity is less than the write-off, because most was taken already
-  - L3813 ...and a borrower still past the watch line stays in stage 2, its staged loss struck on what it owes now
-  - L3825 a repaid book holds nothing, and its allowance comes back as a release
-  - L3830 over the episode the provisions add up to the write-offs, to the cent
-  - L3831 ...and every month its equity moved by its net income and nothing else
-  - L3834 a family owing under the watch line holds a year's loss
-  - L3836 ...halfway from there to the discharge line, half its debt
-  - L3839 ...and at the line, all of it - a discharge writes the whole debt off
-  - L3859 fixture: a family borrowing to eat does pass the watch line
-  - L3860 ...and its book then holds more than a year's loss
-  - L3862 ...which is the rule cell by cell
-- **L3864 (8) a bank that has lived through a bad year chooses more capital than a young one**
-  - L3895 a bank whose worst year was under the conservation buffer targets the minimum and the buffer
-  - L3897 fixture: the scarred bank's worst year was past the conservation buffer
-  - L3899 ...one that has lived through a worse year holds a buffer that would take it and leave the minimum
-  - L3901 ...which is more than the young one holds
-  - L3902 ...its worst year is its year's provisions over its weighted book
-  - L3904 ...and never more than the whole Basel stack, MAX_BUFFER, however bad the year
-  - L3907 ...and a loss on a book smaller than its founding capital carries is read over that capacity
-  - L3913 no bank ever targets less than the minimum and the conservation buffer
-  - L3914 ...and it prices a loan's capital at the target it chose
-- **L3919 (9) under its target it keeps its profit and lends slower, and under its minimum only to keep borrowers going**
-  - L3924 fixture: halfway between its minimum and its target
-  - L3926 it keeps every dollar of a profit
-  - L3927 ...and says so
-  - L3928 ...and a borrower's debt may grow RATIONED_GROWTH a month halfway there
-  - L3940 the limit is RATIONED_GROWTH x x/(1-x) from the minimum to the target
-  - L3941 ...rising smoothly, never falling, as the ratio rises
-  - L3942 ...from nothing at the minimum
-  - L3943 ...to no limit at all at the target
-  - L3954 a sector owing 100,000 may borrow that share of it more this month
-  - L3955 ...a project inside it is funded
-  - L3956 ...and one past it is not
-  - L3957 ...and the investor can say it was the bank's capital
-  - L3962 ...and its short month is lent whole, its fee on top: a working-capital line the rule does not ration
-  - L3966 under its minimum it lends only to keep its borrowers going
-  - L3974 ...no project, however small
-  - L3976 ...but a borrower short of cash is still lent its short month: the line is honoured under the minimum too
-  - L3987 fixture: its loan fell due
-  - L3988 ...and what fell due may be lent again under the minimum
-  - L3993 ...and a borrower past the line still has its defaulted firms written off
-  - L3996 ...and one with nothing left is still restructured whole
-  - L4013 fixture: free, it borrows more than its interest
-  - L4014 a family's debt may grow the month's share and its interest, and no more
-  - L4017 ...and under the minimum it may draw its interest and nothing else
-- **L4020 (10) inside its band it pays a share of its profit, over the top it returns the excess**
-  - L4024 fixture: inside its band, with no reserves at all
-  - L4026 inside its band it pays PAYOUT_IN_BAND of its profit after tax
-  - L4030 ...and pays it though it holds no reserves - out of what it borrows, like any bank
-  - L4032 ...nothing on a loss
-  - L4034 ...and never so much that it would fall under its target
-  - L4038 fixture: far over the top of its band
-  - L4039 over the top it pays its share and a twelfth of the excess
-  - L4048 ...so a year returns all but (11/12)^12 of it, on no profit at all
-  - L4050 ...and it counts what it paid over the year
-  - L4054 under its target, under its minimum, failed or with no bank it pays nothing
-- **L4058 (11) while the bank stands, there is always something it will lend**
-  - L4074 a standing bank at any capital has capacity
-  - L4075 ...lends more than nothing a month whenever it is over its minimum
-  - L4076 ...and at any capital lends a borrower short of cash its interest
-  - L4080 ...where a failed one, in resolution, has none - resolution is as it was
-- **L4138 and the bank pays for the city's paper**
-  - L4168 fixture: the city has a working bank and owes nothing yet
-  - L4197 fixture: the city issued a note and a serial bond, below par
-  - L4199 between the presses the bank has not paid yet
-  - L4200 ...and owes the treasury exactly what it received
-  - L4213 a city saved between the issue and the settle still owes its bank's payment
-  - L4226 fixture: the households held their paper through the settle - the desk bought none
-  - L4260 the bank's cash fell by exactly what the treasury received less what the households
-  - L4263 ...which is the figure the settle reports
-  - L4264 ...and between them the holders paid every dollar the treasury received
-  - L4267 ...its book rose by its own face, less what the city repaid it this month
-  - L4269 ...and its equity by net income and capital, and nothing else - the discount, not the face
-  - L4272 ...and once it has paid it owes nothing for the paper
-  - L4276 MoneyAudit still closes, on the month the bank paid
-  - L4278 the reloaded city's bank paid the same, at its settle
-  - L4280 ...and its households the same
-  - L4281 ...and its businesses
-  - L4282 ...and its world
-  - L4283 ...and its month closes too
-  - L4292 fixture: the note and the serial are on the books
-  - L4294 each piece carries its own discount, which together is face less what it raised
-  - L4304 the bank's interest in the settle month carries one month of its share of the discount,
-  - L4306 ...which is well short of the whole (the old rule booked all of it)
-  - L4308 the rest sits against its book, unearned, so its equity did not move for the discount
-  - L4311 ...and it is exactly the bank's share less what accreted
-  - L4325 over the note's life its accretion adds up to its face less what it raised
-  - L4327 ...and nothing of it is left unearned once it is repaid
-  - L4328 ...and it is off the books
-- **L4350 (13b) the tab draws each rate in its parts (0.7.33)**
-  - L4362 an insured mortgage's money, running costs and capital add up to its rate, at six dials
-  - L4364 ...its running part is prime's own running costs
-  - L4365 the losses' watch line is past what a sound book loses
-  - L4413 fixture: every sector is priced
-  - L4414 fixture: the sector given a record carries it in its quote
-  - L4416 fixture: the book's concentration prices at least one sector
-  - L4417 prime and a sector's three parts are its rate, to the bit, for every sector
-  - L4418 ...on the prime it was priced on, its record and the charge pushed for it
-  - L4419 ...and the three are its spread over prime
-  - L4430 ...and a played month later, still to the bit
-  - L4457 a city just loaded quotes every sector with its record, as the city it was saved from
-  - L4459 ...the fixture's record among them, in its rate
-  - L4461 ...and the book's concentration on it, the charge the bank prices it at now
-  - L4462 ...each quote still its parts, to the bit
-  - L4479 fixture: no branch stands and the bank's own rule wants its first - the page said \"Yes\"
-  - L4481 fixture: the city could not staff one
-  - L4482 the planner the tab's verdict reads does not build it
-  - L4483 ...and holds on the staffing, the words the verdict prints after \"Not yet\"
-  - L4485 asked twice, the planner answers the same and moves nothing - it is a read
-  - L4502 the rates' flags carry the central bank's and the bank's decisions and nothing else
-  - L4504 ...a month with both one flag holding both
+  - L3000 the founding branch never closes on the rule, however far its fees are from its cost
+  - L3004 fixture: the charter's template carries an operating cost
+  - L3006 ...and the charter, standing alone, is charged none of it
+  - L3013 the fixture placed five branches
+  - L3017 fixture: the branch's operating cost is what makes the fees cover two, not nothing
+  - L3019 every branch past what the fees cover closed at once, the month after: two stand
+  - L3024 ...before the month paid them: it ran two branches, not five, and paid the operating cost of
+  - L3028 ...and that month closes the audit, the operating cost in it
+  - L3033 while what a branch costs held still, the fees covered the branches the rule kept
+  - L3039 ...and the next month the rule, reading that cost, closed the one the fees no longer cover
+  - L3043 every month the fees fell short of the branches standing, the next month's rule closed one
+- **L3068 (17) the desk bids for the bank's own shares only with what it holds over its target**
+  - L3079 fixture: a bank a little over its target
+  - L3080 fixture: ...which by its own rule buys its shares back
+  - L3084 fixture: its shares have a record neither new nor bad
+  - L3093 its desk bids half a spread under fair value
+  - L3094 ...for what its spare capital pays for at the bid, under the pace
+  - L3100 fixture: the household offers more than the pace, and the pace more than the spare
+  - L3109 a bank a little over its target, offered more than its spare capital, buys back exactly the spare
+  - L3111 ...and ends at its target
+  - L3112 ...not under it
+  - L3113 ...so the household raised what the desk took, and no more - the rest of its need goes on to credit
+  - L3115 ...and the rest of what it offered waits on the book: the desk is not obliged
+  - L3118 a second offer the same month, at its target, finds no bid
+- **L3120 (17) ...and other companies' shares only on the capital it has to spare, at the desk's weight**
+  - L3134 its desk bids for what its spare capital carries at RISK_EQUITY, marked at the price it pays
+  - L3138 fixture: the household offers more than that
+  - L3144 a bank a little over its target buys only what its spare capital carries at the weight
+  - L3147 ...the weight the weighted book already gives the desk, RISK_EQUITY, at the price it paid
+  - L3149 ...and marked, it holds its target
+  - L3150 ...its ratio at or over the target
+  - L3151 ...the household raised what the desk paid
+  - L3152 ...and the rest of its offer waits on the book
+  - L3157 its selling is unchanged: at its target it still asks for what it holds
+  - L3159 ...and bids for no more than rounding
+  - L3168 fixture: a bank under its target, its desk still posting
+  - L3169 ...bids for nothing
+  - L3172 a bank under its target buys none: the household raises nothing from its shares
+  - L3173 ...and the desk holds none
+  - L3186 fixture: twenty households leave with their shares
+  - L3193 fixture: the desk was posting
+  - L3194 the leavers' shares a bank under its target will not bid for stay abroad with them, as with no market
+  - L3196 ...resting on the book, unpaid
+- **L3218 (13) the ladder's four parts are its prime, at every dial**
+  - L3236 the funds-transfer price, running costs, expected loss and capital charge add up to prime, at six dials
+  - L3238 ...and every other rung is the bank's own rate for it
+  - L3239 fixture: at 3% every part is priced
+  - L3241 ...and past the owners' return the capital part is nothing
+  - L3242 the step from the policy rate is the window's penalty on its share and the term premium
+  - L3245 ...and the step to prime is the three costs over it
+- **L3248 (13) the weight table foots to the weighted book, term and desk included**
+  - L3269 the weight table's weighed column foots to the weighted book capacity reads
+  - L3271 fixture: the desk's shares are on it, at RISK_EQUITY
+  - L3272 ...a book halfway through its loans' terms shows the share its term counts for
+  - L3274 ...and every row is its face, term and risk weight multiplied
+  - L3275 ...where face times risk, with no term and no desk, did not foot
+- **L3286 (13) what it gathers is in today's money after a reform**
+  - L3290 three branches gather all the city has banked, whatever their number
+  - L3293 ...and after a hundred-for-one reform, a hundredth of it
+  - L3295 ...which is the city's own savings with it, all of them
+  - L3297 ...and their owners' capital for a branch
+- **L3300 (13) the bank's state in a sentence, with the figure that decides it**
+  - L3303 with no branch: there is no bank
+  - L3310 fixture: the four banks are healthy, rebuilding, under the minimum and failed
+  - L3315 a bank at or over its target is healthy and lending freely, at its ratio and its target
+  - L3319 ...one under its target is rebuilding, at the growth its rule allows
+  - L3322 ...one under the minimum lends only to keep its borrowers going, at its ratio
+  - L3325 ...and a failed one says what it must hold again
+- **L3330 (13) on a played city: the interest by who paid it, last month, the year, and the equity's movement**
+  - L3338 the city's coupons, the businesses', the families' and the discount each on its own line
+  - L3342 ...and together they are its interest
+  - L3520 fixture: the played city's first branch opened in it
+  - L3521 fixture: the bank paid its owners in it
+  - L3522 fixture: the treasury bought paper back from it, at a gain or a loss
+  - L3523 fixture: the city put capital into it
+  - L3524 its equity's movement left nothing unexplained, every month
+  - L3526 ...nor between two presses, after a buyback and after a rescue
+  - L3528 fixture: the city and the businesses paid it interest
+  - L3529 its interest by who paid it is the whole of its interest, every month
+  - L3530 fixture: last month and the year were read in most months
+  - L3531 last month's column is what that month read, whole
+  - L3532 ...and the last twelve months add up to the last twelve read
+  - L3533 the played bank's weight table foots every month
+- **L3535 (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save**
+  - L3538 fixture: a year ago was on file in most of the months played
+  - L3539 fixture: the businesses owed the bank in most of them
+  - L3543 its asset lines are what totalAssets() sums
+  - L3544 ...its liability lines what totalLiabilities() sums
+  - L3545 so its lines foot, assets less liabilities less equity, every month
+  - L3546 ...and a year ago, every month one was on file
+  - L3547 a year ago is the sheet as it stood twelve months before, line for line
+  - L3548 the businesses' loans by sector add to their line, and the interim financing to its
+  - L3570 the year of sheets survives a save, whole
+  - L3572 ...so the reloaded page has a year ago
+  - L3573 ...the same equity a year ago
+  - L3575 ...and the same loans to the businesses a year ago
+  - L3577 a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"
+- **L3580 (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month**
+  - L3584 fixture: a branch opened, its capital sold as shares
+  - L3585 fixture: it bought its own shares back
+  - L3586 fixture: it paid a dividend
+  - L3587 fixture: it lost money in a month
+  - L3588 a bank founded in this build keeps the split, every month
+  - L3589 paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses
+  - L3591 paid in moved by what its owners and the city put in: offerings, new shares, a resolution, less buybacks
+  - L3593 ...and retained by everything else: what it kept, less dividends, and the rest of the causes
+  - L3595 both survive a save
+  - L3598 ...and still add up to the reloaded bank's equity
+  - L3599 ...and the page's lines read them - with the city's preferred, equity's third part since 0.7.14
+  - L3602 a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"
+  - L3605 ...its equity the same total
+  - L3612 ...and a month played does not invent them
+- **L3628 (13) the interest margin is on what earns it interest: its loans, its paper and bonds, and its reserves**
+  - L3631 fixture: the played bank has lent
+  - L3651 fixture: its reserves are at least a hundred times its book, and it still lends
+  - L3658 its earning assets are the eight sheet lines that earn it interest: its reserves, loans, interim financing,
+  - L3662 ...which are its assets less the desk's shares, which earn no interest, and the allowance, which is negative
+  - L3665 the month's margin is its net interest, a year of it, over its earning assets
+  - L3673 a margin on what earns it interest cannot pass the best rate any of it earned that month
+  - L3674 ...where the old reading, over the book alone, passed it - the absurd figure the issue saw
+  - L3684 fixture: a whole year is on file, more months were played than that, and its window holds months before the capital
+  - L3687 the earning assets averaged over the year are the mean of those read at the close of each of its months
+  - L3690 ...and the year's margin is its average net interest, a year of it, over them
+- **L3702 (13) the rescue's guard is the model's**
+  - L3703 fixture: the bank stands and needs nothing
+  - L3704 a bank that needs nothing is not offered a rescue
+  - L3708 fixture: the bank is under water
+  - L3709 ...a treasury holding half of what it needs resolves it all the same
+  - L3710 ...paying the hole and the capital to reopen, the whole of what it is asked
+  - L3711 ...half of it from its cash and the rest for the central bank to advance
+  - L3713 ...and doing it stands the bank back up
+- **L3747 (7) a loan is met by its year's allowance, a weakening borrower by its lifetime loss, a write-off by the allowance first**
+  - L3760 a new loan to a sound borrower is met by its year's expected loss, BASE_LOSS_RATE of it
+  - L3762 ...a stage-1 book
+  - L3763 ...and that is the month's provision
+  - L3781 a borrower past SECTOR_WATCH_LEVERAGE moves to stage 2
+  - L3782 ...and its allowance rises toward its lifetime loss: a loan's term of defaults on the share of its firms past the line
+  - L3784 ...which is more than a year's loss
+  - L3785 ...and the rise is the month's provision, before anything is written off
+  - L3801 fixture: the month's slice is written off, and the sector is not restructured
+  - L3808 a write-off is drawn against the allowance its book held first
+  - L3810 ...and only what that did not cover reaches the month
+  - L3812 ...so the provision is the allowance's move plus the write-off
+  - L3814 ...and the month's hit to equity is less than the write-off, because most was taken already
+  - L3817 ...and a borrower still past the watch line stays in stage 2, its staged loss struck on what it owes now
+  - L3829 a repaid book holds nothing, and its allowance comes back as a release
+  - L3834 over the episode the provisions add up to the write-offs, to the cent
+  - L3835 ...and every month its equity moved by its net income and nothing else
+  - L3838 a family owing under the watch line holds a year's loss
+  - L3840 ...halfway from there to the discharge line, half its debt
+  - L3843 ...and at the line, all of it - a discharge writes the whole debt off
+  - L3863 fixture: a family borrowing to eat does pass the watch line
+  - L3864 ...and its book then holds more than a year's loss
+  - L3866 ...which is the rule cell by cell
+- **L3868 (8) a bank that has lived through a bad year chooses more capital than a young one**
+  - L3899 a bank whose worst year was under the conservation buffer targets the minimum and the buffer
+  - L3901 fixture: the scarred bank's worst year was past the conservation buffer
+  - L3903 ...one that has lived through a worse year holds a buffer that would take it and leave the minimum
+  - L3905 ...which is more than the young one holds
+  - L3906 ...its worst year is its year's provisions over its weighted book
+  - L3908 ...and never more than the whole Basel stack, MAX_BUFFER, however bad the year
+  - L3911 ...and a loss on a book smaller than its founding capital carries is read over that capacity
+  - L3917 no bank ever targets less than the minimum and the conservation buffer
+  - L3918 ...and it prices a loan's capital at the target it chose
+- **L3923 (9) under its target it keeps its profit and lends slower, and under its minimum only to keep borrowers going**
+  - L3928 fixture: halfway between its minimum and its target
+  - L3930 it keeps every dollar of a profit
+  - L3931 ...and says so
+  - L3932 ...and a borrower's debt may grow RATIONED_GROWTH a month halfway there
+  - L3944 the limit is RATIONED_GROWTH x x/(1-x) from the minimum to the target
+  - L3945 ...rising smoothly, never falling, as the ratio rises
+  - L3946 ...from nothing at the minimum
+  - L3947 ...to no limit at all at the target
+  - L3958 a sector owing 100,000 may borrow that share of it more this month
+  - L3959 ...a project inside it is funded
+  - L3960 ...and one past it is not
+  - L3961 ...and the investor can say it was the bank's capital
+  - L3966 ...and its short month is lent whole, its fee on top: a working-capital line the rule does not ration
+  - L3970 under its minimum it lends only to keep its borrowers going
+  - L3978 ...no project, however small
+  - L3980 ...but a borrower short of cash is still lent its short month: the line is honoured under the minimum too
+  - L3991 fixture: its loan fell due
+  - L3992 ...and what fell due may be lent again under the minimum
+  - L3997 ...and a borrower past the line still has its defaulted firms written off
+  - L4000 ...and one with nothing left is still restructured whole
+  - L4017 fixture: free, it borrows more than its interest
+  - L4018 a family's debt may grow the month's share and its interest, and no more
+  - L4021 ...and under the minimum it may draw its interest and nothing else
+- **L4024 (10) inside its band it pays a share of its profit, over the top it returns the excess**
+  - L4028 fixture: inside its band, with no reserves at all
+  - L4030 inside its band it pays PAYOUT_IN_BAND of its profit after tax
+  - L4034 ...and pays it though it holds no reserves - out of what it borrows, like any bank
+  - L4036 ...nothing on a loss
+  - L4038 ...and never so much that it would fall under its target
+  - L4042 fixture: far over the top of its band
+  - L4043 over the top it pays its share and a twelfth of the excess
+  - L4052 ...so a year returns all but (11/12)^12 of it, on no profit at all
+  - L4054 ...and it counts what it paid over the year
+  - L4058 under its target, under its minimum, failed or with no bank it pays nothing
+- **L4062 (11) while the bank stands, there is always something it will lend**
+  - L4078 a standing bank at any capital has capacity
+  - L4079 ...lends more than nothing a month whenever it is over its minimum
+  - L4080 ...and at any capital lends a borrower short of cash its interest
+  - L4084 ...where a failed one, in resolution, has none - resolution is as it was
+- **L4142 and the bank pays for the city's paper**
+  - L4172 fixture: the city has a working bank and owes nothing yet
+  - L4201 fixture: the city issued a note and a serial bond, below par
+  - L4203 between the presses the bank has not paid yet
+  - L4204 ...and owes the treasury exactly what it received
+  - L4217 a city saved between the issue and the settle still owes its bank's payment
+  - L4230 fixture: the households held their paper through the settle - the desk bought none
+  - L4264 the bank's cash fell by exactly what the treasury received less what the households
+  - L4267 ...which is the figure the settle reports
+  - L4268 ...and between them the holders paid every dollar the treasury received
+  - L4271 ...its book rose by its own face, less what the city repaid it this month
+  - L4273 ...and its equity by net income and capital, and nothing else - the discount, not the face
+  - L4276 ...and once it has paid it owes nothing for the paper
+  - L4280 MoneyAudit still closes, on the month the bank paid
+  - L4282 the reloaded city's bank paid the same, at its settle
+  - L4284 ...and its households the same
+  - L4285 ...and its businesses
+  - L4286 ...and its world
+  - L4287 ...and its month closes too
+  - L4296 fixture: the note and the serial are on the books
+  - L4298 each piece carries its own discount, which together is face less what it raised
+  - L4308 the bank's interest in the settle month carries one month of its share of the discount,
+  - L4310 ...which is well short of the whole (the old rule booked all of it)
+  - L4312 the rest sits against its book, unearned, so its equity did not move for the discount
+  - L4315 ...and it is exactly the bank's share less what accreted
+  - L4329 over the note's life its accretion adds up to its face less what it raised
+  - L4331 ...and nothing of it is left unearned once it is repaid
+  - L4332 ...and it is off the books
+- **L4354 (13b) the tab draws each rate in its parts (0.7.33)**
+  - L4366 an insured mortgage's money, running costs and capital add up to its rate, at six dials
+  - L4368 ...its running part is prime's own running costs
+  - L4369 the losses' watch line is past what a sound book loses
+  - L4417 fixture: every sector is priced
+  - L4418 fixture: the sector given a record carries it in its quote
+  - L4420 fixture: the book's concentration prices at least one sector
+  - L4421 prime and a sector's three parts are its rate, to the bit, for every sector
+  - L4422 ...on the prime it was priced on, its record and the charge pushed for it
+  - L4423 ...and the three are its spread over prime
+  - L4434 ...and a played month later, still to the bit
+  - L4461 a city just loaded quotes every sector with its record, as the city it was saved from
+  - L4463 ...the fixture's record among them, in its rate
+  - L4465 ...and the book's concentration on it, the charge the bank prices it at now
+  - L4466 ...each quote still its parts, to the bit
+  - L4483 fixture: no branch stands and the bank's own rule wants its first - the page said \"Yes\"
+  - L4485 fixture: the city could not staff one
+  - L4486 the planner the tab's verdict reads does not build it
+  - L4487 ...and holds on the staffing, the words the verdict prints after \"Not yet\"
+  - L4489 asked twice, the planner answers the same and moves nothing - it is a read
+  - L4506 the rates' flags carry the central bank's and the bank's decisions and nothing else
+  - L4508 ...a month with both one flag holding both
 
 ## BankFailureCheck.java - 68 labelled assertions
 
@@ -19342,220 +19342,220 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L11238 a box from the city's east edge along its site's row, five blocks out and one deep, takes the free blocks joined through its own (
   - L11244 a box over the third block alone, two from the picked one, takes none; over the second and third it takes both, joined through the first
   - L11249 a box over the whole world takes at most
-  - L11256 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own
-  - L11271 picked block by block from the city's edge (
-  - L11272 ...and then it is: its id is the pick (an offer wholly picked is the offer), its blocks are out of the block set and no draft is left for them
-  - L11274 ...bought at its listed price: the card's figure is the offer's
-  - L11276 ...and its ground is not a block's: a click on one of its blocks picks none, a box over it adds none of them
-  - L11301 fixture: the offer to be bought, and a block bought after it, leave the city's blocks the size they are (level
-  - L11304 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick
-  - L11309 fixture: one of its blocks may be picked, and picking it, the offer is not wholly picked: a draft stands for that block
-  - L11318 the city's buying the offer over a picked block drops the block it owns whole, and the draft that held it, named (
-  - L11320 ...the note stands while nothing changes (live() runs every frame), and a click clears it
-  - L11328 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to bite
-  - L11332 fixture: one of its blocks may be picked
-  - L11345 a draft bought through Game.buyLandParcel() makes its block the city's and the picks drop it:
-  - L11347 ...and the offer whose ground it bit (
-  - L11365 fixture: a block is picked in a new city, and its draft stands
-  - L11372 the city's blocks changing size (its level rose from
-  - L11444 fixture: the hand-made city has a block it owns in part, a free one with an owned plot across an edge, three free blocks in a row out of its frontier, and no...
-  - L11458 fixture: the half-owned block holds a plot the city owns and a free one
-  - L11462 a press on a free plot of a block that may be picked boxes with no key held: one beside the city's ground, and a free plot of a block it owns part of
-  - L11465 ...but the city's own plot in that half-owned block pans: it is not ground the player may pick
-  - L11467 a press on a block two away from the city's ground, nothing picked, pans - the second and third of a row out of the frontier, which join nothing yet - and on...
-  - L11470 ...with the first picked, the second boxes (it joins through the picked block) and the third, still two away, pans
-  - L11473 a press on a picked block boxes, though it may not be picked again; Shift boxes from the third block too
-  - L11486 fixture: three free blocks in a row run out of the played city's frontier
-  - L11496 Picks.pressBoxes() reads the blocks and offers picked as they stand: a free plot of the picked block boxes, ground a quarter of the world out pans, Shift box...
-  - L11503 the blocks a box would take (Picks.boxBlocks()) are worked out and nothing is picked: no block, no draft, no card figure
-  - L11507 ...and the release takes exactly them (
-  - L11509 ...and over the same box again the preview takes none: what is picked is not taken twice
-  - L11512 the blocks the drafts hold, counted by draftBlocks() (
-  - L11526 the picked blocks' fill (LandMap.freeCells()) holds no plot the city owns, and exactly the plots of the blocks it does not own (
-  - L11529 ...and its edge (freeOutline()) is that ground's own: closed, the ground on its right, none of it the city's, enclosing exactly its free plots
-  - L11535 on the hand-made city's half-owned block and the free one beside it: the fill holds none of the city's plots, the edge is the free ground's, and the blocks' own
-  - L11540 freeCells() and ownedIn() of a rectangle are the offer's of that rectangle: the same cells, the owned leaves cut out
-  - L11548 the edge of two touching parcels' free ground is one shape, the seam between them no run: a rectangle's four; none for none
-  - L11555 a box's plots (plotBox()) run from the least corner's plot to one past the greatest's, whatever order the corners come in: the plot under every corner is in
-  - L11558 the bounds of picked blocks hold all of them and no more, and none for none
-  - L11571 the card's title names one offer by its place, several as a count, the drafts together as \"Your ground - N blocks\", and both joined:
-  - L11581 the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price ...
-  - L11585 ...over a picked block what is picked in all (\"
-  - L11595 two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick
-  - L11633 fixture: a fresh city has an offer and a block that may be picked sharing no ground with it and completing no offer
-  - L11639 a block picked first and an offer after: the card's ids put the offer before the draft - the order they are bought in, so no draft's purchase can take the of...
-  - L11647 ...and the card's Buy buys both through Game.buyLandParcels() (
-- **L11715 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
-  - L11741 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
-  - L11742 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
-  - L11773 fixture: its square holds sites enough of every type for all its works
-  - L11774 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
-  - L11780 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
-  - L11808 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
-  - L11825 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
-  - L11849 ...the
-  - L11902 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
-  - L11906 with no zone set no district is tinted
-  - L11938 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
-  - L11940 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
-  - L11941 ...and each zone in its sector's own colour
-  - L11975 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
-  - L12264 fixture: the avenues run open for steps across a district's seam and a tile's edge, on every arm
-  - L12265 THE LINE: along every arm's line between two open cells, every sample is the street's colour - across the tile edges and the seams, no gap and no staircase
-  - L12266 ...and the line's two sides, as far out as the street is wide less a pixel, are the street's too: no step where the band crosses an edge or a seam, no narrowing
-  - L12296 fixture: the tiles about the origin have avenues about them
-  - L12297 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
-  - L12298 ...and a copy whose mark beside the tile moved has another stamp: a tile repaints when an avenue plot beside it is laid
-  - L12319 ...and a tile of an avenue from a twin map built alike paints the same pixels
-  - L12343 NO BUILDING ON THE BAND: not one staircase plot and not one outer plot (the ground the band crosses) is under a building, and no sample of the line is a buil...
-  - L12354 CROSSINGS: a staircase's plots alone are no junction - an avenue's arm with no street across it draws no box, no zebra, no ring (and is drawn: its paved band...
-  - L12361 ...an avenue across an arterial is a signal: the box on the avenue's two plots in the arterial's column, a zebra on each of the arterial's arms, no ring (fou...
-  - L12367 ...two arterials crossing with no avenue: a signal, the box at the corner, no ring
-  - L12371 ...the avenue through that corner (
-  - L12376 ...the origin where the four arms meet and a street runs along each axis (eight roads): one ring about the origin's plot, ISLAND exactly within ROUNDABOUT_IS...
-  - L12379 ...and the four arms alone (four roads): a signal, the box on the origin's plot, no ring
-  - L12383 ...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17),...
-  - L12415 fixture: the tiles about the origin read crossings, roundabouts among them
-  - L12416 ...the ring of street codes each was handed is the map's streetAt() on all
-  - L12417 A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout
-  - L12449 THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them:
-  - L12794 fixture: the far districts hold crescents and shore curves, shore curves that cross a tile's edge and some that bend, and their plans are drawn (a Drawn coun...
-  - L12796 ...the curves' bytes are a small share of the plans' (compact: the geometry as numbers, the plots as one list of ints): at most 15%
-  - L12830 THE LINE at
-  - L12832 ...the band's middle stays within
-  - L12834 ...and between samples
-  - L12853 THE CONTROL: the same crescents drawn without the curves, as the staircase of bars they were, fail the audit - the band's middle off the line, its width wron...
-  - L12893 fixture: the tiles about the first crescents and shore curves have curves about them
-  - L12894 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
-  - L12895 ...and a copy with a curve mark added beside the tile has another stamp: a tile repaints when a curve plot beside it is laid
-  - L12916 ...and a tile of a curve from a twin map built alike paints the same pixels
-  - L12967 NO BUILDING UNDER OR OVER A CURVE: not one plot a curve is laid on or reaches is under a building of the plan (a works at the water, which CityShore places o...
-  - L12979 CROSSINGS: a crescent's plots alone are no junction - between its two rings it draws no box, no zebra, no ring (and is drawn: its paved band is on its apex p...
-  - L12991 ...a street that crosses it runs on across the band: along the long street's row, over the plots the arc crosses and three each side, its colour at the middl...
-  - L12999 ...and an arterial crossing another with the crescent in the tile is a signal as it was: the box on the crossing's plot, nowhere else, no ring
-  - L13008 ...and over a bridge a street along a cut is drawn through: its colour along the whole line from its first plot's middle to its last's, the deck on the four ...
-  - L13052 THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them:
-  - L13772 fixture:
-  - L13774 in the months that laid a run at
-  - L13817 the runs index enters a stretch of any heading, at any scale and start (on a node's edge, beside it, inside it), at exactly the nodes stroke()'s clip draws i...
-  - L13853 the runs key of a far node from the scale's index is the key the walk of every stretch and dot gives it, on x 1, x 80 and 5B, at six scales
-  - L13993 fixture: every month reconciled (the map was not restated), on x 1, x 80, 5B and the played city
-  - L13996 fixture: the chain settled - no job left to hand out - within
-  - L13997 the minimap's picture after a month - the stamp and the preview, from the kept nodes - equals a full redraw of the same map, pixel for pixel, asking the same...
-  - L13999 ...the played city before its land purchase and after it
-  - L14010 fixture: months left far nodes held (their key unmoved) on x 1, x 80 and 5B, to compare
-  - L14011 the far view's nodes whose key did not move hold the pixels a fresh nodePixels() gives them, every month on x 1, x 80 and 5B
-  - L14032 fixture:
-  - L14035 the stamp's static layer is not redrawn by a month that adds no run, and a month that lays a highway or a stretch of track redraws it once (its pixels equal ...
-  - L14040 fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was
-  - L14042 the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the
-  - L14053 stampOf and the margins' hash from the cache equal a fresh one for every link kept after each of
-  - L14078 fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did
-  - L14079 every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)
-  - L14093 the jobs the map counts as handed out lazy are the plan jobs the month's rounds were handed with no input and a link to take, every month on
-  - L14094 a band whose lazy job failed hands none lazy at its next hand-out:
-  - L14095 a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their li...
-  - L14098 fixture: x 80 has a band whose lazy job failed and that was handed out again (
-  - L14105 fixture: x 80's band, with the link of district
-  - L14118 fixture: x 80 has a used district after district
-  - L14136 a link whose carry in is not the one arriving makes the lazy try fail, and the band hands its jobs out with the input gathered from then on: a district's car...
-  - L14139 ...at the next epoch none is handed lazy and none fails: the plans of the district let go and of the one whose link carried the other carry in are made (
-  - L14142 ...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (
-  - L14153 a district's link gone and nothing else moved: the chain plans that district and takes the link of every district after it, none planned that need not be -
-  - L14156 ...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current:
-  - L14161 a district's link gone and nothing else moved: the reserves are found again as kept -
-  - L14163 ...and the sites kept for every region are the ones a fresh find gives, after that round (
-  - L14164 a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and t...
-  - L14169 the links and plans kept after
-  - L14188 fixture:
-  - L14190 an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of
-  - L14224 fixture: x 80's months ask the reserves (a median of
-  - L14226 the sites kept for every region are the ones a fresh find gives, after every month of x 80 (
-  - L14227 the guard's kept digest is the one worked out afresh from the shore's works and the districts' mined sites after every month of x 80 - no writer of a mine or...
-  - L14229 a month in which the guard's version did not move empties the cache by it never:
-  - L14230 ...and one in which it moved, with the reserves asked after it, empties the cache by it at least once:
-  - L14242 a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than
-  - L14266 a land purchase moves the key of every tile over the ground bought, in what the city owns of the tile, and of no tile about it
-  - L14274 fixture: the L0 screen on x 1, x 80 and 5B has tiles whose key held through a month, to compare, and tiles whose key moved, read again
-  - L14276 a tile whose key did not move holds the stamp a fresh input() gives it, every month on x 1, x 80 and 5B
-  - L14293 fixture:
-  - L14297 a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round ...
-  - L14312 fixture:
-  - L14314 a month that places in one district re-colours only the far nodes over that district and its neighbours, pictures on, at
-  - L14319 ...the chain re-plans the district that moved and those whose carry or edges moved, and no other:
-  - L14596 a plot is painted by its cover and relief: flat ground its cover's colour; grass, the beach and the desert on a slope its grey, foothill lightest to very ste...
-  - L14598 ...forest on a slope its green shaded toward its slope's grey (neither forest's own nor the grey), ice white whatever the slope, water as it is
-  - L14626 Medellin's hills in the fixture: every plot painted by its relief, and the three greys and the three shades of forest all on the screen
-  - L14644 the map's tile input carries the world's relief (CityMap.tileInput(), MapTiles.input()), and the plots about Medellin's centre hold some
-  - L14657 a generated world is flat everywhere and paints its cover's colour at every plot, byte for byte as before (D19)
-  - L14689 a far node's cover is the same with its relief asked for, and its relief is on dry ground alone, all four classes present over Medellin
-  - L14691 ...its pixels painted by cover and relief (TileRaster.colour()), the city's ground and edge aside; with no relief, or all flat, the pixels as before; the kep...
-  - L14702 ...the node and its pixels drawn in no more than SCREEN_MS (
-  - L14708 a generated world's far node asked for its relief is all flat, its cover the same
-- **L14714 11 (ET1 slice D). the district pictures over relief: the far node's own ground under a built city is painted by its relief**
-  - L14743 a far node over a built city on Medellin's hills draws the city's own bare ground by its relief, undimmed, and the rest dimmed - no pixel but a building's, a...
-  - L14770 on an Earth world with relief the hover's first line is the plot's ground and grade: \"Foothill\" and its grade on open ground, \"Forest on steep ground\" an...
-  - L14784 on the sea the first line carries the depth: the Narrows \"Shallow sea\" and its metres, Bedford Basin \"Sea\" and its
-  - L14797 a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())
-  - L14814 the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth
-  - L14830 the legend on an Earth world with relief has the three greys, forest on a slope and the shallow sea, in the globe's tiers and the plane's; without, as it was
-  - L14838 the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it
-- **L14868 19. the borders on the city's plane: only where a border crosses the city's ground (WN2)**
-  - L14870 WorldDataCheck's fixture is beside the classes (
-  - L14891 a box of the city's ground round Baarle-Nassau is crossed by the Belgium-Netherlands line, and each line crossing() gives has a segment meeting the box
-  - L14892 crossing() misses no line that has a segment meeting the box (each segment sampled a thousand times)
-  - L14893 the same box round Rotterdam is crossed by no line
-  - L14894 crossing() keeps its answer for the same box and spot, and gives a new one for another spot
-  - L14907 planeBorders() of the Baarle lines on a
-  - L14921 at the closest view, on one of the line's vertices, the line that runs far off the canvas is cut to its margin (
-  - L14923 the plane's level of detail is the coarsest whose tolerance is no more than LOD_PX of a pixel at PLOT_M / 1000 / scale km (level
-  - L14926 borders and nations are drawn on an Earth world and on none a generated one makes
-- **L15001 20. the one rail yard is dealt to the district whose frame holds it: a Rail Depot arriving in a district earlier in the map's order moves...**
-  - L15012 fixture: one Rail Depot lays one yard (
-  - L15033 fixture: the district that stands the yard counts its depot and has no room for another (
-  - L15041 fixture: the second Rail Depot arrives in the district ahead in the map's order (
-  - L15046 the yard's share stays with the district that stands it: it is dealt
-  - L15048 ...every yard laid is dealt to some district (
-  - L15055 no box of the district that stands the yard moves, and it gains none: its depot is still its yard's (
-  - L15057 no box of the district ahead moves, and the arrival is its one new box, drawn in its plan (
-- **L15156 21. ground bought inside a built district with large works standing moves no box of its plan (MF2; WN3-M(b))**
-  - L15162 fixture: the district is built to
-  - L15175 fixture: the
-  - L15177 ground bought inside a built district moves none of the boxes that stand:
-  - L15183 ...and six months of arrivals after it, large works among them, move none either (
-- **L15187 22. a Convenience Store that leaves takes only its own box out of the plan (MF2; HD1-M)**
-  - L15191 fixture: the district is built to
-  - L15207 a Convenience Store leaving takes one box out of the plan and no other moves:
-- **L15229 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396)**
-  - L15247 fixture: one yard in the frame of the district that counts both Rail Depots (
-  - L15259 fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (
-  - L15261 a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (
-- **L15384 LM1: the deposits zoomed out**
-  - L15413 fixture: a view at the cut-off within
-  - L15421 fixture: the frame is at the cut-off - its level() is FAR (more than
-  - L15423 fixture: the frame's box holds deposits, of
-  - L15430 every deposit LandMap.fieldsIn finds in the frame's box is drawn, or shares its
-  - L15432 ...no two icons share a square, and every icon is of a deposit the search found
-  - L15442 two fields in one square keep the one with more sites, whichever comes first; the next square keeps its own; a field off the screen is not drawn
-  - L15445 ...and two of equal sites in one square keep the earlier of the list
-  - L15459 fixture: a view
-  - L15461 ...every deposit in its box is drawn or covered by a larger one in its square, one icon to a square, and none more than squares are on the screen
-  - L15476 a drag of a few pixels keeps the same deposits drawn: of
-  - L15492 every resource in fields has a mark of its own, none empty (
-  - L15494 ...written dark on a light colour and white on a dark one: each resource's ink has at least the contrast of the other against its colour
-  - L15507 fixture: a box just inside
-  - L15509 past
-  - L15535 a view panned a quarter of its size inside the searched box does not search again (
-  - L15536 ...one that leaves the box searches (
-  - L15537 ...a new land key searches (
-  - L15569 finding and thinning the frame's deposits takes a median of
-  - L15570 ...a second frame panned inside the searched box does not search again, and thins in a median of
-  - L15595 a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again
-- **L15642 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction**
-  - L15707 fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases
-  - L15708 both avenue strokes are continuous through every crossing, also on a tile corner (
-  - L15709 the crossing keeps each band wide to its street width less a pixel (
-  - L15710 each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw
+  - L11268 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own
+  - L11283 picked block by block from the city's edge (
+  - L11284 ...and then it is: its id is the pick (an offer wholly picked is the offer), its blocks are out of the block set and no draft is left for them
+  - L11286 ...bought at its listed price: the card's figure is the offer's
+  - L11288 ...and its ground is not a block's: a click on one of its blocks picks none, a box over it adds none of them
+  - L11313 fixture: the offer to be bought, and a block bought after it, leave the city's blocks the size they are (level
+  - L11316 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick
+  - L11321 fixture: one of its blocks may be picked, and picking it, the offer is not wholly picked: a draft stands for that block
+  - L11330 the city's buying the offer over a picked block drops the block it owns whole, and the draft that held it, named (
+  - L11332 ...the note stands while nothing changes (live() runs every frame), and a click clears it
+  - L11340 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to bite
+  - L11344 fixture: one of its blocks may be picked
+  - L11357 a draft bought through Game.buyLandParcel() makes its block the city's and the picks drop it:
+  - L11359 ...and the offer whose ground it bit (
+  - L11377 fixture: a block is picked in a new city, and its draft stands
+  - L11384 the city's blocks changing size (its level rose from
+  - L11456 fixture: the hand-made city has a block it owns in part, a free one with an owned plot across an edge, three free blocks in a row out of its frontier, and no...
+  - L11470 fixture: the half-owned block holds a plot the city owns and a free one
+  - L11474 a press on a free plot of a block that may be picked boxes with no key held: one beside the city's ground, and a free plot of a block it owns part of
+  - L11477 ...but the city's own plot in that half-owned block pans: it is not ground the player may pick
+  - L11479 a press on a block two away from the city's ground, nothing picked, pans - the second and third of a row out of the frontier, which join nothing yet - and on...
+  - L11482 ...with the first picked, the second boxes (it joins through the picked block) and the third, still two away, pans
+  - L11485 a press on a picked block boxes, though it may not be picked again; Shift boxes from the third block too
+  - L11498 fixture: three free blocks in a row run out of the played city's frontier
+  - L11508 Picks.pressBoxes() reads the blocks and offers picked as they stand: a free plot of the picked block boxes, ground a quarter of the world out pans, Shift box...
+  - L11515 the blocks a box would take (Picks.boxBlocks()) are worked out and nothing is picked: no block, no draft, no card figure
+  - L11519 ...and the release takes exactly them (
+  - L11521 ...and over the same box again the preview takes none: what is picked is not taken twice
+  - L11524 the blocks the drafts hold, counted by draftBlocks() (
+  - L11538 the picked blocks' fill (LandMap.freeCells()) holds no plot the city owns, and exactly the plots of the blocks it does not own (
+  - L11541 ...and its edge (freeOutline()) is that ground's own: closed, the ground on its right, none of it the city's, enclosing exactly its free plots
+  - L11547 on the hand-made city's half-owned block and the free one beside it: the fill holds none of the city's plots, the edge is the free ground's, and the blocks' own
+  - L11552 freeCells() and ownedIn() of a rectangle are the offer's of that rectangle: the same cells, the owned leaves cut out
+  - L11560 the edge of two touching parcels' free ground is one shape, the seam between them no run: a rectangle's four; none for none
+  - L11567 a box's plots (plotBox()) run from the least corner's plot to one past the greatest's, whatever order the corners come in: the plot under every corner is in
+  - L11570 the bounds of picked blocks hold all of them and no more, and none for none
+  - L11583 the card's title names one offer by its place, several as a count, the drafts together as \"Your ground - N blocks\", and both joined:
+  - L11593 the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price ...
+  - L11597 ...over a picked block what is picked in all (\"
+  - L11607 two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick
+  - L11645 fixture: a fresh city has an offer and a block that may be picked sharing no ground with it and completing no offer
+  - L11651 a block picked first and an offer after: the card's ids put the offer before the draft - the order they are bought in, so no draft's purchase can take the of...
+  - L11659 ...and the card's Buy buys both through Game.buyLandParcels() (
+- **L11727 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
+  - L11753 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
+  - L11754 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
+  - L11785 fixture: its square holds sites enough of every type for all its works
+  - L11786 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
+  - L11792 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
+  - L11820 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
+  - L11837 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
+  - L11861 ...the
+  - L11914 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
+  - L11918 with no zone set no district is tinted
+  - L11950 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
+  - L11952 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
+  - L11953 ...and each zone in its sector's own colour
+  - L11987 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
+  - L12276 fixture: the avenues run open for steps across a district's seam and a tile's edge, on every arm
+  - L12277 THE LINE: along every arm's line between two open cells, every sample is the street's colour - across the tile edges and the seams, no gap and no staircase
+  - L12278 ...and the line's two sides, as far out as the street is wide less a pixel, are the street's too: no step where the band crosses an edge or a seam, no narrowing
+  - L12308 fixture: the tiles about the origin have avenues about them
+  - L12309 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
+  - L12310 ...and a copy whose mark beside the tile moved has another stamp: a tile repaints when an avenue plot beside it is laid
+  - L12331 ...and a tile of an avenue from a twin map built alike paints the same pixels
+  - L12355 NO BUILDING ON THE BAND: not one staircase plot and not one outer plot (the ground the band crosses) is under a building, and no sample of the line is a buil...
+  - L12366 CROSSINGS: a staircase's plots alone are no junction - an avenue's arm with no street across it draws no box, no zebra, no ring (and is drawn: its paved band...
+  - L12373 ...an avenue across an arterial is a signal: the box on the avenue's two plots in the arterial's column, a zebra on each of the arterial's arms, no ring (fou...
+  - L12379 ...two arterials crossing with no avenue: a signal, the box at the corner, no ring
+  - L12383 ...the avenue through that corner (
+  - L12388 ...the origin where the four arms meet and a street runs along each axis (eight roads): one ring about the origin's plot, ISLAND exactly within ROUNDABOUT_IS...
+  - L12391 ...and the four arms alone (four roads): a signal, the box on the origin's plot, no ring
+  - L12395 ...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17),...
+  - L12427 fixture: the tiles about the origin read crossings, roundabouts among them
+  - L12428 ...the ring of street codes each was handed is the map's streetAt() on all
+  - L12429 A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout
+  - L12461 THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them:
+  - L12806 fixture: the far districts hold crescents and shore curves, shore curves that cross a tile's edge and some that bend, and their plans are drawn (a Drawn coun...
+  - L12808 ...the curves' bytes are a small share of the plans' (compact: the geometry as numbers, the plots as one list of ints): at most 15%
+  - L12842 THE LINE at
+  - L12844 ...the band's middle stays within
+  - L12846 ...and between samples
+  - L12865 THE CONTROL: the same crescents drawn without the curves, as the staircase of bars they were, fail the audit - the band's middle off the line, its width wron...
+  - L12905 fixture: the tiles about the first crescents and shore curves have curves about them
+  - L12906 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
+  - L12907 ...and a copy with a curve mark added beside the tile has another stamp: a tile repaints when a curve plot beside it is laid
+  - L12928 ...and a tile of a curve from a twin map built alike paints the same pixels
+  - L12979 NO BUILDING UNDER OR OVER A CURVE: not one plot a curve is laid on or reaches is under a building of the plan (a works at the water, which CityShore places o...
+  - L12991 CROSSINGS: a crescent's plots alone are no junction - between its two rings it draws no box, no zebra, no ring (and is drawn: its paved band is on its apex p...
+  - L13003 ...a street that crosses it runs on across the band: along the long street's row, over the plots the arc crosses and three each side, its colour at the middl...
+  - L13011 ...and an arterial crossing another with the crescent in the tile is a signal as it was: the box on the crossing's plot, nowhere else, no ring
+  - L13020 ...and over a bridge a street along a cut is drawn through: its colour along the whole line from its first plot's middle to its last's, the deck on the four ...
+  - L13064 THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them:
+  - L13784 fixture:
+  - L13786 in the months that laid a run at
+  - L13829 the runs index enters a stretch of any heading, at any scale and start (on a node's edge, beside it, inside it), at exactly the nodes stroke()'s clip draws i...
+  - L13865 the runs key of a far node from the scale's index is the key the walk of every stretch and dot gives it, on x 1, x 80 and 5B, at six scales
+  - L14005 fixture: every month reconciled (the map was not restated), on x 1, x 80, 5B and the played city
+  - L14008 fixture: the chain settled - no job left to hand out - within
+  - L14009 the minimap's picture after a month - the stamp and the preview, from the kept nodes - equals a full redraw of the same map, pixel for pixel, asking the same...
+  - L14011 ...the played city before its land purchase and after it
+  - L14022 fixture: months left far nodes held (their key unmoved) on x 1, x 80 and 5B, to compare
+  - L14023 the far view's nodes whose key did not move hold the pixels a fresh nodePixels() gives them, every month on x 1, x 80 and 5B
+  - L14044 fixture:
+  - L14047 the stamp's static layer is not redrawn by a month that adds no run, and a month that lays a highway or a stretch of track redraws it once (its pixels equal ...
+  - L14052 fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was
+  - L14054 the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the
+  - L14065 stampOf and the margins' hash from the cache equal a fresh one for every link kept after each of
+  - L14090 fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did
+  - L14091 every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)
+  - L14105 the jobs the map counts as handed out lazy are the plan jobs the month's rounds were handed with no input and a link to take, every month on
+  - L14106 a band whose lazy job failed hands none lazy at its next hand-out:
+  - L14107 a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their li...
+  - L14110 fixture: x 80 has a band whose lazy job failed and that was handed out again (
+  - L14117 fixture: x 80's band, with the link of district
+  - L14130 fixture: x 80 has a used district after district
+  - L14148 a link whose carry in is not the one arriving makes the lazy try fail, and the band hands its jobs out with the input gathered from then on: a district's car...
+  - L14151 ...at the next epoch none is handed lazy and none fails: the plans of the district let go and of the one whose link carried the other carry in are made (
+  - L14154 ...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (
+  - L14165 a district's link gone and nothing else moved: the chain plans that district and takes the link of every district after it, none planned that need not be -
+  - L14168 ...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current:
+  - L14173 a district's link gone and nothing else moved: the reserves are found again as kept -
+  - L14175 ...and the sites kept for every region are the ones a fresh find gives, after that round (
+  - L14176 a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and t...
+  - L14181 the links and plans kept after
+  - L14200 fixture:
+  - L14202 an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of
+  - L14236 fixture: x 80's months ask the reserves (a median of
+  - L14238 the sites kept for every region are the ones a fresh find gives, after every month of x 80 (
+  - L14239 the guard's kept digest is the one worked out afresh from the shore's works and the districts' mined sites after every month of x 80 - no writer of a mine or...
+  - L14241 a month in which the guard's version did not move empties the cache by it never:
+  - L14242 ...and one in which it moved, with the reserves asked after it, empties the cache by it at least once:
+  - L14254 a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than
+  - L14278 a land purchase moves the key of every tile over the ground bought, in what the city owns of the tile, and of no tile about it
+  - L14286 fixture: the L0 screen on x 1, x 80 and 5B has tiles whose key held through a month, to compare, and tiles whose key moved, read again
+  - L14288 a tile whose key did not move holds the stamp a fresh input() gives it, every month on x 1, x 80 and 5B
+  - L14305 fixture:
+  - L14309 a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round ...
+  - L14324 fixture:
+  - L14326 a month that places in one district re-colours only the far nodes over that district and its neighbours, pictures on, at
+  - L14331 ...the chain re-plans the district that moved and those whose carry or edges moved, and no other:
+  - L14608 a plot is painted by its cover and relief: flat ground its cover's colour; grass, the beach and the desert on a slope its grey, foothill lightest to very ste...
+  - L14610 ...forest on a slope its green shaded toward its slope's grey (neither forest's own nor the grey), ice white whatever the slope, water as it is
+  - L14638 Medellin's hills in the fixture: every plot painted by its relief, and the three greys and the three shades of forest all on the screen
+  - L14656 the map's tile input carries the world's relief (CityMap.tileInput(), MapTiles.input()), and the plots about Medellin's centre hold some
+  - L14669 a generated world is flat everywhere and paints its cover's colour at every plot, byte for byte as before (D19)
+  - L14701 a far node's cover is the same with its relief asked for, and its relief is on dry ground alone, all four classes present over Medellin
+  - L14703 ...its pixels painted by cover and relief (TileRaster.colour()), the city's ground and edge aside; with no relief, or all flat, the pixels as before; the kep...
+  - L14714 ...the node and its pixels drawn in no more than SCREEN_MS (
+  - L14720 a generated world's far node asked for its relief is all flat, its cover the same
+- **L14726 11 (ET1 slice D). the district pictures over relief: the far node's own ground under a built city is painted by its relief**
+  - L14755 a far node over a built city on Medellin's hills draws the city's own bare ground by its relief, undimmed, and the rest dimmed - no pixel but a building's, a...
+  - L14782 on an Earth world with relief the hover's first line is the plot's ground and grade: \"Foothill\" and its grade on open ground, \"Forest on steep ground\" an...
+  - L14796 on the sea the first line carries the depth: the Narrows \"Shallow sea\" and its metres, Bedford Basin \"Sea\" and its
+  - L14809 a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())
+  - L14826 the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth
+  - L14842 the legend on an Earth world with relief has the three greys, forest on a slope and the shallow sea, in the globe's tiers and the plane's; without, as it was
+  - L14850 the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it
+- **L14880 19. the borders on the city's plane: only where a border crosses the city's ground (WN2)**
+  - L14882 WorldDataCheck's fixture is beside the classes (
+  - L14903 a box of the city's ground round Baarle-Nassau is crossed by the Belgium-Netherlands line, and each line crossing() gives has a segment meeting the box
+  - L14904 crossing() misses no line that has a segment meeting the box (each segment sampled a thousand times)
+  - L14905 the same box round Rotterdam is crossed by no line
+  - L14906 crossing() keeps its answer for the same box and spot, and gives a new one for another spot
+  - L14919 planeBorders() of the Baarle lines on a
+  - L14933 at the closest view, on one of the line's vertices, the line that runs far off the canvas is cut to its margin (
+  - L14935 the plane's level of detail is the coarsest whose tolerance is no more than LOD_PX of a pixel at PLOT_M / 1000 / scale km (level
+  - L14938 borders and nations are drawn on an Earth world and on none a generated one makes
+- **L15013 20. the one rail yard is dealt to the district whose frame holds it: a Rail Depot arriving in a district earlier in the map's order moves...**
+  - L15024 fixture: one Rail Depot lays one yard (
+  - L15045 fixture: the district that stands the yard counts its depot and has no room for another (
+  - L15053 fixture: the second Rail Depot arrives in the district ahead in the map's order (
+  - L15058 the yard's share stays with the district that stands it: it is dealt
+  - L15060 ...every yard laid is dealt to some district (
+  - L15067 no box of the district that stands the yard moves, and it gains none: its depot is still its yard's (
+  - L15069 no box of the district ahead moves, and the arrival is its one new box, drawn in its plan (
+- **L15168 21. ground bought inside a built district with large works standing moves no box of its plan (MF2; WN3-M(b))**
+  - L15174 fixture: the district is built to
+  - L15187 fixture: the
+  - L15189 ground bought inside a built district moves none of the boxes that stand:
+  - L15195 ...and six months of arrivals after it, large works among them, move none either (
+- **L15199 22. a Convenience Store that leaves takes only its own box out of the plan (MF2; HD1-M)**
+  - L15203 fixture: the district is built to
+  - L15219 a Convenience Store leaving takes one box out of the plan and no other moves:
+- **L15241 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396)**
+  - L15259 fixture: one yard in the frame of the district that counts both Rail Depots (
+  - L15271 fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (
+  - L15273 a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (
+- **L15396 LM1: the deposits zoomed out**
+  - L15425 fixture: a view at the cut-off within
+  - L15433 fixture: the frame is at the cut-off - its level() is FAR (more than
+  - L15435 fixture: the frame's box holds deposits, of
+  - L15442 every deposit LandMap.fieldsIn finds in the frame's box is drawn, or shares its
+  - L15444 ...no two icons share a square, and every icon is of a deposit the search found
+  - L15454 two fields in one square keep the one with more sites, whichever comes first; the next square keeps its own; a field off the screen is not drawn
+  - L15457 ...and two of equal sites in one square keep the earlier of the list
+  - L15471 fixture: a view
+  - L15473 ...every deposit in its box is drawn or covered by a larger one in its square, one icon to a square, and none more than squares are on the screen
+  - L15488 a drag of a few pixels keeps the same deposits drawn: of
+  - L15504 every resource in fields has a mark of its own, none empty (
+  - L15506 ...written dark on a light colour and white on a dark one: each resource's ink has at least the contrast of the other against its colour
+  - L15519 fixture: a box just inside
+  - L15521 past
+  - L15547 a view panned a quarter of its size inside the searched box does not search again (
+  - L15548 ...one that leaves the box searches (
+  - L15549 ...a new land key searches (
+  - L15581 finding and thinning the frame's deposits takes a median of
+  - L15582 ...a second frame panned inside the searched box does not search again, and thins in a median of
+  - L15607 a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again
+- **L15654 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction**
+  - L15719 fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases
+  - L15720 both avenue strokes are continuous through every crossing, also on a tile corner (
+  - L15721 the crossing keeps each band wide to its street width less a pixel (
+  - L15722 each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw
 
 ## MarketCheck.java - 117 labelled assertions
 
@@ -28448,6 +28448,44 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1088 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
   - L1090 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
   - L1091 ...and the order it passes on that draw is not refused for want of the brake
+
+## StaffingTieCheck.java - 17 labelled assertions
+
+> The harness for TQ1's tie rule at the staffing gate: a planner whose buildings the gate refused hands WantedPosts one hold
+> (LD1), and where two of its refusals stand at the same share the hold keeps both, Game.noteStaffingHold() notes each, and
+> each asks for its part of its posts (Sector.Staffing.held(), WantedPosts.Ask.part()). Not part of the game.
+> 
+> WHY. On main 0.9.129 the thirteen planners each wrote a strict {@code >} and so the first template they met kept every tie.
+> In a city with no spare, every template at or below the diploma band shares drawn/posts, snapped to DRAWN_SHARE_GRID (GW1,
+> docs/queue/GW1-notes.md, section 5), so the refused templates tie exactly, and the order a sector lists its buildings in
+> decided which one the wage was bid for: measured on that default playtest, a tie decided 638 of its 3,502 holds, 278 of
+> Construction's 305 (the Builders' Yard's 20 posts priced, never the Construction Depot's 50), 226 of Restaurants' 467 and 103
+> of Manufacturing's 522, mostly in the founding. Before the snap float noise broke the tie as it fell; shared is that noise's
+> expectation, and nothing a sector lists first decides it. Nothing here moves a premise to get green: the tie is found in a
+> city the game plays, and every figure asserted against comes from the model's own calls.
+> ...
+
+- **L270 1. the fixture causes the tie: a fresh city, played until the gate refuses two templates of a sector alike**
+  - L273 fixture:
+  - L277 ...both templates are refused by their sector's gate
+  - L278 ...at the same share to the bit (
+  - L279 ...which is under Sector.MIN_STAFFABLE_TO_ORDER (
+  - L281 ...and they are two templates of the sector that differ in posts
+  - L283 ...a share above 0 and the draw's, not the founding's
+  - L287 ...and asking the planners for it moved nothing in the city (its fingerprint the same after)
+- **L295 2. the one place keeps both, whichever is met first**
+  - L297 fixture: both ties were found in section 1
+  - L300 founding
+  - L301 grown
+- **L360 3. WantedPosts prices the two alike, whichever is first**
+  - L362 fixture: both ties were found in section 1
+  - L365 founding
+  - L366 grown
+- **L423 4. the month's own planning hands the tie in, and how often**
+  - L463 the planners hand in holds the gate tied, in a city played
+  - L464 ...each month's holds are its crews', its unpaid and its asks
+  - L465 ...a hold the gate tied counts each of its buildings, so a month's holds are at least
+  - L466 ...and in some month a tie's two buildings both ask: a sector asked once a month (not Retail) names two of its buildings
 
 ## StaleCheck.java - 22 labelled assertions
 

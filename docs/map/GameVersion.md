@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.131"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.132"` | Bump on release. |
 | 8292 | `GameVersion.SAVE_FORMAT` | `54` | The save shape. |
 | 8343 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `54` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8351 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

@@ -3954,8 +3954,23 @@ public class Game {
      * shortage a wage answers) asks nothing; a building that would not carry its interest even at today's wage
      * (consider()'s own test at prime) asks nothing; the rest ask for the posts of the bands they are short in, with
      * how far those wages could rise and the building still carry its interest.
+     *
+     * A hold the gate tied (TQ1; Sector.Staffing.held(), A TIE AT THE GATE IS SHARED) is noted as each of its
+     * buildings, in the order of their ids, so the order a sector lists them in moves nothing to the bit, and each that
+     * asks, asks for its part of its posts.
      */
     void noteStaffingHold(Sector.Staffing held) {
+        List<Sector.Staffing> alike = held.alike();
+        if (alike.size() > 1) {
+            wantedPosts.heldInATie();
+            alike = new ArrayList<>(alike);
+            alike.sort(java.util.Comparator.comparingInt(s -> s.template() == null ? Integer.MAX_VALUE : s.template().getId()));
+        }
+        for (Sector.Staffing one : alike) noteStaffingHold(one, alike.size());
+    }
+
+    /** One building of a hold, one of {@code ways} tied (TQ1): sorted as above, and its ask its part of its posts. */
+    private void noteStaffingHold(Sector.Staffing held, int ways) {
         Sector owner = held.owner();
         BuildingsTemplate t = held.template();
         if (owner == null || t == null) return;
@@ -3982,7 +3997,7 @@ public class Game {
             }
         }
         WantedPosts.Ask a = WantedPosts.askOf(owner.key(), t.getName(), wanted, spare, margin, shortBill);
-        if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a);
+        if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a.part(ways));
     }
 
     /**

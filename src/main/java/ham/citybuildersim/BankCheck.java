@@ -2928,6 +2928,10 @@ public class BankCheck {
             branch.setUpkeep(Math.max(0, (feesBefore - 2.5 * repairsEach) / 1.5));
             town.simulateMonths(1);                 // a month at the new cost, so the rule has struck it
             closedBefore = town.getBranchesClosed();
+            // ...on ground of their own, given as the town's 30,000,000 sq ft was: the town's builders use what it has
+            // left as the path goes (TQ1: 43,076 sq ft free here against 624,076, and the four refused for land).
+            LandManager land = town.getLandManager();
+            land.setOwnedSqFt(land.getOwnedSqFt() + 4 * branch.getLandSqFt());
             town.buildStack(branch, 4, true);
             placed = town.getBuildingManager().countByName("Commercial Bank");
             coverPlaced = b.branchesTheFeesCover();

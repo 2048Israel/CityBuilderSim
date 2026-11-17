@@ -783,7 +783,6 @@ public final class Construction extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             double points = t.makes(Good.BUILDING_WORK);
             if (points <= 0) continue;
@@ -793,10 +792,7 @@ public final class Construction extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -816,7 +812,7 @@ public final class Construction extends Sector {
                 return BusinessInvestment.Decision.unstaffed(sector, staffingHold, String.format(
                         "%s months of work queued, but %s",
                         backlogMonths == Double.MAX_VALUE ? "endless" : String.format("%.1f", backlogMonths),
-                        staffingHold.why(staffingHoldName)));
+                        staffingHold.why()));
             }
             return BusinessInvestment.Decision.no(sector, "nothing that adds capacity");
         }
