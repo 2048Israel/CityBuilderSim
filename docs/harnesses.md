@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**216 harness files, 25,025 labelled assertions.** AllChecks runs 216 of them.
+**216 harness files, 25,037 labelled assertions.** AllChecks runs 216 of them.
 
 ## Which harnesses read which class
 
@@ -246,7 +246,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PartnerTrade](map/PartnerTrade.md) | DenominationCheck, PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [PartnersPage](map/PartnersPage.md) | **none** |
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
-| [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
+| [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DeathRecordCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
 | [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, KeptCheck, LandmassCheck, ManufacturingCheck, MedicineCheck, MoneyDatesCheck, NewGameCheck, PolicyDatesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
@@ -6797,7 +6797,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L532 the money audit's worst month is within 0.01% of what moved
   - L533 ...and nothing moved a pool after it
 
-## DeathRecordCheck.java - 26 labelled assertions
+## DeathRecordCheck.java - 38 labelled assertions
 
 > The running totals of the dead, by age and for the orphans and the unhoused.
 > 
@@ -6807,36 +6807,50 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its own cause.
 
 - **L61 the layoff beside its twin, each month of two years**
-  - L94 fixture: the paired city's closing put adults out of work: more at home than its twin in the same month
-  - L95 ...and the old rule would have at least doubled its orphans
-  - L96 the children went with the laid-off parents
-  - L97 the layoff adds at most one orphan against its twin in every month of the two years
-- **L102 1. who among the dead**
-  - L116 a tenth of the babies orphaned, at forty times the rate: their share of the dead
-  - L118 a tenth of the adults with no home, at 3.7 times: their share
-  - L123 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
-  - L125 ...and the unhoused a tenth of the adults'
-  - L129 a city with no orphans and nobody unhoused attributes none of its dead to them
-- **L132 2. the running total**
-  - L136 months before a series was recorded stay unrecorded
-  - L138 ...then it sums
-  - L139 ...carries across a gap
-  - L140 ...and goes on
-- **L142 3. a city whose employer closes**
-  - L156 the graph holds this month's dead:
-  - L160 ...and the bands add up to the month's dead
-  - L164 the running total is every month's dead since the founding
-  - L165 fixture: the city has buried somebody
-- **L167 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
-  - L255 fixture: the closing put adults out of work
-  - L270 ...and big enough that the old rule would have at least doubled the orphans
-  - L293 the orphan section does not fill behind it, in any month of the two years
-  - L296 ...because the children went with their parents
-  - L298 fixture: the city still has orphans for the record to count
-  - L300 ...and some of them died
-  - L301 the graph holds this month's orphans who died
-  - L303 ...and this month's dead with no home
-  - L306 ...and its running total grew with them
+  - L103 fixture: the paired city's closing put adults out of work: more at home than its twin in the same month
+  - L104 ...and the old rule would have at least doubled its orphans
+  - L105 the children went with the laid-off parents
+  - L106 the layoff adds at most one orphan against its twin in every month of the two years
+- **L118 a wave of the out of work that ends at once: the children go home with their parents**
+  - L143 fixture: a fifth of the adults went out of work, and their children with them at the city's own rate
+  - L163 fixture: the wave ended at once: the month after, the model has nobody out of work at home and no child out with them
+  - L165 the month it ends, every adult who was out of work is back in the families
+  - L166 ...and every child who went out with them came back with them
+  - L167 ...and is placed in a household with them
+  - L168 the wave adds at most one orphan against its twin in any month of it
+  - L169 the month it ends adds at most one orphan against the twin: the children went home with their parents
+  - L170 ...and so does every month of the year after it
+- **L180 the adults at home fall and nobody comes home: prison, and the jobless leaving**
+  - L209 fixture: the wave went to prison, and the adults at home fell by all of it
+  - L210 ...and the wave that left the city took the adults at home down by all of it
+  - L211 nobody is brought home when the out of work go to prison
+  - L212 ...nor when they leave the city
+- **L217 1. who among the dead**
+  - L231 a tenth of the babies orphaned, at forty times the rate: their share of the dead
+  - L233 a tenth of the adults with no home, at 3.7 times: their share
+  - L238 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
+  - L240 ...and the unhoused a tenth of the adults'
+  - L244 a city with no orphans and nobody unhoused attributes none of its dead to them
+- **L247 2. the running total**
+  - L251 months before a series was recorded stay unrecorded
+  - L253 ...then it sums
+  - L254 ...carries across a gap
+  - L255 ...and goes on
+- **L257 3. a city whose employer closes**
+  - L271 the graph holds this month's dead:
+  - L275 ...and the bands add up to the month's dead
+  - L279 the running total is every month's dead since the founding
+  - L280 fixture: the city has buried somebody
+- **L282 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
+  - L370 fixture: the closing put adults out of work
+  - L385 ...and big enough that the old rule would have at least doubled the orphans
+  - L408 the orphan section does not fill behind it, in any month of the two years
+  - L411 ...because the children went with their parents
+  - L413 fixture: the city still has orphans for the record to count
+  - L415 ...and some of them died
+  - L416 the graph holds this month's orphans who died
+  - L418 ...and this month's dead with no home
+  - L421 ...and its running total grew with them
 
 ## DebtExchangeCheck.java - 125 labelled assertions
 
