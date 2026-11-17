@@ -794,9 +794,10 @@ public class StaffingDrawCheck {
         for (double v : noCensus.toSaveArray()) noNaN &= !Double.isNaN(v) && !Double.isInfinite(v);
         readerOfNone.restore(noCensus.toSaveArray());
         // fixture: placed. A room of exactly nothing (a census that found no door) is written into the struck month's own array, in the
-        // slot of the room: the last of the month's scalars, which are followed by the two band mixes and the licences by job.
+        // slot of the room: the last of the month's scalars, which are followed by the two band mixes, the licences by job and
+        // the brake the month applied (WG2-R's tail slot, FB4: the count from the end left it out and placed the 0 in a mix).
         double[] zeroRoom = struck.toSaveArray();
-        zeroRoom[zeroRoom.length - 2 * WageBand.values().length - JobType.values().length - 1] = 0;
+        zeroRoom[zeroRoom.length - Migration.BRAKE_SLOTS - 2 * WageBand.values().length - JobType.values().length - 1] = 0;
         readerOfZero.restore(zeroRoom);
         System.out.printf("   last month's room: struck on doors %,.1f read back %,.1f; placed at 0 read back %.1f; with no census NaN: %s%n",
                 struck.getLastRoom(), reader.getLastRoom(), readerOfZero.getLastRoom(), Double.isNaN(noCensus.getLastRoom()));
