@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-R6b-WnmIOf8F -->
 ## changelog
 ### {next} — R6b, Research: the near-future rows — 2026-11-17, ready, see docs/queue/R6b-notes.md
