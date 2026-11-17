@@ -2171,7 +2171,7 @@ public class UserInterface extends Application {
      * @param more   the (i)'s popover, or null for a tile with none
      * @param keys   the lines City History draws when the tile is clicked
      */
-    private record Headline(String label, String area, String value, String valueTone,
+    record Headline(String label, String area, String value, String valueTone,
                             String[] change, String changeTone, double[] series,
                             String tip, String more, String[] keys) { }
 
@@ -2670,7 +2670,7 @@ public class UserInterface extends Application {
      * shortest wording, so none of the three is ever cut; HeadlineRow gives
      * every tile at least that.
      */
-    private static final class HeadlineTile extends Region {
+    static final class HeadlineTile extends Region {
         private final Label label = new Label();
         private final HBox labelRow = new HBox(4, label);
         private final Label figure = new Label();
@@ -2774,6 +2774,9 @@ public class UserInterface extends Application {
             if (drawn) {
                 spark.resizeRelocate(snapPositionX(x + w - sparkWide), snapPositionY(y + (top - SPARK_HEIGHT) / 2),
                         snapSizeX(sparkWide), SPARK_HEIGHT);
+            } else {
+                // FB2 (KS1-UI): a line not drawn stands where a tile built new leaves it, at the corner with no size (see the wordings below).
+                spark.resizeRelocate(0, 0, 0, 0);
             }
             double fh = figure.prefHeight(-1);
             figure.resizeRelocate(x, y + top, Math.max(w, figure.prefWidth(-1)), fh);
@@ -2789,6 +2792,10 @@ public class UserInterface extends Application {
             for (Label c : changes) {
                 Kept.give(c.visibleProperty(), c == shown);
                 if (c == shown) c.resizeRelocate(x, y + top + fh, Math.max(w, c.prefWidth(-1)), c.prefHeight(-1));
+                // FB2 (KS1-UI): a wording not shown stands where a tile built new leaves it - at the corner, no size - not where it was last
+                // laid out: a wording shown last month and hidden this one kept its 145 x 14 at (11, 44), and the kept header was not the new one's
+                // in 18 states of KeptCheck's section 98 (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling).
+                else c.resizeRelocate(0, 0, 0, 0);
             }
         }
     }

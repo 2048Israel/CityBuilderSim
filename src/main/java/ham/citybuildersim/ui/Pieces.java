@@ -1596,9 +1596,31 @@ public final class Pieces {
                 Region m = marks.get(i);
                 m.setStyle("-fx-background-color: " + t.colour() + ";");
                 markTips.set(i, tipped(m, markTips.get(i), t.tip()));
-                names.get(i).setText(t.name() == null ? "" : t.name());
-                names.get(i).setVisible(t.name() != null);
+                // FB2 (KS1-UI, HW1's Your rate): a tick with no name has no label on the bar. A label emptied after it had words keeps the
+                // laid-out text node of them (13 px high, nothing in it) where one that never had any has none, so the kept bar and one built
+                // new differed by 13 px in the box of a label nobody sees (the dial's name is left out while the rate is near it); a label that
+                // is not on the bar has no box to differ in, and comes back with its words.
+                Label name = names.get(i);
+                if (t.name() != null) {
+                    name.setText(t.name());
+                    name.setVisible(true);
+                } else {
+                    name.setVisible(false);
+                }
             }
+            // The bar's children in the one order, a tick's name among them only while it has one: set where they differ, never added to.
+            List<javafx.scene.Node> onBar = new java.util.ArrayList<>();
+            onBar.add(track);
+            for (int i = 0; i < newParts.size(); i++) {
+                onBar.add(drawn.get(i));
+                onBar.add(stripes.get(i));
+                onBar.add(labels.get(i));
+            }
+            for (int i = 0; i < newTicks.size(); i++) {
+                onBar.add(marks.get(i));
+                if (newTicks.get(i).name() != null) onBar.add(names.get(i));
+            }
+            if (!getChildren().equals(onBar)) getChildren().setAll(onBar);
             setMinWidth(width > 0 ? width : 0);
             setPrefWidth(width > 0 ? width : 200);
             setMaxWidth(width > 0 ? width : Double.MAX_VALUE);
@@ -1708,6 +1730,7 @@ public final class Pieces {
                 double at = Math.round(w * t.at() / scale);
                 m.resizeRelocate(Math.max(0, Math.min(w - t.width(), at - t.width() / 2)), top, t.width(),
                         band + 2 * proud());
+                if (t.name() == null) continue;
                 double nw = name.prefWidth(-1), nh = name.prefHeight(-1);
                 name.resizeRelocate(Math.max(0, Math.min(w - nw, at - nw / 2)), top + band + 2 * proud() + 1, nw, nh);
             }
@@ -3882,7 +3905,7 @@ public final class Pieces {
                 double span = total > 0 ? s.amount() / total * 360 : 0;
                 final double from = at - span + gap / 2, length = Math.max(0, span - gap);
                 final double whole = total;
-                ring.getChildren().add(Kept.scope(s.name(), () -> {
+                ring.getChildren().add(Kept.parkedScope(s.name(), () -> {
                     javafx.scene.shape.Arc arc = Kept.of(javafx.scene.shape.Arc.class, javafx.scene.shape.Arc::new);
                     arc.setCenterX(size / 2);
                     arc.setCenterY(size / 2);
@@ -3944,7 +3967,7 @@ public final class Pieces {
         // Kept (KP6): a row a slice, a scope each keyed by the slice's name, as the ring's arcs are.
         return Kept.scope("ringKey", () -> {
             VBox key = Kept.column(2);
-            for (Slice s : slices) key.getChildren().add(Kept.scope(s.name(), () -> {
+            for (Slice s : slices) key.getChildren().add(Kept.parkedScope(s.name(), () -> {
                 Region swatch = Kept.region();
                 swatch.setMinSize(10, 10);
                 Pieces.prefSize(swatch, 10, 10);
@@ -4337,10 +4360,11 @@ public final class Pieces {
         }
         final boolean all = open.contains(key) || shown.size() <= foldPast;
         int count = all ? shown.size() : Math.max(1, foldPast - 1);
-        // A step is a scope keyed by its words, so a step that comes or goes, or moves up the column as the sizes change, takes its nodes with it.
+        // A step is a scope keyed by its words, so a step that moves up the column as the sizes change takes its nodes with it; one that goes (at nothing
+        // this month) leaves them parked for the month it comes back (FB2, KS1-Gov).
         for (int i = 0; i < count; i++) {
             final BridgeStep step = shown.get(i);
-            column.getChildren().add(Kept.scope(step.label(), () -> bridgeRow(step, scale, figure, in, out)));
+            column.getChildren().add(Kept.parkedScope(step.label(), () -> bridgeRow(step, scale, figure, in, out)));
         }
         if (shown.size() > foldPast) {
             final int hidden = shown.size() - count;
