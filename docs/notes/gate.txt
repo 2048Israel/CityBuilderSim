@@ -1,24 +1,26 @@
-# gate of Merge batch/FB2: the kept screens' geometry and retention, 4 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): KL1, KS1-UI, BF1-K, KS1-Gov; not beside FB6 (`KeptCheck`), 0.9.131
+# gate of Merge batch/TQ1: the staffing gate's tie rule: in a city with no spare every template at or below the diploma band shares drawn/posts (about 0.60), so refused templates tie, and `staffing.share > staffingHold.share` in thirteen planners (`sectors/Construction.java:796`, `BusinessInvestment.java:923` and eleven more) gives every hold to the first template, which WantedPosts then prices. On GW1's first draw this made H2 vacuous, deflated the founding and lengthened A2. A tie broken by a rule that names it (or the holds shared), one place for the thirteen, and a harness that two tied templates are treated alike, 0.9.132
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 199 harnesses run in 1175s: 195 passed, 4 failed
+# suite: 206 harnesses run in 1205s: 199 passed, 7 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
-MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
-MapCheck | at the widest view every pixel a highway or the track crosses is drawn as it, and no other FAIL
-MapCheck | 3 FAILED
+MapCheck | 1 FAILED
+PlanCheck | exit 1
+PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
+PlanCheck | 1 FAILED
 DeathRecordCheck | exit 1
-DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 2 FAILED
+DeathRecordCheck | 1 FAILED
+LongPlaytest | exit 1
+LongPlaytest | (no FAIL line)
+PrizeCheck | exit 2
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1084.6550704334672 of 1066.202294161942)
+PrizeCheck | FAIL ...and its till (at most 445) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 2 FAILED of 284
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
-PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2880964439267 of 1019.6940354153619)
-PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 2 FAILED of 284
