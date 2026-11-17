@@ -157,7 +157,21 @@ Passed by name, in code CU2 does not touch, each with its fix queued (the ship f
    `WorldMarket.guards()` counts the process's every January, whoever solved it. Mended: the count is a
    printed reading. The started-from-NaN solve keeps its `put >= 1`.
 3. **`roundSig`'s `r x FACTOR`** is not a short decimal, so each six-figure value writes about 17 digits.
-   Measured on a default playtest's history file: (to come).
+   - **Measured.** The default playtest's history file (seed 0, m2400) is 6,392,277 bytes. Its 92,714
+     six-figure values take 1,675,828 characters as written, against 740,957 at six figures: 14.6% of the
+     file, over the review's 10%.
+   - **Mended in the file's form alone.** FACTOR is a long decimal, so no short text reads back as the same
+     double. The eight series (the wage, the rent, food, materials, ore and ground, each company's two share
+     series) are written as `{"todays":[...]}`: six figures at today's prices, multiplied by FACTOR on load,
+     bit for bit.
+   - **The values held do not move.** A series a reform or a fold moved off the grid stays the plain array
+     it was.
+   - **HistoryCheck 7** proves the form, the reload to the bit, the reform's plain array and the bytes saved.
+   - **The trace.** The memory a running game reads is untouched, so the trace cannot move. The default
+     playtest replayed on the new writer leaves all eight trace files identical to dce27a4a's, byte for byte.
+     Its save differs only in `savedAt`.
+   - **The result.** The history file falls from 6,392,277 to 5,399,070 bytes (15.5% smaller). The ensemble
+     stands.
 
 ## WN4: what moved
 
@@ -180,31 +194,37 @@ The copper nations sit well below zero before 2000 on both builds (the path's ch
 
 ## The trace (seed 0, the default playtest, against main 08c8727d)
 
-The trace moves from the first month: GDP is first more than 1% off main's at month 2, the rate at month 19.
+The trace moves from the first year: GDP is first more than 1% off main's at month 12 (the first month with
+a GDP), the rate at month 19. Played on dce27a4a's model (the review's mends since touch no model code).
 
 | month | people main / CU2 | GDP D$ main / CU2 | rate main / CU2 | price index main / CU2 | GDP in US$ main / CU2 |
 |---|---|---|---|---|---|
 | 12 | 150 / 141 | 21.0 / 47.4 | 0.785 / 0.785 | 1 / 1 | 26.8 / 60.4 |
 | 120 | 2,432 / 1,474 | 816 / 263 | 1.26 / 1.80 | 1.76 / 2.10 | 647 / 146 |
 | 600 | 3,522 / 14,670 | 1,481 / 19,910 | 1.17 / 5.46 | 5.29 / 22.7 | 1,270 / 3,646 |
-| 1200 | 33,240 / 24,855 | 451k / 424k | 37.8 / 46.9 | 241 / 276 | 11,940 / 9,046 |
-| 1800 | 286,027 / 111,714 | 65.2M / 35.2M | 44.9 / 113.4 | 1,448 / 2,816 | 1.45M / 0.31M |
-| 2400 | 1,376,222 / 1,297,969 | 2.47B / 7.56B | 130.7 / 983.5 | 9,665 / 64,330 | 18.9M / 7.7M |
+| 1200 | 33,240 / 23,870 | 451k / 379k | 37.8 / 43.9 | 241 / 252 | 11,940 / 8,639 |
+| 1800 | 286,027 / 259,319 | 65.2M / 69.9M | 44.9 / 101.8 | 1,448 / 2,713 | 1.45M / 0.69M |
+| 2400 | 1,376,222 / 1,473,138 | 2.47B / 5.85B | 130.7 / 502.9 | 9,665 / 34,160 | 18.9M / 11.6M |
 
-The city ends about the same size, in a money that fell much further: the D$ at 983.5 to the dollar, not 130.7.
+The city ends a little larger, in a money that fell much further: the D$ at 502.9 to the dollar, not 130.7.
 
 ## Copper works at month 2400
 
 | seed | Copper Smelter | Electrolytic Refinery | Scrap Copper Refinery | Rod Mill | Wire & Cable Works |
 |---|---|---|---|---|---|
-| 0 | 3 | 1 | 4 | 2 | 4 |
-| 1 | 0 | 0 | 0 (one building since m2341) | 0 | 1 |
+| 0 | 0 | 0 | 6 | 3 | 4 |
+| 1 | 0 | 0 | 0 | 0 | 1 |
 | 2 | 5 | 2 | 5 | 0 | 0 |
 
-On main, seed 0 stood 61 Wire & Cable Works and seed 1 363 Rod Mills (the study). The default playtest no
+Played on dce27a4a's model. Before `roundSig`'s grid (edb28d18) seed 0 stood 3, 1, 4, 2, 4, and seeds 1 and 2
+the same as now (seed 1's trace parts from that build's at m1271). On main, seed 0 stood 61 Wire & Cable
+Works and seed 1 363 Rod Mills (the study). The default playtest no
 longer exercises a large wire industry. CopperRefiningCheck's own fixtures still build every works.
 
 ## DS1: which gate holds a processing sector, and whether any can be left this way
+
+Seeds 1 and 2 were read on the build before `roundSig`'s grid (dcb16a6f). Their copper works at m2400 are the
+same on dce27a4a's model (above), but the months and sums below are that build's.
 
 - **Seed 0 on main 0.9.128 is not dead.** Copper Refining ends with $12.1T cash, $15.6T assets, no debt, a
   6.93% rate and two restructures. The limit bound it for 190 sector-months, and it was in default for 8
@@ -255,11 +275,21 @@ ensemble's to the byte:
 
 This is not HN1's class (a four-month lag behind homes already coming). It is main's capital rule
 rationing every mortgage, housing included, for six years, which CU2's path reaches in one SHOCK seed. CU2
-does not touch the bank or the mortgage. Queued as **MC1** (the ship file's queued rows), for the
-orchestrator to pass by name or hold.
+does not touch the bank or the mortgage.
 
-★8 (MA1): the ensemble's CSVs carry no sector columns. Whether Fabrication and Automotive still carry the
-chained city is read from the default playtest's kept city (below, to come).
+**The orchestrator's call:** F1 passes by name with **MC1** queued (the ship file's queued rows). This follows
+Jerus's rule of 2026-11-04: a red caused outside the batch's own code passes by name, with a fix queued. MC1's
+fixture is SHOCK seed 13 on CU2's path. The three info verdicts that changed are information only.
+
+**★8 (MA1): the same two sectors carry the chained city.** The ensemble's CSVs carry no sector columns, so this
+is read from the default playtest's kept city (seed 0, m2400, dce27a4a's model). Its month's exports are
+$3.45B on a GDP of $5.85B:
+
+- Automotive exports $1.64B and Manufacturing (the Fabrication Works) $0.75B, together 70% of the exports and
+  41% of GDP.
+- Next come Business Services at $0.65B, Cement & Concrete at $0.16B and Mining at $0.08B.
+
+MA1, the margins study of ★8 (a), is in the ship file's queued rows.
 
 ## The dry run
 

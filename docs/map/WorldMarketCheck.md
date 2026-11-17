@@ -1,4 +1,4 @@
-# WorldMarketCheck.java - 1,684 lines · 52 methods · 27 constants · harnesses
+# WorldMarketCheck.java - 1,685 lines · 52 methods · 27 constants · harnesses
 
 `ham/citybuildersim/WorldMarketCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -84,7 +84,7 @@
 | 1268 | 12. THE CHAIN HOLDS |
 | 1459 | 13. THE RECIPE TABLE IS buildings.json's |
 | 1542 | 14. THE GUARD KEEPS THE SOLVE TO THE NUMBERS |
-| 1605 | 15. THE COPPER CHARGE |
+| 1606 | 15. THE COPPER CHARGE |
 
 ## Constants
 
@@ -115,8 +115,8 @@
 | 1282 | `WorldMarketCheck.EXTRA_WORKS` | `{ "Electrolytic Refinery", "Electric Arc Furnace" }` | The works section 12 holds beside the recipe's own: the cathode's and the arc furnace's, which no row of the table names. |
 | 1547 | `WorldMarketCheck.GUARD_SEED` | `9` | The drawn world whose crude left the numbers in 2165 on main (spec-world-prices 3.7), and the last January section 14 plays it to. |
 | 1548 | `WorldMarketCheck.GUARD_LAST` | `2170` |  |
-| 1610 | `WorldMarketCheck.CHARGE_FROM` | `1900, CHARGE_TO = 2230` | The years the charge's swing is read over: the calendar's first to well past the paths' end. |
-| 1613 | `WorldMarketCheck.PEAKS_FROM` | `1990, PEAKS_TO = 2030` | The years round the record's peaks the local maxima are listed over (printed beside them, not asserted). |
+| 1611 | `WorldMarketCheck.CHARGE_FROM` | `1900, CHARGE_TO = 2230` | The years the charge's swing is read over: the calendar's first to well past the paths' end. |
+| 1614 | `WorldMarketCheck.PEAKS_FROM` | `1990, PEAKS_TO = 2030` | The years round the record's peaks the local maxima are listed over (printed beside them, not asserted). |
 
 ## Fields (state)
 
@@ -146,7 +146,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 108 | 1577 | **type** `public class WorldMarketCheck` | The world market (batch WN3; the project's spec-nations.md 4): the nations' January solve held to the equations it solves, the calibration held to the game's literals, and the city's band held to what makes it a band ... |
+| 108 | 1578 | **type** `public class WorldMarketCheck` | The world market (batch WN3; the project's spec-nations.md 4): the nations' January solve held to the equations it solves, the calibration held to the game's literals, and the city's band held to what makes it a band ... |
 | 168 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 173 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 179 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -267,15 +267,15 @@
 | 1464 | 6 | `static double mid(Good g)` | A good's mid-band literal price, (import + export) / 2 for a two-sided good, its one literal otherwise, NaN for a good with neither. |
 | 1471 | 70 | `static void theRecipeTable()` |  |
 
-### 14. THE GUARD KEEPS THE SOLVE TO THE NUMBERS (lines 1542-1604)
+### 14. THE GUARD KEEPS THE SOLVE TO THE NUMBERS (lines 1542-1605)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1550 | 54 | `static void theGuard(Scope sc)` |  |
+| 1550 | 55 | `static void theGuard(Scope sc)` |  |
 
-### 15. THE COPPER CHARGE (lines 1605-1684)
+### 15. THE COPPER CHARGE (lines 1606-1685)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1615 | 69 | `static void theCopperCharge(Scope sc)` |  |
+| 1616 | 69 | `static void theCopperCharge(Scope sc)` |  |
 

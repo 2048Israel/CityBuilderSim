@@ -8279,6 +8279,15 @@ public final class GameVersion {
      *     and that January starts from a state the chained solve never left.
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
+     *
+     *     THE HISTORY FILE'S FORM (REV-CU2-1; no bump, 54 is this batch's
+     *     own): the eight prices HistorySave.roundSig records (the wage, the
+     *     rent, food, materials, ore, ground, and each company's share price
+     *     and value) are written at today's prices to six figures,
+     *     {"todays":[...]}, and multiplied by PriceLevel.FACTOR on load, bit
+     *     for bit; the product itself would take seventeen digits, FACTOR
+     *     being a long decimal. A series a reform or a fold moved off that
+     *     grid stays a plain array. Memory holds the same values as before.
      * --------------------------------------------------------------------- */
     public static final int SAVE_FORMAT = 54;
 

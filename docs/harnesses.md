@@ -2,7 +2,7 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**210 harness files, 24,753 labelled assertions.** AllChecks runs 210 of them.
+**210 harness files, 24,767 labelled assertions.** AllChecks runs 210 of them.
 
 ## Which harnesses read which class
 
@@ -258,7 +258,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
-| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, LicenceFeesCheck, MaterialsCheck, RecipeCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
@@ -302,7 +302,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveDump](map/SaveDump.md) | **none** |
 | [SaveHeader](map/SaveHeader.md) | ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | LicenceFeesCheck, ReplayCheck, SaveSlotCheck |
-| [SavedCities](map/SavedCities.md) | RankingsCheck |
+| [SavedCities](map/SavedCities.md) | HistoryCheck, RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck |
@@ -13096,7 +13096,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L708 the composite row still counts only the unfitted part after one tractor is fitted
   - L711 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
 
-## HistoryCheck.java - 97 labelled assertions
+## HistoryCheck.java - 112 labelled assertions
 
 > Verifies the graph history: recording, alignment, and the round trip. Not
 > part of the game.
@@ -13112,127 +13112,143 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 2. A SERIES MISSING FROM restoreFrom() records perfectly all session and
 > ...
 
-- **L71 1. every series is recorded, every month**
-  - L81 the axis has a point per month lived
-  - L93 there are more than the original eight
-  - L102 
-  - L106 
-  - L109 the companies' share prices are among them
-  - L113 the bank, listed at the founding, has a price in the last month
-  - L129 
-- **L132 2. it survives a save and a reload**
-  - L135 the city saved
-  - L141 the axis came back whole
-  - L165 
-- **L170 2b. every sector's two series (0.7.4)**
-- **L179 every sector's net income and workers, every month**
-  - L189 
-  - L197 ...its last month's net income is SectorBooks' for that month
-  - L200 ...and its last month's workers are the sector's posts filled
-  - L206 ...and both came back from the save
-  - L211 every sector in the city has its two series
-  - L212 ...and some sector earned or lost something, so the income is read
-  - L213 ...and some sector employs somebody, so the workers are read
-- **L215 2c. GDP's four parts (0.7.6)**
-- **L225 GDP's four parts, every month, adding up**
-  - L228 the city's own accounts: C+I+G+NX is this month's GDP
-  - L234 
-  - L249 C+I+G+NX is the month's kept GDP to the cent, every month
-  - L250 ...and the households bought something, so C is read
-  - L252 the last month's parts are the accounts' own, to the cent
-  - L262 a rolling year of the four in founding money is the year of real GDP
-  - L265 ...and no year before twelve months of them
-- **L268 2d. the dial and the bank's three prices (0.7.7)**
-- **L278 the dial and the bank's three prices**
-  - L285 the last month's policyRate is the dial
-  - L287 ...its bankPrime is Bank.prime() at that dial
-  - L289 ...its bankDepositRate is what savers were paid
-  - L291 ...and its bankFees is the month's fee income, to the cent
-  - L302 prime is never under the dial, in any month
-  - L303 ...and the founding bank charged a fee in some month
-- **L305 2e. the bank's capital (0.7.8)**
-- **L315 the bank's capital**
-  - L322 the last month's bankCapitalRatio is Bank.capitalRatio(), clamped at ten
-  - L325 ...its bankCapitalTarget is the target the bank chose
-  - L327 ...its bankAllowance is what it has set aside, to the cent
-  - L330 ...its bankProvisions is the month's provision, to the cent
-  - L333 ...its bankDividends is what it paid its owners, to the cent
-  - L336 ...and its bankReturnOnEquity is the month's return, a year, clamped at ten
-  - L345 fixture: the founding bank has lived through no bad year
-  - L346 ...so it targets the minimum and the conservation buffer in every month
-  - L352 fixture: the bank has something on its sheet, so its leverage ratio is a figure
-  - L355 the outbreak series is Health's outbreak, 0 between them, every month
-  - L358 the leverage ratio and its target are recorded every month as the bank reads them
-- **L363 2f. the month's graduates (A6, 0.7.46)**
-- **L372 the month's graduates are the people who gained a qualification**
-  - L385 fixture: the town's high schools handed out diplomas this month
-  - L387 the graduates series is never negative
-  - L388 ...and its last month is what the schools gained, to the history's rounding
-- **L392 2g. a consolidated company's price (C5, 0.7.48)**
-- **L403 a consolidated company's price is recorded, not rounded to nothing**
-  - L414 fixture: a listed company a household holds a share of
-  - L421 fixture: it consolidated, and four places would record its price as nothing
-  - L427 a consolidated company's price is recorded, not rounded to nothing
-- **L431 3. A SHORT SERIES LINES UP WITH THE END**
-- **L446 a series added late lines up with the END**
-  - L454 the fixture actually removed the series
-  - L465 the axis is untouched by the missing series
-  - L467 ...and the missing series is empty, not absent
-  - L472 aligned() still returns a full-length array
-  - L483 ...reading as NaN - not-recorded is not the same as zero
-  - L494 only the new months have the series
-  - L497 aligned() covers the whole axis
-  - L500 month
-  - L507 ...and the LAST four months carry the data
-- **L509 3a. a year of a flow (B7, 0.7.47)**
-- **L519 twelve recorded months of a flow are its trailing year**
-  - L524 a series recorded for four months sums its four, and has four, not a year
-  - L535 fixture: a year of revenue, recorded
-  - L536 twelve recorded months of a flow are its trailing year
-- **L538 3b. a 0.7.6 history still loads (0.7.7)**
-- **L546 a history from before the premium went**
-  - L561 the fixture has the old series and none of the four new ones
-  - L569 the old history loads with its axis whole
-  - L570 ...the premium it carried is not a series any more
-  - L572 ...and the bank's prices are empty, not absent
-  - L575 ...and so is LB3's price level of the game dollar (usPrices), empty and not absent
-  - L578 ...and usPrices fills from the end as the others do, at the world's own level, drawn as not recorded before
-  - L582 ...and fill from the end once the city plays on
-  - L586 ...and so do the bank's capital series (0.7.8), empty until then
-  - L592 ...and so does parity beside the rate (0.7.35), drawn as not recorded before
-  - L598 ...and so do XR1's fair level and market swing, drawn as not recorded before
-- **L608 4. the derived series do not divide by zero**
-- **L615 derived series on a city with nobody in it**
-  - L628 month
-- **L632 5. a new game forgets it**
-  - L636 the axis is empty
-  - L639 
-- **L663 past five hundred years, a year to a point**
-  - L689 the first year folds the month its last month leaves the newest MONTHLY_KEPT
-  - L690 ...so the months kept never fall under MONTHLY_KEPT
-  - L691 ...nor stand more than eleven over it - a year folds as soon as it can
-  - L692 every year wholly older than the months kept is folded, and no other
-  - L693 ...and the months it lived are every month grown
-  - L699 a folded year sits at its last month, holding twelve; every month after is a month
-  - L718 every series folds exactly by its rule - a flow's months added, a level's last, a rate's averaged
-  - L720 ...a series begun inside a folded year folds the months it has
-  - L738 ...and a running total ends on it
-  - L742 a folded year's flow reads a month at a time on the chart: its sum over its months
-  - L744 ...a level reads its year's end
-  - L745 ...a rate its year's average
-  - L747 a pointer by a folded year's point, at its year's end, reads that year
-  - L750 ...and a window across the fold reaches both parts
-  - L752 twelve months back from a folded year is the year before it
-  - L753 ...and from the first month after the fold, the last folded year
-  - L757 the rolling year of real output runs on across the fold, never blank
-  - L759 ...the first month after it the last folded year's eleven months at their average, and its own
-  - L764 the year book's row for a folded year holds its twelve months
-  - L765 ...and its gdp is the year's sum
-  - L766 ...and the book has a row a year: the folded ones and the months after
-  - L771 the folded history saves
-  - L774 ...and loads: the axis, its folded years and every series, as they were
-  - L782 ...and a year on, both have folded the next year alike
-  - L787 a history from before 0.7.55 has no folded years: every entry a month
+- **L82 1. every series is recorded, every month**
+  - L92 the axis has a point per month lived
+  - L104 there are more than the original eight
+  - L113 
+  - L117 
+  - L120 the companies' share prices are among them
+  - L124 the bank, listed at the founding, has a price in the last month
+  - L140 
+- **L143 2. it survives a save and a reload**
+  - L146 the city saved
+  - L152 the axis came back whole
+  - L176 
+- **L181 2b. every sector's two series (0.7.4)**
+- **L190 every sector's net income and workers, every month**
+  - L200 
+  - L208 ...its last month's net income is SectorBooks' for that month
+  - L211 ...and its last month's workers are the sector's posts filled
+  - L217 ...and both came back from the save
+  - L222 every sector in the city has its two series
+  - L223 ...and some sector earned or lost something, so the income is read
+  - L224 ...and some sector employs somebody, so the workers are read
+- **L226 2c. GDP's four parts (0.7.6)**
+- **L236 GDP's four parts, every month, adding up**
+  - L239 the city's own accounts: C+I+G+NX is this month's GDP
+  - L245 
+  - L260 C+I+G+NX is the month's kept GDP to the cent, every month
+  - L261 ...and the households bought something, so C is read
+  - L263 the last month's parts are the accounts' own, to the cent
+  - L273 a rolling year of the four in founding money is the year of real GDP
+  - L276 ...and no year before twelve months of them
+- **L279 2d. the dial and the bank's three prices (0.7.7)**
+- **L289 the dial and the bank's three prices**
+  - L296 the last month's policyRate is the dial
+  - L298 ...its bankPrime is Bank.prime() at that dial
+  - L300 ...its bankDepositRate is what savers were paid
+  - L302 ...and its bankFees is the month's fee income, to the cent
+  - L313 prime is never under the dial, in any month
+  - L314 ...and the founding bank charged a fee in some month
+- **L316 2e. the bank's capital (0.7.8)**
+- **L326 the bank's capital**
+  - L333 the last month's bankCapitalRatio is Bank.capitalRatio(), clamped at ten
+  - L336 ...its bankCapitalTarget is the target the bank chose
+  - L338 ...its bankAllowance is what it has set aside, to the cent
+  - L341 ...its bankProvisions is the month's provision, to the cent
+  - L344 ...its bankDividends is what it paid its owners, to the cent
+  - L347 ...and its bankReturnOnEquity is the month's return, a year, clamped at ten
+  - L356 fixture: the founding bank has lived through no bad year
+  - L357 ...so it targets the minimum and the conservation buffer in every month
+  - L363 fixture: the bank has something on its sheet, so its leverage ratio is a figure
+  - L366 the outbreak series is Health's outbreak, 0 between them, every month
+  - L369 the leverage ratio and its target are recorded every month as the bank reads them
+- **L374 2f. the month's graduates (A6, 0.7.46)**
+- **L383 the month's graduates are the people who gained a qualification**
+  - L396 fixture: the town's high schools handed out diplomas this month
+  - L398 the graduates series is never negative
+  - L399 ...and its last month is what the schools gained, to the history's rounding
+- **L403 2g. a consolidated company's price (C5, 0.7.48)**
+- **L414 a consolidated company's price is recorded, not rounded to nothing**
+  - L425 fixture: a listed company a household holds a share of
+  - L432 fixture: it consolidated, and four places would record its price as nothing
+  - L438 a consolidated company's price is recorded, not rounded to nothing
+- **L442 3. A SHORT SERIES LINES UP WITH THE END**
+- **L457 a series added late lines up with the END**
+  - L465 the fixture actually removed the series
+  - L476 the axis is untouched by the missing series
+  - L478 ...and the missing series is empty, not absent
+  - L483 aligned() still returns a full-length array
+  - L494 ...reading as NaN - not-recorded is not the same as zero
+  - L505 only the new months have the series
+  - L508 aligned() covers the whole axis
+  - L511 month
+  - L518 ...and the LAST four months carry the data
+- **L520 3a. a year of a flow (B7, 0.7.47)**
+- **L530 twelve recorded months of a flow are its trailing year**
+  - L535 a series recorded for four months sums its four, and has four, not a year
+  - L546 fixture: a year of revenue, recorded
+  - L547 twelve recorded months of a flow are its trailing year
+- **L549 3b. a 0.7.6 history still loads (0.7.7)**
+- **L557 a history from before the premium went**
+  - L572 the fixture has the old series and none of the four new ones
+  - L580 the old history loads with its axis whole
+  - L581 ...the premium it carried is not a series any more
+  - L583 ...and the bank's prices are empty, not absent
+  - L586 ...and so is LB3's price level of the game dollar (usPrices), empty and not absent
+  - L589 ...and usPrices fills from the end as the others do, at the world's own level, drawn as not recorded before
+  - L593 ...and fill from the end once the city plays on
+  - L597 ...and so do the bank's capital series (0.7.8), empty until then
+  - L603 ...and so does parity beside the rate (0.7.35), drawn as not recorded before
+  - L609 ...and so do XR1's fair level and market swing, drawn as not recorded before
+- **L619 4. the derived series do not divide by zero**
+- **L626 derived series on a city with nobody in it**
+  - L639 month
+- **L643 5. a new game forgets it**
+  - L647 the axis is empty
+  - L650 
+- **L676 past five hundred years, a year to a point**
+  - L702 the first year folds the month its last month leaves the newest MONTHLY_KEPT
+  - L703 ...so the months kept never fall under MONTHLY_KEPT
+  - L704 ...nor stand more than eleven over it - a year folds as soon as it can
+  - L705 every year wholly older than the months kept is folded, and no other
+  - L706 ...and the months it lived are every month grown
+  - L712 a folded year sits at its last month, holding twelve; every month after is a month
+  - L731 every series folds exactly by its rule - a flow's months added, a level's last, a rate's averaged
+  - L733 ...a series begun inside a folded year folds the months it has
+  - L751 ...and a running total ends on it
+  - L755 a folded year's flow reads a month at a time on the chart: its sum over its months
+  - L757 ...a level reads its year's end
+  - L758 ...a rate its year's average
+  - L760 a pointer by a folded year's point, at its year's end, reads that year
+  - L763 ...and a window across the fold reaches both parts
+  - L765 twelve months back from a folded year is the year before it
+  - L766 ...and from the first month after the fold, the last folded year
+  - L770 the rolling year of real output runs on across the fold, never blank
+  - L772 ...the first month after it the last folded year's eleven months at their average, and its own
+  - L777 the year book's row for a folded year holds its twelve months
+  - L778 ...and its gdp is the year's sum
+  - L779 ...and the book has a row a year: the folded ones and the months after
+  - L784 the folded history saves
+  - L787 ...and loads: the axis, its folded years and every series, as they were
+  - L795 ...and a year on, both have folded the next year alike
+  - L800 a history from before 0.7.55 has no folded years: every entry a month
+- **L946 the eight prices write at today's prices**
+  - L956 the played city has values in each of the eight series (
+  - L958 ...and every one of them is a figure roundSig recorded: it is on the grid of six figures at today's prices
+  - L965 the city saved to slot 2 of its scratch files
+  - L981 each of the eight is written as {\"todays\":[...]} with an entry for every month (
+  - L982 ...and a todays entry is written with at most
+  - L990 reloaded, the axis and each of the eight series are the live ones, to the bit: nulls in place, the same length, every company's two (
+  - L1001 ...and saving moved no bit of the series held in memory
+  - L1012 the slim read of the file holds the prices the measures keep as a PackedDoubles, to the bit (
+  - L1021 fixture: after a reform by a seventh
+  - L1023 the reformed history saved
+  - L1026 the wage, off the grid, is written as a plain array, the one Gson writes of its list
+  - L1029 the ground's price, which a reform does not scale, is still {\"todays\":[...]}
+  - L1034 every one of the eight reads back after the reform as it was, to the bit (
+  - L1039 a plain array as older builds wrote it reads as it is, a null where it was, and a todays series with a null in it reads as its figures times FACTOR
+  - L1048 the eight series take fewer bytes written at today's prices (
 
 ## HoldersCheck.java - 460 labelled assertions
 
@@ -29688,11 +29704,11 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L382 6. played: a 1900 village for 24 months, every wage positive and finite, the allocator on 1901's bases**
   - L401 the allocator's base for each band is the lowest ungated ratio on the 1901 ladder
   - L402 ...which differs from today's in some band (the fixture causes the condition), a default village's being today's
-  - L416 24 months played: every job's wage, in the market and the population manager, positive
-  - L417 ...and finite
-  - L418 ...with the rent and the floor positive and finite
-  - L419 ...the city still on 1901's ladder, its allocator's bases unchanged
-  - L430 ...and its unskilled wage still on 1901's base after two years' scarcity: at most the curve's MAX_MULTIPLE of it, under today's
+  - L439 24 months played: every job's wage, in the market and the population manager, positive
+  - L440 ...and finite
+  - L441 ...with the rent and the floor positive and finite
+  - L442 ...the city still on 1901's ladder, its allocator's bases unchanged
+  - L453 ...and its unskilled wage risen by scarcity alone: every month on 1901's base (its going rate and ratio), the band's multiple the curve's at its
 
 ## WantedPostsCheck.java - 145 labelled assertions
 
@@ -30448,7 +30464,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L933 7. a nation for every land cell inside every border tile**
 - **L988 8. the moneys and paths are whole**
 
-## WorldMarketCheck.java - 73 labelled assertions
+## WorldMarketCheck.java - 72 labelled assertions
 
 > The world market (batch WN3; the project's spec-nations.md 4): the nations'
 > January solve held to the equations it solves, the calibration held to the
@@ -30530,15 +30546,14 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1573 ...and the solve ended in
   - L1574 ...and its answer clears (sales over supply off by
   - L1599 no good's solve reached SOLVE_MAX_PASSES (
-  - L1601 the guard fired during that run (
-  - L1627 the Historical swing has a local maximum above CHARGE_MID on CHARGE_PEAK_YEAR (
-  - L1648 the swing stays within CHARGE_MID +- CHARGE_HALF x the two weights' sum (
-  - L1650 the swing is the same twice, and on a second Nations of the path and seed (a pure function)
-  - L1651 no year has a yearly record (copperChargeRecorded is false on every year of every path read)
-  - L1654 two Random seeds (1 and 5) swing differently
-  - L1680 a solved January's concentrate carries the part-1 charge: the swing times the manufactures index's level over the reference year's, times the copper's, Histo...
-  - L1681 ...and anode REFINING_PART of it, to 1e-12
-  - L1682 ...and no other good a charge
+  - L1628 the Historical swing has a local maximum above CHARGE_MID on CHARGE_PEAK_YEAR (
+  - L1649 the swing stays within CHARGE_MID +- CHARGE_HALF x the two weights' sum (
+  - L1651 the swing is the same twice, and on a second Nations of the path and seed (a pure function)
+  - L1652 no year has a yearly record (copperChargeRecorded is false on every year of every path read)
+  - L1655 two Random seeds (1 and 5) swing differently
+  - L1681 a solved January's concentrate carries the part-1 charge: the swing times the manufactures index's level over the reference year's, times the copper's, Histo...
+  - L1682 ...and anode REFINING_PART of it, to 1e-12
+  - L1683 ...and no other good a charge
 
 ## WorldMeasuresCheck.java - 91 labelled assertions
 
