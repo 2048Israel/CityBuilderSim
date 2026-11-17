@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-FB3-CP19hJD1 -->
 ## changelog
 ### {next} — FB3, reloads that read as they were saved — 2026-11-17, ready, see docs/queue/FB3-notes.md
