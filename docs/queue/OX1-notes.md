@@ -179,3 +179,35 @@ come earlier in the median.
 
 Judged again on the saved log with a TF1 row standing in for EDU1's (`CBS_REJUDGE=--rejudge ./batch-check.sh --judge`):
 "known red only - 2 harnesses", exit 3.
+
+Since: R6b (0.9.133, merged before the dry run) names that EducationCheck line as EDU1, so OX1 files nothing for it.
+
+## The dry run
+
+`sh tools/gate.sh OX1 --dry-run` on bb29c4f6 (main 48eb9b42, 0.9.133, merged in; its four conflicting generated
+indexes taken from main and regenerated), run `/tmp/cbs-gate-OX1-9eG8xQIY`, its log kept as `target/OX1-dry.txt`.
+**Gate exit 1.** The suite ran in 1,318 s, exit 4, 37 red lines named nowhere, in four harnesses, none of them in
+OX1's files and each green on main's tree (R6b's gate runs on 48eb9b42: GoldStandardCheck and RoadCheck with no
+FAIL, PriceLevelCheck's twin-town horizon 120 of 120, MapCheck FB5's month-91 line alone). Each is main's code
+meeting the path OX1's households moved, the class Jerus passes by name (2026-11-04), so each is named in the ship
+file's `## known-reds`, the fixes queued:
+
+- **GoldStandardCheck**, "the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it": the
+  rate struck, 0.110136, is goldRate at a cover of about 0.5993 (0.000136 of spread over goldSpread's 0.202 a unit
+  of cover), read inside the month, below both ends the line brackets it by (0.600 and 0.601). HP1.
+- **RoadCheck**, the busy street: the advice's choice holds (2 x Gravel Road, plan -66,414.1 against the Paved
+  Road's -65,763.4, every same-rank card above it) and every candidate's figure agrees to the bit but the Light Rail
+  Line's, one ulp off when `BuildAdviceCheck.lifeFigure` recomputes it (a probe not committed, `target/OX1-road2.txt`).
+  HP1.
+- **PriceLevelCheck**, 245 failed, printed as 24 `FAIL reload.` lines and the two summaries: section 9's twin-town (ScaleCheck's town,
+  saved and loaded) has a nudge horizon of 20 of 120 months on OX1's path, so its twins' equalities are trimmed to
+  month 20 (observed, skipped), but `Child.prefix()` keeps the `reload.*` series whole and the reload is sampled after
+  month 120, where the twins have parted (2e-9 to 2.5e-5). The twins agree through the horizon. HP1.
+- **MapCheck**, "...and every building drawn, one for one", section 8's played city: OX1's packs 784 buildings at the
+  city's edge, 135 with no ground (main's: 732, 0), and those are not drawn: FB5's placement class.
+
+HP1 is queued in the ship file (the three harness premises). Judged again on a copy of the run's `suite.txt`
+(`target/checks/OX1-dry-suite.txt`, `CBS_REJUDGE=--rejudge ./batch-check.sh --judge`) with the five rows: "known red
+only - 9 harnesses" (DeathRecordCheck, EducationCheck, GoldStandardCheck, InvestCheck, MapCheck, PlanCheck,
+PriceLevelCheck, RoadCheck, YoungBankCheck), exit 3. The gate's tree took `{next}` as 0.9.134 (the ensemble as
+`docs/ensemble/0.9.134.md`). The dry run's two commits: bb29c4f6 (the branch) and 48eb9b42 (main).
