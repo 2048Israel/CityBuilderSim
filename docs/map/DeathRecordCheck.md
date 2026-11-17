@@ -1,4 +1,4 @@
-# DeathRecordCheck.java - 307 lines · 8 methods · 0 constants · harnesses
+# DeathRecordCheck.java - 315 lines · 8 methods · 0 constants · harnesses
 
 `ham/citybuildersim/DeathRecordCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -15,10 +15,10 @@
 
 | line | section |
 |---:|---|
-| 94 | · 1. who among the dead |
-| 124 | · 2. the running total |
-| 134 | · 3. a city whose employer closes |
-| 159 | · CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES. |
+| 102 | · 1. who among the dead |
+| 132 | · 2. the running total |
+| 142 | · 3. a city whose employer closes |
+| 167 | · CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES. |
 
 ## Fields (state)
 
@@ -30,13 +30,13 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 297 | **type** `public class DeathRecordCheck` | The running totals of the dead, by age and for the orphans and the unhoused. |
+| 11 | 305 | **type** `public class DeathRecordCheck` | The running totals of the dead, by age and for the orphans and the unhoused. |
 | 15 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 21 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 26 | 5 | `static void quietly(Runnable work)` |  |
 | 33 | 3 | `static Game town(java.nio.file.Path root, String data, String legacy)` | Section 3's city: a founding with its houses, shops, mill and works stood free, 48 months played; a second one is its twin (same months, same path). |
 | 38 | 15 | `static Game town(java.nio.file.Path root, String data, String legacy, int month)` | The same founding at a named month, keeping the buildings and the layoff unchanged (LD3). |
 | 54 | 4 | `static double last(HistorySave h, String key)` |  |
-| 60 | 31 | `static void layoffsBesideTwin(java.nio.file.Path root)` | LD3 measures the twins in the same month, across the whole two-year layoff window. |
-| 92 | 215 | `public static void main(String[] args) throws Exception` |  |
+| 60 | 39 | `static void layoffsBesideTwin(java.nio.file.Path root)` | LD3 measures the twins in the same month, across the whole two-year layoff window. |
+| 100 | 215 | `public static void main(String[] args) throws Exception` |  |
 

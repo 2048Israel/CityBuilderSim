@@ -1,4 +1,4 @@
-# WorldMoneysCheck.java - 1,262 lines · 49 methods · 15 constants · harnesses
+# WorldMoneysCheck.java - 1,282 lines · 49 methods · 15 constants · harnesses
 
 `ham/citybuildersim/WorldMoneysCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -63,11 +63,11 @@
 | 692 | 4. PEGS HOLD AND BREAK BY THE RULE |
 | 751 | 5. A RISK-OFF |
 | 808 | 6. THE TERMS OF TRADE |
-| 965 | 7. CROSS RATES |
-| 993 | 8. PARITY |
-| 1057 | 9. WHAT IT COSTS |
-| 1079 | THE FULL FILE'S OWN FINDINGS |
-| 1103 | 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) |
+| 985 | 7. CROSS RATES |
+| 1013 | 8. PARITY |
+| 1077 | 9. WHAT IT COSTS |
+| 1099 | THE FULL FILE'S OWN FINDINGS |
+| 1123 | 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) |
 
 ## Constants
 
@@ -87,7 +87,7 @@
 | 99 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
 | 100 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { ...` |  |
 | 101 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1108 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 1128 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ## Fields (state)
 
@@ -130,7 +130,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1205 | **type** `public class WorldMoneysCheck` | The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar - its parity path, the dollar cycle, the risk-off, the terms of trade and its own swi... |
+| 58 | 1225 | **type** `public class WorldMoneysCheck` | The world's moneys (batch WN4; spec-exchange-rates 3.7, spec-nations 5.1): WorldMoneys' monthly rate of each money to the US dollar - its parity path, the dollar cycle, the risk-off, the terms of trade and its own swi... |
 | 80 | 3 | `static int longMonths(Nations.Path path)` | The last month the identity and restore sections step a path to: Random's thirty years; Historical's whole replay and RULED_MONTHS of the rule. |
 | 103 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 109 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -213,46 +213,46 @@
 |---:|---:|---|---|
 | 755 | 52 | `static void theRiskOff(Scope sc, Pass pass)` |  |
 
-### 6. THE TERMS OF TRADE (lines 808-964)
+### 6. THE TERMS OF TRADE (lines 808-984)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 813 | 8 | `static int findExporter(Scope sc, WorldMoneys w, Nations n)` | The nation of the most commodity-heavy exports that is the anchor of its money and floats: Canada on the full file, whatever the fixture has. |
 | 822 | 56 | `static void theTermsOfTrade(Scope sc)` |  |
-| 880 | 84 | `static void theMarketReads(Scope sc)` | The market's two reads held to the file's pairs: the share of exports in bulk goods and the ln terms of trade, recomputed from the flows. |
+| 880 | 104 | `static void theMarketReads(Scope sc)` | The market's two reads held to the file's pairs: the share of exports in bulk goods and the ln terms of trade, recomputed from the flows. |
 
-### 7. CROSS RATES (lines 965-992)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 969 | 23 | `static void theCross(Scope sc)` |  |
-
-### 8. PARITY (lines 993-1056)
+### 7. CROSS RATES (lines 985-1012)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 998 | 7 | `static double lnRelative(Nations n, int anchor, int usa, int t)` | ln(P_a / P_US) in a month, log-linear between Januaries, from Nations itself. |
-| 1006 | 50 | `static void theParity(Scope sc)` |  |
+| 989 | 23 | `static void theCross(Scope sc)` |  |
 
-### 9. WHAT IT COSTS (lines 1057-1078)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1061 | 17 | `static void theCost(Scope sc)` |  |
-
-### THE FULL FILE'S OWN FINDINGS (lines 1079-1102)
+### 8. PARITY (lines 1013-1076)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1083 | 19 | `static void theFullOnly(Scope all, Pass pass)` |  |
+| 1018 | 7 | `static double lnRelative(Nations n, int anchor, int usa, int t)` | ln(P_a / P_US) in a month, log-linear between Januaries, from Nations itself. |
+| 1026 | 50 | `static void theParity(Scope sc)` |  |
 
-### 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) (lines 1103-1262)
+### 9. WHAT IT COSTS (lines 1077-1098)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1111 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
-| 1118 | 1 | `static void play(Game city)` | One month of a city, the narration sent nowhere. |
-| 1121 | 16 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams), on a scratch folder. |
-| 1139 | 1 | `static boolean sameArray(double[] a, double[] b)` | Two arrays the same to the bit. |
-| 1141 | 121 | `static void theCity()` |  |
+| 1081 | 17 | `static void theCost(Scope sc)` |  |
+
+### THE FULL FILE'S OWN FINDINGS (lines 1099-1122)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1103 | 19 | `static void theFullOnly(Scope all, Pass pass)` |  |
+
+### 10. IN A CITY - the moneys in the month, the D$ and the save (Game's THE WORLD'S MONEYS IN THE MONTH) (lines 1123-1282)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1131 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
+| 1138 | 1 | `static void play(Game city)` | One month of a city, the narration sent nowhere. |
+| 1141 | 16 | `static Game town(String label)` | A trading town on the default founding, as ExchangeRateCheck builds it (its own copy: that one is tied to its harness's streams), on a scratch folder. |
+| 1159 | 1 | `static boolean sameArray(double[] a, double[] b)` | Two arrays the same to the bit. |
+| 1161 | 121 | `static void theCity()` |  |
 

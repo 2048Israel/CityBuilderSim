@@ -35,13 +35,21 @@ import java.util.function.Supplier;
  * for every section, and a line says when it is not.
  *
  * What this has to prove:
- *   1. THE SOLVE CONVERGES: every good clears to SOLVE_TOL (sales over supply,
- *      recomputed from the file's pairs) and meets the price path's level,
- *      cold at the founding (the calendar's first year, and again at the file's
- *      first, 2000) and warm after, on both paths; the sweeps are counted.
+ *   1. THE CHAINED SOLVE (CU2; WorldChain, spec-world-prices 3): the January
+ *      solves the goods inputs first, cold at the founding (the calendar's first
+ *      year, and again at the file's first, 2000) and warm after, on both paths,
+ *      and holds three claims, each to a figure recomputed from the file's pairs
+ *      and the freight table: a root's reference band stands on its price path
+ *      (the anchor); a made good is what its inputs cost the nation landed, less
+ *      the copper charge, plus its own part, which clears and meets the
+ *      manufactures index's level to SOLVE_TOL; every maker clears (a root's sales
+ *      over supply, a made good's supply over its sales). The sweeps are counted.
  *   2. THE CALIBRATION: the reference city (Halifax, 2025, Historical) sees
- *      Good's literals on every calibrated side to 1e-9; no two-sided good
- *      goes without; a one-sided good takes its class's median freight scale.
+ *      Good's literals on every calibrated side to 1e-9, except concentrate and
+ *      anode, which carry the played year's charge and not 2024's the literals
+ *      stand on (call star 6 (a)), and are held to the charge's difference; no
+ *      two-sided good goes without; a good that does not calibrate keeps the
+ *      freight scale the plain pass gave it, its class's median.
  *   3. THE FLOOR IS NEVER ABOVE THE CEILING: every good, 2000-2040, both
  *      paths, at three sites, the city's exports and imports each 0, 0.1%,
  *      1%, 10% and 50% of the world's use; and the floor falls with the
@@ -50,7 +58,9 @@ import java.util.function.Supplier;
  *      (an ordinary city) the netback moves by under 1% of the price it is
  *      sold at, at 10% by at least 5% of it, every good; at 0.1% the move is
  *      printed (the re-solve agrees with it: the host's market is small).
- *   5. THE MONTH'S STEP IS NEAR A RE-SOLVE: the fill's netback (the band's floor)
+ *   5. THE MONTH'S STEP IS NEAR A RE-SOLVE (a made good's makers each supply
+ *      what they sell at its chained price, so its re-solve starts from a scale
+ *      a maker): the fill's netback (the band's floor)
  *      within 3% of the price it is sold at of the nations' solve again with the
  *      city's tonnes delivered. At 0.1% of world use every good is; at 1% the
  *      median is and lumber, crude, iron and grains each are; 5% and 10% are
@@ -68,6 +78,28 @@ import java.util.function.Supplier;
  *  10. THE WOOD CASE (full file; printed, not asserted): a Halifax city's
  *      lumber buyers and where the others join.
  *  11. THE TIMINGS: the Base, the founding solve, a January, a month's bands.
+ *  12. THE CHAIN HOLDS (full file; printed on the fixture): at the reference
+ *      site and at a generated world's stand-in, every fifth January 1900-2200
+ *      on the Historical path and on Random seeds 1, 5, 9 and 48213, rod stands
+ *      on cathode (each good's floor over its literal export price, rod's over
+ *      cathode's within ROD_ON_CATHODE of 1 every January), wire on rod and
+ *      every works' feed over its sales on its literal (the median of all the
+ *      Januaries within WIRE_ON_ROD_MEDIAN and WORKS_MEDIAN of 1: a single
+ *      draw's January parts wider, printed with its path and year).
+ *  13. THE RECIPE TABLE IS buildings.json's: each WorldChain.RECIPE row's shares
+ *      are the works' uses over its sales (all it makes) at the literals'
+ *      mid-band prices, to RECIPE_TOL; wire's 0.70 rod (Jerus's call) is
+ *      printed, not asserted.
+ *  14. THE GUARD KEEPS THE SOLVE TO THE NUMBERS: a good's solve started with a
+ *      maker's price that is not a number is put back by the guard and ends
+ *      clear; on the full file a drawn world whose crude left the numbers on
+ *      main is played January by January and stops no good at SOLVE_MAX_PASSES
+ *      (the chained solve starts a root on the year's level and anchors it, and
+ *      no longer draws the guard there: printed).
+ *  15. THE COPPER CHARGE: Nations' swing has its large peaks on the record's
+ *      years, stays in its band, is a pure function and moves with the seed,
+ *      and has no yearly record; in a solved January concentrate carries it,
+ *      anode REFINING_PART of it, and no other good any.
  *
  * Every fixture causes its condition: the city's volumes are shares of the
  * good's own world use, a seed is drawn so that two worlds differ, a save is
@@ -111,6 +143,27 @@ public class WorldMarketCheck {
 
     /** A frequency is judged within this many standard deviations of a binomial. */
     static final double SIGMAS = 4.5;
+
+    /** Two figures that are one piece of arithmetic done twice (a price that is the sum of its parts, a ratio of two charges) agree within this share. */
+    static final double ARITHMETIC = 1e-12;
+
+    /** A root's reference band stands on its path's target within this, in logs: ten times the anchor's own stop (WorldMarket.ANCHOR_TOL), the worst measured on these years being 9.4e-11 (a band off its path by percents in main). */
+    static final double ANCHOR_CHECK_TOL = 10 * WorldMarket.ANCHOR_TOL;
+
+    /** The played 2025 band of concentrate or anode moves off its literal by the charge's whole difference, within this share of it: the worst measured is 6.0e-14 of it. */
+    static final double CHARGE_ROOM = 1e-12;
+
+    /** Rod's floor over its literal export price stands within this of cathode's in every January read: the worst measured is 0.0933 (Random seed 9, the reference site, 1900), main's world stands 1.4 off (rod 2.41 and 2.68 over cathode, spec-world-prices 3.2). */
+    static final double ROD_ON_CATHODE = .10;
+
+    /** The median over every January read of wire's floor over its literal export price, over rod's, stands within this of 1: the measured median is 1.038, main's world stands 0.12 to 0.18 off (0.82 and 0.88, 3.2); the worst January is 0.98 off (Random seed 9, 1900) since wire's 30% own part follows the manufactures index and rod the copper path, so it is the median that holds the study's claim. */
+    static final double WIRE_ON_ROD_MEDIAN = .05;
+
+    /** A works' median feed over its sales, over every January read, stands within this share of its literal margin: the widest measured is 0.074 (Panel Mill and Pulp Mill), main's Rod Mill stands 0.55 off (0.46 for 1.03, 3.3); the worst single January is far wider (Fabrication Works 12.4 times its literal on Random seed 5 in 2145), the study's table being the drawn worlds' median. */
+    static final double WORKS_MEDIAN = .10;
+
+    /** A recipe row's share of an input is within this (absolute) of the works' uses and makes at the literals' mid-band prices: a few points, as the dial is rounded to the hundredth. */
+    static final double RECIPE_TOL = .03;
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -193,6 +246,7 @@ public class WorldMarketCheck {
         long t0 = System.nanoTime();
         Scope fx = new Scope("fixture", fixture, WorldMarket.Base.of(fixture), (System.nanoTime() - t0) / 1e6);
         sections(fx);
+        theRecipeTable();
 
         out.println("--- the full file, when it is named ---");
         if (named != null && !named.isBlank() && !fullThere) {
@@ -259,26 +313,48 @@ public class WorldMarketCheck {
         theStandIn(sc);
         thePieces(sc);
         theTimings(sc);
+        theChainHolds(sc);
+        theGuard(sc);
+        theCopperCharge(sc);
     }
 
     /* =====================================================================
-       1. THE SOLVE CONVERGES
+       1. THE CHAINED SOLVE
        ===================================================================== */
 
-    /** One good's solved state recomputed from the file's pairs alone: {the worst of sales over supply less 1 over the makers, the mean mill price over its path's level less 1 in magnitude}. */
-    static double[] residual(WorldData data, WorldMarket m, Good g) {
-        int gi = m.indexOf(g);
-        WorldMarket.Traded t = m.base().traded[gi];
-        WorldData.Flows f = data.trade(t.number);
-        int n = m.nationCount();
-        double eps = t.eps;
-        double[] p = m.phat(gi), gh = m.gHat();
-        double lambda = m.lambda(gi);
-        double[] use = new double[n], make = new double[n], phi = new double[n], sales = new double[n];
-        for (int k = 0; k < f.pairs(); k++) {
-            make[f.seller[k] - 1] += f.flow[k];
-            use[f.buyer[k] - 1] += f.flow[k];
+    /** The largest of a figure over many readings, and where it was read. */
+    static final class Worst {
+        double v;
+        String at = "";
+
+        void see(double x, Supplier<String> where) {
+            if (x > v || Double.isNaN(x)) {
+                v = x;
+                at = where.get();
+            }
         }
+
+        @Override public String toString() { return String.format(Locale.ROOT, "%.3g (%s)", v, at); }
+    }
+
+    /** What a good's makers made at the base year's prices (thousand US$), summed from the file's pairs. */
+    static double[] madeIn(WorldData data, WorldMarket.Traded t, int n) {
+        WorldData.Flows f = data.trade(t.number);
+        double[] make = new double[n];
+        for (int k = 0; k < f.pairs(); k++) make[f.seller[k] - 1] += f.flow[k];
+        return make;
+    }
+
+    /**
+     * Each maker's sales of a good (thousand US$ of the base year) at the prices p it asks (a good's phat, over the base year's), recomputed from the
+     * file's pairs alone: p^-eps times the pair's flow times the buyer's spending over its price index, as the solve has it; gh is the nations' growth.
+     */
+    static double[] sales(WorldData data, WorldMarket.Traded t, double[] p, double[] gh) {
+        WorldData.Flows f = data.trade(t.number);
+        int n = p.length;
+        double eps = t.eps;
+        double[] use = new double[n], phi = new double[n], sales = new double[n];
+        for (int k = 0; k < f.pairs(); k++) use[f.buyer[k] - 1] += f.flow[k];
         for (int k = 0; k < f.pairs(); k++) {
             int s = f.seller[k] - 1, b = f.buyer[k] - 1;
             phi[b] += f.flow[k] / use[b] * Math.pow(p[s], -eps);
@@ -288,6 +364,17 @@ public class WorldMarketCheck {
             double spending = gh[b] * Math.pow(phi[b], -(1 - WorldMarket.DEMAND_ELASTICITY) / eps);
             sales[s] += Math.pow(p[s], -eps) * f.flow[k] * spending / phi[b];
         }
+        return sales;
+    }
+
+    /** One good's solved state recomputed from the file's pairs alone: {the worst of sales over supply less 1 over the makers, the mean mill price over its path's level less 1 in magnitude}. */
+    static double[] residual(WorldData data, WorldMarket m, Good g) {
+        int gi = m.indexOf(g);
+        WorldMarket.Traded t = m.base().traded[gi];
+        int n = m.nationCount();
+        double[] p = m.phat(gi), gh = m.gHat();
+        double lambda = m.lambda(gi);
+        double[] make = madeIn(data, t, n), sales = sales(data, t, p, gh);
         double worst = 0, total = 0, index = 0;
         for (int i = 0; i < n; i++) {
             if (!(make[i] > 0)) continue;
@@ -299,9 +386,75 @@ public class WorldMarketCheck {
         return new double[] { worst, Math.abs(index / total / m.levelTarget(gi) - 1) };
     }
 
+    /**
+     * What a good costs each nation over what it cost in the base year, recomputed from the market's finished prices and the freight table: the cheapest
+     * maker's mill price landed there (its price over the base year's, times its unit value, plus the good's freight scale times the maker's freight),
+     * over the same at base-year prices; 1 where no maker reaches the nation. The freight scale is the good's, WorldMarket.PHI_FALLBACK where it has none.
+     */
+    static double[] landed(WorldMarket m, int pg) {
+        WorldMarket.Base base = m.base();
+        WorldMarket.Traded t = base.traded[pg];
+        int n = base.nationCount();
+        double[] ph = m.phat(pg), cost = new double[n];
+        double phi = t.phi > 0 ? t.phi : WorldMarket.PHI_FALLBACK;
+        for (int i = 0; i < n; i++) {
+            double now = Double.POSITIVE_INFINITY, then = Double.POSITIVE_INFINITY;
+            for (int k : t.makers) {
+                double f = phi * base.freight[k * n + i];
+                now = Math.min(now, t.v * ph[k] + f);
+                then = Math.min(then, t.v + f);
+            }
+            cost[i] = now < Double.POSITIVE_INFINITY && then > 0 ? now / then : 1;
+        }
+        return cost;
+    }
+
+    /**
+     * What a made good's inputs cost in each of its makers' nations, less the copper charge where the good carries one (never below WorldMarket.CHARGE_LEAVES
+     * of the inputs' cost): the sum over its inputs of the recipe's share times what the input costs the nation (landed above); landed is the year's
+     * cache of that, by good.
+     */
+    static double[] inputsOf(WorldMarket m, int gi, double[][] landed) {
+        WorldMarket.Base base = m.base();
+        WorldMarket.Traded t = base.traded[gi];
+        WorldChain chain = base.chain;
+        double[] cost = new double[base.nationCount()];
+        for (int k = 0; k < chain.parent[gi].length; k++) {
+            int pg = chain.parent[gi][k];
+            if (landed[pg] == null) landed[pg] = landed(m, pg);
+            for (int i : t.makers) cost[i] += chain.share[gi][k] * landed[pg][i];
+        }
+        double chi = m.charge(t.good);
+        if (chi > 0) for (int i : t.makers) cost[i] = Math.max(WorldMarket.CHARGE_LEAVES * cost[i], cost[i] - chi);
+        return cost;
+    }
+
+    /**
+     * The anchor's read of a root, recomputed from its makers' solved prices: the reference city's band over the band the calibration left it, a calibrated
+     * good by the geometric middle of its two sides, a one-sided good by its calibrated side; NaN where the side is not above 0 (a price below its freight:
+     * the anchor leaves such a year as the solve had it).
+     */
+    static double anchorRead(WorldMarket m, int gi) {
+        WorldMarket.Base base = m.base();
+        WorldMarket.Traded t = base.traded[gi];
+        double[] ph = m.phat(gi), p = new double[ph.length];
+        for (int i = 0; i < p.length; i++) p[i] = t.v * ph[i];
+        double[] fl = base.referenceBand(t, p, t.phi);
+        if (t.fit == WorldMarket.Fit.CALIBRATED) {
+            double f = t.sigma * fl[0] / t.refFloor, c = t.sigma * fl[1] / t.refCeiling;
+            return f > 0 && c > 0 && Double.isFinite(f) && Double.isFinite(c) ? Math.sqrt(f * c) : Double.NaN;
+        }
+        double s = t.good.importable() ? t.sigma * fl[1] / t.refCeiling : t.sigma * fl[0] / t.refFloor;
+        return s > 0 && Double.isFinite(s) ? s : Double.NaN;
+    }
+
     static void theSolve(Scope sc) {
-        out.println("--- the January solve clears every maker and meets its price path (" + sc.name + ") ---");
-        Tally clearing = new Tally(), level = new Tally(), years = new Tally();
+        out.println("--- the chained January solve: a root's band meets its path, a made good is its inputs plus its own part, every maker clears (" + sc.name + ") ---");
+        WorldChain chain = sc.base.chain;
+        int n = sc.base.nationCount();
+        Tally anchored = new Tally(), assembled = new Tally(), clearing = new Tally(), years = new Tally();
+        Worst anchorMiss = new Worst(), ownClear = new Worst(), ownLevel = new Worst(), priceMiss = new Worst(), supplyMiss = new Worst();
+        List<String> left = new ArrayList<>();
         List<Integer> cold = new ArrayList<>(), warm = new ArrayList<>();
         double tol = WorldMarket.SOLVE_TOL * (1 + 1e-9);
         // Two foundings per path: the calendar's first year (EP1: the stand-in century's, where a city begins) and the file's own first, 2000 (real years).
@@ -312,19 +465,72 @@ public class WorldMarketCheck {
                     m.solveYear(y);
                     int yy = y, first = start;
                     years.see(m.solvedYear() == y, () -> "solved " + m.solvedYear() + " for " + yy);
+                    double[][] landed = new double[sc.base.traded.length][];
+                    double[] gh = m.gHat();
                     for (Good g : sc.base.goods()) {
                         (y == start ? cold : warm).add(m.passes(g));
                         if (y != start && y != start + 5 && y != start + 10) continue;
-                        double[] r = residual(sc.data, m, g);
-                        clearing.see(r[0] <= tol, () -> g + " " + path + " " + yy + ": sales over supply off by " + r[0]);
-                        level.see(r[1] <= tol, () -> g + " " + path + " " + yy + " (from " + first + "): the mean mill price off its path by " + r[1]);
+                        int gi = m.indexOf(g);
+                        WorldMarket.Traded t = sc.base.traded[gi];
+                        Supplier<String> where = () -> g + " " + path + " " + yy + " (from " + first + ")";
+                        if (!chain.made(gi)) {
+                            double[] r = residual(sc.data, m, g);
+                            clearing.see(r[0] <= tol, () -> where.get() + ": sales over supply off by " + r[0]);
+                            if (!(t.sigma > 0) || !(t.phi > 0)) continue;
+                            double read = anchorRead(m, gi), target = m.anchorTarget(gi);
+                            if (Double.isNaN(read)) {
+                                left.add(where.get());
+                                continue;
+                            }
+                            double miss = Math.abs(Math.log(read / target));
+                            anchorMiss.see(miss, where);
+                            anchored.see(miss <= ANCHOR_CHECK_TOL, () -> where.get() + ": the reference band stands " + read + " of the band the calibration left, the path says " + target);
+                            continue;
+                        }
+                        double[] ph = m.phat(gi), in = inputsOf(m, gi, landed);
+                        double own = chain.own[gi];
+                        if (own > 0) {
+                            // q: its own part, what is left of the price once its inputs are paid; it clears at its own level on the manufactures index
+                            double[] q = new double[n];
+                            Arrays.fill(q, 1);
+                            for (int i : t.makers) q[i] = (ph[i] - in[i]) / own;
+                            double[] make = madeIn(sc.data, t, n), sl = sales(sc.data, t, q, gh);
+                            double lam = m.lambda(gi), worst = 0, total = 0, index = 0;
+                            for (int i : t.makers) {
+                                double supply = make[i] * gh[i] * lam * Math.pow(q[i], 1 + WorldMarket.SUPPLY_ELASTICITY);
+                                worst = Math.max(worst, Math.abs(sl[i] / supply - 1));
+                                total += make[i];
+                                index += make[i] * q[i];
+                            }
+                            double level = Math.abs(index / total / m.ownLevelTarget(gi) - 1), clears = worst;
+                            ownClear.see(clears, where);
+                            ownLevel.see(level, where);
+                            assembled.see(clears <= tol && level <= tol, () -> where.get() + ": its own part's sales are off its supply by " + clears + ", its mean off the level by " + level);
+                        } else {
+                            double off = 0;
+                            for (int i : t.makers) off = Math.max(off, Math.abs(ph[i] / Math.max(in[i], WorldMarket.PRICE_FLOOR) - 1));
+                            double miss = off;
+                            priceMiss.see(miss, where);
+                            assembled.see(miss <= ARITHMETIC, () -> where.get() + ": a good with no part of its own is off its inputs' cost by " + miss);
+                        }
+                        double[] sup = m.supply(gi), sl = sales(sc.data, t, ph, gh);
+                        double worst = 0;
+                        for (int i : t.makers) worst = Math.max(worst, Math.abs(sl[i] * 1000 / (t.v * ph[i]) / sup[i] - 1));
+                        double clears = worst;
+                        supplyMiss.see(clears, where);
+                        clearing.see(clears <= tol, () -> where.get() + ": its makers' supply is off their sales at its price by " + clears);
                     }
                 }
             }
         }
         tally("the solved year is the year asked for", years);
-        tally("every maker's sales are within SOLVE_TOL of its supply, recomputed from the file's pairs: the founding, five and ten years on, from " + Nations.FIRST_YEAR + " and from " + WorldData.FILE_FIRST_YEAR + ", on both paths", clearing);
-        tally("the mean mill price is within SOLVE_TOL of the good's real price path (over the base year's), the founding, five and ten years on, from " + Nations.FIRST_YEAR + " and from " + WorldData.FILE_FIRST_YEAR + ", on both paths", level);
+        tally("a root's reference band stands on its path: over the band the calibration left it, within ANCHOR_CHECK_TOL (" + ANCHOR_CHECK_TOL + ") in logs of the path's level over the literals', the founding, five and ten years on, both starts, both paths", anchored);
+        out.println("the worst anchor miss, in logs: " + anchorMiss);
+        assertTrue("no year the anchor left (the reference band not above 0 at the solve's prices) on these years: " + left.size() + (left.isEmpty() ? "" : ", the first " + left.get(0)), left.isEmpty());
+        tally("a made good is its inputs' landed cost (less the copper charge) plus its own part: the part clears and meets the manufactures index's level to SOLVE_TOL, a good with none is its inputs' cost to 1e-12", assembled);
+        out.println("worst own part: sales over supply " + ownClear + "; mean over the level " + ownLevel + "; a good with no part, off its inputs' cost " + priceMiss);
+        tally("every maker clears within SOLVE_TOL: a root's sales over supply, a made good's supply over its sales at its price, recomputed from the file's pairs", clearing);
+        out.println("worst made good, supply over its sales at its price: " + supplyMiss);
         Collections.sort(cold);
         Collections.sort(warm);
         out.printf("sweeps a good: founding (cold, " + Nations.FIRST_YEAR + " and " + WorldData.FILE_FIRST_YEAR + ") median %d, worst %d; a January after (warm) median %d, worst %d%n",
@@ -345,15 +551,18 @@ public class WorldMarketCheck {
         Tally literals = new Tally(), scales = new Tally(), medians = new Tally();
         List<String> unfit = new ArrayList<>(), onePlace = new ArrayList<>(), none = new ArrayList<>();
         Map<String, List<Double>> byClass = new HashMap<>();
+        // the class's median is the plain pass's (CU2: a made good reads its input's freight scale, so the class median is only known after the plain pass)
         for (Good g : base.goods()) {
-            WorldMarket.Traded t = base.traded[m.indexOf(g)];
-            if (base.fit(g) == WorldMarket.Fit.CALIBRATED) byClass.computeIfAbsent(t.goodClass, c -> new ArrayList<>()).add(base.phi(g));
+            int gi = m.indexOf(g);
+            if (base.plainFit[gi] == WorldMarket.Fit.CALIBRATED) byClass.computeIfAbsent(base.traded[gi].goodClass, c -> new ArrayList<>()).add(base.plainPhi[gi]);
         }
         for (Good g : base.goods()) {
             WorldMarket.Traded t = base.traded[m.indexOf(g)];
             WorldMarket.Fit fit = base.fit(g);
             double[] b = m.band(g, 0, 0);
             boolean both = g.importable() && g.exportable();
+            // concentrate and anode carry the played year's charge, not 2024's the literals stand on (call star 6 (a)): judged apart, below
+            boolean charged = (g == Good.COPPER_CONC || g == Good.ANODE) && fit == WorldMarket.Fit.CALIBRATED;
             if (both && fit != WorldMarket.Fit.CALIBRATED) unfit.add(g + " (" + fit + ")");
             if (fit == WorldMarket.Fit.NONE) {
                 none.add(g.toString());
@@ -361,6 +570,10 @@ public class WorldMarketCheck {
             }
             if (fit == WorldMarket.Fit.ONE_SIDED) onePlace.add(g.toString());
             scales.see(base.sigma(g) > 0 && Double.isFinite(base.sigma(g)) && base.phi(g) > 0 && Double.isFinite(base.phi(g)), () -> g + ": sigma " + base.sigma(g) + ", phi " + base.phi(g));
+            if (charged) {
+                literals.see(near(base.referenceFloor(g), g.worldExportPrice(), SAME) && near(base.referenceCeiling(g), g.worldImportPrice(), SAME), () -> g + "'s reference figures (the calibration reads CHARGE_LITERAL): " + base.referenceFloor(g) + " and " + base.referenceCeiling(g));
+                continue;
+            }
             if (g.importable()) literals.see(near(b[1], g.worldImportPrice(), SAME), () -> g + " (" + fit + ") ceiling " + b[1] + " against the literal " + g.worldImportPrice());
             else literals.see(Double.isNaN(b[1]), () -> g + " has no import side, and its ceiling is " + b[1]);
             if (fit == WorldMarket.Fit.CALIBRATED) {
@@ -371,20 +584,54 @@ public class WorldMarketCheck {
             } else {
                 literals.see(Double.isNaN(b[0]), () -> g + " has no export side, and its floor is " + b[0]);
             }
-            if (fit != WorldMarket.Fit.CALIBRATED && byClass.containsKey(t.goodClass)) {
-                List<Double> v = new ArrayList<>(byClass.get(t.goodClass));
-                Collections.sort(v);
-                int k = v.size();
-                double median = k % 2 == 1 ? v.get(k / 2) : .5 * (v.get(k / 2 - 1) + v.get(k / 2));
-                medians.see(near(base.phi(g), median, 1e-12), () -> g + "'s freight scale " + base.phi(g) + " against its class's median " + median);
+            if (fit != WorldMarket.Fit.CALIBRATED) {
+                // it keeps the freight scale the plain pass gave it, and the plain pass gave it its class's median of the goods that calibrated there
+                int gi = m.indexOf(g);
+                medians.see(near(base.phi(g), base.plainPhi[gi], ARITHMETIC), () -> g + "'s freight scale " + base.phi(g) + " against the plain pass's " + base.plainPhi[gi]);
+                if (byClass.containsKey(t.goodClass)) {
+                    List<Double> v = new ArrayList<>(byClass.get(t.goodClass));
+                    Collections.sort(v);
+                    int k = v.size();
+                    double median = k % 2 == 1 ? v.get(k / 2) : .5 * (v.get(k / 2 - 1) + v.get(k / 2));
+                    medians.see(near(base.plainPhi[gi], median, ARITHMETIC), () -> g + "'s plain freight scale " + base.plainPhi[gi] + " against its class's median " + median + " of the goods the plain pass calibrated");
+                }
             }
         }
-        tally("the reference city (Halifax, no berth, 2025, Historical) sees the literal on every side the city has, to 1e-9: calibrated goods both, one-sided goods theirs", literals);
+        tally("the reference city (Halifax, no berth, 2025, Historical) sees the literal on every side the city has, to 1e-9: calibrated goods both, one-sided goods theirs (concentrate and anode: their reference figures)", literals);
         tally("every good the market scales has a price scale and a freight scale above 0", scales);
-        tally("a one-sided good, and a two-sided one that would not calibrate, takes its class's median freight scale", medians);
+        tally("a good that does not calibrate keeps the freight scale the plain pass gave it, and that is its class's median of the plain pass's calibrated goods where the class has one", medians);
         out.println("calibrated " + base.fits[WorldMarket.Fit.CALIBRATED.ordinal()] + ", one-sided " + onePlace + ", on the class median " + unfit + ", without a side " + none);
         assertTrue("no two-sided good goes uncalibrated: " + (unfit.isEmpty() ? "none" : unfit), unfit.isEmpty());
         assertTrue("the reference city stands in Canada (" + m.iso3(m.host()) + ")", m.iso3(m.host()).equals("CAN") && m.host() == base.referenceHost());
+
+        // concentrate and anode: the calibration read the charge the literals stand on (CHARGE_LITERAL), the played 2025 carries the year's own, so each side of
+        // the played band stands off the literal by the charge's whole difference (times the good's price scale and unit value) and no more, cheaper where the
+        // year's charge is the higher
+        Tally moved = new Tally();
+        for (Good g : new Good[] {Good.COPPER_CONC, Good.ANODE}) {
+            int gi = m.indexOf(g);
+            if (gi < 0 || base.fit(g) != WorldMarket.Fit.CALIBRATED) {
+                out.println(g + " is not a calibrated good on this file: its played band is not read");
+                continue;
+            }
+            WorldMarket.Traded t = base.traded[gi];
+            double part = g == Good.COPPER_CONC ? 1 : WorldMarket.REFINING_PART;
+            double literalCharge = part * WorldMarket.CHARGE_LITERAL * base.refCopper, yearCharge = m.charge(g), diff = yearCharge - literalCharge;
+            double room = base.sigma(g) * t.v * Math.abs(diff);
+            double[] b = m.band(g, 0, 0), lit = {g.worldExportPrice(), g.worldImportPrice()};
+            String[] side = {"floor", "ceiling"};
+            double[] share = new double[2];
+            for (int s = 0; s < 2; s++) {
+                int ss = s;
+                share[s] = Math.abs(b[s] - lit[s]) / room;
+                boolean way = diff > 0 ? b[s] < lit[s] : diff < 0 ? b[s] > lit[s] : near(b[s], lit[s], SAME);
+                moved.see(way && Math.abs(b[s] - lit[s]) <= room * (1 + CHARGE_ROOM), () -> g + "'s " + side[ss] + " " + b[ss] + " against the literal " + lit[ss]
+                        + ", the charge " + yearCharge + " against the literal's " + literalCharge + ", room " + room);
+            }
+            out.printf(Locale.ROOT, "%s in %d, played over its literal: floor %.4f, ceiling %.4f; the year's charge %.4f against the literal's %.4f of the copper's base-year price; each side's move off its literal is the charge's whole difference to %.2e and %.2e of it%n",
+                    g, WorldMarket.REFERENCE_YEAR, b[0] / lit[0], b[1] / lit[1], yearCharge, literalCharge, Math.abs(share[0] - 1), Math.abs(share[1] - 1));
+        }
+        tally("concentrate and anode in " + WorldMarket.REFERENCE_YEAR + " stand off their literals the way the year's charge says (cheaper where it is above the literal's) and by no more than its difference", moved);
 
         // elsewhere the world is not the literal: Rotterdam, with a berth
         WorldMarket there = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
@@ -1016,5 +1263,423 @@ public class WorldMarketCheck {
         Arrays.sort(us);
         report("a month's bands for every good take under BAND_MONTH_US, the median of " + rounds + " rounds of " + each, Timing.within(us[rounds / 2], WorldMarket.BAND_MONTH_US, "us"),
                 String.format(Locale.ROOT, "median %.0f us for %d goods, slowest round %.0f us", us[rounds / 2], goods.size(), us[rounds - 1]));
+    }
+
+    /* =====================================================================
+       12. THE CHAIN HOLDS
+       ===================================================================== */
+
+    /** The ground seed the stand-in site of section 12 is drawn from (setStandIn: the site a generated world's city is founded at); the single-world sections use 7 as well. */
+    static final long CHAIN_GROUND = 7;
+
+    /** The Random seeds section 12 plays beside the Historical path: 9 is the guard's world (its crude left the numbers in 2165 on main), 48213 the game's default. */
+    static final long[] CHAIN_SEEDS = {1, 5, 9, Nations.DEFAULT_SEED};
+
+    /** The last January section 12 reads, and the years between the Januaries it reads (from the calendar's first). */
+    static final int CHAIN_LAST = 2200, CHAIN_EVERY = 5;
+
+    /** The works section 12 holds beside the recipe's own: the cathode's and the arc furnace's, which no row of the table names. */
+    static final String[] EXTRA_WORKS = {"Electrolytic Refinery", "Electric Arc Furnace"};
+
+    /** One works as section 12 reads it: its template, the goods it uses and makes, its feed over its sales at the literals, and what the Januaries read. */
+    static final class Works {
+        final String name;
+        final BuildingsTemplate template;
+        final List<Good> used = new ArrayList<>(), made = new ArrayList<>();
+        /** The feed (each use at the literal import price) over the sales (each make at the literal export price); NaN where a good has no such literal, and why. */
+        double literal = Double.NaN;
+        String why = "";
+        double low = Double.POSITIVE_INFINITY, high = Double.NEGATIVE_INFINITY;
+        String lowAt = "", highAt = "";
+        int read, unpriced;
+        final List<Double> ratios = new ArrayList<>();
+
+        Works(String name, BuildingsTemplate template) {
+            this.name = name;
+            this.template = template;
+            double feed = 0, sales = 0;
+            for (Good g : Good.values()) {
+                if (template.uses(g) > 0) used.add(g);
+                if (template.makes(g) > 0) made.add(g);
+            }
+            if (made.isEmpty()) why = "buildings.json lists no makes for it (its slate may live in code)";
+            if (used.isEmpty()) why = "buildings.json lists no uses for it";
+            for (Good g : used) {
+                if (g.importable()) feed += template.uses(g) * g.worldImportPrice();
+                else why = g + " has no import literal";
+            }
+            for (Good g : made) {
+                if (g.exportable()) sales += template.makes(g) * g.worldExportPrice();
+                else why = g + " has no export literal";
+            }
+            if (why.isEmpty()) literal = feed / sales;
+        }
+
+        /** The feed over the sales in the game's money from the market's bands (a use at the ceiling, a make at the floor), NaN where a good is not priced there. */
+        double margin(WorldMarket m) {
+            double feed = 0, sales = 0;
+            for (Good g : used) {
+                double c = m.band(g, 0, 0)[1];
+                if (!(c > 0) || !Double.isFinite(c)) return Double.NaN;
+                feed += template.uses(g) * c;
+            }
+            for (Good g : made) {
+                double f = m.band(g, 0, 0)[0];
+                if (!(f > 0) || !Double.isFinite(f)) return Double.NaN;
+                sales += template.makes(g) * f;
+            }
+            return feed / sales;
+        }
+    }
+
+    /** A good's played floor over its literal export price, NaN where the market has no positive floor for it. */
+    static double floorOver(WorldMarket m, Good g) {
+        double f = m.band(g, 0, 0)[0];
+        return f > 0 && Double.isFinite(f) ? f / g.worldExportPrice() : Double.NaN;
+    }
+
+    /** The templates of buildings.json by name, through the game's own loader; null where it cannot be read. */
+    static Map<String, BuildingsTemplate> buildingsByName() {
+        List<BuildingsTemplate> templates = new BuildingCatalog().load();
+        if (templates == null) return null;
+        Map<String, BuildingsTemplate> byName = new HashMap<>();
+        for (BuildingsTemplate b : templates) byName.put(b.getName(), b);
+        return byName;
+    }
+
+    /** A figure's worst in each fifty years, as a line. */
+    static String windowed(double[] worst) {
+        StringBuilder s = new StringBuilder("[");
+        for (int k = 0; k < worst.length; k++) s.append(k > 0 ? ", " : "").append(String.format(Locale.ROOT, "%.3f", worst[k]));
+        return s.append("]").toString();
+    }
+
+    static void theChainHolds(Scope sc) {
+        if (!sc.name.equals("full")) {
+            out.println("--- the chain holds rod and wire on cathode, and every works near its literal margin: the full file's section, not run on the " + sc.name + " ---");
+            return;
+        }
+        out.println("--- the chain holds rod and wire on cathode, and every works near its literal margin (" + sc.name + ") ---");
+        long t0 = System.nanoTime();
+        Map<String, BuildingsTemplate> byName = buildingsByName();
+        if (byName == null) {
+            assertTrue("buildings.json is read", false);
+            return;
+        }
+        List<String> names = new ArrayList<>();
+        for (WorldChain.Row row : WorldChain.RECIPE) if (row.works() != null && !names.contains(row.works())) names.add(row.works());
+        for (String extra : EXTRA_WORKS) if (!names.contains(extra)) names.add(extra);
+        List<Works> works = new ArrayList<>();
+        for (String name : names) {
+            BuildingsTemplate b = byName.get(name);
+            if (b == null) assertTrue("the works " + name + " is in buildings.json", false);
+            else works.add(new Works(name, b));
+        }
+        Tally rod = new Tally(), medians = new Tally();
+        List<Double> wireRatios = new ArrayList<>(), rodRatios = new ArrayList<>();
+        Worst rodWorst = new Worst(), wireWorst = new Worst();
+        double[] rodWindow = new double[(CHAIN_LAST - Nations.FIRST_YEAR) / 50 + 1], wireWindow = new double[rodWindow.length];
+        int rodUnread = 0, wireUnread = 0;
+        String[] sites = {"reference site", "stand-in site"};
+        for (int p = 0; p <= CHAIN_SEEDS.length; p++) {
+            Nations.Path path = p == 0 ? Nations.Path.HISTORICAL : Nations.Path.RANDOM;
+            long seed = p == 0 ? Nations.DEFAULT_SEED : CHAIN_SEEDS[p - 1];
+            for (int site = 0; site < 2; site++) {
+                WorldMarket m = sc.market(path, seed);
+                if (site == 1) m.setStandIn(CHAIN_GROUND, false);
+                for (int y = Nations.FIRST_YEAR; y <= CHAIN_LAST; y += CHAIN_EVERY) {
+                    m.solveYear(y);
+                    String where = path + (path == Nations.Path.RANDOM ? " seed " + seed : "") + ", the " + sites[site] + ", " + y;
+                    double cathode = floorOver(m, Good.COPPER), rodOver = floorOver(m, Good.COPPER_ROD), wireOver = floorOver(m, Good.WIRE_CABLE);
+                    double onCathode = rodOver / cathode, onRod = wireOver / rodOver;
+                    if (Double.isNaN(onCathode)) rodUnread++;
+                    else {
+                        rod.see(Math.abs(onCathode - 1) <= ROD_ON_CATHODE, () -> where + ": rod's floor over its literal is " + onCathode + " of cathode's");
+                        rodRatios.add(onCathode);
+                        rodWorst.see(Math.abs(onCathode - 1), () -> String.format(Locale.ROOT, "%.4f, %s", onCathode, where));
+                        rodWindow[(y - Nations.FIRST_YEAR) / 50] = Math.max(rodWindow[(y - Nations.FIRST_YEAR) / 50], Math.abs(onCathode - 1));
+                    }
+                    if (Double.isNaN(onRod)) wireUnread++;
+                    else {
+                        wireRatios.add(onRod);
+                        wireWorst.see(Math.abs(onRod - 1), () -> String.format(Locale.ROOT, "%.4f, %s", onRod, where));
+                        wireWindow[(y - Nations.FIRST_YEAR) / 50] = Math.max(wireWindow[(y - Nations.FIRST_YEAR) / 50], Math.abs(onRod - 1));
+                    }
+                    for (Works w : works) {
+                        if (Double.isNaN(w.literal)) continue;
+                        double margin = w.margin(m);
+                        if (Double.isNaN(margin)) {
+                            w.unpriced++;
+                            continue;
+                        }
+                        double r = margin / w.literal;
+                        w.read++;
+                        w.ratios.add(r);
+                        if (r < w.low) {
+                            w.low = r;
+                            w.lowAt = where;
+                        }
+                        if (r > w.high) {
+                            w.high = r;
+                            w.highAt = where;
+                        }
+                    }
+                }
+            }
+        }
+        tally("rod stands on cathode: rod's floor over its literal export price over cathode's, within ROD_ON_CATHODE (" + ROD_ON_CATHODE + ") of 1, every fifth January " + Nations.FIRST_YEAR + "-" + CHAIN_LAST + ", Historical and Random seeds 1, 5, 9, 48213, both sites", rod);
+        Collections.sort(wireRatios);
+        Collections.sort(rodRatios);
+        double wireMedian = wireRatios.get(wireRatios.size() / 2);
+        assertTrue(String.format(Locale.ROOT, "wire stands on rod: the median over all the Januaries read of wire's floor over its literal export price over rod's is %.4f, within WIRE_ON_ROD_MEDIAN (%s) of 1", wireMedian, WIRE_ON_ROD_MEDIAN), Math.abs(wireMedian - 1) <= WIRE_ON_ROD_MEDIAN);
+        out.printf(Locale.ROOT, "spread over the Januaries read, 5th percentile, median, 95th percentile: rod over cathode %.3f %.3f %.3f; wire over rod %.3f %.3f %.3f%n", rodRatios.get(rodRatios.size() / 20), rodRatios.get(rodRatios.size() / 2), rodRatios.get(rodRatios.size() * 19 / 20),
+                wireRatios.get(wireRatios.size() / 20), wireMedian, wireRatios.get(wireRatios.size() * 19 / 20));
+        out.println("the worst: rod over cathode " + rodWorst + "; wire over rod " + wireWorst + "; Januaries with no floor for them: " + rodUnread + " and " + wireUnread);
+        out.println("the worst by 50 years from " + Nations.FIRST_YEAR + ": rod over cathode " + windowed(rodWindow) + "; wire over rod " + windowed(wireWindow));
+        out.printf("%-26s %8s  %s%n", "works", "literal", "worst low, worst high (feed over sales, then over its literal; the path, seed, site and year); Januaries read, not priced");
+        for (Works w : works) {
+            if (Double.isNaN(w.literal)) {
+                out.printf("%-26s not priced at the literals, not asserted: %s%n", w.name, w.why);
+            } else if (w.read == 0) {
+                out.printf(Locale.ROOT, "%-26s %8.3f  not priced by the market in any January read (%d), not asserted%n", w.name, w.literal, w.unpriced);
+            } else {
+                out.printf(Locale.ROOT, "%-26s %8.3f  low %.3f (%.3f) %s; high %.3f (%.3f) %s; %d, %d%n", w.name, w.literal, w.low * w.literal, w.low, w.lowAt,
+                        w.high * w.literal, w.high, w.highAt, w.read, w.unpriced);
+                List<Double> sorted = new ArrayList<>(w.ratios);
+                Collections.sort(sorted);
+                double median = sorted.get(sorted.size() / 2);
+                out.printf(Locale.ROOT, "%-26s          over its literal: 5th percentile %.3f, median %.3f, 95th percentile %.3f%n", "", sorted.get(sorted.size() / 20), median, sorted.get(sorted.size() * 19 / 20));
+                medians.see(Math.abs(median - 1) <= WORKS_MEDIAN, () -> w.name + ": the median of its feed over its sales is " + median + " of what it is at the literals");
+            }
+        }
+        tally("every priced works' median feed over its sales (uses at the ceiling, makes at the floor), over all the Januaries read, is within WORKS_MEDIAN (" + WORKS_MEDIAN + ") of what it is at the literals", medians);
+        out.printf(Locale.ROOT, "section 12 took %.1f s%n", (System.nanoTime() - t0) / 1e9);
+    }
+
+    /* =====================================================================
+       13. THE RECIPE TABLE IS buildings.json's
+       ===================================================================== */
+
+    /** A good's mid-band literal price, (import + export) / 2 for a two-sided good, its one literal otherwise, NaN for a good with neither. */
+    static double mid(Good g) {
+        if (g.importable() && g.exportable()) return (g.worldImportPrice() + g.worldExportPrice()) / 2;
+        if (g.importable()) return g.worldImportPrice();
+        if (g.exportable()) return g.worldExportPrice();
+        return Double.NaN;
+    }
+
+    static void theRecipeTable() {
+        out.println("--- the recipe table is buildings.json's: each row's shares are its works' uses over its sales at the literals' mid-band prices ---");
+        Map<String, BuildingsTemplate> byName = buildingsByName();
+        if (byName == null) {
+            assertTrue("buildings.json is read", false);
+            return;
+        }
+        Tally shares = new Tally();
+        List<String> notRecomputed = new ArrayList<>(), leftOut = new ArrayList<>(), seen = new ArrayList<>(), off = new ArrayList<>();
+        int priceFile = 0, rows = 0;
+        double worst = 0;
+        String worstAt = "";
+        for (WorldChain.Row row : WorldChain.RECIPE) {
+            rows++;
+            if (row.works() == null) {
+                priceFile++;
+                continue;
+            }
+            BuildingsTemplate w = byName.get(row.works());
+            if (w == null) {
+                shares.see(false, () -> row.made() + ": its works " + row.works() + " is not in buildings.json");
+                continue;
+            }
+            double makes = w.makes(row.made()), out1 = mid(row.made()), sold = 0;
+            // the works' sales are all it makes at the literals' mid-band prices: a works with two goods (meat works, bakery, crude unit) spreads its feed over both, so each carries the same share
+            for (Good g : Good.values()) if (w.makes(g) > 0 && mid(g) > 0) sold += w.makes(g) * mid(g);
+            if (!(makes > 0) || !(out1 > 0)) {
+                List<Good> lists = new ArrayList<>();
+                for (Good g : Good.values()) if (w.makes(g) > 0) lists.add(g);
+                notRecomputed.add(row.made() + " (" + row.works() + (!(makes > 0) ? " does not list it in makes: " + (lists.isEmpty() ? "no makes at all, its slate lives in code" : "it lists " + lists) : " has no literal price for it") + ")");
+                continue;
+            }
+            for (int k = 0; k < row.inputs().length; k++) {
+                Good in = row.inputs()[k];
+                double price = mid(in), share = w.uses(in) * price / sold, alone = w.uses(in) * price / (makes * out1), dial = row.shares()[k];
+                if (!(price > 0)) {
+                    notRecomputed.add(row.made() + " on " + in + " (" + in + " has no literal price)");
+                    continue;
+                }
+                if (row.made() == Good.WIRE_CABLE) {
+                    out.printf(Locale.ROOT, "%s on %s is Jerus's call (star 3), not the works' recipe: the works' figure %.3f, the dial %.2f; not asserted%n", row.made(), in, share, dial);
+                    continue;
+                }
+                double miss = Math.abs(share - dial);
+                if (miss > worst) {
+                    worst = miss;
+                    worstAt = row.made() + " on " + in + ": " + String.format(Locale.ROOT, "%.3f against the dial %.2f", share, dial);
+                }
+                shares.see(miss <= RECIPE_TOL, () -> row.made() + " on " + in + ": the works " + row.works() + " gives " + share + ", the dial is " + dial);
+                if (miss > RECIPE_TOL) off.add(String.format(Locale.ROOT, "%s on %s: the works %s gives %.4f (%.4f of the row's good alone), the dial is %.2f (off by %.4f)", row.made(), in, row.works(), share, alone, dial, miss));
+            }
+            for (Good g : Good.values()) {
+                if (!(w.uses(g) > 0)) continue;
+                boolean named = false;
+                for (Good in : row.inputs()) named |= in == g;
+                String key = row.works() + "|" + g;
+                if (named || seen.contains(key)) continue;
+                seen.add(key);
+                double price = mid(g);
+                leftOut.add(String.format(Locale.ROOT, "%s uses %s, which no row names: %s of %s's price", row.works(), g, price > 0 ? String.format(Locale.ROOT, "%.3f", w.uses(g) * price / sold) : "no literal price", row.made()));
+            }
+        }
+        tally("every row's shares are its works' uses over its sales (all it makes) at the literals' mid-band prices, within RECIPE_TOL (" + RECIPE_TOL + ", absolute), wire's rod apart", shares);
+        out.println("the widest row off its works: " + worstAt + " (" + String.format(Locale.ROOT, "%.3f", worst) + "); every row off the dial by more than RECIPE_TOL:" + (off.isEmpty() ? " none" : ""));
+        for (String s : off) out.println("    " + s);
+        out.println(rows + " rows; " + priceFile + " are the price file's own (no works between them); not recomputed:" + (notRecomputed.isEmpty() ? " none" : ""));
+        for (String s : notRecomputed) out.println("    " + s);
+        out.println("inputs the works use that the row leaves out, with the share of the row's price they would be:" + (leftOut.isEmpty() ? " none" : ""));
+        for (String s : leftOut) out.println("    " + s);
+    }
+
+    /* =====================================================================
+       14. THE GUARD KEEPS THE SOLVE TO THE NUMBERS
+       ===================================================================== */
+
+    /** The drawn world whose crude left the numbers in 2165 on main (spec-world-prices 3.7), and the last January section 14 plays it to. */
+    static final long GUARD_SEED = 9;
+    static final int GUARD_LAST = 2170;
+
+    static void theGuard(Scope sc) {
+        out.println("--- the guard keeps the solve to the numbers (" + sc.name + ") ---");
+        // a good's solve started with one maker's price not a number: the guard puts back the plain step, and the solve ends clear
+        Good crude = sc.base.goods().contains(Good.CRUDE) ? Good.CRUDE : sc.base.goods().get(0);
+        WorldMarket.Traded t = sc.base.traded[sc.base.indexOf[crude.ordinal()]];
+        int n = sc.base.nationCount();
+        WorldMarket first = sc.market(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+        first.solveYear(Nations.FIRST_YEAR);
+        double[] gh = first.gHat(), phat = new double[n], lam = {1};
+        Arrays.fill(phat, 1);
+        phat[t.makers[0]] = Double.NaN;
+        long before = WorldMarket.guards();
+        int sweeps = WorldMarket.solve(t, gh, null, true, 1, WorldMarket.SOLVE_TOL, phat, lam, 0, new WorldMarket.Work(n));
+        long put = WorldMarket.guards() - before;
+        double[] make = madeIn(sc.data, t, n), sales = sales(sc.data, t, phat, gh);
+        double worst = 0, total = 0, index = 0;
+        for (int i : t.makers) {
+            worst = Math.max(worst, Math.abs(sales[i] / (make[i] * gh[i] * lam[0] * Math.pow(phat[i], 1 + WorldMarket.SUPPLY_ELASTICITY)) - 1));
+            total += make[i];
+            index += make[i] * phat[i];
+        }
+        double level = Math.abs(index / total - 1), clears = worst;
+        assertTrue(crude + "'s solve started with a maker's price that is not a number: the guard put back the plain step " + put + " times (at least 1)", put >= 1);
+        assertTrue("...and the solve ended in " + sweeps + " sweeps, under SOLVE_MAX_PASSES (" + WorldMarket.SOLVE_MAX_PASSES + ")", sweeps < WorldMarket.SOLVE_MAX_PASSES);
+        assertTrue("...and its answer clears (sales over supply off by " + String.format(Locale.ROOT, "%.2e", clears) + ") and meets its level (off by " + String.format(Locale.ROOT, "%.2e", level) + ") to SOLVE_TOL, recomputed from the pairs",
+                clears <= WorldMarket.SOLVE_TOL * (1 + 1e-9) && level <= WorldMarket.SOLVE_TOL * (1 + 1e-9));
+        if (!sc.name.equals("full")) {
+            out.println("the drawn world whose crude left the numbers on main is played on the full file only, not on the " + sc.name);
+            return;
+        }
+        WorldMarket.forgetSolves();
+        before = WorldMarket.guards();
+        long t0 = System.nanoTime();
+        WorldMarket m = sc.market(Nations.Path.RANDOM, GUARD_SEED);
+        int most = 0;
+        String mostAt = "";
+        for (int y = Nations.FIRST_YEAR; y <= GUARD_LAST; y++) {
+            m.solveYear(y);
+            for (Good g : sc.base.goods()) {
+                int took = m.passes(g);
+                if (took > most) {
+                    most = took;
+                    mostAt = g + " " + y;
+                }
+            }
+        }
+        long fired = WorldMarket.guards() - before;
+        int took = most;
+        out.printf(Locale.ROOT, "Random seed %d, every January %d-%d (%.1f s): the guard fired %d times%n", GUARD_SEED, Nations.FIRST_YEAR, GUARD_LAST, (System.nanoTime() - t0) / 1e9, fired);
+        assertTrue("no good's solve reached SOLVE_MAX_PASSES (" + WorldMarket.SOLVE_MAX_PASSES + ") in any January " + Nations.FIRST_YEAR + "-" + GUARD_LAST + " of Random seed " + GUARD_SEED + ": the worst took " + took + " sweeps (" + mostAt + ")",
+                took < WorldMarket.SOLVE_MAX_PASSES);
+        // A reading, not an assertion (REV-CU2-1): guards() counts the process's every January, whoever solved it.
+        if (fired > 0) out.println("the guard fired " + fired + " times during that run (the process's count): the world whose crude left the numbers on main still reaches it");
+        else out.println("guards 0 on the chained solve: it starts a root on the year's level and anchors it, so this world no longer leaves the numbers; the started-from-NaN solve above causes the condition");
+    }
+
+    /* =====================================================================
+       15. THE COPPER CHARGE
+       ===================================================================== */
+
+    /** The years the charge's swing is read over: the calendar's first to well past the paths' end. */
+    static final int CHARGE_FROM = 1900, CHARGE_TO = 2230;
+
+    /** The years round the record's peaks the local maxima are listed over (printed beside them, not asserted). */
+    static final int PEAKS_FROM = 1990, PEAKS_TO = 2030;
+
+    static void theCopperCharge(Scope sc) {
+        out.println("--- the copper charge: the swing's peaks, band, purity and seed; concentrate carries it, anode its refining part, nothing else (" + sc.name + ") ---");
+        Nations hist = new Nations(sc.data, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+        Nations[] paths = {hist, new Nations(sc.data, Nations.Path.RANDOM, 1), new Nations(sc.data, Nations.Path.RANDOM, 5)};
+        Tally peaks = new Tally();
+        List<String> heights = new ArrayList<>();
+        for (int y = Nations.CHARGE_PEAK_YEAR; y <= 2024; y += (int) Nations.CHARGE_YEARS) {
+            int yy = y;
+            double here = hist.copperChargeSwing(y), before = hist.copperChargeSwing(y - 1), after = hist.copperChargeSwing(y + 1);
+            peaks.see(here > before && here > after && here > Nations.CHARGE_MID && y >= PEAKS_FROM && y <= PEAKS_TO, () -> "the Historical swing at " + yy + " is " + here + ", " + before + " the year before and " + after + " the year after");
+            heights.add(String.format(Locale.ROOT, "%d %.4f", y, here));
+        }
+        tally("the Historical swing has a local maximum above CHARGE_MID on CHARGE_PEAK_YEAR (" + Nations.CHARGE_PEAK_YEAR + ") and every CHARGE_YEARS (" + (int) Nations.CHARGE_YEARS + ") after it through 2024", peaks);
+        List<String> maxima = new ArrayList<>();
+        for (int y = PEAKS_FROM; y <= PEAKS_TO; y++) {
+            if (hist.copperChargeSwing(y) > hist.copperChargeSwing(y - 1) && hist.copperChargeSwing(y) > hist.copperChargeSwing(y + 1)) maxima.add(y + " " + String.format(Locale.ROOT, "%.4f", hist.copperChargeSwing(y)));
+        }
+        out.println("peaks " + heights + "; every local maximum " + PEAKS_FROM + "-" + PEAKS_TO + ": " + maxima);
+        double reach = Nations.CHARGE_HALF * (Nations.CHARGE_MAIN_WEIGHT + Nations.CHARGE_SLOW_WEIGHT);
+        Tally band = new Tally(), pure = new Tally(), record = new Tally();
+        double lowest = Double.POSITIVE_INFINITY, highest = Double.NEGATIVE_INFINITY;
+        for (Nations nations : paths) {
+            Nations again = new Nations(sc.data, nations.path(), nations == hist ? Nations.DEFAULT_SEED : nations == paths[1] ? 1 : 5);
+            for (int y = CHARGE_FROM; y <= CHARGE_TO; y++) {
+                double s = nations.copperChargeSwing(y);
+                int yy = y;
+                lowest = Math.min(lowest, s);
+                highest = Math.max(highest, s);
+                band.see(s >= 0 && s >= Nations.CHARGE_MID - reach - ARITHMETIC && s <= Nations.CHARGE_MID + reach + ARITHMETIC, () -> nations.path() + " " + yy + ": the swing is " + s + ", the band is " + Nations.CHARGE_MID + " +- " + reach);
+                pure.see(same(s, nations.copperChargeSwing(y)) && same(s, again.copperChargeSwing(y)), () -> nations.path() + " " + yy + ": the swing is not the same twice, nor on a second Nations of the same path and seed");
+                record.see(!nations.copperChargeRecorded(y), () -> nations.path() + " " + yy + " has a recorded charge: no yearly record may ship (Pending WP1-C)");
+            }
+        }
+        tally("the swing stays within CHARGE_MID +- CHARGE_HALF x the two weights' sum (" + Nations.CHARGE_MID + " +- " + String.format(Locale.ROOT, "%.4f", reach) + ") and at or above 0, " + CHARGE_FROM + "-" + CHARGE_TO + ", Historical and Random seeds 1 and 5", band);
+        out.println("the swing ran from " + String.format(Locale.ROOT, "%.4f to %.4f", lowest, highest));
+        tally("the swing is the same twice, and on a second Nations of the path and seed (a pure function)", pure);
+        tally("no year has a yearly record (copperChargeRecorded is false on every year of every path read)", record);
+        boolean differs = false;
+        for (int y = CHARGE_FROM; y <= CHARGE_TO && !differs; y++) differs = !same(paths[1].copperChargeSwing(y), paths[2].copperChargeSwing(y));
+        assertTrue("two Random seeds (1 and 5) swing differently", differs);
+
+        // in a solved January: concentrate carries the charge, anode its refining part, no other good any
+        WorldMarket.Base base = sc.base;
+        if (base.indexOf[Good.COPPER_CONC.ordinal()] < 0 || base.indexOf[Good.ANODE.ordinal()] < 0) {
+            out.println("this file does not model concentrate and anode: the solved Januaries are not read");
+            return;
+        }
+        Tally carried = new Tally(), part = new Tally(), none = new Tally();
+        Object[][] januaries = {{Nations.Path.HISTORICAL, Nations.DEFAULT_SEED, 2010}, {Nations.Path.HISTORICAL, Nations.DEFAULT_SEED, 2100}, {Nations.Path.RANDOM, 5L, 2100}};
+        for (Object[] j : januaries) {
+            Nations nations = new Nations(sc.data, (Nations.Path) j[0], (Long) j[1]);
+            int year = (Integer) j[2];
+            WorldMarket m = new WorldMarket(base, nations);
+            m.solveYear(year);
+            String where = j[0] + " seed " + j[1] + " " + year;
+            double level = m.muv() < 0 ? 1 : m.levelTarget(m.muv());
+            double want = nations.copperChargeSwing(year) * level / base.refMuv * base.refCopper;
+            double conc = m.charge(Good.COPPER_CONC), anode = m.charge(Good.ANODE);
+            carried.see(conc > 0 && near(conc, want, ARITHMETIC), () -> where + ": concentrate's charge is " + conc + ", the swing over the manufactures index over the reference year's, in the copper's base-year price, is " + want);
+            part.see(near(anode / conc, WorldMarket.REFINING_PART, ARITHMETIC), () -> where + ": anode's charge over concentrate's is " + anode / conc + ", REFINING_PART is " + WorldMarket.REFINING_PART);
+            for (Good g : base.goods()) {
+                if (g == Good.COPPER_CONC || g == Good.ANODE) continue;
+                none.see(m.charge(g) == 0, () -> where + ": " + g + " carries a charge of " + m.charge(g));
+            }
+        }
+        tally("a solved January's concentrate carries the part-1 charge: the swing times the manufactures index's level over the reference year's, times the copper's, Historical 2010 and 2100 and Random seed 5 at 2100", carried);
+        tally("...and anode REFINING_PART of it, to 1e-12", part);
+        tally("...and no other good a charge", none);
     }
 }

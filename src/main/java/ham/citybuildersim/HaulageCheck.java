@@ -1351,9 +1351,17 @@ public class HaulageCheck {
          * exported its bread and imported its crops (632 t carried); at the world's band for 2000 bread is dearer to import than to make and
          * they raised none, so only Retail, Heavy Industry and Restaurants carried anything (3 sectors with legs, 4 wanted).
          */
-        Town(String label, boolean bakery) {
+        Town(String label, boolean bakery) { this(label, bakery, null); }
+
+        /**
+         * ...with `held` a sector held out of the planner's hands through the sixteen months (CU2), so it stands no works at the haul. On the
+         * chained world prices the investors raised a Manufacturing works of their own in them (2,462 t of standing need), and the growth
+         * section's sector new at the haul was not new.
+         */
+        Town(String label, boolean bakery, String held) {
             files = GameFiles.scratch(label);
             Game built = base(files);
+            if (held != null) built.getBusinessInvestment().holdSector(held);
             if (bakery) land(built, "Industrial Bakery", 1);
             quietly(() -> { for (int i = 0; i < 16; i++) built.toggleNextMonth(); });
             game = built;
@@ -1540,7 +1548,7 @@ public class HaulageCheck {
 
         System.out.println("\n--- ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands ---");
 
-        Town t3 = new Town("haulagecheck-deal-growth");
+        Town t3 = new Town("haulagecheck-deal-growth", false, Sectors.MANUFACTURING);
         Game g3 = t3.game;
         Haulage h3 = t3.h;
         Sector heavy3 = g3.getSectors().heavyIndustry(), retail3 = g3.getSectors().retail(), works3 = g3.getSectors().manufacturing();
