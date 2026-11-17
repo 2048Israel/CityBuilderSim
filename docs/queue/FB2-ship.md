@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-FB2-SoO0ydg8 -->
 ## changelog
 ### {next} — FB2, the kept screens' geometry and retention — 2026-11-17, ready, see docs/queue/FB2-notes.md
 The kept screens read the same as screens built new whatever the played city does, and each repair is caused by the states that need it (KeptCheck 103, 25 lines: each repair's lines red by hand on the old classes, none now).

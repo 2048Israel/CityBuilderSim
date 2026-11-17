@@ -123,6 +123,14 @@ quote for the six months) is the fixture's, FB6's KBF1 family (cause stable auct
   package-private; `UserInterface.Headline` and `HeadlineTile` are package-private for the same reason.
 - No process change: no script, check machinery or session rule is touched.
 
-## Where the kept dry run is
+## The dry run
 
-(filled when it has run)
+`sh tools/gate.sh FB2 --dry-run` (the version it planned: 0.9.131), run directory `/tmp/cbs-gate-FB2-SoO0ydg8` (kept; the log is its
+`ship.log`, the launch output `target/FB2-dry.txt`): **exit 0**, `unnamed.txt` empty. It was of branch
+`dd379f2835beab980816c45a3c9e8bd051633dc5` (batch/FB2 at the two mends; origin/main had not moved, so no merge) and main
+`f38eafbcf90edb68d06b6423f785a9aa7c3596d9` (0.9.130). The pick named 15 of 212 harnesses for the diff, with the nightly tier's
+KeptCheck besides; the check suite finished in 1,216 s (exit 3) with **known reds only: DeathRecordCheck, InvestCheck, MapCheck,
+YoungBankCheck**, main's own, none of this batch's. KeptCheck ALL OK on the merged tree: section 103's 25 lines, and the Government
+Overview at 34 of 400 (6 of 25 months made none; the Overview of the first page at 26 of 712), where main reads 45 of 400 on the
+same sort of path. The eight entries filed under FB2 were retired by the merge; 22 went to KRT1 and 38 to FB6 by the ship's
+`## known-reds` rows. After the dry run only these notes and the ship file changed.
