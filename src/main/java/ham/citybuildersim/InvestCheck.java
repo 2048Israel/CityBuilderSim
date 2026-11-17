@@ -1409,6 +1409,25 @@ public class InvestCheck {
         check("...with an allowance of what is left past the work still owed at its cash cost",
                 inferred19.getAllowance(), Math.max(0, site19.getContractValue()
                         - template(older19, "House").getCashCost() * owed19 / house19.getConstructionPoints()), 1e-9);
+        // FB3 (RT2-L): THE REBATE'S LINE BETWEEN THE TWO LABOURS. A load read this contract before its rebuild struck the builders'
+        // wages, so at the founding ladder's labour (the index 1), and the loaded city's rule reads it at today's: this town's House
+        // stands either side of the line at the two, so the two parted (main 0.9.134: .0000625068 read, nothing by the rule). The
+        // founding ladder put on the reloaded city last, through the model's own rule (nothing below reads older19).
+        BuildingManager ob19 = older19.getBuildingManager();
+        BuildingsTemplate houseOlder19 = template(older19, "House");
+        double olderIndex19 = ob19.buildersWageIndex(), atFounding19 = ob19.buildersWagePerPoint() / olderIndex19;
+        ob19.setBuildersWages(new BuildingManager.BuildersWages() {
+            @Override public double perPointToday()      { return atFounding19; }
+            @Override public double perPointAtFounding() { return atFounding19; }
+        });
+        double ladderBefore19 = ob19.nonMaterialCost(houseOlder19)
+                + houseOlder19.getConstructionMaterials() * Math.max(0, ob19.getConstructionMaterialPrice());
+        double ladderShare19 = older19.getEconomyManager().taxRecoveredShare(landlords19, houseOlder19,
+                older19.getEconomyManager().withBuildersTax(ladderBefore19) - ladderBefore19);
+        System.out.printf("   ...at the founding ladder's labour (index %.6f today): %.16f%n", olderIndex19, ladderShare19);
+        assertTrue("fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older"
+                        + " save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them",
+                olderIndex19 != 1 && ob19.buildersWageIndex() == 1 && ladderShare19 != olderShare19);
 
         // (i) The rebates on a new rental home (revised; EconomyManager, THE REBATES ON A NEW HOME, AND THE CITY'S).
         System.out.println("\n--- the rebates on a new rental home (0.7.19, revised) ---");

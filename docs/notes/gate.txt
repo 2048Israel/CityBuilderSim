@@ -1,14 +1,11 @@
-# gate of Merge batch/AQ1: a3's one seed on GW1: AUTO2-2, a town of 20,500 with 17% out of work, goes to 48% unemployment at months 610-620 (the policy rate 7% to 0), a year's prices then read below -10% for 12 months (621-632, A3's limit) and its people fall 13%. Read what laid off 30 points of the workforce in ten months; WG2's brake on the draw (next in lane B) is the first place to look, since the bust takes unemployment from 19% to 48%; A3 under 12 in every seed; with RN1-A (AUTO2 seed 4's deflation at the zero bound; A3's one-month red accepted, as recommended), folded in from Pending on 2026-11-16, 0.9.135
+# gate of Merge batch/FB3: reloads that read as they were saved, 3 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): HZ1, R0f-S, RT2-L; not beside FB4 (`SaveFileCheck`); and FW6-C (restores no harness causes, the unsaved draws list), folded in from Pending on 2026-11-16, 0.9.136
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 205 harnesses run in 2724s: 194 passed, 11 failed
+# suite: 207 harnesses run in 2656s: 198 passed, 9 failed
 LandmassCheck | exit 1
 LandmassCheck | home filled by a fixture (1454 houses ordered until the linked free ground is under half the island's buildable ground): the map's districts on the island hold buildings, and none stands on an unlinked plot FAIL  1439 buildings drawn on the island; linked free 12,178,110 sq ft of 12,094,868
 LandmassCheck | 1 FAILED
-InvestCheck | exit 1
-InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
-InvestCheck | 1 FAILED
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -59,15 +56,15 @@ DeathRecordCheck | the layoff adds at most one orphan against its twin in every 
 DeathRecordCheck | 1 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 5.0 minutes; its output: C:\Users\Jerus\AppData\Local\Temp\citybuildersim-tmp\6952\copperrefiningcheck-rodmills17042686657693717501\seed1.log
+CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 4.2 minutes; its output: C:\Users\Jerus\AppData\Local\Temp\citybuildersim-tmp\12672\copperrefiningcheck-rodmills9921504199316789933\seed1.log
 CopperRefiningCheck | 2 FAILED
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1084.6554535790149 of 1066.2026564191337)
 PrizeCheck | FAIL ...and its till (at most 445) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED

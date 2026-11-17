@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.136 — FB3, reloads that read as they were saved — 2026-11-17, ready, see docs/queue/FB3-notes.md
+A loaded city now reads as it was saved in four more places. The shops' want and means are put back always, zeros too: a city saved in its
+second month, when its shops want nothing, came back wanting what the load's rebuild struck (0.0625; MoneyDatesCheck). An older save's
+contracts on site are read after the load strikes the builders' wages, not at the founding ladder before it, so a House either side of the
+rental rebate's line gets the loaded city's share (.0000625 against 0; InvestCheck green, a premise line that the line lies between). The
+draws made between the presses cross a save, so a hand order keeps its seller's row; the month closes its own before its autosave, which a
+load would otherwise fill twice. The hot money's peaks cross a save, so the Trade card's "the most that was ever here" is the city's.
+Groceries, housing, luxury and meals now begin each month's trades afresh, where they grew for the city's whole life. ReloadCheck causes the
+stop, the hand order and the limestone carry no checkpoint reaches, asks that its skips had an outbreak and a sick month, and loads the
+month-end autosave; SaveFileCheck places the hot money by name (HZ1). No save format bump; the playtest's trace is unchanged.
+
 ### 0.9.135 — AQ1, A3's one seed on GW1: the bust — 2026-11-17, ready, see docs/queue/AQ1-notes.md
 GW1's seed-2 bust is off main's path, but its cause is on it: a price taker with no demand reading (Business
 Services, Automotive, Manufacturing) held all its plant through years of losses the bank's shortfall desk lent it,
