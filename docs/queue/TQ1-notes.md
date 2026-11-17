@@ -156,6 +156,33 @@ main loads and reads as it did.
   (their one line each fails). Section 4 fails "the planners hand in holds the gate tied" and "in some month a tie's two
   buildings both ask". Put back, 55 of 55.
 - **The default playtest** on the rule (dbc00115): 2,400 months, exit 0, "All checks passed.".
+- **Main merged in** (6169c305). Main moved on to aeac6e5a (0.9.130: DQ1, then CU2) while TQ1 waited for its pick.
+  Its one conflict, `AllChecks.HARNESSES`' last line, now keeps both: StaffingTieCheck after StaffingDrawCheck, and
+  DQ1's YoungBankCheck at the end.
+- **The full pick** (the orchestrator's go, after CU2's dry run), on dc8f4da6 before the merge, ran all 212 harnesses.
+  It exited 4, with NEW reds in two: BankCheck ("it pays its savers something", 1 FAILED) and TreasuryCheck (5 FAILED,
+  starting with "fixture: the window is open as it falls due"). On the merged tree both of those lines pass. BankCheck
+  is red there in another place, section 19 (`theBranchesByTheirCustomers`): 3 FAILED, starting with "the fixture placed
+  five branches". BankCheck's pre-merge line was not rerun alone; the dry run is on the merged tree, where it passes.
+- **BankCheck section 19, mended in the harness.** The fixture places four branches beside the charter's. Its town
+  was given 30,000,000 sq ft at founding, and its builders spend what is left as the path goes. On TQ1's path the town
+  has 43,076 sq ft free at that point, against main's 624,076, so the four were refused `NO_LAND`: one branch stood,
+  none closed, and the month paid nothing. They are now given their ground (`4 * branch.getLandSqFt()`) before
+  `buildStack`, as the town was given its own. The premise is unchanged: five standing on fees that cover two, and
+  the three past the fees closed the month after. Unmended, on main's rule (`held()`'s tie line put back by hand), it
+  passes: 2 standing a month later, 3 closed, "All checks passed." (`target/tq1/BankCheck-main-rule.txt`). Mended, on
+  the merged tree with TQ1's rule: five placed, 2 standing, 3 closed, "All checks passed.".
+- **`./batch-check.sh BankCheck TreasuryCheck` on the merged tree with the mend** (4e4a2d7e) ran four harnesses in 678s
+  and exited 3, known red only. BankCheck and TreasuryCheck pass. The one red is YoungBankCheck ("the bank is never in
+  resolution"), main's recorded OE1 entry in `known-reds.txt`.
+- **TreasuryCheck alone on dc8f4da6**, a scratch build of that commit (`target/tq1-pre/`), is still red: 5 FAILED,
+  exit 1. So it was not load: it is that tree's path. The fixture's dollar note falls due at month 65, and on dc8f4da6
+  the window is shut then ("1,129.25k falls due, 16.26k of it abroad; window shut: 65% of exports already goes to
+  foreign creditors"). On the merged tree the same month reads "1,008.85k falls due, 25.28k of it abroad; window open".
+  TQ1's base, main d08c8116, passes TreasuryCheck (it is in neither `gate.txt` nor `known-reds.txt` there), and dc8f4da6
+  is d08c8116 plus TQ1. So TQ1's path shut the fixture's window, and what the merge brought, DQ1's young-town borrowing
+  and CU2's chained world prices, opened it again. The fixture does not cause the open window it asserts; the path
+  does. That is a fragility of the fixture's own, which TQ1 does not mend (named in the mail).
 
 ## 6. The trace
 
@@ -179,6 +206,28 @@ The wage's premiums stand higher from month 240 on, as the larger bids would hav
 where main's did not: out of land at month 62 ("Holding: no land"), then "housing ahead of jobs" with no order and the
 builders idle from month 70 to 170 (jobs 572-582, 15-38% out of work), while main's grew through the same months.
 A path that parted at month 4; the ensemble's founding rows say whether it is the rule's.
+
+**On the merged tree** (4e4a2d7e: main aeac6e5a merged in, with the BankCheck mend), against main's new reference
+(`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-aeac6e5a/`). The default playtest ran 2,400 months and printed
+"All checks passed.", then **exited 1 on a finding**, "households with no home", 54 times in months 692-745 (worst,
+month 741: 115 households nowhere, 3,162 homes of 6 sizes). Section 9 has its probe. All eight files move: `labour`
+from month 4, `bank`, `build`, `month` and `house` from 36, `bonds` from 37, `pop` from 53, `borrow` from its first
+paper (month 59). The size, main then TQ1:
+
+| month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
+|---|---|---|---|---|---|---|
+| 60 | 977; 977 | 0; 0 | 596; 596 | 15.4%; 15.5% | 1.072; 1.079 | 0.825; 0.825 |
+| 120 | 1,474; 1,471 | 0.1%; 0 | 767; 767 | 10.6%; 10.6% | 0.964; 0.963 | 0.665; 0.665 |
+| 240 | 1,835; 1,833 | 9.4%; 9.4% | 819; 819 | -4.3%; -4.2% | 0.938; 0.939 | 0.713; 0.713 |
+| 600 | 14,670; 14,441 | 0; 0 | 7,312; 7,244 | 10.8%; 15.1% | 1.028; 1.037 | 0.790; 0.791 |
+| 1,200 | 23,870; 33,302 | 10.9%; 9.4% | 9,864; 13,852 | 8.6%; 7.4% | 0.850; 0.850 | 0.719; 0.700 |
+| 1,800 | 259,319; 40,436 | 0; 9.1% | 114,380; 16,856 | -2.0%; -3.8% | 0.993; 0.868 | 0.764; 0.700 |
+| 2,399 | 1,473,260; 630,320 | 6.9%; 5.9% | 622,460; 258,580 | -6.2%; -7.8% | 0.948; 0.971 | 0.720; 0.723 |
+
+Both towns stall after month 900. Main's falls to 21,664 at 1,000, stands near 24,000 to 1,300 and takes off at about
+1,400. TQ1's stands near 33,000 ("housing ahead of jobs (14,222 now; 0 coming)" from 1,300) until about 1,750, so it
+ends at less than half main's size. The ensemble judged the rule on the model before the merge (section 7). It has
+not been run on the merged model; that is the orchestrator's call.
 
 ## 7. The ensemble
 
@@ -275,3 +324,38 @@ Estate held for land from 324 to 455, the treasury overdrawn, main's model stall
 can use: the ensemble driver with `-Densemble.months=460` on seed 3 AUTO2, its CSV's homes and treasury columns, and
 each month's reasons, read through `Game.getLastInvestment()` and `AutoBuilder.latest()`. The first paragraph says
 how the probe was built; its scratch files (`target/tq1-homes/`) go with this worktree.
+
+## 9. The default playtest after the merge: households with no home, months 692-745
+
+**What holds it.** On TQ1's merged path Real Estate is held "no land - needs 5,570 m²; 1,190 m² free" from month 640
+(257 m² free from 702), with homes flat at 3,162 from 644 to 741 while households grow from 5,600 to 6,300. The
+treasury is overdrawn from 655 to 693 and near empty until about 730. The playtest's "ground kept ahead" (0.7.58)
+reports "the cash share stopped a look short 12 time(s)" over the run. Cash builds from 80k at 735 to 197k at 741,
+when the hold turns to the bank's capital and then lifts. At 741 the landlords build 10 Low-Rise Apartments (trimmed
+from 23). Main's run builds through the same months (3,465 homes at 690, 4,538 at 720, 4,979 at 741).
+
+**The same-state probe**, as section 8's for seed 3: a scratch copy of `LongPlaytest` (`target/tq1-ltp/`, probe only)
+sets section 8's `Sector.Staffing.mainRule` before the month `-Dtq1.mainFrom` names, and each run stops at month 780
+(`-Dplaytest.months=780`). The control (no switch) matches the full run's trace through 780 and gives the same
+finding. Every short run also fires "industry stands farther out than the homes" at 780, its last month, as FB5's does
+at 2,400.
+
+| main's rule from | the path moves from | homes at 650 / 700 / 741 / 780 | households with no home |
+|---|---|---|---|
+| never (TQ1) | - | 3,162 / 3,162 / 3,162 / 4,296 | 54 times, 692-745, worst 115.24 at 741 |
+| 640 | 640 | 3,162 / 3,162 / 3,162 / 4,296 | 54 times, 692-745, worst 115.42 at 741 |
+| 600 | 600 | 3,162 / 3,162 / 3,162 / 4,296 | 54 times, 692-745, worst 115.28 at 741 |
+| 560 | 590 | 3,162 / 3,162 / 3,162 / 4,296 | 54 times, 692-745, worst 115.28 at 741 |
+| 480 | 508 | 3,728 / 4,484 / 6,142 / 6,588 | none |
+| 400 | 426 | 3,603 / 3,666 / 3,920 / 5,495 | none |
+| 300 | 370 | 2,972 / 4,171 / 4,424 / 4,739 | none |
+
+So main's own model, switched on from TQ1's state at 560 or later, stalls the same months to the household. From 480
+or earlier, its path finds ground. This is seed 3's pattern (section 8: main's model from 360 or later stalls, from
+340 or earlier escapes), and the same class: landlords held for land while nothing pays for ground, and an overdrawn
+treasury. Whether the town stalls rides on the path, which the tie rule moves by design.
+
+**On the gate** the full suite's LongPlaytest exits 1 with no FAIL line. `known-reds.txt`'s "LongPlaytest | (no FAIL
+line) | FB5" entry (CL6's industry ring) matches any such exit, so the judge would pass it under FB5's name. Its
+disposition is the orchestrator's (mailed with this commit). This note's recommendation is FB11 by name, as for seed 3:
+a ship-file `## known-reds` row of the same harness and part naming FB11, and one clause in the changelog paragraph.
