@@ -241,3 +241,8 @@ exited 1, with the suite (3094 s) showing two NEW reds.
   - Run on f18b10537 (0.9.137, before LX1): green, bought in 63 months.
   - No gate has run it since LX1's model change: it has no log in LX1's kept run or in FB7's (the orchestrator).
   - Passed by name in the ship file's `## known-reds`, with **SX2** queued ([SX2](SX2.md)).
+
+**The second dry run, the kept run:** `/tmp/cbs-gate-FB4-AvAhuTIn`, on e5a9af591 over main b9520ac9e (MA1 and
+KR1, docs only), versioned 0.9.140. It exited 0: the suite (2980 s) exit 3, known red only, 15 harnesses - main's
+`gate.txt` lines, and ShortSellingCheck by the ship file's row (SX2); StaffingDrawCheck green. The ship file names it
+in its `gate-run` comment; after it only the notes and the ship file changed.
