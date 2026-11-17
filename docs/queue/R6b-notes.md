@@ -83,8 +83,58 @@ is R6-T's). Coding went to four Sonnet slices (the mark; FE1; FE2; FE4), each di
 
 ## What the checks showed
 
-(filled at the end)
+Each new harness was run once on main's own classes (aeac6e5a, the branch's harness classes beside them):
+- `DriverlessTruckCheck` red on main: `NoSuchMethodError: Haulage.setDriverShare(double)` before its first
+  section. On the branch 60 ok: the share's dials to the bit at 1; the kit NOT_KNOWN the month before FE1 and
+  known at it (or from an earlier find); its gain `driverGain()` at the city's figures, verdict PAYS; every
+  depot fitted, the tonnes a truck at 6,000, the need's trucks halved and the drivers struck by the formula;
+  one depot of two fitted, the share .5; a city founded today's way at exactly 1. **Played count**: a 1900
+  village 24 months from FE1's month, the share below 1 in 24 of 24 (the fixture fits every other piece by
+  hand: the village has no builders, so a 6-point electric-drive job held the fitting queue's head).
+- `SulphideLeachCheck` red on main: "fixture: Sulphide Leach & SX-EW Plant (153) and the Leach & SX-EW Plant
+  (123) are in the catalogue, in Copper Mining FAIL", then a NullPointerException (no FE2). On the branch:
+  the row; known from FE2's month in a 1900 city, never in one founded today's way; a played month's cathode
+  digging `SULPHIDE_LEACH_DIG` a tonne exactly, acid bought, no concentrate, no smelter. **The plan** on a
+  sulphide-founded town: 153 earns 1.358% of its whole cost a month, the Mine & Mill 1.029%, the Large Mine
+  1.055%. **Played count**: 24 months from FE2's month, 0 built at the sector's own money gate, 1 with it set
+  aside (a 1900 city at 2025 clears no copper plant at its own gate, as `RefineryCheck` finds).
+- `HydrogenSteelCheck` red on main: "fixture: the Hydrogen Steel Works (154) is in the catalogue, in Heavy
+  Industry FAIL", then a NullPointerException (no FE4). On the branch: the row against
+  `HYDROGEN_MWH_A_TONNE` and `KWH_PER_UNIT`; known from FE4's month; **where it pays**: at the model's own
+  tariff (0.000259 a unit) in a city whose fabricators import steel it earns 532.57k a month on 68,751k
+  (0.775%) against a hurdle of 389.33k and `plan()` orders it; at 0.001049 a unit (4.1 times; break-even
+  0.000654) 246.09k (0.358%), refused at the money gate. With its steel exported it clears on no tariff, free
+  power included: it pays where it replaces imported steel, as the integrated route does (MaterialsCheck 11).
+  Captive pellets from the city's plant first; with no works the made pellets' arithmetic to the bit.
+  **Played count**: 0 built in 24 months from FE4's month, four runs (two cities, the money gate kept and set
+  aside): the tariff is the utility's again each month, and on it the works does not clear. The planner bills
+  362,500 of the works' 483,333 units a unit of tariff (0.75); not traced.
+- **A real run**: the default playtest builds, fits and drives none of the three (★1; the trace below).
+- Inventories the rows move, each moved to the new truth with its reason in the label: `ResearchCheck` (94
+  rows, ENGINEERING 50, needs 29 to 25, months known 32, templates dated by code 33, the F codes' years and
+  fields), `BuildingDataCheck` (18 sited rows, copper's four, 44 buying consumables, the dated list),
+  `EquipmentCheck` (the depot's two pieces), `MaterialsCheck` (Iron & Steel's captive set with PELLETS),
+  `ResearchViewCheck` and `KeptCheck` (the default city's founding words), `BuildCardCheck` (a card for every
+  building the city knows, none for the near future's two; the buyers among known buildings). The mark's own:
+  `ResearchCheck` 11-13, red on main (7 FAIL on the file's 94 rows, then `NoSuchFieldError: NEAR_FUTURE`).
+- **The pick** (`./batch-check.sh --pick`, after merging main f38eafbc, FB1): ALL 215 harnesses
+  (`AllChecks` changed); one NEW red, `EducationCheck` "a poor city at x3 enrols fewer than at x1: the trap is
+  back", **main's own**: main's aeac6e5a classes give the same line with the same figures (university 1,652 at
+  x1, 1,632 at x3, willing .72 and .35). It is a NIGHTLY harness the gate runs only when a pick names it (HA1),
+  so no gate saw it. Named in the ship file's known reds, its look queued as EDU1. Review: "not needed - no
+  money, saves or threading in the diff". Stale: 0 firm.
+- Left as found: `EquipmentFit.cartGain()` still strikes the motor truck against teams at the one-shift
+  tonnes (the forms never meet: a 1900 city's horses are gone long before 2025); `BuildingVisual` draws 153
+  as a copper pit.
 
 ## The trace
 
-(filled at the end)
+The branch's default playtest (2,400 months, `-Dplaytest.trace`, at c46259c4, all the model's changes in)
+against main's reference at `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-aeac6e5a/` (made by this batch
+from aeac6e5a, for other builders too): **all eight CSVs byte-identical** (bank, bonds, build, house, labour,
+month, pop 2,405 lines each, borrow 54). The trace does not move; no ensemble (`docs/batch.md` 6). FB1,
+merged after, changed harnesses only.
+
+## The dry run
+
+(filled after it)
