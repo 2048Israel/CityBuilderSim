@@ -1,6 +1,6 @@
-# Automotive.java - 312 lines · 7 methods · 3 constants · sectors
+# Automotive.java - 308 lines · 7 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The automobile industry. THE THIRTEENTH SECTOR (2026-09-16, Jerus's call).
 > 
@@ -72,7 +72,7 @@
 | line | section |
 |---:|---|
 | 149 | PLANNING - can the city supply it, and then is it worth it |
-| 265 | · the screen |
+| 261 | · the screen |
 
 ## Constants
 
@@ -86,22 +86,22 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 237 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 76 | 233 | **type** `public final class Automotive extends Sector` | The automobile industry. |
 | 133 | 15 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 149-264)
+### PLANNING - can the city supply it, and then is it worth it (lines 149-260)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 154 | 3 | `public double localSupplyOf(Good g, Game game)` | What the city can fabricate a month, whoever is currently buying it. |
 | 159 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
-| 172 | 76 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
-| 263 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+| 172 | 72 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
+| 259 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
 
-### the screen (lines 265-312)
+### the screen (lines 261-308)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 1 | `public boolean hasPlantBlock()` |  |
-| 271 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 264 | 1 | `public boolean hasPlantBlock()` |  |
+| 267 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 

@@ -1,6 +1,6 @@
 # DeterminismCheck.java - 447 lines · 19 methods · 5 constants · harnesses
 
-`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit.
 > 
@@ -32,7 +32,7 @@
 
 **Uses:** [FloatLinkCheck](FloatLinkCheck.md) (8), [WorldData](WorldData.md) (6), [Game](Game.md) (6), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (2), [LongPlaytest](LongPlaytest.md) (2), [AllChecks](AllChecks.md) (1), [EarthSite](EarthSite.md) (1), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1)
 
-**Used by (1):** [CausesOfDeathCheck](CausesOfDeathCheck.md)
+**Used by (2):** [CausesOfDeathCheck](CausesOfDeathCheck.md), [StaffingTieCheck](StaffingTieCheck.md)
 
 ## Sections
 

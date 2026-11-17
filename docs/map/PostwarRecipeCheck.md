@@ -1,6 +1,6 @@
 # PostwarRecipeCheck.java - 835 lines · 20 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PostwarRecipeCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PostwarRecipeCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default

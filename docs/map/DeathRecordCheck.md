@@ -1,6 +1,6 @@
 # DeathRecordCheck.java - 315 lines · 8 methods · 0 constants · harnesses
 
-`ham/citybuildersim/DeathRecordCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeathRecordCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The running totals of the dead, by age and for the orphans and the unhoused.
 > 

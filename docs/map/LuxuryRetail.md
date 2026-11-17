@@ -1,6 +1,6 @@
-# LuxuryRetail.java - 558 lines · 24 methods · 4 constants · sectors
+# LuxuryRetail.java - 554 lines · 24 methods · 4 constants · sectors
 
-`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The luxury shops. THE FOURTEENTH SECTOR (2026-09-17, Jerus's call).
 > 
@@ -69,8 +69,8 @@
 | 123 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
 | 191 | THE SALE |
 | 374 | PLANNING - the queue at a door that is not there |
-| 491 | THE SCREEN |
-| 533 | SAVE, RESET (0.7.43) |
+| 487 | THE SCREEN |
+| 529 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
@@ -93,7 +93,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 487 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 483 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
 ### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-122)
 
@@ -123,26 +123,26 @@
 | 351 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
 | 369 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### PLANNING - the queue at a door that is not there (lines 374-490)
+### PLANNING - the queue at a door that is not there (lines 374-486)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 402 | 61 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
-| 480 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+| 402 | 57 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
+| 476 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
 
-### THE SCREEN (lines 491-532)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 497 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
-| 500 | 1 | `public boolean hasPlantBlock()` |  |
-| 503 | 30 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE, RESET (0.7.43) (lines 533-558)
+### THE SCREEN (lines 487-528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 539 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
-| 546 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
-| 554 | 4 | `protected void resetExtras()` |  |
+| 493 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
+| 496 | 1 | `public boolean hasPlantBlock()` |  |
+| 499 | 30 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET (0.7.43) (lines 529-554)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 535 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 542 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
+| 550 | 4 | `protected void resetExtras()` |  |
 

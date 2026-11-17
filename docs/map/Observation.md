@@ -1,6 +1,6 @@
 # Observation.java - 71 lines · 5 methods · 4 constants · model
 
-`ham/citybuildersim/Observation.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Observation.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The played city's path premises, reported without counting a failure.
 > 
