@@ -2527,16 +2527,28 @@ public class KeptCheck {
     /** The name of the Rankings tab's one thread for the saved cities (RankingsScreen's WORKER). */
     static final String RANKINGS_WORKER = "rankings-saved-cities";
 
-    /** A thread by its name, as the trace needs it: its state, its priority, the CPU it has had and the top of its stack; or that there is none. */
+    /**
+     * A thread by its name, as the trace needs it: its state, its priority, the CPU it has had, the machine's CPU load, the top of its stack and
+     * its first frames in the game's own code (which file it reads); or that there is none.
+     */
     static String workerThread(String name) {
         java.lang.management.ThreadMXBean mx = java.lang.management.ManagementFactory.getThreadMXBean();
+        double load = java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os
+                ? os.getCpuLoad() : -1;
         for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
             Thread t = e.getKey();
             if (!t.getName().equals(name)) continue;
             long cpu = mx.isThreadCpuTimeSupported() ? mx.getThreadCpuTime(t.threadId()) : -1;
-            StringBuilder s = new StringBuilder(t.getState() + " at priority " + t.getPriority() + ", " + String.format("%.1f", cpu / 1e9) + " s of CPU");
+            StringBuilder s = new StringBuilder(t.getState() + " at priority " + t.getPriority() + ", " + String.format("%.1f", cpu / 1e9)
+                    + " s of CPU, the machine's CPU " + (load < 0 ? "unknown" : String.format("%.0f%% busy", 100 * load)));
             StackTraceElement[] stack = e.getValue();
-            for (int i = 0; i < Math.min(6, stack.length); i++) s.append(i == 0 ? ", in " : " < ").append(stack[i]);
+            int ours = 0;
+            for (int i = 0; i < stack.length && ours < 4; i++) {
+                boolean game = stack[i].getClassName().startsWith("ham.citybuildersim");
+                if (i >= 3 && !game) continue;
+                if (game) ours++;
+                s.append(i == 0 ? ", in " : " < ").append(stack[i]);
+            }
             return s.toString();
         }
         return "is no thread (" + name + " never started)";
@@ -4400,6 +4412,41 @@ public class KeptCheck {
         });
     }
 
+    /** How many months 63's fixture tries the hand's bid for a bond that runs long enough before it gives up (KF63). */
+    static final int FUND_HAND_TRIES = 6;
+
+    /** How far over the market's value the fixture's bid is named, so that it crosses the asks a month posts (KF63). */
+    static final double FUND_HAND_PREMIUM = .10;
+
+    /**
+     * KF63: a bond the fund holds that runs more than `months` from now, and whether the fixture bought it. While the rule is held still the
+     * fund's bonds only fall due (FB6's played city: by 63's security pages every bond it held had gone), so when none runs that long the
+     * fund buys one by hand, as the ticket's button does: the minimum issue of the longest live bond in its reach but `not`, bid
+     * FUND_HAND_PREMIUM over its value, a month landing on each try, and one month more once it holds it so the order's record has settled.
+     */
+    static Object[] heldLasting(Game g, KeptBench bench, int months, String not) throws Exception {
+        boolean bought = false;
+        for (int tried = 0; ; tried++) {
+            List<String> held = fx(bench::fundHoldings);
+            String bond = lastingBond(g, held, List.of());
+            if (bond != null && monthsLeft(g, bond) > months) {
+                if (bought) fx(() -> { month(g); return null; });
+                return new Object[]{bond, bought};
+            }
+            List<String> others = new ArrayList<>(held);
+            if (not != null) others.add(not);
+            String buy = lastingBond(g, fx(bench::fundSecurities), others);
+            if (buy == null || tried == FUND_HAND_TRIES) return new Object[]{bond, bought};
+            bought = true;
+            fx(() -> {
+                CorporateBond b = g.getBondMarket().bond(Integer.parseInt(buy.substring(2)));
+                g.fundBuyBond(b.id(), g.minimumIssueSize(), g.getBondMarket().modelPrice(b, g.getMonth()) * (1 + FUND_HAND_PREMIUM));
+                month(g);
+                return null;
+            });
+        }
+    }
+
     /** Sections 61 to 63: the city's fund kept. */
     static void fund(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The city's fund (KP5) ===");
@@ -4443,7 +4490,7 @@ public class KeptCheck {
 
         // 63: what reshapes the fund, with the fund's rule held still (fundHeld): only the choices reshape it.
         Runnable fundBack = fundHeld(g);
-        List<String> lots = fx(bench::fundHoldings);
+        List<String> lots = new ArrayList<>(fx(bench::fundHoldings));
         KeptBench.Page tab = fx(() -> bench.finances("the city's fund", "The city's fund", "Portfolio"));
         List<Choice> pages = new ArrayList<>();
         for (String page : KeptBench.financePages("The city's fund")) {
@@ -4505,9 +4552,19 @@ public class KeptCheck {
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
         List<String> none = List.of();
-        // (The bonds are the ones that run the longest: a bond repaid while its page is watched is a page the model reshaped, FB6's free bond.)
-        String share = lotOf(holdings, "S:", none, false), bond = lastingBond(g, holdings, none), rescue = lotOf(holdings, "S:", none, true);
-        String freeShare = lotOf(securities, "S:", holdings, false), freeBond = lastingBond(g, securities, holdings);
+        // (The fund's lots and reach as they stand now, after 63's months. The bonds are the ones that run the longest: a bond repaid while
+        // its page is watched is a page the model reshaped, FB6's free bond; the held bond is bought by hand when none the fund holds lasts.)
+        List<String> heldNow = fx(bench::fundHoldings), reach = fx(bench::fundSecurities);
+        String share = lotOf(heldNow, "S:", none, false), rescue = lotOf(heldNow, "S:", none, true);
+        String freeShare = lotOf(reach, "S:", heldNow, false), freeBond = lastingBond(g, reach, heldNow);
+        // (The share's two pages and then the bond's: choice i is drawn and then a month lands, as the check below counts.)
+        Object[] lasting = heldLasting(g, bench, (share == null ? 0 : 2) + 2, freeBond);
+        String bond = (String) lasting[0];
+        if ((Boolean) lasting[1]) {
+            check("fixture: the fund holds a bond that runs past its page's months, bought by hand when none it held lasted (" + bond + ")",
+                    bond != null && !lots.contains(bond));
+            if (bond != null) lots.add(bond);
+        }
         System.out.println("  securities drawn: a share held " + share + ", a bond held " + bond + ", the rescue book " + rescue
                 + ", a share not held " + freeShare + ", a bond not held " + freeBond);
         List<Choice> security = new ArrayList<>();
@@ -8265,6 +8322,12 @@ public class KeptCheck {
         y.add(choice("the drawer closed, Now, the filter ALL (the saved city among the rows)", x -> { x.rankingsDrawer(null); x.rankingsAtAge(false); x.rankingsFilter("ALL"); return null; }));
         y.add(choice("the filter YOUR_SIZE", x -> { x.rankingsFilter("YOUR_SIZE"); return null; }));
         pageReshaped(g, bench, page, 87, y, HANDED_BACK, true);
+        if (!landed) {
+            // KS1-Saved: whether the worker's answer came back at all, minutes later, after the Your cities run.
+            boolean late = fx(bench::rankingsReadLanded);
+            System.out.printf("  by the end of 87, %.0f s after the read was asked, it %s; the screen's worker %s%n", (System.nanoTime() - asked) / 1e9,
+                    late ? "had landed (" + fx(bench::rankingsSavedOnBoard) + " on the board)" : "had still not landed", workerThread(RANKINGS_WORKER));
+        }
         fx(() -> {
             bench.home(page);
             return null;
