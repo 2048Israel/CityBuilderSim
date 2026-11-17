@@ -97,6 +97,60 @@ public class DeathRecordCheck {
         assertTrue("the layoff adds at most one orphan against its twin in every month of the two years", mostAdded[0] <= 1);
     }
 
+    /*
+     * 4. A WAVE OF THE OUT OF WORK THAT ENDS AT ONCE (OX1, 2026-11-17). The played town of section 3 took its 319 out of work back in one
+     * month and its orphans peaked at 27.7 against its open twin's 21.5: the children who had gone out with their parents came back to the
+     * builder together, its half a shape left part of them over, and the households' memory, which already held every adult, kept them
+     * waiting for months. A bare model with the memory on, as Game has it, on one pyramid that never moves, so nothing but the wave can
+     * part the twins: a fifth of the adults out of work for six months, then all of them back in one month, against a twin that never laid
+     * anybody off. The allowance is section 3's, one orphan.
+     */
+    static void waveEndsAtOnce() {
+        System.out.println("\n--- a wave of the out of work that ends at once: the children go home with their parents ---");
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = 600;
+        jobs[PayTier.SKILLED.ordinal()] = 300;
+        jobs[PayTier.values().length - 1] = 100;
+        double babies = 800, children = 900, teens = 650, adults = 6000;
+        PopulationCohorts city = new PopulationCohorts();
+        city.restore(new double[] {babies, children, teens, adults, 1700, 0, 0, 0});
+        double outOfWork = adults / 5;
+        FamilyModel closed = new FamilyModel(), open = new FamilyModel();
+        closed.rememberHouseholds(true);
+        open.rememberHouseholds(true);
+        for (int m = 0; m < 36; m++) {
+            closed.rebuild(city, jobs, 0, 0);
+            open.rebuild(city, jobs, 0, 0);
+        }
+        double before = closed.getOrphansTotal();
+        double mostDuring = 0, mostAfter = 0, atTheEnd = 0;
+        for (int m = 0; m < 6; m++) {
+            closed.rebuild(city, jobs, 0, outOfWork);
+            open.rebuild(city, jobs, 0, 0);
+            mostDuring = Math.max(mostDuring, closed.getOrphansTotal() - open.getOrphansTotal());
+        }
+        double childrenOut = closed.getOutsideDependantsTotal();
+        check("fixture: a fifth of the adults went out of work, and their children with them at the city's own rate",
+                childrenOut, (babies + children + teens) * outOfWork / adults, 1e-9);
+        StringBuilder trace = new StringBuilder("   orphans by month after the wave ends, the laid-off model / its twin:");
+        for (int m = 0; m < 12; m++) {
+            closed.rebuild(city, jobs, 0, 0);
+            open.rebuild(city, jobs, 0, 0);
+            double excess = closed.getOrphansTotal() - open.getOrphansTotal();
+            if (m == 0) atTheEnd = excess;
+            mostAfter = Math.max(mostAfter, excess);
+            trace.append(String.format(" %.2f/%.2f", closed.getOrphansTotal(), open.getOrphansTotal()));
+        }
+        System.out.printf("   orphans %.2f before the wave; %.2f children went out with %.0f adults; over the twin %.3f at most during it, %.3f the month it ended, %.3f at most in the year after%n",
+                before, childrenOut, outOfWork, mostDuring, atTheEnd, mostAfter);
+        System.out.println(trace);
+        assertTrue("fixture: the wave ended at once: nobody is out of work the month after, and no child is out with them",
+                closed.getAtHomeAdults() == 0 && closed.getOutsideDependantsTotal() == 0);
+        assertTrue("the wave adds at most one orphan against its twin in any month of it", mostDuring <= 1);
+        assertTrue("the month it ends adds at most one orphan against the twin: the children went home with their parents", atTheEnd <= 1);
+        assertTrue("...and so does every month of the year after it", mostAfter <= 1);
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* ============ 1. who among the dead ============ */
@@ -307,6 +361,7 @@ public class DeathRecordCheck {
                 orphanTotal[orphanTotal.length - 1] >= Math.round(orphanDeathsEver[0] * 100) / 100.0 - .1);
 
         layoffsBesideTwin(root);
+        waveEndsAtOnce();
 
         System.out.println();
         System.out.println(fails == 0 ? "The dead are counted." : fails + " FAILED");
