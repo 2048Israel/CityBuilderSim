@@ -302,7 +302,21 @@ MA1, the margins study of ★8 (a), is in the ship file's queued rows.
 
 ## The dry run
 
-(to come: the run directory and the two commits)
+`sh tools/gate.sh CU2 --dry-run`, 22:33 to 23:26 on 2026-11-16, of the branch at a5c238da on main a9f48daf (DQ1
+merged). Kept as `/tmp/cbs-gate-CU2-iRo73CaP` (`ship.log`, `unnamed.txt`). Gate exit 1.
+
+- **Known red, by their rows:** InvestCheck and DeathRecordCheck (main's recorded rows), MapCheck (FB9) and
+  KeptCheck (FB2), the ship file's rows.
+- **YoungBankCheck:** its assertion "the bank is never in resolution" was covered by its OE1 row (the pick's
+  section, above). `unnamed.txt` held only its two tally lines, "exit 1" and "YoungBankCheck: 1 FAILED". The
+  judge (`KnownReds.count()`) follows a named assertion only with "exit N" or "N FAILED", and DQ1's harness
+  prints its name before the count, so the tally read as a second assertion, the class FB10 recorded for
+  ResearchViewCheck.
+- **The second OE1 row:** it names that tally line, the orchestrator's call. With it, the gate's own
+  `suite.txt` re-judged (`CBS_REJUDGE=--rejudge ./batch-check.sh --judge`) exits 3, "known red only - 5
+  harnesses", with no new red.
+- **No second dry run** (the orchestrator's call). After the run only the notes and the ship file changed:
+  the row, the gate-run line, then the marker dropped in a commit of its own.
 
 ## For Jerus
 
