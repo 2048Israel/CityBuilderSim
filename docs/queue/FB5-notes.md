@@ -125,7 +125,7 @@ ways:
 
 ## 4. The known reds filed under FB5 (docs/notes/known-reds.txt)
 
-| line | state on 427ce6d8 |
+| line | state on 25acf76e |
 |---|---|
 | LongPlaytest, (no FAIL line) | green: no finding in 2,400 months |
 | LongPlaytest, industry stands farther out than the homes | green: 2.78 km against 3.92 |
@@ -137,8 +137,9 @@ ways:
 | MapCheck, ...and every building drawn, one for one | green (DM3) |
 | CopperRefiningCheck, the child ran the playtest's seed 1 to its end | red: seed 1's ring (section 3), to CL7 by the ship file |
 
-`./batch-check.sh MapCheck PlanCheck LongPlaytest` on bc4d5ee9 (the merge) gives exit 4, with FB5's
-own cover removed:
+`./batch-check.sh MapCheck PlanCheck LongPlaytest` on bc4d5ee9 (the merge) gave exit 4 with FB5's own
+cover removed, and exit 3 rejudged with the ship file's two transfers. On 25acf76e (the review's
+mends) it gives exit 3 at once, the same lines:
 - PlanCheck: all checks passed.
 - LongPlaytest: no findings.
 - MapCheck: 2 FAILED. One is the draws-exactly line, at the m61 road. The other is FB9's known
@@ -148,8 +149,9 @@ Before FB5, main's gate (`gate.txt`) had MapCheck 3 FAILED and PlanCheck 3 FAILE
 
 ## 5. The trace
 
-The default playtest on 427ce6d8 (`-Dplaytest.trace`, Temp/cbs-trace-FB5-427ce6d8) against main's 0c43757b
-(Temp/cbs-trace-main-0c43757b): all eight CSVs byte for byte the same. The trace did not move, so no ensemble.
+The default playtest on 427ce6d8 and again on 25acf76e (`-Dplaytest.trace`, Temp/cbs-trace-FB5-427ce6d8 and
+Temp/cbs-trace-FB5-25acf76e) against main's 0c43757b (Temp/cbs-trace-main-0c43757b): all eight CSVs
+byte for byte the same, both times. The trace did not move, so no ensemble.
 
 ## 6. The dry run
 
