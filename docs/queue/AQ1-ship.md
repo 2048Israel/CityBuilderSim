@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-AQ1-Z3yUUeW5 -->
 ## changelog
 ### {next} — AQ1, A3's one seed on GW1: the bust — 2026-11-17, ready, see docs/queue/AQ1-notes.md
