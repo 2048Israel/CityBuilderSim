@@ -130,6 +130,8 @@ public final class GovernmentViewCheck {
         near("debt is the paper at face, the central bank's advances and the linked bonds' indexation", v.debt(),
                 principal + advances + indexation);
         check("...and is more than the paper at face alone", v.debt() > principal);
+        near("...while the paper, what a buyback can buy and what the advice's 'no paper to buy back' reads, is the paper at face alone",
+                v.paper(), principal);
         check("fixture: treasury, fund cash, vault and paper are all material", v.treasury() > 0 && v.fundCash() > 0
                 && v.vault() > 0 && v.debt() > 0);
         check("fixture: the fund owns a marked holding, not cash alone", v.fundHoldings() > 0);

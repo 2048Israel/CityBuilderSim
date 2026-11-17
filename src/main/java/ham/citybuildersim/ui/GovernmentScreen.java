@@ -774,7 +774,7 @@ final class GovernmentScreen {
                 m(view.buybackMonthlySaving()) + " a month in coupons", buyback ? "Open buyback" : null,
                 buyback ? () -> ui.financesScreen.openClose(view.buybackDebt()) : null,
                 buyback ? "The coupon stopped by the quoted buyback. A discount bill has no coupon; its saving is the price below its maturity payment. Open the ticket and ladder to review the price."
-                        : view.debt() <= 0 ? "There is no paper to buy back."
+                        : view.paper() <= 0 ? "There is no paper to buy back."
                         : "Needs treasury cash above the city's debt and paper with a positive yield. Cash earns nothing."));
 
         String tax = view.largestTaxName();

@@ -40,7 +40,7 @@ public final class GovernmentView {
     }
 
     private final Game game;
-    private final double treasury, fundCash, fundHoldings, vault, debt, annualRevenue, netWealth, wealthYears;
+    private final double treasury, fundCash, fundHoldings, vault, paper, debt, annualRevenue, netWealth, wealthYears;
     private Advice advice;
 
     private GovernmentView(Game game) {
@@ -49,8 +49,8 @@ public final class GovernmentView {
         fundCash = game.getFund().getCash();
         fundHoldings = game.fundValue() - fundCash;
         vault = game.getForeignAccounts().getReserves();
-        debt = game.getDebtManager().getAllPrincipal() + game.getCentralBank().getAdvancesToTreasury()
-                + game.getDebtManager().getIndexationOwed();
+        paper = game.getDebtManager().getAllPrincipal();
+        debt = paper + game.getCentralBank().getAdvancesToTreasury() + game.getDebtManager().getIndexationOwed();
         HistorySave history = game.getHistorySave();
         annualRevenue = history.monthsRecorded("revenue") >= REVENUE_MONTHS
                 ? history.recentTotal("revenue", REVENUE_MONTHS) : Double.NaN;
@@ -70,6 +70,8 @@ public final class GovernmentView {
      * treasury's cash below nothing already is the overdraft here (Game.getNetPosition() tells that double count).
      */
     public double debt() { return debt; }
+    /** The government's paper alone, at face: what a buyback can buy (debt() adds the advances and the indexation, which no buyback retires; FB4's review). */
+    public double paper() { return paper; }
     public double annualRevenue() { return annualRevenue; }
     public double netWealth() { return netWealth; }
     public double wealthYears() { return wealthYears; }

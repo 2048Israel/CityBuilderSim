@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**217 harness files, 25,168 labelled assertions.** AllChecks runs 217 of them.
+**217 harness files, 25,170 labelled assertions.** AllChecks runs 217 of them.
 
 ## Which harnesses read which class
 
@@ -12554,7 +12554,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L229 two actual annual tax moves over two played years
   - L230 an immediate repeated review after the skip does nothing
 
-## GovernmentViewCheck.java - 91 labelled assertions
+## GovernmentViewCheck.java - 92 labelled assertions
 
 > The government's wealth bands and advice, measured without moving its books (GV1).
 > 
@@ -12598,71 +12598,72 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L128 fixture: the central bank has advanced the treasury money and a linked bond owes indexation past its face
   - L130 debt is the paper at face, the central bank's advances and the linked bonds' indexation
   - L132 ...and is more than the paper at face alone
-  - L133 fixture: treasury, fund cash, vault and paper are all material
-  - L135 fixture: the fund owns a marked holding, not cash alone
-  - L136 the fund's cash is counted once alongside its marked holdings
-  - L137 the vault is converted to local money
-  - L138 net wealth is the full bridge
-  - L141 years uses the recorded revenue
-  - L144 a treasury-to-fund transfer does not make government wealth
-  - L148 the advances and the linker are taken off again
-- **L151 3. trailing revenue, zero receipts, and old folded history**
-  - L153 month thirteen replaces the oldest month
-  - L155 twelve zero receipts yield no band, not infinite wealth
-  - L164 old folded years are excluded from the last twelve months
-- **L167 4. advice reads the current policy and quote, never moving either**
-  - L178 fixture: coupon-bearing paper and cash above debt make a buyback available
-  - L182 monthly saving is the quoted face's coupon stopped
-  - L184 a cut and a transfer preview are never negative
-  - L185 advice leaves treasury cash alone
-  - L186 advice leaves fund cash alone
-  - L187 advice leaves debt alone
-  - L188 advice leaves profit tax alone
-  - L189 advice leaves sales tax alone
-  - L190 advice leaves pensions alone
-  - L191 advice leaves a deliberately stale standing rate alone
-  - L192 advice preserves every saved market input and its last strike
-  - L195 cash equal to debt is not an excess-cash buyback
-  - L201 fixture: a bill offers no coupon and costs less than its maturity payment
-  - L203 positive-yield discount paper is offered for buyback despite no coupon
-  - L204 a bill invents no monthly coupon saving
-  - L215 fixture: cash exceeds face debt, but only part of a premium bond is affordable
-  - L219 an affordable partial premium buyback is advised
-  - L221 quoting the affordable part spends no cash
-  - L223 no treasury cash means no buyback advice
-- **L228 5. the same reading after a save, before another month**
-  - L234 the loaded city has the same net wealth
-  - L235 the loaded history has the same annual revenue
-  - L236 the loaded city starts in the same band
-- **L243 the quote is kept while the month, cash, debt and market are as they were**
-  - L251 fixture: cash far above the debt makes a buyback available
-  - L252 a view after the cash moved quotes the debt once
-  - L254 a second view in the same month with nothing changed quotes nothing, and says what the first said
-  - L256 ...the tax and transfer illustrations are its own, not the kept quote's
-  - L260 a changed treasury cash quotes afresh
-  - L263 ...and the cash back again quotes afresh too: the kept quote is the last one, whatever it was
-  - L269 a piece added to the debt quotes afresh
-  - L271 ...and the quote that replaced it is kept for the next view
-  - L276 a piece removed from the debt quotes afresh, and the answer is the one the first view gave
-  - L283 a market input that moved quotes afresh
-  - L285 ...and restored quotes afresh again
-  - L306 fixture: the next month moved the month and nothing else the quote is struck on
-  - L309 the next month quotes afresh
-  - L310 ...and a second view in it quotes nothing
-- **L316 positive tax and transfer advice on the model's own previews**
-  - L338 fixture:
-  - L341 the largest tax is selected:
-  - L342 the selected tax's current take:
-  - L343 the exact one-point revenue change:
-  - L344 the tax preview leaves every policy dial alone:
-  - L348 zero tax receipts offer no invented tax cut
-  - L360 fixture: pensioners and EI claimants both draw positive transfers
-  - L370 capped transfers offer no invented increase
-  - L392 both five-point transfer previews have a positive cost
-  - L396 the positive transfer alternative is selected:
-  - L397 the selected transfer's current monthly bill:
-  - L398 the exact five-point transfer increase:
-  - L399 the transfer preview leaves every policy dial alone:
+  - L133 ...while the paper, what a buyback can buy and what the advice's 'no paper to buy back' reads, is the paper at face alone
+  - L135 fixture: treasury, fund cash, vault and paper are all material
+  - L137 fixture: the fund owns a marked holding, not cash alone
+  - L138 the fund's cash is counted once alongside its marked holdings
+  - L139 the vault is converted to local money
+  - L140 net wealth is the full bridge
+  - L143 years uses the recorded revenue
+  - L146 a treasury-to-fund transfer does not make government wealth
+  - L150 the advances and the linker are taken off again
+- **L153 3. trailing revenue, zero receipts, and old folded history**
+  - L155 month thirteen replaces the oldest month
+  - L157 twelve zero receipts yield no band, not infinite wealth
+  - L166 old folded years are excluded from the last twelve months
+- **L169 4. advice reads the current policy and quote, never moving either**
+  - L180 fixture: coupon-bearing paper and cash above debt make a buyback available
+  - L184 monthly saving is the quoted face's coupon stopped
+  - L186 a cut and a transfer preview are never negative
+  - L187 advice leaves treasury cash alone
+  - L188 advice leaves fund cash alone
+  - L189 advice leaves debt alone
+  - L190 advice leaves profit tax alone
+  - L191 advice leaves sales tax alone
+  - L192 advice leaves pensions alone
+  - L193 advice leaves a deliberately stale standing rate alone
+  - L194 advice preserves every saved market input and its last strike
+  - L197 cash equal to debt is not an excess-cash buyback
+  - L203 fixture: a bill offers no coupon and costs less than its maturity payment
+  - L205 positive-yield discount paper is offered for buyback despite no coupon
+  - L206 a bill invents no monthly coupon saving
+  - L217 fixture: cash exceeds face debt, but only part of a premium bond is affordable
+  - L221 an affordable partial premium buyback is advised
+  - L223 quoting the affordable part spends no cash
+  - L225 no treasury cash means no buyback advice
+- **L230 5. the same reading after a save, before another month**
+  - L236 the loaded city has the same net wealth
+  - L237 the loaded history has the same annual revenue
+  - L238 the loaded city starts in the same band
+- **L245 the quote is kept while the month, cash, debt and market are as they were**
+  - L253 fixture: cash far above the debt makes a buyback available
+  - L254 a view after the cash moved quotes the debt once
+  - L256 a second view in the same month with nothing changed quotes nothing, and says what the first said
+  - L258 ...the tax and transfer illustrations are its own, not the kept quote's
+  - L262 a changed treasury cash quotes afresh
+  - L265 ...and the cash back again quotes afresh too: the kept quote is the last one, whatever it was
+  - L271 a piece added to the debt quotes afresh
+  - L273 ...and the quote that replaced it is kept for the next view
+  - L278 a piece removed from the debt quotes afresh, and the answer is the one the first view gave
+  - L285 a market input that moved quotes afresh
+  - L287 ...and restored quotes afresh again
+  - L308 fixture: the next month moved the month and nothing else the quote is struck on
+  - L311 the next month quotes afresh
+  - L312 ...and a second view in it quotes nothing
+- **L318 positive tax and transfer advice on the model's own previews**
+  - L340 fixture:
+  - L343 the largest tax is selected:
+  - L344 the selected tax's current take:
+  - L345 the exact one-point revenue change:
+  - L346 the tax preview leaves every policy dial alone:
+  - L350 zero tax receipts offer no invented tax cut
+  - L362 fixture: pensioners and EI claimants both draw positive transfers
+  - L372 capped transfers offer no invented increase
+  - L394 both five-point transfer previews have a positive cost
+  - L398 the positive transfer alternative is selected:
+  - L399 the selected transfer's current monthly bill:
+  - L400 the exact five-point transfer increase:
+  - L401 the transfer preview leaves every policy dial alone:
 
 ## GridCheck.java - 45 labelled assertions
 
@@ -23183,7 +23184,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1255 the twin billed at 2 quotes the preview's handling
   - L1261 the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was
 
-## PopulationCheck.java - 184 labelled assertions
+## PopulationCheck.java - 185 labelled assertions
 
 > The demographics: do they hold together, and do they move the city the way
 > they were told to?
@@ -23334,73 +23335,74 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L989 fixture: the rate is
   - L992 arrivals
   - L994 ...and the brake it kept (what the People screen's word reads) is the brake at the rate it read
-  - L996 ...and the twin with no people read kept none: a brake of 1
-  - L997 ...and the mix by band is of the braked arrivals
-  - L1003 past the stop nobody arrives, however many jobs are going
-  - L1012 fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people
-  - L1015 a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole
-  - L1017 ...and its kept brake is 1, whatever share it read
-  - L1026 fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away
-  - L1039 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
-  - L1041 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
-  - L1044 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
-  - L1046 ...and the departure mix sums to the departures
-  - L1048 a city past the healthy rate loses people for want of work
-  - L1049 ...from the band that is out of work at its own level
-  - L1052 a city at or under the healthy rate loses nobody for want of work
-  - L1072 fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining
-  - L1074 a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate
-  - L1076 ...its departures are the twin's, the extra leavers none
-- **L1080 a city, played**
-  - L1120 a city does not fill in a single month
-  - L1122 ...but it does fill, given a decade
-  - L1176 ...and does not run away entirely
-  - L1180 ...because a city past its target stops pulling people in
-  - L1202 the workforce is the city's adults, within a month's growth
-  - L1233 ...and the share is the pyramid's, not a constant
-- **L1237 5. and it survives a save**
-  - L1258 the city has a pyramid
-  - L1264 the pyramid came back
-  - L1265 ...and the households with it
-  - L1268 
-  - L1290 a declining streak survives a save
-  - L1295 ...and a malformed one is refused, not half-read
-  - L1305 a malformed pyramid is refused, not half-read
-- **L1383 the pyramid survives a band being added**
-  - L1391 the names travel beside the pyramid
-  - L1397 restored by name:
-  - L1399 and the births beside it
-  - L1400 and the deaths
-  - L1419 order does not matter:
-  - L1439 an unknown band shifts nothing:
-  - L1441 ...and the births are still the births
-  - L1442 ...and the stranger is not in the pyramid
-  - L1452 the legacy format is five bands, in writing
-  - L1458 a nameless save puts babies in BABY
-  - L1459 ...and seniors in SENIOR
-  - L1460 ...and reads births after the fifth
-  - L1461 ...and deaths after that
-  - L1462 ...and nobody else is in the city
-  - L1477 a save from before the names carries none
-  - L1481 a real old save: its adults are its adults
-  - L1483 ...its seniors are its seniors
-  - L1485 ...last month's births are births, not a band
-  - L1487 ...and the city is the size it was saved at
-  - L1495 a malformed named pyramid is refused too
-- **L1524 the families and the sick ring survive it too**
-- **L1533 families**
-  - L1535 the fixture actually has families to save
-  - L1540 the families round-trip by name
-  - L1550 a today-save read as five bands and thirteen shapes is refused whole
-  - L1574 ...and a band from the future shifts nothing behind it
-  - L1579 a malformed family array is refused whole
-- **L1581 the ring**
-  - L1584 the ring restores by name
-  - L1585 ...and round-trips
-  - L1594 a today-ring read as five bands is refused whole
-  - L1606 a five-band ring from before the names still loads
-  - L1607 ...and it put somebody in the ring
-  - L1610 a ring is refused whole when the width does not match its names
+  - L996 ...and the mix by band is of the braked arrivals
+  - L1002 past the stop nobody arrives, however many jobs are going
+  - L1008 fixture: a city past the stop kept a brake below 1 in the month it read its people
+  - L1011 ...and its next month, with no people read, kept none: a brake of 1
+  - L1020 fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people
+  - L1023 a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole
+  - L1025 ...and its kept brake is 1, whatever share it read
+  - L1034 fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away
+  - L1047 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
+  - L1049 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
+  - L1052 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
+  - L1054 ...and the departure mix sums to the departures
+  - L1056 a city past the healthy rate loses people for want of work
+  - L1057 ...from the band that is out of work at its own level
+  - L1060 a city at or under the healthy rate loses nobody for want of work
+  - L1080 fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining
+  - L1082 a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate
+  - L1084 ...its departures are the twin's, the extra leavers none
+- **L1088 a city, played**
+  - L1128 a city does not fill in a single month
+  - L1130 ...but it does fill, given a decade
+  - L1184 ...and does not run away entirely
+  - L1188 ...because a city past its target stops pulling people in
+  - L1210 the workforce is the city's adults, within a month's growth
+  - L1241 ...and the share is the pyramid's, not a constant
+- **L1245 5. and it survives a save**
+  - L1266 the city has a pyramid
+  - L1272 the pyramid came back
+  - L1273 ...and the households with it
+  - L1276 
+  - L1298 a declining streak survives a save
+  - L1303 ...and a malformed one is refused, not half-read
+  - L1313 a malformed pyramid is refused, not half-read
+- **L1391 the pyramid survives a band being added**
+  - L1399 the names travel beside the pyramid
+  - L1405 restored by name:
+  - L1407 and the births beside it
+  - L1408 and the deaths
+  - L1427 order does not matter:
+  - L1447 an unknown band shifts nothing:
+  - L1449 ...and the births are still the births
+  - L1450 ...and the stranger is not in the pyramid
+  - L1460 the legacy format is five bands, in writing
+  - L1466 a nameless save puts babies in BABY
+  - L1467 ...and seniors in SENIOR
+  - L1468 ...and reads births after the fifth
+  - L1469 ...and deaths after that
+  - L1470 ...and nobody else is in the city
+  - L1485 a save from before the names carries none
+  - L1489 a real old save: its adults are its adults
+  - L1491 ...its seniors are its seniors
+  - L1493 ...last month's births are births, not a band
+  - L1495 ...and the city is the size it was saved at
+  - L1503 a malformed named pyramid is refused too
+- **L1532 the families and the sick ring survive it too**
+- **L1541 families**
+  - L1543 the fixture actually has families to save
+  - L1548 the families round-trip by name
+  - L1558 a today-save read as five bands and thirteen shapes is refused whole
+  - L1582 ...and a band from the future shifts nothing behind it
+  - L1587 a malformed family array is refused whole
+- **L1589 the ring**
+  - L1592 the ring restores by name
+  - L1593 ...and round-trips
+  - L1602 a today-ring read as five bands is refused whole
+  - L1614 a five-band ring from before the names still loads
+  - L1615 ...and it put somebody in the ring
+  - L1618 a ring is refused whole when the width does not match its names
 
 ## PortCheck.java - 170 labelled assertions
 

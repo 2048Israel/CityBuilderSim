@@ -1,4 +1,4 @@
-# GovernmentViewCheck.java - 401 lines · 9 methods · 0 constants · harnesses
+# GovernmentViewCheck.java - 403 lines · 9 methods · 0 constants · harnesses
 
 `ham/citybuildersim/GovernmentViewCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -23,14 +23,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 17 | 385 | **type** `public final class GovernmentViewCheck` | The government's wealth bands and advice, measured without moving its books (GV1). |
+| 17 | 387 | **type** `public final class GovernmentViewCheck` | The government's wealth bands and advice, measured without moving its books (GV1). |
 | 19 | 4 | `static void check(String label, boolean ok)` |  |
 | 23 | 4 | `static void near(String label, double a, double b)` |  |
 | 27 | 7 | `static void quiet(Runnable body)` |  |
 | 36 | 52 | `static void bandMargin()` | GV1-R: a notice leaves a band only BAND_MARGIN of the bound past it; the ends are bandFor()'s, open and closed. |
-| 89 | 151 | `public static void main(String[] args) throws Exception` |  |
-| 242 | 71 | `static void buybackCache(Game g)` | GV1-R: the buyback quote is kept while nothing it was struck on has changed, and quoted afresh when any of it has. |
-| 315 | 57 | `static void policyAdvice() throws Exception` | A played policy fixture supplies positive taxable books, followed by explicit pension and EI populations. |
-| 373 | 9 | `static void setTax(TaxPolicy policy, int family, double rate)` |  |
-| 384 | 17 | `static void checkTransfer(Game city, String forced)` | Both alternatives are positive in the initial fixture; caps then force each choice independently. |
+| 89 | 153 | `public static void main(String[] args) throws Exception` |  |
+| 244 | 71 | `static void buybackCache(Game g)` | GV1-R: the buyback quote is kept while nothing it was struck on has changed, and quoted afresh when any of it has. |
+| 317 | 57 | `static void policyAdvice() throws Exception` | A played policy fixture supplies positive taxable books, followed by explicit pension and EI populations. |
+| 375 | 9 | `static void setTax(TaxPolicy policy, int family, double rate)` |  |
+| 386 | 17 | `static void checkTransfer(Game city, String forced)` | Both alternatives are positive in the initial fixture; caps then force each choice independently. |
 

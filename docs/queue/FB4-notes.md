@@ -110,6 +110,21 @@ brief standing. Cut from main at 0c43757b (0.9.136). Opus wrote the briefs, revi
     - The most the fund held was 10.30%, against the fixed point L s / (s - b) = 10.92% at the fastest buyback the
       pace allows.
 
+## 3b. The review's two notes (REV-FB4-1, SHIP)
+
+- **The advice's "There is no paper to buy back."** It was gated on `debt() <= 0`. Since GV1-R that debt counts the
+  advances and the indexation, so a city with advances and no paper was told it needs cash above its debt.
+  - The view now has `paper()`, the paper at face alone, and the Government screen gates the line on it.
+  - New GovernmentViewCheck line: `paper()` is the principal while the debt is more. Red before (by hand, the paper
+    read as the debt): FAIL.
+- **PopulationCheck's "a brake of 1" read a fresh Migration**, whose field starts at 1, so it could not fail if the
+  7-argument month's reset went.
+  - The line now reads a city that braked past the stop (a fixture line: its brake below 1) and then played a month
+    with no people read.
+  - Red before (by hand, the reset at `Migration` "lastBrake = 1" removed): FAIL, 0 against 1.
+
+`./batch-check.sh PopulationCheck GovernmentViewCheck`: exit 3, on main's MR1 alone.
+
 ## 4. The trace moved: GV1-R's debt, through the player
 
 Main's 0c43757b and this branch's cac8009e (8 files, 2,400 months):

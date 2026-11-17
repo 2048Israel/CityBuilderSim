@@ -1826,8 +1826,8 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 29 | `GovernmentView.BAND_MARGIN` | `.1` | How far past a band's bound, as a share of that bound, the wealth must go before the band notice leaves the band: a tenth (GV1-R, estimated), so wealth that sits on a bound posts one notice, not on... |
 | 31 | `GovernmentView.TAX_CUT_STEP` | `.01` | An illustrative tax cut on the advice card: one percentage point, not a policy change. |
 | 33 | `GovernmentView.TRANSFER_RAISE_STEP` | `.05` | An illustrative transfer rise: the five-point step the brief gives its test player. |
-| 202 | `GovernmentView.QUOTED` | `Collections.synchronizedMap(new WeakHashMap<>())` | The last buyback quote of each city and what it was struck on, so a redraw of the Government overview with nothing changed quotes nothing (GV1-R). |
-| 203 | `GovernmentView.QUOTING_PASSES` | `new AtomicInteger()` |  |
+| 204 | `GovernmentView.QUOTED` | `Collections.synchronizedMap(new WeakHashMap<>())` | The last buyback quote of each city and what it was struck on, so a redraw of the Government overview with nothing changed quotes nothing (GV1-R). |
+| 205 | `GovernmentView.QUOTING_PASSES` | `new AtomicInteger()` |  |
 
 ### GridOffers.java ([map](map/GridOffers.md))
 

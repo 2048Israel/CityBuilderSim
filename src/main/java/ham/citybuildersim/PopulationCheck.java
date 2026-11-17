@@ -993,7 +993,6 @@ public class PopulationCheck {
                         wgBraked.getLastArrivals(), wgTwin.getLastArrivals() * Migration.arrivalBrake(wgRate), 1e-9);
                 check("...and the brake it kept (what the People screen's word reads) is the brake at the rate it read",
                         wgBraked.getLastBrake(), Migration.arrivalBrake(wgRate), 1e-12);
-                check("...and the twin with no people read kept none: a brake of 1", wgTwin.getLastBrake(), 1, 1e-12);
                 check("...and the mix by band is of the braked arrivals", wgMixed, wgBraked.getLastArrivals(), 1e-6);
             }
             PopulationManager wgPast = cityOutOfWork(wgAdults, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
@@ -1001,6 +1000,15 @@ public class PopulationCheck {
             wgStopped.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
                     new LabourMarket(), wgPast);
             check("past the stop nobody arrives, however many jobs are going", wgStopped.getLastArrivals(), 0, 1e-9);
+            // FB4's review: the month with no people read (the 7-argument overload) keeps no brake, even after a month
+            // that braked. A fresh Migration starts at 1 and would pass whatever the reset did, so the city brakes first.
+            Migration wgEmptied = oldMigration();
+            wgEmptied.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0,
+                    new LabourMarket(), wgPast);
+            assertTrue("fixture: a city past the stop kept a brake below 1 in the month it read its people",
+                    wgEmptied.getLastBrake() < 1);
+            wgEmptied.monthlyNet(wgPast.getPopulation(), wgJobs * 2, wgCapacity * 2, wgHomes, roomy, ADULT_MIX, 0);
+            check("...and its next month, with no people read, kept none: a brake of 1", wgEmptied.getLastBrake(), 1, 1e-12);
 
             // A young city is not braked: the same people, past the stop, with no months recorded.
             Migration wgYoung = new Migration(), wgYoungTwin = new Migration();
