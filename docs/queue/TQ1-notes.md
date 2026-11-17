@@ -126,26 +126,35 @@ main loads and reads as it did.
 - `WantedPosts`: `Ask.part(int)`, `heldInATie()`, `getTiedHolds()` (reset in `beginMonth()`); `getHolds()` counts a
   tied hold once for each of its buildings (its javadoc says so).
 - `StaffingTieCheck` (new, in `AllChecks` after StaffingDrawCheck), written by a Sonnet slice to this session's brief
-  and reviewed here (one printed line's wording mended). Four sections: 1 a fresh city played until the gate refuses
-  two of a sector's templates at the same share to the bit (Retail's Convenience Store and Small Grocery Store at 0,
-  month 1; the Convenience Store and the Filling Station at 0.333292257, month 10, a share the draw filled part of);
-  2 `held(a, b)` and `held(b, a)` carry both, a larger share met before, between or after is kept alone, a smaller
-  one leaves the two; 3 `noteStaffingHold()` of either order gives the same asks, counts and latent posts to the bit,
-  one tied hold counting both buildings, each building's outcome its outcome alone, each ask its ask alone halved and
-  the posts asked the mean of the two; 4 a city played 120 months: 466 holds noted, 37 tied in 34 months, 33 months in
-  which one sector asked for two of its buildings (Construction 29, Manufacturing 2, Retail 2). 53 assertions, 12 s.
+  and reviewed here (one printed line's wording mended). Four sections. Section 1: a fresh city played until a planner
+  hands in a hold for two of its sector's templates the gate refused at the same share to the bit. The founding's is
+  Manufacturing's Fabrication Shop (135 posts) and Machine Works (173) at 0, month 1. The first at a share the draw
+  filled part of is Retail's Convenience Store (5) and Small Grocery Store (27) at 0.464864594, month 65. Asking the
+  planners moves nothing in the city: its fingerprint is the same after. Section 2: `held(a, b)` and `held(b, a)` carry
+  both, a larger share met before, between or after is kept alone, and a smaller one leaves the two. Section 3:
+  `noteStaffingHold()` in either order gives the same asks, counts and latent posts to the bit. One tied hold counts
+  both buildings, each building's outcome is its outcome alone, each ask is its ask alone halved, and the posts asked
+  are the mean of the two. Section 4: a city played 120 months has 466 holds noted and 37 tied, in 34 months. In 31 of
+  those months a sector asked one question a month names two of its buildings (Construction 29, Manufacturing 2).
+  55 assertions.
+- REV-TQ1-1 (Opus, the orchestrator's stranger's review, on da61276a): SHIP, with two harness points, both mended
+  (harness only). (1) The grown pair was a Convenience Store with a Filling Station, which no planner forms:
+  `Retail.plan()` skips a template with no coverage, and the stations are `planStations()`'s. `tieIn()` now takes its
+  pair from the hold a planner hands in (`Sector.plan()`, then `alike()`) and reads the two afresh at the gate. So a
+  pair must be one planner's, and the search runs ten years (`MONTHS_TO_A_TIE` 60 to 120; the first such tie comes at
+  month 65). (2) "One sector asks for two buildings" could pass with no tie, through Retail's shop and station holds in
+  one month. It now counts only a month with a tie, in a sector asked one question a month: every sector but Retail,
+  which is asked for its shops, its forecourts and the bank branch.
 
 ## 5. What the checks showed
 
-- **StaffingTieCheck by hand on main's rule.** With `held()`'s tie line put back to main's (`return kept;`, the strict
-  `>` of 91aa94ef, whose trace is main's to the byte) for one run: exit 1, 22 FAILED of 53, every one a claim of the
-  rule (section 1's fixture lines pass; the run's log is `target/tq1/StaffingTieCheck-main-rule.txt` in this
-  worktree). Section 2: `held(a, b)` and `held(b, a)` carry both (founding and grown, 4), a smaller share leaves the
-  two (2). Section 3, founding and grown: the same asks whichever is met first, the same latent posts to the bit, one
-  tied hold counting both, each building's outcome its own, each ask halved, the posts the mean (14 of 16: the
-  founding's counts agree on main's rule, each order's one building asking, and the grown city's one ask is a building
-  that asked alone). Section 4: "the planners hand in holds the gate tied" and "in some
-  month one sector's asks name two of its buildings". Put back, 53 of 53.
+- **StaffingTieCheck by hand on main's rule.** `held()`'s tie line was put back to main's for one run (`return kept;`,
+  the strict `>` of 91aa94ef, whose trace is main's to the byte). On the first harness: exit 1, 22 of 53 FAILED, every
+  one a claim of the rule; the log is `target/tq1/StaffingTieCheck-main-rule.txt`. On the harness after the review's
+  mends: exit 1, 6 FAILED, 2 OK (`target/tq1/StaffingTieCheck-main-rule-2.txt`). On main's rule a planner never hands
+  in a tie, so neither of section 1's fixtures is found within the ten years, and sections 2 and 3 have no tie to hold
+  (their one line each fails). Section 4 fails "the planners hand in holds the gate tied" and "in some month a tie's two
+  buildings both ask". Put back, 55 of 55.
 - **The default playtest** on the rule (dbc00115): 2,400 months, exit 0, "All checks passed.".
 
 ## 6. The trace
@@ -196,9 +205,9 @@ the housing read beside it (`-Densemble.extra`; its columns 1-62 equal the ensem
 A town of 4,000 at full employment, every home doubled (doubled up is the half-the-households-plus-one ceiling,
 `FamilyModel`), migration bringing nobody (it is damped as the valves run out, as designed), and the landlords
 building nothing: the town's own growth forms about 1.2 households a month past the ceiling, and LongPlaytest's
-watch (more than one household unplaced) fires at 428. Nothing in it is the tie: it is HN1's class ("a played seed-12
-city leaves households without matching homes for four months on main too; retain the hard housing watch and mend the
-model", `docs/queue/HN1.md`, from R0h's same-state probe), main's housing code reached on TQ1's path.
+watch (more than one household unplaced) fires at 428. Section 8's same-state probe reads it. The landlords are held
+for land from 324, and no gate is involved. Main's model stalls alike from TQ1's state at 360 on. The finding passes
+by name with FB11 (ER1-F's case), not HN1, whose placement lag this first reading guessed.
 
 **The rest, information.** H2 is vacuous as on main's baseline (-0.55% against 0.54%, both VACUOUS: the ZERO_HOT city
 has no burst to stop). A1 3.11% a year against 3.04%; A2 22 [14 to 36] against 22 [11 to 37]; A3 0 [0 to 20] against
@@ -256,4 +265,13 @@ misses it as TQ1's does. Switched on at 340 or earlier, it catches it.
 So the finding is main's: a town at full employment whose landlords are held for land for 130 months, while nothing
 buys them any and the treasury cannot. TQ1's path reaches it, and so does main's model from TQ1's state at 360, 380
 and 400. The escape is a works order that happens to buy more ground than it uses, not a mechanism. The tie rule is
-not changed for it. The orchestrator's disposition is recorded below.
+not changed for it.
+
+**The disposition** (the orchestrator, 2026-11-16, its call): no model change in TQ1. F1 (seed 3; AUTO2, ZERO_SLACK,
+SHOCK and HIGH) passes by name with **FB11** ("held towns: why no works pays, and the advisor's land funding"), not
+HN1, and no new batch. It is ER1-F's case, folded into FB11: fund LongPlaytest's `keepGroundAhead`/`advise`
+growth-land purchase through the land office's bounded funding flow, with RE3-J beside it. This seed-3 stall (Real
+Estate held for land from 324 to 455, the treasury overdrawn, main's model stalling alike from 360) is a measure FB11
+can use: the ensemble driver with `-Densemble.months=460` on seed 3 AUTO2, its CSV's homes and treasury columns, and
+each month's reasons, read through `Game.getLastInvestment()` and `AutoBuilder.latest()`. The first paragraph says
+how the probe was built; its scratch files (`target/tq1-homes/`) go with this worktree.

@@ -27,25 +27,29 @@ import java.util.function.DoublePredicate;
  * city the game plays, and every figure asserted against comes from the model's own calls.
  *
  * What this has to prove:
- *   1. THE FIXTURE CAUSES THE TIE: in a fresh city played month by month the gate refuses two templates of one sector at the
- *      same share to the bit and they differ in posts: the founding's first tie (no spare, no draw, a share of 0), and the
- *      first at a share above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (one the draw filled part of).
+ *   1. THE FIXTURE CAUSES THE TIE: in a fresh city played month by month a planner hands in a hold for two templates of
+ *      its sector the gate refused at the same share to the bit, which differ in posts: the founding's first tie (no spare,
+ *      no draw, a share of 0), and the first at a share above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (one the draw
+ *      filled part of); and asking the planner for it moves nothing in the city.
  *   2. THE ONE PLACE KEEPS BOTH, WHICHEVER IS MET FIRST: held(a, b) and held(b, a) both carry both templates, each once; none
  *      so far keeps the one; a refusal at a larger share is kept alone, whenever it is met; one at a smaller share leaves the two.
  *   3. WANTEDPOSTS PRICES THE TWO ALIKE, WHICHEVER IS FIRST: the same asks in the same order and the same latent posts to the
  *      bit; one tied hold counted once and each building counted besides; each building's outcome is the one it has alone and
  *      each ask is its ask alone divided by the number tied, so the posts asked are the mean of the two alone.
  *   4. THE MONTH'S OWN PLANNING HANDS THE TIE IN, AND HOW OFTEN: in a city played ten years the tie fires, every month's
- *      holds are its crews', its unpaid and its asks, a tie's buildings each count, and in some month one sector's asks name two
- *      of its buildings.
+ *      holds are its crews', its unpaid and its asks, a tie's buildings each count, and in some month a tie's two buildings
+ *      both ask: a sector asked one question a month (every one but Retail) names two of its buildings.
  */
 public class StaffingTieCheck {
 
     static int fails = 0;
     static PrintStream out, quiet;
 
-    /** The most months a fresh city is played to find a tie at the gate (section 1). */
-    static final int MONTHS_TO_A_TIE = 60;
+    /**
+     * The most months a fresh city is played to find a tie a planner hands in (section 1): ten years, as section 4 plays. The
+     * first at a share the draw filled part of comes at month 65, Retail's shops (TQ1's review: a pair a planner forms).
+     */
+    static final int MONTHS_TO_A_TIE = 120;
 
     /** The months of the city section 4 plays, ten years as WantedPostsCheck's. */
     static final int PLAYED_MONTHS = 120;
@@ -118,25 +122,34 @@ public class StaffingTieCheck {
     record Found(Game g, Tie tie) { }
 
     /**
-     * The first tie in this city's sectors, in the order the sectors and their templates are listed: two templates the
-     * sector's gate refuses at the same share to the bit, whose posts differ in total, at a share this test takes.
+     * The first tie a planner of this city hands in, in the order the sectors are listed: its plan asked now as the month's
+     * planning asks it (Sector.plan()), a hold for staff whose refusals stand at the same share to the bit
+     * (Sector.Staffing.alike()), two of whose templates differ in posts, at a share this test takes. The two are read afresh
+     * at the gate (Sector.staffing()), so the holds sections 2 and 3 build are theirs alone, not the planner's, which already
+     * carries both. Two refusals no one planner meets together are no tie: Retail's shop and its forecourt station tie at the
+     * gate, but Retail.plan() skips a template with no coverage and the stations are planStations()'s (TQ1's review).
      */
     static Tie tieIn(Game g, DoublePredicate shareTaken, int month) {
-        for (Sector sector : g.getSectors().all()) {
-            if (!sector.ordersOnlyWhatItCanStaff()) continue;
-            List<Sector.Staffing> refused = new ArrayList<>();
-            for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(sector.key())) {
-                Sector.Staffing s = sector.staffing(t);
-                if (!s.passes()) refused.add(s);
-            }
-            for (int i = 0; i < refused.size(); i++) {
-                for (int j = i + 1; j < refused.size(); j++) {
-                    Sector.Staffing a = refused.get(i), b = refused.get(j);
-                    if (a.share == b.share && shareTaken.test(a.share) && total(a) != total(b)) return new Tie(month, sector, a, b);
+        System.setOut(quiet);
+        try {
+            for (Sector sector : g.getSectors().all()) {
+                if (!sector.ordersOnlyWhatItCanStaff()) continue;
+                BusinessInvestment.Decision plan = sector.plan(g.getBusinessInvestment(), g);
+                if (plan == null || plan.build || plan.heldForStaff == null) continue;
+                List<Sector.Staffing> alike = plan.heldForStaff.alike();
+                for (int i = 0; i < alike.size(); i++) {
+                    for (int j = i + 1; j < alike.size(); j++) {
+                        Sector.Staffing a = sector.staffing(alike.get(i).template()), b = sector.staffing(alike.get(j).template());
+                        if (a.share == b.share && !a.passes() && !b.passes() && shareTaken.test(a.share) && total(a) != total(b)) {
+                            return new Tie(month, sector, a, b);
+                        }
+                    }
                 }
             }
+            return null;
+        } finally {
+            System.setOut(out);
         }
-        return null;
     }
 
     /** A fresh city played, month by month, until it holds a tie this test takes: the tie, or null at the dial. */
@@ -268,6 +281,11 @@ public class StaffingTieCheck {
         assertTrue("...and they are two templates of the sector that differ in posts", t.first().template() != t.second().template()
                 && t.sector().key().equals(t.first().template().getSector()) && total(t.first()) != total(t.second()));
         if (!first) assertTrue("...a share above 0 and the draw's, not the founding's", t.first().share > 0);
+        // The fixture asks the planners outside the month: it must not move the city it asks.
+        Map<String, String> before = DeterminismCheck.fingerprint(f.g());
+        tieIn(f.g(), first ? ANY_SHARE : A_SHARE_THE_DRAW_FILLED_PART_OF, t.month());
+        assertTrue("...and asking the planners for it moved nothing in the city (its fingerprint the same after)",
+                before.equals(DeterminismCheck.fingerprint(f.g())));
         return f;
     }
 
@@ -424,9 +442,12 @@ public class StaffingTieCheck {
                 buildings.computeIfAbsent(a.sector(), k -> new HashSet<>()).add(a.building());
                 askedBySector.merge(a.sector(), 1, Integer::sum);
             }
+            // Only from a tie: every sector but Retail is asked one question a month, so two of its buildings asking can
+            // only be one tied hold; Retail is asked three (its shops, its forecourts, the bank branch: Game's
+            // runPrivateInvestment()), and its shop and station holds name two buildings with no tie (TQ1's review).
             boolean two = false;
             for (Map.Entry<String, Set<String>> e : buildings.entrySet()) {
-                if (e.getValue().size() >= 2) {
+                if (w.getTiedHolds() > 0 && !e.getKey().equals(played.getSectors().retail().key()) && e.getValue().size() >= 2) {
                     sectorMonths.merge(e.getKey(), 1, Integer::sum);
                     two = true;
                 }
@@ -435,13 +456,13 @@ public class StaffingTieCheck {
         }
         out.printf("   %d months: %,d staffing holds noted (a tied hold once for each of its buildings): %,d asked for their posts, %,d for the builders' crews, %,d unpaid; %,d holds the gate tied, in %d months%n",
                 months, holds, asked, crews, unpaid, tied, tieMonths);
-        out.printf("   %d months had a sector whose asks named two of its buildings; by sector (months with two, of asks all told):%n", monthsTwoInASector);
+        out.printf("   %d months had a tie and a sector asked once a month whose asks named two of its buildings; by sector (months with two, of asks all told):%n", monthsTwoInASector);
         for (Map.Entry<String, Integer> e : sectorMonths.entrySet()) {
             out.printf("      %-24s %4d months, %,d asks%n", e.getKey(), e.getValue(), askedBySector.getOrDefault(e.getKey(), 0));
         }
         assertTrue("the planners hand in holds the gate tied, in a city played " + months + " months", tied > 0 && tieMonths > 0);
         assertTrue("...each month's holds are its crews', its unpaid and its asks", counted);
         assertTrue("...a hold the gate tied counts each of its buildings, so a month's holds are at least " + TIED_WAYS + " for each tied", aTieCountsEachBuilding);
-        assertTrue("...and in some month one sector's asks name two of its buildings", monthsTwoInASector > 0);
+        assertTrue("...and in some month a tie's two buildings both ask: a sector asked once a month (not Retail) names two of its buildings", monthsTwoInASector > 0);
     }
 }
