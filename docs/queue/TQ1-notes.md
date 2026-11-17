@@ -134,3 +134,39 @@ main loads and reads as it did.
   one tied hold counting both buildings, each building's outcome its outcome alone, each ask its ask alone halved and
   the posts asked the mean of the two; 4 a city played 120 months: 466 holds noted, 37 tied in 34 months, 33 months in
   which one sector asked for two of its buildings (Construction 29, Manufacturing 2, Retail 2). 53 assertions, 12 s.
+
+## 5. What the checks showed
+
+- **StaffingTieCheck by hand on main's rule.** With `held()`'s tie line put back to main's (`return kept;`, the strict
+  `>` of 91aa94ef, whose trace is main's to the byte) for one run: exit 1, 22 FAILED of 53, every one a claim of the
+  rule (section 1's fixture lines pass; the run's log is `target/tq1/StaffingTieCheck-main-rule.txt` in this
+  worktree). Section 2: `held(a, b)` and `held(b, a)` carry both (founding and grown, 4), a smaller share leaves the
+  two (2). Section 3, founding and grown: the same asks whichever is met first, the same latent posts to the bit, one
+  tied hold counting both, each building's outcome its own, each ask halved, the posts the mean (14 of 16: the
+  founding's counts agree on main's rule, each order's one building asking, and the grown city's one ask is a building
+  that asked alone). Section 4: "the planners hand in holds the gate tied" and "in some
+  month one sector's asks name two of its buildings". Put back, 53 of 53.
+- **The default playtest** on the rule (dbc00115): 2,400 months, exit 0, "All checks passed.".
+
+## 6. The trace
+
+`-Dplaytest.trace` on the default playtest against main's reference (`C:/Users/Jerus/AppData/Local/Temp/
+cbs-trace-main-08c8727d/`, still main's: SQ1's was byte-identical to it). The refactor alone (91aa94ef) is identical
+in all eight files. The rule moves all eight: `labour` from month 4 (the founding's first ties fall in months 2-4), `bank`, `bonds`,
+`build` and `month` from month 27, `house` from 28, `pop` from 43, `borrow` from its second paper (main's month 99). One city's path, so the ensemble judges; the
+size, main then TQ1:
+
+| month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
+|---|---|---|---|---|---|---|
+| 60 | 1,645; 1,612 | 0; 0 | 963; 897 | 22.1%; 23.3% | 1.196; 1.194 | 0.924; 0.919 |
+| 120 | 2,432; 1,332 | 0; 20.6% | 1,554; 582 | 6.3%; -1.6% | 0.942; 0.807 | 0.721; 0.696 |
+| 240 | 3,115; 2,319 | 10.3%; 0 | 1,446; 1,259 | -3.2%; 2.9% | 0.938; 1.016 | 0.711; 0.765 |
+| 600 | 3,522; 6,593 | 10.1%; 0 | 1,599; 3,214 | 6.3%; 8.4% | 0.928; 0.980 | 0.690; 0.740 |
+| 1,200 | 33,240; 33,822 | 7.9%; 0 | 14,026; 16,354 | 9.9%; 9.0% | 0.883; 0.962 | 0.677; 0.720 |
+| 1,800 | 286,027; 186,301 | 0.4%; 0 | 123,523; 85,481 | -3.0%; -1.8% | 0.974; 1.032 | 0.709; 0.793 |
+| 2,399 | 1,375,880; 1,222,970 | 10.6%; 0.7% | 543,126; 539,218 | -8.4%; -6.6% | 0.917; 1.019 | 0.720; 0.752 |
+
+The wage's premiums stand higher from month 240 on, as the larger bids would have them. This city's founding stalled
+where main's did not: out of land at month 62 ("Holding: no land"), then "housing ahead of jobs" with no order and the
+builders idle from month 70 to 170 (jobs 572-582, 15-38% out of work), while main's grew through the same months.
+A path that parted at month 4; the ensemble's founding rows say whether it is the rule's.
