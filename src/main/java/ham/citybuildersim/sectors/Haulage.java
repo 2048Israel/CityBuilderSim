@@ -481,7 +481,7 @@ public final class Haulage {
         tonnes = carried = bill = diesel = dieselImported = dieselLitres = dieselLitresImported = worn = 0;
         truckTonnes = teamTonnes = teams = teamCapacity = feed = feedImported = feedTonnes = feedTonnesImported = 0;
         // The fleet the month was carried by: held now, before the month's wear (closeMonth()).
-        capacityInForce = trucks() * TONNES_A_TRUCK_MONTH;
+        capacityInForce = trucks() * tonnesATruck();
         for (double t : legs.values()) tonnes += t;
         // ...a city carried wholly by teams (the horse form at 1) needs no trucks to bill the month.
         final double h = horseShare;
@@ -598,10 +598,10 @@ public final class Haulage {
         // ...the trucks' part of it: (1 - h) of it with the horse form on, the teams being hired for the rest (truckPart()).
         double truckNeed = truckPart(need);
         if (!trucksKnown && truckNeed > 0) {
-            freight.seedTrucks(truckNeed / TONNES_A_TRUCK_MONTH);
+            freight.seedTrucks(truckNeed / tonnesATruck());
             trucksKnown = true;
         }
-        double capacity = Math.max(capacityInForce, trucks() * TONNES_A_TRUCK_MONTH);
+        double capacity = Math.max(capacityInForce, trucks() * tonnesATruck());
         share = !(truckNeed > 0) || capacity >= truckNeed ? 1 : Math.max(0, capacity / truckNeed);
         tightness = truckNeed > 0 ? Math.max(0, Math.min(1, (truckNeed - capacity) / truckNeed)) : 0;
         // ...and, with the city's share struck, the fleet's room dealt per sector (FR8), over each sector's trucks' part of its legs.
@@ -767,7 +767,7 @@ public final class Haulage {
     public double trucks() { return freight.trucksHeld(); }
 
     /** ...and how many the coming month's need asks for. */
-    public double trucksNeeded() { return truckPart(need) / TONNES_A_TRUCK_MONTH; }
+    public double trucksNeeded() { return truckPart(need) / tonnesATruck(); }
 
     /** Trucks the depots standing keep: the room of Freight's finished buildings. */
     public double depotRoom() {
@@ -802,7 +802,7 @@ public final class Haulage {
      * little as .69; FR2's notes). A haulier hires for a contract before the
      * works it serves opens; the share still reads the plant standing.
      */
-    public double trucksAsked() { return truckPart(need + needOnSite) / TONNES_A_TRUCK_MONTH; }
+    public double trucksAsked() { return truckPart(need + needOnSite) / tonnesATruck(); }
 
     /** The legs at nameplate the city's works on site will ask when they stand: nameplateNeed()'s weights, over Freight's every other sector's buildings on site. */
     public double nameplateNeedOnSite(Sectors sectors) {
@@ -879,11 +879,87 @@ public final class Haulage {
         // ...the DIPLOMA posts of the buildings it owns: the berths' dockers (FR3) are not drivers and are never laid off.
         long diploma = b == null ? 0 : b.getOwnedJobArrayBySector(freight.key())[JobType.DIPLOMA.ordinal()];
         double idle = Math.floor(Math.max(0, depotRoom() - trucks())) * DRIVERS_A_TRUCK;
+        // ...and, in the driverless form (THE DRIVERLESS TRUCK), the posts the depots' driverless trucks no longer need: all but the oversight's.
+        if (driverShare < 1) idle += Math.min(trucks(), depotRoom()) * (1 - driverShare) * (DRIVERS_A_TRUCK - OVERSIGHT_A_TRUCK);
         diplomaOffered = diploma > 0 ? Math.max(0, Math.min(1, (diploma - idle) / diploma)) : 1;
     }
 
     /** The share of Freight's posts of a job type on offer this month: the drivers' tier's as struck, every other's whole. */
     public double offeredShare(JobType type) { return type == JobType.DIPLOMA ? diplomaOffered : 1; }
+
+    /* ===== THE DRIVERLESS TRUCK (R6b, 2026-11-17; docs/studies/research-near-future.md 3, FE1)
+     *
+     * From May 2025 a truck can run a fixed motorway lane with nobody in the cab (Aurora, Dallas to Houston), and a depot fitted with the
+     * driverless kit (the Truck Depot's second piece of equipment, ending Equipment.Form.CAB_DRIVERS) keeps its trucks that way. A share of the
+     * depots' truck room, 0..1, is still driven (setDriverShare(); EquipmentForms sets it from the depots lacking the kit). At 1, the default
+     * and every city founded today's way, nothing here runs and the month is today's, to the bit.
+     *
+     * At share s (the share still driven):
+     *
+     *   - A TRUCK CARRIES MORE: a driven truck works one shift (SHIFT_HOURS, the shift TONNES_A_TRUCK_MONTH is struck on) and a driverless one
+     *     DRIVERLESS_HOURS, at the same diesel a tonne, so tonnesATruck() blends the two and the same need asks for fewer trucks
+     *     (trucksNeeded(), trucksAsked(), the capacity the share is struck over). The blend is over the trucks the depots keep: a truck past
+     *     their room stands on the street, under no kit, and is driven (driverlessShare(); REV-R6b-1). Read at the fleet held, the count a
+     *     need asks for settles where the fleet's tonnes meet it, a month's fleet moving toward it as the vans' rule allows.
+     *   - THE DRIVERS ARE LAID OFF BUT FOR THE OVERSIGHT: driverPostsATruck() blends DRIVERS_A_TRUCK with OVERSIGHT_A_TRUCK, and
+     *     strikeDrivers() lays off the posts of the depots' driverless trucks beyond it, as it lays off the places no truck fills.
+     *   - THE QUOTE's estimate is struck on the same two figures: the tonnes a truck carries and the driver posts it keeps.
+     *
+     * WHY A SHARE, AND WHY THESE FIGURES: the rule the truck escapes is the cab's, not the truck's: a driver may drive 11 hours in a 14-hour
+     * day and must rest 10 (49 CFR 395.3), so a driven truck stands idle most of the day it could work, and a driverless one stops only to be
+     * loaded, fuelled and looked over. How many hours that is, and how many people watch a truck from afar, are not published (the study's
+     * 3.2: "nothing is published on cost"), so DRIVERLESS_HOURS and OVERSIGHT_A_TRUCK are R6b's assumptions, named as such, and the kit's
+     * price is half a truck's (buildings.json). A share, like the horse form's, because a building is fitted or it is not and the forms read
+     * one number a sector (EquipmentForms): it is the room-weighted share of the depots without the kit, not saved, set again each month.
+     * =================================================================== */
+
+    /** Hours a driven truck works in a day: the one ten-hour shift TONNES_A_TRUCK_MONTH is struck on. */
+    public static final double SHIFT_HOURS = 10;
+
+    /** Hours a day a truck with no driver works: day and night but for loading, fuelling and upkeep; the 11-hour driving limit (49 CFR 395.3) binds the cab, not the truck (est., unpublished; R6b's call). */
+    public static final double DRIVERLESS_HOURS = 20;
+
+    /** Remote-assistance and terminal posts a driverless truck needs, per truck (est., unpublished; R6b's call). */
+    public static final double OVERSIGHT_A_TRUCK = 0.1;
+
+    /** The share of the depots' truck room still driven, 0 to 1: 1 until EquipmentForms (or a harness) sets it; not saved. */
+    private double driverShare = 1;
+
+    /** Sets the driven share of the depots' truck room, clamped to [0, 1] (not a number reads 1): from the next bill, the next haul and the next wage pass. */
+    public void setDriverShare(double d) {
+        driverShare = Double.isFinite(d) ? Math.min(1, Math.max(0, d)) : 1;
+    }
+
+    public double getDriverShare() { return driverShare; }
+
+    /**
+     * The share of the fleet held that runs driverless: the depots' driverless share (1 - the driven share) of the trucks the depots keep,
+     * min(trucks, depotRoom) over trucks, as strikeDrivers() counts them. A truck past the room is parked on the street, in no depot and
+     * under no kit, and is driven (REV-R6b-1). With no truck held, the first ones go to the depots, if any stand.
+     */
+    public double driverlessShare() {
+        if (driverShare >= 1) return 0;
+        double n = trucks(), room = depotRoom();
+        double kept = n > 0 ? Math.min(n, room) / n : (room > 0 ? 1 : 0);
+        return (1 - driverShare) * kept;
+    }
+
+    /** The tonnes a truck of the fleet held carries in a month: TONNES_A_TRUCK_MONTH itself while every truck is driven, more as the driverless ones (driverlessShare()) work DRIVERLESS_HOURS where a driven one works SHIFT_HOURS. */
+    public double tonnesATruck() {
+        if (driverShare >= 1) return TONNES_A_TRUCK_MONTH;
+        double d = driverlessShare();
+        return TONNES_A_TRUCK_MONTH * ((1 - d) + d * DRIVERLESS_HOURS / SHIFT_HOURS);
+    }
+
+    /** The driver posts a truck of the fleet held needs: DRIVERS_A_TRUCK itself while every truck is driven, the oversight's OVERSIGHT_A_TRUCK for each driverless one (driverlessShare()). */
+    public double driverPostsATruck() {
+        if (driverShare >= 1) return DRIVERS_A_TRUCK;
+        double d = driverlessShare();
+        return (1 - d) * DRIVERS_A_TRUCK + d * OVERSIGHT_A_TRUCK;
+    }
+
+    /** What a driver's post costs a month, a diploma's wage (Freight's, package-private): the figure a driver saved is worth, for EquipmentFit.driverGain(). */
+    public double driverWage() { return freight.diplomaWage(); }
 
     /* ===== THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, section 2.3)
      *
@@ -1037,35 +1113,50 @@ public final class Haulage {
             if (dieselMarket != null) d = dieselMarket.landedPrice();
         }
         d = Double.isFinite(d) ? Math.max(0, d) : 0;
-        double e = (TONNES_A_TRUCK_MONTH * DIESEL_LITRES_A_TONNE * d + freight.diplomaWage()) / TONNES_A_TRUCK_MONTH;
+        double t = tonnesATruck();
+        double e = (t * DIESEL_LITRES_A_TONNE * d + freight.diplomaWage() * driverPostsATruck()) / t;
         return Double.isFinite(e) ? Math.max(0, e) : 0;
     }
 
     /* ------------------------------------------------------------ the price */
 
     /**
+     * A truck's capital for a month at today's prices: its wear (a van's life, Sector.VAN_LIFE_MONTHS) and its return on what it cost
+     * (Freight.TARGET_RETURN), at the trucks' landed price, or the world's before a market has one. Finite and not below zero. estimate()'s
+     * first term, and the capital a depot's driverless kit saves on the trucks it needs fewer of (EquipmentFit.driverGain()).
+     */
+    public double truckCapitalMonth() {
+        double p = Good.TRUCKS.worldImportPrice();
+        Markets m = freight.markets();
+        if (m != null) {
+            GoodsMarket trucksMarket = m.get(Good.TRUCKS);
+            if (trucksMarket != null && Double.isFinite(trucksMarket.landedPrice())) p = trucksMarket.landedPrice();
+        }
+        p = Double.isFinite(p) ? Math.max(0, p) : 0;
+        return p * (1 / Sector.VAN_LIFE_MONTHS + Freight.TARGET_RETURN);
+    }
+
+    /**
      * What a tonne's city leg costs at today's prices with no history behind
      * it: the quote before the first month's carriage has struck one. A truck's
      * wear and its return on what it cost, a month's diesel, and a driver's
-     * month (a diploma's wage), over the tonnes a truck carries a month. No
+     * month (a diploma's wage, at the driver posts a truck keeps: THE DRIVERLESS
+     * TRUCK), over the tonnes a truck carries a month. No
      * depot in it: the rule has the depots' own costs once there are some.
      *
      * Finite and not below zero whatever the markets say.
      */
     public double estimate() {
-        double p = Good.TRUCKS.worldImportPrice();
         double d = Good.DIESEL.worldImportPrice();
         Markets m = freight.markets();
         if (m != null) {
-            GoodsMarket trucksMarket = m.get(Good.TRUCKS), dieselMarket = m.get(Good.DIESEL);
-            if (trucksMarket != null && Double.isFinite(trucksMarket.landedPrice())) p = trucksMarket.landedPrice();
+            GoodsMarket dieselMarket = m.get(Good.DIESEL);
             if (dieselMarket != null) d = dieselMarket.landedPrice();
         }
-        p = Double.isFinite(p) ? Math.max(0, p) : 0;
         d = Double.isFinite(d) ? Math.max(0, d) : 0;
-        double w = freight.diplomaWage();
-        double e = (p * (1 / Sector.VAN_LIFE_MONTHS + Freight.TARGET_RETURN)
-                + TONNES_A_TRUCK_MONTH * DIESEL_LITRES_A_TONNE * d + w) / TONNES_A_TRUCK_MONTH;
+        double w = freight.diplomaWage() * driverPostsATruck();
+        double t = tonnesATruck();
+        double e = (truckCapitalMonth() + t * DIESEL_LITRES_A_TONNE * d + w) / t;
         double today = Double.isFinite(e) ? Math.max(0, e) : 0;
         if (!(horseShare > 0)) return today;
         // ...with the horse form on, the blend of the trucks' price and the teams' (THE HORSE FORM).

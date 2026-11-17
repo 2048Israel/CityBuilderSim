@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.133 — R6b, Research: the near-future rows — 2026-11-17, ready, see docs/queue/R6b-notes.md
+The near future's first rows, each with what it gives. `research.json` learns `projected` and `window`, held to
+`ResearchCatalog.HISTORY_ENDS` (November 2026), and a projected row says so wherever its date shows: the inbox,
+the research screen's dots, rows and flags, the build card's origin. A city founded today's way never knows a row
+from `NEAR_FUTURE` (January 2025) on, so the default playtest is unchanged to the bit. A city founded the 1900 way
+gets **FE1**, the driverless truck: a kit at the Truck Depot, a truck working 20 hours, not one 10-hour shift, with
+a tenth of a post watching it (both estimates). **FE2** is the Sulphide Leach & SX-EW Plant (153): cathode from a
+sulphide field at 85%, no smelter. **FE4** is the Hydrogen Steel Works (154, projected 2028): pellets and 3.48 MWh a
+tonne into steel, paying where it replaces imported steel on cheap power. Saves go to format 55, and the oldest
+loadable with them: a format-54 save holds no count of the depots' kits unfitted, which would read as fitted. New:
+`DriverlessTruckCheck`, `SulphideLeachCheck`, `HydrogenSteelCheck`, `ResearchCheck` 11-13. FE3, FE5, FE6, FM1
+and FM2 wait for their batches.
+
 ### 0.9.132 — TQ1, the staffing gate's tie rule — 2026-11-17, ready, see docs/queue/TQ1-notes.md
 A planner whose buildings the staffing gate refused hands one hold to the wage (LD1), the refusal nearest to
 passing, and in a city with no spare the refused templates tie exactly (GW1's snapped share). Each of thirteen

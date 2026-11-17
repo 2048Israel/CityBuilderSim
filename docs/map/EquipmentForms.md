@@ -1,9 +1,9 @@
-# EquipmentForms.java - 124 lines · 5 methods · 0 constants · model
+# EquipmentForms.java - 150 lines · 6 methods · 0 constants · model
 
 `ham/citybuildersim/EquipmentForms.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share
-> and the carts' horse share, each the unfitted part of what it scales.
+> and the carts' horse share, each the unfitted part of what it scales, and (R6b) Haulage's driven share of the depots, the part of their truck room still without the driverless kit.
 > 
 > WHY (R1, 2026-11-05; docs/queue/R1-notes.md calls 4 and 6). R0c built the forms as shares nobody set, off in every played city, and its
 > call 3 said "R1 fits equipment building by building and sets the sector's share from its count; the forms read one number". This is that
@@ -24,7 +24,7 @@
 > state. clear() forgets which shares were driven, where Game rebuilds its world (R1b), so a city founded or loaded into a Game that played
 > another starts as a fresh process does.
 
-**Uses:** [Equipment](Equipment.md) (9), [BuildingsStacks](BuildingsStacks.md) (4), [Game](Game.md) (1), [Sectors](Sectors.md) (1), [Agriculture](Agriculture.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Equipment](Equipment.md) (10), [BuildingsStacks](BuildingsStacks.md) (6), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [Agriculture](Agriculture.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -39,11 +39,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 91 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales. |
+| 34 | 117 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales, and (R6... |
 | 40 | 3 | **type** `private static final class Weight` | What a form scales over a set of stacks: the whole, and the part of it that lacks the equipment. |
-| 45 | 45 | `public void apply(Game game)` | Sets every form's share from the counts. |
-| 95 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
-| 106 | 8 | `private static long unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
-| 116 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
-| 121 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
+| 48 | 46 | `public void apply(Game game)` | Sets every form's share from the counts, and Freight's driven share of the depots (R6b) from them whatever they are. |
+| 101 | 15 | `private static void setDriven(Game game, List<BuildingsStacks> stacks)` | Sets the share of the depots' truck room still driven (R6b, call 1: the driverless kit's piece ends CAB_DRIVERS): in a city founded the 1900 way, the truck room of the buildings lacking the kit over all the truck room... |
+| 121 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
+| 132 | 8 | `private static long unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
+| 142 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
+| 147 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
 

@@ -1937,11 +1937,14 @@ final class InfrastructureScreen {
 
     /** The trucks' (i) (FR4). */
     static final String TRUCKS_INFO = String.format(
-            "A truck carries about %,.0f tonnes a month. Haulage owns the fleet and buys toward what the "
+            "A truck carries about %,.0f tonnes a month on its driver's shift, and about %,.0f with no "
+            + "driver, where its depot has the driverless kit. Haulage owns the fleet and buys toward what the "
             + "plant standing and the plant on site will ask of it, an eighth of the gap a month - so a "
             + "town that is growing is short for a while, and a short fleet carries only its share of the "
             + "city leg: the shippers collect the rest in their own vans.",
-            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH);
+            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH,
+            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH * ham.citybuildersim.sectors.Haulage.DRIVERLESS_HOURS
+                    / ham.citybuildersim.sectors.Haulage.SHIFT_HOURS);
 
     /** The depots' (i) (FR4). */
     static final String DEPOTS_INFO = String.format(

@@ -1018,9 +1018,9 @@ final class BuildScreen {
         return out;
     }
 
-    /** Where a building came from, in the strip's words: "found here, June 1979" or "from abroad, June 1955". */
+    /** Where a building came from, in the strip's words: "found here, June 1979" or "from abroad, June 1955", with the mark after it where its discovery is projected ("from abroad, June 2028 (projected, 2027-2030)"). */
     static String originPlace(ResearchView.Origin o) {
-        return (o.source() == ResearchView.Source.HERE ? "found here, " : "from abroad, ") + CityCalendar.format(o.month());
+        return ResearchView.marked(o.entry(), (o.source() == ResearchView.Source.HERE ? "found here, " : "from abroad, ") + CityCalendar.format(o.month()));
     }
 
     /**

@@ -1,7 +1,7 @@
 {
  "_readme": [
   "The research catalogue (R2): every discovery the city's schools can make, which field researches it, what it unlocks, history's date, what it needs first and what the work costs.",
-  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 91 entries: the original 89, the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6), plus E19/E20 (research-1900 Q13, R2e-notes).",
+  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 94 entries: the original 89, the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6), plus E19/E20 (research-1900 Q13, R2e-notes) and the near future's FE1, FE2 and FE4 (research-near-future.md 3, R6b).",
   "",
   "CODE IS PERMANENT. buildings.json's \"since\" names a discovery by its code (\"E1\", \"PE14\") and saves will key by it. Never renumber or reuse a code; a new discovery takes the next free number in its field.",
   "Reordering entries is safe. The order here is the order the studies print them in.",
@@ -22,7 +22,10 @@
   "requires  what else it needs, in words (a coast, a magnetite field), or \"\".",
   "fee       whether it would carry a licence fee while under patent (research-design.md 2.4: 25% of what it adds, 20 years); feeNote is the study's qualifier. Law is not patented: every law row is false.",
   "work      researcher-years at its date. The tables' figure; for the PL rows and L5, which the tables do not print, the rule: 400 (building, equipment), 200 (recipe) or 500 (drug) at 1950, times 1.053 a year (1.035 a year in medicine) to the year, rounded.",
-  "study     the section it comes from."
+  "study     the section it comes from.",
+  "projected optional (R6b, research-near-future.md 2 rule 5): true for a row whose date history has not reached, a projection (the builder's date plus the study's allowance, its 4); absent or false, history. ResearchCatalog.HISTORY_ENDS is the month the catalogue was last read against the world (2026-11): every row dated after it is projected, every row on or before it is not (ResearchCheck).",
+  "window    optional, with projected: the years the projection may fall in, \"2027-2030\" (the builder's own date to the latest any builder of the same thing gives). The screens print it beside the date.",
+  "          A row dated from ResearchCatalog.NEAR_FUTURE (Jan 2025, the study's rule 6) on is the near future: no part of today's figures in buildings.json, so a city founded the default way, which knows every other row from its first month, never knows it (R6b's call 1)."
  ],
  "entries": [
   { "code": "E1", "name": "Oxygen converter", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
@@ -606,6 +609,21 @@
     "FPL-RP-656 https://www.fpl.fs.usda.gov/documnts/fplrp/fpl_rp656.pdf; no source dates the exact year 1970"
    ],
    "work": 1124
-  }
+  },
+  { "code": "FE1", "name": "Driverless truck", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
+    "year": 2025, "month": 5, "monthKnown": true, "world": "May 2025, Dallas to Houston",
+    "touches": "Truck Depot",
+    "effect": "no driver in the cab on a fixed motorway lane; a driven truck is held to 11 hours' driving in a 14-hour day; cost a mile not published",
+    "sources": ["N1", "N2", "N3"], "needs": [], "requires": "", "fee": true, "feeNote": "", "work": 19239, "study": "research-near-future 3" },
+  { "code": "FE2", "name": "Sulphide heap leaching", "field": "ENGINEERING", "kind": ["building"], "size": "recipe",
+    "year": 2025, "month": 11, "monthKnown": true, "world": "Nov 2025, Johnson Camp, Arizona",
+    "touches": "Sulphide Leach & SX-EW Plant (new): the Leach & SX-EW Plant on a sulphide field",
+    "effect": "sulphide ore to cathode on the heap, with no concentrator, smelter or refinery; recovery up to 85% (the builder's ceiling); 71 L of water a kg of copper against about 130",
+    "sources": ["N4", "N5"], "needs": ["E12"], "requires": "a sulphide field; acid", "fee": true, "feeNote": "", "work": 9620, "study": "research-near-future 3" },
+  { "code": "FE4", "name": "Hydrogen-reduced iron", "field": "ENGINEERING", "kind": ["building"], "size": "building",
+    "year": 2028, "month": 6, "monthKnown": false, "world": "2028, Boden, Sweden", "projected": true, "window": "2027-2030",
+    "touches": "Hydrogen Steel Works (new), in place of the Blast Furnace and the Oxygen Steel Shop",
+    "effect": "3.48 MWh of electricity a tonne of liquid steel, most of it making hydrogen (54 kg a tonne of iron by the chemistry); no coke",
+    "sources": ["N8", "N9", "N10"], "needs": ["PE1", "E4"], "requires": "", "fee": true, "feeNote": "", "work": 22463, "study": "research-near-future 3" }
  ]
 }

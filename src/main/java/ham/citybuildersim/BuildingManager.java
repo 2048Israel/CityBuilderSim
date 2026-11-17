@@ -4994,7 +4994,57 @@ public class BuildingManager {
                 .setSite(Resource.GOLD, Deposit.FieldType.NONE, 1, 1)
                 .setSince(1900)
                 .setId(152));
-        //add more buildings; next Building ID is 153
+        /* ---------------- THE NEAR FUTURE (R6b, 2026-11-16; docs/studies/research-near-future.md 3, docs/queue/R6b-notes.md)
+
+           Two works a near-future row opens, which a city founded the default way never knows (ResearchCatalog.NEAR_FUTURE; Game.knows()).
+           The SULPHIDE LEACH & SX-EW PLANT (FE2, Nov 2025, Johnson Camp): the Leach & SX-EW Plant's figures on one sulphide site, its dig the
+           builder's "recovery rates of up to 85% from primary sulphides" (Rio Tinto, 4 Dec 2025: CopperMining.SULPHIDE_LEACH_RECOVERY) and its
+           water the builder's "71 litres per kilogram copper", 71,000 m3 a month for 1,000 t in units of 10,000 US gallons (est. else: the
+           oxide plant's acid, power, staff and cost; no figure for them is published). The HYDROGEN STEEL WORKS (FE4, projected 2028, Boden):
+           electrolysers, a shaft furnace and its arc furnaces in one, pellets and power into steel; 100,000 t a month, LKAB's HYBRIT value
+           chain of 1.2 Mt of crude steel a year; 3.48 MWh a tonne of liquid steel (Vogl, Ahman and Nilsson 2018), in units of 720 kWh;
+           pellets at 1/0.65 a tonne (E4's 65% Fe); its cost, staff, ground, roads, consumables and water composed as 0.4 of a Blast Furnace
+           (the shaft furnace and electrolysers in its place, for 100,000 t of iron) and 0.8 of a Large Mini-Mill (its arc furnaces), plus
+           electrolysis water at 9 kg a kg of 54 kg of hydrogen a tonne (all est.: no builder has published these). */
+        templates.add(new BuildingsTemplate("Sulphide Leach & SX-EW Plant", BuildingType.MINING)   // one sulphide site: ore heap-leached to cathode, no smelter, 2025
+                .setCashCost(192310)
+                .setConstructionPoints(96155)
+                .setConstructionMaterials(3205)
+                .setSector("Copper Mining")
+                .makes(Good.COPPER, 1000)
+                .uses(Good.ACID, 3500)
+                .setElectricityConsumption(6000)
+                .setWaterConsumption(1876)          // 71 L a kg: 71,000,000 L over 37,854 L a unit
+                .setConsumables(1025.35)
+                .setLandSqFt(5381955)               // one copper site
+                .setRoadLoad(756)
+                .setStock(3000)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 41)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 15)
+                .setJobs(JobType.UNIV_SCIENCE, 4)
+                .setSite(Resource.COPPER, Deposit.FieldType.SULPHIDE, 1, ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH_DIG)
+                .setSince("FE2")
+                .setId(153));
+        templates.add(new BuildingsTemplate("Hydrogen Steel Works", BuildingType.HEAVY_INDUSTRY)   // pellets and power into steel, no coke, projected 2028
+                .setCashCost(1153838)
+                .setConstructionPoints(576919)
+                .setConstructionMaterials(19231)
+                .setSector("Heavy Industry")
+                .makes(Good.STEEL, 100000)
+                .uses(Good.PELLETS, 153846)          // 1/0.65 t of 65% Fe pellets a tonne
+                .setElectricityConsumption(483333)   // 3.48 MWh a tonne over 720 kWh a unit
+                .setWaterConsumption(8389)
+                .setConsumables(4506.82)
+                .setLandSqFt(6544457)
+                .setRoadLoad(11080)
+                .setJobs(JobType.NO_DIPLOMA, 432)
+                .setJobs(JobType.DIPLOMA, 280)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 72)
+                .setJobs(JobType.UNIV_SCIENCE, 16)
+                .setSince("FE4")
+                .setId(154));
+        //add more buildings; next Building ID is 155
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 

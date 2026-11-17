@@ -350,14 +350,15 @@ public class Inbox {
             // ...and where the field's prize went, when it has one (R4): the part to the labs that did the work and the part to the schools' grants.
             Research.Purse purse = research.purses().get(code);
             take(game, month, "found:" + code, true, "Found here: " + entry.name(),
-                    wrapped(String.format("%s found it, %.1f years ahead of the world. It touches: %s.", capital(entry.field().school()), years, entry.touches())
+                    wrapped(ResearchView.marked(entry, String.format("%s found it, %.1f years ahead of the world", capital(entry.field().school()), years))
+                            + String.format(". It touches: %s.", entry.touches())
                             + (purse == null ? "" : " " + prizeSentence(purse)), BODY_COLUMNS));
         }
         for (String code : arrived) {
             ResearchCatalog.Entry entry = catalogue.entry(code);
             if (entry == null) continue;
             take(game, month, "abroad:" + code, true, "From abroad: " + entry.name(),
-                    wrapped(String.format("The world has it now (%s). It touches: %s.", entry.world(), entry.touches()), BODY_COLUMNS));
+                    wrapped(String.format("The world has it now (%s). It touches: %s.", entry.dateWords(), entry.touches()), BODY_COLUMNS));
         }
         // ...and the ones raised in an earlier month are settled: they were told once.
         for (Notice notice : new ArrayList<>(notices)) {
