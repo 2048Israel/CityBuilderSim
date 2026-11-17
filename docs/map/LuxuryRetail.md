@@ -1,4 +1,4 @@
-# LuxuryRetail.java - 554 lines · 24 methods · 4 constants · sectors
+# LuxuryRetail.java - 586 lines · 24 methods · 6 constants · sectors
 
 `ham/citybuildersim/sectors/LuxuryRetail.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -59,18 +59,19 @@
 
 **Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (3), [Markets](Markets.md) (2), [Trade](Trade.md) (2), [Game](Game.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildingType](BuildingType.md) (1), [Retail](Retail.md) (1)
 
-**Used by (5):** [EconomyManager](EconomyManager.md), [Game](Game.md), [LuxuryCounter](LuxuryCounter.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
+**Used by (6):** [EconomyManager](EconomyManager.md), [Game](Game.md), [LuxuryCounter](LuxuryCounter.md), [LuxuryRetailCheck](LuxuryRetailCheck.md), [SectorScreen](SectorScreen.md), [Sectors](Sectors.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 74 | THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT |
-| 123 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
-| 191 | THE SALE |
-| 374 | PLANNING - the queue at a door that is not there |
-| 487 | THE SCREEN |
-| 529 | SAVE, RESET (0.7.43) |
+| 117 | WHAT A POST SELLS (LX1, 2026-11-17) |
+| 155 | WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG |
+| 223 | THE SALE |
+| 406 | PLANNING - the queue at a door that is not there |
+| 519 | THE SCREEN |
+| 561 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
@@ -79,70 +80,74 @@
 | 92 | `LuxuryRetail.MARGIN_FLOOR` | `1.25` | What a shop charges over what the piece cost it when nobody would buy at its price: the mark-up at a position of nothing, and the lowest the margin can strike (0.7.19: the position is the buyers AT THE PRICE CHARGED -... |
 | 106 | `LuxuryRetail.MARGIN_CEILING` | `4.0` | ...and what a shop charges as the buyers at its price outnumber its counters without limit: the position's limit of one. |
 | 115 | `LuxuryRetail.MARGIN_SPEED` | `1.0 / 6` | The share of the way, in logs, a shop's charged margin moves toward the fixed point its buyers strike in a month: a sixth (0.7.43; spec-inflation.md 2.7). |
-| 262 | `LuxuryRetail.MARGIN_STEPS` | `60` | Bisection steps for the margin's fixed point: 2.75 / 2^60 is far below a cent's grain on any landed cost. |
+| 144 | `LuxuryRetail.LABOUR_SHARE` | `.417` | BEA's compensation of employees over value added for other retail (4A0), the mean of 2023-2025 (LS1's bea-compensation-share.csv): what a luxury shop's payroll is of its margin less power, water and upkeep, the share ... |
+| 147 | `LuxuryRetail.LABOUR_SHARE_FACTOR` | `2` | ...and how far either way of it a shop's payroll over its value added may read and still be on BEA's mark: a factor of two, what a piece's landed cost over the mean wage alone moves through one run (1.6 to 3.4 mean mo... |
+| 294 | `LuxuryRetail.MARGIN_STEPS` | `60` | Bisection steps for the margin's fixed point: 2.75 / 2^60 is far below a cent's grain on any landed cost. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 118 | `private double sellPrice` | What one shop's counter is worth a month, before anybody has told it anything. |
-| 121 | `private double chargedMargin` | The margin the shops charge, carried month to month (0.7.43); NaN until the first strike, and on a save from before, which opens at the target. |
-| 171 | `private double rMargin` | The month's reading, for the screen and the harness. |
+| 150 | `private double sellPrice` | What one shop's counter is worth a month, before anybody has told it anything. |
+| 153 | `private double chargedMargin` | The margin the shops charge, carried month to month (0.7.43); NaN until the first strike, and on a save from before, which opens at the target. |
+| 203 | `private double rMargin` | The month's reading, for the screen and the harness. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 483 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
+| 72 | 515 | **type** `public class LuxuryRetail extends Sector` | The luxury shops. |
 
-### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-122)
+### THE MARGIN, AND WHY IT IS A MULTIPLE RATHER THAN AN AMOUNT (lines 74-116)
 
-### WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG (lines 123-190)
+### WHAT A POST SELLS (LX1, 2026-11-17) (lines 117-154)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 164 | 5 | `public static double landedCost(GoodsMarket wholesale)` | What one piece costs the shop to bring in: the local price when the city has luxuries on offer, the import price when it has none. |
-| 173 | 17 | `public LuxuryRetail()` |  |
-
-### THE SALE (lines 191-373)
+### WHAT A PIECE COSTS THE SHOP - AND THE SWING THAT READING THE WRONG (lines 155-222)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 196 | 4 | `public long coverage()` | People the shops can serve a month, off their buildings. |
-| 208 | 4 | `public long coverageOnSite()` | ...and the people the shops on site will serve once they open (BA1, 2026-11-02): plan() counted the counters standing only while a sector could have one order on site; with no cap on orders it would order the same que... |
-| 214 | 1 | `public double getMargin()` | The margin charged this month: a sixth of the way from last month's to the fixed point, in logs (0.7.43). |
-| 216 | 1 | `public double getTargetMargin()` | The fixed point the buyers struck this month (strikeMargin()), which the charged margin chases. |
-| 217 | 1 | `public double getWanted()` |  |
-| 218 | 1 | `public double getServed()` |  |
-| 219 | 1 | `public double getCoverage()` |  |
-| 220 | 1 | `public double getLanded()` |  |
-| 221 | 1 | `public double getSellPrice()` |  |
-| 271 | 42 | `public double strikeMargin(Markets markets, java.util.function.DoubleUnaryOperator buyersAt)` | Strikes the margin against the buyers at the price it charges and returns what a piece will cost this month. |
-| 315 | 5 | `private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, long cover, double margin)` | The rule's gap at a margin: the margin less what the buyers at its price would strike. |
-| 331 | 18 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
-| 351 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
-| 369 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
+| 196 | 5 | `public static double landedCost(GoodsMarket wholesale)` | What one piece costs the shop to bring in: the local price when the city has luxuries on offer, the import price when it has none. |
+| 205 | 17 | `public LuxuryRetail()` |  |
 
-### PLANNING - the queue at a door that is not there (lines 374-486)
+### THE SALE (lines 223-405)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 402 | 57 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
-| 476 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
+| 228 | 4 | `public long coverage()` | People the shops can serve a month, off their buildings. |
+| 240 | 4 | `public long coverageOnSite()` | ...and the people the shops on site will serve once they open (BA1, 2026-11-02): plan() counted the counters standing only while a sector could have one order on site; with no cap on orders it would order the same que... |
+| 246 | 1 | `public double getMargin()` | The margin charged this month: a sixth of the way from last month's to the fixed point, in logs (0.7.43). |
+| 248 | 1 | `public double getTargetMargin()` | The fixed point the buyers struck this month (strikeMargin()), which the charged margin chases. |
+| 249 | 1 | `public double getWanted()` |  |
+| 250 | 1 | `public double getServed()` |  |
+| 251 | 1 | `public double getCoverage()` |  |
+| 252 | 1 | `public double getLanded()` |  |
+| 253 | 1 | `public double getSellPrice()` |  |
+| 303 | 42 | `public double strikeMargin(Markets markets, java.util.function.DoubleUnaryOperator buyersAt)` | Strikes the margin against the buyers at the price it charges and returns what a piece will cost this month. |
+| 347 | 5 | `private static double excess(java.util.function.DoubleUnaryOperator buyersAt, double landed, long cover, double margin)` | The rule's gap at a margin: the margin less what the buyers at its price would strike. |
+| 363 | 18 | `public double serve(Markets markets, double pieces)` | ...and sells what the counter and the shelf can actually get through. |
+| 383 | 1 | `public double onShelf()` | What the shops hold, in pieces. |
+| 401 | 4 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### THE SCREEN (lines 487-528)
+### PLANNING - the queue at a door that is not there (lines 406-518)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 493 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
-| 496 | 1 | `public boolean hasPlantBlock()` |  |
-| 499 | 30 | `public List<Line> ownLines(Game game)` |  |
+| 434 | 57 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the customers who came AT ITS PRICE, not against a sales record (0.7.19: the buyers at the margin it struck - see strikeMargin() - where it read the queue at the floor price until then). |
+| 508 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more counter would earn a month. |
 
-### SAVE, RESET (0.7.43) (lines 529-554)
+### THE SCREEN (lines 519-560)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 535 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
-| 542 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
-| 550 | 4 | `protected void resetExtras()` |  |
+| 525 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
+| 528 | 1 | `public boolean hasPlantBlock()` |  |
+| 531 | 30 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET (0.7.43) (lines 561-586)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 567 | 4 | `protected void saveExtras(java.util.Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 574 | 6 | `protected void restoreExtras(java.util.Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its fixed point. |
+| 582 | 4 | `protected void resetExtras()` |  |
 
