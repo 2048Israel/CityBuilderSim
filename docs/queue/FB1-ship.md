@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-FB1-I1vH4jjs -->
 ## changelog
 ### FB1 — three fixtures that read the city's path — 2026-11-16, ready, no tag (harness)
 Two fixtures that read where the played city's path happens to stand now cause their own conditions; the model and the playtest are main's.

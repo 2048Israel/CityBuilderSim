@@ -107,3 +107,13 @@ different experiment (a dial rule that holds the currency, or a window cut betwe
 - RN1-F's "tried fourteen clinics so the beds cannot bind" is superseded by `keepBedsAhead()`: the beds are caused, not
   waited for.
 - No process change: no script, check machinery or session rule is touched (`git diff --numstat` over `tools/`: none).
+
+## The dry run
+
+`sh tools/gate.sh FB1 --dry-run --no-tag` (untagged: harnesses only), run directory `/tmp/cbs-gate-FB1-I1vH4jjs`
+(kept; the log is its `ship.log`, the launch output `target/FB1-dry.txt`): exit 0, the pick of 6 harnesses (FoodProcessingCheck,
+HealthCheck, KnownRedsCheck, LongPlaytest, SicknessCheck, TimingCheck) OK in 662 s, `unnamed.txt` empty, no new red.
+It was of branch `aafe98eef37f41472d8e66aac5936218ce5ab555` (batch/FB1 with origin/main merged in) and main
+`aeac6e5a9056145b41fb8a70907628fe781d8924` (0.9.130, CU2 shipped). CU2 had shipped between the first scratch merges and the
+dry run: the three harnesses were run again on the merge with main (exit 0, suite OK 4, with KnownRedsCheck) before it.
+After it only these notes and the ship file changed.
