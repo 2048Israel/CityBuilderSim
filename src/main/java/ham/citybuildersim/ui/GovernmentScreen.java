@@ -758,7 +758,7 @@ final class GovernmentScreen {
     VBox wealthCard() {
         GovernmentView view = GovernmentView.of(ui.game);
         String info = "Net financial wealth is treasury cash + fund cash + the fund's holdings at market value + "
-                + "the vault's reserves in local money, less the city's debt. It is compared with the last twelve "
+                + "the vault's reserves in local money, less the city's debt (its paper at face, the central bank's advances and the linked bonds' indexation). It is compared with the last twelve "
                 + "months of revenue once a full year has been recorded.\n\nTreasury: " + m(view.treasury())
                 + "\nFund cash: " + m(view.fundCash()) + "\nFund holdings: " + m(view.fundHoldings())
                 + "\nVault: " + m(view.vault()) + "\nDebt: " + m(view.debt())
