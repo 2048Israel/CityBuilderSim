@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-FB7-Gss1vBX6 -->
 ## changelog
 ### {next} — FB7, counters read under load — 2026-11-17, ready, see docs/queue/FB7-notes.md
