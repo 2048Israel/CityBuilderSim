@@ -2524,6 +2524,24 @@ public class KeptCheck {
         }
     }
 
+    /** The name of the Rankings tab's one thread for the saved cities (RankingsScreen's WORKER). */
+    static final String RANKINGS_WORKER = "rankings-saved-cities";
+
+    /** A thread by its name, as the trace needs it: its state, its priority, the CPU it has had and the top of its stack; or that there is none. */
+    static String workerThread(String name) {
+        java.lang.management.ThreadMXBean mx = java.lang.management.ManagementFactory.getThreadMXBean();
+        for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+            Thread t = e.getKey();
+            if (!t.getName().equals(name)) continue;
+            long cpu = mx.isThreadCpuTimeSupported() ? mx.getThreadCpuTime(t.threadId()) : -1;
+            StringBuilder s = new StringBuilder(t.getState() + " at priority " + t.getPriority() + ", " + String.format("%.1f", cpu / 1e9) + " s of CPU");
+            StackTraceElement[] stack = e.getValue();
+            for (int i = 0; i < Math.min(6, stack.length); i++) s.append(i == 0 ? ", in " : " < ").append(stack[i]);
+            return s.toString();
+        }
+        return "is no thread (" + name + " never started)";
+    }
+
     /** Whether a label on the page as drawn says these words (its whole text, or the start of it). */
     static boolean pageSays(KeptBench bench, String words) {
         for (javafx.scene.Node n : bench.nodesOnPage()) {
@@ -4493,8 +4511,11 @@ public class KeptCheck {
         }
         for (String key : new String[]{bond, freeBond}) {
             if (key == null) continue;
+            // (Choice i is drawn and then a month lands, its (i + 1)th: the bond is on the market through the month after its last choice.)
+            int last = -1;
+            for (int i = 0; i < security.size(); i++) if (security.get(i).name().contains(key + " ") || security.get(i).name().contains(key + ":")) last = i;
             int left = monthsLeft(g, key);
-            check("fixture: " + key + " runs " + left + " months, past the " + security.size() + " months its page is watched", left > security.size() + 1);
+            check("fixture: " + key + " runs " + left + " months, past the " + (last + 1) + " months its page is watched", left > last + 1);
         }
         pageReshaped(g, bench, tab, 63, security);
         fx(() -> {
@@ -4594,17 +4615,69 @@ public class KeptCheck {
         }
     }
 
+
+    /**
+     * FB6 (LX1's two Search lines): the fund's Search list made longer than two of its pages. The list is the market, every listed share and
+     * live bond (a held lot twice), and a played city can hold fewer: LX1's 600-month city had 61 against 2 x SEARCH_ROWS, and Show more never
+     * reached a third page. The fixture sells small bonds of the market's largest issuer through the market's own issue, at the highest coupon
+     * the market pays, the proceeds handed to the issuer's till as a bond's are, until the list is long enough. Returns how many it sold.
+     */
+    static int searchPagesLong(Game g, int rows) throws Exception {
+        return fx(() -> {
+            BondMarket bm = g.getBondMarket();
+            int month = g.getMonth(), sold = 0;
+            CorporateBond largest = null;
+            double coupon = 0;
+            for (CorporateBond b : bm.getBonds()) {
+                if (b.isMatured(month) || !(b.face() > 0)) continue;
+                if (largest == null || b.face() > largest.face()) largest = b;
+                coupon = Math.max(coupon, b.coupon());
+            }
+            Sector issuer = largest == null ? null : g.getSectors().byKey(largest.issuer());
+            if (issuer == null) return 0;
+            double face = g.minimumIssueSize();
+            while (FundView.search(g, "", "All").size() <= rows * 2 && sold <= rows * 2) {
+                double proceeds = bm.issue(new BusinessDebtManager.Plan(issuer.key(), face, face, coupon, coupon, 0, coupon, coupon,
+                        bm.issueCost(face), coupon, 0, face, face), month);
+                if (!(proceeds > 0)) break;
+                issuer.addCash(proceeds);
+                sold++;
+            }
+            return sold;
+        });
+    }
+
+    /**
+     * FB6 (LX1's Activity line): the fund's record given lines in two older years. The Activity page folds each line older than ACTIVITY_MONTHS
+     * by its year, and a played city's record can hold one such year (FundLedger keeps its newest ACTIVITY_ROWS lines, and a rule that trades
+     * every month fills them within two years: LX1's city); the fixture writes a pay-in line of a thousand in the month before the window and
+     * one a year before that, as fundYearNet writes its year. Returns how many it wrote.
+     */
+    static int olderYears(Game g) throws Exception {
+        return fx(() -> {
+            int recentMonths = fundDial("ACTIVITY_MONTHS");
+            if (FundView.activityRecord(g, "All", recentMonths).years().size() > 1) return 0;
+            FundLedger ledger = g.getFund().getLedger();
+            int older = g.getMonth() - recentMonths;
+            ledger.flow(FundLedger.PAY_IN, 1, true, older - TreasuryFund.YEAR_MONTHS);
+            ledger.flow(FundLedger.PAY_IN, 1, true, older);
+            return 2;
+        });
+    }
     /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
     static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
         System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
         fx(() -> { fundYearNet(g); return null; });
         int rows = fundDial("SEARCH_ROWS");
+        int sold = searchPagesLong(g, rows), listed = fx(() -> FundView.search(g, "", "All").size());
+        check("fixture: the market lists more than two Search pages (" + listed + " securities against 2 x SEARCH_ROWS = " + rows * 2
+                + (sold > 0 ? ", " + sold + " small bonds sold for it" : "") + ")", listed > rows * 2);
         List<Choice> choices = new ArrayList<>();
         choices.add(choice("Search starts with SEARCH_ROWS", b -> {
             b.fundPage("Search");
             b.fundSearch("", "All");
             b.drawKept(tab);
-            check("the played city's market causes at least three Search pages", FundView.search(g, "", "All").size() > rows * 2);
+            check("the market still lists more than two Search pages", FundView.search(g, "", "All").size() > rows * 2);
             fundSearchPage(g, b, rows);
             return null;
         }));
@@ -4687,13 +4760,15 @@ public class KeptCheck {
             check("the replacement fixture leaves the model in the same month", g.getMonth() == month);
             return null;
         });
+        int wrote = olderYears(g);
         fx(() -> {
             bench.fundPage("Activity");
             bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
             bench.fundFoldsClosed();
             bench.drawKept(tab);
             List<FundView.ActivityYear> years = FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years();
-            check("the played city's record causes multiple older year folds", years.size() > 1);
+            check("fixture: the record folds lines older than ACTIVITY_MONTHS into more than one year (" + years.size() + " years"
+                    + (wrote > 0 ? ", " + wrote + " pay-in lines written in two of them" : "") + ")", years.size() > 1);
             for (FundView.ActivityYear year : years) {
                 String closed = "▸ " + year.year() + " · " + year.months() + (year.months() == 1 ? " month" : " months");
                 check("year " + year.year() + " starts shut with its recorded month count", bench.chipWith(closed::equals) != null);
@@ -8139,11 +8214,14 @@ public class KeptCheck {
         // snapshot left off the board and why (SavedCities.left()), the slot's two files on disk, and the folder read again here, off the screen.
         String left = fx(bench::rankingsSavedLeft);
         GameFiles files = g.getGameFiles();
+        String worker = workerThread(RANKINGS_WORKER);
+        long readAt = System.nanoTime();
         SavedCities again = SavedCities.read(files);
         System.out.printf("  the read %s after %.1f s; the screen's snapshot: %d on the board, left off %s; slot 10's save %s, its history %s;"
-                        + " the folder read again here: %d on the board, left off %s%n",
+                        + " the folder read again here, in %.1f s: %d on the board, left off %s; the screen's worker %s%n",
                 landed ? "landed" : "had not landed (" + fx(bench::rankingsReadState) + ")", waited, onBoard, left,
-                bytesOf(files.saveFile(10)), bytesOf(files.historyFile(10)), again.now(SavedCities.Played.NONE).size(), again.left());
+                bytesOf(files.saveFile(10)), bytesOf(files.historyFile(10)), (System.nanoTime() - readAt) / 1e9,
+                again.now(SavedCities.Played.NONE).size(), again.left(), worker);
         check("the read of the saved cities landed within a minute, with the saved city on the board (" + onBoard + " on it)", landed && onBoard >= 1);
         List<Choice> y = new ArrayList<>();
         y.add(choice("the filter YOUR_CITIES with the saved city on it, Now", x -> { x.rankingsFilter("YOUR_CITIES"); x.rankingsAtAge(false); return null; }));
