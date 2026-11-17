@@ -143,6 +143,26 @@ deaths over the run, OX1 19,856 and 5,265. The end size is the path's, not the m
 until month 60, ended at 238,511 people (9,088 at month 600) and 1acfc4f3's at 819,808 (3,496 at 600), against main's
 630,320 (14,441). One city's path each, so the ensemble judges.
 
+## The ensemble
+
+`tools/ensemble/ensemble.sh OX1` on 8214515f (the capped model, main ec481b4a merged) against `docs/ensemble/0.9.132.md`,
+80 of 80 runs in 45.9 min, exit 0, committed as `docs/ensemble/OX1.md`. **M1 passes** in every policy (0 months the
+money audit failed). **F1 passes**, 10 of 10 hard: one city in AUTO2, ZERO_SLACK, SHOCK and HIGH, 0 in ZERO_HOT, each
+`households with no home`, against the baseline's one each of the same class; it is one city, seed 9, at month 390,
+before every policy's switch, so its twins share it (the baseline's is seed 0 at month 182, the same way). The class
+is the default playtest's recorded finding on main (m692-745, FB11's). Changed verdicts, information only: ZERO_HOT H2
+VACUOUS to PASS; SHOCK K2 PASS to FAIL (m720-840 inflation 3.01% against a 3.00% bar, 0.48% over its twin); HIGH R2
+PASS to FAIL (unemployment over the twin 0.32 points against a +0.50 bar); 22 of 26 criteria.
+
+**The default city's m600 is the path's, not the rule's.** AUTO2's people at month 600, OX1 then 0.9.132's run (TQ1's
+CSVs): median 19,786 and 24,510, quartiles 14,796-31,891 and 14,660-28,492, range 6,716-47,576 and 8,873-37,360.
+Seed by seed, OX1's city is the larger at m600 in 9 of 16 (Mann-Whitney U 137 of 256, 128 being no difference), the
+ratio OX1 to main median 1.10 [0.35 to 2.13]; at m1200 larger in 7 of 16, ratio 0.98 [0.20 to 4.38]. T1, the month a
+city reaches 40,000: OX1 m872 [493 to 1,320], 0.9.132 m1,071 [671 to 1,306]; the final population (T2) 1,949,996
+against 1,836,044. The default playtest's 3,496 against 14,441 at m600 (0.24) sits below the seeds' lowest ratio
+(0.35) and is 1.09 by m1200 (36,343 against 33,302): one path's take-off coming later, where the seeds' take-offs
+come earlier in the median.
+
 ## The pick
 
 `./batch-check.sh --pick` on 77a7ccc9, before the review (both data files named): 15 of 213 harnesses, 13 green, 2 red; review line
