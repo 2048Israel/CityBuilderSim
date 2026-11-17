@@ -157,8 +157,10 @@ The branch's default playtest (2,400 months, `-Dplaytest.trace`, at c46259c4, al
 against main's reference at `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-aeac6e5a/` (made by this batch
 from aeac6e5a, for other builders too): **all eight CSVs byte-identical** (bank, bonds, build, house, labour,
 month, pop 2,405 lines each, borrow 54). The trace does not move; no ensemble (`docs/batch.md` 6). The
-REV-R6b-1 mends were not traced again: in a city founded today's way the share stays 1, where
-`tonnesATruck()` and `driverPostsATruck()` return before the new blend, and the format number is in no CSV. FB1,
+REV-R6b-1 mends traced again at 09f7decd (Haulage changed; the orchestrator's bar), the same run into
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-R6b-mends/`: **all eight byte-identical** to main's again (2,405
+lines each, borrow 54). In a city founded today's way the share stays 1, where both methods return before the
+blend; the format number is in no CSV. FB1,
 merged after, changed harnesses only.
 
 ## The dry run
