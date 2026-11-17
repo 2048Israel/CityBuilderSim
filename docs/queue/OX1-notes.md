@@ -151,8 +151,9 @@ money audit failed). **F1 passes**, 10 of 10 hard: one city in AUTO2, ZERO_SLACK
 `households with no home`, against the baseline's one each of the same class; it is one city, seed 9, at month 390,
 before every policy's switch, so its twins share it (the baseline's is seed 0 at month 182, the same way). The class
 is the default playtest's recorded finding on main (m692-745, FB11's). Changed verdicts, information only: ZERO_HOT H2
-VACUOUS to PASS; SHOCK K2 PASS to FAIL (m720-840 inflation 3.01% against a 3.00% bar, 0.48% over its twin); HIGH R2
-PASS to FAIL (unemployment over the twin 0.32 points against a +0.50 bar); 22 of 26 criteria.
+VACUOUS to PASS; SHOCK K2 PASS to FAIL (m720-840 inflation 3.01% [-0.49% to 6.75%] against a 3.00% bar, 0.48% over
+its twin; the baseline 2.86% [0.30% to 6.48%] and -0.20%, PASS); HIGH R2 PASS to FAIL (unemployment over the twin
+0.32 points [-1.40 to 6.78] against a +0.50 bar; the baseline 1.55 [-0.77 to 7.87], PASS); 22 of 26 criteria.
 
 **The default city's m600 is the path's, not the rule's.** AUTO2's people at month 600, OX1 then 0.9.132's run (TQ1's
 CSVs): median 19,786 and 24,510, quartiles 14,796-31,891 and 14,660-28,492, range 6,716-47,576 and 8,873-37,360.
