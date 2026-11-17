@@ -1740,7 +1740,6 @@ public final class Freight extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
 
         BuildingsTemplate bestSiding = null;
         double bestSidingScore = 0;
@@ -1775,10 +1774,7 @@ public final class Freight extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -1814,7 +1810,7 @@ public final class Freight extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             // ...the reasons it ordered nothing, the clearest first (FR7): no yard, then no works without a siding, then too little freight.
             // Worded in the words BuildCard.wordKind() reads an advisor's word by ("not enough for a first", "already"): ENOUGH, not OTHER.

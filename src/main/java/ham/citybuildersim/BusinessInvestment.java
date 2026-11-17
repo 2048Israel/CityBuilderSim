@@ -862,7 +862,6 @@ public class BusinessInvestment {
         double bestScore = 0;
         double demandAtOpening = 0;
         Sector.Staffing staffingHold = null;
-        String staffingHoldName = null;
 
         /*
          * THE FORECAST IS CAPPED BY WHERE THE PEOPLE COULD LIVE, exactly as
@@ -921,10 +920,7 @@ public class BusinessInvestment {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Sector.Staffing staffing = sector.staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Sector.Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -941,7 +937,7 @@ public class BusinessInvestment {
         }
 
         if (best == null) {
-            return staffingHold != null ? Decision.unstaffed(key, staffingHold, staffingHold.why(staffingHoldName))
+            return staffingHold != null ? Decision.unstaffed(key, staffingHold, staffingHold.why())
                     : Decision.no(key, "output ahead of demand");
         }
 

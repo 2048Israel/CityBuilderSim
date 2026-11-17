@@ -68,6 +68,17 @@ public final class WantedPosts {
         public Ask {
             posts = posts == null ? new double[0] : posts.clone();
         }
+
+        /**
+         * This ask's part of a hold the gate tied {@code ways} ways (TQ1; Sector.Staffing.held()): its posts, one of
+         * {@code ways} of each band's, and its own pay factor. The ask itself for one way.
+         */
+        public Ask part(int ways) {
+            if (ways <= 1) return this;
+            double[] p = posts.clone();
+            for (int b = 0; b < p.length; b++) p[b] /= ways;
+            return new Ask(sector, building, p, payFactor);
+        }
     }
 
     /**
@@ -90,7 +101,7 @@ public final class WantedPosts {
     }
 
     private final List<Ask> asks = new ArrayList<>();
-    private int crewsHolds, unpaidHolds;
+    private int crewsHolds, unpaidHolds, tiedHolds;
     private final double[] latent = new double[WageBand.values().length];
 
     /** The month's start: last month's asks and counts cleared (the latent posts stay until settle() replaces them). */
@@ -98,6 +109,7 @@ public final class WantedPosts {
         asks.clear();
         crewsHolds = 0;
         unpaidHolds = 0;
+        tiedHolds = 0;
     }
 
     /** A hold the gate put on for the builders' laid-off crews: IC1's, no shortage the wage answers. */
@@ -106,17 +118,23 @@ public final class WantedPosts {
     /** A hold for want of workers on a building that would not carry its interest at today's wage: no ask. */
     public void heldUnpaid() { unpaidHolds++; }
 
+    /** A hold the gate tied (TQ1): its buildings are each noted besides, as a crews' hold, an unpaid one or an ask. */
+    public void heldInATie() { tiedHolds++; }
+
     /** A hold for want of workers on a building that would pay: it asks for its posts. */
     public void ask(Ask a) {
         if (a != null) asks.add(a);
     }
 
-    /** Every staffing hold this month, whatever came of it. */
+    /** Every staffing hold this month, whatever came of it. A hold the gate tied counts once for each of its buildings (TQ1). */
     public int getHolds() { return crewsHolds + unpaidHolds + asks.size(); }
 
     public int getCrewsHolds() { return crewsHolds; }
 
     public int getUnpaidHolds() { return unpaidHolds; }
+
+    /** The month's holds the gate tied (TQ1): each counted once here, and once for each of its buildings in getHolds(). */
+    public int getTiedHolds() { return tiedHolds; }
 
     /** The holds that asked. */
     public int getAsked() { return asks.size(); }

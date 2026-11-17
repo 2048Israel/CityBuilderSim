@@ -403,7 +403,6 @@ public final class Forestry extends ExtractionSector {
         BuildingsTemplate best = null, forestHold = null, moneyHold = null;
         double bestScore = 0, moneyEarns = 0, moneyCost = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (!isCrew(t)) continue;
             // ...E: the forest it may cut lasts 120 months of every crew's cut with it.
@@ -413,10 +412,7 @@ public final class Forestry extends ExtractionSector {
             }
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -442,7 +438,7 @@ public final class Forestry extends ExtractionSector {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
                         + planner().city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
-            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHold));
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }

@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.132 — TQ1, the staffing gate's tie rule — 2026-11-17, ready, see docs/queue/TQ1-notes.md
+A planner whose buildings the staffing gate refused hands one hold to the wage (LD1), the refusal nearest to
+passing, and in a city with no spare the refused templates tie exactly (GW1's snapped share). Each of thirteen
+planners broke the tie by the order its buildings are listed in: in main's default playtest a tie decided 638 of
+3,502 holds, mostly in the founding, and a Builders' Yard's 20 posts were priced, never the Construction Depot's 50.
+The thirteen keep their hold in one place now (`Sector.Staffing.held()`), and a tie is shared: each tied building
+asks for its part of its posts, so list order decides nothing (StaffingTieCheck, red on main's rule). No save field,
+no format bump. The path moves from month 4. Its two findings, households with no home in the ensemble's seed 0 (once,
+month 182) and in the default playtest (months 692-745), pass by name with FB11: Real Estate held for land while
+nothing buys ground. In same-state probes main's rule stalls alike (the playtest's from 560 on; seed 0's, from
+month 2, is the same city just under the watch's line); the escape is a works order buying ground it does not use.
+
+### 0.9.131 — FB2, the kept screens' geometry and retention — 2026-11-17, ready, see docs/queue/FB2-notes.md
+The kept screens read the same as screens built new whatever the played city does, and each repair is caused by the states that need it (KeptCheck 103, 25 lines: each repair's lines red by hand on the old classes, none now).
+The buyback ladder is drawn from what it reads of a quote, as written and at a quarter pixel, so faces moving by 1.4e-8 of themselves no longer draw it again (KL1). The header's hidden wordings and
+sparkline stand where a tile built new leaves them (the RATE tile's "D$1,000,000,000.00 per US$": 18 states), a bar's tick with no name has no label on it (Your rate's dial: 0 x 20 against 0 x 13), and
+Partners' buyer-entry triangles stand at their own points, not moved by a fractional layout offset (62 pixels at the finding, 0 now); Search's empty price and held words are FP1's scopes, now asserted. The Government
+Overview's lines that leave and come back (a tax's slice and its key row, a bridge's step, the arrears) are parked, off the page, by the new Kept.parkedScope() and return with no node made (38 nodes before, 0 now);
+the busiest month of a path whose first draw made 400 nodes reads 34, not 45, and a line's first appearance still makes its nodes. Two entries are not mended and are filed: the Wood Products Residues Text (KRT1: 0 differ over 120 months
+and on KS1's own classes) and the Borrow page's ladder card coming and going with the quote (FB6's KBF1 family). Screens only: the playtest does not move.
+
 ### FB1 — three fixtures that read the city's path — 2026-11-16, ready, no tag (harness)
 Two fixtures that read where the played city's path happens to stand now cause their own conditions; the model and the playtest are main's.
 FoodProcessingCheck 5's Meat Works bet read the lived-in city's wages, exchange rate, demand and rate: its two profit sums stood at $-244 / $-595 on main

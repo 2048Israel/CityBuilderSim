@@ -11251,7 +11251,19 @@ public class MapCheck {
         picks.clear();
 
         // ---- an offer wholly picked is the offer
+        // TQ1, 2026-11-17 (the path moved): the played city may stand with no offer of its level holding two or more blocks wholly its own. Where none
+        // stands, the city buys the largest standing offer first, through the office as it buys any, as the section after this one does (FR8).
         LandParcel target = ownBlocks(land, market, level, 0);
+        long boughtForTarget = 0;
+        for (int tries = 0; target == null && tries < 4; tries++) {
+            long largest = buyTheLargestOffer(g);
+            if (largest == 0) break;
+            boughtForTarget += largest;
+            level = market.getLevel();
+            b = 1L << level;
+            target = ownBlocks(land, market, level, 0);
+        }
+        if (boughtForTarget > 0) out.printf("      the offer to be picked whole: none stood at the city's level, so it bought the largest offer first (%d plots); level %d%n", boughtForTarget, level);
         java.util.Set<Long> targetBlocks = target == null ? null : blocksMetBy(land, target, level);
         check("fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own", target != null);
         if (target != null) {

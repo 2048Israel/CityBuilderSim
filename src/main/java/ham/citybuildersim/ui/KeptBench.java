@@ -5147,4 +5147,367 @@ public final class KeptBench {
     public double headerChildX(int i) {
         return ui.header.getChildren().get(i).getBoundsInParent().getMinX();
     }
+
+    /* =====================================================================
+       FB2: THE CAUSAL FIXTURES OF THE REPAIRS (KL1, KS1-UI, BF1-K)
+
+       Each probe builds the picture it is about on a scene of its own, tells it two or more states in turn - a kept picture
+       told one after another - and hands back what a picture built new in the last state of each step looks like, beside
+       what the kept one looks like: the caller (KeptCheck's section 100) compares them. The states are chosen to cause the
+       condition the repair mends, whatever the city's path: a screen that was right only on the path it was found on
+       (KS1, GW1, HW1, BF1) is not mended.
+       ===================================================================== */
+
+    /** A node on a scene of its own, themed as the bench's pages are, so that its CSS and layout can be run. */
+    private Pane probeHost(Node n, double w, double h) {
+        Pane host = new Pane(n);
+        Scene sc = new Scene(host, w, h);
+        ui.applyTheme(sc);
+        return host;
+    }
+
+    /** ...with the node left to be sized by hand: a plain Pane autosizes its managed children to their preferred sizes at every layout. */
+    private Pane probeFixed(Region n, double w, double h) {
+        n.setManaged(false);
+        return probeHost(n, w, h);
+    }
+
+    private static List<String> signLines(Node n) {
+        List<String> out = new ArrayList<>();
+        sign(n, "", out);
+        return out;
+    }
+
+    /** A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. */
+    private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken) {
+        return ladderQuote(scale, taken, -1, 0);
+    }
+
+    /** ...with `add` more face on slice `only` (none: -1). */
+    private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken, int only, double add) {
+        ham.citybuildersim.Buyback.Holder[] who = {ham.citybuildersim.Buyback.Holder.BANK, ham.citybuildersim.Buyback.Holder.HOUSEHOLDS,
+                ham.citybuildersim.Buyback.Holder.FIRMS, ham.citybuildersim.Buyback.Holder.WORLD, ham.citybuildersim.Buyback.Holder.BANK,
+                ham.citybuildersim.Buyback.Holder.HOUSEHOLDS};
+        double[] face = {5.0e11, 4.1e11, 3.2e11, 1.9e11, 1.3e11, 0.9e11}, price = {98.6, 99.1, 99.7, 100.4, 100.9, 101.5};
+        List<ham.citybuildersim.Buyback.Offer> ladder = new ArrayList<>();
+        for (int i = 0; i < face.length; i++) ladder.add(new ham.citybuildersim.Buyback.Offer(who[i], face[i] * scale + (i == only ? add : 0), price[i]));
+        return new ham.citybuildersim.Buyback.Result(ladder, 1.0e12, 1.3265e12 * scale, taken ? 6.0e11 * scale : 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                taken ? 99.1 : 0, 0, 100.0, 0, 0, 0);
+    }
+
+    /**
+     * KL1: a kept BuybackLadder told a quote and then the same quote with every face moved by 1.4e-8 of itself (what GW1's city moved them
+     * by in months 2 and 6 with nothing typed), with nothing taken and with part of it taken, and then a quote whose faces moved by a
+     * hundredth. For each of the two cities, in order: the nodes it holds after the drift are the ones it held (1), the nodes it holds
+     * after the hundredth are other nodes (1: it drew again), what it shows after the drift equals a ladder built new and told the
+     * drifted quote (1), and the same after the hundredth (1).
+     */
+    public int[] ladderProbe() throws Exception {
+        java.util.function.DoubleFunction<String> money = ui.financesScreen::d;
+        int[] out = new int[8];
+        for (int k = 0; k < 2; k++) {
+            boolean taken = k == 1;
+            FinancesScreen.BuybackLadder kept = new FinancesScreen.BuybackLadder();
+            Pane host = probeHost(kept, 1000, 400);
+            kept.set(ladderQuote(1, taken), 98.5, money);
+            passes(host.getScene(), host);
+            List<Node> first = new ArrayList<>(kept.getChildren());
+            kept.set(ladderQuote(1 + 1.4e-8, taken), 98.5, money);
+            passes(host.getScene(), host);
+            out[k * 4] = first.equals(kept.getChildren()) ? 1 : 0;
+            FinancesScreen.BuybackLadder fresh = new FinancesScreen.BuybackLadder();
+            Pane host2 = probeHost(fresh, 1000, 400);
+            fresh.set(ladderQuote(1 + 1.4e-8, taken), 98.5, money);
+            passes(host2.getScene(), host2);
+            out[k * 4 + 2] = pictureSignature(kept).equals(pictureSignature(fresh)) ? 1 : 0;
+            kept.set(ladderQuote(1.01, taken), 98.5, money);
+            passes(host.getScene(), host);
+            out[k * 4 + 1] = first.equals(kept.getChildren()) ? 0 : 1;
+            FinancesScreen.BuybackLadder fresh2 = new FinancesScreen.BuybackLadder();
+            Pane host3 = probeHost(fresh2, 1000, 400);
+            fresh2.set(ladderQuote(1.01, taken), 98.5, money);
+            passes(host3.getScene(), host3);
+            out[k * 4 + 3] = pictureSignature(kept).equals(pictureSignature(fresh2)) ? 1 : 0;
+        }
+        return out;
+    }
+
+    /**
+     * KS1-UI: a header tile told the same words at widths that make it show its longest wording, then the next, then the shortest, and
+     * back (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling is the longest of its wordings): after each width,
+     * the kept tile's signature then the signature of a tile built new and laid out at that width alone.
+     */
+    public List<List<String>> headerTileProbe() throws Exception {
+        UserInterface.Headline h = new UserInterface.Headline("RATE", Palette.MONEY, "D$1.00", Palette.TEXT_HEAD,
+                new String[]{"D$1,000,000,000.00 per US$ and a good many words after it", "D$1,000,000,000.00 per US$", "per US$"},
+                Palette.TEXT_MUTED, new double[]{1, 2, 3, 4, 3, 2, 1, 2}, null, null, new String[]{"rate"});
+        List<Integer> axis = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+        List<List<String>> out = new ArrayList<>();
+        UserInterface.HeadlineTile kept = new UserInterface.HeadlineTile();
+        kept.set(h, axis, null);
+        Pane host = probeFixed(kept, 1000, 80);
+        for (double w : new double[]{420, 230, 110, 60, 420, 230, 60, 110}) {
+            kept.resizeRelocate(0, 0, w, 60);
+            passes(host.getScene(), host);
+            UserInterface.HeadlineTile fresh = new UserInterface.HeadlineTile();
+            fresh.set(h, axis, null);
+            Pane host2 = probeFixed(fresh, 1000, 80);
+            fresh.resizeRelocate(0, 0, w, 60);
+            passes(host2.getScene(), host2);
+            out.add(signLines(kept));
+            out.add(signLines(fresh));
+        }
+        return out;
+    }
+
+    /**
+     * HW1's Your rate, mended under KS1-UI: a SegmentBar whose dial tick is named when the rate is away from the dial and not when it is near
+     * (FinancesScreen.realCard's `near ? null : "the dial ..."`), told the two states in turn: the kept bar's signature and a bar built new's
+     * after each.
+     */
+    public List<List<String>> segmentBarProbe() throws Exception {
+        List<List<String>> out = new ArrayList<>();
+        Pieces.SegmentBar kept = new Pieces.SegmentBar();
+        Pane host = probeHost(kept, 700, 80);
+        List<Pieces.Segment> parts = List.of(Pieces.Segment.of(.02, Palette.MONEY_DARK), Pieces.Segment.of(.015, Palette.MONEY),
+                Pieces.Segment.of(.01, Palette.MONEY_LIGHT));
+        for (boolean near : new boolean[]{false, true, false, true, true, false}) {
+            List<Pieces.Tick> ticks = List.of(new Pieces.Tick(.03, Palette.TEXT_MUTED, 2, near ? null : "the dial 3.00%", null),
+                    new Pieces.Tick(near ? .031 : .0345, Palette.TEXT_HEAD, 3, near ? "you 3.10% · the dial 3.00%" : "you 3.45%", null));
+            kept.set(parts, .06, ticks, 600, 10);
+            passes(host.getScene(), host);
+            Pieces.SegmentBar fresh = new Pieces.SegmentBar();
+            Pane host2 = probeHost(fresh, 700, 80);
+            fresh.set(parts, .06, ticks, 600, 10);
+            passes(host2.getScene(), host2);
+            out.add(signLines(kept));
+            out.add(signLines(fresh));
+        }
+        return out;
+    }
+
+    /**
+     * BF1-K: Partners' chart told where the next buyers join, then other places (a fraction of a pixel on), then the first again: for each
+     * telling, how the kept chart's picture and a chart built new's, told the last, part - {pixels that differ at all, pixels that differ
+     * by more than `levels` in a channel, and the box round the differing ones: x0, y0, x1, y1}.
+     */
+    public int[][] partnersChartProbe(int levels) throws Exception {
+        double[] xs = {1e-4, 1e-3, 1e-2, 1e-1}, net = {5, 4, 2.5, 1}, world = {3, 3, 3, 3};
+        java.util.function.DoubleFunction<String> money = v -> String.format(Locale.ROOT, "%.1f", v), share = v -> String.format(Locale.ROOT, "%.4f", v);
+        double[][] places = {{.00123, .00337, .0113}, {.00131, .00347, .0119}, {.00127, .00341, .0117}, {.00123, .00337, .0113}, {.00139, .00359, .0121}};
+        PartnersPage.CurveChart kept = new PartnersPage.CurveChart();
+        Pane host = probeFixed(kept, 900, 300);
+        int[][] out = new int[places.length][];
+        for (int i = 0; i < places.length; i++) {
+            List<PartnersPage.CurveChart.Join> joins = new ArrayList<>();
+            for (int j = 0; j < places[i].length; j++) joins.add(new PartnersPage.CurveChart.Join(places[i][j], "buyer " + (j + 1)));
+            kept.set(xs, net, world, null, joins, money, share);
+            kept.resizeRelocate(0, 0, 877.3, PartnersPage.CurveChart.HEIGHT);
+            passes(host.getScene(), host);
+            PartnersPage.CurveChart fresh = new PartnersPage.CurveChart();
+            Pane host2 = probeFixed(fresh, 900, 300);
+            fresh.set(xs, net, world, null, joins, money, share);
+            fresh.resizeRelocate(0, 0, 877.3, PartnersPage.CurveChart.HEIGHT);
+            passes(host2.getScene(), host2);
+            int[] a = pixelsOf(kept), b = pixelsOf(fresh);
+            if (a[0] != b[0] || a[1] != b[1]) {
+                out[i] = new int[]{-1, -1, 0, 0, 0, 0};
+                continue;
+            }
+            int w = a[0], total = 0, past = 0, x0 = w, y0 = a[1], x1 = -1, y1 = -1;
+            for (int p = 2; p < a.length; p++) {
+                if (a[p] == b[p]) continue;
+                total++;
+                int x = (p - 2) % w, y = (p - 2) / w;
+                x0 = Math.min(x0, x);
+                y0 = Math.min(y0, y);
+                x1 = Math.max(x1, x);
+                y1 = Math.max(y1, y);
+                for (int sh = 0; sh < 32; sh += 8) {
+                    if (Math.abs(((a[p] >> sh) & 255) - ((b[p] >> sh) & 255)) > levels) {
+                        past++;
+                        break;
+                    }
+                }
+            }
+            out[i] = new int[]{total, past, x0, y0, x1, y1};
+        }
+        return out;
+    }
+
+    /**
+     * BF1-K: Fund Search's rows told securities whose price, move and held words come and go (a bond has a price and none held, a share
+     * held has both...) at the same places, as FP1's rows are kept in their place when the market changes: the kept page's signature and a
+     * page built new's after each state.
+     */
+    public List<List<String>> fundRowsProbe() throws Exception {
+        FundScreen fs = ui.financesScreen.fundScreen;
+        Game g = ui.game;
+        String[][][] states = {
+                {{"D$98.50", "+1.2% a year", "12 bonds"}, {"D$99.10", "", ""}, {"", "", "3 shares held"}},
+                {{"", "", ""}, {"D$99.12", "−0.4% a year", "5 bonds"}, {"D$1.20", "", ""}},
+                {{"D$98.50", "+1.2% a year", "12 bonds"}, {"D$99.10", "", ""}, {"", "", "3 shares held"}},
+                {{"", "", "7 bonds held by the fund"}, {"", "", ""}, {"D$1.20", "+3% a year", "3 shares held"}}};
+        Kept.Pool pool = new Kept.Pool();
+        VBox page = new VBox();
+        Pane host = probeHost(page, 900, 500);
+        List<List<String>> out = new ArrayList<>();
+        for (String[][] state : states) {
+            Kept.draw(pool, () -> page.getChildren().setAll(foundRows(fs, g, state)));
+            passes(host.getScene(), host);
+            Kept.Pool pool2 = new Kept.Pool();
+            VBox page2 = new VBox();
+            Pane host2 = probeHost(page2, 900, 500);
+            Kept.draw(pool2, () -> page2.getChildren().setAll(foundRows(fs, g, state)));
+            passes(host2.getScene(), host2);
+            out.add(signLines(page));
+            out.add(signLines(page2));
+        }
+        return out;
+    }
+
+    private static Node foundRows(FundScreen fs, Game g, String[][] state) {
+        VBox list = Kept.column(2);
+        for (int i = 0; i < state.length; i++) {
+            FundScreen.Found f = new FundScreen.Found(null, "B:" + (3200 + i), "Issuer " + i, "bond #" + (3200 + i), "Bond", state[i][0], state[i][1],
+                    state[i][2], null, -1, null);
+            list.getChildren().add(Kept.scope("found:" + i, () -> fs.foundRow(g, f)));
+        }
+        return list;
+    }
+
+    /** KS1-Gov's probe: what each state's draw made new and what its unchanged redraw made, and the page's signature, kept beside built new. */
+    public record RowsProbe(List<List<String>> signatures, int[] made, int[] madeAgain) { }
+
+    /**
+     * KS1-Gov: the pieces the Government Overview's lines come and go in - the ring's arcs and its key's rows (a slice a line), the
+     * bridge's steps (a step a line, the ones at nothing left out) and the treasury statement's rows - told states in which the same lines
+     * leave and come back, as a tax's slice and a month's paper raised and repaid do: the nodes each draw made, the nodes its unchanged
+     * redraw made, and the page's signature beside a page built new's. The first state draws the lines of a quiet month; the second the
+     * lines come (made once: it is the first time); the third they go; the fourth they come back (made none: they are kept); the fifth
+     * is the fourth again; the sixth brings one line back and two lines never seen (made: those two alone).
+     */
+    public RowsProbe governmentRowsProbe() throws Exception {
+        String[][] ringStates = {{"Income tax", "Property tax"}, {"Income tax", "Property tax", "Sales tax", "Land sold"},
+                {"Income tax", "Property tax"}, {"Income tax", "Property tax", "Sales tax", "Land sold"},
+                {"Income tax", "Property tax", "Sales tax", "Land sold"}, {"Income tax", "Sales tax", "Central bank remittance"}};
+        String[][] stepStates = {{"Interest that was no cash"}, {"Interest that was no cash", "Raised by issuing paper", "Principal repaid"},
+                {"Interest that was no cash"}, {"Interest that was no cash", "Raised by issuing paper", "Principal repaid"},
+                {"Interest that was no cash", "Raised by issuing paper", "Principal repaid"},
+                {"Interest that was no cash", "Arrears paid down"}};
+        int n = ringStates.length;
+        int[] made = new int[n], madeAgain = new int[n];
+        List<List<String>> out = new ArrayList<>();
+        Kept.Pool pool = new Kept.Pool();
+        VBox page = new VBox();
+        Pane host = probeHost(page, 1000, 900);
+        for (int i = 0; i < n; i++) {
+            final int at = i;
+            Runnable draw = () -> page.getChildren().setAll(governmentRows(ringStates[at], stepStates[at]));
+            Kept.draw(pool, draw);
+            made[i] = pool.lastMade();
+            passes(host.getScene(), host);
+            Kept.draw(pool, draw);
+            madeAgain[i] = pool.lastMade();
+            passes(host.getScene(), host);
+            Kept.Pool pool2 = new Kept.Pool();
+            VBox page2 = new VBox();
+            Pane host2 = probeHost(page2, 1000, 900);
+            Kept.draw(pool2, () -> page2.getChildren().setAll(governmentRows(ringStates[at], stepStates[at])));
+            passes(host2.getScene(), host2);
+            out.add(signLines(page));
+            out.add(signLines(page2));
+        }
+        return new RowsProbe(out, made, madeAgain);
+    }
+
+    private static Node governmentRows(String[] lines, String[] steps) {
+        List<Pieces.Slice> slices = new ArrayList<>();
+        for (int i = 0; i < lines.length; i++) slices.add(new Pieces.Slice(lines[i], 100 + 40 * i, Palette.CATEGORIES[i % Palette.CATEGORIES.length]));
+        Node ring = Pieces.splitRing(slices, "taken in", "D$1.2T", Palette.TEXT_HEAD, 180, null);
+        Node key = Pieces.ringKey(slices, 260, null);
+        List<Pieces.BridgeStep> col = new ArrayList<>();
+        for (int i = 0; i < steps.length; i++) col.add(Pieces.BridgeStep.of(steps[i], (i % 2 == 0 ? 1 : -1) * (50 + 30 * i), Icons.FINANCES));
+        List<Pieces.Anchor> anchors = List.of(new Pieces.Anchor("EARNED", Icons.COIN, "D$1.0T", "the header's figure", null, null),
+                new Pieces.Anchor("BANKED", Icons.FINANCES, "D$1.1T", "the cash", null, null));
+        Node bridge = Pieces.bridge(anchors, List.of(col), v -> String.format(Locale.ROOT, "%,.0f", v), Palette.MONEY, Palette.MONEY_DARK, 5,
+                new java.util.HashSet<>(), "probe", () -> { });
+        javafx.scene.layout.GridPane grid = Kept.grid();
+        int row = 0;
+        for (String step : steps) row = GovernmentScreen.moved(grid, row, step, 12.5, false);
+        return Kept.column(8, Kept.row(8, ring, key), bridge, grid);
+    }
+
+    /**
+     * KS1-Gov: the rows a scope parks are the ones last asked for. A page whose lines recur (fourteen, asked every fourth draw) and whose other
+     * lines are asked once and never again (a step named with its figure, "Bought land with D$12.4M of reserves": a key a draw each), over
+     * three times the most a scope parks. Returns the nodes the draws that ask for the recurring lines made beyond the one-off's own: 0
+     * when every recurring line was kept (a one-off's are never asked for again, so they are what a full scope lets go) and the number of
+     * recurring lines made anew when the scope let go the wrong ones, then the one-offs parked in all and the most a scope parks.
+     */
+    private static final String[] RECURRING_LINES = {"Raised by issuing paper", "Principal repaid", "Interest that was no cash",
+            "Gain (loss) on paper bought back", "Inflation uplift not yet paid", "Exchange gain (loss) on foreign debt", "Arrears paid down",
+            "Not accounted for", "Sales tax", "Business tax", "Income tax", "Property tax", "Central bank remittance", "Land sold"};
+
+    public int[] parkedCullProbe() {
+        Kept.Pool pool = new Kept.Pool();
+        VBox page = new VBox();
+        int excess = 0, draws = 3 * Kept.PARKED_MAX;
+        for (int d = 0; d < draws; d++) {
+            final int at = d;
+            Kept.draw(pool, () -> {
+                List<Node> rows = new ArrayList<>();
+                if (at % 4 == 0) {
+                    for (String line : RECURRING_LINES) rows.add(Kept.parkedScope(line, () -> Kept.label(line)));
+                }
+                String once = "Bought land with D$" + (12 + at) + ".4M of reserves";
+                rows.add(Kept.parkedScope(once, () -> Kept.label(once)));
+                page.getChildren().setAll(rows);
+            });
+            if (at % 4 == 0 && at > 0) excess += pool.lastMade() - 1;
+        }
+        return new int[]{excess, draws, Kept.PARKED_MAX};
+    }
+
+    /** KL1's quantum probe: what a face's drift does to a bar, against the picture's own quantum. */
+    public record LadderQuantum(double quantum, double tinyPx, double bigPx, boolean tinyKept, boolean tinyEqualsNew, boolean bigRedrawn,
+                                boolean bigEqualsNew) { }
+
+    /**
+     * KL1: one holder's face moved so that its bar moves by a hundredth of a pixel (under FinancesScreen.BuybackLadder.PIXEL_QUANTUM: the ladder
+     * is the picture it was, the nodes it held) and by half a pixel (over it: it is drawn again), each equal to a ladder built new and told the
+     * same quote. The faces are written to a tenth of a trillion, so only the bar can tell the quotes apart.
+     */
+    public LadderQuantum ladderQuantumProbe() throws Exception {
+        java.util.function.DoubleFunction<String> money = v -> String.format(Locale.ROOT, "D$%.1fT", v / 1e12);
+        FinancesScreen.BuybackLadder kept = new FinancesScreen.BuybackLadder();
+        Pane host = probeHost(kept, 1000, 400);
+        kept.set(ladderQuote(1, false, 1, 0), 98.5, money);
+        passes(host.getScene(), host);
+        double plot = Math.max(FinancesScreen.BuybackLadder.LEAST_W, kept.getWidth()) - FinancesScreen.BuybackLadder.LEFT
+                - FinancesScreen.BuybackLadder.FACE_ROOM - FinancesScreen.BuybackLadder.MARKS;
+        double biggest = 5.0e11;
+        // A hundredth of a pixel the way that keeps the bar in the cell of the quantum it is in (the bar's snap is a round, and a hundredth can cross a cell's edge).
+        double q = FinancesScreen.BuybackLadder.PIXEL_QUANTUM, was = plot * 4.1e11 / biggest;
+        double tiny = Math.round((was + .01) / q) == Math.round(was / q) ? .01 : -.01;
+        double tinyAdd = tiny / plot * biggest, bigAdd = .5 / plot * biggest;
+        List<Node> first = new ArrayList<>(kept.getChildren());
+        kept.set(ladderQuote(1, false, 1, tinyAdd), 98.5, money);
+        passes(host.getScene(), host);
+        boolean tinyKept = first.equals(kept.getChildren());
+        FinancesScreen.BuybackLadder fresh = new FinancesScreen.BuybackLadder();
+        Pane host2 = probeHost(fresh, 1000, 400);
+        fresh.set(ladderQuote(1, false, 1, tinyAdd), 98.5, money);
+        passes(host2.getScene(), host2);
+        boolean tinyEquals = pictureSignature(kept).equals(pictureSignature(fresh));
+        kept.set(ladderQuote(1, false, 1, bigAdd), 98.5, money);
+        passes(host.getScene(), host);
+        boolean bigRedrawn = !first.equals(kept.getChildren());
+        FinancesScreen.BuybackLadder fresh2 = new FinancesScreen.BuybackLadder();
+        Pane host3 = probeHost(fresh2, 1000, 400);
+        fresh2.set(ladderQuote(1, false, 1, bigAdd), 98.5, money);
+        passes(host3.getScene(), host3);
+        boolean bigEquals = pictureSignature(kept).equals(pictureSignature(fresh2));
+        return new LadderQuantum(FinancesScreen.BuybackLadder.PIXEL_QUANTUM, .01, .5, tinyKept, tinyEquals, bigRedrawn, bigEquals);
+    }
 }

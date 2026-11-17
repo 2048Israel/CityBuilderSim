@@ -1,4 +1,4 @@
-# Freight.java - 2,239 lines · 112 methods · 13 constants · sectors
+# Freight.java - 2,235 lines · 112 methods · 13 constants · sectors
 
 `ham/citybuildersim/sectors/Freight.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -79,9 +79,9 @@
 | 1357 | · the Ports division's seam (FR3) |
 | 1448 | · what it is doing, for everyone else |
 | 1604 | PLANNING - the freight nobody is carrying |
-| 1953 | · the books |
-| 1988 | · the screen |
-| 2084 | · save/load |
+| 1949 | · the books |
+| 1984 | · the screen |
+| 2080 | · save/load |
 
 ## Constants
 
@@ -136,7 +136,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 144 | 2096 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
+| 144 | 2092 | **type** `public final class Freight extends Sector` | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). |
 | 459 | 20 | `public Freight()` |  |
 
 ### THE MONTH (lines 480-923)
@@ -264,40 +264,40 @@
 | 1587 | 13 | `public void reapplyBand(ham.citybuildersim.Ports ports)` | ...with the city's ports' shares in force (0.7.86): step 5's lines, as haul() leaves them. |
 | 1602 | 1 | `public double lorryRatePerTonne()` | What a tonne of the city's own freight costs by lorry, this month - of the freight the railway was offered, the berths that go before it having taken theirs (0.7.86). |
 
-### PLANNING - the freight nobody is carrying (lines 1604-1952)
+### PLANNING - the freight nobody is carrying (lines 1604-1948)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1624 | 37 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
-| 1671 | 178 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
-| 1856 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Offered tonnes against standing track, the nameplate unitsOf() counts (RT2). |
-| 1861 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
-| 1872 | 16 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | A track sale must leave the operating minimum above the planner's headroom too (RT2). |
-| 1912 | 10 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
-| 1928 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by the tonnes it sorts: the one plan() orders first, before any track; null with no catalogue or no station in it. |
-| 1946 | 6 | `public boolean wouldOrderAgain(BuildingsTemplate station)` | Whether selling this station would leave the stations short by the first station's rung (FD1): the shortfall the stations leave, with this one's tonnes added back, is at least the tonnes plan() orders a first station ... |
+| 1671 | 174 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
+| 1852 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Offered tonnes against standing track, the nameplate unitsOf() counts (RT2). |
+| 1857 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
+| 1868 | 16 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | A track sale must leave the operating minimum above the planner's headroom too (RT2). |
+| 1908 | 10 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
+| 1924 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by the tonnes it sorts: the one plan() orders first, before any track; null with no catalogue or no station in it. |
+| 1942 | 6 | `public boolean wouldOrderAgain(BuildingsTemplate station)` | Whether selling this station would leave the stations short by the first station's rung (FD1): the shortfall the stations leave, with this one's tonnes added back, is at least the tonnes plan() orders a first station ... |
 
-### the books (lines 1953-1987)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1961 | 19 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
-| 1983 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. |
-| 1986 | 1 | `public String inputLabel()` |  |
-
-### the screen (lines 1988-2083)
+### the books (lines 1949-1983)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1991 | 1 | `public boolean hasPlantBlock()` |  |
-| 1994 | 89 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 1957 | 19 | `protected Map<String, Double> nameOtherRevenue()` | ITS WHOLE REVENUE HAS A NAME, because none of it is the sale of a good. |
+| 1979 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a carrier, read by its revenue a worker. |
+| 1982 | 1 | `public String inputLabel()` |  |
 
-### save/load (lines 2084-2239)
+### the screen (lines 1984-2079)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2087 | 47 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 2136 | 49 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 2187 | 25 | `protected void resetExtras()` |  |
-| 2222 | 17 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
+| 1987 | 1 | `public boolean hasPlantBlock()` |  |
+| 1990 | 89 | `public List<Sector.Line> ownLines(Game game)` |  |
+
+### save/load (lines 2080-2235)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2083 | 47 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 2132 | 49 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 2183 | 25 | `protected void resetExtras()` |  |
+| 2218 | 17 | `protected void redenominateExtras(double scale)` | THE QUOTE IS NOT MONEY AND DOES NOT MOVE, which is the whole reason it was written as a share of the lorry rate. |
 

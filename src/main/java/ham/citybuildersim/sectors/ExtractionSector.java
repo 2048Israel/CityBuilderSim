@@ -302,7 +302,6 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate moneyHold = null;
         double moneyEarns = 0, moneyCost = 0;
         BuildingsTemplate fieldHold = null;
@@ -316,10 +315,7 @@ public abstract class ExtractionSector extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -348,7 +344,7 @@ public abstract class ExtractionSector extends Sector {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
                         + planner.city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
-            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             return BusinessInvestment.Decision.no(sector, fieldHold != null ? noField(land, fieldHold) : "nothing worth sinking");
         }
         if (plans.plotsAvailableFor(best) < 1) {
