@@ -809,6 +809,25 @@ public class CapitalFlows {
     }
 
     /**
+     * A harness's stock, set by the field's name (HZ1): SaveFileCheck held it at half its target through raw slots of
+     * toSaveArray(), which a reordering of that array would have moved to another field without a word.
+     */
+    public void setStockForTest(double stock) {
+        this.stock = Math.max(0, stock);
+    }
+
+    /**
+     * ...and a month's arrival placed, by name (HZ1): the stock, the arrivals since founding and the month's, each grown by it,
+     * as takeMonth() leaves them when that much came in. The bank it funds is the harness's to move, as Game moves it.
+     */
+    public void placeArrivalForTest(double amount) {
+        double a = Math.max(0, amount);
+        stock += a;
+        lifetimeArrived += a;
+        arrived += a;
+    }
+
+    /**
      * The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and
      * a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MONTHS at most).
      * Null, as an older save has, reads none.

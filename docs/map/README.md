@@ -4,7 +4,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 587 files, 638,048 lines, 27,807 methods, 6,114 constants. `GameVersion.VERSION` is "0.9.134", `SAVE_FORMAT` 55.
+**The tree:** 587 files, 638,107 lines, 27,809 methods, 6,114 constants. `GameVersion.VERSION` is "0.9.134", `SAVE_FORMAT` 55.
 
 ## model (267 files)
 
@@ -46,7 +46,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CallTree.java](CallTree.md) | 330 | 18 | What a callable bond is worth, and what the right to call it costs: a Ho-Lee short-rate tree on monthly steps, fitted to the city's curve (CD4, doc... | 5 |
 | [CameraPath.java](CameraPath.md) | 231 | 20 | The replay camera's arithmetic without the toolkit (TR1, 2026-10-31): the glide between two marked views, the fly out to the whole Earth and back, ... | 6 |
 | [CapSetting.java](CapSetting.md) | 78 | 8 | A cap on the yield an automatic sale takes, saved and said (D28). | 5 |
-| [CapitalFlows.java](CapitalFlows.md) | 871 | 55 | Hot money: what comes in chasing a spread, and what happens when it leaves. | 20 |
+| [CapitalFlows.java](CapitalFlows.md) | 890 | 57 | Hot money: what comes in chasing a spread, and what happens when it leaves. | 20 |
 | [CareType.java](CareType.md) | 170 | 7 | What a healthcare building actually does. | 37 |
 | [CausesOfDeath.java](CausesOfDeath.md) | 728 | 32 | The causes of death of 1900, and how history and the city take them away. | 10 |
 | [CentralBank.java](CentralBank.md) | 991 | 99 | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. | 26 |
@@ -104,7 +104,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 789 | 94 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 13 |
 | [FundView.java](FundView.md) | 921 | 41 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 8 |
-| [Game.java](Game.md) | 22,574 | 1012 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 296 |
+| [Game.java](Game.md) | 22,580 | 1012 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 296 |
 | [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 187 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 260 | 29 | How the player likes the window, kept between runs. | 6 |
@@ -310,7 +310,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RefineryFlow.java](RefineryFlow.md) | 431 | 38 | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into ... | 23 |
 | [Refining.java](Refining.md) | 1,995 | 114 | The refinery. | 27 |
 | [Restaurants.java](Restaurants.md) | 528 | 25 | The kitchens. | 8 |
-| [Retail.java](Retail.md) | 1,407 | 105 | The shops. | 41 |
+| [Retail.java](Retail.md) | 1,407 | 105 | The shops. | 42 |
 | [SpreadPlanner.java](SpreadPlanner.md) | 633 | 52 | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of t... | 43 |
 | [WoodProducts.java](WoodProducts.md) | 107 | 2 | Sawmills, and the panel, pulp, paper and pellet mills - Wood Products (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.7, 2.8, 2.12 and 5... | 7 |
 
@@ -483,7 +483,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InfrastructureCheck.java](InfrastructureCheck.md) | 1,184 | 8 | The road network, from the curve up to a city that actually jams. | 0 |
 | [InterestAbroadCheck.java](InterestAbroadCheck.md) | 1,185 | 39 | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, J... | 2 |
 | [InterventionCheck.java](InterventionCheck.md) | 548 | 14 | Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1, 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as ... | 0 |
-| [InvestCheck.java](InvestCheck.md) | 2,073 | 20 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
+| [InvestCheck.java](InvestCheck.md) | 2,092 | 20 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
 | [IslandLinkCheck.java](IslandLinkCheck.md) | 796 | 26 | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, th... | 0 |
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 3 |
 | [IslandRailCheck.java](IslandRailCheck.md) | 946 | 45 | The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the islands... | 1 |
@@ -506,7 +506,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MedicineCheck.java](MedicineCheck.md) | 605 | 34 | Proves the research catalogue's medical rows (R2f) move the constants they map to: a medical row a 1900 city finds ahead of the world brings its st... | 0 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 12 |
 | [MonetaryCheck.java](MonetaryCheck.md) | 1,004 | 14 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
-| [MoneyDatesCheck.java](MoneyDatesCheck.md) | 228 | 10 | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. | 2 |
+| [MoneyDatesCheck.java](MoneyDatesCheck.md) | 246 | 10 | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. | 2 |
 | [MoneySignCheck.java](MoneySignCheck.md) | 397 | 9 | The money's sign is the city's to choose and place, and with the default it writes what it always wrote (FM1). | 0 |
 | [MoneyWordsCheck.java](MoneyWordsCheck.md) | 344 | 17 | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). | 0 |
 | [MortgageCheck.java](MortgageCheck.md) | 1,245 | 26 | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. | 1 |
@@ -555,7 +555,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RoadCheck.java](RoadCheck.md) | 1,209 | 35 | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to the... | 1 |
 | [RobustnessCheck.java](RobustnessCheck.md) | 432 | 5 | What the game does when something is already broken. | 0 |
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,310 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 2 |
-| [SaveFileCheck.java](SaveFileCheck.md) | 4,713 | 30 | Verifies where saves go and how they are written. | 9 |
+| [SaveFileCheck.java](SaveFileCheck.md) | 4,710 | 30 | Verifies where saves go and how they are written. | 9 |
 | [SaveSlotCheck.java](SaveSlotCheck.md) | 1,978 | 53 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 1 |
 | [ScaleCheck.java](ScaleCheck.md) | 1,938 | 59 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |

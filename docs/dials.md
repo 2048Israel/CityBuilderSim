@@ -6859,7 +6859,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 2015 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
+| 2034 | `InvestCheck.AHEAD_MONTHS` | `360` | Months the playtest's city is played with every order watched. |
 
 ### IslandLinkCheck.java ([map](map/IslandLinkCheck.md))
 
@@ -7419,8 +7419,8 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 21 | `MoneyDatesCheck.OUT` | `System.out` |  |
-| 22 | `MoneyDatesCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 23 | `MoneyDatesCheck.OUT` | `System.out` |  |
+| 24 | `MoneyDatesCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### MoneySignCheck.java ([map](map/MoneySignCheck.md))
 
@@ -7936,7 +7936,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4010 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4007 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 

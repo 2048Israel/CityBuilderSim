@@ -1522,9 +1522,7 @@ public class SaveFileCheck {
             // (the squeeze pulls the output down and the stock is left standing over it), so the loop ran its
             // whole bound, to month 392, and the bank failed, the bonds were repaid and the mortgages gone,
             // and every fixture below read an empty city.
-            double[] hot = full.getCapitalFlows().toSaveArray();
-            hot[0] = Math.min(hot[0], full.getCapitalFlows().getTarget() / 2);
-            full.getCapitalFlows().restore(hot);
+            full.getCapitalFlows().setStockForTest(Math.min(full.getCapitalFlows().getStock(), full.getCapitalFlows().getTarget() / 2));   // HZ1: by name
             full.simulateMonths(1);
         } while (++extraMonths < 240
                 && (full.getHealth().getHungerRate() <= 0
@@ -1534,9 +1532,8 @@ public class SaveFileCheck {
         // ...AND THE MONTH'S ARRIVAL PLACED when the month brought none (GW1).
         final double PLACED_ARRIVAL = 40;
         if (full.getCapitalFlows().getArrived() <= 0) {
-            double[] hot = full.getCapitalFlows().toSaveArray();
-            hot[0] += PLACED_ARRIVAL; hot[3] += PLACED_ARRIVAL; hot[16] = PLACED_ARRIVAL;
-            full.getCapitalFlows().restore(hot);
+            // HZ1: the stock, the arrivals since founding and the month's, by name (once slots 0, 3 and 16 of toSaveArray()).
+            full.getCapitalFlows().placeArrivalForTest(PLACED_ARRIVAL);
             // ...and into the bank it funds, as Game does when a month's stock grows (its cash, the month's hot money in, the foreign deposits): a load sets those deposits from the stock, so a stock the bank never took reloads 40k short in equity.
             full.getBank().receiveHotMoney(PLACED_ARRIVAL);
             full.getBank().setForeignDeposits(full.getCapitalFlows().getStock());

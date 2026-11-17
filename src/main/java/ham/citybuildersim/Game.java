@@ -21377,8 +21377,9 @@ public class Game {
             if (loaded.getContractRecords() != null) {
                 buildingManager.restoreContractRecords(loaded.getContractRecords());
             } else {
-                // ...once the land price is back (below), which the share of
-                // the tax a landlord's home gets back reads (revised 0.7.19).
+                // ...at the end of the load, once the land price and the wages are
+                // back, which the share of the tax a landlord's home gets back
+                // reads (revised 0.7.19; FB3).
                 contractsToInfer = true;
             }
 
@@ -21694,13 +21695,7 @@ public class Game {
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
         pushLandByRelief();
-
-        // An older save's contracts, read as their owners' (OLD CONTRACTS),
-        // now the land price the rebate on a new rental home reads is back.
-        if (contractsToInfer) {
-            contractsToInfer = false;
-            buildingManager.inferContracts(this::ownerOfOrder, this::recoveredOnOldContract);
-        }
+        // (An older save's contracts are read as their owners' at the end of the load, FB3.)
 
         /*
          * The property tax each sector was charged came back inside its own
@@ -21823,11 +21818,15 @@ public class Game {
          * See carriedRetailCapacity: the rebuild re-derives these and does not
          * reproduce them to the cent, and everything downstream of the budget
          * constraint amplifies the difference. Carried whole, applied after.
+         *
+         * Always, zeros too (FB3, R0f-S): the guard here applied them only when
+         * one was over zero, so a city saved in a month its shops wanted nothing
+         * (a founding's second month) came back wanting what the rebuild struck,
+         * 0.0625 on MoneyDatesCheck's exhausted-gold town. Every save a build
+         * opens carries both (Retail's extras since format 21).
          */
-        if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-            getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
-            getSectors().retail().setWantedSpend(carriedRetailWant);
-        }
+        getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+        getSectors().retail().setWantedSpend(carriedRetailWant);
         if (carriedRentWeight > 0) {
             // Both halves, and the family one by subtraction so the two always
             // sum to the figure the landlords were paid. See the note at the
@@ -22015,10 +22014,9 @@ public class Game {
              * carriedRetailCapacity.
              */
             refreshHouseholdAccounts();
-            if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-                getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
-                getSectors().retail().setWantedSpend(carriedRetailWant);
-            }
+            // ...zeros too, as above (FB3, R0f-S).
+            getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+            getSectors().retail().setWantedSpend(carriedRetailWant);
 
             /*
              * ...and then the statement the save was taken with, over the top of
@@ -22208,6 +22206,14 @@ public class Game {
         for (Sector s : getSectors().all()) s.deriveCarriedTrade();
         // ...and, last, the fund's cost basis for a save from before it (0.7.39): every price is back now.
         if (fund.needsLedgerSeed()) seedFundLedger();
+        // ...and an older save's contracts on site, read as their owners' (OLD CONTRACTS), last of all (FB3, RT2-L): the share of the
+        // tax a landlord's home gets back reads the builders' labour at today's wages, and the rebuild strikes those; read before it, at
+        // the founding ladder, a House on InvestCheck's town stood under the rebate's line and the loaded city's rule over it
+        // (.0000625 against 0). The month that follows reads them (its dues, the city's sites); the load reads none.
+        if (contractsToInfer) {
+            contractsToInfer = false;
+            buildingManager.inferContracts(this::ownerOfOrder, this::recoveredOnOldContract);
+        }
     }
 
     /**
