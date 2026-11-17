@@ -665,7 +665,6 @@ public class FamilyModel {
 
         // ---- 2c. the adults back in the families bring their children home (OX1; the banner below) ----
         if (keep) bringHome(hadAtHome, hadWithThem, order, tierShare, remaining);
-        if (keep) arriveTogether(cohorts, new double[] { babies, children, teens, adults }, order, tierShare, remaining);
 
         for (int i = 0; i < order.length; i++) {
             FamilyStructure shape = order[i];
@@ -748,8 +747,10 @@ public class FamilyModel {
        with the memory on: a fifth of 6,000 adults out of work for six months,
        then all of them back in one month - 470 children came back, 67.7 were
        left in the orphan section that month against a twin's 6.6, and it took
-       nine months to fall back. On a played town (DeathRecordCheck) the 319
-       taken back in one month peaked the orphans at 27.7 against 21.5.
+       nine months to fall back. On DeathRecordCheck's played town (0.9.131)
+       a month that took 234 back into work took the orphans from 12.6 to
+       28.2, and its open twin's from 11.6 to 27.1 a month later, behind a
+       wave of its own.
 
        NOW THE ADULTS BACK IN THE FAMILIES BRING THEIR CHILDREN WITH THEM.
        They are last month's adults at home less this month's - the net, which
@@ -803,23 +804,6 @@ public class FamilyModel {
         lastBackAdults = back;
         lastBackChildren = children;
         lastBackChildrenHome = home;
-    }
-
-    private double lastArrivedChildren, lastArrivedChildrenHome;
-    public double getLastArrivedChildren() { return lastArrivedChildren; }
-    public double getLastArrivedChildrenHome() { return lastArrivedChildrenHome; }
-
-    /** PROTOTYPE: the month's net arrivals, in the city's own proportions, placed as families. */
-    private void arriveTogether(PopulationCohorts cohorts, double[] families, FamilyStructure[] order,
-                                double[] tierShare, double[] remaining) {
-        lastArrivedChildren = 0; lastArrivedChildrenHome = 0;
-        double total = cohorts.total();
-        double share = total > 0 ? Math.max(0, cohorts.getLastMigration()) / total : 0;
-        if (share <= 0) return;
-        double[] group = new double[remaining.length];
-        for (int b = 0; b < group.length; b++) group[b] = Math.max(0, Math.min(remaining[b], families[b] * share));
-        lastArrivedChildren = childrenIn(group);
-        lastArrivedChildrenHome = placeTogether(group, order, tierShare, remaining);
     }
 
     /** Forms a group's households by the builder's order and half a shape, pass after pass, until its children are placed; returns the children placed and takes the group's placed people out of the pool. */
