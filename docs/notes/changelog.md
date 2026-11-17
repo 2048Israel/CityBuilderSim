@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### MA1 — what carries the city next — 2026-11-17, ready, see docs/queue/MA1-notes.md
+`docs/studies/manufacturing-margin.md`, its probe, the census and BEA extracts and the runs' tables in
+`docs/studies/manufacturing-margin/`: Manufacturing's and Automotive's margins against the 2022 Economic Census and BEA's
+use tables, as CU1 did for copper. On 0.9.138 the two carry 52-76% of the exports and 42-51% of GDP. Their goods and
+wages are real, but a works buys nothing beyond its recipe, where a real one buys half to two thirds of its sales, so it
+keeps 21-41% against the census's 13-23%; fabricated steel's world price floats 1.1-1.8 times its chain; a works costs
+two to four times the census's assets a sale; the Machine Works has three times a machine shop's crew. On five
+prototypes, with everything in line two cities of three take off, on the same two sectors at the census's margin, and
+the third stays at 40 thousand people. Five calls (MA1-K); MA2 (the hold) and MA3 (the books) queued, MA4 pending on
+MA3's ensemble. No code.
+
 ### 0.9.139 — FB7, counters read under load — 2026-11-17, ready, see docs/queue/FB7-notes.md
 Two counters that load could move are read so that it cannot; the model and the playtest are main's. SaveSlotCheck 7d's swap counter
 and its seam are the whole program's: 7d now counts with the shared save writer settled and held, the seam answering only its own
