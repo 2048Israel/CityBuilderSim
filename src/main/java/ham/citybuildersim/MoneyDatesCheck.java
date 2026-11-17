@@ -17,6 +17,8 @@ import java.util.Arrays;
 public final class MoneyDatesCheck {
     private static int fails;
     private static boolean exhaustedTwinMatches;
+    /** FB3 (R0f-S): the loaded shops' spending seam is the saved one, to the bit; and the next month's rent, cash and savings are the twin's. */
+    private static boolean exhaustedWantedNothing, exhaustedSeamCarried, exhaustedMonthMatches;
     private static int auditedMonths, auditFailures, goldMonths, floatingMonths;
     private static final PrintStream OUT = System.out;
     private static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
@@ -74,10 +76,23 @@ public final class MoneyDatesCheck {
             DataSave stock = g.prepareSaveForChecks(0, "exhausted gold").data();
             Game back = reload(g, "exhausted gold");
             boolean sameStock = Arrays.equals(stock.getForeignAccounts(), back.getForeignAccounts().toSaveArray());
+            // FB3 (R0f-S): the second month of a founding is one its shops want nothing in (wantedSpend 0); the load's rebuild strikes a
+            // want of its own, and the load put the saved one back only when it was over zero.
+            ham.citybuildersim.sectors.Retail shopsSaved = g.getSectors().retail(), shopsBack = back.getSectors().retail();
+            exhaustedWantedNothing = shopsSaved.getWantedSpend() == 0;
+            exhaustedSeamCarried = Double.doubleToLongBits(shopsSaved.getWantedSpend()) == Double.doubleToLongBits(shopsBack.getWantedSpend())
+                    && Double.doubleToLongBits(shopsSaved.getSpendingCapacity()) == Double.doubleToLongBits(shopsBack.getSpendingCapacity());
+            if (!exhaustedSeamCarried) OUT.printf("after load: Retail wantedSpend %.17g != %.17g, spendingCapacity %.17g != %.17g%n",
+                    shopsSaved.getWantedSpend(), shopsBack.getWantedSpend(), shopsSaved.getSpendingCapacity(), shopsBack.getSpendingCapacity());
             step(g);
             step(back);
             if (!sameStock) difference("after load", stock.getForeignAccounts(), back.getForeignAccounts().toSaveArray());
             exhaustedTwinMatches = Arrays.equals(g.getForeignAccounts().toSaveArray(), back.getForeignAccounts().toSaveArray());
+            exhaustedMonthMatches = g.getSectors().realEstate().getRentIncome() == back.getSectors().realEstate().getRentIncome()
+                    && g.getCash() == back.getCash() && g.getHouseholdDeposits() == back.getHouseholdDeposits();
+            if (!exhaustedMonthMatches) OUT.printf("after the next month: rent %.17g != %.17g, cash %.17g != %.17g, savings %.17g != %.17g%n",
+                    g.getSectors().realEstate().getRentIncome(), back.getSectors().realEstate().getRentIncome(), g.getCash(), back.getCash(),
+                    g.getHouseholdDeposits(), back.getHouseholdDeposits());
             if (!exhaustedTwinMatches)
                 difference("after the next month", g.getForeignAccounts().toSaveArray(), back.getForeignAccounts().toSaveArray());
             if (!left) OUT.println("FAIL fixture: the empty vault did not leave gold");
@@ -215,7 +230,10 @@ public final class MoneyDatesCheck {
 
             OUT.println("--- 4. empty reserves cause an early exit and the exit survives next month and a load ---");
             check("an exhausted episode stays left even after reserves return, identically after JSON and a month", saveChecks());
+            check("fixture: the exhausted-gold city is saved in a month its shops want nothing in", exhaustedWantedNothing);
+            check("the exhausted-gold city comes back with the shops' saved want and means, to the bit, a want of nothing included", exhaustedSeamCarried);
             check("the exhausted-gold city's whole foreign-account twin matches after the next month", exhaustedTwinMatches);
+            check("...and after the next month its rent, the city's cash and the households' savings are its twin's", exhaustedMonthMatches);
             check("second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON", secondExhaustion());
             check("reading Money never mutates its saved rule or inherited rate", readChecks());
             check("every played month conserves money to MoneyAudit's tolerance, across both gold and floating months",

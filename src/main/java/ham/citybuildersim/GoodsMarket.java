@@ -101,7 +101,8 @@ public final class GoodsMarket {
      * The month's draws (Markets.draw()) since the month last closed: kept
      * past the clearing among the month's fills, and put back on their
      * sellers' rows after the strike (FW5, 2026-10-25). Units only: the
-     * tally above and the sectors' ledgers are not touched by them.
+     * tally above and the sectors' ledgers are not touched by them. They
+     * cross a save (Markets.State.draws; FB3, FW6-C).
      */
     private final List<Trade> draws = new ArrayList<>();
 
@@ -619,11 +620,11 @@ public final class GoodsMarket {
     }
 
     /**
-     * The month's tally and the draws not yet struck, put back so a city just loaded reads what the one that kept running
+     * The month's tally and the units drawn since, put back so a city just loaded reads what the one that kept running
      * does: the goods imported, exported and filled at home in the month last closed (SpreadPlanner.values() prices a
      * works' feed and output off them), what was offered and bid for, and the units drawn on demand since (the next
      * strike counts them). The trades list is not put back: the screens that read it say "not counted" until a month
-     * has run (FW6, 2026-10-25).
+     * has run (FW6, 2026-10-25). The draws themselves are restoreDraws()'s (FB3, FW6-C).
      */
     public void restoreTally(double imported, double exported, double localFilled, double offered, double bid, double drawn) {
         this.imported = Math.max(0, imported);
@@ -632,6 +633,19 @@ public final class GoodsMarket {
         this.offered = Math.max(0, offered);
         this.bid = Math.max(0, bid);
         this.drawn = Math.max(0, drawn);
+    }
+
+    /**
+     * The month's draws since it last closed, put back (FB3, FW6-C): a hand order made between the presses keeps its seller's row
+     * after a load, because Markets.rowDrawsBeforeStrike() reads them. Put in the draws list alone, not the trades list: startMonth()
+     * adds the draws to the trades at the next clearing, as on the city that kept running. Null is none.
+     */
+    void restoreDraws(List<Markets.State.DrawRow> rows) {
+        draws.clear();
+        if (rows == null) return;
+        for (Markets.State.DrawRow d : rows) {
+            if (d != null && d.seller != null && d.buyer != null) draws.add(new Trade(good, d.seller, d.buyer, d.units, d.price));
+        }
     }
 
     public void reset() {

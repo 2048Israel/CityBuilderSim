@@ -752,6 +752,13 @@ public class CapitalFlows {
 
     /* --------------------------------- carrying --------------------------------- */
 
+    /** Saved slot of the most that was ever here (FB3, FW6-C). */
+    public static final int PEAK_STOCK_SLOT = 24;
+    /** Saved slot of the widest the gap ever got (FB3, FW6-C). */
+    public static final int PEAK_SPREAD_SLOT = 25;
+    /** Exact length of toSaveArray(), through the peaks. */
+    public static final int SAVE_SLOTS = PEAK_SPREAD_SLOT + 1;
+
     public double[] toSaveArray() {
         // Appended at the end, and restore() guards every slot past the first
         // two - so an older save reads back with no carry book, which is true
@@ -767,7 +774,9 @@ public class CapitalFlows {
                 // FX8: the month's flows, which a screen reads the month after and nothing can rebuild.
                 arrived, departed, doubtDeparted,
                 // XR4: what ran home in a risk-off (the month's and since founding), the carry's, and the months it did.
-                riskOffDeparted, riskOffDepartedLifetime, carryRiskRepaid, carryRiskRepaidLifetime, riskOffMonths };
+                riskOffDeparted, riskOffDepartedLifetime, carryRiskRepaid, carryRiskRepaidLifetime, riskOffMonths,
+                // FB3 (FW6-C): the most that was ever here and the widest the gap ever got, which the Trade screen's card prints and a load restarted from nothing.
+                peakStock, peakSpread };
     }
 
     public void restore(double[] saved) {
@@ -806,6 +815,37 @@ public class CapitalFlows {
             carryRiskRepaidLifetime = Math.max(0, saved[22]);
             riskOffMonths = Math.max(0, (int) Math.round(saved[23]));
         }
+        // FB3 (FW6-C): the peaks, so "the most that was ever here" is the city's and not the load's.
+        if (saved.length >= SAVE_SLOTS) {
+            peakStock = Math.max(0, saved[PEAK_STOCK_SLOT]);
+            peakSpread = Math.max(0, saved[PEAK_SPREAD_SLOT]);
+        }
+    }
+
+    /**
+     * A harness's stock, set by the field's name (HZ1): SaveFileCheck held it at half its target through raw slots of
+     * toSaveArray(), which a reordering of that array would have moved to another field without a word.
+     */
+    public void setStockForTest(double stock) {
+        this.stock = Math.max(0, stock);
+    }
+
+    /**
+     * ...and a month's arrival placed, by name (HZ1): the stock, the arrivals since founding and the month's, each grown by it,
+     * as takeMonth() leaves them when that much came in. The bank it funds is the harness's to move, as Game moves it.
+     */
+    public void placeArrivalForTest(double amount) {
+        double a = Math.max(0, amount);
+        stock += a;
+        lifetimeArrived += a;
+        arrived += a;
+    }
+
+    /** A harness's stop, by name (FB3, FW6-C): starts a break as takeMonth() does when a new one begins, with the reason given, for PANIC_MONTHS from the month last told. */
+    public void startStopForTest(String reason) {
+        if (!isStopped()) stopsSuffered++;
+        panicReason = reason == null ? "" : reason;
+        panicUntil = lastMonth + PANIC_MONTHS;
     }
 
     /**
