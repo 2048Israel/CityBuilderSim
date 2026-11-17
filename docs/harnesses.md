@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**213 harness files, 24,834 labelled assertions.** AllChecks runs 213 of them.
+**213 harness files, 24,845 labelled assertions.** AllChecks runs 213 of them.
 
 ## Which harnesses read which class
 
@@ -99,7 +99,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
@@ -10079,7 +10079,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L54 without a city there is no shop headcount to measure
   - L62 after RETIREMENT_LOSS_MONTHS losses the rule sells the most-held mill and the share its constants allow
 
-## FoodProcessingCheck.java - 26 labelled assertions
+## FoodProcessingCheck.java - 30 labelled assertions
 
 > The third of the shelf that arrives already made.
 > 
@@ -10114,20 +10114,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L338 twenty points on the sales tax moves what a plant is thought to earn
   - L342 ...and putting the rate back puts the estimate back
 - **L346 5. the meat price is the bet, and it is real**
-  - L389 meat at a farm's floor is worth more to a Meat Works than meat off a ship
-  - L403 ...and the difference is most of what a Meat Works is worth
-  - L416 nobody finances a Meat Works on meat nothing could pay for
-  - L426 and every decision comes with a reason
-- **L431 6. it survives a save, by name**
-  - L445 the save loaded at all
-  - L447 the sector's till survives the round trip
-  - L450 ...and it is still the eleventh name in the equity register
-- **L454 7. a plant is counted in the money the measure counts in (RT1)**
-  - L472 fixture: every good the plants make has an export floor above nothing, so each is in the measure
-  - L474 ...and the sector holds two kinds of plant, the Meat Works the more, so it is the one the rule would thin
-  - L485 a plant is counted in the measure's own unit: what the plants add up to is the capacity the measure reports
-  - L494 ...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant
-  - L498 ...at the founding's price level, where a money-per-kilogram quotient sold nothing (PriceLevel.FACTOR below 1)
+  - L476 fixture: the goods' band is the world's literal, at par
+  - L479 fixture: the Works is paid the founding's ladder and runs at nameplate
+  - L482 fixture: the city takes none of what the plant makes
+  - L493 fixture: a Meat Works on a farm's floor is an ordinary business
+  - L496 meat at a farm's floor is worth more to a Meat Works than meat off a ship
+  - L512 ...and the difference is most of what a Meat Works is worth
+  - L526 nobody finances a Meat Works on meat nothing could pay for
+  - L536 and every decision comes with a reason
+- **L541 6. it survives a save, by name**
+  - L555 the save loaded at all
+  - L557 the sector's till survives the round trip
+  - L560 ...and it is still the eleventh name in the equity register
+- **L564 7. a plant is counted in the money the measure counts in (RT1)**
+  - L582 fixture: every good the plants make has an export floor above nothing, so each is in the measure
+  - L584 ...and the sector holds two kinds of plant, the Meat Works the more, so it is the one the rule would thin
+  - L595 a plant is counted in the measure's own unit: what the plants add up to is the capacity the measure reports
+  - L604 ...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant
+  - L608 ...at the founding's price level, where a money-per-kilogram quotient sold nothing (PriceLevel.FACTOR below 1)
 
 ## ForeignCheck.java - 179 labelled assertions
 
@@ -12747,7 +12751,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1635 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
   - L1638 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
 
-## HealthCheck.java - 229 labelled assertions
+## HealthCheck.java - 236 labelled assertions
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 
@@ -12963,63 +12967,70 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1170 a household that skipped last month's bill is judged on the full one
   - L1175 ...and settles where it pays what it can, month after month
   - L1178 ...rather than swinging between served and starving
-  - L1435 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
-  - L1437 ...and its baseline sick rate, which coverage sets, is higher for it
-  - L1462 with the fee at nothing the same city is served in full, every month
-  - L1464 ...every kind of care
-  - L1476 
-  - L1478 ...and the served are the offered times the share who could pay
-  - L1486 the treatment fees are charged on the people treated
-  - L1503 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
-  - L1516 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
-  - L1519 ...and the service still costs money to run
-- **L1522 14. the unchanged case, at zero tolerance**
-- **L1534 the unchanged case, at zero tolerance**
-  - L1547 in a city that can pay, every household paid its whole care bill
-  - L1549 
-  - L1551 ...and the served are the offered, exactly
-  - L1554 ...and the fees charged are the fees at full service, exactly
-  - L1556 ...and the households were billed exactly what the city collected a month ago, as before
-  - L1558 ...and nobody was priced out
-  - L1559 ...and no bill was skipped
-- **L1561 15. the premium**
-- **L1569 the premium**
-  - L1577 the premium raises exactly the rate times the wage bill
-  - L1579 fixture: which is money
-  - L1580 ...on the same base as the EI premium
-  - L1582 ...and it is on the government's revenue list
-  - L1585 ...inside the revenue total
-  - L1589 ...and reaches the treasury's cash, penny for penny
-  - L1597 the households' statement shows the premium the city collected a month ago
-  - L1603 ...and the rows add back up to it
-  - L1604 ...off the wages, so the retired pay none
-  - L1606 ...and it comes off take-home, like the EI premium
-  - L1612 the money audit saw it as a household-to-treasury flow
-  - L1639 
-  - L1642 the insured city charged no treatment fee
-  - L1643 ...and the fee-funded one did
-  - L1644 the insured city's wage earners paid a premium
-  - L1646 ...and the fee-funded city's paid none
-  - L1647 the gross cost is the same either way: a ward is paid for whether or not its patients are
-- **L1650 16. both dials survive a save, and a reform**
-  - L1660 the fee scale came back
-  - L1661 ...and the premium
-  - L1662 ...and the service charges at the reloaded scale
-  - L1663 ...and the full-service bill the next strike reads came back
-  - L1671 a save from before the dials is still read
-  - L1672 ...at the founding fee
-  - L1673 ...with no premium
-  - L1676 ...and so is the service's state from before the full-service bill
-  - L1678 ...which reads the bill it charged as the bill at full service
-  - L1680 ...and a coverage of 1 until a month strikes it
-  - L1685 ...and the state from before the coverages were kept
-  - L1686 ...which reads the full bill at 1x it carried
-  - L1687 the reloaded service kept the coverage the month read
-  - L1689 ...which is the figure the sick rate read, not the beds
-  - L1696 a currency reform leaves the fee scale alone
-  - L1697 ...and the premium
-  - L1701 ...and the service's scale
-  - L1702 ...while its fees move with the money
+  - L1427 fixture: every twin held a place at a clinic for every one of its people in every month
+  - L1429 fixture: at the dial's top the fee turns away a material share of the care the founding fee serves
+  - L1431 at a high fee a poor city serves a smaller share of its people than at the founding fee
+  - L1457 fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away
+  - L1459 ...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top
+  - L1461 ...and its baseline sick rate, which coverage sets, is higher for it
+  - L1484 ...and it buries more of its people over the run
+  - L1485 ...its old first, whom a fee on senior care turns away
+  - L1486 with the fee at nothing the same city is served in full, every month
+  - L1488 ...every kind of care
+  - L1494 ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care
+  - L1500 
+  - L1502 ...and the served are the offered times the share who could pay
+  - L1510 the treatment fees are charged on the people treated
+  - L1527 ...which is less than the same beds would raise at full service, in every month the fee turned somebody away
+  - L1540 the buildings' upkeep is the same at a dear fee as at the founding fee, in founding money
+  - L1543 ...and the service still costs money to run
+- **L1546 14. the unchanged case, at zero tolerance**
+- **L1558 the unchanged case, at zero tolerance**
+  - L1571 in a city that can pay, every household paid its whole care bill
+  - L1573 
+  - L1575 ...and the served are the offered, exactly
+  - L1578 ...and the fees charged are the fees at full service, exactly
+  - L1580 ...and the households were billed exactly what the city collected a month ago, as before
+  - L1582 ...and nobody was priced out
+  - L1583 ...and no bill was skipped
+- **L1585 15. the premium**
+- **L1593 the premium**
+  - L1601 the premium raises exactly the rate times the wage bill
+  - L1603 fixture: which is money
+  - L1604 ...on the same base as the EI premium
+  - L1606 ...and it is on the government's revenue list
+  - L1609 ...inside the revenue total
+  - L1613 ...and reaches the treasury's cash, penny for penny
+  - L1621 the households' statement shows the premium the city collected a month ago
+  - L1627 ...and the rows add back up to it
+  - L1628 ...off the wages, so the retired pay none
+  - L1630 ...and it comes off take-home, like the EI premium
+  - L1636 the money audit saw it as a household-to-treasury flow
+  - L1663 
+  - L1666 the insured city charged no treatment fee
+  - L1667 ...and the fee-funded one did
+  - L1668 the insured city's wage earners paid a premium
+  - L1670 ...and the fee-funded city's paid none
+  - L1671 the gross cost is the same either way: a ward is paid for whether or not its patients are
+- **L1674 16. both dials survive a save, and a reform**
+  - L1684 the fee scale came back
+  - L1685 ...and the premium
+  - L1686 ...and the service charges at the reloaded scale
+  - L1687 ...and the full-service bill the next strike reads came back
+  - L1695 a save from before the dials is still read
+  - L1696 ...at the founding fee
+  - L1697 ...with no premium
+  - L1700 ...and so is the service's state from before the full-service bill
+  - L1702 ...which reads the bill it charged as the bill at full service
+  - L1704 ...and a coverage of 1 until a month strikes it
+  - L1709 ...and the state from before the coverages were kept
+  - L1710 ...which reads the full bill at 1x it carried
+  - L1711 the reloaded service kept the coverage the month read
+  - L1713 ...which is the figure the sick rate read, not the beds
+  - L1720 a currency reform leaves the fee scale alone
+  - L1721 ...and the premium
+  - L1725 ...and the service's scale
+  - L1726 ...while its fees move with the money
 
 ## HistoricalLicenceCheck.java - 49 labelled assertions
 
