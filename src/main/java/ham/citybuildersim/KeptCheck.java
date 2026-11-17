@@ -4613,6 +4613,8 @@ public class KeptCheck {
         // holdings the fund did not hold; then held again, and the months after it counted - Portfolio with the rows it settled, a settled
         // lot's page, and its ticket at its buy and sell review.
         List<String> letGoFrom = new ArrayList<>(), settled = new ArrayList<>();
+        String[] watched = {null};
+        int[] watchedLeft = {0};
         List<Choice> settles = new ArrayList<>();
         settles.add(acting("the rule let go a month, every row that folds opened on Portfolio: its buys settle holdings", b -> {
             letGoFrom.clear();
@@ -4633,7 +4635,26 @@ public class KeptCheck {
         }));
         settles.add(choice("the page of a holding the let-go month settled, from Portfolio", b -> {
             if (settled.isEmpty()) return "the month the rule was let go settled no holding";
-            b.fundOpen(settled.stream().filter(k -> k.startsWith("B:")).findFirst().orElse(settled.get(0)), "Portfolio");
+            // (The settled bond that runs the longest, as the free bond is: a bond repaid while its page is watched is a page the model
+            // reshaped - REV-FB6-1's first run took the first settled, #3089, repaid at par a month later. A share when no bond settled.)
+            String pick = null;
+            int most = -1;
+            for (String k : settled) {
+                if (!k.startsWith("B:") || k.contains(":rescue")) continue;
+                CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(k.substring(2)));
+                int left = cb == null ? 0 : cb.remainingMonths(g.getMonth());
+                if (left > most) {
+                    pick = k;
+                    most = left;
+                }
+            }
+            if (pick == null) {
+                pick = settled.get(0);
+                most = Integer.MAX_VALUE;
+            }
+            watched[0] = pick;
+            watchedLeft[0] = most;
+            b.fundOpen(pick, "Portfolio");
             return null;
         }));
         settles.add(choice("...its ticket, buy by amount at fair, at its review", ticket(true, true, 25_000, "fair", 0, true)));
@@ -4644,7 +4665,10 @@ public class KeptCheck {
         other.removeAll(lotsAfter);
         other.removeAll(settled);
         check("fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it ("
-                + settled.size() + ": " + settled + ")", !settled.isEmpty());
+                + settled.size() + " settled)", !settled.isEmpty());
+        // (Its page and its two reviews: choice i is drawn and then a month lands, so the lot is held through the month after the third.)
+        check("fixture: the settled lot watched, " + watched[0] + ", runs " + (watchedLeft[0] == Integer.MAX_VALUE ? "on (a share)" : watchedLeft[0] + " months")
+                + ", past the 3 months its page is watched", watchedLeft[0] > 3);
         check("fixture: the rule held again after its month, no lot but the ones it settled (" + lotsAfter.size() + " lots, then " + lotsLast.size()
                 + (other.isEmpty() ? "" : "; new " + other) + ")", other.isEmpty());
         fx(() -> {
