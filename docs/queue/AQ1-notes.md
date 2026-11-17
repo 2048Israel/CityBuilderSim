@@ -164,20 +164,63 @@ Red on main, run once by hand (main's classes, this harness's class first on the
 
 (section 7 calls the method main lacks, so it is last). Sections 1, 2, 5 and 6 pass on main.
 
-## 7. The trace: it moves, and the default town is worse off
+## 7. The trace
 
-The default playtest (2,405 months, the data files named) with `-Dplaytest.trace` on e17ee67f9 against
-`cbs-trace-main-ec481b4a`: all eight files are identical to the byte through month 874 and differ from 875 to the end
-(1,531 of 2,404 rows each; the borrow file 37 rows against main's 45). The playtest itself passes, every month audited.
-At 875 a 300-post office goes (jobs 15,916 to 15,616, out of work 3.6% to 5.2%): the bleed firing. Then the town
-loses 3,900 posts in 24 months (out of work 2.7% at 870, 28.8% at 900), where main's own bust comes at 924-936 (11%
-to 26%). Over the run, from m400:
+**First, on e17ee67f9 (before the review), against `cbs-trace-main-ec481b4a`:** identical through m874, every row
+after; the default town ended at 127,424 people against 646,914. A counted run (a copy of `Game` in target/ that
+logs every sale, its trace identical to the branch's) showed why: from m875 two bleeds overlapped, Business
+Services (six centres, 1,800 posts, on $26M of its OWN cash, no debt) and Manufacturing (one Machine Works a month,
+m889-901, 2,249 posts, lent $228M-$419M, its count six interest-only months ahead of its operating losses): 4,049
+posts, exactly the jobs lost, out of work 2.7% at m870 to 28.8% at m900. The same count on main's classes: main's
+bust at m925-932 was Business Services alone (lent $849M over 74 months, losing $22M a month on its operations,
+sold by the overdrawn rule in eight months); main's Manufacturing, losing up to $25M a month on $916M lent at m905,
+sold nothing and recovered. So the bleed sold plant a wage cycle would have saved, and a sector's own cash was
+taken for a lender. Both mended (section 8).
 
-| | people at 2400 | mean out of work | peak | months over 10% | largest 10-month rise |
+**Then, on the merge with 0.9.134 (7c607323c plus d00b70592's mends), against `cbs-trace-main-69a29638`:** all eight
+files identical through m1199 and different from m1200 to the end (1,205 of 2,404 rows; the borrow file 47 rows
+against 45). The playtest passes. The bleed fired 11 times in 2,405 months, all Business Services: two centres at
+m1201-1204, then ten over m1298-1330 (4,500 posts to 1,500, lent $430M-$758M, operating losses $4M-$17M a month),
+until the desk refused at m1331 and the quarter rule sold the last four (m1331-1334). The other distress sales are
+the old rule's (49 overdrawn) and the spare-capacity rule's (75). Main's bust at m1343 loses 3,999 posts in ten
+months. From the fork (m1200):
+
+| | largest 10-month rise in out of work | most posts lost in 10 months | peak | months over 10% | people at the end |
 |---|---|---|---|---|---|
-| main | 646,914 | 5.6% | 26.3% (m933) | 578 | 15.3 pts (m933) |
-| AQ1 e17ee67f9 | 127,424 | 7.9% | 29.7% (m1820) | 1,057 | 18.9 pts (m1825) |
+| main 69a29638 | 18.7 pts (m1343) | 3,999 (m1343) | 30.6% (m1344) | 317 | 840,819 |
+| AQ1 | 8.1 pts (m1392) | 1,530 (m1310) | 26.4% (m1334) | 411 | 423,905 |
 
-One run 1,500 months past a fork is one path, not a verdict, but this one is worse, and the 3,900 posts at 876-900
-are faster than a twenty-fourth of one sector's plant a month. Being read before the ensemble (what sold, by which
-rule, in which month).
+On the brief's measure the bust is under half (the same holds on the four AUTO2 seeds, section 4); it is spread
+over more months, so more months sit over 10%. The two towns stay level for 900 months (m1400 27,858 against
+26,361; m2000 125,870 against 113,548; m2100 173,267 against 175,395); the gap opens over m2100-2400, 800 months after
+the bleed's last sale, in a growth phase (main 175k to 824k, AQ1 173k to 415k) that includes an old-rule cliff on
+AQ1's path at m2151-2155 (Heavy Industry, losses of interest only, overdrawn: seven Steel Mini-Mills in five months).
+One run's end 1,200 months past a fork is a path, not a measure; the ensemble is.
+
+## 8. The review (REV-AQ1-1, on e17ee67f9) and the counted playtest
+
+SHIP on the money (the retire path, `settleRetirement`, booked once), on the branch's exclusivity, the three overrides
+and the cause. Its findings and what was done:
+
+1. **The streak was the net one.** The 24 months were `recordSectorResult`'s net-loss months (interest, property and
+   sales tax in them) and only this month's operating income was read, so a sector losing only interest for two years
+   sold on its first month of operating dip. The default playtest showed it: Manufacturing's count began at m866,
+   its operating income turned negative only at m872, and it sold at m889 with 18 operating-loss months. Mended: a
+   second streak, `BusinessInvestment.operatingLossMonths` (`recordOperatingResult(Sector)`, called beside
+   `recordSectorResult` in `Game.runRetirement()`), saved as `DataSave.sectorOperatingLossMonths` and restored in the
+   load path; SaveFileCheck asserts a reload carries it. The bleed reads it, and its step is counted on it. No format
+   bump: a save without the field restarts the streak at 0, later and not wrong.
+2. **The harness.** Section 5 lifted the floor before the dial, so no month mixed the two kinds; it now raises the
+   floor, lifts it while interest keeps the net count climbing, and raises it again: 23 months with the net count
+   at 28-50, the operating streak at 1-23 and the plant losing, nothing sold (e17ee67f9's rule sells in 7 of them, red
+   when put back). Section 7 could not fail (the three overrides return null literally); it now also asks the rule of
+   a sector that does not bleed, past the dial and not overdrawn (Freight, net count 24, cash $90k, owing $5,766k):
+   nothing sold.
+3. **Old metal (predates AQ1).** A scrapped plant's steel and copper sold to the Scrap Yards come back as other
+   revenue (`Sector.sellOldMetal`, `CopperRefining`'s scrap purchases), inside operating income, which could reset a
+   streak in the month the metal lands. The operating streak leaves it out (`OldMetal.SOLD` in the statement's other
+   revenue); the net streak keeps it, as before.
+
+The counted playtest (a copy of `Game` in target/ logging each sale, its trace identical to the branch's) also found
+that "lent" was not tested: Business Services bled six centres from m875 on $26M of its own cash with no debt to the
+desk. The bleed now needs the desk's principal above zero; a sector living on its own cash holds, as on main.
