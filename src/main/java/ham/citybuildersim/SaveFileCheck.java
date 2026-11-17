@@ -2827,6 +2827,11 @@ public class SaveFileCheck {
         Game fundCity = back;
         Bank fb = fundCity.getBank();
         assertTrue("fixture: the city has a bank to ask it for preferred", fb.getBranches() > 0);
+        // ...AND OPEN (CU2, 2026-11-16): on the chained world prices this city's bank stands failed at the save (in resolution, equity
+        // -3,420 against a minimum of 3,507), and a failed bank asks nobody for preferred (Bank.wantsPreferred()). The city resolves it as the
+        // Bank tab's button does, the model's own call, as the WG2 note above does, so the fixture puts an open bank under its minimum.
+        if (fundCity.canResolveBank()) fundCity.resolveBank();
+        assertTrue("fixture: the bank is open, not in resolution, before it is put under its minimum", !fb.isInsolvent());
         fundCity.setFundDial(1.5);
         fundCity.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
         fundCity.setCashForTest(fundCity.getCash() + 50_000 * PriceLevel.FACTOR);

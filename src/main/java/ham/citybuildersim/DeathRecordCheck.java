@@ -65,7 +65,13 @@ public class DeathRecordCheck {
         Game open = town(root, "layoff-open-data", "layoff-open-no-legacy", 60);
         double orphansBefore = closed.getFamilies().getOrphansTotal();
         double atHomeBefore = closed.getFamilies().getAtHomeAdults();
-        double[] peakAtHome = { atHomeBefore }, childrenAtPeak = { 0 }, oldRuleOrphans = { 0 }, mostAdded = { 0 };
+        /*
+         * CU2: THE WAVE AGAINST THE TWIN, as the orphans are. The out of work at home is read over the open twin's in the same month, not over
+         * the closed town's own count at the closing: on the chained world prices this town stands 351 out of work at month 60, and the twin's
+         * count moves as far as the closed one's in the months after (420 against 221 in the first, 143 against 209 in the second), so the
+         * town's own count at the closing says nothing of what the closing did. The twin is the same city to the month with the mill standing.
+         */
+        double[] peakExcess = { 0 }, peakAtHome = { atHomeBefore }, childrenAtPeak = { 0 }, oldRuleOrphans = { 0 }, mostAdded = { 0 };
         quietly(() -> {
             BuildingsTemplate mill = closed.getBuildingManager().getTemplateByName("Industrial Bakery");
             closed.getBuildingManager().retire(mill, closed.getBuildingManager().getQuantity(mill.getId()));
@@ -74,16 +80,18 @@ public class DeathRecordCheck {
                 open.simulateMonths(1);
                 FamilyModel families = closed.getFamilies();
                 mostAdded[0] = Math.max(mostAdded[0], families.getOrphansTotal() - open.getFamilies().getOrphansTotal());
-                if (families.getAtHomeAdults() > peakAtHome[0]) {
+                double excess = families.getAtHomeAdults() - open.getFamilies().getAtHomeAdults();
+                if (excess > peakExcess[0]) {
+                    peakExcess[0] = excess;
                     peakAtHome[0] = families.getAtHomeAdults();
                     childrenAtPeak[0] = families.getOutsideDependantsTotal();
-                    oldRuleOrphans[0] = (peakAtHome[0] - atHomeBefore) * families.dependantsPerOutsideHousehold();
+                    oldRuleOrphans[0] = excess * families.dependantsPerOutsideHousehold();
                 }
             }
         });
-        System.out.printf("   out of work at home %.0f to %.0f, children with them %.3f, old rule %.3f against %.3f orphans; greatest same-month excess %.3f%n",
-                atHomeBefore, peakAtHome[0], childrenAtPeak[0], oldRuleOrphans[0], orphansBefore, mostAdded[0]);
-        assertTrue("fixture: the paired city's closing put adults out of work", peakAtHome[0] > atHomeBefore);
+        System.out.printf("   out of work at home %.0f at the closing, %.0f at the widest over the twin (%.0f more than it), children with them %.3f, old rule %.3f against %.3f orphans; greatest same-month excess %.3f%n",
+                atHomeBefore, peakAtHome[0], peakExcess[0], childrenAtPeak[0], oldRuleOrphans[0], orphansBefore, mostAdded[0]);
+        assertTrue("fixture: the paired city's closing put adults out of work: more at home than its twin in the same month", peakExcess[0] > 0);
         assertTrue("...and the old rule would have at least doubled its orphans", oldRuleOrphans[0] > orphansBefore);
         assertTrue("the children went with the laid-off parents", childrenAtPeak[0] > 0);
         assertTrue("the layoff adds at most one orphan against its twin in every month of the two years", mostAdded[0] <= 1);

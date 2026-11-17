@@ -1,24 +1,26 @@
-# gate of Merge batch/DQ1: young towns borrow ahead of their people and default: six GW1 fixtures held sectors so a young town's bank stayed solvent (BankCheck 19, HoldersCheck, SaveFileCheck, CurveCheck, PolicyPreviewCheck, BondCheck 7c). The ensemble's AUTO2 bank, months under `CAPITAL_RATIO` to m600: a median of 17 on GW1's first draw against 4 unsnapped, 2 [0 to 21] on the reviewed draw (0.9.55 had 15). Read what lending to a young town's businesses rests on, a harness of a young town's bank, and the six holds released where they are no longer needed; with BA1-B (build-ahead lending's bank losses: whether lending to orders on site wants a brake of its own) and WN3-Y (the young town ordering works it cannot build or run), folded in from Pending on 2026-11-16, 0.9.129
+# gate of Merge batch/CU2: world prices chained (after WP1): the solve WP1 designs, each nation's made good priced off its inputs plus a conversion, for every good the price file prices off another, wire and cable as rod plus fabrication, the refining charge's cycle; a `WorldMarketCheck` section (rod and wire against cathode plus their conversion on the Historical path and random ones, the calibration's figures standing), a played count of Rod Mills (seed 1 builds 363 by m2400 today), a fixture city with a mine and a smelter; the trace moves on every seed (the ensemble) and money moves (a stranger's review at the gate); CU1's ★1-★4 as Jerus took them (2026-11-09): chain-linked prices, every good, wire tied to rod, the charge's cycle on the real record. Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **DS1**: Seed 0's Copper Refining builds nothing with a candidate that clears every gate, a look: on main's default playtest the sector has no cash, a 31.30% rate and rating 4 from m768 to m3996 after one losing Rod Mill, its Rod Mill candidate earning 0.42 of its cost a month at m2400, where seeds 1-3 build 363-446; which gate holds it, and whether any processing sector can be left this way, 0.9.130
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 199 harnesses run in 2655s: 196 passed, 3 failed
+# suite: 207 harnesses run in 3060s: 202 passed, 5 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
-MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
+MapCheck | at the widest view every pixel a highway or the track crosses is drawn as it, and no other FAIL
 MapCheck | 3 FAILED
+KeptCheck | exit 1
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 45 of 400; 3 of 25 months made none) FAIL
+KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
+DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 1 FAILED
-KeptCheck | exit 3
-KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 46 of 400; 6 of 25 months made none) FAIL
-KeptCheck | the read of the saved cities landed within a minute, with the saved city on the board (0 on it) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 3 FAILED
+DeathRecordCheck | 2 FAILED
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2880964439267 of 1019.6940354153619)
 PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified

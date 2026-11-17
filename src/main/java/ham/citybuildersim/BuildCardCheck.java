@@ -1689,10 +1689,12 @@ public class BuildCardCheck {
                 String.format("earns %s on %s, the bar %s; %s", Formats.INSTANCE.amount(w.earns()), Formats.INSTANCE.amount(w.cost()),
                         Formats.INSTANCE.amount(w.hurdle()), w.why()));
         SpreadPlanner.Candidate c = steel.appraise(pellets, plans);
+        // ...asked for the plant itself, as the planner asks it (City.money(t, ...), BA1): the interest on the wait for it is in the bar. On the
+        // chained world prices (CU2) the plant earns, and its words name that bar; where it lost, as on main, they named no bar and the two agreed.
         assertTrue("its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant"
                 + " alone, no van and no truck in it, since the pellets and their feed are bulk and go by Haulage's trucks (FR2) - with"
                 + " its city legs at the quote in what it earns", w.why().equals(c.refusal(SpreadPlanner.Gate.MONEY))
-                && w.why().equals(steel.planner().city(steel, plans, g).money(w.earns(), w.cost())) && w.fleet() == 0 && w.vans() == 0
+                && w.why().equals(steel.planner().city(steel, plans, g).money(pellets, w.earns(), w.cost())) && w.fleet() == 0 && w.vans() == 0
                 && Math.abs(w.cost() - plans.getCostOf(pellets, 1)) <= 1e-9 * w.cost()
                 && ProcessingSector.cityLegs(pellets, 1, steel.legPrice()) > 0);
         BuildCard.Investors inv = BuildCard.investors(g, pellets);
