@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-LX1-MV0wqgUr -->
 ## changelog
 ### {next} — LX1, Luxury Retail's sales per post — 2026-11-17, ready, see docs/queue/LX1-notes.md
