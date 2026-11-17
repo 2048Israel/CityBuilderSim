@@ -96,51 +96,95 @@ public final class WorksValue {
     private record Relief(double used, double avoided, double futureCapital, long futureUnits,
                           double futureMonths, double financing, double running) { }
 
-    private record Financing(double monthlyCoupon, double issueCost, int months) { }
+    private record Financing(double monthlyCoupon, double issueCost, int months, double proceeds) { }
 
     private static Financing financing(Game g, double gap) {
-        if (!(gap > 0)) return new Financing(0, 0, 0);
+        if (!(gap > 0)) return new Financing(0, 0, 0, 0);
         DebtQuote q = AutoBuilder.bondQuote(g, gap, g.getAutoBuilder().getCap());
         if (q == null || !(q.cashReceived() > 0)) {
             double rate = Math.max(0, g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12)) / 12;
-            return new Financing(gap * rate, 0, Game.BUILD_BOND_YEARS * 12);
+            return new Financing(gap * rate, 0, Game.BUILD_BOND_YEARS * 12, gap);
         }
         int months = q.auction() == null ? q.duration() * 12 : q.auction().ask().months();
         double scale = Math.max(1, gap / q.cashReceived());
-        return new Financing(q.monthlyInterest() * scale, (q.faceValue() - q.cashReceived()) * scale, months);
+        return new Financing(q.monthlyInterest() * scale, (q.faceValue() - q.cashReceived()) * scale,
+                months, q.cashReceived() * scale);
     }
 
     /** Whole parcels retain their unused ground, and the foreign vault pays only once across the sequence. */
     private static final class GroundPlan {
         private final Game game;
         private final java.util.Set<Integer> bought = new java.util.LinkedHashSet<>();
+        private final LandManager.Use use;
+        private double owned, slope, forest, allocated, works, runs;
         private double free, paid;
 
         GroundPlan(Game game, BuildingsTemplate template, double available) {
             this.game = game;
+            use = Game.groundUse(template);
+            LandManager land = game.getLandManager();
+            owned = land.getLinkedOwnedSqFt();
+            slope = land.getSlopeSqFt() - land.getLandmasses().unlinkedReliefSqFt(CityLand.RELIEF_STEEP)
+                    - land.getLandmasses().unlinkedReliefSqFt(CityLand.RELIEF_VERY_STEEP);
+            forest = land.getLinkedForestSqFt();
+            allocated = land.getLinkedAllocatedSqFt();
+            works = land.getWorksSqFt();
+            runs = land.getRunsSqFt();
             free = BuildAdvice.availableGround(game, template, available);
         }
 
+        /** The office's class and zone constraints on this projected pool, before reservations. */
+        private double room() {
+            Zoning zoning = game.getLandManager().getZoning();
+            double unbuilt = Math.max(0, owned - allocated - zoning.keptShare() * forest);
+            double held = 0;
+            for (Zoning.Zone zone : zoning.zones())
+                held += Math.max(0, zone.targetSqFt(owned) - zone.usedSqFt());
+            double anyone = Math.max(0, unbuilt - held);
+            if (use == LandManager.Use.WORKS) return anyone;
+            double runSlope = owned > 0 ? Math.min(runs * slope / owned, slope) : 0;
+            if (use == LandManager.Use.BUILDING)
+                return Math.max(0, anyone - Math.max(0, slope - runSlope - works));
+            double buildableShare = owned > 0 ? (owned - slope) / owned : 0;
+            double runRoom = Math.max(0, owned - allocated);
+            if (buildableShare > 0)
+                runRoom = Math.min(runRoom, (owned - slope - (allocated - works - runs)) / buildableShare - runs);
+            return Math.max(0, Math.min(anyone, runRoom));
+        }
+
         double take(double area) {
-            double cash = 0, lack = area - free;
-            if (lack > 0) {
+            double cash = 0, estimated = 0;
+            while (area > free) {
+                double lack = area - free;
                 AutoBuilder.Ground ground = AutoBuilder.groundFor(game, lack, bought);
                 if (ground == null) {
                     // No offered parcel can be bought now. Future unavailable ground uses the office's estimate.
-                    cash = lack * game.getLandManager().getOfficePricePerSqFt();
-                    free += lack;
+                    cash += lack * game.getLandManager().getOfficePricePerSqFt();
+                    estimated += lack;
+                    free = area;
                 } else {
+                    double before = room();
                     for (LandParcel parcel : ground.offers()) {
                         bought.add(parcel.getId());
-                        free += parcel.getSizeSqFt() - parcel.getUnlinkedDryKm2() * LandManager.SQ_FT_PER_KM2;
+                        double dry = parcel.getSizeSqFt() - LandManager.sqFt(parcel.getUnlinkedDryKm2());
+                        double building = LandManager.sqFt(parcel.getReliefKm2(CityLand.RELIEF_FLAT)
+                                + parcel.getReliefKm2(CityLand.RELIEF_FOOTHILL) - parcel.getUnlinkedBuildableKm2());
+                        owned += dry;
+                        slope += Math.max(0, dry - building);
+                        forest += LandManager.sqFt(parcel.getKm2(CityLand.FOREST) - parcel.getUnlinkedForestKm2());
                     }
+                    free += room() - before;
                     java.util.List<Integer> ids = new java.util.ArrayList<>(bought);
                     double total = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
-                    cash = total - paid;
+                    cash += total - paid;
                     paid = total;
                 }
             }
             free -= area;
+            // Office-priced unavailable ground has no parcel in this pool and leaves no reusable remainder.
+            allocated += area - estimated;
+            if (use == LandManager.Use.WORKS) works += area - estimated;
+            if (use == LandManager.Use.RUN) runs += area - estimated;
             return cash;
         }
     }
@@ -181,7 +225,7 @@ public final class WorksValue {
             double cash = g.getAutoBuilder().spendableForMeasure(g, m) - (g.getCash() - maintenance.cashLeft());
             double gap = Math.max(0, maintenance.initialCashCost() - cash);
             Financing funding = creditQuotes.computeIfAbsent(gap, amount -> financing(g, amount));
-            cashForLater = Math.max(0, cash - maintenance.initialCashCost());
+            cashForLater = Math.max(0, cash + funding.proceeds() - maintenance.initialCashCost());
             financingCost = funding.issueCost() + funding.monthlyCoupon()
                     * annuity(couponDiscount, Math.min(horizon, funding.months()));
             futureLead = g.quoteBuild(maintenance.template(), 1).months;
@@ -219,8 +263,8 @@ public final class WorksValue {
                         futureCapital += (cashCost + land) * discount;
                         double cashNeeded = cashCost + maintenance.ground().take(g.landNeededFor(t, extra[0]));
                         double financed = Math.max(0, cashNeeded - cashForLater);
-                        cashForLater = Math.max(0, cashForLater - cashNeeded);
                         Financing funding = creditQuotes.computeIfAbsent(financed, amount -> financing(g, amount));
+                        cashForLater = Math.max(0, cashForLater + funding.proceeds() - cashNeeded);
                         financingCost += (funding.issueCost() + funding.monthlyCoupon()
                                 * annuity(couponDiscount, Math.min(horizon - paidAt, funding.months()))) * discount;
                         futureUnits += extra[0];
