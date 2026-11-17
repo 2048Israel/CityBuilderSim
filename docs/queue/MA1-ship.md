@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### MA1 — what carries the city next — 2026-11-17, ready, see docs/queue/MA1-notes.md
 `docs/studies/manufacturing-margin.md`, its probe, the census and BEA extracts and the runs' tables in
