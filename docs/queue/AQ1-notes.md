@@ -91,3 +91,75 @@ Business Services' own design (its class javadoc, 2026-09-12) is otherwise: "the
 twenty-four months of losses sheds plant"; "Boom and bleed, documented" (Nova Scotia's centres shed 2,000 of 15,693
 jobs inside a decade); its screen says "past one hundred the offices start closing". The code closes nothing while a
 lender covers the loss, for up to a hundred months, and then everything in a year.
+
+## 4. The mend: a price taker bleeds while it is lent (★)
+
+`BusinessInvestment.planDistressRetirement()` now lets a sector whose `Sector.bleedsWhileLent()` is true (Business
+Services, Automotive, Manufacturing: the three whose `retirementDemandAndCapacity()` always returns null) sell plant
+while the desk still lends it, once it has lost money `DISTRESS_LOSS_MONTHS` running and only while its plant is
+short of its own running costs (`statement().operatingIncome < 0`; a loss that is only interest holds, as before).
+The pace is the new dial `BLEED_MONTHS` (= `DISTRESS_LOSS_MONTHS`, the losses' runway again): a twenty-fourth of its
+biggest holding a month in whole buildings; below twenty-four held, one building on each count of the losses that is
+a multiple of ceil(24 / held) past the dial, the step read off the holding that month. Eight held go at counts 24,
+28, 32, 34, 36, 40, 48 and 72. No saved field: the step is read off the saved loss counter and the holding, so a
+reload keeps it; no format bump (nothing an old save holds reads differently). Overdrawn with no lender, every
+sector sells `MAX_RETIREMENT_FRACTION` a month as before.
+
+Measured on main's four Business Services seeds to month 1300 (the ensemble driver, one run each; main, then the
+first prototype at one building a month while lent, then this):
+
+| seed | largest 10-month rise from m400 | peak out of work | months over 20% | people at 1300 |
+|---|---|---|---|---|
+| 0 | 27.4 / 18.8 / 12.0 pts | 36.6 / 22.3 / 17.0% | 37 / 6 / 0 | 38,849 / 38,720 / 40,589 |
+| 2 | 26.9 / 15.0 / 9.6 pts | 38.2 / 29.1 / 13.9% | 35 / 12 / 0 | 38,369 / 36,178 / 39,851 |
+| 10 | 27.3 / 12.3 / 14.2 pts | 32.0 / 18.7 / 19.7% | 28 / 0 / 0 | 116,060 / 670,667 / 458,213 |
+| 13 | 25.1 / 20.5 / 9.0 pts | 33.6 / 27.2 / 19.9% | 26 / 24 / 0 | 40,517 / 84,396 / 42,394 |
+
+A3 is 0 in every run. Seed 10's 14.2 points (m612-622) were read month by month: its Business Services held nine
+offices, sold one at losses 24, 30, 36 and 40 while lent (cash $62k-$996k a month, principal about $21M), and at 41
+the desk refused: each office sold took its book value off the assets and paid little off the debt, so the debt
+passed the default point sooner. The quarter rule then sold the last five, one a month (1,500 posts), alongside
+Construction's own shed of 948 posts at m616. The refusal still comes; it comes to a smaller sector.
+
+The other ways, not taken:
+- Keep main's rule: the cliff stays (8 of 16 seeds on 0.9.132's AUTO2 lose 25-27 points in ten months).
+- One building a month while lent (the first prototype): seed 13 still spent 24 months over 20%, seed 2 twelve.
+- Slow the overdrawn rule instead: a firm refused credit with no money is the case the rule was written for ("a firm
+  with no money and no lender lays people off"), and it leaves the hundred months of lent losses as they were.
+- Stop the desk lending operating losses earlier: the bank's rule, every sector's, a larger change than this batch.
+- A strict step counted from the last sale: the same average pace, and a saved field per sector to carry it.
+
+## 5. RN1-A: A3's one-month red, accepted
+
+RN1 (0.9.63, 2026-11-09) shipped with A3 red by one month in one seed of sixteen (AUTO2 seed 4, a 12-month spell of
+yoy under -10% at m970-981 against main's 11), as its notes recommended; its changelog says so, and QUEUE folded
+RN1-A into this batch "as recommended". Confirmed on 0.9.132's ensemble (TQ1's baseline, `docs/ensemble/0.9.132.md`):
+A3 PASS, 0 [0 to 4]; seed 4's lowest yoy is -8.6% at m740 with the policy rate at zero, no month of it under -10%;
+the longest spell in any seed is seed 15's 4 months (m1385-1388). The zero bound itself is common (189 to 481
+months at a 0% policy rate per seed), so RN1-A's question, the deflation at the zero bound, is not a red on main; this
+batch records it and builds nothing for it.
+
+## 6. The harness: DistressBleedCheck
+
+A town of eight Contact Centres (the fixture of BusinessServicesCheck's "what closes it") and the minimum wage opened
+and lifted to 1.8 times its founding floor: Business Services' operations lose $48k-$72k a month from month 2, the
+desk lends it (cash never below $6k, debt $597k to $2,152k) and the count reaches 24 at month 25. Three times the
+floor loses $250k a month and the desk refuses at about the dial, which is the quarter rule's case, not this one.
+Seven sections: the fixture; nothing sold under the dial; a centre sold the month the count reaches it while lent,
+half gone by the dial plus BLEED_MONTHS; never faster than max(1, held / BLEED_MONTHS) and only on the counts the
+dial names; a loss that is only interest holds (a second town, the floor lifted back at a count of 12); overdrawn,
+the quarter (the rule asked with an overdrawn balance as its argument); only a sector with no demand reading bleeds.
+On this branch: exit 0 in 7 s, sales at counts 24, 28, 32, 34 and 36 with 8, 7, 6, 5 and 4 held.
+
+Red on main, run once by hand (main's classes, this harness's class first on the path):
+
+    the month the count reached 24: 0 centre(s) sold, cash $130k, operating income $-49k, debt $2,221k
+    a centre is sold in the month the count reaches the dial       FAIL
+    0 of the 8 centres sold in months the lender still covered; half gone at a count of never (the dial's end: 48)
+    by the dial plus BLEED_MONTHS months of losses at least half the centres are gone, sold while lent FAIL
+    0 sales over 25 months of lent losses, at counts none with none held before them
+    a lent sale falls on a count the dial names, and a count it names with the operations losing money passes none FAIL
+    the first two sales are at least the dial's step apart for the holding at the first FAIL
+    Exception in thread "main" java.lang.NoSuchMethodError: 'boolean ham.citybuildersim.Sector.bleedsWhileLent()'
+
+(section 7 calls the method main lacks, so it is last). Sections 1, 2, 5 and 6 pass on main.
