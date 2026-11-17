@@ -1,4 +1,4 @@
-# HydrogenSteelCheck.java - 508 lines · 22 methods · 5 constants · harnesses
+# HydrogenSteelCheck.java - 509 lines · 22 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HydrogenSteelCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -39,7 +39,7 @@
 > is known; the works and the plant are placed by hand where a section is about them; the labour is handed (MaterialsCheck.handWorkers()) as the plan fixtures
 > of the materials chains hand it, because the plan under test is the planner's own, not a labour market's.
 
-**Uses:** [Good](Good.md) (76), [HeavyIndustry](HeavyIndustry.md) (45), [Game](Game.md) (25), [SpreadPlanner](SpreadPlanner.md) (18), [BuildingManager](BuildingManager.md) (16), [MaterialsCheck](MaterialsCheck.md) (14), [Sector](Sector.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (11), [Sectors](Sectors.md) (7), [CityCalendar](CityCalendar.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Markets](Markets.md) (4), [MoneyAudit](MoneyAudit.md) (4), [ResearchCatalog](ResearchCatalog.md) (3), [ResearchCheck](ResearchCheck.md) (3), [Founding](Founding.md) (2), [HydroSites](HydroSites.md) (2), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Trade](Trade.md) (1), [Statement](Statement.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
+**Uses:** [Good](Good.md) (76), [HeavyIndustry](HeavyIndustry.md) (45), [Game](Game.md) (25), [SpreadPlanner](SpreadPlanner.md) (18), [BuildingManager](BuildingManager.md) (16), [MaterialsCheck](MaterialsCheck.md) (14), [Sector](Sector.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (11), [Sectors](Sectors.md) (7), [CityCalendar](CityCalendar.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Markets](Markets.md) (4), [MoneyAudit](MoneyAudit.md) (4), [ResearchCatalog](ResearchCatalog.md) (3), [ResearchCheck](ResearchCheck.md) (3), [Founding](Founding.md) (2), [HydroSites](HydroSites.md) (2), [GoodsMarket](GoodsMarket.md) (2), [LicenceFees](LicenceFees.md) (2), [GameFiles](GameFiles.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Trade](Trade.md) (1), [Statement](Statement.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
 ## Sections
 
@@ -48,9 +48,9 @@
 | 133 | 1. the row |
 | 167 | 2. known by the research |
 | 216 | 3. where it pays, and where it does not |
-| 321 | 4. captive pellets |
-| 409 | 5. nothing moves without the works |
-| 458 | 6. a played count |
+| 322 | 4. captive pellets |
+| 410 | 5. nothing moves without the works |
+| 459 | 6. a played count |
 
 ## Constants
 
@@ -72,7 +72,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 459 | **type** `public class HydrogenSteelCheck` | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from pellets and the grid's power alone, no coke, no limestone, no scrap, i... |
+| 50 | 460 | **type** `public class HydrogenSteelCheck` | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from pellets and the grid's power alone, no coke, no limestone, no scrap, i... |
 | 58 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 63 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 68 | 5 | `static void quietly(Runnable r)` |  |
@@ -96,7 +96,7 @@
 | 170 | 4 | `static boolean weighed(HeavyIndustry heavy, Game g, BuildingsTemplate t)` | Whether a template is among the candidates a sector's planner weighs. |
 | 175 | 40 | `static void knownByTheResearch()` |  |
 
-### 3. where it pays, and where it does not (lines 216-320)
+### 3. where it pays, and where it does not (lines 216-321)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -105,25 +105,25 @@
 | 223 | 7 | `static Figure figure(Game g)` |  |
 | 238 | 11 | `static Game paysTown(String label, double tariff, boolean importsSteel)` | A city for section 3: the 1900 town at FE4's month, its labour handed, the grid billing `tariff` (NaN: the model's own, the utility's) and, with `importsSteel`, the city's fabricators having bought the works' whole na... |
 | 251 | 6 | `static String ranked(List<SpreadPlanner.Candidate> all)` | The candidates the planner ranks, best earnings on the whole cost first, as text. |
-| 258 | 62 | `static void wherePays()` |  |
+| 258 | 63 | `static void wherePays()` |  |
 
-### 4. captive pellets (lines 321-408)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 323 | 85 | `static void capturedPellets()` |  |
-
-### 5. nothing moves without the works (lines 409-457)
+### 4. captive pellets (lines 322-409)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 411 | 46 | `static void nothingMoves()` |  |
+| 324 | 85 | `static void capturedPellets()` |  |
 
-### 6. a played count (lines 458-508)
+### 5. nothing moves without the works (lines 410-458)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 461 | 5 | `static double dearest(Game g)` | The dearest of Heavy Industry's candidates' whole cost: what the sector's till is topped to when its money gate is set aside. |
-| 468 | 15 | `static long played(Game g, boolean freed)` | The 154s held (built and ordered) after the played months, with the money gate its own or set aside (RefineryCheck's lever: ON_ITS_BORROWING and the dearest cost in the till). |
-| 484 | 24 | `static void aPlayedCount()` |  |
+| 412 | 46 | `static void nothingMoves()` |  |
+
+### 6. a played count (lines 459-509)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 462 | 5 | `static double dearest(Game g)` | The dearest of Heavy Industry's candidates' whole cost: what the sector's till is topped to when its money gate is set aside. |
+| 469 | 15 | `static long played(Game g, boolean freed)` | The 154s held (built and ordered) after the played months, with the money gate its own or set aside (RefineryCheck's lever: ON_ITS_BORROWING and the dearest cost in the till). |
+| 485 | 24 | `static void aPlayedCount()` |  |
 

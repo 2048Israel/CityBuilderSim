@@ -9,7 +9,8 @@ is R6-T's). Coding went to four Sonnet slices (the mark; FE1; FE2; FE4), each di
 
 - `research.json` learns two optional keys, `"projected": true` and `"window": "2027-2030"` (its readme says
   so); `ResearchCatalog.Entry` reads them (`projected()`, `window()`, `mark()`, `dateWords()`), and a row
-  without them is history. Gson leaves a missing key alone and a save holds codes: no `SAVE_FORMAT` change.
+  without them is history. Gson leaves a missing key alone and a save holds codes: the keys need no
+  `SAVE_FORMAT` change (the driverless kit does: format 55, below).
 - `ResearchCatalog.HISTORY_ENDS` = November 2026, the month the catalogue was last read against the world.
   `ResearchCheck` 11 holds every row to it: dated after it, projected with a window holding its year; on or
   before it, history with no window. FE4 (June 2028) is projected, 2027-2030; FE1 (May 2025) and FE2 (Nov 2025)
@@ -34,7 +35,9 @@ is R6-T's). Coding went to four Sonnet slices (the mark; FE1; FE2; FE4), each di
   from the kit's counts, 1 in a city founded today's way): `tonnesATruck()` blends `TONNES_A_TRUCK_MONTH`'s one
   shift (`SHIFT_HOURS` 10) with `DRIVERLESS_HOURS` 20, `driverPostsATruck()` blends `DRIVERS_A_TRUCK` with
   `OVERSIGHT_A_TRUCK` 0.1, and the capacity, the fleet's need, the drivers struck (`strikeDrivers()`) and the
-  quote's estimates read them; at a share of 1 each is main's own expression, to the bit. The kit's gain is
+  quote's estimates read them; at a share of 1 each is main's own expression, to the bit. The blend is over
+  the trucks the depots keep (`driverlessShare()`, min(trucks, room) over trucks, as `strikeDrivers()` counts
+  them): a truck past the room stands on the street, under no kit, and is driven (REV-R6b-1). The kit's gain is
   `EquipmentFit.driverGain()`: the drivers' wages less the oversight's, and the capital month
   (`Haulage.truckCapitalMonth()`) of the trucks no longer needed; `LicenceFees` bills FE1's fee on it unchanged.
   `FreightView`'s plant plan reads the live figures; the trucks' info text names both tonnages.
@@ -52,6 +55,16 @@ is R6-T's). Coding went to four Sonnet slices (the mark; FE1; FE2; FE4), each di
   good it uses has.
 - **Named for their owners' batches** (the ship file's pending): FE3 and FE6 after PW2 and PW4, FE5 after a
   storage batch, FM1 and FM2 after R2f and the gap's mRNA row. Nothing of PW's or FM2's was built.
+
+## Saves: format 55, and the floor with it (REV-R6b-1)
+
+`GameVersion.SAVE_FORMAT` and `OLDEST_LOADABLE_FORMAT` both go from 54 to 55, by the rule (an old save would
+load wrongly), with no conversion code. A format-54 save holds no unfitted count for the depots' driverless
+kit, a piece this batch adds, and the load path reads a missing count as fitted (`Game`'s
+`restoreUnfitted`), so `EquipmentForms.setDriven` would set a 1900 city's driven share to 0 from its first
+month, in 1930 as in 2030: twice the tonnes a truck, the drivers laid off, no kit bought, no FE1 fee. A
+format-54 save is now refused, naming the build that opens it. No field is added; `GameVersion`'s 55 block
+says the same.
 
 ## The calls (balance), each taken on the recommended way
 
@@ -85,10 +98,13 @@ is R6-T's). Coding went to four Sonnet slices (the mark; FE1; FE2; FE4), each di
 
 Each new harness was run once on main's own classes (aeac6e5a, the branch's harness classes beside them):
 - `DriverlessTruckCheck` red on main: `NoSuchMethodError: Haulage.setDriverShare(double)` before its first
-  section. On the branch 60 ok: the share's dials to the bit at 1; the kit NOT_KNOWN the month before FE1 and
+  section. On the branch 66 ok: the share's dials to the bit at 1; the kit NOT_KNOWN the month before FE1 and
   known at it (or from an earlier find); its gain `driverGain()` at the city's figures, verdict PAYS; every
   depot fitted, the tonnes a truck at 6,000, the need's trucks halved and the drivers struck by the formula;
-  one depot of two fitted, the share .5; a city founded today's way at exactly 1. **Played count**: a 1900
+  the fleet then raised past the depots' room (200 room, 100 on the street; REV-R6b-1): the fleet's tonnes
+  1,500,000, the street's trucks at 3,000, the posts 120, the drivers struck on the room alone. That line run
+  once on the review's Haulage (eb55dd31's, compiled apart, ahead on the path): red by value, 1,800,000 t
+  against 1,500,000 and 30 posts against 120 (the street's trucks driverless too). One depot of two fitted, the share .5; a city founded today's way at exactly 1. **Played count**: a 1900
   village 24 months from FE1's month, the share below 1 in 24 of 24 (the fixture fits every other piece by
   hand: the village has no builders, so a 6-point electric-drive job held the fitting queue's head).
 - `SulphideLeachCheck` red on main: "fixture: Sulphide Leach & SX-EW Plant (153) and the Leach & SX-EW Plant
@@ -108,7 +124,8 @@ Each new harness was run once on main's own classes (aeac6e5a, the branch's harn
   Captive pellets from the city's plant first; with no works the made pellets' arithmetic to the bit.
   **Played count**: 0 built in 24 months from FE4's month, four runs (two cities, the money gate kept and set
   aside): the tariff is the utility's again each month, and on it the works does not clear. The planner bills
-  362,500 of the works' 483,333 units a unit of tariff (0.75); not traced.
+  362,500 of the works' 483,333 units a unit of tariff: 0.75, 1 - `LicenceFees.SHARE`, FE4 being patented and
+  the world taking a quarter of the gain; section 3 asserts it against the constant (REV-R6b-1).
 - **A real run**: the default playtest builds, fits and drives none of the three (★1; the trace below).
 - Inventories the rows move, each moved to the new truth with its reason in the label: `ResearchCheck` (94
   rows, ENGINEERING 50, needs 29 to 25, months known 32, templates dated by code 33, the F codes' years and
@@ -123,6 +140,13 @@ Each new harness was run once on main's own classes (aeac6e5a, the branch's harn
   x1, 1,632 at x3, willing .72 and .35). It is a NIGHTLY harness the gate runs only when a pick names it (HA1),
   so no gate saw it. Named in the ship file's known reds, its look queued as EDU1. Review: "not needed - no
   money, saves or threading in the diff". Stale: 0 firm.
+- **REV-R6b-1** (the orchestrator's stranger's review of eb55dd31): NOT SHIP, one must-fix and two mends,
+  all made: the format to 55 (Saves, above); the truck blend over the depots' trucks only; the hydrogen
+  works' tariff slope pinned to the draw x (1 - `LicenceFees.SHARE`). Run alone after it, each green:
+  `DriverlessTruckCheck` 66, `HydrogenSteelCheck`, `HaulageCheck`, `FreightViewCheck`, `EquipmentCheck`,
+  `FittingCheck`, `Forms1900Check`, `SaveFileCheck`, `ReadPathCheck`; `SaveSlotCheck` all but its one timing
+  line (the autosave month's median 32.8 ms against `SaveWriter.CLOCK_MS` 25, hard when run alone; the gate
+  runs no timing, and nothing here touches the autosave). Maps regenerated; Stale 0 firm.
 - Left as found: `EquipmentFit.cartGain()` still strikes the motor truck against teams at the one-shift
   tonnes (the forms never meet: a 1900 city's horses are gone long before 2025); `BuildingVisual` draws 153
   as a copper pit.
@@ -132,7 +156,9 @@ Each new harness was run once on main's own classes (aeac6e5a, the branch's harn
 The branch's default playtest (2,400 months, `-Dplaytest.trace`, at c46259c4, all the model's changes in)
 against main's reference at `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-aeac6e5a/` (made by this batch
 from aeac6e5a, for other builders too): **all eight CSVs byte-identical** (bank, bonds, build, house, labour,
-month, pop 2,405 lines each, borrow 54). The trace does not move; no ensemble (`docs/batch.md` 6). FB1,
+month, pop 2,405 lines each, borrow 54). The trace does not move; no ensemble (`docs/batch.md` 6). The
+REV-R6b-1 mends were not traced again: in a city founded today's way the share stays 1, where
+`tonnesATruck()` and `driverPostsATruck()` return before the new blend, and the format number is in no CSV. FB1,
 merged after, changed harnesses only.
 
 ## The dry run

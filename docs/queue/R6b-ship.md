@@ -8,8 +8,10 @@ from `NEAR_FUTURE` (January 2025) on, so the default playtest is unchanged to th
 gets **FE1**, the driverless truck: a kit at the Truck Depot, a truck working 20 hours, not one 10-hour shift, with
 a tenth of a post watching it (both estimates). **FE2** is the Sulphide Leach & SX-EW Plant (153): cathode from a
 sulphide field at 85%, no smelter. **FE4** is the Hydrogen Steel Works (154, projected 2028): pellets and 3.48 MWh a
-tonne into steel, paying where it replaces imported steel on cheap power. New: `DriverlessTruckCheck`,
-`SulphideLeachCheck`, `HydrogenSteelCheck`, `ResearchCheck` 11-13. FE3, FE5, FE6, FM1 and FM2 wait for their batches.
+tonne into steel, paying where it replaces imported steel on cheap power. Saves go to format 55, and the oldest
+loadable with them: a format-54 save holds no count of the depots' kits unfitted, which would read as fitted. New:
+`DriverlessTruckCheck`, `SulphideLeachCheck`, `HydrogenSteelCheck`, `ResearchCheck` 11-13. FE3, FE5, FE6, FM1
+and FM2 wait for their batches.
 ## pending
 | R6b-P | The near future's rows for their owners' batches ({next}): FE3 and FE6 after PW2 and PW4, FE5 after a storage batch, FM1 and FM2 after R2f and the gap's mRNA row | a row enters `research.json` in the batch that builds what it gives (R6's ★6); PW and FM2 are held | [the near-future study §10](docs/studies/research-near-future.md#10-the-brief-for-r6b) |
 ## queued

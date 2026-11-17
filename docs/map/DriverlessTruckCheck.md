@@ -1,4 +1,4 @@
-# DriverlessTruckCheck.java - 400 lines · 23 methods · 1 constants · harnesses
+# DriverlessTruckCheck.java - 419 lines · 23 methods · 1 constants · harnesses
 
 `ham/citybuildersim/DriverlessTruckCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 > Every fixture is FittingCheck.village() (placed without construction, in a GameFiles.scratch() directory: no save slot is written), said over by
 > unfitTheFounding() in a city founded the 1900 way, with its month set by reflection where a date is the premise (ResearchCheck.atMonth()).
 
-**Uses:** [Haulage](Haulage.md) (52), [Game](Game.md) (20), [EquipmentFit](EquipmentFit.md) (19), [BuildingsStacks](BuildingsStacks.md) (9), [Equipment](Equipment.md) (6), [ResearchCheck](ResearchCheck.md) (6), [LicenceFees](LicenceFees.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [JobType](JobType.md) (4), [FittingCheck](FittingCheck.md) (3), [Good](Good.md) (3), [Forms1900Check](Forms1900Check.md) (2), [DiscoveryCheck](DiscoveryCheck.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1), [Freight](Freight.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1)
+**Uses:** [Haulage](Haulage.md) (61), [Game](Game.md) (20), [EquipmentFit](EquipmentFit.md) (19), [BuildingsStacks](BuildingsStacks.md) (9), [Equipment](Equipment.md) (6), [Good](Good.md) (6), [ResearchCheck](ResearchCheck.md) (6), [JobType](JobType.md) (5), [LicenceFees](LicenceFees.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [FittingCheck](FittingCheck.md) (3), [Forms1900Check](Forms1900Check.md) (2), [DiscoveryCheck](DiscoveryCheck.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Sector](Sector.md) (2), [Founding](Founding.md) (1), [Freight](Freight.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1)
 
 ## Sections
 
@@ -44,9 +44,9 @@
 | 185 | 2. before FE1 |
 | 207 | 3. at FE1 |
 | 257 | 4. every depot fitted |
-| 310 | 5. half the depots fitted |
-| 339 | 6. a default city |
-| 362 | 7. a played count |
+| 329 | 5. half the depots fitted |
+| 358 | 6. a default city |
+| 381 | 7. a played count |
 
 ## Constants
 
@@ -67,7 +67,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 358 | **type** `public class DriverlessTruckCheck` | The driverless truck (R6b, FE1): the Truck Depot's second piece of equipment, the kit that ends the driver's cab, and what a depot fitted with it does to Haulage: a truck that carries more tonnes a month and a depot t... |
+| 43 | 377 | **type** `public class DriverlessTruckCheck` | The driverless truck (R6b, FE1): the Truck Depot's second piece of equipment, the kit that ends the driver's cab, and what a depot fitted with it does to Haulage: a truck that carries more tonnes a month and a depot t... |
 | 52 | 4 | `static void check(String label, boolean ok)` |  |
 | 58 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 63 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -102,28 +102,28 @@
 |---:|---:|---|---|
 | 212 | 44 | `static void three(Game g) throws Exception` |  |
 
-### 4. every depot fitted (lines 257-309)
+### 4. every depot fitted (lines 257-328)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 259 | 44 | `static void four()` |  |
-| 305 | 4 | `static double dieselPrice(Game g)` | The diesel's price Haulage's running estimate reads: the market's landed, the world's before one. |
+| 259 | 63 | `static void four()` |  |
+| 324 | 4 | `static double dieselPrice(Game g)` | The diesel's price Haulage's running estimate reads: the market's landed, the world's before one. |
 
-### 5. half the depots fitted (lines 310-338)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 312 | 26 | `static void five()` |  |
-
-### 6. a default city (lines 339-361)
+### 5. half the depots fitted (lines 329-357)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 341 | 20 | `static void six() throws Exception` |  |
+| 331 | 26 | `static void five()` |  |
 
-### 7. a played count (lines 362-400)
+### 6. a default city (lines 358-380)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 36 | `static void seven() throws Exception` |  |
+| 360 | 20 | `static void six() throws Exception` |  |
+
+### 7. a played count (lines 381-419)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 383 | 36 | `static void seven() throws Exception` |  |
 

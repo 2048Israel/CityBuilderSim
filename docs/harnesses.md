@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**215 harness files, 24,985 labelled assertions.** AllChecks runs 215 of them.
+**215 harness files, 24,991 labelled assertions.** AllChecks runs 215 of them.
 
 ## Which harnesses read which class
 
@@ -203,7 +203,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandmassView](map/LandmassView.md) | LandmassCheck, LongPlaytest, ReadPathCheck |
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Levers](map/Levers.md) | **none** |
-| [LicenceFees](map/LicenceFees.md) | DriverlessTruckCheck, FittingCheck, HistoricalLicenceCheck, LicenceFeesCheck, PostwarRecipeCheck |
+| [LicenceFees](map/LicenceFees.md) | DriverlessTruckCheck, FittingCheck, HistoricalLicenceCheck, HydrogenSteelCheck, LicenceFeesCheck, PostwarRecipeCheck |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
@@ -7863,7 +7863,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1419 the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write),
   - L1421 ...and with the posts held again it is what it was
 
-## DriverlessTruckCheck.java - 60 labelled assertions
+## DriverlessTruckCheck.java - 66 labelled assertions
 
 > The driverless truck (R6b, FE1): the Truck Depot's second piece of equipment, the kit that ends the driver's cab, and what a depot fitted with it does
 > to Haulage: a truck that carries more tonnes a month and a depot that keeps oversight posts where it kept drivers.
@@ -7924,28 +7924,34 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L295 the depots offer fewer DIPLOMA posts:
   - L296 ...by exactly the driverless trucks x (DRIVERS_A_TRUCK - OVERSIGHT_A_TRUCK) posts, over the depots' posts
   - L297 the estimate a tonne's city leg is struck on carries both: the driver's month is the posts a truck keeps
-  - L301 a month played leaves the share at 0 (the counts are the saved truth, the share is derived each month)
-- **L313 5. half the depots fitted: the share is the room-weighted share of the depots lacking the kit**
-  - L318 fixture: two or more depots stand and one is fitted
-  - L322 fixture: the share lacking is between none and all
-  - L323 the driven share is the room of the depots lacking the kit over all the depots' room
-  - L325 ...a truck carries the blend of the two at that share
-  - L326 ...and keeps the blend of the posts
-  - L327 ...between the driven figure and the driverless
-  - L330 a month played leaves it where the counts say
-  - L333 the last depot fitted takes it to 0
-  - L336 ...and a count that returns takes it back to 1
-- **L342 6. a city founded today's way: no near-future piece is ever on its depots, so every truck is driven**
-  - L346 fixture: founded the default way, past FE1's month, with depots standing all fitted
-  - L349 the forms applied, the driven share is exactly 1 and a truck carries TONNES_A_TRUCK_MONTH
-  - L351 ...and the depots' driver posts are DRIVERS_A_TRUCK a truck
-  - L355 a count of the kit put on every depot by hand does not move it: the share is 1 still
-  - L359 two months played, still 1
-- **L365 7. a played count: the 1900 village played 24 months from FE1's month**
-  - L380 fixture: the kit on the depots is the only piece left unfitted in the city, and every truck is driven
-  - L391 fixture: the clock has moved the whole span
-  - L393 section 3's verdict was PAYS: the city fits the kit, so the driven share was below 1 in
-  - L394 ...and the share it fell to is the share of the depots still lacking it (
+  - L306 fixture: every depot fitted (share 0), and the fleet held past the depots' room, some trucks on the street
+  - L308 the fleet carries the depots' trucks at DRIVERLESS_HOURS / SHIFT_HOURS the tonnes, the street's at TONNES_A_TRUCK_MONTH: a street truck is driven
+  - L310 ...and keeps the depots' trucks' OVERSIGHT_A_TRUCK posts and the street's DRIVERS_A_TRUCK
+  - L312 ...so a truck of the fleet carries less than a driverless one, more than a driven one
+  - L315 the posts struck are the depots' trucks', min(trucks, room): every place filled, none idle, the street's trucks' drivers kept
+  - L317 the driverless share of the fleet is the depots' room over the fleet (driverlessShare())
+  - L320 a month played leaves the share at 0 (the counts are the saved truth, the share is derived each month)
+- **L332 5. half the depots fitted: the share is the room-weighted share of the depots lacking the kit**
+  - L337 fixture: two or more depots stand and one is fitted
+  - L341 fixture: the share lacking is between none and all
+  - L342 the driven share is the room of the depots lacking the kit over all the depots' room
+  - L344 ...a truck carries the blend of the two at that share
+  - L345 ...and keeps the blend of the posts
+  - L346 ...between the driven figure and the driverless
+  - L349 a month played leaves it where the counts say
+  - L352 the last depot fitted takes it to 0
+  - L355 ...and a count that returns takes it back to 1
+- **L361 6. a city founded today's way: no near-future piece is ever on its depots, so every truck is driven**
+  - L365 fixture: founded the default way, past FE1's month, with depots standing all fitted
+  - L368 the forms applied, the driven share is exactly 1 and a truck carries TONNES_A_TRUCK_MONTH
+  - L370 ...and the depots' driver posts are DRIVERS_A_TRUCK a truck
+  - L374 a count of the kit put on every depot by hand does not move it: the share is 1 still
+  - L378 two months played, still 1
+- **L384 7. a played count: the 1900 village played 24 months from FE1's month**
+  - L399 fixture: the kit on the depots is the only piece left unfitted in the city, and every truck is driven
+  - L410 fixture: the clock has moved the whole span
+  - L412 section 3's verdict was PAYS: the city fits the kit, so the driven share was below 1 in
+  - L413 ...and the share it fell to is the share of the depots still lacking it (
 
 ## ER1Check.java - 9 labelled assertions
 
@@ -14597,36 +14603,36 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L200 a 1900 city whose research finds FE4 knows it from the month it finds it, long before FE4's own month
   - L208 a city founded today's way, its clock a year past FE4's month, does not know it, lists it for no sector, weighs it not, and refuses the order
 - **L259 3. where it pays, and where it does not: cities that differ only in the price of the grid's power (and, once, in whether the city imports...**
-  - L272 fixture: the planner bills 154's power by its draw: its earnings fall as the tariff rises, by no more than the draw a unit of it
-  - L276 the cheaper city: the model's own tariff, the city's fabricators having imported the works' whole output of steel, no month played - 154 is weighed,
-  - L289 in the dearer city they do not: the planner refuses it at the money, and for nothing else
-  - L292 the two cities differ by the power and nothing else: the same cost, the same hurdle, and earnings apart by exactly the power the planner bills at the two prices
-  - L295 ...and the break-even is where they meet: the cheaper city's earnings are the hurdle plus its saving on the break-even, the dearer's the hurdle less its cost...
-  - L304 in the cheaper city the planner's own rule ranks 154 first of Heavy Industry's works that pass every gate, and the plan orders it
-  - L310 ...and in the dearer one 154 is not among the works that pass, and the plan does not order it
-  - L315 what it replaces decides it too: on the model's own power in a city that imports no steel, so that what 154 makes would be exported, it does not clear
-- **L324 4. captive pellets: the pelletising plants' pellets to the hydrogen works first, only the rest bought or sold**
-  - L337 fixture: Iron & Steel's real rows, the Pelletising Plants (twice over) and one Hydrogen Steel Works, the pellets captive and the plant's the larger
-  - L341 a month's flow: the works' need is the captive figure, taken off what the plant makes; the market is bid nothing for it and sees the rest
-  - L345 ...no purchase booked for the pellets the works took: none bought, only the rest sold
-  - L357 ...and three works over one plant: all the plant's pellets are the works', none to the market, and the market is bid for the rest
-  - L378 fixture: a 1900 city at FE4's month with
-  - L384 a played month makes steel: Iron & Steel's steel is made, with the works standing
-  - L385 the works' pellets are the plants' first: the captive figure covers what the works need so far as the plants make it, and the sector bids only for the
-  - L390 ...and the pellets the works took cost it nothing at the market: what it bought is the rest,
-  - L397 the works' power is drawn at the template's figure: Iron & Steel's draw is its buildings' net draw, the plants' and the works' own, and the works'
-  - L402 ...billed at the ratio the grid delivered and the tariff: the sector's electricity is its draw times both
-  - L406 the month's money audit closes
-- **L412 5. nothing moves without the works: no 154, so no pellets are captive and the plants' pellets all go to the market as before**
-  - L423 fixture: two Pelletising Plants and no Hydrogen Steel Works; Heavy Industry's pellets are captive in law and need none
-  - L429 the captive figure is exactly 0 and the market is bid nothing for pellets
-  - L431 the plants' pellets all go to the market: what the sector makes of them is what a sector that only makes them makes, to the bit
-  - L437 ...sold and booked the same: the units shipped, and no pellets bought
-  - L450 a played 1900 city at FE4's month with the plants and no works: the sector's captive pellets are exactly 0 and the market is bid nothing for them
-  - L455 ...and the month's audit closes
-- **L485 6. a played count: two years from FE4's month with the planner free - the 154s ordered, and none in a city founded today's way**
-  - L496 the
-  - L505 a city founded today's way, played the same months from FE4's with the gate set aside, orders and builds no 154, and its audit closes
+  - L273 fixture: the planner bills 154's power by its draw less FE4's licence: its earnings fall as the tariff rises, by the draw x (1 - LicenceFees.SHARE) a unit of it
+  - L277 the cheaper city: the model's own tariff, the city's fabricators having imported the works' whole output of steel, no month played - 154 is weighed,
+  - L290 in the dearer city they do not: the planner refuses it at the money, and for nothing else
+  - L293 the two cities differ by the power and nothing else: the same cost, the same hurdle, and earnings apart by exactly the power the planner bills at the two prices
+  - L296 ...and the break-even is where they meet: the cheaper city's earnings are the hurdle plus its saving on the break-even, the dearer's the hurdle less its cost...
+  - L305 in the cheaper city the planner's own rule ranks 154 first of Heavy Industry's works that pass every gate, and the plan orders it
+  - L311 ...and in the dearer one 154 is not among the works that pass, and the plan does not order it
+  - L316 what it replaces decides it too: on the model's own power in a city that imports no steel, so that what 154 makes would be exported, it does not clear
+- **L325 4. captive pellets: the pelletising plants' pellets to the hydrogen works first, only the rest bought or sold**
+  - L338 fixture: Iron & Steel's real rows, the Pelletising Plants (twice over) and one Hydrogen Steel Works, the pellets captive and the plant's the larger
+  - L342 a month's flow: the works' need is the captive figure, taken off what the plant makes; the market is bid nothing for it and sees the rest
+  - L346 ...no purchase booked for the pellets the works took: none bought, only the rest sold
+  - L358 ...and three works over one plant: all the plant's pellets are the works', none to the market, and the market is bid for the rest
+  - L379 fixture: a 1900 city at FE4's month with
+  - L385 a played month makes steel: Iron & Steel's steel is made, with the works standing
+  - L386 the works' pellets are the plants' first: the captive figure covers what the works need so far as the plants make it, and the sector bids only for the
+  - L391 ...and the pellets the works took cost it nothing at the market: what it bought is the rest,
+  - L398 the works' power is drawn at the template's figure: Iron & Steel's draw is its buildings' net draw, the plants' and the works' own, and the works'
+  - L403 ...billed at the ratio the grid delivered and the tariff: the sector's electricity is its draw times both
+  - L407 the month's money audit closes
+- **L413 5. nothing moves without the works: no 154, so no pellets are captive and the plants' pellets all go to the market as before**
+  - L424 fixture: two Pelletising Plants and no Hydrogen Steel Works; Heavy Industry's pellets are captive in law and need none
+  - L430 the captive figure is exactly 0 and the market is bid nothing for pellets
+  - L432 the plants' pellets all go to the market: what the sector makes of them is what a sector that only makes them makes, to the bit
+  - L438 ...sold and booked the same: the units shipped, and no pellets bought
+  - L451 a played 1900 city at FE4's month with the plants and no works: the sector's captive pellets are exactly 0 and the market is bid nothing for them
+  - L456 ...and the month's audit closes
+- **L486 6. a played count: two years from FE4's month with the planner free - the 154s ordered, and none in a city founded today's way**
+  - L497 the
+  - L506 a city founded today's way, played the same months from FE4's with the gate set aside, orders and builds no 154, and its audit closes
 
 ## InboxCheck.java - 63 labelled assertions
 
