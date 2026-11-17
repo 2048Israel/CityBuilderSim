@@ -1,8 +1,8 @@
-# gate of Merge batch/LX1: luxury Retail's sales per post: payroll over the margin from about 2% toward BEA's 41.7% through the Boutique's coverage and posts together, the luxury piece's price held, checked by LS1's probe rerun; after CU2, whose prices set the old city's demand (LS1, section 5; CU1's ★6, Jerus 2026-11-09: CU1's prototype halved the old city's income a head on three seeds of four), 0.9.138
+# gate of Merge batch/FB7: counters read under load, 2 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): SS1, GR2-R; runs beside any, 0.9.139
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 215 harnesses run in 2531s: 201 passed, 14 failed
+# suite: 203 harnesses run in 3071s: 193 passed, 10 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -39,9 +39,6 @@ PriceLevelCheck | 245 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
-EducationCheck | exit 1
-EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
-EducationCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
 HealthCheck | 1 FAILED
@@ -58,15 +55,21 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 1
-KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
+KeptCheck | exit 1
+KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
+KeptCheck | 1 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED
@@ -74,6 +77,3 @@ PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1060.0377948361418 of 1044.8565391780962)
 PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED

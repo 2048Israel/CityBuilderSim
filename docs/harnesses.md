@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**218 harness files, 25,110 labelled assertions.** AllChecks runs 218 of them.
+**218 harness files, 25,114 labelled assertions.** AllChecks runs 218 of them.
 
 ## Which harnesses read which class
 
@@ -25445,7 +25445,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L799 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L805 4. on the real Earth**
 
-## ReplayCheck.java - 185 labelled assertions
+## ReplayCheck.java - 188 labelled assertions
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
 > and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.
@@ -25567,98 +25567,101 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L811 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
   - L823 ...a tile whose stamp is the same paints the same pixels in both maps (
 - **L826 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
-  - L836 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
-  - L840 the glide crosses the fixture's recorded land purchase with both months and distinct land contexts prepared
-  - L843 the real MapView chartNodes range covers every sampled GROUND point past the plane during a loaded move (
-  - L845 leaving a Ready move synchronously releases MoveLoad, all pins and the replay's prepared contexts
-  - L850 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
-- **L855 6. recording costs the month only its fill, and changes nothing in it**
-  - L863 fixture: two cities grown the same, to the last digit
-  - L884 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
-  - L886 ...and the one that records has its 12 months on disk
-  - L891 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
-  - L909 ...and a month's file is smaller than the JSON of the save it holds
-  - L927 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
-  - L960 fixture: the replay city really buys an offered parcel between its two recorded months
-  - L966 fixture: both sides of the purchase were recorded
-  - L985 ...and runs on
-  - L989 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
-  - L991 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
-  - L993 ...and it ran frame by frame to its end, at least
-  - L994 ...after it, no move is held and nothing is pinned
-- **L1050 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
-  - L1056 fixture: a log has written its first event
-  - L1063 a log whose write failed has ended its thread
-  - L1065 ...takes no more events: what is added after the failure is not queued, and nothing more is written
-  - L1069 ...closes at once, not after the wait for a thread that has gone
-  - L1077 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
-  - L1081 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
-  - L1090 fixture: the city is recording, under an id of that shape
-  - L1093 ...with a recording on disk to be left alone
-  - L1100 fixture: the save says it is recording, and now names a folder
-  - L1105 a save whose recording id is
-  - L1116 ...and a month played writes nothing outside recordings/ and nothing in the one there
-  - L1120 ...and switching recording on again gives the city an id of its own, of the shape
-  - L1127 fixture: an old timeline of months 1 to 8
-  - L1132 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
-  - L1139 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
-  - L1141 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
-  - L1146 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
-  - L1149 ...and so is the history that switching the recording off writes, behind a first month and one more
-  - L1151 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
-  - L1169 a recorded city that plays
-  - L1181 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
-  - L1184 ...and so is its map, byte for byte
-- **L1394 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
-  - L1425 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
-  - L1429 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
-  - L1433 ...and monthAt gives the month back for each
-  - L1435 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
-  - L1439 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
-  - L1446 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
-  - L1455 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
-  - L1461 ...and played, it loads 10, 11, 12 and stops
-  - L1465 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
-  - L1470 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
-  - L1473 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
-  - L1476 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
-  - L1478 ...a moment that is not in the timeline has no state, no month
-  - L1488 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
-  - L1500 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
-  - L1513 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
-  - L1522 ...with it off, the gap plays in full
-  - L1530 ...and at speed 4 the skipped gap takes a quarter of that
-  - L1542 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
-  - L1554 a stopped player delivers nothing more
-  - L1560 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
-  - L1563 an empty timeline is done at once, plays nothing, and starts nowhere
-- **L1578 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
-  - L1605 fixture: a sitting of
-  - L1611 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
-  - L1614 ...and the state at the first month's marker is the window the sitting opened with
-  - L1628 at speed
-  - L1637 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
-  - L1641 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
-  - L1654 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
-  - L1661 ...and the screen it ends on,
-  - L1665 ...and the live play after the join carries on to the month's next screen,
-  - L1669 starting exactly at a month's marker loads it and catches up on nothing
-  - L1673 following writes nothing in the recording's folder, and nothing in the player's
-- **L1680 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
-  - L1698 a move, press, release, wheel and key logged while the player was on a game menu (
-  - L1700 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
-  - L1702 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
-  - L1715 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
-  - L1716 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
-  - L1720 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
-  - L1731 Space, Left and Right, down and up, are dropped as the clock's keys
-  - L1732 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
-  - L1738 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
-  - L1742 P is dropped where it would open the game menu, and kept where it would not and in a text field
-  - L1752 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
-  - L1758 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
-  - L1775 in the window:
-  - L1777 in the window:
+  - L832 fixture: a job the map's worker has taken off its queue and not yet begun is in neither of getTaskCount()'s counts, so with nothing asked
+  - L835 ...while the map's worker counts each job as it is handed in: across that moment its count holds (asks
+  - L846 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
+  - L850 the glide crosses the fixture's recorded land purchase with both months and distinct land contexts prepared
+  - L853 the real MapView chartNodes range covers every sampled GROUND point past the plane during a loaded move (
+  - L855 leaving a Ready move synchronously releases MoveLoad, all pins and the replay's prepared contexts
+  - L860 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
+- **L865 6. recording costs the month only its fill, and changes nothing in it**
+  - L873 fixture: two cities grown the same, to the last digit
+  - L894 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
+  - L896 ...and the one that records has its 12 months on disk
+  - L901 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
+  - L919 ...and a month's file is smaller than the JSON of the save it holds
+  - L937 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+  - L970 fixture: the replay city really buys an offered parcel between its two recorded months
+  - L976 fixture: both sides of the purchase were recorded
+  - L995 ...and runs on
+  - L999 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
+  - L1001 ...and no frame's asks came out below nothing, so a sum of none is no ask and no -1 (
+  - L1003 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
+  - L1005 ...and it ran frame by frame to its end, at least
+  - L1006 ...after it, no move is held and nothing is pinned
+- **L1062 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
+  - L1068 fixture: a log has written its first event
+  - L1075 a log whose write failed has ended its thread
+  - L1077 ...takes no more events: what is added after the failure is not queued, and nothing more is written
+  - L1081 ...closes at once, not after the wait for a thread that has gone
+  - L1089 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
+  - L1093 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
+  - L1102 fixture: the city is recording, under an id of that shape
+  - L1105 ...with a recording on disk to be left alone
+  - L1112 fixture: the save says it is recording, and now names a folder
+  - L1117 a save whose recording id is
+  - L1128 ...and a month played writes nothing outside recordings/ and nothing in the one there
+  - L1132 ...and switching recording on again gives the city an id of its own, of the shape
+  - L1139 fixture: an old timeline of months 1 to 8
+  - L1144 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
+  - L1151 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
+  - L1153 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
+  - L1158 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
+  - L1161 ...and so is the history that switching the recording off writes, behind a first month and one more
+  - L1163 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
+  - L1181 a recorded city that plays
+  - L1193 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
+  - L1196 ...and so is its map, byte for byte
+- **L1406 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
+  - L1437 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
+  - L1441 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
+  - L1445 ...and monthAt gives the month back for each
+  - L1447 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
+  - L1451 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
+  - L1458 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
+  - L1467 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
+  - L1473 ...and played, it loads 10, 11, 12 and stops
+  - L1477 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
+  - L1482 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
+  - L1485 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
+  - L1488 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
+  - L1490 ...a moment that is not in the timeline has no state, no month
+  - L1500 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
+  - L1512 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
+  - L1525 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
+  - L1534 ...with it off, the gap plays in full
+  - L1542 ...and at speed 4 the skipped gap takes a quarter of that
+  - L1554 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
+  - L1566 a stopped player delivers nothing more
+  - L1572 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
+  - L1575 an empty timeline is done at once, plays nothing, and starts nowhere
+- **L1590 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
+  - L1617 fixture: a sitting of
+  - L1623 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
+  - L1626 ...and the state at the first month's marker is the window the sitting opened with
+  - L1640 at speed
+  - L1649 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
+  - L1653 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
+  - L1666 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
+  - L1673 ...and the screen it ends on,
+  - L1677 ...and the live play after the join carries on to the month's next screen,
+  - L1681 starting exactly at a month's marker loads it and catches up on nothing
+  - L1685 following writes nothing in the recording's folder, and nothing in the player's
+- **L1692 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
+  - L1710 a move, press, release, wheel and key logged while the player was on a game menu (
+  - L1712 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
+  - L1714 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
+  - L1727 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
+  - L1728 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
+  - L1732 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
+  - L1743 Space, Left and Right, down and up, are dropped as the clock's keys
+  - L1744 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
+  - L1750 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
+  - L1754 P is dropped where it would open the game menu, and kept where it would not and in a text field
+  - L1764 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
+  - L1770 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
+  - L1787 in the window:
+  - L1789 in the window:
 
 ## ResearchCheck.java - 154 labelled assertions
 
@@ -27533,7 +27536,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L4681 every sector's losing streak survives a load
   - L4688 every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load
 
-## SaveSlotCheck.java - 225 labelled assertions
+## SaveSlotCheck.java - 226 labelled assertions
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -27613,200 +27616,201 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L361 slot 10 has its own
   - L362 ...and they are different files
   - L364 ...with different contents
-- **L413 7d. a file held open while a write swaps over it: the write waits for it**
-  - L437 fixture: on Windows a reader holding the file open makes a plain move over it fail
-  - L459 a write over a file let go at its refused try
-  - L460 ...having been refused exactly that many times first
-  - L461 ...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)
-  - L462 ...with the .tmp gone and the file before it in the .bak
-  - L468 a write over a file held past every retry fails, and says so (
-  - L469 ...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed
-  - L472 ...and once it is let go the next write lands
-- **L559 7e. the skip's end, the close and the player's Save (UP6)**
-- **L572 7e.1 a skip inside the floor ends with its own last month on disk**
-  - L577 the autosave is the skip's end, named for it
-  - L579 ...and its counter is back at
-  - L583 ...and
-- **L587 7e.2 the close autosaves like Quit, and waits for it**
-  - L590 a skip and at once the close: the autosave is the close's
-  - L595 fixture: the autosave on disk (month
-  - L601 fixture: the held autosave is not on disk yet
-  - L609 held, the close returns after the writer was released
-  - L610 ...with its autosave on disk, named for the close
-  - L611 ...at the city's month
-- **L614 7e.3 the player's Save returns at once, and its files are whole when its line clears**
-  - L617 fixture: slot 4 is empty
-  - L622 with the writer held, the Save returns
-  - L623 ...slot 4 is still empty and its result has not come
-  - L628 released, it lands ok and whole
-  - L631 ...slot 4 is named 7e, at the city's month
-  - L634 ...with its history of all the city's
-  - L636 ...and the last save result is that one, for slot 4
-- **L640 7e.3b a second Save while the first is in the writer waits for it**
-  - L647 with the writer held, the first of two Saves returns
-  - L656 the second returns after the writer was released: it waited for the first
-  - L658 ...and the first was written by then, not replaced unwritten
-  - L660 ...the second lands ok
-  - L662 ...slot 4 is named for the second
-  - L663 ...and the writer wrote both
-- **L666 7e.3c the writer touches only the slot the player saved to**
-  - L682 a Save to slot 5 lands, with its save and its history beside it
-  - L684 ...and no other file in the saves folder changed (
-  - L685 ...and no file but slot 5's is new (
-  - L686 a player's Save to the autosave's slot is refused
-  - L688 ...and so is one past the last slot
-- **L692 7e.4 a history that could not be written is told beside the save's result**
-  - L693 slot 6 is saved whole first
-  - L699 fixture: slot 6's history .tmp is a folder with a file in it
-  - L704 the Save's result is ok and not whole, and carries why the history failed
-  - L707 ...the player's headline says it:
-  - L709 ...and the log line says it
-  - L712 the slot holds the new save, named, at the city's month
-  - L714 ...beside the old history, whose last month is the earlier one's
-  - L716 ...and the save from before is kept beside it as the .bak
-  - L719 the sync way says it too: ok, not whole, and why
-  - L734 an autosave whose history failed is ok and not whole
-  - L736 ...the inbox holds a notice titled \"The autosave's history could not be written\"
-  - L738 ...whose body gives the reason
-  - L747 an autosave that could not be written is not ok
-  - L748 ...and the same standing notice is now titled \"The autosave could not be written\"
-  - L754 with the obstacles gone, an autosave lands whole
-  - L755 ...and settles the notice: none is standing
-- **L768 7f. autosave review follow-ups (UP6b)**
-- **L777 7f.1 a skip throws inside its second month, then the window closes**
-  - L787 fixture: one month completed and the next stopped before its history was recorded
-  - L791 fixture: the skip reported its injected failure
-  - L793 the failure page says autosaves stay off until the city is loaded again
-  - L796 the inbox keeps the same warning while autosaves are off
-  - L800 the close after the broken skip preserves every autosave file
-  - L802 Quit uses the same completed-skip guard
-  - L803 the return point is still the whole month before the skip
-  - L805 ...with its own history beside it
-  - L809 an explicit autosave after the broken skip preserves every file
-  - L820 Simulate more preserves the return point before its first month starts
-  - L821 fixture: Simulate more completed both later months
-  - L822 ...its end still preserves every file from before the broken skip
-  - L827 the periodic autosave also preserves the return point until a load
-  - L832 saving by hand succeeds and keeps the autosaves-off warning standing
-  - L835 loading that manual save settles its saved autosaves-off warning
-  - L842 after reloading, the close saves the city's completed month
-- **L847 7f.2 a failed autosave is reported one month late**
-  - L854 fixture: the city advanced while its failed autosave was held
-  - L861 the late notice names the autosave's month, not the reporting month's
-- **L864 7f.3 the failed save is older than the history beside it**
-  - L870 fixture: the failed save kept its bytes while the newer history landed
-  - L875 the notice says the save and history may be from different months
-- **L880 7f.4 a numbered background result reaches the model when reported**
-  - L886 the held background Save returns without changing the last reported result
-  - L892 its callback has a whole result while the model still holds the previous report
-  - L895 after reporting, the numbered background result is the model's last result
-- **L929 the autosave off the clock: two snapshots share nothing a month could change**
-  - L931 fixture: the grown city has a map (the save carries its stamp)
-  - L937 fixture: both jobs carry the city map's bytes
-  - L944 fixture: the walk reaches the save's lists and books, and the history's series
-  - L946 every class in the save is one the walk can see into
-  - L947 ...and in the history
-  - L948 the save: no mutable object is in both snapshots
-  - L949 the history: no mutable object is in both snapshots
-  - L954 the walk sees sharing: a snapshot shares
-  - L958 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
-  - L963 ...and the history walked twice shares every one of its
-  - L973 ...and one list held by both saves is named by its field
-  - L979 the save holds what the bond market writes
-  - L981 ...what the exchange writes
-  - L983 ...what the construction control writes
-  - L985 ...what the fund writes
-  - L987 ...what the inbox holds (
-  - L990 ...what the build log holds (
-- **L1024 the setters that copy, on states filled in every field**
-  - L1031 the construction control's state (setConstructionControl)
-  - L1035 the bond market's state, its bonds and books (setBondMarket)
-  - L1039 the exchange's state, its books (setExchangeState)
-  - L1043 the fund's state, its resolutions, orders and ledger (setFund)
-  - L1047 the bank's preferred blocks (setBankPreferred)
-  - L1051 the inbox's notices (setNotices)
-  - L1055 the build log's entries (setBuilds)
-  - L1060 the licensed heads (setLicences)
-  - L1061 the skilled heads (setSkilledWorkforce)
-  - L1064 the automatic builder's log, as its toState() copies it
-  - L1071 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
-  - L1072 ...and two states of one table share nothing: each save is its own
-  - L1083 the long bridges, built fresh by toState() (DataSave.setBridges)
-  - L1084 ...and two states of one list share nothing: each save is its own
-  - L1088 a state held uncopied is caught: all
-  - L1091 every field of every class above was given a value (
-  - L1104 ...and writes what the source writes
-- **L1321 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
-  - L1328 fixture: the city's own history (
-  - L1329 fixture: ...and has folded no year
-  - L1334 fixture: the history holds MONTHLY_KEPT months
-  - L1343 fixture: the old way saved
-  - L1376 every due month, warm-ups too, wrote one autosave named for its month
-- **L1392 the autosave off the clock: written behind the months, the same files as the old way**
-  - L1399 the old way saved slot 3 from the live objects
-  - L1410 fixture: three months ran while the snapshot waited
-  - L1411 fixture: and they changed the city (cash
-  - L1412 fixture: the writer was held: the autosave on disk is still the one before
-  - L1413 fixture: ...and nothing was written meanwhile
-  - L1417 released, the writer wrote the one snapshot
-  - L1418 ...named as it was asked
-  - L1421 both saves read back as whole JSON
-  - L1433 the save: all
-  - L1435 ...and the two trees are equal
-  - L1442 ...and the same tree
-  - L1444 the city map exists beside both
-  - L1445 ...and is the same bytes
-  - L1450 the autosave loads with no failure
-  - L1451 ...at the month it was asked at, not three on
-  - L1452 ...with the cash it was asked at
-  - L1453 ...and the history it was asked at
-- **L1464 the autosave off the clock: back to back, one at a time, always whole**
-  - L1475 held, two autosaves asked for write once
-  - L1476 ...and the file holds the second
-  - L1484 not held, two autosaves asked for write once or twice (
-  - L1485 ...and the file holds the second
-  - L1486 ...and the writer never wrote two at once, in the whole run
-- **L1500 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
-  - L1512 fixture: the autosave on disk (month
-  - L1519 fixture: the held autosave is not on disk yet
-  - L1524 a load straight after an autosave returns after the writer was released
-  - L1525 ...and loads that autosave: its month
-  - L1526 ...its name
-  - L1527 ...with no failure
-  - L1533 fixture: the held autosave is not on disk yet
-  - L1538 a numbered save returns after the writer was released
-  - L1539 ...slot 4 is saved
-  - L1540 ...and the held autosave is on disk
-  - L1553 a skip returns after the writer was released
-  - L1555 ...the held autosave and the skip's before and end were all written (without the wait the skip's before replaces the held)
-  - L1557 ...and the file holds the skip's end
-  - L1567 Quit returns after the writer was released
-  - L1568 ...and its autosave is on disk
-  - L1569 ...at the city's month
-- **L1580 the autosave off the clock: a write that fails is reported, and the next one writes**
-  - L1587 fixture: the autosave's .tmp is a folder with a file in it
-  - L1602 the failed write is the last save result, not ok
-  - L1603 ...naming the autosave file
-  - L1604 ...and the calling thread said \"Autosave failed:\"
-  - L1605 the autosave on disk is still the one before
-  - L1613 fixture: the obstacle is gone
-  - L1617 with the obstacle gone, the next autosave writes
-  - L1618 ...and the file holds it
-- **L1632 the autosave off the clock: the floor of real time**
-  - L1650 fixture: each of the
-  - L1651 with the clock still,
-  - L1652 ...each due month started its counter again, at
-  - L1657 one second short of the floor, the next due month writes nothing
-  - L1658 ...and its counter starts again
-  - L1663 one second past the floor, the next due month writes exactly one
-  - L1664 ...at its month
-  - L1665 ...named for it
-  - L1685 fixture: the five due months came inside one floor of real time
-  - L1687 on the real clock,
-  - L1690 ...the first due month's, month
-  - L1957 ...and its history ends at it
-  - L1967 ...two months on, its history ends at the city's
-  - L1968 ...with no month missing (
+- **L415 7d. a file held open while a write swaps over it: the write waits for it**
+  - L439 fixture: on Windows a reader holding the file open makes a plain move over it fail
+  - L472 a write over a file let go at its refused try
+  - L473 ...having been refused exactly that many times first
+  - L474 ...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)
+  - L475 ...with the .tmp gone and the file before it in the .bak
+  - L481 a write over a file held past every retry fails, and says so (
+  - L482 ...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed
+  - L484 fixture: the counts are 7d's own: the shared save writer, settled and held, wrote nothing while 7d counted (
+  - L490 ...and once it is let go the next write lands
+- **L577 7e. the skip's end, the close and the player's Save (UP6)**
+- **L590 7e.1 a skip inside the floor ends with its own last month on disk**
+  - L595 the autosave is the skip's end, named for it
+  - L597 ...and its counter is back at
+  - L601 ...and
+- **L605 7e.2 the close autosaves like Quit, and waits for it**
+  - L608 a skip and at once the close: the autosave is the close's
+  - L613 fixture: the autosave on disk (month
+  - L619 fixture: the held autosave is not on disk yet
+  - L627 held, the close returns after the writer was released
+  - L628 ...with its autosave on disk, named for the close
+  - L629 ...at the city's month
+- **L632 7e.3 the player's Save returns at once, and its files are whole when its line clears**
+  - L635 fixture: slot 4 is empty
+  - L640 with the writer held, the Save returns
+  - L641 ...slot 4 is still empty and its result has not come
+  - L646 released, it lands ok and whole
+  - L649 ...slot 4 is named 7e, at the city's month
+  - L652 ...with its history of all the city's
+  - L654 ...and the last save result is that one, for slot 4
+- **L658 7e.3b a second Save while the first is in the writer waits for it**
+  - L665 with the writer held, the first of two Saves returns
+  - L674 the second returns after the writer was released: it waited for the first
+  - L676 ...and the first was written by then, not replaced unwritten
+  - L678 ...the second lands ok
+  - L680 ...slot 4 is named for the second
+  - L681 ...and the writer wrote both
+- **L684 7e.3c the writer touches only the slot the player saved to**
+  - L700 a Save to slot 5 lands, with its save and its history beside it
+  - L702 ...and no other file in the saves folder changed (
+  - L703 ...and no file but slot 5's is new (
+  - L704 a player's Save to the autosave's slot is refused
+  - L706 ...and so is one past the last slot
+- **L710 7e.4 a history that could not be written is told beside the save's result**
+  - L711 slot 6 is saved whole first
+  - L717 fixture: slot 6's history .tmp is a folder with a file in it
+  - L722 the Save's result is ok and not whole, and carries why the history failed
+  - L725 ...the player's headline says it:
+  - L727 ...and the log line says it
+  - L730 the slot holds the new save, named, at the city's month
+  - L732 ...beside the old history, whose last month is the earlier one's
+  - L734 ...and the save from before is kept beside it as the .bak
+  - L737 the sync way says it too: ok, not whole, and why
+  - L752 an autosave whose history failed is ok and not whole
+  - L754 ...the inbox holds a notice titled \"The autosave's history could not be written\"
+  - L756 ...whose body gives the reason
+  - L765 an autosave that could not be written is not ok
+  - L766 ...and the same standing notice is now titled \"The autosave could not be written\"
+  - L772 with the obstacles gone, an autosave lands whole
+  - L773 ...and settles the notice: none is standing
+- **L786 7f. autosave review follow-ups (UP6b)**
+- **L795 7f.1 a skip throws inside its second month, then the window closes**
+  - L805 fixture: one month completed and the next stopped before its history was recorded
+  - L809 fixture: the skip reported its injected failure
+  - L811 the failure page says autosaves stay off until the city is loaded again
+  - L814 the inbox keeps the same warning while autosaves are off
+  - L818 the close after the broken skip preserves every autosave file
+  - L820 Quit uses the same completed-skip guard
+  - L821 the return point is still the whole month before the skip
+  - L823 ...with its own history beside it
+  - L827 an explicit autosave after the broken skip preserves every file
+  - L838 Simulate more preserves the return point before its first month starts
+  - L839 fixture: Simulate more completed both later months
+  - L840 ...its end still preserves every file from before the broken skip
+  - L845 the periodic autosave also preserves the return point until a load
+  - L850 saving by hand succeeds and keeps the autosaves-off warning standing
+  - L853 loading that manual save settles its saved autosaves-off warning
+  - L860 after reloading, the close saves the city's completed month
+- **L865 7f.2 a failed autosave is reported one month late**
+  - L872 fixture: the city advanced while its failed autosave was held
+  - L879 the late notice names the autosave's month, not the reporting month's
+- **L882 7f.3 the failed save is older than the history beside it**
+  - L888 fixture: the failed save kept its bytes while the newer history landed
+  - L893 the notice says the save and history may be from different months
+- **L898 7f.4 a numbered background result reaches the model when reported**
+  - L904 the held background Save returns without changing the last reported result
+  - L910 its callback has a whole result while the model still holds the previous report
+  - L913 after reporting, the numbered background result is the model's last result
+- **L947 the autosave off the clock: two snapshots share nothing a month could change**
+  - L949 fixture: the grown city has a map (the save carries its stamp)
+  - L955 fixture: both jobs carry the city map's bytes
+  - L962 fixture: the walk reaches the save's lists and books, and the history's series
+  - L964 every class in the save is one the walk can see into
+  - L965 ...and in the history
+  - L966 the save: no mutable object is in both snapshots
+  - L967 the history: no mutable object is in both snapshots
+  - L972 the walk sees sharing: a snapshot shares
+  - L976 ...a snapshot of a snapshot shares all but the two objects it makes: itself and its buildings array (
+  - L981 ...and the history walked twice shares every one of its
+  - L991 ...and one list held by both saves is named by its field
+  - L997 the save holds what the bond market writes
+  - L999 ...what the exchange writes
+  - L1001 ...what the construction control writes
+  - L1003 ...what the fund writes
+  - L1005 ...what the inbox holds (
+  - L1008 ...what the build log holds (
+- **L1042 the setters that copy, on states filled in every field**
+  - L1049 the construction control's state (setConstructionControl)
+  - L1053 the bond market's state, its bonds and books (setBondMarket)
+  - L1057 the exchange's state, its books (setExchangeState)
+  - L1061 the fund's state, its resolutions, orders and ledger (setFund)
+  - L1065 the bank's preferred blocks (setBankPreferred)
+  - L1069 the inbox's notices (setNotices)
+  - L1073 the build log's entries (setBuilds)
+  - L1078 the licensed heads (setLicences)
+  - L1079 the skilled heads (setSkilledWorkforce)
+  - L1082 the automatic builder's log, as its toState() copies it
+  - L1089 the landmasses' placements, built fresh by toState() (DataSave.setLandmasses)
+  - L1090 ...and two states of one table share nothing: each save is its own
+  - L1101 the long bridges, built fresh by toState() (DataSave.setBridges)
+  - L1102 ...and two states of one list share nothing: each save is its own
+  - L1106 a state held uncopied is caught: all
+  - L1109 every field of every class above was given a value (
+  - L1122 ...and writes what the source writes
+- **L1339 the autosave off the clock: the month that autosaves holds the clock at most CLOCK_MS**
+  - L1346 fixture: the city's own history (
+  - L1347 fixture: ...and has folded no year
+  - L1352 fixture: the history holds MONTHLY_KEPT months
+  - L1361 fixture: the old way saved
+  - L1394 every due month, warm-ups too, wrote one autosave named for its month
+- **L1410 the autosave off the clock: written behind the months, the same files as the old way**
+  - L1417 the old way saved slot 3 from the live objects
+  - L1428 fixture: three months ran while the snapshot waited
+  - L1429 fixture: and they changed the city (cash
+  - L1430 fixture: the writer was held: the autosave on disk is still the one before
+  - L1431 fixture: ...and nothing was written meanwhile
+  - L1435 released, the writer wrote the one snapshot
+  - L1436 ...named as it was asked
+  - L1439 both saves read back as whole JSON
+  - L1451 the save: all
+  - L1453 ...and the two trees are equal
+  - L1460 ...and the same tree
+  - L1462 the city map exists beside both
+  - L1463 ...and is the same bytes
+  - L1468 the autosave loads with no failure
+  - L1469 ...at the month it was asked at, not three on
+  - L1470 ...with the cash it was asked at
+  - L1471 ...and the history it was asked at
+- **L1482 the autosave off the clock: back to back, one at a time, always whole**
+  - L1493 held, two autosaves asked for write once
+  - L1494 ...and the file holds the second
+  - L1502 not held, two autosaves asked for write once or twice (
+  - L1503 ...and the file holds the second
+  - L1504 ...and the writer never wrote two at once, in the whole run
+- **L1518 the autosave off the clock: a load, a numbered save, a skip and Quit each wait for it**
+  - L1530 fixture: the autosave on disk (month
+  - L1537 fixture: the held autosave is not on disk yet
+  - L1542 a load straight after an autosave returns after the writer was released
+  - L1543 ...and loads that autosave: its month
+  - L1544 ...its name
+  - L1545 ...with no failure
+  - L1551 fixture: the held autosave is not on disk yet
+  - L1556 a numbered save returns after the writer was released
+  - L1557 ...slot 4 is saved
+  - L1558 ...and the held autosave is on disk
+  - L1571 a skip returns after the writer was released
+  - L1573 ...the held autosave and the skip's before and end were all written (without the wait the skip's before replaces the held)
+  - L1575 ...and the file holds the skip's end
+  - L1585 Quit returns after the writer was released
+  - L1586 ...and its autosave is on disk
+  - L1587 ...at the city's month
+- **L1598 the autosave off the clock: a write that fails is reported, and the next one writes**
+  - L1605 fixture: the autosave's .tmp is a folder with a file in it
+  - L1620 the failed write is the last save result, not ok
+  - L1621 ...naming the autosave file
+  - L1622 ...and the calling thread said \"Autosave failed:\"
+  - L1623 the autosave on disk is still the one before
+  - L1631 fixture: the obstacle is gone
+  - L1635 with the obstacle gone, the next autosave writes
+  - L1636 ...and the file holds it
+- **L1650 the autosave off the clock: the floor of real time**
+  - L1668 fixture: each of the
+  - L1669 with the clock still,
+  - L1670 ...each due month started its counter again, at
+  - L1675 one second short of the floor, the next due month writes nothing
+  - L1676 ...and its counter starts again
+  - L1681 one second past the floor, the next due month writes exactly one
+  - L1682 ...at its month
+  - L1683 ...named for it
+  - L1703 fixture: the five due months came inside one floor of real time
+  - L1705 on the real clock,
+  - L1708 ...the first due month's, month
+  - L1975 ...and its history ends at it
+  - L1985 ...two months on, its history ends at the city's
+  - L1986 ...with no month missing (
 
 ## ScaleCheck.java - 84 labelled assertions
 
