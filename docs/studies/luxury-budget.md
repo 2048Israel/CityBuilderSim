@@ -46,6 +46,8 @@ budget is a bigger pile unless the money goes somewhere else.
   workers down 23-45% and their value added 13-35%, with the spend and the
   pile where they were; the workers go to the other sectors and the public
   posts, and the share of the people at work stays in main's own range, 38-47%.
+  In seed 0's old city it takes 23% off the shops, which still staff 14% of
+  the posts: the rest is the pile's.
 - **The Department Store is never chosen** because it covers 62% of a
   Boutique's pieces a dollar. By the Census a department store has no edge
   to give it: it sells less per worker than a jeweller.
@@ -74,7 +76,8 @@ budget is a bigger pile unless the money goes somewhere else.
   - `main-report.txt`: each run at m240, 600, 1,200, 2,400 and its last
     year, the median year from m240, and the budget by kind of household;
   - `cmp-share40.txt` and `cmp-margin.txt`: main against each prototype;
-  - `cmp-long.txt`: seed 0's old city on all three.
+  - `cmp-long.txt`: seed 0's old city on all three;
+  - `long-report.txt`: `report.py` on each prototype's run to m4000.
 
   The CSVs were not kept; `run.sh`, then `report.py` and `compare.py`,
   remake them.
@@ -320,7 +323,33 @@ city's path branches on any change.
 
 ### 6.3 The old city
 
-<!-- OLD CITY -->
+Seed 0 to m4000 on each prototype, against main's seed 0 (`cmp-long.txt`).
+Each cell is the median year m2400-m3996, then the year to m3996:
+
+| | main | prototype 2, the margin | prototype 1, the share |
+|---|---|---|---|
+| the spend over GDP | 30.8; 36.0 | 31.9; 35.8 | 19.7; 14.7 |
+| Luxury Retail's value added over GDP | 18.5; 22.4 | 14.2; 16.9 | 11.7; 8.6 |
+| its workers over the posts staffed | 18.5; 19.1 | 14.2; 14.9 | 14.4; 12.2 |
+| net worth over GDP | 8.7; 9.6 | 8.6; 9.6 | 15.9; 10.6 |
+| net worth over disposable income | 26.4; 32.2 | 27.2; 29.8 | 46.0; 27.3 |
+| people at m3996 | 6.29m | 7.70m | 5.67m |
+
+**The margin** takes 23% off the old city's shops, in value added and in
+workers, and leaves the spend and the pile as on main. The shops still
+staff 14% of the posts, twice BLS's other retail and general merchandise
+(6.4%). What is left is the budget: a third of GDP, on a pile of 26-30
+years of disposable income, which the margin cannot reach.
+
+**The share cut** takes a third off the spend and the shops' value added,
+and a fifth off their workers. In those years the pile nearly doubles (15.9
+years of GDP against 8.7), then falls back to main's by m3996.
+
+The share of the people at work holds at 40.6-42.7% on all three.
+
+Neither change alone brings the old city in line. Its excess belongs to the
+pile, which is spec-wealth's (net worth peaking at about 11 years of GDP and
+turning back, its 3.6), and to the second drain (LQ3).
 
 ## 7. The Department Store (REV-LX1-1)
 

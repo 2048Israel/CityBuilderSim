@@ -82,7 +82,12 @@ their value added 13-35%; the spend and the pile stay within the seeds'
 noise. The share of the people at work stays in 38-47%, main's own range.
 Decided: LQ2.
 
-**The old city** (seed 0, m3996 on each): <!-- OLD CITY NOTES -->
+**The old city** (seed 0, m3996 on each): the median year m2400-m3996. On main the
+shops staff 18.5% of the posts. Prototype 2 makes it 14.2%, with the spend
+(31% of GDP) and the pile (8.6-8.7 years of GDP) as main's. Prototype 1 makes
+it 14.4%, with the spend 19.7% and the pile 15.9 years against main's 8.7.
+Neither brings the old city in line; its excess is the pile's (spec-wealth)
+and the second drain's (LQ3), which the study says.
 
 **The Department Store** covers 62% of a Boutique's pieces a dollar, with
 more ground a piece and the same posts a piece, so it is never chosen. By
@@ -134,13 +139,20 @@ each is recommended (a).
   because I edited `run.sh` while its bash was reading it. Its Java had
   finished ("All checks passed"; the CSV runs to m3996). Since then the runs
   go from a copy, `target/lq1/runner/run.sh`.
-- **The exits.** All three seed 0 runs exit 0, and so does main's seed 1.
+- **The exits.** These exit 0:
+  - main's seed 0 and seed 1;
+  - both prototypes' seed 0 runs to m2400;
+  - prototype 1's seed 0 to m4000.
+
   The rest exit 1 on the playtest's own watches:
   - "industry stands farther out than the homes" at m2400, CL7's class:
     Rotterdam on main and on prototype 2, and seed 1 on prototype 1;
   - spells of "households with no home", HN1's class: seed 1 on prototype 2
     (m937-1046), and Rotterdam on prototype 2 (m619-651) and prototype 1
-    (m724-824).
+    (m724-824);
+  - seed 0's old city on prototype 2: "the city map across a save" and "the
+    played city sidecar was refused or lost history" at m3933, the map
+    sidecar's class (FB8's DM2 rows).
 
   The probe only reads, and these are the paths' branches. LQ2's brief says
   to trace the second if its own playtest shows it.
