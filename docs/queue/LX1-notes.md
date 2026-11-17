@@ -268,3 +268,10 @@ sales are 25.4% of GDP against 19.4%, their net 36% of their sales against 45%.
   city), AUTO2-10 and ZERO_SLACK-10 at m1088 (one city), ZERO_HOT-2 at m353. TQ1's class, raised by main's
   ec481b4a default run too (months 692-745); main 69a29638's default run and the merged branch's raise none. Not
   committed as `docs/ensemble/LX1.md`: the run on the merged model is the one that counts.
+- **On the merged model (380315e04, main 69a29638 merged), against `docs/ensemble/0.9.134.md`**, the run that counts,
+  beside FB3's dry run: 80 of 80 runs in 109.6 min (AUTO2's cities run to 1.3-4.3M on this balance), exit 0,
+  criteria 24/26, batch verdict PASS, hard 10/10. M1: 0 in all five scenarios. F1: 0/16 in every scenario (main's
+  0.9.134 had one city with "households with no home" in AUTO2, ZERO_SLACK, SHOCK and HIGH each), so no F1 city and
+  no cause class. Changed verdicts, both information: SHOCK K2 FAIL to PASS, HIGH R2 FAIL to PASS. Still failing, as
+  on main, both information: AUTO2 A1 (inflation from m240, 3.16% a year, 5/16 in band; main 3.53%) and A2 (the
+  longest spell of inflation over 10%, 22 months; main 24). Committed as `docs/ensemble/LX1.md`.
