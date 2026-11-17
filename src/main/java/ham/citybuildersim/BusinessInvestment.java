@@ -590,6 +590,13 @@ public class BusinessInvestment {
      */
     public static final int DISTRESS_LOSS_MONTHS = 24;
 
+    /**
+     * The months a price taker takes to sell its biggest holding once it has lost money DISTRESS_LOSS_MONTHS running, its plant short of its own running costs, while a lender still covers the loss (AQ1, ★): a twenty-fourth of it a month, the losses' runway again.
+     * Below twenty-four buildings that is one building every so many months of the losses. Sector.bleedsWhileLent() says
+     * which sectors; overdrawn with no lender, any sector sells MAX_RETIREMENT_FRACTION a month as before.
+     */
+    public static final int BLEED_MONTHS = DISTRESS_LOSS_MONTHS;
+
     /** Call once a month with each sector's net income. */
     public void recordSectorResult(String sector, double netIncome) {
         if (netIncome < 0) {
@@ -748,7 +755,9 @@ public class BusinessInvestment {
      * three sectors ended a 4,000-month run at billions of negative cash,
      * owed to nobody, with mining wages still paid 1,400 months after the
      * ore ran out. A firm with no money and no lender lays people off, and
-     * here the jobs come with the plant.
+     * here the jobs come with the plant. Since AQ1 a price taker whose plant
+     * is short of its running costs sells too while it is still lent, a
+     * BLEED_MONTHS-th of its holding a month.
      *
      * @param cash the sector's balance after this month's credit settled
      */
@@ -762,7 +771,21 @@ public class BusinessInvestment {
             return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
 
-        if (cash >= 0) return Decision.no(key, "losing money, but still solvent");
+        /*
+         * A PRICE TAKER BLEEDS WHILE IT IS LENT (AQ1, 2026-11-17). Waiting for
+         * the refusal let a sector with no demand reading hold every building
+         * through years of losses the shortfall desk lent it (Business
+         * Services on main's AUTO2 seed 2: 101 months, $409M) and then sell a
+         * quarter of its biggest holding a month: 6,000 posts in twelve
+         * months, the town from 8% to 38% out of work. Its plant short of its
+         * own running costs, it sells its biggest holding over BLEED_MONTHS
+         * instead, lent or not; overdrawn with no lender, the quarter below
+         * as before.
+         */
+        boolean bleed = cash >= 0;
+        if (bleed && !(sector.bleedsWhileLent() && sector.statement().operatingIncome < 0)) {
+            return Decision.no(key, "losing money, but still solvent");
+        }
 
         BuildingsTemplate worst = null;
         long mostHeld = 0;
@@ -779,6 +802,19 @@ public class BusinessInvestment {
         }
 
         if (worst == null) return Decision.no(key, sector.noRetirementReason(true));
+
+        if (bleed) {
+            // A BLEED_MONTHS-th of the holding a month, in whole buildings; below one a month, one building every
+            // so many months of the losses, read off the saved loss counter so a reload keeps the step.
+            long every = (BLEED_MONTHS + mostHeld - 1) / mostHeld;
+            if (every > 1 && (losses - DISTRESS_LOSS_MONTHS) % every != 0) {
+                return Decision.no(key, String.format("%d months of losses its lender covered: one %s every %d months",
+                        losses, worst.getName(), every));
+            }
+            return new Decision(key, worst, Math.max(1, mostHeld / BLEED_MONTHS),
+                    String.format("%d months of losses its lender covered, its plant short of its running costs", losses),
+                    true);
+        }
 
         long quantity = Math.min(mostHeld,
                 Math.max(1, (long) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
