@@ -49,3 +49,127 @@ the surplus), so the spending is the same at any margin the shops can serve, and
 budget times (1 - 1/margin). The share is therefore (posts / coverage) x (pay a post / landed) / (u x (margin - 1)),
 and the number of workers it makes is fixed by the budget and the share, whatever the Boutique's coverage and posts:
 only the margin moves it, and only between the planner's settling point and `MARGIN_CEILING`.
+
+## 2. The change, and where
+
+- **`buildings.json`, ids 69 and 70** (and `BuildingManager`'s built-ins, the same figures, `BuildingDataCheck`): the
+  Boutique covers 7 pieces a month where it covered 320, with 8 posts where it had 7 (diploma 4 to 5; no diploma 2,
+  college business 1); makes and uses 7, its stockroom 21 (three months, as before). The Department Store covers 80
+  where it covered 4,200, makes and uses 80, stockroom 240; its 91 posts held. Cost, floor, power, road held; no id
+  moved; only the luxury templates touched (R6b's 153-154 are elsewhere in the file).
+- **`sectors/LuxuryRetail.java`**, banner "WHAT A POST SELLS (LX1, 2026-11-17)": why the coverage is what eight staff
+  sell, and two dials: `LABOUR_SHARE` = .417 (BEA 4A0, 2023-2025, LS1's `bea-compensation-share.csv`) and
+  `LABOUR_SHARE_FACTOR` = 2 (the band either way of it: a piece's landed cost over the mean wage moves 1.6-3.4 through
+  one run). No mechanic reads them; they are the mark the catalogue is struck to and the harness asserts against.
+- **`LuxuryRetailCheck`** (new, in `AllChecks` after `RestaurantsCheck`), section 5 below.
+- Prose that named the old figures: `GdpCheck` (two comments: a Boutique's stockroom), `NationalAccounts` (one).
+- No saved field: coverage and posts are read from the template each month, so an old save loads the new shops (its
+  standing Boutiques sell 7 a month from the first month, their stock over three months' worth until sold). No format
+  bump.
+- **`BuildingsTemplate.loadOf`** (a3e714c69): the last of a building's three road-load streams is now its road load
+  less the two shares' sum, `roadLoad - (asCommuters + asGoods)`, where it was `roadLoad - asCommuters - asGoods`.
+  Taken one at a time the remainder was rounded twice, and `TradeCostCheck`'s bitwise "three loads add to the one"
+  read the new Boutique's 8 as 7.999999999999999. In the order the three are added back the sum is the road load to
+  the bit. Every building's bulk stream moves by at most a rounding; the default playtest's eight trace files are
+  the same to the byte before and after it.
+- **`KeptCheck.fundLists`** (a3e714c69): the fold choices take at most the two older years the record has. In the
+  first run of the harness on this balance the played city's fund record had one older year: "the played city's
+  record causes multiple older year folds" failed, and the next line's `subList(0, 2)` threw on the FX thread,
+  leaving the JVM up until the suite's 1,740 s timeout. The check stands; only the throw is gone (section 5).
+
+## 3. The calls (Jerus's, taken the recommended way)
+
+- **Where in the band.** ★ About BEA's 41.7% in the old city: 7 pieces on 8 posts (0.88 pieces a post), struck at the
+  ladder's wages and the planner's margin to 33% in the catalogue, read 36-41% (median, m240 on) on the three runs.
+  Other ways: 8 on 8 (1.0 a post; probed as C1, 19-55%, 36% at m2400 and m3996 on seed 0); half-way, about 21% (the
+  band's floor; the city less changed, a quarter of the posts again). Why: the batch is to move the share to BEA's,
+  and the old city is where it reads steady.
+- **What the Boutique gives up.** ★ Its coverage (320 to 7), its posts 7 to 8, the building held: its 750 sq ft and
+  $148k a post stand beside the Convenience Store's 1,000 and $88k, and its power (1.12 a worker) and road (1.0) are a
+  shop's. Other ways: posts up and coverage held (about 365 posts on 320 pieces: a Boutique would be a works); a
+  geometric split (about 50 posts on 44 pieces, fewer bigger shops, the building grown sevenfold); 7 posts on 7
+  pieces (the posts held, about 29% in the catalogue, nearer the band's floor). Why: what was wrong was the sales a
+  post, not the building.
+- **The Department Store moves with it.** ★ 80 pieces on its 91 posts. The planner scores templates by coverage x
+  (sell - landed) / cost and does not read payroll, so with the Boutique alone cut it would build Department Stores,
+  each covering 4,200 on 91 posts, and the share would not move. Other way: the Boutique only (no change in the city).
+- **The band's width.** ★ A factor of two either way of 41.7% (20.8-83.4%). Why: the landed cost over the mean wage
+  alone moves by two in one run. Other ways: 30-55% (from m240, 130 of seed 0's 314 years fall outside it, 65 of
+  seed 1's 181, 50 of Rotterdam's 181); none (a point value no run holds).
+- **The fixture's fortune.** ★ `LuxuryRetailCheck` credits its 200-house town a wealth sized from
+  `WEALTH_SPENT_A_MONTH` to ask for two Boutiques' coverage. Why: a 24-month town has no luxury queue of its own (the
+  first fixture's 60 houses bought nothing at the planner's margin), and the share is a ratio a queue of any size reads.
+
+## 4. LS1's probe, before and after
+
+The same runs as section 1 (seed 0 to m3996, seed 1 and Rotterdam to m2400), main ec481b4a then this balance. Share:
+payroll over value added, a year; mrg/wkr: a post's month of margin in mean monthly wages (BEA: 2.4); LR workers:
+Luxury Retail's staffed posts.
+
+| run, month | share | mrg/wkr | LR workers | people |
+|---|---|---|---|---|
+| seed 0, m600 | 0.7%; 29.8% | 127.75; 3.04 | 7; 256 | 14,441; 8,493 |
+| seed 0, m1200 | 1.4%; 54.6% | 68.17; 1.70 | 28; 1,016 | 33,302; 25,685 |
+| seed 0, m2400 | 0.8%; 45.5% | 112.74; 2.10 | 504; 17,361 | 633,124; 550,804 |
+| seed 0, m3996 | 0.8%; 38.8% | 117.89; 2.40 | 4,894; 420,800 | 1,871,609; 5,523,722 |
+| seed 1, m600 | 1.7%; 39.8% | 54.26; 2.28 | 6; 231 | 4,962; 7,349 |
+| seed 1, m1200 | 1.1%; 60.3% | 84.26; 1.61 | 21; 1,088 | 26,655; 30,866 |
+| seed 1, m2400 | 0.8%; 32.7% | 112.40; 2.92 | 132; 74,176 | 198,726; 1,592,536 |
+| Rotterdam, m600 | 0.7%; 37.6% | 123.13; 2.55 | 7; 307 | 13,236; 8,970 |
+| Rotterdam, m1200 | 1.3%; 44.3% | 63.92; 2.05 | 28; 884 | 35,682; 24,211 |
+| Rotterdam, m2400 | 0.6%; 104.3% | 154.58; 0.97 | 42; 2,624 | 42,409; 40,954 |
+
+Household wages over GDP (LS1's other measure), main then LX1: seed 0 46.1/58.7/45.9/31.2% and 46.2/51.6/47.7/39.8%
+(m600, m1200, m2400, m3996); seed 1 46.7/58.9/53.9% and 52.9/57.5/38.8%; Rotterdam 49.2/70.8/43.1% and
+57.6/64.1/83.1%.
+
+**How often the share is in the band, counted over every year of the runs** (the house rule: count it in a real run):
+
+| run | years | in BEA's band, main | in BEA's band, LX1 | LX1 from m240: median, low-high, above the band |
+|---|---|---|---|---|
+| seed 0 | 331 | 0 | 313 | 36.1%, 18.3-192.6%, 11 years |
+| seed 1 | 198 | 0 | 194 | 40.1%, 23.9-93.4%, 4 |
+| Rotterdam | 198 | 0 | 194 | 40.6%, 24.4-104.3%, 4 |
+
+Main's share is 0.4-13.1% in every year of the three runs, never in the band. The years above it are slumps, when the
+shops' margin falls with the city's spending and their posts do not: seed 0 m924-996 (the city's staffed workers
+14,831 to 6,534, Business Services 2,836 to 0 and Manufacturing 5,145 to 854, both already at a loss; the bank's
+leverage at its run low, 0.07% at m940), and Rotterdam's m2400, where 328 Boutiques serve 27-48% of their coverage
+(main's 6 served 93%). Rotterdam flags "industry stands farther out than the homes" at m2400 as main does.
+
+**What it costs the city.** At BEA's share the luxury budget buys posts: Luxury Retail takes 23-27% of the business
+sectors' workers in seed 0's old city (0.8% on main), and the cities are smaller through m1200 and differently sized
+after (seed 0 551k against 633k at m2400 and 5.5M against 1.9M at m3996; seed 1 1.59M against 199k at m2400). The
+budget's size is LQ1's question (the ship file's queued row): BEA's other retail is a few per cent of GDP, the luxury
+margin here 10-30% of the business sectors' value added.
+
+## 6. The trace
+
+`-Dplaytest.trace` on the default playtest (2,400 months, exit 0 in 243 s, "All checks passed.", findings: "Nothing.")
+of the balance (96dae306b) against main's reference made for this batch (`C:/Users/Jerus/AppData/Local/Temp/
+cbs-trace-main-ec481b4a/`; main's own run exits 1 on TQ1's "households with no home", months 692-745, not this
+batch's). All eight files move: `bank`, `build`, `house`, `labour`, `month` and `pop` from month 11,
+`bonds` from 12, `borrow` from its first paper (main's month 59, LX1's 63; 44 papers in the run on main, 37 on LX1).
+One city's path, so the ensemble judges; the size, main then LX1:
+
+| month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
+|---|---|---|---|---|---|---|
+| 60 | 977; 815 | 0; 0 | 596; 531 | 15.5%; 15.2% | 1.079; 1.282 | 0.825; 0.993 |
+| 120 | 1,471; 1,064 | 0; 11.7% | 767; 500 | 10.6%; 2.2% | 0.963; 0.886 | 0.665; 0.689 |
+| 240 | 1,833; 1,249 | 9.4%; 19.4% | 819; 508 | -4.2%; -4.2% | 0.939; 0.850 | 0.713; 0.783 |
+| 600 | 14,441; 8,493 | 0; 0.0% | 7,244; 4,120 | 15.1%; 7.8% | 1.037; 1.009 | 0.791; 0.738 |
+| 1,200 | 33,302; 25,685 | 9.4%; 9.0% | 13,852; 10,849 | 7.4%; 11.3% | 0.850; 0.850 | 0.700; 0.677 |
+| 1,800 | 40,436; 40,681 | 9.1%; 9.5% | 16,856; 16,607 | -3.8%; -2.0% | 0.868; 0.867 | 0.700; 0.676 |
+| 2,399 | 630,320; 547,879 | 5.9%; 3.6% | 258,580; 228,753 | -7.8%; -5.3% | 0.971; 0.991 | 0.723; 0.726 |
+
+The founding is smaller (the luxury shops now take posts the founding's other works wanted; 11.7-19.4% out of work at
+m120-m240 where main had 0-9.4%), level with main by m1800 and 13% smaller at m2399. Prices rise less: the price index
+at m2399 is 5,752 against main's 35,033. In real terms the shops' monthly sales at m2399 are 13.4% of GDP against
+main's 17.3%, and their net 20% of their sales against 44%.
+
+**The longer run.** Seed 0's 4,000-month probe run on this balance flags "the city map across a save" and "the played
+city sidecar was refused or lost history", 2 times each, at months 3589 and 3952 (slot 9 of its `TempDirs` folder; 8
+of 10 reloads read the map back the same), in a city of 5.5M; main's same run, 1.9M at its end, flags nothing. The
+gate's 2,400 months do not reach it; the nightly's 4,000 may. It is the map's sidecar refused whole on a reload, what
+FB8's DM2-B row studies ("no normal-play route to that mismatch" was DM2's finding): this is one, in a city larger
+than main's runs reach, and is left to FB8 (not this batch's code: `CityMap`, `MapSiteHistory`).
