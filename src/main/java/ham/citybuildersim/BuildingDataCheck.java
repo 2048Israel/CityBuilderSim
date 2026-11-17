@@ -711,7 +711,7 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) iron.add(id);
         iron.add(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL);
         iron.add(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH);
-        iron.add(154);   // the Hydrogen Steel Works (R6b, FE4)
+        iron.add(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS);   // the Hydrogen Steel Works (R6b, FE4)
         assertTrue("forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
                 + " the Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110),"
                 + " Coal Mining's four of batch I6 (111-114), stone's six of batch I7 (115-120), copper's eight of batch I8 (121-128,"
@@ -809,7 +809,7 @@ public class BuildingDataCheck {
         years.put(147, 1900);
         years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
-        years.put(154, 2028);   // FE4, the Hydrogen Steel Works: a projection
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"

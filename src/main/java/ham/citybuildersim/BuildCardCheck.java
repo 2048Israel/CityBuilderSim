@@ -301,10 +301,18 @@ public class BuildCardCheck {
                 }
             }
         }
-        int catalogue = g.getBuildingManager().getTemplates().size();
+        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows.
+        int catalogue = 0, nearFuture = 0;
+        boolean nearOnNone = true;
         Set<String> every = new HashSet<>(market);
         every.addAll(city);
-        assertTrue("every building in the catalogue (" + catalogue + ") is on a card", every.size() == catalogue);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (g.getBuildingManager().isTemplateKnown(t)) catalogue++;
+            else if (ResearchCatalog.nearFuture(t.getSinceText())) { nearFuture++; nearOnNone &= !every.contains(t.getName()); }
+        }
+        assertTrue("every building in the catalogue the city knows (" + catalogue + ") is on a card", every.size() == catalogue);
+        assertTrue("...and the near future's (" + nearFuture + "), which a city founded today's way never knows, on none",
+                nearFuture > 0 && nearFuture == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
         assertTrue("...a market building on exactly one, in one group (" + market.size() + " market buildings)",
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);
@@ -1751,13 +1759,13 @@ public class BuildCardCheck {
     /** e. Who buys what it makes: the sectors here whose buildings use a good, its owner's own works first, or it ships. */
     static void whoBuys(Game g) {
         BuildingManager bm = g.getBuildingManager();
-        // buyers() against a count of its own: every sector whose catalogue holds a building that uses the good.
+        // buyers() against a count of its own: every sector whose catalogue holds a building it knows that uses the good (R6b: not the near future's in a city founded today's way).
         boolean same = true;
         for (Good good : Good.values()) {
             Set<String> expect = new HashSet<>();
             for (BuildingsTemplate t : bm.getTemplates()) {
                 Sector s = g.getSectors().ownerOf(t);
-                if (t.uses(good) > 0 && s != null && s.key().equals(t.getSector())) expect.add(s.key());
+                if (bm.isTemplateKnown(t) && t.uses(good) > 0 && s != null && s.key().equals(t.getSector())) expect.add(s.key());
             }
             Set<String> got = new HashSet<>();
             for (BuildCard.Buyer b : BuildCard.buyers(g, good)) {
