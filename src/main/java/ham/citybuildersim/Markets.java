@@ -149,6 +149,19 @@ public final class Markets {
        THE MONTH
        =================================================================== */
 
+    /**
+     * The seller-priced goods' months begin (FB3, FW6-C): every market whose good is not traded forgets last month's trades and
+     * tally, as clear() does for each traded good when its clearing starts. Nothing did, so their trades list and their
+     * localFilled, offered, bid, imported and exported grew for the city's whole life (housing held 1,161 trades at month 606). Called
+     * in Game.nextMonth() before startOfMonthUpdate(), because the earliest seller-priced fill of a press is the luxury counter's,
+     * inside it; the retail and real-estate sales come after, in simulateMonth()'s markets pass. The draws are not wiped, as startMonth() keeps them.
+     */
+    public void startSellerPricedMonth() {
+        for (GoodsMarket m : markets.values()) {
+            if (!m.good().traded()) m.startMonth();
+        }
+    }
+
     public void clearMonth(Sectors sectors, Game game) {
 
         // BF1: a demolished shed's lost stock cannot be sold by this clearing.
@@ -563,13 +576,24 @@ public final class Markets {
     /**
      * One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the
      * month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last clearing.
-     * An older save lacks the tally's keys and reads none, as it did.
+     * An older save lacks the tally's keys and reads none, as it did. Since FB3 (FW6-C) the draws themselves cross too
+     * (the list below), so a hand order made between the presses keeps its seller's row after a load.
      */
     public static final class State {
         public String good;
         public double price, flow, stock, demand;
         public double[] taken;
         public double imported, exported, localFilled, offered, bid, drawn;
+        /**
+         * The month's draws since it last closed (FB3, FW6-C): who sold, who bought, how many units, at what price; the good is this
+         * State's. Null when there are none, so a save without draws writes no key, and an older save reads none, as it did.
+         */
+        public List<DrawRow> draws;
+        /** One of the month's draws, as a save carries it (FB3, FW6-C): a Trade without its good. */
+        public static final class DrawRow {
+            public String seller, buyer;
+            public double units, price;
+        }
         /**
          * The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. Boxed: null is the
          * good's literal, so a city with no world market writes neither key, and a save without them reads the literals.
@@ -596,6 +620,18 @@ public final class Markets {
             s.offered = m.getOffered();
             s.bid = m.getBid();
             s.drawn = m.getDrawn();
+            // The draws since the month last closed (FB3, FW6-C): none writes no key.
+            if (!m.monthsDraws().isEmpty()) {
+                s.draws = new ArrayList<>();
+                for (Trade t : m.monthsDraws()) {
+                    State.DrawRow d = new State.DrawRow();
+                    d.seller = t.seller();
+                    d.buyer = t.buyer();
+                    d.units = t.units();
+                    d.price = t.price();
+                    s.draws.add(d);
+                }
+            }
             // ...and the band it was struck at (WN3): the tally above is what the next band is made of, and the draws between presses read this one.
             s.worldImport = Double.isNaN(m.getWorldImportSet()) ? null : m.getWorldImportSet();
             s.worldExport = Double.isNaN(m.getWorldExportSet()) ? null : m.getWorldExportSet();
@@ -614,6 +650,7 @@ public final class Markets {
             m.setLocalPrice(s.price);
             m.restoreStrike(s.flow, s.stock, s.demand);
             m.restoreTally(s.imported, s.exported, s.localFilled, s.offered, s.bid, s.drawn);
+            m.restoreDraws(s.draws);
             m.restoreTakenHistory(s.taken);
             // The band (WN3): put back as it was struck, never recomputed, so a city loaded between two presses draws at the prices the one saved would.
             m.setWorldPrices(s.worldImport == null ? Double.NaN : s.worldImport, s.worldExport == null ? Double.NaN : s.worldExport);

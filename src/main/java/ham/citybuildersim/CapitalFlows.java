@@ -767,7 +767,9 @@ public class CapitalFlows {
                 // FX8: the month's flows, which a screen reads the month after and nothing can rebuild.
                 arrived, departed, doubtDeparted,
                 // XR4: what ran home in a risk-off (the month's and since founding), the carry's, and the months it did.
-                riskOffDeparted, riskOffDepartedLifetime, carryRiskRepaid, carryRiskRepaidLifetime, riskOffMonths };
+                riskOffDeparted, riskOffDepartedLifetime, carryRiskRepaid, carryRiskRepaidLifetime, riskOffMonths,
+                // FB3 (FW6-C): the most that was ever here and the widest the gap ever got, which the Trade screen's card prints and a load restarted from nothing.
+                peakStock, peakSpread };
     }
 
     public void restore(double[] saved) {
@@ -806,6 +808,11 @@ public class CapitalFlows {
             carryRiskRepaidLifetime = Math.max(0, saved[22]);
             riskOffMonths = Math.max(0, (int) Math.round(saved[23]));
         }
+        // FB3 (FW6-C): the peaks, so "the most that was ever here" is the city's and not the load's.
+        if (saved.length > 25) {
+            peakStock = Math.max(0, saved[24]);
+            peakSpread = Math.max(0, saved[25]);
+        }
     }
 
     /**
@@ -825,6 +832,13 @@ public class CapitalFlows {
         stock += a;
         lifetimeArrived += a;
         arrived += a;
+    }
+
+    /** A harness's stop, by name (FB3, FW6-C): starts a break as takeMonth() does when a new one begins, with the reason given, for PANIC_MONTHS from the month last told. */
+    public void startStopForTest(String reason) {
+        if (!isStopped()) stopsSuffered++;
+        panicReason = reason == null ? "" : reason;
+        panicUntil = lastMonth + PANIC_MONTHS;
     }
 
     /**

@@ -303,6 +303,11 @@ public final class Quarrying extends ExtractionSector {
         return carried;
     }
 
+    /** A harness's carry, by name (FB3, FW6-C): ReloadCheck places one when no checkpoint of its probe city has any, because produceFlow() zeroes it a month on. */
+    public void setCarriedForTest(double tonnes) {
+        carried = Math.max(0, tonnes);
+    }
+
     /** The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. */
     @Override
     protected void saveExtras(Map<String, Double> extras) {

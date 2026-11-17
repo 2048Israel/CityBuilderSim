@@ -13586,6 +13586,9 @@ public class Game {
          */
         economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));
 
+        // FB3 (FW6-C): the seller-priced goods' markets begin their month here, as the traded goods' do in their clearing: their trades and tally
+        // grew for the city's whole life. Before startOfMonthUpdate(), whose luxury counter makes the earliest of a press's seller-priced fills.
+        getMarkets().startSellerPricedMonth();
         startOfMonthUpdate();
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
