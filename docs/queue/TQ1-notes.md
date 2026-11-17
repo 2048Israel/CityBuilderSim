@@ -242,6 +242,12 @@ against main's 0/16, so they FAIL. SHOCK has 1/16 against main's 1/16 and passes
 main's is seed 13, months 738-776 (CU2's notes). The four are one city, seed 0, the finding once at month 182, before
 any policy parts from its AUTO2 twin. Seed 3, the first run's F1, is clean on the merged model.
 
+**The hard count is information** (the orchestrator, 2026-11-17, its call): 7 of 10 against the baseline's 9 of 10.
+Four hard verdicts changed against `docs/ensemble/0.9.130.md`, all F1. AUTO2, ZERO_SLACK and HIGH went PASS to FAIL
+(1/16 against 0/16), and SHOCK went FAIL to PASS (1/16 against 1/16: main's seed 13, ours seed 0). Net, two fewer pass.
+F1 passes by name: the four flags are one city of FB11's class, crossing the watch's line for one month, and main's
+rule from month 2 gives the same city (below). M1 passes in all five.
+
 **Seed 0, replayed** with section 8's probe rebuilt on the merged snapshot (`target/tq1-homes/run0.sh`, output in
 `s0/`; the control's CSV equals the ensemble's AUTO2-0 to the byte for 230 rows). Real Estate is held "no land" from
 month 100 or earlier (5,570 m² needed and 684 free from 140), with homes at 215 and the treasury's cash just below
