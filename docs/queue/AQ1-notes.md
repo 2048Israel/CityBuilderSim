@@ -163,3 +163,21 @@ Red on main, run once by hand (main's classes, this harness's class first on the
     Exception in thread "main" java.lang.NoSuchMethodError: 'boolean ham.citybuildersim.Sector.bleedsWhileLent()'
 
 (section 7 calls the method main lacks, so it is last). Sections 1, 2, 5 and 6 pass on main.
+
+## 7. The trace: it moves, and the default town is worse off
+
+The default playtest (2,405 months, the data files named) with `-Dplaytest.trace` on e17ee67f9 against
+`cbs-trace-main-ec481b4a`: all eight files are identical to the byte through month 874 and differ from 875 to the end
+(1,531 of 2,404 rows each; the borrow file 37 rows against main's 45). The playtest itself passes, every month audited.
+At 875 a 300-post office goes (jobs 15,916 to 15,616, out of work 3.6% to 5.2%): the bleed firing. Then the town
+loses 3,900 posts in 24 months (out of work 2.7% at 870, 28.8% at 900), where main's own bust comes at 924-936 (11%
+to 26%). Over the run, from m400:
+
+| | people at 2400 | mean out of work | peak | months over 10% | largest 10-month rise |
+|---|---|---|---|---|---|
+| main | 646,914 | 5.6% | 26.3% (m933) | 578 | 15.3 pts (m933) |
+| AQ1 e17ee67f9 | 127,424 | 7.9% | 29.7% (m1820) | 1,057 | 18.9 pts (m1825) |
+
+One run 1,500 months past a fork is one path, not a verdict, but this one is worse, and the 3,900 posts at 876-900
+are faster than a twenty-fourth of one sector's plant a month. Being read before the ensemble (what sold, by which
+rule, in which month).
