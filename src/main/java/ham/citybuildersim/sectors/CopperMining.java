@@ -81,6 +81,15 @@ public final class CopperMining extends ExtractionSector {
     /** Tonnes of an oxide field's copper a tonne of leached cathode takes: 1.4 (spec 2.4; the study's 4.3 - 280,000 t of ore at 0.5% into 1,000 t). */
     public static final double LEACH_DIG = 1.4;
 
+    /** The Sulphide Leach & SX-EW Plant's (R6b, FE2): 1,000 t of cathode a month on one sulphide site, heap-leached with no concentrator or smelter. */
+    public static final int SULPHIDE_LEACH = 153;
+
+    /** The share of a sulphide heap's copper the plant recovers as cathode: the builder's "up to 85% from primary sulphides" (Rio Tinto, 4 Dec 2025; a ceiling, not an average). */
+    public static final double SULPHIDE_LEACH_RECOVERY = .85;
+
+    /** Tonnes of a sulphide field's copper a tonne of heap-leached cathode takes: 1 / SULPHIDE_LEACH_RECOVERY, about 1.18, against LEACH_DIG's 1.4 on oxide. */
+    public static final double SULPHIDE_LEACH_DIG = 1 / SULPHIDE_LEACH_RECOVERY;
+
     public CopperMining() {
         super(Sectors.COPPER_MINING, "Copper Mining", BuildingType.MINING, Resource.COPPER);
         makes(Good.COPPER_CONC);
