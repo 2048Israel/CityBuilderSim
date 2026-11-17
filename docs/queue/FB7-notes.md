@@ -68,3 +68,21 @@ this batch's to retire; no entry is added or moved, and no batch is queued.
 The orchestrator's call (15:53): versioned, not "no tag (harness)": `ui/MapView.java` ships in the game, so the build gets its
 own version though the model and the playtest are unchanged. The ship file's heading carries `{next}`; the dry run is the
 gate's normal route without `--no-tag`. REV-FB7-1, a stranger's threading review of e5fcfb922, runs beside it.
+
+## The dry run
+
+`sh tools/gate.sh FB7 --dry-run` (versioned, {next} = 0.9.139), kept at `/tmp/cbs-gate-FB7-Gss1vBX6`: branch 3e300b15e on
+main 886bd92dc, exit 0. The whole suite ran (MapView is a game class) in 3,171 s, exit 3, known red only: DeathRecordCheck,
+DistressBleedCheck, HealthCheck, MapCheck, PlanCheck, PopulationCheck, PriceLevelCheck, RoadCheck, ScaleCheck, YoungBankCheck,
+none of them FB7's. SaveSlotCheck and ReplayCheck had no FAIL line, FB7's three entries retired; 14 timing lines SOFT; maps
+regenerated, Stale 0 firm, the tree as it was.
+
+## Review (REV-FB7-1, on e5fcfb922): SHIP
+
+The worker's tally is sound, the probe's latches are bounded, 7d's hold cannot deadlock, and nothing in the model reads them.
+Three minors, none blocking, left as they are:
+(a) 5d's "asks below nothing" line cannot fail now. It is a tripwire against a return to getTaskCount(); the transit fixture
+is the red-before.
+(b) The second transit line folds `transit.ended()` into its condition without naming it in the label.
+(c) Older than FB7: `MapView.loadStep`'s stuck test, `getActiveCount() == 0 && getQueue().isEmpty()`, has the same gap for
+a job taken and not yet started. That is harmless while STUCK_S asks for a sustained idle.
