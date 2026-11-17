@@ -62,3 +62,9 @@ approvals came from the launchers' carried `--red-line` lists (46 copies, 11-08 
 
 The three entries filed under FB7 (SaveSlotCheck's two counter lines, ReplayCheck's "(asks -1, unpainted frames 0") are
 this batch's to retire; no entry is added or moved, and no batch is queued.
+
+## The tag
+
+The orchestrator's call (15:53): versioned, not "no tag (harness)": `ui/MapView.java` ships in the game, so the build gets its
+own version though the model and the playtest are unchanged. The ship file's heading carries `{next}`; the dry run is the
+gate's normal route without `--no-tag`. REV-FB7-1, a stranger's threading review of e5fcfb922, runs beside it.
