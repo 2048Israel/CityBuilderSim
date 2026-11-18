@@ -1,10 +1,10 @@
-# HL1: the households' books closed ({next}, resumed 2026-11-18)
+# HL1: the households' books closed (resumed 2026-11-18)
 
 **Where it stands (2026-11-18, ensemble go).** REV-HL1-2 said SHIP and the orchestrator
 reserved the heavy slot for HL1's final 80 after LM1-D's gate. Main 608bf7025 (including LM1-D,
-0.9.152) is merged, source clean, generated indexes regenerated, --fast exit 0. The previous
-2,404-month default and all HL1 money fixtures passed with nine unchanged bounds; the combined
-LM1-D tree is being traced against that preserved HL1 run before the ensemble. The ship marker
+0.9.152) is merged, source clean, generated indexes regenerated, --fast exit 0. The combined
+LM1-D tree passes the 2,404-month default and all money fixtures: its eight CSVs and nine own-line
+rows are identical to the preserved HL1 run. The final 80 are next on the frozen merged model. The ship marker
 remains provisional. No ensemble or dry run has started in this phase yet; the dry run needs a
 separate go after the final baseline and score are committed. Current results and all changed
 figures are below; the 2026-11-11 measurements are historical.
@@ -52,7 +52,7 @@ So the study's "44% transit and the bank" was the lags and the faults, not a bil
   (`householdsInTransit()`, the "out of step" row). The households' share trades with the world and
   what migrants bring and take are pairs of lines, so the balance of payments sees them; the two
   no-cash write-off halves are `Scope.BOOK`.
-- **The upkeep is bought of Business Services** (â˜…5 of the study, as recommended): its other revenue
+- **The upkeep is bought of Business Services** (Ã¢Ëœâ€¦5 of the study, as recommended): its other revenue
   (`Sector.UPKEEP_SOLD`, "Upkeep work"), three quarters of it an imported service on its own books
   (`BusinessServices.UPKEEP_IMPORTED = 0.75`, measured: the grocers import 0.75-0.78 of their inputs,
   the restaurants 0.73-0.77, the builders 0.62-0.80), all of it where the sector has no seats. The
@@ -85,7 +85,7 @@ The last two rows are a finding: with no income any debt is "at the ceiling", so
 discharged are overwhelmingly ones that could repay (mean savings of a discharging cell 2,845 against
 a debt of 1.11; 10,605 against 64.58). The old rule destroyed 4% of such a cell's savings a month:
 that was most of the leak. They are still marked bankrupt, locked out a year, and a quarter leave (994
-and 3,862 households in 661 months): HL2's â˜…2.
+and 3,862 households in 661 months): HL2's Ã¢Ëœâ€¦2.
 
 ## What moves for the player
 
@@ -277,14 +277,14 @@ such a month; HL1's path does, once in 192,000 city-months. Queued as NG1.
 ## Calls
 
 Taken, each overturnable:
-- â˜…5 (the study's): the upkeep bought of Business Services, three quarters imported. As recommended.
+- Ã¢Ëœâ€¦5 (the study's): the upkeep bought of Business Services, three quarters imported. As recommended.
 - **The bankrupt's savings repay the bank first.** The other way kept the rule and named the loss as
   a line, which leaves up to 3.5% of GDP a year vanishing: the row's own bug.
 - **The faults are named and HL2 mends them**, rather than a rule for each inside this batch.
 
 For Jerus (in `docs/queue/HL2.md`, both with a recommendation):
-- â˜…1 who bears an unfunded bill: recommended nobody is sold to (it comes off the sellers' sales).
-- â˜…2 a household whose savings cover its debt is not bankrupt: recommended.
+- Ã¢Ëœâ€¦1 who bears an unfunded bill: recommended nobody is sold to (it comes off the sellers' sales).
+- Ã¢Ëœâ€¦2 a household whose savings cover its debt is not bankrupt: recommended.
 
 ## Left
 
@@ -337,7 +337,7 @@ left alone. Main's QB1 ScaleCheck fixture month 225 replaces HL1's obsolete mont
 scan narrative. These two decisions keep main's repaired fixtures; fresh checks decide whether the
 new path still causes their premises. Orchestrator notified before resolving KeptCheck.
 
-â˜… Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
+Ã¢Ëœâ€¦ Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
 valuation is not income from or spending by a household. All real new money flows remain in the
 pool audit, either household DOMESTIC flows or the named TRADE/MONEY/FINANCIAL lanes beside them.
 No save-format bump: the upkeep pending field is additive and missing means no previously booked
@@ -610,3 +610,15 @@ trace and did not need another ensemble.
 Jerus's FS1 practice received 18:18: at dry run/gate, an unrelated moved-city pinned figure or
 load-timeout red gets a named ship known-reds row with already-queued FS1, no new queue row or
 FB bundle. A real bug found in passing is still queued, and code-caused failures are still mended.
+
+Final-model trace verification on e96bd45b5: `LongPlaytest` **exit 0**, 1,116 s suite, all default
+and money-fixture assertions pass. All eight final trace CSVs are byte-identical to the preserved
+e425b1810 traces, including all 2,404 month rows. The nine printed own-line rows (totals, fired
+counts, means and bounds) are also text-identical to the recorded table above. LM1-D therefore
+moves none of the measured HL1 default figures. No repeat main run was used.
+
+The final ensemble uses a fresh `HL1-final-20261118` label (no prior snapshot), five JVMs within
+the one reserved heavy slot, all five policies and seeds 0-15. Both data paths are explicit;
+baseline docs/ensemble/0.9.151.md scores 23/26, hard 10/10, 16/16 takeoffs (median m820), median
+final AUTO2 population 2,656,362. No pick or dry run runs beside the ensemble. The source is frozen
+for the run; its output and snapshot are target/ensemble/HL1-final-20261118.
