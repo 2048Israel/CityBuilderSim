@@ -3176,7 +3176,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2647 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
 | 2650 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
 | 3047 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not... |
-| 3289 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
+| 3300 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
 
 ### SectorBooks.java ([map](map/SectorBooks.md))
 
@@ -6163,15 +6163,15 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 259 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
 | 262 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
 | 344 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1075 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
-| 1162 | `CopperRefiningCheck.WORLD_YEARS` | `40` | The years section 10 plays: four of the charge's large peaks (Nations.CHARGE_YEARS apart) and a year over, about what a minute of the section holds. |
-| 1165 | `CopperRefiningCheck.PEAKS_HELD` | `3` | The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. |
-| 1168 | `CopperRefiningCheck.CYCLE_SEEN` | `.95` | The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a lit... |
-| 1171 | `CopperRefiningCheck.RANGE_KEPT` | `.5` | The share of the treatment part's range the margin's range must keep: half, so the market does not damp the swing away (1.28 of it measured, over the same 41 solves). |
-| 1345 | `CopperRefiningCheck.PLAYED` | `! "false".equalsIgnoreCase(System.getProperty("copperRefining.played"))` | Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. |
-| 1348 | `CopperRefiningCheck.ROD_CHILD_MINUTES` | `28` | The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. |
-| 1351 | `CopperRefiningCheck.ROD_MILLS_STANDING` | `1` | The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). |
-| 1354 | `CopperRefiningCheck.WORKS_LINE` | `"copper works at the end:"` | The playtest's own line of the copper works it ended with. |
+| 1085 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1172 | `CopperRefiningCheck.WORLD_YEARS` | `40` | The years section 10 plays: four of the charge's large peaks (Nations.CHARGE_YEARS apart) and a year over, about what a minute of the section holds. |
+| 1175 | `CopperRefiningCheck.PEAKS_HELD` | `3` | The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. |
+| 1178 | `CopperRefiningCheck.CYCLE_SEEN` | `.95` | The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a lit... |
+| 1181 | `CopperRefiningCheck.RANGE_KEPT` | `.5` | The share of the treatment part's range the margin's range must keep: half, so the market does not damp the swing away (1.28 of it measured, over the same 41 solves). |
+| 1355 | `CopperRefiningCheck.PLAYED` | `! "false".equalsIgnoreCase(System.getProperty("copperRefining.played"))` | Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. |
+| 1358 | `CopperRefiningCheck.ROD_CHILD_MINUTES` | `28` | The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. |
+| 1361 | `CopperRefiningCheck.ROD_MILLS_STANDING` | `1` | The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). |
+| 1364 | `CopperRefiningCheck.WORKS_LINE` | `"copper works at the end:"` | The playtest's own line of the copper works it ended with. |
 
 ### CreditCheck.java ([map](map/CreditCheck.md))
 

@@ -61,13 +61,13 @@ The required source lookups were rerun with `Where` on this base.
 save field, balance constant or version edit is needed. No Pending row in
 QUEUE names CPB1.
 
-## Verification in progress
+## Verification before review
 
 `CopperBufferCheck` is registered in AllChecks. Its real-market controls
 cover domestic and captive demand, profitable buffer replenishment,
 existing-stock sales, feed/output identity, and the expenditure identity.
 The unchanged-main reproduction passes the preservation controls and fails
-the loss-prevention assertions. The final-model run currently passes all.
+the loss-prevention assertions. The final-model run passes all.
 
 Mutation runs keep the final fixture and its premise fixed, compiling shadow
 model classes under `target/cpb1-mutations/`. Main's Sector and CopperRefining
@@ -104,8 +104,13 @@ Two other CopperRefiningCheck reds in that first run are the already recorded
 FF1 (no cut observed in the Rotterdam run) and CL7 (seed 1's distant industry
 finding in its child playtest). No CPB1 cover is used for them.
 
-Named checks, seed windows, final trace/ensemble and orchestrator review/gate
-results will be recorded here as they finish. The picked set is ALL because
+The three revised assertions in the existing copper/cement checks also fail
+with whole-main Sector and CopperRefining classes substituted, with their
+original towns, prices, months and no-demand premises retained. The cement
+home-purchase/production controls pass on both models. Logs:
+`target/cpb1-changed-sections{,-main}.log`.
+
+The picked set is ALL because
 Sector is shared by more than the pick fanout and AllChecks adds a harness;
 no `batch-check.sh --pick` is run in this worktree.
 
@@ -116,3 +121,53 @@ CementConcreteCheck, MaterialsCheck, WoodProductsCheck, RefineryCheck,
 ManufacturingCheck, GdpCheck, BooksCheck, SectorStatementCheck,
 SectorFlowCheck, HistoryCheck and TreasuryCheck. LongPlaytest's final seed
 runs also execute its MoneyFixtures and monthly MoneyAudit assertions.
+
+The final named run is `target/cpb1-named-final.log`, with its kept suite
+output at `target/cpb1-named-final-suite.txt`. Common-judge exit 3: only FF1's
+pre-existing CopperRefiningCheck assertion that the Rotterdam run cuts at
+least one order (0 months). Every other named check passes. Copper Refining's
+seed-1 child plays all 2,400 months, exits 0, and stands zero Rod Mills (8.6
+minutes). The first run's CL7 child finding is absent on this final path.
+The final `batch-check.sh --fast` also exits 0 (136-second compile), maps
+regenerated, zero firm Stale findings and 187 soft:
+`target/cpb1-fast-final.log`. Ship record parsing by
+`sh tools/known-reds.sh CPB1 docs/queue/CPB1-ship.md` exits 0.
+
+## Seed windows and trace
+
+Both requested runs were made once on the final model, with the shared Earth
+and world files set through JDK_JAVA_OPTIONS. LongPlaytest source is unchanged.
+Logs and monthly CSVs: `target/cpb1-seeds/seed{3,9}{.log,-month.csv}`.
+
+| seed | played to | window | negative GDP months | lowest GDP in window | old failing month, now GDP |
+|---|---:|---|---:|---:|---:|
+| 3 | 760 | 700–760 (61 months) | 0 | 38,654.695 at 712 | 735: 43,690.273 |
+| 9 | 1530 | 1490–1530 (41 months) | 0 | 241,012.025 at 1491 | 1514: 266,836.765 |
+
+Neither run has a negative-GDP finding anywhere. Both exit 1 solely for the
+existing industry/home placement class tracked by CL7: seed 3 at 760,
+industry 0.82 km versus homes 0.58 km; seed 9 at 1530, 1.09 versus 0.70 km.
+Both monthly money checks and all final MoneyFixtures pass. The original
+0.9.102 negative seeded totals are historical replays, not a baseline rerun;
+the reduced fixture independently proves main 0.9.140 still has the defect.
+
+The default trace moves. A default seed prefix through month 60 exits 0
+(`target/cpb1-default60.log` and `target/cpb1-default60-month.csv`). Against
+the retained 0.9.140 AUTO2-0 data in
+`../cl-FB4/target/ensemble/FB4-merged/AUTO2-0.csv`, GDP first differs beyond
+CSV rounding at 47; at 48 it is 136.984 versus baseline 136.830974. The
+baseline is the committed `docs/ensemble/0.9.140.md`, snapshot 10cc0ca20.
+Between that snapshot and CPB1's base, the only change to model code is
+Migration.BRAKE_SLOTS visibility; other changed files are version, renderer,
+or harness code. No main run was repeated for comparison. Seed 3 and 9
+traces also differ from that retained baseline from month 47.
+
+## Orchestrator review and reserved runs
+
+Provisional mends only. The ensemble and ALL merge dry run require the
+orchestrator's machine slots. They have not been started. Merge origin/main
+before the ensemble, and again before the dry run if main has advanced.
+At the handoff fetch, main has advanced to 0e32d5330 (HW1-V, 0.9.141).
+The results above are on CPB1's 231f16270 base plus its own final model.
+The ship file forwards the bounded-run placement class to the already queued
+CL7 with a scoped LongPlaytest row; it does not cover negative GDP.
