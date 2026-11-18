@@ -103,3 +103,16 @@ docs/notes/known-reds.txt (LX1's two LongPlaytest entries under FB8) and LX1-not
   merges onto; a kept run would be refused as main moves tonight. The ship file names no gate run; {next} is kept.
 - A stranger's review, REV-FB8-1, reads b2939c8c4 (the map code that ships); the provisional marker stays until the
   orchestrator mails its word.
+
+## REV-FB8-1: DM2-C's own guard, mended
+
+- Found by the review of b2939c8c4: DISTRICT_MOST (2,896) was set from the district's own plots, but fixedLogInto()
+  packs the plan frame's plots, DISTRICT + 1 a side (DistrictPlan.FRAME), into `plot << 8 | before << 4 | after` ints
+  and drops a negative record; at a side of 2,896 the frame's south-east plot, 8,392,608, packs negative and its dated
+  change is discarded without a word.
+- ★ Mended: `CityMap.RECORD_PLOTS` (1 << 23, an int's 31 value bits less the record's 8) and DISTRICT_MOST worked out
+  from the frame, `(int) Math.sqrt(RECORD_PLOTS) - 1` = 2,895, its comment saying why; MapCheck 4b's boundary line packs
+  the frame's last plot as fixedLogInto() does, at DISTRICT_MOST (positive) and one side longer (negative), and holds
+  DISTRICT + 1 to DistrictPlan.FRAME.
+- Check by hand (target/fb8/mutant-r-src): with DISTRICT_MOST = 2,896 the new line FAILs (the old one passed there);
+  on the fix it is OK.

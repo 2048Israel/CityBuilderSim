@@ -5180,9 +5180,13 @@ public class MapCheck {
     static void siteCodecEdges() throws java.io.IOException {
         out.println("\n--- 4b. the source history's rectangles hold at the district's edges: a whole district, a whole row and the last column (DM2-C) ---");
         int side = CityMap.DISTRICT;
-        check("CityMap.DISTRICT is within DISTRICT_MOST, the longest side whose plots fit a run record's plot << 8, and no side longer fits",
-                side >= 1 && side <= CityMap.DISTRICT_MOST && ((long) CityMap.DISTRICT_MOST * CityMap.DISTRICT_MOST << 8) <= Integer.MAX_VALUE
-                && ((long) (CityMap.DISTRICT_MOST + 1) * (CityMap.DISTRICT_MOST + 1) << 8) > Integer.MAX_VALUE);
+        // The plan frame's last plot, packed as fixedLogInto() packs a run record (plot << 8 | before << 4 | after, an int), at
+        // DISTRICT_MOST and one side longer: the frame is DISTRICT + 1 a side (DistrictPlan.FRAME), its last plot the south-east corner's.
+        int frameMost = CityMap.DISTRICT_MOST + 1, framePast = frameMost + 1;
+        int lastMost = frameMost * frameMost - 1, lastPast = framePast * framePast - 1;
+        check("CityMap.DISTRICT is within DISTRICT_MOST, the longest side whose plan frame packs its last plot into a positive run record, "
+                + "plot << 8 | 255, and no side longer does", side >= 1 && side <= CityMap.DISTRICT_MOST && side + 1 == DistrictPlan.FRAME
+                && (lastMost << 8 | 255) >= 0 && (lastPast << 8 | 255) < 0);
         CityMap.District d = new CityMap.District(0, 0, 1, 0);
         byte[][] masks = { new byte[side * side], null };
         // The month's mask as it ends, and (an override given) as it began.

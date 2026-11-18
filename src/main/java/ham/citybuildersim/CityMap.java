@@ -153,14 +153,23 @@ public final class CityMap {
     public static final int DISTRICT = World.DISTRICT;
 
     /**
-     * The longest side a district may have while the map's journals keep a plot in an int: 2,896 plots, the most whose plot
-     * numbers fit a run record's `plot << 8` (jRec), the tightest of the journals' packings (a site record's `plot << 4` is looser).
+     * The plots a journal record's plot field may number while the record stays a positive int: 1 << 23, an int's 31 value bits
+     * less the 8 of a run record's kinds (`plot << 8 | before << 4 | after`, jRec and the plan's fixedLog), the tightest of the
+     * journals' packings (a site record's `plot << 4` and a wall record's `plot << 1` are looser).
+     */
+    static final int RECORD_PLOTS = 1 << (Integer.SIZE - 1 - 8);
+
+    /**
+     * The longest side a district may have while the map's journals keep a plot in an int: 2,895 plots, worked out from the plan's
+     * frame, not the district: fixedLogInto() packs the frame's plots, DISTRICT + 1 a side (DistrictPlan.FRAME), into run records
+     * and drops a negative one, so the frame's last plot, (DISTRICT + 1)^2 - 1, must be below RECORD_PLOTS.
      * WHY (DM2-C): the site history's rectangle codec (MapSiteHistory) matched a row's spans by a key packing the column and the
      * width less one in 8 bits each, right for this DISTRICT of 256 and wrong past it, where a span 257 plots wide takes the next
      * column's key and two spans are written as one rectangle. The key is laid out from DISTRICT now and the codec's bounds are
-     * DISTRICT's; past this side the class fails as it loads, rather than write records that wrap.
+     * DISTRICT's; past this side the class fails as it loads, rather than write records that wrap. REV-FB8-1: first set from the
+     * district's own plots (2,896), where the frame's south-east plot packs negative and its dated change is silently dropped.
      */
-    static final int DISTRICT_MOST = 2_896;
+    static final int DISTRICT_MOST = (int) Math.sqrt(RECORD_PLOTS) - 1;
 
     static {
         if (DISTRICT < 1 || DISTRICT > DISTRICT_MOST) throw new IllegalStateException("CityMap.DISTRICT " + DISTRICT + " is past DISTRICT_MOST");
