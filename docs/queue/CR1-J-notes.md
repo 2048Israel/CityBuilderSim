@@ -274,6 +274,15 @@ Never upload content-0.9.1 again: its runtime is NFTC.
   with "review needed - threading: ui/UserInterface.java (UI-wide)". The only
   change in UserInterface is the Credits page's intro string (the first
   round; the mends do not touch it).
+- REV-CR1-J-1's recheck at 1224741e8: SHIP, each of the eight findings
+  mended. origin/main 442ad3935 (DM1-P) merged in at 7ba92dd7d, scripts and
+  records only.
+- `sh tools/gate.sh CR1-J --dry-run` at 7ba92dd7d, 2026-11-18 02:24 to
+  03:03: gate exit 0. The suite ran 2,294 s, exit 3, known red only:
+  DeathRecordCheck, DistressBleedCheck, HealthCheck, MapCheck, PlanCheck,
+  PopulationCheck, PriceLevelCheck, RoadCheck, ScaleCheck, YoungBankCheck
+  (main's, none in this batch's code). No unnamed lines. The run is kept as
+  /tmp/cbs-gate-CR1-J-Oo6lVTc9, named on the ship file's first line.
 - No model change, so the default trace does not move and there is no
   ensemble.
 - Not a process batch. Build EXE.bat is the product's packaging, not a
