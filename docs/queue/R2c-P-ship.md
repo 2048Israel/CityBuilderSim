@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-R2c-P-dIFjs3NN -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R2c-P, public works' licence fees — 2026-11-18, ready, see docs/queue/R2c-P-notes.md
 In a city founded the 1900 way the city's own works now pay R2c's patent rent: a patented entry its utilities use (rapid sand, PE5;
