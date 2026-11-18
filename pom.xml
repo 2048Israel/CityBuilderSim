@@ -57,6 +57,12 @@
                     <include>world/ATTRIBUTION.txt</include>
                 </includes>
             </resource>
+            <!-- CR1-L: these releases' jars omit legal files; one checked copy
+                 from each upstream release, with provenance in sources.properties. -->
+            <resource>
+                <directory>tools/credits</directory>
+                <targetPath>credits</targetPath>
+            </resource>
         </resources>
         <plugins>
 
