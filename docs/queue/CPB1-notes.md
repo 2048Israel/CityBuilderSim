@@ -62,3 +62,11 @@ Named checks, seed windows, final trace/ensemble and orchestrator review/gate
 results will be recorded here as they finish. The picked set is ALL because
 Sector is shared by more than the pick fanout and AllChecks adds a harness;
 no `batch-check.sh --pick` is run in this worktree.
+
+`batch-check.sh --fast`: exit 0, compile and regenerated maps green, zero
+firm Stale findings (187 soft). Log: `target/cpb1-fast.log`. The named run
+includes CopperBufferCheck, CopperRefiningCheck (including its played seed 1),
+CementConcreteCheck, MaterialsCheck, WoodProductsCheck, RefineryCheck,
+ManufacturingCheck, GdpCheck, BooksCheck, SectorStatementCheck,
+SectorFlowCheck, HistoryCheck and TreasuryCheck. LongPlaytest's final seed
+runs also execute its MoneyFixtures and monthly MoneyAudit assertions.
