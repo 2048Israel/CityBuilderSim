@@ -7715,7 +7715,33 @@ public class Game {
 
         String[] refusal = { null };
         int written = credit.getMortgagesWrittenThisMonth();
-        if (buildFor(mortgageInvestor(decision.sector, refusal), t, quantity)) {
+        boolean built = buildFor(mortgageInvestor(decision.sector, refusal), t, quantity);
+        /*
+         * THE DOOR'S NO IS TO THE ORDER, NOT TO THE LANDLORD (HN1, 2026-11-18).
+         * Mortgage.decide() sizes the order on the landlord's till and the
+         * lender's test, at the plan's price; the door then asks the bank's
+         * capital (while its leverage ratio binds), the down payment at the
+         * purchase's own price, and the default point, all on the whole
+         * order. A no to the whole order held all of it: AUTO2 seed 12 (R0h's
+         * path) asked 26-35 Low-Rise Apartments a month from m699 to m746,
+         * was told "short of capital" or "the down payment" at the door every
+         * month, and built none, with 32,000 in the till - five blocks bought
+         * outright - while 2,959 of 5,918 households doubled up and from m744
+         * 3.6-13.2 had no door at all. So a no at the door is asked again of
+         * half the order, down to one: a smaller order needs a smaller loan,
+         * and one its till covers needs none - what a banned landlord may
+         * build too (consider()). A failed buildFor() changes nothing before
+         * canBorrow() says no.
+         */
+        long tried = quantity;
+        String doorRefusal = refusal[0];
+        while (!built && quantity > 1 && refusal[0] != null) {
+            quantity /= 2;
+            refusal[0] = null;
+            built = buildFor(mortgageInvestor(decision.sector, refusal), t, quantity);
+        }
+        if (built && quantity < tried) trimmed = doorTrimmed(doorRefusal, decision.quantity, quantity);
+        if (built) {
             boolean mortgaged = credit.getMortgagesWrittenThisMonth() > written;
             lastInvestment.put(slot, String.format("Built %,d %s%s%s - %s", quantity, t.getName(),
                     mortgaged ? " on an insured mortgage" : "", trimmed, decision.reason));
@@ -7754,6 +7780,23 @@ public class Game {
             blockOnLand(decision.sector, needs);
             lastInvestment.put(slot, "Could not build " + t.getName() + " - " + needs);
         }
+    }
+
+    /** The advisor's words for an order the door cut down (HN1): from what the planner asked, to what was built, by the door's first no. */
+    private static String doorTrimmed(String refusal, long asked, long built) {
+        return switch (refusal) {
+            case BusinessDebtManager.MORTGAGE_CAPITAL -> String.format(
+                    " (trimmed from %,d - the bank is short of capital for more)", asked);
+            case BusinessDebtManager.MORTGAGE_DOWN_PAYMENT -> String.format(
+                    " (trimmed from %,d - its own funds put the %.0f%% down on %,d)",
+                    asked, (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, built);
+            case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
+                    " (trimmed from %,d - more would leave it owing past %.2f times what it owns)",
+                    asked, BusinessDebtManager.INSOLVENCY_TRIGGER);
+            case BusinessDebtManager.MORTGAGE_BANK_SHUT -> String.format(
+                    " (trimmed from %,d - the bank has failed, so what its own funds buy)", asked);
+            default -> String.format(" (trimmed from %,d - the lender would not write more: %s)", asked, refusal);
+        };
     }
 
     /**
