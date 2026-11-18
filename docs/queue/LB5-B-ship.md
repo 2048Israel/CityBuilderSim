@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — LB5-B, a slot's previous city kept whole while its history lands — 2026-11-18, ready, see docs/queue/LB5-B-notes.md
 While a saved slot's header month and its history's last month disagree (a save landed before its history, SaveWriter's order, or its
