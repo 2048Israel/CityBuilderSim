@@ -81,7 +81,12 @@ import ham.citybuildersim.ui.ReplayMoveProbe;
  *      from the month's start reaches, a viewer's press ends Follow and his move does only past the grace and 8 px, and leaving
  *      the replay leaves the copy and the player's folder as they were (FollowBench.check and followCheck; the window part is
  *      skipped where JavaFX cannot start); a press dragged off a button disarms it and a release there does not fire it, one dragged
- *      back on fires it, a key still down when Follow stops is released once, and the game menus are the model's own list.
+ *      back on fires it, a key still down when Follow stops is released once, and the game menus are the model's own list;
+ *  11. replay's copy leaves the player's prefs alone (TR2-G): a copy of the prefs holds the player's values, changes to it leave
+ *      his in memory as they were, and its save writes to no folder and says no; in the real window (skipped where JavaFX cannot
+ *      start) a click on the drawer's pin and on the construction tab outside the copy changes the player's prefs and saves them,
+ *      in the copy changes the copy's only (his prefs in memory and his file unchanged after a prefs save too, and no prefs file
+ *      in the copy's folder), and after leaving the replay the first prefs save is his own values and his clicks save again.
  */
 public class ReplayCheck {
 
@@ -947,6 +952,7 @@ public class ReplayCheck {
         long tenAt = System.nanoTime();
         followRulesChecks();
         followWindowChecks(rec);
+        prefsChecks(rec);
         System.out.printf("      sections 7, 8, 9 and 10 took %.1f s, %.1f s, %.1f s and %.1f s%n", (eightAt - sevenAt) / 1e9, (nineAt - eightAt) / 1e9,
                 (tenAt - nineAt) / 1e9, (System.nanoTime() - tenAt) / 1e9);
 
@@ -1225,7 +1231,7 @@ public class ReplayCheck {
     }
 
     /** The bytes of a file, or null where there is none. */
-    static byte[] bytesOrNull(Path file) throws IOException {
+    public static byte[] bytesOrNull(Path file) throws IOException {
         return Files.isRegularFile(file) ? Files.readAllBytes(file) : null;
     }
 
@@ -1768,6 +1774,50 @@ public class ReplayCheck {
             markers &= FollowRules.judge(e, "showSavingMenu", "showMainMenu", true, false, true, true) == keep;
         }
         helper("the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input", markers);
+    }
+
+    /**
+     * 11. The copy's prefs (TR2-G): the model's half, then the window's (FollowBench.prefsCheck). Each assertion fails when
+     * UserInterface.replayHoldPrefs is not called at the replay's entry or GamePrefs.copyForReplay hands out the player's own.
+     */
+    static void prefsChecks(Recording rec) throws Exception {
+        System.out.println("\n--- 11. replay's copy leaves the player's prefs alone: in memory and on disk, and his own clicks still save ---");
+        Gson gson = new Gson();
+        GameFiles files = GameFiles.scratch("replayprefs");
+        GamePrefs mine = new GamePrefs();
+        mine.setFullScreen(false);
+        mine.setDrawerPinned(true);
+        mine.setPinnedLeft("population");
+        mine.setTrucksOnMap(false);
+        helper("the player's prefs are saved to the scratch folder first", mine.save(files));
+        Path file = files.getDirectory().resolve(GamePrefs.FILE);
+        byte[] disk = bytesOrNull(file);
+        GamePrefs copy = mine.copyForReplay();
+        helper("a replay's copy of the prefs holds the player's values and is marked a copy, which his are not",
+                gson.toJson(copy).equals(gson.toJson(mine)) && copy.isDetached() && !mine.isDetached() && !gson.toJson(copy).contains("detached"));
+        copy.setDrawerPinned(false);
+        copy.setConstructionOpen(true);
+        copy.setPinnedLeft("realGdp");
+        copy.setTrucksOnMap(true);
+        helper("changing the copy leaves the player's prefs in memory as they were",
+                mine.isDrawerPinned() && !mine.isConstructionOpen() && "population".equals(mine.getPinnedLeft()) && !mine.isTrucksOnMap());
+        GameFiles other = GameFiles.scratch("replayprefs-other");
+        helper("the copy's save says no and writes nothing, to the player's folder or to any other",
+                !copy.save(files) && !copy.save(other) && Arrays.equals(disk, bytesOrNull(file)) && !Files.exists(other.getDirectory().resolve(GamePrefs.FILE)));
+        mine.setConstructionOpen(true);
+        helper("the player's own prefs still save, and read back as he left them", mine.save(files) && GamePrefs.load(files).isConstructionOpen() && !GamePrefs.load(files).isDetached());
+
+        long began = System.nanoTime();
+        String cannot = FollowBench.startJavaFx();
+        if (cannot != null) {
+            System.out.println("      skipped in the window: " + cannot);
+            return;
+        }
+        GameFiles windowFiles = GameFiles.scratch("prefswindow");
+        Game city = FollowBench.fx(() -> LongPlaytest.probeCity(windowFiles, null));
+        List<String[]> found = FollowBench.fx(() -> FollowBench.prefsCheck(city, rec.folder()));
+        for (String[] f : found) helper("in the window: " + f[0], "true".equals(f[1]));
+        System.out.printf("      %d findings in the window, %.1f s%n", found.size(), (System.nanoTime() - began) / 1e9);
     }
 
     /**
