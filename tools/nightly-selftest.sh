@@ -3,6 +3,7 @@
 set -eu
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 . "$ROOT/tools/nightly-timing.sh"
+. "$ROOT/tools/check-data.sh"
 PAIRAWK=$ROOT/tools/timing-pair.awk
 TEST=$(mktemp -d "${TMPDIR:-/tmp}/cbs-night-test-XXXXXXXX")
 trap 'rm -rf "$TEST"' EXIT
@@ -23,14 +24,23 @@ done
 mkdir "$TEST/lock"
 CASE='legacy empty lock is taken over'; nightly_lock "$TEST/lock"; ok grep -q 'recovered stale lock' "$LOG"; nightly_unlock
 (
-    MAIN="$TEST/assets with spaces"; mkdir -p "$MAIN/data"; unset JDK_JAVA_OPTIONS
-    CASE='absent data files add no properties'; nightly_data; ok test -z "${JDK_JAVA_OPTIONS:-}"
-    touch "$MAIN/data/earth-2.bin"; nightly_data
+    MAIN="$TEST/assets with spaces"; mkdir -p "$MAIN/data" "$TEST/local/data"; cd "$TEST/local"; unset JDK_JAVA_OPTIONS
+    CASE='absent data files add no properties'; cbs_check_data "$MAIN"; ok test -z "${JDK_JAVA_OPTIONS:-}"
+    touch "$MAIN/data/earth-2.bin"; cbs_check_data "$MAIN"
+    command -v cygpath >/dev/null 2>&1 && MAIN=$(cygpath -m "$MAIN")
     CASE='only the existing Earth file is named'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$MAIN/data/earth-2.bin\""
-    touch "$MAIN/data/world-1.bin"; unset JDK_JAVA_OPTIONS; nightly_data
+    touch "$MAIN/data/world-1.bin"; unset JDK_JAVA_OPTIONS; cbs_check_data "$MAIN"
     CASE='both existing files are named'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$MAIN/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
-    JDK_JAVA_OPTIONS='-Dfixture=kept'; nightly_data
-    CASE='caller Java options take precedence'; ok test "$JDK_JAVA_OPTIONS" = '-Dfixture=kept'
+    touch data/earth-2.bin; unset JDK_JAVA_OPTIONS; cbs_check_data "$MAIN"
+    LOCAL=$(pwd); command -v cygpath >/dev/null 2>&1 && LOCAL=$(cygpath -m "$LOCAL")
+    CASE='checkout Earth wins while missing world falls back to main'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$LOCAL/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    JDK_JAVA_OPTIONS='-Xmx64m'; cbs_check_data "$MAIN"
+    CASE='unrelated caller flags keep both data defaults'; ok test "$JDK_JAVA_OPTIONS" = "-Xmx64m -Dcbs.earth=\"$LOCAL/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    CALLER='-Xmx64m -Dcbs.earth="manual Earth.bin"'; JDK_JAVA_OPTIONS=$CALLER; cbs_check_data "$MAIN" > "$TEST/data-report"
+    CASE='hand-set Earth stays while world is added'; ok test "$JDK_JAVA_OPTIONS" = "$CALLER -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    CASE='the report separates caller and named properties'; ok grep -q 'cbs.earth already set;.*cbs.world=.* named;' "$TEST/data-report"
+    CALLER="$CALLER -Dcbs.world=\"manual world.bin\""; JDK_JAVA_OPTIONS=$CALLER; cbs_check_data "$MAIN"
+    CASE='both hand-set data paths stay unchanged'; ok test "$JDK_JAVA_OPTIONS" = "$CALLER"
 )
 row() { printf 'PlanCheck\tplan 42 ms\t%s\t100\tms\tFAIL\t1\n' "$1"; }
 judge() { awk -v mode=night -f "$PAIRAWK" "$TEST/old" "$TEST/new"; }

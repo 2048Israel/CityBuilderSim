@@ -104,9 +104,7 @@ sh "$CBS_GATE_SCRIPT" "$@"
 RESULT=$?
 exit "$RESULT"
 WRAPPER
-MAINPATH=$MAIN
-[ "$WINDOWS" = 0 ] || MAINPATH=$(cygpath -m "$MAIN")
-export JDK_JAVA_OPTIONS="${JDK_JAVA_OPTIONS:-} -Dcbs.earth=$MAINPATH/data/earth-2.bin -Dcbs.world=$MAINPATH/data/world-1.bin"
+. "$HERE/check-data.sh"; cbs_check_data "$MAIN"
 export CBS_GATE_RUN=$RUN
 export CBS_SHIP_HOME=$CLONE
 touch "$RUN/active"

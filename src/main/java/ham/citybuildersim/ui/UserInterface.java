@@ -4438,9 +4438,9 @@ public class UserInterface extends Application {
     /* ----- the Credits page (CR1, 2026-11-09) ----- */
 
     /**
-     * The Credits page: the Earth and nations attribution files in full and the fonts' notice with its
-     * licence, each as Credits reads it from the jar (the game is sold, and those licences ask that the
-     * credit reach the player). Drawn like Settings, and scrolled the same way: ~400 lines of text, so
+     * The Credits page: the data's, fonts' and libraries' notices and licences in full,
+     * each as Credits reads it from the jar (the game is sold, and those licences ask that the
+     * credit reach the player). Drawn like Settings, and scrolled the same way: long legal texts, so
      * it must scroll in the Esc menu (the column in the page) and over the title backdrop (the panel
      * menuPage() makes scrolls itself, so the column is not wrapped a second time there).
      */
@@ -4455,8 +4455,8 @@ public class UserInterface extends Application {
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
         column.getChildren().add(statementNote(
-                "The data the city's world is made from, and the type it is set in. "
-                + "Each file is shown as it ships beside the game."));
+                "The data the city's world is made from, the type it is set in, and the libraries it uses. "
+                + "Their licences and notices are shown in full."));
         for (Credits.Section s : Credits.sections()) {
             column.getChildren().add(statementHead(s.title()));
             if (s.lead() != null) column.getChildren().add(statementNote(s.lead()));
