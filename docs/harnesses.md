@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**224 harness files, 25,704 labelled assertions.** AllChecks runs 224 of them.
+**224 harness files, 25,722 labelled assertions.** AllChecks runs 224 of them.
 
 ## Which harnesses read which class
 
@@ -359,7 +359,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, GovernmentViewCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ElectrolyserCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
@@ -8758,7 +8758,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1455 ...and the load path told the schools the nine, not the one
   - L1460 ...and the month by kind came back with the save, not zero
 
-## ElectrolyserCheck.java - 60 labelled assertions
+## ElectrolyserCheck.java - 71 labelled assertions
 
 > Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen
 > Steel Works' piece of equipment, the 46 kWh electrolyser, and what a works that has it draws from the grid.
@@ -8774,72 +8774,84 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L144 1. the row and its dials: the piece, the chemistry's saving, what a works saves in the game's units**
-  - L149 fixture: the Hydrogen Steel Works carries the piece, since FE10, ending ELECTROLYSERS, buying machinery and lasting
-  - L153 fixture: the target is under today's figure and over nothing (46 < 55)
-  - L155 the hydrogen a tonne of iron takes at today's figure is HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG: 2.97 MWh (the study's)
-  - L157 ...and at the target 2.484 MWh (the study's 2.48)
-  - L158 the saving a tonne is the difference of the two, 0.486 MWh
-  - L160 ...0.486 MWh
-  - L161 ...less than the works' whole draw a tonne, and the hydrogen at today's figure is part of that whole (the rest is the shaft furnace and the arc furnace)
-  - L166 a works saves its steel a month at that saving, in the game's units (HydroSites.KWH_PER_UNIT kWh a unit)
-  - L169 ...which is the saving's share of the works' whole draw (HYDROGEN_MWH_SAVED_A_TONNE over HYDROGEN_MWH_A_TONNE), to a unit's rounding
-  - L171 the template's own draw is HYDROGEN_MWH_A_TONNE a tonne, untouched by the piece (the piece is a fitting, not a figure of the row)
-- **L179 2. the entry: FE10, projected, its date inside its window, after FE4**
-  - L181 fixture: FE10 and FE4 are in the catalogue
-  - L183 FE10 is an ENGINEERING row that opens equipment, of the equipment's size, patented, its source the department's page (X8)
-  - L186 it is a projection (dated after history's end,
-  - L190 its window
-  - L192 it needs FE4, the works the piece is fitted to, and FE4 is dated before it
-  - L193 the piece is known from FE10's month and not before: knownFrom() is the entry's, a year inside the window
-- **L200 3. known in its window and not before: NOT_KNOWN a month before FE10, priced at it, earlier in a city that found it**
-  - L203 fixture: a 1900 city,
-  - L208 the month before its window opens the piece is NOT_KNOWN on the works, and none carries it
-  - L212 ...and the month before FE10's own
-  - L216 at FE10's month it is known, priced and judged: PAYS or NOT_YET, its gain, cost, rate and hurdle numbers
-  - L226 a city that finds FE10 in month
-  - L229 ...and has it in the month it found it, twelve months before history's (
-  - L231 ...owing no patent rent on what it found itself
-- **L238 4. its kWh read by FE4's works: each works with the piece draws HYDROGEN_MWH_SAVED_A_TONNE less a tonne of its steel**
-  - L245 none fitted, Heavy Industry draws the buildings' own figure, to the bit: every works at its template's draw
-  - L246 ...and no works is counted with the piece
-  - L250 two of the
-  - L252 Heavy Industry draws the works' draws less the saving of each fitted works
-  - L253 ...a fitted works drawing the whole 3.48 MWh a tonne less the 0.486, in units: draw - saved is HYDROGEN_MWH_A_TONNE - HYDROGEN_MWH_SAVED_A_TONNE a tonne of i...
-  - L256 EconomyManager setting the draw again from the templates keeps the saving off it
-  - L258 ...and the forms said again move nothing (the saving is taken off the buildings' figure once, not each time)
-  - L262 every works fitted, the saving is of every one
-  - L263 ...and the sector still draws power: the saving is part of the draw and never all of it
-  - L267 the count that comes back takes the saving off again: the buildings' figure, to the bit
-  - L272 fixture: two months played, the works stand and carry the count they were given
-  - L275 two months played, the draw is still the buildings' sum less the fitted works' saving (the month's own setting of the draw kept it)
-- **L281 5. the saving against the model's own constants: it pays where power is dear, and the break-even is the model's own arithmetic**
-  - L291 fixture: the works saves units, and the grid has a price
-  - L292 the piece's gross gain is the units it saves at the unit's price (EquipmentFit.electrolyserGain())
-  - L294 ...which is a function of the price alone: twice the price, twice the gain
-  - L299 the piece costs about the stacks' share of the works' whole cost, 8% (an estimate: the electrolysers a fifth of such a works, the stacks two fifths of them, ...
-  - L302 FE10 is payable at its own month, so the verdict's gain is the gross less the patent's share of it
-  - L304 the verdict's gain is the gross less that rent (1 - LicenceFees.SHARE of it)
-  - L309 fixture: the break-even is a price above nothing
-  - L310 the verdict at the model's own tariff is the one that tariff's side of the break-even gives: PAYS exactly when the tariff is at least it
-  - L317 a quarter above the break-even tariff the piece PAYS: its gain earns the cost back over its life and clears the hurdle
-  - L319 a fifth short of it the piece does NOT: NOT_YET, the same works, the same cost, the same life
-  - L321 the gain between the two tariffs differs by the units saved at the difference of the prices, net of the rent
-  - L324 at no price for power the piece saves nothing and is not fitted: NOT_YET
-- **L338 6. a city founded before the window, and one founded today's way, are untouched**
-  - L345 a 1900 city a month before the window opens draws the buildings' figure, to the bit
-  - L346 ...with no works carrying the piece
-  - L348 ...three months played, the buildings' sum to the bit
-  - L349 ...and none carries the piece
-  - L358 fixture: a 1900 city with
-  - L359 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
-  - L363 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
-  - L377 fixture: founded today's way, a year past FE10's month,
-  - L380 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
-  - L381 ...and none is counted with the piece, every count there reading fitted
-  - L386 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
-  - L387 ...no works carries the piece
-  - L389 two months played, the buildings' sum to the bit
+- **L149 1. the row and its dials: the piece, the chemistry's saving, what a works saves in the game's units**
+  - L154 fixture: the Hydrogen Steel Works carries the piece, since FE10, ending ELECTROLYSERS, buying machinery and lasting
+  - L158 fixture: the target is under today's figure and over nothing (46 < 55)
+  - L160 the hydrogen a tonne of iron takes at today's figure is HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG: 2.97 MWh (the study's)
+  - L162 ...and at the target 2.484 MWh (the study's 2.48)
+  - L163 the saving a tonne is the difference of the two, 0.486 MWh
+  - L165 ...0.486 MWh
+  - L166 ...less than the works' whole draw a tonne, and the hydrogen at today's figure is part of that whole (the rest is the shaft furnace and the arc furnace)
+  - L171 a works saves its steel a month at that saving, in the game's units (HydroSites.KWH_PER_UNIT kWh a unit)
+  - L174 ...which is the saving's share of the works' whole draw (HYDROGEN_MWH_SAVED_A_TONNE over HYDROGEN_MWH_A_TONNE), to a unit's rounding
+  - L176 the template's own draw is HYDROGEN_MWH_A_TONNE a tonne, untouched by the piece (the piece is a fitting, not a figure of the row)
+- **L184 2. the entry: FE10, projected, its date inside its window, after FE4**
+  - L186 fixture: FE10 and FE4 are in the catalogue
+  - L188 FE10 is an ENGINEERING row that opens equipment, of the equipment's size, patented, its source the department's page (X8)
+  - L191 it is a projection (dated after history's end,
+  - L195 its window
+  - L197 it needs FE4, the works the piece is fitted to, and FE4 is dated before it
+  - L198 the piece is known from FE10's month and not before: knownFrom() is the entry's, a year inside the window
+- **L205 3. known in its window and not before: NOT_KNOWN a month before FE10, priced at it, earlier in a city that found it**
+  - L208 fixture: a 1900 city,
+  - L213 the month before its window opens the piece is NOT_KNOWN on the works, and none carries it
+  - L217 ...and the month before FE10's own
+  - L221 at FE10's month it is known, priced and judged: PAYS or NOT_YET, its gain, cost, rate and hurdle numbers
+  - L231 a city that finds FE10 in month
+  - L234 ...and has it in the month it found it, twelve months before history's (
+  - L236 ...owing no patent rent on what it found itself
+- **L243 4. its kWh read by FE4's works: each works with the piece draws HYDROGEN_MWH_SAVED_A_TONNE less a tonne of its steel**
+  - L250 none fitted, Heavy Industry draws the buildings' own figure, to the bit: every works at its template's draw
+  - L251 ...and no works is counted with the piece
+  - L255 two of the
+  - L257 Heavy Industry draws the works' draws less the saving of each fitted works
+  - L258 ...a fitted works drawing the whole 3.48 MWh a tonne less the 0.486, in units: draw - saved is HYDROGEN_MWH_A_TONNE - HYDROGEN_MWH_SAVED_A_TONNE a tonne of i...
+  - L261 EconomyManager setting the draw again from the templates keeps the saving off it
+  - L263 ...and the forms said again move nothing (the saving is taken off the buildings' figure once, not each time)
+  - L267 every works fitted, the saving is of every one
+  - L268 ...and the sector still draws power: the saving is part of the draw and never all of it
+  - L272 the count that comes back takes the saving off again: the buildings' figure, to the bit
+  - L277 fixture: two months played, the works stand and carry the count they were given
+  - L280 two months played, the draw is still the buildings' sum less the fitted works' saving (the month's own setting of the draw kept it)
+- **L286 5. the saving against the model's own constants: it pays where power is dear, and the break-even is the model's own arithmetic**
+  - L296 fixture: the works saves units, and the grid has a price
+  - L297 the piece's gross gain is the units it saves at the unit's price (EquipmentFit.electrolyserGain())
+  - L299 ...which is a function of the price alone: twice the price, twice the gain
+  - L304 the piece costs about the stacks' share of the works' whole cost, 8% (an estimate: the electrolysers a fifth of such a works, the stacks two fifths of them, ...
+  - L307 FE10 is payable at its own month, so the verdict's gain is the gross less the patent's share of it
+  - L309 the verdict's gain is the gross less that rent (1 - LicenceFees.SHARE of it)
+  - L314 fixture: the break-even is a price above nothing
+  - L315 the verdict at the model's own tariff is the one that tariff's side of the break-even gives: PAYS exactly when the tariff is at least it
+  - L322 a quarter above the break-even tariff the piece PAYS: its gain earns the cost back over its life and clears the hurdle
+  - L324 a fifth short of it the piece does NOT: NOT_YET, the same works, the same cost, the same life
+  - L326 the gain between the two tariffs differs by the units saved at the difference of the prices, net of the rent
+  - L329 at no price for power the piece saves nothing and is not fitted: NOT_YET
+- **L372 7. the grid is sized on what is drawn: the utility's demand and invoiced draw fall with the works' bill, and the ratio follows**
+  - L379 every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)
+  - L380 ...and so does the draw the utility invoices
+  - L381 ...the same units the sector's own bill falls by
+  - L382 ...which the services manager holds as the saving it was handed
+  - L384 half of them fitted, half the saving comes off the demand
+  - L386 fixture: the utility has staff, so its supply scales with its fill and can be written to a number
+  - L391 a grid sized between the two demands serves the city whose works have the piece in full: the energy ratio is 1
+  - L392 ...and rations the same city with the piece off its works: the ratio is under 1, the supply under the demand it has
+  - L394 ...at exactly the supply over the demand (the utility's own division)
+  - L396 the count that comes back takes the saving off the demand again
+  - L398 ...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0
+- **L405 6. a city founded before the window, and one founded today's way, are untouched**
+  - L412 a 1900 city a month before the window opens draws the buildings' figure, to the bit
+  - L413 ...with no works carrying the piece, and the grid handed no saving
+  - L415 ...three months played, the buildings' sum to the bit
+  - L416 ...and none carries the piece
+  - L425 fixture: a 1900 city with
+  - L426 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
+  - L430 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
+  - L444 fixture: founded today's way, a year past FE10's month,
+  - L447 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
+  - L448 ...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving
+  - L454 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
+  - L455 ...no works carries the piece
+  - L457 two months played, the buildings' sum to the bit
 
 ## EnsembleCheck.java - 41 labelled assertions
 
@@ -9880,7 +9892,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L557 ...its month's move in credibility at nothing (0.7.45)
   - L558 ...and the level at 1, so nothing jumps: its constants are at founding money
 
-## FieldOperatorsCheck.java - 63 labelled assertions
+## FieldOperatorsCheck.java - 70 labelled assertions
 
 > Driverless field work (R6d, FE8: Deere's goal of a fully autonomous corn and soybean season by 2030, projected 2033, window 2030-2036): the autonomy kit,
 > the third piece of equipment on the Grain Farm and the Mixed Farm, and what the farms that carry it do to their posts: the operator of each tractor and
@@ -9962,9 +9974,16 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 two months played, still 1
 - **L412 6. a played count: the 1900 village played 24 months from FE8's month**
   - L427 fixture: the kit on the two farms is the only piece left unfitted in the city, and every machine is operated
-  - L438 fixture: the clock has moved the whole span
-  - L440 section 3's verdict was PAYS: the city fits the kit, so the operated share was below 1 in
-  - L441 ...and the share it fell to is the share of the farms still lacking it (
+  - L435 fixture: the kit PAYS on the Mixed Farm in this village in the month the city first orders a fitting (
+  - L439 ...and so did section 3's, in its own village
+  - L450 fixture: the clock has moved the whole span
+  - L451 the city fitted the kit where it pays: every Mixed Farm has it, and the operated share was below 1 in
+  - L453 ...the share it fell to is the share of the farms still lacking the kit (
+  - L458 the operators are struck from the posts the farms offer:
+  - L460 ...and the month's wage pass was struck on them: the posts offered are the posts the farms say, tier by tier
+  - L468 the farms' payroll at full staffing is the wage rates over the posts they offer
+  - L469 ...and it is less than the buildings' posts would have cost at the same rates: the operators struck are paid no more, the watch added is paid
+  - L471 ...by exactly the operators' wages less the watch's
 
 ## FittingCheck.java - 237 labelled assertions
 

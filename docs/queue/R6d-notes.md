@@ -71,25 +71,24 @@ moves to history and none is dropped. Each page still says what the study says:
 
 ## What the checks showed
 
-- **`ElectrolyserCheck`** (new, 60 assertions green; AllChecks line): the row and its dials, 0.486 to the bit and
+- **`ElectrolyserCheck`** (new, 71 assertions green; AllChecks line): the row and its dials, 0.486 to the bit and
   against 2.97 and 2.484; the entry (window holds 2034, FE4 dated before it, the piece known from its month and
   not before: NOT_KNOWN the month the window opens, the month before FE10, priced at it; a city that finds it
   earlier knows it from the month it finds it, rent free); the works' draw with two of three fitted, after
   `EconomyManager` sets it again, after the forms are said again, after two played months, and with none fitted
-  (to the bit); the verdict against the model's own arithmetic. **Where it pays**: the piece costs 8.00% of a works'
+  (to the bit); the verdict against the model's own arithmetic; and (REV-R6d P1, section 7) the utility's demand. **Where it pays**: the piece costs 8.00% of a works'
   whole cost (the planner's 68,673.64), gains 13.10 a month at the model's own tariff (0.000259) for a cost of
   5,492.99 over 110 months (earns back 1,382.38): NOT_YET; its break-even tariff is 0.001029, 3.97 times the
   model's own (read off the verdict's cost, factor and hurdle, asserted PAYS a quarter above it and NOT_YET a fifth
   below); a city before the window and one founded today's way draw the buildings' figure to the bit.
-- **`FieldOperatorsCheck`** (new, 63 green; AllChecks line): the dials, the posts at 1, 0 and a half (operators from
+- **`FieldOperatorsCheck`** (new, 70 green; AllChecks line): the dials, the posts at 1, 0 and a half (operators from
   the hands, the watch to DIPLOMA, the city's own count of posts and the payroll with them, a farm on horses
   striking none), the kit NOT_KNOWN the month before FE8 and priced at it (gain `operatorGain()`, a Grain Farm's
   two machines, a Mixed Farm's one, PAYS exactly by `EquipmentFit`'s rule: 0.0246 a month on 1.7876, earns back
   2.1161, hurdle 0.0132), the machine-weighted share from the farms' counts, a city founded today's way (even with
-  counts put on by hand), and a played count: the 1900 village 24 months from FE8, the operated share below 1 in
-  23 of 24 (lowest 0.955: the fittings go one at a time and only the Mixed Farms were fitted: 21 of 21 Grain Farms
-  still lack the kit; the sector's one order a month is the cause, not the verdict, which was PAYS).
-- **Each assertion fails with its cause removed.** Thirteen mutations of the model, each compiled apart and run
+  counts put on by hand), and a played count (REV-R6d P2, below): the 1900 village 24 months from FE8, the kit asserted to pay on the Mixed Farm
+  and then required to be fitted, with its effect on the posts and the payroll.
+- **Each assertion fails with its cause removed.** Seventeen mutations of the model (thirteen first, REV-R6d's four below), each compiled apart and run
   against the harness that should notice (the first FAIL line of each in brackets): the saving not taken off the
   draw (the works' draw); the electrolyser count ignoring how the city was founded (today's way); the count
   ignoring whether the piece is known (the month before FE10); the 46 typed 45 (the dials); the gain not priced
@@ -98,6 +97,37 @@ moves to history and none is dropped. Each page still says what the study says:
   out of `operatorGain()` (the gain written out); the kit read where it is not known (a count-less farm the month
   before FE8); the posts past the buildings' not following the autonomy (the city's count); the share not weighted
   by machines (the farms' counts). All thirteen red.
+- **REV-R6d (Codex), two P1s, both mended** (2026-11-18; the rest of the review passed: the floor 56 is justified, both pieces
+  use DataSave's existing unfitted-map paths, the eight trace CSVs hash identical, the sources support the figures; the code does not date
+  the DOE's 46 kWh a kilogram, whose page gives it no year, and Purdue's 10% is labelled an assumption).
+  1. **FE10 cut the works' bill but not the utility's demand.** `ServicesManager` summed the template's unchanged `powerBought()` for the
+     grid's demand and the draw it invoices, so `UtilitiesHandler.updateEnergyRatio()` rationed the grid against power the fitted works no
+     longer draw. Now `ServicesManager` holds the saving (`setElectrolyserSaving()`), taken off both sums (`lessElectrolysers()`: the
+     draw itself, to the bit, while none is saved), and `EquipmentForms` hands it at every pass (`tellTheGrid()`, also on the early return)
+     as `HeavyIndustry.getGridUnitsSaved()`, the saving net of the sector's steam share, as the sector's own draw is. `Game` and `Sector`
+     (HL1's) are untouched: the hook is pushed from `EquipmentForms`, which owns the counts. `ElectrolyserCheck` 7 causes it: six works
+     in a 1900 city at FE10's month, the utility's demand, invoiced draw and the sector's bill each fall by six savings (67,500 units each);
+     the grid's supply is then written to the midpoint of the two demands (2,702,198 units against 2,499,698 fitted and 2,904,698 not) and
+     the utility's own division gives the ratio, never forced: **1.0000 with the piece on the works and 0.9303 with it off**, the same
+     supply. With the old reading put back (`lessElectrolysers()` returning the draw) five assertions fail, including both ratios; with
+     the saving handed as 0, or as twice, the first demand line fails. A city before the window and one founded today's way are handed 0.
+  2. **`FieldOperatorsCheck`'s played count skipped every fitting assertion on a NOT_YET.** It now builds a paying fixture and asserts it:
+     one month is played first (as section 3 does, so the wages are struck), and the kit on the **Mixed Farm** must PAY in that month,
+     by the verdict's own gain, cost and life; section 3's village must PAY too. Then 24 months are played and the city is required to
+     have fitted it (every Mixed Farm has it, the operated share fell below 1 in 23 months, equal to the farms still lacking the kit),
+     the operators struck from the posts the farms offer (67 -> 65, the two Mixed Farms' machines: the posts equal the buildings' less `autonomousMachines()`),
+     the month's wage pass struck on them (the posts offered equal the posts the farms say, tier by tier), and the payroll at full
+     staffing equal to the wage rates over those posts, less the buildings' posts' at the same rates, by exactly the operators' wages less
+     the watch's. With the kit's life put at 1 month in a copy of `buildings.json`, seven assertions fail, the first the fixture's PAYS.
+     **The Grain Farm's kit does not pay in that played village** (cost 21.48 against 2.44 earned back, where section 3's own village
+     has it PAY at 1.79 against 2.12): the village is a 1900 city with its clock set to 2033 and a month played there, and the price of
+     machinery moves with that clock, a twelve-fold difference in the kit's cost, not its gain. It is printed, not asserted, and no Grain
+     Farm is fitted in the 24 months: the fixture, not the model, so the Mixed Farm is the paying one. In a city that reaches 2033 by its own
+     months the price level and the wages move together; that is the one thing a played count of this kit cannot show here.
+  **Does (1) reach the default city's power? No**: a city founded today's way has no works counted with the piece, so the saving handed
+  `ServicesManager` is 0 and `lessElectrolysers()` returns its argument; `ElectrolyserCheck` 6 asserts the saving is 0 there and in
+  the city before the window. The other change on that path, `setWattsConsumption(getTotalDouble(gridDraw))` where `updateHandlerDouble` was,
+  is the same call. The trace is not run again: it could not move (the eight CSVs of the first run stand).
 - **A finding of the pick's own harness**: `HydrogenSteelCheck` 4 (a works placed by hand with no count in a 1900
   city) went red on the first version: a count-less stack reads "fitted", so the works saved power in FE4's month,
   years before FE10. Both forms now read a piece only where it is known (`EquipmentForms.known()`): a works or a

@@ -39,6 +39,10 @@ import java.util.Map;
  *   6. A CITY FOUNDED BEFORE THE WINDOW, AND ONE FOUNDED TODAY'S WAY, ARE UNTOUCHED: the 1900 city a month before FE10 draws the buildings' figure to
  *      the bit; a city founded today's way, past FE10's month, with works standing and every count reading fitted, draws it too and carries no works with the
  *      piece, even where a count is put on its stack by hand
+ *   7. THE GRID IS SIZED ON WHAT IS DRAWN (REV-R6d P1): the utility's demand and the draw it invoices fall by the saving of the works that have the piece,
+ *      the same units the sector's own bill falls by; with the grid's supply between the two demands, the fitted city is fully served and the same
+ *      city with the piece off its works is rationed (the energy ratio under 1), the sector's ratio left free, never forced; a city before the window
+ *      and one founded today's way have no saving to hand the grid
  *
  * Every fixture is HydrogenSteelCheck.town1900(), a city founded the 1900 way with its clock at FE4's month, its works placed by hand and said over by
  * unfitTheFounding(), in a GameFiles.scratch() directory (no save slot is written); its clock is moved by ResearchCheck.atMonth() where a date is the premise.
@@ -134,6 +138,7 @@ public class ElectrolyserCheck {
         four(g);
         five();
         six();
+        seven();
         System.out.println(fails == 0 ? "ElectrolyserCheck: all " + passes + " ok" : "ElectrolyserCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
     }
@@ -332,6 +337,68 @@ public class ElectrolyserCheck {
         return v;
     }
 
+    /* ============================ 7. the grid is sized on what is drawn ============================ */
+
+    /** The works section 7 stands: enough that the saving of all of them is a good part of a Coal Power Plant. */
+    static final int GRID_WORKS = 6;
+
+    /** The city's demand, the draw invoiced, the grid's ratio and the sector's own draw, as a counted state leaves them. */
+    record Grid(double demand, double billed, double ratio, double drawn) { }
+
+    /**
+     * The city with `fitted` of the works carrying the piece: the counts set, the forms said, the services updated and, where `supply` is a number, the grid's
+     * production written over the buildings' so that it is exactly that (the utility's own division then gives the ratio: never forced here).
+     */
+    static Grid grid(Game g, long fitted, double supply) {
+        BuildingsStacks stack = works(g);
+        stack.setUnfitted(PIECE, stack.getQuantity() - fitted);
+        quietly(() -> {
+            g.getEquipmentForms().apply(g);
+            g.getEconomyManager().setElectricityConsumption();
+            g.getServicesManager().updateServices();
+        });
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        if (!Double.isNaN(supply)) {
+            u.setWattsProduction(0);
+            u.updateEnergyRatio();
+            double base = u.getProduction(), fill = u.getAverageUtilityFill();
+            u.setWattsProduction((supply - base) / fill);
+            u.updateEnergyRatio();
+        }
+        return new Grid(u.getConsumption(), u.getBilledElectricityDraw(), u.getEnergyRatio(), draw(g));
+    }
+
+    static void seven() {
+        System.out.println("\n--- 7. the grid is sized on what is drawn: the utility's demand and invoiced draw fall with the works' bill, and the ratio follows ---");
+        Game g = city("electrolyser-grid", GRID_WORKS);
+        BuildingsTemplate t = works(g).getBuilding();
+        at(g, fe10());
+        double saved = HeavyIndustry.unitsSavedAWorks(t);
+        Grid off = grid(g, 0, Double.NaN);
+        Grid on = grid(g, GRID_WORKS, Double.NaN);
+        near("every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)", off.demand() - on.demand(), GRID_WORKS * saved, 1e-6);
+        near("...and so does the draw the utility invoices", off.billed() - on.billed(), GRID_WORKS * saved, 1e-6);
+        near("...the same units the sector's own bill falls by", off.drawn() - on.drawn(), GRID_WORKS * saved, 1e-6);
+        near("...which the services manager holds as the saving it was handed", g.getServicesManager().getElectrolyserSaving(), GRID_WORKS * saved, 1e-6);
+        Grid some = grid(g, GRID_WORKS / 2, Double.NaN);
+        near("half of them fitted, half the saving comes off the demand", off.demand() - some.demand(), (GRID_WORKS / 2) * saved, 1e-6);
+        double fill = g.getServicesManager().getUtilitiesHandler().getAverageUtilityFill();
+        check("fixture: the utility has staff, so its supply scales with its fill and can be written to a number", fill > 0, "" + fill);
+        double supply = (off.demand() + on.demand()) / 2;
+        Grid served = grid(g, GRID_WORKS, supply);
+        Grid rationed = grid(g, 0, supply);
+        System.out.printf("  a grid of %,.0f units against demands of %,.0f (works fitted) and %,.0f (not): the ratio %.4f and %.4f%n", supply, on.demand(), off.demand(), served.ratio(), rationed.ratio());
+        check("a grid sized between the two demands serves the city whose works have the piece in full: the energy ratio is 1", served.ratio() == 1 && served.demand() < supply, "" + served.ratio());
+        check("...and rations the same city with the piece off its works: the ratio is under 1, the supply under the demand it has", rationed.ratio() < 1 && rationed.demand() > supply,
+                rationed.ratio() + " at demand " + rationed.demand());
+        near("...at exactly the supply over the demand (the utility's own division)", rationed.ratio(), supply / rationed.demand(), 1e-12);
+        Grid again = grid(g, GRID_WORKS, Double.NaN);
+        near("the count that comes back takes the saving off the demand again", again.demand(), on.demand(), 1e-6);
+        Grid none = grid(g, 0, Double.NaN);
+        check("...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0",
+                none.demand() == off.demand() && g.getServicesManager().getElectrolyserSaving() == 0, none.demand() + " against " + off.demand());
+    }
+
     /* ============================ 6. before the window, and today's way ============================ */
 
     static void six() {
@@ -343,7 +410,7 @@ public class ElectrolyserCheck {
         at(g, open - 1);
         quietly(() -> g.getEquipmentForms().apply(g));
         near("a 1900 city a month before the window opens draws the buildings' figure, to the bit", draw(g), WORKS * t.powerBought(), 0);
-        check("...with no works carrying the piece", heavy.getElectrolyserWorks() == 0);
+        check("...with no works carrying the piece, and the grid handed no saving", heavy.getElectrolyserWorks() == 0 && g.getServicesManager().getElectrolyserSaving() == 0);
         play(g, 3);
         near("...three months played, the buildings' sum to the bit", draw(g), raw(g), 0);
         check("...and none carries the piece", heavy.getElectrolyserWorks() == 0);
@@ -378,7 +445,8 @@ public class ElectrolyserCheck {
                 && today.getMonth() > fe10() && stack.getQuantity() == WORKS && !stack.hasUnfitted(), today.getMonth() + " " + fe10());
         HeavyIndustry modern = today.getSectors().heavyIndustry();
         near("the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10", draw(today), WORKS * tt.powerBought(), 0);
-        check("...and none is counted with the piece, every count there reading fitted", modern.getElectrolyserWorks() == 0 && modern.getElectrolyserUnitsSaved() == 0);
+        check("...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving",
+                modern.getElectrolyserWorks() == 0 && modern.getElectrolyserUnitsSaved() == 0 && today.getServicesManager().getElectrolyserSaving() == 0);
         stack.setUnfitted(PIECE, WORKS);
         quietly(() -> today.getEquipmentForms().apply(today));
         stack.setUnfitted(PIECE, 0);

@@ -426,22 +426,49 @@ public class FieldOperatorsCheck {
         quietly(() -> { g.getRecipes().choose(g); g.getRecipes().apply(g); g.getEquipmentForms().apply(g); });
         check("fixture: the kit on the two farms is the only piece left unfitted in the city, and every machine is operated", left == 2
                 && grain(g).getUnfitted(KIT) == grain(g).getQuantity() && a.getOperatedShare() == 1 && g.getFittings().isEmpty(), left + " stacks with a count");
-        int below = 0, months = 24;
-        double least = 1;
-        for (int i = 0; i < months; i++) {
+        // REV-R6d P2: a played count that accepted a kit that did not pay would leave both green with no kit fitted (a life of one month, say). The fixture
+        // is built to pay, and that is asserted before a month is played; then the city is required to fit it and the fitting to show in the posts and the payroll.
+        // One month is played first, so that the labour market has struck the wages the kit saves (a village is born with none), as section 3 does.
+        play(g, 1);
+        Equipment grainKit = grain(g).getBuilding().getEquipment(KIT), mixedKit = mixed(g).getBuilding().getEquipment(KIT);
+        EquipmentFit.Verdict grainVerdict = EquipmentFit.verdict(g, grain(g), grainKit), mixedVerdict = EquipmentFit.verdict(g, mixed(g), mixedKit);
+        check("fixture: the kit PAYS on the Mixed Farm in this village in the month the city first orders a fitting (" + mixedVerdict.kind() + "): asserted, not accepted",
+                mixedVerdict.kind() == EquipmentFit.Kind.PAYS && mixedVerdict.gain() > 0 && mixedVerdict.gain() * mixedVerdict.factor() >= mixedVerdict.cost(), "" + mixedVerdict);
+        System.out.printf("  the kit on the Grain Farm in the same village and month: %s (gain %.4f a month on a cost of %.4f, earns back %.4f): printed, not asserted, as the village's price level has moved with its clock%n",
+                grainVerdict.kind(), grainVerdict.gain(), grainVerdict.cost(), grainVerdict.earnsBack());
+        check("...and so did section 3's, in its own village", verdictAtFe8 == EquipmentFit.Kind.PAYS, "" + verdictAtFe8);
+        int below = a.getOperatedShare() < 1 ? 1 : 0, months = 24;
+        double least = a.getOperatedShare();
+        for (int i = 1; i < months; i++) {
             play(g, 1);
             if (a.getOperatedShare() < 1) below++;
             least = Math.min(least, a.getOperatedShare());
         }
-        System.out.printf("  played %d months from month %d: the operated share was below 1 in %d of them, lowest %.3f, the kit unfitted on %d of %d Grain Farms; section 3's verdict: %s%n",
-                months, fe8(), below, least, grain(g).getUnfitted(KIT), grain(g).getQuantity(), verdictAtFe8);
+        long kits = (mixed(g).getQuantity() - mixed(g).getUnfitted(KIT)) + (grain(g).getQuantity() - grain(g).getUnfitted(KIT));
+        System.out.printf("  played %d months from month %d: the operated share was below 1 in %d of them, lowest %.3f, the kit fitted on %d farms (the Grain Farms still lacking it: %d of %d)%n",
+                months, fe8(), below, least, kits, grain(g).getUnfitted(KIT), grain(g).getQuantity());
         check("fixture: the clock has moved the whole span", g.getMonth() >= fe8() + months, "" + g.getMonth());
-        if (verdictAtFe8 == EquipmentFit.Kind.PAYS) {
-            check("section 3's verdict was PAYS: the city fits the kit, so the operated share was below 1 in " + below + " of the " + months + " months", below > 0);
-            check("...and the share it fell to is the share of the farms still lacking it (" + String.format("%.3f", a.getOperatedShare()) + ")",
-                    a.getOperatedShare() == lackingShare(g));
-        } else {
-            System.out.println("  section 3's verdict was " + verdictAtFe8 + ": no assertion on the count (a city fits only what pays)");
+        check("the city fitted the kit where it pays: every Mixed Farm has it, and the operated share was below 1 in " + below + " of the " + months + " months",
+                mixed(g).getUnfitted(KIT) == 0 && kits >= mixed(g).getQuantity() && below > 0, kits + " farms fitted, " + mixed(g).getUnfitted(KIT) + " Mixed Farms lacking it, " + below + " months below 1");
+        check("...the share it fell to is the share of the farms still lacking the kit (" + String.format("%.3f", a.getOperatedShare()) + ")", a.getOperatedShare() == lackingShare(g) && a.getOperatedShare() < 1);
+        play(g, 1);
+        long[] base = base(g), posts = a.postsPerTier(), offered = a.postsOfferedPerTier();
+        int hands = JobType.NO_DIPLOMA.ordinal();
+        long struck = Math.round(a.autonomousMachines() * Agriculture.OPERATORS_A_MACHINE);
+        check("the operators are struck from the posts the farms offer: " + base[hands] + " -> " + posts[hands] + " (" + struck + " machines work by themselves)",
+                struck > 0 && posts[hands] == base[hands] - struck, posts[hands] + " against " + base[hands]);
+        check("...and the month's wage pass was struck on them: the posts offered are the posts the farms say, tier by tier", Arrays.equals(offered, posts),
+                Arrays.toString(offered) + " against " + Arrays.toString(posts));
+        double[] rates = g.getEconomyManager().getWageRates();
+        double payroll = a.getPayrollAtFullStaffing(), unstruck = 0, struckPay = 0;
+        for (int i = 0; i < base.length; i++) {
+            unstruck += rates[i] * base[i];
+            struckPay += rates[i] * posts[i];
         }
+        near("the farms' payroll at full staffing is the wage rates over the posts they offer", payroll, struckPay, 1e-9 * Math.max(1, struckPay));
+        check("...and it is less than the buildings' posts would have cost at the same rates: the operators struck are paid no more, the watch added is paid",
+                payroll < unstruck && payroll > 0, payroll + " against " + unstruck);
+        near("...by exactly the operators' wages less the watch's", unstruck - payroll,
+                rates[hands] * (base[hands] - posts[hands]) - rates[JobType.DIPLOMA.ordinal()] * (posts[JobType.DIPLOMA.ordinal()] - base[JobType.DIPLOMA.ordinal()]), 1e-9 * Math.max(1, unstruck));
     }
 }

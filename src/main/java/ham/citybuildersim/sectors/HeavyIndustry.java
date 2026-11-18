@@ -171,6 +171,12 @@ public final class HeavyIndustry extends ProcessingSector {
         return electrolyserWorks > 0 && buildings != null ? electrolyserWorks * unitsSavedAWorks(buildings.getTemplate(HYDROGEN_WORKS)) : 0;
     }
 
+    /** What the works with FE10's electrolysers save the GRID at nameplate: getElectrolyserUnitsSaved() less the part of the sector's draw its steam form turns on site (1 - getSteamShare()), the draw the sector is billed on and the city's demand is struck on. */
+    public double getGridUnitsSaved() {
+        double saved = getElectrolyserUnitsSaved();
+        return getSteamShare() > 0 ? saved * (1 - getSteamShare()) : saved;
+    }
+
     /**
      * The sector's draw at nameplate: the buildings' (EconomyManager.setElectricityConsumption()) less what the works with FE10's electrolysers
      * save, kept at 0 or more. With none fitted, every city founded today's way, the buildings' own figure, to the bit.

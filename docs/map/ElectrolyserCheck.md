@@ -1,4 +1,4 @@
-# ElectrolyserCheck.java - 391 lines · 21 methods · 3 constants · harnesses
+# ElectrolyserCheck.java - 459 lines · 23 methods · 4 constants · harnesses
 
 `ham/citybuildersim/ElectrolyserCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -32,92 +32,106 @@
 >   6. A CITY FOUNDED BEFORE THE WINDOW, AND ONE FOUNDED TODAY'S WAY, ARE UNTOUCHED: the 1900 city a month before FE10 draws the buildings' figure to
 >      the bit; a city founded today's way, past FE10's month, with works standing and every count reading fitted, draws it too and carries no works with the
 >      piece, even where a count is put on its stack by hand
+>   7. THE GRID IS SIZED ON WHAT IS DRAWN (REV-R6d P1): the utility's demand and the draw it invoices fall by the saving of the works that have the piece,
+>      the same units the sector's own bill falls by; with the grid's supply between the two demands, the fitted city is fully served and the same
+>      city with the piece off its works is rationed (the energy ratio under 1), the sector's ratio left free, never forced; a city before the window
+>      and one founded today's way have no saving to hand the grid
 > 
 > Every fixture is HydrogenSteelCheck.town1900(), a city founded the 1900 way with its clock at FE4's month, its works placed by hand and said over by
 > unfitTheFounding(), in a GameFiles.scratch() directory (no save slot is written); its clock is moved by ResearchCheck.atMonth() where a date is the premise.
 
-**Uses:** [HeavyIndustry](HeavyIndustry.md) (37), [EquipmentFit](EquipmentFit.md) (28), [Game](Game.md) (18), [ResearchCatalog](ResearchCatalog.md) (12), [BuildingsStacks](BuildingsStacks.md) (7), [Equipment](Equipment.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingManager](BuildingManager.md) (5), [Good](Good.md) (4), [PolicyDates](PolicyDates.md) (4), [LicenceFees](LicenceFees.md) (4), [HydrogenSteelCheck](HydrogenSteelCheck.md) (3), [HydroSites](HydroSites.md) (3), [ResearchCheck](ResearchCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1)
+**Uses:** [HeavyIndustry](HeavyIndustry.md) (38), [EquipmentFit](EquipmentFit.md) (28), [Game](Game.md) (20), [ResearchCatalog](ResearchCatalog.md) (12), [BuildingsStacks](BuildingsStacks.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Equipment](Equipment.md) (7), [BuildingManager](BuildingManager.md) (5), [Good](Good.md) (4), [PolicyDates](PolicyDates.md) (4), [LicenceFees](LicenceFees.md) (4), [HydrogenSteelCheck](HydrogenSteelCheck.md) (3), [HydroSites](HydroSites.md) (3), [ResearchCheck](ResearchCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 141 | 1. the row and its dials |
-| 176 | 2. the entry |
-| 197 | 3. known in its window and not before |
-| 235 | 4. its kWh read by FE4's works |
-| 278 | 5. the saving against the model's own constants |
-| 335 | 6. before the window, and today's way |
+| 146 | 1. the row and its dials |
+| 181 | 2. the entry |
+| 202 | 3. known in its window and not before |
+| 240 | 4. its kWh read by FE4's works |
+| 283 | 5. the saving against the model's own constants |
+| 340 | 7. the grid is sized on what is drawn |
+| 402 | 6. before the window, and today's way |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 51 | `ElectrolyserCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 52 | `ElectrolyserCheck.PIECE` | `"electrolyser"` |  |
-| 54 | `ElectrolyserCheck.WORKS` | `3` | The works section 3 to 5 stand: enough that "some of them" is more than none and less than all. |
+| 55 | `ElectrolyserCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 56 | `ElectrolyserCheck.PIECE` | `"electrolyser"` |  |
+| 58 | `ElectrolyserCheck.WORKS` | `3` | The works section 3 to 5 stand: enough that "some of them" is more than none and less than all. |
+| 343 | `ElectrolyserCheck.GRID_WORKS` | `6` | The works section 7 stands: enough that the saving of all of them is a good part of a Coal Power Plant. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 48 | `static int fails` |  |
-| 49 | `static int passes` |  |
+| 52 | `static int fails` |  |
+| 53 | `static int passes` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 346 | **type** `public class ElectrolyserCheck` | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen Steel Works' piece of equipment, the 46 kWh electrolyser, and... |
-| 56 | 4 | `static void check(String label, boolean ok)` |  |
-| 61 | 4 | `static void check(String label, boolean ok, String found)` |  |
-| 66 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
-| 70 | 5 | `static void quietly(Runnable r)` |  |
-| 77 | 3 | `static void play(Game g, int months)` | One press of the clock, quietly. |
-| 82 | 3 | `static int fe10()` | FE10's month in history: the model's own, never a literal. |
-| 86 | 3 | `static void at(Game g, int month)` |  |
-| 90 | 3 | `static BuildingsStacks works(Game g)` |  |
-| 94 | 3 | `static Equipment piece(Game g)` |  |
-| 99 | 11 | `static Game city(String label, int n)` | A 1900 city at FE4's month with `n` Hydrogen Steel Works placed by hand and every piece unfitted on them; the sector billed one unit of power a unit at the grid's whole ratio, so that its bill is its draw. |
-| 111 | 5 | `static void billAtOne(Game g)` |  |
-| 118 | 3 | `static double raw(Game g)` | What the buildings' templates sum to for Heavy Industry, in units: every works it has standing at the draw its template bills (EconomyManager's own sum), whatever the played months have added. |
-| 123 | 4 | `static double draw(Game g)` | Heavy Industry's draw at nameplate in units: its bill at one unit of power a unit and the grid's whole ratio. |
-| 128 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 50 | 410 | **type** `public class ElectrolyserCheck` | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen Steel Works' piece of equipment, the 46 kWh electrolyser, and... |
+| 60 | 4 | `static void check(String label, boolean ok)` |  |
+| 65 | 4 | `static void check(String label, boolean ok, String found)` |  |
+| 70 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
+| 74 | 5 | `static void quietly(Runnable r)` |  |
+| 81 | 3 | `static void play(Game g, int months)` | One press of the clock, quietly. |
+| 86 | 3 | `static int fe10()` | FE10's month in history: the model's own, never a literal. |
+| 90 | 3 | `static void at(Game g, int month)` |  |
+| 94 | 3 | `static BuildingsStacks works(Game g)` |  |
+| 98 | 3 | `static Equipment piece(Game g)` |  |
+| 103 | 11 | `static Game city(String label, int n)` | A 1900 city at FE4's month with `n` Hydrogen Steel Works placed by hand and every piece unfitted on them; the sector billed one unit of power a unit at the grid's whole ratio, so that its bill is its draw. |
+| 115 | 5 | `static void billAtOne(Game g)` |  |
+| 122 | 3 | `static double raw(Game g)` | What the buildings' templates sum to for Heavy Industry, in units: every works it has standing at the draw its template bills (EconomyManager's own sum), whatever the played months have added. |
+| 127 | 4 | `static double draw(Game g)` | Heavy Industry's draw at nameplate in units: its bill at one unit of power a unit and the grid's whole ratio. |
+| 132 | 13 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the row and its dials (lines 141-175)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 143 | 32 | `static void one()` |  |
-
-### 2. the entry (lines 176-196)
+### 1. the row and its dials (lines 146-180)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 178 | 18 | `static void two()` |  |
+| 148 | 32 | `static void one()` |  |
 
-### 3. known in its window and not before (lines 197-234)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 199 | 35 | `static void three(Game g)` |  |
-
-### 4. its kWh read by FE4's works (lines 235-277)
+### 2. the entry (lines 181-201)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 237 | 40 | `static void four(Game g)` |  |
+| 183 | 18 | `static void two()` |  |
 
-### 5. the saving against the model's own constants (lines 278-334)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 280 | 47 | `static void five()` |  |
-| 328 | 6 | `static double twice(Game g, BuildingsTemplate t, Equipment e, double price)` |  |
-
-### 6. before the window, and today's way (lines 335-391)
+### 3. known in its window and not before (lines 202-239)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 54 | `static void six()` |  |
+| 204 | 35 | `static void three(Game g)` |  |
+
+### 4. its kWh read by FE4's works (lines 240-282)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 242 | 40 | `static void four(Game g)` |  |
+
+### 5. the saving against the model's own constants (lines 283-339)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 285 | 47 | `static void five()` |  |
+| 333 | 6 | `static double twice(Game g, BuildingsTemplate t, Equipment e, double price)` |  |
+
+### 7. the grid is sized on what is drawn (lines 340-401)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 346 | 1 | **type** `record Grid(double demand, double billed, double ratio, double drawn)` | The city's demand, the draw invoiced, the grid's ratio and the sector's own draw, as a counted state leaves them. |
+| 352 | 18 | `static Grid grid(Game g, long fitted, double supply)` | The city with `fitted` of the works carrying the piece: the counts set, the forms said, the services updated and, where `supply` is a number, the grid's production written over the buildings' so that it is exactly tha... |
+| 371 | 30 | `static void seven()` |  |
+
+### 6. before the window, and today's way (lines 402-459)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 404 | 55 | `static void six()` |  |
 

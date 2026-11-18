@@ -1,4 +1,4 @@
-# HeavyIndustry.java - 364 lines · 19 methods · 15 constants · sectors
+# HeavyIndustry.java - 370 lines · 20 methods · 15 constants · sectors
 
 `ham/citybuildersim/sectors/HeavyIndustry.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -72,7 +72,7 @@
 
 | line | section |
 |---:|---|
-| 211 | THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) |
+| 217 | THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) |
 
 ## Constants
 
@@ -105,29 +105,30 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 99 | 266 | **type** `public final class HeavyIndustry extends ProcessingSector` | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0.7.123 the integrated route from ore and coke to steel and the yards t... |
+| 99 | 272 | **type** `public final class HeavyIndustry extends ProcessingSector` | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0.7.123 the integrated route from ore and coke to steel and the yards t... |
 | 156 | 3 | `public static double unitsSavedAWorks(BuildingsTemplate t)` | The grid units a month's draw one Hydrogen Steel Works saves at nameplate with FE10's electrolysers: its steel a month at HYDROGEN_MWH_SAVED_A_TONNE, in the units the sectors are billed (HydroSites.KWH_PER_UNIT). |
 | 161 | 5 | `public void setElectrolyserWorks(long n)` | Sets how many Hydrogen Steel Works carry FE10's electrolysers (never below 0) and takes their saving off the month's draw. |
 | 167 | 1 | `public long getElectrolyserWorks()` |  |
 | 170 | 3 | `public double getElectrolyserUnitsSaved()` | The grid units the fitted works save at nameplate: 0 with none fitted. |
-| 179 | 4 | `public void setElectricityConsumption(double kw)` | The sector's draw at nameplate: the buildings' (EconomyManager.setElectricityConsumption()) less what the works with FE10's electrolysers save, kept at 0 or more. |
-| 184 | 26 | `public HeavyIndustry()` |  |
+| 175 | 4 | `public double getGridUnitsSaved()` | What the works with FE10's electrolysers save the GRID at nameplate: getElectrolyserUnitsSaved() less the part of the sector's draw its steam form turns on site (1 - getSteamShare()), the draw the sector is billed on ... |
+| 185 | 4 | `public void setElectricityConsumption(double kw)` | The sector's draw at nameplate: the buildings' (EconomyManager.setElectricityConsumption()) less what the works with FE10's electrolysers save, kept at 0 or more. |
+| 190 | 26 | `public HeavyIndustry()` |  |
 
-### THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) (lines 211-364)
+### THE OLD STEEL (0.7.123, batch I4; OldMetal, the spec's 2.9) (lines 217-370)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 216 | 3 | `private ham.citybuildersim.OldMetal pool()` | The city's old steel, or null with no city (a fixture's bare sector). |
-| 221 | 3 | `public double oldSteelIntake()` | Tonnes of old steel its standing yards take a month at nameplate. |
-| 231 | 3 | `public double oldSteelOnSite()` | ...and what its yards on site will take once they open (BA1, 2026-11-02): the yard feed gate counted the yards standing only while a sector could have one order on site, and with no cap on orders a second yard would b... |
-| 236 | 4 | `public double oldSteelPerTonneOfScrap()` | ...and the tonnes of old steel a tonne of their scrap takes: their intake over their scrap at nameplate (10,500 into 10,000), 0 with no yard standing. |
-| 242 | 5 | `public double oldSteelPrice()` | What its yards pay a tonne of old steel today: OldMetal.PAY_SHARE of scrap's export price (Jerus's Q8); 0 with no markets. |
-| 256 | 17 | `public java.util.List<Line> ownLines(ham.citybuildersim.Game game)` | The page (0.7.142, batch I13): the city's old steel last month - what arose, what its yards bought and what went to landfill (OldMetal), as Copper Refining's page says its old copper - and the price they pay; then its... |
-| 275 | 3 | `private double spareOldSteel(ham.citybuildersim.OldMetal pool)` | Old steel arisen in the pool's last month past what the yards standing and on site take: what one more would run on. |
-| 281 | 7 | `protected double groundLimit(Good g, double asked)` | Its scrap is limited by the old steel that arose (the yards make no scrap past it); every other good as Sector's. |
-| 302 | 23 | `public void produceFlow(Good g)` | Makes a flow good for the month; its scrap, from the old steel its yards buy now (THE OLD STEEL): what they made at the rate, at oldSteelPerTonneOfScrap() a tonne, bought from the pool pro rata to each seller at oldSt... |
-| 328 | 9 | `protected String feedRefusal(ham.citybuildersim.BuildingsTemplate t)` | A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing and on site take; every other works buys its feed on the market. |
-| 340 | 6 | `protected double feedShare(ham.citybuildersim.BuildingsTemplate t)` | One more yard runs on the old steel past what the yards standing and on site take, at most its nameplate; every other works on all of it. |
-| 349 | 8 | `protected double feedShareStanding(ham.citybuildersim.BuildingsTemplate t)` | The last yard standing runs on what the others leave of the old steel that arose, at most its nameplate. |
-| 360 | 4 | `protected double offMarketFeed(ham.citybuildersim.BuildingsTemplate t, double rate)` | What a yard pays a month for the old steel it takes at `rate`: its intake at the rate, at oldSteelPrice(). |
+| 222 | 3 | `private ham.citybuildersim.OldMetal pool()` | The city's old steel, or null with no city (a fixture's bare sector). |
+| 227 | 3 | `public double oldSteelIntake()` | Tonnes of old steel its standing yards take a month at nameplate. |
+| 237 | 3 | `public double oldSteelOnSite()` | ...and what its yards on site will take once they open (BA1, 2026-11-02): the yard feed gate counted the yards standing only while a sector could have one order on site, and with no cap on orders a second yard would b... |
+| 242 | 4 | `public double oldSteelPerTonneOfScrap()` | ...and the tonnes of old steel a tonne of their scrap takes: their intake over their scrap at nameplate (10,500 into 10,000), 0 with no yard standing. |
+| 248 | 5 | `public double oldSteelPrice()` | What its yards pay a tonne of old steel today: OldMetal.PAY_SHARE of scrap's export price (Jerus's Q8); 0 with no markets. |
+| 262 | 17 | `public java.util.List<Line> ownLines(ham.citybuildersim.Game game)` | The page (0.7.142, batch I13): the city's old steel last month - what arose, what its yards bought and what went to landfill (OldMetal), as Copper Refining's page says its old copper - and the price they pay; then its... |
+| 281 | 3 | `private double spareOldSteel(ham.citybuildersim.OldMetal pool)` | Old steel arisen in the pool's last month past what the yards standing and on site take: what one more would run on. |
+| 287 | 7 | `protected double groundLimit(Good g, double asked)` | Its scrap is limited by the old steel that arose (the yards make no scrap past it); every other good as Sector's. |
+| 308 | 23 | `public void produceFlow(Good g)` | Makes a flow good for the month; its scrap, from the old steel its yards buy now (THE OLD STEEL): what they made at the rate, at oldSteelPerTonneOfScrap() a tonne, bought from the pool pro rata to each seller at oldSt... |
+| 334 | 9 | `protected String feedRefusal(ham.citybuildersim.BuildingsTemplate t)` | A yard is fed only while old steel for FEED_GATE of one arises past what the yards standing and on site take; every other works buys its feed on the market. |
+| 346 | 6 | `protected double feedShare(ham.citybuildersim.BuildingsTemplate t)` | One more yard runs on the old steel past what the yards standing and on site take, at most its nameplate; every other works on all of it. |
+| 355 | 8 | `protected double feedShareStanding(ham.citybuildersim.BuildingsTemplate t)` | The last yard standing runs on what the others leave of the old steel that arose, at most its nameplate. |
+| 366 | 4 | `protected double offMarketFeed(ham.citybuildersim.BuildingsTemplate t, double rate)` | What a yard pays a month for the old steel it takes at `rate`: its intake at the rate, at oldSteelPrice(). |
 

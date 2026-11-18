@@ -54,7 +54,7 @@ public final class EquipmentForms {
         for (BuildingsStacks s : stacks) {
             if (s.hasUnfitted()) { any = true; break; }
         }
-        if (!any && driven.isEmpty()) return;
+        if (!any && driven.isEmpty()) { tellTheGrid(game); return; }
 
         Sectors sectors = game.getSectors();
         Agriculture agriculture = sectors.agriculture();
@@ -92,6 +92,17 @@ public final class EquipmentForms {
         if (horses >= 0) agriculture.setHorseShare(horses);
         double carted = drive(Equipment.Form.CART_HORSES, sectors.freight().key(), carts);
         if (carted >= 0) sectors.freight().haulage().setHorseShare(carted);
+        tellTheGrid(game);
+    }
+
+    /**
+     * Hands the utility the power the works with FE10's electrolysers no longer draw (R6d, REV-R6d P1): ServicesManager sizes and rations the grid on
+     * the draw of the buildings, so a saving the sector's bill takes off has to come off the city's demand too, or the grid is rationed against power
+     * nobody draws. Said after the steam shares are set (the saving is net of the sector's), at every pass, 0 where no works is fitted.
+     */
+    private static void tellTheGrid(Game game) {
+        if (game.getSectors() == null || game.getServicesManager() == null) return;
+        game.getServicesManager().setElectrolyserSaving(game.getSectors().heavyIndustry().getGridUnitsSaved());
     }
 
     /**

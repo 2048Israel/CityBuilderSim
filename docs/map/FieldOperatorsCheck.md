@@ -1,4 +1,4 @@
-# FieldOperatorsCheck.java - 447 lines · 22 methods · 2 constants · harnesses
+# FieldOperatorsCheck.java - 474 lines · 22 methods · 2 constants · harnesses
 
 `ham/citybuildersim/FieldOperatorsCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 > Every fixture is FittingCheck.village() with Grain Farms added (placed without construction, in a GameFiles.scratch() directory: no save slot is written),
 > said over by unfitTheFounding() in a city founded the 1900 way, with its month set by reflection where a date is the premise (ResearchCheck.atMonth()).
 
-**Uses:** [Agriculture](Agriculture.md) (25), [EquipmentFit](EquipmentFit.md) (21), [Game](Game.md) (19), [JobType](JobType.md) (17), [BuildingsStacks](BuildingsStacks.md) (10), [ResearchCheck](ResearchCheck.md) (9), [Equipment](Equipment.md) (8), [LicenceFees](LicenceFees.md) (5), [FittingCheck](FittingCheck.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [ResearchCatalog](ResearchCatalog.md) (4), [BuildingManager](BuildingManager.md) (4), [Forms1900Check](Forms1900Check.md) (2), [DiscoveryCheck](DiscoveryCheck.md) (2), [Founding](Founding.md) (2), [Recipes](Recipes.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1)
+**Uses:** [Agriculture](Agriculture.md) (26), [EquipmentFit](EquipmentFit.md) (25), [JobType](JobType.md) (21), [Game](Game.md) (19), [BuildingsStacks](BuildingsStacks.md) (10), [Equipment](Equipment.md) (9), [ResearchCheck](ResearchCheck.md) (9), [LicenceFees](LicenceFees.md) (5), [FittingCheck](FittingCheck.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [ResearchCatalog](ResearchCatalog.md) (4), [BuildingManager](BuildingManager.md) (4), [Forms1900Check](Forms1900Check.md) (2), [DiscoveryCheck](DiscoveryCheck.md) (2), [Founding](Founding.md) (2), [Recipes](Recipes.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1)
 
 ## Sections
 
@@ -67,7 +67,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 405 | **type** `public class FieldOperatorsCheck` | Driverless field work (R6d, FE8: Deere's goal of a fully autonomous corn and soybean season by 2030, projected 2033, window 2030-2036): the autonomy kit, the third piece of equipment on the Grain Farm and the Mixed Fa... |
+| 43 | 432 | **type** `public class FieldOperatorsCheck` | Driverless field work (R6d, FE8: Deere's goal of a fully autonomous corn and soybean season by 2030, projected 2033, window 2030-2036): the autonomy kit, the third piece of equipment on the Grain Farm and the Mixed Fa... |
 | 54 | 4 | `static void check(String label, boolean ok)` |  |
 | 59 | 4 | `static void check(String label, boolean ok, String found)` |  |
 | 64 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -115,9 +115,9 @@
 |---:|---:|---|---|
 | 387 | 21 | `static void five() throws Exception` |  |
 
-### 6. a played count (lines 409-447)
+### 6. a played count (lines 409-474)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 411 | 36 | `static void six() throws Exception` |  |
+| 411 | 63 | `static void six() throws Exception` |  |
 
