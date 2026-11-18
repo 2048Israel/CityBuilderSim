@@ -27,6 +27,9 @@ adds its line here, not in `CLAUDE.md`.
                                    CopperRefiningCheck and LongPlaytest hold it
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
+        CopperBufferCheck.java     CPB1's empty-yard refinery regression: no feed for an undemanded
+                                   loss-making buffer, with domestic/captive demand, stock sales,
+                                   recipe identity and the national accounts kept intact
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the

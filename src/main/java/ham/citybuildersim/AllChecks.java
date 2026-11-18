@@ -38,7 +38,7 @@ public class AllChecks {
 
     /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck",
+        "CopperBufferCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "PolicyDatesCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",

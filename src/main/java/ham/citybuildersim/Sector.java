@@ -2656,7 +2656,8 @@ public abstract class Sector {
      * against demand that does not depend on what it did last month, or a
      * throttle driven off its own sales deadlocks - zero output makes zero
      * purchases makes zero output. Nobody has told a new market anything, so
-     * a maker with no signal fills its shed to the dump line and stops.
+     * a maker with no signal fills its shed to the dump line only when its
+     * output can sell for at least the inputs it costs, then stops (CPB1).
      */
     protected double plannedDemand(Good g) {
         GoodsMarket m = markets == null ? null : markets.get(g);
@@ -2675,6 +2676,13 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         if (!g.stockable()) return nameplate;
         double demand = plannedDemand(g);
+        // CPB1: an undemanded buffer must cover its feed at the price it can
+        // sell for. Use the recipe's current input cost, including captive
+        // inputs and co-products; actual home and captive demand keep running.
+        if (!(demand > 0) && markets != null) {
+            GoodsMarket market = markets.get(g);
+            if (market != null && market.netExportPrice() < flowCostPerUnit(g)) return 0;
+        }
         double target = demand > 0
                 ? demand * STOCK_MONTHS
                 : getStockCapacity(g) * DUMP_THRESHOLD;
@@ -2976,7 +2984,8 @@ public abstract class Sector {
        A stockable good's order share is what the month will make of it for the
        home market and the ship (getPlannedOutput() + getExportBoundOutput(),
        asked at the stock it expects to hold once the shed has sold what the
-       market will take of it) over its nameplate past what its own works use;
+       market will take of it), plus its own works' captive need, over its
+       whole nameplate (CPB1: the captive part must still order its feed);
        a building's is the greatest of its traded goods', flow or stockable
        (1 when it makes nothing traded; a flow good's is FL1's, below).
        planOrders() fixes the shares once, at the top of the market
@@ -3103,13 +3112,15 @@ public abstract class Sector {
      * to make for the market.
      */
     private double forecastOrder(Good g) {
-        double market = madeAtRate(g) - (captive(g) ? captiveUnits(g) : 0);
+        double nameplate = madeAtRate(g);
+        double own = captive(g) ? captiveUnits(g) : 0;
+        double market = nameplate - own;
         GoodsMarket m = markets.get(g);
         if (!(market > 0) || m == null) return 1;
         double held = getStock(g);
         double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
         double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
-        return made >= 0 ? Math.min(1, made / market) : 1;
+        return made >= 0 ? (made >= market ? 1 : (own + made) / nameplate) : 1;
     }
 
     /**
@@ -3350,7 +3361,9 @@ public abstract class Sector {
         double rest = 0;
         Double share = ordering ? orderShares.get(g) : null;
         if (share != null) {
-            double ordered = nameplate * share;
+            // The order covers the whole run, including the captive output
+            // already counted above (CPB1); only the rest can enter the shed.
+            double ordered = Math.max(0, madeAtRate(g) * share - o.captive);
             planned = Math.min(planned, ordered);
             direct = Math.min(direct, ordered - planned);
             rest = ordered - planned - direct;
