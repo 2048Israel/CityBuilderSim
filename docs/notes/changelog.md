@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.146 — CPB1, the cathode buffer at a loss — 2026-11-18, ready, see docs/queue/CPB1-notes.md
+The zero-demand cathode buffer no longer buys anode for an empty yard at a negative feed spread. Sector's planner gates speculative stock fills while domestic and captive demand and profitable replenishment keep running; recovered copper already committed is transformed by its own works without starting an idle refinery beside it. Real-market checks reproduce the old loss, preserve feed/output and GDP identities, and retain the original copper and cement premises as regressions. Existing stock sales and national-account rules are unchanged; the separate export-spare and no-world-outlet paths are queued as CPB2.
+
 ### 0.9.145 — FB10, the research checks and the judge — 2026-11-18, ready, see docs/queue/FB10-notes.md
 R2b-J: the judge read a harness's own tally, "ResearchViewCheck: 1 FAILED of 217", as an assertion, so a harness whose
 every assertion was known stayed NEW on its count. `KnownReds.count()` takes a tally headed by the line's own harness,

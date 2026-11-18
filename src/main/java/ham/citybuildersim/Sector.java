@@ -2656,7 +2656,8 @@ public abstract class Sector {
      * against demand that does not depend on what it did last month, or a
      * throttle driven off its own sales deadlocks - zero output makes zero
      * purchases makes zero output. Nobody has told a new market anything, so
-     * a maker with no signal fills its shed to the dump line and stops.
+     * a maker with no signal fills its shed to the dump line only when its
+     * output can sell for at least the inputs it costs, then stops (CPB1).
      */
     protected double plannedDemand(Good g) {
         GoodsMarket m = markets == null ? null : markets.get(g);
@@ -2675,6 +2676,13 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         if (!g.stockable()) return nameplate;
         double demand = plannedDemand(g);
+        // CPB1: an undemanded buffer must cover its feed at the price it can
+        // sell for. Use the recipe's current input cost, including captive
+        // inputs and co-products; actual home and captive demand keep running.
+        if (!(demand > 0) && markets != null) {
+            GoodsMarket market = markets.get(g);
+            if (market != null && market.netExportPrice() < flowCostPerUnit(g)) return 0;
+        }
         double target = demand > 0
                 ? demand * STOCK_MONTHS
                 : getStockCapacity(g) * DUMP_THRESHOLD;
@@ -2899,7 +2907,7 @@ public abstract class Sector {
     }
 
     /**
-     * The share of its nameplate a flow good is made at this month (THE ORDER, FL1): the share of the run of the buildings that make it, nameplate-weighted -
+     * The share of its nameplate a good is made at this month (THE ORDER, FL1; stock too since CPB1): the share of the run of the buildings that make it, nameplate-weighted -
      * what buildingOrder() orders their inputs for - and not the good's own share, because a by-product comes out of the run whatever it fetches. WHY: the
      * Copper Smelter orders its concentrate for the whole run when its acid has a home buyer, but made 17% of its anode when the anode sold under its
      * inputs, and the rest of the concentrate was lost. Exactly 1 where every building's order is 1 (x * 1.0 is x, so the two sums are one sum); the good's own
@@ -2976,7 +2984,8 @@ public abstract class Sector {
        A stockable good's order share is what the month will make of it for the
        home market and the ship (getPlannedOutput() + getExportBoundOutput(),
        asked at the stock it expects to hold once the shed has sold what the
-       market will take of it) over its nameplate past what its own works use;
+       market will take of it), plus its own works' captive need, over its
+       whole nameplate (CPB1: the captive part must still order its feed);
        a building's is the greatest of its traded goods', flow or stockable
        (1 when it makes nothing traded; a flow good's is FL1's, below).
        planOrders() fixes the shares once, at the top of the market
@@ -3103,13 +3112,15 @@ public abstract class Sector {
      * to make for the market.
      */
     private double forecastOrder(Good g) {
-        double market = madeAtRate(g) - (captive(g) ? captiveUnits(g) : 0);
+        double nameplate = madeAtRate(g);
+        double own = captive(g) ? captiveUnits(g) : 0;
+        double market = nameplate - own;
         GoodsMarket m = markets.get(g);
         if (!(market > 0) || m == null) return 1;
         double held = getStock(g);
         double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
         double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
-        return made >= 0 ? Math.min(1, made / market) : 1;
+        return made >= 0 ? (made >= market ? 1 : (own + made) / nameplate) : 1;
     }
 
     /**
@@ -3246,8 +3257,19 @@ public abstract class Sector {
             traded = true;
             most = Math.max(most, orderShare(e.getKey()));
         }
+        // CPB1: a feed already committed outside the goods market must be
+        // transformed too. Apply its floor only to buildings that use it.
+        for (Good g : t.goodsUsed().keySet()) {
+            double committed = committedInput(g);
+            if (!(committed > 0)) continue;
+            double need = getInputAtCapacity(g) * getOperatingRate();
+            if (need > 0) most = Math.max(most, Math.min(1, committed / need));
+        }
         return traded ? most : 1;
     }
+
+    /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */
+    protected double committedInput(Good g) { return 0; }
 
     /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
     protected double inputToMake(Good g) {
@@ -3350,7 +3372,10 @@ public abstract class Sector {
         double rest = 0;
         Double share = ordering ? orderShares.get(g) : null;
         if (share != null) {
-            double ordered = nameplate * share;
+            // The order covers the whole run, including the captive output
+            // already counted above (CPB1); only the rest can enter the shed.
+            // A building using committed feed runs even if the buffer is cut.
+            double ordered = Math.max(0, madeAtRate(g) * flowRunShare(g) - o.captive);
             planned = Math.min(planned, ordered);
             direct = Math.min(direct, ordered - planned);
             rest = ordered - planned - direct;

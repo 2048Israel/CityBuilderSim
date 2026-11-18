@@ -1,4 +1,4 @@
-# CementConcreteCheck.java - 354 lines · 11 methods · 12 constants · harnesses
+# CementConcreteCheck.java - 368 lines · 11 methods · 12 constants · harnesses
 
 `ham/citybuildersim/CementConcreteCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 >      limestone at home, puts its cement in its silo or ships it, and the
 >      money audit closes.
 
-**Uses:** [Good](Good.md) (62), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [QuarryingCheck](QuarryingCheck.md) (3), [Sector](Sector.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1), [GoodsMarket](GoodsMarket.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [Good](Good.md) (67), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sector](Sector.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [QuarryingCheck](QuarryingCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [GoodsMarket](GoodsMarket.md) (2), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 ## Sections
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 295 | **type** `public class CementConcreteCheck` | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md - 1.2, 6 and 7): stone's processing industry, on Sectors.KEYS ... |
+| 60 | 309 | **type** `public class CementConcreteCheck` | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-research.md - 1.2, 6 and 7): stone's processing industry, on Sectors.KEYS ... |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 78 | 5 | `static void quietly(Runnable r)` |  |
@@ -120,9 +120,9 @@
 | 313 | 1 | **type** `record MarketsCheckValues(double limeIn)` | What a tonne of limestone used costs the city now (the values' in()). |
 | 315 | 3 | `static MarketsCheckValues valuesOf(Game g)` |  |
 
-### 6. a played month (lines 319-354)
+### 6. a played month (lines 319-368)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 321 | 33 | `static void playedMonth()` |  |
+| 321 | 47 | `static void playedMonth()` |  |
 
