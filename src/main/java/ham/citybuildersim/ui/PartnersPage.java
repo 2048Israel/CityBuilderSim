@@ -249,9 +249,9 @@ final class PartnersPage {
         l.setStyle(l.isHover() ? over : rest);
         l.setMinWidth(0);
         l.setMaxWidth(Double.MAX_VALUE);
-        l.setOnMouseEntered(e -> l.setStyle(over));
-        l.setOnMouseExited(e -> l.setStyle(rest));
-        l.setOnMouseClicked(e -> {
+        Kept.give(l.onMouseEnteredProperty(), e -> l.setStyle(over));
+        Kept.give(l.onMouseExitedProperty(), e -> l.setStyle(rest));
+        Kept.give(l.onMouseClickedProperty(), e -> {
             e.consume();
             open(number);
         });
@@ -424,7 +424,7 @@ final class PartnersPage {
             n.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
             Pane sample = Kept.plain(l);
             sample.setMinSize(22, 12);
-            sample.setPrefSize(22, 12);
+            Pieces.prefSize(sample, 22, 12);
             sample.setMaxSize(22, 12);
             HBox item = Kept.row(6, sample, n);
             item.setAlignment(Pos.CENTER_LEFT);
@@ -741,9 +741,9 @@ final class PartnersPage {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set; handlers set, not added.
         back.setStyle(back.isHover() ? over : rest);
         back.setMinWidth(Region.USE_PREF_SIZE);
-        back.setOnMouseEntered(e -> back.setStyle(over));
-        back.setOnMouseExited(e -> back.setStyle(rest));
-        back.setOnMouseClicked(e -> {
+        Kept.give(back.onMouseEnteredProperty(), e -> back.setStyle(over));
+        Kept.give(back.onMouseExitedProperty(), e -> back.setStyle(rest));
+        Kept.give(back.onMouseClickedProperty(), e -> {
             nation = 0;
             ui.innerScrollAt.remove("showForeignMenu:body");
             trade.showForeignMenu();
@@ -768,7 +768,7 @@ final class PartnersPage {
         values.setHgrow(Priority.ALWAYS);
         values.setMinWidth(0);
         ranks.setHalignment(javafx.geometry.HPos.RIGHT);
-        g.getColumnConstraints().addAll(labels, values, ranks);
+        Kept.columns(g).addAll(labels, values, ranks);
         int at = 0;
         for (NationsMap.Row r : p.figureRows()) {
             final int line = at;
@@ -1052,7 +1052,8 @@ final class PartnersPage {
                 l.setStroke(text);
                 l.getStrokeDashArray().setAll(2.0, 3.0);
                 joinLines.add(l);
-                Polygon tri = new Polygon(-4.0, 0.0, 4.0, 0.0, 0.0, -6.0);
+                // FB2 (BF1-K): the points are set at layout, in the chart's own coordinates, never moved by layoutX/Y (see layoutChildren).
+                Polygon tri = new Polygon();
                 tri.setFill(text);
                 joinMarks.add(tri);
                 if (joinLabels.size() < 3) joinLabels.add(small());
@@ -1153,9 +1154,10 @@ final class PartnersPage {
                 l.setEndX(x);
                 l.setStartY(plotT);
                 l.setEndY(plotB);
-                Polygon tri = joinMarks.get(i);
-                tri.setLayoutX(x);
-                tri.setLayoutY(plotB);
+                // FB2 (BF1-K): the buyer's triangle stands on the axis at its own points, not at fixed points moved by layoutX/Y. A node moved by a
+                // fractional layoutX/Y keeps the outline it was first rasterised at, so a kept chart and one built new, signed equal, differed by 62
+                // pixels at m3169 (BF1-K); at its own points it is the same shape whichever way it got there.
+                joinMarks.get(i).getPoints().setAll(x - 4, plotB, x + 4, plotB, x, plotB - 6);
             }
             for (int i = 0; i < joinLabels.size(); i++) {
                 Label t = joinLabels.get(i);

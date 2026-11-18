@@ -1052,6 +1052,13 @@ public class NewGameCheck {
            a hand, the autopilot comes back the autopilot, and a save from
            before either key - no autopilot, no rollover - loads with the
            hand on the dial and rolling nothing, as it was played.
+
+       A city founded the 1900 way - the founding screen's "1900" chip since R1d -
+       has its central bank shut until March 1935 (R0f), so the rule it founds
+       on cannot hold the dial yet: the dial is nobody's, the rule waits for
+       the bank (DebtManager.isAutopilotAtOpening()) and takes the dial the
+       month the bank opens, unless the player's hand took the Advance Rate
+       first, and a save before the opening reloads with the rule waiting.
        ===================================================================== */
     static void theDialAndTheRollover(GameFiles files) throws Exception {
         System.out.println("\n--- 12. the dial and the rollover a player founds with ---");
@@ -1102,6 +1109,33 @@ public class NewGameCheck {
         assertTrue("a save from before either key loads with the hand on the dial",
                 !back[0].getDebtManager().isAutopilot());
         assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
+
+        // R1d: the founding screen's own city on its "1900" chip: its central bank is shut, so the rule waits for it.
+        Founding opened = Founding.named("Arden", Founding.Preset.LEAN, WorldEconomy.DEFAULT_MEAN_INFLATION).withUnfitted(true);
+        Game old = new Game(files);
+        quietly(() -> old.newGame(opened));
+        assertTrue("fixture: the founding screen's city founded the 1900 way, on its \"1900\" chip", old.foundedUnfitted());
+        assertTrue("a 1900 city: the bank is closed, so the dial is nobody's yet and the rule waits for it",
+                !old.getDebtManager().isAutopilot() && old.getDebtManager().isAutopilotAtOpening());
+        assertTrue("...and it rolls in the same structure", old.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
+        assertTrue("saved", old.saveGame(10, "a rule waiting for its bank").ok);
+        quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
+        assertTrue("a save before the bank opens reloads with the rule still waiting",
+                !back[0].getDebtManager().isAutopilot() && back[0].getDebtManager().isAutopilotAtOpening());
+        old.getDebtManager().hearMoneyMonth(PolicyDates.openingMonth(PolicyDates.Lever.CENTRAL_BANK), false);
+        assertTrue("the month the bank opens, the rule takes the dial",
+                old.getDebtManager().isAutopilot() && !old.getDebtManager().isAutopilotAtOpening());
+
+        Game handed = new Game(files);
+        quietly(() -> handed.newGame(opened));
+        handed.getDebtManager().hearMoneyMonth(PolicyDates.openingMonth(PolicyDates.Lever.POLICY_RATE), false);
+        handed.getDebtManager().takeTheDial(.04);
+        assertTrue("fixture: the Advance Rate is open and the player's hand took the dial at 4%",
+                Math.abs(handed.getDebtManager().getPolicyRate() - .04) < 1e-12 && !handed.getDebtManager().isAutopilot());
+        handed.getDebtManager().hearMoneyMonth(PolicyDates.openingMonth(PolicyDates.Lever.CENTRAL_BANK), false);
+        assertTrue("a player whose hand took the Advance Rate keeps it when the bank opens",
+                !handed.getDebtManager().isAutopilot() && !handed.getDebtManager().isAutopilotAtOpening()
+                        && Math.abs(handed.getDebtManager().getPolicyRate() - .04) < 1e-12);
     }
 
     /* =====================================================================

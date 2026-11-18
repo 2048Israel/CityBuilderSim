@@ -1,6 +1,6 @@
 # ZoningScreen.java - 1,135 lines · 71 methods · 24 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -38,7 +38,7 @@
 > PolicyPreview's (the tax take, THE BUDGET, zoningTaxChange()) and
 > LandManager's - ZoningViewCheck holds them; nothing here adds up a figure.
 
-**Uses:** [PolicyScreen](PolicyScreen.md) (75), [Palette](Palette.md) (73), [ZoningView](ZoningView.md) (64), [Zoning](Zoning.md) (52), [Kept](Kept.md) (52), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [PolicyDates](PolicyDates.md) (8), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [PolicyScreen](PolicyScreen.md) (75), [Palette](Palette.md) (73), [ZoningView](ZoningView.md) (64), [Kept](Kept.md) (59), [Zoning](Zoning.md) (52), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [PolicyDates](PolicyDates.md) (8), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (3):** [BuildScreen](BuildScreen.md), [KeptBench](KeptBench.md), [PolicyScreen](PolicyScreen.md)
 

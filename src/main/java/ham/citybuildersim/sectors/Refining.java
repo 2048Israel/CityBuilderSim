@@ -2,6 +2,7 @@ package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
+import ham.citybuildersim.BuildingsStacks;
 import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Currency;
 import ham.citybuildersim.Deposit;
@@ -241,7 +242,7 @@ public final class Refining extends Sector {
      */
     public static Map<Good, Double> madeBy(BuildingsTemplate t) {
         if (t == null) return Collections.emptyMap();
-        if (isConversionUnit(t)) return RefineryFlow.madeAlone(t.refineryUnit(), t.feedPerMonth());
+        if (isConversionUnit(t)) return RefineryFlow.process(t.crackerPetrol()).madeAlone(t.refineryUnit(), t.feedPerMonth());
         return isCrudeUnit(t) ? slate(t.uses(Good.CRUDE)).products() : t.goodsMade();
     }
 
@@ -499,12 +500,36 @@ public final class Refining extends Sector {
     }
 
     /** This month's flow at nameplate: the standing crude units' crude, at the month's crude mix, through the standing conversion units, at the city's prices. Pure in those; cached. */
+    private double flowCrackerPetrol = Double.NaN;
+
+    /** Feed-weighted yield of the standing cracking units, after Recipes applies. */
+    public double crackerPetrol() {
+        if (game == null || !game.foundedUnfitted() || buildings == null) return 0.55;
+        double feed = 0, petrol = 0, minimum = Double.POSITIVE_INFINITY, maximum = Double.NEGATIVE_INFINITY;
+        for (BuildingsStacks stack : buildings.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.refineryUnit() != RefineryFlow.Kind.CRACKER) continue;
+            double f = stack.getQuantity() * t.feedPerMonth();
+            if (!(f > 0)) continue;
+            feed += f;
+            petrol += f * t.crackerPetrol();
+            minimum = Math.min(minimum, t.crackerPetrol());
+            maximum = Math.max(maximum, t.crackerPetrol());
+        }
+        // Keep the mean within its actual inputs, exact for a homogeneous process.
+        if (feed > 0) return Math.max(minimum, Math.min(maximum, petrol / feed));
+        BuildingsTemplate candidate = buildings.getTemplateByName("Cracking Unit");
+        return candidate == null ? 0.55 : candidate.crackerPetrol();
+    }
+
     public RefineryFlow.Flow flow() {
         double[] feed = unitFeed(false), values = flowValues();
+        double crackerPetrol = crackerPetrol();
         double crude = getInputAtCapacity(Good.CRUDE);
-        if (flowSolved == null || Double.compare(crude, flowCrude) != 0 || !java.util.Arrays.equals(feed, flowFeed)
+        if (flowSolved == null || Double.compare(crackerPetrol, flowCrackerPetrol) != 0 || Double.compare(crude, flowCrude) != 0 || !java.util.Arrays.equals(feed, flowFeed)
                 || !java.util.Arrays.equals(crudeMix, flowMix) || !java.util.Arrays.equals(values, flowPrices)) {
-            flowSolved = RefineryFlow.solve(feed, crude, crudeMix, values);
+            flowSolved = RefineryFlow.solve(feed, crude, crudeMix, values, crackerPetrol);
+            flowCrackerPetrol = crackerPetrol;
             flowFeed = feed;
             flowMix = crudeMix.clone();
             flowPrices = values;
@@ -535,7 +560,7 @@ public final class Refining extends Sector {
         boolean units = false;
         for (double f : all) units |= f > 0;
         if (!units) return slateOf(crudeOnSite()).of(g);
-        double with = RefineryFlow.solve(all, getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix, flowValues()).of(g);
+        double with = RefineryFlow.solve(all, getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix, flowValues(), crackerPetrol()).of(g);
         return Math.max(0, with - flow().of(g));
     }
 
@@ -576,6 +601,25 @@ public final class Refining extends Sector {
         for (double v : one.products().values()) all += v;
         return all > 0 ? tankage * one.of(g) / all : 0;
     }
+
+    /** Oil does not spoil: produceStock liquidates tanks before they go (O1), rather than discarding them early (BF1). */
+    @Override
+    public void writeOffUnhousedStock() { }
+
+    /** Nonspoiling oil left for O1's liquidation line covers debt at its net export proceeds before any haircut. */
+    @Override
+    public double retirementRecovery() {
+        double value = 0;
+        for (Good g : PRODUCTS) if (g.exportable() && markets != null && markets.get(g) != null) {
+            GoodsMarket market = markets.get(g);
+            value += getStock(g) * market.netExportPrice();
+            Sector.Split sold = pending().sold.get(g);
+            if (sold != null) value += sold.atHome + (market.exportPrice() > 0
+                    ? sold.abroad * market.netExportPrice() / market.exportPrice() : 0);
+        }
+        return Math.max(0, value);
+    }
+
 
     /**
      * The month's production into the tanks - after shipping, from the tanks,
@@ -1469,7 +1513,15 @@ public final class Refining extends Sector {
      */
     public record Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
                           double spareCrude, double[] spareMix, double crudeLocal, double crudeImport, double lubricantsHome,
-                          double[] away, double[] imports, RunPrices run) {
+                          double[] away, double[] imports, RunPrices run, double crackerPetrol) {
+
+        /** A modern-process outlook, the original constructor used by pure fixtures. */
+        public Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
+                       double spareCrude, double[] spareMix, double crudeLocal, double crudeImport, double lubricantsHome,
+                       double[] away, double[] imports, RunPrices run) {
+            this(feed, crude, mix, values, room, spareCrude, spareMix, crudeLocal, crudeImport,
+                    lubricantsHome, away, imports, run, 0.55);
+        }
 
         /** ...in the prototype's frame (spec-oil 2.4): no cap on lubricants. */
         public Outlook(double[] feed, double crude, double[] mix, double[] values, double room,
@@ -1510,7 +1562,7 @@ public final class Refining extends Sector {
         return new Outlook(unitFeed(true), getInputAtCapacity(Good.CRUDE) + crudeOnSite(), crudeMix.clone(), cityValues(), room,
                 spare, spare > 0 ? wellsGradesAhead() : MEDIUM_MIX.clone(),
                 Double.isFinite(local) ? local : 0, Double.isFinite(imported) ? imported : 0,
-                Double.isFinite(home) ? Math.max(0, home) : 0, awayValues(), imports, runPrices());
+                Double.isFinite(home) ? Math.max(0, home) : 0, awayValues(), imports, runPrices(), crackerPetrol());
     }
 
     /**
@@ -1590,7 +1642,7 @@ public final class Refining extends Sector {
      * standing at the outlook's values.
      */
     public static List<SpreadPlanner.Candidate> appraise(Outlook o, List<BuildingsTemplate> templates, SpreadPlanner.City city) {
-        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values(), o.crackerPetrol());
         List<SpreadPlanner.Candidate> out = new ArrayList<>();
         for (BuildingsTemplate t : templates) {
             if (isConversionUnit(t)) out.add(unitEstimate(o, flow, t, city));
@@ -1635,12 +1687,12 @@ public final class Refining extends Sector {
             }
         }
         double gross = flow.spread(k) * Math.min(spare, one);
-        if (o != null && (o.run() != null || pastImports(o, madeOf(k, Math.min(spare, one))) > 0)) {
+        if (o != null && (o.run() != null || pastImports(o, madeOf(k, Math.min(spare, one), o.crackerPetrol())) > 0)) {
             // ...petrol and diesel past the city's imports at the net export price, at the run with it standing (R1).
-            gross -= pastImports(o, madeOf(k, Math.min(spare, one)));
+            gross -= pastImports(o, madeOf(k, Math.min(spare, one), o.crackerPetrol()));
             double[] with = o.feed().clone();
             with[k.ordinal()] += one;
-            gross *= runWith(o, RefineryFlow.solve(with, o.crude(), o.mix(), o.values()));
+            gross *= runWith(o, RefineryFlow.solve(with, o.crude(), o.mix(), o.values(), o.crackerPetrol()));
         }
         double earns = SpreadPlanner.earns(t, gross, city);
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
@@ -1648,8 +1700,13 @@ public final class Refining extends Sector {
 
     /** What `litres` of a kind's feed make with nothing downstream, by Good's ordinal (RefineryFlow.madeAlone()). */
     static double[] madeOf(RefineryFlow.Kind k, double litres) {
+        return madeOf(k, litres, 0.55);
+    }
+
+    /** Products at the actual thermal or catalytic process, including the export discount. */
+    static double[] madeOf(RefineryFlow.Kind k, double litres, double crackerPetrol) {
         double[] out = new double[Good.values().length];
-        for (Map.Entry<Good, Double> e : RefineryFlow.madeAlone(k, litres).entrySet()) out[e.getKey().ordinal()] += e.getValue();
+        for (Map.Entry<Good, Double> e : RefineryFlow.process(crackerPetrol).madeAlone(k, litres).entrySet()) out[e.getKey().ordinal()] += e.getValue();
         return out;
     }
 
@@ -1676,7 +1733,7 @@ public final class Refining extends Sector {
         double run = o.crude() + add;
         double[] mix = blend(o.mix(), o.crude(), own, add);
         double[] values = o.values();
-        RefineryFlow.Flow after = RefineryFlow.solve(o.feed(), run, mix, values);
+        RefineryFlow.Flow after = RefineryFlow.solve(o.feed(), run, mix, values, o.crackerPetrol());
         double gain = 0;
         for (Good g : PRODUCTS) gain += (after.of(g) - before.of(g)) * values[g.ordinal()];
         double crude = local * o.crudeLocal() + (add - local) * o.crudeImport();
@@ -1689,7 +1746,7 @@ public final class Refining extends Sector {
         double[] with = o.feed().clone();
         List<BuildingsTemplate> units = new ArrayList<>();
         for (int round = 0; round < PACKAGE_MOST_UNITS; round++) {
-            RefineryFlow.Flow f = RefineryFlow.solve(with, run, mix, values);
+            RefineryFlow.Flow f = RefineryFlow.solve(with, run, mix, values, o.crackerPetrol());
             BuildingsTemplate next = null;
             double best = 0;
             for (RefineryFlow.Kind k : RefineryFlow.Kind.values()) {
@@ -1715,7 +1772,7 @@ public final class Refining extends Sector {
         if (o.run() != null) {
             // ...the package's petrol and diesel past the city's imports at the net export price, and every
             // building's gross at the run the campus would take with it all standing (0.7.105, R1).
-            RefineryFlow.Flow all = RefineryFlow.solve(with, run, mix, values);
+            RefineryFlow.Flow all = RefineryFlow.solve(with, run, mix, values, o.crackerPetrol());
             double[] delta = new double[Good.values().length];
             for (Good g : PRODUCTS) delta[g.ordinal()] = all.of(g) - before.of(g);
             double share = runWith(o, all);
@@ -1780,7 +1837,7 @@ public final class Refining extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
         // No crude unit while one is on site (0.7.105, R3; ONE ORDER IN FLIGHT, below): the refiners' own count, kept in BA1.
-        int crudeOnSite = crudeUnitsOnSite();
+        long crudeOnSite = crudeUnitsOnSite();
         Outlook o = outlook(plans);
         List<BuildingsTemplate> templates = new ArrayList<>(buildings.getTemplatesBySector(sector));
         if (crudeOnSite > 0) templates.removeIf(Refining::isCrudeUnit);
@@ -1849,8 +1906,8 @@ public final class Refining extends Sector {
      */
 
     /** The crude units on site, anyone's order (R3). */
-    int crudeUnitsOnSite() {
-        int n = 0;
+    long crudeUnitsOnSite() {
+        long n = 0;
         if (buildings == null) return 0;
         for (ham.citybuildersim.BuildingsStacks s : buildings.getStacksUnderConstruction()) {
             if (isCrudeUnit(s.getBuilding()) && s.getUnderConstruction() > 0) n += s.getUnderConstruction();
@@ -1862,7 +1919,7 @@ public final class Refining extends Sector {
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
         SpreadPlanner.City city = planner.city(this, plans, game);
         Outlook o = outlook(plans);
-        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        RefineryFlow.Flow flow = RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values(), o.crackerPetrol());
         return isConversionUnit(t) ? unitEstimate(o, flow, t, city)
                 : packageEstimate(o, flow, t, buildings.getTemplatesBySector(key()), city);
     }

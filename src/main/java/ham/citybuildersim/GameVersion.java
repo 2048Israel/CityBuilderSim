@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.94";
+    public static final String VERSION = "0.9.150";
 
     /**
      * The save shape.
@@ -8263,8 +8263,47 @@ public final class GameVersion {
      *     and its accretion income stop for the life of every line it holds.
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
+     *
+     * 54 - WORLD PRICES CHAINED (batch CU2; docs/studies/spec-world-prices.md
+     *     9): the world market's January solves the goods inputs first, a made
+     *     good priced off what its inputs cost each nation plus its own part,
+     *     a root anchored so the reference city's band stands on its path
+     *     (WorldChain, WorldMarket). No field is added.
+     *
+     *     THE FLOOR RISES TO 54 WITH IT (the rule): a save of format 53 or
+     *     older would load WRONGLY. Its saved world prices and supply scales
+     *     are the unchained solve's: a made good's price is its own path's,
+     *     not its inputs' cost, and a root's lambda is not the anchored one, so
+     *     the restored market (restore, no re-solve) prices rod, wire, steel
+     *     and fuels apart from what they are made of until the next January,
+     *     and that January starts from a state the chained solve never left.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
+     *
+     *     THE HISTORY FILE'S FORM (REV-CU2-1; no bump, 54 is this batch's
+     *     own): the eight prices HistorySave.roundSig records (the wage, the
+     *     rent, food, materials, ore, ground, and each company's share price
+     *     and value) are written at today's prices to six figures,
+     *     {"todays":[...]}, and multiplied by PriceLevel.FACTOR on load, bit
+     *     for bit; the product itself would take seventeen digits, FACTOR
+     *     being a long decimal. A series a reform or a fold moved off that
+     *     grid stays a plain array. Memory holds the same values as before.
+     *
+     * 55 - THE DRIVERLESS TRUCK (batch R6b, FE1; REV-R6b-1): the Truck
+     *     Depot holds a driverless kit, an equipment piece whose unfitted
+     *     count a 1900 city saves per stack, and Haulage's share of trucks
+     *     still driven (EquipmentForms.setDriven) is read from it. No field
+     *     is added; the piece is new.
+     *
+     *     THE FLOOR RISES TO 55 WITH IT (the rule): a save of format 54 or
+     *     older would load WRONGLY. It holds no unfitted count for the kit,
+     *     and the load path reads a missing count as fitted, so a 1900 city's
+     *     depots would run driverless from its first month on, in 1930 as in
+     *     2030: twice the tonnes a truck, its drivers laid off, no kit bought
+     *     and no fee paid. It is refused, naming the build that still opens
+     *     it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 51;
+    public static final int SAVE_FORMAT = 55;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8274,8 +8313,12 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 51 since batch BK2 (EACH HOLDER'S OWN DISCOUNT above: a save's pieces
-     * carry one pool of discount, and every holder would read none of it).
+     * 55 since batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
+     * of the depots' kit unfitted, which reads as fitted). 54 from batch CU2
+     * (WORLD PRICES CHAINED above: a save's world prices
+     * and scales are the unchained solve's). 51 from batch BK2 (EACH HOLDER'S
+     * OWN DISCOUNT above: a save's pieces carry one pool of discount, and
+     * every holder would read none of it).
      * 50 from batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
      * years would read a century ahead and its dollars 38 times its world's).
      * 49 from batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
@@ -8313,7 +8356,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 51;
+    public static final int OLDEST_LOADABLE_FORMAT = 55;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

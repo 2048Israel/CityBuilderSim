@@ -124,6 +124,12 @@ public final class Recipe {
         return new Recipe(id, name, since, needsEquipment, isDefault, makes, uses, jobs, electricity, gen, water, consumables * factor);
     }
 
+    /** The same immutable figures with a human name for a composed historical way. */
+    Recipe withName(String label) {
+        return new Recipe(id, label, since, needsEquipment, isDefault, makes, uses, jobs,
+                electricity, gen, water, consumables);
+    }
+
     /** The recipe's permanent key on its template. */
     public String getId() { return id; }
 

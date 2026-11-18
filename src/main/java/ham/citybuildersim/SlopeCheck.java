@@ -157,6 +157,7 @@ public class SlopeCheck {
         EarthData file = theEarth();
         foundingOnBuildableGround(file);
         inARealRun(file);
+        historicalGround();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -168,6 +169,28 @@ public class SlopeCheck {
 
     /** How many Houses the fixtures of 1 order at once. */
     static final int ORDER = 5;
+
+    /** R1f: terrain constrains a 1900 House just as it does today's city. */
+    static void historicalGround() {
+        out.println("\n--- 10. the 1900 city: owned steep ground still refuses a House ---");
+        for (int c : new int[] { World.FLAT, World.STEEP }) {
+            Game g = new Game(GameFiles.scratch("slopecheck-1900-" + c), LongPlaytest.founding().withUnfitted(true));
+            quietly(g::run);
+            g.setCashForTest(CASH);
+            double dry = g.getCityLand().totalKm2(CityLand.DRY);
+            double[] relief = new double[5];
+            relief[c] = dry;
+            g.getCityLand().setCentreRelief(relief);
+            g.getLandManager().setAllocatedSqFt(0);
+            BuildingsTemplate house = template(g, HOUSE);
+            boolean may = World.buildable(World.GRASS, c);
+            check("fixture: the 1900 city owns a House's ground in the chosen relief", ofClass(g, c) > house.getLandSqFt());
+            double cash = g.getCash(), used = g.getLandManager().getAllocatedSqFt();
+            Game.BuildResult result = order(g, house, 1);
+            check("1900 House follows the model's buildable relief", result == (may ? Game.BuildResult.SUCCESS : Game.BuildResult.NO_LAND));
+            check("a refused 1900 order spends and allocates nothing", may || (cash == g.getCash() && used == g.getLandManager().getAllocatedSqFt()));
+        }
+    }
 
     static void buildingOnEachGround() {
         out.println("--- 1. a building on each class of ground: flat and foothill take it, steep and very steep refuse it ---");
@@ -195,7 +218,7 @@ public class SlopeCheck {
             Game.BuildQuote q = g.quoteBuild(house, ORDER);
             Game.BuildResult r = order(g, house, ORDER);
             BuildingsStacks stack = g.getBuildingManager().getStack(house);
-            int onSite = stack == null ? 0 : stack.getUnderConstruction();
+            long onSite = stack == null ? 0 : stack.getUnderConstruction();
             if (may) {
                 report(name + ": the city's order of " + ORDER + " goes through - ground taken, the quote's money paid, the Houses on site",
                         r == Game.BuildResult.SUCCESS && onSite == ORDER
@@ -500,7 +523,7 @@ public class SlopeCheck {
     /** One month, played and audited as the playtest audits one: the money, the GDP identity, GDP's construction against the builders' own books, and every sector's statements (SectorStatementCheck.audit()). */
     static void month(Game g, BuildingsStacks stack, Months m) {
         Construction construction = g.getSectors().construction();
-        int before = stack.getQuantity();
+        long before = stack.getQuantity();
         quietly(() -> g.simulateMonths(1));
         m.played++;
         m.applied += stack.getLastApplied();

@@ -1,6 +1,6 @@
 # SupplierCreditCheck.java - 340 lines · 10 methods · 1 constants · harnesses
 
-`ham/citybuildersim/SupplierCreditCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SupplierCreditCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit
 > when the till cannot pay for it, owed for a month, repaid out of the sale it
@@ -38,7 +38,7 @@
 >   5. A grocer whose till covers its stock takes none.
 >   6. Saved and loaded, what it owes and what it bought on credit come back.
 
-**Uses:** [SupplierCredit](SupplierCredit.md) (16), [Good](Good.md) (13), [Trade](Trade.md) (12), [Sectors](Sectors.md) (8), [Game](Game.md) (7), [BondCheck](BondCheck.md) (6), [Retail](Retail.md) (4), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sector](Sector.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [SectorBooksCheck](SectorBooksCheck.md) (2), [BalanceSheet](BalanceSheet.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [SectorBooks](SectorBooks.md) (1)
+**Uses:** [SupplierCredit](SupplierCredit.md) (16), [Good](Good.md) (13), [Trade](Trade.md) (12), [Sectors](Sectors.md) (8), [Game](Game.md) (7), [BondCheck](BondCheck.md) (6), [Retail](Retail.md) (4), [GameFiles](GameFiles.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sector](Sector.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [SectorStatementCheck](SectorStatementCheck.md) (2), [BalanceSheet](BalanceSheet.md) (2), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [EconomyManager](EconomyManager.md) (1), [SectorBooks](SectorBooks.md) (1)
 
 ## Sections
 

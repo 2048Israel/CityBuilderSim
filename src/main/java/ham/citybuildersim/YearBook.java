@@ -161,6 +161,10 @@ public final class YearBook {
         flow(m, "basketsAsked", "baskets the households asked for at the shelf price - a basket is a person-month of groceries (recorded since 0.7.45)");
         flow(m, "basketsHanded", "baskets the shops handed over (recorded since 0.7.45)");
         flow(m, HistorySave.RESEARCH_SPEND, "what research cost the month: the grants' posts and the labs' other costs, and the prizes the treasury paid the labs, in thousands (recorded since R5, in a city founded the 1900 way)");
+        flow(m, "ipCharges", "patent service imports paid by private firms, already inside imports abroad, in thousands (recorded since R2c)");
+        flow(m, "ipAccrued", "patent service imports accrued by production for the next strike, in thousands (recorded since R2c)");
+        flow(m, "publicIpCharges", "patent licences the city's own works paid abroad at the strike, already inside imports abroad, in thousands (recorded since R2c-P)");
+        flow(m, "publicIpAccrued", "patent licences the city's own works accrued for the next strike, in thousands (recorded since R2c-P)");
 
         /* ---- levels: a stock, so a row is where it STOOD at the end ---- */
         level(m, "cash", "the treasury's cash in hand - negative is an overdraft, in thousands");

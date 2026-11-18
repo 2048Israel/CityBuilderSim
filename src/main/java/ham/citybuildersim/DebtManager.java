@@ -74,6 +74,23 @@ public class DebtManager {
     /** What the city's central bank charges. The player's dial - or the rule's, with autopilot on. */
     private double baseRate = .03;
 
+    /** Calendar permissions, derived again after a load; standalone pricing fixtures keep their dials. */
+    private boolean rateOpen = true, moneyOpen = true;
+
+    /** Canada had an Advance Rate from 1914; its gold years inherit the world's interest instead. */
+    public void hearMoneyMonth(int month, boolean onGold) {
+        rateOpen = PolicyDates.isOpen(PolicyDates.Lever.POLICY_RATE, month) && !onGold;
+        moneyOpen = PolicyDates.isOpen(PolicyDates.Lever.CENTRAL_BANK, month);
+        if (!moneyOpen && autopilot) {          // a rule held while the bank is shut (a load's setAutopilot() before this month is heard) goes back to waiting
+            autopilot = false;
+            autopilotAtOpening = true;
+        } else if (moneyOpen && autopilotAtOpening) {   // the bank opens: the waiting rule takes the dial, with no decision line
+            autopilot = true;
+            autopilotAtOpening = false;
+        }
+        if (!rateOpen) setPolicyRate(worldRate());
+    }
+
     public double getPolicyRate() { return baseRate; }
 
     public void setPolicyRate(double rate) {
@@ -114,7 +131,19 @@ public class DebtManager {
     private boolean autopilot;
 
     public boolean isAutopilot()              { return autopilot; }
+    /**
+     * Whether the rule has been asked for but the central bank is still shut, so it waits and takes the dial the month the bank opens (hearMoneyMonth()).
+     * R1d offers the 1900 city on the founding screen (its "1900" chip), whose bank opens in March 1935 (R0f), and Jerus ruled in 0.7.13 that a game starts on the automatic,
+     * "not your hand": the rule asked for at the founding waits for the bank rather than being dropped, unless the player's hand (takeTheDial()) took the dial first.
+     */
+    private boolean autopilotAtOpening;
+
+    public boolean isAutopilotAtOpening()     { return autopilotAtOpening; }
     public void setAutopilot(boolean on) {
+        if (!moneyOpen) {
+            autopilotAtOpening = on;
+            return;
+        }
         if (on != autopilot) {
             decided(DecisionLog.CENTRAL_BANK, on ? "Central bank rate handed to the rule"
                                                  : "Central bank rate taken back by hand");
@@ -185,6 +214,7 @@ public class DebtManager {
     public Aim getAim() { return aim; }
 
     public void setAim(Aim a) {
+        if (!moneyOpen) return;
         Aim next = a == null ? Aim.INFLATION : a;
         if (next != aim) decided(DecisionLog.CENTRAL_BANK, "Central bank aims at " + next.words);
         this.aim = next;
@@ -197,6 +227,7 @@ public class DebtManager {
 
     /** Sets the spread, inside what keeps the tied rate on the dial (MIN_POLICY_RATE to MAX_POLICY_RATE over tieRate(): the peg's anchor's rate, the US's for the US$). */
     public void setPegSpread(double spread) {
+        if (!moneyOpen) return;
         double next = Double.isFinite(spread)
                 ? Math.max(MIN_POLICY_RATE - tieRate(), Math.min(MAX_POLICY_RATE - tieRate(), spread))
                 : 0;
@@ -254,9 +285,11 @@ public class DebtManager {
      * call, and leaves the toggle alone.
      */
     public void takeTheDial(double rate) {
+        if (!rateOpen) return;
         boolean wasRule = autopilot;
         double was = baseRate;
         autopilot = false;
+        autopilotAtOpening = false;             // the player's hand took the dial before the bank opened: no rule waits for it
         setPolicyRate(rate);
         if (wasRule || DecisionLog.moved(was, baseRate)) {
             decided(DecisionLog.CENTRAL_BANK, "Central bank rate to " + DecisionLog.pct2(baseRate));
@@ -294,6 +327,7 @@ public class DebtManager {
 
     /** Sets the target, held between MIN_INFLATION_TARGET and MAX_INFLATION_TARGET; not a number leaves it where it was. */
     public void setInflationTarget(double target) {
+        if (!moneyOpen) return;
         if (Double.isNaN(target)) return;
         double was = inflationTarget;
         inflationTarget = Math.max(MIN_INFLATION_TARGET, Math.min(MAX_INFLATION_TARGET, target));
@@ -430,6 +464,7 @@ public class DebtManager {
 
     /** Sets how strict the rule is, applied at once like the target; null leaves it where it was. */
     public void setStrictness(Strictness s) {
+        if (!moneyOpen) return;
         if (s == null) return;
         if (s != strictness) decided(DecisionLog.CENTRAL_BANK, "Central bank strictness to " + s.words);
         strictness = s;

@@ -1,9 +1,15 @@
 package ham.citybuildersim;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +40,11 @@ import java.util.Map;
  * the oldest years fold a year to an entry, each series by its rule, and
  * every reader has to read a folded year as a year - a fold that summed a
  * level, or a chart that drew a year's flow as one month's, looks fine too.
+ *
+ * And since CU2 (REV-CU2-1), a fifth (section 7): the eight prices roundSig
+ * records are written at today's prices to six figures and read back times
+ * FACTOR, and a reload that moved one bit of one of them would move the bank's
+ * volatility, and every trace played from the file, without a word.
  */
 public class HistoryCheck {
 
@@ -642,6 +653,8 @@ public class HistoryCheck {
 
         folds(root);
 
+        todaysPrices(root, files, city);
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -845,6 +858,194 @@ public class HistoryCheck {
         int end = close + 1;
         if (end < json.length() && json.charAt(end) == ',') end++;
         return json.substring(0, at) + json.substring(end);
+    }
+
+    /* ============ 7. the eight prices write at today's prices (CU2, REV-CU2-1) ============
+     *
+     * HistorySave.roundSig keeps six figures of a price at today's prices and
+     * multiplies them back by PriceLevel.FACTOR, a long decimal, so the double
+     * it records takes seventeen digits to write: 935,000 characters of a
+     * default playtest's history. The file now writes those six figures,
+     * {"todays":[...]}, and the load multiplies them again, which is the
+     * product roundSig made - the same bits, not the same to six figures. A
+     * series a reform or a fold moved off that grid is written as the plain
+     * array it always was. The city played here is section 1's, its history
+     * saved and reloaded the way the game does; the one moved off the grid is
+     * that history after a reform by a seventh.
+     */
+    static final String[] PRICES = {"minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice"};
+
+    /** The eight prices of a history, by the name seriesByName() gives them: the six, and each company's share price and value. */
+    static Map<String, List<? extends Number>> eight(HistorySave h) {
+        Map<String, List<? extends Number>> all = h.seriesByName(), found = new LinkedHashMap<>();
+        for (String name : PRICES) found.put(name, all.get(name));
+        for (Map.Entry<String, List<? extends Number>> e : all.entrySet()) {
+            if (e.getKey().startsWith("sharePrice:") || e.getKey().startsWith("shareValue:")) found.put(e.getKey(), e.getValue());
+        }
+        return found;
+    }
+
+    /** One of the eight in the written file: the field by its name, or a company's series inside its share field. */
+    static JsonElement inFile(JsonObject file, String name) {
+        int colon = name.indexOf(':');
+        if (colon < 0) return file.get(name);
+        JsonElement byCompany = file.get(name.substring(0, colon));
+        return byCompany == null || !byCompany.isJsonObject() ? null : byCompany.getAsJsonObject().get(name.substring(colon + 1));
+    }
+
+    /** The significant digits a number is written with: its mantissa's, from the first to the last that is not a zero. */
+    static int figures(String number) {
+        String digits = number.toLowerCase().split("e")[0].replace("-", "").replace(".", "");
+        int first = 0, last = digits.length();
+        while (first < last && digits.charAt(first) == '0') first++;
+        while (last > first && digits.charAt(last - 1) == '0') last--;
+        return last - first;
+    }
+
+    /** Two series the same length, with a null where the other has one and every other entry the same double to the bit. */
+    static boolean sameBits(List<? extends Number> a, List<? extends Number> b) {
+        if (a == null || b == null || a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            Number x = a.get(i), y = b.get(i);
+            if (x == null || y == null) {
+                if (x != y) return false;
+            } else if (Double.doubleToLongBits(x.doubleValue()) != Double.doubleToLongBits(y.doubleValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** How many of the eight in `a` are, to the bit, what `b` has under the same name. */
+    static int sameEight(HistorySave a, HistorySave b) {
+        int same = 0;
+        Map<String, List<? extends Number>> other = eight(b);
+        for (Map.Entry<String, List<? extends Number>> e : eight(a).entrySet()) {
+            if (sameBits(e.getValue(), other.get(e.getKey()))) same++;
+        }
+        return same;
+    }
+
+    /** The text the eight take when each is written by Gson as the plain array of its doubles, the form before CU2. */
+    static int plainBytes(HistorySave h) {
+        Gson gson = new Gson();
+        int bytes = 0;
+        for (List<? extends Number> series : eight(h).values()) bytes += gson.toJson(series).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        return bytes;
+    }
+
+    /** The text the eight take in the file as written: each one's element, as Gson writes it. */
+    static int writtenBytes(HistorySave h, JsonObject file) {
+        Gson gson = new Gson();
+        int bytes = 0;
+        for (String name : eight(h).keySet()) bytes += gson.toJson(inFile(file, name)).getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        return bytes;
+    }
+
+    static void todaysPrices(Path root, GameFiles files, Game city) throws Exception {
+        System.out.println("\n--- the eight prices write at today's prices ---");
+        HistorySave live = city.getHistorySave();
+        Map<String, List<? extends Number>> prices = eight(live);
+        int companies = (int) prices.keySet().stream().filter(n -> n.startsWith("sharePrice:")).count();
+
+        boolean valued = true, onGrid = true;
+        for (List<? extends Number> series : prices.values()) {
+            valued &= series != null && !series.isEmpty();
+            if (series != null) for (Number n : series) onGrid &= n == null || HistorySave.onTodaysGrid(n.doubleValue());
+        }
+        assertTrue("the played city has values in each of the eight series (" + prices.size() + " of them, " + companies + " companies listed)",
+                valued && companies > 0 && prices.size() == PRICES.length + 2 * companies);
+        assertTrue("...and every one of them is a figure roundSig recorded: it is on the grid of six figures at today's prices", onGrid);
+        Map<String, long[]> before = new LinkedHashMap<>();
+        for (Map.Entry<String, List<? extends Number>> e : prices.entrySet()) {
+            before.put(e.getKey(), e.getValue().stream().mapToLong(n -> n == null ? 0L : Double.doubleToLongBits(n.doubleValue())).toArray());
+        }
+
+        // (a) saved
+        assertTrue("the city saved to slot 2 of its scratch files", city.saveGame(2, "todays").ok);
+        Path written = files.historyFile(2);
+        JsonObject file = JsonParser.parseString(Files.readString(written)).getAsJsonObject();
+        int todays = 0, figuresMost = 0, entries = 0;
+        for (Map.Entry<String, List<? extends Number>> e : prices.entrySet()) {
+            JsonElement at = inFile(file, e.getKey());
+            if (at == null || !at.isJsonObject() || !at.getAsJsonObject().has("todays") || !at.getAsJsonObject().get("todays").isJsonArray()) continue;
+            com.google.gson.JsonArray array = at.getAsJsonObject().getAsJsonArray("todays");
+            if (array.size() != e.getValue().size()) continue;
+            todays++;
+            for (JsonElement n : array) {
+                if (n.isJsonNull()) continue;
+                entries++;
+                figuresMost = Math.max(figuresMost, figures(n.getAsString()));
+            }
+        }
+        assertTrue("each of the eight is written as {\"todays\":[...]} with an entry for every month (" + todays + " of " + prices.size() + ")", todays == prices.size());
+        assertTrue("...and a todays entry is written with at most " + HistorySave.SHARE_PRICE_DIGITS + " significant digits (" + entries + " entries, " + figuresMost + " at most)",
+                entries > 0 && figuresMost <= HistorySave.SHARE_PRICE_DIGITS);
+
+        // (b) reloaded the way the game reloads: the save and its history, from the slot
+        Game again = new Game(files);
+        quietly(() -> again.loadGameSave(2));
+        HistorySave reloaded = again.getHistorySave();
+        int reloadedSame = sameEight(live, reloaded);
+        assertTrue("reloaded, the axis and each of the eight series are the live ones, to the bit: nulls in place, the same length, every company's two ("
+                + reloadedSame + " of " + prices.size() + ")", reloaded.months() == live.months() && reloadedSame == prices.size());
+        boolean unmoved = true;
+        for (Map.Entry<String, List<? extends Number>> e : eight(live).entrySet()) {
+            long[] was = before.get(e.getKey());
+            unmoved &= was.length == e.getValue().size();
+            for (int i = 0; unmoved && i < was.length; i++) {
+                Number n = e.getValue().get(i);
+                unmoved &= (n == null ? 0L : Double.doubleToLongBits(n.doubleValue())) == was[i];
+            }
+        }
+        assertTrue("...and saving moved no bit of the series held in memory", unmoved);
+
+        // the kept read of a slot (LB4): the prices the measures read come off the file as primitives, to the bit
+        HistorySave slim = HistorySave.readKept(new StringReader(Files.readString(written)), SavedCities.KEPT);
+        int keptPrices = 0, keptSame = 0;
+        for (String name : PRICES) {
+            if (!SavedCities.KEPT.contains(name)) continue;
+            keptPrices++;
+            List<? extends Number> read = slim.seriesByName().get(name);
+            if (read instanceof HistorySave.PackedDoubles && sameBits(live.seriesByName().get(name), read)) keptSame++;
+        }
+        assertTrue("the slim read of the file holds the prices the measures keep as a PackedDoubles, to the bit (" + keptSame + " of " + keptPrices + ")",
+                keptPrices >= 2 && keptSame == keptPrices);
+
+        // (c) off the grid: the same history after a reform that scales every price by a seventh (a decimal shift can leave a short figure on the grid)
+        HistorySave moved = new HistorySave();
+        moved.restoreFrom(live);
+        moved.redenominate(1.0 / 7);
+        int off = 0;
+        for (Number n : moved.seriesByName().get("minimumWage")) if (n != null && !HistorySave.onTodaysGrid(n.doubleValue())) off++;
+        assertTrue("fixture: after a reform by a seventh " + off + " of the wage's " + moved.seriesByName().get("minimumWage").size() + " figures are off the grid", off > 0);
+        GameFiles reformed = new GameFiles(root.resolve("todays"), root.resolve("todays-no-legacy"));
+        assertTrue("the reformed history saved", moved.saveHistory(reformed, 10).ok);
+        String reformedText = Files.readString(reformed.historyFile(10));
+        JsonObject reformedFile = JsonParser.parseString(reformedText).getAsJsonObject();
+        assertTrue("the wage, off the grid, is written as a plain array, the one Gson writes of its list",
+                reformedFile.get("minimumWage").isJsonArray()
+                        && new Gson().toJson(reformedFile.get("minimumWage")).equals(new Gson().toJson(moved.seriesByName().get("minimumWage"))));
+        assertTrue("the ground's price, which a reform does not scale, is still {\"todays\":[...]}", reformedFile.get("landPrice").isJsonObject()
+                && reformedFile.get("landPrice").getAsJsonObject().has("todays"));
+        HistorySave movedBack = new HistorySave();
+        movedBack.restoreFrom(new Gson().fromJson(reformedText, HistorySave.class));
+        int movedSame = sameEight(moved, movedBack);
+        assertTrue("every one of the eight reads back after the reform as it was, to the bit (" + movedSame + " of " + prices.size() + ")", movedSame == prices.size());
+
+        // a file as every build before CU2 wrote it still reads
+        HistorySave plain = new Gson().fromJson("{\"month\":[1,2,3],\"minimumWage\":[0.5,null,0.123456789],\"sharePrice\":{\"Bank\":[1.5,2.5]},"
+                + "\"shareValue\":{\"Bank\":{\"todays\":[null,2]}}}", HistorySave.class);
+        assertTrue("a plain array as older builds wrote it reads as it is, a null where it was, and a todays series with a null in it reads as its figures times FACTOR",
+                plain.seriesByName().get("minimumWage").equals(java.util.Arrays.asList(0.5, null, 0.123456789))
+                        && plain.seriesByName().get(HistorySave.priceKey("Bank")).equals(List.of(1.5, 2.5))
+                        && plain.seriesByName().get(HistorySave.valueKey("Bank")).equals(java.util.Arrays.asList(null, 2 * PriceLevel.FACTOR)));
+
+        // (d) shorter
+        int shortBytes = writtenBytes(live, file), longBytes = plainBytes(live);
+        System.out.printf("  the eight series' text: %,d bytes at today's prices, %,d bytes as plain arrays of the same values (%.1f%% shorter); the history file %,d bytes%n",
+                shortBytes, longBytes, 100.0 * (longBytes - shortBytes) / longBytes, Files.size(written));
+        assertTrue("the eight series take fewer bytes written at today's prices (" + shortBytes + ") than as plain arrays of the same values (" + longBytes + ")", shortBytes < longBytes);
     }
 
     static void cleanUp(Path root) {

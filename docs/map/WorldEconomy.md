@@ -1,6 +1,6 @@
 # WorldEconomy.java - 550 lines · 27 methods · 11 constants · model
 
-`ham/citybuildersim/WorldEconomy.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldEconomy.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The rest of the world, which has its own inflation and did not use to: the in-game US dollar's price level, which is the US's own path where the
 > city has the nations' moneys (WN4, D29; THE US DOLLAR ON THE US'S PATH below) and a seeded walk around a mean where it has no world file.
@@ -35,7 +35,7 @@
 
 **Uses:** [Nations](Nations.md) (3), [WorldMoneys](WorldMoneys.md) (2), [World](World.md) (1)
 
-**Used by (14):** [CentralBankCheck](CentralBankCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SkipReportCheck](SkipReportCheck.md), [TradeScreen](TradeScreen.md)
+**Used by (15):** [CentralBankCheck](CentralBankCheck.md), [Founding](Founding.md), [FoundingScreen](FoundingScreen.md), [FundCheck](FundCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [NewGameCheck](NewGameCheck.md), [PolicyScreen](PolicyScreen.md), [RealDollarCheck](RealDollarCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SkipReportCheck](SkipReportCheck.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 

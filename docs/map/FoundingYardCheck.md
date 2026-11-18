@@ -1,6 +1,6 @@
 # FoundingYardCheck.java - 630 lines · 27 methods · 5 constants · harnesses
 
-`ham/citybuildersim/FoundingYardCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoundingYardCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The founding yard (PT1-M4, 2026-10-12): the works department's free 400
 > points a month are retired and every city founds with one Builders' Yard
@@ -143,7 +143,7 @@
 |---:|---:|---|---|
 | 356 | 76 | `static void town(Path root)` |  |
 | 434 | 6 | `static boolean villageStands(BuildingManager bm)` | Whether every building of the founding village stands (the depot line is the village's own, beside the founding yard). |
-| 448 | 6 | `static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Integer> sold)` | Whether every building of the founding village has been built: those standing and those the retirement rules (either, any seller; the city's own demolitions are not theirs) have sold since reach each line's count. |
+| 448 | 6 | `static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Long> sold)` | Whether every building of the founding village has been built: those standing and those the retirement rules (either, any seller; the city's own demolitions are not theirs) have sold since reach each line's count. |
 
 ### 5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD (lines 455-494)
 
@@ -155,7 +155,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 498 | 3 | `static int shops(BuildingManager bm)` | How many of the village's two small food shops stand. |
+| 498 | 3 | `static long shops(BuildingManager bm)` | How many of the village's two small food shops stand. |
 | 503 | 3 | **type** `record Village(Game game, int firstShop, int idleMonths, long withheldInIdle, long mostWithheld, long people)` | One hands-off village, played FIRST_SHOP_MONTHS months: when its first shop stood, and what its builders held back while idle. |
 | 504 | 1 | `double meanWithheld()` _(in FoundingYardCheck.Village)_ |  |
 | 513 | 31 | `static Village playHandsOff(Path root, String name, boolean depotInstead)` | A hands-off founded city (run(), no orders, Founding.defaults()), its yard retired and a Construction Depot placed in its stead before month 1 when depotInstead, played FIRST_SHOP_MONTHS months. |

@@ -746,11 +746,14 @@ public class DiscoveryCheck {
         check("the part without the open hearth runs the oxygen recipe from the month E1 was found here, and the Bessemer one before and without it, nor does an empty research move it",
                 Recipes.best(shop, false, e1, dear, r) == oxygen && Recipes.best(shop, false, e1 - 1, dear, r) == bessemer && Recipes.best(shop, false, e1, dear) == bessemer
                         && Recipes.best(shop, false, e1, dear, empty) == bessemer && Recipes.best(shop, false, e1, dear, null) == bessemer);
-        check("...so the open hearth's gain over the unfitted part is that against the oxygen recipe with the find, and against the Bessemer without it",
-                Recipes.recipeGain(shop, e1, dear, r) == Recipes.value(hearth, dear) - Recipes.value(oxygen, dear)
+        check("...so the found oxygen process supersedes both parts with no fitting gain, while history alone keeps the hearth-over-Bessemer gain",
+                Recipes.best(shop, true, e1, dear, r) == oxygen && Recipes.recipeGain(shop, e1, dear, r) == 0
                         && Recipes.recipeGain(shop, e1, dear) == Recipes.value(hearth, dear) - Recipes.value(bessemer, dear)
                         && Recipes.recipeGain(shop, e1, dear, empty) == Recipes.recipeGain(shop, e1, dear));
-        check("...and the oxygen recipe is never the fitted part's, found or not", !Recipes.canRun(shop, oxygen, true, e1, r) && Recipes.canRun(shop, oxygen, false, e1, r) && !Recipes.canRun(shop, oxygen, false, e1));
+        check("...and the fitted part can run oxygen from its own find, with both parts blocked before the find or without it",
+                Recipes.canRun(shop, oxygen, true, e1, r) && Recipes.canRun(shop, oxygen, false, e1, r)
+                        && !Recipes.canRun(shop, oxygen, true, e1 - 1, r) && !Recipes.canRun(shop, oxygen, false, e1 - 1, r)
+                        && !Recipes.canRun(shop, oxygen, true, e1) && !Recipes.canRun(shop, oxygen, false, e1));
         List<String> bestMoved = new ArrayList<>();
         for (BuildingsTemplate t : shipped) {
             if (!t.hasRecipeChoice()) continue;

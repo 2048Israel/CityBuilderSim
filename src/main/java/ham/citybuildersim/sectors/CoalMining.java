@@ -189,6 +189,20 @@ public final class CoalMining extends ExtractionSector {
         return Math.max(0, flow(all[0], all[1], all[2]).of(g) - flow().of(g));
     }
 
+    /**
+     * Worked-out mines in their raw nameplate tonnes, as unitsOf() counts them (RT2).
+     * The whole-deposit measure inherited thermal output after washing: a fully
+     * washed longwall counted only THERMAL_YIELD of the mine the rule sells.
+     * With ore left, the base already counts the mines over each worked-out type.
+     */
+    @Override
+    public double[] retirementDemandAndCapacity(Game game) {
+        if (game == null) return null;
+        if (game.getLandManager().getRemaining(Resource.COAL) > 0) return super.retirementDemandAndCapacity(game);
+        double capacity = buildings == null ? 0 : buildings.totalBySector(key(), this::unitsOf);
+        return capacity > 0 ? new double[] { 0, capacity } : null;
+    }
+
     /* ----- the ground ----- */
 
     /** One kind of dig its mines make: the type of field they stand on (null for ANY), the tonnes of field a tonne takes, whether its coal is raw, and their nameplate. */

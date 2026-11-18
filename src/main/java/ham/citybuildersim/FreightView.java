@@ -190,7 +190,7 @@ public final class FreightView {
     /** One kind of berth on the Ports page: the terminals standing, the tonnes against their room, the handling quote, the dues and the calls. */
     public record Berth(
             Ports.Cargo kind,
-            int berths,           // terminals standing
+            long berths,          // terminals standing
             double capacity,      // tonnes a month they handle
             double onSite,        // ...and those on site
             double tonnes,        // sea tonnes handled in the month billed
@@ -207,7 +207,7 @@ public final class FreightView {
     /** The Ports page: berths by kind, the month's handling billed and dues paid, the dial and the calls. */
     public record PortsPage(
             List<Berth> kinds,
-            int berths,           // terminals standing, all kinds
+            long berths,          // terminals standing, all kinds
             double capacity,      // their tonnes a month
             double tonnes,        // sea tonnes handled
             double handlingBilled,// the handling billed to the shippers (Freight's "Port handling billed")
@@ -294,11 +294,12 @@ public final class FreightView {
     static PortsPage portsPage(Game game, Freight fr, Ports ports, BuildingManager buildings) {
         PortDivision pd = fr.portDivision();
         double[] capacity = Ports.berths(buildings), onSite = Ports.berthsOnSite(buildings);
-        int[] counts = Ports.berthCounts(buildings);
+        long[] counts = Ports.berthCounts(buildings);
         double dial = fin(pd.dial());
         BoatSchedule boats = ports == null || game.getWorld() == null ? null : game.boats(List.of());
         List<Berth> kinds = new ArrayList<>();
-        int berths = 0, calls = 0;
+        long berths = 0;
+        int calls = 0;
         double cap = 0, tonnes = 0;
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             int k = kind.ordinal();
@@ -427,7 +428,7 @@ public final class FreightView {
     /** One BULK good a building makes or uses, tonnes a month at nameplate. */
     public record PlantLine(Good good, boolean made, double tonnes) { }
 
-    /** One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.TONNES_A_TRUCK_MONTH, DRIVERS_A_TRUCK), and a month of haulage at the quote. */
+    /** One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.tonnesATruck(), driverPostsATruck()), and a month of haulage at the quote. */
     public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage) { }
 
     /**
@@ -441,7 +442,8 @@ public final class FreightView {
 
     /** A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. */
     public static Plant plantOf(Game game, BuildingsTemplate t) {
-        double quote = fin(game.getSectors().freight().haulage().getQuote());
+        Haulage haulage = game.getSectors().freight().haulage();
+        double quote = fin(haulage.getQuote());
         double relief = InfrastructureManager.RAIL_ROAD_RELIEF;
         List<PlantLine> lines = new ArrayList<>();
         if (t != null) {
@@ -453,14 +455,14 @@ public final class FreightView {
             }
         }
         double tonnes = fin(Freight.bulkTonnesOf(t));
-        Plan truck = plan(tonnes, 0, quote);
-        Plan siding = plan(tonnes * (1 - relief), tonnes * relief, quote);
+        Plan truck = plan(haulage, tonnes, 0, quote);
+        Plan siding = plan(haulage, tonnes * (1 - relief), tonnes * relief, quote);
         return new Plant(t == null ? "" : t.getName(), lines, tonnes, quote, relief, truck, siding, truck.haulage() - siding.haulage());
     }
 
-    private static Plan plan(double truckTonnes, double sidingTonnes, double quote) {
-        double trucks = truckTonnes / Haulage.TONNES_A_TRUCK_MONTH;
-        return new Plan(truckTonnes, sidingTonnes, trucks, trucks * Haulage.DRIVERS_A_TRUCK, truckTonnes * quote);
+    private static Plan plan(Haulage haulage, double truckTonnes, double sidingTonnes, double quote) {
+        double trucks = truckTonnes / haulage.tonnesATruck();
+        return new Plan(truckTonnes, sidingTonnes, trucks, trucks * haulage.driverPostsATruck(), truckTonnes * quote);
     }
 
     /** A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. */

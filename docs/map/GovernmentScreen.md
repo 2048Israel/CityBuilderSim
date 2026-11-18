@@ -1,6 +1,6 @@
-# GovernmentScreen.java - 2,785 lines · 120 methods · 42 constants · interface
+# GovernmentScreen.java - 2,793 lines · 120 methods · 42 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The government tab: where the city's money came from and went, the road
 > from what it EARNED through the budget's SURPLUS to what the cash BANKED,
@@ -25,7 +25,7 @@
 > behind an (i). The rail opens showGovernmentMenu(); open() is every other
 > door in.
 
-**Uses:** [Palette](Palette.md) (222), [Kept](Kept.md) (144), [Icons](Icons.md) (56), [Money](Money.md) (37), [NationalAccounts](NationalAccounts.md) (33), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [GovernmentView](GovernmentView.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [TreasuryFund](TreasuryFund.md) (3), [DebtManager](DebtManager.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1), [PolicyPreview](PolicyPreview.md) (1), [CityCalendar](CityCalendar.md) (1)... and 12 more
+**Uses:** [Palette](Palette.md) (222), [Kept](Kept.md) (144), [Icons](Icons.md) (56), [Money](Money.md) (37), [NationalAccounts](NationalAccounts.md) (33), [CityNeeds](CityNeeds.md) (24), [CareType](CareType.md) (16), [EconomyManager](EconomyManager.md) (12), [HistoryScreen](HistoryScreen.md) (8), [HouseholdAccounts](HouseholdAccounts.md) (7), [EducationType](EducationType.md) (6), [TimeChart](TimeChart.md) (5), [HistorySave](HistorySave.md) (4), [BuildScreen](BuildScreen.md) (4), [GovernmentView](GovernmentView.md) (4), [Pieces](Pieces.md) (4), [FinancesScreen](FinancesScreen.md) (3), [ServicesScreen](ServicesScreen.md) (3), [TreasuryJournal](TreasuryJournal.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (3), [TreasuryFund](TreasuryFund.md) (3), [DebtManager](DebtManager.md) (3), [Formats](Formats.md) (3), [UserInterface](UserInterface.md) (2), [PolicyScreen](PolicyScreen.md) (2), [CentralBank](CentralBank.md) (2), [TreasuryLine](TreasuryLine.md) (2), [BuildingManager](BuildingManager.md) (2), [SummaryScreen](SummaryScreen.md) (1)... and 14 more
 
 **Used by (3):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 
@@ -46,13 +46,13 @@
 | 1386 | · the central bank |
 | 1442 | · against the economy |
 | 1506 | THE TWO LISTS (0.7.31: ranked bars). |
-| 1761 | · who pays what |
-| 1965 | · what it spends |
-| 2005 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
-| 2144 | · · and the money that is not on this statement |
-| 2226 | REVENUE AND SPENDING (0.7.31) |
-| 2291 | · the three cards |
-| 2558 | THE OUTPUT (0.7.31) |
+| 1765 | · who pays what |
+| 1969 | · what it spends |
+| 2009 | WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON |
+| 2148 | · · and the money that is not on this statement |
+| 2230 | REVENUE AND SPENDING (0.7.31) |
+| 2295 | · the three cards |
+| 2562 | THE OUTPUT (0.7.31) |
 
 ## Constants
 
@@ -82,24 +82,24 @@
 | 1398 | `GovernmentScreen.ARREARS_INFO` | `"What the ceiling cut: owed, with no interest on it, and paid down out of the...` | P6: the arrears. |
 | 1445 | `GovernmentScreen.ECONOMY_INFO` | `"A year of revenue against a year of output is the only honest way to " + "co...` | P8: why a month against a year. |
 | 1452 | `GovernmentScreen.NO_YEAR` | `"There is no output recorded yet, so nothing here can be put in " + "proporti...` | P7: no month of output yet. |
-| 1632 | `GovernmentScreen.LIST_COLUMNS` | `{ 100, 60, 70 }` | The column heads' widths: a month, of the budget, of GDP. |
-| 1635 | `GovernmentScreen.LIST_DOOR` | `96` | ...and the door's at the end of a row: "set it ›", "Land office ›". |
-| 1910 | `GovernmentScreen.FUND_INFO` | `String.format("The withdrawal dial's share of everything the city's fund hold...` | P20: the fund's transfer. |
-| 2294 | `GovernmentScreen.PRINCIPAL_INFO` | `"Not on the list above, and deliberately: repaying principal is not " + "spen...` | P27: principal is not spending. |
-| 2299 | `GovernmentScreen.TERM_INFO` | `"A term loan pays its coupon every month and the whole face at the end, so th...` | P28: term loans. |
-| 2304 | `GovernmentScreen.SERIAL_INFO` | `"Serial bonds amortise - a slice of principal falls due every anniversary, so...` | P29: serial bonds. |
-| 2308 | `GovernmentScreen.FLOATING_INFO` | `"A floating-rate note pays the policy rate of the month plus a margin fixed a...` | Floating-rate notes (CD5, spec-city-debt.md 2.4). |
-| 2314 | `GovernmentScreen.LINKED_INFO` | `"An inflation-linked bond pays a real coupon on a principal that follows the ...` | Inflation-linked bonds (CD5, spec-city-debt.md 2.5). |
-| 2320 | `GovernmentScreen.NOTES_INFO` | `"A note pays no coupon.The lender's return is the discount, taken out of the ...` | P31: notes. |
-| 2326 | `GovernmentScreen.COUPON_INFO` | `"The coupons on the budget are struck from what the city actually paid over a...` | P30: the coupon and the budget disagreeing. |
-| 2480 | `GovernmentScreen.BOTH_DEFICIT_INFO` | `"Both run at a deficit on purpose.What the deficit buys is on the " + "Servic...` | P32, as it is true: both cost the city more than they charge. |
-| 2484 | `GovernmentScreen.NOT_BOTH_INFO` | `"Care and the schools are meant to run at a deficit: what it buys is on the "...` | ...and when one does not (B16: fees with no bill). |
-| 2527 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " ...` | P33: pay-as-you-go. |
-| 2613 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + ...` | The layers' caption's (i). |
-| 2691 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts "...` | P34: stock built up. |
-| 2701 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "ca...` | P35, rewritten (B5): what G is, as the model counts it. |
-| 2740 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city...` | P37, on the strip's month on month. |
-| 2745 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " ...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
+| 1636 | `GovernmentScreen.LIST_COLUMNS` | `{ 100, 60, 70 }` | The column heads' widths: a month, of the budget, of GDP. |
+| 1639 | `GovernmentScreen.LIST_DOOR` | `96` | ...and the door's at the end of a row: "set it ›", "Land office ›". |
+| 1914 | `GovernmentScreen.FUND_INFO` | `String.format("The withdrawal dial's share of everything the city's fund hold...` | P20: the fund's transfer. |
+| 2298 | `GovernmentScreen.PRINCIPAL_INFO` | `"Not on the list above, and deliberately: repaying principal is not " + "spen...` | P27: principal is not spending. |
+| 2303 | `GovernmentScreen.TERM_INFO` | `"A term loan pays its coupon every month and the whole face at the end, so th...` | P28: term loans. |
+| 2308 | `GovernmentScreen.SERIAL_INFO` | `"Serial bonds amortise - a slice of principal falls due every anniversary, so...` | P29: serial bonds. |
+| 2312 | `GovernmentScreen.FLOATING_INFO` | `"A floating-rate note pays the policy rate of the month plus a margin fixed a...` | Floating-rate notes (CD5, spec-city-debt.md 2.4). |
+| 2318 | `GovernmentScreen.LINKED_INFO` | `"An inflation-linked bond pays a real coupon on a principal that follows the ...` | Inflation-linked bonds (CD5, spec-city-debt.md 2.5). |
+| 2324 | `GovernmentScreen.NOTES_INFO` | `"A note pays no coupon.The lender's return is the discount, taken out of the ...` | P31: notes. |
+| 2330 | `GovernmentScreen.COUPON_INFO` | `"The coupons on the budget are struck from what the city actually paid over a...` | P30: the coupon and the budget disagreeing. |
+| 2484 | `GovernmentScreen.BOTH_DEFICIT_INFO` | `"Both run at a deficit on purpose.What the deficit buys is on the " + "Servic...` | P32, as it is true: both cost the city more than they charge. |
+| 2488 | `GovernmentScreen.NOT_BOTH_INFO` | `"Care and the schools are meant to run at a deficit: what it buys is on the "...` | ...and when one does not (B16: fees with no bill). |
+| 2531 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " ...` | P33: pay-as-you-go. |
+| 2617 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + ...` | The layers' caption's (i). |
+| 2695 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts "...` | P34: stock built up. |
+| 2709 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "ca...` | P35, rewritten (B5): what G is, as the model counts it. |
+| 2748 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city...` | P37, on the strip's month on month. |
+| 2753 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " ...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
 
 ## Fields (state)
 
@@ -117,7 +117,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 2741 | **type** `final class GovernmentScreen` | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, who pays every line and where each is decided, what the city owes and h... |
+| 45 | 2749 | **type** `final class GovernmentScreen` | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, who pays every line and where each is decided, what the city owes and h... |
 | 50 | 1 | `GovernmentScreen(UserInterface ui)` |  |
 | 56 | 3 | `void forget()` | Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). |
 
@@ -252,89 +252,89 @@
 |---:|---:|---|---|
 | 1465 | 40 | `VBox economyCard(NationalAccounts na)` | AGAINST THE ECONOMY: what was taken in, paid out and kept or short - the surplus or deficit - and the care and schools staff's wages, as bars on one scale of per cent of a year's GDP - a month and a year in their tool... |
 
-### THE TWO LISTS (0.7.31: ranked bars). (lines 1506-1760)
+### THE TWO LISTS (0.7.31: ranked bars). (lines 1506-1764)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1521 | 7 | `static List<String> revenueNames()` |  |
 | 1529 | 37 | `List<Double> revenueAmounts(NationalAccounts na)` |  |
-| 1581 | 10 | `static List<String> spendingNames()` | REPAIRS LEFT THIS LIST IN 0.7.31, AND CAME BACK IN 0.7.102. |
-| 1592 | 38 | `List<Double> spendingAmounts(NationalAccounts na)` |  |
-| 1638 | 4 | `String scaledYearInfo(NationalAccounts na)` | P19, on the "of GDP" head while the year is scaled up. |
-| 1650 | 68 | `void listPage(VBox page, String pageName, String verb, List<String> names, List<Double> amounts, double total, NationalAccounts...` | A list page: its head line ("$162.5M taken in · 34.4% of annual GDP · the month"), the column heads, a ranked bar a line - every line with a door, the ones that open with their payers - the lines at nothing folded int... |
-| 1720 | 40 | `HBox listHead(NationalAccounts na)` | The column heads over a list, in the rows' own columns; the "of GDP" head carries P19 while the year is scaled. |
+| 1581 | 12 | `static List<String> spendingNames()` | REPAIRS LEFT THIS LIST IN 0.7.31, AND CAME BACK IN 0.7.102. |
+| 1594 | 40 | `List<Double> spendingAmounts(NationalAccounts na)` |  |
+| 1642 | 4 | `String scaledYearInfo(NationalAccounts na)` | P19, on the "of GDP" head while the year is scaled up. |
+| 1654 | 68 | `void listPage(VBox page, String pageName, String verb, List<String> names, List<Double> amounts, double total, NationalAccounts...` | A list page: its head line ("$162.5M taken in · 34.4% of annual GDP · the month"), the column heads, a ranked bar a line - every line with a door, the ones that open with their payers - the lines at nothing folded int... |
+| 1724 | 40 | `HBox listHead(NationalAccounts na)` | The column heads over a list, in the rows' own columns; the "of GDP" head carries P19 while the year is scaled. |
 
-### who pays what (lines 1761-1964)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1764 | 1 | **type** `record Payer(String who, double amount, String rate)` | One payer inside an opened line. |
-| 1771 | 17 | `VBox payers(String caption, String note, List<Payer> who, double total, String colour)` | A line opened (0.7.31): its payers as one bar - the row's colour at two strengths, alternating - then a payer row each, and the old note behind the (i) on the panel's first line. |
-| 1790 | 4 | `String colourOf(String line, List<String> names, List<Double> amounts)` | A line's colour as the list draws it: its ring slice's, or the grey rest. |
-| 1796 | 17 | `VBox businessTaxDetail(double total, String colour)` | Business tax, by the companies that pay it - every sector, and the bank. |
-| 1815 | 13 | `VBox salesTaxDetail(double total, String colour)` | Sales tax, by the sector that remitted it. |
-| 1830 | 13 | `VBox wageTaxDetail(double total, String colour)` | Wage tax, by the pay tier that earned the wages. |
-| 1845 | 11 | `VBox contributionsDetail(double total, String colour)` | Pension contributions, by the tier that paid them. |
-| 1858 | 14 | `VBox propertyTaxDetail(double total, String colour)` | Property tax, by the sector it is assessed on. |
-| 1874 | 17 | `VBox healthFeeDetail(double total, String colour)` | Healthcare fees, by the kind of care that charged them - and the burials and cremations, which charge with no care bill of their own. |
-| 1893 | 15 | `VBox schoolFeeDetail(double total, String colour)` | School fees, by the course. |
-| 1917 | 15 | `VBox fundTransferDetail()` | THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. |
-| 1934 | 7 | `static String insuranceInfo()` | P21: the mortgage insurance. |
-| 1950 | 14 | `VBox mortgageInsuranceDetail()` | THE CITY'S MORTGAGE INSURANCE (0.7.11), opened from either of its two lines: the premiums taken this month and what they were on, what the insurance paid the bank, and the book over the city's life - does the city mak... |
-
-### what it spends (lines 1965-2004)
+### who pays what (lines 1765-1968)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1968 | 17 | `VBox healthSpendDetail(double total, String colour)` | Healthcare spending, by the kind of care it is spent on. |
-| 1987 | 17 | `VBox educationSpendDetail(double total, String colour)` | Education spending, by the school it is spent on. |
+| 1768 | 1 | **type** `record Payer(String who, double amount, String rate)` | One payer inside an opened line. |
+| 1775 | 17 | `VBox payers(String caption, String note, List<Payer> who, double total, String colour)` | A line opened (0.7.31): its payers as one bar - the row's colour at two strengths, alternating - then a payer row each, and the old note behind the (i) on the panel's first line. |
+| 1794 | 4 | `String colourOf(String line, List<String> names, List<Double> amounts)` | A line's colour as the list draws it: its ring slice's, or the grey rest. |
+| 1800 | 17 | `VBox businessTaxDetail(double total, String colour)` | Business tax, by the companies that pay it - every sector, and the bank. |
+| 1819 | 13 | `VBox salesTaxDetail(double total, String colour)` | Sales tax, by the sector that remitted it. |
+| 1834 | 13 | `VBox wageTaxDetail(double total, String colour)` | Wage tax, by the pay tier that earned the wages. |
+| 1849 | 11 | `VBox contributionsDetail(double total, String colour)` | Pension contributions, by the tier that paid them. |
+| 1862 | 14 | `VBox propertyTaxDetail(double total, String colour)` | Property tax, by the sector it is assessed on. |
+| 1878 | 17 | `VBox healthFeeDetail(double total, String colour)` | Healthcare fees, by the kind of care that charged them - and the burials and cremations, which charge with no care bill of their own. |
+| 1897 | 15 | `VBox schoolFeeDetail(double total, String colour)` | School fees, by the course. |
+| 1921 | 15 | `VBox fundTransferDetail()` | THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. |
+| 1938 | 7 | `static String insuranceInfo()` | P21: the mortgage insurance. |
+| 1954 | 14 | `VBox mortgageInsuranceDetail()` | THE CITY'S MORTGAGE INSURANCE (0.7.11), opened from either of its two lines: the premiums taken this month and what they were on, what the insurance paid the bank, and the book over the city's life - does the city mak... |
 
-### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 2005-2225)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2046 | 3 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note, double discount, int...` | One kind of paper, totalled: its pieces, principal (face), the coupons it pays next month in cash (a linker's uplift not among them: DebtManager.getUpliftDueNextMonth()), the discounts it was sold at, and the soonest ... |
-| 2050 | 31 | `java.util.List<PaperKind> paperKinds()` |  |
-| 2082 | 3 | `static PaperKind kind(String name, double[] t, String note)` |  |
-| 2087 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
-| 2095 | 13 | `String interestInfo(double repaid)` | P24: interest is the only part of debt service that is an expense. |
-| 2115 | 37 | `VBox debtServiceDetail(double total, String colour)` | The interest line, opened into the paper it is charged on. |
-| 2159 | 15 | `VBox foodAssistanceDetail(double total, String colour)` | Food assistance, by who it was paid to (0.7.45): each kind of household's vouchers at the last sale (HouseholdBalance.foodAssistanceByRow()), which add to the treasury's line - not the households' own books, which car... |
-| 2179 | 8 | `VBox researchSpendDetail(double total, String colour)` | The research line, opened (R3b): the bill the accounts book is the pay of the posts the grants bought (already in the households' wages, which count a post as the job it is) and the laboratories' other costs (EconomyM... |
-| 2189 | 11 | `VBox pensionDetail(double total, String colour)` | Pensions, and who they go to. |
-| 2209 | 16 | `VBox landSpendDetail(double total, String colour)` | The land line, opened (0.7.6): the land office is paid in US dollars, and the budget carries it at what it cost in local money on the day - paid by converting cash, or out of the vault with no cash moving at all (the ... |
-
-### REVENUE AND SPENDING (0.7.31) (lines 2226-2290)
+### what it spends (lines 1969-2008)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2230 | 23 | `void revenuePage(VBox page, EconomyManager em, NationalAccounts na)` |  |
-| 2254 | 36 | `void spendingPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all)` |  |
+| 1972 | 17 | `VBox healthSpendDetail(double total, String colour)` | Healthcare spending, by the kind of care it is spent on. |
+| 1991 | 17 | `VBox educationSpendDetail(double total, String colour)` | Education spending, by the school it is spent on. |
 
-### the three cards (lines 2291-2557)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2341 | 51 | `VBox debtCard(NationalAccounts na, double spending)` | THE DEBT: the principal by paper as one bar in the maturity ladder's three steps, what is owed and what it costs a month (since CD3 the interest on the city's paper: the coupons and the discount wearing off), a line a... |
-| 2394 | 42 | `List<String[]> debtLines(NationalAccounts na)` | THE DEBT card's lines, {words, (i)} each, the first the total with no (i) (pure: the probe reads them). |
-| 2442 | 36 | `Node debtGrid(double spending)` | S6's grid: pieces, owed (face), carried (CD3), interest a month (the effective interest), of spending - plain figures. |
-| 2497 | 11 | `VBox servicesCard(EconomyManager em)` | THE SERVICES THAT CHARGE: care and the schools, each a bar of its fees against its bill and one line - what the fees cover and the net cost, or what they ran over by, or that there was no bill. |
-| 2510 | 6 | `static String serviceWords(String name, double bill, double fees, double net)` | One service's words: what its fees cover and its net cost, what they ran over by, or that there was no bill (B3, B16). |
-| 2518 | 7 | `static VBox serviceLine(String name, double bill, double fees, double net)` | One service: its fees against its bill as a bar, and its words. |
-| 2539 | 18 | `VBox pensionsCard(EconomyManager em, List<CityNeeds.Need> all)` | PENSIONS: contributions against what the pensions cost as a bar, the seniors and what each is paid, and what came out of general revenue - with a chip in NEEDS YOU's PENSIONS colour only while NEEDS YOU lists it (B11:... |
-
-### THE OUTPUT (0.7.31) (lines 2558-2785)
+### WHAT THE DEBT COSTS, BY THE PAPER IT IS OWED ON (lines 2009-2229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2569 | 42 | `void outputPage(VBox page, NationalAccounts na)` |  |
-| 2619 | 42 | `HBox outputHero(NationalAccounts na)` | WHAT THE CITY MAKES: History's layers chart at the left, this month's GDP, the year, a head and the real growth at the right. |
-| 2663 | 6 | `static String realGrowthWords(int recorded, double grew)` | The header GDP tile's real growth, in its words (UserInterface's tile), without its verdict colour - that is the tile's. |
-| 2671 | 12 | `static VBox partCard(String name, String colour, String amount, String info, Node...lines)` | One of the four parts' cards: its name, its figure, and its lines. |
-| 2684 | 5 | `VBox consumptionCard(NationalAccounts na)` |  |
-| 2694 | 5 | `VBox investmentCard(NationalAccounts na)` |  |
-| 2705 | 4 | `VBox governmentCard(NationalAccounts na)` |  |
-| 2718 | 20 | `VBox tradeCard(NationalAccounts na)` | NET EXPORTS: what was sold abroad against what was bought, as two bars on one scale - exports in the business violet, imports in its darker step in three parts - with the parts named for what they are (B5: "Steel expo... |
-| 2750 | 26 | `HBox growthStrip(NationalAccounts na)` | The growth strip: five readings, no verdict tone (B4: MoM and YoY were coloured on thresholds of the screen's own). |
-| 2778 | 7 | `static void withInfo(VBox cell, String info)` | A limit cell's note with an (i) after it. |
+| 2050 | 3 | **type** `record PaperKind(String name, int count, double principal, double coupon, String note, double discount, int...` | One kind of paper, totalled: its pieces, principal (face), the coupons it pays next month in cash (a linker's uplift not among them: DebtManager.getUpliftDueNextMonth()), the discounts it was sold at, and the soonest ... |
+| 2054 | 31 | `java.util.List<PaperKind> paperKinds()` |  |
+| 2086 | 3 | `static PaperKind kind(String name, double[] t, String note)` |  |
+| 2091 | 6 | `PaperKind paperKind(String name)` | One kind's row, or an empty one. |
+| 2099 | 13 | `String interestInfo(double repaid)` | P24: interest is the only part of debt service that is an expense. |
+| 2119 | 37 | `VBox debtServiceDetail(double total, String colour)` | The interest line, opened into the paper it is charged on. |
+| 2163 | 15 | `VBox foodAssistanceDetail(double total, String colour)` | Food assistance, by who it was paid to (0.7.45): each kind of household's vouchers at the last sale (HouseholdBalance.foodAssistanceByRow()), which add to the treasury's line - not the households' own books, which car... |
+| 2183 | 8 | `VBox researchSpendDetail(double total, String colour)` | The research line, opened (R3b): the bill the accounts book is the pay of the posts the grants bought (already in the households' wages, which count a post as the job it is) and the laboratories' other costs (EconomyM... |
+| 2193 | 11 | `VBox pensionDetail(double total, String colour)` | Pensions, and who they go to. |
+| 2213 | 16 | `VBox landSpendDetail(double total, String colour)` | The land line, opened (0.7.6): the land office is paid in US dollars, and the budget carries it at what it cost in local money on the day - paid by converting cash, or out of the vault with no cash moving at all (the ... |
+
+### REVENUE AND SPENDING (0.7.31) (lines 2230-2294)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2234 | 23 | `void revenuePage(VBox page, EconomyManager em, NationalAccounts na)` |  |
+| 2258 | 36 | `void spendingPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all)` |  |
+
+### the three cards (lines 2295-2561)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2345 | 51 | `VBox debtCard(NationalAccounts na, double spending)` | THE DEBT: the principal by paper as one bar in the maturity ladder's three steps, what is owed and what it costs a month (since CD3 the interest on the city's paper: the coupons and the discount wearing off), a line a... |
+| 2398 | 42 | `List<String[]> debtLines(NationalAccounts na)` | THE DEBT card's lines, {words, (i)} each, the first the total with no (i) (pure: the probe reads them). |
+| 2446 | 36 | `Node debtGrid(double spending)` | S6's grid: pieces, owed (face), carried (CD3), interest a month (the effective interest), of spending - plain figures. |
+| 2501 | 11 | `VBox servicesCard(EconomyManager em)` | THE SERVICES THAT CHARGE: care and the schools, each a bar of its fees against its bill and one line - what the fees cover and the net cost, or what they ran over by, or that there was no bill. |
+| 2514 | 6 | `static String serviceWords(String name, double bill, double fees, double net)` | One service's words: what its fees cover and its net cost, what they ran over by, or that there was no bill (B3, B16). |
+| 2522 | 7 | `static VBox serviceLine(String name, double bill, double fees, double net)` | One service: its fees against its bill as a bar, and its words. |
+| 2543 | 18 | `VBox pensionsCard(EconomyManager em, List<CityNeeds.Need> all)` | PENSIONS: contributions against what the pensions cost as a bar, the seniors and what each is paid, and what came out of general revenue - with a chip in NEEDS YOU's PENSIONS colour only while NEEDS YOU lists it (B11:... |
+
+### THE OUTPUT (0.7.31) (lines 2562-2793)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2573 | 42 | `void outputPage(VBox page, NationalAccounts na)` |  |
+| 2623 | 42 | `HBox outputHero(NationalAccounts na)` | WHAT THE CITY MAKES: History's layers chart at the left, this month's GDP, the year, a head and the real growth at the right. |
+| 2667 | 6 | `static String realGrowthWords(int recorded, double grew)` | The header GDP tile's real growth, in its words (UserInterface's tile), without its verdict colour - that is the tile's. |
+| 2675 | 12 | `static VBox partCard(String name, String colour, String amount, String info, Node...lines)` | One of the four parts' cards: its name, its figure, and its lines. |
+| 2688 | 5 | `VBox consumptionCard(NationalAccounts na)` |  |
+| 2698 | 9 | `VBox investmentCard(NationalAccounts na)` |  |
+| 2713 | 4 | `VBox governmentCard(NationalAccounts na)` |  |
+| 2726 | 20 | `VBox tradeCard(NationalAccounts na)` | NET EXPORTS: what was sold abroad against what was bought, as two bars on one scale - exports in the business violet, imports in its darker step in three parts - with the parts named for what they are (B5: "Steel expo... |
+| 2758 | 26 | `HBox growthStrip(NationalAccounts na)` | The growth strip: five readings, no verdict tone (B4: MoM and YoY were coloured on thresholds of the screen's own). |
+| 2786 | 7 | `static void withInfo(VBox cell, String info)` | A limit cell's note with an (i) after it. |
 

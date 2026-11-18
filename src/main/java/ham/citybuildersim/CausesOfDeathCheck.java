@@ -20,9 +20,10 @@ import java.util.Map;
  *   8. booking the dead, the TB sick and the save
  *   9. a real city's month books the causes (slice 2: the cohorts' fourth competing risk)
  *  10. the 1918 influenza in a real city: its dead, its sick on Health's rate, its notice
- *      (a) a reload mid-influenza, played on: January to March 1919 beside the unbroken city, to the bit; on the playtest's founding,
- *          for the section's stocked city drifts after any reload (queued as SR1)
+ *      (a) reloads played on, to the bit: the bulk-stocked city at months 3, 12 and 60, and January to March 1919
+ *          on both that city and the playtest's founding (SR1)
  *      (b) the fixtures' hold kept across a load: a held twin loaded from September 1918 stays held to March 1920
+ *      (c) September 1918 twins with only Health's influenza held off: no delayed ring deaths beyond their economic drift (R0h)
  *
  * The 1900 city of sections 2, 4, 5 and 6 is Canada's 1901 pyramid at 100,000
  * people with no childcare (the swing at its top), general care for everybody,
@@ -166,7 +167,14 @@ public class CausesOfDeathCheck {
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
     }
 
-    /** The real city of sections 9 and 10: founded in 1900, stocked, and played a month at a time. */
+    /**
+     * The real city of sections 9 and 10: founded in 1900, stocked, and played a month at a time.
+     * stock() places its complete bulk stacks without allocating their ground. The old
+     * loader replaced that live land ledger with the stacks' footprint, changing land
+     * prices and then cash. AW2 already saves the live allocation; SR1 keeps this exact
+     * fixture and guards its reloads beside the playtest founding's. Player placements,
+     * including the founding bank and yard, allocate their ground before a save.
+     */
     static Game founded() {
         Game g = new Game(GameFiles.scratch("causesofdeathcheck"));
         quietly(() -> {
@@ -760,6 +768,7 @@ public class CausesOfDeathCheck {
 
         reloadedMidInfluenzaAndPlayedOn();
         theHoldKeptAcrossALoad(g, fluRate);
+        theInfluenzaCountedOnce(g);
     }
 
     /**
@@ -800,6 +809,7 @@ public class CausesOfDeathCheck {
         if (Double.compare(sa, sb) != 0) return "Health's sick rate: " + sa + " against " + sb;
         double ia = a.getHealth().getInfluenzaRate(), ib = b.getHealth().getInfluenzaRate();
         if (Double.compare(ia, ib) != 0) return "Health's influenza rate: " + ia + " against " + ib;
+        if (!Arrays.equals(a.getSickness().getAcuteShares(), b.getSickness().getAcuteShares())) return "Sickness's acute shares";
         double[] ra = a.getSickness().getState(), rb = b.getSickness().getState();
         if (!Arrays.equals(ra, rb)) {
             for (int i = 0; i < Math.min(ra.length, rb.length); i++) {
@@ -810,21 +820,55 @@ public class CausesOfDeathCheck {
         return null;
     }
 
-    /**
-     * (a) A reload mid-influenza, played on. The city is the playtest's founding (LongPlaytest.founding()), played a month at a
-     * time to December 1918, saved to a slot of its own folder and loaded into a second Game; both then play January to March
-     * 1919 and after each month they are the same city to the bit, so a load mid-influenza loses nothing the next month reads.
-     *
-     * Why on this city and not the section's: the section's city is stocked complete in bulk through stock() (addStack(..., true)),
-     * and a city stocked that way reloads with its cash drifting from month 3, with or without the influenza and its hold (R0g's
-     * probe; R0b's notes saw it too). That is a fault of that set-up, queued as SR1 by R0g's notes, not the influenza's. A bare
-     * city, one with only the cash set, and the playtest's founding all reload to the bit.
-     */
+    /** (a) Keep the original complete bulk stock, and the playtest founding, beside their reloads (SR1). */
     static void reloadedMidInfluenzaAndPlayedOn() {
-        System.out.println("\n--- a reload mid-influenza, played on to March 1919 ---");
-        long started = System.nanoTime();
+        stockedReloadsPlayedOn();
+        reloadedMidInfluenzaAndPlayedOn(founded(), "the bulk-stocked city");
         Game city = new Game(GameFiles.scratch("causesofdeathcheck-reload"), LongPlaytest.founding());
         quietly(city::run);
+        reloadedMidInfluenzaAndPlayedOn(city, "the playtest's city");
+    }
+
+    /** R0g's earliest three failing saves, played on without changing founded()'s premise. */
+    static void stockedReloadsPlayedOn() {
+        System.out.println("\n--- complete bulk stock: early reloads played on (SR1) ---");
+        Game city = founded();
+        for (int savedMonth : new int[]{3, 12, 60}) {
+            boolean played = true;
+            while (city.getMonth() < savedMonth) {
+                int[] ran = new int[1];
+                quietly(() -> ran[0] = city.simulateMonths(1));
+                if (ran[0] != 1) { played = false; break; }
+            }
+            assertTrue("fixture: month " + savedMonth + " still carries complete bulk stacks outside the live land allocation",
+                    city.getBuildingManager().getTotalLandFootprint() > city.getLandManager().getAllocatedSqFt());
+            Game back = new Game(city.getGameFiles());
+            quietly(() -> { city.saveGame(1, "bulk stock"); back.loadGameSave(1); });
+            assertTrue("fixture: the bulk-stocked city and its reload reached month " + savedMonth,
+                    played && city.getMonth() == savedMonth && back.getMonth() == savedMonth);
+            check("month " + savedMonth + " keeps the live land allocation instead of replacing it with the stacks' footprint",
+                    back.getLandManager().getAllocatedSqFt(), city.getLandManager().getAllocatedSqFt(), 0);
+            String loadedDifference = firstDifference(city, back);
+            assertTrue("month " + savedMonth + " keeps the bulk-stocked city to the bit immediately on load",
+                    loadedDifference == null);
+            if (loadedDifference != null) System.out.println("     first difference: " + loadedDifference);
+            int[] ran = new int[2];
+            quietly(() -> { ran[0] = city.simulateMonths(1); ran[1] = back.simulateMonths(1); });
+            assertTrue("fixture: both bulk-stocked twins played the month after " + savedMonth,
+                    ran[0] == 1 && ran[1] == 1 && city.getMonth() == savedMonth + 1 && back.getMonth() == savedMonth + 1);
+            String difference = firstDifference(city, back);
+            assertTrue("month " + savedMonth + " played on keeps cash and every audit pool, fingerprint, cohorts, causes, sick and rings to the bit",
+                    difference == null);
+            if (difference != null) System.out.println("     first difference: " + difference);
+            System.out.printf("   reload at m%d: next month's cash difference %.17g; all audit pools equal: %s%n",
+                    savedMonth, back.getCash() - city.getCash(), Arrays.equals(MoneyAudit.pools(city), MoneyAudit.pools(back)));
+        }
+    }
+
+    /** Both founding fixtures play to December 1918, reload, then match through March 1919, to the bit. */
+    static void reloadedMidInfluenzaAndPlayedOn(Game city, String fixture) {
+        System.out.println("\n--- a reload mid-influenza, played on to March 1919: " + fixture + " ---");
+        long started = System.nanoTime();
         int december = CausesOfDeath.INFLUENZA_FIRST + 2;
         boolean playedUp = true;
         while (city.getMonth() < december) {
@@ -841,10 +885,12 @@ public class CausesOfDeathCheck {
             city.saveGame(1, "influenza");
             back.loadGameSave(1);
         });
-        assertTrue("fixture: the playtest's city played a month at a time to December 1918", playedUp && city.getMonth() == december);
+        assertTrue("fixture: " + fixture + " played a month at a time to December 1918", playedUp && city.getMonth() == december);
         assertTrue("fixture: it had influenza sick in December 1918, on Health's rate", decemberSick > 0);
         assertTrue("fixture: the reload is at the same month, and has the same people", back.getMonth() == december
                 && back.getPopulationManager().getPopulation() == people);
+        check("the December reload keeps " + fixture + "'s live land allocation",
+                back.getLandManager().getAllocatedSqFt(), city.getLandManager().getAllocatedSqFt(), 0);
         System.out.printf("   in December 1918 the city had %d people, %.1f influenza dead that month and %.1f%% of the workforce off sick with it%n",
                 people, decemberDead, decemberSick * 100);
 
@@ -874,6 +920,69 @@ public class CausesOfDeathCheck {
         }
         System.out.printf("   the city's own 1900 to December 1918 took %.1f seconds, and its three months on both cities %.1f%n",
                 upSeconds, (System.nanoTime() - started) / 1e9 - upSeconds);
+    }
+
+    /** R0g's September 1918 twins: only Health's influenza sick are held off, with causes on in both. */
+    static void theInfluenzaCountedOnce(Game saved) {
+        System.out.println("\n--- the influenza sick counted once: September 1918 twins (R0h) ---");
+        Game flu = new Game(saved.getGameFiles()), calm = new Game(saved.getGameFiles());
+        quietly(() -> { flu.loadGameSave(2); calm.loadGameSave(2); });
+        calm.getHealth().holdInfluenzaOff();
+        int first = CausesOfDeath.INFLUENZA_FIRST;
+        assertTrue("fixture: both twins loaded the same September 1918 city with causes on",
+                flu.getMonth() == first - 1 && calm.getMonth() == first - 1
+                && !flu.getCausesOfDeath().isHeldOff() && !calm.getCausesOfDeath().isHeldOff()
+                && Arrays.equals(flu.getSickness().getState(), calm.getSickness().getState()));
+        double[] extra = new double[CausesOfDeath.INFLUENZA_LAST - first + 2];
+        double[] drift = new double[extra.length];
+        Sickness fluChronic = new Sickness(), calmChronic = new Sickness();
+        fluChronic.restore(PopulationCohorts.saveBands(), flu.getSickness().getState());
+        calmChronic.restore(PopulationCohorts.saveBands(), calm.getSickness().getState());
+        double fluDead = 0, sick = 0;
+        boolean ran = true, held = true, visible = true, uncapped = true;
+        for (int k = 0; k < extra.length; k++) {
+            // Ring deaths read the opening cohorts and last month's ring, before the month's health inputs arrive.
+            double fluExpected = ringDeaths(flu.getSickness(), flu.getCohorts());
+            double calmExpected = ringDeaths(calm.getSickness(), calm.getCohorts());
+            drift[k] = ringDeaths(fluChronic, flu.getCohorts()) - ringDeaths(calmChronic, calm.getCohorts());
+            int[] months = new int[2];
+            quietly(() -> { months[0] = flu.simulateMonths(1); months[1] = calm.simulateMonths(1); });
+            uncapped &= Math.abs(fluExpected - flu.getSickness().getLastDeaths()) < 1e-9
+                    && Math.abs(calmExpected - calm.getSickness().getLastDeaths()) < 1e-9;
+            advanceChronic(fluChronic, flu);
+            advanceChronic(calmChronic, calm);
+            ran &= months[0] == 1 && months[1] == 1;
+            held &= calm.getHealth().getInfluenzaRate() == 0;
+            extra[k] = flu.getSickness().getLastDeaths() - calm.getSickness().getLastDeaths();
+            fluDead += flu.getCausesOfDeath().getLastDeaths(Cause.INFLUENZA);
+            sick += flu.getHealth().getInfluenzaRate();
+            visible &= Math.abs(flu.getSickness().share(AgeBand.ADULT) - flu.getHealth().getSickRate()) < 1e-12;
+            System.out.printf("   month %d: ring extra %+.6f; chronic drift %+.6f; influenza dead %.6f%n",
+                    flu.getMonth(), extra[k], drift[k], flu.getCausesOfDeath().getLastDeaths(Cause.INFLUENZA));
+        }
+        assertTrue("fixture: both twins played every month, only one had influenza sick, and its causes booked influenza dead",
+                ran && held && sick > 0 && fluDead > 0);
+        assertTrue("the epidemic remains in the visible adult sick share every month", visible);
+        assertTrue("fixture: opening cohorts times each ring rate book its dead without a competing-risk cap", uncapped);
+        for (int k = 3; k <= 6; k++) {
+            check("January-April 1919 month " + (k - 2) + ": no extra ring dead beyond the twins' own chronic drift",
+                    extra[k] - drift[k], 0, 1e-9);
+        }
+    }
+
+    /** Ring deaths on opening cohorts; the fixture checks that competing-risk caps do not reduce them. */
+    static double ringDeaths(Sickness ring, PopulationCohorts people) {
+        double[] rates = ring.deathRates();
+        double dead = 0;
+        for (AgeBand band : BANDS) dead += rates[band.ordinal()] * people.get(band);
+        return dead;
+    }
+
+    /** Replay only each twin's observed chronic inputs, retaining its own economic and care drift. */
+    static void advanceChronic(Sickness ring, Game city) {
+        Healthcare care = city.getHealthcare();
+        ring.advanceMonth(city.getHealth().getSickRateWithoutInfluenza(),
+                care.getCoverage(CareType.GENERAL), care.getCoverage(CareType.CHILDCARE), care.getCoverage(CareType.SENIOR));
     }
 
     /**

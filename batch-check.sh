@@ -1,69 +1,9 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  A batch's checks in one call, for a session on Linux (a cloud session, the
-#  orchestrator's gate, ship.sh) or in Git Bash on the PC: compile, the suite,
-#  the maps, Stale and the tree's state, each said in a line or two.
-#  Everything long goes to a file under target/checks/ and the line says which.
-#
-#      ./batch-check.sh               compile, the whole suite, maps, Stale, git status
-#      ./batch-check.sh money bank    the same, the suite only the harnesses named so
-#      ./batch-check.sh --fast        compile, maps, Stale, git status: no suite
-#      ./batch-check.sh --timing      compile and the timing harnesses alone, hard: the ship gate's
-#      ./batch-check.sh --pick        the plain run, the suite only the harnesses tools/pick.sh picks
-#                                     from the diff against main, plus any names typed after it
-#      ./batch-check.sh --judge LOG   judge a saved AllChecks -f log: nothing built, nothing run, no lock
-#
-#  One of --fast, --timing and --pick, and harness names, in any order; --judge
-#  takes its one log and nothing else. After a suite run the red lines are in
-#  target/checks/reds.txt, one "Harness | exit N" per failed harness and one
-#  "Harness | <failing line>" per failing line.
-#
-#  Not here: the 80-run ensemble, tools/ensemble/ensemble.sh, run only for a
-#  batch whose playtest trace moves (EN1, 2026-10-20; tools/ensemble/README.md).
-#
-#  Exit status, which is what ship.sh reads:
-#      0  it compiled, every harness run passed, Stale has no firm finding
-#      1  the compile, the classpath, the maps, Stale or the line endings failed,
-#         the pick's guard did, or the suite printed no summary or ran 0
-#         harnesses (AllChecks skips a name it does not know without a word)
-#      2  usage: an unknown option, two of --fast/--timing/--pick, --fast with
-#         names, a name no harness file has - said before anything is built
-#      3  nothing failed but the suite, and every red line is a known red: in
-#         main's recorded reds (the non-# lines of docs/notes/gate.txt as it was at
-#         the merge-base with origin/main, else with main, else this tree's:
-#         at the gate HEAD is main, so that is main's own record; in a batch
-#         it is the record of the main the batch forked from, whose reds its
-#         tree can have - not the reds main has gained or mended since)
-#      4  nothing else failed, but some red line is NEW: not recorded
-#  When something else failed as well, 1. --judge LOG exits as the suite's
-#  verdict does (0, 1, 3 or 4), and 2 for a usage error.
-#
-#  WHY (2026-10-13, BP1, FW7): a session paid for every line it read; the long story is
-#  docs/notes/batch-history.md, "The scripts' headers" (moved there in GT1).
-#
-#  On the cloud workbench (2 cores) one JVM at a time: under
-#  the lock at $CBS_JVM_LOCK (default /home/claude/jvm.lock) when its folder
-#  exists and flock is installed. The PC's twin is Batch check.bat.
-#
-#  Timing (TM1, 2026-10-18; BP1, 2026-10-25; GP1, 2026-10-27): every run but --timing
-#  times soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on
-#  its line and is not counted. The suite runs AllChecks.PARALLEL harnesses at
-#  once, each JVM under AllChecks.HEAP_MB of heap (SP1); --timing, one at a time.
-#  Timing is judged once, hard, by --timing, the ship gate's, and it starts at
-#  once. WHY (GP1): TM2 made it wait for a quiet minute (four empty looks in a
-#  row, 30 minutes at most), so that a hard run did not share the machine with
-#  another batch's JVM; with two lanes that was often the whole of a gate's
-#  wait, and since TM3 a timing red is judged against main's own run in the same
-#  minutes (ship.sh), which is what the wait only approximated.
-#  In Git Bash the classpath is joined with ';', as Java on Windows wants.
-#
-#  The figures (TM3, 2026-10-27): every suite run writes each timing assertion's
-#  measured figure and budget to target/checks/timing.tsv (Timing.TSV_PROPERTY; the
-#  columns are in Timing), the old file removed first. ship.sh reads it, never a
-#  label's prose, to judge a timing red side by side with main (tools/timing-pair.awk):
-#  it runs `./batch-check.sh --timing HARNESS...` in main's worktree and in the
-#  merge's tree in turn, back to back, to share one load.
-# ---------------------------------------------------------------------------
+# Compile, selected suite, maps and Stale. --fast skips the suite; --pick selects it.
+# --timing is the hard nightly; --judge LOG uses the common judge without building.
+# Exit 0 green, 3 known reds, 4 NEW reds, 1 incomplete/build failure, 2 usage.
+# CBS_KNOWN_REDS overrides the combined record for --judge; CBS_REJUDGE ignores old tags.
+# WHY (GR2): builders and gates need one verdict and the same repository approvals.
 
 ASKED_FROM=$(pwd)   # where the caller stood: a relative LOG of --judge is theirs, not the repository's
 cd "$(dirname "$0")" || exit 1
@@ -104,10 +44,7 @@ if [ "$JUDGE" = 0 ] && [ -z "$CBS_LOCKED" ] && command -v flock >/dev/null 2>&1 
 fi
 
 set -f; set -- $NAMES; set +f   # from here "$@" is the harness names alone
-case "$(uname -s)" in
-    MINGW*|MSYS*|CYGWIN*) SEP=';' ;;
-    *) SEP=':' ;;
-esac
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) SEP=';' ;; *) SEP=':' ;; esac
 
 if [ "$JUDGE" = 1 ]; then   # the folder of the log, so a suite writing to target/checks is never overwritten
     OUT=$(dirname "$LOGARG"); SUITE="$LOGARG"
@@ -121,35 +58,8 @@ quiet() { grep -v '^Picked up JAVA_TOOL_OPTIONS'; }   # the cloud's proxy settin
 SUITE_EXIT=0   # 0 green or no suite, 3 only main's recorded reds, 4 reds not recorded (the exit status, if nothing else failed)
 RUNSUITE=1
 
-# the suite log's reds (BP1), one line each: "Harness | exit N" for a failed harness, "Harness | <line>" for each
-# failing line AllChecks -f printed under it, its 4-space indent stripped; a section title is not a failing line.
-# The exit may be negative (BP1, 2026-10-25): on Windows a JVM that dies natively reaches AllChecks as a negative int
-# (0xC0000005 is -1073741819), and a header that did not match was dropped with its lines - a crash passed beside
-# main's recorded red as exit 3.
-reds_of() {
-    awk '
-    /^[A-Za-z0-9_]+ +FAILED - exit -?[0-9]+/ { h = $1; nofail = 0; infail = 1; print h " | exit " $5; next }
-    !/^    / { infail = 0; next }
-    !infail { next }
-    {
-        t = substr($0, 5)
-        sub(/^[ \t]+/, "", t); sub(/[ \t\r]+$/, "", t)
-        sub(/^\[(known|NEW)\] +/, "", t)                   # the tag AllChecks puts there (FW7); a log from before it has none
-        if (t == "(no FAIL line; its last lines:)") { print h " | (no FAIL line)"; nofail = 1; next }
-        if (nofail) next                                   # a harness that died some other way: its last lines are not failures
-        if (t ~ /^---[ \t].*[ \t]---$/) next
-        if (t ~ /^\.\.\. [0-9]+ failing lines in all: /) sub(/: .*$/, "", t)   # the log path differs by machine
-        if (t != "") print h " | " t
-    }' "$1"
-}
-
-# main's recorded reds: docs/notes/gate.txt as it was at the merge-base with origin/main, else with main, else this
-# tree's, else none. At the gate HEAD is main (or main plus the batch), so the merge-base is origin/main's tip and this
-# is ship.sh's own recorded(); in a batch it is the record of the main the batch forked from. WHY (BP1, 2026-10-25):
-# the tip of origin/main was read first, so a batch that forked while MapCheck 8 was recorded saw it as a new red the
-# day main's fix rewrote gate.txt without it - a red its own tree still has, and one it was told to mend twice.
-# RL1: a batch built on its predecessor's tip (tools/carries.sh) reads the record of the main that predecessor forked from,
-# which lacks the reds Jerus approves at its gate; the verdict says so under a NEW red, and merging main once it lands mends it.
+# Read the fork's gate record. WHY (BP1) a later main fix otherwise made an older
+# batch's existing red NEW. Repository parts are added by record_reds below.
 recorded_reds() {
     for r in origin/main main; do
         mb=$(git merge-base HEAD "$r" 2>/dev/null) || continue
@@ -159,76 +69,20 @@ recorded_reds() {
     return 0
 }
 
-# the record the verdict is judged against: docs/notes/gate.txt as recorded_reds has it, or in --judge mode the file named
-# by $CBS_KNOWN_REDS (read nowhere else), without its # and blank lines. Written to $OUT/known-reds.txt before the suite
-# runs and given to AllChecks (FW7, 2026-10-25), which tags its red lines against that same file.
+# GR2: the runner, saved-log verdict and publisher call the same Java judge.
 record_reds() {
-    if [ "$JUDGE" = 1 ] && [ -n "$CBS_KNOWN_REDS" ]; then cat "$CBS_KNOWN_REDS"; else recorded_reds; fi \
-        | tr -d '\r' | grep -v -e '^#' -e '^[[:space:]]*$'
-}
-
-# the suite is red: 3 when every red line is a known one (main's), else 4 with the lines that are NEW. Before that, a
-# guard that does not depend on the header's form (BP1, 2026-10-25): the summary says how many harnesses failed, and
-# reds.txt must name as many - a harness whose header reds_of could not read would otherwise be dropped, and the
-# rest pass as main's recorded reds. And a guard on AllChecks' own verdict (FW7): when its headers say how many red
-# lines are NEW, those counts must add up to this script's own, or the two judges disagree and neither is trusted.
-judge_reds() {
-    if [ -s "$OUT/known-reds.txt" ]; then
-        grep -v -x -F -f "$OUT/known-reds.txt" "$OUT/reds.txt" > "$OUT/new-reds.txt"
+    if [ -n "$CBS_KNOWN_REDS" ]; then
+        cat "$CBS_KNOWN_REDS"
     else
-        cp "$OUT/reds.txt" "$OUT/new-reds.txt"
-    fi
-    NEW=$(grep -c . "$OUT/new-reds.txt")
-    NAMED=$(grep -c -E '^[A-Za-z0-9_]+ \| exit -?[0-9]+$' "$OUT/reds.txt")
-    SAID=$(sed -n 's/^[0-9][0-9]* harness.* run in .*, \([0-9][0-9]*\) failed$/\1/p' "$SUITE" | tail -1)
-    if [ "$NAMED" = 0 ]; then
-        FAILED=1
-        echo "suite     FAILED - the log says harnesses failed but no red line could be read from it: $SUITE"
-        return 0
-    fi
-    if [ "$NAMED" != "$SAID" ]; then
-        FAILED=1
-        echo "suite     FAILED - the log says ${SAID:-an unreadable number of} harness(es) failed, its red lines name $NAMED: $SUITE"
-        return 0
-    fi
-    if grep -q -E '^[A-Za-z0-9_]+ +FAILED - exit -?[0-9]+.*  (known red|NEW red: [0-9]+ of [0-9]+ red lines)$' "$SUITE"; then
-        COUNTED=$(sed -n 's/^[A-Za-z0-9_][A-Za-z0-9_]* *FAILED - exit -\{0,1\}[0-9][0-9]*.*  NEW red: \([0-9][0-9]*\) of [0-9][0-9]* red lines$/\1/p' "$SUITE" \
-            | awk '{ n += $1 } END { print n + 0 }')
-        if [ "$COUNTED" != "$NEW" ]; then
-            FAILED=1
-            echo "suite     FAILED - AllChecks counts $COUNTED NEW red line(s), this script $NEW: the two judges disagree ($SUITE)"
-            return 0
-        fi
-    fi
-    if [ "$NEW" = 0 ]; then
-        SUITE_EXIT=3
-        echo "suite     known red only - $(sed -n 's/ | exit -\{0,1\}[0-9]*$//p' "$OUT/reds.txt" | paste -sd, - | sed 's/,/, /g') ($KNOWN_FROM)"
-    else
-        SUITE_EXIT=4
-        echo "suite     FAILED - NEW red: $NEW line(s), the known reds aside:"
-        head -30 "$OUT/new-reds.txt" | sed 's/^/    /'
-        [ "$NEW" -le 30 ] || echo "    ... $((NEW - 30)) more: $OUT/new-reds.txt"
-        CARR=$(sh tools/carries.sh | tr '\n' ' ')   # RL1: a red its predecessor brought and Jerus approves at that gate is main's record only once it lands
-        [ -z "$CARR" ] || echo "    built on ${CARR% }, not on main yet: a red it brought, approved at its gate, is not in main's record until it lands - wait (sh tools/wait.sh --row ${CARR% }), merge main, run again before mending"
+        recorded_reds
+        ID=$(git branch --show-current); ID=${ID#batch/}; ID=$(printf '%s' "$ID" | tr '/' '-')
+        sh tools/known-reds.sh "$ID" "docs/queue/$ID-ship.md" || return 1
     fi
 }
-
-# the verdict on the suite log $SUITE: what a run says of its own suite, and what --judge says of a saved one (FW7)
 suite_verdict() {
-    reds_of "$SUITE" > "$OUT/reds.txt"
-    if ! grep -q -E '^[0-9]+ harness(es)? run in ' "$SUITE"; then
-        FAILED=1
-        echo "suite     FAILED - no summary line, the run did not finish; its last lines:"
-        sed '/^$/d' "$SUITE" | tail -15 | sed 's/^/    /'
-    elif grep -q '^0 harnesses run' "$SUITE"; then
-        FAILED=1
-        echo "suite     FAILED - 0 harnesses run: no name matches a harness AllChecks runs (it skips an unknown one without a word)"
-        sed '/^$/d' "$SUITE" | head -5 | sed 's/^/    /'
-    elif grep -q ' 0 failed$' "$SUITE"; then
-        echo "suite     OK - $(grep 'harness.* run in ' "$SUITE" | sed 's/:.*//')"
-    else
-        judge_reds
-    fi
+    java src/main/java/ham/citybuildersim/KnownReds.java "$SUITE" "$OUT/known-reds.txt" "$OUT" $CBS_REJUDGE
+    SUITE_EXIT=$?
+    case "$SUITE_EXIT" in 0|3|4) ;; *) FAILED=1 ;; esac
 }
 
 # the end: a failure of anything but the suite's harnesses is 1; else the suite's own 0, 3 or 4
@@ -237,10 +91,13 @@ finish() { [ "$FAILED" = 0 ] || exit 1; exit "$SUITE_EXIT"; }
 # --- --judge LOG: the verdict on a saved log, nothing built, nothing run, no lock (FW7) ---
 if [ "$JUDGE" = 1 ]; then
     [ -z "$CBS_KNOWN_REDS" ] || KNOWN_FROM="$CBS_KNOWN_REDS"
-    record_reds > "$OUT/known-reds.txt"
+    record_reds > "$OUT/known-reds.txt" || exit 1
     suite_verdict
     finish
 fi
+
+. ./tools/check-data.sh
+cbs_check_data
 
 # --- compile ---------------------------------------------------------------
 t=$(date +%s)
@@ -272,7 +129,8 @@ if [ "$PICK" = 1 ]; then
         echo "pick      FAILED (exit $PRC) - no suite: $OUT/pick.txt"
     else
         case "$PICKED" in
-            ALL)  set -- ;;   # the whole suite, whatever was typed
+            ALL)  NIGHTLY_PICKED=$(sh tools/pick.sh --nightly) || { FAILED=1; RUNSUITE=0; }
+                  set -- --gate $NIGHTLY_PICKED ;;   # nightly tier only by its direct rules (HA1)
             NONE) if [ "$#" = 0 ]; then
                       RUNSUITE=0
                       echo "suite     none picked - no harness reads what changed; the gate runs the suite"
@@ -289,18 +147,26 @@ if [ "$TIMING" = 1 ]; then
     set -- --timing "$@"
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
-    TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
+    TIMED="-Dcbs.timing=soft"   # GR1: only --timing judges speed, nightly on main
 fi
 
 # --- the suite -------------------------------------------------------------
+if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ] && [ "$#" = 0 ]; then
+    # HA1's own gate may still be launched by the preceding publisher.
+    if [ "${CBS_GATE_NIGHTLY+x}" != x ]; then
+        CBS_GATE_NIGHTLY=$(sh tools/pick.sh --nightly) || { FAILED=1; RUNSUITE=0; }
+    fi
+    set -- --gate $CBS_GATE_NIGHTLY
+fi
 if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
-    record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk
+    record_reds > "$OUT/known-reds.txt" || exit 1   # Same retirements and transfers as the gate (GG1).
     rm -f "$OUT/timing.tsv"   # the figures of this run alone (TM3)
     # -Xms64m: the runner holds little; its default initial heap was 616 MB of commit (SP1)
     java -Xms64m $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
     suite_verdict
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
+    grep ' OBSERVED, not counted: ' "$SUITE" | sed 's/^/observed  /'
     grep '^memory: ' "$SUITE" | sed 's/^memory: /memory    /'   # the starts the commit charge held (SP1)
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
     find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \

@@ -66,7 +66,7 @@ public class TimeSkipReport {
         double householdRentBurden;
         double cumulativeWriteOffs;
 
-        final Map<String, Integer> buildings = new LinkedHashMap<>();
+        final Map<String, Long> buildings = new LinkedHashMap<>();
     }
 
     private Snapshot before;
@@ -161,7 +161,7 @@ public class TimeSkipReport {
                          double landOwnedBlocks, double landUtilisation,
                          double householdSavingRate, double householdRentBurden,
                          double cumulativeWriteOffs,
-                         Map<String, Integer> buildings) {
+                         Map<String, Long> buildings) {
 
         Snapshot s = new Snapshot();
         s.month = month;
@@ -504,9 +504,9 @@ public class TimeSkipReport {
     /** A building type whose count moved, and by how much. Gains and losses both. */
     public static class BuildingChange {
         public final String name;
-        public final int change;
+        public final long change;
 
-        BuildingChange(String name, int change) {
+        BuildingChange(String name, long change) {
             this.name = name;
             this.change = change;
         }
@@ -530,33 +530,33 @@ public class TimeSkipReport {
             return changes;
         }
 
-        Map<String, Integer> seen = new LinkedHashMap<>();
+        Map<String, Long> seen = new LinkedHashMap<>();
         seen.putAll(before.buildings);
         seen.putAll(after.buildings);
 
         for (String name : seen.keySet()) {
-            int start = before.buildings.getOrDefault(name, 0);
-            int end = after.buildings.getOrDefault(name, 0);
+            long start = before.buildings.getOrDefault(name, 0L);
+            long end = after.buildings.getOrDefault(name, 0L);
 
             if (end != start) {
                 changes.add(new BuildingChange(name, end - start));
             }
         }
 
-        changes.sort((x, y) -> Integer.compare(Math.abs(y.change), Math.abs(x.change)));
+        changes.sort((x, y) -> Long.compare(Math.abs(y.change), Math.abs(x.change)));
         return changes;
     }
 
-    public int getBuildingsGained() {
-        int total = 0;
+    public long getBuildingsGained() {
+        long total = 0;
         for (BuildingChange c : getBuildingChanges()) {
             if (c.change > 0) total += c.change;
         }
         return total;
     }
 
-    public int getBuildingsLost() {
-        int total = 0;
+    public long getBuildingsLost() {
+        long total = 0;
         for (BuildingChange c : getBuildingChanges()) {
             if (c.change < 0) total -= c.change;
         }

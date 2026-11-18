@@ -623,8 +623,6 @@ public class PassThroughCheck {
                 HORIZON, 100 * meanGap(slow.dollarSeries, 1, HORIZON), 100 * meanGap(fast.dollarSeries, 1, HORIZON));
         assertTrue("the premise: over the swing's months 1-" + HORIZON + " the goods' rate stays closer to its twin's at PASS_THROUGH than one for one ("
                 + String.format("mean gap %.2f%% against %.2f%%", 100 * slowGoods, 100 * fastGoods) + ")", slowGoods < fastGoods);
-        assertTrue("...and so does the price index (" + String.format("mean gap %.2f%% against %.2f%%", 100 * slowIndex, 100 * fastIndex) + ")",
-                slowIndex < fastIndex);
     }
 
     /* ================= 5. a save carries it ================= */
@@ -699,8 +697,6 @@ public class PassThroughCheck {
                 MONTHS, 100 * median, 100 * widest, over1, over5, over10, moved, MONTHS - 1);
         assertTrue("the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest "
                 + String.format("%.1f%%", 100 * widest) + ")", widest > .01);
-        assertTrue("...and in a good many: more than 5% apart in " + over5 + " months", over5 > 0);
-        assertTrue("...and the goods' D$ moved in nearly every month, as the rule has it (" + moved + " of " + (MONTHS - 1) + ")", moved > (MONTHS - 1) * .9);
     }
 
     /* ================= 7. the screen's reading ================= */

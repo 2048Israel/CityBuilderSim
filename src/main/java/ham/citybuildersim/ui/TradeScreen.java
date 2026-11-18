@@ -718,9 +718,9 @@ final class TradeScreen {
         String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
-        c.setOnMouseEntered(e -> c.setStyle(over));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(over));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -1555,8 +1555,7 @@ final class TradeScreen {
             hand.add(Kept.scope("sold", () -> chipInfo("the treasury sold " + d(fx.getSoldThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO)));
         }
         if (Math.abs(fx.valuationChange()) > .005) {
-            hand.add(Kept.scope("written off", () -> chipInfo("claims written off " + d(Math.abs(fx.valuationChange())), Palette.TEXT_LABEL,
-                    String.format(VALUATION_INFO, d(Math.abs(fx.valuationChange()))))));
+            hand.add(Kept.scope("written off", () -> chipInfo(valuationChip(fx.valuationChange(), d(Math.abs(fx.valuationChange()))), Palette.TEXT_LABEL, valuationInfo(fx.valuationChange(), d(Math.abs(fx.valuationChange()))))));
         }
         if (!hand.isEmpty()) c.getChildren().add(Kept.scope("hand", () -> chips(hand.toArray(new Node[0]))));
         return c;
@@ -1583,6 +1582,43 @@ final class TradeScreen {
     static final String VALUATION_INFO = "%s of foreign claims were written off this month. It improves what the city owes "
             + "the world and it is NOT a dollar earned — nobody paid it, so it never crossed the edge and it is not drawn "
             + "above. It changes the position, which is what a valuation change is.";
+
+    /**
+     * ...and the valuation that goes against the city (LF1c): a short closed for nothing leaves its buyers with a claim on the world gone, the world
+     * let off, so a month's valuation can net under nothing. The words said a gain only ("improves what the city owes the world").
+     */
+    static final String VALUATION_LOSS_INFO = "%s of the city's claims abroad were lost this month - a short closed for nothing, which its buyers "
+            + "held a claim on, is one. It counts against the city and it is NOT a dollar paid out - nobody paid it, so it never crossed the edge "
+            + "and it is not drawn above. It is a valuation change, which is why it is only here.";
+
+    /** The chip for the month's valuation change, by its sign: claims written off in the city's favour, or lost against it. */
+    static String valuationChip(double change, String shown) {
+        return (change >= 0 ? "claims written off " : "claims lost abroad ") + shown;
+    }
+
+    /** The sentence behind that chip. */
+    static String valuationInfo(double change, String shown) {
+        return String.format(change >= 0 ? VALUATION_INFO : VALUATION_LOSS_INFO, shown);
+    }
+
+    /** The note under the statement's "Claims written off" line, by the sign of the month's valuation change. */
+    static String valuationNote(double change) {
+        return change >= 0 ? "What foreign creditors gave up on. It improves the position and it is not a dollar earned, so it is below the line and out of the river."
+                : "What the city's holders lost a claim on abroad. It counts against the city and it is not a dollar paid out, so it is below the line and out of the river.";
+    }
+
+    /** The chip for what has been written off since founding, by its sign: forgiven or settled in the city's favour, or net against it. */
+    static String forgivenChip(double forgiven, String shown) {
+        return (forgiven > 0 ? "forgiven or settled " : "written off against the city ") + shown;
+    }
+
+    /** The sentence behind that chip. */
+    static String forgivenInfo(double forgiven) {
+        return forgiven > 0
+                ? "Claims the world has written off since founding - a failed bank's foreign creditors, a resolution, a default. It improved the position without a dollar being earned."
+                : "Claims written off since founding come to a loss for the city, net of what the world forgave it: what its holders lost a claim on abroad - a short closed for nothing - "
+                + "was more. It counted against the city without a dollar crossing the edge.";
+    }
 
     /* ------------------------------ the river ------------------------------ */
 
@@ -1656,12 +1692,12 @@ final class TradeScreen {
         double rightBarX = W - LABEL - BAR;
 
         javafx.scene.layout.Pane face = Kept.plain();
-        face.setPrefSize(W, H);
+        Pieces.prefSize(face, W, H);
         face.setMinSize(W, H);
         face.setMaxSize(W, H);
 
         Region trunk = Kept.region();
-        trunk.setPrefSize(TRUNK, H);
+        Pieces.prefSize(trunk, TRUNK, H);
         trunk.setMinSize(TRUNK, H);
         trunk.setStyle("-fx-background-color: " + Palette.PINNED + "; -fx-background-radius: 3;");
         trunk.setLayoutX(trunkX0);
@@ -1730,7 +1766,7 @@ final class TradeScreen {
     /** One source or use bar, with its tooltip; the closing band outlined. */
     Region riverBar(Flow f, double x, double y, double w, double h) {
         Region bar = Kept.region();
-        bar.setPrefSize(w, h);
+        Pieces.prefSize(bar, w, h);
         bar.setMinSize(w, h);
         boolean closing = Palette.TEXT_SPENT.equals(f.colour());
         bar.setStyle(closing
@@ -1764,7 +1800,7 @@ final class TradeScreen {
         band.setFill(javafx.scene.paint.Color.web(colour));
         band.setStroke(null);
         // Translucent, so a ribbon crossing another still reads as two ribbons.
-        band.setOpacity(.55);
+        Kept.give(band.opacityProperty(), .55);
         return band;
     }
 
@@ -1928,9 +1964,7 @@ final class TradeScreen {
         if (Math.abs(fx.valuationChange()) > .005) {
             column.getChildren().add(statementLine("Claims written off", signedTight(fx.valuationChange(), false),
                     Palette.TEXT_MUTED));
-            column.getChildren().add(statementNote(
-                    "What foreign creditors gave up on. It improves the position and it is "
-                    + "not a dollar earned, so it is below the line and out of the river."));
+            column.getChildren().add(statementNote(valuationNote(fx.valuationChange())));
         }
 
         OutwardInvestment sectorsAbroad = ui.game.getOutwardInvestment();
@@ -2125,9 +2159,7 @@ final class TradeScreen {
                             + "bank's defence and the land office have taken out, in the local money each cost or fetched."));
         }
         if (fx.getForgiven() != 0) {
-            also.add(chipInfo("forgiven or settled " + d(fx.getForgiven()), Palette.TEXT_LABEL,
-                    "Claims the world has written off since founding - a failed bank's foreign creditors, a resolution, "
-                            + "a default. It improved the position without a dollar being earned."));
+            also.add(chipInfo(forgivenChip(fx.getForgiven(), d(Math.abs(fx.getForgiven()))), Palette.TEXT_LABEL, forgivenInfo(fx.getForgiven())));
         }
         if (fx.getRepudiated() > 0) {
             also.add(chipInfo("walked away from " + d(fx.getRepudiated()), Palette.BAD,
@@ -2466,14 +2498,14 @@ final class TradeScreen {
                 blocks.add(block);
                 all.add(block);
                 javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
-                stripe.setMouseTransparent(true);
-                stripe.setVisible(p.part().abroad());
+                Kept.give(stripe.mouseTransparentProperty(), true);
+                Kept.give(stripe.visibleProperty(), p.part().abroad());
                 stripe.setFill(SectorScreen.hatch(Palette.STAGE, .6));
                 stripes.add(stripe);
                 all.add(stripe);
                 Label label = new Label(p.part().label());
-                label.setMouseTransparent(true);
-                label.setVisible(false);
+                Kept.give(label.mouseTransparentProperty(), true);
+                Kept.give(label.visibleProperty(), false);
                 label.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-background-color: "
                         + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
                 if (named) {
@@ -2494,8 +2526,8 @@ final class TradeScreen {
                 double wide = scale > 0 ? w * Math.max(0, pieces.get(i).amount()) / scale : 0;
                 double shown = wide > 0 ? Math.max(1, Math.min(w - x, wide - (i < n - 1 ? 1 : 0))) : 0;
                 javafx.scene.shape.Rectangle block = blocks.get(i), stripe = stripes.get(i);
-                block.setVisible(shown > 0);
-                stripe.setVisible(shown > 0 && pieces.get(i).part().abroad());
+                Kept.give(block.visibleProperty(), shown > 0);
+                Kept.give(stripe.visibleProperty(), shown > 0 && pieces.get(i).part().abroad());
                 for (javafx.scene.shape.Rectangle s : List.of(block, stripe)) {
                     s.setX(x);
                     s.setY(0);
@@ -2506,7 +2538,7 @@ final class TradeScreen {
                 if (label != null) {
                     label.applyCss();
                     double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
-                    label.setVisible(shown > lw + 8);
+                    Kept.give(label.visibleProperty(), shown > lw + 8);
                     label.resizeRelocate(x + 4, Math.max(0, (BAND - lh) / 2), lw, lh);
                 }
                 x += wide;
@@ -3178,7 +3210,7 @@ final class TradeScreen {
         whatCol.setHgrow(Priority.ALWAYS);
         javafx.scene.layout.ColumnConstraints barCol = new javafx.scene.layout.ColumnConstraints(100, 220, 260);
         javafx.scene.layout.ColumnConstraints rateCol = new javafx.scene.layout.ColumnConstraints(90, 110, 140);
-        g.getColumnConstraints().addAll(stepCol, whatCol, barCol, rateCol);
+        Kept.columns(g).addAll(stepCol, whatCol, barCol, rateCol);
         g.add(muted("step"), 0, 0);
         g.add(muted("what it does"), 1, 0);
         Label heading = muted(Currency.FOREIGN_SYMBOL + "1 is");
@@ -3262,7 +3294,7 @@ final class TradeScreen {
     /** A fraction as a signed per cent to three places, with a true minus: "−0.229%". */
     static String signedPct3(double v) {
         double shown = unsigned0(v * 100, 3);
-        return (shown > 0 ? "+" : shown < 0 ? "−" : "") + String.format("%.3f%%", Math.abs(shown));
+        return Formats.INSTANCE.change(shown / 100, 0, shown == 0 ? "%.3f%%" : "%+.3f%%").replace('-', '−');
     }
 
     /* ------------------------------ what the rate is doing ------------------------------ */
@@ -3814,6 +3846,10 @@ final class TradeScreen {
      * its alert: it is the moment of choice.
      */
     VBox exchangeCard() {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            return card(line(PolicyDates.shutLine(PolicyDates.Lever.CENTRAL_BANK),
+                    "The vault follows Canada's dated money. Its reserves hold the dollar on gold; discretionary dealing opens with the Bank of Canada."));
+        }
         ForeignAccounts fx = ui.game.getForeignAccounts();
         FlowPane toggle = Kept.scope("toggle", () -> chipStrip(new String[] {"Buy — cash into the vault", "Sell — the vault into cash"},
                 tradeBuying ? "Buy — cash into the vault" : "Sell — the vault into cash", Palette.SIZE_LABEL, pick -> {

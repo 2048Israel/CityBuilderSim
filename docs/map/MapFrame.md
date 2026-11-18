@@ -1,6 +1,6 @@
 # MapFrame.java - 374 lines · 47 methods · 22 constants · model
 
-`ham/citybuildersim/MapFrame.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MapFrame.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The map view's arithmetic without the toolkit: where the view looks and how close, how a drag, a notch of the wheel and a held key (0.7.135) move it, which level of detail it draws and which tiles or far nodes that takes, the land's overlay on whole pixels, and how long its scale bar is - what ui/MapView draws by and MapCheck holds.
 > 
@@ -30,7 +30,7 @@
 
 **Uses:** [World](World.md) (16), [TileRaster](TileRaster.md) (2)
 
-**Used by (25):** [BoatSchedule](BoatSchedule.md), [CameraPath](CameraPath.md), [DepositMarks](DepositMarks.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckCheck](TruckCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (27):** [BoatSchedule](BoatSchedule.md), [CameraPath](CameraPath.md), [DepositMarks](DepositMarks.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FoundingScreen](FoundingScreen.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [JunctionCheck](JunctionCheck.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [MiniMapFrame](MiniMapFrame.md), [NationsMap](NationsMap.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PortCheck](PortCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReliefRenders](ReliefRenders.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [ShipShapes](ShipShapes.md), [TrainShapes](TrainShapes.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 

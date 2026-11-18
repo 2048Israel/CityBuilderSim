@@ -1,6 +1,6 @@
-# CentralBank.java - 955 lines · 95 methods · 8 constants · model
+# CentralBank.java - 991 lines · 99 methods · 8 constants · model
 
-`ham/citybuildersim/CentralBank.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBank.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The city's central bank: the balance sheet its money is made on, and the one
 > place money is made or destroyed.
@@ -64,9 +64,9 @@
 > every dollar a central bank creates ends up in that bank's settlement
 > ... (25 more lines in the source)
 
-**Uses:** [DecisionLog](DecisionLog.md) (7)
+**Uses:** [DecisionLog](DecisionLog.md) (7), [PolicyDates](PolicyDates.md) (2)
 
-**Used by (25):** [AutoBuildCheck](AutoBuildCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CentralBankCheck](CentralBankCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md)
+**Used by (27):** [AutoBuildCheck](AutoBuildCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CentralBankCheck](CentralBankCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GoldMiningCheck](GoldMiningCheck.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [HoldersCheck](HoldersCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [MoneyDatesCheck](MoneyDatesCheck.md), [MortgageCheck](MortgageCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md)
 
 ## Sections
 
@@ -75,14 +75,14 @@
 | 102 | · the dials |
 | 128 | · the balance sheet |
 | 202 | · the month |
-| 222 | · the city's life |
-| 268 | THE WINDOW |
-| 325 | THE TREASURY |
-| 404 | THE HOLDINGS DIAL (0.7.1) |
-| 611 | THE DEFENCE (0.7.2) |
-| 708 | THE CEILING |
-| 756 | READING |
-| 825 | THE SAVE |
+| 228 | · the city's life |
+| 275 | THE WINDOW |
+| 332 | THE TREASURY |
+| 411 | THE HOLDINGS DIAL (0.7.1) |
+| 627 | THE DEFENCE (0.7.2) |
+| 738 | THE CEILING |
+| 787 | READING |
+| 856 | THE SAVE |
 
 ## Constants
 
@@ -124,22 +124,25 @@
 | 216 | `private double boughtAtIssue, parAtIssue` | ...and what it paid the treasury at issue, and the par it took, rolling its own maturing paper (0.7.15, round 2): money made into the treasury's cash. |
 | 218 | `private double defendedThisMonth` | The defence's month (0.7.2): the local price of the vault's dollars sold at this month's reprice - equity spent, not money destroyed. |
 | 220 | `private double dollarsBought` | The mirror of the defence (XR2): the local price of the dollars it bought for the vault this month at the strong edge of a band or a peg, in money made and paid abroad for them. |
-| 225 | `private double printedLifetime` | Advanced to the treasury since founding - "printed since founding". |
-| 226 | `private double issuedLifetime, retiredLifetime, remittedLifetime` |  |
-| 228 | `private double boughtPaperLifetime, soldPaperLifetime` | Paid for the city's paper and received for it since founding (0.7.1). |
-| 230 | `private double boughtFromHouseholdsLifetime` | ...and of what it paid, what it paid the households since founding (0.7.15). |
-| 232 | `private double boughtAtIssueLifetime, parAtIssueLifetime` | ...and what it paid at issue for its own maturing paper rolled, and the par, since founding (0.7.15, round 2). |
-| 234 | `private double defendedLifetime` | Spent defending the currency since founding (0.7.2): the vault's dollars at the rates they were sold at. |
-| 236 | `private double dollarsBoughtLifetime` | ...and what it paid, in money made, for the dollars it bought for the vault since founding (XR2). |
-| 239 | `private final double[] revenue` | The treasury's revenue, the last REVENUE_MONTHS of it, for the ceiling. |
-| 240 | `private int revenueFilled, revenueNext` |  |
-| 243 | `private final java.util.function.DoubleSupplier vault` | Where the vault is read from. |
+| 223 | `private double goldMinted` | New D$ paid for domestically mined gold this month (GD4). |
+| 226 | `private double goldMintedLifetime` | New D$ paid for domestically mined gold since founding (GD4). |
+| 231 | `private double printedLifetime` | Advanced to the treasury since founding - "printed since founding". |
+| 232 | `private double issuedLifetime, retiredLifetime, remittedLifetime` |  |
+| 234 | `private double boughtPaperLifetime, soldPaperLifetime` | Paid for the city's paper and received for it since founding (0.7.1). |
+| 236 | `private double boughtFromHouseholdsLifetime` | ...and of what it paid, what it paid the households since founding (0.7.15). |
+| 238 | `private double boughtAtIssueLifetime, parAtIssueLifetime` | ...and what it paid at issue for its own maturing paper rolled, and the par, since founding (0.7.15, round 2). |
+| 240 | `private double defendedLifetime` | Spent defending the currency since founding (0.7.2): the vault's dollars at the rates they were sold at. |
+| 242 | `private double dollarsBoughtLifetime` | ...and what it paid, in money made, for the dollars it bought for the vault since founding (XR2). |
+| 245 | `private final double[] revenue` | The treasury's revenue, the last REVENUE_MONTHS of it, for the ceiling. |
+| 246 | `private int revenueFilled, revenueNext` |  |
+| 249 | `private final java.util.function.DoubleSupplier vault` | Where the vault is read from. |
+| 587 | `private boolean moneyOpen` | Whether the Bank of Canada's dated policy controls are available; the book itself also represents the earlier government. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 90 | 866 | **type** `public final class CentralBank` | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. |
+| 90 | 902 | **type** `public final class CentralBank` | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. |
 | 96 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 98 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -147,138 +150,142 @@
 
 ### the balance sheet (lines 128-201)
 
-### the month (lines 202-221)
+### the month (lines 202-227)
 
-### the city's life (lines 222-267)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 245 | 1 | `public CentralBank()` |  |
-| 247 | 3 | `public CentralBank(java.util.function.DoubleSupplier vault)` |  |
-| 252 | 12 | `public void startMonth()` | Clears the month's flows. |
-| 265 | 1 | `private void issue(double x)` |  |
-| 266 | 1 | `private void retire(double x)` |  |
-
-### THE WINDOW (lines 268-324)
+### the city's life (lines 228-274)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 279 | 7 | `public double advanceToBank(double x)` | Money made and lent to the commercial bank at the window. |
-| 288 | 8 | `public double repayFromBank(double x)` | ...and repaid, which destroys it. |
-| 303 | 5 | `public void settleWindow(double owed)` | Brings the window to what the bank owes past its deposits, once a month at the settle: advances the difference or takes the repayment. |
-| 310 | 6 | `public double payInterestOnReserves(double x)` | Interest on reserves: the policy rate on the bank's spare cash, paid in money made for it. |
-| 318 | 6 | `public double chargeWindow(double x)` | The window's interest, from the commercial bank: income here, and money destroyed. |
+| 251 | 1 | `public CentralBank()` |  |
+| 253 | 3 | `public CentralBank(java.util.function.DoubleSupplier vault)` |  |
+| 258 | 13 | `public void startMonth()` | Clears the month's flows. |
+| 272 | 1 | `private void issue(double x)` |  |
+| 273 | 1 | `private void retire(double x)` |  |
 
-### THE TREASURY (lines 325-403)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 328 | 8 | `public double advanceToTreasury(double x)` | The treasury's shortfall, advanced in money made for it. |
-| 338 | 8 | `public double repayFromTreasury(double x)` | ...and repaid out of cash above zero, which destroys it. |
-| 348 | 3 | `public double advancesInterestDue(double policyAnnual)` | What a month on the advances outstanding costs at this policy rate. |
-| 353 | 6 | `public double chargeAdvances(double x)` | The treasury's interest on its advances: income here, and money destroyed. |
-| 367 | 9 | `public double remit()` | The profit, to the treasury: last month's, struck at closeMonth() and paid at the top of this one - a revenue line, "Central bank remittance". |
-| 388 | 10 | `public void closeMonth()` | Strikes the month's profit and decides what is owed to the treasury. |
-| 400 | 3 | `public double monthProfit()` | This month's income less what reserves cost, so far. |
-
-### THE HOLDINGS DIAL (0.7.1) (lines 404-610)
+### THE WINDOW (lines 275-331)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 460 | 9 | `public double buyPaper(double price, double face)` | Buys this much face for this price, in money made for it. |
-| 479 | 6 | `public double buyPaperFromHouseholds(double price, double face)` | Buys this much face from the households for this price, in money made for them (0.7.15): the paper the bank could not sell it. |
-| 494 | 5 | `public double buyPaperFromWorld(double price, double face)` | Buys this much face from the world for this price (CD2, slice 5), in money made for it, the last the dial reaches: the same purchase as buyPaper(), counted apart because the money made leaves the city for the world - ... |
-| 510 | 10 | `public double buyAtIssue(double price, double face)` | Its add-on at issue (0.7.15, round 2): this much face of the city's new paper for this price - the issue's own price on each unit of face - paid to the treasury in money made for it. |
-| 522 | 9 | `public double sellPaper(double price, double face)` | ...and sells it back, which destroys the price. |
-| 533 | 6 | `public double takeCoupon(double x)` | The coupon on its share, from the treasury: income here, and money destroyed. |
-| 541 | 7 | `public double takePrincipal(double x)` | Principal repaid on its share: off the book at face, and destroyed. |
-| 555 | 5 | `public void paperBoughtBack(double price, double face)` | The treasury buys back a bond this bank holds part of, between two presses: the face comes off the book now, and the price and the gain against face wait for the top of the next month (settleRedemptions()), where the ... |
-| 562 | 10 | `public double settleRedemptions()` | ...and settled: the price destroyed, the gain into this month's profit. |
-| 574 | 1 | `public double getRedemptionDue()` | What the treasury has paid for this bank's share of a buyback and it has not yet settled: carried in the treasury's pool until it has. |
-| 576 | 1 | `public double getTargetShare()` |  |
-| 577 | 1 | `public double getPreviousTarget()` |  |
-| 580 | 8 | `public void setTargetShare(double share)` | The dial, held to 0..MAX_QE_SHARE. |
-| 596 | 3 | `public void restoreTargetShare(double share)` | The dial as a save left it, WITHOUT moving the memory of where it was: the load path's setter. |
-| 605 | 5 | `public double stepFor(double termPrincipal)` | The most the book may move this month, at face, against this much term paper outstanding: QE_SPEED of the larger of the dial, the setting before it and the share it actually holds. |
+| 286 | 7 | `public double advanceToBank(double x)` | Money made and lent to the commercial bank at the window. |
+| 295 | 8 | `public double repayFromBank(double x)` | ...and repaid, which destroys it. |
+| 310 | 5 | `public void settleWindow(double owed)` | Brings the window to what the bank owes past its deposits, once a month at the settle: advances the difference or takes the repayment. |
+| 317 | 6 | `public double payInterestOnReserves(double x)` | Interest on reserves: the policy rate on the bank's spare cash, paid in money made for it. |
+| 325 | 6 | `public double chargeWindow(double x)` | The window's interest, from the commercial bank: income here, and money destroyed. |
 
-### THE DEFENCE (0.7.2) (lines 611-707)
+### THE TREASURY (lines 332-410)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 669 | 5 | `public void dollarsSold(double local)` | The vault's dollars were sold at the reprice for this much local money. |
-| 676 | 1 | `public double getDefendedThisMonth()` | Spent defending the currency at this month's reprice, at the rate the dollars were sold at. |
-| 678 | 1 | `public double getDefendedLifetime()` | ...and since founding. |
-| 685 | 1 | `public double vaultSpent()` | Spent defending the currency since founding: the local price of every dollar the defence has sold. |
-| 695 | 7 | `public double buyDollarsForVault(double local)` | Pays this much local money, made for the purpose, for the dollars the vault bought at the strong edge (the mirror of the defence; Game .settleTheEdge()). |
-| 704 | 1 | `public double getDollarsBought()` | What it paid, in new money, for the dollars it bought for the vault this month. |
-| 706 | 1 | `public double getDollarsBoughtLifetime()` | ...and since founding. |
+| 335 | 8 | `public double advanceToTreasury(double x)` | The treasury's shortfall, advanced in money made for it. |
+| 345 | 8 | `public double repayFromTreasury(double x)` | ...and repaid out of cash above zero, which destroys it. |
+| 355 | 3 | `public double advancesInterestDue(double policyAnnual)` | What a month on the advances outstanding costs at this policy rate. |
+| 360 | 6 | `public double chargeAdvances(double x)` | The treasury's interest on its advances: income here, and money destroyed. |
+| 374 | 9 | `public double remit()` | The profit, to the treasury: last month's, struck at closeMonth() and paid at the top of this one - a revenue line, "Central bank remittance". |
+| 395 | 10 | `public void closeMonth()` | Strikes the month's profit and decides what is owed to the treasury. |
+| 407 | 3 | `public double monthProfit()` | This month's income less what reserves cost, so far. |
 
-### THE CEILING (lines 708-755)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 711 | 6 | `public void noteRevenue(double monthRevenue)` | Files a month of the treasury's revenue, for the ceiling. |
-| 719 | 6 | `public double trailingRevenue()` | The treasury's revenue a month, averaged over what has been filed. |
-| 727 | 1 | `public double ceiling()` | The most the treasury may owe here before the arrears rule decides who is paid: the dial's months of its trailing revenue. |
-| 730 | 4 | `public double ceilingAt(double months)` | ...at a ceiling of the caller's, in months (0.7.36): what the dial would allow at that setting, held to its range - the Policy tab's ceiling preview. |
-| 736 | 1 | `public double getAdvancesCeilingMonths()` | The ceiling dial, in months of revenue. |
-| 739 | 10 | `public void setAdvancesCeilingMonths(double months)` | Sets the ceiling dial, held to 0..MAX_ADVANCES_CEILING; a number that is not one reads the default. |
-| 751 | 1 | `public double headroom()` | What the treasury may still draw for anything that is not a promise. |
-| 754 | 1 | `public boolean ceilingBound()` | True once the treasury owes the ceiling or more. |
-
-### READING (lines 756-824)
+### THE HOLDINGS DIAL (0.7.1) (lines 411-626)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 758 | 1 | `public double getAdvancesToBank()` |  |
-| 759 | 1 | `public double getAdvancesToTreasury()` |  |
-| 760 | 1 | `public double getPaperHeld()` |  |
-| 762 | 1 | `public double getVault()` | The vault, at today's rate, read from ForeignAccounts. |
-| 763 | 1 | `public double getReserves()` |  |
-| 764 | 1 | `public double getCurrency()` |  |
-| 766 | 3 | `public double totalAssets()` |  |
-| 771 | 1 | `public double m0()` | M0: everything this bank owes, which is every dollar it has made and not taken back. |
-| 773 | 1 | `public double totalLiabilities()` |  |
-| 775 | 1 | `public double equity()` |  |
-| 777 | 1 | `public double getLossCarried()` |  |
-| 778 | 1 | `public double getRemittanceDue()` |  |
-| 780 | 1 | `public double getIssued()` |  |
-| 781 | 1 | `public double getRetired()` |  |
-| 784 | 1 | `public double getM0Moved()` | What M0 moved by this month: the money made less the money destroyed (0.7.32, the Finances tab's THIS MONTH, which subtracted them itself). |
-| 785 | 1 | `public double getAdvancedToBank()` |  |
-| 786 | 1 | `public double getRepaidByBank()` |  |
-| 788 | 1 | `public double getAdvancedToTreasury()` | Printed this month: what was advanced to the treasury. |
-| 789 | 1 | `public double getRepaidByTreasury()` |  |
-| 790 | 1 | `public double getInterestOnReserves()` |  |
-| 791 | 1 | `public double getWindowInterest()` |  |
-| 792 | 1 | `public double getAdvancesInterest()` |  |
-| 794 | 1 | `public double getRemitted()` | The remittance paid to the treasury this month. |
-| 796 | 1 | `public double getBoughtPaper()` | The holdings' month (0.7.1). |
-| 797 | 1 | `public double getSoldPaper()` |  |
-| 798 | 1 | `public double getPaperCoupons()` |  |
-| 799 | 1 | `public double getPaperRedeemed()` |  |
-| 801 | 1 | `public double getBoughtBack()` | What a buyback redeemed of its paper, settled this month. |
-| 802 | 1 | `public double getPaperGains()` |  |
-| 803 | 1 | `public double getBoughtPaperLifetime()` |  |
-| 804 | 1 | `public double getSoldPaperLifetime()` |  |
-| 806 | 1 | `public double getBoughtFromHouseholds()` | Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. |
-| 808 | 1 | `public double getBoughtFromWorld()` | ...and the world (CD2, slice 5). |
-| 810 | 1 | `public double getBoughtFromHouseholdsLifetime()` | ...and since founding. |
-| 812 | 1 | `public double getBoughtAtIssue()` | What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). |
-| 814 | 1 | `public double getParAtIssue()` | ...their par: what of its maturing paper it rolled this month. |
-| 816 | 1 | `public double getBoughtAtIssueLifetime()` | ...and since founding, what it paid. |
-| 818 | 1 | `public double getParAtIssueLifetime()` | ...and the par. |
-| 820 | 1 | `public double getPrintedLifetime()` |  |
-| 821 | 1 | `public double getIssuedLifetime()` |  |
-| 822 | 1 | `public double getRetiredLifetime()` |  |
-| 823 | 1 | `public double getRemittedLifetime()` |  |
+| 467 | 9 | `public double buyPaper(double price, double face)` | Buys this much face for this price, in money made for it. |
+| 486 | 6 | `public double buyPaperFromHouseholds(double price, double face)` | Buys this much face from the households for this price, in money made for them (0.7.15): the paper the bank could not sell it. |
+| 501 | 5 | `public double buyPaperFromWorld(double price, double face)` | Buys this much face from the world for this price (CD2, slice 5), in money made for it, the last the dial reaches: the same purchase as buyPaper(), counted apart because the money made leaves the city for the world - ... |
+| 517 | 10 | `public double buyAtIssue(double price, double face)` | Its add-on at issue (0.7.15, round 2): this much face of the city's new paper for this price - the issue's own price on each unit of face - paid to the treasury in money made for it. |
+| 529 | 9 | `public double sellPaper(double price, double face)` | ...and sells it back, which destroys the price. |
+| 540 | 6 | `public double takeCoupon(double x)` | The coupon on its share, from the treasury: income here, and money destroyed. |
+| 548 | 7 | `public double takePrincipal(double x)` | Principal repaid on its share: off the book at face, and destroyed. |
+| 562 | 5 | `public void paperBoughtBack(double price, double face)` | The treasury buys back a bond this bank holds part of, between two presses: the face comes off the book now, and the price and the gain against face wait for the top of the next month (settleRedemptions()), where the ... |
+| 569 | 10 | `public double settleRedemptions()` | ...and settled: the price destroyed, the gain into this month's profit. |
+| 581 | 1 | `public double getRedemptionDue()` | What the treasury has paid for this bank's share of a buyback and it has not yet settled: carried in the treasury's pool until it has. |
+| 583 | 1 | `public double getTargetShare()` |  |
+| 584 | 1 | `public double getPreviousTarget()` |  |
+| 590 | 3 | `public void hearMoneyMonth(int month)` | Permissions are calendar data and are re-established after a load. |
+| 595 | 9 | `public void setTargetShare(double share)` | The dial, held to 0..MAX_QE_SHARE. |
+| 612 | 3 | `public void restoreTargetShare(double share)` | The dial as a save left it, WITHOUT moving the memory of where it was: the load path's setter. |
+| 621 | 5 | `public double stepFor(double termPrincipal)` | The most the book may move this month, at face, against this much term paper outstanding: QE_SPEED of the larger of the dial, the setting before it and the share it actually holds. |
 
-### THE SAVE (lines 825-955)
+### THE DEFENCE (0.7.2) (lines 627-737)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 843 | 29 | `public double[] toSaveArray()` | Everything above that is state rather than this month's flow, as one array under its own key (DataSave.centralBank). |
-| 873 | 34 | `public void restore(double[] saved)` |  |
-| 909 | 17 | `public void reset()` | An empty bank: nothing lent, nothing made. |
-| 932 | 23 | `public void redenominate(double scale)` | Every figure on this balance sheet, in the new unit. |
+| 685 | 5 | `public void dollarsSold(double local)` | The vault's dollars were sold at the reprice for this much local money. |
+| 692 | 1 | `public double getDefendedThisMonth()` | Spent defending the currency at this month's reprice, at the rate the dollars were sold at. |
+| 694 | 1 | `public double getDefendedLifetime()` | ...and since founding. |
+| 701 | 1 | `public double vaultSpent()` | Spent defending the currency since founding: the local price of every dollar the defence has sold. |
+| 711 | 7 | `public double buyDollarsForVault(double local)` | Pays this much local money, made for the purpose, for the dollars the vault bought at the strong edge (the mirror of the defence; Game .settleTheEdge()). |
+| 720 | 6 | `public void mintGold(double local)` | Issues the mint's payment to a domestic miner, thousands of D$ (GD4). |
+| 728 | 1 | `public double getGoldMinted()` | The month's domestic mint payment, kept on save for the audit and the books. |
+| 731 | 1 | `public double getGoldMintedLifetime()` | The domestic mint's new money since founding. |
+| 734 | 1 | `public double getDollarsBought()` | What it paid, in new money, for the dollars it bought for the vault this month. |
+| 736 | 1 | `public double getDollarsBoughtLifetime()` | ...and since founding. |
+
+### THE CEILING (lines 738-786)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 741 | 6 | `public void noteRevenue(double monthRevenue)` | Files a month of the treasury's revenue, for the ceiling. |
+| 749 | 6 | `public double trailingRevenue()` | The treasury's revenue a month, averaged over what has been filed. |
+| 757 | 1 | `public double ceiling()` | The most the treasury may owe here before the arrears rule decides who is paid: the dial's months of its trailing revenue. |
+| 760 | 4 | `public double ceilingAt(double months)` | ...at a ceiling of the caller's, in months (0.7.36): what the dial would allow at that setting, held to its range - the Policy tab's ceiling preview. |
+| 766 | 1 | `public double getAdvancesCeilingMonths()` | The ceiling dial, in months of revenue. |
+| 769 | 11 | `public void setAdvancesCeilingMonths(double months)` | Sets the ceiling dial, held to 0..MAX_ADVANCES_CEILING; a number that is not one reads the default. |
+| 782 | 1 | `public double headroom()` | What the treasury may still draw for anything that is not a promise. |
+| 785 | 1 | `public boolean ceilingBound()` | True once the treasury owes the ceiling or more. |
+
+### READING (lines 787-855)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 789 | 1 | `public double getAdvancesToBank()` |  |
+| 790 | 1 | `public double getAdvancesToTreasury()` |  |
+| 791 | 1 | `public double getPaperHeld()` |  |
+| 793 | 1 | `public double getVault()` | The vault, at today's rate, read from ForeignAccounts. |
+| 794 | 1 | `public double getReserves()` |  |
+| 795 | 1 | `public double getCurrency()` |  |
+| 797 | 3 | `public double totalAssets()` |  |
+| 802 | 1 | `public double m0()` | M0: everything this bank owes, which is every dollar it has made and not taken back. |
+| 804 | 1 | `public double totalLiabilities()` |  |
+| 806 | 1 | `public double equity()` |  |
+| 808 | 1 | `public double getLossCarried()` |  |
+| 809 | 1 | `public double getRemittanceDue()` |  |
+| 811 | 1 | `public double getIssued()` |  |
+| 812 | 1 | `public double getRetired()` |  |
+| 815 | 1 | `public double getM0Moved()` | What M0 moved by this month: the money made less the money destroyed (0.7.32, the Finances tab's THIS MONTH, which subtracted them itself). |
+| 816 | 1 | `public double getAdvancedToBank()` |  |
+| 817 | 1 | `public double getRepaidByBank()` |  |
+| 819 | 1 | `public double getAdvancedToTreasury()` | Printed this month: what was advanced to the treasury. |
+| 820 | 1 | `public double getRepaidByTreasury()` |  |
+| 821 | 1 | `public double getInterestOnReserves()` |  |
+| 822 | 1 | `public double getWindowInterest()` |  |
+| 823 | 1 | `public double getAdvancesInterest()` |  |
+| 825 | 1 | `public double getRemitted()` | The remittance paid to the treasury this month. |
+| 827 | 1 | `public double getBoughtPaper()` | The holdings' month (0.7.1). |
+| 828 | 1 | `public double getSoldPaper()` |  |
+| 829 | 1 | `public double getPaperCoupons()` |  |
+| 830 | 1 | `public double getPaperRedeemed()` |  |
+| 832 | 1 | `public double getBoughtBack()` | What a buyback redeemed of its paper, settled this month. |
+| 833 | 1 | `public double getPaperGains()` |  |
+| 834 | 1 | `public double getBoughtPaperLifetime()` |  |
+| 835 | 1 | `public double getSoldPaperLifetime()` |  |
+| 837 | 1 | `public double getBoughtFromHouseholds()` | Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. |
+| 839 | 1 | `public double getBoughtFromWorld()` | ...and the world (CD2, slice 5). |
+| 841 | 1 | `public double getBoughtFromHouseholdsLifetime()` | ...and since founding. |
+| 843 | 1 | `public double getBoughtAtIssue()` | What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). |
+| 845 | 1 | `public double getParAtIssue()` | ...their par: what of its maturing paper it rolled this month. |
+| 847 | 1 | `public double getBoughtAtIssueLifetime()` | ...and since founding, what it paid. |
+| 849 | 1 | `public double getParAtIssueLifetime()` | ...and the par. |
+| 851 | 1 | `public double getPrintedLifetime()` |  |
+| 852 | 1 | `public double getIssuedLifetime()` |  |
+| 853 | 1 | `public double getRetiredLifetime()` |  |
+| 854 | 1 | `public double getRemittedLifetime()` |  |
+
+### THE SAVE (lines 856-991)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 874 | 31 | `public double[] toSaveArray()` | Everything above that is state rather than this month's flow, as one array under its own key (DataSave.centralBank). |
+| 906 | 36 | `public void restore(double[] saved)` |  |
+| 944 | 17 | `public void reset()` | An empty bank: nothing lent, nothing made. |
+| 967 | 24 | `public void redenominate(double scale)` | Every figure on this balance sheet, in the new unit. |
 

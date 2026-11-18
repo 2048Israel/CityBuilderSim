@@ -384,16 +384,7 @@ public class HealthCheck {
          * after this section.
          */
         ham.citybuildersim.sectors.Retail shops = well.getSectors().retail();
-        /*
-         * THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}). The sick rate cuts what the shops CAN hand
-         * over, which shows only where the shelf holds more than that. The played city used to give it for free: at month 36 it
-         * had 2,094 people and a shelf over its shops' reach. The brake on arrivals (Migration.arrivalBrake()) does not act at
-         * month 36, under Migration.BRAKE_FROM_MONTH, and the same city has 1,872 (1,655 when the brake acted from month 1, and
-         * then a shelf its shops could empty and the premise below failed). WG2's part 1, senior care no longer lifting the jobs'
-         * draw, is only 29 of the 222 people fewer than 2,094 (the city is 1,901 with the jobs' draw lifted by it as before); the
-         * rest was not measured here. So the fixture causes the shelf whatever the city's size: every pantry is put at
-         * SHELF_STOCK times what the city left there, before the full-health sale and before it is saved.
-         */
+        // THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}).
         final double SHELF_STOCK = 10;
         for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) shops.setPantry(sg, shops.getPantry(sg) * SHELF_STOCK);
         /*
@@ -1195,6 +1186,14 @@ public class HealthCheck {
          * of households with nothing behind them, which is what the fee has
          * to be tested against. Three twins from the same founding, the same
          * buildings, the same months, at fees of 0, 1x and the dial's top.
+         *
+         * HX1, RN1-F: AND THE POOR LEFT BETWEEN THE BILLS. The drain left every cell clearing fifteen bills (the employed) or not one (the out of work),
+         * so the x1 and x15 twins served the same people (83.0% and 83.0%, coverage 86.20% in both on 0.9.60's build; 85.69% and 85.57% on GW1's), the
+         * claims below compared the twins' noise, and a fee at the dial's top bit in hunger (13% against 20%: a household above its basket paying the dear
+         * bill by eating less) and not in who was served. betweenTheBills() puts the cells that are short of a basket and BETWEEN_THE_BILLS bills where
+         * they are served in full at the founding fee and in part at the top; keepBedsAhead() keeps a place for each person in every twin, whatever path
+         * the city takes (CU2's path grew the free twin to 34,610 people against 30,000 places). Both are the fixture's causes, and the lines that say so fail
+         * if the fixture misses; what the played twins then read (the burials, the old, the year's hunger) is the model's.
          */
         System.out.println("  building a poor city three times over...");
         double[] scales = { 0, TaxPolicy.DEFAULT_HEALTH_FEE_SCALE, TaxPolicy.MAX_HEALTH_FEE_SCALE };
@@ -1235,6 +1234,14 @@ public class HealthCheck {
         double[] bedCover = new double[scales.length];
         double[] coverRead = new double[scales.length];
         double[] peakPeople = new double[scales.length];
+        // HX1, RN1-F: the share of its people each twin's last month left between one bill and fifteen (betweenTheBills()), the months a twin's
+        // clinics held a place for fewer people than it had (keepBedsAhead()), and the clinics it ended with.
+        double[] liftedShare = new double[scales.length];
+        double[] bedsShortMonths = new double[scales.length];
+        double[] clinicsEnd = new double[scales.length];
+        // ...and the clinics each month added, struck in the free twin's months and laid again in the others', so the same buildings stand in every twin (the
+        // buildings' upkeep below is read as the same figure) and a place for each of them is the premise it is read against.
+        int[] bedsAdded = new int[48 + window];
         // The months a twin turned somebody away and charged less than the
         // same beds would raise at full service (0.7.103, see THE MONTHS THE
         // FEE TURNED SOMEBODY AWAY below).
@@ -1260,12 +1267,10 @@ public class HealthCheck {
             System.setOut(quiet);
             try {
                 town.run();
-                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
-                // are placed free, but their running costs - the coal plant's unbilled
-                // draw, the city's own services - come out of the treasury month after
-                // month, and on the D$100M a city founds with since 0.7.10 it ran dry
-                // and simulateMonths() stopped. Given the D$2.5B it assumed, the
-                // Wealthy preset's, explicitly.
+                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings are placed free, but
+                // their running costs - the coal plant's unbilled draw, the city's own services - come out of
+                // the treasury month after month, and on the D$100M a city founds with since 0.7.10 it ran
+                // dry and simulateMonths() stopped.
                 town.setCashForTest(Founding.WEALTHY_CASH);
                 BuildingManager b = town.getBuildingManager();
                 town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 100_000_000L);
@@ -1334,12 +1339,15 @@ public class HealthCheck {
                 // Three build alike enough for the fee to be what differs.
                 b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
                 // ...and the fleet of Freight's Haulage kept ahead of the plant (trucksKeepUp(), FR2).
+                int standing = clinics, step = 0;
                 for (int pre = 0; pre < 48; pre++) {
                     trucksKeepUp(town);
+                    standing = keepBedsAhead(town, standing, bedsAdded, step++, k == 0);
                     town.simulateMonths(1);
                 }
                 // ...and the clinics' two more, with a place for the peak the twins now reach (GW1; see the note at clinics).
                 b.addStack(b.getTemplateByName("Walk-in Clinic"), extraClinics, true);
+                standing += extraClinics;
                 // The drain: nothing saved, nothing abroad, no shares, and
                 // the bank not lending - the waterfall's every step before
                 // "eat less" already spent.
@@ -1349,36 +1357,15 @@ public class HealthCheck {
                     java.util.Arrays.fill(c.shares, 0);
                     c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                 }
-                /*
-                 * ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31). The twins stand alike for their first 48 months (one
-                 * founding, no fee yet) and the claim is the fee's, but the window left every investor free to build against each twin's
-                 * own demand, so the twins' paths parted by more than the fee does. On the path before LD1 the dear twin buried 14.67
-                 * a year per 1,000 against the founding fee's 14.19 (old 82.22 against 80.31); once the refused posts bid their band's
-                 * wage up (WantedPosts) the dear twin's economy grew the better one, ended at 12,817 people against 9,536, priced out
-                 * 928 in general care against 1,303 on the old path, and buried 14.11 against 14.29 (old 81.25 against 81.61): the
-                 * fee's few points of coverage were smaller than what the demography of two growing cities differs by. Every sector is
-                 * held (BusinessInvestment.holdSector(), "a harness names the sectors its question is not about") from the drain on,
-                 * so each twin keeps the buildings the fixture put up and the fee is all that differs: the twins end at 10,238 and 10,327
-                 * people and bury 14.49 against 14.94 (the old 81.87 against 82.73), as they do on the model before LD1 (14.49, 14.94; 81.92, 82.76).
-                 */
+                // ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31).
                 for (String key : Sectors.KEYS) town.getBusinessInvestment().holdSector(key);
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
                 for (int m = 0; m < window; m++) {
+                    if (m == 0) CHARGED.clear();
+                    liftedShare[k] = betweenTheBills(town);
                     trucksKeepUp(town);
-                    /*
-                     * WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW. The drain above shuts it once, for HouseholdBalance.LOCKOUT_MONTHS
-                     * (12), and then the households borrow again. From month 12 the old's cells have $8k to $27k a household to spend against
-                     * a care bill of $100 to $120 a household at x1 and $2.2k to $3.6k at x15, so every old head pays at both fees (at month 30,
-                     * 1,815 of them at x1 and 2,058 at x15, none turned away): the fee on senior care turned nobody away after the first eleven
-                     * months, and in those it turned away the same 965 of 1,767 old heads at x1 and at x15 (the ones the drain left with
-                     * nothing, whatever the fee). The twins' old were served alike (senior coverage 0.924 mean in both) and what the assertion
-                     * read was the all-ages sickness that general care sets: the old's rate 52.33 at x1 against 52.61 at x15 on WN3 before
-                     * the merge (e1be7c9f), a margin of 0.5%, and 53.17 against 53.14 on the merged model, 0.06% the other way. The fixture
-                     * had never caused its condition. Renewed each month, the shut bank is the drain's premise for all 96 months (households
-                     * with nothing behind them): the old's cells are broke or between the two bills, senior care is priced out in every month
-                     * and more of it at x15 (senior coverage 0.344 mean against 0.379 at x1), and the old's rate is 79.95 against 82.18.
-                     * The same renewal as CreditCheck's ban (heldBroke): a condition that wears off is caused again.
-                     */
+                    standing = keepBedsAhead(town, standing, bedsAdded, step++, k == 0);
+                    // WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW.
                     for (Household c : town.getHouseholdBalance().cells()) c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                     town.simulateMonths(1);
                     Healthcare hc = town.getHealthcare();
@@ -1395,6 +1382,8 @@ public class HealthCheck {
                     bedCover[k] += wouldServe > 0 ? Math.min(1, hc.getOffered(CareType.GENERAL) / wouldServe) : 1;
                     coverRead[k] += hc.getCoverage(CareType.GENERAL);
                     peakPeople[k] = Math.max(peakPeople[k], town.getCohorts().total());
+                    if (standing * (double) b.getTemplateByName("Walk-in Clinic").getCapacity() < town.getCohorts().total()) bedsShortMonths[k]++;
+                    clinicsEnd[k] = standing;
                     deathsOver[k] += town.getCohorts().getLastDeaths();
                     eldersLost[k] += town.getCohorts().getDeaths(AgeBand.SENIOR)
                             + town.getCohorts().getDeaths(AgeBand.ELDER);
@@ -1431,10 +1420,14 @@ public class HealthCheck {
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
                     hungerAtEnd[k] * 100, hungerYear[k] * 100, hungerYearPriced[k] * 100, hungerYearShelf[k] * 100);
         }
-        assertTrue("fixture: the poor city has somebody at the eat-less step",
-                hungerAtEnd[1] > 0);
-        assertTrue("fixture: at the dial's top the fee priced somebody out",
-                pricedOutMonths[2] > 0);
+        Observation.reached("fixture: the poor city has somebody at the eat-less step", hungerAtEnd[1] > 0);
+        // HX1, RN1-F: the three lines below are the fixture's own (betweenTheBills(), keepBedsAhead()), caused and not waited for, so a miss is the fixture's fault and fails.
+        System.out.printf("  between one bill and fifteen: %.1f%% of the people at x%.2f, %.1f%% at x%.2f (the last month's lift); %,.0f, %,.0f and %,.0f clinics at the end%n",
+                liftedShare[1] * 100, scales[1], liftedShare[2] * 100, scales[2], clinicsEnd[0], clinicsEnd[1], clinicsEnd[2]);
+        assertTrue("fixture: every twin held a place at a clinic for every one of its people in every month",
+                bedsShortMonths[0] == 0 && bedsShortMonths[1] == 0 && bedsShortMonths[2] == 0);
+        assertTrue("fixture: at the dial's top the fee turns away a material share of the care the founding fee serves",
+                meanAffordable[1] - meanAffordable[2] >= MATERIAL_TURNED_AWAY);
         assertTrue("at a high fee a poor city serves a smaller share of its people than at the founding fee",
                 meanAffordable[2] < meanAffordable[1]);
         /*
@@ -1459,12 +1452,8 @@ public class HealthCheck {
         }
         System.out.printf("  the beds took %.2f%% of those general care serves at x%.2f and %.2f%% at x%.2f; the fee left coverage at %.2f%% and %.2f%%%n",
                 bedCover[1] * 100, scales[1], bedCover[2] * 100, scales[2], coverRead[1] * 100, coverRead[2] * 100);
-        double places = (clinics + extraClinics)
-                * (double) towns[0].getBuildingManager().getTemplateByName("Walk-in Clinic").getCapacity();
-        System.out.printf("  the clinics' %,.0f places against the peaks of %,.0f, %,.0f and %,.0f people%n",
-                places, peakPeople[0], peakPeople[1], peakPeople[2]);
-        assertTrue("fixture: the same clinics in every twin, a place for more people than any of them holds",
-                places > Math.max(peakPeople[0], Math.max(peakPeople[1], peakPeople[2])));
+        System.out.printf("  the peaks of %,.0f, %,.0f and %,.0f people against %,.0f places at the end of each twin%n",
+                peakPeople[0], peakPeople[1], peakPeople[2], clinicsEnd[2] * (double) towns[2].getBuildingManager().getTemplateByName("Walk-in Clinic").getCapacity());
         assertTrue("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",
                 bedCover[2] - bedCover[1] < meanAffordable[1] - meanAffordable[2]);
         assertTrue("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
@@ -1491,6 +1480,7 @@ public class HealthCheck {
         System.out.printf("  deaths a year per 1,000: %.2f at x%.2f, %.2f at x%.2f; the old %.2f against %.2f%n",
                 deathRate1 * 12_000, scales[1], deathRate2 * 12_000, scales[2],
                 elderRate1 * 12_000, elderRate2 * 12_000);
+        // HX1, RN1-F: with the fixture causing the fee's bite (the lines above), the claims are the harness's own again, hard as they were before PO1 observed them.
         assertTrue("...and it buries more of its people over the run", deathRate2 > deathRate1);
         assertTrue("...its old first, whom a fee on senior care turns away", elderRate2 > elderRate1);
         check("with the fee at nothing the same city is served in full, every month",
@@ -1743,6 +1733,81 @@ public class HealthCheck {
                 ? "\nAll checks passed."
                 : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /**
+     * Where a poor household's money is left, in bills: the geometric middle of the span from the founding fee's bill to the dial's top (HX1, RN1-F). A
+     * household serves itself care out of what is left of its money after a basket (Household.affordCare()): it pays the whole bill when that is
+     * at least the bill and part of it when it is less. The dial's top charges MAX_HEALTH_FEE_SCALE / DEFAULT_HEALTH_FEE_SCALE (fifteen) times the founding
+     * fee, so only a household whose money after a basket lies between one bill and fifteen is served in full at the founding fee and in part at the top: its
+     * share is the whole of the fee's effect on who is served. The drain left none there: every cell cleared fifteen bills (the employed) or could not clear one
+     * (the out of work), the x1 and x15 twins served 83.0% alike on 0.9.60's build and read 86.20% coverage in both, and the claims below compared the twins' noise.
+     */
+    static final double BETWEEN_THE_BILLS = Math.sqrt(TaxPolicy.MAX_HEALTH_FEE_SCALE / TaxPolicy.DEFAULT_HEALTH_FEE_SCALE);
+
+    /**
+     * HX1: how much more of the care offered the dear twin must turn away than the founding fee's, a fraction: five points. A fee that moves who is served
+     * by under a point (the old fixture's 83.0% against 83.0%, coverage 85.69% against 85.57%) leaves the twins' burials to their own noise, and what the
+     * claims below read is then the twins' sizes and shelves; five points is beyond that noise and well under what the lifted twins part by.
+     */
+    static final double MATERIAL_TURNED_AWAY = .05;
+
+    /** What each cell was charged for care in the month just run (the bill its last plan struck), by cell: betweenTheBills() reads the month's money before that bill. */
+    static final java.util.IdentityHashMap<Household, Double> CHARGED = new java.util.IdentityHashMap<>();
+
+    /**
+     * HX1, RN1-F: the households the drain left short of a basket are given the savings that leave them, after the month's rent, fixed bills and the shopping
+     * they planned, a basket and BETWEEN_THE_BILLS of the founding fee's bill, a month at a time (the drain's savings are spent, and a cell's money moves with
+     * the month's wage and rent). Households with more than that (a basket and BETWEEN_THE_BILLS bills to spare, before the shopping) are left as they are. The same in every
+     * twin, so the fee is what differs; the bill is the model's own (Healthcare.treatmentFeesAtOne() over the people who pay, a household's share by its
+     * people, as HouseholdAccounts splits it), and each cell's money before the bill it was charged is struck from last month's after-fixed plus what it was
+     * charged then: struck from the month's after-fixed alone the fixture swung between a household that paid in full and one that paid nothing, every
+     * other month (x15: 100% paid, then none, then 100%), the swing affordCare()'s own comment warns of. Returns the share of the people lifted.
+     */
+    static double betweenTheBills(Game town) {
+        Healthcare hc = town.getHealthcare();
+        double paying = 0;
+        for (Household c : town.getHouseholdBalance().cells()) {
+            if (c.isEmpty() || c.row() == Household.ORPHAN_ROW || c.row() == Household.PRISON_ROW) continue;
+            paying += c.people();
+        }
+        double perPerson = paying > 0 ? hc.treatmentFeesAtOne() / paying : 0;
+        double scale = town.getEconomyManager().getTaxPolicy().getHealthFeeScale();
+        double lifted = 0;
+        for (Household c : town.getHouseholdBalance().cells()) {
+            if (c.isEmpty() || c.row() == Household.ORPHAN_ROW || c.row() == Household.PRISON_ROW) continue;
+            double bill = perPerson * c.headcount();
+            double charged = c.carePaid() * scale * bill;
+            double before = c.afterFixed + CHARGED.getOrDefault(c, charged);
+            double lift = BETWEEN_THE_BILLS * bill + c.subsistence + c.planned - before;
+            CHARGED.put(c, charged);
+            if (before - c.subsistence >= BETWEEN_THE_BILLS * bill) continue;   // more than that: left as it is
+            c.savings = Math.max(0, lift);
+            lifted += c.people();
+        }
+        return paying > 0 ? lifted / paying : 0;
+    }
+
+    /** HX1: how many places the clinics keep ahead of the people: a fifth over. The twins' places are what the fee is not to be read against. */
+    static final double BEDS_AHEAD = 1.2;
+
+    /**
+     * HX1, CU2's path: the Walk-in Clinics standing, more added the month the people outgrow BEDS_AHEAD of their places, so that every twin has a place for
+     * every person whatever path the city takes (a fixed twelve clinics held 30,000 places on 0.9.129 against peaks of 17,000 and missed on a path that grew
+     * to 34,610). The free twin (first) strikes what each month needs and keeps it in the plan; the others lay the same clinics in the same months, so the
+     * twins stand on the same buildings and the fee is what differs (a twin that added its own clinics read a buildings' upkeep 3% apart). Returns the
+     * clinics standing.
+     */
+    static int keepBedsAhead(Game town, int standing, int[] plan, int month, boolean first) {
+        BuildingManager b = town.getBuildingManager();
+        BuildingsTemplate clinic = b.getTemplateByName("Walk-in Clinic");
+        if (first) {
+            double want = BEDS_AHEAD * town.getCohorts().total();
+            double have = standing * (double) clinic.getCapacity();
+            plan[month] = have >= want ? 0 : (int) Math.ceil((want - have) / clinic.getCapacity());
+        }
+        if (plan[month] > 0) b.addStack(clinic, plan[month], true);
+        return standing + plan[month];
     }
 
     /** A city with enough in it that the sectors have something to lose. */

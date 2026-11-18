@@ -1,6 +1,6 @@
 # CityNeeds.java - 1,112 lines · 48 methods · 23 constants · model
 
-`ham/citybuildersim/CityNeeds.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityNeeds.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > NEEDS YOU, measured: everything with a lever, each against its own line, in
 > the order a city is built - the list the left panel's Summary prints, the
@@ -34,9 +34,9 @@
 > Reads the city; changes nothing. Every figure is a getter the screens
 > already read.
 
-**Uses:** [CareType](CareType.md) (48), [EducationType](EducationType.md) (36), [Game](Game.md) (21), [InfrastructureManager](InfrastructureManager.md) (6), [Education](Education.md) (6), [JobType](JobType.md) (6), [BuildingType](BuildingType.md) (5), [LandManager](LandManager.md) (5), [Formats](Formats.md) (4), [PopulationCohorts](PopulationCohorts.md) (3), [DebtManager](DebtManager.md) (3), [PopulationManager](PopulationManager.md) (3), [WageBand](WageBand.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (2), [SafetyType](SafetyType.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildersShort](BuildersShort.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [EconomyManager](EconomyManager.md) (1), [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1), [FamilyModel](FamilyModel.md) (1), [Bank](Bank.md) (1), [BuildAdvice](BuildAdvice.md) (1), [Expectations](Expectations.md) (1), [PriceIndex](PriceIndex.md) (1), [Zoning](Zoning.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1)... and 6 more
+**Uses:** [CareType](CareType.md) (48), [EducationType](EducationType.md) (36), [Game](Game.md) (21), [InfrastructureManager](InfrastructureManager.md) (6), [Education](Education.md) (6), [JobType](JobType.md) (6), [BuildingType](BuildingType.md) (5), [LandManager](LandManager.md) (5), [Formats](Formats.md) (4), [PopulationCohorts](PopulationCohorts.md) (3), [DebtManager](DebtManager.md) (3), [PopulationManager](PopulationManager.md) (3), [WageBand](WageBand.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (2), [BuildAdvice](BuildAdvice.md) (2), [SafetyType](SafetyType.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildersShort](BuildersShort.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [EconomyManager](EconomyManager.md) (1), [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1), [FamilyModel](FamilyModel.md) (1), [Bank](Bank.md) (1), [Expectations](Expectations.md) (1), [PriceIndex](PriceIndex.md) (1), [Zoning](Zoning.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1)... and 6 more
 
-**Used by (29):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (30):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [PeopleScreen](PeopleScreen.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -124,7 +124,7 @@
 | 315 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
 | 647 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
 | 650 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 985 | `CityNeeds.FIRST_SCHOOL_SHARE` | `.5` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
+| 985 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
 
 ## Methods, in file order, under their sections
 
@@ -138,7 +138,7 @@
 | 93 | 9 | `public boolean cityBuilds()` _(in CityNeeds.Need)_ | A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. |
 | 109 | 12 | `public Served served()` _(in CityNeeds.Need)_ | What the row's figure serves, read the one way (0.7.41), for the rows that are a supply against a demand - power, water, the road, care and the schools - or null for the rest. |
 | 127 | 4 | `public int verdictLevel()` _(in CityNeeds.Need)_ | The row's colour on a screen (0.7.41): a served row's verdict, so a gauge and its row read one colour everywhere; any other row's level. |
-| 132 | 4 | `Need withOnSite(String moreReading, int units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
+| 132 | 4 | `Need withOnSite(String moreReading, long units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
 | 143 | 6 | **type** `public interface Words` | How the interface writes a figure, passed in so the readings are its own: a headcount, an amount of money in the model's thousands, a short number for a narrow cell, and a build time. |
 | 144 | 1 | `String people(double count)` _(in CityNeeds.Words)_ |  |
 | 145 | 1 | `String money(double thousands)` _(in CityNeeds.Words)_ |  |

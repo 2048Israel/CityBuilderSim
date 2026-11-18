@@ -117,7 +117,7 @@ public class MiningCheck {
             for (long x = cx - 1; x <= cx + 1; x++) {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), Resource.IRON)) {
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
                     best = r;
                     nearest = d;

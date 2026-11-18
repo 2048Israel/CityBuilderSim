@@ -116,7 +116,7 @@ public final class BuildCard {
                           double bar1, double bar2, Bar2 bar2Kind,
                           String per, String perTag,
                           double staffable, double staffableWithArrivals, double running, double[] detail,
-                          int owned, int onSite, double siteMonths, double landFree) {
+                          long owned, long onSite, double siteMonths, double landFree) {
 
         /** No positive unit to price against: a maker whose inputs cost more than it makes, or a city building nobody could staff. Both bars read "—". */
         public boolean addsNothing() { return !(unit > 0); }
@@ -485,7 +485,7 @@ public final class BuildCard {
      * when the card and the advice recommend it (BuildAdvice.pavingBeatsPaved()).
      * Null for any other building, or with no Paved Road in the catalogue.
      */
-    public record Paving(int paveable, int paving, Game.BuildQuote one, double unit, double frees,
+    public record Paving(long paveable, long paving, Game.BuildQuote one, double unit, double frees,
                          double perTrip, double pavedPerTrip, boolean beatsPaved) { }
 
     public static Paving paving(Game game, BuildingsTemplate t) {
@@ -494,7 +494,7 @@ public final class BuildCard {
         Game.BuildQuote one = game.quotePave(1);
         if (to == null || one == null) return null;
         BuildAdvice.Measure roads = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, roads);
+        java.util.Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, roads);
         double free = game.getLandManager().getAvailableSqFt();
         double unit = BuildAdvice.pavingUnit(game, site), paved = BuildAdvice.unit(game, roads, to);
         double per = unit > 0 ? BuildAdvice.pavingLifetime(game, free, site) / unit : Double.POSITIVE_INFINITY;
@@ -503,16 +503,25 @@ public final class BuildCard {
                 BuildAdvice.pavingBeatsPaved(game, free, site));
     }
 
-    /** What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). */
+    /** What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. */
     public static double runningCost(Game game, BuildingsTemplate t) {
         double[] wages = game.getPopulationManager().getWagesPerType();
+        double[] fill = game.getPopulationManager().getJobFillRate();
         double bill = 0;
         for (JobType job : JobType.values()) {
             int n = t.getJobs(job);
             if (n == 0) continue;
-            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()];
+            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()] * fill[job.ordinal()];
         }
         return t.getUpkeep() + bill;
+    }
+
+    /** The same full-horizon sum the advice uses, exposed to every city work's card (HW1). */
+    public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
+        BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
+        if (on == null) return null;
+        return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
+                game.getLandManager().getAvailableSqFt());
     }
 
     /** The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). */
@@ -534,9 +543,9 @@ public final class BuildCard {
         // ...on the ground its sector may build on (0.7.109, Z2): free for anyone, and its zone's (LandManager.freeFor()) - a works's, any dry ground (ET2).
         double free = game.freeGroundFor(t);
         BuildingManager bm = game.getBuildingManager();
-        int owned = bm.getQuantity(t.getId());
+        long owned = bm.getQuantity(t.getId());
         BuildingsStacks stack = bm.getStack(t);
-        int onSite = stack == null ? 0 : stack.getUnderConstruction();
+        long onSite = stack == null ? 0 : stack.getUnderConstruction();
         double siteMonths = onSite > 0 ? game.onSiteMonths(t) : 0;
 
         if (kind == Kind.CITY) {
@@ -1150,7 +1159,7 @@ public final class BuildCard {
      *                  weighed()), or null for any other
      */
     public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo,
-                            int onSite, double months, String word, Gate own, double estimate, Weighed planned) {
+                            long onSite, double months, String word, Gate own, double estimate, Weighed planned) {
 
         /** "this one:" is said when there is a gate, no investor is already building it, and the word does not already name it. */
         public boolean showOwn() { return own != null && !theirs && !word.contains(building); }
@@ -1168,7 +1177,7 @@ public final class BuildCard {
         String slot = slot(t);
         Sector owner = ownerOf(game, t);
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
-        int onSite = stack == null ? 0 : stack.getUnderConstruction();
+        long onSite = stack == null ? 0 : stack.getUnderConstruction();
         boolean theirs = false, yours = false;
         if (onSite > 0) {
             for (BuildingsStacks.Contract c : stack.getContracts()) {
@@ -1391,7 +1400,7 @@ public final class BuildCard {
      * field has room) and a coal mine (raw coal washed or sold as thermal),
      * its row's makes for any other.
      */
-    public record Stands(Resource resource, Deposit.FieldType type, int sites, int owned, int committed, double left,
+    public record Stands(Resource resource, Deposit.FieldType type, int sites, long owned, long committed, double left,
                          long[] byType, boolean fits, String wanting, Map<Good, Double> makes) {
 
         /** Whether it stands on its resource's fields of either type (a Quarry, a Large Quarry). */
@@ -1420,7 +1429,7 @@ public final class BuildCard {
      * (Game.hydroSlotsFree(), hydroSlots()), how many sites that is, and the best linked site's river width and head
      * (HydroSites.best(), the most mean power) - NaN for both when the city has none.
      */
-    public record Hydro(int free, int slots, int sites, double widthM, double headM) { }
+    public record Hydro(long free, long slots, int sites, double widthM, double headM) { }
 
     /**
      * Where a long bridge would go (ET6): the crossing the model surveyed toward the landmass the card picked
@@ -1846,7 +1855,7 @@ public final class BuildCard {
      * @param landBlocked the month put it on Game.getLandBlockedSectors()
      */
     public record SectorInvestors(Sector owner, String word, WordKind kind, List<Investors> buildings,
-                                  boolean theirs, boolean yoursToo, int onSite, double months, boolean landBlocked) {
+                                  boolean theirs, boolean yoursToo, long onSite, double months, boolean landBlocked) {
 
         /** The sector's line as a build card's line is worded: its own name, its word, no gate of its own. */
         public Investors line() {
@@ -1857,7 +1866,7 @@ public final class BuildCard {
     public static SectorInvestors sectorInvestors(Game game, Sector sector) {
         List<Investors> all = new ArrayList<>();
         boolean theirs = false, yours = false;
-        int onSite = 0;
+        long onSite = 0;
         double months = 0;
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (citys(t) || ownerOf(game, t) != sector) continue;
@@ -1892,7 +1901,7 @@ public final class BuildCard {
         public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure) { this(kind, quote, figure, null); }
     }
 
-    public static Verdict verdict(Game game, BuildingsTemplate t, int n) {
+    public static Verdict verdict(Game game, BuildingsTemplate t, long n) {
         Game.BuildQuote q = game.quoteBuild(t, n);
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);

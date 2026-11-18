@@ -432,7 +432,7 @@ public class MaterialsCheck {
         assertTrue("a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked",
                 w.outputRow(Good.STEEL).captive == steelMade && w.outputRow(Good.STEEL).produced == 0
                         && w.bid(Good.STEEL) == 2 * 2000 * rate - steelMade);
-        // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron; and since
+        // One sector in the game keeps captive goods since 0.7.123 (batch I4): Iron & Steel, its scrap, coke and pig iron (and since R6b, FE4, its pellets: the Hydrogen Steel Works uses what the pelletising plants make); and since
         // 0.7.133 (batch I8; spec 2.7, "anode and cathode in Copper Refining") a second, Copper Refining; and since 0.7.140 (batch
         // I10; spec 2.7, "residues and pulp") a third, Wood Products.
         Game g = new Game(GameFiles.scratch("materialscheck-captive"));
@@ -447,11 +447,11 @@ public class MaterialsCheck {
             else others &= !s.captive(x) && s.captiveUnits(x) == 0;
         }
         assertTrue("three sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its"
-                        + " scrap, coke and pig iron, which its works both make and use - since 0.7.133 Copper Refining, its anode and"
+                        + " scrap, coke and pig iron, which its works both make and use, and since R6b (FE4) its pellets, which the Hydrogen Steel Works uses - since 0.7.133 Copper Refining, its anode and"
                         + " cathode, and since 0.7.140 Wood Products, its residues and pulp; every other none (Sector.captive() false): "
                         + kept + " " + copper + " " + wood,
                 others && g.getSectors().heavyIndustry() instanceof ProcessingSector
-                        && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PIG_IRON, Good.MET_COKE))
+                        && kept.equals(java.util.EnumSet.of(Good.SCRAP, Good.PELLETS, Good.PIG_IRON, Good.MET_COKE))
                         && copper.equals(java.util.EnumSet.of(Good.ANODE, Good.COPPER))
                         && wood.equals(java.util.EnumSet.of(Good.RESIDUES, Good.PULP)));
     }
@@ -689,7 +689,7 @@ public class MaterialsCheck {
         quietly(() -> land.restoreSites(Resource.IRON, 3, 5_000_000));
         assertTrue("Mining is an ExtractionSector on iron's ground, its good iron ore", mining instanceof ExtractionSector
                 && mining.resource() == Resource.IRON && mining.groundGood() == Good.IRON);
-        int sites = mining.sitesOwned();
+        long sites = mining.sitesOwned();
         report("its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())",
                 sites == land.getIronDeposits() && mining.sitesWorked() == g.minesCommitted() && sites >= 3
                         && mining.sitesWorked() == 0, String.format("%d sites, %d worked", sites, mining.sitesWorked()));
@@ -1377,12 +1377,12 @@ public class MaterialsCheck {
         report("...and the plan orders the one of the two that earns more on its whole cost, its freight in it",
                 both.build && both.template == (pitScore > mineScore ? pit : mine),
                 String.format("%s; the pit %.3f%%, the Iron Mine %.3f%% a month", both.reason, 100 * pitScore, 100 * mineScore));
-        Map<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
-        run.put(mine, 1);
-        run.put(pit, 1);
-        Map<BuildingsTemplate, Integer> pitFirst = new LinkedHashMap<>();
-        pitFirst.put(pit, 1);
-        pitFirst.put(mine, 1);
+        Map<BuildingsTemplate, Long> run = new LinkedHashMap<>();
+        run.put(mine, 1L);
+        run.put(pit, 1L);
+        Map<BuildingsTemplate, Long> pitFirst = new LinkedHashMap<>();
+        pitFirst.put(pit, 1L);
+        pitFirst.put(mine, 1L);
         assertTrue("a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead"
                         + " leaves the mine none", g.buildRunAhead(run) == 1 && g.buildRunStop(run) == Game.BuildResult.NO_DEPOSIT
                         && g.buildRunAhead(pitFirst) == 1 && g.buildRunStop(pitFirst) == Game.BuildResult.NO_DEPOSIT);

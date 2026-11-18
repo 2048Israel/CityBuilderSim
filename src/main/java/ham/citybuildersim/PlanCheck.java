@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,6 +92,11 @@ import java.util.List;
  *      purchase, some on the new cells, where the same ground owned from the
  *      start moves boxes; a purchase dated at or before the first batch's
  *      month, or no dates at all, is ground from the start;
+ *  12b. the + floor on ground bought (FB5; DistrictPlan's THE + FLOOR ON
+ *      GROUND BOUGHT): ground cut across open cells, the ground past the cut
+ *      bought and the cells beyond opened after: without the floor a line laid
+ *      across the old cut breaks the + rules in some plan; with it every plan
+ *      keeps every check at every cut and no box moves;
  *  13. the avenues (batch CL4; DistrictPlan's AVENUES): four avenues at 45
  *      degrees from the founding site, laid when a cell opens - each arm's
  *      staircase plot for plot in the open cells and none in a closed one,
@@ -172,7 +178,10 @@ import java.util.List;
  *      until then, and the re-baked nations file's played city stood with two
  *      pieces behind such a belt on its iron field, MapCheck 8 red); one
  *      network, every check, a pure function; and the case counted across
- *      section 17's cities and this harness's, before and after.
+ *      section 17's cities and this harness's, before and after. DM2: the dated field belt stays connected, keeps buildings off
+ *      its way and moves none through later arrivals; recorded ways displace only intersecting boxes and release plots for
+ *      later arrivals; the first site or shore exclusion preserves the raw history, its first-batch boundary and standing boxes;
+ *      a purchase in the current picture's month releases an unused way without dating a wall record in the future.
  *  19. no avenue through an interchange (batch MF2, 2026-11-08; DistrictPlan's NO AVENUE THROUGH AN INTERCHANGE'S RESERVE
  *      LAID AFTER IT; Jerus's Bergen city drew a diagonal avenue through a cloverleaf's loops): a 19 x 19 reserve laid across
  *      the south-east arm in a month after the avenue was laid (the arm's step 8, inside the cell beside the hub, and step 20,
@@ -180,8 +189,9 @@ import java.util.List;
  *      which the painter draws from, and the harness's own staircase agree - as the same reserve there from the start has none;
  *      what the plan took up of the streets the plan before it had in the box is the avenue's alone (the cells' own stand, FX7);
  *      the avenue stands on both sides of the reserve and counts what it does not lay there (avenueBroken) as the same reserve
- *      from the start does; no building off the reserve moves; every check holds. (D2, a diagonal highway through a full
- *      district, is a probe, docs/queue/MF2/MF2DiagonalProbe, compiled by hand, while the plan lays no frontage avenue.)
+ *      from the start does; no building off the reserve moves; every check holds.
+ *  20. frontage avenues beside a diagonal highway: MF2's original strip-use and verge-end fixture, plus the
+ *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -378,6 +388,7 @@ public class PlanCheck {
         streetLayouts(types);
         arrivals(types);
         groundBought(types);
+        floorBought(types);
         avenues(types);
         curves(types);
         runsDated(types);
@@ -386,7 +397,12 @@ public class PlanCheck {
         farBank(types);
         walledIn(types);
         fieldWall(types);
+        fieldWallArrivals(types);
+        datedWallEvents(types);
+        firstExclusion(types);
+        wallPurchaseMonth(types);
         interchangeAvenue(types);
+        diagonalFrontage(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -594,6 +610,7 @@ public class PlanCheck {
                 boolean[] laid = new boolean[area];
                 for (int q = 0; q < area; q++) laid[q] = (p.avenue[q] & CityRuns.M_DIAG) != 0;
                 for (int a = 0; a < 4; a++) f.avenueBad += floorBad(junctions(p, stairsIn, a, laid, null));
+                f.avenueBad += frontageFloorBad(p);
             }
         }
         return f;
@@ -1047,6 +1064,9 @@ public class PlanCheck {
         int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond;
         /** Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them; and those of them whose way crossed houses on a resource field's plots (LC3). */
         int walled, kept, fieldWalled;
+        /** Street plots the + floor took up on ground bought (FB5's DistrictPlan.boughtFloored), summed over the plans, and the plans it took any in. */
+        long boughtFloored;
+        int flooredPlans;
         long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts;
         double surplus, worstFill, worstLost;
         String worstWhere = "", firstFail = "";
@@ -1096,6 +1116,8 @@ public class PlanCheck {
             if (p.wallTries > 0) walled++;
             if (p.wallField > 0) fieldWalled++;
             kept += p.wallClear;
+            boughtFloored += p.boughtFloored;
+            if (p.boughtFloored > 0) flooredPlans++;
             if (f.closestPlus >= DistrictPlan.LATTICE) floor++;
             if (f.outOfReach == 0) reach++;
             if (f.onStreet == 0) onStreet++;
@@ -1343,6 +1365,7 @@ public class PlanCheck {
         count(t);
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
         playedAvenues = t.av.clone();
+        playedFloored = new long[] { t.boughtFloored, t.flooredPlans, t.districts };
         playedCurves = t.cv.clone();
         check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
@@ -2718,6 +2741,104 @@ public class PlanCheck {
                 && lateDated.buildings == lateNone.buildings);
         DistrictPlan again = DistrictPlan.make(grownIn);
         check("a plan is a pure function of its input: the plan with the land bought, made twice, is the same plan box for box and street for street", samePlan(after, again));
+    }
+
+    /* ----- 12b. the + floor on ground bought (FB5) ----- */
+
+    /** Section 6's played city: the street plots the + floor took up on ground bought over its samples' plans, the plans it took any in, and the plans (Tally): null until section 6 has run. */
+    static long[] playedFloored;
+
+    /** The input of 12b's district: cells 2 to 5 each way owned whole, the hub at their middle; the ground past plot `cut` (a column when `across`, else a row) left out when `cutOff`. */
+    static DistrictPlan.Input floorGround(BuildingVisual.Type[] types, int cut, boolean across, boolean cutOff) {
+        DistrictPlan.Input in = cellsOwned(types, 2, 5, 2, 5);
+        if (cutOff) for (int p = 0; p < DistrictPlan.AREA; p++) if ((across ? p % DistrictPlan.FRAME : p / DistrictPlan.FRAME) > cut) in.owned[p] = false;
+        return in;
+    }
+
+    /** The plan made with the + floor on ground bought (`on`, play's) or without it; the switch back to play's after. */
+    static DistrictPlan makeFloored(DistrictPlan.Input in, boolean on) {
+        DistrictPlan.floorOnBought = on;
+        try {
+            return DistrictPlan.make(in);
+        } finally {
+            DistrictPlan.floorOnBought = true;
+        }
+    }
+
+    static void floorBought(BuildingVisual.Type[] types) {
+        out.println("\n--- 12b. the + floor on ground bought: streets laid across an old cut stop a plot short of a + the plan allows nowhere else (FB5) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 16, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int paved = pavedRoad(types);
+        final int bought = 5, cell = DistrictPlan.CELL;
+        // Works and houses fill cells 2 to 5 cut at a plot column (or row): the cells the cut crosses open with their lines
+        // ending at it and joined along it (shore()); the ground past the cut is bought after month 5's arrivals, and
+        // month 6's works open the cells beyond, so cellsOnGrown() lays the cut cells' lines across the old cut.
+        Log log = new Log();
+        log.add(0, house, 60).add(0, works, 6).add(0, paved, 3).batch();
+        for (int m = 1; m <= bought; m++) log.add(m, works, 8).add(m, house, 40).add(m, paved, 2);
+        log.add(bought + 1, works, 30).add(bought + 1, paved, 2);
+        Log until = log.until(bought);
+        int cuts = 0, breaks = 0, held = 0, flooredCuts = 0, moved = 0, estatePluses = 0, closest = Integer.MAX_VALUE, uncounted = 0, worksLost = 0;
+        long floored = 0, streetsOff = 0, streetsOn = 0, worksOff = 0, worksOn = 0;
+        String firstBreak = "", firstFail = "", firstLoss = "";
+        DistrictPlan.Input pureIn = null;
+        for (int a = 0; a < 2; a++) {
+            boolean across = a == 0;
+            for (int cut = 2 * cell + 6; cut <= 6 * cell - 6; cut += 3) {
+                if (cut % cell == 0) continue;
+                cuts++;
+                DistrictPlan.Input in = log.into(floorGround(types, cut, across, false));
+                in.boughtAt = boughtOn(floorGround(types, cut, across, false), floorGround(types, cut, across, true), bought);
+                DistrictPlan off = makeFloored(in, false), on = makeFloored(in, true);
+                DistrictPlan before = DistrictPlan.make(until.into(floorGround(types, cut, across, true)));
+                Figures fo = figures(off, in), fn = figures(on, in);
+                // The streets the floor takes are the ones it counts, and no works of month 6 loses its place for them: a street it
+                // took up that parted a piece of new streets from the old ones would take the piece with it (pruneApart()).
+                int wOff = boxesOfType(off, works), wOn = boxesOfType(on, works);
+                streetsOff += off.boughtStreets;
+                streetsOn += on.boughtStreets;
+                worksOff += wOff;
+                worksOn += wOn;
+                if (off.boughtStreets - on.boughtStreets != on.boughtFloored) uncounted++;
+                if (wOn < wOff) worksLost++;
+                if ((off.boughtStreets - on.boughtStreets != on.boughtFloored || wOn < wOff) && firstLoss.isEmpty())
+                    firstLoss = String.format("%s %d: %,d street plots on ground bought without the floor, %,d with it, %,d counted taken; works %d and %d", across ? "column" : "row", cut,
+                            off.boughtStreets, on.boughtStreets, on.boughtFloored, wOff, wOn);
+                // A break of the + rules (a + inside an estate cell, or two nearer than LATTICE): what the floor is for.
+                if (fo.estatePlus > 0 || fo.closestPlus < DistrictPlan.LATTICE) {
+                    breaks++;
+                    estatePluses += fo.estatePlus;
+                    closest = Math.min(closest, fo.closestPlus);
+                    if (firstBreak.isEmpty()) firstBreak = String.format("%s %d: %s", across ? "column" : "row", cut, line(off, fo));
+                    if (pureIn == null && on.boughtFloored > 0) pureIn = in;
+                }
+                if (fn.holds(on, in)) held++;
+                else if (firstFail.isEmpty()) firstFail = String.format("%s %d: %s", across ? "column" : "row", cut, line(on, fn));
+                if (on.boughtFloored > 0) flooredCuts++;
+                floored += on.boughtFloored;
+                moved += missing(before, on);
+            }
+        }
+        DistrictPlan.Input wholeIn = log.into(floorGround(types, 0, true, false));
+        DistrictPlan whole = DistrictPlan.make(wholeIn);
+        out.printf("      %d cuts across cells 2 to 5 (every third plot column, then row), the ground past each bought in month %d: without the floor %d plans break the + rules (%d + junctions inside"
+                + " estate cells, the closest pair of + %s plots apart against LATTICE %d; the first, %s); with it %d of %d keep every check, the floor taking up %,d plots in %d of them%s%n",
+                cuts, bought, breaks, estatePluses, closest == Integer.MAX_VALUE ? "none" : Integer.toString(closest), DistrictPlan.LATTICE, firstBreak.isEmpty() ? "none" : firstBreak, held,
+                cuts, floored, flooredCuts, firstFail.isEmpty() ? "" : "; the first that breaks, " + firstFail);
+        out.printf("      over the %d cuts: %,d street plots laid on ground bought without the floor, %,d with it (%,d the floor counts taken, %d cuts where the difference is not that);"
+                + " month %d's works placed %,d without the floor and %,d with it (%d cuts with fewer)%s%n", cuts, streetsOff, streetsOn, floored, uncounted, bought + 1, worksOff, worksOn, worksLost,
+                firstLoss.isEmpty() ? "" : "; the first, " + firstLoss);
+        if (playedFloored != null) out.printf("      section 6's played city: the floor took up %,d plots on ground bought, in %d of its %d samples' district plans%n", playedFloored[0], playedFloored[1], playedFloored[2]);
+        check("the fixture: the same arrivals on the ground owned from the start keep every check, and with the floor off the ground bought past a cut breaks the + rules in some plan"
+                + " (a + inside an estate cell or within LATTICE plots of another)", figures(whole, wholeIn).holds(whole, wholeIn) && breaks > 0);
+        check("with the floor every plan keeps every check, at every cut, the floor taking up plots on ground bought", held == cuts && floored > 0);
+        check("...and it moves no box: every box of month " + bought + "'s plan on the old ground stands in month " + (bought + 1) + "'s, at every cut", moved == 0);
+        check("...and it takes up no street on ground bought but the plots it counts: at every cut the plan's streets laid there are the plan's without the floor less those plots",
+                uncounted == 0 && streetsOff > streetsOn);
+        check("...and costs no works its place: at every cut month " + (bought + 1) + "'s works stand as many with the floor as without it", worksLost == 0 && worksOff > 0);
+        check("a plan is a pure function of its input: a plan the floor took plots up in, made twice, is the same plan box for box and street for street",
+                pureIn != null && samePlan(DistrictPlan.make(pureIn), DistrictPlan.make(pureIn)));
     }
 
     /* =====================================================================
@@ -4500,6 +4621,9 @@ public class PlanCheck {
         }
         DistrictPlan.Input timed = keptInput(types, longLog, many, true);
         DistrictPlan a = makeGround(timed, true, false), b = makeGround(timed, false, false);
+        check("...the same plan both ways: " + fieldsDiffering(a, b).size() + " field(s) differ", fieldsDiffering(a, b).isEmpty() && a.movedOff + a.movedOver > 0);
+
+        if (Timing.skip("PlanCheck kept ground timing")) return;
         double keptMs, wholeMs;
         // in turn: the whole ground, the kept, the whole, the kept; and the same log with no run laid after the first batch, the floor
         wholeMs = planMs(timed, false, 5);
@@ -4509,7 +4633,6 @@ public class PlanCheck {
         double floorMs = planMs(keptInput(types, longLog, new Runs(), true), true, 5);
         out.printf("      the district with the most records (%,d in %d months, %,d boxes placed, %d moved off the runs): a plan takes %.1f ms with the whole ground worked out each time, %.1f ms with it kept (%.1fx);"
                 + " the same log with no run laid after the first batch, %.1f ms%n", timed.fixedLog.length, long_, a.buildings, a.movedOff + a.movedOver, wholeMs, keptMs, wholeMs / keptMs, floorMs);
-        check("...the same plan both ways: " + fieldsDiffering(a, b).size() + " field(s) differ", fieldsDiffering(a, b).isEmpty() && a.movedOff + a.movedOver > 0);
         check("...and the kept ground costs no more than the whole ground worked out each time", Timing.within(keptMs, wholeMs));
     }
 
@@ -4585,8 +4708,8 @@ public class PlanCheck {
     /**
      * Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in
      * walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept clear), ok[1] where one is
-     * planned more than WALL_TRIES times or has plots kept clear without being planned again (FR8: the played city's loop, for the
-     * river fixture's districts too).
+     * planned more than WALL_TRIES times or its new ways and retries disagree (FR8: the played city's loop, for the river
+     * fixture's districts too). Incoming ways can already keep plots clear without another retry.
      */
     static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok) {
         map.forgetPainted();
@@ -4600,9 +4723,33 @@ public class PlanCheck {
                 if (p.wallTries > 0) walledIns.add(pj.in);
                 DistrictPlan again = DistrictPlan.make(pj.in);
                 ok[0] &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
-                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
+                ok[1] &= wallBounds(p, pj.in);
             }
         }
+    }
+
+    /** The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. */
+    static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in) {
+        int incoming = in.wallMonth == null || in.wallChange == null ? 0 : Math.min(in.wallMonth.length, in.wallChange.length);
+        if (p.wallTries < 0 || p.wallTries > DistrictPlan.WALL_TRIES || p.wallMonth == null || p.wallChange == null
+                || p.wallMonth.length != p.wallChange.length || p.wallMonth.length < incoming) return false;
+        boolean[] active = new boolean[DistrictPlan.AREA];
+        int newKeeps = 0;
+        for (int k = 0; k < p.wallMonth.length; k++) {
+            if (k < incoming && (p.wallMonth[k] != in.wallMonth[k] || p.wallChange[k] != in.wallChange[k])) return false;
+            int record = p.wallChange[k], plot = record >>> 1;
+            if (plot >= active.length || (k > 0 && p.wallMonth[k] < p.wallMonth[k - 1])) return false;
+            boolean kept = (record & 1) != 0;
+            if (k >= incoming && kept && !active[plot]) newKeeps++;
+            active[plot] = kept;
+        }
+        if ((p.wallTries > 0) != (newKeeps > 0) || p.wallWay.length != p.wallClear) return false;
+        int n = 0;
+        for (int plot = 0; plot < active.length; plot++) {
+            if (!active[plot]) continue;
+            if (n >= p.wallWay.length || p.wallWay[n++] != plot) return false;
+        }
+        return n == p.wallClear;
     }
 
     static void walledIn(BuildingVisual.Type[] catalog) throws Exception {
@@ -4649,7 +4796,7 @@ public class PlanCheck {
         check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
         check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
         check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
-        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times, and plots kept clear only in a district planned again", bounded);
+        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times: every new keep has a retry, every retry keeps a new plot, and the active journal is exactly the kept way", bounded);
         check("...and a pure function: the same district, the same plan, boxes and streets, the same ways kept clear", pure);
         // The same districts with no log - their counts and their carry, the first batch alone, no events: the join's way kept clear and
         // every building placed or sent on, once (placed and left out = counts + carry).
@@ -4751,6 +4898,240 @@ public class PlanCheck {
                 playedCase[3] == 0 && riverCase[3] == 0 && citiesLeft == 0 && left == 0);
     }
 
+    /** A dated field belt keeps its first way while later houses arrive (DM2). */
+    static void fieldWallArrivals(BuildingVisual.Type[] types) {
+        out.println("\n--- 18b. a walled field belt keeps its way as later houses arrive (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        Log log = new Log();
+        DistrictPlan before = null;
+        int walls = 0, moved = 0, changedInput = 0, replayChanged = 0, disconnected = 0, onWay = 0, badBounds = 0, later = 0;
+        int[] months = null, changes = null;
+        for (int month = 1; month <= 30; month++) {
+            log.add(month, house, 15).add(month, shop, 3);
+            DistrictPlan.Input in = log.into(fieldBelt(types, house, 0));
+            in.seed = 1;
+            in.month = month;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            int[] oldMonths = months == null ? null : months.clone(), oldChanges = changes == null ? null : changes.clone();
+            DistrictPlan after = DistrictPlan.make(in);
+            if (before != null && before.wallClear > 0) {
+                moved += MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(after));
+                later++;
+            }
+            if (figures(after, in).pieces != 1) disconnected++;
+            for (int b = 0; b < after.buildings; b++) {
+                for (int y = after.by[b]; y < after.by[b] + after.bh[b]; y++) {
+                    for (int x = after.bx[b]; x < after.bx[b] + after.bw[b]; x++) {
+                        if (Arrays.binarySearch(after.wallWay, y * DistrictPlan.FRAME + x) >= 0) onWay++;
+                    }
+                }
+            }
+            if (!wallBounds(after, in)) badBounds++;
+            if (!Arrays.equals(months, oldMonths) || !Arrays.equals(changes, oldChanges)) changedInput++;
+            walls = Math.max(walls, after.wallClear);
+            months = after.wallMonth;
+            changes = after.wallChange;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            DistrictPlan replay = DistrictPlan.make(in);
+            if (placedDigest(after) != placedDigest(replay) || streetDigest(after) != streetDigest(replay)
+                    || !Arrays.equals(months, replay.wallMonth) || !Arrays.equals(changes, replay.wallChange)) replayChanged++;
+            before = after;
+        }
+        out.printf("      field belt: %d plots kept clear, %d standing boxes moved over later arrivals%n", walls, moved);
+        check("fixture: the dated field belt has a wall way before its arrivals end", walls > 0 && later > 0);
+        check("the field belt's later arrivals move no standing box", moved == 0);
+        check("the field belt remains one street network through every later month", disconnected == 0);
+        check("no building stands on a kept plot in any month", onWay == 0);
+        check("new ways have bounded retries, and incoming active ways need no new discovery", badBounds == 0);
+        check("the planner leaves its input wall journal unchanged", changedInput == 0);
+        check("the recorded plan replays identically without adding another wall event", replayChanged == 0);
+        DistrictPlan.Input unseenInput = log.into(fieldBelt(types, house, 0));
+        unseenInput.seed = 1;
+        unseenInput.month = 30;
+        DistrictPlan unseen = DistrictPlan.make(unseenInput);
+        check("a field belt first drawn after every arrival has the watched belt's boxes, streets and wall history", samePlan(before, unseen)
+                && Arrays.equals(months, unseen.wallMonth) && Arrays.equals(changes, unseen.wallChange));
+        DistrictPlan.Input batchInput = new Log().add(1, house, 3000).batch().into(fieldBelt(types, house, 0));
+        batchInput.seed = 1;
+        batchInput.month = 1;
+        DistrictPlan batch = DistrictPlan.make(batchInput);
+        batchInput.wallMonth = batch.wallMonth;
+        batchInput.wallChange = batch.wallChange;
+        DistrictPlan batchReplay = DistrictPlan.make(batchInput);
+        check("fixture: a first batch alone discovers a field-belt wall way", batch.wallClear > 0);
+        check("a way discovered after the first batch replays in the same phase, with the same boxes, streets and journal", samePlan(batch, batchReplay)
+                && Arrays.equals(batch.wallMonth, batchReplay.wallMonth) && Arrays.equals(batch.wallChange, batchReplay.wallChange));
+    }
+
+    /** A recorded way moves only its intersecting box. Its later release leaves that box in place and offers the plot to arrivals. */
+    static void datedWallEvents(BuildingVisual.Type[] types) {
+        out.println("\n--- 18c. wall events displace only their boxes and release room for later arrivals (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        Log log = new Log().add(1, house, 50);
+        DistrictPlan.Input in = log.into(flat(types));
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        int moves = MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept));
+        boolean occupied = MapCheck.boxesOf(kept).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a dated way displaces its one intersecting box, with every other box standing and no box on its plot",
+                moves == 1 && kept.movedOff == 1 && before.buildings == kept.buildings && !occupied);
+        in.month = 3;
+        in.wallMonth = new int[] { 2, 3 };
+        in.wallChange = new int[] { plot << 1 | 1, plot << 1 };
+        DistrictPlan released = DistrictPlan.make(in);
+        check("a way's release preserves every standing box and its earlier displacement", MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(released)) == 0);
+        log.add(4, house, 1).into(in);
+        in.month = 4;
+        DistrictPlan arrived = DistrictPlan.make(in);
+        boolean used = MapCheck.boxesOf(arrived).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a later arrival can use the released plot without moving another box", used && arrived.buildings == released.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(released), MapCheck.boxesOf(arrived)) == 0);
+    }
+
+    /** A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. */
+    static void firstExclusion(BuildingVisual.Type[] types) {
+        out.println("\n--- 18d. the first exclusion preserves the raw arrival history and its first-batch boundary (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        int excluded = pick(types, 1, t -> t.site() != null || t.shore() || t.terminal());
+        Log log = new Log().add(1, house, 150).add(1, shop, 20).add(1, excluded, 1).batch();
+        // These are later raw records, even though they share the first batch's month. Mixed signs retain which older units left.
+        log.add(1, house, -20).add(1, house, 60).add(1, shop, -3).add(1, shop, 10);
+        log.add(2, house, -30).add(2, house, 40).add(2, shop, -4).add(2, shop, 12);
+        DistrictPlan.Input in = log.into(flat(types));
+        in.month = 2;
+        DistrictPlan before = DistrictPlan.make(in);
+        int[] rawMonths = in.logMonth.clone(), rawTypes = in.logType.clone(), rawChanges = in.logChange.clone();
+        int batch = in.firstBatch;
+        CityMap map = CityMap.square(Founding.DEFAULT_WORLD_SEED, 0, 0, types, 1, DistrictPlan.SIDE * DistrictPlan.SIDE, new long[types.length]);
+        map.reconcile(new long[types.length], 3);
+        CityMap.District district = new CityMap.District(0, 0, types.length, 0);
+        System.arraycopy(in.counts, 0, district.counts, 0, types.length);
+        district.logMonth = rawMonths.clone();
+        district.logType = rawTypes.clone();
+        district.logChange = rawChanges.clone();
+        district.logN = rawMonths.length;
+        district.firstBatch = batch;
+        in.counts[excluded]--;
+        in.month = 3;
+        map.recordPlanExclusion(district, excluded, 1);
+        int[] excludedCounts = new int[types.length];
+        excludedCounts[excluded] = 1;
+        check("the source records the excluded unit at month 3, with its type, signed departure and excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3 }) && Arrays.equals(district.excludeType, new int[] { excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1 }) && Arrays.equals(district.excluded, excludedCounts));
+        Object[] sourceAt3 = exclusionState(district);
+        map.planExclusionsInto(district, in);
+        DistrictPlan after = DistrictPlan.make(in);
+        boolean sourceUnchanged = deepSame(sourceAt3, exclusionState(district));
+        var standing = MapCheck.boxesOf(before);
+        standing.removeIf(b -> b.type() == excluded);
+        int moved = MapCheck.movedOf(standing, MapCheck.boxesOf(after));
+        boolean raw = in.logMonth.length == rawMonths.length + 1;
+        for (int k = 0; raw && k < rawMonths.length; k++) {
+            raw = in.logMonth[k] == rawMonths[k] && in.logType[k] == rawTypes[k] && in.logChange[k] == rawChanges[k];
+        }
+        int last = in.logMonth.length - 1;
+        check("fixture: the excluded unit stood before the adjustment, with later first-month records and mixed departures and arrivals",
+                before.buildings == standing.size() + 1 && before.overflowCount() == 0 && rawMonths[batch] == rawMonths[batch - 1]);
+        check("the first exclusion leaves every earlier raw record and the original first-batch boundary intact", raw && in.firstBatch == batch);
+        check("the exclusion is one departure at its actual month", in.logMonth[last] == 3 && in.logType[last] == excluded && in.logChange[last] == -1);
+        check("the first exclusion moves no other standing building (" + moved + " of " + standing.size() + ")", moved == 0 && after.buildings == standing.size());
+        DistrictPlan.Input replayInput = exclusionInput(map, district, types, log, excluded);
+        check("merging and replaying the exclusion preserve every source record, total, stamp and raw-log boundary",
+                sourceUnchanged && deepSame(sourceAt3, exclusionState(district)));
+        check("a repeated input has the same merged history and layout", samePlan(after, DistrictPlan.make(replayInput))
+                && Arrays.equals(in.logMonth, replayInput.logMonth) && Arrays.equals(in.logType, replayInput.logType)
+                && Arrays.equals(in.logChange, replayInput.logChange) && in.firstBatch == replayInput.firstBatch);
+
+        map.reconcile(new long[types.length], 4);
+        map.recordPlanExclusion(district, excluded, 0);
+        check("the source records the unit's return at month 4, preserving its departure and clearing the excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3, 4 }) && Arrays.equals(district.excludeType, new int[] { excluded, excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1, 1 }) && Arrays.equals(district.excluded, new int[types.length]));
+        Object[] sourceAt4 = exclusionState(district);
+        DistrictPlan.Input returnedInput = exclusionInput(map, district, types, log, excluded);
+        DistrictPlan returned = DistrictPlan.make(returnedInput);
+        sourceUnchanged = deepSame(sourceAt4, exclusionState(district));
+        int n = rawMonths.length;
+        int[] wantedMonths = Arrays.copyOf(rawMonths, n + 2), wantedTypes = Arrays.copyOf(rawTypes, n + 2), wantedChanges = Arrays.copyOf(rawChanges, n + 2);
+        wantedMonths[n] = 3; wantedMonths[n + 1] = 4;
+        wantedTypes[n] = wantedTypes[n + 1] = excluded;
+        wantedChanges[n] = -1; wantedChanges[n + 1] = 1;
+        check("the returned unit arrives at its own month, with the exact earlier raw history and first batch preserved",
+                Arrays.equals(returnedInput.logMonth, wantedMonths) && Arrays.equals(returnedInput.logType, wantedTypes)
+                        && Arrays.equals(returnedInput.logChange, wantedChanges) && returnedInput.firstBatch == batch);
+        check("the returned unit adds one box and moves no building that stood through its exclusion", returned.buildings == after.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(after), MapCheck.boxesOf(returned)) == 0);
+        replayInput = exclusionInput(map, district, types, log, excluded);
+        check("replaying the returned unit preserves every source byte array and state, the merged flow and the layout",
+                sourceUnchanged && deepSame(sourceAt4, exclusionState(district)) && samePlan(returned, DistrictPlan.make(replayInput))
+                        && Arrays.equals(replayInput.logMonth, wantedMonths) && Arrays.equals(replayInput.logType, wantedTypes)
+                        && Arrays.equals(replayInput.logChange, wantedChanges) && replayInput.firstBatch == batch);
+    }
+
+    /** A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. */
+    static Object[] exclusionState(CityMap.District district) {
+        return new Object[] { district.excludeMonth.clone(), district.excludeType.clone(), district.excludeChange.clone(), district.excluded.clone(),
+                district.excludeHash, district.excludeBatch, district.logMonth.clone(), district.logType.clone(), district.logChange.clone(),
+                district.logN, district.firstBatch, district.counts.clone() };
+    }
+
+    /** Rebuilds the raw input after the source records have already established how many units are excluded now. */
+    static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excluded) {
+        DistrictPlan.Input in = log.into(flat(types));
+        in.month = map.month();
+        in.counts[excluded] -= district.excluded[excluded];
+        map.planExclusionsInto(district, in);
+        return in;
+    }
+
+    /** A purchase in the picture's month can release an unused way without dating a record in the future (DM2). */
+    static void wallPurchaseMonth(BuildingVisual.Type[] types) {
+        out.println("\n--- 18e. a purchase releases an unused wall way in the current picture's month (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        DistrictPlan.Input in = new Log().add(1, house, 50).into(flat(types));
+        int purchase = 4 * DistrictPlan.FRAME + 4, bought = 150;
+        in.owned[purchase] = false;
+        in.month = 1;
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        // The release needs a physical source event. No arrival at this month can conceal a purchase processed one month late.
+        in.wallMonth = kept.wallMonth;
+        in.wallChange = kept.wallChange;
+        in.owned[purchase] = true;
+        in.boughtAt = new int[DistrictPlan.AREA];
+        in.boughtAt[purchase] = bought;
+        in.month = bought;
+        DistrictPlan after = DistrictPlan.make(in);
+        boolean released = false, future = false;
+        for (int k = 0; k < after.wallMonth.length; k++) {
+            future |= after.wallMonth[k] > in.month;
+            if (after.wallChange[k] == plot << 1 && after.wallMonth[k] == bought) released = true;
+        }
+        check("fixture: an earlier recorded way displaced one box and remains kept until the purchase", kept.wallClear == 1
+                && kept.wallWay[0] == plot && MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept)) == 1);
+        check("the current-month purchase releases the unused way at its actual month, with no future wall record", released && !future && after.wallClear == 0);
+        check("the purchase and release move no standing box", after.buildings == kept.buildings
+                && MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(after)) == 0);
+        in.wallMonth = after.wallMonth;
+        in.wallChange = after.wallChange;
+        DistrictPlan replay = DistrictPlan.make(in);
+        check("the current-month purchase replays the same boxes, streets and wall journal", samePlan(after, replay)
+                && Arrays.equals(after.wallMonth, replay.wallMonth) && Arrays.equals(after.wallChange, replay.wallChange));
+    }
+
     /* =====================================================================
        19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08)
        ===================================================================== */
@@ -4837,4 +5218,243 @@ public class PlanCheck {
         }
     }
 
+
+    /** How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). */
+    static final int STRIP = TilePainter.JUNCTION_APART;
+
+    /**
+     * The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same
+     * fill, the same arrivals; the verge, which H5 bars to buildings, is counted out of both): 0.02, 139 of the strip's 6,936 plots. A frontage street
+     * along the verge would leave each block it cuts one corner triangle, at most LATTICE x LATTICE / 2 = 32 plots, and the strip holds about 108 blocks
+     * (6,936 / 64) of which a corner triangle is empty in a few; 0.02 is four of them. Main loses 0.085, some 590 plots of the blocks the
+     * highway cuts, with nothing on them. (The cells' own spread of the used share is 0.20: one cell differs from the next by far more, so the margin is
+     * not drawn from it.)
+     */
+    static final double STRIP_MARGIN = 0.02;
+
+    /** The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). */
+    static final int FRONTAGE_OFFSET = 37;
+
+    /** Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. */
+    static final long MAIN_LATE_STRIP_USED = 4373;
+
+    /** MF2's unchanged probe, now the next permanent section (FA1). */
+    static void diagonalFrontage(BuildingVisual.Type[] types) {
+        out.println("\n--- 20. frontage avenues along a diagonal highway: the wedges built and the grid streets joined ---");
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan.Input in = flatMix(types, FULL_FILL, true, false);
+        int highwayPlots = 0;
+        for (int x = 0; x < n; x++) {
+            for (int dy = 0; dy <= 1; dy++) {
+                int y = x - FRONTAGE_OFFSET - dy;
+                if (y < 0 || y >= n) continue;
+                in.fixed[y * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                highwayPlots++;
+            }
+        }
+        DistrictPlan p = DistrictPlan.make(in);
+        // The same district with no highway: what the strip's plots hold when nothing cuts them.
+        DistrictPlan control = DistrictPlan.make(flatMix(types, FULL_FILL, true, false));
+        // Chebyshev distance to the highway's plots (8-connected BFS from them): 0 on it, 1 on its verge, 2 to 1 + STRIP the strip.
+        int[] d = new int[DistrictPlan.AREA];
+        Arrays.fill(d, Integer.MAX_VALUE);
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY) { d[q] = 0; queue.add(q); }
+        while (!queue.isEmpty()) {
+            int q = queue.poll(), x = q % n, y = q / n;
+            for (int yy = Math.max(0, y - 1); yy <= Math.min(n - 1, y + 1); yy++) {
+                for (int xx = Math.max(0, x - 1); xx <= Math.min(n - 1, x + 1); xx++) {
+                    int a = yy * n + xx;
+                    if (d[a] != Integer.MAX_VALUE) continue;
+                    d[a] = d[q] + 1;
+                    queue.add(a);
+                }
+            }
+        }
+        // The plots a building covers.
+        boolean[] built = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < p.buildings; i++) for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++) built[y * n + x] = true;
+        boolean[] builtControl = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < control.buildings; i++) for (int y = control.by[i]; y < control.by[i] + control.bh[i]; y++) for (int x = control.bx[i]; x < control.bx[i] + control.bw[i]; x++) builtControl[y * n + x] = true;
+        long stripOwned = 0, stripUsed = 0, restOwned = 0, restUsed = 0, controlUsed = 0;
+        final int cells = DistrictPlan.CELLS_A_SIDE, cell = DistrictPlan.CELL;
+        long[] cellOwned = new long[DistrictPlan.CELLS], cellUsed = new long[DistrictPlan.CELLS];
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int x = q % n, y = q / n;
+            if (!in.owned[q] || d[q] <= 1 || !inOpenBox(p, x, y)) continue;
+            boolean used = built[q] || p.isStreet(q);
+            if (d[q] <= 1 + STRIP) { stripOwned++; if (used) stripUsed++; if (builtControl[q] || control.isStreet(q)) controlUsed++; }
+            else {
+                restOwned++;
+                if (used) restUsed++;
+                int c = Math.min(cells - 1, x / cell) + cells * Math.min(cells - 1, y / cell);
+                cellOwned[c]++;
+                if (used) cellUsed[c]++;
+            }
+        }
+        double stripShare = stripOwned == 0 ? 0 : (double) stripUsed / stripOwned, restShare = restOwned == 0 ? 0 : (double) restUsed / restOwned;
+        // What the highway costs the strip: its plots' used share in the same district with no highway, less what they hold with it.
+        double controlShare = stripOwned == 0 ? 0 : (double) controlUsed / stripOwned, lost = controlShare - stripShare;
+        // THE STREETS THAT END AT THE VERGE: the street plots within the strip's inner two rings (distance 2 and 3 from the highway), 4-connected into
+        // pieces; a piece is a frontage street when it is as long as two blocks (2 x LATTICE plots) - a grid street's own plots there are two or three.
+        // Every other piece that has a plot at distance 2 and a street plot at distance 4 beside one of its own is a grid street that runs to the verge
+        // and meets no street along it.
+        int[] piece = new int[DistrictPlan.AREA];
+        int pieces = 0, frontage = 0, ends = 0, reaching = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            if ((d[q] != 2 && d[q] != 3) || !p.isStreet(q) || p.kindAt(q) == DistrictPlan.UNDER || piece[q] != 0) continue;
+            pieces++;
+            int size = 0;
+            boolean atVerge = false, arrives = false;
+            ArrayDeque<Integer> walk = new ArrayDeque<>();
+            piece[q] = pieces;
+            walk.add(q);
+            while (!walk.isEmpty()) {
+                int u = walk.poll(), ux = u % n, uy = u / n;
+                size++;
+                if (d[u] == 2) atVerge = true;
+                for (int k = 0; k < 4; k++) {
+                    int a = (uy + TilePainter.DY[k]) * n + ux + TilePainter.DX[k];
+                    if (a < 0 || a >= DistrictPlan.AREA || !p.isStreet(a) || p.kindAt(a) == DistrictPlan.UNDER) continue;
+                    if (d[a] == 4) arrives = true;
+                    if ((d[a] == 2 || d[a] == 3) && piece[a] == 0) { piece[a] = pieces; walk.add(a); }
+                }
+            }
+            if (size >= 2 * TilePainter.JUNCTION_APART) { frontage++; continue; }
+            if (atVerge && arrives) ends++;
+            if (atVerge) reaching++;
+        }
+        out.printf("      the plan: %,d buildings, %d cells open, %d highway plots; the strip (%d plots beyond the verge): %,d owned plots, %.1f%% used; the rest %,d plots, %.1f%% used; the same plots with no highway %.1f%% (lost %.1f points)%n",
+                p.buildings, p.cellsOpen, highwayPlots, STRIP, stripOwned, 100 * stripShare, restOwned, 100 * restShare, 100 * controlShare, 100 * lost);
+        out.printf("      street pieces in the strip's inner rings: %d, %d of them as long as two blocks (a street along the highway); %d reach the verge, %d of those a grid street arriving from away and meeting none%n",
+                pieces, frontage, reaching, ends);
+        check("fixture: the district is full (every cell open) and the highway runs through it across its cells, with ground on both sides of it", p.cellsOpen == DistrictPlan.CELLS && stripOwned > 1000 && restOwned > 1000);
+        check("the strips beside the highway's verge are used as the same district uses them with no highway: " + String.format("%.1f%% against %.1f%% (the rest of the district %.1f%%)", 100 * stripShare, 100 * controlShare, 100 * restShare)
+                + ", the loss within STRIP_MARGIN (" + STRIP_MARGIN + ")", lost <= STRIP_MARGIN);
+        check("no grid street runs to the verge and ends there without a street along the highway to join (" + ends + " of the " + reaching + " pieces that reach it)", ends == 0);
+        // A late run across a fully built district must not use the final fixed array in its first batch.
+        Log log = new Log();
+        for (int t = 0; t < control.overflow.length; t++) {
+            int count = in.counts[t];
+            if (count > 0) log.add(0, t, count);
+        }
+        log.batch();
+        DistrictPlan.Input beforeIn = log.attach(flatMix(types, FULL_FILL, true, false));
+        DistrictPlan before = DistrictPlan.make(beforeIn);
+        Runs lateRun = new Runs();
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY) lateRun.lay(1, q % n, q / n, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+        DistrictPlan.Input lateIn = lateRun.into(log.attach(flatMix(types, FULL_FILL, true, false)), 1, true);
+        lateIn.month = 1;
+        DistrictPlan late = DistrictPlan.make(lateIn);
+        int lostGrid = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (before.isStreet(q) && !late.isStreet(q)) lostGrid++;
+        out.printf("      late highway: %d buildings, %d moved off its ground, %d old street plots lost, %d frontage floor breaches%n", late.buildings, late.movedOff, lostGrid, frontageFloorBad(late));
+        check("a late diagonal highway preserves every existing grid street", lostGrid == 0);
+        check("late frontage keeps every plan law", figures(late, lateIn).holds(late, lateIn));
+        int offRunMoved = 0, lateMarks = 0, omitted = 0;
+        java.util.Set<Long> lateBoxes = boxes(late);
+        for (int i = 0; i < before.buildings; i++) {
+            boolean onVerge = false;
+            for (int y = before.by[i]; y < before.by[i] + before.bh[i]; y++) for (int x = before.bx[i]; x < before.bx[i] + before.bw[i]; x++) if (d[y * n + x] <= 1) onVerge = true;
+            if (!onVerge && !lateBoxes.contains(boxKey(before, i))) offRunMoved++;
+        }
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int t = q % n - q / n;
+            if (t != FRONTAGE_OFFSET - DistrictPlan.FRONTAGE_GAP && t != FRONTAGE_OFFSET - DistrictPlan.FRONTAGE_GAP + 1
+                    && t != FRONTAGE_OFFSET + DistrictPlan.FRONTAGE_GAP && t != FRONTAGE_OFFSET + DistrictPlan.FRONTAGE_GAP + 1) continue;
+            if (late.avenue != null && late.avenue[q] != 0) lateMarks++; else omitted++;
+        }
+        check("fixture: the late run actually meets standing buildings and leaves frontage gaps (" + lateMarks + " laid, " + omitted + " omitted)", before.cellsOpen == DistrictPlan.CELLS && late.movedOff > 0 && lateMarks > 0 && omitted > 0);
+        check("the late frontage moves no box beyond the highway's own verge (" + offRunMoved + ")", offRunMoved == 0);
+        int newEnds = 0, lateUsed = 0;
+        boolean[] lateBuilt = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < late.buildings; i++) for (int y = late.by[i]; y < late.by[i] + late.bh[i]; y++) for (int x = late.bx[i]; x < late.bx[i] + late.bw[i]; x++) lateBuilt[y * n + x] = true;
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int x = q % n, y = q / n;
+            if (d[q] > 1 && d[q] <= 1 + STRIP && (lateBuilt[q] || late.isStreet(q))) lateUsed++;
+            if (!late.isStreet(q) || before.isStreet(q) || x == 0 || y == 0 || x == n - 1 || y == n - 1) continue;
+            int neighbours = 0;
+            for (int dir = 0; dir < 4; dir++) if (late.isStreet(q + TilePainter.DX[dir] + n * TilePainter.DY[dir])) neighbours++;
+            if (neighbours < 2) newEnds++;
+        }
+        out.printf("      late frontage: %d new dead ends, strip %.1f%% used (%d/%d), %d of %d frontage plots omitted%n", newEnds, 100.0 * lateUsed / stripOwned, lateUsed, stripOwned, omitted, omitted + lateMarks);
+        check("omitting a late frontage crossing leaves no new street dead end", newEnds == 0);
+        check("the late frontage uses at least main 01402a54e's strip plots on the identical dated city (" + lateUsed + " against " + MAIN_LATE_STRIP_USED + ")", lateUsed >= MAIN_LATE_STRIP_USED);
+        DistrictPlan.Input reflectedIn = flatMix(types, FULL_FILL, true, false);
+        for (int q = 0; q < DistrictPlan.AREA; q++) reflectedIn.fixed[(n - 1 - q / n) * n + q % n] = in.fixed[q];
+        DistrictPlan reflected = DistrictPlan.make(reflectedIn);
+        check("the opposite diagonal has frontage and keeps every plan law", reflected.avenuePlots > control.avenuePlots && figures(reflected, reflectedIn).holds(reflected, reflectedIn));
+
+        check("the same dated input replays to the identical boxes, street codes and avenue marks", samePlan(late, DistrictPlan.make(lateIn)));
+
+        int atGrade = 0, underneath = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY && p.isStreet(q)) {
+            if (p.kindAt(q) == DistrictPlan.UNDER) underneath++; else atGrade++;
+        }
+        check("the grid still passes beneath the diagonal highway, never across it at grade", underneath > 0 && atGrade == 0);
+        frontageGrowth(types);
+        Figures f = figures(p, in);
+        int frontageBad = frontageFloorBad(p);
+        check("the + floor also holds along each frontage arm with its own origin (" + frontageBad + ")", frontageBad == 0);
+        out.printf("      plan laws: pieces %d closest + %d, reach %d, on street %d, highway verge %d, avenue floor %d%n", f.pieces, f.closestPlus, f.outOfReach, f.onStreet, f.besideHighway, f.avenueBad);
+        check("the frontage district keeps every existing plan law", f.holds(p, in));
+    }
+
+    /** Later arrivals open more frontage cells without disturbing the cells already built. */
+    static void frontageGrowth(BuildingVisual.Type[] types) {
+        int house = pick(types,1,t->t.category()==BuildingType.RESIDENTIAL&&!t.outer()&&t.site()==null);
+        int shop = pick(types,1,t->t.category()==BuildingType.COMMERCIAL&&!t.outer()&&t.site()==null);
+        int works = pick(types,9,t->t.cls()==BuildingVisual.INDUSTRY&&!t.outer()&&t.site()==null&&t.campusGroup()==BuildingVisual.NO_GROUP);
+        int farm = pick(types,1,t->t.category()==BuildingType.AGRICULTURE&&t.outer()&&t.site()==null);
+        Log log=runsLog(house,shop,works,farm,pavedRoad(types),8);
+        DistrictPlan previous=null;
+        int moved = 0, lostGrid = 0, bad = 0, opened = 0;
+        for(int m=0;m<=8;m++) {
+            DistrictPlan.Input in=log.until(m).into(flat(types));
+            int n=DistrictPlan.FRAME;
+            for(int x=0;x<n;x++)for(int c=0;c<2;c++){int y=x-37-c;if(y>=0&&y<n)in.fixed[y*n+x]=DistrictPlan.FIXED_HIGHWAY;}
+            DistrictPlan p=DistrictPlan.make(in);
+            if (previous != null) {
+                moved += missing(previous, p);
+                for (int q = 0; q < DistrictPlan.AREA; q++) if (previous.isStreet(q) && previous.roleAt(q) != DistrictPlan.ROLE_JOIN && !p.isStreet(q)) lostGrid++;
+                if (p.cellsOpen > previous.cellsOpen) opened++;
+            }
+            if (!figures(p, in).holds(p, in)) bad++;
+            previous=p;
+        }
+        check("fixture: later arrivals open further frontage cells", opened > 0);
+        check("later frontage cells keep all standing boxes, old grid plots and plan laws (" + moved + ", " + lostGrid + ", " + bad + ")", moved == 0 && lostGrid == 0 && bad == 0);
+    }
+
+    /** The extra arms' lines read independently from the painted staircase marks, with the existing junction law. */
+    static int frontageFloorBad(DistrictPlan p) {
+        if (p.avenue == null) return 0;
+        java.util.Set<Integer> lines = new java.util.TreeSet<>();
+        int n = DistrictPlan.FRAME, bad = 0;
+        boolean[] laid = new boolean[DistrictPlan.AREA];
+        for (int q = 0; q < laid.length; q++) {
+            int mark = p.avenue[q] & 255, code = mark >> CityRuns.M_DIAG_SHIFT & 3;
+            laid[q] = mark != 0;
+            if (mark == 0 || code != 0 && code != 3) continue;
+            int dy = ARM_DY[code], line = q % n - dy * (q / n) - ((mark & CityRuns.M_CORNER) == 0 ? 0 : 1);
+            lines.add((line + 2 * n) * 2 + (code == 3 ? 1 : 0));
+        }
+        for (int key : lines) {
+            int code = key % 2 == 0 ? 0 : 3, line = key / 2 - 2 * n;
+            Stairs s = new Stairs();
+            s.ox = 0;
+            s.oy = -ARM_DY[code] * line;
+            s.from[code] = 0;
+            s.to[code] = n;
+            System.arraycopy(p.avenue, 0, s.mark, 0, s.mark.length);
+            for (int q = 0; q < laid.length; q++) {
+                int mark = p.avenue[q] & 255;
+                laid[q] = mark != 0 && (mark >> CityRuns.M_DIAG_SHIFT & 3) == code
+                        && q % n - ARM_DY[code] * (q / n) - ((mark & CityRuns.M_CORNER) == 0 ? 0 : 1) == line;
+            }
+            int[] js = junctions(p, s, code, laid, null);
+            bad += floorBad(js);
+        }
+        return bad;
+    }
 }

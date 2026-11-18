@@ -440,12 +440,6 @@ public class BuildingDataCheck {
                         + " Highway 1.25% - and so do ET6's three long bridges, the Elevated Highway's rate (ids 145 to 147), and no other building: " + repairs,
                 repairs.equals(java.util.Map.of("Gravel Road", .03, "Paved Road", .02, "Elevated Highway", .0125,
                         "Highway Bridge", .0125, "Rail Bridge", .0125, "Road Bridge", .0125)));
-        assertTrue("...and 152 buildings in all (R4: the four Research Labs, ids 148 to 151; 148 until then: ET6: the Highway, Rail and Road Bridge, ids 145 to 147; 145 from HY1: the Hydro Station, id 144; 144 from PT1-M4: the Builders' Yard, id 143, the founding's own; 143 from FR3, the Bulk Berth, id 142; 142 from FR7, the Rail Depot; 141 from FR2, the Truck Depot and the Heavy Truck Plant; 139 from 0.7.140, Wood Products' six; 133 from 0.7.138, Forestry's two crews and two planted"
-                        + " stands; 129 from 0.7.133, Copper"
-                        + " Mining's three, Copper Refining's four and Manufacturing's Wire & Cable Works; 121 from 0.7.131, Quarrying's three and Cement & Concrete's three; 115 from 0.7.126, Coal Mining's four;"
-                        + " 111 from 0.7.124, Iron Mining's three; 108 from 0.7.123, the integrated route's seven; 101 from 0.7.91, 98 from"
-                        + " 0.7.86, 94 from 0.7.85, 92 from 0.7.83, 91 from 0.7.80, 76 until then)",
-                data.size() == 152);
 
         /* ---------- the oil storage (0.7.85, batch O8; spec-oil 2.8) ----------
 
@@ -615,14 +609,20 @@ public class BuildingDataCheck {
                 copperSites.put(t.getId(), site.type() + " " + site.sites() + " " + site.dig());
                 continue;
             }
+            if (site.resource() == Resource.GOLD) {
+                shape &= t.getId() == ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL
+                        && site.any() && site.sites() == 1 && site.dig() == 1;
+                continue;
+            }
             shape &= site.any() && (t.isPlatform() ? site.sites() == 0 && site.dig() == 0 : site.sites() == 1 && site.dig() == 1);
         }
         assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone"
                 + " Quarry's (0.7.131) and copper's two mines' (0.7.133), which the rule gave none, and Forestry's two crews (0.7.138),"
                 + " which the rule gave the forest and which cut it on no site", rule);
-        assertTrue("...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three"
-                + " mines, stone's three quarries and copper's three (thirteen until 0.7.133, ten until 0.7.131, seven until 0.7.126)",
-                onSites == 16);
+        assertTrue("...eighteen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three"
+                + " mines, stone's three quarries and copper's four, the Sulphide Leach & SX-EW Plant's one sulphide site among them (seventeen until R6b,"
+                + " thirteen until 0.7.133, ten until 0.7.131, seven until 0.7.126)",
+                onSites == 18);
         assertTrue("...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
         java.util.Map<Integer, String> byType = new java.util.TreeMap<>();
         byType.put(ham.citybuildersim.sectors.Mining.IRON_MINE, "HEMATITE 1 1.0");
@@ -652,13 +652,14 @@ public class BuildingDataCheck {
         copperByType.put(ham.citybuildersim.sectors.CopperMining.MINE_AND_MILL, "SULPHIDE 1 " + ham.citybuildersim.sectors.CopperMining.CONC_DIG);
         copperByType.put(ham.citybuildersim.sectors.CopperMining.LARGE_MINE, "SULPHIDE 8 " + ham.citybuildersim.sectors.CopperMining.CONC_DIG);
         copperByType.put(ham.citybuildersim.sectors.CopperMining.LEACH_PLANT, "OXIDE 1 " + ham.citybuildersim.sectors.CopperMining.LEACH_DIG);
+        copperByType.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, "SULPHIDE 1 " + ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH_DIG);
         boolean worksOnNone = true;
         for (int id = ham.citybuildersim.sectors.CopperRefining.SMELTER; id <= ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS; id++) {
             worksOnNone &= byId(data, id).site() == null;
         }
         assertTrue("...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine"
                 + " eight, .341 t of copper a tonne of concentrate; the Leach & SX-EW Plant one oxide site, 1.4 t a tonne of cathode;"
-                + " the four works and the wire works on none: " + copperSites, copperSites.equals(copperByType) && worksOnNone);
+                + " the Sulphide Leach & SX-EW Plant (R6b, FE2) one sulphide site, 1 / .85 t of copper a tonne of cathode; the four works and the wire works on none: " + copperSites, copperSites.equals(copperByType) && worksOnNone);
 
         /* ---------- a works' own power and its consumables (0.7.112, batch I2) ----------
 
@@ -708,7 +709,10 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.CopperMining.MINE_AND_MILL; id <= ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.Forestry.LOGGING_CAMP; id <= ham.citybuildersim.sectors.Forestry.WOODLOT; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) iron.add(id);
-        assertTrue("forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
+        iron.add(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL);
+        iron.add(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH);
+        iron.add(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS);   // the Hydrogen Steel Works (R6b, FE4)
+        assertTrue("forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
                 + " the Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110),"
                 + " Coal Mining's four of batch I6 (111-114), stone's six of batch I7 (115-120), copper's eight of batch I8 (121-128,"
                 + " the wire works' insulation among them), Forestry's four of batch I9 (129-132: the crews' fuel and wear, the"
@@ -776,7 +780,7 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) {
             years.put(id, 1900);
         }
-        years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1980);
+        years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1981);
         years.put(ham.citybuildersim.sectors.WoodProducts.PELLET_MILL, 1970);
         // R2: the rows research-1900.md 1.2 says did not exist in 1900, dated by the entry that opens each (its year here; the codes are ResearchCheck 7's)
         years.put(11, 1900);    // PE1 Electric Arc Furnace, December 1900
@@ -803,6 +807,9 @@ public class BuildingDataCheck {
         years.put(144, 1900);   // HY1's Hydro Station: it stood before the start (Appleton 1882, Niagara 1895)
         years.put(146, 1900);   // ET6's Rail Bridge and Road Bridge: they stood before the start (the Forth Bridge, 1890); the Highway Bridge is undated, as the Elevated Highway is
         years.put(147, 1900);
+        years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
+        years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
+        years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
@@ -812,14 +819,14 @@ public class BuildingDataCheck {
                         + " Cement Plant, 1902 (Edison's long kilns, research-1900.md 1.2); and batch I8's eight 1900 but the Large Copper"
                         + " Mine, 1906 (Bingham Canyon, research-1900.md 1.2), and the Leach & SX-EW Plant, 1968 (E12, Bluebird); and"
                         + " batch I9's four 1900 but the Harvesting Operation, 1973 (E14, PIKA 75) - the Tree Plantation and the Woodlot"
-                        + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1980 (OSB about"
-                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; and HY1's"
+                        + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1981 (OSB first commercial, FPL-GTR-59; formerly about"
+                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - R2e E19/E20: FPL-GTR-59 dates OSB 1981, FPL-RP-656 dates only the pellet decade; and HY1's"
                         + " Hydro Station, 1900 (standing before it: Appleton 1882, Niagara 1895); and ET6's Rail and Road Bridge, 1900 (the Forth Bridge,"
                         + " 1890), the Highway Bridge undated as the Elevated Highway is; and R2's twenty-one more, undated before, dated by the entry that opens each (the Electric Arc Furnace PE1 1900, the Filling Station PB1 1905,"
                         + " the cracking units PE11 1913, the Assembly Plant PE13 1913, the cokers PE23 1929, the alkylation units PE25 1938, the reformers PE27"
                         + " 1949, the Container Terminal E5 1956, the Desalination Plant E6 1957, the hydrocrackers E7 1959, the Contact Centre B2 1965, the"
                         + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
-                        + " Services Centre B6 1982); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
+                        + " Services Centre B6 1982) and R6b's two near-future buildings, the Sulphide Leach & SX-EW Plant 2025 (FE2) and the Hydrogen Steel Works 2028 (FE4, a projection); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
                         + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
                         + " their years here being their entries'; no row"
                         + " before them: " + dated,

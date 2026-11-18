@@ -523,7 +523,10 @@ public final class MoneyAudit {
      *               when a city's first branch takes over from the lenders it
      *               replaces. These improve what the city owes the world without
      *               a single dollar being earned, so they belong in the audit -
-     *               the pools really do move - and NOT in the reserve.
+     *               the pools really do move - and NOT in the reserve. One
+     *               goes the other way (LF1c): a short closed for nothing at a
+     *               company with no shares in issue, which the world is let off
+     *               and its buyers lose - valuationOut, against the city.
      *
      *               Measured before this was split out: a city's reserve swung
      *               from -$88M to +$50M and back on bank resolutions alone,
@@ -1095,16 +1098,19 @@ public final class MoneyAudit {
         in += credit.apply("+ fund SharesSoldToHouseholds", g.getExchange().getFundSoldToHouseholds(), Scope.DOMESTIC);
         in += credit.apply("+ fund SharesSoldAbroad", g.getExchange().getFundSoldAbroad(), Scope.FINANCIAL);
         /*
-         * ...and the two trades that pass between the households and the world, outside the pools on
-         * both sides, as the bonds' do (HL1, 2026-11-11): shares the households bought of the world,
-         * of an emigrant on the way out and of the world's short (Exchange's abroadSells && cellBuys),
-         * paid out of their savings and abroad; shares they sold the world (cellSells && worldBuys),
-         * paid into their savings. A pair each, so the pools' residual is unmoved - and the
-         * balance of payments, and the households' identity, now see them. The emigrants' sales to the
-         * desk, the fund and the companies are the FINANCIAL lines above and below already.
+         * ...AND THE HOUSEHOLDS' CELLS TRADING SHARES WITH THE WORLD (LF1b),
+         * as they trade bonds with it (+ bonds HouseholdsSoldAbroad): the cells
+         * and the world are both outside the pools, so a cell selling to the
+         * world, or buying from it (its long, its short or the month's
+         * leavers), moves no pool and needs no line to foot. But the dollars
+         * cross the border all the same, so each is a pair the cash identity
+         * cancels and the balance of payments reads: a sale abroad a financial
+         * inflow into the cells' savings, a purchase a financial outflow out
+         * of them. Until LF1b the financial account held the cells' bonds and
+         * left out their shares. See Exchange.getHouseholdsSoldAbroad().
          */
-        in += credit.apply("+ equity HouseholdsBoughtAbroad (from their savings)", g.getExchange().getHouseholdsBoughtAbroad(), Scope.DOMESTIC);
-        in += credit.apply("+ equity HouseholdsSoldAbroad", g.getExchange().getHouseholdsSoldAbroad(), Scope.FINANCIAL);
+        in += credit.apply("+ shares HouseholdsSoldAbroad", g.getExchange().getHouseholdsSoldAbroad(), Scope.FINANCIAL);
+        in += credit.apply("+ shares HouseholdsBoughtAbroad (from their savings)", g.getExchange().getHouseholdsBoughtAbroad(), Scope.DOMESTIC);
         /*
          * THE WORLD'S SHORT (EM2). Two payments it makes that no pool's cash
          * shows, each income from outside, and both owed to the city's holders
@@ -1171,6 +1177,23 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ bank OwnersWipedAbroad", g.getOwnersWipedAbroadThisMonth(), Scope.VALUATION);
         /*
+         * ...AND A COMPANY WITH NO SHARES IN ISSUE AND A SHORT OPEN (LF1c): the
+         * exchange cancels what the short sold with the company (Exchange.
+         * cancelShortHeld()), and two claims cross the border without a
+         * dollar. The world's own shares in it go for nothing, as a resolution's
+         * do: the city owes the world less at the quote - the same pair, the
+         * credit for the balance of payments ("forgiven"), the debit keeping the
+         * cash identity whole. And the short is closed for nothing, the world
+         * keeping what it was paid: what it owed the buyers is gone, a valuation
+         * AGAINST the city (valuationOut), the debit for the balance of payments
+         * and the credit the other half. Neither moves a pool. Only the wipe moves
+         * the position figure (what the world holds here carried its shares, and
+         * the short was never on it); the close is a valuation the balance of
+         * payments counts against the city and the position never held.
+         */
+        in += credit.apply("+ desk WorldSharesWiped", g.getExchange().getWorldSharesWiped(), Scope.VALUATION);
+        in += credit.apply("+ desk ShortClosedForNothing (no cash)", g.getExchange().getShortClosedForNothing(), Scope.BOOK);
+        /*
          * A bankrupt sector's creditors absorbing its overdraft, the same
          * way. The bills were paid with money the sector did not have; the
          * restructure admits it and somebody outside eats it. See
@@ -1229,6 +1252,7 @@ public final class MoneyAudit {
         // DollarsBoughtAbroad, RESERVE), so no pool moves and the month's MONEY
         // in less out is still M0's move.
         in += credit.apply("+ centralbank IssuedForDollars", cb.getDollarsBought(), Scope.MONEY);
+        in += credit.apply("+ centralbank GoldMinted", cb.getGoldMinted(), Scope.MONEY);
 
         double out = 0;
         // Payrolls, as each statement charged them.
@@ -1291,11 +1315,15 @@ public final class MoneyAudit {
         // bought from the world that have no good behind them: the shuttle tankers' freight (0.7.91) and the
         // works' consumables (0.7.112, Sector.buyConsumables()), each in TRADE with the goods.
         for (Sector s : sectors.all()) {
-            out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
+            double ip = s.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+            out += debit.apply("- " + s.key() + " Imports", ip != 0 ? s.statement().imports - ip : s.statement().imports, Scope.TRADE);
+            if (ip != 0) out += debit.apply("- " + s.key() + " IP charges", ip, Scope.TRADE);
         }
         // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
         // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
         out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
+        // ...and the licences the city's own patented works paid abroad (R2c-P), at the strike: TRADE, so ForeignAccounts takes it the same month.
+        if (g.getPublicIpPaid() != 0) out += debit.apply("- city IP charges", g.getPublicIpPaid(), Scope.TRADE);
         /*
          * ...and the steel in the households' scrapped cars, bought by the
          * Scrap Yards (0.7.123, batch I4; OldMetal): paid into their savings
@@ -1514,13 +1542,15 @@ public final class MoneyAudit {
         // ...and the city's fund buying (0.7.14), the same two ways.
         out += debit.apply("- fund SharesBoughtFromHouseholds", g.getExchange().getFundBoughtFromHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- fund SharesBoughtFromAbroad", g.getExchange().getFundBoughtAbroad(), Scope.FINANCIAL);
-        // ...and the households' two with the world, the other legs of the pairs above (HL1, 2026-11-11).
-        out += debit.apply("- equity HouseholdsBoughtAbroad", g.getExchange().getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
-        out += debit.apply("- equity HouseholdsSoldAbroad (into their savings)", g.getExchange().getHouseholdsSoldAbroad(), Scope.DOMESTIC);
+        // ...and the cells' trades with the world (LF1b), the other halves of the pair above.
+        out += debit.apply("- shares HouseholdsSoldAbroad (into their savings)", g.getExchange().getHouseholdsSoldAbroad(), Scope.DOMESTIC);
+        out += debit.apply("- shares HouseholdsBoughtAbroad", g.getExchange().getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
         // ...and the world's shares wiped out at a resolution (0.7.14): the
         // other half of the pair above, no cash.
-        // BOOK, not DOMESTIC, for the reason "- bonds WrittenOffAbroad" gives (HL1, 2026-11-11).
         out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.BOOK);
+        // ...and a short company's wipe and close for nothing (LF1c), the other halves of the two lines above: no cash.
+        out += debit.apply("- desk WorldSharesWiped (no cash)", g.getExchange().getWorldSharesWiped(), Scope.BOOK);
+        out += debit.apply("- desk ShortClosedForNothing", g.getExchange().getShortClosedForNothing(), Scope.VALUATION);
         out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",

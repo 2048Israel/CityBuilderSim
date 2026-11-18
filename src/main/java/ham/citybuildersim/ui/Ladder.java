@@ -187,7 +187,7 @@ public final class Ladder {
         double slider = Math.max(60, wide - READING - 2 * BUTTON - 3 * GAP);
         bar.setPrefWidth(slider);
         bar.setMaxWidth(slider);
-        bar.setDisable(greyed);
+        Kept.give(bar.disableProperty(), greyed);
         boolean held = Kept.held(bar);
         double thumb = held ? bounded(snapped(bar.getValue(), min, step)) : at;
         if (!held) settle(bar, min, max, at);
@@ -216,7 +216,7 @@ public final class Ladder {
             });
         }
         Runnable commit = () -> hand(bar.getValue());
-        bar.setOnMouseReleased(e -> commit.run());
+        Kept.give(bar.onMouseReleasedProperty(), e -> commit.run());
         bar.setOnKeyReleased(e -> commit.run());
 
         HBox row = Kept.row(GAP,
@@ -246,7 +246,7 @@ public final class Ladder {
         box.getChildren().add(ends);
         box.setMaxWidth(wide);
         box.setStyle("-fx-padding: 6 0 10 0;");
-        box.setOpacity(greyed ? .55 : 1);
+        Kept.give(box.opacityProperty(), greyed ? .55 : 1);
         return box;
     }
 
@@ -435,15 +435,15 @@ public final class Ladder {
         Button button = Kept.of(Button.class, Button::new);
         button.setText(glyph);
         button.setMinSize(BUTTON, BUTTON);
-        button.setPrefSize(BUTTON, BUTTON);
+        Pieces.prefSize(button, BUTTON, BUTTON);
         button.setMaxSize(BUTTON, BUTTON);
-        button.setDisable(!live);
+        Kept.give(button.disableProperty(), !live);
         button.setStyle("-fx-padding: 0; -fx-font-size: 14px; -fx-font-weight: bold;"
                 + " -fx-background-radius: 4; -fx-background-insets: 0;"
                 + " -fx-background-color: " + (live ? Palette.CONTROL : Palette.PANEL) + ";"
                 + " -fx-text-fill: " + (live ? Palette.TEXT_HEAD : Palette.TEXT_SPENT) + ";"
                 + (live ? " -fx-cursor: hand;" : ""));
-        button.setOnAction(e -> go.run());
+        Kept.give(button.onActionProperty(), e -> go.run());
         return button;
     }
 }

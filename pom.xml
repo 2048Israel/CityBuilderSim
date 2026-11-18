@@ -57,8 +57,48 @@
                     <include>world/ATTRIBUTION.txt</include>
                 </includes>
             </resource>
+            <!-- CR1-L: these releases' jars omit legal files; one checked copy
+                 from each upstream release, with provenance in sources.properties. -->
+            <resource>
+                <directory>tools/credits</directory>
+                <targetPath>credits</targetPath>
+            </resource>
         </resources>
         <plugins>
+
+            <!-- CR1-L review: resource copying alone silently skips missing files. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.2</version>
+                <executions>
+                    <execution>
+                        <id>require-credits-notices</id>
+                        <phase>validate</phase>
+                        <goals><goal>enforce</goal></goals>
+                        <configuration>
+                            <rules>
+                                <requireFilesExist>
+                                    <message>The Credits page requires every library licence, notice and its provenance, Microsoft's runtime terms and the source archives' pins (CR1-J).</message>
+                                    <files>
+                                        <file>${project.basedir}/tools/credits/gson/LICENSE</file>
+                                        <file>${project.basedir}/tools/credits/openjfx/LICENSE</file>
+                                        <file>${project.basedir}/tools/credits/openjfx/ADDITIONAL_LICENSE_INFO</file>
+                                        <file>${project.basedir}/tools/credits/openjfx/ASSEMBLY_EXCEPTION</file>
+                                        <file>${project.basedir}/tools/credits/openjfx/jpeg_fx.md</file>
+                                        <file>${project.basedir}/tools/credits/openjfx/mesa3d.md</file>
+                                        <file>${project.basedir}/tools/credits/microsoft/NOTICE.txt</file>
+                                        <file>${project.basedir}/tools/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt</file>
+                                        <file>${project.basedir}/tools/credits/microsoft/LICENSE-windows-sdk.txt</file>
+                                        <file>${project.basedir}/tools/credits/source-archives.properties</file>
+                                        <file>${project.basedir}/tools/credits/sources.properties</file>
+                                    </files>
+                                </requireFilesExist>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 
             <!-- JavaFX run support (IMPORTANT for your project) -->
             <plugin>

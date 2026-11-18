@@ -262,10 +262,10 @@ final class TimeChart extends VBox {
 
         card.setStyle(Palette.block(Palette.PINNED, Palette.EDGE) + " -fx-padding: 7 10 8 10;");
         card.setMaxWidth(CARD_W);
-        card.setVisible(false);
-        card.setMouseTransparent(true);
+        Kept.give(card.visibleProperty(), false);
+        Kept.give(card.mouseTransparentProperty(), true);
         over.getChildren().add(card);
-        over.setMouseTransparent(true);
+        Kept.give(over.mouseTransparentProperty(), true);
         over.setPickOnBounds(false);
         StackPane plotStack = new StackPane(plot, over);
         plotStack.setAlignment(Pos.TOP_LEFT);
@@ -289,7 +289,7 @@ final class TimeChart extends VBox {
             ranges.setAlignment(Pos.CENTER_RIGHT);
             ranges.setMinWidth(Region.USE_PREF_SIZE);
             fullButton.setMinWidth(Region.USE_PREF_SIZE);
-            fullButton.setOnMouseClicked(e -> { if (onFullScreen != null) onFullScreen.run(); });
+            Kept.give(fullButton.onMouseClickedProperty(), e -> { if (onFullScreen != null) onFullScreen.run(); });
             lead.setAlignment(Pos.CENTER_LEFT);
             lead.setMinWidth(Region.USE_PREF_SIZE);
             toolbar = new HBox(8, lead, legend, gap, ranges, fullButton);
@@ -307,8 +307,8 @@ final class TimeChart extends VBox {
         } else {
             toolbar = null;
             getChildren().add(plotStack);
-            plot.setOnMouseMoved(guarded(e -> { hoverX = e.getX(); hoverY = e.getY(); draw(); }));
-            plot.setOnMouseExited(guarded(e -> { hoverX = hoverY = Double.NaN; draw(); }));
+            Kept.give(plot.onMouseMovedProperty(), guarded(e -> { hoverX = e.getX(); hoverY = e.getY(); draw(); }));
+            Kept.give(plot.onMouseExitedProperty(), guarded(e -> { hoverX = hoverY = Double.NaN; draw(); }));
         }
     }
 
@@ -462,7 +462,7 @@ final class TimeChart extends VBox {
         dragging = false;
         stripMode = 0;
         pressX = Double.NaN;
-        plot.setCursor(Cursor.DEFAULT);
+        Kept.give(plot.cursorProperty(), Cursor.DEFAULT);
     }
 
     /** The slot at the left of the toolbar: the title and the date, in full screen. */
@@ -506,7 +506,7 @@ final class TimeChart extends VBox {
                 boolean on = !hidden.contains(l.key());
                 Region bar = Kept.region();
                 bar.setMinSize(12, 3);
-                bar.setPrefSize(12, 3);
+                Pieces.prefSize(bar, 12, 3);
                 bar.setMaxSize(12, 3);
                 bar.setStyle("-fx-background-color: " + (on ? l.colour() : Palette.TEXT_SPENT) + "; -fx-background-radius: 2;");
                 Label chip = Kept.label(l.label() + (l.unitWords() == null || l.unitWords().isEmpty() ? "" : "  " + l.unitWords()), bar);
@@ -515,7 +515,7 @@ final class TimeChart extends VBox {
                         + " -fx-padding: 3 9 3 8; -fx-background-radius: 12; -fx-border-radius: 12; -fx-border-width: 1;"
                         + " -fx-border-color: " + (on ? l.colour() : Palette.EDGE) + "; -fx-cursor: hand;");
                 HistoryScreen.tip(chip, (on ? "Hides" : "Shows") + " this line; the axes fit what is shown.");
-                chip.setOnMouseClicked(guarded(e -> {
+                Kept.give(chip.onMouseClickedProperty(), guarded(e -> {
                     if (!hidden.remove(l.key())) hidden.add(l.key());
                     // Both, as setData() draws them: a draw lets go of what it does not ask for, the range buttons too.
                     Kept.draw(chipPool, () -> {
@@ -536,7 +536,7 @@ final class TimeChart extends VBox {
             int months = i < ChartModel.RANGES.length ? ChartModel.RANGES[i] : ChartModel.ALL;
             Label r = Kept.label(ChartModel.RANGE_NAMES[i]);
             r.setUserData(months);
-            r.setOnMouseClicked(guarded(e -> { window.showRange(months); moved(true); }));
+            Kept.give(r.onMouseClickedProperty(), guarded(e -> { window.showRange(months); moved(true); }));
             buttons.add(r);
         }
         Kept.set(ranges.getChildren(), buttons);
@@ -593,7 +593,7 @@ final class TimeChart extends VBox {
         plotRight = width - (anyOnRight() ? AXIS_W : NO_AXIS_W);
         plot.setWidth(width);
         plot.setHeight(canvasHeight());
-        over.setPrefSize(width, canvasHeight());
+        Pieces.prefSize(over, width, canvasHeight());
         if (main) {
             strip.setWidth(width);
             strip.setHeight(OVERVIEW);
@@ -728,7 +728,7 @@ final class TimeChart extends VBox {
             g.setTextBaseline(VPos.BASELINE);
             g.clearRect(0, 0, plot.getWidth(), plot.getHeight());
             if (main) strip.getGraphicsContext2D().clearRect(0, 0, strip.getWidth(), strip.getHeight());
-            card.setVisible(false);
+            Kept.give(card.visibleProperty(), false);
         } catch (RuntimeException ignored) {
             // The fault below is what is worth reading.
         }
@@ -1317,11 +1317,11 @@ final class TimeChart extends VBox {
             flagCard(c);
         }
         if (card.getChildren().isEmpty()) {
-            card.setVisible(false);
+            Kept.give(card.visibleProperty(), false);
             return;
         }
         if (pinned != null) card.getChildren().add(caption("Click anywhere else to close.", Palette.TEXT_SPENT));
-        card.setVisible(true);
+        Kept.give(card.visibleProperty(), true);
         card.applyCss();
         double w = Math.min(CARD_W, card.prefWidth(-1)), h = card.prefHeight(w);
         card.resize(w, h);
@@ -1351,7 +1351,7 @@ final class TimeChart extends VBox {
     private static HBox row(String colour, String name, String value) {
         Region dot = new Region();
         dot.setMinSize(8, 8);
-        dot.setPrefSize(8, 8);
+        Pieces.prefSize(dot, 8, 8);
         dot.setMaxSize(8, 8);
         dot.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 4;");
         Label n = new Label(name);
@@ -1490,44 +1490,44 @@ final class TimeChart extends VBox {
        ===================================================================== */
 
     private void listen() {
-        plot.setOnMouseMoved(guarded(e -> {
+        Kept.give(plot.onMouseMovedProperty(), guarded(e -> {
             hoverX = e.getX();
             hoverY = e.getY();
             Object item = itemAt(hoverX, hoverY);
-            plot.setCursor(inPlot(hoverX, hoverY) ? Cursor.OPEN_HAND
+            Kept.give(plot.cursorProperty(), inPlot(hoverX, hoverY) ? Cursor.OPEN_HAND
                     : item != null ? Cursor.HAND : Cursor.DEFAULT);
             draw();
         }));
-        plot.setOnMouseExited(guarded(e -> {
+        Kept.give(plot.onMouseExitedProperty(), guarded(e -> {
             hoverX = hoverY = Double.NaN;
             draw();
         }));
-        plot.setOnMousePressed(guarded(e -> {
+        Kept.give(plot.onMousePressedProperty(), guarded(e -> {
             if (e.getButton() != MouseButton.PRIMARY) return;
             pressX = e.getX();
             pressY = e.getY();
             pressLo = window.lo();
             pressHi = window.hi();
         }));
-        plot.setOnMouseDragged(guarded(e -> {
+        Kept.give(plot.onMouseDraggedProperty(), guarded(e -> {
             if (Double.isNaN(pressX) || !inPlot(pressX, pressY)) return;
             if (!dragging && Math.abs(e.getX() - pressX) < DRAG_SLOP) return;
             dragging = true;
-            plot.setCursor(Cursor.CLOSED_HAND);
+            Kept.give(plot.cursorProperty(), Cursor.CLOSED_HAND);
             double perPixel = (pressHi - pressLo) / plotW();
             window.setWindow(pressLo - (e.getX() - pressX) * perPixel, pressHi - (e.getX() - pressX) * perPixel);
             hoverX = e.getX();
             hoverY = e.getY();
             moved(false);
         }));
-        plot.setOnMouseReleased(guarded(e -> {
+        Kept.give(plot.onMouseReleasedProperty(), guarded(e -> {
             boolean was = dragging;
             dragging = false;
             double px = pressX;
             pressX = Double.NaN;
             if (e.getButton() != MouseButton.PRIMARY || Double.isNaN(px)) return;
             if (was) {
-                plot.setCursor(Cursor.OPEN_HAND);
+                Kept.give(plot.cursorProperty(), Cursor.OPEN_HAND);
                 moved(true);
                 return;
             }
@@ -1543,7 +1543,7 @@ final class TimeChart extends VBox {
             pinnedX = e.getX();
             draw();
         }));
-        plot.setOnScroll(guarded(this::wheel));
+        Kept.give(plot.onScrollProperty(), guarded(this::wheel));
     }
 
     private void wheel(ScrollEvent e) {
@@ -1561,12 +1561,12 @@ final class TimeChart extends VBox {
     }
 
     private void listenToStrip() {
-        strip.setOnMouseMoved(guarded(e -> {
+        Kept.give(strip.onMouseMovedProperty(), guarded(e -> {
             double xl = stripX(window.lo()), xr = stripX(window.hi());
-            strip.setCursor(Math.abs(e.getX() - xl) <= HANDLE || Math.abs(e.getX() - xr) <= HANDLE ? Cursor.H_RESIZE
+            Kept.give(strip.cursorProperty(), Math.abs(e.getX() - xl) <= HANDLE || Math.abs(e.getX() - xr) <= HANDLE ? Cursor.H_RESIZE
                     : e.getX() > xl && e.getX() < xr ? Cursor.MOVE : Cursor.HAND);
         }));
-        strip.setOnMousePressed(guarded(e -> {
+        Kept.give(strip.onMousePressedProperty(), guarded(e -> {
             if (e.getButton() != MouseButton.PRIMARY) return;
             double xl = stripX(window.lo()), xr = stripX(window.hi());
             if (Math.abs(e.getX() - xl) <= HANDLE) stripMode = 2;
@@ -1584,7 +1584,7 @@ final class TimeChart extends VBox {
             pressLo = window.lo();
             pressHi = window.hi();
         }));
-        strip.setOnMouseDragged(guarded(e -> {
+        Kept.give(strip.onMouseDraggedProperty(), guarded(e -> {
             if (stripMode == 0) return;
             double dm = stripMonth(e.getX()) - pressMonth;
             double min = Math.min(ChartModel.MIN_SPAN, window.last() - window.first());
@@ -1595,13 +1595,13 @@ final class TimeChart extends VBox {
             }
             moved(false);
         }));
-        strip.setOnMouseReleased(guarded(e -> {
+        Kept.give(strip.onMouseReleasedProperty(), guarded(e -> {
             if (stripMode == 0) return;
             stripMode = 0;
             dragging = false;
             moved(true);
         }));
-        strip.setOnScroll(guarded(this::wheel));
+        Kept.give(strip.onScrollProperty(), guarded(this::wheel));
     }
 
     /** The window moved: this chart, the charts that follow it, and - once it rests - the page. */

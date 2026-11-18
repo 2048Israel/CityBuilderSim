@@ -88,6 +88,8 @@ public class NationalAccounts {
     private double consumptionHousing;
     private double investmentConstruction;
     private double investmentInventories;
+    /** Newly mined fine gold acquired by the mint as valuables, before monetization (GD4). */
+    private double investmentValuables;
     private double government;
     private double importsFood;
     private double importsMaterials;
@@ -232,7 +234,7 @@ public class NationalAccounts {
             Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
             Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER,
             Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS,
-            Good.TRUCKS };
+            Good.TRUCKS, Good.GOLD };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;
@@ -334,6 +336,7 @@ public class NationalAccounts {
         this.consumptionHousing = consumptionHousing;
         this.investmentConstruction = investmentConstruction;
         this.investmentInventories = investmentInventories;
+        this.investmentValuables = 0;
         this.government = government;
         this.importsFood = importsFood;
         this.importsMaterials = importsMaterials;
@@ -470,11 +473,27 @@ public class NationalAccounts {
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue,
                        double[] heldUnits, double[] heldWrittenOff, double[] heldPrices) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, materialWrittenOff, materialPrice, luxuryUnits, luxuryWrittenOff, luxuryPrice,
+                governmentServices, foodImports, materialImports, rawMaterialImports, exportRevenue,
+                heldUnits, heldWrittenOff, heldPrices, 0);
+    }
+
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialWrittenOff, double materialPrice,
+                       double luxuryUnits, double luxuryWrittenOff, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldWrittenOff, double[] heldPrices, double valuables) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
 
         investmentConstruction = constructionWorkDone;
+        investmentValuables = valuables;
 
         /*
          * The change in stock, as a VOLUME, priced today.
@@ -526,8 +545,8 @@ public class NationalAccounts {
                warehouse, and now the luxury shelf.
 
                IT SHOWED AS GDP OF -$8,636k IN MONTH 7 of a fresh city, which
-               is one Boutique's three-month stockroom - 960 pieces at $9 -
-               imported in a single month and counted on one side only. Sixty
+               is one Boutique's three-month stockroom before LX1 - 960 pieces
+               at $9 - imported in a single month and counted on one side only. Sixty
                months in a long playtest read negative before this line; one
                did after it, and that one is the same shape in construction
                that the rounding note below already describes.
@@ -959,6 +978,14 @@ public class NationalAccounts {
     /** ...and what the reserve's crude sold for - a revenue line since 0.7.102. */
     public double getReserveCrudeSold()   { return reserveCrudeSold; }
 
+    /** The licence the city's own patented works paid abroad at the month's strike (R2c-P; Game.settlePublicLicences()) - a spending line, saved on the government block's end. */
+    private double publicIpCharges;
+
+    /** Sets the month's public works' licence (R2c-P), a spending line; a figure below 0 is 0. */
+    public void setPublicIpCharges(double charges) { this.publicIpCharges = Math.max(0, charges); }
+    /** The licence the city's own patented works paid abroad this month - a spending line (R2c-P). */
+    public double getPublicIpCharges() { return publicIpCharges; }
+
     /* ---------------------------------------------------------------------
        THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5)
 
@@ -1238,11 +1265,13 @@ public class NationalAccounts {
             // older save reads zero, which is right: its books booked none.
             debtExchangeGain,
             // ...and the research grants' bill (R3): an older save reads zero, which is right: it paid none.
-            researchSpending };
+            researchSpending,
+            // ...and the licence the city's own patented works paid abroad (R2c-P): an older save reads zero, which is right: it accrued none.
+            publicIpCharges };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-nine since the research grants' bill (R3); thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // Forty since the public works' licence (R2c-P); thirty-nine since the research grants' bill (R3); thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
         // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
@@ -1253,7 +1282,8 @@ public class NationalAccounts {
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
                 && saved.length != 29 && saved.length != 33 && saved.length != 35
-                && saved.length != 37 && saved.length != 38 && saved.length != 39)) return;
+                && saved.length != 37 && saved.length != 38 && saved.length != 39 && saved.length != 40)) return;
+        publicIpCharges       = saved.length >= 40 ? saved[39] : 0;
         researchSpending      = saved.length >= 39 ? saved[38] : 0;
         debtExchangeGain      = saved.length >= 38 ? saved[37] : 0;
         inflationUplift       = saved.length >= 37 ? saved[35] : 0;
@@ -1297,7 +1327,7 @@ public class NationalAccounts {
     /* ------------------------------- GDP ------------------------------------ */
 
     public double getConsumption()  { return consumptionGoods + consumptionHousing; }
-    public double getInvestment()   { return investmentConstruction + investmentInventories; }
+    public double getInvestment()   { return investmentConstruction + investmentInventories + investmentValuables; }
     public double getNetExports() {
         return exports - (importsFood + importsMaterials + importsRawMaterial);
     }
@@ -1306,6 +1336,10 @@ public class NationalAccounts {
     public double getConsumptionHousing()     { return consumptionHousing; }
     public double getInvestmentConstruction() { return investmentConstruction; }
     public double getInvestmentInventories()  { return investmentInventories; }
+    public double getInvestmentValuables() { return investmentValuables; }
+
+    /** The saved month's valuables acquisition, alongside its other restored GDP components. */
+    void restoreValuables(double value) { investmentValuables = value; }
     public double getGovernment()             { return government; }
     public double getImportsFood()            { return importsFood; }
     public double getImportsMaterials()       { return importsMaterials; }
@@ -1456,6 +1490,8 @@ public class NationalAccounts {
                 + healthSpending + educationSpending + safetySpending + subsidies
                 // ...and the research grants' posts and laboratories (R3): none at a grant of 0.
                 + researchSpending
+                // ...and the licence the city's own patented works paid abroad (R2c-P): none before a patented work stands.
+                + publicIpCharges
                 // ...and the interest on the central bank's advances (0.7.0).
                 + centralBankInterest
                 // ...and what its mortgage insurance paid the bank (0.7.11).
@@ -1505,6 +1541,7 @@ public class NationalAccounts {
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         heldBaselineKnown = true;
         gdp = 0;
+        investmentValuables = 0;
     }
 
     /**
@@ -1530,6 +1567,7 @@ public class NationalAccounts {
     public void redenominate(double scale) {
         consumptionGoods *= scale;  consumptionHousing *= scale;
         investmentConstruction *= scale;  investmentInventories *= scale;
+        investmentValuables *= scale;
         government *= scale;
         importsFood *= scale;  importsMaterials *= scale;  importsRawMaterial *= scale;
         exports *= scale;  gdp *= scale;
@@ -1565,6 +1603,7 @@ public class NationalAccounts {
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;
         researchSpending *= scale;
+        publicIpCharges *= scale;
         subsidies *= scale;
     }
 

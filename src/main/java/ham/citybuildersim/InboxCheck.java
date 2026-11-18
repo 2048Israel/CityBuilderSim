@@ -353,6 +353,9 @@ public class InboxCheck {
         /* ============ 8. wealth changes, rather than every month's reading (GV1) ============ */
         wealthBandChanges(files);
 
+        /* ============ 8b. wealth that sits on a bound posts one notice, not one a month (GV1-R) ============ */
+        wealthBandHolds(files);
+
         /* ============ 9. a new game forgets it ============ */
         System.out.println("\n--- and a new game starts with a clean inbox ---");
 
@@ -613,6 +616,78 @@ public class InboxCheck {
         quietly(() -> aged.getInbox().takeMonth(aged));
         assertTrue("unavailable revenue retains the last measured band", GovernmentView.of(aged).band() == null
                 && changed != null && aged.getInbox().live(changed.getKey()) == changed && wealthNotices(aged.getInbox()).size() == 2);
+    }
+
+    /**
+     * Section 8b (GV1-R): wealth that sits on a bound reads as a different band every month, and the notice must
+     * hold its band until the wealth is BAND_MARGIN past the bound. A city with a measured revenue year, its wealth
+     * set with treasury cash alone, read 120 times either side of RICH_MIN inside the margin, then past it.
+     */
+    static void wealthBandHolds(GameFiles files) {
+        System.out.println("\n--- the wealth band's notice holds at a bound (GV1-R) ---");
+        Game city = new Game(files);
+        quietly(city::newGame);
+        Inbox inbox = city.getInbox();
+        quietly(() -> city.simulateMonths(GovernmentView.REVENUE_MONTHS));
+        boolean measured = Double.isFinite(GovernmentView.of(city).wealthYears());
+        assertTrue("fixture has a measured year of positive revenue", measured);
+        if (!measured) return;
+
+        double margin = GovernmentView.BAND_MARGIN, bound = GovernmentView.RICH_MIN;
+        double above = bound * (1 + margin / 2), below = bound * (1 - margin / 2);
+        String soundKey = Inbox.WEALTH_BAND_PREFIX + GovernmentView.Band.SOUND.name();
+        String richKey = Inbox.WEALTH_BAND_PREFIX + GovernmentView.Band.RICH.name();
+        inbox.reset();
+        setWealthYears(city, (GovernmentView.SOUND_MIN + GovernmentView.RICH_MIN) / 2);
+        quietly(() -> inbox.takeMonth(city));
+        Notice sound = inbox.live(soundKey);
+        assertTrue("the baseline is a sound notice, and the one wealth notice", sound != null && wealthNotices(inbox).size() == 1);
+        if (sound == null) return;
+
+        int flips = 0, readings = 0;
+        GovernmentView.Band last = null;
+        boolean bodyNamesBoth = false;
+        for (int i = 0; i < 120; i++) {
+            setWealthYears(city, i % 2 == 0 ? above : below);
+            GovernmentView.Band plain = GovernmentView.of(city).band();
+            if (last != null && plain != last) flips++;
+            last = plain;
+            quietly(() -> inbox.takeMonth(city));
+            readings++;
+            if (i == 0) {
+                String told = String.join(" ", sound.getBody());
+                bodyNamesBoth = plain == GovernmentView.Band.RICH && told.contains("rich by the bands")
+                        && told.contains("stays at sound") && told.contains(String.format("%.0f%%", margin * 100));
+            }
+        }
+        assertTrue("fixture: the plain band changed at nearly every one of the 120 readings", flips >= 119);
+        assertTrue("120 readings either side of two years inside the margin raise no notice", wealthNotices(inbox).size() == 1
+                && inbox.live(soundKey) == sound && !sound.isResolved());
+        assertTrue("a held notice's body names both bands while the wealth is inside the margin", bodyNamesBoth);
+
+        setWealthYears(city, bound * (1 + 2 * margin));
+        quietly(() -> inbox.takeMonth(city));
+        Notice rich = inbox.live(richKey);
+        assertTrue("past the margin exactly one notice is raised, rich", wealthNotices(inbox).size() == 2 && rich != null
+                && sound.isResolved() && rich.isUrgent());
+        if (rich == null) return;
+        assertTrue("...and its body is the plain one", String.join(" ", rich.getBody()).contains("Its wealth band is rich"));
+
+        for (int i = 0; i < 120; i++) {
+            setWealthYears(city, i % 2 == 0 ? above : below);
+            quietly(() -> inbox.takeMonth(city));
+            readings++;
+        }
+        assertTrue("120 more readings inside the margin around two years raise none", wealthNotices(inbox).size() == 2
+                && inbox.live(richKey) == rich && !rich.isResolved());
+
+        setWealthYears(city, bound * (1 - 2 * margin));
+        quietly(() -> inbox.takeMonth(city));
+        Notice back = inbox.live(soundKey);
+        assertTrue("past the margin the other way exactly one notice is raised, sound", wealthNotices(inbox).size() == 3 && back != null
+                && back != sound && rich.isResolved());
+        System.out.println("  " + wealthNotices(inbox).size() + " wealth notices over " + (1 + readings + 2)
+                + " readings: the baseline, " + readings + " held inside the margin, and the two crossings");
     }
 
     /** Set only treasury cash, so the government's measured wealth reaches the stated interior of a band. */

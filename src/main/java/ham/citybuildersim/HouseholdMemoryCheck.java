@@ -241,11 +241,11 @@ public class HouseholdMemoryCheck {
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             /*
              * ...AND THE GROUND THEY STAND ON (BA1, 2026-11-04). addStack() puts a building up without allocating its land,
-             * and a load derives the allocation from the buildings (Game's load, "Land, after the buildings"), so the city
+             * and the load then derived allocation from the buildings, so the city
              * saved below read 6,290,000 sq ft more free than its twin loaded from it: 525,192 free live, none loaded. On
              * BA1's path the city is short of ground by month 36 and the twins' planners part on it ("no land - 0 m2 free"
              * in the loaded one only). The city is handed the ground its fixture's buildings take and it is allocated, as a
-             * load reads it; what is free stays what it was before them.
+             * its fixture requires; what is free stays what it was before them. AW2 now saves that ledger explicitly.
              */
             LandManager land = g.getLandManager();
             double unallocated = b.getTotalLandFootprint() - land.getAllocatedSqFt();
@@ -253,7 +253,7 @@ public class HouseholdMemoryCheck {
             land.setAllocatedSqFt(b.getTotalLandFootprint());
             g.simulateMonths(36);
         });
-        assertTrue("fixture: the city's allocated ground is what its buildings stand on, as a load derives it",
+        assertTrue("fixture: the city's allocated ground is what its buildings stand on",
                 Math.abs(g.getLandManager().getAllocatedSqFt() - g.getBuildingManager().getTotalLandFootprint()) < 1);
         FamilyModel families = g.getFamilies();
         assertTrue("the game's families remember", families.remembersHouseholds() && families.hasRecord());

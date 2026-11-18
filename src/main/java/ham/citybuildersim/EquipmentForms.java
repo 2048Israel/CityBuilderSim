@@ -10,7 +10,7 @@ import java.util.Set;
 
 /**
  * Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share
- * and the carts' horse share, each the unfitted part of what it scales.
+ * and the carts' horse share, each the unfitted part of what it scales, and (R6b) Haulage's driven share of the depots, the part of their truck room still without the driverless kit.
  *
  * WHY (R1, 2026-11-05; docs/queue/R1-notes.md calls 4 and 6). R0c built the forms as shares nobody set, off in every played city, and its
  * call 3 said "R1 fits equipment building by building and sets the sector's share from its count; the forms read one number". This is that
@@ -41,9 +41,13 @@ public final class EquipmentForms {
         double total, off;
     }
 
-    /** Sets every form's share from the counts. Does nothing, and touches nothing, in a city with no building unfitted that has never had one. */
+    /**
+     * Sets every form's share from the counts, and Freight's driven share of the depots (R6b) from them whatever they are. Does nothing else, and
+     * touches nothing else, in a city with no building unfitted that has never had one.
+     */
     public void apply(Game game) {
         List<BuildingsStacks> stacks = game.getBuildingManager().getStacksView();
+        setDriven(game, stacks);
         boolean any = false;
         for (BuildingsStacks s : stacks) {
             if (s.hasUnfitted()) { any = true; break; }
@@ -57,7 +61,7 @@ public final class EquipmentForms {
         Weight farm = new Weight(), carts = new Weight();
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
-            int quantity = stack.getQuantity();
+            long quantity = stack.getQuantity();
             String owner = t.getSector();
             if (!owner.isEmpty()) {
                 double draw = t.getElectricityConsumption();
@@ -89,6 +93,28 @@ public final class EquipmentForms {
     }
 
     /**
+     * Sets the share of the depots' truck room still driven (R6b, call 1: the driverless kit's piece ends CAB_DRIVERS): in a city founded the 1900 way,
+     * the truck room of the buildings lacking the kit over all the truck room, as the carts' weight is struck, and 1 where there is no truck room;
+     * in a city founded today's way, always 1, a near-future piece being on no building of a city founded today's way (its depots stand "fitted"
+     * only because every count there is). Not driven like the forms above: it is set at every call, and not saved, the counts being.
+     */
+    private static void setDriven(Game game, List<BuildingsStacks> stacks) {
+        Sectors sectors = game.getSectors();
+        if (sectors == null) return;
+        double total = 0, off = 0;
+        if (game.foundedUnfitted()) {
+            for (BuildingsStacks stack : stacks) {
+                double room = stack.getBuilding().getTruckRoom();
+                if (room > 0) {
+                    total += stack.getQuantity() * room;
+                    off += unfitted(stack, Equipment.Form.CAB_DRIVERS) * room;
+                }
+            }
+        }
+        sectors.freight().haulage().setDriverShare(total > 0 ? Math.min(1, off / total) : 1);
+    }
+
+    /**
      * The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the
      * counts say, 0 when they are gone), and remembered as driven only while some is.
      */
@@ -103,9 +129,9 @@ public final class EquipmentForms {
     }
 
     /** How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). */
-    private static int unfitted(BuildingsStacks stack, Equipment.Form form) {
+    private static long unfitted(BuildingsStacks stack, Equipment.Form form) {
         if (!stack.hasUnfitted()) return 0;
-        int n = 0;
+        long n = 0;
         for (Equipment e : stack.getBuilding().getEquipment()) {
             if (e.getEnds() == form) n += stack.getUnfitted(e.getId());
         }

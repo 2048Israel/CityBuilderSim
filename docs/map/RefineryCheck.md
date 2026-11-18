@@ -1,6 +1,6 @@
 # RefineryCheck.java - 1,543 lines · 35 methods · 18 constants · harnesses
 
-`ham/citybuildersim/RefineryCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RefineryCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The refinery's units and the flow through them (0.7.80, batch O4;
 > docs/studies/spec-oil.md 2.3, and 4's RefineryCheck), and since 0.7.82 the
@@ -65,6 +65,8 @@
 > ... (80 more lines in the source)
 
 **Uses:** [Refining](Refining.md) (188), [Good](Good.md) (132), [RefineryFlow](RefineryFlow.md) (86), [SpreadPlanner](SpreadPlanner.md) (79), [BuildingsTemplate](BuildingsTemplate.md) (38), [Game](Game.md) (25), [BusinessInvestment](BusinessInvestment.md) (20), [Sectors](Sectors.md) (16), [BuildingManager](BuildingManager.md) (15), [GoodsMarket](GoodsMarket.md) (14), [Sector](Sector.md) (10), [Deposit](Deposit.md) (9), [GameFiles](GameFiles.md) (9), [Freight](Freight.md) (5), [RefineryView](RefineryView.md) (5), [Founding](Founding.md) (3), [Trade](Trade.md) (3), [Ports](Ports.md) (3), [LandManager](LandManager.md) (2), [MoneyAudit](MoneyAudit.md) (2), [PriceLevel](PriceLevel.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (1), [Resource](Resource.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+
+**Used by (1):** [HistoricalRecipeCheck](HistoricalRecipeCheck.md)
 
 ## Sections
 

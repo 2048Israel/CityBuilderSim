@@ -128,13 +128,16 @@ public class Equity {
     /** A founding share: a thousand dollars, in the game's thousands, at today's prices. Priced at the founding's level (times PriceLevel.FACTOR, EP1). */
     public static final double FOUNDING_PRICE = 1.0 * PriceLevel.FACTOR;
 
+    /** An offering's money tail, at founding prices and reseeded with the founding quote (BF1). */
+    static final double OFFER_DUST = PriceLevel.atFounding(1e-9);
+
     /**
      * The same price in TODAY's money, after any currency reform.
      *
      * A MONEY CONSTANT THAT A REFORM NEVER RESEEDED - found 2026-09-12, and it
      * had been there since the exchange was built. FOUNDING_PRICE is the
-     * yardstick every share is measured against: Exchange.splitWhatNeedsIt() takes
-     * `mid / FOUNDING_PRICE` and splits above SPLIT_AT or consolidates below
+     * yardstick the exchange used before SX1's wage band: it took
+     * `mid / FOUNDING_PRICE` and split above 100 or consolidated below
      * one over it. Exchange.redenominate() dutifully scales mid, fair and
      * lastMid; the yardstick they are divided by stayed at 1.0. So a city that
      * lopped two zeroes woke up with every share reading a hundred times
@@ -520,7 +523,7 @@ public class Equity {
          * bought on prospects; a company with twelve months of losses is not.
          */
         double abroad = 0;
-        if (left > 1e-9) {
+        if (left > OFFER_DUST * foundingPrice / FOUNDING_PRICE) {
             boolean founding = l.months < RECORD_MONTHS;
             double equityAfter = Math.max(0, bookEquity) + home + left;
             double yield = equityAfter > 0 ? PAYOUT * Math.max(0, l.trailingIncome()) / equityAfter : 0;

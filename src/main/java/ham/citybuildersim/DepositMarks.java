@@ -14,7 +14,7 @@ import java.util.Map;
  * (MapView.deposits()); and at FAR - an L2 view holding more than MapFrame.NEAR_TILES_MOST tiles, which at the expanded map's size is a
  * 2 km scale bar of 70 to 75 px or less, a plot a pixel or less - nothing at all. A player scouting round his city, the very zoom at which
  * he looks for iron or oil, saw no deposit until he zoomed in a notch. So at FAR the map draws one small icon a deposit at its centre
- * plot, in the resource's colour with its mark in it (Fe, O, St, C, Cu, U): a few dozen to a few hundred draws, never the tiles' shading.
+ * plot, in the resource's colour with its mark in it (Fe, O, St, C, Cu, U, Au): a few dozen to a few hundred draws, never the tiles' shading.
  * Finding the deposits asks the world for every cell the view touches, so it is done for a box twice the view (Search) and again only when
  * the view leaves it, the scale halves or doubles, or the land changes - a drag or a wheel notch costs the thinning alone; and the
  * thinning keeps one icon in each ICON_PX square, the one with the most sites, so a far zoom-out never piles thousands of icons on
@@ -45,7 +45,7 @@ public final class DepositMarks {
 
     private DepositMarks() { }
 
-    /** The mark a resource's icon carries: Iron "Fe", Oil "O", Stone "St", Coal "C", Copper "Cu", Uranium "U"; empty for forest, which has no fields. */
+    /** The mark a resource's icon carries: Iron "Fe", Oil "O", Stone "St", Coal "C", Copper "Cu", Uranium "U", Gold "Au"; empty for forest, which has no fields. */
     public static String mark(Resource r) {
         switch (r) {
             case IRON: return "Fe";
@@ -54,6 +54,7 @@ public final class DepositMarks {
             case COAL: return "C";
             case COPPER: return "Cu";
             case URANIUM: return "U";
+            case GOLD:    return "Au";
             default: return "";
         }
     }

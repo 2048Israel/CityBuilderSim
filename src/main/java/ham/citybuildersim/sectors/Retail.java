@@ -709,7 +709,6 @@ public final class Retail extends Sector {
         double atTheFloor = demandAt(game == null ? null : game.getHouseholdBalance(), getFloorPrice());
         double output = game.getBuildingOutputAtEveryPost();   // the sites' output, for the order's wait (0.7.17)
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate best = null;
         double bestScore = 0, demandAtOpening = 0;
 
@@ -729,10 +728,7 @@ public final class Retail extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -747,7 +743,7 @@ public final class Retail extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector, "what the shops can hand over is ahead of what is wanted");
         }

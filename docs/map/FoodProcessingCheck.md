@@ -1,6 +1,6 @@
-# FoodProcessingCheck.java - 511 lines · 7 methods · 3 constants · harnesses
+# FoodProcessingCheck.java - 621 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The third of the shelf that arrives already made.
 > 
@@ -38,7 +38,7 @@
 > 
 > Every fixture CAUSES its condition: the meat price is set, not waited for.
 
-**Uses:** [Good](Good.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (13), [LongPlaytest](LongPlaytest.md) (11), [BusinessInvestment](BusinessInvestment.md) (8), [Formats](Formats.md) (7), [JobType](JobType.md) (6), [Game](Game.md) (4), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PriceLevel](PriceLevel.md) (2), [PayTier](PayTier.md) (1), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (13), [Formats](Formats.md) (12), [JobType](JobType.md) (11), [LongPlaytest](LongPlaytest.md) (11), [BusinessInvestment](BusinessInvestment.md) (9), [PayTier](PayTier.md) (4), [Game](Game.md) (4), [GoodsMarket](GoodsMarket.md) (3), [Equity](Equity.md) (3), [GameFiles](GameFiles.md) (2), [FoodProcessing](FoodProcessing.md) (2), [PriceLevel](PriceLevel.md) (2), [TempDirs](TempDirs.md) (1), [BuildingManager](BuildingManager.md) (1), [Markets](Markets.md) (1), [TaxPolicy](TaxPolicy.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 ## Sections
 
@@ -49,8 +49,8 @@
 | 168 | · 3. what a plant earns per person who runs it |
 | 218 | · 4. the estimate: the price it leaves behind, and the tax |
 | 346 | · 5. the meat price is the bet, and it is real |
-| 431 | · 6. it survives a save, by name |
-| 454 | · 7. a plant is counted in the money the measure counts in (RT1) |
+| 541 | · 6. it survives a save, by name |
+| 564 | · 7. a plant is counted in the money the measure counts in (RT1) |
 
 ## Constants
 
@@ -72,12 +72,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 466 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
+| 46 | 576 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 57 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 | 72 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 | 78 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 | 85 | 9 | `static double midBandRevenue(BuildingsTemplate t)` | A template's nameplate valued at the middle of each good's world band, in thousands. |
-| 95 | 416 | `public static void main(String[] args) throws Exception` |  |
+| 95 | 526 | `public static void main(String[] args) throws Exception` |  |
 

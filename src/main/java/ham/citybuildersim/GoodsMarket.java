@@ -101,7 +101,8 @@ public final class GoodsMarket {
      * The month's draws (Markets.draw()) since the month last closed: kept
      * past the clearing among the month's fills, and put back on their
      * sellers' rows after the strike (FW5, 2026-10-25). Units only: the
-     * tally above and the sectors' ledgers are not touched by them.
+     * tally above and the sectors' ledgers are not touched by them. They
+     * cross a save (Markets.State.draws; FB3, FW6-C).
      */
     private final List<Trade> draws = new ArrayList<>();
 
@@ -203,7 +204,7 @@ public final class GoodsMarket {
     public double getRailCharge() { return railCharge; }
 
     /** The railway's charge on one unit, in city money. Exactly zero with no railway. */
-    public double domesticFreight() { return good.baseFreight() * railCharge * exchangeRate; }
+    public double domesticFreight() { return (good == Good.GOLD ? bandFreight() : good.baseFreight()) * railCharge * exchangeRate; }
 
     /** What the freight on one unit has moved by, in the world's money. Exactly zero at rest. */
     public double freightChange() {
@@ -310,6 +311,8 @@ public final class GoodsMarket {
      * railway charges at home, not what the band holds.
      */
     public double bandFreight() {
+        if (good == Good.GOLD && hasWorldPrices()) return (worldImportNow() - worldExportNow())
+                * (Good.GOLD_FREIGHT_SHARE / (2 * (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)));
         double lorry = good.baseFreight();
         if (!hasWorldPrices() || !good.importable() || !good.exportable()) return lorry;
         double literal = good.worldImportPrice() - good.worldExportPrice(), world = worldImportNow() - worldExportNow();
@@ -403,6 +406,18 @@ public final class GoodsMarket {
         return importPrice();
     }
 
+    /**
+     * The next order's input quote on today's band (GDP1): the last clearing's
+     * supply and demand, priced at the current world, exchange and freight
+     * prices. With no local supply an importable input costs the import price.
+     * The recorded localPrice stays the price actually traded: a band change
+     * must reach the forecast without rewriting the preceding month's sales.
+     */
+    public double currentLandedPrice() {
+        if (!(getSupply() > 0) && good.importable()) return importPrice();
+        return priceAt(getSupply(), rDemand);
+    }
+
     /** The floor: the export price, or nothing. */
     public double floor() {
         return good.exportable() ? exportPrice() : 0;
@@ -433,19 +448,24 @@ public final class GoodsMarket {
         rSupplyStock = Math.max(0, stock);
         rDemand = Math.max(0, demand);
 
+        localPrice = priceAt(supply, rDemand);
+    }
+
+    /** The clearing's price on the current band, also used by the input quote before the next clearing (GDP1). */
+    private double priceAt(double supply, double demand) {
         double position;
-        if (supply <= 0 && rDemand <= 0) {
+        if (supply <= 0 && demand <= 0) {
             position = .5;                      // nothing either side - the middle
         } else if (supply <= 0) {
             position = 1;                       // no makers - buyers pay the ceiling
-        } else if (rDemand <= 0) {
+        } else if (demand <= 0) {
             position = 0;                       // no takers - makers get the floor
         } else {
-            position = rDemand / (rDemand + supply);
+            position = demand / (demand + supply);
         }
 
         double lo = floor(), hi = ceiling();
-        localPrice = lo + (hi - lo) * position;
+        return lo + (hi - lo) * position;
     }
 
     /** Wipes the month's tally, not the draws. Called by Markets as this good's clearing starts. */
@@ -600,11 +620,11 @@ public final class GoodsMarket {
     }
 
     /**
-     * The month's tally and the draws not yet struck, put back so a city just loaded reads what the one that kept running
+     * The month's tally and the units drawn since, put back so a city just loaded reads what the one that kept running
      * does: the goods imported, exported and filled at home in the month last closed (SpreadPlanner.values() prices a
      * works' feed and output off them), what was offered and bid for, and the units drawn on demand since (the next
      * strike counts them). The trades list is not put back: the screens that read it say "not counted" until a month
-     * has run (FW6, 2026-10-25).
+     * has run (FW6, 2026-10-25). The draws themselves are restoreDraws()'s (FB3, FW6-C).
      */
     public void restoreTally(double imported, double exported, double localFilled, double offered, double bid, double drawn) {
         this.imported = Math.max(0, imported);
@@ -613,6 +633,19 @@ public final class GoodsMarket {
         this.offered = Math.max(0, offered);
         this.bid = Math.max(0, bid);
         this.drawn = Math.max(0, drawn);
+    }
+
+    /**
+     * The month's draws since it last closed, put back (FB3, FW6-C): a hand order made between the presses keeps its seller's row
+     * after a load, because Markets.rowDrawsBeforeStrike() reads them. Put in the draws list alone, not the trades list: startMonth()
+     * adds the draws to the trades at the next clearing, as on the city that kept running. Null is none.
+     */
+    void restoreDraws(List<Markets.State.DrawRow> rows) {
+        draws.clear();
+        if (rows == null) return;
+        for (Markets.State.DrawRow d : rows) {
+            if (d != null && d.seller != null && d.buyer != null) draws.add(new Trade(good, d.seller, d.buyer, d.units, d.price));
+        }
     }
 
     public void reset() {

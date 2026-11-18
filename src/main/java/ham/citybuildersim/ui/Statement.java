@@ -298,14 +298,14 @@ public final class Statement {
                       String key, java.util.Set<String> open) {
         boolean shown = open != null && open.contains(key);
         // Kept (KP4): set on both sides, so a detail kept from a draw that had it open is closed again by one that has not.
-        detail.setVisible(shown);
-        detail.setManaged(shown);
+        Kept.give(detail.visibleProperty(), shown);
+        Kept.give(detail.managedProperty(), shown);
         mark.setText((shown ? OPENED : CLOSED) + " " + word);
         // Set, not added: a kept row is handed back with no handler (Kept), and given this draw's.
-        row.setOnMouseClicked(e -> {
+        Kept.give(row.onMouseClickedProperty(), e -> {
             boolean now = !detail.isVisible();
-            detail.setVisible(now);
-            detail.setManaged(now);
+            Kept.give(detail.visibleProperty(), now);
+            Kept.give(detail.managedProperty(), now);
             mark.setText((now ? OPENED : CLOSED) + " " + word);
             if (open != null) {
                 if (now) open.add(key);
@@ -454,15 +454,15 @@ public final class Statement {
 
     /** As above, keeping a row's own styling - used by the tier table. */
     public static VBox disclosure(String line, String hint, VBox detail, String style) {
-        detail.setVisible(false);
-        detail.setManaged(false);
+        Kept.give(detail.visibleProperty(), false);
+        Kept.give(detail.managedProperty(), false);
 
         Label head = monoLabel(line + "   " + CLOSED + " " + hint);
         head.setStyle(style + " -fx-cursor: hand;");
-        head.setOnMouseClicked(e -> {
+        Kept.give(head.onMouseClickedProperty(), e -> {
             boolean open = !detail.isVisible();
-            detail.setVisible(open);
-            detail.setManaged(open);
+            Kept.give(detail.visibleProperty(), open);
+            Kept.give(detail.managedProperty(), open);
             head.setText(line + "   " + (open ? OPENED : CLOSED) + " " + hint);
         });
 

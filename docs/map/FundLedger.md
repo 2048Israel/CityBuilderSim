@@ -1,6 +1,6 @@
 # FundLedger.java - 789 lines · 94 methods · 7 constants · model
 
-`ham/citybuildersim/FundLedger.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundLedger.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in income, and every trade, income, transfer and event the fund saw (0.7.39).
 > 
@@ -58,7 +58,7 @@
 
 **Uses:** [CorporateBond](CorporateBond.md) (7), [Equity](Equity.md) (4), [TreasuryFund](TreasuryFund.md) (3), [OrderBook](OrderBook.md) (1), [Game](Game.md) (1), [Exchange](Exchange.md) (1)
 
-**Used by (12):** [BondMarket](BondMarket.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
+**Used by (13):** [BondMarket](BondMarket.md), [Exchange](Exchange.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 

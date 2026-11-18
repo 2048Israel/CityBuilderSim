@@ -102,7 +102,7 @@ final class StatementView {
                 + " -fx-border-color: " + (on ? Palette.ACCENT : Palette.CONTROL_EDGE) + "; -fx-border-width: 1;"
                 + " -fx-padding: 3 12 3 12; -fx-cursor: hand;");
         b.setMinWidth(Region.USE_PREF_SIZE);
-        b.setOnAction(e -> { if (!on) go.run(); });
+        Kept.give(b.onActionProperty(), e -> { if (!on) go.run(); });
         return b;
     }
 
@@ -193,7 +193,7 @@ final class StatementView {
                 + " -fx-background-radius: " + Palette.RADIUS_TIGHT + "; -fx-padding: 2 8 2 8; -fx-cursor: hand;"
                 + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + "; -fx-border-width: 0 0 1 0;");
         b.setMinWidth(Region.USE_PREF_SIZE);
-        b.setOnAction(e -> go.run());
+        Kept.give(b.onActionProperty(), e -> go.run());
         return b;
     }
 
@@ -203,7 +203,7 @@ final class StatementView {
         b.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.ACCENT) + " -fx-background-color: transparent;"
                 + " -fx-padding: 2 6 2 6; -fx-cursor: hand;");
         b.setMinWidth(Region.USE_PREF_SIZE);
-        b.setOnAction(e -> go.run());
+        Kept.give(b.onActionProperty(), e -> go.run());
         return b;
     }
 
@@ -375,7 +375,7 @@ final class StatementView {
                 NOTE_COLUMN, Palette.words(Palette.SIZE_CAPTION, hasNote ? Palette.ACCENT : Palette.TEXT_MUTED) + (hasNote ? " -fx-cursor: hand;" : ""),
                 Pos.CENTER_LEFT);
         // Set, not added: a kept number is handed back with no handler (Kept), and given this draw's.
-        if (hasNote) note.setOnMouseClicked(e -> toggle.run());
+        if (hasNote) Kept.give(note.onMouseClickedProperty(), e -> toggle.run());
         row.getChildren().add(note);
 
         Label label = Kept.label(r.label());
@@ -390,7 +390,7 @@ final class StatementView {
         // Kept (KP4): the indent and the hand are set on both sides, since a row kept from a draw that had them is handed back as it was.
         labelled.setPadding(!head && !sub && !total ? INDENTED : javafx.geometry.Insets.EMPTY);
         labelled.setStyle(hasNote ? "-fx-cursor: hand;" : "");
-        if (hasNote) label.setOnMouseClicked(e -> toggle.run());
+        if (hasNote) Kept.give(label.onMouseClickedProperty(), e -> toggle.run());
         HBox.setHgrow(labelled, Priority.ALWAYS);
         labelled.setMaxWidth(Double.MAX_VALUE);
         row.getChildren().add(labelled);

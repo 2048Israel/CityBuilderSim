@@ -293,13 +293,39 @@ final class MapView {
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
-    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. Built as Executors.newSingleThreadExecutor() builds its own, but kept a ThreadPoolExecutor (CM1): its getTaskCount() is the camera tally's count of asks (MoveTally). */
-    static final ThreadPoolExecutor WORKER = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
+    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. Built as Executors.newSingleThreadExecutor() builds its own, but a Worker (CM1, FB7): its asked() is the camera tally's count of asks (MoveTally) and the load's. */
+    static final Worker WORKER = new Worker(new LinkedBlockingQueue<>(), r -> {
         Thread t = new Thread(r, "city-map");
         t.setDaemon(true);
         t.setPriority(Thread.MIN_PRIORITY);
         return t;
     });
+
+    /**
+     * The map's one worker thread, counting each job as it is handed in (FB7, 2026-11-17).
+     * WHY: the camera tally and the load counted asks by getTaskCount(), which the JDK calls an approximation: a job the
+     * thread has taken off its queue and not yet begun is counted nowhere, one just finished is counted twice for a moment.
+     * Under load a loaded glide that asked nothing tallied asks -1 (CM1b's known red, GR2-R); ReplayCheck 5d causes that moment.
+     */
+    static final class Worker extends ThreadPoolExecutor {
+        private final java.util.concurrent.atomic.AtomicLong asked = new java.util.concurrent.atomic.AtomicLong();
+
+        Worker(java.util.concurrent.BlockingQueue<Runnable> queue, java.util.concurrent.ThreadFactory threads) {
+            super(1, 1, 0L, TimeUnit.MILLISECONDS, queue, threads);
+        }
+
+        /** Every job comes through here, submit()'s too: counted before it is queued, so a count read after a hand-in has it. */
+        @Override
+        public void execute(Runnable job) {
+            asked.incrementAndGet();
+            super.execute(job);
+        }
+
+        /** The jobs handed in since the worker was made; it never goes down, so a difference of two readings is the asks between them. */
+        long asked() {
+            return asked.get();
+        }
+    }
 
     /** The thread a hover's block is quoted on (WN5b): its own, not WORKER's, because one quote can take seconds at a big level near a foreign coast and would hold the map's own jobs (plans, nodes, the minimap) behind it. Low priority; it dies with the window. */
     static final ExecutorService QUOTES = Executors.newSingleThreadExecutor(r -> {
@@ -308,9 +334,6 @@ final class MapView {
         t.setPriority(Thread.MIN_PRIORITY);
         return t;
     });
-
-    /** How many blocks' quotes the hover keeps, the latest asked: 16 - a pointer that comes back to a block shows its price at once. */
-    static final int QUOTES_KEPT = 16;
 
     private final UserInterface ui;
     private final Picker picker;
@@ -415,8 +438,18 @@ final class MapView {
 
     /* ----------------------------- buying from the map (0.7.137, batch M6) ----------------------------- */
 
-    /** The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a load and a collapse - and, since MS1, not on a month: each is keyed to its ground and lost only when the city bought it or nothing offers it, the head saying so (headNote). */
-    private final LandMap.Picks picks = new LandMap.Picks();
+    /** Pick measurements have their own queue: a slow hover cannot hold the clicked block behind it (WN5c). */
+    private static final ExecutorService DRAFTS = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "land-drafts");
+        t.setDaemon(true);
+        t.setPriority(Thread.MIN_PRIORITY);
+        return t;
+    });
+    /** The picks belong to this view; only the FX dispatcher installs measured ground and changes the card (WN5c). */
+    private final LandMap.Picks picks = new LandMap.Picks(DRAFTS, Platform::runLater, () -> {
+        showBuyCard();
+        requestDraw();
+    });
     /** The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. */
     private VBox buyBox;
     private String cardFor;
@@ -540,6 +573,10 @@ final class MapView {
 
     MapView(UserInterface ui, Picker picker, Runnable onClose) {
         this.ui = ui;
+        hoverQuotes = new LandMap.Quotes(() -> ui.game, QUOTES, Platform::runLater, () -> {
+            if (pointerAt != null) hoverAt = pointerAt;
+            requestDraw();
+        });
         this.picker = picker;
         this.onClose = onClose;
         hatch = hatchPattern();
@@ -547,7 +584,7 @@ final class MapView {
         canvas.setFocusTraversable(true);
         readout.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 4; -fx-padding: 2 7 3 7;");
-        readout.setMouseTransparent(true);
+        Kept.give(readout.mouseTransparentProperty(), true);
         readout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         // Within the small map (0.7.88): a street's words after whose it is may run past it, so it wraps there.
         readout.setWrapText(true);
@@ -555,7 +592,7 @@ final class MapView {
         showIf(readout, false);
         note.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 6; -fx-padding: 6 12 6 12;");
-        note.setMouseTransparent(true);
+        Kept.give(note.mouseTransparentProperty(), true);
         note.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         note.setText(DRAWING);
         showIf(note, false);
@@ -564,7 +601,7 @@ final class MapView {
         expand.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 4; -fx-padding: 3 9 3 7; -fx-cursor: hand;");
         expand.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        expand.setOnMouseClicked(e -> { expand(); e.consume(); });
+        Kept.give(expand.onMouseClickedProperty(), e -> { expand(); e.consume(); });
         HistoryScreen.tip(expand, EXPAND_TIP);
         StackPane.setAlignment(expand, Pos.TOP_RIGHT);
         StackPane.setAlignment(readout, Pos.TOP_LEFT);
@@ -572,7 +609,7 @@ final class MapView {
         StackPane.setMargin(readout, new Insets(Palette.GAP));
         smallBox.getChildren().addAll(canvas, note, readout, expand);
         smallBox.setMinSize(SMALL_W, SMALL_H);
-        smallBox.setPrefSize(SMALL_W, SMALL_H);
+        Pieces.prefSize(smallBox, SMALL_W, SMALL_H);
         smallBox.setMaxSize(SMALL_W, SMALL_H);
         smallBox.setStyle("-fx-background-color: " + Palette.STAGE + "; -fx-background-radius: 8;");
         clip(smallBox);
@@ -611,6 +648,7 @@ final class MapView {
 
     /** A new city or a load: everything drawn is another city's. */
     void forget() {
+        endMove();      // CM2: a detached canvas cannot tick again to release its prepared replay contexts
         // FM1: the trade chip's tip names the city's money, and the city has changed.
         if (tradeChip != null && Kept.tipOf(tradeChip) != null) Kept.tipOf(tradeChip).setText(tradeTip());
         backFromFunding = false;
@@ -631,6 +669,7 @@ final class MapView {
 
     private void reset() {
         resetGlobePicture();
+        hoverQuotes.redraw();
         shownMap = null;
         tiles = null;
         draft = null;
@@ -689,12 +728,14 @@ final class MapView {
 
     private void tick() {
         if (canvas.getScene() == null || ui.game == null) {
+            hoverQuotes.leave();
             pump.stop();
             running = false;
             return;
         }
         long deadline = System.nanoTime() + (long) ((ui.replayOn() ? REPLAY_FRAME_MS : FRAME_MS) * 1e6);      // (TR1) a replay computes no month
         boolean more = keepUp();
+        more |= hoverQuotes.tick();
         more |= keys();
         boolean camera = replayCamera();     // (TR1) the replay's glide, fly and smooth hand
         // The head's money and the card caught up with the city (0.7.137): a month, a purchase, the toggle.
@@ -856,6 +897,7 @@ final class MapView {
         if (buffer.length < w * w) buffer = new int[w * w];
         for (long[] t : tilesInView(f)) {
             long tx = t[0], ty = t[1], key = MapTiles.key(tx, ty);
+            if (move != null && move.stuckTiles.contains(((long) cacheIndex(pictures) << 58) ^ key)) continue;
             Img img = pictures.get(key);
             if (img != null && img.version == version) continue;
             if (img != null && moveRunning()) {     // (CM1) a loaded move's month, taken from what the load kept of it
@@ -905,6 +947,8 @@ final class MapView {
     private void ask(long tx, long ty) {
         final MapTiles askedFor = tiles;
         final CityMap map = shownMap;
+        final int moveSerial = move == null ? 0 : move.serial;
+        final Pictures pictures = move == null ? null : picturesFor(frame().level(), MapFrame.tilePx(frame().level(), frame().scale()));
         for (CityMap.Job j : tiles.jobs(tx, ty)) {
             WORKER.submit(() -> {
                 if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its plans are not drawn
@@ -912,6 +956,13 @@ final class MapView {
                     j.run();
                 } catch (RuntimeException e) {
                     System.out.println("A district's plan could not be drawn: " + e);
+                    if (moveSerial != 0) {
+                        Platform.runLater(() -> {
+                            if (move != null && move.serial == moveSerial) move.stuckTiles.add(((long) cacheIndex(pictures) << 58) ^ MapTiles.key(tx, ty));
+                            requestDraw();
+                        });
+                        return;
+                    }
                 }
                 Platform.runLater(() -> {
                     if (tiles == askedFor) map.adopt(j);
@@ -964,11 +1015,13 @@ final class MapView {
         if (picturesWanted.isEmpty() || !tiles.picturesFit(f)) return;
         final MapTiles askedFor = tiles;
         final CityMap map = shownMap;
+        final int moveSerial = move == null ? 0 : move.serial;
         final List<CityMap.District> asked = new ArrayList<>();
         final List<CityMap.Job> jobs = new ArrayList<>();
         long until = System.nanoTime() + (long) (FRAME_MS * 1e6);
         for (CityMap.District d : picturesWanted) {
             if (System.nanoTime() > until) break;
+            if (move != null && move.stuckPictures.contains(d)) continue;
             if (!picturesAsked.add(d)) continue;
             asked.add(d);
             jobs.addAll(map.pictureJobs(d));
@@ -976,15 +1029,19 @@ final class MapView {
         if (asked.isEmpty()) return;
         WORKER.submit(() -> {
             if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its pictures are not drawn
+            boolean failed = false;
             for (CityMap.Job j : jobs) {
                 try {
                     j.run();
                 } catch (RuntimeException e) {
                     System.out.println("A district's picture could not be drawn: " + e);
+                    failed = true;
                 }
             }
+            final boolean gaveUp = failed;
             Platform.runLater(() -> {
                 if (tiles != askedFor) return;
+                if (gaveUp && move != null && move.serial == moveSerial) move.stuckPictures.addAll(asked);
                 for (CityMap.Job j : jobs) map.adopt(j);
                 picturesAsked.removeAll(asked);
                 requestDraw();
@@ -1017,6 +1074,7 @@ final class MapView {
         for (long ny = ny0; ny <= ny1; ny++) {
             for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
+                if (move != null && move.stuckNodes.contains(key)) continue;
                 Img img = nodes.get(key);
                 if (img == null) {
                     // Its ground asked of WORKER once; the answer asks for a frame.
@@ -1082,6 +1140,7 @@ final class MapView {
         for (long[] a : asking) {
             final long nx = a[0], ny = a[1], key = a[2], x0 = nx * span, y0 = ny * span;
             final MapTiles askedFor = tiles;
+            final int moveSerial = move == null ? 0 : move.serial;
             WORKER.submit(() -> {
                 long[] w = nodesWanted;
                 if (w == null || w[0] != plots || nx < w[1] || nx > w[2] || ny < w[3] || ny > w[4]) {
@@ -1091,8 +1150,21 @@ final class MapView {
                     });
                     return;
                 }
-                byte[] relief = world.earth() ? new byte[n * n] : null;
-                byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
+                byte[] relief, ground;
+                try {
+                    relief = world.earth() ? new byte[n * n] : null;
+                    ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
+                } catch (RuntimeException e) {
+                    if (moveSerial == 0) throw e;
+                    System.out.println("A node's ground could not be drawn: " + e);
+                    Platform.runLater(() -> {
+                        if (tiles != askedFor) return;
+                        nodesAsked.remove(key);
+                        if (move != null && move.serial == moveSerial) move.stuckNodes.add(key);
+                        requestDraw();
+                    });
+                    return;
+                }
                 Platform.runLater(() -> {
                     nodesAsked.remove(key);
                     if (tiles != askedFor) return;
@@ -2560,10 +2632,13 @@ final class MapView {
      * view's chart draws (GlobeFrame.chartHolds(): at the plane's scales the ground past GlobeFrame.handoverKm() of the city and off
      * the world's square), sampled every NODE_SAMPLE_PX as globeNodes() is, each sample's place on the chart (GlobeFrame.chartAt(), in
      * chart pixels at the view's stride) cut into nodes of MapFrame.NODE_PX and padded by a sample's step; null where the chart draws
-     * none. Kept for the view, as globeNodes()'s is.
+     * none. A loaded replay move (CM2) widens this to the whole visible disc in GROUND; ordinary play keeps its range.
+     * Kept for the view and that coverage, as globeNodes()'s is.
      */
     private long[] chartNodes(GlobeFrame v) {
-        if (chartNodesFor != null && chartNodesFor.sameView(v)) return chartNodesAt;
+        boolean wholeDisc = move != null && v.tier() == GlobeFrame.GROUND;
+        if (chartNodesFor != null && chartNodesFor.sameView(v) && chartWholeDisc == wholeDisc) return chartNodesAt;
+        chartWholeDisc = wholeDisc;
         chartNodesFor = v.copy(v.width(), v.height(), v.kmPx());
         long plots = MapFrame.nodePlotsAt(v.planeScale());
         double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
@@ -2572,7 +2647,7 @@ final class MapView {
         for (double sy = 0.5; sy < h + NODE_SAMPLE_PX; sy += NODE_SAMPLE_PX) {
             for (double sx = 0.5; sx < w + NODE_SAMPLE_PX; sx += NODE_SAMPLE_PX) {
                 double px = Math.min(sx, w - 0.5), py = Math.min(sy, h - 0.5);
-                if (!v.chartHolds(px, py) || !v.chartAt(px, py, xy)) continue;
+                if (!v.chartHolds(px, py, wholeDisc) || !v.chartAt(px, py, xy)) continue;
                 x0 = Math.min(x0, xy[0]);
                 y0 = Math.min(y0, xy[1]);
                 x1 = Math.max(x1, xy[0]);
@@ -2589,6 +2664,7 @@ final class MapView {
 
     private GlobeFrame chartNodesFor;
     private long[] chartNodesAt;
+    private boolean chartWholeDisc;
 
     /** A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. */
     private static final long CHART_NODE_OFFSET = 1L << 19;
@@ -2644,6 +2720,7 @@ final class MapView {
         for (long ny = r[4]; ny <= r[5]; ny++) {
             for (long nx = r[2]; nx <= r[3]; nx++) {
                 long key = chartKey(id, plots, nx, ny);
+                if (move != null && move.stuckCharts.contains(key)) continue;
                 if (charts.get(key) == null && chartsAsked.add(key)) asking.add(new long[] { nx, ny, key });
             }
         }
@@ -2655,6 +2732,7 @@ final class MapView {
         final int gen = chartGen, n = MapFrame.NODE_PX;
         for (long[] a : asking) {
             final long nx = a[0], ny = a[1], key = a[2];
+            final int moveSerial = move == null ? 0 : move.serial;
             WORKER.submit(() -> {
                 long[] w = chartsWanted;
                 if (w == null || w[0] != plots || w[1] != id || nx < w[2] || nx > w[3] || ny < w[4] || ny > w[5]) {
@@ -2671,6 +2749,12 @@ final class MapView {
                     MapTiles.chartPixels(ground, relief, pixels);
                 } catch (RuntimeException e) {
                     System.out.println("A chart's ground could not be drawn: " + e);
+                    if (moveSerial != 0) Platform.runLater(() -> {
+                        if (gen != chartGen) return;
+                        chartsAsked.remove(key);
+                        if (move != null && move.serial == moveSerial) move.stuckCharts.add(key);
+                        requestDraw();
+                    });
                     return;
                 }
                 Platform.runLater(() -> {
@@ -2821,7 +2905,8 @@ final class MapView {
             GlobeFrame.NodePixels cp = cr == null ? null : (nx, ny) -> chartSnap.get(chartKey(chartId, plots, nx, ny));
             GlobeFrame.Beyond beyond = mode == MODE_FADE ? (i, j, vx, vy, vz) -> 0 : beyond(t, pic);
             final int a0 = i0, a1 = i1, b0 = j0;
-            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, cp, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
+            boolean wholeDisc = move != null && globe.tier() == GlobeFrame.GROUND;
+            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, cp, wholeDisc, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
         }
         globeImg.getPixelWriter().setPixels(i0, j0, i1 - i0, j1 - j0, PixelFormat.getIntArgbInstance(), px, j0 * w + i0, w);
     }
@@ -3239,7 +3324,7 @@ final class MapView {
         }
         cursorFor(boxes);
         if (dotWords != null) {
-            if (!pressed) canvas.setCursor(javafx.scene.Cursor.HAND);
+            if (!pressed) Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.HAND);
             showCard(dotWords, sx, sy, globe.width(), globe.height());
             return;
         }
@@ -3273,90 +3358,19 @@ final class MapView {
         if (key < 0 || land.ownsPlot(x, y)) return null;
         List<String> out = new ArrayList<>();
         if (picks.blocks().contains(key)) {
-            List<Integer> ids = picks.live(g);
-            LandMap.Card c = LandMap.card(g, ids);
-            int offers = 0;
-            for (int id : ids) if (id > 0) offers++;
-            out.add(LandMap.pickedWords(offers, picks.blocks().size()));
-            out.add(LandMap.kindWords(c.km2(), c.dryKm2(), c.freshKm2(), c.seaKm2()));
-            out.add("Price " + ui.landScreen.inToggle(c.usd()));
-            out.add(CLICK_TO_DROP);
+            out.addAll(picks.groundWords(g, ui.landScreen::inToggle));
+            out.add(picks.pricing() ? "Shift-click to drop it" : CLICK_TO_DROP);
             return out;
         }
         if (!picks.pickable(g, key)) return null;
-        // The office measures the block as it would an offer of it - its ground, fields and price - once for the pointer's stay over it,
-        // away from the screen's thread (WN5b): a block quoted before is shown at once, else the card says so and the quote is asked of QUOTES.
-        String quoteKey = key + "|" + level + "|" + shapesFor + "|" + g.getMonth() + "|" + System.identityHashCode(market);
-        quoteWanted = quoteKey;
-        if (!quotes.containsKey(quoteKey)) {
-            if (!quotesAsked.contains(quoteKey)) {
-                String quoterKey = System.identityHashCode(market) + "|" + level + "|" + shapesFor + "|" + g.getMonth();
-                if (!quoterKey.equals(quoterFor)) {
-                    quoter = market.quoter();       // the land copied here, on the screen's thread: one copy for the month and the city's ground, not one a block
-                    quoterFor = quoterKey;
-                }
-                if (quoter == null) return null;
-                askQuote(quoter, quoteKey, LandMap.blockRect(level, key));
-            }
-            out.add(LandMap.ONE_BLOCK);
-            out.add(LandMap.QUOTING);
-            out.add(LandMap.CLICK_TO_PICK);
-            return out;
-        }
-        LandParcel q = quotes.get(quoteKey);
-        if (q == null) return null;
-        out.add(LandMap.ONE_BLOCK);
-        out.add(LandMap.kindWords(q.getKm2(), q.getKm2(CityLand.DRY), q.getKm2(CityLand.FRESH), q.getKm2(CityLand.SEA)));
-        out.add("Price " + ui.landScreen.inToggle(q.getPriceUsd()));
-        out.add(LandMap.CLICK_TO_PICK);
-        return out;
+        quoteUsed = true;
+        return hoverQuotes.words(key, ui.landScreen::inToggle);
     }
 
-    /* ----- the hover's quote, away from the screen's thread (WN5b, 2026-11-02) ----- */
+    /* ----- the hover's quote lifecycle (WN5d) ----- */
 
-    /** The block the hover wants quoted now: its key (block, level, ground, month and office), or "" while the pointer is over none. QUOTES' queue reads it from its own thread, and drops the quote of a block the pointer has left unread. */
-    private volatile String quoteWanted = "";
-
-    /** The quotes the hover has had (LandMarket.quote(), a null for a block with none), by key, the latest asked kept (QUOTES_KEPT): the screen's thread's. */
-    private final Map<String, LandParcel> quotes = new LinkedHashMap<>(32, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<String, LandParcel> eldest) { return size() > QUOTES_KEPT; }
-    };
-
-    /** The quotes on QUOTES' queue or running and not back: a block asked once, not again for each frame the pointer stays on it. The screen's thread's. */
-    private final Set<String> quotesAsked = new HashSet<>();
-
-    /** The office as it stood (LandMarket.quoter()) for the office, level, ground and month in quoterFor, and what it was made for; null where the office has none. */
-    private LandMarket.Quoter quoter;
-    private String quoterFor = "";
-
-    /**
-     * Asks QUOTES for a block's quote, `r` the block's {x0, y0, x1, y1}. A block still queued when the pointer has left it is dropped unread
-     * (askNodes()'s rule), its key forgotten so a pointer that comes back asks again. What comes back is kept on the screen's thread, a failure
-     * or nothing as a null so it is not asked again, and when the pointer is still on the block the hover is asked for the next frame.
-     */
-    private void askQuote(LandMarket.Quoter use, String quoteKey, long[] r) {
-        quotesAsked.add(quoteKey);
-        QUOTES.submit(() -> {
-            boolean wanted = quoteKey.equals(quoteWanted);
-            LandParcel got = null;
-            if (wanted) {
-                try {
-                    got = use.quote(r[0], r[1], r[2], r[3]);
-                } catch (RuntimeException e) {
-                    System.out.println("A block's price could not be worked out: " + e);
-                }
-            }
-            final LandParcel result = got;
-            Platform.runLater(() -> {
-                quotesAsked.remove(quoteKey);
-                if (wanted) quotes.put(quoteKey, result);
-                if (quoteKey.equals(quoteWanted) && pointerAt != null) {
-                    hoverAt = pointerAt;
-                    requestDraw();
-                }
-            });
-        });
-    }
+    private final LandMap.Quotes hoverQuotes;
+    private boolean quoteUsed;
 
     /** The ground lines in the hover card where "Not the city's" stood (after its first line when the card has not that line), their last line, the blue one, at the card's foot. */
     private static void groundInto(List<String> lines, List<String> ground) {
@@ -3422,7 +3436,7 @@ final class MapView {
             globe.keyPan(v, dt);
             follow();
         } else big.keyPan(v, dt);
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
         return true;
     }
@@ -3446,30 +3460,31 @@ final class MapView {
        ===================================================================== */
 
     private void handlers() {
-        canvas.setOnMouseMoved(e -> {
+        Kept.give(canvas.onMouseMovedProperty(), e -> {
             hoverAt = new double[] { e.getX(), e.getY() };
             pointerAt = hoverAt;
             hoverShift = e.isShiftDown();
             requestDraw();
         });
-        canvas.setOnMouseExited(e -> {
+        Kept.give(canvas.onMouseExitedProperty(), e -> {
             hoverAt = null;
             pointerAt = null;
-            quoteWanted = "";       // (WN5b) the pointer has left the map: a quote still queued is dropped
+            hoverQuotes.leave();
             showIf(readout, false);
-            if (card != null) card.setVisible(false);
+            if (card != null) Kept.give(card.visibleProperty(), false);
             if (overSide >= 0) {
                 overSide = overPlace = -1;
                 requestDraw();
             }
         });
-        canvas.setOnMousePressed(e -> {
+        Kept.give(canvas.onMousePressedProperty(), e -> {
             if (replayRunsOnClick()) {      // (CM1) a replay's loaded move waits for this click
                 e.consume();
                 return;
             }
             // A second button pressed over the first starts the press again as its own: only its release ends it.
             pressed = true;
+            hoverQuotes.leave();
             pointerAt = null;       // a press pans or boxes: no boat is named under it (WN7)
             pressButton = e.getButton();
             pressX = lastX = boxX = e.getX();
@@ -3481,19 +3496,19 @@ final class MapView {
             boxing = pressButton == javafx.scene.input.MouseButton.PRIMARY && pressBoxes(e.getX(), e.getY(), e.isShiftDown());
             if (expanded) {
                 canvas.requestFocus();
-                canvas.setCursor(boxing ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
+                Kept.give(canvas.cursorProperty(), boxing ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
             }
         });
-        canvas.setOnMouseDragged(e -> {
+        Kept.give(canvas.onMouseDraggedProperty(), e -> {
             if (!pressed) return;
             moved = Math.max(moved, Math.hypot(e.getX() - pressX, e.getY() - pressY));
             if (boxing) {
                 boxX = e.getX();
                 boxY = e.getY();
-                if (card != null && moved >= CLICK_SLOP) card.setVisible(false);
+                if (card != null && moved >= CLICK_SLOP) Kept.give(card.visibleProperty(), false);
                 requestDraw();
             } else if (expanded) {
-                canvas.setCursor(javafx.scene.Cursor.CLOSED_HAND);
+                Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.CLOSED_HAND);
                 if (globe != null) {
                     globe.drag(lastX, lastY, e.getX(), e.getY());
                     follow();
@@ -3503,7 +3518,7 @@ final class MapView {
             lastX = e.getX();
             lastY = e.getY();
         });
-        canvas.setOnMouseReleased(e -> {
+        Kept.give(canvas.onMouseReleasedProperty(), e -> {
             // Only the press's own button lets it go; and a right or middle press never clicks (MS1).
             if (!pressed || e.getButton() != pressButton) return;
             boolean primary = pressButton == javafx.scene.input.MouseButton.PRIMARY;
@@ -3518,7 +3533,7 @@ final class MapView {
             else if (click) click(e.getX(), e.getY(), e.isShiftDown());
             else requestDraw();
         });
-        canvas.setOnScroll(e -> {
+        Kept.give(canvas.onScrollProperty(), e -> {
             if (!expanded) return;
             double notches = e.getDeltaY() / 40.0;
             if (notches == 0) return;
@@ -3527,7 +3542,7 @@ final class MapView {
                 globe.zoomNotches(e.getX(), e.getY(), notches);
                 follow();
             } else big.zoomNotches(e.getX(), e.getY(), notches);
-            if (card != null) card.setVisible(false);
+            if (card != null) Kept.give(card.visibleProperty(), false);
             requestDraw();
             e.consume();
         });
@@ -3685,7 +3700,12 @@ final class MapView {
 
     /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
     private void hover(double sx, double sy) {
-        quoteWanted = "";       // (WN5b) wanted again below where the pointer is over a block that may be picked: a quote queued for one it has left is dropped
+        quoteUsed = false;
+        try { hoverHere(sx, sy); }
+        finally { if (!quoteUsed) hoverQuotes.leave(); }
+    }
+
+    private void hoverHere(double sx, double sy) {
         if (onGlobe()) {
             globeHover(sx, sy);
             return;
@@ -3743,7 +3763,7 @@ final class MapView {
      */
     private void cursorFor(boolean boxHere) {
         if (pressed) return;
-        canvas.setCursor(!expanded ? javafx.scene.Cursor.DEFAULT
+        Kept.give(canvas.cursorProperty(), !expanded ? javafx.scene.Cursor.DEFAULT
                 : canPick() && (boxHere || hoverShift) ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
     }
 
@@ -3758,7 +3778,7 @@ final class MapView {
     /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - the hint last (CLICK_TO_BUY, CLICK_TO_PICK, CLICK_TO_DROP, and a nation's NationsMap.CLICK_FOR_CARD) in the accent's light blue. */
     private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
         if (lines.isEmpty()) {
-            card.setVisible(false);
+            Kept.give(card.visibleProperty(), false);
             return;
         }
         card.getChildren().clear();
@@ -3777,7 +3797,7 @@ final class MapView {
         if (top + ch > vh - 10) top = Math.max(10, vh - ch - 10);
         card.setTranslateX(left);
         card.setTranslateY(top);
-        card.setVisible(true);
+        Kept.give(card.visibleProperty(), true);
     }
 
     /** The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). */
@@ -3911,6 +3931,16 @@ final class MapView {
     private void showBuyCard() {
         if (buyBox == null) return;
         List<Integer> ids = picks.live(ui.game);
+        if (picks.pricing()) {
+            receiptShown = false;
+            cardFor = cardKey(ids);
+            hideNationCard();
+            rings = List.of();
+            buyBox.getChildren().setAll(ui.landScreen.mapPricingNode(LandMap.groundTitle(picks.blocks().size()), this));
+            Kept.give(buyBox.visibleProperty(), true);
+            layoutBuyCard();
+            return;
+        }
         LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
         if (m == null) {
             hideBuyCard();
@@ -3929,7 +3959,7 @@ final class MapView {
         }
         rings = sites;
         buyBox.getChildren().setAll(ui.landScreen.mapCardNode(m, this));
-        buyBox.setVisible(true);
+        Kept.give(buyBox.visibleProperty(), true);
         layoutBuyCard();
     }
 
@@ -3940,13 +3970,13 @@ final class MapView {
         receiptShown = false;
         if (buyBox == null) return;
         buyBox.getChildren().clear();
-        buyBox.setVisible(false);
+        Kept.give(buyBox.visibleProperty(), false);
     }
 
     /** What the card was drawn from: the picks, the toggle, the cash and the vault, the month and the listing. */
     private String cardKey(List<Integer> ids) {
         Game g = ui.game;
-        return ids + "|" + g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|"
+        return ids + "|" + picks.pricing() + "|" + g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|"
                 + g.getMonth() + "|" + g.getLandManager().getMarket().getNextOfferId();
     }
 
@@ -4170,7 +4200,7 @@ final class MapView {
         List<int[]> offerPlaces = new ArrayList<>();
         for (int[] sp : places) if (sp[2] == 0) offerPlaces.add(new int[] { sp[0], sp[1] });
         buyBox.getChildren().setAll(ui.landScreen.mapReceiptNode(title, offerPlaces, this));
-        buyBox.setVisible(true);
+        Kept.give(buyBox.visibleProperty(), true);
         layoutBuyCard();
         requestDraw();
     }
@@ -4197,6 +4227,7 @@ final class MapView {
         }
         if (k == KeyCode.ENTER && !receiptShown) {
             List<Integer> ids = picks.live(ui.game);
+            if (picks.pricing()) return true;
             LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
             if (m == null) return false;
             ui.landScreen.mapCardPress(m, this);
@@ -4561,12 +4592,12 @@ final class MapView {
         Label chip = new Label(words);
         Region dot = new Region();
         dot.setMinSize(7, 7);
-        dot.setPrefSize(7, 7);
+        Pieces.prefSize(dot, 7, 7);
         dot.setMaxSize(7, 7);
         chip.setGraphic(dot);
         chip.setGraphicTextGap(5);
         chip.setMinWidth(Region.USE_PREF_SIZE);
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             flip.run();
             e.consume();
         });
@@ -4987,7 +5018,7 @@ final class MapView {
         Label close = new Label("×");
         close.setStyle(Palette.words(Palette.SIZE_SECTION, Palette.TEXT_MUTED) + " -fx-cursor: hand;");
         close.setMinWidth(Region.USE_PREF_SIZE);
-        close.setOnMouseClicked(e -> {
+        Kept.give(close.onMouseClickedProperty(), e -> {
             hideNationCard();
             requestDraw();
             e.consume();
@@ -5002,7 +5033,7 @@ final class MapView {
         values.setHgrow(Priority.ALWAYS);
         values.setMinWidth(0);
         ranks.setHalignment(HPos.RIGHT);
-        grid.getColumnConstraints().addAll(labels, values, ranks);
+        Kept.columns(grid).addAll(labels, values, ranks);
         int row = 0;
         for (NationsMap.Row r : c.rows()) {
             Label k = new Label(r.label());
@@ -5046,7 +5077,7 @@ final class MapView {
             }));
         }
         nationBox.getChildren().setAll(head, distance, grid, doors);
-        nationBox.setVisible(true);
+        Kept.give(nationBox.visibleProperty(), true);
         nationBox.applyCss();
         nationBox.autosize();
         placeNationCard();
@@ -5072,7 +5103,7 @@ final class MapView {
         nationKey = null;
         if (nationBox == null) return;
         nationBox.getChildren().clear();
-        nationBox.setVisible(false);
+        Kept.give(nationBox.visibleProperty(), false);
     }
 
     /** A frame's look at the card (tick()): made again when the month moved - the year's figures and the D$ it is struck in - and put away if its nation is not shown any more (Nations off, another game). */
@@ -5111,7 +5142,7 @@ final class MapView {
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
         setCinematic(ui.cinematicHidesChrome());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it (TR2: not the form Follow keeps)
-        canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+        Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
         if (keepView && before) requestDraw();
@@ -5139,7 +5170,10 @@ final class MapView {
 
     /** Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked - the card's picks dropped (0.7.137), and its purchase forgotten unless the funding page has it (B5). */
     void collapse(boolean redraw) {
+        hoverQuotes.leave();
         if (!expanded) return;
+        ReplayCamera cam = ui.replayCamera();
+        if (cam != null) cam.mapGone();
         expanded = false;
         ui.panKeysTo(null);
         keyW = keyA = keyS = keyD = false;
@@ -5153,8 +5187,8 @@ final class MapView {
         hideBuyCard();
         hideNationCard();
         ui.closeChartFullScreen();
-        if (card != null) card.setVisible(false);
-        canvas.setCursor(javafx.scene.Cursor.DEFAULT);
+        if (card != null) Kept.give(card.visibleProperty(), false);
+        Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.DEFAULT);
         bigBox.getChildren().remove(canvas);
         smallBox.getChildren().add(0, canvas);
         canvas.setWidth(SMALL_W);
@@ -5218,20 +5252,20 @@ final class MapView {
         card.setStyle("-fx-background-color: #0b1118e6; -fx-background-radius: 6; -fx-border-color: " + Palette.EDGE
                 + "; -fx-border-radius: 6; -fx-padding: 6 9 7 9;");
         // Laid out by hand at the pointer: never managed, so the pane never stretches it.
-        card.setMouseTransparent(true);
-        card.setManaged(false);
-        card.setVisible(false);
+        Kept.give(card.mouseTransparentProperty(), true);
+        Kept.give(card.managedProperty(), false);
+        Kept.give(card.visibleProperty(), false);
         VBox legend = legend();
         StackPane.setAlignment(legend, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(legend, new Insets(Palette.GAP));
         // The buying card (0.7.137): laid out by hand beside its offer, under the hover card, never managed either.
         buyBox = new VBox();
-        buyBox.setManaged(false);
-        buyBox.setVisible(false);
+        Kept.give(buyBox.managedProperty(), false);
+        Kept.give(buyBox.visibleProperty(), false);
         // A nation's card (WN2): the same, laid out by hand beside the point clicked, under the hover card.
         nationBox = new VBox(NATION_CARD_GAP);
-        nationBox.setManaged(false);
-        nationBox.setVisible(false);
+        Kept.give(nationBox.managedProperty(), false);
+        Kept.give(nationBox.visibleProperty(), false);
         bigBox = new StackPane(legend, buyBox, nationBox, card);
         StackPane.setAlignment(card, Pos.TOP_LEFT);
         StackPane.setAlignment(buyBox, Pos.TOP_LEFT);
@@ -5259,7 +5293,7 @@ final class MapView {
         canvas.setWidth(w);
         canvas.setHeight(h);
         bigBox.setMinSize(w, h);
-        bigBox.setPrefSize(w, h);
+        Pieces.prefSize(bigBox, w, h);
         bigBox.setMaxSize(w, h);
         if (big == null) big = new MapFrame(w, h);
         else big.resize(w, h);
@@ -5367,7 +5401,7 @@ final class MapView {
         // them goes through. The box itself has no background and picks only through its head (setPickOnBounds(false)); the dark ground
         // is the head's and the body's, so the folded head is a small rounded box of its own.
         legendBody = new VBox(6, legendGrid, shipsLine, trucksLine, legendNote);
-        legendBody.setMouseTransparent(true);
+        Kept.give(legendBody.mouseTransparentProperty(), true);
         legendChevron.setMinWidth(Region.USE_PREF_SIZE);
         legendChevron.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         Label legendWord = new Label("Legend");
@@ -5375,8 +5409,8 @@ final class MapView {
         legendFoldHint.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         legendHead = new HBox(6, legendChevron, legendWord, legendFoldHint);
         legendHead.setAlignment(Pos.CENTER_LEFT);
-        legendHead.setCursor(javafx.scene.Cursor.HAND);
-        legendHead.setOnMouseClicked(e -> {
+        Kept.give(legendHead.cursorProperty(), javafx.scene.Cursor.HAND);
+        Kept.give(legendHead.onMouseClickedProperty(), e -> {
             ui.prefs.setMapLegendFolded(!ui.prefs.isMapLegendFolded());
             ui.prefs.save(ui.game.getGameFiles());
             foldLegend();
@@ -5501,7 +5535,7 @@ final class MapView {
 
     /** Holds the canvas's cursor at none while cinematic mode is on, whatever cursorFor() or a press asks for. */
     private final javafx.beans.value.ChangeListener<javafx.scene.Cursor> cursorOff = (o, was, now) -> {
-        if (now != javafx.scene.Cursor.NONE) canvas.setCursor(javafx.scene.Cursor.NONE);
+        if (now != javafx.scene.Cursor.NONE) Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.NONE);
     };
 
     /** A pane measure as it is now: the padding's and the head's room, none in cinematic mode. */
@@ -5521,15 +5555,15 @@ final class MapView {
         canvas.cursorProperty().removeListener(cursorOff);
         if (on && expanded) {
             canvas.cursorProperty().addListener(cursorOff);
-            canvas.setCursor(javafx.scene.Cursor.NONE);
+            Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.NONE);
         } else if (expanded) {
-            canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+            Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.OPEN_HAND);
         }
         if (bigPane == null || !expanded) return;
         if (paddedStyle == null) paddedStyle = bigPane.getStyle();
         showIf(bigPane.getChildren().get(0), !on);
         if (legendHead != null && legendHead.getParent() != null) showIf(legendHead.getParent(), !on);
-        card.setOpacity(on ? 0 : 1);
+        Kept.give(card.opacityProperty(), on ? 0 : 1);
         bigPane.setStyle(on ? "-fx-background-color: " + Palette.STAGE + ";" : paddedStyle);
         // The rounded corners of the picture would show the window's ground at its four corners.
         if (on) bigBox.setClip(null); else clip(bigBox);
@@ -5635,7 +5669,7 @@ final class MapView {
         } else {
             return;
         }
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
     }
 
@@ -5656,7 +5690,7 @@ final class MapView {
             else big.pan(m.dx(), m.dy());
         }
         if (globe != null) follow();
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
     }
 
@@ -5708,7 +5742,7 @@ final class MapView {
         else if (shot.move() != null) applyMove(shot.move());
         if (shot.view() != null && move != null && move.running && !move.planned.contains(shot.view())) moveTally.offPlan++;
         if (wasMoving || cam.moving()) {
-            tallyTasks = WORKER.getTaskCount();
+            tallyTasks = WORKER.asked();
             tallyEvicted = evictedNow();
             tallyThisFrame = true;
         }
@@ -5721,7 +5755,7 @@ final class MapView {
         if (cam == null || !expanded || big == null) return false;
         cam.hand();
         cam.smooth().wheel(sx, sy, notches);
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         requestDraw();
         return true;
     }
@@ -5732,7 +5766,7 @@ final class MapView {
      * A replay's camera move loaded before it runs (CM1, 2026-11-03): Jerus films his trailer from a replay and a glide or a fly out
      * that reaches the screen before the worker has shows half of it black. A move therefore LOADS first (ReplayCamera.LOAD): loadStep()
      * takes the camera's plan views (ReplayCamera.planView(), ReplayCamera.PLAN_HZ a second of the move's own clock) one after another
-     * and paints each with the real paint() until nothing it needs is missing (loadSettled()), with no limit on the time, while the
+     * and paints each with the real paint() until nothing it needs is missing (loadSettled()), up to LOAD_MAX_S, while the
      * caches are pinned (Pictures.pinned) so the walk does not let go of its own early views; then the move waits for a click and
      * runs on pictures that are all there. A move across months keeps, for each month, what the load saw (MoveLoad's store): a quick
      * step to another month makes a new CityMap whose district plans are not drawn and every picture stale, and the run takes the
@@ -5743,7 +5777,10 @@ final class MapView {
     /** How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the load is not held by it; the Ready line counts them. */
     static final double STUCK_S = 2;
 
-    /** The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. */
+    /** The overall seconds allowed for a replay move to load, including busy worker time: 120 leaves room for CM2's whole-disc and multi-month loads. */
+    static final double LOAD_MAX_S = 120;
+
+    /** The share of the heap still available at a load's start that it may add before stopping: 0.8 leaves headroom even for a city already using most of the heap. */
     static final double LOAD_HEAP_SHARE = 0.8;
 
     /** The height of the words written over the map while a move loads or waits for its click, in pixels: 28. */
@@ -5759,14 +5796,21 @@ final class MapView {
     private static final class MoveLoad {
         final int serial, of;
         final boolean months;
+        final ReplayCity city;
         /** The plan's next view, the views passed, whether the view {@code next} is taken, and since when the worker has sat idle on it (0 for not idle). */
         int next, passed;
         boolean applied;
         long idleSince;
+        final long started = System.nanoTime();
+        final LoadMemory memory = new LoadMemory(heapUsed(), Runtime.getRuntime().maxMemory());
+        boolean passing;
+        boolean deficient;
         /** From the click's wait to the move's end: the run takes pictures from the store. */
         boolean running;
         /** The far nodes and chart nodes that were asked and never came back, when their view was passed. */
         final Set<Long> stuckNodes = new HashSet<>(), stuckCharts = new HashSet<>();
+        final Set<Long> stuckTiles = new HashSet<>();
+        final Set<CityMap.District> stuckPictures = new HashSet<>();
         /** Month, then (cache index and tile key) to the tile's picture; and (cache index and tile key) to the copies by stamp. */
         final HashMap<Integer, HashMap<Long, TileCopy>> tilesAt = new HashMap<>();
         final HashMap<Long, List<TileCopy>> tileCopies = new HashMap<>();
@@ -5776,10 +5820,11 @@ final class MapView {
         /** Every view the load painted, so the run's tally can count a frame that showed any other (MoveTally.offPlan). */
         final Set<CameraPath.View> planned = new HashSet<>();
 
-        MoveLoad(int serial, int of, boolean months) {
+        MoveLoad(int serial, int of, boolean months, ReplayCity city) {
             this.serial = serial;
             this.of = of;
             this.months = months;
+            this.city = city;
         }
     }
 
@@ -5790,16 +5835,26 @@ final class MapView {
     private boolean moveRunning() { return move != null && move.running && move.months; }
 
     private void beginMove(ReplayCamera cam) {
-        move = new MoveLoad(cam.serial(), cam.planViews(), cam.movesTime());
+        move = new MoveLoad(cam.serial(), cam.planViews(), cam.movesTime(), cam.moveCity());
+        if (move.months) move.city.beginMove();
         pin(true);
     }
 
     /** The move ran out, was let go, cancelled, failed or replaced: the caches are let go of for room again, down to their sizes. */
     private void endMove() {
         if (move == null) return;
+        if (move.months) move.city.endMove();
         move = null;
         pin(false);
         dirty = true;
+    }
+
+    /** Release a cancelled move synchronously, restoring a load's starting month and view before its map can detach. */
+    void cancelMove(ReplayCamera cam) {
+        boolean loading = move != null && !move.running;
+        endMove();
+        if (loading) backToStart(cam);
+        requestDraw();
     }
 
     /** A load that did not reach its click, ended: the view and the month back to where the move begins. */
@@ -5827,6 +5882,20 @@ final class MapView {
         MoveLoad m = move;
         long until = System.nanoTime() + (long) (REPLAY_FRAME_MS * 1e6);
         while (true) {
+            if (System.nanoTime() - m.started >= (long) (LOAD_MAX_S * 1e9)) {
+                cam.loadFailed("the move reached the " + (int) LOAD_MAX_S + " s load limit: shorten it or zoom less");
+                endMove();
+                backToStart(cam);
+                return false;
+            }
+            if (m.memory.over(MapView::heapUsed, System::gc)) {
+                Runtime rt = Runtime.getRuntime();
+                long used = heapUsed() >> 20, most = rt.maxMemory() >> 20;
+                cam.loadFailed("the move needs more memory than the game has (" + used + " of " + most + " MB): shorten it or zoom less");
+                endMove();
+                backToStart(cam);
+                return false;
+            }
             if (m.next >= m.of) {
                 CameraPath.View v0 = cam.startView();
                 cam.showMonthOf(v0);
@@ -5845,7 +5914,7 @@ final class MapView {
                 m.planned.add(v);
                 m.applied = true;
             }
-            long tasks = WORKER.getTaskCount();
+            long tasks = WORKER.asked();
             boolean wasDirty = dirty;
             dirty = false;
             boolean more = tiles != null && paint(until);
@@ -5856,18 +5925,12 @@ final class MapView {
                 if (System.nanoTime() > until) break;
                 continue;
             }
-            if (WORKER.getTaskCount() == tasks && loadSettled(m)) {
-                if (heapOver()) {
-                    Runtime rt = Runtime.getRuntime();
-                    long used = (rt.totalMemory() - rt.freeMemory()) >> 20, most = rt.maxMemory() >> 20;
-                    cam.loadFailed("the move needs more memory than the game has (" + used + " of " + most + " MB): shorten it or zoom less");
-                    endMove();
-                    backToStart(cam);
-                    return false;
-                }
+            if (WORKER.asked() == tasks && loadSettled(m)) {
                 if (m.months) scanView(m, true, cam.shownMonth());
+                if (m.deficient) m.passed++;
                 m.next++;
                 m.applied = false;
+                m.deficient = false;
                 m.idleSince = 0;
                 if (System.nanoTime() > until) break;
                 continue;
@@ -5877,12 +5940,7 @@ final class MapView {
                 if (m.idleSince == 0) {
                     m.idleSince = now;
                 } else if (now - m.idleSince > (long) (STUCK_S * 1e9)) {
-                    m.passed++;
-                    m.stuckNodes.addAll(nodesAsked);
-                    m.stuckCharts.addAll(chartsAsked);
-                    m.next++;
-                    m.applied = false;
-                    m.idleSince = 0;
+                    passView(m);
                     continue;
                 }
             } else {
@@ -5894,20 +5952,49 @@ final class MapView {
         return true;
     }
 
-    /** Whether the heap is over LOAD_HEAP_SHARE of what the game may have, after a collection if it looked so. */
-    private static boolean heapOver() {
+    /** Give an idle, incomplete view up once, remembering requests and visible cells that were never requested (CM1b). */
+    private void passView(MoveLoad m) {
+        m.passed++;
+        m.stuckNodes.addAll(nodesAsked);
+        m.stuckCharts.addAll(chartsAsked);
+        m.stuckPictures.addAll(picturesAsked);
+        m.passing = true;
+        try { scanView(m, false, 0); } finally { m.passing = false; }
+        m.next++;
+        m.applied = false;
+        m.deficient = false;
+        m.idleSince = 0;
+    }
+
+    private static long heapUsed() {
         Runtime rt = Runtime.getRuntime();
-        long limit = (long) (LOAD_HEAP_SHARE * rt.maxMemory());
-        if (rt.totalMemory() - rt.freeMemory() <= limit) return false;
-        System.gc();
-        return rt.totalMemory() - rt.freeMemory() > limit;
+        return rt.totalMemory() - rt.freeMemory();
+    }
+
+    /** A load's incremental heap budget, with at most one collection across all its views (CM1b). */
+    static final class LoadMemory {
+        final long limit;
+        boolean collected;
+
+        LoadMemory(long start, long most) {
+            limit = start + (long) (LOAD_HEAP_SHARE * Math.max(0, most - start));
+        }
+
+        boolean over(java.util.function.LongSupplier used, Runnable collect) {
+            if (used.getAsLong() <= limit) return false;
+            if (!collected) {
+                collected = true;
+                collect.run();
+            }
+            return used.getAsLong() > limit;
+        }
     }
 
     /** The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). */
     boolean viewSettled() { return loadSettled(NO_MOVE); }
 
     /** A move with nothing passed and nothing kept, for viewSettled(). */
-    private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false);
+    private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false, null);
 
     /** Whether a loaded move is held (CM1: ReplayMoveProbe.check(), which ReplayCheck 5d runs). */
     boolean moveHeld() { return move != null; }
@@ -5935,7 +6022,10 @@ final class MapView {
         if (tiles == null) return false;
         for (Long k : nodesAsked) if (!m.stuckNodes.contains(k)) return false;
         for (Long k : chartsAsked) if (!m.stuckCharts.contains(k)) return false;
-        if (!picturesAsked.isEmpty()) return false;
+        for (CityMap.District d : picturesAsked) {
+            if (!m.stuckPictures.contains(d)) return false;
+            m.deficient = true;
+        }
         return scanView(m, false, 0);
     }
 
@@ -5954,9 +6044,11 @@ final class MapView {
                 for (long ny = cr[4]; ny <= cr[5]; ny++) {
                     for (long nx = cr[2]; nx <= cr[3]; nx++) {
                         long key = chartKey(cr[1], cr[0], nx, ny);
-                        if (m.stuckCharts.contains(key)) continue;
+                        if (m.stuckCharts.contains(key)) { m.deficient = true; continue; }
                         Img img = charts.get(key);
-                        if (img == null || img.pixels == null) return false;
+                        if (img == null || img.pixels == null) {
+                            if (m.passing) m.stuckCharts.add(key); else return false;
+                        }
                     }
                 }
             }
@@ -5969,8 +6061,13 @@ final class MapView {
         int cache = cacheIndex(pictures);
         for (long[] t : tilesInView(f)) {
             long key = MapTiles.key(t[0], t[1]);
+            long slot = ((long) cache << 58) ^ key;
+            if (m.stuckTiles.contains(slot)) { m.deficient = true; continue; }
             Img img = pictures.get(key);
-            if (img == null || img.image == null || img.version != version) return false;
+            if (img == null || img.image == null || img.version != version) {
+                if (m.passing) { m.stuckTiles.add(slot); continue; }
+                return false;
+            }
             if (record) storeTile(m, month, cache, key, img);
         }
         return true;
@@ -5983,12 +6080,18 @@ final class MapView {
         for (long ny = ny0; ny <= ny1; ny++) {
             for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
-                if (m.stuckNodes.contains(key)) continue;
+                if (m.stuckNodes.contains(key)) { m.deficient = true; continue; }
                 Img img = nodes.get(key);
-                if (img == null || img.image == null || img.pixels == null || img.version != version) return false;
+                if (img == null || img.image == null || img.pixels == null || img.version != version) {
+                    if (m.passing) { m.stuckNodes.add(key); continue; }
+                    return false;
+                }
                 if (img.partial && img.pictures != kept) {
                     if (fits == null) fits = tiles.picturesFit(asker);
-                    if (fits) return false;
+                    if (fits) {
+                        if (m.passing) { m.stuckNodes.add(key); continue; }
+                        return false;
+                    }
                 }
                 if (record) storeNode(m, month, key, img);
             }
@@ -6155,6 +6258,8 @@ final class MapView {
         long black, coarse, stale;
         /** WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). */
         long asks, evicted;
+        /** Frames whose asks came out below nothing: none can, Worker.asked() only grows (FB7: getTaskCount() could, under load). */
+        long asksBelowNothing;
         /** Frames of a loaded move's run that showed a view its load never painted (CM1: the run stays on the plan, at any frame rate). */
         long offPlan;
         /** The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). */
@@ -6168,7 +6273,7 @@ final class MapView {
 
         /** Back to nothing counted: a move is about to begin. */
         void reset() {
-            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = offPlan = frameNanosSum = worstFrameNanos = 0;
+            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = offPlan = frameNanosSum = worstFrameNanos = asksBelowNothing = 0;
             byWhere.clear();
             lastNanos = 0;
             timed = false;
@@ -6191,6 +6296,7 @@ final class MapView {
             coarse += coarseCells;
             stale += staleCells;
             asks += asked;
+            if (asked < 0) asksBelowNothing++;
             evicted += letGo;
             long[] w = byWhere.computeIfAbsent(where, k -> new long[5]);
             w[0]++;
@@ -6225,7 +6331,7 @@ final class MapView {
     /** The camera move tally (CM1), for ReplayMoveProbe: reset it before a move, read it after. */
     MoveTally moveTally() { return moveTally; }
 
-    /** Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's task count and the caches' evictions as that frame began. */
+    /** Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's asks (Worker.asked()) and the caches' evictions as that frame began. */
     private boolean tallyThisFrame;
     private long tallyTasks, tallyEvicted;
 
@@ -6275,7 +6381,7 @@ final class MapView {
                 double w = globe.width(), h = globe.height();
                 for (double sy = 16; sy < h; sy += 32) {
                     for (double sx = 16; sx < w; sx += 32) {
-                        if (globe.onPlanet(sx, sy) && !(globe.drawsHold(sx, sy) || globe.chartHolds(sx, sy))) coarse++;
+                        if (globe.onPlanet(sx, sy) && !(globe.drawsHold(sx, sy) || globe.chartHolds(sx, sy, move != null))) coarse++;
                     }
                 }
             }
@@ -6325,6 +6431,6 @@ final class MapView {
                 }
             }
         }
-        moveTally.frame(System.nanoTime(), where, black, coarse, stale, half, WORKER.getTaskCount() - tallyTasks, evictedNow() - tallyEvicted);
+        moveTally.frame(System.nanoTime(), where, black, coarse, stale, half, WORKER.asked() - tallyTasks, evictedNow() - tallyEvicted);
     }
 }

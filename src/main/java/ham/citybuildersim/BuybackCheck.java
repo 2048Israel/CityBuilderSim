@@ -1,4 +1,5 @@
 package ham.citybuildersim;
+import java.nio.file.Files;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -178,11 +179,16 @@ public class BuybackCheck {
         halfOfALine(city);
         centralBankHolds();
         noPump(city);
+        typedCancellation();
+        cancelReopening(playedCity("buybackcheck-cancel-reopening"));
         dollars();
         refused(city);
         theYearAddsUp(city);
         callableNow(city);
         fairAndTheAuction(city);
+
+        SerialTerms.run();
+        fails += SerialTerms.fails;
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
@@ -636,6 +642,8 @@ public class BuybackCheck {
         for (String kind : new String[]{"long", "medium", "bill"}) {
             double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
             double before = city.getCash();
+            double splitBefore = city.getBank().equitySplitResidual();
+            double unsettledBefore = city.getCityPaperUnsettled();
             quietly(() -> {
                 switch (kind) {
                     case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
@@ -649,6 +657,8 @@ public class BuybackCheck {
                     fresh != null && raised > 0 && Math.abs(fresh.unsettledFace() - fresh.getOustandingPrincipal()) <= 1e-6);
             if (fresh == null) continue;
             double face = fresh.getOustandingPrincipal();
+            double proceeds = fresh.getSettleDue();
+            double bankCash = city.getBank().getCash();
             Buyback.Result back = city.buyBack(fresh, 1e12, Double.NaN);
             check("the " + kind + " line, bought straight back whole in the month it was sold, is off the books",
                     back.takenFace() > 0 && Math.abs(back.takenFace() - face) <= 1e-6 * Math.max(1, face)
@@ -656,7 +666,14 @@ public class BuybackCheck {
             out.printf("   %-6s the same month: D$%,.0fk of face raised D$%,.2fk, bought back for D$%,.2fk (%.2f per 100, fair %.2f)%n",
                     kind, face, raised, back.paid(), back.averagePer100(), back.fairPer100());
             check("a " + kind + " round trip in the same month never nets the city money", raised - back.paid() <= .01);
+            near("the unpaid " + kind + " sale is cancelled at its proceeds", back.cancelledCash(), proceeds, 1e-9);
+            near("...and its whole face is cancelled", back.cancelledFace(), face, 1e-9);
+            near("...the bank offers only paid face, so it sold none", back.bankFace(), 0, 0);
+            near("...and received no buyback cash", city.getBank().getCash(), bankCash, 0);
+            near("...the cancelled proceeds leave the next settle", city.getCityPaperUnsettled(), unsettledBefore, 1e-9);
             check("the audit closes that month and the next", closes(play(city)) && closes(play(city)));
+            near("the bank's equity split holds over the month after the " + kind + " cancellation",
+                    city.getBank().equitySplitResidual(), splitBefore, MoneyAudit.CENT);
         }
 
         // The month between: sold, settled, bought back.
@@ -693,6 +710,93 @@ public class BuybackCheck {
             check("...and two of them do not either", total <= .01);
         }
         check("the audit still closes after the round trips", closes(play(city)));
+    }
+
+    /** The first review's typed face: a whole-piece tolerance closes the entire unpaid sale. */
+    static void typedCancellation() {
+        out.println("\n--- 5b. a typed face just short of a whole unpaid piece ---");
+        Game city = new Game(GameFiles.scratch("buybackcheck-typed-cancellation"));
+        quietly(city::run);
+        double poolsBefore = MoneyAudit.pooled(city);
+        quietly(() -> city.handleLongBondLogic(2_500_000_001.7, 10, .1));
+        Debt fresh = unsettledPiece(city.getDebtManager());
+        check("fixture: a fresh sale is wholly unpaid", fresh != null
+                && fresh.bankPrincipalPaid() == 0 && fresh.unsettledFace() == fresh.getOustandingPrincipal());
+        if (fresh == null) return;
+        double principal = fresh.getOustandingPrincipal(), proceeds = fresh.getSettleDue();
+        double typed = 2_500_000_000.0;
+        double proRataMiss = proceeds * (principal - typed) / principal;
+        check("fixture: the typed face is short and its pro-rata miss exceeds the audit's allowance",
+                typed < principal && proRataMiss > MoneyAudit.tolerance(proceeds));
+        Buyback.Result quoted = city.quoteBuyback(fresh, typed, Double.NaN);
+        check("fixture: cancellation is the only offer", quoted.ladder().size() == 1
+                && quoted.ladder().get(0).holder() == Buyback.Holder.UNSETTLED);
+        near("the unpaid face carries no paid bank discount", fresh.unaccretedOn(Debt.Holder.BANK, principal), 0, 0);
+        Buyback.Result back = city.buyBack(fresh, typed, Double.NaN);
+        check("the typed face closes the piece", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(fresh));
+        near("the whole cancellation pays its exact proceeds", back.cancelledCash(), proceeds, 0);
+        near("the whole cancellation retires its exact face", back.cancelledFace(), principal, 0);
+        near("the round trip conserves the money audit's pools", MoneyAudit.pooled(city), poolsBefore,
+                MoneyAudit.tolerance(proceeds));
+        MoneyAudit.Result month = play(city);
+        check("the following month's audit holds within its relative tolerance",
+                month.relative() <= MoneyAudit.RELATIVE_TOLERANCE);
+
+        // A paid line with a small, dear reopening: the typed face stops exactly before the cancellation.
+        Debt premium = city.getDebtManager().addLongTermBond(typed, 120, city.getMonth(), .02);
+        premium.reopen(1.7, 6.8, .01);
+        Buyback.Result full = city.quoteBuybackAtRest(premium, typed, Double.NaN);
+        check("fixture: the premium cancellation is the dearest offer", !full.ladder().isEmpty()
+                && full.ladder().get(full.ladder().size() - 1).holder() == Buyback.Holder.UNSETTLED
+                && premium.getSettleDue() > premium.unsettledFace());
+        near("the typed reopening quote cancels the exact unpaid face", full.cancelledFace(), premium.unsettledFace(), 0);
+        near("...and pays the exact premium proceeds", full.cancelledCash(), premium.getSettleDue(), 0);
+        double cap = (full.fairPer100() + 400) / 2;
+        check("a cap leaving the small cancellation behind refuses the whole buyback",
+                city.quoteBuybackAtRest(premium, typed, cap).takenFace() == 0);
+        premium.moveToCentralBank(1.7);
+        check("a small central-bank holding refuses an unsettled whole-piece quote",
+                city.quoteBuybackAtRest(premium, typed, Double.NaN).takenFace() == 0);
+        city.getDebtManager().retire(premium);
+    }
+
+    /** BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. */
+    static void cancelReopening(Game city) {
+        out.println("\n--- 5a. a reopened line closed before the settle ---");
+        HouseholdBalance hb = city.getHouseholdBalance();
+        city.setCashForTest(Founding.WEALTHY_CASH);
+        worldWantsPaper(city);
+        Debt line = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2), 20);
+        check("fixture: the first sale made a line", line != null);
+        if (line == null) return;
+        check("the first sale's audit closes", closes(play(city)));
+        double bankPaidFace = line.bankPrincipalPaid();
+        double householdsFace = line.householdPrincipal();
+        check("fixture: the settled line has paid bank and household holdings", bankPaidFace > 0 && householdsFace > 0);
+        double split = city.getBank().equitySplitResidual();
+        double dueBefore = city.getCityPaperUnsettled();
+        Debt reopened = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * .2), 20);
+        check("fixture: the second sale reopened the same line", reopened == line && line.unsettledFace() > 0);
+        if (reopened != line) return;
+        double unpaidFace = line.unsettledFace(), unpaidCash = line.getSettleDue();
+        double[] before = snapshot(city, line);
+        check("a part of the reopened line is refused without moving its settlement",
+                city.buyBack(line, line.getOustandingPrincipal() / 2, Double.NaN).takenFace() == 0
+                        && same(before, snapshot(city, line)));
+        double typed = line.getOustandingPrincipal() * (1 - 5e-10);
+        Buyback.Result quoted = city.quoteBuyback(line, typed, Double.NaN);
+        near("the quote offers the bank's paid face", quoted.bankFace(), bankPaidFace, 1e-9);
+        near("...and cancels exactly the reopened sale's face", quoted.cancelledFace(), unpaidFace, 1e-9);
+        near("...at the original proceeds", quoted.cancelledCash(), unpaidCash, 1e-9);
+        near("...and takes every paid household's face", quoted.householdFace(), householdsFace, 1e-9);
+        double cash = city.getCash(), bankCash = city.getBank().getCash();
+        Buyback.Result back = city.buyBack(line, typed, Double.NaN);
+        check("the reopened piece is closed whole", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(line));
+        near("the treasury pays the quoted total", cash - city.getCash(), quoted.paid(), 1e-9);
+        near("the bank receives its paid holdings' price", city.getBank().getCash() - bankCash, back.bankPaid(), 1e-9);
+        near("the reopening's proceeds leave the settle", city.getCityPaperUnsettled(), dueBefore, 1e-9);
+        check("the cancellation's audit closes over two months", closes(play(city)) && closes(play(city)));
+        near("the bank's equity split holds after cancelling the reopening", city.getBank().equitySplitResidual(), split, MoneyAudit.CENT);
     }
 
     /* ================= 6. dollar paper ================= */
@@ -807,7 +911,7 @@ public class BuybackCheck {
         return new double[]{g.getCash(), d.getOustandingPrincipal(), d.bankPrincipal(), d.householdPrincipal(), d.firmPrincipal(),
                 d.worldPrincipal(), d.centralBankPrincipal(), d.getCarryingValue(), g.getBank().getCash(), g.getBank().getCityBook(),
                 g.getHouseholdBalance().totalSavings(), g.getHouseholdBalance().totalPaper(), g.getCapitalFlows().getPaper(),
-                g.getBuybackUnsettled(), g.getDebtManager().getDebt().size()};
+                g.getBuybackUnsettled(), g.getCityPaperUnsettled(), g.getDebtManager().getDebt().size()};
     }
 
     static boolean same(double[] a, double[] b) {
@@ -1127,6 +1231,7 @@ public class BuybackCheck {
                 case HOUSEHOLDS -> r.householdFace();
                 case FIRMS -> r.firmFace();
                 case WORLD -> r.worldFace();
+                case UNSETTLED -> r.cancelledFace();
             };
             if (face > 0) holders++;
             if (r.overFair(h) > dearest) { dearest = r.overFair(h); asking = h; }
@@ -1186,5 +1291,195 @@ public class BuybackCheck {
         figuresAdd("...and half of it", half);
         check("a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all",
                 half.overFair() / half.takenFace() <= all.overFair() / all.takenFace() + 1e-12);
+    }
+
+    /** Serial amortisation, bill terms and yields, moved intact from RestructureCheck (HA1). */
+    static final class SerialTerms {
+    static int fails = 0;
+    static PrintStream out;
+    static PrintStream quiet = new PrintStream(new OutputStream() {
+        @Override public void write(int b) { }
+        @Override public void write(byte[] b, int off, int len) { }
+    });
+
+    static void check(String label, double actual, double expected, double tolerance) {
+        boolean ok = Math.abs(actual - expected) <= tolerance;
+        if (!ok) fails++;
+        System.out.printf("%-58s %14.2f  expected %14.2f  %s%n",
+                label, actual, expected, ok ? "OK" : "FAIL");
+    }
+
+    static void assertTrue(String label, boolean ok) {
+        if (!ok) fails++;
+        System.out.printf("%-58s %s%n", label, ok ? "OK" : "FAIL");
+    }
+
+    static void run() throws Exception {
+        out = System.out;
+        Path root = TempDirs.create("serial-terms");
+        /* ============ 5b. the serial bond, on its own terms ============ */
+        System.out.println("\n--- a serial bond amortises ---");
+
+        MediumTermBond serial = new MediumTermBond(120_000, 120, 1, .06);
+
+        check("ten annual slices", serial.getSlicesRemaining(), 10, 0);
+        check("...of a tenth each", serial.getPrincipalPerSlice(), 12_000, .01);
+        check("coupon starts on the whole balance",
+                serial.getMonthlyInterestExpense(), 120_000 * .06 / 12, .01);
+
+        double[] flows = serial.remainingCashFlows();
+        check("one payment a month for ten years", flows.length, 120, 0);
+
+        /*
+         * Everything it will ever pay must equal the principal plus the coupons
+         * actually accrued on a DECLINING balance - which is far less than face
+         * x rate x years, and that gap is the whole point of the instrument.
+         */
+        double total = 0;
+        for (double cf : flows) total += cf;
+        double bulletInterest = 120_000 * .06 * 10;
+        double serialInterest = total - 120_000;
+        System.out.printf("   interest over its life: serial $%,.0f vs a bullet's $%,.0f%n",
+                serialInterest, bulletInterest);
+        assertTrue("a serial pays materially less interest than a bullet",
+                serialInterest < bulletInterest * .6);
+        assertTrue("...but not zero", serialInterest > 0);
+
+        // Discounted at its own coupon, ANY schedule is worth its principal.
+        check("at its own coupon it is worth par",
+                serial.getMarketValue(.06), 120_000, 1);
+
+        /*
+         * Walked forward through a real year. The balance has to actually fall,
+         * which is the one thing a bullet never did and the reason the closed
+         * form could not price this.
+         */
+        Game amort = founded(root, "amortise");
+        System.setOut(quiet);
+        try {
+            amort.handleMediumBondLogic(120_000 * PriceLevel.FACTOR, 10, 1000 * PriceLevel.FACTOR);
+        } finally { System.setOut(out); }
+
+        Debt live = amort.getDebtManager().getDebt()
+                .get(amort.getDebtManager().getDebt().size() - 1);
+        double owedAtIssue = live.getOustandingPrincipal();
+        double couponAtIssue = live.getMonthlyInterestExpense();
+
+        System.setOut(quiet);
+        try { amort.simulateMonths(13); } finally { System.setOut(out); }
+
+        System.out.printf("   owed at issue $%,.0f, thirteen months on $%,.0f%n",
+                owedAtIssue, live.getOustandingPrincipal());
+        assertTrue("principal actually fell over the first year",
+                live.getOustandingPrincipal() < owedAtIssue);
+        /*
+         * AGAINST ITS OWN COUPON AT ISSUE, not against a typed-in rate.
+         *
+         * This read `owedAtIssue * .06 / 12`, which asserted two things at once:
+         * that the coupon falls as the principal amortises (the point) and that
+         * the market lends at 6% (an accident of whatever this fixture's city
+         * looked like the day it was written). The second one broke the moment
+         * rent changed - a different rent bill means different cash, a different
+         * debt ratio and a different quoted rate - and the harness reported a
+         * failure in the bond mechanics that were fine.
+         *
+         * Fifth time in this codebase: an assertion about a rate must be
+         * expressed relative to the market's own number, never to a literal.
+         */
+        assertTrue("...and the coupon fell with it",
+                live.getMonthlyInterestExpense() < couponAtIssue);
+
+        /* ============ 5c. the bill knows its own term ============ */
+        System.out.println("\n--- a bill is priced on its term ---");
+
+        /*
+         * The simple discount this section asserted (rate x months / 12,
+         * capped at 95%) went with CD2: a bill is sold at auction at one flat
+         * yield, monthly compounding, the sum DebtManager.marketValue() reads
+         * it back at. The premise is the same - the price knows how long the
+         * bill runs - and it is asserted on the quote's own figures.
+         */
+        Game bills = founded(root, "billterm");
+        DebtQuote three, twelve, twoYears;
+        System.setOut(quiet);
+        try {
+            three = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 3, 1000 * PriceLevel.FACTOR);
+            twelve = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
+            twoYears = bills.quoteTBill(100_000 * PriceLevel.FACTOR, 24, 1000 * PriceLevel.FACTOR);
+        } finally { System.setOut(out); }
+
+        check("three months is sold at its yield compounded monthly over three months",
+                three.auction().pricePer100(), 100 / Math.pow(1 + three.marketRate() / 12, 3), 1e-9);
+        check("twelve months, over twelve",
+                twelve.auction().pricePer100(), 100 / Math.pow(1 + twelve.marketRate() / 12, 12), 1e-9);
+        check("twenty-four months, over twenty-four",
+                twoYears.auction().pricePer100(), 100 / Math.pow(1 + twoYears.marketRate() / 12, 24), 1e-9);
+
+        assertTrue("a short bill costs less than a long one for the same cash",
+                three.faceValue() < twelve.faceValue() && twelve.faceValue() < twoYears.faceValue());
+
+        // The bug the simple discount replaced: every term produced the same face.
+        assertTrue("...which it did NOT before, when every term priced alike",
+                Math.abs(three.faceValue() - twelve.faceValue()) > 1_000 * PriceLevel.FACTOR);   // today's figure, priced at the founding's level (EP1)
+
+        check("however high the yield and long the term, a bill's price stays above nothing and under par",
+                Debt.presentValue(Auction.bulletPer100(0, 120), .50) > 0
+                        && Debt.presentValue(Auction.bulletPer100(0, 120), .50) < 100 ? 1 : 0, 1, 0);
+
+        /* ============ 5d. yield to maturity ============ */
+        System.out.println("\n--- yield, as opposed to coupon ---");
+
+        LongTermBond ytmBond = new LongTermBond(100_000, 60, 1, .06);
+
+        check("bought at par, the yield IS the coupon",
+                ytmBond.getYieldToMaturity(100_000), .06, 1e-4);
+        assertTrue("bought at a discount, the yield is higher",
+                ytmBond.getYieldToMaturity(85_000) > .06);
+        assertTrue("bought at a premium, the yield is lower",
+                ytmBond.getYieldToMaturity(115_000) < .06);
+
+        /*
+         * The round trip that makes YTM trustworthy: price at a rate, solve the
+         * yield back out, and get the rate you started with. Anything else means
+         * the two halves disagree about what the schedule is.
+         */
+        for (double rate : new double[]{.02, .05, .09, .15}) {
+            check(String.format("  price at %.0f%% -> yield solves back to it", rate * 100),
+                    ytmBond.getYieldToMaturity(ytmBond.getMarketValue(rate)), rate, 1e-4);
+        }
+        check("and it round-trips for an amortising schedule too",
+                serial.getYieldToMaturity(serial.getMarketValue(.09)), .09, 1e-4);
+
+        check("par is quoted as 100", ytmBond.getPriceAsPercentOfPar(.06), 100, .01);
+        assertTrue("a discount quotes below 100",
+                ytmBond.getPriceAsPercentOfPar(.12) < 100);
+
+        cleanUp(root);
+    }
+    static Game founded(Path root, String name) throws Exception {
+        GameFiles files = new GameFiles(root.resolve(name), root.resolve("no-legacy"));
+        Game g = new Game(files);
+        System.setOut(quiet);
+        try {
+            g.run();
+            BuildingManager b = g.getBuildingManager();
+            b.addStack(b.getTemplateByName("House"), 200, true);
+            b.addStack(b.getTemplateByName("Convenience Store"), 6, true);
+            b.addStack(b.getTemplateByName("Construction Depot"), 2, true);
+            g.simulateMonths(18);
+        } finally { System.setOut(out); }
+        return g;
+    }
+
+    /** What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. */
+    static final double DOLLAR_ASK = 5_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
+
+    static void cleanUp(Path root) {
+        try (var walk = Files.walk(root)) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
+    }
     }
 }

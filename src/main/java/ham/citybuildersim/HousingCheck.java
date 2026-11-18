@@ -836,13 +836,9 @@ public class HousingCheck {
         long started = System.currentTimeMillis();
         Game held = new Game(GameFiles.scratch("housing-held-rate"));
         held.newGame();
-        // WG1 (2026-11-10): the floor at the going rate, the wage this fixture was written against (RN1, 2026-11-09), before a month has run. A new city's
-        // floor is .85 of the going rate now (a real minimum, WG1), and on that path the city held at 15% closed no home in its 240 months (the landlords' debt on
-        // closed homes at the end 0.000 of it, the largest lift on a leg that took it 1.725); with the floor at the going rate, main's path, 0.106 of it.
-        held.getLabourMarket().setMinimumWage(held.getLabourMarket().getGoingRate());
         ham.citybuildersim.sectors.RealEstate re = held.getSectors().realEstate();
         DebtManager dm = held.getDebtManager();
-        int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0;
+        int run = 0, studioWaived = 0, familyWaived = 0, glutMonths = 0, neitherMonths = 0, retirable = 0;
         double largestLift = 1;
         for (int i = 0; i < MONTHS; i++) {
             // The advisor nudges a hand-held dial between looks; the hand takes it back.
@@ -864,6 +860,13 @@ public class HousingCheck {
             held.toggleNextMonth();
             run++;
             int month = held.getMonth();
+            // WG1-R: what closes a home is the retirement's own rule (BusinessInvestment.planRetirement(): the sector's loss months at RETIREMENT_LOSS_MONTHS, its homes over
+            // the people by RETIREMENT_SLACK). WG1-D set this city's floor at the going rate for the closed homes it asked for (none closed in 240 months on the .85 floor
+            // then, 0.106 of the debt at the going rate); the glut the fixture places since GW1 closes them on either floor (0.713 on both, and at a dial held at 3%: the
+            // loss is the glut's), so the pin is gone, and this counts the months that met the rule's conditions, the cause of a closing the fixture can name.
+            double[] housed = re.retirementDemandAndCapacity(held);
+            if (i >= GROWN && held.getBusinessInvestment().getLossMonths(re.key()) >= BusinessInvestment.RETIREMENT_LOSS_MONTHS
+                    && housed[1] > housed[0] * (1 + BusinessInvestment.RETIREMENT_SLACK)) retirable++;
             boolean inGlut = assertGlutLegsNotLifted(re, month);
             if (inGlut) glutMonths++;
             if (re.glutWaivesLift(false)) studioWaived++;
@@ -891,17 +894,25 @@ public class HousingCheck {
                 run, HELD * 100, run - GROWN, (System.currentTimeMillis() - started) / 1000.0, glutMonths, neitherMonths,
                 studioWaived, familyWaived, largestLift);
         assertTrue("fixture: the held dial is the rate the landlords borrow against", dm.getPolicyRate() == HELD);
-        assertTrue("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
+        System.out.printf("   %d of the %d months at the held dial met the retirement's own conditions: %d loss months running and the homes %.0f%% over the people%n",
+                retirable, run - GROWN, BusinessInvestment.RETIREMENT_LOSS_MONTHS, BusinessInvestment.RETIREMENT_SLACK * 100);
+        assertTrue("fixture: the landlords ran into loss for the retirement's months with the homes over the people by its slack, which is what closes a home",
+                retirable > 0);
+        Observation.reached("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
                 studioWaived + familyWaived > 0);
 
         // ...and the share of its debt whose homes are closed goes through a save and a load.
         double share = re.strandedDebtShare();
         System.out.printf("   the landlords' debt on closed homes at the end: %.3f of it%n", share);
-        assertTrue("fixture: the city closed homes and left their debt on the landlords", share > 0 && share <= 1);
-        assertTrue("saved", held.saveGame(1, "housing-held").ok);
-        Game back = new Game(held.getGameFiles());
-        back.loadGame(1);
-        isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        assertTrue("closed-home debt is a share in [0, 1]", share >= 0 && share <= 1);
+        if (Observation.reached("fixture: the city closed homes and left their debt on the landlords",
+                share > 0,
+                "closed-home share save round trip")) {
+            assertTrue("saved", held.saveGame(1, "housing-held").ok);
+            Game back = new Game(held.getGameFiles());
+            back.loadGame(1);
+            isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        }
     }
 
     /**

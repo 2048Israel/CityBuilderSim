@@ -91,7 +91,7 @@ public final class Landmasses {
      * two landmasses are the sea route between them (the roads study, I2), but one alone links nothing. Repeated until it
      * stops growing. `standingPorts` maps a landmass to the ports standing on it (those not standing are not in it).
      */
-    public static SortedSet<Integer> closure(int home, SortedMap<Integer, Integer> standingPorts, Joins joins) {
+    public static SortedSet<Integer> closure(int home, SortedMap<Integer, Long> standingPorts, Joins joins) {
         TreeSet<Integer> linked = new TreeSet<>();
         linked.add(home);
         Joins j = joins == null ? Joins.NONE : joins;
@@ -102,9 +102,9 @@ public final class Landmasses {
                 for (int to : j.joinedTo(id)) grew |= linked.add(to);
             }
             boolean anyPort = false;
-            for (int id : linked) anyPort |= standingPorts != null && standingPorts.getOrDefault(id, 0) > 0;
+            for (int id : linked) anyPort |= standingPorts != null && standingPorts.getOrDefault(id, 0L) > 0;
             if (anyPort) {
-                for (Map.Entry<Integer, Integer> e : standingPorts.entrySet()) if (e.getValue() > 0) grew |= linked.add(e.getKey());
+                for (Map.Entry<Integer, Long> e : standingPorts.entrySet()) if (e.getValue() > 0) grew |= linked.add(e.getKey());
             }
         }
         return linked;
@@ -187,6 +187,16 @@ public final class Landmasses {
     /** A bare one: no landmass, home 0, every plot home's and linked. */
     public Landmasses() {
         linkedSet.add(0);
+    }
+
+    /** Owner-thread snapshot for a draft worker's offerSplit: private caches, no live books, ports, joins or stock (WN5c). */
+    Landmasses forOffers() {
+        Landmasses copy = new Landmasses();
+        copy.home = home;
+        copy.active = active;
+        copy.version = version;
+        copy.linkedSet = new TreeSet<>(linkedSet);
+        return copy;
     }
 
     /** Back to a bare one (LandManager.reset(): a new city): nothing counted, nothing unlinked. */
@@ -531,6 +541,7 @@ public final class Landmasses {
         int[] ids = new int[n];
         boolean[] owned = new boolean[n];
         TreeMap<Integer, long[]> counts = new TreeMap<>();
+        long forest = 0;
         for (long ty = Math.floorDiv(y0, t); ty <= Math.floorDiv(y1 - 1, t); ty++) {
             for (long tx = Math.floorDiv(x0, t); tx <= Math.floorDiv(x1 - 1, t); tx++) {
                 int cov = grid.cover(5, tx, ty);
@@ -549,6 +560,7 @@ public final class Landmasses {
                         if (owned[at] || !World.dry(cover[at])) continue;
                         int id = ids[at] == 0 ? home : ids[at];
                         if (linked(id)) continue;
+                        if (cover[at] == World.FOREST) forest++;
                         counts.computeIfAbsent(id, k -> new long[World.RELIEFS])[rel[at]]++;
                     }
                 }
@@ -567,7 +579,8 @@ public final class Landmasses {
                 largest = e.getKey();
             }
         }
-        p.setUnlinked(dry * World.KM2_PER_PLOT, buildable * World.KM2_PER_PLOT, largest);
+        p.setUnlinked(dry * World.KM2_PER_PLOT, buildable * World.KM2_PER_PLOT,
+                forest * World.KM2_PER_PLOT, largest);
     }
 
     /* =====================================================================
@@ -633,16 +646,16 @@ public final class Landmasses {
         boolean known(int template);
 
         /** The finished terminals of a template that no demolition has been ordered for. */
-        int standing(int template);
+        long standing(int template);
 
         /** ...those under construction. */
-        int onSite(int template);
+        long onSite(int template);
 
         /** ...those a stopped order left standing as a shell. */
-        int shell(int template);
+        long shell(int template);
 
         /** The demolitions on site of a template, each as {the demolition's id, its buildings}. */
-        List<int[]> demolitions(int template);
+        List<long[]> demolitions(int template);
 
         /** The land one terminal of the template takes, square feet. */
         double landSqFt(int template);
@@ -701,8 +714,8 @@ public final class Landmasses {
     /** Whether any terminal has a place of its own: a row, or a demolition taking some down. */
     public boolean hasPlacements() { return !ports.isEmpty() || !leaving.isEmpty(); }
 
-    private static void fill(List<Integer> list, int id, int n) {
-        for (int i = 0; i < n; i++) list.add(id);
+    private static void fill(List<Integer> list, int id, long n) {
+        for (long i = 0; i < n; i++) list.add(id);
     }
 
     private static int count(List<Integer> list, int id) {
@@ -717,13 +730,13 @@ public final class Landmasses {
     }
 
     /** Fits a list to n units: short, home at the oldest end; long, the newest dropped. */
-    private void fit(List<Integer> list, int n) {
+    private void fit(List<Integer> list, long n) {
         while (list.size() > n) list.remove(list.size() - 1);
         while (list.size() < n) list.add(0, home);
     }
 
     /** An order of n terminals of a template was placed on a landmass, after the stack took it (`instant`: built at once, no construction). Makes the template's row if it had none. */
-    void ordered(int template, int landmass, int n, boolean instant) {
+    void ordered(int template, int landmass, long n, boolean instant) {
         if (stock == null || n <= 0 || !stock.known(template)) return;
         Segments s = ports.get(template);
         // A template with no row stands at home: an order at home needs none made.
@@ -739,7 +752,7 @@ public final class Landmasses {
     }
 
     /** A demolition of n of a template's standing units was ordered (id `demolition`), the units' count already off standing: the n newest whose loss unlinks nothing go to leaving. Nothing to do for a template with no row (all home). */
-    void demolishing(int template, int n, int demolition) {
+    void demolishing(int template, long n, int demolition) {
         Segments s = ports.get(template);
         if (s == null || n <= 0) return;
         java.util.TreeSet<Integer> take = new java.util.TreeSet<>();
@@ -790,8 +803,8 @@ public final class Landmasses {
             }
             for (java.util.Iterator<Leave> it = leaving.values().iterator(); it.hasNext(); ) {
                 Leave l = it.next();
-                int buildings = -1;
-                if (stock.known(l.template)) for (int[] d : stock.demolitions(l.template)) if (d[0] == l.demolition) buildings = d[1];
+                long buildings = -1;
+                if (stock.known(l.template)) for (long[] d : stock.demolitions(l.template)) if (d[0] == l.demolition) buildings = d[1];
                 if (buildings < 0) { it.remove(); continue; }
                 fit(l.landmasses, buildings);
                 if (allHome(l.landmasses)) it.remove();
@@ -801,14 +814,14 @@ public final class Landmasses {
     }
 
     private void fitRow(int template, Segments s) {
-        int standing = Math.max(0, stock.standing(template)), onSite = Math.max(0, stock.onSite(template)), shell = Math.max(0, stock.shell(template));
+        long standing = Math.max(0, stock.standing(template)), onSite = Math.max(0, stock.onSite(template)), shell = Math.max(0, stock.shell(template));
         // The completions: the oldest units on site have finished.
-        int done = Math.min(Math.max(0, standing - s.standing.size()), s.onSite.size());
+        long done = Math.min(Math.max(0, standing - s.standing.size()), s.onSite.size());
         for (int k = 0; k < done; k++) s.standing.add(s.onSite.remove(0));
         // The stops: the newest units on site past the count have been stopped, to the shell.
-        int stopped = Math.min(Math.max(0, s.onSite.size() - onSite), Math.max(0, shell - s.shell.size()));
-        if (stopped > 0) {
-            List<Integer> moved = new ArrayList<>(s.onSite.subList(s.onSite.size() - stopped, s.onSite.size()));
+        long stopped = Math.min(Math.max(0, s.onSite.size() - onSite), Math.max(0, shell - s.shell.size()));
+        if (stopped > 0) {   // stopped is never more than the list holds, so it fits an index (SQ1)
+            List<Integer> moved = new ArrayList<>(s.onSite.subList(s.onSite.size() - (int) stopped, s.onSite.size()));
             for (int k = 0; k < stopped; k++) s.onSite.remove(s.onSite.size() - 1);
             s.shell.addAll(moved);
         }
@@ -826,34 +839,34 @@ public final class Landmasses {
     }
 
     /** The ports standing on each landmass, by id (a template with no row stands at home): what closure() links by. */
-    SortedMap<Integer, Integer> standingPorts() {
-        TreeMap<Integer, Integer> out = new TreeMap<>();
+    SortedMap<Integer, Long> standingPorts() {
+        TreeMap<Integer, Long> out = new TreeMap<>();
         if (stock == null) return out;
         for (int t : stock.portTemplates()) {
             Segments s = ports.get(t);
             if (s == null) {
-                int n = stock.standing(t);
-                if (n > 0) out.merge(home, n, Integer::sum);
+                long n = stock.standing(t);
+                if (n > 0) out.merge(home, n, Long::sum);
             } else {
-                for (int id : s.standing) out.merge(id == 0 ? home : id, 1, Integer::sum);
+                for (int id : s.standing) out.merge(id == 0 ? home : id, 1L, Long::sum);
             }
         }
         return out;
     }
 
     /** A template's units on a landmass, wherever they are: standing, on site, stopped, or being demolished. */
-    private int unitsOn(int template, int id) {
+    private long unitsOn(int template, int id) {
         int at = id == 0 ? home : id;
         Segments s = ports.get(template);
-        int n = 0;
+        long n = 0;
         if (s == null) {
             if (at == home) n += Math.max(0, stock.standing(template)) + Math.max(0, stock.onSite(template)) + Math.max(0, stock.shell(template));
         } else {
             n += count(s.standing, at) + count(s.onSite, at) + count(s.shell, at);
             if (at == home) n += count(s.standing, 0) + count(s.onSite, 0) + count(s.shell, 0);
         }
-        for (int[] d : stock.demolitions(template)) {
-            Leave l = leaving.get(d[0]);
+        for (long[] d : stock.demolitions(template)) {
+            Leave l = leaving.get((int) d[0]);   // d[0] is a demolition id, not a count: the key is an int
             if (l == null) { if (at == home) n += d[1]; }
             else n += count(l.landmasses, at) + (at == home ? count(l.landmasses, 0) : 0);
         }
@@ -872,12 +885,12 @@ public final class Landmasses {
     /** The indices of a template's standing units (into the list standingUnits() gives) that may go, newest first: each is judged with the ones taken before it gone, and stays if its going would take a landmass out of the linked set. */
     private List<Integer> removable(int template, boolean raw) {
         List<Integer> units = standingUnits(template, raw);
-        TreeMap<Integer, Integer> now = new TreeMap<>(standingPorts());
+        TreeMap<Integer, Long> now = new TreeMap<>(standingPorts());
         SortedSet<Integer> before = closure(home, now, joins);
         List<Integer> out = new ArrayList<>();
         for (int i = units.size() - 1; i >= 0; i--) {
-            TreeMap<Integer, Integer> after = new TreeMap<>(now);
-            after.merge(units.get(i), -1, Integer::sum);
+            TreeMap<Integer, Long> after = new TreeMap<>(now);
+            after.merge(units.get(i), -1L, Long::sum);
             if (closure(home, after, joins).containsAll(before)) {
                 out.add(i);
                 now = after;
@@ -891,8 +904,8 @@ public final class Landmasses {
      * linked (ET5 D11 - unlinking is refused, the builders'-last-depot shape). All of them for a city with no ground off
      * home, and for a template that is not a sea terminal.
      */
-    public int freeToGo(int template) {
-        if (stock == null || !stock.known(template)) return Integer.MAX_VALUE;
+    public long freeToGo(int template) {
+        if (stock == null || !stock.known(template)) return Long.MAX_VALUE;
         if (single() && !hasPlacements()) return Math.max(0, stock.standing(template));
         return removable(template, false).size();
     }
@@ -900,9 +913,9 @@ public final class Landmasses {
     /** The landmasses that would leave the linked set were all of a template's standing terminals gone, named for a sentence ("Island 2"); empty when they link nothing. */
     public String linkedBy(int template) {
         if (stock == null || !stock.known(template)) return "";
-        TreeMap<Integer, Integer> now = new TreeMap<>(standingPorts());
+        TreeMap<Integer, Long> now = new TreeMap<>(standingPorts());
         SortedSet<Integer> before = closure(home, now, joins);
-        for (int id : standingUnits(template, false)) now.merge(id, -1, Integer::sum);
+        for (int id : standingUnits(template, false)) now.merge(id, -1L, Long::sum);
         SortedSet<Integer> after = closure(home, now, joins);
         List<String> names = new ArrayList<>();
         for (int id : before) if (!after.contains(id)) names.add(name(id));
@@ -982,10 +995,10 @@ public final class Landmasses {
     }
 
     /** The sea terminals standing or on site on a landmass, every port template (not a stopped shell, not one being demolished; a template with no row stands at home). */
-    public int portsAt(int id) {
+    public long portsAt(int id) {
         if (stock == null) return 0;
         int at = id == 0 ? home : id;
-        int n = 0;
+        long n = 0;
         for (int t : stock.portTemplates()) {
             Segments s = ports.get(t);
             if (s == null) {
@@ -999,13 +1012,13 @@ public final class Landmasses {
     }
 
     /** The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). */
-    public int[] portsOn(int id) {
+    public long[] portsOn(int id) {
         int at = id == 0 ? home : id;
-        int[] out = new int[Ports.Cargo.values().length];
+        long[] out = new long[Ports.Cargo.values().length];
         if (stock == null) return out;
         for (int t : stock.portTemplates()) {
             Segments s = ports.get(t);
-            int n = s == null ? (at == home ? Math.max(0, stock.standing(t)) : 0) : count(s.standing, at) + (at == home ? count(s.standing, 0) : 0);
+            long n = s == null ? (at == home ? Math.max(0, stock.standing(t)) : 0) : count(s.standing, at) + (at == home ? count(s.standing, 0) : 0);
             out[stock.cargo(t)] += n;
         }
         return out;
@@ -1046,15 +1059,15 @@ public final class Landmasses {
             int[] templates = stock.portTemplates().clone();
             java.util.Arrays.sort(templates);
             for (int t : templates) {
-                TreeMap<Integer, Integer> by = new TreeMap<>();
+                TreeMap<Integer, Long> by = new TreeMap<>();
                 Segments s = ports.get(t);
                 if (s == null) {
-                    int n = stock.standing(t);
+                    long n = stock.standing(t);
                     if (n > 0) by.put(home, n);
                 } else {
-                    for (int id : s.standing) by.merge(id == 0 ? home : id, 1, Integer::sum);
+                    for (int id : s.standing) by.merge(id == 0 ? home : id, 1L, Long::sum);
                 }
-                for (Map.Entry<Integer, Integer> e : by.entrySet()) triples.add(new long[] { t, e.getKey(), e.getValue() });
+                for (Map.Entry<Integer, Long> e : by.entrySet()) triples.add(new long[] { t, e.getKey(), e.getValue() });
             }
         }
         long[] flat = new long[triples.size() * 3];

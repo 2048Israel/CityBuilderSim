@@ -5556,6 +5556,40 @@ public class Bank {
         return room;
     }
 
+    /**
+     * Growth commitments fit the target even above it (BF1). Defaults are
+     * known before the month's loan book settles: remove the losses not
+     * covered by that borrower's existing allowance from the capital room.
+     * Working-capital lines remain commitments already made.
+     */
+    public double projectHeadroom() {
+        if (branches <= 0) return Double.POSITIVE_INFINITY;
+        double loss = unsettledCreditLoss();
+        return Math.max(0, Math.min(headroom(), Math.min(
+                (equity() - loss) / capitalTarget() - getWeightedBook(),
+                (equity() - loss) / leverageTarget() - exposure())));
+    }
+
+    /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix. */
+    public double leverageHeadroom() {
+        return branches <= 0 ? Double.POSITIVE_INFINITY
+                : Math.max(0, equity() / leverageTarget() - exposure());
+    }
+
+    /** The same leverage room before the month's known losses have reached the loan book. */
+    public double projectLeverageHeadroom() {
+        return branches <= 0 ? Double.POSITIVE_INFINITY
+                : Math.max(0, (equity() - unsettledCreditLoss()) / leverageTarget() - exposure());
+    }
+
+    private double unsettledCreditLoss() {
+        double loss = Math.max(0, householdWrittenOff - householdAllowance);
+        for (java.util.Map.Entry<String, Double> e : writtenOffBySector.entrySet()) {
+            loss += Math.max(0, e.getValue() - getSectorAllowance(e.getKey()));
+        }
+        return loss;
+    }
+
     public void setCash(double value) { this.cash = value; }
 
     public void reset() {

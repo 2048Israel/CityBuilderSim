@@ -209,7 +209,7 @@ final class ServicesScreen {
                 Kept.scope("figures", () -> areaVitals(all)), pages);
         frame.setMaxWidth(PAGE_WIDE);
         frame.setFillWidth(true);
-        frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+        Pieces.pad(frame, Pieces.FRAME_ROOM);
 
         /*
          * THE RAILS DO NOT SCROLL. They were inside the scroller in the first
@@ -361,7 +361,7 @@ final class ServicesScreen {
                 name.setMinWidth(Region.USE_PREF_SIZE);
                 Region dot = Kept.region();
                 dot.setMinSize(7, 7);
-                dot.setPrefSize(7, 7);
+                Pieces.prefSize(dot, 7, 7);
                 dot.setMaxSize(7, 7);
                 dot.setStyle("-fx-background-color: " + BuildScreen.verdict(level) + "; -fx-background-radius: 4;");
                 HBox inside = Kept.row(6, icon(areaIcon(a.name()), on ? Palette.PEOPLE : Palette.TEXT_LABEL, 14), name, dot);
@@ -374,7 +374,7 @@ final class ServicesScreen {
                 Kept.tip(inside, a.name() + (worst == null || worst.verdictLevel() == 0
                         ? ": nothing near its line" : ": " + worst.label().toLowerCase() + " · " + worst.reading())
                         + (news ? "\nSomething happened here this month." : ""), 300);
-                inside.setOnMouseClicked(e -> open(a.name(), OVERVIEW));
+                Kept.give(inside.onMouseClickedProperty(), e -> open(a.name(), OVERVIEW));
                 return inside;
             }));
         }
@@ -602,23 +602,28 @@ final class ServicesScreen {
 
     /** A card on the Build ground: raised, rounded, a hairline edge. */
     static VBox card(Node... children) {
+        return card(null, null, children);
+    }
+
+    /** A plain card or a door, styled once, with its whole look chosen before it is written. */
+    static VBox card(Runnable go, String where, Node... children) {
         VBox c = Kept.column(8);
         for (Node n : children) if (n != null) c.getChildren().add(n);
         c.setMaxWidth(Double.MAX_VALUE);
-        c.setStyle("-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
-                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
-        return c;
-    }
-
-    /** ...made a door: a hand, an accent edge under the pointer, a click anywhere opens `go`; its tooltip says where. */
-    static VBox doorCard(VBox c, Runnable go, String where) {
-        String rest = c.getStyle() + " -fx-cursor: hand;";
+        String rest = "-fx-padding: 12 14 12 14; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";";
+        if (go == null) {
+            c.setStyle(rest);
+            return c;
+        }
+        rest += " -fx-cursor: hand;";
+        final String resting = rest;
         String over = rest.replace("-fx-border-color: " + Palette.EDGE, "-fx-border-color: " + Palette.ACCENT);
         // Kept (KP2, rule 6): a card under a still pointer stays hovered across a draw and no mouse-entered comes.
         c.setStyle(c.isHover() ? over : rest);
-        c.setOnMouseEntered(e -> c.setStyle(over));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(over));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(resting));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         if (where != null) Kept.tip(c, where, 300);
         return c;
     }
@@ -657,7 +662,7 @@ final class ServicesScreen {
             if (open) {
                 for (Node n : Kept.scope("open", inside)) if (n != null) box.getChildren().add(n);
             }
-            toggle.setOnMouseClicked(e -> {
+            Kept.give(toggle.onMouseClickedProperty(), e -> {
                 if (!detailsOpen.remove(name)) detailsOpen.add(name);
                 ui.redraw();
             });
@@ -1196,7 +1201,7 @@ final class ServicesScreen {
             default: {
                 buys = pct(ui.game.getSickness().getLastRecovery());
                 buysWords = " of the sick get better";
-                range = pct(Sickness.RECOVERY_UNTREATED) + " → " + pct(Sickness.RECOVERY_SERVED) + " if everyone";
+                range = pct(Sickness.RECOVERY_UNTREATED) + " → " + pct(ui.game.getSickness().servedRecovery()) + " if everyone";
                 icon = Icons.HEALTH;
                 page = "General care";
             }
@@ -1296,10 +1301,10 @@ final class ServicesScreen {
         foot.setAlignment(Pos.CENTER_LEFT);
         Region grow = Kept.region();
         VBox.setVgrow(grow, Priority.ALWAYS);
-        VBox c = card(cardHead(w.icon(), w.name(), w.info(), null), middle, bar,
+        VBox c = card(() -> open("Health", w.page()), w.name() + ": click for its page.", cardHead(w.icon(), w.name(), w.info(), null), middle, bar,
                 words(w.caption(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED), grow, foot);
         c.setMaxHeight(Double.MAX_VALUE);
-        return doorCard(c, () -> open("Health", w.page()), w.name() + ": click for its page.");
+        return c;
     }
 
     /** A run of text in a flow: a figure in mono, or words. */
@@ -1355,11 +1360,11 @@ final class ServicesScreen {
         double cover = service.getCoverage(CareType.GENERAL);
         javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
         two.add(Kept.scope("cures", () -> card(cardHead(Icons.HEALTH, "What care cures", RECOVERY_INFO, null),
-                effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, Sickness.RECOVERY_SERVED,
+                effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, sickness.servedRecovery(),
                         false, ServicesScreen::pct, Palette.PEOPLE, 0,
                         words(CityNeeds.servedPct(cover) + " " + CityNeeds.SERVED, Palette.SIZE_LABEL, Palette.TEXT_LABEL), 90),
                 words("of the sick get better each month: " + pct(Sickness.RECOVERY_UNTREATED)
-                        + " with nobody served, " + pct(Sickness.RECOVERY_SERVED) + " with everybody.",
+                        + " with nobody served, " + pct(sickness.servedRecovery()) + " with everybody.",
                         Palette.SIZE_CAPTION, Palette.TEXT_MUTED))), 0, 0);
         two.add(Kept.scope("doctor", () -> card(cardHead(Icons.STAFF, "Who gets a doctor", careInfo(CareType.GENERAL, cover), null),
                 careFunnel(CareType.GENERAL))), 1, 0);
@@ -1393,7 +1398,9 @@ final class ServicesScreen {
     static final String RECOVERY_INFO = String.format(
             "The share of the sick who get better in a month: %.0f%% with no general care, %.0f%% with "
             + "everybody covered, and in between by the coverage the month applied. The rest stay ill "
-            + "another month; from two months on they can die of it.",
+            + "another month; from two months on they can die of it. A city founded the 1900 way cures "
+            + "less with everybody covered until it knows the medicine that shortens a hospital stay: "
+            + "penicillin, then hip replacement, the CT scanner, keyhole surgery and statins.",
             Sickness.RECOVERY_UNTREATED * 100, Sickness.RECOVERY_SERVED * 100);
 
     /** The death chances by age, with the share of each band past two months and its dead last month. */
@@ -1954,7 +1961,7 @@ final class ServicesScreen {
         HBox head = Kept.row(8, iconSquare(Icons.EDUCATION, Palette.PEOPLE, 24, 13), name,
                 ring(n.arc(), n.ringTone(), 40, 5, n.ring(), 10));
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = card(head, words(n.line1(), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
+        VBox c = card(() -> open("Education", n.page()), n.type().getLabel() + ": click for its page.", head, words(n.line1(), Palette.SIZE_LABEL, Palette.TEXT_LABEL),
                 words(n.line2(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         c.setSpacing(4);
         // R3b: a school that hosts research says the posts the city's grants have there and the room it has (ResearchView.schoolPosts(): the kind's share
@@ -1977,7 +1984,7 @@ final class ServicesScreen {
         c.setPrefWidth(228);
         c.setMaxWidth(228);
         c.setMinHeight(112);
-        return doorCard(c, () -> open("Education", n.page()), n.type().getLabel() + ": click for its page.");
+        return c;
     }
 
     /** The ladder's end: the diplomas the school leavers took this month (Education.getNewDiplomas(), gross), or "not recorded yet" after a load. */
@@ -1987,7 +1994,7 @@ final class ServicesScreen {
         name.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
         HBox head = Kept.row(8, iconSquare(Icons.ARRIVE, Palette.PEOPLE, 24, 13), name);
         head.setAlignment(Pos.CENTER_LEFT);
-        VBox c = card(head, Kept.scope(Double.isFinite(d) ? "figure" : "words", () -> Double.isFinite(d)
+        VBox c = card(() -> open("Education", "Basic ladder"), "The basic ladder: click for its page.", head, Kept.scope(Double.isFinite(d) ? "figure" : "words", () -> Double.isFinite(d)
                         ? figure(flowText(d), 18, Palette.TEXT_HEAD)
                         : words("not recorded yet", Palette.SIZE_LABEL, Palette.TEXT_MUTED)),
                 infoLine("diplomas this month", DIPLOMA_INFO, false, Palette.SIZE_CAPTION, Palette.TEXT_MUTED, 200));
@@ -1996,7 +2003,7 @@ final class ServicesScreen {
         c.setPrefWidth(170);
         c.setMaxWidth(170);
         c.setMinHeight(112);
-        return doorCard(c, () -> open("Education", "Basic ladder"), "The basic ladder: click for its page.");
+        return c;
     }
 
     /** The diplomas' (i): the teens' note, and what the figure is (and is not). */
@@ -2335,7 +2342,7 @@ final class ServicesScreen {
         javafx.scene.layout.Pane arcs = Kept.plain(track);
         if (s > 0) arcs.getChildren().add(fill);
         arcs.setMinSize(size, size / 2 + 6);
-        arcs.setPrefSize(size, size / 2 + 6);
+        Pieces.prefSize(arcs, size, size / 2 + 6);
         arcs.setMaxSize(size, size / 2 + 6);
         Label figure = figure(pct(share), size >= 90 ? 15 : 12, Palette.TEXT_HEAD);
         javafx.scene.layout.StackPane drawn = Kept.stack(arcs, figure);
@@ -2518,7 +2525,7 @@ final class ServicesScreen {
         Label go = door("Infrastructure › Roads", Palette.PEOPLE, () -> ui.infrastructureScreen.open("Roads"));
         HBox row = Kept.row(18, left, says, go);
         row.setAlignment(Pos.CENTER_LEFT);
-        return doorCard(card(row), () -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads");
+        return card(() -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads", row);
     }
 
     /**
@@ -2797,7 +2804,7 @@ final class ServicesScreen {
         three.add(Kept.scope("police", () -> {
             double[] police = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE), java.util.Map.of());
             double without = crime.crimesWithoutPolice();
-            VBox p = card(cardHead(Icons.SAFETY, "Police", OFFICERS_INFO.apply(crime), null),
+            VBox p = card(() -> open("Safety", "Police"), "The police: click for their page.", cardHead(Icons.SAFETY, "Police", OFFICERS_INFO.apply(crime), null),
                     Kept.row(8, figure(without > 0 ? pct(1 - crime.getCrimes() / without) : "—", 22, Palette.TEXT_HEAD),
                             words("of the crime taken off", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
                     supplyBar(police[1], bm.getSafetyCapacity(SafetyType.POLICE), police[0], Palette.PEOPLE, "full cover",
@@ -2806,11 +2813,11 @@ final class ServicesScreen {
                     words(people(police[0]) + " on shift · " + people(police[1]) + " for full cover · " + pct(crime.getCoverage()),
                             Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
                     footDoors("Police", BuildAdvice.Measure.of(BuildAdvice.Kind.POLICE)));
-            return doorCard(p, () -> open("Safety", "Police"), "The police: click for their page.");
+            return p;
         }), 0, 0);
         three.add(Kept.scope("cells", () -> {
             double[] cells = BuildAdvice.supplyDemand(ui.game, BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS), java.util.Map.of());
-            VBox c = card(cardHead(Icons.CELL, "Cells", CAUGHT_INFO, null),
+            VBox c = card(() -> open("Safety", "Prisons"), "The prisons: click for their page.", cardHead(Icons.CELL, "Cells", CAUGHT_INFO, null),
                     Kept.row(8, figure(people(crime.getNotHeld()), 22, crime.getNotHeld() >= .5
                                     ? tone(need(all, CityNeeds.Kind.CELLS, null, null)) : Palette.TEXT_HEAD),
                             words("caught, not held", Palette.SIZE_LABEL, Palette.TEXT_LABEL)),
@@ -2820,7 +2827,7 @@ final class ServicesScreen {
                     words(people(crime.prisoners()) + " in prison · " + people(cells[0]) + " staffed cells · "
                             + people(cells[1]) + " needed", Palette.SIZE_CAPTION, Palette.TEXT_MUTED),
                     footDoors("Prisons", BuildAdvice.Measure.of(BuildAdvice.Kind.CELLS)));
-            return doorCard(c, () -> open("Safety", "Prisons"), "The prisons: click for their page.");
+            return c;
         }), 1, 0);
         three.add(Kept.scope("did", () -> card(cardHead(Icons.ALERT, "What it did", STOLEN_INFO, null),
                 didLine("violent", String.format("%,.1f", crime.getViolent()), String.format("%.2f%% of the city injured, off work", crime.getInjuredShare() * 100)),

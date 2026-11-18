@@ -534,7 +534,7 @@ public final class Construction extends Sector {
      * THE FITTINGS (R1b, 2026-11-05; Game.fit(), Fittings): the builders are paid for the goods they bought and the work they will do to fit a
      * piece of equipment to a standing building, at the order. Other revenue, named apart, and CAPITAL: Game reads getFittingThisMonth() beside
      * getRecognisedThisMonth() for the national accounts' investment line, so a fitting is investment once, on the builders' side (the payer's
-     * spend() is its own cash flow and is not read there). No sales tax is struck on it in this batch.
+     * spend() is its own cash flow and is not read there). R1d includes sales tax in the price and records the owner's capital credit.
      *
      * WHY a figure of its own, and not recognisedThisMonth: that one is cleared by recogniseWork() in the middle of the tick, and a fitting is
      * ordered before it (the investment round at the top of the month, the player's hand between two presses), so it would be cleared
@@ -783,7 +783,6 @@ public final class Construction extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             double points = t.makes(Good.BUILDING_WORK);
             if (points <= 0) continue;
@@ -793,10 +792,7 @@ public final class Construction extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -816,7 +812,7 @@ public final class Construction extends Sector {
                 return BusinessInvestment.Decision.unstaffed(sector, staffingHold, String.format(
                         "%s months of work queued, but %s",
                         backlogMonths == Double.MAX_VALUE ? "endless" : String.format("%.1f", backlogMonths),
-                        staffingHold.why(staffingHoldName)));
+                        staffingHold.why()));
             }
             return BusinessInvestment.Decision.no(sector, "nothing that adds capacity");
         }
@@ -914,7 +910,7 @@ public final class Construction extends Sector {
         if (t == null || !(t.makes(Good.BUILDING_WORK) > 0) || buildings == null) return true;
         // ...standing and not closing: a yard or depot the city has bought out to demolish is gone at the
         // month's start (Game.closeDemolished()), so it is not the one that would be left.
-        int depots = 0;
+        long depots = 0;
         for (BuildingsTemplate d : buildings.getTemplatesBySector(key())) {
             if (d.makes(Good.BUILDING_WORK) > 0) {
                 depots += Math.max(0, buildings.getQuantity(d.getId()) - buildings.getControl().closingOf(d.getId()));

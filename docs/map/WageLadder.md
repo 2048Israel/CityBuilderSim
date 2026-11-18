@@ -1,6 +1,6 @@
-# WageLadder.java - 145 lines · 10 methods · 7 constants · model
+# WageLadder.java - 147 lines · 10 methods · 7 constants · model
 
-`ham/citybuildersim/WageLadder.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageLadder.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's).
 > 
@@ -31,67 +31,67 @@
 >   [CYB07b] Canada Year Book 1907, "Employees and salaries, by principal occupation in the professional class, 1901",
 >            https://www65.statcan.gc.ca/acyb02/1907/acyb02_1907015903-eng.htm
 
-**Uses:** [PayTier](PayTier.md) (17), [Founding](Founding.md) (1), [JobType](JobType.md) (1)
+**Uses:** [PayTier](PayTier.md) (17), [PriceLevel](PriceLevel.md) (2), [Founding](Founding.md) (1), [JobType](JobType.md) (1)
 
-**Used by (7):** [Game](Game.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (9):** [Game](Game.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 40 | THE CONVERSION, ONCE |
-| 60 | THE 1901 TABLE: one rung per PayTier, in PayTier's order; each figure is one line to change |
-| 96 | THE TWO LADDERS |
+| 62 | THE 1901 TABLE: one rung per PayTier, in PayTier's order; each figure is one line to change |
+| 98 | THE TWO LADDERS |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 47 | `WageLadder.FOUNDING_PER_CENSUS_DOLLAR` | `1.0` | What one 1901 census dollar is in founding money: one. |
-| 50 | `WageLadder.MONTHS_A_YEAR` | `12` | The months in the census's year of earnings. |
-| 53 | `WageLadder.THOUSAND` | `1000` | The game's wages are in thousands: .0227 reads $22.67. |
-| 63 | `WageLadder.CIVIL_ENGINEERS_1901` | `1316.31` | Civil engineers' earnings in 1901 (B1, Table II: $852,968 over 648 men), the professional rung and the base the elite rung's estimate is struck on. |
-| 70 | `WageLadder.RUNGS_1901` | `List.of(new Rung(PayTier.UNSKILLED, "Labourers, men", 256.29, "B1", false, "$...` | The 1901 ladder, a rung for each PayTier in PayTier's order, each the comparator nearest the rung's own today (PayTier's comments), men's earnings at regular work for a year (R0d's research, 2026-11-06: the averages B... |
-| 99 | `WageLadder.TODAY` | `new WageLadder("today's", false)` | Today's ladder: PayTier's own figures, the default of every city. |
-| 102 | `WageLadder.Y1901` | `new WageLadder("1901's", true)` | 1901's ladder: the census's earnings in founding money, for a city founded the 1900 way. |
+| 49 | `WageLadder.FOUNDING_PER_CENSUS_DOLLAR` | `PriceLevel.FACTOR / PriceLevel.HISTORICAL_FACTOR` | What one 1901 census dollar is in founding money: one. |
+| 52 | `WageLadder.MONTHS_A_YEAR` | `12` | The months in the census's year of earnings. |
+| 55 | `WageLadder.THOUSAND` | `1000` | The game's wages are in thousands: .0227 reads $22.67. |
+| 65 | `WageLadder.CIVIL_ENGINEERS_1901` | `1316.31` | Civil engineers' earnings in 1901 (B1, Table II: $852,968 over 648 men), the professional rung and the base the elite rung's estimate is struck on. |
+| 72 | `WageLadder.RUNGS_1901` | `List.of(new Rung(PayTier.UNSKILLED, "Labourers, men", 256.29, "B1", false, "$...` | The 1901 ladder, a rung for each PayTier in PayTier's order, each the comparator nearest the rung's own today (PayTier's comments), men's earnings at regular work for a year (R0d's research, 2026-11-06: the averages B... |
+| 101 | `WageLadder.TODAY` | `new WageLadder("today's", false)` | Today's ladder: PayTier's own figures, the default of every city. |
+| 104 | `WageLadder.Y1901` | `new WageLadder("1901's", true)` | 1901's ladder: the census's earnings in founding money, for a city founded the 1900 way. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 109 | `private final String name` |  |
-| 110 | `private final boolean historical` |  |
+| 111 | `private final String name` |  |
+| 112 | `private final boolean historical` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 111 | **type** `public final class WageLadder` | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). |
+| 35 | 113 | **type** `public final class WageLadder` | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). |
 | 38 | 1 | **type** `public record Rung(PayTier tier, String comparator, double annual1901, String source, boolean estimate, Str...` | One rung of the 1901 table: the PayTier it prices, the census occupation it stands on, the year's earnings, where it was read, whether it is an estimate, and a note. |
 
-### THE CONVERSION, ONCE (lines 40-59)
+### THE CONVERSION, ONCE (lines 40-61)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 56 | 3 | `public static double monthlyFromAnnual(double annualCensusDollars)` | A year's earnings in census dollars as a month's wage in thousands of founding money: the one conversion. |
+| 58 | 3 | `public static double monthlyFromAnnual(double annualCensusDollars)` | A year's earnings in census dollars as a month's wage in thousands of founding money: the one conversion. |
 
-### THE 1901 TABLE: one rung per PayTier, in PayTier's order; each figure is one line to change (lines 60-95)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 85 | 7 | `static { ... }` |  |
-| 94 | 1 | `public static Rung rung1901(PayTier tier)` | The 1901 rung for a tier (the table is in PayTier's order). |
-
-### THE TWO LADDERS (lines 96-145)
+### THE 1901 TABLE: one rung per PayTier, in PayTier's order; each figure is one line to change (lines 62-97)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 105 | 3 | `public static WageLadder of(Founding founding)` | The ladder a city is founded on: 1901's where it is founded the 1900 way (Founding.isUnfitted()), today's otherwise. |
-| 112 | 4 | `private WageLadder(String name, boolean historical)` |  |
-| 118 | 1 | `public String name()` | What the ladder is called: today's or 1901's. |
-| 121 | 1 | `public boolean isHistorical()` | Whether this is the census's ladder rather than PayTier's. |
-| 124 | 3 | `public double monthlyWage(PayTier tier)` | What a month of a rung pays, in thousands of founding money: PayTier's own on today's ladder, the 1901 rung's year over twelve on 1901's. |
-| 129 | 1 | `public double anchor()` | The bottom rung's wage: what the minimum wage starts at, the dial's bounds are multiples of, and the rent and the pension are struck on. |
-| 135 | 8 | `public double ratio(JobType job)` | What this job pays relative to the unskilled floor on this ladder. |
-| 144 | 1 | `public String toString()` |  |
+| 87 | 7 | `static { ... }` |  |
+| 96 | 1 | `public static Rung rung1901(PayTier tier)` | The 1901 rung for a tier (the table is in PayTier's order). |
+
+### THE TWO LADDERS (lines 98-147)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 107 | 3 | `public static WageLadder of(Founding founding)` | The ladder a city is founded on: 1901's where it is founded the 1900 way (Founding.isUnfitted()), today's otherwise. |
+| 114 | 4 | `private WageLadder(String name, boolean historical)` |  |
+| 120 | 1 | `public String name()` | What the ladder is called: today's or 1901's. |
+| 123 | 1 | `public boolean isHistorical()` | Whether this is the census's ladder rather than PayTier's. |
+| 126 | 3 | `public double monthlyWage(PayTier tier)` | What a month of a rung pays, in thousands of founding money: PayTier's own on today's ladder, the 1901 rung's year over twelve on 1901's. |
+| 131 | 1 | `public double anchor()` | The bottom rung's wage: what the minimum wage starts at, the dial's bounds are multiples of, and the rent and the pension are struck on. |
+| 137 | 8 | `public double ratio(JobType job)` | What this job pays relative to the unskilled floor on this ladder. |
+| 146 | 1 | `public String toString()` |  |
 

@@ -1,6 +1,6 @@
-# LandParcel.java - 506 lines · 64 methods · 5 constants · model
+# LandParcel.java - 517 lines · 66 methods · 5 constants · model
 
-`ham/citybuildersim/LandParcel.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandParcel.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and the sites and amounts of the seven resources - and its price.
 > 
@@ -47,23 +47,23 @@
 
 **Uses:** [CityLand](CityLand.md) (39), [LandManager](LandManager.md) (6), [Resource](Resource.md) (6), [GridOffers](GridOffers.md) (4)
 
-**Used by (42):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ConversionCheck](ConversionCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandSellersView](LandSellersView.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MoneyCheck](MoneyCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [TreasuryCheck](TreasuryCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
+**Used by (46):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [ER1Check](ER1Check.md), [EarthFoundingCheck](EarthFoundingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [IslandNetCheck](IslandNetCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandSellersView](LandSellersView.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [Landmasses](Landmasses.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [PortCheck](PortCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReplayCheck](ReplayCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [TreasuryCheck](TreasuryCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 363 | ITS RECORDS (DataSave's landOffers and landHoldings, SAVE_FORMAT 32) |
+| 374 | ITS RECORDS (DataSave's landOffers and landHoldings, SAVE_FORMAT 32) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 101 | `LandParcel.MOSTLY_SEA` | `0.70` | The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). |
-| 377 | `LandParcel.RECT_FIELDS` | `7` | Where a record keeps the rectangle: side, place, level, x0, y0, x1, y1 - seven. |
-| 380 | `LandParcel.SELLER_FIELDS` | `3` | How wide a seller's part is in a sellers record (sellersRow()): the nation, its area and its price - three. |
-| 383 | `LandParcel.OFFER_FIELDS` | `1 + RECT_FIELDS + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide an offer's record is: its id, its rectangle (side, place, level, x0, y0, x1, y1), its five areas, its sites, its amounts, its price and the month it was listed - 29. |
-| 386 | `LandParcel.PURCHASE_FIELDS` | `RECT_FIELDS + 3 + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide a holding's record is: its rectangle, the month bought, the price, what was paid here, the five areas, the sites, the amounts, and the offer's id and month listed - 31 (spec-grid 3, M3). |
+| 104 | `LandParcel.MOSTLY_SEA` | `0.70` | The share of an offer's area that, when sea, tags it "mostly sea": 70% - listed, because sea is cheap, but never the best value (spec-land 2.2). |
+| 388 | `LandParcel.RECT_FIELDS` | `7` | Where a record keeps the rectangle: side, place, level, x0, y0, x1, y1 - seven. |
+| 391 | `LandParcel.SELLER_FIELDS` | `3` | How wide a seller's part is in a sellers record (sellersRow()): the nation, its area and its price - three. |
+| 394 | `LandParcel.OFFER_FIELDS` | `1 + RECT_FIELDS + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide an offer's record is: its id, its rectangle (side, place, level, x0, y0, x1, y1), its five areas, its sites, its amounts, its price and the month it was listed - 29. |
+| 397 | `LandParcel.PURCHASE_FIELDS` | `RECT_FIELDS + 3 + CityLand.AREAS + 2 * CityLand.KINDS + 2` | How wide a holding's record is: its rectangle, the month bought, the price, what was paid here, the five areas, the sites, the amounts, and the offer's id and month listed - 31 (spec-grid 3, M3). |
 
 ## Fields (state)
 
@@ -80,82 +80,85 @@
 | 68 | `private final int listedMonth` | The month it was listed in. |
 | 78 | `private transient double unlinkedDryKm2` | Its dry ground on landmasses the city has not linked, square kilometres (Landmasses.offerSplit()). |
 | 81 | `private transient double unlinkedBuildableKm2` | ...the part of it a building could stand on: its flat and foothill, or all of it where the offer is all flat. |
-| 84 | `private transient int unlinkedLargest` | ...and the id of the unlinked landmass holding most of it, 0 for none. |
-| 98 | `private List<Sale> sellers` | The parts of the offer by the nation that sells each, in the order LandSellers.split() says (most ground first); empty for no seller named. |
+| 84 | `private transient double unlinkedForestKm2` | The forest on that unlinked dry ground, square kilometres, for projected forest-law room. |
+| 87 | `private transient int unlinkedLargest` | ...and the id of the unlinked landmass holding most of it, 0 for none. |
+| 101 | `private List<Sale> sellers` | The parts of the offer by the nation that sells each, in the order LandSellers.split() says (most ground first); empty for no seller named. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 457 | **type** `public final class LandParcel` | One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and t... |
-| 95 | 1 | **type** `public record Sale(int seller, double km2, double usd)` | One seller's part of an offer: the nation (the world file's number, 1-based), the part's whole area in square kilometres (its five areas' CityLand.TOTAL) and its share of the price, in thousands of US dollars like get... |
-| 111 | 4 | `public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2, int[] sites, double...` | An offer: its id, its side (0 north, 1 east, 2 south, 3 west), its place on that side (0 to 5, left to right facing out), the level of its blocks and its rectangle of plots [x0, x1) x [y0, y1), its five areas in squar... |
-| 122 | 21 | `public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2, double[] relief, in...` | ...with its dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3): CityLand.RELIEF_AREAS figures in square kilometres, the four reliefs adding up to its DRY area. |
-| 149 | 3 | `public LandParcel(int id, double sizeSqFt, double priceUsd, double ironTonnes, int deposits)` | Dry ground with no place - what a harness hands the office to price by hand: `sizeSqFt` of it, its iron as given, in North's first place on no ground of the grid (an empty rectangle). |
-| 153 | 7 | `private static double[] dryOnly(double sqFt)` |  |
-| 161 | 5 | `private static int[] ironOnly(int deposits)` |  |
-| 167 | 5 | `private static double[] ironAmount(double tonnes)` |  |
-| 173 | 1 | `public int getId()` |  |
-| 176 | 1 | `public int getSide()` | Its side: 0 north, 1 east, 2 south, 3 west. |
-| 179 | 1 | `public int getPlace()` | Its place on that side, 0 to 5, left to right facing out (GridOffers.PLACES). |
-| 182 | 1 | `public int getLevel()` | The level of its blocks: 2^level plots a side (LandGrid). |
-| 185 | 1 | `public long getX0()` | Its rectangle of plots, half-open: its west edge... |
-| 188 | 1 | `public long getY0()` | ...its north edge... |
-| 191 | 1 | `public long getX1()` | ...one past its east edge... |
-| 194 | 1 | `public long getY1()` | ...and one past its south edge. |
-| 197 | 1 | `public boolean contains(long x, long y)` | Whether its rectangle holds plot (x, y). |
-| 200 | 1 | `public long blocksAcross()` | Its blocks across its side. |
-| 203 | 1 | `public long blocksDeep()` | ...and deep, outward. |
-| 206 | 1 | `GridOffers.Rect rect()` | Its rectangle as GridOffers stands it. |
-| 209 | 1 | `public int getListedMonth()` | The month it was listed in. |
-| 212 | 1 | `public double getKm2(int area)` | One of its areas, in square kilometres: CityLand.TOTAL, DRY, FRESH, SEA or FOREST. |
-| 215 | 1 | `public double getKm2()` | Its whole area, in square kilometres. |
-| 218 | 1 | `public double getReliefKm2(int relief)` | Its dry ground by relief, or its shallow sea, in square kilometres (CityLand.RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to getDryKm2(). |
-| 221 | 1 | `public double[] reliefRow()` | Its relief as a record (DataSave's landOffersRelief and landHoldingsRelief): CityLand.RELIEF_AREAS figures, a copy. |
-| 224 | 1 | `public double getDryKm2()` | Its dry ground, in square kilometres. |
-| 227 | 5 | `void setUnlinked(double dryKm2, double buildableKm2, int largest)` | Sets what is on unlinked ground (Landmasses.offerSplit()): its dry ground and the buildable part of it, square kilometres, and the landmass with most of it. |
-| 234 | 1 | `public double getUnlinkedDryKm2()` | Its dry ground on landmasses the city has not linked, square kilometres; 0 for an offer of home's ground and on a generated world. |
-| 237 | 1 | `public double getUnlinkedBuildableKm2()` | ...the part of it a building could stand on (flat and foothill; all of it for an offer all flat), square kilometres. |
-| 240 | 1 | `public int getUnlinkedLargest()` | The id of the unlinked landmass holding most of its unlinked dry ground; 0 for none. |
-| 247 | 1 | `public List<Sale> getSellers()` | Who sells it (WN5): one Sale for each nation whose ground the offer holds, with that part's area and its share of the price (the shares add up to getPriceUsd()). |
-| 250 | 3 | `void setSellers(List<Sale> sold)` | Names the sellers when the offer is listed or restored (LandMarket); an empty or null list is none. |
-| 255 | 10 | `public double[] sellersRow()` | Its sellers as a record (DataSave's landOffersSellers): seller, km2, usd for each part in turn, SELLER_FIELDS figures a part; an empty row for none. |
-| 267 | 11 | `static List<Sale> sellersFrom(double[] row)` | Sellers from a record (sellersRow()): none for a null or empty row, for a row whose width is not a whole number of parts, and for a row with any part whose seller is not a whole number from 1, or whose area or price i... |
-| 280 | 1 | `public int getSites(Resource r)` | Its sites of a resource. |
-| 283 | 1 | `public double getAmount(Resource r)` | Its amount of a resource, in the resource's unit. |
-| 286 | 1 | `public double getSizeSqFt()` | What the city's ground grows by when it is bought: its dry ground, in square feet. |
-| 289 | 1 | `public double getPriceUsd()` | The listed price, in thousands of US dollars. |
-| 292 | 1 | `public double getIronTonnes()` | Its iron ore, in tonnes: the fields of iron whose centres lie on its ground. |
-| 295 | 1 | `public int getDeposits()` | Its iron sites: how many more mines it lets the city stand. |
-| 297 | 1 | `public boolean hasIron()` |  |
-| 300 | 1 | `public boolean isMostlySea()` | Whether it is mostly sea: more than MOSTLY_SEA of its area. |
-| 310 | 1 | `public static int number(int side, int place)` | The number of the offer in a side's place, on the map and in the land office: one to each place across the city (LM1, 2026-11-11), the sides in their order - north, east, south, west - and each side's places left to r... |
-| 313 | 1 | `public int number()` | ...this offer's: number(side, place). |
-| 316 | 1 | `public String where()` | Its side and number as the office names them: "South 15" (number()). |
-| 322 | 1 | `public double localPrice(double rate)` | What the treasury pays for it in local money at this rate - local money per US dollar, ForeignAccounts.getRate() on the day it buys. |
-| 330 | 4 | `public double getUsdPerSqFt()` | Its dollars a square foot of DRY ground (0.7.57): what the office ranks offers by. |
-| 336 | 3 | `public double getDryKm2PerUsd()` | Its dry square kilometres a thousand US dollars: what the office's best value is the most of. |
-| 341 | 3 | `public double getBlocks()` | How many city blocks' worth of dry ground, for a player who thinks in blocks. |
-| 351 | 11 | `public String describe()` | A one-line label for the listing. |
+| 50 | 468 | **type** `public final class LandParcel` | One offer on the market, as the land office lists it: a rectangle of whole blocks against one side of the city, in one of that side's six places, with what its ground holds - its area dry, fresh, sea and forest, and t... |
+| 98 | 1 | **type** `public record Sale(int seller, double km2, double usd)` | One seller's part of an offer: the nation (the world file's number, 1-based), the part's whole area in square kilometres (its five areas' CityLand.TOTAL) and its share of the price, in thousands of US dollars like get... |
+| 114 | 4 | `public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2, int[] sites, double...` | An offer: its id, its side (0 north, 1 east, 2 south, 3 west), its place on that side (0 to 5, left to right facing out), the level of its blocks and its rectangle of plots [x0, x1) x [y0, y1), its five areas in squar... |
+| 125 | 21 | `public LandParcel(int id, int side, int place, int level, long x0, long y0, long x1, long y1, double[] km2, double[] relief, in...` | ...with its dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3): CityLand.RELIEF_AREAS figures in square kilometres, the four reliefs adding up to its DRY area. |
+| 152 | 3 | `public LandParcel(int id, double sizeSqFt, double priceUsd, double ironTonnes, int deposits)` | Dry ground with no place - what a harness hands the office to price by hand: `sizeSqFt` of it, its iron as given, in North's first place on no ground of the grid (an empty rectangle). |
+| 156 | 7 | `private static double[] dryOnly(double sqFt)` |  |
+| 164 | 5 | `private static int[] ironOnly(int deposits)` |  |
+| 170 | 5 | `private static double[] ironAmount(double tonnes)` |  |
+| 176 | 1 | `public int getId()` |  |
+| 179 | 1 | `public int getSide()` | Its side: 0 north, 1 east, 2 south, 3 west. |
+| 182 | 1 | `public int getPlace()` | Its place on that side, 0 to 5, left to right facing out (GridOffers.PLACES). |
+| 185 | 1 | `public int getLevel()` | The level of its blocks: 2^level plots a side (LandGrid). |
+| 188 | 1 | `public long getX0()` | Its rectangle of plots, half-open: its west edge... |
+| 191 | 1 | `public long getY0()` | ...its north edge... |
+| 194 | 1 | `public long getX1()` | ...one past its east edge... |
+| 197 | 1 | `public long getY1()` | ...and one past its south edge. |
+| 200 | 1 | `public boolean contains(long x, long y)` | Whether its rectangle holds plot (x, y). |
+| 203 | 1 | `public long blocksAcross()` | Its blocks across its side. |
+| 206 | 1 | `public long blocksDeep()` | ...and deep, outward. |
+| 209 | 1 | `GridOffers.Rect rect()` | Its rectangle as GridOffers stands it. |
+| 212 | 1 | `public int getListedMonth()` | The month it was listed in. |
+| 215 | 1 | `public double getKm2(int area)` | One of its areas, in square kilometres: CityLand.TOTAL, DRY, FRESH, SEA or FOREST. |
+| 218 | 1 | `public double getKm2()` | Its whole area, in square kilometres. |
+| 221 | 1 | `public double getReliefKm2(int relief)` | Its dry ground by relief, or its shallow sea, in square kilometres (CityLand.RELIEF_FLAT, RELIEF_FOOTHILL, RELIEF_STEEP, RELIEF_VERY_STEEP; RELIEF_SHALLOW): the four reliefs add up to getDryKm2(). |
+| 224 | 1 | `public double[] reliefRow()` | Its relief as a record (DataSave's landOffersRelief and landHoldingsRelief): CityLand.RELIEF_AREAS figures, a copy. |
+| 227 | 1 | `public double getDryKm2()` | Its dry ground, in square kilometres. |
+| 230 | 3 | `void setUnlinked(double dryKm2, double buildableKm2, int largest)` | Sets what is on unlinked ground (Landmasses.offerSplit()): its dry ground and the buildable part of it, square kilometres, and the landmass with most of it. |
+| 234 | 6 | `void setUnlinked(double dryKm2, double buildableKm2, double forestKm2, int largest)` |  |
+| 242 | 1 | `public double getUnlinkedDryKm2()` | Its dry ground on landmasses the city has not linked, square kilometres; 0 for an offer of home's ground and on a generated world. |
+| 245 | 1 | `public double getUnlinkedBuildableKm2()` | ...the part of it a building could stand on (flat and foothill; all of it for an offer all flat), square kilometres. |
+| 248 | 1 | `public double getUnlinkedForestKm2()` | The part of its forest on landmasses the city has not linked, square kilometres. |
+| 251 | 1 | `public int getUnlinkedLargest()` | The id of the unlinked landmass holding most of its unlinked dry ground; 0 for none. |
+| 258 | 1 | `public List<Sale> getSellers()` | Who sells it (WN5): one Sale for each nation whose ground the offer holds, with that part's area and its share of the price (the shares add up to getPriceUsd()). |
+| 261 | 3 | `void setSellers(List<Sale> sold)` | Names the sellers when the offer is listed or restored (LandMarket); an empty or null list is none. |
+| 266 | 10 | `public double[] sellersRow()` | Its sellers as a record (DataSave's landOffersSellers): seller, km2, usd for each part in turn, SELLER_FIELDS figures a part; an empty row for none. |
+| 278 | 11 | `static List<Sale> sellersFrom(double[] row)` | Sellers from a record (sellersRow()): none for a null or empty row, for a row whose width is not a whole number of parts, and for a row with any part whose seller is not a whole number from 1, or whose area or price i... |
+| 291 | 1 | `public int getSites(Resource r)` | Its sites of a resource. |
+| 294 | 1 | `public double getAmount(Resource r)` | Its amount of a resource, in the resource's unit. |
+| 297 | 1 | `public double getSizeSqFt()` | What the city's ground grows by when it is bought: its dry ground, in square feet. |
+| 300 | 1 | `public double getPriceUsd()` | The listed price, in thousands of US dollars. |
+| 303 | 1 | `public double getIronTonnes()` | Its iron ore, in tonnes: the fields of iron whose centres lie on its ground. |
+| 306 | 1 | `public int getDeposits()` | Its iron sites: how many more mines it lets the city stand. |
+| 308 | 1 | `public boolean hasIron()` |  |
+| 311 | 1 | `public boolean isMostlySea()` | Whether it is mostly sea: more than MOSTLY_SEA of its area. |
+| 321 | 1 | `public static int number(int side, int place)` | The number of the offer in a side's place, on the map and in the land office: one to each place across the city (LM1, 2026-11-11), the sides in their order - north, east, south, west - and each side's places left to r... |
+| 324 | 1 | `public int number()` | ...this offer's: number(side, place). |
+| 327 | 1 | `public String where()` | Its side and number as the office names them: "South 15" (number()). |
+| 333 | 1 | `public double localPrice(double rate)` | What the treasury pays for it in local money at this rate - local money per US dollar, ForeignAccounts.getRate() on the day it buys. |
+| 341 | 4 | `public double getUsdPerSqFt()` | Its dollars a square foot of DRY ground (0.7.57): what the office ranks offers by. |
+| 347 | 3 | `public double getDryKm2PerUsd()` | Its dry square kilometres a thousand US dollars: what the office's best value is the most of. |
+| 352 | 3 | `public double getBlocks()` | How many city blocks' worth of dry ground, for a player who thinks in blocks. |
+| 362 | 11 | `public String describe()` | A one-line label for the listing. |
 
-### ITS RECORDS (DataSave's landOffers and landHoldings, SAVE_FORMAT 32) (lines 363-506)
+### ITS RECORDS (DataSave's landOffers and landHoldings, SAVE_FORMAT 32) (lines 374-517)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 389 | 10 | `public double[] offerRow()` | Its record as an offer standing. |
-| 401 | 3 | `public static LandParcel fromOfferRow(double[] row)` | An offer from its record; null when the record is the wrong width. |
-| 406 | 3 | `public static LandParcel fromOfferRow(double[] row, double[] relief)` | ...with its ground by relief (reliefRow(), landOffersRelief's row for it): all flat when there is none, or it is the wrong width (ET1). |
-| 411 | 5 | `public static LandParcel fromOfferRow(double[] row, double[] relief, double[] sellers)` | ...and its sellers (sellersRow(), landOffersSellers' row for it, WN5): none when there is none, or it is not a record of sellers. |
-| 417 | 9 | `private static LandParcel fromOfferRowOf(double[] row, double[] relief)` |  |
-| 428 | 11 | `double[] purchaseRow(int month, double paidLocal)` | Its record as a holding: the month it was bought in and what the treasury paid for it in local money. |
-| 441 | 3 | `static LandParcel fromPurchaseRow(double[] row)` | The offer a holding's record bought; null when the record is the wrong width. |
-| 446 | 9 | `static LandParcel fromPurchaseRow(double[] row, double[] relief)` | ...with its ground by relief (reliefRow(), landHoldingsRelief's row for it): all flat when there is none, or it is the wrong width (ET1). |
-| 457 | 1 | `static int purchaseMonth(double[] row)` | The month a holding's record was bought in. |
-| 460 | 1 | `static double purchasePaid(double[] row)` | What the treasury paid for it, in local money. |
-| 463 | 5 | `static double[] keptRelief(double[] row)` | A relief record as it reads: a copy of `row` when it is CityLand.RELIEF_AREAS figures, none of them negative or not a number, else null. |
-| 470 | 5 | `static double[] flatRelief(double dryKm2)` | The relief of ground that is all flat: its dry area flat, nothing else (what a record with no relief reads as). |
-| 476 | 10 | `private int rectInto(double[] row, int i)` |  |
-| 487 | 6 | `private int contents(double[] row, int i)` |  |
-| 494 | 6 | `private static int read(double[] row, int i, double[] km2, int[] sites, double[] amounts)` |  |
-| 502 | 4 | `public boolean same(LandParcel o)` | Whether two offers are the same, field for field: its record, its ground by relief (ET1) and its sellers (WN5). |
+| 400 | 10 | `public double[] offerRow()` | Its record as an offer standing. |
+| 412 | 3 | `public static LandParcel fromOfferRow(double[] row)` | An offer from its record; null when the record is the wrong width. |
+| 417 | 3 | `public static LandParcel fromOfferRow(double[] row, double[] relief)` | ...with its ground by relief (reliefRow(), landOffersRelief's row for it): all flat when there is none, or it is the wrong width (ET1). |
+| 422 | 5 | `public static LandParcel fromOfferRow(double[] row, double[] relief, double[] sellers)` | ...and its sellers (sellersRow(), landOffersSellers' row for it, WN5): none when there is none, or it is not a record of sellers. |
+| 428 | 9 | `private static LandParcel fromOfferRowOf(double[] row, double[] relief)` |  |
+| 439 | 11 | `double[] purchaseRow(int month, double paidLocal)` | Its record as a holding: the month it was bought in and what the treasury paid for it in local money. |
+| 452 | 3 | `static LandParcel fromPurchaseRow(double[] row)` | The offer a holding's record bought; null when the record is the wrong width. |
+| 457 | 9 | `static LandParcel fromPurchaseRow(double[] row, double[] relief)` | ...with its ground by relief (reliefRow(), landHoldingsRelief's row for it): all flat when there is none, or it is the wrong width (ET1). |
+| 468 | 1 | `static int purchaseMonth(double[] row)` | The month a holding's record was bought in. |
+| 471 | 1 | `static double purchasePaid(double[] row)` | What the treasury paid for it, in local money. |
+| 474 | 5 | `static double[] keptRelief(double[] row)` | A relief record as it reads: a copy of `row` when it is CityLand.RELIEF_AREAS figures, none of them negative or not a number, else null. |
+| 481 | 5 | `static double[] flatRelief(double dryKm2)` | The relief of ground that is all flat: its dry area flat, nothing else (what a record with no relief reads as). |
+| 487 | 10 | `private int rectInto(double[] row, int i)` |  |
+| 498 | 6 | `private int contents(double[] row, int i)` |  |
+| 505 | 6 | `private static int read(double[] row, int i, double[] km2, int[] sites, double[] amounts)` |  |
+| 513 | 4 | `public boolean same(LandParcel o)` | Whether two offers are the same, field for field: its record, its ground by relief (ET1) and its sellers (WN5). |
 

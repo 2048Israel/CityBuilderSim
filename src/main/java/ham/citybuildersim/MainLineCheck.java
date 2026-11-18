@@ -1208,7 +1208,7 @@ public class MainLineCheck {
         works.add(extra);
         List<int[]> sizes = new ArrayList<>();
         for (int i = 0; i < lr.yards().size(); i++) sizes.add(BuildingVisual.footprint(lit.types()[lit.yardTypeOf(i)]));
-        int spurs = 0;
+        long spurs = 0;
         for (int t = 0; t < lit.types().length; t++) if (lit.types()[t] != null && lit.types()[t].siding()) spurs += lit.totals()[t];
         long[] site = lit.site();
         long track = lr.rail().plots() + lr.trackSurplus();

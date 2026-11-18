@@ -125,15 +125,15 @@ public final class Quarrying extends ExtractionSector {
     double[] nameplate(boolean onSite, BuildingsTemplate plus) {
         double[] out = new double[3];
         if (buildings == null) return out;
-        int[] building = onSite ? buildings.getUnderConstructionById() : new int[0];
+        long[] building = onSite ? buildings.getUnderConstructionById() : new long[0];
         List<BuildingsTemplate> who = new ArrayList<>();
         List<LandManager.Claim> claims = new ArrayList<>();
-        List<Integer> counts = new ArrayList<>();
+        List<Long> counts = new ArrayList<>();
         for (int pass = 0; pass < 3; pass++) {
             if (pass == 1 && !onSite) continue;
             if (pass == 2 && plus == null) continue;
             for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-                int n = pass == 0 ? buildings.getQuantity(t.getId())
+                long n = pass == 0 ? buildings.getQuantity(t.getId())
                         : pass == 1 ? (t.getId() < building.length ? building[t.getId()] : 0)
                         : t == plus ? 1 : 0;
                 if (n <= 0 || !(tonnesOf(t) > 0)) continue;
@@ -150,7 +150,7 @@ public final class Quarrying extends ExtractionSector {
         double anyLime = 0, anyHard = 0;
         for (int i = 0; i < who.size(); i++) {
             BuildingsTemplate t = who.get(i);
-            int n = counts.get(i);
+            long n = counts.get(i);
             out[2] += t.makes(Good.DIMENSION_STONE) * n;
             double stone = (t.makes(Good.AGGREGATE) + t.makes(Good.LIMESTONE)) * n;
             if (!(stone > 0)) continue;
@@ -256,7 +256,7 @@ public final class Quarrying extends ExtractionSector {
         if (buildings == null) return 1;
         double units = 0, field = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int n = buildings.getQuantity(t.getId());
+            long n = buildings.getQuantity(t.getId());
             if (n <= 0) continue;
             double made = g == Good.DIMENSION_STONE ? t.makes(Good.DIMENSION_STONE) : t.makes(Good.AGGREGATE) + t.makes(Good.LIMESTONE);
             if (!(made > 0)) continue;
@@ -301,6 +301,11 @@ public final class Quarrying extends ExtractionSector {
     /** Limestone carried into aggregate at the last clearing, tonnes (THE CARRY): what the works that burn limestone weigh it at its export price for (ProcessingSector.values()). Saved since FW6 (2026-10-25), as a market's month of trade is: a city just loaded reads the carry of the month it was saved in. */
     public double carried() {
         return carried;
+    }
+
+    /** A harness's carry, by name (FB3, FW6-C): ReloadCheck places one when no checkpoint of its probe city has any, because produceFlow() zeroes it a month on. */
+    public void setCarriedForTest(double tonnes) {
+        carried = Math.max(0, tonnes);
     }
 
     /** The carry crosses a save (FW6, 2026-10-25): the first investment pass after a load weighs limestone by it. */
@@ -379,7 +384,7 @@ public final class Quarrying extends ExtractionSector {
         double spare = 0;
         if (buildings == null || land == null) return 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * tonnesOf(t);
         }
         return spare;

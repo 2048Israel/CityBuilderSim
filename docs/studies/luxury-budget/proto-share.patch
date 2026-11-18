@@ -1,0 +1,21 @@
+--- a/src/main/java/ham/citybuildersim/Household.java
++++ b/src/main/java/ham/citybuildersim/Household.java
+@@ -326,6 +326,8 @@
+      * Within-month working: struck by plan(), spent by LuxuryCounter.shop().
+      */
+     double luxuryWant;
++    /** LQ1's prototype: the counter's share of the wealth term. */
++    static final double LQ1_SHARE = Double.parseDouble(System.getProperty("lq1.share", "1"));
+ 
+     /**
+      * ...and what it would spend eating out, per household. Same shape:
+@@ -1132,7 +1134,8 @@
+         // see AND WHAT IT SPENDS ANSWERS THE REAL RATE above.
+         double surplus = spendFactor
+                 * Math.max(0, afterFixed + Math.max(0, investmentIncome) - wantAtNoReturn);
+-        luxuryWant = spendFactor * fromWealth
++        // LQ1's prototype: the counter takes a share of the wealth term (-Dlq1.share, 1 = main).
++        luxuryWant = spendFactor * fromWealth * LQ1_SHARE
+                 + HouseholdBalance.LUXURY_SHARE_OF_SURPLUS * surplus;
+         /* =================================================================
+            AND WHAT IT WOULD SPEND EATING OUT (2026-09-18)

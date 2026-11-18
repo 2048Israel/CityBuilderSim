@@ -29,10 +29,10 @@ public class SkipReportCheck {
         System.out.printf("%-54s %s%n", label, ok ? "OK" : "FAIL");
     }
 
-    static Map<String, Integer> buildings(Object... pairs) {
-        Map<String, Integer> map = new LinkedHashMap<>();
+    static Map<String, Long> buildings(Object... pairs) {
+        Map<String, Long> map = new LinkedHashMap<>();
         for (int i = 0; i < pairs.length; i += 2) {
-            map.put((String) pairs[i], (Integer) pairs[i + 1]);
+            map.put((String) pairs[i], ((Number) pairs[i + 1]).longValue());
         }
         return map;
     }
