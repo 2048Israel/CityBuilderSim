@@ -4,7 +4,7 @@
 # CBS_SHIPTEST_SH chooses the shell. Exit status counts failed cases.
 # WHY (BP1, GF1): publication defects must be reproduced without publishing the repository.
 
-unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_KNOWN_REDS CBS_REJUDGE
+unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_GATE_NUMBER CBS_KNOWN_REDS CBS_REJUDGE BUS_EXIT
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/ship.sh" ] || { echo "selftest: no ship.sh in $SRC"; exit 2; }
 TA=${CBS_SHIPTEST_DIR:-$(mktemp -d "${TEMP:-/tmp}/cbs-ship-selftest-XXXXXXXX")}
@@ -12,7 +12,7 @@ mkdir -p "$(dirname "$TA")" && TA=$(cd "$(dirname "$TA")" && pwd)/$(basename "$T
 if [ -e "$TA" ] && [ ! -d "$TA/origin.git" ] && [ -n "$(ls -A "$TA" 2>/dev/null)" ]; then
     echo "selftest: $TA exists and is not a selftest area: name another with CBS_SHIPTEST_DIR"; exit 2
 fi
-export CBS_SELFTEST=1
+export CBS_SELFTEST=1 CBS_BUS="$TA/no-bus-here" BUS_LOG="$TA/bus.log"   # BW1: no case reaches MemWatch's real bus
 FAILS=0; N=0
 ok() { N=$((N + 1)); if "$@" >/dev/null 2>&1; then echo "PASS  $LABEL"; else echo "FAIL  $LABEL"; FAILS=$((FAILS + 1)); [ ! -f "$TA/out.txt" ] || cp "$TA/out.txt" "$TA/fail-$N.txt"; fi; }
 clean() { [ -z "$(git -C "$TA/main" status --porcelain)" ] && [ ! -e "$TA/main/.git/MERGE_HEAD" ]; }
@@ -99,7 +99,7 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3): files under test
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$SRC/tools/bus.sh" "$TA/main/tools/"   # the gate's arithmetic (TM3): files under test
 cp "$SRC/tools/gate-record.awk" "$TA/main/tools/"
 for helper in known-reds batch-id; do [ ! -f "$SRC/tools/$helper.sh" ] || cp "$SRC/tools/$helper.sh" "$TA/main/tools/"; done
 cp "$SRC/src/main/java/ham/citybuildersim/KnownReds.java" "$TA/main/src/main/java/ham/citybuildersim/"
@@ -115,6 +115,16 @@ printf '%s' "$FAKE" > "$TA/fake-rows.txt"
 mkdir -p "$TA/direct"; touch "$TA/direct/guardian.ready"
 ( while :; do sleep 1; done ) &
 FIXTURE_GUARD=$!; echo "$FIXTURE_GUARD" > "$TA/direct/guardian"
+# BW1: a stub cbs-bus, named by CBS_BUS in a case, writes each call as a line and a message's body as "| " lines.
+cat > "$TA/bus-stub" <<'STUB'
+#!/bin/sh
+printf '%s\n' "$*" >> "$BUS_LOG"
+[ "$1" != send ] || for a in "$@"; do [ "$a" != - ] || sed 's/^/| /' >> "$BUS_LOG"; done
+exit "${BUS_EXIT:-0}"
+STUB
+chmod +x "$TA/bus-stub"
+last_gate() { grep "^gate $1 " "$BUS_LOG" | tail -1 | grep -q -- "$2"; }   # the batch's last gate call holds this
+one_send() { [ "$(grep -c '^send ' "$BUS_LOG")" = 1 ] && grep -q -x -F -- "$1" "$BUS_LOG"; }   # one message, and it was sent so
 
 # the branches, written in work
 W() { git -C "$TA/work" "$@"; }
@@ -349,7 +359,7 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/candidate.o
 LABEL="...authority tests left origin's main and tags put"; ok unmoved
 # The real launcher, fresh clone, and its public stop command (Windows uses only the recorded native PID tree).
 mkdir -p "$TA/runs"
-STUB_FAULT=hold STUB_READY="$TA/ready" CBS_GATE_MAIN="$TA/main" TMP="$TA/runs" sh "$SRC/tools/gate.sh" RED --dry-run > "$TA/launcher.out" 2>&1 &
+rm -f "$BUS_LOG"; CBS_BUS="$TA/bus-stub" STUB_FAULT=hold STUB_READY="$TA/ready" CBS_GATE_MAIN="$TA/main" TMP="$TA/runs" sh "$SRC/tools/gate.sh" RED --dry-run > "$TA/launcher.out" 2>&1 &
 LAUNCH=$!
 for attempt in $(seq 1 300); do [ ! -f "$TA/ready" ] || break; kill -0 "$LAUNCH" 2>/dev/null || break; sleep 0.2; done
 RUNDIR=$(sed -n 's/^gate: run //p' "$TA/launcher.out" | head -1)
@@ -368,6 +378,9 @@ wait "$LAUNCH"; RC=$?
 LABEL="launcher returns nonzero for a stopped gate, retaining its log"
 ok sh -c "[ $RC != 0 ] && [ -f '$RUNDIR/ship.log' ] && [ \"\$(cat '$RUNDIR/exit')\" != 0 ]"
 LABEL="...main and tags stayed where they were"; ok unmoved
+LABEL="BW1 a dry run stopped by hand ends stopped, cancelled and unpublished"; ok last_gate RED 'stopped outcome=cancelled published=no'
+LABEL="...with one message, an urgent instruction to the batch"; ok one_send 'send RED --kind instruction --urgent -'
+LABEL="...and leaves the batch's own file alone"; ok sh -c "! grep -q '^state ' '$BUS_LOG'"
 LABEL="...the stopped clone's HEAD is the main it started from"
 ok sh -c "[ \"\$(git -C '$RUNDIR/clone' rev-parse HEAD)\" = \"\$(git -C '$RUNDIR/clone' rev-parse origin/main)\" ]"
 LABEL="the stop report says unmoved after comparing unchanged origin refs"
@@ -521,6 +534,38 @@ LABEL="GG1.7 merged history refuses an advanced reused branch"; ok stopped 'alre
 ( cd "$TA/main" && sh tools/batch-id.sh USED2 main ) > "$TA/id.out" 2>&1; IRC=$?
 LABEL="GG1.7 a longer unused ID remains available"; ok test "$IRC" = 0
 
+
+# BW1: the gate says where it is through tools/bus.sh, and nothing depends on the bus.
+launch() { rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"; RUNDIR=$TA/bus-$1
+    TIP=$(git -C "$TA/origin.git" rev-parse "batch/$1"); BASE0=$(git -C "$TA/origin.git" rev-parse main)
+    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$1" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
+shipped() { [ "$RC" = 0 ] && [ -n "$TAGV" ] && git -C "$TA/origin.git" rev-parse -q --verify "refs/tags/$TAGV" && git -C "$TA/origin.git" log -1 --format=%s main | grep -q "^Merge batch/$1:"; }
+every_line() { [ "$(grep -c 'bus line' "$RUNDIR/unnamed.txt")" = 14 ] && tr -d '\r' < "$RUNDIR/unnamed.txt" | while IFS= read -r l; do grep -q -x -F "| $l" "$BUS_LOG" || exit 1; done; }
+CBS_BUS="$TA/bus-stub" launch BT1
+LABEL="BW1 a gate posts each step as it begins: merge, suite, maps, tag, push, then done"
+ok test "$(sed -n 's/^gate BT1 \([a-z]*\) .*/\1/p' "$BUS_LOG" | uniq | tr '\n' ' ')" = "merge suite maps tag push done "
+LABEL="...every one before the end with the two commits"
+ok sh -c "! grep '^gate BT1 ' '$BUS_LOG' | grep -v '^gate BT1 done ' | grep -q -v -F 'commit=$TIP base=$BASE0'"
+LABEL="...the first with main's version, the machine, the log, the gate's pid and its start"
+ok grep -q "^gate BT1 merge --run [0-9]* commit=$TIP base=$BASE0 version=[0-9][^ ]* machine=[^ ][^ ]* log=[^ ]*/ship.log dry_run=no pid=[0-9][0-9]* started=20" "$BUS_LOG"
+LABEL="...a tag ships"; ok shipped BT1
+LABEL="...and ends in done, tagged and published"; ok last_gate BT1 "^gate BT1 done version=$TAGV outcome=tagged published=yes"
+LABEL="...the batch's own file gating, then shipped with its version"
+ok sh -c "grep '^state BT1 ' '$BUS_LOG' | tr '\n' ';' | grep -q -x 'state BT1 gating;state BT1 shipped version=$TAGV;'"
+LABEL="...and one message, info, to the batch"; ok one_send "send BT1 --kind info --body BT1 shipped as $TAGV"
+REDS='ZzCheck | exit 1'; for n in $(seq 1 14); do REDS="$REDS;ZzCheck | bus line $n FAIL"; done
+STUB_EXIT=4 STUB_REDS="$REDS;ZzCheck | 14 FAILED" CBS_BUS="$TA/bus-stub" launch BT2
+LABEL="BW1 a stopped gate ends stopped, a new red, published=no"; ok last_gate BT2 '^gate BT2 stopped outcome=new red published=no'
+LABEL="...with one message, an urgent instruction to the batch"; ok one_send 'send BT2 --kind instruction --urgent -'
+LABEL="...holding every unnamed line, beyond the twelve the screen shows"; ok every_line
+LABEL="...and the batch sent back"; ok grep -q '^state BT2 sent-back --note new red: NEW red' "$BUS_LOG"
+CBS_BUS="$TA/no-bus-here" launch BT3
+LABEL="BW1 with no cbs-bus at all the gate ships the same"; ok shipped BT3
+LABEL="...and tells nothing"; ok test ! -e "$BUS_LOG"
+BUS_EXIT=2 CBS_BUS="$TA/bus-stub" launch BT4
+LABEL="BW1 a cbs-bus that exits 2 changes nothing: the gate ships"; ok shipped BT4
+LABEL="...each call still made, its failure in the log"
+ok sh -c "grep -q '^gate BT4 done ' '$BUS_LOG' && grep -q 'cbs-bus gate failed (exit 2)' '$RUNDIR/ship.log'"
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"

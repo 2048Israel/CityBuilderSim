@@ -50,7 +50,7 @@ if [ "$WINDOWS" = 1 ]; then
     done
 fi
 # Options are kept as arguments throughout, including spaces in approval text and filenames.
-REDFILE=""; BRANCH_GATE=0; DRY_REQUESTED=0; N=$#
+REDFILE=""; BRANCH_GATE=0; DRY_REQUESTED=0; REUSED=""; N=$#
 while [ "$N" -gt 0 ]; do
     ARG=$1; shift; N=$((N - 1))
     case "$ARG" in
@@ -64,6 +64,7 @@ while [ "$N" -gt 0 ]; do
             REDFILE=$1; shift; N=$((N - 1)) ;;
         --reuse|--red-ok|--red-line|--version|-m|-F)
             [ "$N" -gt 0 ] || { echo "gate: $ARG needs a value"; exit 2; }
+            [ "$ARG" != --reuse ] || REUSED=$1
             set -- "$@" "$ARG" "$1"; shift; N=$((N - 1)) ;;
         *) set -- "$@" "$ARG" ;;
     esac
@@ -104,6 +105,18 @@ sh "$CBS_GATE_SCRIPT" "$@"
 RESULT=$?
 exit "$RESULT"
 WRAPPER
+# BW1: where the gate is, in MemWatch's state\gate.txt and the batch's own file; ship.sh posts the steps between.
+bus() { sh "$HERE/bus.sh" "$@" > /dev/null 2>> "$LOG"; }
+version() { sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$CLONE/src/main/java/ham/citybuildersim/GameVersion.java" | head -1; }
+CBS_GATE_NUMBER=1   # this batch's kept runs here, this one counted
+for d in "$(dirname "$RUN")/cbs-gate-$ID-"????????; do [ ! -d "$d" ] || [ "$d" = "$RUN" ] || CBS_GATE_NUMBER=$((CBS_GATE_NUMBER + 1)); done
+DRY=no; [ "$DRY_REQUESTED" = 0 ] || DRY=yes
+WHERE=$LOG; [ "$WINDOWS" = 0 ] || WHERE=$(cygpath -m "$LOG")
+CBS_ME=${CBS_ME:-gate}; export CBS_ME CBS_GATE_NUMBER
+bus gate "$ID" merge --run "$CBS_GATE_NUMBER" commit="$(cat "$RUN/branch.commit")" base="$(cat "$RUN/main.commit")" version="$(version)" \
+    machine="$(uname -n)" log="$WHERE" dry_run=$DRY pid="$(head -1 "$RUN/owners" 2>/dev/null || echo $$)" \
+    started="$(date +%Y-%m-%dT%H:%M:%S%:z)" outcome= published= reused= skipped= timed_out= known_reds=
+[ "$DRY" = yes ] || bus state "$ID" gating
 . "$HERE/check-data.sh"; cbs_check_data "$MAIN"
 export CBS_GATE_RUN=$RUN
 export CBS_SHIP_HOME=$CLONE
@@ -140,6 +153,37 @@ rm -f "$RUN/active"
 git -C "$CLONE" rev-parse HEAD > "$RUN/head.after"
 git -C "$CLONE" ls-remote origin refs/heads/main "refs/heads/batch/$ID" 'refs/tags/*' > "$RUN/refs.after"
 echo "$CODE" > "$RUN/exit"
+# BW1: the outcome, to the gate's file, the batch's own and, on a publication or a stop, one message to the batch.
+CHECKS=$CLONE/target/checks; TAG=$(cat "$RUN/tag" 2>/dev/null); KNOWN=$(grep -c . "$RUN/stages/used-parts" 2>/dev/null) || :
+AFTER=$(grep 'refs/heads/main$' "$RUN/refs.after"); PUBLISHED=no; STEP=stopped; OURS=1
+[ -z "$AFTER" ] || [ "$AFTER" = "$(grep 'refs/heads/main$' "$RUN/refs.before")" ] || PUBLISHED=yes
+! grep -q 'kept run refused' "$LOG" || REUSED=""
+REASON=$(sed -n 's/.*ship      STOPPED - //p; s/^gate: \(stopped by .*\)/\1/p' "$LOG" | tail -1)
+case "$CODE:$REASON" in
+    0:*) STEP=done; OUTCOME=passed; [ "$PUBLISHED" = no ] || OUTCOME=${TAG:+tagged}; OUTCOME=${OUTCOME:-pushed} ;;
+    130:*|*'stopped by '*) OUTCOME=cancelled; OURS=0 ;;
+    *'NEW red'*) OUTCOME='new red' ;;
+    *'conflicts with main'*|*'merge of'*) OUTCOME=conflict ;;
+    *'did not finish'*) OUTCOME=hung ;;
+    *'main moved on origin'*|*'push of main'*) OUTCOME='push refused'; OURS=0 ;;
+    *) OUTCOME=failed; grep -q 'ship      check .* started' "$LOG" || OUTCOME=records ;;
+esac
+names() { grep "$1" "$2" 2>/dev/null | sed "$3" | sort -u | tr '\n' ',' | sed 's/,$//'; }   # the harness of each line of $2 that holds $1
+V=$(version); set --; [ "$PUBLISHED" = no ] || set -- version="$V"
+bus gate "$ID" "$STEP" "$@" outcome="$OUTCOME" published=$PUBLISHED reused="$REUSED" known_reds="${KNOWN:-0}" \
+    skipped="$(names 'skipped (needs' "$CHECKS/suite.txt" 's/ .*//')" timed_out="$(names 'FAIL: timed out after' "$CHECKS/reds.txt" 's/ |.*//')"
+if [ "$PUBLISHED" = yes ]; then
+    AS="untagged on $V"; [ -z "$TAG" ] || AS="as $TAG"
+    bus state "$ID" shipped version="$V"; bus send "$ID" --kind info --body "$ID shipped $AS"
+elif [ "$STEP" = stopped ]; then
+    WHAT=gate; MARKER=", restore the readiness marker"; [ "$DRY" = no ] || { WHAT="dry run"; MARKER=""; }
+    {   echo "$ID's $WHAT stopped, $OUTCOME: ${REASON:-the log names no reason}"
+        if [ "$OURS" = 1 ]; then echo "Mend or name each line below (docs/contract.md 5.3)$MARKER and mail the orchestrator \"$ID mends at <commit>\"."
+        else echo "Nothing of the batch's to mend."; fi
+        echo "log: $WHERE"; echo "$(cat "$RUN/unnamed.txt" 2>/dev/null | grep -c .) unnamed line(s):"; tr -d '\r' < "$RUN/unnamed.txt" 2>/dev/null; } > "$RUN/mail.txt"
+    bus send "$ID" --kind instruction --urgent - < "$RUN/mail.txt"
+    if [ "$DRY" = yes ]; then :; elif [ "$OURS" = 1 ]; then bus state "$ID" sent-back --note "$OUTCOME: $REASON"; else bus state "$ID" ready --note "gate $OUTCOME"; fi
+fi
 printf '[%s] gate      exit %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$CODE" >> "$LOG"
 tail -16 "$LOG"
 echo "gate: exit $CODE; log $LOG; unnamed lines $RUN/unnamed.txt"

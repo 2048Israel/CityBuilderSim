@@ -473,6 +473,151 @@ public class ScaleCheck {
 
         /* ============== 9. a copy tracks its city month by month ============== */
         tracks(root, grown);
+        historicalScale(root);
+    }
+
+    /** R1f: keep this historical fixture separate from the all-fitted scale laws above. */
+    static void historicalScale(Path root) throws Exception {
+        out.println("\n--- 10. the 1900 city: unfitted plant scales; whole horse posts are bounded ---");
+        Path historical = root.resolve("1900");
+        GameFiles files = new GameFiles(historical.resolve("town"), historical.resolve("no-legacy"));
+        Game g = new Game(files, LongPlaytest.founding().withUnfitted(true));
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        try {
+            quietly(() -> {
+                g.run();
+                LongPlaytest.build(g, "House", 40);
+                LongPlaytest.build(g, "Convenience Store", 3);
+                LongPlaytest.build(g, "Mixed Farm", 2);
+                g.simulateMonths(3);
+                LongPlaytest.build(g, "House", 20);
+                g.simulateMonths(4);
+                LongPlaytest.build(g, "Convenience Store", 2);
+                LongPlaytest.build(g, "Construction Depot", 1);
+                g.simulateMonths(FIXTURE_MONTHS - g.getMonth());
+                g.saveGame(10, "scalecheck 1900");
+            });
+        } finally { LongPlaytest.out = was; }
+        assertTrue("fixture: the city keeps its 1900 founding and 1901 ladder", g.getFounding().isUnfitted()
+                && WageLadder.of(g.getFounding()) == WageLadder.Y1901);
+        assertTrue("fixture: horse hands put posts past the buildings", postsPast(g.getBuildingManager()) > 0);
+        addsUp(g, "1900");
+        GameFiles copy = new GameFiles(historical.resolve("plant-copy"), historical.resolve("plant-no-legacy"));
+        scale(files.saveFile(10), copy.saveFile(10), TRACK_TIMES);
+        JsonObject a = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(10))).getAsJsonObject();
+        JsonObject b = com.google.gson.JsonParser.parseString(Files.readString(copy.saveFile(10))).getAsJsonObject();
+        int pieces = 0;
+        boolean exact = true;
+        if (a.has("unfittedById")) for (var row : a.getAsJsonObject("unfittedById").entrySet()) {
+            for (var piece : row.getValue().getAsJsonObject().entrySet()) {
+                pieces++;
+                exact &= b.getAsJsonObject("unfittedById").getAsJsonObject(row.getKey()).get(piece.getKey()).getAsLong()
+                        == TRACK_TIMES * piece.getValue().getAsLong();
+            }
+        }
+        assertTrue("fixture: the 1900 save carries unfitted pieces", pieces > 0);
+        assertTrue("every unfitted piece count is K times the city's, as its buildings are", exact);
+        // A farm's extra hands are whole posts per tier, not a missing extensive stock.
+        var farm = g.getSectors().agriculture();
+        long[] extra = farm.postsPastBuildings();
+        long[] base = g.getBuildingManager().getJobArrayBySector(farm.key());
+        double worst = 0;
+        for (int j = 0; j < extra.length; j++) {
+            double ideal = base[j] * farm.getHorseShare() * (ham.citybuildersim.sectors.Agriculture.HORSE_POSTS_FACTOR - 1);
+            worst = Math.max(worst, Math.abs(extra[j] - ideal));
+        }
+        assertTrue("horse hands differ from the model's factor by at most half a post per tier", worst <= .5);
+        out.printf("   %d unfitted piece counts scaled; horse rounding at most %.6f post per tier%n", pieces, worst);
+        var haul = g.getSectors().freight().haulage();
+        // The fleet has bought its motors by month 120. Measure the horse form
+        // on the same live demand as a control, then restore its actual share.
+        double motorShare = haul.getHorseShare();
+        haul.setHorseShare(1);
+        double carters = haul.getHorseShare() * haul.getNeed() / ham.citybuildersim.sectors.Haulage.TONNES_A_TEAM_MONTH
+                * ham.citybuildersim.sectors.Haulage.CARTERS_A_TEAM;
+        assertTrue("fixture: the historical city's live haulage demand needs carters in the horse form", carters > 0);
+        assertTrue("carters round by at most half a post at the model's team capacity", Math.abs(haul.getCarters() - carters) <= .5);
+        out.printf("   horse-form carters %.6f -> %d whole posts (teams themselves are divisible)%n", carters, haul.getCarters());
+        haul.setHorseShare(motorShare);
+        // Fitting work is continuous; completion delivers one whole building. A K-times
+        // workforce cannot be compared while only one copy is delivered that whole piece.
+        BuildingsTemplate bakery = LongPlaytest.template(g, "Bakery");
+        Equipment drive = bakery.getEquipment("electric-drive");
+        assertTrue("fixture: a historical Bakery's drive has positive work", drive != null && drive.getWork() > 0);
+        if (drive != null) {
+            Fittings work = new Fittings();
+            work.add(bakery.getId(), drive.getId(), "City", drive.getWork());
+            assertTrue("a partial fitting delivers no fraction of a building", work.work(drive.getWork() / 2).isEmpty()
+                    && work.onSite(bakery.getId(), drive.getId()) == 1);
+            same("the remaining work delivers exactly one whole fitting", work.work(drive.getWork() / 2).size(), 1);
+        }
+        assertTrue("fixture: no indivisible fitting is on site when the tracking save is taken", g.getFittings().isEmpty());
+        // At 171 people, half a farm hand is a material change in crop costs.
+        // Use a larger 1900 fixture for the economic laws, retaining the small
+        // city's explicit grain measurements above. No tolerance changes.
+        GameFiles larger = new GameFiles(historical.resolve("larger"), historical.resolve("larger-no-legacy"));
+        long fixtureTimes = (long) Math.ceil(FREE_MONTHS * JobType.values().length
+                / (TRACK_PRICES * Math.max(1, everyPost(g))));
+        scale(files.saveFile(10), larger.saveFile(10), fixtureTimes);
+        Files.copy(files.historyFile(10), larger.historyFile(10));
+        out.printf("   economic tracking fixture: %d copies of the 1900 town, %d people; existing TRACK bands unchanged%n",
+                fixtureTimes, fixtureTimes * g.getPopulationManager().getPopulation());
+        historicalTracks(historical, larger);
+    }
+
+    /** Whole posts have an absolute rounding bound, not today's town's empirical relative tolerances. */
+    static void historicalTracks(Path root, GameFiles saved) throws Exception {
+        Game[] cities = new Game[2];
+        for (int c = 0; c < cities.length; c++) {
+            long k = c == 0 ? 1 : TRACK_TIMES;
+            GameFiles files = new GameFiles(root.resolve("bounded" + k), root.resolve("bounded-no-legacy" + k));
+            scale(saved.saveFile(10), files.saveFile(10), k);
+            Files.copy(saved.historyFile(10), files.historyFile(10));
+            Game g = cities[c] = new Game(files);
+            quietly(() -> g.loadGameSave(10));
+            assertTrue("the historical copy at K = " + k + " loads", g.getLoadFailure() == null);
+            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+            g.getBusinessInvestment().holdBranches();
+        }
+        int rounded = 0;
+        for (int month = 0; month <= FREE_MONTHS; month++) {
+            Game small = cities[0], big = cities[1];
+            long[] a = small.getSectors().agriculture().postsPastBuildings();
+            long[] b = big.getSectors().agriculture().postsPastBuildings();
+            boolean bounded = a != null && b != null;
+            long most = 0;
+            if (bounded) for (int j = 0; j < a.length; j++) {
+                long miss = Math.abs(b[j] - TRACK_TIMES * a[j]);
+                most = Math.max(most, miss);
+                if (miss > 0) rounded++;
+                bounded &= miss <= (TRACK_TIMES + 1) / 2.0;
+            }
+            assertTrue("1900 month " + month + ": farm hands obey the half-post-per-tier bound at both sizes", bounded);
+            var smallHaul = small.getSectors().freight().haulage();
+            var bigHaul = big.getSectors().freight().haulage();
+            double smallShare = smallHaul.getHorseShare(), bigShare = bigHaul.getHorseShare();
+            smallHaul.setHorseShare(1);
+            bigHaul.setHorseShare(1);
+            double needMove = (bigHaul.getNeed() - TRACK_TIMES * smallHaul.getNeed())
+                    / ham.citybuildersim.sectors.Haulage.TONNES_A_TEAM_MONTH * ham.citybuildersim.sectors.Haulage.CARTERS_A_TEAM;
+            double carterRound = bigHaul.getCarters() - TRACK_TIMES * smallHaul.getCarters() - needMove;
+            assertTrue("1900 month " + month + ": carters' rounding, apart from demand, obeys the two half-post bounds",
+                    Math.abs(carterRound) <= (TRACK_TIMES + 1) / 2.0);
+            smallHaul.setHorseShare(smallShare);
+            bigHaul.setHorseShare(bigShare);
+            assertTrue("1900 month " + month + ": the posts identity includes horse hands at both sizes", sumsAgree(small) && sumsAgree(big));
+            assertTrue("1900 month " + month + ": both sizes keep the same census wage ladder",
+                    small.getLabourMarket().getLadder() == WageLadder.Y1901 && big.getLabourMarket().getLadder() == WageLadder.Y1901);
+            assertTrue("1900 month " + month + ": registers still equal their holders", Math.max(registersMiss(small), registersMiss(big)) <= REGISTER_WITHIN);
+            double[] miss = new Figures(big).missAgainst(new Figures(small), TRACK_TIMES);
+            out.printf("   1900 month %d: largest horse-post miss %d / K; people %.2e, savings %.2e, GDP %.2e, prices %.2e%n",
+                    month, most, miss[0], miss[2], miss[3], miss[5]);
+            for (int f = 0; f < miss.length; f++) assertTrue("1900 month " + month + ": " + Figures.NAMES[f]
+                    + " obeys the existing TRACK law", miss[f] <= Figures.WITHIN[f]);
+            if (month < FREE_MONTHS) for (Game g : cities) quietly(() -> g.simulateMonths(1));
+        }
+        assertTrue("fixture: whole horse posts actually break exact K scaling in the played twins", rounded > 0);
     }
 
     /**
@@ -923,7 +1068,7 @@ public class ScaleCheck {
         for (long n : bm.homesBySize()) bySize += n;
         var landlords = g.getSectors().realEstate();
         return everyPost(g) == byStack && byType == people.getTotalJobs()
-                && people.getTotalJobs() == everyPost(g) - bm.getPostsWithheld()
+                && people.getTotalJobs() == everyPost(g) - bm.getPostsWithheld() + postsPast(bm)
                 && bm.getTotalHomes() == homesByStack && bySize == bm.getTotalHomes()
                 && landlords.getStudioHomes() + landlords.getFamilyHomes() == bm.getTotalHomes()
                 && g.getHouseholdCapacity() == 100 * bm.getFoundingEndowments() + placesByStack;
@@ -1246,8 +1391,8 @@ public class ScaleCheck {
         long byType = 0;
         for (long n : people.getJobs()) byType += n;
         same("...the posts on offer by job type add up to the total", byType, people.getTotalJobs());
-        same("...and the total is every post less those withheld", people.getTotalJobs(),
-                everyPost(g) - bm.getPostsWithheld());
+        same("...and the total is every post less those withheld plus the posts past the buildings", people.getTotalJobs(),
+                everyPost(g) - bm.getPostsWithheld() + postsPast(bm));
 
         long bySize = 0;
         for (long n : bm.homesBySize()) bySize += n;
@@ -1264,6 +1409,12 @@ public class ScaleCheck {
     static long everyPost(Game g) {
         long n = 0;
         for (JobType j : JobType.values()) n += g.getBuildingManager().getTotalJobsAtEveryPost(j);
+        return n;
+    }
+
+    static long postsPast(BuildingManager bm) {
+        long n = 0;
+        for (JobType j : JobType.values()) n += bm.getPostsPast(j);
         return n;
     }
 
@@ -1344,7 +1495,7 @@ public class ScaleCheck {
             // FL1-R: the bank's desk inventory as it carries it, saved since FL1; the load used to re-mark it from the scaled shares.
             "bankSecurities", "cityMaintenancePaid", "bankProfitLastMonth",
             "bankTaxCharged", "population", "workforce", "landBlocksPurchased",
-            "materialsConsumed", "buildings", "underConstructionById", "constructionProgressById",
+            "materialsConsumed", "buildings", "unfittedById", "underConstructionById", "constructionProgressById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",
             "populationTrend", "treasuryJournalAmounts", "governmentMonth", "householdStatement",
             "sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefore", "creditStatements",

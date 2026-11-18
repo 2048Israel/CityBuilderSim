@@ -1,6 +1,7 @@
 #!/bin/sh
 # GR1: made-up figures and five merges, no JVM or network.
 set -eu
+export CBS_BUS="${TMPDIR:-/tmp}/no-bus-here"   # BW1: no case reaches MemWatch's real bus
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 . "$ROOT/tools/nightly-timing.sh"
 . "$ROOT/tools/check-data.sh"
@@ -180,4 +181,14 @@ printf 'ObservationCheck\tcold premise\tMISSED\n' > "$CLONE/observations.tsv"
 CASE='a cold all-miss night clears an interrupted state write'
 nightly_observations "$COLD" > "$TEST/observed-cold"
 ok test ! -s "$COLD/held.tsv"
+# BW1: the night's verdict is mail only when the playtest is red or a line slower, to Jerus and the gate's keeper.
+BUSLOG=$TEST/bus.log; CBS_BUS=$TEST/bus-stub; export CBS_BUS BUSLOG
+printf '#!/bin/sh\necho "$*" >> "$BUSLOG"; cat >> "$BUSLOG"\n' > "$CBS_BUS"; chmod +x "$CBS_BUS"
+FULL=$(git -C "$CLONE" rev-parse HEAD); slower=0; SLOWER_BY=
+CASE='a green night sends nothing'; nightly_mail 0 'green verdict'; ok test ! -e "$BUSLOG"
+CASE='a red playtest mails Jerus and the keeper, naming the batch at the tip'; nightly_mail 1 'red verdict'
+ok test "$(grep -c '^send ' "$BUSLOG")" = 2; ok grep -q '^send jerus --kind info -$' "$BUSLOG"; ok grep -q '^send orchestrator ' "$BUSLOG"
+ok grep -q "playtest red on ST5's merge" "$BUSLOG"; ok grep -q '^red verdict$' "$BUSLOG"
+: > "$BUSLOG"; slower=1; SLOWER_BY=' ST3'
+CASE='a slower line names the batch that introduced it'; nightly_mail 0 'slow verdict'; ok grep -q 'slower, introduced by ST3$' "$BUSLOG"
 echo 'nightly selftest OK'

@@ -1,7 +1,7 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 #  Nightly on origin/main's tip: 4,000 months, the nightly tier, hard timing.
-#  One verdict in $HOME/.cbs-nightly.txt, detail in .cbs-nightly.log; figures
+#  One verdict in $HOME/.cbs-nightly.txt (mailed when red or slower, BW1), detail in .cbs-nightly.log; figures
 #  and commit per machine/night in $HOME/.cbs-timing (GR1). No commits or saves.
 #  WHY (HA1, GR1): heavy checks belong nightly; gate timing named no faulty batch.
 #  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
@@ -66,4 +66,5 @@ TIER="$TIER; $OBSERVATIONS"
 nightly_timing >> "$LOG" 2>&1; TRC=$?
 [ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
 verdict "$PLAY"
+nightly_mail "$RC" "$(cat "$TXT")"
 [ "$RC" = 0 ] && [ "$NRC" = 0 ] && [ "$ORC" = 0 ] && [ "$TRC" = 0 ]

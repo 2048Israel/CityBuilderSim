@@ -2627,6 +2627,17 @@ public class BusinessDebtManager {
     /** ...a new mortgage, this month. */
     public boolean wasMortgageRefusedForCapital(String sector) { return refusedMortgageForCapital.contains(sector); }
 
+    /**
+     * ...and a capital no taken back (HN1, REV-HN1-1): a smaller order then
+     * got past the door, so the sector was trimmed, not held. Its marks stand
+     * as they stood before the order was first tried - a no at another door
+     * this month is kept - for the investor's next line and the playtest.
+     */
+    public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore) {
+        if (!refusedBefore) refusedForCapital.remove(sector);
+        if (!mortgageRefusedBefore) refusedMortgageForCapital.remove(sector);
+    }
+
     /* =====================================================================
        THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3)
 

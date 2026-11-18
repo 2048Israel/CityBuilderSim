@@ -236,6 +236,7 @@ public class BuildAdviceCheck {
         landCounted(root);
         slackBuilt(g, advice);
         thePipeline(root, g, all);
+        historicalPipeline();
         sizedToTheProjection(root);
         theRun(root, g, advice);
         thePricedOut(g);
@@ -1187,6 +1188,30 @@ public class BuildAdviceCheck {
                 rows[0]++;
             }
         }
+    }
+
+    /** R1f: the young historical founding has no university class; its basic-school pipeline still gates advice. */
+    static void historicalPipeline() {
+        out.println("\n--- 9b. the 1900 city: no university advice ahead of its class ---");
+        Game g = new Game(GameFiles.scratch("buildadvicecheck-1900"), LongPlaytest.founding().withUnfitted(true));
+        quietly(() -> { g.run(); g.simulateMonths(12); });
+        EducationType uni = EducationType.UNIVERSITY;
+        double come = CityNeeds.wouldCome(g, uni);
+        double first = Math.max(CityNeeds.SEATS_FLOOR, CityNeeds.FIRST_SCHOOL_SHARE * CityNeeds.smallestSchool(g, uni));
+        out.printf("   1900 founding at month %d: %.2f would come, first school threshold %.2f%n", g.getMonth(), come, first);
+        assertTrue("fixture: the historical founding has no first university class", come < first);
+        BuildingsTemplate office = template(g, "Engineering Services Office");
+        int offices = 0;
+        while (CityNeeds.hires(g, uni, 1) < first && offices < 10_000) {
+            g.getBuildingManager().addStack(office, 1, true);
+            offices++;
+        }
+        assertTrue("fixture: degree jobs alone would fill a first university, isolating the missing class",
+                CityNeeds.hires(g, uni, 1) >= first && CityNeeds.wouldCome(g, uni) < first);
+        List<CityNeeds.Need> needs = CityNeeds.measure(g, CityNeeds.PLAIN);
+        assertTrue("the 1900 pipeline offers no university row before its class", schoolRow(needs, uni) == null);
+        assertTrue("the 1900 pipeline offers no university card before its class", !suggests(g, needs, uni));
+        higherRows(g, needs, "the 1900 founding", new int[2]);
     }
 
     static CityNeeds.Need schoolRow(List<CityNeeds.Need> all, EducationType t) {

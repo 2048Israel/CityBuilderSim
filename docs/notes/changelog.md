@@ -18,6 +18,49 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FB12 — fixtures on two landmasses — 2026-11-18, ready, see docs/queue/FB12-notes.md
+IslandRailCheck proves a bridge-linked map island's founding-side hub, own
+track and yard on BridgeMapCheck's real terrain. KeptCheck owns ground on a
+second Earth landmass and checks the land office's actual table, its model
+values and its retained nodes through redraws and a changed month. Harnesses
+only; no game class changes.
+
+### 0.9.151 — HN1, households housed before the matching homes finish — 2026-11-18, ready, see docs/queue/HN1-notes.md
+The landlords' order is no longer held whole when the lender's door refuses it. The plan sized it on the till and the
+lender's test, but the door said no to all of it: for the bank's capital while its leverage ratio binds, or for the down
+payment at the purchase's own higher price. On the ensemble's AUTO2 seed 12 that held 26-35 Low-Rise Apartments a month
+from m699 to m746 with five blocks' price in the till. Doubling up filled to its ceiling, and from m744 up to 13
+households had no door. A no at the door is now asked again of half the order, down to one, and the advisor's line says
+the order was trimmed. HousingDoorCheck plays seed 12 on today's main and fails without the mend: 5 months held a
+landlord that could buy one outright while families were short of doors. With the mend the R0h path has no finding in
+748 months. LongPlaytest's watch, seed and floor are unchanged. The default playtest is main's to m1683 and parts at
+m1684, when the door writes 2 of the 5 homes main held whole; the landlords are held for the bank's leverage in 3 months
+against main's 34. The ensemble passes (M1 0, F1 0/16) with larger cities; paired with main, debt and claims do not rise.
+
+### BW1 — the workflow says where it is — 2026-11-18, ready, see docs/queue/BW1-notes.md
+The workflow tells MemWatch where it is instead of MemWatch guessing from logs: `tools/bus.sh` is its one way to
+`cbs-bus`, doing nothing where there is none and never failing a gate or a check. `tools/gate.sh` and `ship.sh` post
+each step the gate begins (merge, suite, maps, tag, push) to `state\gate.txt` with the commits, main's version, the
+machine, the log, the gate's pid and start, then done or stopped with the outcome, published, reused, skipped,
+timed_out and known_reds; a real gate moves the batch's own file to gating, then shipped with its version or
+sent-back. A publication is one info message to the batch, a stop one urgent instruction holding its reason and every
+unnamed line. The nightly mails `jerus` and the gate's keeper when the playtest is red or a timing line slower, naming
+the batch. The contract gives the builders' state lines (building, ready, blocked, held); `docs/orchestrator.md`'s
+waking is cut to its fallback; `ship.sh`'s stops cite `docs/contract.md`. Scripts and docs only.
+
+### R1f — the playtest's harnesses on the 1900 city — 2026-11-18, ready, see docs/queue/R1f-notes.md
+The playtest's seven harnesses now exercise explicit 1900 foundings beside their modern cities. The exchange-rate check counts the existing hold move through the 1914 suspension and 1926 return; the scale copy preserves unfitted plant, counts horse hands beyond the buildings and bounds whole posts while retaining every economic tracking limit. Power building, bill auctions, steep ground, the historical price level and the university pipeline have separate historical sections. The game model and default playtest are unchanged.
+
+### WG1-R — WG1's review fixtures cause their own conditions — 2026-11-18, ready, see docs/queue/WG1-R-notes.md
+WG1-D's five going-rate pins (CurveCheck 7, CentralBankCheck 20, HoldersCheck 12-13, HousingCheck's closed homes, KeptCheck 64) were each
+taken out and the section run on the default floor (.85 of the going rate): four read as written, and their pins, out of date since GW1,
+are gone. CurveCheck 7's steep dial is held two points under the dial the market expects to settle at, with its control (the same city a
+month before the hold: 0.50 points from the 1-month to the 10-year, 2.0 asked); HousingCheck counts the months that met the retirement's
+own conditions (56 of 120); KeptCheck 63's fund is paid in from a treasury the fixture makes have the cash (the default floor's stood at
+0.0 and the fund sold to pay), and 64 says whether the figures its desk draws moved (6 of 6). KeptCheck's city keeps its floor at the
+going rate for two lines further on (queued KFP1). What the pins recorded about .85 does not reproduce on 0.9.149: a city held at 15%
+closes 0.713 of its debt's homes on either floor, and the bond desk redraws 6 of 6 months. Harness only; no game class changed.
+
 ### 0.9.150 — R2c-P, public works' licence fees — 2026-11-18, ready, see docs/queue/R2c-P-notes.md
 In a city founded the 1900 way the city's own works now pay R2c's patent rent: a patented entry its utilities use (rapid sand, PE5;
 the steam turbine and pulverised coal, PE6 and PE16; the desalination plant, E6; the wind farm, E16) pays `LicenceFees.SHARE` of its

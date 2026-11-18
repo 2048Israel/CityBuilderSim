@@ -250,20 +250,14 @@ public class CurveCheck {
 
     /** The playtest's founding with the rule's hand on the dial, played on to this month. */
     static Game city(Path root, String label, int toMonth) {
-        return city(root, label, toMonth, false);
-    }
-
-    /** ...with the minimum wage set at the going rate before the first month where asked (steepCity()'s fixture, WG1). */
-    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate) {
-        return city(root, label, toMonth, floorAtTheGoingRate, new String[0]);
+        return city(root, label, toMonth, new String[0]);
     }
 
     /** ...and with the sectors named held out of the investor's building from the founding's first month (BusinessInvestment.holdSector(), GW1: steepCity()'s fixture). */
-    static Game city(Path root, String label, int toMonth, boolean floorAtTheGoingRate, String... held) {
+    static Game city(Path root, String label, int toMonth, String... held) {
         Game[] g = new Game[1];
         quietly(() -> {
             g[0] = MonetaryCheck.founding(root, label, false, held);
-            if (floorAtTheGoingRate) g[0].getLabourMarket().setMinimumWage(g[0].getLabourMarket().getGoingRate());
             g[0].getDebtManager().setAutopilot(true);
             while (g[0].getMonth() < toMonth) press(g[0]);
         });
@@ -507,20 +501,43 @@ public class CurveCheck {
     /** What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). */
     static final double ASK = 20_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
+    /** How far under the dial the market expects to settle at the steep city's dial is held. */
+    static final double STEEP_GAP = .02;
+
+    /** How far over the 1-month the 10-year of the steep city's curve must stand, as a fraction a year (section 7 asks two points). */
+    static final double STEEP_10Y = .02;
+
+    /** The steep city's 10-year over its 1-month before its dial was held, at the rule's own hand: the condition's control (steepCity()). */
+    static double spanBeforeTheHold;
+
+    /** The dial the market expects, far out: the rule at the inflation it expects, where its path comes to rest (YieldCurve.expectedPath()). */
+    static double expectedToSettleAt(DebtManager dm) {
+        return dm.expectedDialIn(YieldCurve.HORIZON - 1);
+    }
+
     /**
      * A founded city with the rule's hand on the dial to month 38, then the
-     * dial held two points under the rule by hand and one press on: the
-     * market expects the dial to rise to the rule, so the curve is steep. The
-     * city has no year of prices yet at this month, so the rule reads the
-     * target, which is the month's own strike.
+     * dial held STEEP_GAP under the dial the market expects to settle at, by
+     * hand, and one press on: the market expects the dial to rise to where it
+     * settles, so the curve is steep. The gap is taken from the path the market
+     * expects (YieldCurve.expectedPath()), which is what the curve is built on,
+     * and not from the rule at the month's inflation: the two are one at this
+     * month (the city has no year of prices yet, so the rule reads the target,
+     * and the market expects the target), but only there. The city's wage floor
+     * is its default, the .85 of the going rate WG1 gave a new city. WG1-D set
+     * it at the going rate here, for a curve of 1.31, 2.21 and 3.41 where .85
+     * read 1.80, 2.44 and 3.44; on the default today (after GW1's held sectors
+     * and WN3-R's band) it reads 1.00, 2.06 and 3.39, and the pin is gone: the
+     * steepness is the hold's, and spanBeforeTheHold, the same city a month
+     * before it, is the control.
      */
     static Game steepCity(Path root, String label) {
         // On the world's band since WN3-R (2026-11-08). Manufacturing and Wood Products held (GW1); DQ1 tried them free
         // (2026-11-16) and the curve came out 1.39 points from the 1-month to the 10-year, under the 2 section 7 asks: held.
-        Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
+        Game g = city(root, label, 38, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
-        double rule = dm.advisedPolicyRate(inflationRead(g));
-        dm.takeTheDial(Math.max(0, rule - .02));
+        spanBeforeTheHold = dm.curveRate(120) - dm.curveRate(1);
+        dm.takeTheDial(Math.max(0, expectedToSettleAt(dm) - STEEP_GAP));
         pressQuietly(g);
         return g;
     }
@@ -531,11 +548,14 @@ public class CurveCheck {
         YieldCurve curve = dm.curve();
         out.printf("   the steep city at month %d: 1-month %.4f, 1-year %.4f, 10-year %.4f%n", g.getMonth(),
                 dm.curveRate(1) * 100, dm.curveRate(12) * 100, dm.curveRate(120) * 100);
-        check("fixture: the dial is held by hand, two points under the rule at the inflation the month struck",
-                !dm.isAutopilot() && dm.isStruck()
-                        && Math.abs(dm.advisedPolicyRate(dm.getStruckInflation()) - dm.getPolicyRate() - .02) < 1e-12);
+        out.printf("   the dial %.4f, the dial expected to settle at %.4f, the rule at the inflation struck %.4f%n", dm.getPolicyRate() * 100,
+                expectedToSettleAt(dm) * 100, dm.advisedPolicyRate(dm.getStruckInflation()) * 100);
+        check("fixture: the dial is held by hand, two points under the dial the market expects it to settle at (the rule at the inflation it expects)",
+                !dm.isAutopilot() && dm.isStruck() && Math.abs(expectedToSettleAt(dm) - dm.getPolicyRate() - STEEP_GAP) < 1e-12);
         check("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
-                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02);
+                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > STEEP_10Y);
+        check(String.format("fixture: the hold is what makes it steep - this same city a month before, the dial on the rule's hand, stood %.4f points from its 1-month to its 10-year, under the %.1f asked",
+                spanBeforeTheHold * 100, STEEP_10Y * 100), spanBeforeTheHold < STEEP_10Y);
         check("fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)",
                 g.getCash() > 3 * ASK);
 
