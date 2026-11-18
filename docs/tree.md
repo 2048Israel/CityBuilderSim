@@ -30,6 +30,9 @@ adds its line here, not in `CLAUDE.md`.
         CopperBufferCheck.java     CPB1's empty-yard refinery regression: no feed for an undemanded
                                    loss-making buffer, with domestic/captive demand, stock sales,
                                    recipe identity and the national accounts kept intact
+        HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
+                                   played to m500, no landlord whose till buys one of the homes the
+                                   plan passed held with none, and LongPlaytest's homeless watch
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
