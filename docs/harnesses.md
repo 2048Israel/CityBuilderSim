@@ -7991,8 +7991,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1400 at the floor in force it is the payroll the city pays today, the posts' pay in it
   - L1401 ...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against
   - L1409 fixture: the posts are
-  - L1419 the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write),
-  - L1421 ...and with the posts held again it is what it was
+  - L1420 the credit check counts each research job's 2.25 heads of demand plus TARGET_HEADROOM,
+  - L1422 ...and with the posts held again it is what it was
 
 ## DistressBleedCheck.java - 28 labelled assertions
 
