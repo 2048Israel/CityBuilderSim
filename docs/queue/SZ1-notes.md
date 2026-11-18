@@ -76,3 +76,31 @@ check that four compact count buttons and the count fit on a building card.
 `--fast` has passed twice during implementation (52s and 48s compilation),
 with zero firm Stale findings. These are compilation/map checks, not claims
 that the new harness or the ensemble has run.
+
+The live-funding expectations in AuctionCheck, WorksFinanceCheck (and its
+independent AdviceValueOracle), LandCheck, MapCheck and TreasuryCheck now
+read the actual instrument lot. Their fixture cities, requested cash,
+thresholds and money assertions stay the same. In particular, AuctionCheck
+still creates a bank room strictly between the capped and filled bids;
+MapCheck still requires the card's quote to equal the booking path's quote,
+and still asserts lot divisibility. TreasuryCheck captures the lot before
+the month turns. These are repairs to the source of the asserted dial,
+not relaxations of the harnesses' premises. The orchestrator was mailed
+before the LandCheck/MapCheck and HL1-owned edits.
+
+The first pick is ALL (AllChecks plus shared game classes), with stranger
+review required for BondMarket and the bank/fund screens. No `--pick` suite
+has been run; the orchestrator places its dry run after the ensemble.
+
+LongPlaytest's player-side funding quotes and bookings also consume the live
+lots now, including its opening-village, paving, land and preferred-offer
+funding. Its requested cash, chosen terms, player policy and build orders
+are unchanged; its synthetic paper fixtures retain their explicit granules.
+This edit was mailed before touching HL1's LongPlaytest file. StepsCheck
+also causes a one-month bill to mature and counts the real rollover sales,
+comparing both its plan and actual booked face with the live-lot quote.
+
+The latest complete `--fast` passed: compilation 50s, regenerated maps,
+zero firm Stale findings. Source/prose diff whitespace checks pass and the
+new Java files have LF line endings. Named harnesses are still unrun while
+LM1-D owns the heavy slot.

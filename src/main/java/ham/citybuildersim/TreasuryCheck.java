@@ -875,13 +875,14 @@ public class TreasuryCheck {
         int handDebts = byHand.getDebtManager().getDebt().size();
         double owedBefore = same.getDebtManager().getDomesticPrincipal();
 
+        double rollLot = same.issueLot("Note");
         for (Game g : three) press(g);
         m = same.getMonth();
         Rollover roll = same.getRollover();
         Debt rolledNote = paper(same, "NOTE", 3, m - 1, false);
         check("the press rolls it: a new 3-month note, issued the month before the maturity", rolledNote != null);
         check("...whose cash covers what was to roll", roll.getLastRaised() >= p1.toRoll() - 1e-6);
-        check("...by less than a granule of face", roll.getLastRaised() - p1.toRoll() <= Game.BUILD_NOTE_GRANULE);
+        check("...by less than a granule of face", roll.getLastRaised() - p1.toRoll() <= rollLot);
         check("...raised under its face",
                 rolledNote != null && roll.getLastRaised() > 0 && roll.getLastRaised() < rolledNote.getFaceValue());
         near("...by exactly its own discount and costs", m, roll.getLastRaised(),

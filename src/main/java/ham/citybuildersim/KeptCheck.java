@@ -2433,7 +2433,7 @@ public class KeptCheck {
         }
         // ...an order dialled with a card's own stepper and cleared with its own, on a city category and on a market one.
         for (String at : market == null ? List.of(cat) : List.of(cat, market)) {
-            choices.add(choice("an order dialled up on " + at + " (+10 and +, two cards)", b -> {
+        choices.add(choice("an order dialled up on " + at + " (current steps, two cards)", b -> {
                 b.buildOpen(at);
                 b.drawKept(page);
                 b.passes();
@@ -2883,7 +2883,7 @@ public class KeptCheck {
             bench.passes();
             boolean barAfter = bench.buildBarShows(word);
             String after = againstNew(bench, cards);
-            // ...and a hundred more, a month, and the draw.
+            // ...and the current large step, a month, and the draw.
             bench.drawKept(cards);
             boolean pressed100 = bench.buildStep(0, bench.buildStepLabel(0, true));
             month(g);
@@ -2891,8 +2891,9 @@ public class KeptCheck {
             String monthLater = againstNew(bench, cards);
             // ...cleared by the card's own ↺, outside a draw: the bar goes and the next draw is a page built new.
             bench.drawKept(cards);
+            String beforeClear = bench.buildCount(0) + " × " + names.get(0);
             boolean cleared = bench.buildStep(0, "↺");
-            boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows("101 × " + names.get(0));
+            boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows(beforeClear);
             bench.drawKept(cards);
             String afterClear = againstNew(bench, cards);
             bench.home(cards);

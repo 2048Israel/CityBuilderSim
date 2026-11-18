@@ -98,6 +98,32 @@ public final class StepsCheck {
             check(kind + " live dollar lot is round and within its own minimum", round(usd) && usd <= game.minimumIssueSizeIn("USD"));
         }
 
+        try (PrintStream quiet = new PrintStream(OutputStream.nullOutputStream())) {
+            System.setOut(quiet);
+            try {
+                game.getAutoBuilder().setOn(false, null);
+                game.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
+                game.setRolloverCap(Auction.Cap.FILL);
+                game.handleTBillLogic(game.minimumIssueSize() * 100, 1, game.issueLot("Note"), Auction.Cap.FILL);
+                game.setCashForTest(0);
+            } finally { System.setOut(out); }
+        }
+        Rollover.Plan plan = game.rolloverPlan();
+        check("fixture: one month's paper really falls due and needs a rollover", plan.due() > 0 && plan.issues().size() == 1);
+        if (plan.issues().size() == 1) {
+            Rollover.Issue issue = plan.issues().get(0);
+            DebtQuote expected = game.quoteTBill(issue.cash(), issue.term(), game.issueLot("Note"), Auction.Cap.FILL);
+            close("the real rollover plan rounds at the live lot", issue.face(), expected.faceValue());
+            int before = game.getDebtManager().getAuctionTally().auctionSales();
+            try (PrintStream quiet = new PrintStream(OutputStream.nullOutputStream())) {
+                System.setOut(quiet);
+                try { game.toggleNextMonth(); } finally { System.setOut(out); }
+            }
+            int sales = game.getDebtManager().getAuctionTally().auctionSales() - before;
+            check("the month's real rollover fires the auction (" + sales + " sales)", sales > 0 && game.getRollover().getLastIssued() > 0);
+            close("the real sale books the plan's live-lot face", game.getRollover().getLastIssued(), expected.faceValue());
+        }
+
         out.println("--- 4. actual building-card and fund-step presses at large figures ---");
         if (java.awt.GraphicsEnvironment.isHeadless()) {
             out.println("UI presses skipped: no display");
@@ -120,6 +146,9 @@ public final class StepsCheck {
                         check("the large card's button accepts a real press", bench.buildStep(card, bench.buildStepLabel(card, true)));
                         close("that press adds 10,000 buildings", bench.buildOrdered(building), 33_000);
                         check("the fine card step offers +1k", "+1k".equals(bench.buildStepLabel(card, false)));
+                        for (int i = 0; i < 7; i++) bench.buildStep(card, bench.buildStepLabel(card, true));
+                        close("eight large presses cross the next decade", bench.buildOrdered(building), 103_000);
+                        check("the same card refreshes its leading step to +100k", "+100k".equals(bench.buildStepLabel(card, true)));
                     }
                     KeptBench.Page fund = bench.finances("SZ1 fund", "The city's fund", "Rules & cash");
                     bench.home(fund);

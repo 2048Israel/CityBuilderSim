@@ -38,7 +38,7 @@ public final class WorksFinanceCheck {
 
     static double financing(Game g, double amount, double horizon) {
         if (!(amount > 0)) return 0;
-        DebtQuote q = g.quoteLongBondForCash(amount, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE,
+        DebtQuote q = g.quoteLongBondForCash(amount, Game.BUILD_BOND_YEARS, g.issueLot("Term"),
                 g.getAutoBuilder().getCap());
         double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12;
         double discount = (1 + rate)
@@ -92,7 +92,7 @@ public final class WorksFinanceCheck {
         g.setCashForTest(AutoBuilder.reserve(g));
         BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
         double invoice = g.quoteBuild(wind, 1).total;
-        DebtQuote q = g.quoteLongBondForCash(invoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE,
+        DebtQuote q = g.quoteLongBondForCash(invoice, Game.BUILD_BOND_YEARS, g.issueLot("Term"),
                 g.getAutoBuilder().getCap());
         check("fixture: a nonempty quote reopens the benchmark with twelve coupons already paid",
                 q.cashReceived() > 0 && q.auction() != null
@@ -249,7 +249,7 @@ public final class WorksFinanceCheck {
         double gap = Math.max(0, invoice - available);
         double expected = financing(g, gap, BuildAdvice.LIFE_MONTHS);
         double raised = gap > 0 ? g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS,
-                Game.BUILD_BOND_GRANULE, g.getAutoBuilder().getCap()).cashReceived() : 0;
+                g.issueLot("Term"), g.getAutoBuilder().getCap()).cashReceived() : 0;
         available = Math.max(0, available + raised - invoice);
         check("fixture: the initial bond strictly exceeds the gap, or the first plan is paid entirely in cash",
                 borrowFirst ? gap > 0 && raised > gap : gap == 0);
@@ -276,7 +276,7 @@ public final class WorksFinanceCheck {
             double paid = Math.max(0, date - nextLead);
             expected += financing(g, lack, BuildAdvice.LIFE_MONTHS - paid) * Math.pow(1 + rate, -paid);
             double proceeds = lack > 0 ? g.quoteLongBondForCash(lack, Game.BUILD_BOND_YEARS,
-                    Game.BUILD_BOND_GRANULE, g.getAutoBuilder().getCap()).cashReceived() : 0;
+                    g.issueLot("Term"), g.getAutoBuilder().getCap()).cashReceived() : 0;
             available = Math.max(0, available + proceeds - bill);
             laterExcess |= lack > 0 && proceeds > lack;
             additions += extra;
@@ -403,7 +403,7 @@ public final class WorksFinanceCheck {
         BuildAdvice.Measure m = BuildCard.cityMeasure(t);
         WorksValue.Value value = WorksValue.of(g, m, Map.of(), t, 1, buildingFree);
         double invoice = g.quoteBuild(t, 1).total;
-        DebtQuote q = g.quoteLongBondForCash(invoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE,
+        DebtQuote q = g.quoteLongBondForCash(invoice, Game.BUILD_BOND_YEARS, g.issueLot("Term"),
                 g.getAutoBuilder().getCap());
         check("fixture: the flat-demand comparison borrows its build price and needs no later unit",
                 value.futureUnits() == 0 && q.cashReceived() > 0 && land.getOfficePricePerSqFt() > 0);

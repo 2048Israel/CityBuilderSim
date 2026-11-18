@@ -1428,6 +1428,7 @@ public final class Pieces {
                 refresh[0].run();
                 changed.run();
             });
+            Kept.tip(buttons[i], "Steps follow the count's leading digit and its tenth, never below one", 300);
         }
         HBox row = Kept.row(4, buttons[0], buttons[1], count, buttons[2], buttons[3]);
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
@@ -1439,11 +1440,10 @@ public final class Pieces {
                 boolean big = i == 0 || i == 3;
                 double step = steps[big ? 0 : steps.length - 1];
                 buttons[i].setText((i < 2 ? "−" : "+") + countStepWords(step));
-                buttons[i].setMinWidth(Region.USE_PREF_SIZE);
+                buttons[i].setMinWidth(26);
                 buttons[i].setPrefWidth(Region.USE_COMPUTED_SIZE);
                 showIf(buttons[i], !big || steps.length > 1);
                 Kept.give(buttons[i].disableProperty(), i < 2 && now <= 0);
-                Kept.tip(buttons[i], "Steps follow the count's leading digit and its tenth, never below one", 300);
             }
         };
         refresh[0].run();

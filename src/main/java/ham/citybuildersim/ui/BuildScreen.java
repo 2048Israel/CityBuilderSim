@@ -2337,7 +2337,7 @@ final class BuildScreen {
         };
         controls[0] = Pieces.countSteps(() -> orderQty.getOrDefault(key, 0L), n -> orderQty.put(key, n), reprice);
         /*
-         * AND A WAY BACK TO ZERO: with a +100 on the card, overshooting is one
+         * AND A WAY BACK TO ZERO: with a large step on the card, overshooting is one
          * click away. Hidden until there is something to clear.
          */
         Button reset = stepper("↺", 24, () -> {

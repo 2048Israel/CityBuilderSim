@@ -2051,6 +2051,7 @@ public final class KeptBench {
 
     /** A press by the card's current step label, or ↺, with its actual repricing and order-bar refill. */
     public boolean buildStep(int card, String glyph) {
+        if (glyph == null) return false;
         List<javafx.scene.layout.StackPane> cards = cardNodes();
         if (card >= cards.size()) return false;
         javafx.scene.control.Button b = find(cards.get(card), javafx.scene.control.Button.class, x -> glyph.equals(x.getText()));
