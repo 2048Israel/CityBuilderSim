@@ -1,10 +1,10 @@
 #!/bin/sh
-# --row ID... waits for queue removal (or a legacy predecessor mended); --ship for readiness.
+# --row ID... waits for queue removal; --ship for readiness.
 # --line FILE ERE waits for output. --for MIN bounds any wait; 0 looks once.
 # Ship records marked <!-- readiness: provisional --> do not count (GG1).
 # Exit 0 done, 3 deadline, 4 six failed fetches/unreadable queue, 2 usage.
 # CBS_WAIT_ROW_SECS/LINE_SECS shorten polling; MARGIN/FETCH_SECS bound fetches.
-# WHY (GP1, RL1): hand loops hung on failed fetches; wait-selftest.sh covers the endings.
+# WHY (GP1): hand loops hung on failed fetches; wait-selftest.sh covers the endings.
 
 usage() { echo "usage: sh tools/wait.sh --row ID... [--for MIN] | --ship [--skip ID...] [--for MIN] | --line FILE ERE [--for MIN]" >&2; exit 2; }
 
@@ -68,24 +68,15 @@ fetch_main() {   # origin's main and batch branches, the deleted ones pruned; en
     if [ "$HAVE_TIMEOUT" = 1 ]; then timeout "$FETCH_SECS" git fetch -q "$@"
     else git fetch -q "$@"; fi
 }
-CARRIES="$(dirname "$0")/carries.sh"
-# the unmerged batch/ branches with their ship file, each after a space. ships ready: less --skip and those built on an
-# unmerged batch (waiting, not ready). ships mended (--row): those of the ids that HEAD has part of but not the tip of,
-# ready again - a predecessor sent back and mended.
+# the unmerged batch/ branches with their ship file, not provisional and not --skip, each after a space
 ships() {
     for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*'); do
         id=${b#refs/remotes/origin/batch/}
         git merge-base --is-ancestor "$b" origin/main && continue
         git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null || continue
         git show "$b:docs/queue/$id-ship.md" | grep -q -x '<!-- readiness: provisional -->' && continue
-        if [ "$1" = ready ]; then
-            case " $SKIP " in *" $id "*) continue ;; esac
-            [ -z "$(sh "$CARRIES" "$b")" ] && printf ' %s' "$id"
-        else
-            case " $IDS " in *" $id "*) ;; *) continue ;; esac
-            git merge-base --is-ancestor "$b" HEAD && continue
-            mb=$(git merge-base HEAD "$b") && ! git merge-base --is-ancestor "$mb" origin/main && printf ' %s' "$id"
-        fi
+        case " $SKIP " in *" $id "*) continue ;; esac
+        printf ' %s' "$id"
     done
 }
 
@@ -100,7 +91,7 @@ if [ "$MODE" = row ] || [ "$MODE" = ship ]; then
             FAILS=0
             HEAD="origin/main $(git rev-parse --short origin/main)"
             if [ "$MODE" = ship ]; then
-                READY=$(ships ready)
+                READY=$(ships)
                 if [ -n "$READY" ]; then echo "wait      done - ready to ship:$READY (./ship.sh batch/<id>; $(git rev-parse --short origin/main), $(date +%H:%M))"; exit 0; fi
             else
                 Q=$(git show origin/main:QUEUE.md 2>/dev/null) || { echo "wait      origin/main has no QUEUE.md"; exit 4; }
@@ -114,10 +105,6 @@ if [ "$MODE" = row ] || [ "$MODE" = ship ]; then
             if [ "$MODE" = row ] && [ -z "$LEFT" ]; then
                 BEHIND=; git merge-base --is-ancestor origin/main HEAD 2>/dev/null || BEHIND="; HEAD lacks origin/main: merge it first"
                 echo "wait      done -$IDS out of the Queued table of origin/main ($(git rev-parse --short origin/main), $(date +%H:%M))$BEHIND"
-                exit 0
-            fi
-            if [ "$MODE" = row ] && MENDED=$(ships mended) && [ -n "$MENDED" ]; then
-                echo "wait      done -$MENDED ready again with commits HEAD lacks: git merge origin/batch/<id> ($(date +%H:%M))"
                 exit 0
             fi
         else
