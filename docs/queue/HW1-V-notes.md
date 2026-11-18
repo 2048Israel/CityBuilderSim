@@ -1,6 +1,6 @@
 # HW1-V — refine projected ground and borrowing cash
 
-Status: provisional mends; the scheduled normal pick and merge dry run remain.
+Status: ready for the orchestrator's publication gate; REV-HW1-V-1 says SHIP.
 
 Base: origin/main `45de48dc2` (0.9.140), branch `batch/HW1-V`.
 Final model: `0077f3cf5`; final hard fixtures: `3cf66f550`.
@@ -49,7 +49,7 @@ under a law keeping all forest. An unavailable large addition is estimated
 without consuming a parcel or charging its virtual footprint against the
 pool a later, smaller addition can actually buy.
 
-Checks so far:
+Checks:
 
 - Initial `./batch-check.sh --fast`: exit 0, clean generated maps, zero firm
   Stale findings, base `45de48dc2`.
@@ -80,7 +80,8 @@ Checks so far:
   `target/HW1-V-final-advice.log`.
 - Normal pick currently selects 37 of 218 harnesses, not ALL. Review line:
   `not needed - no money, saves or threading in the diff`. The full picked
-  run and gate are pending the orchestrator's machine slot.
+  suite was not run locally; the publication gate will run those 37 on its
+  merge with main, by the orchestrator's final call below.
 
 The orchestrator supplied main's retained eight-file default reference:
 `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-FB4-10cc0ca2/trace-*.csv`.
@@ -92,15 +93,19 @@ exits 0, "All checks passed", with no findings. Its eight completed CSVs at
 bank, bonds, build, house, labour, month and pop each have 2,405 rows, and
 borrow has 41. Report: `target/HW1-V-trace.log`; comparison:
 `target/HW1-V-trace-compare.txt`. No ensemble is required by batch checklist 6.
-The orchestrator holds the machine for FB6's dry run until about 20:45;
-no normal picked suite, ensemble or dry run has been started during that hold.
+No normal picked suite, ensemble or dry run was started during the machine
+hold for FB6.
 
-Remaining at provisional handoff: run `./batch-check.sh --pick` when the
-orchestrator releases the slot, request the merge dry run with "HW1-V dry run?",
-then run the authorised dry run and retain its directory and its branch/main
-commits here. No kept dry run exists yet. The ship file retains the provisional
-marker until that gate passes; remove it last in its own commit and verify it
-is absent on origin. Review was agreed unnecessary by the orchestrator's
-message above. No calls are left for Jerus.
+★ Final orchestrator call, 2026-11-17 20:40, bus message
+`20261117-204020-948-orchestrator-7f11`: REV-HW1-V-1 says SHIP; no dry run
+and no standalone picked suite. The selection is 37, not ALL, and the
+publication gate will run exactly those harnesses on the main it merges
+onto, after FB6 and LQ1. A kept run would be refused as main moves tonight,
+so a duplicate local run would not supply reusable evidence. This explicit
+call supersedes the provisional handoff's pick/dry-run plan. No kept dry run
+exists and the ship file has no gate-run line. The provisional marker is
+removed last in its own commit, then checked absent on origin before the
+ready report. Any NEW red from the publication gate returns to this batch.
+No calls are left for Jerus.
 
 No queue Pending row or known-reds entry names HW1-V at this base.
