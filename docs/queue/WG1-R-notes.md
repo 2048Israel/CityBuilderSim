@@ -110,8 +110,8 @@ reach, since it sells one of each kind of paper itself at section 60.
 
 ## 4. Left for Jerus
 
-- Nothing to decide. The two findings of section 3 are Pending rows with a recommended close (each can be settled by the
-  orchestrator); **KFP1** is queued.
+- Nothing to decide. The two findings of section 3 are settled by their figures (they do not reproduce on 0.9.149), as the
+  orchestrator asked, and are no Pending rows; **KFP1** is queued.
 - Worth knowing: HousingCheck's closed-home tail (the debt share and its save round trip) does not test the held 15% dial, since
   the same share comes at 3%; the section's own subject (a glut's rent carries no lift) does. Not changed.
 - The ensemble is not owed: no game class changed (a model change would have moved the default trace; none did).
