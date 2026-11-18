@@ -2,7 +2,7 @@
 # Read-only morning report (--due: ready/stuck/nightly due, exit 1 if none).
 # WHY (BP1, GG1): one report replaces hand probes; provisional ship records are working.
 # Main/version/reds/nightly/queue, branch state and predicted conflicts; fetch failures are shown.
-# tools/carries.sh keeps legacy predecessor branches waiting. No JVM.
+# No JVM.
 
 usage() { echo "usage: sh tools/day.sh [--due]" >&2; exit 2; }
 DUE=0
@@ -13,7 +13,6 @@ case "$1" in
 esac
 [ $# -le 1 ] || usage
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "day       not in a git checkout" >&2; exit 2; }
-CARRIES="$(cd "$(dirname "$0")" && pwd)/carries.sh"
 cd "$(git rev-parse --show-toplevel)" || exit 2
 NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
 
@@ -56,7 +55,7 @@ mtnote() {   # what git predicts of merging branch ref $1 into main, as the tail
     elif [ "$rc" -ne 0 ]; then printf ' - conflicts not predicted'
     fi
 }
-READY=; WAIT=; STUCK=; WORK=; OFFQ=; MERGED=0
+READY=; STUCK=; WORK=; OFFQ=; MERGED=0
 for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*'); do
     id=${b#refs/remotes/origin/batch/}
     if git merge-base --is-ancestor "$b" "$M"; then MERGED=$((MERGED + 1)); continue; fi
@@ -64,9 +63,7 @@ for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*')
     age=$(ago "$t")
     if git show "$b:docs/queue/$id-ship.md" 2>/dev/null > /dev/null &&
         ! git show "$b:docs/queue/$id-ship.md" | grep -q -x '<!-- readiness: provisional -->'; then
-        pred=$(sh "$CARRIES" "$b" | tr '\n' ' ')
-        if [ -z "$pred" ]; then READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
-        else WAIT="${WAIT}waiting   $id - ship file pushed, built on ${pred% }, not on main yet: gate that first$NL"; fi
+        READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
     elif ! printf '%s\n' "$QUEUED" | grep -qxF "$id"; then
         OFFQ="${OFFQ:+$OFFQ, }$id ($age)"
     elif [ $((NOW - t)) -ge 86400 ]; then
@@ -117,7 +114,7 @@ PEND=$(printf '%s\n' "$Q" | rows Pending)
 echo "pending   $(printf '%s\n' "$PEND" | grep -c .): $(printf '%s\n' "$PEND" | tr '\n' ' ' | sed 's/ $//')"
 
 # --- the branches, then the tidy count ---------------------------------------
-printf '%s' "$READY$WAIT$STUCK$WORK"
+printf '%s' "$READY$STUCK$WORK"
 [ -z "$OFFQ" ] || echo "off-queue unmerged and not queued: $OFFQ"
 [ "$MERGED" = 0 ] || echo "tidy      $MERGED merged batch branches still on origin"
 exit 0
