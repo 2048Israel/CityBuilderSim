@@ -36,6 +36,24 @@ clicks the same.
 No handler is guarded, so a writer added later is covered too. The player's own
 clicks outside a replay see his object, as before.
 
+## Does anything keep its own reference to the player's prefs? (the orchestrator's question)
+
+No. By grep of every `GamePrefs` and `prefs` mention outside the harnesses and
+probes: the only holders of the object are `UserInterface.prefs` and the new
+`playerPrefs` (the one set aside). `MapView`, `HistoryScreen` and `SummaryScreen`
+take `ui.prefs` at each read and write (no local, no field, no argument; two
+null checks at `MapView` 4459 and 4761), the pin and tab handlers and the two
+settings toggles in `UserInterface` read the field at the click, and the model
+classes that name `GamePrefs` (`GameVersion`, `TruckSchedule`, `WorldEconomy`)
+do so only in comments. No prefs *value* is cached either: every `isXOnMap()`
+and `getPinned...()` is read inside the draw or the click, so after leaving the
+next paint reads the player's. `ReplayMoveProbe` and `UiProbe` load a prefs of
+their own to set up a window, not a component of the game. The window's
+`UserInterface` is built once and `ui.prefs` swapped on it, so the swap covers
+every reader; ReplayCheck 11 shows the pin and the tab, and its sweep of every
+other setter shows his object untouched, which holds for the rest by the same
+field.
+
 ## The harness: ReplayCheck 11
 
 The model half (headless): the copy holds his values and is marked, a change to
