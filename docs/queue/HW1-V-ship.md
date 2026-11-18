@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HW1-V, refine projected ground and borrowing cash — 2026-11-17, ready, see docs/queue/HW1-V-notes.md
 Projected works retain only the linked ground their class and zoning let
