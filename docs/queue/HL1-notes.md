@@ -418,3 +418,30 @@ AutoBuildCheck rerun and LongPlaytest. No such wrapper is tracked or shipped.
 
 AutoBuildCheck rerun after the school fixture mend: **exit 0**, all assertions including the
 first essential school order and both debt-limit refusal cases pass. No model or tolerance changed.
+
+### HN1 merged: f17ff2141 (0.9.151)
+
+HN1's Game.considerOnMortgage() retries the door's refused quantity at halves down to one;
+BusinessDebtManager.takeBackCapitalRefusal() restores only the reporting marks that this try set.
+The source merge is clean; generated conflicts were main's temporarily, then regenerated.
+
+The money still follows Game.mortgageInvestor() -> sectorInvestor()/buildFor(): the down payment
+is the landlord's own sector till, the mortgage is its liability and the bank's loan asset. The
+borrower receives principal less the existing fee; the insurance premium reaches the treasury;
+the build pays the construction order book and land reaches the treasury. A failed door test
+changes none of that money; only the accepted smaller order borrows and spends. An outright
+trimmed purchase uses its till and creates no mortgage. Funding, repayments, fees, premiums and
+insured claims are pool-to-pool, as MoneyAudit's existing "SO DO THE LANDLORDS' INSURED MORTGAGES"
+paragraph specifies; they must not be labelled household savings income or spending merely
+because households own shares in the landlord. Households' own rent, wages, share purchases,
+dividends and consumer loans retain their existing DOMESTIC legs and transit carriers. Thus HN1
+adds no new money lane or own plug: it changes amounts and timing, which the unchanged pool and
+household identities must close on the new path. No saved field changed in this retry/reporting
+mend. HousingDoorCheck and the final default/ensemble will verify the combined model.
+
+The essential-school diagnostic before repayment is 285.3% debt/GDP against 240%; after repayment
+it is within the unchanged limit and the school is ordered. This confirms the fixture diagnosis.
+
+`--fast` after HN1 merge: exit 0, compile 41 s, indexes regenerated, 0 firm Stale findings
+(187 soft). HN1 supplies the new current ensemble baseline docs/ensemble/0.9.151.md; the final
+HL1 ensemble must compare with the newest baseline after LM1-D, not the old 0.9.93 record.
