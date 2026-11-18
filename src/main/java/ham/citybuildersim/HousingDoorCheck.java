@@ -24,7 +24,7 @@ import java.util.Locale;
  * the door the same way in some twenty months of m437-m496 with the door's
  * price of a block in the till. This harness plays that city - the
  * ensemble's AUTO2 seed 12, its founding and rhythm line for line
- * (tools/ensemble/Ensemble.java, foundAndPlay()) - through those months, its
+ * (the driver in tools/ensemble/, its foundAndPlay()) - through those months, its
  * player and its automatic works as they play, and watches the landlords'
  * every order there (Game.watchOrders()).
  *
@@ -223,7 +223,7 @@ public final class HousingDoorCheck {
 
     /* =====================================================================
        THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for
-       line (tools/ensemble/Ensemble.java), the AUTO2 policy's setups, to TO.
+       line (the driver in tools/ensemble/), the AUTO2 policy's setups, to TO.
        ===================================================================== */
 
     static boolean stuck;
