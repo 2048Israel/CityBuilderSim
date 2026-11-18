@@ -1,0 +1,45 @@
+# FB12 — fixtures on two landmasses
+
+Harness-only batch, 2026-11-18: RI1-F and KP2b-N. No game class, balance,
+save format, screen or default-playtest code changes; the default trace cannot
+move, so no ensemble is owed.
+
+RI1-F adds IslandRailCheck section 10 on BridgeMapCheck.MapFixture's real
+generated-world terrain. Its owned banks are separate map pieces, divided by
+103–131 plots of fresh water. The far piece has built weight, no terminal,
+its highway hub nearest the founding site's tile, and its rail hub nearest
+that anchor at RAIL_AT modulo CELL. It grows its own track and one of the two
+yards. The bridge carries track over 131 water plots; the otherwise identical
+map without it carries none over those plots. Expectations use the existing
+crossing constants, model type ids and fixture track/yard counts. The first
+run found 783 island rail plots and one island yard.
+
+KP2b-N adds a self-contained section beside KeptCheck's land office. A
+GameFiles.scratch city on the existing Rotterdam Earth fixture initially owns
+only home; buying a measured square of landmass 648 causes the second
+Landmasses.rows() entry and the actual page's grid. Every cell is compared
+with LandmassView.rows(), and the column heads come from LandmassView.HEADS.
+The grid and all its authored descendants must retain identity on a redraw,
+then after another island purchase and a month; the values must update and
+match a fresh table. No KeptBench or screen API change is needed.
+
+★ Use BridgeMapCheck's real channel, which the brief explicitly permits,
+rather than adding another Earth survey fixture. CityRuns reads map pieces,
+not their link type: the bridge's independent water-plot assertion proves
+the link while the hub, track and yard assertions prove RI1 call 3 there.
+This does not extend trains' routing over bridges (RI1 call 2).
+
+★ Reuse the existing Earth fixture and scratch-city helper for the land
+office, rather than changing Landmasses or LandManager. Check the actual
+rendered grid and its descendants, not the bench's table-presence helper,
+which constructs a table when called.
+
+Checks and cause-removal evidence are recorded below before readiness.
+The orchestrator cleared IslandRailCheck and KeptCheck one at a time, and
+reserved TimingCheck for the gate because BW1's dry run occupies the machine.
+The focused diagnostic selector used during construction will be removed
+before the final whole KeptCheck; normal suite coverage remains unconditional.
+
+Review scope: money no; saves no; threading no. All additions are harness
+code; the FX fixture uses KeptCheck's existing fx() handoff. Only generated
+dependency indexes mention the read-only model classes.

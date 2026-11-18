@@ -60,6 +60,9 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *      and no rail or highway plot lies on it (ET5's rule), the railway is the home piece's alone (a premise: it has track and a yard at home), and
  *      the home piece's anchor is its hub.
  *
+ *   10. A BRIDGE-LINKED ISLAND ON REAL MAP GROUND keeps the founding-side hub (RI1 call 3), with its own track and yard.
+ *      BridgeMapCheck's real channel is wider than a short crossing: only the bridge lays track across its water.
+ *
  * WHY THIS EXISTS: CL5 gave every piece of the city's ground the water parts a highway net of its own and left the railway the home
  * piece's alone, so a city built on islands had no track and no yard on any but the founding site's (Jerus ticked "Rail on islands",
  * 2026-10-31: CL5-C's call 1, "the railway on other islands: its own track and yards from each piece's hub"). A fixture CAUSES each case:
@@ -220,6 +223,7 @@ public class IslandRailCheck {
             section7();
             section8();
             section9();
+            section10();
         } finally {
             CityRuns.islandRail = wasIslandRail;
         }
@@ -942,5 +946,59 @@ public class IslandRailCheck {
         check("no piece of ground holds the island's squares: the pieces the map has are home's ground", p.islandPieceBefore == -1 && p.farPieceBefore == -1);
         check("no plot of the runs lies on the island (a loop over its squares): no rail, no highway ", p.railOnIsland == 0 && p.highwaysOnIsland == 0 && p.railPlotsBefore > 0);
         check("the home piece's anchor() is its hub() (piece 0 starts from the founding site always)", p.homeAnchorBefore);
+    }
+
+    /* ============ 10. a bridge-linked piece on real map ground (FB12, RI1-F) ============ */
+
+    /** BridgeMapCheck's real channel, with track and two yards: only a bridge crosses the water. */
+    static void section10() {
+        System.out.println("\n--- 10. a bridge-linked island starts from the founding site's side, with its own track and yard ---");
+        int before = BridgeMapCheck.fails;
+        BridgeMapCheck.MapFixture f = BridgeMapCheck.MapFixture.build();
+        check("fixture: BridgeMapCheck's real-world channel and dry banks are found", f != null && BridgeMapCheck.fails == before);
+        if (f == null) return;
+        for (int t = 0; t < f.types.length; t++) {
+            BuildingVisual.Type type = f.types[t];
+            if (type == null) continue;
+            if (BuildingVisual.freightLine(type)) f.counts[t] = LINES;
+            if (type.id() == BuildingVisual.RAIL_TERMINALS[0]) f.counts[t] = YARDS;
+        }
+        CityRuns.islandRail = true;
+        CityMap bare = f.draw(null);
+        CityMap map = f.draw(List.of(BridgeMapCheck.run(BridgeMapCheck.RAIL, f.rl)));
+        long[] box = { (long) f.rects[1][0], (long) f.rects[1][1], (long) f.rects[1][2] - 1, (long) f.rects[1][3] - 1 };
+        int ip = pieceIn(map, box);
+        check("fixture: the far bank is a separate map piece with built weight and no terminal", ip > 0 && map.pieces().weight(ip) > 0 && map.shore().works().isEmpty());
+        if (ip < 1) return;
+        List<long[]> tiles = tilesOf(map, ip, box);
+        long[] site = map.site();
+        long[] want = nearestHighway(map, tiles, Math.floorDiv(site[0], World.TILE), Math.floorDiv(site[1], World.TILE));
+        long[] anchor = map.pieces().anchor(ip);
+        check("the bridge-linked island's highway hub is the dry crossing nearest the founding site's tile", want != null && Arrays.equals(map.pieces().hub(ip), want));
+        check("with no port the bridge-linked island's anchor is that founding-side hub", want != null && Arrays.equals(anchor, want));
+        int rp = netOf(map.runs().rail(), map, ip);
+        long[] hub = rp < 1 ? null : map.runs().rail().pieceHub(rp);
+        long[] railWant = want == null ? null : nearestRail(map, tiles, want[0], want[1]);
+        check("its railway hub is a RAIL_AT crossing on its own piece nearest that anchor", hub != null && railWant != null
+                && Math.floorMod(hub[0] - CityRuns.RAIL_AT, CityRuns.CELL) == 0 && Math.floorMod(hub[1] - CityRuns.RAIL_AT, CityRuns.CELL) == 0
+                && map.pieces().pieceOf(hub[0], hub[1]) == ip && Math.abs(dist(hub, anchor) - dist(railWant, anchor)) < 1e-9);
+        check("the bridge-linked island grows track of its own on the far bank", rp >= 1 && map.runs().rail().piecePlots(rp) > 0
+                && in(map.runs().rail(), box) == map.runs().rail().piecePlots(rp));
+        int islandYards = 0;
+        for (long[] y : map.runs().yards()) if (map.pieces().pieceOf(y[0] + y[2] / 2, y[1] + y[3] / 2) == ip) islandYards++;
+        check("the two model yards include a yard on the bridge-linked island's railway", map.runs().yards().size() == YARDS && islandYards == 1);
+        boolean wetBare = true, wetBridge = true;
+        int water = 0;
+        for (long k : BridgeMapCheck.pathOf(f.rl)) {
+            long x = BridgeMapCheck.kx(k), y = BridgeMapCheck.ky(k);
+            if (World.dry(f.ground.at(x, y))) continue;
+            water++;
+            wetBare &= bare.runs().at(x, y) != CityRuns.F_RAIL;
+            wetBridge &= map.runs().at(x, y) == CityRuns.F_RAIL;
+        }
+        check("fixture: the real water is wider than both short-crossing constants and has no track without the bridge", water > BridgeMapCheck.shortest() && wetBare);
+        check("the rail bridge alone lays every water plot between the two real banks", water > BridgeMapCheck.shortest() && wetBridge);
+        System.out.printf("  far piece %d, hub %s, rail hub %s, %,d rail plots, %d island yard, %d water plots bridged%n",
+                ip, Arrays.toString(want), Arrays.toString(hub), rp < 1 ? 0 : map.runs().rail().piecePlots(rp), islandYards, water);
     }
 }
