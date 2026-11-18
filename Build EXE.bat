@@ -358,8 +358,9 @@ exit /b 0
 :unfit
 echo.
 echo   The built image lacks what a sold build must carry, listed above, so
-echo   dist\%APPNAME% is removed and nothing is zipped.
+echo   dist\%APPNAME% and this version's zip are removed: nothing is published.
 echo.
-rmdir /s /q "dist\%APPNAME%"
+if exist "dist\%APPNAME%" rmdir /s /q "dist\%APPNAME%"
+if exist "dist\%APPNAME%-%APPVER%.zip" del /q "dist\%APPNAME%-%APPVER%.zip"
 %PAUSE%
 exit /b 1

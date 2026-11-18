@@ -1,4 +1,4 @@
-# PackagingCheck.java - 335 lines · 9 methods · 1 constants · harnesses
+# PackagingCheck.java - 337 lines · 9 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PackagingCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 281 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
+| 55 | 283 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
 | 59 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 65 | 8 | `static boolean names(List<String> problems, String...words)` | True when some problem contains every one of the words. |
 | 78 | 12 | `static Properties fixturePins(Path cache) throws IOException` | Pins of two small fixture archives, the rest as the real pins have them. |
@@ -61,6 +61,6 @@
 | 130 | 1 | **type** `record Fixture(Path cache, Path image, Properties pins)` | A complete, staged fixture image and its cache and pins. |
 | 132 | 8 | `static Fixture staged() throws IOException` |  |
 | 141 | 3 | `static List<String> verify(Fixture f) throws IOException` |  |
-| 145 | 182 | `public static void main(String[] args) throws Exception` |  |
-| 328 | 7 | `static void deleteTree(Path root) throws IOException` |  |
+| 145 | 184 | `public static void main(String[] args) throws Exception` |  |
+| 330 | 7 | `static void deleteTree(Path root) throws IOException` |  |
 

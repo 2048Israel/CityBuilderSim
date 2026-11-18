@@ -312,6 +312,8 @@ public class PackagingCheck {
             check("a failed stage or check goes to the removal of the image", bat.contains("Packaging stage \"%SOURCES%\" \"dist\\%APPNAME%\"\nif errorlevel 1 goto unfit")
                     && bat.contains("Packaging verify \"dist\\%APPNAME%\"\nif errorlevel 1 goto unfit")
                     && unfit > zip && bat.indexOf("rmdir /s /q \"dist\\%APPNAME%\"", unfit) > unfit, null);
+            check("and of this version's zip, an earlier build's left by none", bat.indexOf("del /q \"dist\\%APPNAME%-%APPVER%.zip\"", unfit) > unfit
+                    && bat.indexOf("exit /b 1", unfit) > bat.indexOf("del /q \"dist\\%APPNAME%-%APPVER%.zip\"", unfit), null);
             check("a failed fetch stops the build", bat.substring(fetch).startsWith("Packaging fetch \"%SOURCES%\"\nif errorlevel 1 (")
                     && bat.indexOf("exit /b 1", fetch) < jpackage, null);
             check("nopause neither pauses nor starts the game", bat.contains("if /i \"%~1\"==\"nopause\" (\n    set \"PAUSE=rem\"\n    set \"LAUNCH=\"")

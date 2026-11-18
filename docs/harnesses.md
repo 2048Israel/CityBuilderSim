@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**219 harness files, 25,334 labelled assertions.** AllChecks runs 219 of them.
+**219 harness files, 25,335 labelled assertions.** AllChecks runs 219 of them.
 
 ## Which harnesses read which class
 
@@ -22031,7 +22031,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L757 ...and the owners' cell empty
   - L762 ...the shape from before the hunger's halves, eleven rows, read the same way
 
-## PackagingCheck.java - 53 labelled assertions
+## PackagingCheck.java - 54 labelled assertions
 
 > The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime
 > files, the libraries' texts and the complete corresponding source archives, unchanged, and a
@@ -22104,9 +22104,10 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L310 the JDK is held to the pins and the archives fetched before jpackage
   - L311 the image is staged and checked after jpackage and before the zip
   - L312 a failed stage or check goes to the removal of the image
-  - L315 a failed fetch stops the build
-  - L317 nopause neither pauses nor starts the game
-  - L319 every other pause is %PAUSE%
+  - L315 and of this version's zip, an earlier build's left by none
+  - L317 a failed fetch stops the build
+  - L319 nopause neither pauses nor starts the game
+  - L321 every other pause is %PAUSE%
 
 ## PartnerCallsCheck.java - 90 labelled assertions
 
