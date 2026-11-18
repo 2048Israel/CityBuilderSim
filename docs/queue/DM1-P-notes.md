@@ -74,10 +74,40 @@ and the ship file (40 added, 23 removed):
 1	1	tools/nightly.sh
 ```
 
-## Provisional handoff
+## Launcher dry run and unrelated QW1 finding
 
-The ship file keeps its provisional marker. The ALL dry run is
-`sh tools/gate.sh DM1-P --dry-run --no-tag`, waiting for the orchestrator's
-explicit go after CR1-L's dry run and gate (about 23:45, not permission by
-time alone). No full --pick, ensemble or real dry run has started; no kept
-gate run exists yet. Refresh main before the scheduled run as briefed.
+- Orchestrator go: 20261118-002333-968. Main 873de9427 (0.9.143, CR1-L)
+  merged and pushed before the run. Branch commit:
+  `5711390a0d3160ef0d51fd71195d1391b7c2e956`; main commit:
+  `873de9427d846fa8605e0e8e29a1bce4f02b3d1b`.
+- `sh tools/gate.sh DM1-P --dry-run --no-tag`, launcher timeout 7200s.
+  Retained run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-DM1-P-20261118-002805-6934`.
+  It ran from 00:28 to **gate exit 1 at 01:16:42** on 2026-11-18.
+  The 01:25 cutoff was lifted by mail 20261118-011206-568; its watcher
+  was disabled. No cutoff or timeout ended this run.
+- Checks completed and were sealed (`checks.complete`, `checks.sha256`):
+  203 harnesses, 192 passed, 11 failed, 2773s. Ten failing harnesses have
+  only existing known reds. Only LandNationsCheck is NEW (314.0s).
+- **QW1, not the helper:** LandNationsCheck's already-covered real level-12
+  hover line misses at 10004.40ms. Its unchanged finally block then calls
+  shutdownNow and awaitTermination(10s), throwing at L1734 when that clock
+  expires too. This is beside CPB1's expressly allowed ensemble, the same
+  load class as QW1's queued 10-second fixture repair. No src/ differs from
+  main (`git diff --quiet origin/main HEAD -- src/`, exit 0); the gate
+  names exactly the same C:/ Earth/world files as main's previous launcher.
+- **The diagnostic lines are not failed assertions.** AllChecks.FAILING
+  (L109) matches Exception anywhere and Error at the start; failingLines
+  (L565) copies those lines whenever a harness exits nonzero. It thus copies
+  the deliberate `fixture quote failure` throws (HoverFixture L1547) and
+  eight passing RuntimeException/Error-labelled assertions, each ending OK.
+  They became NEW only when the later QW1 fixture crashed. The two identical
+  intentional-exception lines need one entry. No main baseline was rerun.
+- The ship file has ten precise QW1 rows: the cleanup timeout, that intentional
+  diagnostic, and the eight complete passing lines including their OK suffix.
+  A future FAIL cannot match those OK entries. The exit count follows the
+  covered assertions; no broad exit approval was added. QW1 is already queued
+  (QUEUE.md and docs/queue/FB3-notes.md, The dry run).
+- These changes affect notes/ship only. The source, main and selection remain
+  eligible for rejudging the retained completed run. The gate-run comment is
+  line 1; the provisional marker stays until a green rejudge. No further JVM
+  or suite has started; the orchestrator has the completed verdict and cause.
