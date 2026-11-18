@@ -1741,10 +1741,6 @@ public class CentralBankCheck {
             // put back, before a month has run (MonetaryCheck 5).
             city.getEconomyManager().getTaxPolicy().reset();
             city.getEconomyManager().getTaxPolicy().openAll();
-            // WG1 (2026-11-10): the floor at the going rate, the wage this fixture was written against, before a month has run. A new city's floor is .85 of
-            // the going rate now (a real minimum, WG1), and the unskilled wage then falls to the market's own level in a glut, so the same town at month 72
-            // read a slice of $5.2k against last year's surplus, unused, of $-349.6k; with the floor at the going rate (main's path) the surplus is over the slice.
-            city.getLabourMarket().setMinimumWage(city.getLabourMarket().getGoingRate());
             city.getForeignAccounts().pinRate(1.0);
             /* ...AND EVERY SECTOR HELD, SO THE TREASURY KEEPS ITS SURPLUS (GW1). The fixture's premise is last year's surplus, and its question is how that
                surplus pays a slice, not what the businesses build. On GW1's path (the staffing gate counts the workers an order's posts would draw,

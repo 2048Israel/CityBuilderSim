@@ -483,6 +483,8 @@ public final class TileRaster {
             }
             boolean edged = px >= EDGE_FROM;
             int look = t == null ? BuildingVisual.PLAIN : t.look();
+            // A street across a mine (FB9) keeps its pixels: the mine is drawn over its box, the street's plots put back.
+            int[] across = site >= 0 ? streetsAcross(p, b, px, img, w) : null;
             if (look != BuildingVisual.PLAIN && px >= LOOK_FROM && !p.bpacked[b] && (p.bw[b] > 1 || p.bh[b] > 1 || site >= 0)) {
                 // A materials building as itself (0.8.0, batch I14): its pit, quarry, heaps, works, camp or forest.
                 drawLook(in, t, site, px, edged, img, w, x0, y0, x1, y1);
@@ -494,6 +496,7 @@ public final class TileRaster {
                     }
                 }
             }
+            if (across != null) putBack(p, b, px, img, w, across);
             if (site >= 0 && px >= 4) {
                 // A mine's mark: its resource's colour at its centre, ringed - since 0.8.0 the whole site's centre, so a site
                 // across tiles is marked once.
@@ -511,6 +514,49 @@ public final class TileRaster {
         }
         overBuildings(in, p, px, img);
         atSea(in, p, px, img);
+    }
+
+    /*
+     * THE STREET ACROSS A MINE (batch FB9, 2026-11-18; BF1-M, DM3-R). A mine born on a site after a cell's street was laid
+     * across it keeps the street (TilePainter's THE STREET ACROSS A MINE: the plot is the street's, the mine on the rest of
+     * its site), but a building is drawn over the whole of its box, and a mine's box is its site's plots' bounds. The street's
+     * plots inside it, drawn by the ground and ways() before the buildings, are kept and put back after the mine is drawn,
+     * before its mark: the street through the mine as the painter has it.
+     */
+
+    /** The pixels of the street plots drawn inside mine b's box (Painted.use ROAD), row by row of each plot in the box's order; null for none. */
+    private static int[] streetsAcross(TilePainter.Painted p, int b, int px, int[] img, int w) {
+        int tile = TilePainter.TILE, n = 0;
+        int xe = Math.min(tile, p.bx[b] + p.bw[b]), ye = Math.min(tile, p.by[b] + p.bh[b]);
+        for (int y = p.by[b]; y < ye; y++) for (int x = p.bx[b]; x < xe; x++) if (p.use[y * tile + x] == TilePainter.ROAD) n++;
+        if (n == 0) return null;
+        int[] kept = new int[n * px * px];
+        int k = 0;
+        for (int y = p.by[b]; y < ye; y++) {
+            for (int x = p.bx[b]; x < xe; x++) {
+                if (p.use[y * tile + x] != TilePainter.ROAD) continue;
+                for (int yy = 0; yy < px; yy++) {
+                    System.arraycopy(img, (y * px + yy) * w + x * px, kept, k, px);
+                    k += px;
+                }
+            }
+        }
+        return kept;
+    }
+
+    /** Puts back the pixels streetsAcross() kept of mine b's box. */
+    private static void putBack(TilePainter.Painted p, int b, int px, int[] img, int w, int[] kept) {
+        int tile = TilePainter.TILE, k = 0;
+        int xe = Math.min(tile, p.bx[b] + p.bw[b]), ye = Math.min(tile, p.by[b] + p.bh[b]);
+        for (int y = p.by[b]; y < ye; y++) {
+            for (int x = p.bx[b]; x < xe; x++) {
+                if (p.use[y * tile + x] != TilePainter.ROAD) continue;
+                for (int yy = 0; yy < px; yy++) {
+                    System.arraycopy(kept, k, img, (y * px + yy) * w + x * px, px);
+                    k += px;
+                }
+            }
+        }
     }
 
     /**

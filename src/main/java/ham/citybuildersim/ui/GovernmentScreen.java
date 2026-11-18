@@ -1585,6 +1585,8 @@ final class GovernmentScreen {
                 "Transit", "Repairs", "Arrears paid down", "Crude for the reserve",
                 // ...and the linked bonds' indexation (CD5), on the end for the same reason: in getTotalExpenses() beside the interest.
                 "Inflation uplift on linked bonds",
+                // ...and the licence the city's own patented works paid abroad (R2c-P), in getTotalExpenses() beside the research bill; Research stays last.
+                "Patent licences",
                 // ...and the research grants' posts and laboratories (R3b), the bill NationalAccounts.getTotalExpenses() has carried since R3 and no line named.
                 "Research");
     }
@@ -1624,6 +1626,8 @@ final class GovernmentScreen {
                 na.getReserveCrudeBought(),
                 // ...and the month's indexation of the linked bonds (CD5, spec-city-debt.md 5.4): in getTotalExpenses() at its end.
                 na.getInflationUplift(),
+                // ...and the licence the city's own patented works paid abroad (R2c-P), in getTotalExpenses() beside the research bill; Research stays last.
+                na.getPublicIpCharges(),
                 // ...and the research grants' posts and laboratories (R3), in getTotalExpenses() beside the safety bill.
                 na.getResearchSpending());
     }

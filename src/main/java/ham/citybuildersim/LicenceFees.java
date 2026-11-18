@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * The patent rent on discoveries imported by a city founded the 1900 way.
@@ -330,5 +331,193 @@ public final class LicenceFees {
         double sum = 0;
         for (Sector s : game.getSectors().all()) sum += s.pending().otherInputs.getOrDefault(IP_CHARGES, 0.0);
         return sum;
+    }
+
+    /* ===== THE CITY'S OWN WORKS (R2c-P) ===== */
+
+    /** Whether this template is one of the city's own works, the stacks no sector owns (the bank's branch excepted), which pay their licences too (R2c-P). */
+    static boolean citysWork(Game game, BuildingsTemplate t) {
+        return t != null && game.isCitysToDemolish(t);
+    }
+
+    /** What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). */
+    static double powerDelivered(UtilitiesHandler u, double nameplate) {
+        return Math.max(0, Math.min(u.getConsumption(), Math.max(0, u.getProduction() + nameplate * u.getAverageUtilityFill())));
+    }
+
+    /** What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). */
+    static double waterDelivered(Game game, UtilitiesHandler u, double freshMove, double desalMove) {
+        return Math.max(0, Math.min(u.getWaterConsumption(), UtilitiesHandler.waterOutput(
+                Math.max(0, u.getFreshNameplate() + freshMove), Math.max(0, u.getDesalNameplate() + desalMove),
+                u.getAverageUtilityFill(), u.getFreshCap(), game.getBuildingManager().getFoundingEndowments())));
+    }
+
+
+    /**
+     * One city utility in a state of its fitting, the thing a bill is struck on (R2c-P, REV-R2c-P-1). STANDING: the template's stack, with these
+     * unfitted counts over its `n` buildings (its own state is its getUnfittedView()). NEW: `n` new buildings beside the city as it stands, each
+     * with this one building's unfitted counts. `ids` are the recipes the buildings would run, as RecipeChanges.productionAt() reads them.
+     */
+    record Fitting(Map<String, Long> counts, long n, boolean standing, String[] ids) {
+        /** The stack of `quantity` buildings with these unfitted counts, the grid's nameplate moved from the stack as it stands to this state (R2c-P, REV-R2c-P-1). */
+        static Fitting standing(Map<String, Long> counts, long quantity, String[] ids) { return new Fitting(counts, quantity, true, ids); }
+
+        /** `units` new buildings, each with these unfitted counts, added to the city as it stands (R2c-P, REV-R2c-P-1). */
+        static Fitting added(Map<String, Long> counts, long units, String[] ids) { return new Fitting(counts, units, false, ids); }
+    }
+
+    /** Whether this template is a city utility the licences are struck on: a city work in a city founded the 1900 way, electricity or water (R2c-P, REV-R2c-P-1). */
+    private static boolean utilityWork(Game game, BuildingsTemplate t) {
+        return game.foundedUnfitted() && citysWork(game, t)
+                && (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER);
+    }
+
+    /**
+     * The service delivered with the grid's or the works' nameplate moved by `move`, less that delivered with it moved by `move - drop`, in money
+     * at the tariff the planners price it at (Recipes.pricesOf()): surplus capacity adds nothing (R2c-P, REV-R2c-P-1).
+     */
+    private static double served(Game game, BuildingsTemplate t, double move, double drop) {
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        if (t.getCategory() == BuildingType.ELECTRICITY)
+            return (powerDelivered(u, move) - powerDelivered(u, move - drop)) * prices.pricePerWatt();
+        boolean sea = t.isSeaWater();
+        return (waterDelivered(game, u, sea ? 0 : move, sea ? move : 0)
+                - waterDelivered(game, u, sea ? 0 : move - drop, sea ? move - drop : 0)) * prices.pricePerWaterUnit();
+    }
+
+    /**
+     * The month's public gain of one entry of a city utility in a state of its fitting, in money (R2c-P, REV-R2c-P-1): the service delivered
+     * with it less that delivered without it, at the planners' tariff. pieceId null is the building entry (the state's buildings gone, less
+     * their running cost, `running` a building); a piece is every building of the state lacking it. The grid's nameplate is moved from the
+     * city as it stands to this state (STANDING: the stack's own state moves it nothing; NEW: the new buildings are added to it).
+     */
+    private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running) {
+        long per = f.standing() ? f.n() : 1;
+        double plate = RecipeChanges.productionAt(game, t, f.counts(), per, f.ids());
+        double move = plate * f.n();
+        if (f.standing()) {
+            BuildingsStacks stack = game.getBuildingManager().getStack(t);
+            Map<String, Long> own = stack == null ? Map.of() : stack.getUnfittedView();
+            move = (plate - RecipeChanges.productionAt(game, t, own, per, f.ids())) * f.n();
+        }
+        if (pieceId == null) return served(game, t, move, plate * f.n()) - f.n() * running;
+        Map<String, Long> less = new TreeMap<>(f.counts());
+        less.put(pieceId, per);
+        return served(game, t, move, (plate - RecipeChanges.productionAt(game, t, less, per, f.ids())) * f.n());
+    }
+
+    /** The share of a life's weight (BuildAdvice.LIFE_MONTHS' annuity at the monthly rate i) that a patent's term left at atMonth covers (R2c-P, REV-R2c-P-1): 0 once it has ended, 1 while a whole life fits inside it. */
+    private static double lifeShare(String code, int atMonth, double i) {
+        ResearchCatalog.Entry e = ResearchCatalog.get().entry(code);
+        int left = e == null ? 0 : e.worldMonth() + TERM_MONTHS - atMonth;
+        if (left <= 0) return 0;
+        return annuity(i, Math.min(BuildAdvice.LIFE_MONTHS, left)) / annuity(i, BuildAdvice.LIFE_MONTHS);
+    }
+
+    /** What a month of 1 is worth over `months` at the monthly rate i, as BuildAdvice.lifeFactor() reads it: the level annuity's factor, the months themselves at no rate (R2c-P, REV-R2c-P-1). */
+    private static double annuity(double i, double months) {
+        return i > 0 ? (1 - Math.pow(1 + i, -months)) / i : months;
+    }
+
+    /** One entry's fee on its gain (R2c-P, REV-R2c-P-1): onGain() at atMonth, over a life weighted by lifeShare(); the life's rate (rate[0], NaN till asked) is read only for a fee above nothing. */
+    private static double fee(Game game, String code, int atMonth, double gain, boolean overLife, double[] rate) {
+        double fee = onGain(code, atMonth, game.getResearch(), gain);
+        if (!overLife || !(fee > 0)) return fee;
+        if (Double.isNaN(rate[0])) rate[0] = BuildAdvice.lifeRate(game) / 12;
+        return fee * lifeShare(code, atMonth, rate[0]);
+    }
+
+    /**
+     * The ONE bill of a city utility in a state of its fitting (R2c-P, REV-R2c-P-1): every patented entry once a code (the building's own, and each
+     * piece fitted on some building of the state and known at atMonth), SHARE of its positive entryGain() while its patent runs at atMonth, `running`
+     * a building's cost to run. overLife weights each fee by lifeShare(): the part of BuildAdvice.LIFE_MONTHS' annuity that its term left covers.
+     * 0 unless the city was founded the 1900 way and the template is one of its own electricity or water works. The capture, the public fitting
+     * verdict and the planners' licence all read it, so they bill what the month would.
+     */
+    static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife) {
+        if (f.n() <= 0 || !utilityWork(game, t)) return 0;
+        Research found = game.getResearch();
+        long per = f.standing() ? f.n() : 1;
+        double[] rate = { Double.NaN };
+        Set<String> charged = new HashSet<>();
+        double bill = 0;
+        String code = t.getSinceText();
+        if (charged.add(code) && payable(code, atMonth, found))
+            bill += fee(game, code, atMonth, entryGain(game, t, f, null, running), overLife, rate);
+        for (Equipment piece : t.getEquipment()) {
+            if (f.counts().getOrDefault(piece.getId(), 0L) >= per || !piece.knownAt(atMonth, found)
+                    || !charged.add(piece.getSince()) || !payable(piece.getSince(), atMonth, found)) continue;
+            bill += fee(game, piece.getSince(), atMonth, entryGain(game, t, f, piece.getId(), 0), overLife, rate);
+        }
+        return bill;
+    }
+
+    /**
+     * The month's public gain of one entry on one standing stack of a city utility, in money (R2c-P): the service delivered with it less the
+     * service delivered without it, at the tariff the planners price it at (Recipes.pricesOf()). Surplus capacity adds nothing. pieceId null is
+     * the building entry itself (the stack gone, less its running cost); a piece is every building of the stack lacking it. 0 for a stack
+     * that is not standing or not a utility. The gain billOf() bills for the stack at its own state (REV-R2c-P-1).
+     */
+    public static double publicGain(Game game, BuildingsStacks stack, String pieceId) {
+        BuildingsTemplate t = stack.getBuilding();
+        long q = stack.getQuantity();
+        BuildingType category = t.getCategory();
+        if (q <= 0 || category != BuildingType.ELECTRICITY && category != BuildingType.WATER) return 0;
+        return entryGain(game, t, Fitting.standing(stack.getUnfittedView(), q, t.runningRecipeIds()), pieceId,
+                pieceId == null ? BuildAdvice.rawRunningCostAt(game, t, 0) : 0);
+    }
+
+    /** One standing stack's bill at the month's state, as billOf() strikes it, before any finiteness guard (R2c-P, REV-R2c-P-1). */
+    private static double standingBill(Game game, BuildingsStacks stack) {
+        BuildingsTemplate t = stack.getBuilding();
+        if (stack.getQuantity() <= 0 || !utilityWork(game, t)) return 0;
+        return billOf(game, t, Fitting.standing(stack.getUnfittedView(), stack.getQuantity(), t.runningRecipeIds()),
+                BuildAdvice.rawRunningCostAt(game, t, 0), game.getMonth(), false);
+    }
+
+    /** What the capture would bill this one stack this month (R2c-P, REV-R2c-P-1): its part of capturePublic(); 0 for no stack, a stack that is not a city utility's, or a city not founded the 1900 way. */
+    public static double publicBillOf(Game game, BuildingsStacks stack) {
+        if (stack == null) return 0;
+        double bill = standingBill(game, stack);
+        return Double.isFinite(bill) ? bill : 0;
+    }
+
+    /**
+     * The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices: the sum of
+     * billOf() over the standing stacks at their own state (REV-R2c-P-1), each entry once a stack, SHARE of its positive public gain while its
+     * patent runs. 0 in a city not founded the 1900 way, and for anything not finite.
+     */
+    public static double capturePublic(Game game) {
+        if (!game.foundedUnfitted()) return 0;
+        double bill = 0;
+        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) bill += standingBill(game, stack);
+        return Double.isFinite(bill) ? bill : 0;
+    }
+
+    /**
+     * The planners' licence cost of ONE more building of a city utility (R2c-P, REV-R2c-P-1), added to its running cost: billOf() for one new
+     * building with the pieces it would be fitted with, today, over a life (each fee weighted by the term its patent has left). 0 in a city
+     * not founded the 1900 way, inside another licence pricing, and for any work that is not a city utility.
+     */
+    public static double forNewWork(Game game, BuildingsTemplate t, double running) {
+        if (pricing.get() || !utilityWork(game, t)) return 0;
+        Fitting one = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), 1,
+                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+        double bill = billOf(game, t, one, running, game.getMonth(), true);
+        return Double.isFinite(bill) ? bill : 0;
+    }
+
+    /**
+     * The planners' licence cost of `units` more buildings of a city utility, `monthsAhead` months from now (R2c-P, REV-R2c-P-1): billOf() for the
+     * units together beside the city as it stands (the bill of the whole order, not units times one's), at that month and not over a life: a
+     * patent that has ended by then costs nothing. 0 where forNewWork(game, t, running) is.
+     */
+    public static double forNewWork(Game game, BuildingsTemplate t, double running, long units, int monthsAhead) {
+        if (pricing.get() || !utilityWork(game, t)) return 0;
+        Fitting order = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), units,
+                RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+        double bill = billOf(game, t, order, running, game.getMonth() + monthsAhead, false);
+        return Double.isFinite(bill) ? bill : 0;
     }
 }

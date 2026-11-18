@@ -1057,7 +1057,10 @@ public final class AutoBuilder {
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (!inRemit(t)) continue;
             int id = t.getId();
-            if (ownMeasure(m, t)) spend -= bm.getQuantity(id) * running(game, t);
+            if (ownMeasure(m, t) && game.foundedUnfitted())
+                // R2c-P, REV-R2c-P-1: the spend holds the licence the city's utilities paid, not the one-more fee running() adds.
+                spend -= bm.getQuantity(id) * (running(game, t) - BuildAdvice.licenceOf(game, t)) + LicenceFees.publicBillOf(game, bm.getStack(t));
+            else if (ownMeasure(m, t)) spend -= bm.getQuantity(id) * running(game, t);
             else if (id < site.length && site[id] > 0 && staffedBuilding(t)) spend += site[id] * running(game, t);
         }
         return spend / people;

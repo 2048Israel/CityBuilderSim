@@ -18,6 +18,35 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### WG1-R — WG1's review fixtures cause their own conditions — 2026-11-18, ready, see docs/queue/WG1-R-notes.md
+WG1-D's five going-rate pins (CurveCheck 7, CentralBankCheck 20, HoldersCheck 12-13, HousingCheck's closed homes, KeptCheck 64) were each
+taken out and the section run on the default floor (.85 of the going rate): four read as written, and their pins, out of date since GW1,
+are gone. CurveCheck 7's steep dial is held two points under the dial the market expects to settle at, with its control (the same city a
+month before the hold: 0.50 points from the 1-month to the 10-year, 2.0 asked); HousingCheck counts the months that met the retirement's
+own conditions (56 of 120); KeptCheck 63's fund is paid in from a treasury the fixture makes have the cash (the default floor's stood at
+0.0 and the fund sold to pay), and 64 says whether the figures its desk draws moved (6 of 6). KeptCheck's city keeps its floor at the
+going rate for two lines further on (queued KFP1). What the pins recorded about .85 does not reproduce on 0.9.149: a city held at 15%
+closes 0.713 of its debt's homes on either floor, and the bond desk redraws 6 of 6 months. Harness only; no game class changed.
+
+### 0.9.150 — R2c-P, public works' licence fees — 2026-11-18, ready, see docs/queue/R2c-P-notes.md
+In a city founded the 1900 way the city's own works now pay R2c's patent rent: a patented entry its utilities use (rapid sand, PE5;
+the steam turbine and pulverised coal, PE6 and PE16; the desalination plant, E6; the wind farm, E16) pays `LicenceFees.SHARE` of its
+positive public gain until `TERM_MONTHS` after history's month. The gain is the water or power it delivers over what the city would get
+without it, at the planners' tariff, so surplus capacity adds nothing and a building's running cost comes off. Local finds and
+unpatented entries pay nothing; no berth carries a patented entry, so Freight pays nothing it never earned. Captured at production, the
+bill is paid at the next strike on the city's services line, in the same month's audit as trade, the foreign accounts, the imports and
+a "Patent licences" budget line; saved, no `SAVE_FORMAT` change. The public fitting verdict, a new utility's running cost and the works
+value net the bill the month would strike, only while the patent runs. `PublicLicenceCheck` holds it (67 assertions); a city founded today is untouched.
+
+### 0.9.149 — FB9, the map's renderer and MapCheck's fixtures — 2026-11-18, ready, see docs/queue/FB9-notes.md
+A mine born on a site after a cell's street was laid across it kept the street in the plan, where the buildings beside it
+stand by it, but the painter stood the mine over the whole site and drew the street as the mine: its surface counted and
+not drawn (paved 153 of 156 on main's played city), the street beyond the mine a piece apart, the buildings it served
+beyond reach. The map now draws the street through the mine (TilePainter, and TileRaster keeps its pixels inside the
+mine's box); no building moves and the plans are as they were. MapCheck 8d causes it on any path, plot and pixel; 2h-c's
+mine is born under houses; 14 lays a box on every offer and one across two besides its 200 scattered ones; MapCheck stops
+the JavaFX toolkit before it exits. The 8 known reds filed under FB9 are green; the map only, the playtest unmoved.
+
 ### WC1 — one contract for both builders — 2026-11-18, ready, see docs/queue/WC1-notes.md
 The workflow redesign's last step (Jerus, 2026-11-11): `docs/contract.md`, one file Claude and Codex builders both
 read, holds his standing rules (all of `CLAUDE.md`'s, unchanged in substance) and the process, with every decision of
