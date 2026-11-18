@@ -18,6 +18,13 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FB12 — fixtures on two landmasses — 2026-11-18, ready, see docs/queue/FB12-notes.md
+IslandRailCheck proves a bridge-linked map island's founding-side hub, own
+track and yard on BridgeMapCheck's real terrain. KeptCheck owns ground on a
+second Earth landmass and checks the land office's actual table, its model
+values and its retained nodes through redraws and a changed month. Harnesses
+only; no game class changes.
+
 ### 0.9.151 — HN1, households housed before the matching homes finish — 2026-11-18, ready, see docs/queue/HN1-notes.md
 The landlords' order is no longer held whole when the lender's door refuses it. The plan sized it on the till and the
 lender's test, but the door said no to all of it: for the bank's capital while its leverage ratio binds, or for the down
