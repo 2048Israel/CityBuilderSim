@@ -155,7 +155,7 @@ public final class HistoricalLicenceCheck {
 
     }
     static void publicPieces() throws Exception {
-        System.out.println("--- public patent estimates carry no phantom firm royalty (R2c-P) ---");
+        System.out.println("--- public patent estimates net the city's own licence and carry no firm royalty (R2c-P) ---");
         for (String code : new String[] { "PE5", "PE6", "PE16" }) {
             Game g = town("R2d-public-" + code, true);
             HistoricalRecipeCheck.allExcept(g, code);
@@ -165,8 +165,9 @@ public final class HistoricalLicenceCheck {
             double gross = RecipeChanges.gainOf(g, t, piece);
             check("fixture: " + code + " is a municipal upgrade with positive gain during its patent term",
                     !t.isOwnedBySector() && gross > 0 && LicenceFees.payable(code, g.getMonth(), g.getResearch()), "gross " + gross);
-            check("the public fitting estimate keeps the whole gross gain for " + code,
-                    near(EquipmentFit.verdictForNew(g, t, piece).gain(), gross), "net " + EquipmentFit.verdictForNew(g, t, piece).gain() + " gross " + gross);
+            check("the public fitting estimate nets the patent share of the gross gain for " + code,
+                    near(EquipmentFit.verdictForNew(g, t, piece).gain(), gross * (1 - LicenceFees.SHARE)),
+                    "net " + EquipmentFit.verdictForNew(g, t, piece).gain() + " gross " + gross);
             HistoricalRecipeCheck.silent(() -> g.simulateMonths(2));
             check("the public " + code + " upgrade creates no firm bill or new-building royalty",
                     LicenceFees.forNew(g, t) == 0 && LicenceFees.paid(g) == 0 && LicenceFees.accrued(g) == 0, "");
