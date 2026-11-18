@@ -298,6 +298,8 @@ settings resume with 46 cases left, keeping all 34 completed records and
 without rearming the past cutoff. It finishes all **80 of 80** cases, with
 no missing or short runs, exit 0. The resumed segment takes 29.0 minutes;
 the earlier segment and nightly pause are recorded above.
+The 80 kept time records total 550.665 run-minutes; interrupted partial
+attempts are not counted in that total.
 
 | result | CPB1 | baseline 0.9.140 |
 |---|---|---|
@@ -315,3 +317,19 @@ criterion is not counted. The raw score, summary and case files remain in
 with only the heading and introductory version changed to the publisher's
 next-version token. Snapshot provenance remains 272cacc55 and both shared
 data paths are named. No main ensemble was rerun for comparison.
+
+## Dry-run preparation
+
+After committing the baseline, main 442ad3935 (CR1-L 0.9.143 and DM1-P)
+is merged in 337c39e3c. Incoming source changes since FB8 are Credits,
+CreditsCheck, UserInterface and GameVersion, plus the POM and process scripts;
+the orchestrator confirms no simulation model change, so the ensemble stays
+valid. Only generated indexes conflict and are regenerated.
+
+`target/cpb1-pre-gate-fast.log`: exit 0, compile 68 seconds, maps regenerated,
+zero firm Stale findings and 187 soft. `tools/pick.sh origin/main HEAD` is
+ALL, 219 harnesses; its review line is "not needed - no money, saves or
+threading in the diff" (the separate stranger review and its mends are
+recorded above). `known-reds.sh CPB1 docs/queue/CPB1-ship.md` exits 0.
+The provisional marker remains. The merge dry run has not started; its
+machine slot is requested from the orchestrator.
