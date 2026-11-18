@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-BW1-quCobx0m -->
 <!-- readiness: provisional -->
 ## changelog
 ### BW1 — the workflow says where it is — 2026-11-18, ready, see docs/queue/BW1-notes.md

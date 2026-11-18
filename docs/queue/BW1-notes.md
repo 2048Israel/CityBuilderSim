@@ -121,11 +121,29 @@ launcher, to `docs/queue/BW1.md`. Scripts and docs only; untagged.
   does not exist before any case.
 - On the laptop: `sh tools/bus.sh state BW1 building ...` wrote
   `cbs\state\batches\BW1.txt` (step building, the builder, model, session and
-  branch). The dry runs: on the orchestrator's go, below.
+  branch). Main 28ee126e8 (0.9.150: R2c-P, WG1-R, R1f) merged first, touching
+  none of BW1's files, `--fast` green on the merge (891532002).
+- `sh tools/gate.sh BW1 --branch-gate --dry-run --no-tag`, on the
+  orchestrator's go: **exit 0**, kept run `/tmp/cbs-gate-BW1-quCobx0m`
+  (15:21-15:55): `--fast` green, `nightly selftest OK`, `selftest: 167 of
+  167 passed`, the tree as it was. `cbs\state\gate.txt`, watched every two
+  seconds, went merge (15:21:16), suite (15:21:37), maps (15:22:17), suite
+  again for the self-tests (15:22:38), done (15:54:57): run 1, both commits,
+  version 0.9.150, machine, `C:/...` log, dry_run yes, pid, started, then
+  outcome passed, published no, known_reds 0. No message, and the batch's
+  own file left at building.
+- The same, stopped by hand past its maps step (`sh tools/gate.sh --stop
+  /tmp/cbs-gate-BW1-QFKNpj23`, exit 130): `gate.txt` went merge, suite, maps,
+  stopped, run 2, outcome cancelled, published no. Exactly one message, in
+  BW1's own mailbox (`bus\BW1`, the only message file written in the bus
+  since the run began): an urgent instruction, "BW1's dry run stopped,
+  cancelled: stopped by --stop; origin refs unmoved", "Nothing of the batch's
+  to mend.", the log, "0 unnamed line(s):". It woke this session through the
+  mail hook, as a launched builder's would be.
 
 ## One in, one out
 
-`git diff --numstat origin/main` (2d895d646) over the process files, the notes
+`git diff --numstat origin/main` (28ee126e8) over the process files, the notes
 and ship file left out: 211 added, 78 removed, 133 more.
 
 | file | + | - |
