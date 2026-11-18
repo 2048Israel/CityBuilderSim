@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HN1, households housed before the matching homes finish — 2026-11-18, ready, see docs/queue/HN1-notes.md
 The landlords' order is no longer held whole when the lender's door refuses it. The plan sized it on the till and the
