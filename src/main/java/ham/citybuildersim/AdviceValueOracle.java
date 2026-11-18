@@ -35,9 +35,9 @@ final class AdviceValueOracle {
         Ground ground = new Ground(g, t, land);
         double invoice = quote.total + ground.use(s.paving() ? footprint : g.landNeededFor(t, s.count()));
         double available = g.getAutoBuilder().spendableForMeasure(g, measure) - (g.getCash() - treasury);
-        double initialFinance = credit(g, Math.max(0, invoice - available), nominal,
+        double[] initialFinance = credit(g, Math.max(0, invoice - available), nominal,
                 BuildAdvice.LIFE_MONTHS);
-        available = Math.max(0, available - invoice);
+        available = Math.max(0, available + initialFinance[1] - invoice);
         double perUnitReturned = 0;
         double[] wages = g.getPopulationManager().getWagesPerType(), fill = g.getPopulationManager().getJobFillRate();
         if (!s.paving()) for (JobType job : JobType.values())
@@ -47,7 +47,7 @@ final class AdviceValueOracle {
         double openFactor = Math.abs(monthly) > 1e-12 ? (1 - Math.pow(1 + monthly, -openMonths)) / monthly : openMonths;
         double returned = perUnitReturned * openFactor * Math.pow(1 + monthly, -opening);
         perUnitReturned /= s.count();
-        double capitalLater = 0, financing = initialFinance, operating = 0, saved = 0, units = 0, weights = 0, unitMonths = 0;
+        double capitalLater = 0, financing = initialFinance[0], operating = 0, saved = 0, units = 0, weights = 0, unitMonths = 0;
         long additions = 0;
         double nextLead = g.quoteBuild(t, 1).months;
         if (!Double.isFinite(nextLead)) nextLead = 0;
@@ -81,9 +81,10 @@ final class AdviceValueOracle {
                     double discount = Math.pow(1 + monthly, -paidDate);
                     capitalLater += (build + BuildAdvice.landValue(g, t.getLandSqFt() * (double) extra, free)) * discount;
                     double needed = build + ground.use(g.landNeededFor(t, extra));
-                    financing += credit(g, Math.max(0, needed - available), nominal,
-                            Math.min(BuildAdvice.LIFE_MONTHS - paidDate, Game.BUILD_BOND_YEARS * 12)) * discount;
-                    available = Math.max(0, available - needed);
+                    double[] loan = credit(g, Math.max(0, needed - available), nominal,
+                            Math.min(BuildAdvice.LIFE_MONTHS - paidDate, Game.BUILD_BOND_YEARS * 12));
+                    financing += loan[0] * discount;
+                    available = Math.max(0, available + loan[1] - needed);
                     additions += extra;
                     planned = BuildAdvice.plus(planned, Map.of(t, extra));
                 }
@@ -176,52 +177,93 @@ final class AdviceValueOracle {
         return new double[] {ratio > 0 ? demand / ratio : 0, demand};
     }
 
-    private static double credit(Game g, double gap, double discount, double months) {
-        if (!(gap > 0)) return 0;
+    /** Present cost and cash actually raised, including the quoted granule's excess. */
+    private static double[] credit(Game g, double gap, double discount, double months) {
+        if (!(gap > 0)) return new double[] {0, 0};
         DebtQuote q = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE,
                 g.getAutoBuilder().getCap());
-        double coupon, spread;
+        double coupon, spread, proceeds = gap;
         if (q.cashReceived() > 0) {
             double scale = Math.max(1, gap / q.cashReceived());
             coupon = q.monthlyInterest() * scale;
             spread = (q.faceValue() - q.cashReceived()) * scale;
+            proceeds = q.cashReceived() * scale;
             months = Math.min(months, q.auction() == null ? q.duration() * 12 : q.auction().ask().months());
         } else {
             coupon = gap * Math.max(0, g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12)) / 12;
             spread = 0;
         }
         double annuity = Math.abs(discount) > 1e-12 ? (1 - Math.pow(1 + discount, -months)) / discount : months;
-        return spread + coupon * annuity;
+        return new double[] {spread + coupon * annuity, proceeds};
     }
 
     private static final class Ground {
         final Game game;
         final Set<Integer> parcels = new LinkedHashSet<>();
+        final LandManager.Use use;
+        double dry, steep, forest, taken, works, runs;
         double free, paid;
         Ground(Game g, BuildingsTemplate t, double free) {
             game = g;
+            use = Game.groundUse(t);
+            LandManager land = g.getLandManager();
+            dry = land.getLinkedOwnedSqFt();
+            steep = land.getSlopeSqFt() - land.getLandmasses().unlinkedReliefSqFt(CityLand.RELIEF_STEEP)
+                    - land.getLandmasses().unlinkedReliefSqFt(CityLand.RELIEF_VERY_STEEP);
+            forest = land.getLinkedForestSqFt();
+            taken = land.getLinkedAllocatedSqFt();
+            works = land.getWorksSqFt();
+            runs = land.getRunsSqFt();
             this.free = Math.max(0, free + (g.getLandManager().freeForAnyone(Game.groundUse(t))
                     - g.getLandManager().getAvailableSqFt()));
         }
+        private double available() {
+            double wanted = 0;
+            Zoning zones = game.getLandManager().getZoning();
+            for (Zoning.Zone zone : zones.zones())
+                wanted += Math.max(0, zone.targetSqFt(dry) - zone.usedSqFt());
+            double open = Math.max(0, dry - taken - zones.keptShare() * forest - wanted);
+            if (use == LandManager.Use.WORKS) return open;
+            if (use == LandManager.Use.BUILDING) {
+                double slopeAfterRuns = steep - (dry > 0 ? Math.min(steep, runs * steep / dry) : 0);
+                return Math.max(0, open - Math.max(0, slopeAfterRuns - works));
+            }
+            double share = dry > 0 ? (dry - steep) / dry : 0;
+            double runLimit = dry - taken;
+            if (share > 0) runLimit = Math.min(runLimit, (dry - steep - taken + works + runs) / share - runs);
+            return Math.max(0, Math.min(open, runLimit));
+        }
         double use(double area) {
-            double shortage = area - free, cash = 0;
-            if (shortage > 0) {
+            double cash = 0, estimated = 0;
+            while (area > free) {
+                double shortage = area - free;
                 AutoBuilder.Ground bought = AutoBuilder.groundFor(game, shortage, parcels);
                 if (bought == null) {
-                    cash = shortage * game.getLandManager().getOfficePricePerSqFt();
-                    free += shortage;
+                    cash += shortage * game.getLandManager().getOfficePricePerSqFt();
+                    estimated += shortage;
+                    free = area;
                 } else {
+                    double previous = available();
                     for (LandParcel parcel : bought.offers()) {
                         parcels.add(parcel.getId());
-                        free += parcel.getSizeSqFt() - parcel.getUnlinkedDryKm2() * LandManager.SQ_FT_PER_KM2;
+                        double linked = parcel.getSizeSqFt() - LandManager.sqFt(parcel.getUnlinkedDryKm2());
+                        double usable = LandManager.sqFt(parcel.getReliefKm2(CityLand.RELIEF_FLAT)
+                                + parcel.getReliefKm2(CityLand.RELIEF_FOOTHILL) - parcel.getUnlinkedBuildableKm2());
+                        dry += linked;
+                        steep += Math.max(0, linked - usable);
+                        forest += LandManager.sqFt(parcel.getKm2(CityLand.FOREST) - parcel.getUnlinkedForestKm2());
                     }
+                    free += available() - previous;
                     List<Integer> ids = new ArrayList<>(parcels);
                     double bill = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
-                    cash = bill - paid;
+                    cash += bill - paid;
                     paid = bill;
                 }
             }
             free -= area;
+            taken += area - estimated;
+            if (use == LandManager.Use.WORKS) works += area - estimated;
+            if (use == LandManager.Use.RUN) runs += area - estimated;
             return cash;
         }
     }
