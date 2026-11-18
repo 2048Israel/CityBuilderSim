@@ -116,3 +116,5 @@ docs/notes/known-reds.txt (LX1's two LongPlaytest entries under FB8) and LX1-not
   DISTRICT + 1 to DistrictPlan.FRAME.
 - Check by hand (target/fb8/mutant-r-src): with DISTRICT_MOST = 2,896 the new line FAILs (the old one passed there);
   on the fix it is OK.
+- `./batch-check.sh MapCheck` on the mend: exit 3, known red only (FB9's same four lines), 4b's new line and 4c's six
+  OK; maps regenerated, Stale 0 firm.
