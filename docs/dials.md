@@ -2,9 +2,9 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,155 constants in 589 files.**
+**6,173 constants in 591 files.**
 
-## model (2926 constants)
+## model (2936 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -847,14 +847,24 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 36 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
-| 39 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
-| 42 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
-| 45 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
-| 48 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
-| 51 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
-| 56 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
-| 67 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource))` | The shared snapshot of the page's sections and complete legal texts. |
+| 48 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
+| 51 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
+| 54 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
+| 57 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
+| 60 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
+| 63 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
+| 68 | `Credits.MICROSOFT` | `"/credits/microsoft/NOTICE.txt"` | The notice that names Microsoft's runtime files the game carries and the terms they come under (CR1-J). |
+| 71 | `Credits.MICROSOFT_FILES` | `List.of(MICROSOFT, "/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt", "/credits/mic...` | The notice and Microsoft's licence terms in full: the Visual C++ 2015-2022 runtime's, and the Windows SDK's, whose Distributable Code the Universal C Runtime is. |
+| 75 | `Credits.SOURCE_PINS` | `"/credits/source-archives.properties"` | The source archives' pins: each archive's file, version, origin and SHA-256 (CR1-J); tools.Packaging stages them. |
+| 78 | `Credits.SOURCE_FOLDER` | `"source"` | The folder beside the exe that holds the complete corresponding source archives and their README. |
+| 81 | `Credits.LEGAL_FOLDER` | `"legal"` | The folder beside the exe that holds a copy of tools/credits, the libraries' and Microsoft's texts. |
+| 84 | `Credits.RUNTIME_LEGAL` | `"runtime/legal"` | The runtime's legal folder as the exe ships it, beside the exe; the page reads it from java.home. |
+| 87 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 91 | `Credits.MICROSOFT_LEAD` | `"Microsoft's C and C++ runtime libraries, which the Java runtime and OpenJFX's " + "gra...` | The line above Microsoft's notice and terms. |
+| 101 | `Credits.COPYRIGHT` | `"Copyright(c) 2026 Jerus"` | The game's own copyright notice. |
+| 104 | `Credits.GAME_NOTICE` | `GameVersion.NAME + " is " + COPYRIGHT + ".The game's own code, rules, " + "tables, art ...` | The page's first section: whose the game is, and that the works below are their authors'. |
+| 116 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource, javaHome()))` | The shared snapshot of the page's sections and complete legal texts. |
+| 197 | `Credits.REFERENCE` | `Pattern.compile("\\A\\s*Please see(\\S+)\\s*\\z")` | jlink's note in place of a file another module already ships: on Windows, where it makes no links, "Please see ..\java.base\LICENSE"; the path is relative to the module's folder. |
 
 ### Crime.java ([map](map/Crime.md))
 
@@ -1675,7 +1685,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.143"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.144"` | Bump on release. |
 | 8306 | `GameVersion.SAVE_FORMAT` | `55` | The save shape. |
 | 8359 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `55` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8367 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -5800,7 +5810,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1751 constants)
+## harnesses (1752 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5814,7 +5824,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck...` | Every harness: the gate and nightly selections together cover this registry. |
+| 40 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignChe...` | Every harness: the gate and nightly selections together cover this registry. |
 | 58 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
 | 61 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
 | 64 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (Ma... |
@@ -7579,6 +7589,12 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 515 | `OwnerCheck.CRUMB` | `1e-3` | The most of a company with no family the owner cell may hold, as a part of the shares in issue: the line's stakes come with a family, and what is over is the crumbs of the pool a growing cell claim... |
 | 518 | `OwnerCheck.LOG` | `new java.io.ByteArrayOutputStream()` | The game's log while a city runs: kept, and read for the families that rejoin the population and why. |
 
+### PackagingCheck.java ([map](map/PackagingCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 78 | `PackagingCheck.CREDITS` | `Packaging : : credit` | The jar's credits texts, as Build EXE.bat's java -cp reads them. |
+
 ### PartnerCallsCheck.java ([map](map/PartnerCallsCheck.md))
 
 | line | constant | value | says |
@@ -8468,7 +8484,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 99 | `ZoningViewCheck.ORDERS` | `{ { "House", "580" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | ZoningCheck's orders: a small city with homes, shops, diners and works. |
 | 105 | `ZoningViewCheck.CITY_KM2` | `80` | The ground the city is drawn to round the default world's founding site: ZoningCheck's land office's 80 km², forest and bare ground both. |
 
-## tools (69 constants)
+## tools (76 constants)
 
 ### ChipRender.java ([map](map/ChipRender.md))
 
@@ -8561,6 +8577,18 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 277 | `Names.LANGUAGE` | `Set.of("abstract", "boolean", "break", "byte", "case", "catch", "char", "class", "const...` | Words a backtick holds that are Java's, the codebase's conventions' or the shell's, not the tree's. |
 | 286 | `Names.OBJECT` | `Set.of("equals", "hashCode", "toString", "getClass", "clone")` | What every object has, and every enum. |
 | 287 | `Names.ENUM` | `Set.of("values", "valueOf", "ordinal", "name", "compareTo")` |  |
+
+### Packaging.java ([map](map/Packaging.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 63 | `Packaging.MICROSOFT_DLL` | `Pattern.compile("(?i)(?:msvcp\|vcruntime\|ucrtbase\|api-ms-win-\|concrt\|vccorlib\|vcomp\|mfc)...` | A file name that is one of Microsoft's C or C++ runtime libraries, by its family's name. |
+| 66 | `Packaging.MICROSOFT_COVERED` | `Pattern.compile("(?i)(?:msvcp140(?:_[12])?\|vcruntime140(?:_1)?\|ucrtbase\|api-ms-win-[a-z...` | The Microsoft files tools/credits/microsoft/NOTICE.txt names and whose terms were audited; another needs a new audit. |
+| 69 | `Packaging.GPL2` | `"Version 2, June 1991"` | The words that open the GNU GPL, version 2, as OpenJDK's legal/java.base/LICENSE carries it. |
+| 72 | `Packaging.NFTC` | `"No-Fee Terms and Conditions"` | The words that mark Oracle's No-Fee Terms and Conditions, which bar the sold game; a runtime carrying them is refused. |
+| 75 | `Packaging.README` | `"README.txt"` | The README written beside the archives. |
+| 81 | `Packaging.REAL` | `new Probes(Packaging : : runtimeStrings, Packaging : : fxVersion)` | The real probes: the runtime's java.base version constants, and the jar's OpenJFX build. |
+| 141 | `Packaging.DATA_NOTICES` | `Map.of("data/earth-2-ATTRIBUTION.txt", Credits.EARTH, "data/world-ATTRIBUTION.txt", Cre...` | The attribution files beside the data, each with the jar's copy it must equal (Build EXE.bat copies them). |
 
 ### ReliefRenders.java ([map](map/ReliefRenders.md))
 

@@ -1,0 +1,11 @@
+Microsoft's runtime libraries in Civic Ledger
+
+Civic Ledger is Copyright (c) 2026 Jerus. It carries these files of Microsoft's, unmodified and signed by Microsoft. Copyright (c) Microsoft Corporation. All rights reserved.
+
+They come with the game's Java runtime, in runtime\bin, and with OpenJFX's graphics library, inside the game's jar in app\, which unpacks them into the .openjfx folder in your user folder when the game starts.
+
+The Microsoft Visual C++ 2015 - 2022 runtime: msvcp140.dll, msvcp140_1.dll, msvcp140_2.dll, vcruntime140.dll and vcruntime140_1.dll. They are Distributable Code of Microsoft Visual Studio 2022, distributed under the Distributable Code terms of its licence. Your use of them is subject to the Microsoft Software License Terms for the Microsoft Visual C++ 2015 - 2022 Runtime, in full in LICENSE-vc-runtime-2015-2022.txt beside this notice.
+
+The Universal C Runtime: ucrtbase.dll and the api-ms-win-*.dll files. They are Distributable Code of the Microsoft Windows Software Development Kit, distributed under the Distributable Code terms of its licence, in full in LICENSE-windows-sdk.txt beside this notice; on Windows 10 and later, Windows uses its own copy of them.
+
+They are licensed, not sold, and only as a part of this game, and only to run on Windows. Microsoft provides them as is and gives no warranty for them. Both licences are also on the game's Credits page.

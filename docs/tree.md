@@ -950,9 +950,16 @@ adds its line here, not in `CLAUDE.md`.
         Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
                                    fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
                                    screen (UserInterface.showCreditsMenu(), from the title screen and the Esc menu); no JavaFX
+                                   (CR1-L: Gson and OpenJFX; CR1-J: the Java runtime's runtime/legal read from the image it runs on,
+                                   Microsoft's Visual C++ runtime terms, and source/README.txt for the two source archives beside the exe)
         CreditsCheck.java          the page held to the files: every ATTRIBUTION copy in Build EXE.bat is a section whose text is
                                    the file exactly, the fonts' notice over OFL.txt in full, a missing file named beside the exe,
                                    the paragraphs losing no line, and both files saying "Credits page"
+                                   (CR1-J: a fixture runtime's legal folder in order, its references resolved, a dangling one missing;
+                                   the Microsoft terms whole and every DLL in OpenJFX's jar named; the source section the README)
+        PackagingCheck.java        tools.Packaging on fixture images (CR1-J): a complete one passes; a missing or changed source
+                                   archive, a lost notice, a dangling legal reference, an Oracle or NFTC runtime, another OpenJFX
+                                   build, an unnamed Microsoft DLL each fail; the pins held to pom.xml and Build EXE.bat's order
         DistressBleedCheck.java    the distress rule for a lent price taker (AQ1), on a town of eight Contact Centres and a minimum wage
                                    lifted until Business Services loses money on its operations: nothing sold under the dial, one a
                                    step from the dial while the desk lends, never faster than BLEED_MONTHS, nothing sold on a loss that
@@ -1010,7 +1017,7 @@ adds its line here, not in `CLAUDE.md`.
                                    -Dplaytest.budget=N prints the treasury's month line by line; since
                                    0.8.14 (batch CL3) its layout watch: how many boxes the map moved
                                    between month pairs, and where industry and the homes stand
-        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
+        tools/                     the index generators, the two look-up tools, Stale (the prose check), Names (a branch's names checked, RV1), ManualToMarkdown (the manual into docs/), Packaging (CR1-J: Build EXE.bat's JDK check, the source archives fetched, staged and the image verified), LandTable (world/land-2024.json from tools/world/land.tsv, WN5) and IslandRailRenders (RI1-C: IslandRailCheck's linked island and its railway drawn, docs/queue/RI1/); nothing in the game uses them
     src/main/resources/buildings.json    the balance file (ids permanent); consumption.json the basket;
                                          research.json the research catalogue (R2; codes permanent);
                                          fonts/ the eight IBM Plex files and their licence, OFL.txt (0.7.21);
@@ -1026,6 +1033,9 @@ adds its line here, not in `CLAUDE.md`.
                                          tools/world/measures.py and read by WorldMeasures; and land-2024.json,
                                          each nation's land a hectare (WN5), made by tools.LandTable from
                                          tools/world/land.tsv and read by LandFactors
+    tools/credits/                       the libraries' notices the jar carries under credits/ (CR1-L), Microsoft's VC++ and SDK terms
+                                         and our notice (CR1-J), sources.properties their provenance, source-archives.properties
+                                         the OpenJFX, Temurin and temurin-build archives pinned by version and SHA-256 (CR1-J)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
