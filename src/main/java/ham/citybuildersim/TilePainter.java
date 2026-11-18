@@ -777,10 +777,16 @@ public final class TilePainter {
             p.use[i] = RAIL;
             p.sidingLaid++;
         }
-        // The plan's streets: each plot's surface, width and role; across the track a level crossing, beneath a highway a street passing under.
+        // The plan's streets: each plot's surface, width and role; across the track a level crossing, beneath a highway a street passing under;
+        // across a mine born on it, the street (a street on a mine's site, a run's plot left as it was: FB9's THE STREET ACROSS A MINE).
         for (int i = 0; i < PLOTS; i++) {
             int code = in.street[i] & 0xff;
-            if ((code & S_KIND) == DistrictPlan.NONE || p.use[i] == BUILDING) continue;
+            if ((code & S_KIND) == DistrictPlan.NONE) continue;
+            if (p.use[i] == BUILDING && acrossMine(in, p, i, code)) {
+                p.use[i] = EMPTY;
+                p.bld[i] = 0;
+            }
+            if (p.use[i] == BUILDING) continue;
             if (p.use[i] == ROAD && p.road[i] == BuildingVisual.HIGHWAY && in.fixed[i] != 0 || (code & S_KIND) == DistrictPlan.UNDER) {
                 if (p.use[i] == ROAD && p.road[i] == BuildingVisual.HIGHWAY) {
                     p.beneath[i] = true;
@@ -895,6 +901,30 @@ public final class TilePainter {
     }
 
     /* --------------------------------------------- the mines on their sites */
+
+    /*
+     * THE STREET ACROSS A MINE (batch FB9, 2026-11-18; BF1-M, DM3-R). A plan lays no street on a mine's site (SITE_MINED bars a
+     * cell's lines, the join, the wall's way and the avenues), but a mine born on a site after a cell's street was laid across it
+     * - a site record the plan replays at its month (DM2) - leaves that street in the plan, as FX7 leaves a street under a run laid
+     * later and MF2 the cells' streets under a reserve: the buildings beside it stand by it, and it is the network's. standMines()
+     * stands the mine on the whole of its site first, and the streets' loop skipped every plot a building stood on, so the street's
+     * plots were drawn as the mine: their surface counted by the plan and drawn by nobody, the street beyond the mine a piece the
+     * city's own ground joins, and the buildings it served beyond REACH of any drawn street.
+     * WHY: MapCheck's played city on 0.9.148 had a mine born at m66 on six plots of a cell's arterial: 3 paved plots of 156 not
+     * drawn and its 12-plot stub beyond the mine a piece apart (MapCheck 1 and 8). BF1-M's 67-plot piece on BF1's path and
+     * DM3-R's 1.5 plots and six buildings beyond REACH on HW1's were the same arterial, mine and stub. Taking the street up in the
+     * plan instead (tried first) left the boxes beside a mine out of reach of every street (PlanCheck 14 (g): 12 of 402 rim
+     * districts of the dense city), MF2's finding for a reserve.
+     * HOW: a plan street on a plot a mine stands on, with no run of the city's on it (a highway over a mine still stands over it
+     * and its street beneath it is the mine's, as before), is drawn as the street, the mine on the rest of its site; TileRaster
+     * keeps the street's pixels inside the mine's box (THE STREET ACROSS A MINE there).
+     */
+
+    /** Whether plot i, a mine's, carries the plan's street `code` across it: a mine stands there (Painted.bsite), no run lies on it, and the street is one the loop paints (kindOf()), not one passing under a highway. */
+    static boolean acrossMine(Input in, Painted p, int i, int code) {
+        int b = p.bld[i] - 1;
+        return b >= 0 && p.bsite[b] >= 0 && in.fixed[i] == 0 && (code & S_KIND) != DistrictPlan.UNDER && kindOf(code) != 0;
+    }
 
     /** Each site with a mine or well on it: the mine on the whole of the site's plots here, whoever owns the ground and whatever it is - the field is the city's (0.7.64: an offshore well stands on its water, and a site of a field whose centre the city bought, lying past its ground, still carries its mine). */
     private static void standMines(Input in, Painted p) {
