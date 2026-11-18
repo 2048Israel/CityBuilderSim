@@ -169,6 +169,60 @@ batch verdict PASS, hard criteria 10/10. M1 is 0 months on every policy, and F1 
 - The two traced default playtests above (main and branch), one JVM at a time.
 - `sh tools/pick.sh origin/main HEAD`: ALL 221 harnesses (AllChecks.java runs the suite), so the full pick is the dry
   run's. Review: "not needed - no money, saves or threading in the diff".
+- The dry run (`/tmp/cbs-gate-HN1-7jjAaTes`, 32138d2b2: main d6844edc4 merged, 0.9.151): the suite ran 221 harnesses in
+  2,513 s and the gate stopped, exit 1, on 30 unnamed lines in three harnesses (5a). Each is main's code on HN1's moved
+  path, none of them the door's, and each is named in the ship file's `## known-reds`. Judged again with those rows
+  (`KnownReds`, the kept `suite.txt`, main's `gate.txt`): "known red only - 12 harnesses", no NEW line. The ship file's
+  first line names the run for the gate to reuse.
+
+## 5a. The dry run's three reds, traced
+
+Each was traced on the branch with scratch probes, one JVM at a time. The probes were in `target/hn1/probe`, with an
+instrumented copy of `OrderBook` on their own classpath, so the tree was not edited.
+
+**DenominationCheck, a decade on: 8 lines, 3.5e-8 to 1.3e-6 apart against 1e-9.** The plain city and the one reformed
+a hundred to one at m121 part first at m179, in the share book.
+- This fixture's desk is full (the harness says so itself). So the desk's room is `Exchange.deskLimits()`'s book limit,
+  `(BOOK_LIMIT * equity - bookAtFair) / fair`: the difference of two equal money sums.
+- That room, in Retail at the end of each month, plain city against reformed one: m176 2.2e-10 against 1.7e-10, m177
+  8.2e-10 against 8.0e-10, m178 1.05934e-9 against 6.82e-10. `OrderBook.DUST` is 1e-9 shares.
+- In m179, a household's sale of Retail fills the plain desk's bid for exactly 1.0593e-9 shares. It passes the reformed
+  desk's by.
+- The reformed desk's room then takes 6.3e-9 shares of Real Estate that the plain desk does not, at its bid, and that
+  fill becomes the Real Estate book's last price.
+- So the household's next ask is 2% apart (0.0044016 against 0.0043145) and Real Estate's shares in issue 3,073,062
+  against 3,074,618 by the month's end. Construction's bond buys are 2.7e-9 apart at m181 (201.0278366 against
+  201.0278733), and the headline figures 1e-7 a decade on. The fills moved about 4e-11 of money.
+- The door is not in it. Real Estate's books agree to 1e-12 through m180, and neither twin writes a mortgage in m181 or m182.
+  What HN1 changed is the path: the door trims in this fixture from m124, nearly every month to m137, and on that path
+  the desk sits full at the dust. Main's path keeps the twins to 1e-14.
+- Queued: **DK1** (the ship file's `## queued`). The desk's room under the arithmetic's resolution of the two sums
+  reads as none.
+
+**PriceLevelCheck section 8, the played twin's history: 11 lines and their summary.** Every line is past the twin's
+horizon.
+- The nudge parts the played twin at 105 of 120 months, and `Child.prefix()` keeps the first 106 entries of every series
+  by index.
+- The history's lists do not start at month 1. `h.month` runs from m2 to m121, and a company's lists start at its
+  listing: Food Processing m62, Mining m43, Manufacturing m17, Industry m10, Luxury Retail and Restaurants m7.
+- So index 57 of Food Processing's share price is m119. Mining's 64 to 76 are m107 to m119, Manufacturing's 90 and 92
+  are m107 and m109, Industry's and Luxury Retail's 102 and 105 are m109 to m112, and `h.m2`'s 105 is m107.
+- The two children were run alone, one at a time (`PriceLevelCheck --twin-played`, at the factor and at today's
+  prices). Every share price and share value in the history agrees to 1.8e-16 through m105, and parts from m107 at the
+  earliest.
+- The class is HP1's third item (`Child.prefix()` keeps the `reload.*` series whole past the horizon). The lines are
+  named HP1, whose trim by the month, not the index, covers the history's late-starting lists if HP1's row says so.
+
+**KeptCheck section 63: 4 lines.** WG1-R's fixture lets the fund's rule go for a month, so that its buys settle
+holdings the fund did not hold.
+- On HN1's path it settled none. The fund held 46 lots before and 43 after.
+- Its cash stood over 3 months' transfer in every month watched (0 under), so WG1-R's top-up held, and cash is not why.
+- On main's default floor it settled 9 (WG1-R's notes).
+- Nothing in the fixture makes a security the fund does not hold exist for the rule to buy: it leans on main's path for
+  one.
+- Not traced further: the city is KeptCheck's 2,500-month path, 10 to 35 minutes a run to section 63.
+- Named **KFP1** (KeptCheck's lines written on its path). Recommended: widen it so the fixture makes that holding exist,
+  for instance with one lot sold by hand before the rule is let go.
 
 ## 6. Left open, each with a recommendation (the ship file's Pending rows)
 
