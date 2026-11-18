@@ -219,6 +219,28 @@ q x running) 2. PublicLicenceCheck is now 67 assertions, about 6 s.
   judges it; if it reds there it goes in the ship file's known-reds with this
   cause and a queued fix.
 
+## The dry run
+
+The second stranger's review (REV-R2c-P-2), on the mends delta
+3bd2f4b14..ae4052915, read only, returned SHIP with no P1 or P2. Its four
+P3s are the ship file's Pending row R2c-P-R.
+
+The dry run on the merge with main 2d895d646 (FB9, 0.9.149) was 8acf984b2,
+run /tmp/cbs-gate-R2c-P-Zx9VwFMb: gate exit 1, suite 3745 s (exit 4).
+Every red but one is named. The unnamed red is KeptCheck at "FAIL: timed out
+after 1740 s" (AllChecks gives a harness four times KeptCheck's usual
+435 s). It was still in section 63 at the limit, and its two FAILs before
+that are main's exact gate.txt lines. Its log ran from 10:49 to 11:18,
+entirely beside HN1's 80-run ensemble (target/ensemble/HN1 on cl-HN1, 09:21
+to 11:23, about ten JVMs). The same run's CentralBankCheck took 1219 s
+(FB9's gate 1057, CPB1's 819) and CopperRefiningCheck 943 s (CPB1's 492).
+The suite took 3745 s against FB9's 2846 and TR2-G's 1645. KeptCheck's
+cities are founded today, where every R2c-P path returns at once (the
+default trace is identical to the byte), so the cause is the machine's load.
+But sections 63 to the end never ran on the merge, so the orchestrator is
+asked to choose: a fresh dry run in a quiet slot (recommended), or a
+known-reds row with a queued fix.
+
 ## The default trace
 
 Main's default LongPlaytest made fresh at c17b92f0f (FB4's retained trace,
