@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-FB10-AMlPXs74 -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FB10, the research checks and the judge — 2026-11-18, ready, see docs/queue/FB10-notes.md

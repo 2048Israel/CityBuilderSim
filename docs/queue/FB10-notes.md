@@ -165,3 +165,16 @@ and row 23 (a derived tally, a count under R2b-J) are FB10's own, vetoed at
 its gate and dropped by the publisher. Row 22 moves to R3b-R through the ship
 file's `## known-reds`. No other row is touched. YoungBankCheck's row 26 is
 OE1's and becomes inert (above).
+
+## The dry run
+
+`sh tools/gate.sh FB10 --dry-run`, 03:13 to 03:55, kept at
+/tmp/cbs-gate-FB10-AMlPXs74 (C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FB10-AMlPXs74).
+It ran branch 728621b6 (batch/FB10 after merging main 0.9.144) on main 1cb13fff. Gate exit 0.
+The suite took 2,431 s and exited 3: known red only, 12 harnesses, and 0 unnamed lines.
+PrizeCheck is known red on its one section 20 line under R3b-R, with its exit and its
+"PrizeCheck: 1 FAILED of 285" following it. ResearchViewCheck and KnownRedsCheck are green.
+The other eleven are main's recorded reds, by name.
+The playtest is not moved: Game gained an unsaved record of the lab order's quote and
+nothing reads it but PrizeCheck. After the dry run only these notes and the ship file
+changed.
