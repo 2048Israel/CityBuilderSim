@@ -340,3 +340,20 @@ pool audit, either household DOMESTIC flows or the named TRADE/MONEY/FINANCIAL l
 No save-format bump: the upkeep pending field is additive and missing means no previously booked
 upkeep. DataSave and HistorySave still carry SectorState through the ordinary load path; save and
 read checks are required again below.
+
+### Checks on f56f6f5ac (before HN1/LM1-D)
+
+`./batch-check.sh --fast`: exit 0, compile 49 s, regenerated indexes, 0 firm Stale findings
+(187 soft). `sh tools/pick.sh origin/main HEAD`: ALL, 221 harnesses; review needed for money
+(Bank, BondMarket). No full pick was run: the scheduled dry run is that verdict.
+
+`./batch-check.sh GdpCheck`: exit 0, 14 s suite. The bank paid 14.75 in both fixtures: with no
+Business Services seats its import is 14.75 (whole-sector imports 208.25, national accounts 193.49,
+GDP 185.05 versus 170.30 counting the bank import); with 600 seats the import is 11.07 (whole
+265.87, accounts 254.80, GDP 259.93 versus 248.87). The five services' line is 17.70 without seats,
+13.28 with the office. These replace the old comparison where figures changed, keeping the same
+claim and tolerances. Logs: target/HL1-GdpCheck.txt and target/checks/GdpCheck.log.
+
+Named calls use one name per batch-check invocation and `-Dcbs.parallel=1` explicitly: AllChecks
+matches substrings, so BankCheck also selects CentralBankCheck and YoungBankCheck. The first Bank
+invocation exposed that matcher; subsequent calls serialize its selected harnesses as well.
