@@ -338,7 +338,7 @@ left alone. Main's QB1 ScaleCheck fixture month 225 replaces HL1's obsolete mont
 scan narrative. These two decisions keep main's repaired fixtures; fresh checks decide whether the
 new path still causes their premises. Orchestrator notified before resolving KeptCheck.
 
-? Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
+★ Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
 valuation is not income from or spending by a household. All real new money flows remain in the
 pool audit, either household DOMESTIC flows or the named TRADE/MONEY/FINANCIAL lanes beside them.
 No save-format bump: the upkeep pending field is additive and missing means no previously booked
@@ -581,3 +581,7 @@ e425b1810 over 36157fb19. Pick remains ALL 222 (Game 185 readers); review line: 
 Bank.java and BondMarket.java. The additive SectorState pending upkeep/load seam is also part of
 the requested stranger review. No threading change. The provisional ship text deliberately says
 the final ensemble/dry run remain due and is not a final publication claim.
+
+The final byte check caught PowerShell stdin replacing the two publication-heading em dashes
+and the new design-choice star with question marks. They were restored with explicit Unicode
+code points through Git Bash, UTF-8 and LF checked before the mends handoff; no code changed.
