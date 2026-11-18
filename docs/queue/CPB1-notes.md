@@ -236,6 +236,16 @@ orchestrator was sent this comparison, and its conditional ensemble GO is met.
 The ensemble runs once on this merged model. The ALL dry run still requires
 a machine slot after DM1-P's; merge main again first if it advances.
 
+At 23:02 the orchestrator orders HOLD: no JVM of any kind until its next go,
+so FB8 can re-gate on a quiet machine after timeouts under concurrent load.
+That mail arrived just after the ensemble launcher started. CPB1 immediately
+used `tools/ensemble/ensemble.sh --stop CPB1`; it stopped one owned setup
+process. The run directory contains only `classes.part`, logs/times/tmp:
+no completed snapshot, simulation CSVs or score. No CPB1 JVM remains. The
+interrupted wrapper's exit 0 is **not** an ensemble pass. The once-only
+ensemble has not run its cases; resume setup only on the orchestrator's go.
+No named harness, playtest, compilation or other JVM is launched during HOLD.
+
 The seed-window results above are on CPB1's 231f16270 base plus its own model.
 The ship file forwards the bounded-run placement class to the already queued
 CL7 with a scoped LongPlaytest row; it does not cover negative GDP.
