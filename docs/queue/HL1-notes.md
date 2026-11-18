@@ -338,8 +338,9 @@ new path still causes their premises. Orchestrator notified before resolving Kep
 valuation is not income from or spending by a household. All real new money flows remain in the
 pool audit, either household DOMESTIC flows or the named TRADE/MONEY/FINANCIAL lanes beside them.
 No save-format bump: the upkeep pending field is additive and missing means no previously booked
-upkeep. DataSave and HistorySave still carry SectorState through the ordinary load path; save and
-read checks are required again below.
+upkeep. DataSave carries the pending SectorState through the ordinary load path. HistorySave's
+existing sector net-income and GDP/import series retain the struck results; no new history series
+is introduced. Save and read checks are required again below.
 
 ### Checks on f56f6f5ac (before HN1/LM1-D)
 
@@ -472,3 +473,10 @@ month; no requirement or tolerance is dropped.
 hungrier than the free one by more than the price of care`. The old HL1 burial red does not
 recur: deaths/year/1,000 are 10.27 at fee x1 and 14.33 at x15, old deaths 54.75 against 88.00;
 both "buries more" and "its old first" pass. No new red.
+
+`./batch-check.sh KeptCheck` on HN1: exit 3, 789.7 s suite, only the four KFP1 fund-page reds
+already recorded by HN1 on main (held Portfolio and holding-page redraw equivalence; no newly
+settled lot and thus none watched for three months). No new red. One path assertion is recorded
+OBSERVED by main's rules. KS1's supplied sawmill has a counted month and works to draw; the
+historic HL1 quiet-node red does not recur. Quiet-month counts across those assertions: [25, 24, 23, 19, 25, 25, 25, 25, 25, 24, 19, 22, 22, 18, 25, 24, 25, 25, 25, 25, 19, 25, 25, 20, 25, 22, 23, 25, 23, 21, 25, 23, 25, 20]
+of 25, all pass. Main's KeptCheck source was retained without a new HL1 edit.
