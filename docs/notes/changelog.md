@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.150 — R2c-P, public works' licence fees — 2026-11-18, ready, see docs/queue/R2c-P-notes.md
+In a city founded the 1900 way the city's own works now pay R2c's patent rent: a patented entry its utilities use (rapid sand, PE5;
+the steam turbine and pulverised coal, PE6 and PE16; the desalination plant, E6; the wind farm, E16) pays `LicenceFees.SHARE` of its
+positive public gain until `TERM_MONTHS` after history's month. The gain is the water or power it delivers over what the city would get
+without it, at the planners' tariff, so surplus capacity adds nothing and a building's running cost comes off. Local finds and
+unpatented entries pay nothing; no berth carries a patented entry, so Freight pays nothing it never earned. Captured at production, the
+bill is paid at the next strike on the city's services line, in the same month's audit as trade, the foreign accounts, the imports and
+a "Patent licences" budget line; saved, no `SAVE_FORMAT` change. The public fitting verdict, a new utility's running cost and the works
+value net the bill the month would strike, only while the patent runs. `PublicLicenceCheck` holds it (67 assertions); a city founded today is untouched.
+
 ### 0.9.149 — FB9, the map's renderer and MapCheck's fixtures — 2026-11-18, ready, see docs/queue/FB9-notes.md
 A mine born on a site after a cell's street was laid across it kept the street in the plan, where the buildings beside it
 stand by it, but the painter stood the mine over the whole site and drew the street as the mine: its surface counted and

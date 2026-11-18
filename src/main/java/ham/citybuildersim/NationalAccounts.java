@@ -978,6 +978,14 @@ public class NationalAccounts {
     /** ...and what the reserve's crude sold for - a revenue line since 0.7.102. */
     public double getReserveCrudeSold()   { return reserveCrudeSold; }
 
+    /** The licence the city's own patented works paid abroad at the month's strike (R2c-P; Game.settlePublicLicences()) - a spending line, saved on the government block's end. */
+    private double publicIpCharges;
+
+    /** Sets the month's public works' licence (R2c-P), a spending line; a figure below 0 is 0. */
+    public void setPublicIpCharges(double charges) { this.publicIpCharges = Math.max(0, charges); }
+    /** The licence the city's own patented works paid abroad this month - a spending line (R2c-P). */
+    public double getPublicIpCharges() { return publicIpCharges; }
+
     /* ---------------------------------------------------------------------
        THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5)
 
@@ -1257,11 +1265,13 @@ public class NationalAccounts {
             // older save reads zero, which is right: its books booked none.
             debtExchangeGain,
             // ...and the research grants' bill (R3): an older save reads zero, which is right: it paid none.
-            researchSpending };
+            researchSpending,
+            // ...and the licence the city's own patented works paid abroad (R2c-P): an older save reads zero, which is right: it accrued none.
+            publicIpCharges };
     }
 
     void restoreGovernment(double[] saved) {
-        // Thirty-nine since the research grants' bill (R3); thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
+        // Forty since the public works' licence (R2c-P); thirty-nine since the research grants' bill (R3); thirty-eight since the exchange on foreign debt (CD7); thirty-seven since the linked bonds' uplift (CD5); thirty-five since the city's paper on amortised cost (CD3); thirty-three
         // since the repairs, the arrears and the reserve's crude (0.7.102);
         // twenty-nine since food assistance; twenty-eight since the city's fund; twenty-seven since the mortgage
         // insurance; twenty-five since the central bank; twenty-three since
@@ -1272,7 +1282,8 @@ public class NationalAccounts {
                 && saved.length != 21 && saved.length != 22 && saved.length != 23
                 && saved.length != 25 && saved.length != 27 && saved.length != 28
                 && saved.length != 29 && saved.length != 33 && saved.length != 35
-                && saved.length != 37 && saved.length != 38 && saved.length != 39)) return;
+                && saved.length != 37 && saved.length != 38 && saved.length != 39 && saved.length != 40)) return;
+        publicIpCharges       = saved.length >= 40 ? saved[39] : 0;
         researchSpending      = saved.length >= 39 ? saved[38] : 0;
         debtExchangeGain      = saved.length >= 38 ? saved[37] : 0;
         inflationUplift       = saved.length >= 37 ? saved[35] : 0;
@@ -1479,6 +1490,8 @@ public class NationalAccounts {
                 + healthSpending + educationSpending + safetySpending + subsidies
                 // ...and the research grants' posts and laboratories (R3): none at a grant of 0.
                 + researchSpending
+                // ...and the licence the city's own patented works paid abroad (R2c-P): none before a patented work stands.
+                + publicIpCharges
                 // ...and the interest on the central bank's advances (0.7.0).
                 + centralBankInterest
                 // ...and what its mortgage insurance paid the bank (0.7.11).
@@ -1590,6 +1603,7 @@ public class NationalAccounts {
         educationFees *= scale;  educationSpending *= scale;
         safetySpending *= scale;
         researchSpending *= scale;
+        publicIpCharges *= scale;
         subsidies *= scale;
     }
 

@@ -54,7 +54,7 @@
 
 **Uses:** [Game](Game.md) (158), [Founding](Founding.md) (149), [Currency](Currency.md) (41), [WorldEconomy](WorldEconomy.md) (27), [World](World.md) (13), [FoundingName](FoundingName.md) (10), [GameFiles](GameFiles.md) (8), [Nations](Nations.md) (7), [Rollover](Rollover.md) (7), [PolicyDates](PolicyDates.md) (6), [EarthData](EarthData.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [EarthCheck](EarthCheck.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [MoneyAudit](MoneyAudit.md) (3), [EarthSite](EarthSite.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1)... and 8 more
 
-**Used by (3):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (4):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 

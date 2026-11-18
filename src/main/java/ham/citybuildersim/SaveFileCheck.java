@@ -70,6 +70,7 @@ public class SaveFileCheck {
 
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
+        assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
         assertTrue("the prior steam rail period survives the actual load after its last unfitted depot closes", HistoricalLicenceCheck.saveChecks());
 
         System.out.println("--- R0f: the exhausted gold episode through DataSave and the load path ---");

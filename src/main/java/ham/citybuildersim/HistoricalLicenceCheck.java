@@ -155,7 +155,7 @@ public final class HistoricalLicenceCheck {
 
     }
     static void publicPieces() throws Exception {
-        System.out.println("--- public patent estimates carry no phantom firm royalty (R2c-P) ---");
+        System.out.println("--- public patent estimates net the city's own licence and carry no firm royalty (R2c-P) ---");
         for (String code : new String[] { "PE5", "PE6", "PE16" }) {
             Game g = town("R2d-public-" + code, true);
             HistoricalRecipeCheck.allExcept(g, code);
@@ -165,8 +165,21 @@ public final class HistoricalLicenceCheck {
             double gross = RecipeChanges.gainOf(g, t, piece);
             check("fixture: " + code + " is a municipal upgrade with positive gain during its patent term",
                     !t.isOwnedBySector() && gross > 0 && LicenceFees.payable(code, g.getMonth(), g.getResearch()), "gross " + gross);
-            check("the public fitting estimate keeps the whole gross gain for " + code,
-                    near(EquipmentFit.verdictForNew(g, t, piece).gain(), gross), "net " + EquipmentFit.verdictForNew(g, t, piece).gain() + " gross " + gross);
+            // REV-R2c-P-1: the verdict nets exactly the bill the capture would strike on the new building's piece, in the state this town is in.
+            java.util.Set<String> chosen = EquipmentFit.fittedForNew(g, t);
+            java.util.Set<String> with = new java.util.HashSet<>(chosen), without = new java.util.HashSet<>(chosen);
+            with.add(piece.getId());
+            without.remove(piece.getId());
+            String[] ids = RecipeChanges.newChoices(g, t, Recipes.pricesOf(g));
+            double raw = BuildAdvice.rawRunningCostAt(g, t, 0);
+            double fee = LicenceFees.billOf(g, t, LicenceFees.Fitting.added(RecipeChanges.counts(t, with), 1, ids), raw, g.getMonth(), false)
+                    - LicenceFees.billOf(g, t, LicenceFees.Fitting.added(RecipeChanges.counts(t, without), 1, ids), raw, g.getMonth(), false);
+            UtilitiesHandler grid = g.getServicesManager().getUtilitiesHandler();
+            boolean surplus = t.getCategory() == BuildingType.ELECTRICITY ? grid.getConsumption() <= grid.getProduction() : grid.getWaterConsumption() <= grid.getWaterProduction();
+            System.out.printf("   %s: the town is %s, the new building's fee with and without the piece %.9f, gross %.9f%n", code, surplus ? "in surplus" : "short", fee, gross);
+            check("the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for " + code,
+                    near(EquipmentFit.verdictForNew(g, t, piece).gain(), gross - fee),
+                    "net " + EquipmentFit.verdictForNew(g, t, piece).gain() + " gross " + gross + " fee " + fee);
             HistoricalRecipeCheck.silent(() -> g.simulateMonths(2));
             check("the public " + code + " upgrade creates no firm bill or new-building royalty",
                     LicenceFees.forNew(g, t) == 0 && LicenceFees.paid(g) == 0 && LicenceFees.accrued(g) == 0, "");

@@ -1213,6 +1213,19 @@ public class DataSave implements Cloneable {
         return licenceFees == null ? java.util.Map.of() : licenceFees;
     }
 
+    /**
+     * The bill on the city's own patented works (R2c-P; LicenceFees.capturePublic()): what production accrued, to be paid at the next strike, and
+     * what the last strike paid. A save from before reads 0 for both, the bill it never accrued, so no format bump.
+     */
+    private Double publicIpPending, publicIpPaid;
+
+    public double getPublicIpPending() { return publicIpPending == null ? 0 : publicIpPending; }
+    /** Stores the amount owed, null (no key in the file) for 0, a figure not finite or below 0 (R2c-P). */
+    public void setPublicIpPending(double amount) { publicIpPending = Double.isFinite(amount) && amount > 0 ? amount : null; }
+    public double getPublicIpPaid() { return publicIpPaid == null ? 0 : publicIpPaid; }
+    /** Stores the amount last paid, null (no key in the file) for 0, a figure not finite or below 0 (R2c-P). */
+    public void setPublicIpPaid(double amount) { publicIpPaid = Double.isFinite(amount) && amount > 0 ? amount : null; }
+
     public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId) {
         this.recipeChoices = byId == null || byId.isEmpty() ? null : byId;
     }

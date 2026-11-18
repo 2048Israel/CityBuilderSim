@@ -719,6 +719,9 @@ public class Game {
         // ...and the recipes chosen (R1c): the last city's choices, for templates this city does not have.
         recipes.clear();
         licenceFees = java.util.Map.of();
+        // ...and the public works' licence bill (R2c-P): the last city's, accrued and paid.
+        publicIpPending = 0;
+        publicIpPaid = 0;
         // ...and the fittings on site (R1b): jobs for the last city's buildings.
         fittings.clear();
         // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
@@ -1231,6 +1234,21 @@ public class Game {
             if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() > 0) kept.put(e.getKey(), e.getValue());
         }
         licenceFees = java.util.Map.copyOf(kept);
+    }
+
+    /** The month's bill on the city's own patented works, struck at production and paid at the next strike, and what that strike paid (R2c-P; LicenceFees.capturePublic()). */
+    private double publicIpPending, publicIpPaid;
+
+    /** The licence the city's own works accrued this month, to be paid at the next strike (R2c-P). */
+    public double getPublicIpPending() { return publicIpPending; }
+
+    /** The licence the city's own works were paid out of the treasury at the last strike (R2c-P). */
+    public double getPublicIpPaid() { return publicIpPaid; }
+
+    /** Restores the public works' licence bill from a save (R2c-P): a figure that is not finite and not below 0 reads 0, as an old save's does. */
+    public void restorePublicLicences(double pending, double paid) {
+        publicIpPending = Double.isFinite(pending) && pending >= 0 ? pending : 0;
+        publicIpPaid = Double.isFinite(paid) && paid >= 0 ? paid : 0;
     }
 
     /** The recipes' driver, for the harnesses and the screens that read which way each template runs (R1c). */
@@ -6332,6 +6350,17 @@ public class Game {
         // Budget lines since 0.7.102 (A15): the crude is a thing the city buys and sells every month its
         // order or its release stands, as land is - journalled by name until then. See NationalAccounts.
         economyManager.setReserveCrude(bought, sold);
+    }
+
+    /**
+     * The licence the city's own patented works accrued last month, paid abroad at the strike (R2c-P; LicenceFees.capturePublic()): a promise,
+     * the service having been used, on the city's services line. The bill is cleared as it is paid, so no month pays it twice.
+     */
+    private void settlePublicLicences() {
+        double owed = publicIpPending;
+        publicIpPending = 0;
+        publicIpPaid = owed > 0 && Double.isFinite(owed) ? treasuryPays(TreasuryLine.CITY_SERVICES, owed) : 0;
+        economyManager.setPublicIpCharges(publicIpPaid);
     }
 
     /** Tells the investment engine what land is left to sell, right now - and since 0.7.107 what each zone holds and at what share of the price (BusinessInvestment, THE INVESTORS' GROUND BY ZONE). */
@@ -14480,6 +14509,8 @@ public class Game {
         getMarkets().rowDrawsBeforeStrike(getSectors());
         // ...and the strategic reserve's month, beside the businesses it traded with (0.7.85).
         settleReserve();
+        // ...and the licences the city's own patented works accrued last month (R2c-P), paid abroad in the same strike.
+        settlePublicLicences();
         // ...and the sales tax a business claimed back on the buildings it
         // bought reached its till at the bank (Sector.bank()) as cash back on
         // them, so the month's building spending is net of it (0.7.19).
@@ -14511,7 +14542,9 @@ public class Game {
                         + education.getGrossCost()
                         // ...and the research grants' posts and laboratories (R3), valued at what they cost: none at a grant of 0.
                         + economyManager.getResearchBill()
-                        + economyManager.getTransitBill(),
+                        + economyManager.getTransitBill()
+                        // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
+                        + publicIpPaid,
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -14953,7 +14986,9 @@ public class Game {
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
         economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
-        
+        // The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices; paid at the next strike.
+        publicIpPending = LicenceFees.capturePublic(this);
+
         if (Double.isFinite(tempCash)) {
             // The tax take in, and every line out - the promises whole.
             // tempCash is the guard it always was: a month whose books do not
@@ -17144,6 +17179,9 @@ public class Game {
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         dataSave.setLicenceFees(licenceFeesForSave());
+        // ...and the licence the city's own patented works accrued and last paid (R2c-P).
+        dataSave.setPublicIpPending(publicIpPending);
+        dataSave.setPublicIpPaid(publicIpPaid);
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
         // ...and the city's research with the month's bill, only where it holds anything (R3; none in a city that never funded any).
@@ -21309,6 +21347,7 @@ public class Game {
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
             restoreLicenceFees(loaded.getLicenceFees());
+            restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);
             equipmentForms.apply(this);
 
@@ -21947,10 +21986,12 @@ public class Game {
             // where the treasury pays them in the month (chargeBuildingMaintenance(), settleTreasury(), settleReserve()):
             // the same refresh struck the loaded city's repairs as nothing, and its first pass read a resident as costing
             // $0.90k a month where the city it was saved from read $1.12k (AutoBuildCheck 4 on FR7's path, 2026-10-19).
+            // The public works' licence (R2c-P), paid at the same strike, is one of them: the same refresh would strike a loaded city's licence line as nothing.
             economyManager.setCityRepairsPaid(economyManager.getNationalAccounts().getCityRepairs());
             economyManager.setArrearsPaidDown(economyManager.getNationalAccounts().getArrearsPaid());
             economyManager.setReserveCrude(economyManager.getNationalAccounts().getReserveCrudeBought(),
                     economyManager.getNationalAccounts().getReserveCrudeSold());
+            economyManager.setPublicIpCharges(economyManager.getNationalAccounts().getPublicIpCharges());
             loadedGovernmentMonth = null;
         }
 
@@ -22011,6 +22052,7 @@ public class Game {
             // The rebuild dispatches a notional month. Standing readers need
             // the saved production's royalty, just as the ledgers need its bill.
             restoreLicenceFees(restoredFlows.getLicenceFees());
+            restorePublicLicences(restoredFlows.getPublicIpPending(), restoredFlows.getPublicIpPaid());
 
             // And the utility's bill, which is read off those statements, has
             // to be re-struck now that they are the carried ones rather than
@@ -22464,6 +22506,8 @@ public class Game {
         java.util.Map<Integer, Double> scaledLicenceFees = new java.util.TreeMap<>(licenceFees);
         scaledLicenceFees.replaceAll((id, fee) -> fee * scale);
         restoreLicenceFees(scaledLicenceFees);
+        // ...and the public works' licence bill (R2c-P), accrued and paid, in the same money.
+        publicIpPending *= scale;  publicIpPaid *= scale;
         ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);

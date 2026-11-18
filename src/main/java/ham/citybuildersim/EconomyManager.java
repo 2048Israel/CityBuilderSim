@@ -1971,6 +1971,13 @@ public class EconomyManager {
     public double getCityRepairsPaid()  { return cityRepairsPaid; }
     public double getArrearsPaidDown()  { return arrearsPaidDown; }
 
+    /** The licence the city's own patented works paid abroad at the last strike (R2c-P; Game.settlePublicLicences()), a budget line, an import and part of the services valued at cost. */
+    private double publicIpCharges;
+
+    /** Sets the month's public works' licence (R2c-P); a figure that is not finite or is below 0 is 0. */
+    public void setPublicIpCharges(double charges) { this.publicIpCharges = Double.isFinite(charges) ? Math.max(0, charges) : 0; }
+    public double getPublicIpCharges() { return publicIpCharges; }
+
     /** Sets the month's student-loan interest, the treasury's. See Game.getStudentLoanInterest(). */
     public void setStudentLoanInterest(double interest) { this.studentLoanInterest = Math.max(0, interest); }
 
@@ -2280,6 +2287,8 @@ public class EconomyManager {
         // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
         if (cityCrudeExports > 0) exports += cityCrudeExports;
         if (cityCrudeImports > 0) rawImports += cityCrudeImports;
+        // ...and the licence the city's own patented works paid abroad, as the strike settled it (R2c-P).
+        if (publicIpCharges > 0) rawImports += publicIpCharges;
         double foodImports = retail.statement().imports;
         double materialImports = construction.statement().imports;
 
@@ -2315,6 +2324,7 @@ public class EconomyManager {
         nationalAccounts.setCityRepairs(cityRepairsPaid);
         nationalAccounts.setArrearsPaid(arrearsPaidDown);
         nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
+        nationalAccounts.setPublicIpCharges(publicIpCharges);
         setMortgageInsuranceLines();
 
         GDP = nationalAccounts.getGdp();
@@ -2399,6 +2409,7 @@ public class EconomyManager {
         nationalAccounts.setCityRepairs(cityRepairsPaid);
         nationalAccounts.setArrearsPaid(arrearsPaidDown);
         nationalAccounts.setReserveCrude(reserveCrudeBought, reserveCrudeSold);
+        nationalAccounts.setPublicIpCharges(publicIpCharges);
         setMortgageInsuranceLines();
     }
 
@@ -2617,6 +2628,7 @@ public class EconomyManager {
         totalPropertyTax = 0;
         salesTax = 0;
         cityCrudeTonnes = cityCrudeImports = cityCrudeExports = 0;
+        publicIpCharges = 0;
         sectors.reset();
         markets.reset();
         salesTaxLedger.reset();
@@ -2672,6 +2684,7 @@ public class EconomyManager {
         foodAssistance *= scale;
         cityRepairsPaid *= scale;  arrearsPaidDown *= scale;
         reserveCrudeBought *= scale;  reserveCrudeSold *= scale;
+        publicIpCharges *= scale;
         // ...and the month's transit wages and fares (B6, 0.7.47): the next
         // month bills the households last month's fares (Game.startOfMonthUpdate,
         // households.setTransitFares()), and in the old unit a reform by a
