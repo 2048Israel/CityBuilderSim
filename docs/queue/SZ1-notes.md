@@ -25,8 +25,13 @@ Game, and merge HL1's main before the final model checks/ensemble.
 
 ## Checks and coordination
 
-LM1-D's gate was in its suite phase at startup; only `--fast` is allowed
-while that heavy run holds the machine. Named harnesses wait for the slot.
+LM1-D's gate was in its suite phase at startup. Initially I held named
+harnesses under the contract's `--fast`-only restriction. ★ The launch
+brief's final machine paragraph explicitly allows `--fast` and named
+harnesses one at a time alongside gates. That later direct instruction
+overrides the earlier restriction: each named check below runs alone,
+one name per batch-check call. The orchestrator was mailed this reading
+before the first named check. Ensemble/dry-run placement still needs its go.
 
 ## What changed and the calls taken
 
@@ -69,8 +74,8 @@ test repricing plus kept/new equality.
 The new StepsCheck causes 1900, reference and hyperinflated levels with and
 without an active cap for all five dials. It also presses the actual large
 clinic-card and fund-transfer buttons on an offscreen JavaFX scene; its
-cities use GameFiles.scratch. Its mutation check is still to run once the
-heavy slot is free. No eye check is needed to establish the rule; visually,
+cities use GameFiles.scratch. Its mutation check rejects fixed nominal lots
+(results below). No eye check is needed to establish the rule; visually,
 check that four compact count buttons and the count fit on a building card.
 
 `--fast` has passed twice during implementation (52s and 48s compilation),
@@ -102,5 +107,25 @@ comparing both its plan and actual booked face with the live-lot quote.
 
 The latest complete `--fast` passed: compilation 50s, regenerated maps,
 zero firm Stale findings. Source/prose diff whitespace checks pass and the
-new Java files have LF line endings. Named harnesses are still unrun while
-LM1-D owns the heavy slot.
+new Java files have LF line endings.
+
+## Named checks (source 93da11821)
+
+StepsCheck passes: the one-month maturity causes one real auction sale;
+its plan and the booked face are both 134 at the live lot. Eight actual
+large clinic-card presses carry 23,000 to 103,000 and refresh +10k to +100k;
+both actual fund presses move the leading unit or its tenth at 3.4e9.
+
+The old-lot mutation replaced only BondMarket.issueLot's repricing/cap with
+`return referenceLot(kind)`, reproducing the old nominal lots for all five
+kinds. StepsCheck fails **35 assertions**. The original source was restored
+byte for byte, its diff checked empty, and StepsCheck passes again; the
+generated maps also returned to a clean tree. Logs are
+`target/SZ1-StepsCheck-green.log`, `target/SZ1-StepsCheck-fixed-lots.log` and
+`target/SZ1-StepsCheck-restored.txt`. No mutation remains in the branch.
+
+AuctionCheck passes, including the 1,200-month played city and all its
+rollover-cap and open-funding-ask assertions (`target/SZ1-AuctionCheck.txt`,
+`target/checks/AuctionCheck.log`). LM1-D finished and published while this
+single named harness ran. The `Where MagnitudeSteps.of -print` navigation
+check ran once the gate was done.
