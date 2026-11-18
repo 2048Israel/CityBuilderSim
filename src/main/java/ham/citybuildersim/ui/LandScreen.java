@@ -1301,6 +1301,12 @@ final class LandScreen {
     HBox nextPlots(Next next) {
         Pieces.CountSteps controls = Pieces.countSteps(() -> next.n(),
                 n -> nextCount = (int) Math.max(1, Math.min(n, next.listed())), this::showLandMenu);
+        for (javafx.scene.Node node : controls.row().getChildren()) {
+            if (node instanceof Button button) {
+                Kept.give(button.disableProperty(), button.getText().startsWith("−")
+                        ? next.n() <= 1 : next.n() >= next.listed());
+            }
+        }
 
         Label total = Kept.label(next.total());
         total.setStyle(Palette.figure(Palette.SIZE_SECTION, next.totalTone()));

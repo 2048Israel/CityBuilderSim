@@ -129,3 +129,18 @@ rollover-cap and open-funding-ask assertions (`target/SZ1-AuctionCheck.txt`,
 `target/checks/AuctionCheck.log`). LM1-D finished and published while this
 single named harness ran. The `Where MagnitudeSteps.of -print` navigation
 check ran once the gate was done.
+
+The orchestrator's 18:56 mail confirms the narrow Game, KeptCheck and
+LongPlaytest edits, frees LandCheck/MapCheck after LM1-D, and permits single
+named harnesses while HL1's ensemble runs. Its accounting changes must ship
+first; SZ1 must then merge them before its own ensemble. No own `--pick`,
+ensemble or dry run is authorized yet.
+
+Merged LM1-D main b3c4b614e (0.9.152) in 87d97d7e1. Source merged without
+conflict; the four conflicts were generated indexes, regenerated from the
+merged source. `--fast` passed (47s compile, zero firm Stale). Then merged
+the current queue-only main 608bf7025. The land office retains its previous
+disabled buttons at one offer and at the listed maximum with the shared
+control. WorksFinanceCheck passes on that merged model, including rounded
+excess proceeds and the independent advice oracle
+(`target/SZ1-WorksFinanceCheck.txt`).

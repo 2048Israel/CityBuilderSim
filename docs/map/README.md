@@ -4,7 +4,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 596 files, 646,597 lines, 28,126 methods, 6,194 constants. `GameVersion.VERSION` is "0.9.152", `SAVE_FORMAT` 55.
+**The tree:** 596 files, 646,603 lines, 28,126 methods, 6,194 constants. `GameVersion.VERSION` is "0.9.152", `SAVE_FORMAT` 55.
 
 ## model (268 files)
 
@@ -341,7 +341,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Kept.java](Kept.md) | 899 | 90 | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the... | 31 |
 | [KeptBench.java](KeptBench.md) | 5,634 | 590 | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page,... | 4 |
 | [Ladder.java](Ladder.md) | 449 | 31 | One dial, drawn the one way: a "−" worth one step, a slider that snaps to the step, a "+" worth one step, the reading, and a line under them saying... | 16 |
-| [LandScreen.java](LandScreen.md) | 2,580 | 105 | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.... | 4 |
+| [LandScreen.java](LandScreen.md) | 2,586 | 105 | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.... | 4 |
 | [Levers.java](Levers.md) | 166 | 4 | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on t... | 3 |
 | [MapView.java](MapView.md) | 6,436 | 274 | The city map on screen: one Canvas the land office shows small, 600 x 400, and Expand lays over the window to pan and zoom, drawn from the model's ... | 6 |
 | [MiniMap.java](MiniMap.md) | 471 | 20 | The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288... | 2 |
