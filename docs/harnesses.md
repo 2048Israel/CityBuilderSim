@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**219 harness files, 25,365 labelled assertions.** AllChecks runs 219 of them.
+**219 harness files, 25,382 labelled assertions.** AllChecks runs 219 of them.
 
 ## Which harnesses read which class
 
@@ -29587,7 +29587,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L609 a currency reform divides the fare like every other price
   - L613 ...and nobody changes their mind about the bus because of it
 
-## TreasuryCheck.java - 233 labelled assertions
+## TreasuryCheck.java - 250 labelled assertions
 
 > Plays a city and audits what the screens say the treasury did. Not part of
 > the game.
@@ -29603,265 +29603,283 @@ _(this harness does not label its checks through a helper - it prints its findin
 > The nine things it will not let past:
 > ...
 
-- **L236 1. no gap between windows**
-  - L238 window opens where it closed
-- **L242 2. the closing IS the cash**
-  - L243 closing balance is the cash
-- **L246 3. the bridge foots**
-  - L247 the bridge foots
-- **L254 5. and on a hands-off city there is nothing in it**
-  - L256 nothing the budget cannot explain
-  - L264 EARNED, its steps and the dials come to the budget
-  - L266 ...and on a hands-off city the dials leave nothing
-- **L272 AND AGAIN WITH THE SUBSIDY DIAL ON.**
-  - L300 subsidised: window opens where it closed
-  - L303 subsidised: the bridge foots
-  - L309 subsidised: nothing the budget cannot explain
-  - L312 subsidised: EARNED, its steps and the dials come to the budget
-  - L314 subsidised: ...the subsidies one of the steps, and the dials leave nothing
-- **L335 AND IT HAS TO SURVIVE A SAVE.**
-  - L355 survives a save
-  - L357 ...and its closing balance
-  - L369 ...and the budget behind it
-  - L372 ...including what the city spent on buildings
-  - L375 ...and what it paid in interest
-- **L379 and the first month back still has no gap**
-  - L381 window survives a reload
-- **L384 AND THE ROW OPENS.**
-- **L398 and the row that says \"everything else\" opens into lines**
-  - L409 fixture: the land office listed a plot the city can afford
-  - L414 fixture: the city paid for ten houses
-  - L424 fixture: 5,000 went into the city's fund and reserves were bought twice and sold once
-  - L436 fixture: the city issued a note and a serial bond
-  - L441 fixture: and bought the note straight back
-  - L453 the land is on the budget's own line
-  - L454 ...so the journal does not name it a second time
-  - L456 the houses are on the budget's own line
-  - L457 ...so the journal does not name them a second time
-  - L461 the journal carries what was paid into the city's fund
-  - L463 ...the reserves bought, two purchases folded into one line
-  - L465 ...the reserves sold, on a line of their own
-  - L467 ...and the bond bought back, for what it cost
-  - L469 ...and nothing the treasury did not do
-  - L473 the paper raised is on the bridge's own row, not in the journal
-  - L479 the bridge foots through the journal
-  - L484 the journal explained more than it left over
-  - L508 ...and what it left over is the first coupon's timing, to the cent: the bank's share of it
-  - L518 a city that did nothing has an empty journal, and the row stays a row
-  - L539 last month's journal survives a save, line for line, in order
-  - L540 ...and so does the residual under it
-  - L542 ...and the paper raised on the row above
-  - L544 ...and the month in progress, which the next strike will count
-  - L547 ...so the reserves bought before the save are on the next month's line
-  - L549 ...and the note issued before the save is on its raised row
-  - L554 a save from before the journal loads with an empty journal, not a broken one
-- **L558 7. ROLLING WHAT FALLS DUE (0.7.13)**
-- **L561 8. FROM EARNED TO THE BUDGET (0.7.31)**
-- **L564 9. THE CITY'S PAPER ON AMORTISED COST (CD3)**
-- **L567 THE REPORT.**
-- **L629 8. from EARNED to the budget**
-  - L635 a city nobody touched: the dials leave nothing
-  - L645 fixture: five points more wage tax moves EARNED with no month played
-  - L647 ...and not the budget it walks to
-  - L648 ...so the dials leave exactly the move
-  - L649 ...and reading EARNED struck nothing into the month's wage tax
-  - L654 a press strikes the month at the new rate, and the dials leave nothing again
-  - L672 fixture: food assistance at half, and the month's vouchers paid at the sale
-  - L673 ...a step on EARNED's walk, so with the dial set a month ago the dials leave nothing
-  - L675 ...the step is the vouchers the treasury paid
-  - L701 fixture: the buses carry people, and their crews draw wages
-  - L736 the treasury pays transit's bill and the bridge closes with it
-  - L737 ...EARNED counts the bill, and walks to the budget with nothing for the dials
-  - L738 ...and the walk has no fares step: the budget carries them
-  - L740 fixture: the city paid to repair its own buildings that year
-  - L741 its repairs are inside the budget's spending, as paid, and the journal names none (0.7.102)
-  - L742 ...and the walk from EARNED takes them as a step of their own
-- **L794 7. the rollover's arithmetic, on the brief's figures**
-  - L797 D$1.2B falling due, D$300M in cash, a D$100M surplus: it nets D$100M
-  - L801 ...and rolls D$1.1B
-  - L802 the same surplus, netted already in the year, nets nothing again
-  - L804 a deficit year nets nothing, so everything rolls
-  - L806 ...a surplus nets no more than the treasury holds
-  - L808 ...nor more than falls due
-- **L810 a city in surplus, two notes falling due in a row**
-  - L835 fixture: a new game rolls in the same structure
-  - L848 fixture: the first note falls due next month, the second the month after
-  - L853 what falls due next month is the first note's face
-  - L854 fixture: the city ran a surplus over the year
-  - L855 it nets the surplus not netted yet, capped by the cash and what falls due
-  - L857 fixture: which is part of what falls due, so the rest rolls
-  - L858 ...into one issue: a 3-month note at home, the paper falling due
-  - L861 ...its cash what falls due less what is netted
-  - L862 ...and the face its quote gives for that cash more than it: a note sells at a discount
-  - L865 12-month notes: the same sum rolls
-  - L866 ...as one 12-month note at home
-  - L869 by hand: the same falls due
-  - L870 ...and it nets and issues nothing
-  - L878 the press rolls it: a new 3-month note, issued the month before the maturity
-  - L879 ...whose cash covers what was to roll
-  - L880 ...by less than a granule of face
-  - L881 ...raised under its face
-  - L883 ...by exactly its own discount and costs
-  - L885 the record keeps the face it booked
-  - L887 ...and the note that fell due was paid
-  - L889 so rolling moved the debt by the new face less the one it paid
-  - L891 ...more than the netting alone would leave: the note's discount is borrowed into the debt
-  - L893 the ledger keeps what it netted, the month it ran
-  - L894 the bridge's raised row is what it raised
-  - L895 ...and its repaid row the note that fell due
-  - L896 ...and the month closes its audit
-  - L898 12-month notes: a 12-month note, the month before the maturity, its cash covering what was to roll
-  - L900 ...and its month closes its audit
-  - L901 by hand: nothing issued, the note paid out of cash
-  - L903 ...and its month closes its audit
-  - L908 the second note falls due the month after
-  - L909 ...and the ledger carries the first netting into its year
-  - L910 ...so it nets only the surplus not netted already
-  - L912 the surplus nets once: the two months net no more than a year's surplus between them
-  - L915 ...and that month closes its audit too
-  - L924 the setting survives a save
-  - L925 ...the ledger, month by month
-  - L928 ...and the record
-  - L930 ...so a reloaded city reads the year's netting the live one does
-- **L933 a city that built this year: a deficit, and everything rolls**
-  - L939 fixture: it builds five roads this year
-  - L940 fixture: the window abroad is open while it owes nothing abroad
-  - L942 fixture: ...and shut once it owes dollars and sells nothing abroad
-  - L976 fixture: something fell due in the deficit year
-  - L977 a deficit year nets nothing
-  - L978 ...so everything that fell due rolled, and its cash covered it
-  - L979 ...each month's new face more than the cash it raised: the interest capitalised
-  - L980 the dollar note, the window shut, rolled into a local note of its term
-  - L981 ...and the log says why
-  - L982 the serial's instalment rolled into a new serial of its original term
-  - L983 ...and every month closed its audit
-- **L985 the surplus city, exporting: a dollar note rolls abroad, in dollars**
-  - L990 fixture: it sells abroad now, and the window is open
-  - L994 fixture: it owes a dollar note
-  - L1014 fixture: the city spent the year's surplus it had not netted
-  - L1022 fixture: the window is open as it falls due
-  - L1023 fixture: the year's surplus is netted already, so it rolls whole
-  - L1024 the dollar note rolls abroad, as a 6-month dollar note
-  - L1030 ...issued abroad the month before the one falling due
-  - L1031 ...the one falling due paid, and the city owes the new one in dollars
-  - L1035 ...its cash covering what fell due
-  - L1036 ...so a bigger dollar face than the one it replaced: its discount borrowed too
-  - L1038 ...and the month closes its audit
-- **L1167 9. the city's paper on amortised cost (CD3)**
-- **L1189 9g. the balance: the paper at its carrying value, the fair value a note**
-  - L1207 fixture: a bill, an amortizing bond and a term bond on the books, each carried under its face
-  - L1209 the balance carries the city's paper at the sum of each piece's carrying value
-  - L1211 ...so the paper's face less its carrying value is the discount not yet amortised, and there is some
-  - L1214 ...and a month wears it off by what the month amortised (no piece repaid a slice in it)
-  - L1216 fixture: the month amortised something, and the discount is still not gone
-  - L1222 the fair value is the market's value of each piece, summed
-  - L1223 fixture: and it is not the carrying value: the market and the books value the paper differently
-  - L1233 the fair value moved with the curve: dearer money, less for the paper
-  - L1236 ...and no piece's carrying value moved
-  - L1237 ...nor the carrying value on the balance
-  - L1238 ...nor the month's interest on the books
-  - L1239 ...nor the budget's result
-  - L1240 ...nor the city's net position, what its cash holds against what it owes
-- **L1253 9f. a buyback gains the carrying value less the price, through a save**
-  - L1266 fixture: the term bond and the bill are on the books, three months old
-  - L1272 fixture: the bond is carried under its face, sold away from par: the face and the carrying value differ, and the gain is a gain
-  - L1273 the gain the screen quotes is the carrying value less the price
-  - L1274 ...and not the face less the price, which differs from it by the unamortised discount
-  - L1280 the bill, sold at a discount, is no different: its gain is its carrying value less its price too
-  - L1284 the treasury paid the price the screen quoted
-  - L1285 fixture: the bond is off the books and the bill is not
-  - L1298 ...the budget's result carries it, below the operating lines: the totals do not
-  - L1300 ...the bridge's not-cash row takes it out again, with the discount amortised, since the price was the cash
-  - L1304 ...and the bridge foots with the gain in it
-  - L1306 ...the journal names the price paid, not the gain
-  - L1308 the reloaded city's whole month is the live city's, in the gain and in the bridge's not-cash row
-  - L1311 the month after, the gain is not counted again
-- **L1322 9e. a played city, 30 months of paper sold under par: the interest, the not-cash row, the bridge**
-  - L1332 fixture: a bill, an amortizing bond and a term bond, all sold under par
-  - L1362 fixture: the discount wore off in every month of the 30
-  - L1363 every month the budget's interest is the cash coupons and the discount amortised
-  - L1364 ...the discount amortised is the manager's, month by month
-  - L1365 ...and the bridge's not-cash row is the budget's amortisation less the gain on debt retired
-  - L1366 ...and the bridge foots with the not-cash row in it (the part of a billion of the treasury's size)
-  - L1367 ...and what the bridge leaves over is the bank's coupon timing and nothing else, every month: the amortisation left none
-- **L1389 9d. dollar paper: the books in dollars, read at the month's D$ and not the struck rate**
-  - L1398 fixture: the D$ is pinned at the same rate in both cities, and the window abroad is open in both
-  - L1409 fixture: each city borrowed the one five-year dollar bond
-  - L1411 fixture: the same bond in both, sold away from par, so there is a discount to amortise
-  - L1423 fixture: then the D$ moves by half in one city and stays in the other, and the debt is told
-  - L1426 the move left the dollar books alone: the carrying value in dollars is what it was
-  - L1427 ...and moved the carrying value in D$ by the revaluation, in the ratio of the two D$s
-  - L1455 fixture: the goods' struck rate stayed away from the D$ in both cities, every month
-  - L1456 the expense in dollars is the same wherever the D$ is: the weaker D$ moved none of it
-  - L1457 ...and so is the carrying value in dollars
-  - L1458 the dollar books follow the carrying recurrence alone: carrying + expense - payment, every month
-  - L1459 the D$ books are the dollars read at the month's D$ (the carrying value, the expense, the rate the paper is valued at)
-  - L1461 ...so the D$ carrying value moved by the revaluation, in the ratio of the two D$s, every month
-  - L1463 ...at the D$ and not at the rate the goods are struck at, which would read it differently
-  - L1466 the manager's interest booked for the month is the piece's, in D$
-- **L1471 9a. the calm ten-year, on the study's table**
-  - L1476 fixture: it sold under par, D$297.4M raised of D$300M
-  - L1477 the books open at what the sale raised
-  - L1478 its effective rate is the yield at which the payments it owes are worth what was raised
-  - L1480 ...and it is the study's 3.602%
-  - L1481 ...dearer than the coupon it prints: a bond sold under par costs more than its coupon
-  - L1487 month 1 costs the study's D$893k
-  - L1488 ...of which the coupon, D$875k
-  - L1489 ...the coupon the piece owed, to the cent
-  - L1490 ...and D$18k is the discount wearing off
-  - L1492 month 24 costs the study's D$894k
-  - L1493 ...and is carried at the study's D$297.9M
-  - L1495 month 60 costs the study's D$896k
-  - L1496 ...and is carried at the study's D$298.6M
-  - L1498 month 119 costs the study's D$900k
-  - L1499 ...and is carried at the study's D$300.0M, the face repaid the next month
-  - L1501 just before its last payment it is carried at what that payment is worth
-  - L1503 ...within a coupon of the face
-  - L1505 it ran its 120 months and came off the books
-  - L1506 after the last payment nothing is carried
-  - L1507 over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)
-  - L1509 ...the discount wore off in full: the amortised sum to face less proceeds
-  - L1510 every month the carrying value was what the payments still owed were worth at the effective rate
-  - L1511 ...and the manager's month totals were the piece's, every month
-  - L1512 the carrying value rose every month to the last, as the discount wore off
-- **L1517 9b. a premium, a bill and an amortizing bond**
-  - L1523 fixture: a 6% bond sold over par, a coupon over the day's yield
-  - L1524 its effective rate is under its coupon: a premium costs the city less than it pays
-  - L1527 it ran its 60 months
-  - L1530 every month its amortised is below nothing: the expense is under the coupon
-  - L1531 ...and the carrying value fell every month, from over par toward the face
-  - L1532 over its life the expenses are the coupons less the premium: sum of expenses = sum of coupons + (face - proceeds)
-  - L1534 ...which is less than the coupons it paid
-  - L1535 it closes to nothing
-  - L1536 every month its carrying value was what the payments still owed were worth
-  - L1542 fixture: a six-month bill that pays no coupon and sold under its face
-  - L1546 a bill is not free money: its first month costs interest although it pays no coupon
-  - L1549 it ran its 6 months
-  - L1550 its whole cost is its discount: the sum of expenses is face less proceeds
-  - L1551 ...and with no coupon every month's expense is amortised
-  - L1552 ...the carrying value rose every month toward the face
-  - L1553 it closes to nothing
-  - L1554 every month its carrying value was what the payments still owed were worth
-  - L1562 fixture: a five-year amortizing bond of five yearly slices, sold under par
-  - L1566 it ran its 60 months
-  - L1579 its carrying value falls in each month a slice is repaid
-  - L1580 ...by the slice less what the month amortised
-  - L1581 ...and rises in every month between, as the discount wears off
-  - L1582 over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)
-  - L1584 it closes to nothing
-  - L1585 every month its carrying value was what the payments still owed were worth
-- **L1590 9c. a reopened line**
-  - L1602 fixture: the first sale was under par and the second over it, so the two sales' own rates differ
-  - L1607 the carrying value takes in what the second sale raised
-  - L1608 the rate is solved again on the whole remaining schedule at the new face, against the old carrying value and the new proceeds
-  - L1610 ...and it is the yield at which that schedule is worth the carrying value
-  - L1612 ...between the two sales' own rates
-  - L1614 the line ran its 120 months as one piece
-  - L1615 it closes to nothing
-  - L1616 over its life the expenses are the coupons and the discount of BOTH sales: sum of expenses = sum of coupons + (total face - total proceeds)
-  - L1618 every month, before and after the reopening, its carrying value was what the payments still owed were worth
-  - L1627 an add-on for the central bank is carried at the price of the sale it rides: its face at that price
-  - L1629 ...and the rate is solved again on the new face
+- **L238 1. no gap between windows**
+  - L240 window opens where it closed
+- **L244 2. the closing IS the cash**
+  - L245 closing balance is the cash
+- **L248 3. the bridge foots**
+  - L249 the bridge foots
+- **L256 5. and on a hands-off city there is nothing in it**
+  - L258 nothing the budget cannot explain
+  - L266 EARNED, its steps and the dials come to the budget
+  - L268 ...and on a hands-off city the dials leave nothing
+- **L274 AND AGAIN WITH THE SUBSIDY DIAL ON.**
+  - L302 subsidised: window opens where it closed
+  - L305 subsidised: the bridge foots
+  - L311 subsidised: nothing the budget cannot explain
+  - L314 subsidised: EARNED, its steps and the dials come to the budget
+  - L316 subsidised: ...the subsidies one of the steps, and the dials leave nothing
+- **L337 AND IT HAS TO SURVIVE A SAVE.**
+  - L357 survives a save
+  - L359 ...and its closing balance
+  - L371 ...and the budget behind it
+  - L374 ...including what the city spent on buildings
+  - L377 ...and what it paid in interest
+- **L381 and the first month back still has no gap**
+  - L383 window survives a reload
+- **L386 AND THE ROW OPENS.**
+- **L400 and the row that says \"everything else\" opens into lines**
+  - L411 fixture: the land office listed a plot the city can afford
+  - L416 fixture: the city paid for ten houses
+  - L426 fixture: 5,000 went into the city's fund and reserves were bought twice and sold once
+  - L438 fixture: the city issued a note and a serial bond
+  - L443 fixture: and bought the note straight back
+  - L455 the land is on the budget's own line
+  - L456 ...so the journal does not name it a second time
+  - L458 the houses are on the budget's own line
+  - L459 ...so the journal does not name them a second time
+  - L463 the journal carries what was paid into the city's fund
+  - L465 ...the reserves bought, two purchases folded into one line
+  - L467 ...the reserves sold, on a line of their own
+  - L469 ...and the bond bought back, for what it cost
+  - L471 ...and nothing the treasury did not do
+  - L475 the paper raised is on the bridge's own row, not in the journal
+  - L481 the bridge foots through the journal
+  - L486 the journal explained more than it left over
+  - L510 ...and what it left over is the first coupon's timing, to the cent: the bank's share of it
+  - L520 a city that did nothing has an empty journal, and the row stays a row
+  - L541 last month's journal survives a save, line for line, in order
+  - L542 ...and so does the residual under it
+  - L544 ...and the paper raised on the row above
+  - L546 ...and the month in progress, which the next strike will count
+  - L549 ...so the reserves bought before the save are on the next month's line
+  - L551 ...and the note issued before the save is on its raised row
+  - L556 a save from before the journal loads with an empty journal, not a broken one
+- **L560 7. ROLLING WHAT FALLS DUE (0.7.13)**
+- **L563 8. FROM EARNED TO THE BUDGET (0.7.31)**
+- **L566 9. THE CITY'S PAPER ON AMORTISED COST (CD3)**
+- **L569 THE REPORT.**
+- **L633 8. from EARNED to the budget**
+  - L639 a city nobody touched: the dials leave nothing
+  - L649 fixture: five points more wage tax moves EARNED with no month played
+  - L651 ...and not the budget it walks to
+  - L652 ...so the dials leave exactly the move
+  - L653 ...and reading EARNED struck nothing into the month's wage tax
+  - L658 a press strikes the month at the new rate, and the dials leave nothing again
+  - L676 fixture: food assistance at half, and the month's vouchers paid at the sale
+  - L677 ...a step on EARNED's walk, so with the dial set a month ago the dials leave nothing
+  - L679 ...the step is the vouchers the treasury paid
+  - L705 fixture: the buses carry people, and their crews draw wages
+  - L740 the treasury pays transit's bill and the bridge closes with it
+  - L741 ...EARNED counts the bill, and walks to the budget with nothing for the dials
+  - L742 ...and the walk has no fares step: the budget carries them
+  - L744 fixture: the city paid to repair its own buildings that year
+  - L745 its repairs are inside the budget's spending, as paid, and the journal names none (0.7.102)
+  - L746 ...and the walk from EARNED takes them as a step of their own
+- **L798 7. the rollover's arithmetic, on the brief's figures**
+  - L801 D$1.2B falling due, D$300M in cash, a D$100M surplus: it nets D$100M
+  - L805 ...and rolls D$1.1B
+  - L806 the same surplus, netted already in the year, nets nothing again
+  - L808 a deficit year nets nothing, so everything rolls
+  - L810 ...a surplus nets no more than the treasury holds
+  - L812 ...nor more than falls due
+- **L814 a city in surplus, two notes falling due in a row**
+  - L839 fixture: a new game rolls in the same structure
+  - L852 fixture: the first note falls due next month, the second the month after
+  - L857 what falls due next month is the first note's face
+  - L858 fixture: the city ran a surplus over the year
+  - L859 it nets the surplus not netted yet, capped by the cash and what falls due
+  - L861 fixture: which is part of what falls due, so the rest rolls
+  - L862 ...into one issue: a 3-month note at home, the paper falling due
+  - L865 ...its cash what falls due less what is netted
+  - L866 ...and the face its quote gives for that cash more than it: a note sells at a discount
+  - L869 12-month notes: the same sum rolls
+  - L870 ...as one 12-month note at home
+  - L873 by hand: the same falls due
+  - L874 ...and it nets and issues nothing
+  - L882 the press rolls it: a new 3-month note, issued the month before the maturity
+  - L883 ...whose cash covers what was to roll
+  - L884 ...by less than a granule of face
+  - L885 ...raised under its face
+  - L887 ...by exactly its own discount and costs
+  - L889 the record keeps the face it booked
+  - L891 ...and the note that fell due was paid
+  - L893 so rolling moved the debt by the new face less the one it paid
+  - L895 ...more than the netting alone would leave: the note's discount is borrowed into the debt
+  - L897 the ledger keeps what it netted, the month it ran
+  - L898 the bridge's raised row is what it raised
+  - L899 ...and its repaid row the note that fell due
+  - L900 ...and the month closes its audit
+  - L902 12-month notes: a 12-month note, the month before the maturity, its cash covering what was to roll
+  - L904 ...and its month closes its audit
+  - L905 by hand: nothing issued, the note paid out of cash
+  - L907 ...and its month closes its audit
+  - L912 the second note falls due the month after
+  - L913 ...and the ledger carries the first netting into its year
+  - L914 ...so it nets only the surplus not netted already
+  - L916 the surplus nets once: the two months net no more than a year's surplus between them
+  - L919 ...and that month closes its audit too
+  - L928 the setting survives a save
+  - L929 ...the ledger, month by month
+  - L932 ...and the record
+  - L934 ...so a reloaded city reads the year's netting the live one does
+- **L937 a city that built this year: a deficit, and everything rolls**
+  - L943 fixture: it builds five roads this year
+  - L944 fixture: the window abroad is open while it owes nothing abroad
+  - L946 fixture: ...and shut once it owes dollars and sells nothing abroad
+  - L980 fixture: something fell due in the deficit year
+  - L981 a deficit year nets nothing
+  - L982 ...so everything that fell due rolled, and its cash covered it
+  - L983 ...each month's new face more than the cash it raised: the interest capitalised
+  - L984 the dollar note, the window shut, rolled into a local note of its term
+  - L985 ...and the log says why
+  - L986 the serial's instalment rolled into a new serial of its original term
+  - L987 ...and every month closed its audit
+- **L989 the surplus city, exporting: a dollar note rolls abroad, in dollars**
+  - L993 fixture: it sells abroad now, and the window is open
+  - L1009 fixture: its twin, from a save of it, is the same city: the same month, exports and D$
+  - L1022 fixture: it owes a dollar note
+  - L1023 fixture: ...and its twin one
+  - L1042 fixture: the city spent the year's surplus it had not netted
+  - L1044 fixture: ...and so did its twin
+  - L1052 fixture: the next year's service on the note is under the share of exports the window shuts at
+  - L1054 fixture: the window is open as it falls due
+  - L1055 fixture: what falls due abroad is more than the smallest issue the rollover makes, so it has a dollar issue to make
+  - L1057 fixture: the year's surplus is netted already, so it rolls whole
+  - L1058 the dollar note rolls abroad, as a 6-month dollar note
+  - L1064 ...issued abroad the month before the one falling due
+  - L1065 ...the one falling due paid, and the city owes the new one in dollars
+  - L1069 ...its cash covering what fell due
+  - L1070 ...so a bigger dollar face than the one it replaced: its discount borrowed too
+  - L1072 ...and the month closes its audit
+- **L1074 ...and its twin, the same note over the threshold: the window shut, the dollar note rolls at home**
+  - L1088 fixture: the next year's service on the note is over the share of exports the window shuts at
+  - L1090 fixture: what falls due abroad is more than the smallest issue the rollover makes, so it has an issue to make at home
+  - L1092 fixture: the window is shut as it falls due, by that share of exports and no other reason
+  - L1094 fixture: the year's surplus is netted already, so the note rolls whole
+  - L1095 the plan issues nothing abroad: the window is shut
+  - L1096 ...it rolls the one dollar note at home, as a 6-month note of its term
+  - L1099 ...and says why: the window abroad is shut
+  - L1103 ...issued at home the month before the one falling due
+  - L1104 ...the dollar note paid, and the city owes no dollars
+  - L1107 ...its cash covering what fell due
+  - L1108 ...and the log says why
+  - L1109 ...and the month closes its audit
+- **L1278 9. the city's paper on amortised cost (CD3)**
+- **L1300 9g. the balance: the paper at its carrying value, the fair value a note**
+  - L1318 fixture: a bill, an amortizing bond and a term bond on the books, each carried under its face
+  - L1320 the balance carries the city's paper at the sum of each piece's carrying value
+  - L1322 ...so the paper's face less its carrying value is the discount not yet amortised, and there is some
+  - L1325 ...and a month wears it off by what the month amortised (no piece repaid a slice in it)
+  - L1327 fixture: the month amortised something, and the discount is still not gone
+  - L1333 the fair value is the market's value of each piece, summed
+  - L1334 fixture: and it is not the carrying value: the market and the books value the paper differently
+  - L1344 the fair value moved with the curve: dearer money, less for the paper
+  - L1347 ...and no piece's carrying value moved
+  - L1348 ...nor the carrying value on the balance
+  - L1349 ...nor the month's interest on the books
+  - L1350 ...nor the budget's result
+  - L1351 ...nor the city's net position, what its cash holds against what it owes
+- **L1364 9f. a buyback gains the carrying value less the price, through a save**
+  - L1377 fixture: the term bond and the bill are on the books, three months old
+  - L1383 fixture: the bond is carried under its face, sold away from par: the face and the carrying value differ, and the gain is a gain
+  - L1384 the gain the screen quotes is the carrying value less the price
+  - L1385 ...and not the face less the price, which differs from it by the unamortised discount
+  - L1391 the bill, sold at a discount, is no different: its gain is its carrying value less its price too
+  - L1395 the treasury paid the price the screen quoted
+  - L1396 fixture: the bond is off the books and the bill is not
+  - L1409 ...the budget's result carries it, below the operating lines: the totals do not
+  - L1411 ...the bridge's not-cash row takes it out again, with the discount amortised, since the price was the cash
+  - L1415 ...and the bridge foots with the gain in it
+  - L1417 ...the journal names the price paid, not the gain
+  - L1419 the reloaded city's whole month is the live city's, in the gain and in the bridge's not-cash row
+  - L1422 the month after, the gain is not counted again
+- **L1433 9e. a played city, 30 months of paper sold under par: the interest, the not-cash row, the bridge**
+  - L1443 fixture: a bill, an amortizing bond and a term bond, all sold under par
+  - L1473 fixture: the discount wore off in every month of the 30
+  - L1474 every month the budget's interest is the cash coupons and the discount amortised
+  - L1475 ...the discount amortised is the manager's, month by month
+  - L1476 ...and the bridge's not-cash row is the budget's amortisation less the gain on debt retired
+  - L1477 ...and the bridge foots with the not-cash row in it (the part of a billion of the treasury's size)
+  - L1478 ...and what the bridge leaves over is the bank's coupon timing and nothing else, every month: the amortisation left none
+- **L1500 9d. dollar paper: the books in dollars, read at the month's D$ and not the struck rate**
+  - L1509 fixture: the D$ is pinned at the same rate in both cities, and the window abroad is open in both
+  - L1520 fixture: each city borrowed the one five-year dollar bond
+  - L1522 fixture: the same bond in both, sold away from par, so there is a discount to amortise
+  - L1534 fixture: then the D$ moves by half in one city and stays in the other, and the debt is told
+  - L1537 the move left the dollar books alone: the carrying value in dollars is what it was
+  - L1538 ...and moved the carrying value in D$ by the revaluation, in the ratio of the two D$s
+  - L1566 fixture: the goods' struck rate stayed away from the D$ in both cities, every month
+  - L1567 the expense in dollars is the same wherever the D$ is: the weaker D$ moved none of it
+  - L1568 ...and so is the carrying value in dollars
+  - L1569 the dollar books follow the carrying recurrence alone: carrying + expense - payment, every month
+  - L1570 the D$ books are the dollars read at the month's D$ (the carrying value, the expense, the rate the paper is valued at)
+  - L1572 ...so the D$ carrying value moved by the revaluation, in the ratio of the two D$s, every month
+  - L1574 ...at the D$ and not at the rate the goods are struck at, which would read it differently
+  - L1577 the manager's interest booked for the month is the piece's, in D$
+- **L1582 9a. the calm ten-year, on the study's table**
+  - L1587 fixture: it sold under par, D$297.4M raised of D$300M
+  - L1588 the books open at what the sale raised
+  - L1589 its effective rate is the yield at which the payments it owes are worth what was raised
+  - L1591 ...and it is the study's 3.602%
+  - L1592 ...dearer than the coupon it prints: a bond sold under par costs more than its coupon
+  - L1598 month 1 costs the study's D$893k
+  - L1599 ...of which the coupon, D$875k
+  - L1600 ...the coupon the piece owed, to the cent
+  - L1601 ...and D$18k is the discount wearing off
+  - L1603 month 24 costs the study's D$894k
+  - L1604 ...and is carried at the study's D$297.9M
+  - L1606 month 60 costs the study's D$896k
+  - L1607 ...and is carried at the study's D$298.6M
+  - L1609 month 119 costs the study's D$900k
+  - L1610 ...and is carried at the study's D$300.0M, the face repaid the next month
+  - L1612 just before its last payment it is carried at what that payment is worth
+  - L1614 ...within a coupon of the face
+  - L1616 it ran its 120 months and came off the books
+  - L1617 after the last payment nothing is carried
+  - L1618 over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)
+  - L1620 ...the discount wore off in full: the amortised sum to face less proceeds
+  - L1621 every month the carrying value was what the payments still owed were worth at the effective rate
+  - L1622 ...and the manager's month totals were the piece's, every month
+  - L1623 the carrying value rose every month to the last, as the discount wore off
+- **L1628 9b. a premium, a bill and an amortizing bond**
+  - L1634 fixture: a 6% bond sold over par, a coupon over the day's yield
+  - L1635 its effective rate is under its coupon: a premium costs the city less than it pays
+  - L1638 it ran its 60 months
+  - L1641 every month its amortised is below nothing: the expense is under the coupon
+  - L1642 ...and the carrying value fell every month, from over par toward the face
+  - L1643 over its life the expenses are the coupons less the premium: sum of expenses = sum of coupons + (face - proceeds)
+  - L1645 ...which is less than the coupons it paid
+  - L1646 it closes to nothing
+  - L1647 every month its carrying value was what the payments still owed were worth
+  - L1653 fixture: a six-month bill that pays no coupon and sold under its face
+  - L1657 a bill is not free money: its first month costs interest although it pays no coupon
+  - L1660 it ran its 6 months
+  - L1661 its whole cost is its discount: the sum of expenses is face less proceeds
+  - L1662 ...and with no coupon every month's expense is amortised
+  - L1663 ...the carrying value rose every month toward the face
+  - L1664 it closes to nothing
+  - L1665 every month its carrying value was what the payments still owed were worth
+  - L1673 fixture: a five-year amortizing bond of five yearly slices, sold under par
+  - L1677 it ran its 60 months
+  - L1690 its carrying value falls in each month a slice is repaid
+  - L1691 ...by the slice less what the month amortised
+  - L1692 ...and rises in every month between, as the discount wears off
+  - L1693 over its life the expenses are the coupons and the discount: sum of expenses = sum of coupons + (face - proceeds)
+  - L1695 it closes to nothing
+  - L1696 every month its carrying value was what the payments still owed were worth
+- **L1701 9c. a reopened line**
+  - L1713 fixture: the first sale was under par and the second over it, so the two sales' own rates differ
+  - L1718 the carrying value takes in what the second sale raised
+  - L1719 the rate is solved again on the whole remaining schedule at the new face, against the old carrying value and the new proceeds
+  - L1721 ...and it is the yield at which that schedule is worth the carrying value
+  - L1723 ...between the two sales' own rates
+  - L1725 the line ran its 120 months as one piece
+  - L1726 it closes to nothing
+  - L1727 over its life the expenses are the coupons and the discount of BOTH sales: sum of expenses = sum of coupons + (total face - total proceeds)
+  - L1729 every month, before and after the reopening, its carrying value was what the payments still owed were worth
+  - L1738 an add-on for the central bank is carried at the price of the sale it rides: its face at that price
+  - L1740 ...and the rate is solved again on the new face
 
 ## TruckRouteCheck.java - 195 labelled assertions
 
