@@ -357,3 +357,22 @@ claim and tolerances. Logs: target/HL1-GdpCheck.txt and target/checks/GdpCheck.l
 Named calls use one name per batch-check invocation and `-Dcbs.parallel=1` explicitly: AllChecks
 matches substrings, so BankCheck also selects CentralBankCheck and YoungBankCheck. The first Bank
 invocation exposed that matcher; subsequent calls serialize its selected harnesses as well.
+
+The integration now has two additional caused assertions: PublicLicenceCheck.payment() requires
+the household identity to close in its month of a positive public patent payment; ShortSellingCheck
+theWipe() requires it to close through LF1c's positive share wipe and short closure. They use the
+same closure predicate as LongPlaytest's money fixtures, alongside the existing pool/BOP assertions.
+These cover new main flows at the seam rather than relying on a default city to exercise them.
+
+`./batch-check.sh BankCheck`: exit 3; 3 substring-matched harnesses, 785 s. BankCheck and
+CentralBankCheck passed. YoungBankCheck's only red is main's recorded `the bank is never in
+resolution`; no new red. The two historical CentralBankCheck reds do not recur: the current
+harness compares 24 shapes (its perturbation fixture holds 23/24 against 18 required), and the
+probe's Very Loose trust is .680 against Standard .879. Mean inflation is 3.529% Very Strict,
+3.895% Standard, 4.737% Very Loose. The discharge fixtures end 192.42k of debt: with half-debt
+savings, 32.70k repaid and 159.72k written off; with twice-debt savings, 192.42k repaid and nothing
+written off, with 7,783k savings still theirs. All repayment/bank channel assertions passed.
+
+`./batch-check.sh ScaleCheck`: suite passed with main's current QB1 fixture at month 225; the
+obsolete HL1 month-165 fixture and its narrow 7/36 scan are not restored. No dial or premise moved.
+Full wrapper exits and remaining named results follow below.

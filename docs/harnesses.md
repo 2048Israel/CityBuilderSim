@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**221 harness files, 25,614 labelled assertions.** AllChecks runs 221 of them.
+**221 harness files, 25,616 labelled assertions.** AllChecks runs 221 of them.
 
 ## Which harnesses read which class
 
@@ -24409,7 +24409,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2003 ...because it never qualified to bid: a record that is bad (
   - L2005 ...and its till (at most
 
-## PublicLicenceCheck.java - 67 labelled assertions
+## PublicLicenceCheck.java - 68 labelled assertions
 
 > The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the
 > service it delivers with that upgrade over what it would deliver without it, in a city founded the 1900 way, while the patent runs.
@@ -24436,71 +24436,72 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L238 fixture: nothing has been paid yet, the bill waits for the next strike
   - L241 the next strike pays the bill accrued before it, to the bit
   - L243 the payment is in the same month's named audit, which closes, and the foreign accounts take it that month
-  - L248 the national accounts carry it as a budget line and the economy as the month's licence
-  - L252 fixture: no reserve crude crosses the edge, so the accounts' imports are the sectors' and the licence
-  - L254 the licence is one of the month's imports in the national accounts
-  - L256 the history carries the paid flow to cents, and the bill accrued beside it
-  - L260 the freight statement carries no IP charge of its own beside the paid licence: nothing here is a firm's bill
-  - L263 a budget with the licence alone spends exactly the licence (the line is in the total expenses)
-- **L271 3. the patent ends TERM_MONTHS after history's month**
-  - L304 fixture: the months played run through the term's last month and beyond it, and the works hold a gain in every one
-  - L306 the bill accrues, at the independently worked fee, in every month the patent runs (the capture month decides)
-  - L307 nothing accrues in a month after the patent's last: its gain is the same and its fee is none, where the term's months accrued
-  - L308 each month's bill is paid at the following strike, the term's last month's included, and nothing is paid after it
-- **L315 4. a local discovery pays nothing**
-  - L327 fixture: the same shortage the piece relieves (a gain that would be billed) and the patent's term open, but PE5 found at home
-  - L331 a local find pays nothing in two months where the same works on an imported find paid the patent share
-- **L362 5. an unpatented berth pays nothing and Freight none**
-  - L376 fixture: a Container Terminal stands, known in its year and abroad, the city's own berth in a city founded the 1900 way
-  - L380 fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive
-  - L383 the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge
-- **L391 6. no gain, no fee**
-  - L403 fixture (a): the grid asks no more than it makes without the steam turbine, the piece fitted inside PE6's term
-  - L414 P2-1 surplus: with the grid asking no more than it makes without the steam turbine, the public fitting verdict of the piece is its whole gross gain while the...
-  - L431 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
-  - L445 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
-  - L459 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
-  - L461 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
-- **L470 7. the planners net the fee the capture would strike (REV-R2c-P-1)**
-  - L485 fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share
-  - L488 P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discover...
-  - L518 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
-  - L521 P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building
-  - L525 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share
-- **L534 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1)**
-  - L542 fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way ...
-  - L549 P2-2 term:
-  - L554 P2-2 term: in the patent's last month it carries the fee times one month's share of the life
-  - L558 P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee
-  - L562 P2-2 term: past the patent's end it carries nothing
-  - L576 P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)
-  - L577 P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged
-- **L583 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1)**
-  - L595 fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)
-  - L597 fixture: three plants' fee, worked independently, is above nothing and under three times one plant's
-  - L600 fixture: the patent has run its term's first months only, so the order's months are inside it
-  - L604 P2-2 units: runningChange charges one plant the fee of one
-  - L605 P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee
-- **L612 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1)**
-  - L636 fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many
-  - L639 the public bill of the stack is the month's bill the capture struck on it
-  - L641 P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms
-  - L643 P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people
-- **L650 8. the month both ways: the same city live and loaded**
-  - L657 fixture: a bill is accrued and waiting, and the save was written
-  - L658 (a) the loaded city holds the saved bill to the bit
-  - L662 (b) the strike pays the same bill in both
-  - L664 the treasury's cash is the same to the bit in both after the month
-  - L665 the budget's licence line and its total expenses are the same to the bit
-  - L668 the month's next bill is the same to the bit in both
-- **L675 9. a city founded today pays nothing**
-  - L687 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
-  - L692 no bill is struck, and no new plant is charged, in a city founded today
-  - L695 two months leave nothing pending and nothing paid
-  - L698 its save carries neither key
-- **L767 10. the bill crosses a save, and a read leaves it still**
-  - L768 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
-  - L769 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
+  - L249 the households' identity closes in the month the treasury pays the public patent licence
+  - L253 the national accounts carry it as a budget line and the economy as the month's licence
+  - L257 fixture: no reserve crude crosses the edge, so the accounts' imports are the sectors' and the licence
+  - L259 the licence is one of the month's imports in the national accounts
+  - L261 the history carries the paid flow to cents, and the bill accrued beside it
+  - L265 the freight statement carries no IP charge of its own beside the paid licence: nothing here is a firm's bill
+  - L268 a budget with the licence alone spends exactly the licence (the line is in the total expenses)
+- **L276 3. the patent ends TERM_MONTHS after history's month**
+  - L309 fixture: the months played run through the term's last month and beyond it, and the works hold a gain in every one
+  - L311 the bill accrues, at the independently worked fee, in every month the patent runs (the capture month decides)
+  - L312 nothing accrues in a month after the patent's last: its gain is the same and its fee is none, where the term's months accrued
+  - L313 each month's bill is paid at the following strike, the term's last month's included, and nothing is paid after it
+- **L320 4. a local discovery pays nothing**
+  - L332 fixture: the same shortage the piece relieves (a gain that would be billed) and the patent's term open, but PE5 found at home
+  - L336 a local find pays nothing in two months where the same works on an imported find paid the patent share
+- **L367 5. an unpatented berth pays nothing and Freight none**
+  - L381 fixture: a Container Terminal stands, known in its year and abroad, the city's own berth in a city founded the 1900 way
+  - L385 fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive
+  - L388 the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge
+- **L396 6. no gain, no fee**
+  - L408 fixture (a): the grid asks no more than it makes without the steam turbine, the piece fitted inside PE6's term
+  - L419 P2-1 surplus: with the grid asking no more than it makes without the steam turbine, the public fitting verdict of the piece is its whole gross gain while the...
+  - L436 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
+  - L450 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
+  - L464 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
+  - L466 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
+- **L475 7. the planners net the fee the capture would strike (REV-R2c-P-1)**
+  - L490 fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share
+  - L493 P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discover...
+  - L523 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
+  - L526 P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building
+  - L530 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share
+- **L539 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1)**
+  - L547 fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way ...
+  - L554 P2-2 term:
+  - L559 P2-2 term: in the patent's last month it carries the fee times one month's share of the life
+  - L563 P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee
+  - L567 P2-2 term: past the patent's end it carries nothing
+  - L581 P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)
+  - L582 P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged
+- **L588 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1)**
+  - L600 fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)
+  - L602 fixture: three plants' fee, worked independently, is above nothing and under three times one plant's
+  - L605 fixture: the patent has run its term's first months only, so the order's months are inside it
+  - L609 P2-2 units: runningChange charges one plant the fee of one
+  - L610 P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee
+- **L617 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1)**
+  - L641 fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many
+  - L644 the public bill of the stack is the month's bill the capture struck on it
+  - L646 P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms
+  - L648 P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people
+- **L655 8. the month both ways: the same city live and loaded**
+  - L662 fixture: a bill is accrued and waiting, and the save was written
+  - L663 (a) the loaded city holds the saved bill to the bit
+  - L667 (b) the strike pays the same bill in both
+  - L669 the treasury's cash is the same to the bit in both after the month
+  - L670 the budget's licence line and its total expenses are the same to the bit
+  - L673 the month's next bill is the same to the bit in both
+- **L680 9. a city founded today pays nothing**
+  - L692 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
+  - L697 no bill is struck, and no new plant is charged, in a city founded today
+  - L700 two months leave nothing pending and nothing paid
+  - L703 its save carries neither key
+- **L772 10. the bill crosses a save, and a read leaves it still**
+  - L773 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
+  - L774 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
 
 ## QuarryingCheck.java - 47 labelled assertions
 
@@ -28603,7 +28604,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1265 Construction's struck materials are the row as it stood at the strike, and cross a save
   - L1276 ...and a save from before them loads them as not counted, not as nothing
 
-## ShortSellingCheck.java - 276 labelled assertions
+## ShortSellingCheck.java - 277 labelled assertions
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.
@@ -28741,161 +28742,162 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L697 ...and its closed short the shares it owed at the quote
   - L698 fixture: both are above the audit's cent, so a line that was left out would show
   - L700 the month foots with both declared: residual
-  - L702 the audit's wipe line is the exchange's figure, a valuation in the city's favour
-  - L703 ...and its closed-short line, a valuation against it
-  - L704 ...each with its half that moves no cash: the wipe's debit
-  - L705 ...and the closed short's credit
-  - L706 the balance of payments' valuation in is the wipe: nothing else was written off that month
-  - L707 ...and its valuation out the closed short
-  - L708 ForeignAccounts' forgiven counts the two: it moved by the wipe less the short closed
-  - L710 fixture: the month's valuation nets under nothing, the short closed being more than the world's shares wiped:
-  - L713 the Trade screen's chip for it says the claims were lost, not written off in the city's favour:
-  - L716 ...a month that wrote claims off in its favour still says it improves what the city owes:
-  - L718 ...and the chip for what was written off since founding says forgiven or settled for a gain and against the city for a loss
-  - L735 fixture: the fund was paid fees (
-  - L736 the Activity page has a line in words for each month's fees:
-  - L737 ...and none says the row's kind,
-  - L741 the market book's share lot, which the fees are credited to, labels its income for what is in it:
-  - L743 ...a bond's stays coupons, and the rescue book's, which no fee is credited to (FundLedger.lendingFee()), dividends
-  - L747 fixture: the company's rescue book holds no income of the fees: it holds none at all
-  - L749 the income card says what the city's fund's income covered, as its own note does
-  - L752 ...and with no transfer to cover it says what the income is made of, the lending fees beside the dividends and coupons:
-  - L754 ...but with one it says how much of it the income covered:
-  - L759 a share's write-off reads on the page as the shares going with the company:
-  - L761 ...a bond's keeps its face
-  - L776 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
-  - L785 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
-  - L789 with nothing short the cell is paid the company's dividend on every share it holds
-  - L791 ...and with 100 short, the same: the company's dividend per share on its shares in issue
-  - L792 ...the lender kept the shares it lent, so was paid on all of them
-  - L794 the fund is paid the same either way
-  - L795 ...and the world on its own long
-  - L796 the short pays the dividend per share on the shares it is short
-  - L797 ...the desk, which holds them, is paid it
-  - L798 ...every holder was paid, the company's dividend and the short's together
-  - L801 ...and with nothing short the short paid nothing
-  - L813 fixture: the short is
-  - L815 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
-  - L818 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
-  - L820 ...the fund's part pro rata to what it holds of what can be lent
-  - L821 ...and the cells', the rest
-  - L822 ...the fund's cash rose by its part
-  - L824 ...a cell's savings by its part, per household, pro rata to what it holds
-  - L825 ...the other cell the same per share it holds
-  - L827 ...as investment income, which it plans on
-  - L828 ...and not as a dividend, which is a company's: it paid nothing
-  - L829 ...counted over the city's life
-  - L837 fixture: 200 short of 250 that can be lent:
-  - L840 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
-  - L842 ...which is more a share lent than at the general rate (
-  - L844 the rate at HARD_TO_BORROW is the general rate
-  - L845 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
-  - L846 ...halfway between, half of it
-  - L847 ...and no more past all of it lent
-  - L848 ...the dial's own reading of the fixtures
-  - L853 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
-  - L865 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
-  - L876 control: a print between the ask it sold at and the call line (
-  - L880 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
-  - L887 a print at
-  - L893 the next step counts the margin call
-  - L895 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
-  - L897 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
-  - L899 ...which is under the break price, so the account kept some of its collateral's worth
-  - L900 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
-  - L904 ...and the holdings are the shares in issue again
-  - L919 fixture: 60 short, and the lenders hold
-  - L921 fixture: the quote is fair value, so no margin call
-  - L924 the next step counts the recall, and no margin call
-  - L926 ...the short bids for what is short over what can be lent
-  - L928 ...at the market, fair value here, and not at the break price
-  - L929 ...which is under the break price, the collateral over the shares
-  - L930 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
-  - L934 ...a holder selling at the market covers it: the fund's hand sold
-  - L936 ...at fair value, the bid's price
-  - L937 ...it is short
-  - L958 ...the collateral held against them
-  - L959 ...the shares the cells lend
-  - L960 ...the shares the fund lends
-  - L961 ...the month's lending fee the cells were paid
-  - L962 ...and the fund
-  - L963 ...what the short has paid at the dividends over the city's life
-  - L965 ...shares sold short and what they fetched over the city's life
-  - L967 ...shares covered and what that cost
-  - L969 ...asks posted, company-months a short stood open, margin calls and recalls
-  - L972 ...the lending fees paid over the city's life
-  - L973 ...the quote of
-  - L976 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
-  - L980 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
-  - L993 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
-  - L996 ...with its life counted: sold short, asks posted, months open and the fees paid
-  - L1013 saved to slot 10 of the scratch folder and loaded into a second game
-  - L1029 fixture: the state carries a short before the fields are taken out of it
-  - L1034 a state without the shorts' fields still restores
-  - L1035 ...with nothing short, lent or charged, and nothing counted
-  - L1128 8. the lending fee on the lenders' books, and the review's four edges (LF1)
-  - L1137 fixture: the fund lent shares to the short and was paid for them: $
-  - L1138 the fund's income for the month counts the fee, to the cent it was paid
-  - L1139 ...and its life's
-  - L1145 the ledger has one LENDING_FEE row for the month
-  - L1146 ...of the money it was paid
-  - L1149 ...and the company's market lot has it as income
-  - L1150 the fund's page files the row under income
-  - L1165 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
-  - L1168 the step lends what the lenders hold and no more: 50 of the 60
-  - L1170 ...and the fee is charged on those 50, all lent so the top of the rate
-  - L1171 ...which is not the fee on all 60, shares the lenders had sold
-  - L1172 ...the fund's, which holds them all
-  - L1173 ...and the cells', which hold none, nothing
-  - L1174 ...and the step recalls the 10 the lenders do not hold
-  - L1188 fixture: the town holds
-  - L1193 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
-  - L1195 ...as the one-argument form, which knows of no short, caps them at the shares in issue
-  - L1201 fixture: 40 short, held by the desk, and the register is whole
-  - L1210 fixture: the quote is over the last trade,
-  - L1211 fixture: the month's listing comes first and finds no book to list against, so the company is still with no shares in issue, the world holding
-  - L1214 the short is closed
-  - L1215 ...the world's own shares in it, wiped for nothing, are the month's valuation at the quote the company stood at
-  - L1217 ...and the short closed for nothing, the shares it owed at that quote
-  - L1218 ...the world holds none of it after
-  - L1219 ...and what it sold goes with the company: nobody holds a share of it
-  - L1220 ...the desk's 40 among them
-  - L1223 ...and the fund's lot is closed in its ledger, the shares it held gone
-  - L1225 ...and a month after the figures are cleared, a company with no short wiping nothing
-  - L1227 a listing of the company later, when its book is back, holds the founders' shares alone: the holdings are the shares in issue
-  - L1237 fixture: fair value is minFair now, and the quote is over the short's collateral
-  - L1239 a short open at a company under minFair is still margin-called when its account is under water
-  - L1244 fixture: the same quote, no short open, and over the band above minFair
-  - L1245 ...opens no new short at a company under minFair
-  - L1262 9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)
-  - L1276 fixture: the town's cells hold shares in a company
-  - L1284 fixture: an ordinary cell holds
-  - L1319 fixture: no cell had traded a share with the world that month before the fixture's two trades
-  - L1320 fixture: a cell sold the world half its
-  - L1321 ...and the exchange's sale abroad rose by it, at that price
-  - L1322 ...the money in its savings
-  - L1323 fixture: the same cell bought half of that back from the world, at the same price
-  - L1324 ...and the exchange's purchase abroad rose by it
-  - L1325 ...the money out of its savings
-  - L1326 ...the world holding what it bought less what it sold
-  - L1330 the month's two figures hold the fixture's trades
-  - L1331 fixture: both trades are over the audit's cent, so a line that was left out would show
-  - L1332 the month foots with both declared: residual
-  - L1334 the audit's line for the cells' sale abroad is the exchange's figure
-  - L1335 ...with its half into their savings, the same size
-  - L1336 the audit's line for the cells' purchase abroad is the exchange's figure
-  - L1337 ...with its half out of their savings, the same size
-  - L1338 fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow
-  - L1340 the balance of payments' financial inflow holds the sale: $
-  - L1341 ...and its financial outflow the purchase: $
-  - L1343 ForeignAccounts' month, which the rate reads, is that financial account
-  - L1348 7. how often, in a real run:
-  - L1359 the cells traded shares with the world in the real run: they sold to it in
-  - L1361 ...and every month the audit's four lines for them were the exchange's two figures (
-  - L1364 every month passed the audit: worst residual $
-  - L1365 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
-  - L1370 ...and with them off the world posted no ask and sold nothing short, as the switch says
-  - L1372 ...and that city passed the audit and kept its register whole too
+  - L703 the households' cash identity closes through the noncash wipe and short closure:
+  - L706 the audit's wipe line is the exchange's figure, a valuation in the city's favour
+  - L707 ...and its closed-short line, a valuation against it
+  - L708 ...each with its half that moves no cash: the wipe's debit
+  - L709 ...and the closed short's credit
+  - L710 the balance of payments' valuation in is the wipe: nothing else was written off that month
+  - L711 ...and its valuation out the closed short
+  - L712 ForeignAccounts' forgiven counts the two: it moved by the wipe less the short closed
+  - L714 fixture: the month's valuation nets under nothing, the short closed being more than the world's shares wiped:
+  - L717 the Trade screen's chip for it says the claims were lost, not written off in the city's favour:
+  - L720 ...a month that wrote claims off in its favour still says it improves what the city owes:
+  - L722 ...and the chip for what was written off since founding says forgiven or settled for a gain and against the city for a loss
+  - L739 fixture: the fund was paid fees (
+  - L740 the Activity page has a line in words for each month's fees:
+  - L741 ...and none says the row's kind,
+  - L745 the market book's share lot, which the fees are credited to, labels its income for what is in it:
+  - L747 ...a bond's stays coupons, and the rescue book's, which no fee is credited to (FundLedger.lendingFee()), dividends
+  - L751 fixture: the company's rescue book holds no income of the fees: it holds none at all
+  - L753 the income card says what the city's fund's income covered, as its own note does
+  - L756 ...and with no transfer to cover it says what the income is made of, the lending fees beside the dividends and coupons:
+  - L758 ...but with one it says how much of it the income covered:
+  - L763 a share's write-off reads on the page as the shares going with the company:
+  - L765 ...a bond's keeps its face
+  - L780 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
+  - L789 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
+  - L793 with nothing short the cell is paid the company's dividend on every share it holds
+  - L795 ...and with 100 short, the same: the company's dividend per share on its shares in issue
+  - L796 ...the lender kept the shares it lent, so was paid on all of them
+  - L798 the fund is paid the same either way
+  - L799 ...and the world on its own long
+  - L800 the short pays the dividend per share on the shares it is short
+  - L801 ...the desk, which holds them, is paid it
+  - L802 ...every holder was paid, the company's dividend and the short's together
+  - L805 ...and with nothing short the short paid nothing
+  - L817 fixture: the short is
+  - L819 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
+  - L822 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
+  - L824 ...the fund's part pro rata to what it holds of what can be lent
+  - L825 ...and the cells', the rest
+  - L826 ...the fund's cash rose by its part
+  - L828 ...a cell's savings by its part, per household, pro rata to what it holds
+  - L829 ...the other cell the same per share it holds
+  - L831 ...as investment income, which it plans on
+  - L832 ...and not as a dividend, which is a company's: it paid nothing
+  - L833 ...counted over the city's life
+  - L841 fixture: 200 short of 250 that can be lent:
+  - L844 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
+  - L846 ...which is more a share lent than at the general rate (
+  - L848 the rate at HARD_TO_BORROW is the general rate
+  - L849 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
+  - L850 ...halfway between, half of it
+  - L851 ...and no more past all of it lent
+  - L852 ...the dial's own reading of the fixtures
+  - L857 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
+  - L869 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
+  - L880 control: a print between the ask it sold at and the call line (
+  - L884 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
+  - L891 a print at
+  - L897 the next step counts the margin call
+  - L899 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
+  - L901 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
+  - L903 ...which is under the break price, so the account kept some of its collateral's worth
+  - L904 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
+  - L908 ...and the holdings are the shares in issue again
+  - L923 fixture: 60 short, and the lenders hold
+  - L925 fixture: the quote is fair value, so no margin call
+  - L928 the next step counts the recall, and no margin call
+  - L930 ...the short bids for what is short over what can be lent
+  - L932 ...at the market, fair value here, and not at the break price
+  - L933 ...which is under the break price, the collateral over the shares
+  - L934 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
+  - L938 ...a holder selling at the market covers it: the fund's hand sold
+  - L940 ...at fair value, the bid's price
+  - L941 ...it is short
+  - L962 ...the collateral held against them
+  - L963 ...the shares the cells lend
+  - L964 ...the shares the fund lends
+  - L965 ...the month's lending fee the cells were paid
+  - L966 ...and the fund
+  - L967 ...what the short has paid at the dividends over the city's life
+  - L969 ...shares sold short and what they fetched over the city's life
+  - L971 ...shares covered and what that cost
+  - L973 ...asks posted, company-months a short stood open, margin calls and recalls
+  - L976 ...the lending fees paid over the city's life
+  - L977 ...the quote of
+  - L980 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
+  - L984 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
+  - L997 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
+  - L1000 ...with its life counted: sold short, asks posted, months open and the fees paid
+  - L1017 saved to slot 10 of the scratch folder and loaded into a second game
+  - L1033 fixture: the state carries a short before the fields are taken out of it
+  - L1038 a state without the shorts' fields still restores
+  - L1039 ...with nothing short, lent or charged, and nothing counted
+  - L1132 8. the lending fee on the lenders' books, and the review's four edges (LF1)
+  - L1141 fixture: the fund lent shares to the short and was paid for them: $
+  - L1142 the fund's income for the month counts the fee, to the cent it was paid
+  - L1143 ...and its life's
+  - L1149 the ledger has one LENDING_FEE row for the month
+  - L1150 ...of the money it was paid
+  - L1153 ...and the company's market lot has it as income
+  - L1154 the fund's page files the row under income
+  - L1169 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
+  - L1172 the step lends what the lenders hold and no more: 50 of the 60
+  - L1174 ...and the fee is charged on those 50, all lent so the top of the rate
+  - L1175 ...which is not the fee on all 60, shares the lenders had sold
+  - L1176 ...the fund's, which holds them all
+  - L1177 ...and the cells', which hold none, nothing
+  - L1178 ...and the step recalls the 10 the lenders do not hold
+  - L1192 fixture: the town holds
+  - L1197 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
+  - L1199 ...as the one-argument form, which knows of no short, caps them at the shares in issue
+  - L1205 fixture: 40 short, held by the desk, and the register is whole
+  - L1214 fixture: the quote is over the last trade,
+  - L1215 fixture: the month's listing comes first and finds no book to list against, so the company is still with no shares in issue, the world holding
+  - L1218 the short is closed
+  - L1219 ...the world's own shares in it, wiped for nothing, are the month's valuation at the quote the company stood at
+  - L1221 ...and the short closed for nothing, the shares it owed at that quote
+  - L1222 ...the world holds none of it after
+  - L1223 ...and what it sold goes with the company: nobody holds a share of it
+  - L1224 ...the desk's 40 among them
+  - L1227 ...and the fund's lot is closed in its ledger, the shares it held gone
+  - L1229 ...and a month after the figures are cleared, a company with no short wiping nothing
+  - L1231 a listing of the company later, when its book is back, holds the founders' shares alone: the holdings are the shares in issue
+  - L1241 fixture: fair value is minFair now, and the quote is over the short's collateral
+  - L1243 a short open at a company under minFair is still margin-called when its account is under water
+  - L1248 fixture: the same quote, no short open, and over the band above minFair
+  - L1249 ...opens no new short at a company under minFair
+  - L1266 9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)
+  - L1280 fixture: the town's cells hold shares in a company
+  - L1288 fixture: an ordinary cell holds
+  - L1323 fixture: no cell had traded a share with the world that month before the fixture's two trades
+  - L1324 fixture: a cell sold the world half its
+  - L1325 ...and the exchange's sale abroad rose by it, at that price
+  - L1326 ...the money in its savings
+  - L1327 fixture: the same cell bought half of that back from the world, at the same price
+  - L1328 ...and the exchange's purchase abroad rose by it
+  - L1329 ...the money out of its savings
+  - L1330 ...the world holding what it bought less what it sold
+  - L1334 the month's two figures hold the fixture's trades
+  - L1335 fixture: both trades are over the audit's cent, so a line that was left out would show
+  - L1336 the month foots with both declared: residual
+  - L1338 the audit's line for the cells' sale abroad is the exchange's figure
+  - L1339 ...with its half into their savings, the same size
+  - L1340 the audit's line for the cells' purchase abroad is the exchange's figure
+  - L1341 ...with its half out of their savings, the same size
+  - L1342 fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow
+  - L1344 the balance of payments' financial inflow holds the sale: $
+  - L1345 ...and its financial outflow the purchase: $
+  - L1347 ForeignAccounts' month, which the rate reads, is that financial account
+  - L1352 7. how often, in a real run:
+  - L1363 the cells traded shares with the world in the real run: they sold to it in
+  - L1365 ...and every month the audit's four lines for them were the exchange's two figures (
+  - L1368 every month passed the audit: worst residual $
+  - L1369 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
+  - L1374 ...and with them off the world posted no ask and sold nothing short, as the switch says
+  - L1376 ...and that city passed the audit and kept its register whole too
 
 ## SicknessCheck.java - 68 labelled assertions
 

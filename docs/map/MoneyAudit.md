@@ -55,7 +55,7 @@
 > the write-offs' pools-side halves are - and a payment to a household, or from
 > one to the world, has a line on each side, a pair, as the bonds' have. It is
 > struck and kept (Game.getLastHouseholdsAudit()) and IS asserted now, by
-> LongPlaytest.audit() and MoneyCheck, at the pools' own tolerance:
+> LongPlaytest.audit() and LongPlaytest.MoneyFixtures, at the pools' own tolerance:
 > 
 >     held(after) - held(before) == (toHouseholds - fromHouseholds) + own
 > 

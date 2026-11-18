@@ -1100,7 +1100,7 @@ public class GdpCheck {
      * the government, and nobody buys its output over a counter. Taken off GDP as an import it was a fall in output for an input whose output
      * the accounts never counted, so it is booked on a line of its own (BusinessServices.BANK_UPKEEP_SUPPLIES) and the accounts leave it out of
      * their imports, as they leave the drivers' fuel; the sectors' statements, the money audit and the balance of payments keep it, the cash left.
-     * MoneyCheck's upkeep city (a clinic, a school, police, a bus network, three bank branches), with no Business Services seats and then with
+     * LongPlaytest.MoneyFixtures' upkeep city (a clinic, a school, police, a bus network, three bank branches), with no Business Services seats and then with
      * an office, played one press to pay and a second to strike.
      */
     static void bankUpkeep() {

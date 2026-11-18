@@ -698,6 +698,10 @@ public class ShortSellingCheck {
         assertTrue("fixture: both are above the audit's cent, so a line that was left out would show", ex.getWorldSharesWiped() > MoneyAudit.CENT && ex.getShortClosedForNothing() > MoneyAudit.CENT);
         out.printf("   the wipe $%,.2f in the city's favour, the short $%,.2f against it; the audit's residual %.6f%n", ex.getWorldSharesWiped(), ex.getShortClosedForNothing(), a.residual);
         assertTrue("the month foots with both declared: residual " + String.format("%.6f", a.residual), Math.abs(a.residual) <= .001);
+        // HL1: both valuation offsets name no cash; classifying either DOMESTIC would invent a household receipt or payment.
+        MoneyAudit.Households households = city.getLastHouseholdsAudit();
+        assertTrue("the households' cash identity closes through the noncash wipe and short closure: " + households,
+                LongPlaytest.MoneyFixtures.householdsClose(households));
         double lineIn = a.figures.getOrDefault("+ desk WorldSharesWiped", 0.0), lineOut = a.figures.getOrDefault("- desk ShortClosedForNothing", 0.0);
         close("the audit's wipe line is the exchange's figure, a valuation in the city's favour", lineIn, ex.getWorldSharesWiped(), 1e-9);
         close("...and its closed-short line, a valuation against it", lineOut, ex.getShortClosedForNothing(), 1e-9);

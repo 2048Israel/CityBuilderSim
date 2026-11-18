@@ -54,7 +54,7 @@ package ham.citybuildersim;
  * the write-offs' pools-side halves are - and a payment to a household, or from
  * one to the world, has a line on each side, a pair, as the bonds' have. It is
  * struck and kept (Game.getLastHouseholdsAudit()) and IS asserted now, by
- * LongPlaytest.audit() and MoneyCheck, at the pools' own tolerance:
+ * LongPlaytest.audit() and LongPlaytest.MoneyFixtures, at the pools' own tolerance:
  *
  *     held(after) - held(before) == (toHouseholds - fromHouseholds) + own
  *
@@ -89,7 +89,7 @@ package ham.citybuildersim;
  * book is. The transit bill's wages stay a DOMESTIC debit ("- transit Wages").
  *
  * Struck by Game.nextMonth() every month, always, because it costs a few
- * hundred getter reads; asserted by LongPlaytest and MoneyCheck, and its
+ * hundred getter reads; asserted by LongPlaytest and LongPlaytest.MoneyFixtures, and its
  * central bank lines by CentralBankCheck.
  */
 public final class MoneyAudit {
@@ -128,7 +128,7 @@ public final class MoneyAudit {
          * two errors cancel, and the residual stays at $0.00. That is where
          * hot money sat for the whole life of the mechanic. See NOTHING AFTER
          * THE AUDIT MAY MOVE A POOL, the last thing Game.nextMonth() does, and
-         * its assertions in LongPlaytest.audit() and MoneyCheck.
+         * its assertions in LongPlaytest.audit() and LongPlaytest.MoneyFixtures.
          */
         public final double[] poolsAtOpen;
         public final double[] poolsAtClose;
