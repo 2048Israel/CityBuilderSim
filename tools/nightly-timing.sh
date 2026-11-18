@@ -180,7 +180,7 @@ nightly_timing() {  # optional record root for the no-JVM fixture
     fi
     [ -n "$PREV" ] || { OLD=$NIGHT/empty.tsv; echo "no figure of last night's here"; }
     awk -v mode=night -v margin="$MARGIN" -f "$PAIRAWK" "$OLD" "$NIGHT/timing.tsv" > "$NIGHT/verdict.tsv"
-    slower=0; standing=0; first=0; errors=0; DETAILS=
+    slower=0; standing=0; first=0; errors=0; DETAILS=; SLOWER_BY=
     TAB=$(printf '\t')
     while IFS="$TAB" read -r state H L before now budget unit P O; do
         echo "$state: $H | $L | previous $before, tonight $now, budget $budget $unit"
@@ -193,7 +193,7 @@ nightly_timing() {  # optional record root for the no-JVM fixture
                     culprit=$(timing_search); searchcode=$?
                     echo "SLOWER $H | $L | paired $result | introduced by $culprit"
                     DETAILS="$DETAILS; $H | $L | $(printf '%s' "$result" | awk -F '\t' '{printf "previous %s, tonight %s, budget %s %s", $2, $3, $4, $5}') | $culprit"
-                    slower=$((slower + 1)); [ "$searchcode" = 0 ] || errors=$((errors + 1))
+                    slower=$((slower + 1)); SLOWER_BY="$SLOWER_BY ${culprit%% *}"; [ "$searchcode" = 0 ] || errors=$((errors + 1))
                 fi ;;
             STANDING) standing=$((standing + 1)) ;;
             FIRST) first=$((first + 1)) ;;
@@ -207,4 +207,14 @@ nightly_timing() {  # optional record root for the no-JVM fixture
     TIMING="timing: $slower SLOWER, $standing standing miss(es), $first first-night miss(es), $errors incomplete; loaded=$LOADED; $NIGHT$DETAILS"
     [ -n "$PREV" ] || TIMING="$TIMING; no figure of last night's here"
     echo "$TIMING"; [ "$slower" = 0 ] && [ "$errors" = 0 ]
+}
+nightly_mail() {   # BW1: $1 the playtest's exit, $2 the verdict; a red playtest or a slower line mails Jerus and the gate's keeper
+    [ "$1" != 0 ] || [ "${slower:-0}" -gt 0 ] || return 0
+    [ -f "$ORIG/tools/bus.sh" ] || return 0
+    tip=$(git -C "$CLONE" log -1 --format=%s "$FULL" | sed -n 's/^Merge batch\/\([^: ,]*\).*/\1/p')
+    what=; [ "$1" = 0 ] || what="the playtest red on ${tip:-a commit no batch merged}'s merge"
+    [ "${slower:-0}" = 0 ] || what="${what:+$what; }$slower timing line(s) slower, introduced by$(printf '%s\n' ${SLOWER_BY:-} | sort -u | awk '{ printf " %s", $0 }')"
+    for to in jerus "${CBS_GATE_KEEPER:-orchestrator}"; do
+        printf 'nightly RED: %s\n%s\n' "$what" "$2" | CBS_ME=${CBS_ME:-nightly} sh "$ORIG/tools/bus.sh" send "$to" --kind info - > /dev/null
+    done
 }

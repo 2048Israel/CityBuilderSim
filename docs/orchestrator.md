@@ -25,16 +25,18 @@ working, stuck (no commit for a day) or off-queue. `--due` prints only the
 ready and the stuck, and `nightly due` once a day between 01:00 and 07:00.
 
 **Waking** (lesson b: batches sat unshipped 9 hours on 2026-10-24). A builder's
-mail resumes a headless orchestrator. An app-session one arms an hourly
-CronCreate check-in at minute 7 whose prompt runs `sh tools/day.sh --due` and
-ends the turn when it prints nothing, deletes it when replaced (two
-orchestrators may gate one branch), and runs `sh tools/wait.sh --ship [--skip
-HELD...]` in the background, which ends when an unmerged branch's ship file
-lands without its marker (GP1), armed again after each gate.
+mail resumes a headless orchestrator, and the batches' and the gate's state are
+MemWatch's to draw (BW1). The fallback, for an app session no mail wakes: an
+hourly CronCreate check-in running `sh tools/day.sh --due`, ending the turn when
+it prints nothing (deleted when the session is replaced: two may gate one
+branch), and `sh tools/wait.sh --ship [--skip HELD...]` in the background,
+ending when a ship file lands without its marker.
 
 **The nightly**, `sh tools/nightly.sh` on main's tip (4,000 months, the nightly
 tier, hard timing; GT1, GR1), is due once a night; its verdict is in the next
-`day.sh` and `$HOME/.cbs-nightly.log`. A headless orchestrator has no check-in
+`day.sh` and `$HOME/.cbs-nightly.log`, and a red playtest or a slower line is
+mail to `jerus` and the gate's keeper (`CBS_GATE_KEEPER`, else `orchestrator`)
+naming the batch (BW1). A headless orchestrator has no check-in
 to start it: by hand, or a scheduled task (a daily one is Jerus's call, asked
 2026-11-17).
 
@@ -43,7 +45,7 @@ to start it: by hand, or a scheduled task (a daily one is Jerus's call, asked
 - Builders start through the launcher (`cbs-bus start <ID> --runtime claude|codex
   --model ... --effort xhigh`), the runtime chosen by the plans' usage. Each
   prompt carries the batch, the batches in flight and their files, and the
-  mail protocol of the contract, section 5. A launcher name is never reused: a
+  contract's state lines and mail protocol (3, 5). A launcher name is never reused: a
   takeover is `<ID>c`.
 - How many build at once is Jerus's setting; his latest word (2026-11-17):
   three builders, and a fourth on study, docs or process rows while the plan
@@ -67,8 +69,8 @@ Each ready branch, one at a time:
 2. A stranger's review where the contract asks one, by a fresh reviewer; its
    findings go back to the builder by mail. Take the batch's recommended calls.
 3. `sh tools/gate.sh ID [--no-tag] [-m "<title>"]` as a background Bash call
-   with timeout 7200000 into a log, then `tools/wait.sh --line` until it ends.
-   A ship file without its first-line gate-run comment runs fresh: stop it
+   with timeout 7200000 into a log, then `tools/wait.sh --line` until it ends;
+   a stop mails the batch itself, so a send-back needs no relaying. A ship file without its first-line gate-run comment runs fresh: stop it
    (`sh tools/gate.sh --stop RUN_DIRECTORY`) and gate with `--reuse` the kept
    run. `--version X.Y.Z` is Jerus's call.
 4. Verify the publication: one merge, its first parent the gated main; the tag
