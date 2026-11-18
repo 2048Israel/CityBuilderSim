@@ -31,7 +31,13 @@ public class KnownReds {
     }
 
     private static String harness(String line) { return line.substring(0, line.indexOf(" | ")); }
-    private static boolean count(String line) { return line.matches("[^ ]+ \\| (exit -?[0-9]+|[0-9]+ FAILED)"); }
+
+    /** Exit lines and failure tallies, bare or headed by the harness's own name. WHY (R2b-J): "ResearchViewCheck: 1 FAILED of 217" stayed NEW. */
+    private static boolean count(String line) {
+        if (line.matches("[^ ]+ \\| (exit -?[0-9]+|[0-9]+ FAILED)")) return true;
+        String name = line.contains(" | ") ? Pattern.quote(harness(line)) : null;
+        return name != null && line.matches(name + " \\| " + name + ": [0-9]+ FAILED( of [0-9]+)?");
+    }
 
     /** Exact gate lines and five-column, harness-scoped parts share this representation. */
     static boolean matches(String line, String entry) {
