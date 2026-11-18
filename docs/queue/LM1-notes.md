@@ -264,7 +264,9 @@ plans discover"), and 2h-b's twin asserts it that way. The line now asks
 `back` to keep the sources it was saved with and to write the watched
 city's sidecar byte for byte. On main's founding no wall is found and both
 forms hold. It is red without the mend and green with it, as are the yard's
-and the shore's.
+and the shore's. The orchestrator's reading (2026-11-18): the law (a late
+view equals the watched city) stands, and the bytes before the view were the
+accident; the premise is kept, not moved.
 
 **The checks** on the merge: `--fast` OK (Stale 0 firm); LandCheck and
 EarthTerrainCheck (the full file named) green; MapCheck, with BridgeMapCheck,
