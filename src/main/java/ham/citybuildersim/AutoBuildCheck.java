@@ -1026,6 +1026,11 @@ public class AutoBuildCheck {
 
         // A first school (0.7.101): Jerus's "at first it doesnt build schools ... sure its at 0% but building one would put it at 20000%".
         Game k = ChildcareCheck.town(root, "school");
+        // HL1 + main's HW1 (2026-11-18): this school now must be ordered, so cause the same debt room as its positive twin below.
+        // The bill's imported upkeep lowers GDP, putting the untouched town over the debt limit; paying its advances changes no payback.
+        System.out.printf("   first-school fixture before repayment: debt %.1f%% of a year's GDP, limit %.1f%%%n",
+                100 * AutoBuilder.ratio(k), 100 * k.getAutoBuilder().getDebtLimit());
+        repaid(k);
         BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
         BuildingsTemplate school = null;
         for (BuildingsTemplate t : k.getBuildingManager().getTemplates()) if (t.getTeaches() == EducationType.ELEMENTARY) school = t;
@@ -1037,9 +1042,8 @@ public class AutoBuildCheck {
                         + " places, which one would serve %,.0f%%", sdk[1], 100 * sdk[1] / sc.getCapacity(), sc.getCapacity(),
                         100 * sc.getCapacity() / Math.max(1, sdk[1])),
                 sdk[0] == 0 && sdk[1] > 0 && sdk[1] < .5 * sc.getCapacity());
-        // THE PAYBACK (0.7.104): what its residents pay the city short of what each already costs it - its four medical
-        // schools and university spend three times its revenue - so one school does not pay back: held, the inbox giving
-        // the figure.
+        // HW1: schools are essential too. What the residents pay still falls short of what each costs, but the first school
+        // is ordered without a payback veto; the debt-limit refusal itself is caused and asserted separately above.
         ak.setOn(true, null);
         // ...the school's running and what a resident pays read as the pass left the town, before its month runs.
         double[] readK = { Double.NaN, Double.NaN };

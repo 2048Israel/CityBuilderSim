@@ -376,3 +376,45 @@ written off, with 7,783k savings still theirs. All repayment/bank channel assert
 `./batch-check.sh ScaleCheck`: suite passed with main's current QB1 fixture at month 225; the
 obsolete HL1 month-165 fixture and its narrow 7/36 scan are not restored. No dial or premise moved.
 Full wrapper exits and remaining named results follow below.
+
+ScaleCheck's current six-month K=1/K=1000 tracking maxima are: people 6.64e-5 (dial .015),
+cash .00370 (.0125), savings .00678 (.016), GDP .0564 (.14), deposits .00544 (.026), prices
+6.44e-5 (.004), unemployment .000464 (.033), policy zero (.0005). The registers close to 2.5e-13
+of their issue. Its new 1900 section passes too. Wrapper exit 0.
+
+`./batch-check.sh AuctionCheck`: exit 0. `./batch-check.sh DebtExchangeCheck`: exit 0.
+DebtExchangeCheck now tops the dollar paper up by US$3,539.69k; the caused 10% fall leaves a
+209.96k cash surplus beside the -424.74k balance (-634.38k exchange loss). Four one-point market
+steps put the term bond at 8.56%, its below-book buyback 2,543.58k for a 35.82k gain; cash surplus
+171.91k, balance 207.73k. No tolerance or premise changed from HL1's already reviewed fixtures.
+
+AutoBuildCheck's first pass had one NEW assertion: `the first warranted school is essential and
+ordered without a payback veto`. Main's HW1 changed this case from a payback refusal to an
+essential-school order; unlike its already-repaid positive twin, the first-school town still kept
+its central-bank advances. HL1's imported upkeep leaves that town over the debt/GDP limit. The
+mend uses the same existing repaid() fixture operation (cash repays advances, within-limit asserted)
+for the newly positive first-school case, prints its original ratio, and leaves the explicit
+zero/over-limit cases and the model untouched. Budget, children, staffing and all claim/tolerances
+stay; the rerun must prove the order, not just the within-limit precondition.
+
+`./batch-check.sh SaveFileCheck` and `./batch-check.sh ReadPathCheck`: exit 0 each on the merged
+model (the latter compiled the first-school fixture mend). `./batch-check.sh PublicLicenceCheck`:
+exit 0, including the new household closure assertion. Its caused water-works licence is
+3.338775576, pending then paid at the next strike, alongside the named `- city IP charges` audit
+line, the accounts' import and expense, history, save/load and load-path readers. The current
+standing stack's next pending bill is 3.040792804; the hydrogen works' test bill is 1.013918045.
+
+`./batch-check.sh ShortSellingCheck`: exit 0. The caused LF1c month is m53: valuation in 17.36,
+valuation out 34.73; household held 113.87 -> 114.83, to households 6.89, from households 4.03,
+own -1.89, residual zero at display precision. Both valuations exceed the audit cent, the net is
+against the city, and the new household assertion passes beside the pool and BOP assertions.
+
+The temporary named-check loop was edited while active (adding serialization and later names),
+which caused shell parse errors after the completed bank call and at the end of the original
+nine-name loop. Each completed harness verdict above is from its saved batch-check output; these
+errors did not change a harness. Subsequent calls use unchanged one-name wrappers. The two late
+names HealthCheck/KeptCheck did not run in that loop and are still required, as is the mended
+AutoBuildCheck rerun and LongPlaytest. No such wrapper is tracked or shipped.
+
+AutoBuildCheck rerun after the school fixture mend: **exit 0**, all assertions including the
+first essential school order and both debt-limit refusal cases pass. No model or tolerance changed.

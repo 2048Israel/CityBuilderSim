@@ -907,45 +907,45 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L968 fixture: the town short of road, its cash at a month's tax
   - L970 a debt limit of 0%: it holds and borrows nothing
   - L1024 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L1053 the first warranted school is essential and ordered without a payback veto
-  - L1058 the inbox does not invent a payback refusal for the essential school
-  - L1071 the twin with fiscal room also orders its first school without weighing a payback
-  - L1086 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
-- **L1107 6. essential cards carry no payback veto, including after a save**
-  - L1116 fixture: the missing elementary school has a category card before the essential order is placed
-  - L1120 the deficit town orders its warranted school without weighing payback
-  - L1124 the card carries no payback hold after the essential order
-  - L1125 no payback appraisal was retained for the essential card
-  - L1128 the inbox also carries no invented payback refusal
-  - L1133 saved and loaded mid-month, the essential card still has no payback hold
-  - L1136 switched off, it holds nothing back, and the card carries no line
-  - L1140 fiscal room does not reintroduce a payback veto on work already ordered
-- **L1284 7. a young city refused for a small sum keeps building (FW4)**
-  - L1344 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1347 fixture: the first refused order is for the young city's own general-care shortage
-  - L1429 the formerly refused general-care service itself gains operating capacity, and the city grows
-  - L1552 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
-  - L1576 ...and its log says the first was more than the money would pay for
-  - L1612 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1617 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1650 fixture: the town short of a service, with no ground free
-  - L1665 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1671 ...its log's order carries the ground: its square feet, price and places
-  - L1690 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1691 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1714 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1748 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1788 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1790 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1793 ...and the inbox says so, naming the land office
-  - L1796 ...settled the month it is switched off
-  - L1894 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1948 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1973 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1978 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L2009 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L2026 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L2067 a school is essential too: the same deficit does not hold it for payback
+  - L1057 the first warranted school is essential and ordered without a payback veto
+  - L1062 the inbox does not invent a payback refusal for the essential school
+  - L1075 the twin with fiscal room also orders its first school without weighing a payback
+  - L1090 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
+- **L1111 6. essential cards carry no payback veto, including after a save**
+  - L1120 fixture: the missing elementary school has a category card before the essential order is placed
+  - L1124 the deficit town orders its warranted school without weighing payback
+  - L1128 the card carries no payback hold after the essential order
+  - L1129 no payback appraisal was retained for the essential card
+  - L1132 the inbox also carries no invented payback refusal
+  - L1137 saved and loaded mid-month, the essential card still has no payback hold
+  - L1140 switched off, it holds nothing back, and the card carries no line
+  - L1144 fiscal room does not reintroduce a payback veto on work already ordered
+- **L1288 7. a young city refused for a small sum keeps building (FW4)**
+  - L1348 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1351 fixture: the first refused order is for the young city's own general-care shortage
+  - L1433 the formerly refused general-care service itself gains operating capacity, and the city grows
+  - L1556 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
+  - L1580 ...and its log says the first was more than the money would pay for
+  - L1616 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1621 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1654 fixture: the town short of a service, with no ground free
+  - L1669 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1675 ...its log's order carries the ground: its square feet, price and places
+  - L1694 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1695 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1718 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1752 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1792 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1794 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1797 ...and the inbox says so, naming the land office
+  - L1800 ...settled the month it is switched off
+  - L1898 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1952 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1977 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1982 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L2013 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L2030 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L2071 a school is essential too: the same deficit does not hold it for payback
 
 ## BankCheck.java - 532 labelled assertions
 
