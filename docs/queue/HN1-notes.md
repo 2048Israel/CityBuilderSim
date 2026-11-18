@@ -115,8 +115,37 @@ main's was made fresh, as the orchestrator allowed; it is in `target/hn1/tr-c17/
   main's 75,584 of 306,178 (m2405).
 - The mended city ends smaller: 539,318 people at m2402 against 1,053,251 at m2405. Its exchange rate is 312 at m2400
   (trace-month's `rate`) against 75, and its city debt 34.8T against 8.1T. This is one path, 720 months after a split
-  made by two homes. Whether the smaller late city is the mend's doing or the path's is for the 80-run ensemble to say
-  (`docs/ensemble/HN1.md`, against the newest versioned baseline).
+  made by two homes. City debt in years of GDP runs below main's for most of the path (0.29 against 1.69 at m2000,
+  0.09 against 1.20 at m2200) and swings above it at the end (3.04 against 1.36 at m2400). Insurance claims are $0 in
+  both. The capital rule refused other sectors a building's loan in 501 sector-months against 453, while it was on in
+  116 months against 182 (REV-HN1-1's (5a): a trimmed mortgage uses capital room that sectors asking later in the month
+  would have had).
+
+**The ensemble** (`docs/ensemble/HN1.md`, 80 of 80 runs on 2c205e493, the merged tree, against `0.9.146.md`, CPB1's):
+batch verdict PASS, hard criteria 10/10. M1 is 0 months on every policy, and F1 is 0/16 on every policy.
+
+| policy | final population (T2), median [range] | baseline 0.9.146 |
+|---|---|---|
+| AUTO2 | 2,656,362 [1,392,715 to 5,882,191] | 2,335,590 [1,242,257 to 4,873,682] |
+| ZERO_SLACK | 1,735,856 [391,013 to 4,172,643] | 1,426,515 [419,665 to 2,975,422] |
+| ZERO_HOT | 7,859 [1,697 to 20,661] | 6,308 [2,940 to 13,996] |
+| SHOCK | 36,114 [32,420 to 318,562] | 34,922 [26,060 to 208,272] |
+| HIGH | 26,540 [16,912 to 80,231] | 28,496 [18,298 to 79,350] |
+
+- T1: every AUTO2 seed reaches 40,000 people, at m820 [542 to 1,536], against m1,030 [584 to 1,416].
+- Across the runs the cities are larger, not smaller. The default path's smaller end is that path's.
+- One changed verdict, info only: ZERO_HOT H2, PASS to FAIL. It has 11 of 16 seeds below the second half's excess,
+  where 12 are needed; the median is -0.56% against -0.60%.
+- The other info rows move within their ranges: A1 3.10% against 3.16%, A2 24 against 23 months, S1 2.33% against
+  3.04%.
+- What the baseline does not carry: the city's debt and the insurance claims. Neither is in 0.9.146.md, and the
+  driver's CSV has no claims, so neither can be compared across the runs. On HN1's own runs, the AUTO2 city's debt ends
+  at a median of 0.14 years of GDP [0.03 to 0.40], and ZERO_SLACK's at 0.15 [0.00 to 0.67].
+- The run went past the 2-hour limit of the shell that started it, so it was stopped at 62 of 80 with
+  `tools/ensemble/ensemble.sh --stop HN1` and resumed under the same label ("18 of 80 runs to do", the snapshot kept).
+  The helper's first stop left the run's `xargs` (from 09:21), which started five runs at 11:12. A second `--stop`
+  ended them (16 processes), and nothing of the run was left before the resume. The helper's header says it stops
+  xargs; on this run it did so only at the second call.
 
 ## 5. Checks run
 
