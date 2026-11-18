@@ -56,9 +56,15 @@ public final class Credits {
     public static final String FONT_NOTICE = "The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., "
             + "with Reserved Font Name \"Plex\", used under the SIL Open Font License, Version 1.1, which follows in full.";
 
-    /** The page's sections, in order, read from the jar. */
+    /** The page's sections, in order, loaded once; later menu visits do no archive I/O. */
     public static List<Section> sections() {
-        return sections(Credits::readResource);
+        return Loaded.SECTIONS;
+    }
+
+    /** The first visit loads the immutable texts; JVM class initialization safely publishes them. */
+    private static final class Loaded {
+        /** The shared snapshot of the page's sections and complete legal texts. */
+        private static final List<Section> SECTIONS = List.copyOf(sections(Credits::readResource));
     }
 
     /** The same through any reader of a classpath path to its text (null for a file this build lacks); a harness's fixture. */

@@ -47,6 +47,8 @@ import javax.xml.xpath.XPathFactory;
  *   6. THE LIBRARIES FOLLOW THE FONTS, WITH THEIR RELEASE TEXTS IN FULL. The fallback copies'
  *      hashes and versions are pinned to upstream releases and pom.xml. The jars lack legal
  *      files; if that changes, re-audit and take their texts from the dependency instead.
+ *   7. REVISITING THE PAGE REUSES ITS TEXTS. All visits share an immutable section list;
+ *      the injected reader remains independent for missing-file fixtures.
  */
 public class CreditsCheck {
 
@@ -152,6 +154,16 @@ public class CreditsCheck {
         if (!inRepository) System.out.println("  (no Build EXE.bat in " + Path.of("").toAbsolutePath() + ": not run from the repository, the file sections are skipped)");
         List<Credits.Section> sections = Credits.sections();
         final String mark = "\u00a9";
+
+        System.out.println("--- later visits reuse the loaded notices ---");
+        check("another visit receives the same loaded sections", sections == Credits.sections(), null);
+        boolean immutable = false;
+        try {
+            sections.set(0, sections.get(0));
+        } catch (UnsupportedOperationException expected) {
+            immutable = true;
+        }
+        check("a caller cannot change the cached sections", immutable, null);
 
         System.out.println("--- every file the exe ships as a credit is on the page, in full ---");
         if (inRepository) {
