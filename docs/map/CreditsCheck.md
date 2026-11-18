@@ -1,10 +1,11 @@
-# CreditsCheck.java - 278 lines · 6 methods · 0 constants · harnesses
+# CreditsCheck.java - 434 lines · 10 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CreditsCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
-> licence, the libraries' licences and notices, and says where a file is when this build lacks it
-> (CR1, CR1-L).
+> licence, the libraries' licences and notices, the Java runtime's legal folder, Microsoft's terms for
+> its runtime files and where the source is, and says where a file is when this build lacks it
+> (CR1, CR1-L, CR1-J).
 > 
 > WHY THIS EXISTS. The game is sold, and the licences of its data (CC BY among them) and of its
 > type (the SIL Open Font License) ask that the credit reach the player. The page reads the files
@@ -32,24 +33,34 @@
 >      files; if that changes, re-audit and take their texts from the dependency instead.
 >   7. REVISITING THE PAGE REUSES ITS TEXTS. All visits share an immutable section list;
 >      the injected reader remains independent for missing-file fixtures.
+>   8. THE JAVA RUNTIME'S NOTICES ARE ITS OWN (CR1-J). The runtime's NOTICE and every file of
+>      its legal folder, java.base's first, in full; jlink's "Please see" notes kept and resolved
+>      inside the folder, and one naming a file it lacks, or outside it, marks the section missing.
+>   9. MICROSOFT'S TERMS FOR ITS RUNTIME FILES. The notice and Microsoft's pinned licence text in
+>      full, the notice naming every Microsoft library in OpenJFX's Windows graphics jar.
+>  10. WHERE THE SOURCE IS. The section is the README the pins make, naming each archive.
 
-**Uses:** [Credits](Credits.md) (45)
+**Uses:** [Credits](Credits.md) (100), [TempDirs](TempDirs.md) (2), [Packaging](Packaging.md) (2)
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 55 | `private static int fails` |  |
+| 65 | `private static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 226 | **type** `public class CreditsCheck` | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, and says where a file is when this build lacks it (CR1, CR1-L). |
-| 57 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 62 | 3 | `static String read(Path p) throws IOException` |  |
-| 67 | 5 | `static List<String> lines(String text)` | The text's non-blank lines, in order, with any \r gone. |
-| 74 | 59 | `static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception` | The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. |
-| 135 | 12 | `static void dependencyNotices() throws IOException` | The audited jars omit legal files; a new NOTICE or licence must be taken from the jar, not ignored. |
-| 148 | 130 | `public static void main(String[] args) throws Exception` |  |
+| 63 | 372 | **type** `public class CreditsCheck` | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, the Java runtime's legal folder, Microsoft's terms for its runtime files an... |
+| 67 | 4 | `static void check(String label, boolean ok, String detail)` |  |
+| 72 | 3 | `static String read(Path p) throws IOException` |  |
+| 77 | 5 | `static List<String> lines(String text)` | The text's non-blank lines, in order, with any \r gone. |
+| 84 | 60 | `static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception` | The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. |
+| 146 | 12 | `static void dependencyNotices() throws IOException` | The audited jars omit legal files; a new NOTICE or licence must be taken from the jar, not ignored. |
+| 160 | 3 | `static Credits.Section section(List<Credits.Section> sections, String title)` | A section by title, or null. |
+| 165 | 62 | `static void runtimeNotices(List<Credits.Section> sections) throws IOException` | The runtime's notices are its own legal folder's, every file in full, every "Please see" inside it (CR1-J). |
+| 229 | 64 | `static void microsoftAndSource(List<Credits.Section> sections, boolean inRepository) throws IOException` | Microsoft's notice and terms, and where the source is, as the jar and the pins hold them (CR1-J). |
+| 294 | 7 | `static byte[] sha256(byte[] bytes)` |  |
+| 302 | 132 | `public static void main(String[] args) throws Exception` |  |
 

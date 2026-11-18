@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**218 harness files, 25,245 labelled assertions.** AllChecks runs 218 of them.
+**219 harness files, 25,334 labelled assertions.** AllChecks runs 219 of them.
 
 ## Which harnesses read which class
 
@@ -80,7 +80,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, HistoricalRecipeCheck, IndustryViewCheck, SulphideLeachCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, LongPlaytest, ReadPathCheck, SulphideLeachCheck |
 | [CorporateBond](map/CorporateBond.md) | BankFailureCheck, BondCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [Credits](map/Credits.md) | CreditsCheck |
+| [Credits](map/Credits.md) | CreditsCheck, PackagingCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, EssentialWorksCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, MoneyDatesCheck, MoneySignCheck, PopulationCheck, PostwarRecipeCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
@@ -242,6 +242,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
 | [OutwardInvestment](map/OutwardInvestment.md) | AuctionCheck, BondCheck, BuybackCheck, CapitalFlowCheck, ExchangeCheck, HoldersCheck, LongPlaytest, MarketCheck |
 | [OwnerHousehold](map/OwnerHousehold.md) | OwnerCheck, ShortSellingCheck |
+| [Packaging](map/Packaging.md) | CreditsCheck, PackagingCheck |
 | [Palette](map/Palette.md) | KeptCheck |
 | [PartnerTrade](map/PartnerTrade.md) | DenominationCheck, PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [PartnersPage](map/PartnersPage.md) | **none** |
@@ -334,7 +335,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, DistressBleedCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CreditsCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, DistressBleedCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PackagingCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -5850,11 +5851,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2011 the issue and the fair buyback value read the same curve
   - L2015 ...and the buyback takes it off the books at that price
 
-## CreditsCheck.java - 29 labelled assertions
+## CreditsCheck.java - 65 labelled assertions
 
 > The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
-> licence, the libraries' licences and notices, and says where a file is when this build lacks it
-> (CR1, CR1-L).
+> licence, the libraries' licences and notices, the Java runtime's legal folder, Microsoft's terms for
+> its runtime files and where the source is, and says where a file is when this build lacks it
+> (CR1, CR1-L, CR1-J).
 > 
 > WHY THIS EXISTS. The game is sold, and the licences of its data (CC BY among them) and of its
 > type (the SIL Open Font License) ask that the credit reach the player. The page reads the files
@@ -5863,46 +5865,84 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its file, or a font added without its licence would each leave a credit unshown without any
 > error. Files are read from the working directory (the repository), as BrandingCheck reads
 > them; elsewhere those sections say so and are skipped.
-> 
 > ...
 
-- **L75 the libraries' release notices and licences**
-  - L76 the libraries follow the fonts, one section each
-  - L79 the jar carries the legal texts' release provenance
-  - L102 Gson shows its Apache licence exactly
-  - L107 OpenJFX shows every release notice exactly, in order
-  - L108 OpenJFX includes GPL v2 and the Classpath Exception
-  - L110 the JPEG credit is given explicitly
-  - L117 missing
-  - L118 its missing note identifies the library
-  - L123 Gson's legal release version is pinned to pom.xml
-  - L125 OpenJFX's legal release version is pinned to pom.xml
-  - L127 both OpenJFX dependencies use the audited version
-- **L149 CreditsCheck: the Credits page carries the data, fonts and libraries' notices and licences, in full (CR1, CR1-L)**
-- **L158 later visits reuse the loaded notices**
-  - L159 another visit receives the same loaded sections
-  - L166 a caller cannot change the cached sections
-- **L168 every file the exe ships as a credit is on the page, in full**
-  - L174 Build EXE.bat copies at least two ATTRIBUTION files beside the exe
-  - L191 every one of them was matched to a section
-- **L196 the fonts' notice and licence**
-  - L199 the page has a fonts section reading
-  - L200 the notice says 2017 IBM Corp.
-  - L201 the notice names the SIL Open Font License, Version 1.1
-  - L203 the fonts' section leads with the notice
-  - L204 the fonts' section is not missing
-  - L217 there is at least one font in resources/fonts/
-  - L218 every font there is IBM Plex, whose licence the page carries
-  - L220 OFL.txt is beside the fonts
-  - L223 OFL.txt carries Copyright
-  - L224 OFL.txt names the SIL Open Font License, Version 1.1
-  - L226 the fonts' section shows OFL.txt exactly
-- **L232 a build without a file says where the file is**
-  - L239 and its note names
-- **L243 the paragraphs keep the whole text**
-  - L261 \"a\\nb\\n\\n\\nc\\r\\n\" is [\"a\\nb\", \"c\"]
-  - L262 a null text has no paragraphs
-- **L264 each shipped file names the page**
+- **L85 the libraries' release notices and licences**
+  - L86 the libraries follow the fonts, one section each, then the runtime, Microsoft's libraries and the source
+  - L90 the jar carries the legal texts' release provenance
+  - L113 Gson shows its Apache licence exactly
+  - L118 OpenJFX shows every release notice exactly, in order
+  - L119 OpenJFX includes GPL v2 and the Classpath Exception
+  - L121 the JPEG credit is given explicitly
+  - L128 missing
+  - L129 its missing note identifies the library
+  - L134 Gson's legal release version is pinned to pom.xml
+  - L136 OpenJFX's legal release version is pinned to pom.xml
+  - L138 both OpenJFX dependencies use the audited version
+- **L166 the Java runtime's notices are its own legal folder's, in full**
+  - L178 a whole legal folder is read with no problem
+  - L180 NOTICE first, then java.base's files, then the other modules', each by name
+  - L184 jlink's \"Please see\" note is kept as written
+  - L185 and resolved to the file it names, inside the folder
+  - L186 a file that is not a note refers to nothing
+  - L189 the page's runtime section is that folder's files under their names, in full
+  - L191 its lead names this JVM's vendor and counts the files
+  - L193 it names the runtime folder beside the exe
+  - L197 a note naming a file the folder lacks makes it unreadable
+  - L200 and the page marks the whole section missing, naming runtime/legal
+  - L203 a note naming a file outside the folder makes it unreadable
+  - L208 a runtime without a legal folder has no notices to show
+  - L213 this JVM's legal folder is read whole
+  - L215 the page shows this JVM's runtime notices
+  - L219 java.base's LICENSE is among them
+  - L220 every \"Please see\" in it names a file shown
+  - L221 every file is on the page in full
+  - L224 none of the folder's files is left out
+- **L230 Microsoft's runtime libraries: the notice and Microsoft's terms in full**
+  - L232 the page has Microsoft's section, not missing
+  - L237 it shows the notice and the terms exactly, in order, under their names
+  - L238 the terms are Microsoft's for the Visual C++ 2015 - 2022 runtime
+  - L241 the terms are the pinned text of Microsoft's document
+  - L243 the notice gives Microsoft's copyright and points at the terms
+  - L245 the lead says whose libraries they are
+  - L248 the jar's notice and terms are tools/credits/microsoft's
+  - L258 OpenJFX's Windows graphics jar carries Microsoft libraries
+  - L265 the notice names every one of them, and the image check covers it
+  - L270 without
+  - L271 and its note names the legal folder beside the exe
+- **L274 the source code: where the complete source is**
+  - L277 the jar carries the source archives' pins
+  - L280 the section is the README tools.Packaging writes beside the archives
+  - L282 it names
+  - L286 it says the archives are in the folder
+  - L287 and why: GPL v2 section 3
+  - L288 the jar's pins are tools/credits'
+  - L291 without the pins the section is missing, naming source/README.txt
+- **L303 CreditsCheck: the Credits page carries the data, fonts and libraries' notices and licences, in full (CR1, CR1-L)**
+- **L312 later visits reuse the loaded notices**
+  - L313 another visit receives the same loaded sections
+  - L320 a caller cannot change the cached sections
+- **L322 every file the exe ships as a credit is on the page, in full**
+  - L328 Build EXE.bat copies at least two ATTRIBUTION files beside the exe
+  - L345 every one of them was matched to a section
+- **L350 the fonts' notice and licence**
+  - L353 the page has a fonts section reading
+  - L354 the notice says 2017 IBM Corp.
+  - L355 the notice names the SIL Open Font License, Version 1.1
+  - L357 the fonts' section leads with the notice
+  - L358 the fonts' section is not missing
+  - L371 there is at least one font in resources/fonts/
+  - L372 every font there is IBM Plex, whose licence the page carries
+  - L374 OFL.txt is beside the fonts
+  - L377 OFL.txt carries Copyright
+  - L378 OFL.txt names the SIL Open Font License, Version 1.1
+  - L380 the fonts' section shows OFL.txt exactly
+- **L386 a build without a file says where the file is**
+  - L393 and its note names
+- **L397 the paragraphs keep the whole text**
+  - L415 \"a\\nb\\n\\n\\nc\\r\\n\" is [\"a\\nb\", \"c\"]
+  - L416 a null text has no paragraphs
+- **L418 each shipped file names the page**
 
 ## CrimeCheck.java - 79 labelled assertions
 
@@ -21990,6 +22030,83 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L756 ...and their subsistence, seven blocks on: the save's rows, not today's
   - L757 ...and the owners' cell empty
   - L762 ...the shape from before the hunger's halves, eleven rows, read the same way
+
+## PackagingCheck.java - 53 labelled assertions
+
+> The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime
+> files, the libraries' texts and the complete corresponding source archives, unchanged, and a
+> build that lacks any of them stops before the zip (CR1-J).
+> 
+> WHY THIS EXISTS. The sold exe shipped Oracle's runtime, whose No-Fee Terms bar fees for a product
+> bundled with it, and OpenJFX's binaries without the source GPL v2 section 3 asks for. Jerus chose
+> (2026-11-17) Temurin and the source archives beside the exe. Build EXE.bat's copy steps fail
+> silently, so the build ends in tools.Packaging's check; this harness holds that check to fixture
+> images that cause each failure, holds the pins to the binaries the build ships, and holds the
+> batch file to the order that makes the check a gate. No network: a fetch is tried only from an
+> address that refuses it.
+> 
+> ...
+
+- **L146 PackagingCheck: the image ships Temurin, every notice and terms file and the source archives, or no build (CR1-J)**
+  - L151 a complete image has no problem
+  - L155 source/
+  - L157 source/README.txt is the pins' README
+  - L159 legal/
+  - L161 the image's Microsoft libraries are found in runtime/bin and in the jar
+- **L165 a missing or changed source archive stops the build**
+  - L170 without source/
+  - L173 a changed source/
+  - L178 staging from a cache without
+  - L179 and the image it left fails the check
+  - L182 staging from a cache holding a changed
+  - L185 an archive that cannot be fetched is a problem naming it
+  - L186 and no partial download is left in the cache
+  - L189 a cache holding every pinned archive fetches nothing and passes
+- **L191 a lost notice or terms file stops the build**
+  - L197 without
+  - L201 a changed library licence fails
+  - L204 a \"Please see\" naming a file the legal folder lacks fails
+  - L207 a \"Please see\" naming a file outside the legal folder fails
+  - L210 an image without runtime/legal fails
+- **L212 a runtime that is not the pinned Temurin stops the build**
+  - L216 a runtime whose java.base names another vendor fails
+  - L217 and one without the pinned vendor version fails
+  - L219 a runtime that cannot be read fails
+  - L222 a runtime/release of another Java version fails
+  - L226 Oracle's No-Fee Terms in the runtime's legal folder fail
+  - L227 and a java.base licence that is not GPL v2 fails
+  - L230 an OpenJFX build other than the pinned one fails
+  - L233 a Microsoft library the notice does not name fails
+  - L236 an app folder of more than the game's jar fails
+  - L237 a jar that cannot be opened is named, its libraries not skipped unseen
+- **L239 the packaging JDK is held to the pins**
+  - L243 the pinned Temurin passes
+  - L246 Oracle's JDK fails on its IMPLEMENTOR
+  - L247 and its version
+  - L250 another Temurin fails, since its source is not the pinned one
+  - L252 a folder with no release file fails
+  - L257 this PC's packaging JDK,
+- **L262 the pins are the shipped binaries'**
+  - L264 the pins name OpenJFX's archive and the runtime's, in that order
+  - L271 the runtime's archive is the vendor version's
+  - L273 OpenJFX's archive is the openjdk/jfx tag of its version
+  - L279 OpenJFX's pinned build is pom.xml's version
+  - L286 the classpath carries OpenJFX's base jar
+  - L289 its build is the pinned
+  - L292 the probe reads this JVM's vendor,
+  - L295 and its vendor version,
+- **L297 Build EXE.bat names its JDK and checks the image before the zip**
+  - L301 it never asks PATH for jpackage
+  - L302 it never falls back to Program Files' JDK
+  - L303 it checks the JDK's release file for Eclipse Adoptium
+  - L304 and for Java 21
+  - L305 it runs the named JDK's own jlink and jpackage
+  - L310 the JDK is held to the pins and the archives fetched before jpackage
+  - L311 the image is staged and checked after jpackage and before the zip
+  - L312 a failed stage or check goes to the removal of the image
+  - L315 a failed fetch stops the build
+  - L317 nopause neither pauses nor starts the game
+  - L319 every other pause is %PAUSE%
 
 ## PartnerCallsCheck.java - 90 labelled assertions
 
