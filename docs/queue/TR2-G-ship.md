@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — TR2-G, replay's copy leaves the player's prefs alone — 2026-11-18, ready, see docs/queue/TR2-G-notes.md
 In a replay the window takes a copy of the player's prefs for the recorded
