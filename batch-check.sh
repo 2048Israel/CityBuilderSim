@@ -44,10 +44,7 @@ if [ "$JUDGE" = 0 ] && [ -z "$CBS_LOCKED" ] && command -v flock >/dev/null 2>&1 
 fi
 
 set -f; set -- $NAMES; set +f   # from here "$@" is the harness names alone
-case "$(uname -s)" in
-    MINGW*|MSYS*|CYGWIN*) SEP=';' ;;
-    *) SEP=':' ;;
-esac
+case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) SEP=';' ;; *) SEP=':' ;; esac
 
 if [ "$JUDGE" = 1 ]; then   # the folder of the log, so a suite writing to target/checks is never overwritten
     OUT=$(dirname "$LOGARG"); SUITE="$LOGARG"
@@ -98,6 +95,9 @@ if [ "$JUDGE" = 1 ]; then
     suite_verdict
     finish
 fi
+
+. ./tools/check-data.sh
+cbs_check_data
 
 # --- compile ---------------------------------------------------------------
 t=$(date +%s)
