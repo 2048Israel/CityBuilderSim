@@ -6,7 +6,7 @@ c17b92f0f (0.9.148). Docs and process only, untagged: **no game code changes**
 
 ## What changed
 
-- **`docs/contract.md` (new, 284 lines)** is the one file Claude and Codex
+- **`docs/contract.md` (new, 308 lines)** is the one file Claude and Codex
   builders, the orchestrator and reviewers read. Six sections: the standing
   rules (every one of `CLAUDE.md`'s, kept word for word in substance), who
   does what, starting a batch, building, ready, the gate and the
@@ -14,12 +14,26 @@ c17b92f0f (0.9.148). Docs and process only, untagged: **no game code changes**
   it, with his words; the three items still his are named in section 2 as
   his, unanswered. Where WC1.md is silent it writes down today's practice,
   the orchestrator's night practice included: the provisional ship file and
-  the "ID mends at <commit>" mail; no dry run unless the pick is ALL (and
-  then "ID dry run?" first); the gate-run comment on the ship file's first
-  line; no JVM beyond `--fast` while a gate or dry run is on the machine; a
-  headless builder's subagents in the foreground; a red caused outside the
-  batch passed by name under a queued fix, never `--red-ok`; the marker
-  dropped last and checked gone; "ID ready at <commit>".
+  the "ID mends at <commit>" mail; no dry run unless the pick is ALL or the
+  branch edits the publisher (then `--branch-gate`), and "ID dry run?"
+  first; the gate-run comment on the ship file's first line; no JVM beyond
+  `--fast` while a gate or dry run is on the machine; a headless builder's
+  subagents in the foreground; a red caused outside the batch passed by name
+  under a queued fix, `--red-ok` only on Jerus's own word; the marker dropped
+  last and checked gone; "ID ready at <commit>".
+- **After REV-WC1-1** (a stranger's review, a fresh session, on 060748d69),
+  restored or added: the implementer and the docs pass on Opus (Jerus,
+  2026-09-21: contract 2, `docs/orchestrator.md`'s docs pass); a publisher
+  edit's own `--branch-gate --dry-run` (GF1, LM1: contract 5.5 and 6,
+  `docs/orchestrator.md`'s gate step 5); `--red-ok` when he himself says so
+  (BA1, "Ship it, pass both"), not never; his open call on who returns a
+  cleared Pending row to Queued (BP1 call 2, recommended: the orchestrator;
+  contract 6); five rules that lived only in memory notes, each with its WHY:
+  no DeepSeek unless he raises the budget (2), one Sonnet subagent per
+  session at a time (4), never a baseline suite of main (4), the todo under
+  100 KB (4), nothing done while waiting on `wait.sh --row` (5.7).
+  `gemini-notes.md` and `docs/docs-pass.md` pointed at `CLAUDE.md` for rules
+  now the contract's; mended.
 - **Cut to what is not process:** `CLAUDE.md` is the map and the tools (its
   standing rules, "Coding goes to Sonnet" and "How a batch is done" moved;
   it opens by pointing at the contract); `docs/orchestrator.md` is the
@@ -33,7 +47,7 @@ c17b92f0f (0.9.148). Docs and process only, untagged: **no game code changes**
   a Stale missing file, and the history should not be rewritten.
 - **Pointing at it:** `AGENTS.md`, `CLAUDE.md`, `.claude/agents/slice.md`,
   `.claude/agents/assistant-review.md`, `README.md`, `docs/docs-pass.md`,
-  `docs/docs-pass-agent.md`.
+  `docs/docs-pass-agent.md`, `gemini-notes.md`.
 - **RL1's machinery removed**, as WC1.md's "After it ships" decision lists:
   `tools/carries.sh`; `ship.sh`'s stop on a branch built on a batch main
   lacks; `pick.sh`'s diff against a predecessor's tip; `wait.sh --row`'s
@@ -66,37 +80,43 @@ Mostly it moves words. Beyond that:
 3. **A red that is not the batch's fault** is passed by naming it beside the
    batch queued to fix it, never by quoting your 11-04 words at the gate.
    This is what the orchestrator has done since GR2; the contract makes it
-   the rule for everyone.
+   the rule for everyone. A red you yourself say to pass ("Ship it, pass
+   both") still passes on your words.
 4. **A builder checks less before saying it is done**: the quick check and
    the harnesses its change touches, one at a time, instead of the old full
-   "pick" run, unless its change touches shared code, when the dry run
-   decides. This is the night practice that kept the gates from timing out.
+   "pick" run, unless its change touches shared code or the shipping script,
+   when a dry run decides. This is the night practice that kept the gates
+   from timing out.
 
 Nothing else about how batches are chosen, built, gated or shipped changes.
 Still yours, unanswered: what the orchestrator becomes once MemWatch
 dispatches; who keeps the gate day to day and the gate box's part; and which
-standing rules stay (save slots 1-9 still say "never write them").
+standing rules stay (save slots 1-9 still say "never write them"); and, from
+BP1, who moves a Pending row back to Queued when its block clears by itself
+(recommended: the orchestrator).
 
 ## One in, one out
 
 `git diff --numstat origin/main` over the process files (this notes file and
-the ship file left out): 523 added, 717 removed, **194 lines fewer**. The
-contract (284) is shorter than the process text it replaces (578 lines taken
-out of `CLAUDE.md` 109, `docs/batch.md` 91, `docs/orchestrator.md` 225,
-`docs/deepseek.md` 121, `openai-dontread.md` 32).
+the ship file left out): 559 added, 722 removed, **163 lines fewer** (194
+before REV-WC1-1's mends, which added 31 net). The contract (308) is shorter
+than the process text it replaces (579 lines taken out of `CLAUDE.md` 110,
+`docs/batch.md` 91, `docs/orchestrator.md` 225, `docs/deepseek.md` 121,
+`openai-dontread.md` 32).
 
       4   3  .claude/agents/assistant-review.md
       3   2  .claude/agents/slice.md
       7   7  AGENTS.md
-     14 109  CLAUDE.md
+     16 110  CLAUDE.md
       4   4  README.md
       3  91  docs/batch.md
-    284   0  docs/contract.md
+    308   0  docs/contract.md
      28 121  docs/deepseek.md
       1   1  docs/docs-pass-agent.md
-      7   7  docs/docs-pass.md
-    111 225  docs/orchestrator.md
+      8   8  docs/docs-pass.md
+    117 225  docs/orchestrator.md
       6  11  docs/tree.md
+      3   3  gemini-notes.md
      23  32  openai-dontread.md
       0   2  ship.sh
       0  24  tools/carries.sh
@@ -115,7 +135,9 @@ out of `CLAUDE.md` 109, `docs/batch.md` 91, `docs/orchestrator.md` 225,
   ("the prose and the tree agree on everything this tool can check").
 - `./batch-check.sh StaleCheck`: exit 0.
 - `sh tools/pick.sh origin/main HEAD`: NONE of 220 harnesses; review not
-  needed (no money, saves or threading). The pick is not ALL: no dry run.
+  needed (no money, saves or threading). The pick is not ALL, but the branch
+  edits `ship.sh`, so it owes `sh tools/gate.sh WC1 --branch-gate --dry-run
+  --no-tag` (REV-WC1-1), asked as "WC1 dry run?".
 - The changed scripts' self-tests: `ship-selftest.sh` 149 of 149 (main's
   less its 7 RL1 cases; it ran 37 minutes), `pick-selftest.sh` 19 of 19,
   `wait-selftest.sh` 20 of 20 (its RL1 section rewritten as a plain `--row`
@@ -139,11 +161,11 @@ Delete (the rule is now the contract's, or is obsolete):
 | effort-xhigh-or-max | contract 2 |
 | headless-turn-kills-subagents | contract 4 |
 | pick-in-a-worktree-needs-data-named | contract 3 |
-| reds-not-the-batchs-pass | contract 5.3 (it said `--red-ok`; now never) |
-| ship-past-known-reds | obsolete since BP1; contract 5.3 |
+| reds-not-the-batchs-pass | contract 5.3 (`--red-ok` only on his own word) |
+| ship-past-known-reds | its hand merge is obsolete since BP1; `--red-ok` on his word, contract 5.3 |
 | two-batches-at-once | contract 3 (by files), orchestrator.md, Dispatch |
-| night-line-of-sessions | RL1's wait and brief template are gone; waking is orchestrator.md's |
-| sonnet-when-no-deepseek | contract 2 and 4 |
+| night-line-of-sessions | RL1's wait and brief template are gone; waking is orchestrator.md's; nothing done on `wait.sh --row`, contract 5.7 |
+| sonnet-when-no-deepseek | contract 2 (Opus, Sonnet, no DeepSeek unless the budget) and 4 (slices) |
 | slice-worktrees | contract 4 (`EnterWorktree`) |
 | ask-before-pushing-main | contract 4 |
 | eye-checks-not-pending | contract 4 (the 40 old rows stay in `docs/notes/eye-checks.md`) |
@@ -159,9 +181,9 @@ Cut:
   contract's section 1.
 - **pc-shipping** to: start sessions from the repository root (one in
   `src/main/java/ham/citybuildersim` puts its worktrees inside the source
-  tree); memory, not CPU, is what runs short. Its temp-clone steps are
-  obsolete (`tools/gate.sh` makes the clone), and so is its timing paragraph
-  (GR1).
+  tree); memory, not CPU, is what runs short (its one-Sonnet-subagent rule is
+  the contract's 4). Its temp-clone steps are obsolete (`tools/gate.sh` makes
+  the clone), and so is its timing paragraph (GR1).
 - **ensemble-on-the-pc** to the PC's setup: pandas at
   `C:\Users\Jerus\.cache\cbs-ensemble\py`, `python3` the Store stub,
   `--stop <label>`, `-Densemble.extra` and `-Densemble.months`. The rule
@@ -174,11 +196,8 @@ Cut:
 - **codex-cli**: drop "a batch message has to say that brief does not
   apply" (`AGENTS.md` has pointed Codex past `openai-dontread.md` since GF1,
   and now at the contract).
-- **orchestrator-handoff**: its "The rule" paragraph is now
-  `docs/orchestrator.md`, "The session"; keep the hand-off itself. After this
-  ships, the builders' prompt paragraphs can point at the contract (its own
-  note says so).
-
-Keep as they are: pc-subagent-depth, one-pc, bus-mail-to-a-dead-session,
+Keep as they are: orchestrator-handoff (its "The rule" paragraph too: the 40
+lines with its contents, edited in the same message, the ~115k threshold and
+the replace steps are the hand-off's own; REV-WC1-1), pc-subagent-depth, one-pc, bus-mail-to-a-dead-session,
 idle-is-not-stopped, archive-when-on-github, civic-ledger-on-itch,
 steam-app-setup, gate-box, memwatch, plan-ration, exe-smoke-run.

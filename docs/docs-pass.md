@@ -117,7 +117,7 @@ from the code.
   `TODO(docs): <what you could not tell>` in the comment and a line in the
   report, not a plausible paragraph.
 - **Do not renormalise line endings.** The repository stores LF and the
-  `.bat` files CRLF (see `CLAUDE.md`); write LF, never convert a file
+  `.bat` files CRLF (see `docs/contract.md`); write LF, never convert a file
   wholesale, and `git ls-files --eol` shows no `w/crlf` but the `.bat`
   files.
 - **Do not touch saves, `buildings.json`, or `AllChecks`' list.**

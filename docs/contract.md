@@ -75,8 +75,12 @@ own words, and it is the requirement.
 - **Builders** (Jerus, 2026-11-11: "Yes, that split"). Codex builds whole
   batches, in its app or headless, not slices under a Claude session; Claude
   builds the batches he gives it, reviews, and takes the decisions with him.
-  Claude builds on Opus, or on Sonnet as the whole session for a small fix
-  batch (no money, saves or threading, a few hundred lines; BP1).
+  Claude builds on Opus (2026-09-21: the implementer and the docs pass run on
+  Opus, whatever the job's size), or on Sonnet as the whole session for a
+  small fix batch (no money, saves or threading, a few hundred lines; BP1).
+  DeepSeek is never suggested, nor a key asked for, unless he raises the
+  budget (2026-10-20: "for a long while there will be no deepseek so its
+  sonnet").
 - **Effort xhigh or max** for every session, agent, slice, reviewer and
   workflow agent (2026-10-24: "anything on high effort or lower is banned").
   A session cannot raise its own; one started lower is replaced by a fresh one.
@@ -159,13 +163,17 @@ own words, and it is the requirement.
 - **Headless, a builder runs its subagents in the foreground** (`Agent
   run_in_background: false`) and never ends its turn while a subagent or a job
   it started runs: the process exits at the turn's end and kills them (SQ1,
-  CU2, 2026-11-16).
+  CU2, 2026-11-16). One Sonnet subagent per session at a time (2026-10-21: the
+  commit charge reached 43 of 54 GB and a suite died with CreateProcess error
+  1450).
 - **Checks while building:** `./batch-check.sh --fast` and the harnesses you
   name (`./batch-check.sh Name ...`), one at a time; `AllChecks -f` gives a red
-  harness's assertions, never a full rerun to find one. While a gate or a dry
-  run is on the machine, run no JVM beyond `--fast` (FB8's gate timed out under
-  builders' long runs, 2026-11-17 23:01). Builders' runs time soft; speed is
-  judged nightly on main (`tools/nightly.sh`; 2026-11-11: "Judge it nightly").
+  harness's assertions, never a full rerun to find one. Never a baseline suite
+  of main: main's last gate gives its reds (BP1: a fresh baseline suite repeats
+  the recorded gate). While a gate or a dry run is on the machine, run no JVM
+  beyond `--fast` (FB8's gate timed out under builders' long runs, 2026-11-17
+  23:01). Builders' runs time soft; speed is judged nightly on main
+  (`tools/nightly.sh`; 2026-11-11: "Judge it nightly").
 - **The ensemble** (`tools/ensemble/ensemble.sh <label>`) runs once on the
   final model only when the default trace moves beyond runtime, against the
   newest `docs/ensemble/` baseline, never a rerun of main; its `baseline.md`,
@@ -180,6 +188,9 @@ own words, and it is the requirement.
   `main` (a side session that must asks the orchestrator first and pushes on
   its "clear": 2026-10-27, a push during a ship cost a rerun), never runs
   `./ship.sh` for real, and ends only process trees it started, by their ids.
+  The project's `claude/todo.md` stays under 100 KB, archived to
+  `docs/notes/todo-archive.md` when it passes (2026-10-12, the project's
+  `git-workflow.md`, "Keeping usage down": it had reached 735 KB).
 
 ## 5. Ready
 
@@ -213,16 +224,22 @@ own words, and it is the requirement.
    passes by name: a `## known-reds` row naming its queued fix (in `## queued`
    or already on the queue) and its cause, traced in the notes (2026-11-04:
    "if checks were not caused by its own code, then it should always pass").
-   Never `--red-ok`. A red the batch's own code causes is mended.
+   Never `--red-ok`, unless Jerus himself says so for that red (BA1: "Ship it,
+   pass both"): his words and `--red-line` the lines they pass, recorded in
+   `docs/notes/gate.txt`. A red the batch's own code causes is mended.
 4. **Mends.** When the code is final and `--fast` and the harnesses the pick
    names are green (exit 0, or 3: only main's known reds), push the ship file
    with its marker and mail the orchestrator "ID mends at <commit>" with the
    review line and the picked harnesses of `sh tools/pick.sh origin/main HEAD`;
    then end the turn. A stranger's review may run first; its findings and the
    go come by mail, which resumes the builder.
-5. **A dry run only when the pick is ALL.** Ask "ID dry run?" and wait for the
-   go (the orchestrator keeps one heavy slot). Merge origin/main first if it
-   moved. Start `sh tools/gate.sh ID --dry-run > target/ID-dry.txt 2>&1`
+5. **A dry run only when the pick is ALL, or when the branch edits the
+   publisher** (`ship.sh`, `tools/gate*.sh`), which adds `--branch-gate` to run
+   the branch's own `ship.sh` (GF1, LM1: the gate runs main's, so a publisher
+   edit otherwise first runs for real at the next batch's gate). Ask "ID dry
+   run?" and wait for the go (the orchestrator keeps one heavy slot). Merge
+   origin/main first if it moved. Start
+   `sh tools/gate.sh ID --dry-run > target/ID-dry.txt 2>&1`
    (`--no-tag` too for an untagged batch) as a background Bash call with
    timeout 7200000, never `nohup ... &` (SR1c: the gate cancels itself when the
    shell that started it returns), then repeat
@@ -236,21 +253,25 @@ own words, and it is the requirement.
    `checks/suite.txt` into your own `target/checks`; never run anything inside
    a `/tmp/cbs-gate-*` folder (R6b: a changed file breaks its hashes, and the
    gate reruns the suite).
-6. **Ready.** On the go (after a green dry run, or at once when the pick is not
-   ALL): drop the marker last, in its own commit, check it is gone on origin,
-   and mail "ID ready at <commit>" (GR2, WG2: a change to shared code needs the
+6. **Ready.** On the go (after a green dry run, or at once when none is owed):
+   drop the marker last, in its own commit, check it is gone on origin, and
+   mail "ID ready at <commit>" (GR2, WG2: a change to shared code needs the
    whole merge's verdict first; 2026-11-11: "When it touches shared code").
    Sent back, restore and push the marker first.
 7. **Waiting** for the orchestrator: mail the question and end the turn; the
-   reply resumes you. A long job of your own starts in the background and is
-   waited on in the foreground with `tools/wait.sh --line`; a session ends only
-   done or blocked (BP1), its last message at most eight lines.
+   reply resumes you. A session told to wait on `sh tools/wait.sh --row ID`
+   runs, reads and plans nothing until the wait ends (2026-11-02: eight of ten
+   night sessions worked ahead, 12 JVMs beside FC1's gate). A long job of your
+   own starts in the background and is waited on in the foreground with
+   `tools/wait.sh --line`; a session ends only done or blocked (BP1), its last
+   message at most eight lines.
 
 ## 6. The gate and the orchestrator's answers
 
 - **The gate** is `sh tools/gate.sh ID`: main's `ship.sh` in a fresh clone,
-  the data files named, the run's logs kept in its run directory; it publishes
-  only on green (the merge, the records from the ship file, the version, the
+  never the branch's (a publisher edit tests its own first with `--branch-gate
+  --dry-run`, 5.5), the data files named, the run's logs kept in its run
+  directory; it publishes only on green (the merge, the records from the ship file, the version, the
   tag, one atomic push). What it checks follows the diff (2026-11-11: "Yes,
   make it the rule"): only `.md` outside `docs/ensemble/`, `--fast` alone; no
   game code (scripts, docs, tools, harness-only repairs), the compile, the
@@ -281,4 +302,7 @@ own words, and it is the requirement.
   question alone (2026-10-20: "if you dont post the stuff in the chat i wont
   have a clue").
 - **A blocked batch goes under Pending at once**, in a queue commit pushed the
-  same turn (2026-10-24: PT1-M4's reds held a lane six hours).
+  same turn (2026-10-24: PT1-M4's reds held a lane six hours). Who returns
+  such a row to Queued when its block clears by itself is still Jerus's call
+  (BP1, call 2; recommended: the orchestrator; unanswered, so until then his
+  review moves it).

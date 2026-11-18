@@ -74,8 +74,12 @@ Each ready branch, one at a time:
 4. Verify the publication: one merge, its first parent the gated main; the tag
    one up (none for an untagged batch); `known-reds.txt` and `QUEUE.md` changed
    only as the ship file said; `ship.log` ending pushed. Never `--red-ok` or
-   `--red-line`, never a hand merge.
-5. After publisher or launcher edits, `sh tools/ship-selftest.sh`; after picker
+   `--red-line` unless Jerus himself says so for that red (BA1: "Ship it, pass
+   both"), never a hand merge.
+5. A branch that edits the publisher (`ship.sh`, `tools/gate*.sh`) has had its
+   own run by `sh tools/gate.sh ID --branch-gate --dry-run` before it is
+   gated (GF1, LM1: the gate runs main's `ship.sh`, not the branch's). After
+   publisher or launcher edits, `sh tools/ship-selftest.sh`; after picker
    edits `sh tools/pick-selftest.sh`; after wait or day edits
    `sh tools/wait-selftest.sh` (WHY GF1, TM3: a merge rewrites scripts while
    their shell reads them).
@@ -95,7 +99,9 @@ section 1).
 
 ## The docs pass
 
-By a fresh agent, at most once a day, over everything merged since the last;
+On Opus (Jerus, 2026-09-21: the implementer and the docs pass run on Opus,
+whatever the job's size), by a fresh agent, at most once a day, over
+everything merged since the last;
 `docs/docs-pass.md` is its brief, `Docs pass.bat` runs it headless (a bare
 `claude -p` takes the CLI's default effort: check it, lesson e),
 `docs/docs-pass-agent.md` is it as a subagent. It ships `--no-tag` with a ship
