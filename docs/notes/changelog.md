@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### LQ1 — the luxury queue's size, a study — 2026-11-17, ready, see docs/queue/LQ1-notes.md
+`docs/studies/luxury-budget.md`, its probe, two prototypes and the real figures in `docs/studies/luxury-budget/`: the
+households' luxury budget on 0.9.139 against BEA, the Census, BLS and the Fed. The counter takes 13-19% of GDP (36% in
+seed 0's old city) against BEA's other goods' 9.5%. Nearly all of it is the wealth term, the whole of a wealth effect
+spent at one counter on a pile of 10-17 years of disposable income (the Fed's 7.9), and the shops keep 2.66 times the
+landed cost against the specialty stores' 1.92. On three seeds a margin of 1.89 takes the shops' workers down 23-45%
+with the spend and the pile held; a cut in the counter's share alone grows the pile. The Department Store is never
+chosen, and by the Census it has no edge to give it (REV-LX1-1). Three calls (LQ1-K); LQ2 (the margin) and LQ3 (the
+fortune's other spending, a study) queued. No code.
+
 ### FB6 — KeptCheck's fixtures cause their own conditions — 2026-11-17, ready, see docs/queue/FB6-notes.md
 KeptCheck's sections 44, 51, 63, 64, 66, 67 and 89 now cause what they read instead of finding it on the city's path, each with
 a `fixture:` line, and their Observation guards are out; no floor or premise moved. 44 draws a run both offers fall four times
