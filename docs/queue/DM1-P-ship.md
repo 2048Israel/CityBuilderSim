@@ -1,5 +1,4 @@
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-DM1-P-20261118-002805-6934 -->
-<!-- readiness: provisional -->
 ## changelog
 ### DM1-P — batch-check.sh names the Earth and world files — 2026-11-18, ready, see docs/queue/DM1-P-notes.md
 Batch checks fill missing Earth and world properties from the checkout's data, falling back to the main checkout.
