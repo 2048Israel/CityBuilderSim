@@ -1,4 +1,4 @@
-# CentralBankCheck.java - 2,555 lines · 45 methods · 14 constants · harnesses
+# CentralBankCheck.java - 2,551 lines · 45 methods · 14 constants · harnesses
 
 `ham/citybuildersim/CentralBankCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -87,7 +87,7 @@
 | 1211 | 19. THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE (0.7.15, round 2) - a |
 | 1475 | 22. THE CENTRAL BANK'S PAR ROLLED INTO A LINE THE HOUSEHOLDS HOLD PART |
 | 1725 | 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a |
-| 1876 | 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, |
+| 1872 | 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, |
 
 ## Constants
 
@@ -99,14 +99,14 @@
 | 1486 | `CentralBankCheck.LINE_YEARS` | `2` | The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. |
 | 1489 | `CentralBankCheck.TAKE_ALL_MONTHS` | `14` | The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). |
 | 1526 | `CentralBankCheck.RATES_UP` | `.04` | How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). |
-| 1906 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
-| 1909 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
-| 1919 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path gave it in some buil... |
-| 1922 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
-| 1925 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
-| 1928 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
-| 1936 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, ...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
-| 1949 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.113), with all 24 hol... |
+| 1902 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
+| 1905 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
+| 1915 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path gave it in some buil... |
+| 1918 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
+| 1921 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
+| 1924 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
+| 1932 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, ...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
+| 1945 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.113), with all 24 hol... |
 
 ## Fields (state)
 
@@ -117,13 +117,13 @@
 | 192 | `static PrintStream quiet` |  |
 | 230 | `static int monthsPlayed, monthsBroken, mostKindsInAMonth` |  |
 | 231 | `static double worstResidual` |  |
-| 1974 | `int under, underSoon, underAsStandard, over, overCheaper, past` |  |
+| 1970 | `int under, underSoon, underAsStandard, over, overCheaper, past` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 188 | 2368 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
+| 188 | 2364 | **type** `public class CentralBankCheck` | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its two dials - the holdings (0.7.1) and the advances ceiling (0.7.2). |
 | 194 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 199 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 209 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -184,33 +184,33 @@
 | 1558 | 107 | `static void theParRolledIntoAHeldLine() throws Exception` |  |
 | 1667 | 57 | `static void aboutTheRoll(String how, Game g, Debt line, RolledMonth m, double par, String saleReads)` | What the central bank's par did to the line in the month it joined it, read at the probe, and what the month left of the bank's books. |
 
-### 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a (lines 1725-1875)
+### 20. THE SURPLUS PAYS EVERYONE (0.7.15, round 3) - a city with a (lines 1725-1871)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1732 | 143 | `static void theSurplusPaysEveryone() throws Exception` |  |
+| 1732 | 139 | `static void theSurplusPaysEveryone() throws Exception` |  |
 
-### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1876-2555)
+### 21. HOW STRICT (0.7.52) - the dial beside the target (DebtManager, (lines 1872-2551)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1884 | 4 | `static double oldRule(double inflation, double target)` | The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. |
-| 1894 | 7 | `static double rule052(double inflation, double target, DebtManager.Strictness s)` | The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either side of it, at the step's weight. |
-| 1903 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
-| 1959 | 7 | `static void worldPricesFall(Game g, double fall)` | A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first, then the mean, the... |
-| 1973 | 17 | **type** `static final class LooseMonths` | The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the ba... |
-| 1977 | 12 | `void take(Game g, double read, double target, int month)` _(in CentralBankCheck.LooseMonths)_ | One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. |
-| 1991 | 326 | `static void howStrict() throws Exception` |  |
-| 2425 | 10 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
-| 2440 | 3 | `static Game shapedCity(GameFiles files, int houses, int months)` | A city founded in the given shape - `houses` before the next twenty, `months` played before them - and played as the probe city is (probeCity()) to STRICT_BRANCH. |
-| 2445 | 3 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (probeCity()). |
-| 2450 | 44 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff, int laterHouses)` | ...with the second House tranche of the playtest's seed, preserving the first twelve cities at twenty. |
-| 2496 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
-| 2501 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
-| 2512 | 4 | **type** `record CityGap(int houses, int months, int laterHouses, long people, double strict, double standard)` | One city's very strict and Standard inflation a year over STRICT_HORIZON, and its people at the branch. |
-| 2514 | 1 | `double gap()` _(in CentralBankCheck.CityGap)_ | How far under Standard very strict ran, in a year's inflation: negative when it held prices lower. |
-| 2518 | 19 | `static double[] strictAgainstStandard(Game city, GameFiles files)` | The city saved at its branch, then its very strict and its Standard twin played STRICT_HORIZON months: their inflation a year, {strict, standard}. |
-| 2539 | 1 | `static int strictNeed(int cities)` | How many of `cities` must hold the claim: STRICT_SHARE of them, rounded up. |
-| 2542 | 6 | `static double median(double[] xs)` | The median of `xs`, of a sorted copy: the mean of the two middle values when there is an even number. |
-| 2550 | 5 | `static boolean strictHolds(double[] gaps)` | Whether very strict held prices lower than Standard over the set: the median gap under zero and at least strictNeed() of the gaps under it. |
+| 1880 | 4 | `static double oldRule(double inflation, double target)` | The rule as it was until 0.7.51, written out: the neutral rate, the target's distance from the default, and TAYLOR_WEIGHT on the gap. |
+| 1890 | 7 | `static double rule052(double inflation, double target, DebtManager.Strictness s)` | The rule at a step as it was from 0.7.52 to 0.7.80, written out: struck at the aim, on the gap past the band either side of it, at the step's weight. |
+| 1899 | 1 | `static boolean bits(double a, double b)` | Equal to the bit (a NaN as any NaN). |
+| 1955 | 7 | `static void worldPricesFall(Game g, double fall)` | A fall in the world's price level by `fall` (a fraction of it), at once: the level and the newest of the thirteen months it keeps (WorldEconomy.toSaveArray(), the level first, the ring oldest first, then the mean, the... |
+| 1969 | 17 | **type** `static final class LooseMonths` | The very loose twin's months by the side of its target the rule read (0.7.81): in a month under it the rate is Standard's, to the bit; in one over it, money cheaper than Standard's rule at that reading - inside the ba... |
+| 1973 | 12 | `void take(Game g, double read, double target, int month)` _(in CentralBankCheck.LooseMonths)_ | One month taken: `read` is what the autopilot read at the top of it (Game.nextMonth(), THE AUTOPILOT), the dial what the rule set. |
+| 1987 | 326 | `static void howStrict() throws Exception` |  |
+| 2421 | 10 | `static Game probeCity(GameFiles files)` | The probe city: the playtest's founding (LongPlaytest.founding()) in its seed 7's shape since FR7 - 43 houses, then four months before the next 20 (seed 5's, 41 and four months, from 0.7.139; seed 8's, 40 and five mon... |
+| 2436 | 3 | `static Game shapedCity(GameFiles files, int houses, int months)` | A city founded in the given shape - `houses` before the next twenty, `months` played before them - and played as the probe city is (probeCity()) to STRICT_BRANCH. |
+| 2441 | 3 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (probeCity()). |
+| 2446 | 44 | `static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff, int laterHouses)` | ...with the second House tranche of the playtest's seed, preserving the first twelve cities at twenty. |
+| 2492 | 3 | `static void playTo(Game g, int months)` | Up to `months` of the playtest's months, never past STRICT_BRANCH. |
+| 2497 | 9 | `static void strictMonth(Game g)` | One of a twin's months: the playtest's month, with nothing built. |
+| 2508 | 4 | **type** `record CityGap(int houses, int months, int laterHouses, long people, double strict, double standard)` | One city's very strict and Standard inflation a year over STRICT_HORIZON, and its people at the branch. |
+| 2510 | 1 | `double gap()` _(in CentralBankCheck.CityGap)_ | How far under Standard very strict ran, in a year's inflation: negative when it held prices lower. |
+| 2514 | 19 | `static double[] strictAgainstStandard(Game city, GameFiles files)` | The city saved at its branch, then its very strict and its Standard twin played STRICT_HORIZON months: their inflation a year, {strict, standard}. |
+| 2535 | 1 | `static int strictNeed(int cities)` | How many of `cities` must hold the claim: STRICT_SHARE of them, rounded up. |
+| 2538 | 6 | `static double median(double[] xs)` | The median of `xs`, of a sorted copy: the mean of the two middle values when there is an even number. |
+| 2546 | 5 | `static boolean strictHolds(double[] gaps)` | Whether very strict held prices lower than Standard over the set: the median gap under zero and at least strictNeed() of the gaps under it. |
 

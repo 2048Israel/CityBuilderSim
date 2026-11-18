@@ -4385,6 +4385,9 @@ public class KeptCheck {
     /** How many months of the fund's transfer its cash is kept over while 63's choices are watched: the transfer is paid from cash, and nothing is sold for it (KF63). */
     static final int FUND_HELD_DUES = 3;
 
+    /** The months, since fundHeld() began, that the fund's cash stood under FUND_HELD_DUES months' transfer after its top-up (WG1-R: none may). */
+    static int fundShortMonths;
+
     /**
      * KF63: the fund's rule held still while 63's choices are watched, and what puts it back. The rule spends the fund's cash on every live
      * bond each month (BondMarket's and the Exchange's postFund), so in the month the bond issuers' folds are open on Portfolio its buys are
@@ -4395,10 +4398,20 @@ public class KeptCheck {
     static Runnable fundHeld(Game g) throws Exception {
         Runnable before = afterMonth;
         int steps = fx(() -> g.getFund().getWithdrawalSteps());
+        fundShortMonths = 0;
         Runnable topUp = () -> {
             TreasuryFund fund = g.getFund();
             double floor = FUND_HELD_DUES * TreasuryFund.dueAt(fund.getWithdrawalSteps(), g.fundValue(), 0);
-            if (fund.getCash() < floor) g.fundPayIn(2 * floor - fund.getCash());
+            if (fund.getCash() < floor) {
+                double pay = 2 * floor - fund.getCash();
+                // WG1-R: the treasury has what it pays in (fundPayIn() pays what the treasury has). WG1-D's going-rate pin kept this city's treasury in
+                // cash; on the default floor it stood at 0.0 by month 2,507, the pay-in moved nothing, the fund held 7.5e12 in cash of 1.06e16, the withdrawal
+                // sold to pay (toRaise 9.4e13) and the let-go month settled no holding (0 of the 9 it settles with cash). A fund over its dues is the
+                // fixture's to cause, not the path's to leave.
+                if (g.getCash() < pay) g.setCashForTest(pay);
+                g.fundPayIn(pay);
+            }
+            if (fund.getCash() < floor) fundShortMonths++;
         };
         fx(() -> {
             g.getFund().setWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
@@ -4671,6 +4684,8 @@ public class KeptCheck {
                 + ", past the 3 months its page is watched", watchedLeft[0] > 3);
         check("fixture: the rule held again after its month, no lot but the ones it settled (" + lotsAfter.size() + " lots, then " + lotsLast.size()
                 + (other.isEmpty() ? "" : "; new " + other) + ")", other.isEmpty());
+        check("fixture: the fund's cash stood over " + FUND_HELD_DUES + " months' transfer in every month 63 watched, so nothing was sold to pay it (" + fundShortMonths + " months under)",
+                fundShortMonths == 0);
         fx(() -> {
             fundBack.run();
             return null;
@@ -5132,6 +5147,17 @@ public class KeptCheck {
         fx(() -> { bench.financesCapDefault(); return null; });
     }
 
+    /** The kinds of picture the bond desk draws, from the curve and the book (WG1-R). */
+    static final java.util.Set<String> DESK_KINDS = java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "BuybackLadder");
+
+    /** What those pictures read of the model, to the bit (WG1-R): the curve at 12 and 120 months and what the book is worth today. */
+    static double[] deskFigures(Game g) {
+        DebtManager dm = g.getDebtManager();
+        double worth = 0;
+        for (Debt d : dm.getDebt()) worth += dm.marketValue(d);
+        return new double[]{dm.curveRate(12), dm.curveRate(120), worth};
+    }
+
     /** One kind of picture on one page, watched for PICTURE_MONTHS months. */
     static void pictureKept(Game g, KeptBench bench, Spot spot, String kind, boolean observeUnchanged) throws Exception {
         final KeptBench.Page page = spot.page();
@@ -5147,12 +5173,13 @@ public class KeptCheck {
             for (Pane p : bench.pictures(kind)) bench.repaints(p);
             return bench.pictures(kind).size();
         });
-        int repainted = 0, wasted = 0, quiet = 0, differ = 0;
+        int repainted = 0, wasted = 0, quiet = 0, differ = 0, figuresMoved = 0;
         long kept = 0, had = 0;
         String firstDiffer = null, whyLoud = null;
         for (int m = 1; m <= PICTURE_MONTHS; m++) {
             final int at = m;
             Object[] r = fx(() -> {
+                double[] figuresWere = deskFigures(g);
                 java.util.Map<Pane, Object[]> before = new java.util.IdentityHashMap<>();
                 java.util.Map<Pane, Boolean> dirtyBefore = new java.util.IdentityHashMap<>();
                 for (Pane p : bench.pictures(kind)) {
@@ -5202,8 +5229,9 @@ public class KeptCheck {
                 }
                 bench.passes();
                 String d = againstNew(bench, page);
-                return new Object[]{held, before.size(), drew, waste, still, d, why};
+                return new Object[]{held, before.size(), drew, waste, still, d, why, !java.util.Arrays.equals(figuresWere, deskFigures(g))};
             });
+            if ((boolean) r[7]) figuresMoved++;
             kept += (int) r[0];
             had += (int) r[1];
             if ((int) r[2] > 0) repainted++;
@@ -5220,6 +5248,13 @@ public class KeptCheck {
         if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
         if (whyLoud != null) System.out.println("  a redraw in the same month was not quiet: " + whyLoud);
         check(what + ": each month's redraw hands back nine in ten of the pictures it had, or more (" + kept + " of " + had + ")", kept * 10 >= had * 9);
+        if (DESK_KINDS.contains(kind)) {
+            // WG1-R: the figures are the model's, and the fixture causes that they move: a picture that draws nothing in a month the model's figures did not
+            // move is right, and the line below it would blame the picture for a desk with nothing to do (0 of 6 months, said of the default floor at 0.9.83).
+            check("fixture: the figures " + what + " draws moved in " + figuresMoved + " of the " + PICTURE_MONTHS + " months watched (the curve at 12 and 120 months, the book's worth today)",
+                    figuresMoved > 0);
+            check("fixture: ...and the same month read twice moves none, so a move is a month's", java.util.Arrays.equals(deskFigures(g), deskFigures(g)));
+        }
         check(what + ": a month whose figures moved draws it again (" + repainted + " of " + PICTURE_MONTHS + " months did)", repainted > 0);
         pathCheck(observeUnchanged, "pictureKept BuybackLadder on Close it now",
                 what + ": no month draws it again with nothing changed in it", wasted == 0);
@@ -9726,11 +9761,13 @@ public class KeptCheck {
         }
         GameFiles files = GameFiles.scratch("keptcheck");
         Game g = fx(() -> LongPlaytest.probeCity(files, null));
-        // WG1 (2026-11-10): the floor at the going rate, the wage this city was written against, set before the months that matter (a 1900 town has no floor
-        // law to 1918, and a floor that is not law moves no one's pay). A new city's floor is .85 of the going rate now (a real minimum, WG1), and on that path
-        // the desk's pictures stood still for the six months watched in section 64: the DeskBars on The book, the PathChart on a line's page, the BuybackLadder
-        // on Close it now and the Columns on the Finances hub drew again in 0 of 6 months, and the DeskCurve on The book kept 5 of 6 of its pictures; with the
-        // floor at the going rate, main's path, they move and the section reads as it was written.
+        // WG1-D (2026-11-10) set this city's floor at the going rate for section 64's desk, and WG1-R (2026-11-18) found 64 needs no pin: on the default floor
+        // (.85 of the going rate, a new city's) the desk's DeskBars, PathChart, BuybackLadder and Columns redraw in 6 of 6 months and the DeskCurve hands back 6 of
+        // 6, and 64 now says whether the figures it draws moved (pictureKept()). The pin stays for two lines further on that this city's path has to give, and that
+        // were written on it: section 68's Government Overview made 46 nodes in a month of its first draw's 395 where the section asks at most a tenth, and a
+        // pixel check in Trade & the World ("Partners' chart told other places for the buyers to join") differed in 3 pixels. Section 55's Bank Profit page (6
+        // of 25 months quiet under a loaded PC, 17 of 25 under a quiet one) is KBP1's. Each of the two is a premise of its own section to cause, and is
+        // queued (WG1-R's ship file); until then the city's floor is law at the going rate.
         fx(() -> {
             g.getLabourMarket().setMinimumWage(g.getLabourMarket().getGoingRate());
             return null;
