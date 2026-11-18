@@ -1,7 +1,7 @@
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CPB1, the cathode buffer at a loss — 2026-11-17, ready, see docs/queue/CPB1-notes.md
-An undemanded stock buffer no longer orders feed worth more than its output can net abroad. Domestic and captive demand and profitable replenishment keep running; recovered copper already committed is transformed by its own works without starting an idle refinery beside it. Real-market checks reproduce the old loss, preserve feed/output and GDP identities, and retain the original copper and cement premises as regressions. Existing stock sales and the national-account rules are unchanged.
+The zero-demand cathode buffer no longer buys anode for an empty yard at a negative feed spread. Sector's planner gates speculative stock fills while domestic and captive demand and profitable replenishment keep running; recovered copper already committed is transformed by its own works without starting an idle refinery beside it. Real-market checks reproduce the old loss, preserve feed/output and GDP identities, and retain the original copper and cement premises as regressions. Existing stock sales and national-account rules are unchanged; the separate export-spare and no-world-outlet paths are queued as CPB2.
 ## queued
 | CPB2 | Close the allocated-cost export-spare bypass and NaN no-world-outlet buffer paths found by REV-CPB1-1; pre-existing and uncovered, queued by the orchestrator's call | [brief](docs/queue/CPB2.md) |
 ## known-reds
