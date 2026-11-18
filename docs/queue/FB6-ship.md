@@ -16,3 +16,5 @@ is harness only; the playtest's trace is unchanged.
 ## known-reds
 KeptCheck | the Bank's Profit page: each month hands back nine in ten of the nodes the first draw made, or more | KBP1 | 2026-11-17 | Section 55, the Bank's Profit page, in R6b's dry run on main ec481b4a only: one month made 93 of 299 nodes, a block of the page dropped and redrawn. FB6's full runs keep it (193 of 192 handed back, a first draw of 192 nodes), so FB6 could not cause it; the block is not yet named (FB6-notes §6)
 KeptCheck | the read of the saved cities landed within a minute | KRW1 | 2026-11-17 | Section 87: the Rankings tab's worker's read of the saved cities stalls in a native file read under load. Run 4: not landed after 60 s, RUNNABLE in FileDispatcherImpl.read0 with 0.0 s of CPU. Runs 5 and 6 landed after 16.8 s and 8.8 s. The saved city is on disk, and the same read on the harness's thread finds it (FB6-notes §4)
+
+<!-- gate-run: /tmp/cbs-gate-FB6-rm6ztzr7 -->

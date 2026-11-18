@@ -197,4 +197,20 @@ run before the dry run, as the brief says.
 
 ## 8. The dry run
 
-RUN-DRY
+The kept run is `/tmp/cbs-gate-FB6-rm6ztzr7`: `tools/gate.sh FB6 --dry-run --no-tag`
+on 53b59609c over main 45de48dc2 (FB4's 0.9.140), gate exit 0.
+
+- The suite: exit 3 in 2488 s, known red only, 12 harnesses (DeathRecordCheck,
+  DistressBleedCheck, HealthCheck, KeptCheck, MapCheck, PlanCheck,
+  PopulationCheck, PriceLevelCheck, RoadCheck, ScaleCheck, ShortSellingCheck
+  and YoungBankCheck, all main's). KeptCheck's one red was 78's slider, "...and the
+  page is the same slider, kept, equal to a page built new", KRT1's row word
+  for word. In this run 87's read landed within the minute and 55's Profit
+  page kept 192 of 192, so FB6's two rows (KRW1, KBP1) were not needed here;
+  they stay for the runs where they are red.
+- Timing: 10 assertions soft, not counted (EarthTerrainCheck 1, SaveSlotCheck
+  1, MapCheck 7, PlanCheck 1). Pick: 9 of 218 harnesses for 17 files. Stale:
+  0 firm, 187 soft. Review: not needed (no money, saves or threading).
+- The first dry run, on 9907a9fee, was exit 1 before the suite: the changelog
+  heading needed the gate's two em dashes. 53b59609c gave it the untagged form,
+  `### FB6 — <title> — 2026-11-17, ready, see ...`.
