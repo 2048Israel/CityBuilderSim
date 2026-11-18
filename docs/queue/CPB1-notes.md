@@ -333,3 +333,7 @@ threading in the diff" (the separate stranger review and its mends are
 recorded above). `known-reds.sh CPB1 docs/queue/CPB1-ship.md` exits 0.
 The provisional marker remains. The merge dry run has not started; its
 machine slot is requested from the orchestrator.
+At 02:49 the orchestrator accepts the ensemble result and holds CPB1's dry
+run until after CR1-J's dry run/gate and FB10's dry run/gate, likely about
+04:15. No JVM meanwhile. Await its go and merge current origin/main again
+then, so the kept dry run is made on the main that will judge it.
