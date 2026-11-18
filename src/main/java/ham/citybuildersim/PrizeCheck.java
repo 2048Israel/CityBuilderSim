@@ -65,7 +65,8 @@ import java.util.TreeMap;
  *      Services, making nothing and needing no licence, with Research.labJobs() job type by job type and the Engineering Services Office's figures
  *      times the study's 12 / 10.9; a "researches" that is no field is reported and read as none; Business Services' plan is never a lab nor held for
  *      the staff of one, in a 1900 village, a default one and one with no hands.
- *  12. INVESTORS BUILD A LAB. At the prize that just makes the model want one a lab is on site within a month, the owners' raise recorded and no loan;
+ *  12. INVESTORS BUILD A LAB. At the prize that just makes the model want one a lab is on site within a month, the owners' raise recorded, at most the
+ *      order's own quote (Game.getLabQuote(), RT2-P), and no loan;
  *      a hair under, none; a default-way village with the same prize, none; at most one a field a month, with two wanted.
  *  13. LABS AT WORK. The month's lab researchers are the labs' posts' filled researchers at the month's fill, and their work lands on the target.
  *  14. THE PURSE PAID. In the month of a find the treasury's prizes line pays exactly the labs' share, Business Services' books receive the same
@@ -1582,8 +1583,13 @@ public class PrizeCheck {
             check("within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under " + Game.LABS_SLOT + " names it and the problem its purse pays for",
                     a.labsOnSite(F) == 1 && a.labsStanding(F) == 0 && a.getLastInvestment(Game.LABS_SLOT).equals(String.format("Built %s - the purse pays for %s", lab.getName(), target.name())), labsOf(a) + " | " + a.getLastInvestment(Game.LABS_SLOT));
             double raised = a.getEconomyManager().getEquityRaised(BS) - b.getEconomyManager().getEquityRaised(BS);
-            check("...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (" + raised + " of " + (cost + stake) + ")",
-                    raised > 0 && raised <= cost + stake + 1e-6);
+            // RT2-P: the cap is the order's own quote. The cost moves within the month, so the quote read before it (cost, stake) is not the order's.
+            Game.LabQuote quote = a.getLabQuote(F);
+            check("fixture: the order's quote is the model's own, reckoned in the month played (" + quote + "; before the month the lab cost " + cost + " and the stake was " + stake + ")",
+                    quote != null && quote.month() == a.getMonth() && quote.cost() > 0 && quote.stake() > 0 && b.getLabQuote(F) == null);
+            double ordered = quote == null ? Double.NaN : quote.cost() + quote.stake();
+            check("...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (" + raised + " of " + ordered + ")",
+                    raised > 0 && raised <= ordered + 1e-6);
             near("...and no loan: Business Services borrowed this month what its twin did", a.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS), b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS),
                     1e-9 * Math.max(1, b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS)));
             check("with the prize a hair under, none is ordered: nothing on site, and nothing said", labsInAll(b) == 0 && b.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(b) + " | " + b.getLastInvestment(Game.LABS_SLOT));
