@@ -134,7 +134,8 @@ public final class EquipmentForms {
                 int machines = Agriculture.machinesOf(t);
                 if (machines <= 0) continue;
                 total += stack.getQuantity() * machines;
-                off += unfitted(stack, Equipment.Form.FIELD_OPERATORS) * machines;
+                // ...a kit nobody knows yet is on no farm, whatever its count says (a farm placed by hand carries none): every machine there is operated.
+                off += (known(game, t, Equipment.Form.FIELD_OPERATORS) ? unfitted(stack, Equipment.Form.FIELD_OPERATORS) : stack.getQuantity()) * machines;
             }
         }
         agriculture.setOperatedShare(total > 0 ? Math.min(1, off / total) : 1);
@@ -142,7 +143,7 @@ public final class EquipmentForms {
 
     /**
      * THE ELECTROLYSERS (R6d, FE10: the Hydrogen Steel Works' piece ends ELECTROLYSERS). Sets how many works carry the 46 kWh a kilogram system, which
-     * HeavyIndustry takes off its draw: in a city founded the 1900 way, the works standing less those lacking the piece (never below 0); in a
+     * HeavyIndustry takes off its draw: in a city founded the 1900 way, the works standing less those lacking the piece (never below 0), where the piece is known; in a
      * city founded today's way, 0. Set at every call and not saved: the counts are.
      */
     private static void setElectrolysers(Game game, List<BuildingsStacks> stacks) {
@@ -152,16 +153,20 @@ public final class EquipmentForms {
         if (game.foundedUnfitted()) {
             for (BuildingsStacks stack : stacks) {
                 BuildingsTemplate t = stack.getBuilding();
-                if (!hasPieceEnding(t, Equipment.Form.ELECTROLYSERS)) continue;
+                if (!known(game, t, Equipment.Form.ELECTROLYSERS)) continue;
                 fitted += Math.max(0, stack.getQuantity() - unfitted(stack, Equipment.Form.ELECTROLYSERS));
             }
         }
         sectors.heavyIndustry().setElectrolyserWorks(fitted);
     }
 
-    /** Whether a template carries a piece that ends this form: a count that is gone from every stack of it reads as every building fitted only where the piece exists at all. */
-    private static boolean hasPieceEnding(BuildingsTemplate t, Equipment.Form form) {
-        for (Equipment e : t.getEquipment()) if (e.getEnds() == form) return true;
+    /**
+     * Whether a template carries a piece that ends this form and the city knows it this month (Equipment.knownAt(), by history's month or the city's own find):
+     * a works with no count of a piece nobody knows yet is not one that has it, so a building placed by hand, with no count at all, saves nothing before the
+     * piece's month. A building that opens in a city founded the 1900 way gets its counts (Game.fitWhatFinished()), so a real one is never in this case.
+     */
+    private static boolean known(Game game, BuildingsTemplate t, Equipment.Form form) {
+        for (Equipment e : t.getEquipment()) if (e.getEnds() == form && e.knownAt(game.getMonth(), game.getResearch())) return true;
         return false;
     }
 

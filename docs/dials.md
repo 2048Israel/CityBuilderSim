@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,188 constants in 594 files.**
+**6,199 constants in 596 files.**
 
 ## model (2937 constants)
 
@@ -1348,7 +1348,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 298 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
+| 324 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
 
 ### Equity.java ([map](map/Equity.md))
 
@@ -1686,9 +1686,9 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 7372 | `GameVersion.VERSION` | `"0.9.151"` | Bump on release. |
-| 8306 | `GameVersion.SAVE_FORMAT` | `55` | The save shape. |
-| 8359 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `55` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8367 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 8323 | `GameVersion.SAVE_FORMAT` | `56` | The save shape. |
+| 8378 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `56` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8386 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -4018,17 +4018,19 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (206 constants)
+## sectors (212 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 136 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
-| 139 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
-| 163 | `Agriculture.HORSE_FEED_SHARE` | `0.22` | The share of a horse farm's crop its horses eat: 22% of US cropland fed farm horses and mules (research-1900 section 4, [P2.47]); Canada's 1.58 million horses (1901) at about 3 acres each agree (es... |
-| 166 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
-| 424 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 138 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
+| 141 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
+| 165 | `Agriculture.HORSE_FEED_SHARE` | `0.22` | The share of a horse farm's crop its horses eat: 22% of US cropland fed farm horses and mules (research-1900 section 4, [P2.47]); Canada's 1.58 million horses (1901) at about 3 acres each agree (es... |
+| 168 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
+| 261 | `Agriculture.OPERATORS_A_MACHINE` | `1` | The posts a machine's operator holds, 1 NO_DIPLOMA post (an estimate: the Grain Farm's three such posts are its tractor, its combine and a hand, the Mixed Farm's two its tractor and a hand). |
+| 269 | `Agriculture.WATCH_A_MACHINE` | `0.1` | The remote watch an autonomous machine asks for, as a share of one DIPLOMA post: 0.1, an estimate and no builder's target. |
+| 489 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ### Automotive.java ([map](map/Automotive.md))
 
@@ -4166,17 +4168,21 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 95 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
-| 98 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
-| 101 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
-| 104 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
-| 107 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
-| 110 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
-| 113 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
-| 116 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
-| 119 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
-| 122 | `HeavyIndustry.HYDROGEN_WORKS` | `154` | The Hydrogen Steel Works' permanent id (R6b, FE4): pellets and power into steel by hydrogen reduction, no coke - one integrated works, the game having no DRI good. |
-| 125 | `HeavyIndustry.HYDROGEN_MWH_A_TONNE` | `3.48` | The grid's megawatt-hours a tonne of liquid steel the Hydrogen Steel Works draws, 3.48: the study's N9 and N10, the electrolysers' hydrogen, the shaft furnace and the arc furnace together (an estim... |
+| 102 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
+| 105 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
+| 108 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
+| 111 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
+| 114 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
+| 117 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
+| 120 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
+| 123 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
+| 126 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
+| 129 | `HeavyIndustry.HYDROGEN_WORKS` | `154` | The Hydrogen Steel Works' permanent id (R6b, FE4): pellets and power into steel by hydrogen reduction, no coke - one integrated works, the game having no DRI good. |
+| 132 | `HeavyIndustry.HYDROGEN_MWH_A_TONNE` | `3.48` | The grid's megawatt-hours a tonne of liquid steel the Hydrogen Steel Works draws, 3.48: the study's N9 and N10, the electrolysers' hydrogen, the shaft furnace and the arc furnace together (an estim... |
+| 135 | `HeavyIndustry.HYDROGEN_KG_A_TONNE` | `54` | The kilograms of hydrogen a tonne of iron takes by the chemistry, 54 (FE4's note, research-near-future 3). |
+| 138 | `HeavyIndustry.ELECTROLYSIS_KWH_A_KG` | `55` | The kilowatt-hours an electrolysis system takes to make a kilogram of hydrogen today, 55 (61% of the fuel's energy): the US energy department's 2022 status for PEM electrolysis, its page of 29 May ... |
+| 141 | `HeavyIndustry.ELECTROLYSIS_KWH_A_KG_FE10` | `46` | The figure FE10's electrolysers reach, 46 (72%): the same page's ultimate target for the whole system. |
+| 144 | `HeavyIndustry.HYDROGEN_MWH_SAVED_A_TONNE` | `HYDROGEN_KG_A_TONNE *(ELECTROLYSIS_KWH_A_KG - ELECTROLYSIS_KWH_A_KG_FE10) / 1000` | The megawatt-hours a tonne of steel FE10's electrolysers save: HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG less ELECTROLYSIS_KWH_A_KG_FE10 each, 0.486 (calc). |
 
 ### LuxuryRetail.java ([map](map/LuxuryRetail.md))
 
@@ -5811,7 +5817,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1766 constants)
+## harnesses (1771 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6454,6 +6460,14 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 63 | `EducationCheck.OUT` | `System.out` |  |
 | 64 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
 
+### ElectrolyserCheck.java ([map](map/ElectrolyserCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 51 | `ElectrolyserCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 52 | `ElectrolyserCheck.PIECE` | `"electrolyser"` |  |
+| 54 | `ElectrolyserCheck.WORKS` | `3` | The works section 3 to 5 stand: enough that "some of them" is more than none and less than all. |
+
 ### EnsembleCheck.java ([map](map/EnsembleCheck.md))
 
 | line | constant | value | says |
@@ -6511,6 +6525,13 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 109 | `ExpectationsCheck.TARGET` | `.03` | The target the bare fixtures aim at: not the default, so nothing reads the default by accident. |
+
+### FieldOperatorsCheck.java ([map](map/FieldOperatorsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 50 | `FieldOperatorsCheck.KIT` | `"autonomy-kit"` |  |
+| 52 | `FieldOperatorsCheck.GRAINS` | `20` | The Grain Farms stood beside the village's own one: enough that the watch (a tenth of a post a machine) rounds to posts. |
 
 ### FittingCheck.java ([map](map/FittingCheck.md))
 
@@ -7970,11 +7991,11 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 145 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 91 rows (HISTORY_ROWS). |
 | 146 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 147 | `ResearchCheck.HISTORY_ROWS` | `91` |  |
-| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2 and FE4 (the study has no FE3). |
-| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 3, 0, 0, 0 }` |  |
-| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4")` | The near future's rows, in the file's order, after the studies' 91. |
+| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE... |
+| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 91. |
 | 157 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 560 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 561 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 

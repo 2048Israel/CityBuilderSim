@@ -348,6 +348,21 @@ public class ElectrolyserCheck {
         near("...three months played, the buildings' sum to the bit", draw(g), raw(g), 0);
         check("...and none carries the piece", heavy.getElectrolyserWorks() == 0);
 
+        // A works placed by hand with no count at all (a harness's city, an old save) reads "fitted" by its counts, but a piece nobody knows yet is on no works.
+        Game bare = HydrogenSteelCheck.town1900("electrolyser-bare");
+        BuildingManager bb = bare.getBuildingManager();
+        quietly(() -> bb.addStack(bb.getTemplate(HeavyIndustry.HYDROGEN_WORKS), WORKS, true));
+        BuildingsStacks bs = works(bare);
+        at(bare, fe10() - 1);
+        quietly(() -> { bare.getEconomyManager().setElectricityConsumption(); bare.getEquipmentForms().apply(bare); });
+        check("fixture: a 1900 city with " + WORKS + " works placed by hand, no count of any piece on them", bare.foundedUnfitted() && bs.getQuantity() == WORKS && !bs.hasUnfitted());
+        check("the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit",
+                bare.getSectors().heavyIndustry().getElectrolyserWorks() == 0 && draw(bare) == raw(bare) && raw(bare) == WORKS * bs.getBuilding().powerBought());
+        at(bare, fe10());
+        quietly(() -> bare.getEquipmentForms().apply(bare));
+        check("...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them", bare.getSectors().heavyIndustry().getElectrolyserWorks() == WORKS,
+                "" + bare.getSectors().heavyIndustry().getElectrolyserWorks());
+
         Game today = ResearchCheck.datedCity("electrolyser-today", false);
         BuildingManager b = today.getBuildingManager();
         BuildingsTemplate tt = b.getTemplate(HeavyIndustry.HYDROGEN_WORKS);

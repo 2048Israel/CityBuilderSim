@@ -321,6 +321,18 @@ public class FieldOperatorsCheck {
         System.out.printf("  the kit on a Grain Farm at month %d: gain %.4f a month on a cost of %.4f, earnsBack %.4f, hurdle %.4f: %s%n", g.getMonth(), v.gain(), v.cost(),
                 v.earnsBack(), v.hurdle(), v.kind());
 
+        // A farm placed by hand with no count at all reads "fitted" by its counts, but a kit nobody knows yet is on no farm.
+        Game bare = FittingCheck.village("fieldops-bare", Founding.defaults().withUnfitted(true), false, false);
+        ResearchCheck.atMonth(bare, fe8() - 1);
+        bare.getEquipmentForms().apply(bare);
+        check("fixture: a 1900 village whose farms were placed by hand, no count of any piece on them", bare.foundedUnfitted() && !grain(bare).hasUnfitted() && !mixed(bare).hasUnfitted());
+        check("the month before FE8 no count-less farm is autonomous (a kit nobody knows is on none): every machine is operated and the posts are the buildings'",
+                farms(bare).getOperatedShare() == 1 && farms(bare).autonomousMachines() == 0 && Arrays.equals(farms(bare).postsPerTier(), base(bare)));
+        ResearchCheck.atMonth(bare, fe8());
+        bare.getEquipmentForms().apply(bare);
+        check("...and at FE8's month the same farms, lacking nothing by their counts, are all autonomous", farms(bare).getOperatedShare() == 0 && farms(bare).autonomousMachines() == machines(bare),
+                farms(bare).getOperatedShare() + " " + farms(bare).autonomousMachines());
+
         // A city whose research found FE8 before history's month knows the kit from that month.
         Game early = village("fieldops-found", true);
         int found = fe8() - 12;
@@ -339,9 +351,10 @@ public class FieldOperatorsCheck {
 
     /* ============================ 4. the farms' counts ============================ */
 
-    static void four() {
+    static void four() throws Exception {
         System.out.println("\n--- 4. the farms' counts: the operated share is the machine-weighted share of the farms lacking the kit ---");
         Game g = village("fieldops-half", true);
+        ResearchCheck.atMonth(g, fe8());   // the kit is known: a count of it is a farm's lacking it
         Agriculture a = farms(g);
         BuildingsStacks mx = mixed(g), gr = grain(g);
         check("fixture: two Mixed Farms and " + (1 + GRAINS) + " Grain Farms, none fitted", mx.getQuantity() == 2 && gr.getQuantity() == 1 + GRAINS && a.getOperatedShare() == 1);

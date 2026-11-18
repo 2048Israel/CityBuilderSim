@@ -182,8 +182,8 @@ customers in its first season. On the game's books it is posts: the operator
 of each tractor and combine at the Grain Farm and the Mixed Farm. Nobody
 publishes the watch it needs; a university's model assumes a person steps in
 six minutes an hour (about ten machines a person, calc), an assumption and not a
-target, so R6d states one or holds that share. The tractor must pay first:
-R2-R mends `EquipmentFit.gainOf()`, which has no gain in hands. *Event:* the
+target, so R6d states one or holds that share. The tractor paid first: R2-R's gain in hands is in
+(R1d's call 7, 0.9.126), and R6d built the row on it. *Event:* the
 2030 demonstration.
 
 **FE9, the 30% tandem module.** Oxford PV's chief executive, January 2026:
