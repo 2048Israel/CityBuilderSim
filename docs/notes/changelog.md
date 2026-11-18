@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.141 — HW1-V, refine projected ground and borrowing cash — 2026-11-17, ready, see docs/queue/HW1-V-notes.md
+Projected works retain only the linked ground their class and zoning let
+them reuse from purchased parcels, and keep rounded bond proceeds above
+each funding gap as cash for later additions. Both the value model and its
+independent advice oracle carry the corrected ground and cash. Hard parcel
+and bond fixtures prove successive additions, including steep and zoned
+ground, unlinked forest and exhausted offers; twelve removal checks fail
+with their premises intact. Advice, ground, finance and save-path checks
+pass; the default playtest trace is unchanged.
+
 ### LQ1 — the luxury queue's size, a study — 2026-11-17, ready, see docs/queue/LQ1-notes.md
 `docs/studies/luxury-budget.md`, its probe, two prototypes and the real figures in `docs/studies/luxury-budget/`: the
 households' luxury budget on 0.9.139 against BEA, the Census, BLS and the Fed. The counter takes 13-19% of GDP (36% in

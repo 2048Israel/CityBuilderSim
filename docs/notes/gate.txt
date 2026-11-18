@@ -1,14 +1,11 @@
-# gate of Merge batch/FB6: keptCheck's fixtures cause their own conditions, 5 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): KS2, KS1-Saved, KBF1, KHT1, KF63; not beside FB2 (`KeptCheck`), 0.9.140
+# gate of Merge batch/HW1-V: refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4, 0.9.141
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 205 harnesses run in 2430s: 193 passed, 12 failed
+# suite: 206 harnesses run in 2377s: 195 passed, 11 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
-ShortSellingCheck | exit 1
-ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
-ShortSellingCheck | 1 FAILED
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL reload.cash (nominal) month 0: 86125.78634 at the factor over the factor, 86185.25829 at today's prices (0.000690 apart)
 PriceLevelCheck | FAIL reload.gdp.month (nominal) month 0: 574.7829190 at the factor over the factor, 572.8807637 at today's prices (0.00331 apart)
@@ -70,6 +67,9 @@ DistressBleedCheck | a loss that is only interest holds: months at or above the 
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
+ShortSellingCheck | exit 1
+ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
+ShortSellingCheck | 1 FAILED
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED
