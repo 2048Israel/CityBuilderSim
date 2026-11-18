@@ -106,6 +106,13 @@ their C:/ paths. Only scratch / TempDirs cities were written, using slot
 10; ExchangeRateCheck's existing scratch replay cases were moved from
 slot 2 to 10 as well. No real save slot was written.
 
+`sh tools/pick.sh origin/main HEAD` picks 45 of 221 harnesses, not ALL.
+Its review line is `not needed - no money, saves or threading in the diff`.
+The machine coordinator authorized the seven named harnesses while other
+gates run, so no full `--pick` or standalone playtest was started. The
+orchestrator's gate runs the pick fresh on the main it merges onto. No dry
+run or kept gate directory is owed for this harness-only pick.
+
 ## Default trace
 
 The diff touches only `*Check.java` and docs; no game class, resource or
