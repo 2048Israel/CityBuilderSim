@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FB9, the map's renderer and MapCheck's fixtures — 2026-11-18, ready, see docs/queue/FB9-notes.md
 A mine born on a site after a cell's street was laid across it kept the street in the plan, where the buildings beside it
