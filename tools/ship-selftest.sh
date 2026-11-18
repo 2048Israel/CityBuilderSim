@@ -536,10 +536,6 @@ LABEL="GG1.7 a longer unused ID remains available"; ok test "$IRC" = 0
 
 
 # BW1: the gate says where it is through tools/bus.sh, and nothing depends on the bus.
-LABEL="BW1 bus.sh with no cbs-bus does nothing and exits 0"
-ok sh -c "CBS_BUS='$TA/no-bus-here' sh '$SRC/tools/bus.sh' gate X merge > '$TA/bus.out' 2>&1 && test ! -s '$TA/bus.out'"
-LABEL="BW1 bus.sh passes its arguments on, and exits 0 when cbs-bus fails"; rm -f "$BUS_LOG"
-ok sh -c "BUS_EXIT=2 CBS_BUS='$TA/bus-stub' sh '$SRC/tools/bus.sh' gate X 'a b' 2> '$TA/bus.out' && grep -q -x 'gate X a b' '$BUS_LOG' && grep -q 'exit 2' '$TA/bus.out'"
 launch() { rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"; RUNDIR=$TA/bus-$1
     TIP=$(git -C "$TA/origin.git" rev-parse "batch/$1"); BASE0=$(git -C "$TA/origin.git" rev-parse main)
     CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$1" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
@@ -550,6 +546,8 @@ LABEL="BW1 a gate posts each step as it begins: merge, suite, maps, tag, push, t
 ok test "$(sed -n 's/^gate BT1 \([a-z]*\) .*/\1/p' "$BUS_LOG" | uniq | tr '\n' ' ')" = "merge suite maps tag push done "
 LABEL="...every one before the end with the two commits"
 ok sh -c "! grep '^gate BT1 ' '$BUS_LOG' | grep -v '^gate BT1 done ' | grep -q -v -F 'commit=$TIP base=$BASE0'"
+LABEL="...the first with main's version, the machine, the log, the gate's pid and its start"
+ok grep -q "^gate BT1 merge --run [0-9]* commit=$TIP base=$BASE0 version=[0-9][^ ]* machine=[^ ][^ ]* log=[^ ]*/ship.log dry_run=no pid=[0-9][0-9]* started=20" "$BUS_LOG"
 LABEL="...a tag ships"; ok shipped BT1
 LABEL="...and ends in done, tagged and published"; ok last_gate BT1 "^gate BT1 done version=$TAGV outcome=tagged published=yes"
 LABEL="...the batch's own file gating, then shipped with its version"

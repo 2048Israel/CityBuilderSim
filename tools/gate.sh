@@ -114,7 +114,8 @@ DRY=no; [ "$DRY_REQUESTED" = 0 ] || DRY=yes
 WHERE=$LOG; [ "$WINDOWS" = 0 ] || WHERE=$(cygpath -m "$LOG")
 CBS_ME=${CBS_ME:-gate}; export CBS_ME CBS_GATE_NUMBER
 bus gate "$ID" merge --run "$CBS_GATE_NUMBER" commit="$(cat "$RUN/branch.commit")" base="$(cat "$RUN/main.commit")" version="$(version)" \
-    machine="$(uname -n)" log="$WHERE" dry_run=$DRY outcome= published= reused= skipped= timed_out= known_reds=
+    machine="$(uname -n)" log="$WHERE" dry_run=$DRY pid="$(head -1 "$RUN/owners" 2>/dev/null || echo $$)" \
+    started="$(date +%Y-%m-%dT%H:%M:%S%:z)" outcome= published= reused= skipped= timed_out= known_reds=
 [ "$DRY" = yes ] || bus state "$ID" gating
 . "$HERE/check-data.sh"; cbs_check_data "$MAIN"
 export CBS_GATE_RUN=$RUN

@@ -79,12 +79,9 @@ Each ready branch, one at a time:
    `--red-line` unless Jerus himself says so for that red (BA1: "Ship it, pass
    both"), never a hand merge.
 5. A branch that edits the publisher (`ship.sh`, `tools/gate*.sh`) has had its
-   own run by `sh tools/gate.sh ID --branch-gate --dry-run` before it is
-   gated (GF1, LM1: the gate runs main's `ship.sh`, not the branch's). After
-   publisher or launcher edits, `sh tools/ship-selftest.sh`; after picker
-   edits `sh tools/pick-selftest.sh`; after wait or day edits
-   `sh tools/wait-selftest.sh` (WHY GF1, TM3: a merge rewrites scripts while
-   their shell reads them).
+   own `--branch-gate --dry-run` (the contract, 5.5). The gate runs a changed
+   script's self-test, but not beside the whole suite: there, run it by hand
+   (GF1, TM3: a merge rewrites scripts while their shell reads them).
 
 **Before saying a change works:** the gate green but for main's recorded reds,
 the maps regenerated, the ensemble scored if the trace moved, the write-up
