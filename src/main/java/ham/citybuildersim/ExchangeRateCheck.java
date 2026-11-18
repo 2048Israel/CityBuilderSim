@@ -889,9 +889,9 @@ public class ExchangeRateCheck {
             if (g.getMonth() == was || !(before > 0)) return;
             double move = Math.log(fx.getRate() / before);
             // ...and the world's line (WN4), the sixth beside the five: a city on the world file feels the world.
-            double six = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention()
+            double named = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention()
                     + fx.getMoveWorld() + fx.getMoveMarket() + fx.getMoveHeld();
-            worstAdd = Math.max(worstAdd, Math.abs(six - move));
+            worstAdd = Math.max(worstAdd, Math.abs(named - move));
             months++;
             if (g.getMonth() >= 60) { fromMonth60++; sum += move; sum2 += move * move; }
             int s = move > 1e-9 ? 1 : move < -1e-9 ? -1 : 0;
@@ -936,7 +936,6 @@ public class ExchangeRateCheck {
         try {
             Game g = new Game(GameFiles.scratch(label), founding);
             g.run();
-            if (founding.isUnfitted()) LongPlaytest.seedMarket(g, 0);
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
             g.setRolloverMode(LongPlaytest.ROLLOVER);
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);

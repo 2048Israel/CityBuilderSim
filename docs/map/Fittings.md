@@ -15,7 +15,7 @@
 > Money is not kept here. What a fitting costs is paid at the order (Game.fit()) and the builders are paid then; this holds the work only.
 > A city with nothing unfitted never adds a job, so every method below does nothing in it.
 
-**Used by (4):** [DataSave](DataSave.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Game](Game.md)
+**Used by (5):** [DataSave](DataSave.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [ScaleCheck](ScaleCheck.md)
 
 ## Fields (state)
 

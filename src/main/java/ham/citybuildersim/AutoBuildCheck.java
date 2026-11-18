@@ -171,7 +171,7 @@ public class AutoBuildCheck {
         out.println("\n--- 10. the 1900 city: automatic building answers missing power ---");
         Game g = new Game(GameFiles.scratch("autobuildcheck-1900"), LongPlaytest.founding().withUnfitted(true));
         quietly(() -> { g.run(); g.simulateMonths(12); });
-        g.setCashForTest(1_000_000 * PriceLevel.FACTOR);
+        g.setCashForTest(1_000_000_000 * PriceLevel.FACTOR);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(10 * u.getBaseProduction());
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
@@ -181,6 +181,7 @@ public class AutoBuildCheck {
         assertTrue("fixture: 1900 power demand is above its founding supply", sd[1] > sd[0] && sd[0] > 0);
         quietly(() -> ab.pass(g));
         AutoBuilder.Step step = stepFor(ab, power);
+        if (step != null) out.printf("   1900 power: %s, %d %s, cut %s%n", step.outcome(), step.ordered(), step.building(), step.cut());
         assertTrue("the 1900 power shortage orders a known works", step != null && step.ordered() > 0
                 && step.outcome() == AutoBuilder.Outcome.ORDERED);
         assertTrue("the works is essential under the model's rule", AutoBuilder.essential(power)

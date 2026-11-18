@@ -1200,6 +1200,14 @@ public class BuildAdviceCheck {
         double first = Math.max(CityNeeds.SEATS_FLOOR, CityNeeds.FIRST_SCHOOL_SHARE * CityNeeds.smallestSchool(g, uni));
         out.printf("   1900 founding at month %d: %.2f would come, first school threshold %.2f%n", g.getMonth(), come, first);
         assertTrue("fixture: the historical founding has no first university class", come < first);
+        BuildingsTemplate office = template(g, "Engineering Services Office");
+        int offices = 0;
+        while (CityNeeds.hires(g, uni, 1) < first && offices < 10_000) {
+            g.getBuildingManager().addStack(office, 1, true);
+            offices++;
+        }
+        assertTrue("fixture: degree jobs alone would fill a first university, isolating the missing class",
+                CityNeeds.hires(g, uni, 1) >= first && CityNeeds.wouldCome(g, uni) < first);
         List<CityNeeds.Need> needs = CityNeeds.measure(g, CityNeeds.PLAIN);
         assertTrue("the 1900 pipeline offers no university row before its class", schoolRow(needs, uni) == null);
         assertTrue("the 1900 pipeline offers no university card before its class", !suggests(g, needs, uni));
