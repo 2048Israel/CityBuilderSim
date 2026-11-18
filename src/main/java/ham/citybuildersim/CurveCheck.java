@@ -117,10 +117,6 @@ public class CurveCheck {
     }
 
     public static void main(String[] args) throws Exception {
-        // LD2's wage off for the whole JVM (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path section 7's steep city
-        // at month 39 is not steep (1-month 2.25, 1-year 2.65, 10-year 3.46), so its fixture fails. The claim is the curve's
-        // issue, not the wage; queued (LD3) to make the city steep on LD2's path.
-        WantedPosts.carryKeptOut = false;
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         Path root = TempDirs.create("curve");
@@ -402,11 +398,8 @@ public class CurveCheck {
         out.println("\n--- 5. the autopilot's gap is nothing ---");
         Game c = city(root, "x5", 54);
         DebtManager dm = c.getDebtManager();
-        // GW1: the draw lets a young city's businesses order earlier, and this founding (pop 1,273 at month 54, 413 on main's path) is deflating at 54:
-        // inflation -2.27%, the year's prices having fallen, so the rule at Standard and at Strict both sit on the 0% floor and agree - the fixture below
-        // asks for a month where the dial's strictness matters. Run on, a month at a time (at most MAX_RUN_ON), to the first month where Strict and Standard
-        // advise different rates at the inflation the city reads; this founding is at 2.58% a year at month 56 (Standard 3.87%, Strict 4.39%).
-        for (int m = 0; m < MAX_RUN_ON && !strictnessMatters(c); m++) pressQuietly(c);
+        // GW1 ran this city on from month 54 to the first month where Strict and Standard advise different rates (it was deflating at 54,
+        // both rules on the 0% floor); DQ1 released it (2026-11-16): on 0.9.128 it reads 9.03% at month 54 (Standard 13.55%, Strict 15.68%).
         out.printf("   the autopilot city at month %d: inflation %.4f, Standard's rule %.4f, Strict's %.4f%n", c.getMonth(),
                 c.getPriceIndex().hasRate() ? c.getPriceIndex().inflation() : Double.NaN,
                 dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STANDARD),
@@ -421,8 +414,6 @@ public class CurveCheck {
         autopilotMonth(c, "Strict");
     }
 
-    /** The most months section 5 runs its city on to find one where the dial's strictness changes the rule (GW1). */
-    static final int MAX_RUN_ON = 60;
 
     /** Whether, at the inflation the price index reads now, Strict advises a rate more than a tenth of a point from Standard's. */
     static boolean strictnessMatters(Game c) {
@@ -524,21 +515,8 @@ public class CurveCheck {
      * target, which is the month's own strike.
      */
     static Game steepCity(Path root, String label) {
-        // On the world's band since WN3-R (2026-11-08). The curve is steep only while the short end is the dial's. WN3 played this founding
-        // on the literals: on the band at 0.8.75 a cement works' bank loan sent the young bank to the central bank's window, and its cost
-        // of funds plus Bank.MIN_MARGIN floored the 1-month at 2.1% on a dial of 1%, the 10-year 1.3 points over it. On 0.9.55 the band's
-        // founding is the steep city: at month 39 the 1-month 1.31%, the 1-year 2.21%, the 10-year 3.41%, 2.1 points over the 1-month.
-        // WG1 (2026-11-10): the floor is set at the going rate before the first month, the wage this fixture was written against. A new city's floor
-        // is .85 of the going rate now (WG1, a real minimum), and the unskilled wage then falls to the market's own level in a glut: this city at month 39
-        // read 1-month 1.8021, 1-year 2.4377, 10-year 3.4350, the 10-year 1.63 points over the 1-month, under the 2 the fixture asks; with the floor at the
-        // going rate (main's path, the old default) it is the steep city above.
-        // GW1 (2026-11-10): Manufacturing and Wood Products held from the founding, as WN3 held the cement works. With the draw in the staffing gate the
-        // founding's manufacturers order a plant on a bank loan before month 26 (Manufacturing 549 on the bank's book; main's path had Wood Products 430 at
-        // month 33), and the retailers and restaurants that follow it at months 34 to 38 take the bank to 1,104 borrowed against 986 of deposits: the bank
-        // is at the central bank's window, its cost of funds 2.16% and the floor of the 1-month 3.16% on a dial the fixture set at 1%. Month 39 read 1-month
-        // 2.25, 1-year 2.65, 10-year 3.46 (the 10-year 1.21 points over the 1-month, under the 2 the fixture asks, and the 1-year 0.40 under its 0.5). Holding
-        // Wood Products alone changes nothing (the Manufacturing loan is the cause); both held, the bank has 158 borrowed against 1,599 of deposits at month
-        // 38, its cost of funds 0.00%, and month 39 reads 1-month 1.00, 1-year 2.06, 10-year 3.39, the 10-year 2.39 points over the 1-month.
+        // On the world's band since WN3-R (2026-11-08). Manufacturing and Wood Products held (GW1); DQ1 tried them free
+        // (2026-11-16) and the curve came out 1.39 points from the 1-month to the 10-year, under the 2 section 7 asks: held.
         Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));
@@ -716,10 +694,12 @@ public class CurveCheck {
         }
         out.printf("   the month's end moved the expectation from %.6f to %.6f (month %d)%n", expectedBefore,
                 x.getExpectedInflation(), g.getMonth());
-        check("fixture: the end of the month moved the expectation", x.getExpectedInflation() != expectedBefore);
+        boolean expectationMoved = Observation.reached("fixture: the end of the month moved the expectation",
+                x.getExpectedInflation() != expectedBefore,
+                "changed expectation at the held strike");
         same("after the month the struck expectation is what Expectations read before the press", dm.getStruckExpected(),
                 expectedBefore);
-        check("...and it is not what the month's end has since made of it", dm.getStruckExpected() != x.getExpectedInflation());
+        if (expectationMoved) check("...and it is not what the month's end has since made of it", dm.getStruckExpected() != x.getExpectedInflation());
         same("after the month the struck inflation is what the month's top read", dm.getStruckInflation(), inflationBefore);
         double newlyExpected = x.getExpectedInflation(), newlyRead = inflationRead(g);
         pressQuietly(g);

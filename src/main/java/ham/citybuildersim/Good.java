@@ -996,7 +996,7 @@ public enum Good {
     /** Copper anode, by the tonne: a smelter's, of concentrate, the electrolytic refinery's feed. A flow good. */
     ANODE("Copper anode", "tonne", 10.150, 9.650, .1875, false, Pricing.BAND, false),
 
-    /** Copper cathode, by the tonne, LME grade A: an electrolytic refinery's of anode, a scrap refinery's of the city's old copper and scrap, and an oxide field's leach plant's at the mine; the rod mills' feed. Copper's pricing good (Resource.COPPER). Stockable. */
+    /** Copper cathode, by the tonne, LME grade A: an electrolytic refinery's of anode, a scrap refinery's of the city's old copper and scrap, and an oxide field's leach plant's at the mine (a sulphide field's too where FE2 is known, R6b); the rod mills' feed. Copper's pricing good (Resource.COPPER). Stockable. */
     COPPER("Copper cathode", "tonne", 10.500, 10.000, .1875, true, Pricing.BAND, false),
 
     /** Copper scrap, sorted, by the tonne: what the Scrap Copper Refinery buys past the city's own old copper (OldMetal). A flow good. */
@@ -1112,7 +1112,18 @@ public enum Good {
        ======================================================================= */
 
     /** A heavy truck - tractor and semitrailer, 25 t a load - by the unit: the Heavy Truck Plant's; Freight's Haulage division's fleet. Imported, never exported. Stockable. */
-    TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false);
+    TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false),
+
+    /** Fine gold, a stockable troy ounce. GoldPrice supplies the month's nominal US$ band (GD4). */
+    GOLD("Gold", "troy ounce", GoldPrice.PAR_1900 * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * Good.GOLD_FREIGHT_SHARE / (1000 * PriceLevel.HISTORICAL_FACTOR), true, Pricing.BAND, false);
+
+    /** Bullion freight each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_FREIGHT_SHARE = .0025;
+
+    /** The bullion dealer's margin each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_MARGIN_SHARE = .0025;
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1285,6 +1296,7 @@ public enum Good {
     public double tonnesPerUnit() {
         if (this == MATERIALS) return 5;
         switch (unit) {
+            case "troy ounce": return GoldPrice.GRAMS_PER_TROY_OUNCE / 1_000_000;
             case "kg":    return .001;
             case "tonne": return 1;
             /*

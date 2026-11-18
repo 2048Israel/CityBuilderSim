@@ -1,6 +1,6 @@
 # SaveWriter.java - 294 lines · 20 methods · 3 constants · model
 
-`ham/citybuildersim/SaveWriter.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveWriter.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The one thread saves are written on, for the whole JVM: it takes a
 > finished snapshot of a city and turns it into the save, the map and the
@@ -29,7 +29,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (14), [HistorySave](HistorySave.md) (7), [DataSave](DataSave.md) (5)
 
-**Used by (5):** [Game](Game.md), [Recording](Recording.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UiProbe](UiProbe.md)
+**Used by (8):** [Game](Game.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recording](Recording.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UiProbe](UiProbe.md)
 
 ## Constants
 

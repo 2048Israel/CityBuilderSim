@@ -128,6 +128,12 @@ public final class Geology {
     /** Stone's weight by class: two on a shield or in a fold belt, nothing on a shelf (spec-earth 4). */
     static final double[] W_STONE = { 1, 2, 2, 1, 0, 1, 1 };
 
+    /** Gold's class weights, estimated from USGS Bulletin 1693's orogenic, arc and placer models (GD4). */
+    static final double[] W_GOLD = { 0, 3, 3, .5, 0, .5, 1 };
+
+    /** Gold's Z, measured as land over weighted land north of ANTARCTIC_LAT (GD4). */
+    public static final double Z_GOLD = .6096;
+
     /* =====================================================================
        Z, measured on earth-1 with the hand tables (measure(), zOf(r, g);
        EarthTerrainCheck 13 recomputes each to its rounding). Since EG1 (0.8.12)
@@ -771,6 +777,7 @@ public final class Geology {
             case COPPER:  return W_COPPER[k.ordinal()];
             case URANIUM: return W_URANIUM[k.ordinal()];
             case STONE:   return W_STONE[k.ordinal()];
+            case GOLD:    return W_GOLD[k.ordinal()];
             default:      return 1;
         }
     }
@@ -784,6 +791,7 @@ public final class Geology {
             case COPPER:  return Z_COPPER;
             case URANIUM: return Z_URANIUM;
             case STONE:   return Z_STONE;
+            case GOLD:    return Z_GOLD;
             default:      return 1;
         }
     }

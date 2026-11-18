@@ -169,7 +169,7 @@ public class SectorFlowCheck {
         for (Sector s : g.getSectors().all()) {
             SectorFlow.Plant p = SectorFlow.of(g, s).plant();
             double[] r = p.ratios();
-            own &= r.length == SectorFlow.THROTTLES.length && r[0] == s.getAverageFill() && r[1] == s.getEnergyRatio()
+            own &= r.length == SectorFlow.THROTTLES.length && r[0] == s.getAverageFill() && r[1] == s.getPowerRatio()
                     && r[2] == s.getWaterRatio() && r[3] == s.getRoadRatio() && r[4] == s.getHealthRatio()
                     && r[5] == s.getFreightRatio();
             double run = r[0];

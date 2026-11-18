@@ -889,6 +889,7 @@ public class ReadPathCheck {
         g.getForeignAccounts().getPegAnchor();
         g.getForeignAccounts().getPegPerAnchor();
         g.getForeignAccounts().getPegRate();
+        g.getForeignAccounts().getHoldFelt();
         g.getForeignAccounts().regimeWords();
         g.getDebtManager().tieRate();
         g.getDebtManager().tieMoney();
@@ -1260,7 +1261,7 @@ public class ReadPathCheck {
         g.getConstructionOutput();
         g.quoteBuild(template(g, "House"), 1);
         // ...and an order bar's several at once, its Build button's total (0.7.34)
-        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3, template(g, "Water Treatment Plant"), 1));
+        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3L, template(g, "Water Treatment Plant"), 1L));
         // ...and the overview's suggestions added up (0.7.38)
         BuildAdvice.quoteTotal(BuildAdvice.suggest(g));
         // ...and every gauge as served, with its one verdict (0.7.41): the owners' getters, each row's,
@@ -1301,9 +1302,9 @@ public class ReadPathCheck {
         g.buildFundingGap(template(g, "House"), 1);
         g.buildFundingGap(template(g, "Water Treatment Plant"), 1_000);
         // ...and a run of orders, which its funding page is sized to since 0.7.40
-        Map<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(template(g, "House"), 3);
-        run.put(template(g, "Water Treatment Plant"), 1_000);
+        Map<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(template(g, "House"), 3L);
+        run.put(template(g, "Water Treatment Plant"), 1_000L);
         g.buildRunInvoice(run);
         g.buildFundingGap(run);
         g.buildRunAhead(run);
@@ -1561,6 +1562,11 @@ public class ReadPathCheck {
             causeBook.getLastDeaths(cause); causeBook.getYearDeaths(cause); causeBook.getTotalDeaths(cause);
         }
         g.getHealth().getInfluenzaRate();
+        g.getHealth().getSickRateWithoutInfluenza();
+        g.getSickness().getAcuteShares();
+        g.getSickness().peopleSick(g.getCohorts());
+        g.getSickness().peoplePastTwoMonths(g.getCohorts());
+        for (AgeBand band : AgeBand.values()) g.getSickness().share(band);
         HouseholdBalance people = g.getHouseholdBalance();
         people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
         for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }
@@ -1575,9 +1581,23 @@ public class ReadPathCheck {
     }
 
     public static void main(String[] args) throws Exception {
-
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        out.println("--- XR7: reads keep the support already bought under a peg ---");
+        Game supported = CurrencyRegimeCheck.supportedTown("xr7-read-support");
+        ForeignAccounts supportedFx = supported.getForeignAccounts();
+        assertTrue("fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase", supportedFx.getRegime() == ForeignAccounts.Regime.PEG
+                && supportedFx.getHoldFelt() > 0 && supportedFx.getEdgeOwedLocal() > ForeignAccounts.INTERVENTION_LINEAR * 12 * supportedFx.getGdpTrailing());
+        double[] supportBefore = supportedFx.toSaveArray();
+        for (int i = 0; i < 10; i++) readEverything(supported);
+        assertTrue("reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit", java.util.Arrays.equals(supportBefore, supportedFx.toSaveArray()));
+        out.println("--- R2c: IP service flows and planner reads ---");
+        assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
+        assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
+        assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
+
+        out.println("--- R0f: the dated Money readers keep the saved rule still ---");
+        assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 
         Path root = TempDirs.create("readpath");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
@@ -1923,11 +1943,39 @@ public class ReadPathCheck {
 
         onEarth(files);
         onTheWorldMarket(root);
+        acuteSicknessReads();
 
         cleanUp(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** R0h: cause acute sickness before exercising its readers; empty 1900 shares cannot catch a mutating read. */
+    static void acuteSicknessReads() {
+        out.println("\n--- reading acute influenza shares leaves them and the ring alone (R0h) ---");
+        Game city = new Game(GameFiles.scratch("readpath-acute"));
+        System.setOut(quiet);
+        try { city.run(); } finally { System.setOut(out); }
+        Health health = city.getHealth();
+        health.advanceMonth(0, 1000, CausesOfDeath.INFLUENZA_FIRST);
+        Sickness sickness = city.getSickness();
+        sickness.seed(health.getSickRate(), health.getSickRateWithoutInfluenza(), 0, .25, .75);
+        double[] acute = sickness.getAcuteShares(), ring = sickness.getState(), healthState = health.getState();
+        assertTrue("fixture: influenza acute shares and chronic sickness are both present",
+                java.util.Arrays.stream(acute).allMatch(v -> v > 0) && sickness.pastTwoMonths(AgeBand.ADULT) > 0);
+        for (int n = 0; n < 50; n++) {
+            health.getSickRateWithoutInfluenza();
+            sickness.getAcuteShares()[0] = 0; // a reader must not hand out the mutable saved state
+            sickness.peopleSick(city.getCohorts());
+            sickness.peoplePastTwoMonths(city.getCohorts());
+            sickness.deathRates();
+            for (int k = 0; k < Sickness.RING; k++) sickness.peopleInSlot(city.getCohorts(), k);
+            for (AgeBand band : AgeBand.values()) { sickness.share(band); sickness.pastTwoMonths(band); }
+        }
+        assertTrue("fifty reads leave every acute share, ring slot and Health component unchanged",
+                java.util.Arrays.equals(acute, sickness.getAcuteShares()) && java.util.Arrays.equals(ring, sickness.getState())
+                && java.util.Arrays.equals(healthState, health.getState()));
     }
 
     /** The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. */
@@ -1987,8 +2035,8 @@ public class ReadPathCheck {
      * saved and loaded into another game as on the city that played.
      */
     static void afterALoad(Game g, GameFiles files) {
-        // The fixture's buildings were stood up by fiat and took no ground; a load allocates the city's
-        // footprint (Game's load path), so the city is given it first, as a load would.
+        // The fixture's buildings were stood up by fiat and took no ground; give its ledger that footprint.
+        // AW2 saves this allocation explicitly; the fixture still accounts for all the ground it stands on.
         g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
         // ...and a dig by type (0.7.110), so the save carries E by type: the fixture's ore is by fiat, the first type's.
         double dug = g.getLandManager().extract(Resource.IRON, Deposit.FieldType.HEMATITE, 1_000.5);

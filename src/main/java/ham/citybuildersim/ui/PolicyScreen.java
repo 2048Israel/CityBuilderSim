@@ -996,9 +996,9 @@ final class PolicyScreen {
         String rest = own + " -fx-cursor: hand;";
         String lit = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? lit : rest);
-        c.setOnMouseEntered(e -> c.setStyle(lit));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(lit));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -1186,7 +1186,7 @@ final class PolicyScreen {
     static String rateMove(double d) { return points(d); }
 
     /** A percentage to none: "45%". */
-    static String pct0(double share) { return String.format("%.0f%%", unsigned0(share * 100, 0)); }
+    static String pct0(double share) { return Formats.INSTANCE.percentage(unsigned0(share * 100, 0) / 100, "%.0f%%"); }
 
     /** "x1.00". */
     static String times(double scale) { return String.format("x%.2f", scale); }
@@ -1400,7 +1400,7 @@ final class PolicyScreen {
     /** Inflation as a signed share to one place, with a true minus: "+0.2%". */
     static String signedPct1(double v) {
         double shown = unsigned0(v * 100, 1);
-        return (shown < 0 ? "−" : "+") + String.format("%.1f%%", Math.abs(shown));
+        return Formats.INSTANCE.change(shown / 100, 0, "%+.1f%%").replace('-', '−');
     }
 
     /* ------------------------------ what is biting ------------------------------ */
@@ -2231,7 +2231,7 @@ final class PolicyScreen {
                 // Kept (KP6, KP2b): the style set once, whole, not words()' and then this one on top of it (which wrote it twice at each draw).
                 Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED,
                         " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
-                fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
+                Kept.give(fold.onMouseClickedProperty(), e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
                 return fold;
             }));
             if (shown) for (Payer p : zero) addPayer(list, p, scale, which);
@@ -2314,9 +2314,9 @@ final class PolicyScreen {
             String hand = rest + " -fx-cursor: hand;";
             String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
             row.setStyle(row.isHover() ? over : hand);
-            row.setOnMouseEntered(e -> row.setStyle(over));
-            row.setOnMouseExited(e -> row.setStyle(hand));
-            row.setOnMouseClicked(e -> toggle.run());
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(over));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(hand));
+            Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         } else {
             row.setStyle(rest);
         }
@@ -2792,7 +2792,7 @@ final class PolicyScreen {
             c.setPercentWidth(100 * share[i] / FloorView.GAUGE_TOP);
             c.setHgrow(Priority.ALWAYS);
             c.setFillWidth(true);
-            names.getColumnConstraints().add(c);
+            Kept.columns(names).add(c);
             Label zone = words(words[i], Palette.SIZE_CAPTION, Palette.TEXT_MUTED,
                     " -fx-border-color: transparent transparent transparent " + Palette.EDGE + "; -fx-border-width: 0 0 0 1; -fx-padding: 0 4 0 4;");
             names.add(zone, i, 0);
@@ -2980,8 +2980,8 @@ final class PolicyScreen {
             VBox o = option(tieName(tie, share), tieSays(tie), tie == want, tie == now, () -> {
                 if (!shut) choose(FLOOR_TIE, now, tie);
             });
-            o.setDisable(shut);
-            o.setOpacity(shut ? .5 : 1);
+            Kept.give(o.disableProperty(), shut);
+            Kept.give(o.opacityProperty(), shut ? .5 : 1);
             options[i] = o;
         }
         VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "TIE IT TO", TIE_INFO, null), Kept.column(Palette.GAP, options),
@@ -3227,6 +3227,21 @@ final class PolicyScreen {
             + "people expect, not last year's prices, as every real rate here is.";
 
     void ratePage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the dollar is held at par by the city's reserves. Interest follows the world's, "
+                            + pct2(ui.game.getDebtManager().worldRate()) + ". If the reserves run out, the dollar floats."
+                    : "The dollar floats. The government's Advance Rate is the rate at which it lends to the banks."));
+            if (!ui.game.isLeverOpen(PolicyDates.Lever.POLICY_RATE)) addShutCard(page, PolicyDates.Lever.POLICY_RATE);
+            else if (!ui.game.getForeignAccounts().isCanadaGold()) {
+                double rate = ui.game.getDebtManager().getPolicyRate();
+                double want = staged("policy", rate);
+                page.getChildren().add(sectionHead("THE ADVANCE RATE", PolicyDates.Lever.POLICY_RATE.terms(), null));
+                page.getChildren().add(theDialCard(ui.game.getDebtManager(), ui.game.getPriceIndex(), rate, want));
+            }
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            return;
+        }
         DebtManager market = ui.game.getDebtManager();
         PriceIndex px = ui.game.getPriceIndex();
         double rate = market.getPolicyRate();
@@ -3412,6 +3427,13 @@ final class PolicyScreen {
      */
     VBox theDialCard(DebtManager market, PriceIndex px, double rate, double want) {
         if (market.isTied()) return tiedDialCard(market, rate);
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
+            return dialCard(new DialCard(Icons.BANK, Palette.MONEY, "THE ADVANCE RATE", PolicyDates.Lever.POLICY_RATE.terms(), pct2(rate),
+                    "The government's rate for lending to the banks.", List.of(), ladder, want, dialEffects(rate),
+                    "It reprices no bond already sold.", REPRICE_INFO,
+                    applyFoot("policy", "Set the Advance Rate to " + pct2(want), () -> market.takeTheDial(want))), 360, true);
+        }
         Bank bank = ui.game.getBank();
         Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
         double advised = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
@@ -4132,6 +4154,13 @@ final class PolicyScreen {
      * dial's tie, beside dealing in dollars.
      */
     void currencyPage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the city's reserves hold the dollar at par. Reserves running out ends this gold episode."
+                    : "The dollar floats until the city can choose its monetary policy."));
+            return;
+        }
         ForeignAccounts fx = ui.game.getForeignAccounts();
         ForeignAccounts.Regime now = fx.getRegime(), want = stagedRegime(now);
         // Kept (KP6): every card is a scope of its own; the peg's and the band's are keyed by whether it is in force, since a note is another card.
@@ -4166,7 +4195,7 @@ final class PolicyScreen {
         choice.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + (lit ? Palette.block(Palette.CONTROL, Palette.ACCENT) + Palette.strong(Palette.SIZE_CAPTION + 1, Palette.TEXT_HEAD)
                         : Palette.block(Palette.PANEL) + Palette.words(Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL)));
-        choice.setOnMouseClicked(e -> pick.run());
+        Kept.give(choice.onMouseClickedProperty(), e -> pick.run());
         return choice;
     }
 
@@ -5278,6 +5307,13 @@ final class PolicyScreen {
      * and the wording is about ZEROS rather than about value.
      */
     void reformPage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the city's reserves hold the dollar at par. Reserves running out ends this gold episode."
+                    : "The dollar floats until the city can choose its monetary policy."));
+            return;
+        }
         Denomination unit = ui.game.getDenomination();
         double index = ui.game.getPriceIndex().getIndex();
         VBox head = card(cardHead(Icons.BANKNOTE, Palette.MONEY, "LOPPING THE ZEROS OFF", reformInfo(), null),
@@ -6229,9 +6265,9 @@ final class PolicyScreen {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         row.setStyle(row.isHover() ? lit : rest);
-        row.setOnMouseEntered(e -> row.setStyle(lit));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> toggle.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(lit));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         return row;
     }
 
@@ -6417,7 +6453,7 @@ final class PolicyScreen {
         Lever amountLever = new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
                 v -> amountWords(wantBasis, v, ui.game.getExpectations().getExpectedLevel()), v -> policy.setGrant(wantBasis, v));
         boolean shut = isShut(PolicyDates.Lever.STUDENT_AID);
-        pick.setDisable(shut);
+        Kept.give(pick.disableProperty(), shut);
         Ladder ladder = ladderOf(amountLever).greyed(shut);
         double each = ui.game.grantPerStudentUnder(basis, amount);
         DoubleFunction<List<Effect>> effects = grantEffects(policy);

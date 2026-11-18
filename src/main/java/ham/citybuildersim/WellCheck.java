@@ -413,7 +413,7 @@ public class WellCheck {
                         && wells.staffing(well).passes(),
                 wells.vintages().toString());
         double world = land.getWorldTotal(Resource.OIL);
-        int retiredBefore = g.getWellsWornOut();
+        long retiredBefore = g.getWellsWornOut();
         quietly(() -> g.simulateMonths(1));
         List<Vintage> after = wells.vintages();
         boolean younger = !after.isEmpty() && after.get(0).equals(new Vintage(month - 100, 2, WellKind.LAND));
@@ -422,7 +422,7 @@ public class WellCheck {
                 g.getWellsWornOut() - retiredBefore == 2 && younger
                         && wells.landWellsStanding() == 2 + (after.size() - 1 == 0 ? 0 : after.get(after.size() - 1).count()),
                 String.format("%d retired; %s", g.getWellsWornOut() - retiredBefore, after));
-        int[] committed = new int[8];
+        long[] committed = new long[8];
         boolean oneAMonth = true, kept = true;
         committed[0] = g.wellsCommitted();
         for (int m = 1; m < committed.length; m++) {
@@ -435,7 +435,7 @@ public class WellCheck {
                 wells.landWellsStanding() == 4 && oneAMonth, java.util.Arrays.toString(committed) + " wells committed by month");
         List<Vintage> now = wells.vintages();
         boolean refilled = now.size() >= 2 && now.get(0).equals(new Vintage(month - 100, 2, WellKind.LAND));
-        int fresh = 0;
+        long fresh = 0;
         for (int i = 1; i < now.size(); i++) {
             refilled &= now.get(i).month() > month;
             fresh += now.get(i).count();
@@ -557,7 +557,7 @@ public class WellCheck {
         Game old = new Game(files);
         quietly(() -> old.loadGameSave(10));
         Oil oldWells = old.getSectors().oil();
-        int standing = oldWells.landWellsStanding();
+        long standing = oldWells.landWellsStanding();
         report("a save from before 0.7.84 has none: every well it stands is read new, its whole nameplate",
                 old.getLoadFailure() == null && oldWells.vintages().isEmpty() && standing > 0
                         && oldWells.getCapacity(Good.CRUDE) == standing * WELL_TONNES && oldWells.wornOut() == 0,
@@ -728,7 +728,7 @@ public class WellCheck {
         // Worn out at 348 months, oldest first, and the slots refilled by the planner one a month.
         quietly(() -> wells.setVintagesForTest(List.of(new Vintage(month - (Oil.lifeMonths(WellKind.PLATFORM) - 1), 2, WellKind.PLATFORM),
                 new Vintage(month - 100, d.sites() - 2, WellKind.PLATFORM))));
-        int retiredBefore = g.getWellsWornOut();
+        long retiredBefore = g.getWellsWornOut();
         boolean none = wells.wornOut(WellKind.PLATFORM) == 0;
         quietly(() -> {
             g.getBusinessInvestment().releaseSector(Sectors.OIL);
@@ -742,7 +742,7 @@ public class WellCheck {
         // crude price for 2000 to 2002 and the rates of the time it does not ("would not carry the interest on its whole cost" until month
         // 37, January 2003, against the 25 months the literals' price took); so the section waits for the planner, up to five years, and
         // stops at the last slot standing.
-        int[] committed = new int[61];
+        long[] committed = new long[61];
         boolean oneAMonth = true;
         committed[0] = g.platformWellsCommitted();
         int last = 0;
@@ -948,7 +948,7 @@ public class WellCheck {
         Oil wells = g.getSectors().oil();
         BusinessInvestment plans = g.getBusinessInvestment();
         BuildingsTemplate jacket = template(g, "Offshore Platform"), seaWell = template(g, "Platform Well");
-        int jacketsBefore = wells.jacketsStanding();
+        long jacketsBefore = wells.jacketsStanding();
         Oil.JacketCase c = wells.jacketCase(plans);
         double share = c == null ? Double.NaN : wells.estimatedMonthlyProfit(jacket, plans) * c.cost() / plans.getCostOf(jacket, 1);
         report("the investors' test on a jacket is its package's: its share by cost of the jacket and min(12, sites) wells' earnings",
@@ -1391,7 +1391,7 @@ public class WellCheck {
                 wellsPlaced == Game.BuildResult.SUCCESS && wellStack != null
                         && close(-wellStack.getConstructionProgress(), qw.prepPoints + qw.worksPoints + qw.deepWaterPoints),
                 wellStack == null ? "no stack" : String.format("%,.1f owed", -wellStack.getConstructionProgress()));
-        int left = wells.slotsStanding() - wells.platformWellsCommitted();
+        long left = wells.slotsStanding() - wells.platformWellsCommitted();
         Game.BuildResult rest = quietlyGet(() -> g.buildStack(seaWell, left, true));
         report("...with every slot committed there is no next well: no depth, no factor, no works on a quote",
                 rest == Game.BuildResult.SUCCESS && wells.depthOfNext(seaWell) == 0 && wells.deepWaterFactor(seaWell) == 1 && g.deepWater(seaWell, 1) == null,
@@ -1627,14 +1627,14 @@ public class WellCheck {
         report("fixture: five wells stand on five sites, two of them a month short of their life: none worn out yet",
                 wells.landWellsStanding() == 5 && wells.wornOut() == 0 && land.getSites(Resource.OIL, true) == 5,
                 wells.vintagesNow().toString());
-        int retiredBefore = g.getWellsWornOut();
+        long retiredBefore = g.getWellsWornOut();
         quietly(() -> g.simulateMonths(1));
         List<Vintage> after = wells.vintages();
         Vintage fresh = new Vintage(month + 1, 1, WellKind.LAND);
         report("a month on, the two at 263 months are retired and the well that opened that month is a vintage of its own",
                 g.getWellsWornOut() - retiredBefore == 2 && after.equals(List.of(middle, fresh)),
                 String.format("%d retired; %s", g.getWellsWornOut() - retiredBefore, after));
-        int retiredAfter = g.getWellsWornOut();
+        long retiredAfter = g.getWellsWornOut();
         quietly(() -> g.simulateMonths(1));
         List<Vintage> next = wells.vintages();
         report("...and the month after, none is worn out: the fresh well is not retired with the old ones",

@@ -4,8 +4,8 @@ You are Gemini in Google AI Studio Build: a container with a shell, git that
 can push to `2048Israel/CityBuilderSim`, and Node. This file is your role
 (Claude, 2026-10-13, at Jerus's request, from your own capability note).
 
-`CLAUDE.md` is the project's rules; they bind you too, and they win where
-this file is silent.
+`docs/contract.md` is the project's rules and `CLAUDE.md` its map; the rules
+bind you too, and they win where this file is silent.
 
 ## First: can you run Java?
 
@@ -65,7 +65,7 @@ tools unless Jerus asks for one.
 - **Read the indexes, not the giants**: `docs/map/README.md`, then
   `docs/map/NAME.md`; grep `docs/harnesses.md` and `docs/dials.md`, never
   read them whole.
-- **Do not touch:** `CLAUDE.md`'s standing rules, `QUEUE.md` (unless Jerus
+- **Do not touch:** the contract's standing rules, `QUEUE.md` (unless Jerus
   asks), `GameVersion`, the generated files (`docs/map/`, `docs/dials.md`,
   `docs/month-order.md`, `docs/harnesses.md`, `docs/manual.*`), save slots,
   `buildings.json` ids, `Sectors.KEYS` order.

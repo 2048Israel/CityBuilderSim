@@ -166,6 +166,10 @@ public class TradeCostCheck {
         { Good.WOOD_PELLETS,             .220,       .150  },
         // ...and FR2's trucks (2026-10-18), imported and never exported, as vans and wagon sets are.
         { Good.TRUCKS,                 215.0,      Double.NaN  },
+        { Good.GOLD, GoldPrice.PAR_1900 * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE))
+                / (1000 * PriceLevel.HISTORICAL_FACTOR),
+                GoldPrice.PAR_1900 * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE))
+                / (1000 * PriceLevel.HISTORICAL_FACTOR) },
     };
 
     /** Bit-for-bit, not to a tolerance. A price that moved by an ulp moved. */
@@ -208,8 +212,11 @@ public class TradeCostCheck {
                     String.format("buy %.5f sell %.5f  (freight %.5f of a %.5f half-wedge)",
                             g.worldBuyPrice(), g.worldSellPrice(), f, half));
 
-            report("...and freight is three quarters of the half-wedge",
-                    Math.abs(f - .75 * half) < .015 * half,
+            double freightShare = g == Good.GOLD
+                    ? Good.GOLD_FREIGHT_SHARE / (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE) : .75;
+            report(g == Good.GOLD ? "...and gold freight has the declared share of the half-wedge"
+                            : "...and freight is three quarters of the half-wedge",
+                    Math.abs(f - freightShare * half) < .015 * half,
                     String.format("%.1f%%", f / half * 100));
         }
 

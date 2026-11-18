@@ -27,6 +27,9 @@ public class GdpCheck {
 
     public static void main(String[] args) {
 
+        delayedExports();
+        forecastPrices();
+
         NationalAccounts na = new NationalAccounts();
 
         /* ==================== 1. the identity ==================== */
@@ -152,7 +155,8 @@ public class GdpCheck {
          * inventory or the month reads as a collapse in output.
          *
          * The numbers are one Boutique: 960 pieces at $9, which is the figure
-         * the playtest actually reported.
+         * the playtest actually reported (its stockroom until LX1, 21 pieces
+         * since; the arithmetic is the same at any count).
          */
         NationalAccounts boutique = new NationalAccounts();
         boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -164,9 +168,10 @@ public class GdpCheck {
 
         /*
          * ...and the month it SELLS is the month the margin scores, and only
-         * the margin. 320 pieces off the shelf at $14, refilled at $9: the
-         * shelf is level, so the inventory term is zero and the city's output
-         * is what the shop added, which is 320 x (14 - 9).
+         * the margin. 320 pieces off the shelf at $14, refilled at $9 (the
+         * old Boutique's month, kept as the fixture's figures since LX1 made
+         * it 7): the shelf is level, so the inventory term is zero and the
+         * city's output is what the shop added, which is 320 x (14 - 9).
          */
         boutique.update(4_480, 0, 0, 0, 0, 0, 0, 0, 960, 9, 0, 0, 0, 2_880, 0);
         check("...and a month of selling and restocking scores the margin alone",
@@ -283,7 +288,7 @@ public class GdpCheck {
          * it goes books no change in that term, and the next measures from
          * what is left. The quantities are each building's own room
          * (BuildingsTemplate.stocks()) - a Bakery's 996,000 kg of bread, a
-         * Construction Materials Plant's 480 units, a Boutique's 960 pieces -
+         * Construction Materials Plant's 480 units, a Boutique's 21 pieces -
          * at a price of one, so the term reads in units.
          */
         System.out.println("\n--- a mill's warehouse, a plant's shed and a stockroom written off are a loss of assets, not negative output (0.7.136) ---");
@@ -630,14 +635,15 @@ public class GdpCheck {
         assertTrue("HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),"
                         + " cathode after it (0.7.133), wood's five after that (0.7.140) - lumber, panels, pulp, paper and pellets -"
                         + " and trucks last (FR2), each stockable",
-                n >= 12 && NationalAccounts.HELD[n - 12] == Good.CRUDE && NationalAccounts.HELD[n - 11] == Good.MET_COKE
-                        && NationalAccounts.HELD[n - 10] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 9] == Good.COKING_COAL
-                        && NationalAccounts.HELD[n - 8] == Good.CEMENT && NationalAccounts.HELD[n - 7] == Good.COPPER
-                        && NationalAccounts.HELD[n - 6] == Good.LUMBER && NationalAccounts.HELD[n - 5] == Good.PANELS
-                        && NationalAccounts.HELD[n - 4] == Good.PULP && NationalAccounts.HELD[n - 3] == Good.PAPER
-                        && NationalAccounts.HELD[n - 2] == Good.WOOD_PELLETS && NationalAccounts.HELD[n - 1] == Good.TRUCKS
+                n >= 13 && NationalAccounts.HELD[n - 13] == Good.CRUDE && NationalAccounts.HELD[n - 12] == Good.MET_COKE
+                        && NationalAccounts.HELD[n - 11] == Good.THERMAL_COAL && NationalAccounts.HELD[n - 10] == Good.COKING_COAL
+                        && NationalAccounts.HELD[n - 9] == Good.CEMENT && NationalAccounts.HELD[n - 8] == Good.COPPER
+                        && NationalAccounts.HELD[n - 7] == Good.LUMBER && NationalAccounts.HELD[n - 6] == Good.PANELS
+                        && NationalAccounts.HELD[n - 5] == Good.PULP && NationalAccounts.HELD[n - 4] == Good.PAPER
+                        && NationalAccounts.HELD[n - 3] == Good.WOOD_PELLETS && NationalAccounts.HELD[n - 2] == Good.TRUCKS
                         && Good.MET_COKE.stockable() && Good.THERMAL_COAL.stockable() && Good.COKING_COAL.stockable()
                         && Good.CEMENT.stockable() && Good.COPPER.stockable() && Good.LUMBER.stockable() && Good.PANELS.stockable()
+                        && NationalAccounts.HELD[n - 1] == Good.GOLD && Good.GOLD.stockable()
                         && Good.PULP.stockable() && Good.PAPER.stockable() && Good.WOOD_PELLETS.stockable() && Good.TRUCKS.stockable());
         boolean ovensHold = served.getSectors().heavyIndustry().isMaker(Good.MET_COKE) && Good.MET_COKE.stockable();
         assertTrue("...and Iron & Steel, which keeps a yard of coke, is counted by it", ovensHold && counted.contains(Good.MET_COKE));
@@ -815,6 +821,131 @@ public class GdpCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** GDP1: a new input band must reach every works' next run decision. */
+    static void forecastPrices() {
+        System.out.println("\n--- a works forecasts its inputs on the current band (GDP1) ---");
+        for (int id : new int[] { ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS,
+                ham.citybuildersim.sectors.CopperRefining.ROD_MILL }) {
+            BuildingManager b = new BuildingManager();
+            b.initializeTemplates();
+            EconomyManager e = new EconomyManager(b);
+            BuildingsTemplate works = b.getTemplate(id);
+            b.addStack(works, 1, true);
+            Sector sector = e.sector(works.getSector());
+            Good output = id == ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS ? Good.WIRE_CABLE : Good.COPPER_ROD;
+            Good input = id == ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS ? Good.COPPER_ROD : Good.COPPER;
+            GoodsMarket feed = e.getMarket(input), product = e.getMarket(output);
+            double oldImport = input.worldImportPrice(), feedPerUnit = works.uses(input) / works.makes(output);
+            feed.setWorldPrices(oldImport, oldImport * .6);
+            feed.strike(1, 0, 1);
+            double oldCost = sector.flowCostPerUnit(output), oldLocal = feed.getLocalPrice();
+            // The export pays at the old quote; then the input band doubles
+            // before the next order decision, without another local clearing.
+            double exportPrice = oldCost * 1.5;
+            product.setWorldPrices(exportPrice * 2, exportPrice);
+            product.strike(0, 0, 0);
+            sector.planOrders();
+            assertTrue(works.getName() + ": fixture the old input quote permits exports", sector.orderShare(output) == 1);
+            sector.endOrders();
+            feed.setWorldPrices(oldImport * 2, oldImport * 1.2);
+            GoodsMarket clearing = new GoodsMarket(input);
+            clearing.setWorldPrices(oldImport * 2, oldImport * 1.2);
+            clearing.strike(feed.getSupplyFlow(), feed.getSupplyStock(), feed.getDemand());
+            double currentCost = clearing.landedPrice() * feedPerUnit;
+            assertTrue(works.getName() + ": fixture the export is between the stale and current input cost",
+                    oldCost < product.netExportPrice() && product.netExportPrice() < currentCost
+                            && feed.importPrice() > oldImport && feed.getLocalPrice() == oldLocal);
+            sector.planOrders();
+            sector.produceFlow(output);
+            check(works.getName() + ": the forecast costs the current input band", sector.flowCostPerUnit(output), currentCost);
+            check(works.getName() + ": no inputs ordered for a loss-making export", sector.bid(input), 0);
+            check(works.getName() + ": no goods made for a loss-making export", sector.outputRow(output).produced, 0);
+            sector.endOrders();
+
+            // A real margin over even the all-imported bill still runs.
+            double pays = feed.importPrice() * feedPerUnit * (1 + 2 * Sector.FLOW_EXPORT_HEADROOM);
+            product.setWorldPrices(pays * 2, pays);
+            sector.planOrders();
+            sector.produceFlow(output);
+            double made = sector.outputRow(output).produced;
+            sector.shipUnsoldFlow(output, product);
+            assertTrue(works.getName() + ": a real margin still makes and exports the goods",
+                    made > 0 && sector.orderShare(output) == 1 && sector.outputRow(output).exported == made
+                            && sector.pending().exports >= sector.bid(input) * feed.importPrice());
+            sector.endOrders();
+        }
+    }
+
+    /**
+     * GDP1: an imported feed made into stock before the accounts, exported
+     * after them. Use the real refinery and leach-plant declarations and the
+     * same purchase, production, strike and stock-release methods as Markets.
+     * This also distinguishes genuinely unsold goods from a later ledger of
+     * goods already sold in the statement being measured.
+     */
+    static void delayedExports() {
+        System.out.println("\n--- imported feed held as output before a later export (GDP1) ---");
+        for (int id : new int[] {
+                ham.citybuildersim.sectors.CopperRefining.ELECTROLYTIC_REFINERY,
+                ham.citybuildersim.sectors.CopperMining.LEACH_PLANT }) {
+            BuildingManager b = new BuildingManager();
+            b.initializeTemplates();
+            EconomyManager e = new EconomyManager(b);
+            Markets markets = e.getMarkets();
+            BuildingsTemplate works = b.getTemplate(id);
+            b.addStack(works, 1, true);
+            Sector sector = e.sector(works.getSector());
+            GoodsMarket cathode = markets.get(Good.COPPER);
+            // A flat band isolates timing from a change in price or a trading
+            // loss. Production still uses the building's own recipe and room.
+            cathode.setWorldPrices(Good.COPPER.worldImportPrice(), Good.COPPER.worldImportPrice());
+            cathode.strike(0, 0, 0);
+            double planned = sector.getPlannedOutput(Good.COPPER);
+            double share = planned / works.makes(Good.COPPER);
+            double paid = 0;
+            for (var feed : works.goodsUsed().entrySet()) {
+                Good good = feed.getKey();
+                if (!good.traded()) continue;
+                GoodsMarket m = markets.get(good);
+                Trade imported = m.record(Trade.WORLD, sector.key(), feed.getValue() * share, m.importPrice());
+                sector.bookPurchase(imported);
+                sector.receiveInput(good, imported.units());
+                paid += imported.value();
+            }
+            sector.produceStock(Good.COPPER, cathode);
+            double units = sector.getStock(Good.COPPER);
+            double price = EconomyManager.heldPrice(cathode);
+            e.strikeSectors();
+            e.updateNationalAccounts(0, 0, 0, 0, 0, 0, 0);
+            NationalAccounts accounts = e.getNationalAccounts();
+            String label = works.getName() + ": ";
+            assertTrue(label + "fixture imported feed and made unsold cathode", paid > 0 && units > 0
+                    && sector.statement().exports == 0 && sector.statement().localSales == 0);
+            check(label + "the import is in the struck month's NX", accounts.getImportsRawMaterial(), paid);
+            check(label + "its unsold output is in that month's inventory", accounts.getInvestmentInventories(), units * price);
+            check(label + "that month's GDP is output less imported feed", accounts.getGdp(), units * price - paid);
+            check(label + "the identity holds before the export", accounts.getGdp(), accounts.getConsumption()
+                    + accounts.getInvestment() + accounts.getGovernment() + accounts.getNetExports());
+            double firstGdp = accounts.getGdp();
+
+            e.strikeSectors();
+            e.updateNationalAccounts(0, 0, 0, 0, 0, 0, 0);
+            check(label + "holding it another month adds no output", accounts.getGdp(), 0);
+
+            Trade export = cathode.record(sector.key(), Trade.WORLD, units, cathode.exportPrice());
+            sector.bookSale(export);
+            sector.takeFromStock(Good.COPPER, units);
+            e.strikeSectors();
+            e.updateNationalAccounts(0, 0, 0, 0, 0, 0, 0);
+            check(label + "the later export draws inventory down", accounts.getInvestmentInventories(), -units * price);
+            check(label + "the later export is in its own month's NX", accounts.getExports(), export.value());
+            check(label + "the export adds no production at the same price", accounts.getGdp(), export.value() - units * price);
+            check(label + "both months count output once", firstGdp + accounts.getGdp(), export.value() - paid);
+            check(label + "the expenditure identity holds", accounts.getGdp(), accounts.getConsumption()
+                    + accounts.getInvestment() + accounts.getGovernment() + accounts.getNetExports());
+        }
     }
 
     /*

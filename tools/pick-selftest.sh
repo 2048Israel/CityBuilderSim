@@ -1,21 +1,8 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  tools/pick.sh run against a throwaway git repository: a few harness files, a
-#  class they name and a harness table, changed in each way a batch changes
-#  them. No JVM, about two seconds. For whoever changes pick.sh next. POSIX sh,
-#  git and awk.
-#
-#      sh tools/pick-selftest.sh               test the pick.sh of the current checkout
-#      sh tools/pick-selftest.sh <checkout>    test the pick.sh of another checkout (a worktree)
-#
-#  Exit status: the number of failed cases, so 0 is green.
-#
-#  WHY (TM3 item 8, 2026-10-27): ET6's new BridgeCheck compared times against its
-#  budgets directly, in 3 places; TimingCheck's rule that no harness does so but
-#  through Timing caught it only in the gate's full suite, because ET6's own
-#  --pick ran BridgeCheck and nothing else. A *Check.java changed or added now
-#  picks TimingCheck too, and this holds it, with the rules around it.
-# ---------------------------------------------------------------------------
+# tools/pick.sh against a throwaway git repository, with an optional source checkout.
+# Exit status counts failed cases. No JVM.
+# WHY (TM3, GR2) ET6 missed TimingCheck, and shared classes and fixture borrowers
+# escaped the builder's selected checks. These fixtures hold all three picks.
 
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/tools/pick.sh" ] || { echo "pick-selftest: no tools/pick.sh in $SRC"; exit 2; }
@@ -28,7 +15,7 @@ J=src/main/java/ham/citybuildersim
 cd "$TA" || exit 2
 git init -q . && git config user.name selftest && git config user.email selftest@example.invalid
 mkdir -p tools docs "$J"
-cp "$SRC/tools/pick.sh" "$SRC/tools/carries.sh" tools/
+cp "$SRC/tools/pick.sh" tools/
 for h in AllChecks FooCheck BarCheck TimingCheck; do printf 'class %s { }\n' "$h" > "$J/$h.java"; done
 printf 'class Widget { }\n' > "$J/Widget.java"
 printf 'class Gadget { }\n' > "$J/Gadget.java"
@@ -65,7 +52,7 @@ reset; echo "// changed" >> "$J/FooCheck.java"; echo "// changed" >> "$J/BarChec
 LABEL="two changed harnesses pick both and TimingCheck once"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
 
 reset; git rm -q "$J/FooCheck.java"; printf 'class AllChecks { String[] H = { "BarCheck", "TimingCheck", "NewCheck" }; }\n' > "$J/AllChecks.java"; pick
-LABEL="a deleted harness picks nothing, TimingCheck included"; ok test "$PICKED" = "NONE"
+LABEL="a deleted harness plus runner edit picks ALL"; ok test "$PICKED" = "ALL"
 
 reset; echo "// changed" >> "$J/Widget.java"; pick
 LABEL="a class a harness reads picks its readers, not TimingCheck"; ok test "$PICKED" = "FooCheck"
@@ -77,19 +64,41 @@ reset; echo "# note" >> docs/harnesses.md; pick
 LABEL="a document picks nothing"; ok test "$PICKED" = "NONE"
 
 reset; echo "// changed" >> "$J/AllChecks.java"; pick
-LABEL="AllChecks changed alone picks nothing (the guard reads it)"; ok test "$PICKED" = "NONE"
+LABEL="AllChecks changed alone picks ALL"; ok test "$PICKED" = "ALL"
 
 reset; echo "// changed" >> "$J/FooCheck.java"; git add -A; git commit -q -m "a harness"; PICKED=$(sh tools/pick.sh origin/main HEAD 2>"$TA/err"); PERR=$(head -2 "$TA/err" | tr '\n' '/')
 LABEL="the same through a committed range (A B) picks itself and TimingCheck"; ok test "$PICKED" = "FooCheck TimingCheck"
 
-# RL1: a branch built on its predecessor's tip (origin/batch/P, not in origin/main) is picked from its own diff, not P's
-reset; git checkout -q -B batch/S; echo "// P's" >> "$J/BarCheck.java"; git add -A; git commit -q -m "P's work"; git update-ref refs/remotes/origin/batch/P HEAD
-echo "// S's" >> "$J/Widget.java"; git add -A; git commit -q -m "S's work"; PICKED=$(sh tools/pick.sh 2>"$TA/err"); PERR=$(head -2 "$TA/err" | tr '\n' '/')
-LABEL="built on an unmerged predecessor, the diff is against its tip: only this batch's own file picks"; ok test "$PICKED" = "FooCheck"
-git update-ref -d refs/remotes/origin/batch/P; PICKED=$(sh tools/pick.sh 2>"$TA/err")
-LABEL="...once the predecessor's branch is gone from origin (merged) the diff is main's again: both pick"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
-git update-ref refs/remotes/origin/batch/S HEAD~1; PICKED=$(sh tools/pick.sh 2>"$TA/err")
-LABEL="the branch's own pushed tip, behind its unpushed commits, is not a predecessor: the diff stays main's"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
+reset; echo "// changed" >> "$J/Widget.java"; PICKED=$(CBS_PICK_FANOUT=0 sh tools/pick.sh origin/main 2>"$TA/err")
+LABEL="a class over the fanout picks ALL"; ok test "$PICKED" = ALL
+reset; echo "// BarCheck borrows FooCheck" >> "$J/BarCheck.java"; git add -A; git commit -q -m borrowers; git update-ref refs/remotes/origin/main HEAD
+reset; echo "// changed" >> "$J/FooCheck.java"; pick
+LABEL="a changed harness picks its fixture borrowers"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
+reset; echo "// changed" >> "$J/KnownReds.java"; pick
+LABEL="the common verdict runner changed picks ALL"; ok test "$PICKED" = ALL
+reset; echo "// changed" >> "$J/Timing.java"; pick
+LABEL="Timing runner changed picks ALL"; ok test "$PICKED" = ALL
+reset; git reset -q --hard HEAD~1; git update-ref refs/remotes/origin/main HEAD
+
+reset
+# HA1: this class is named only by a nightly harness; ALL cannot widen the tier.
+printf 'class GlobeCheck { PlanetOnly p; }\n' > "$J/GlobeCheck.java"
+printf 'class PlanetOnly { }\n' > "$J/PlanetOnly.java"
+printf 'class AllChecks { String[] H = { "FooCheck", "BarCheck", "TimingCheck", "GlobeCheck" };\nstatic final List<String> NIGHTLY = List.of("GlobeCheck");\n}\n' > "$J/AllChecks.java"
+sed '/## Next/i | [PlanetOnly](x) | GlobeCheck |' docs/harnesses.md > "$TA/index"; mv "$TA/index" docs/harnesses.md
+git add -A; git commit -qm 'nightly fixture'; git update-ref refs/remotes/origin/main HEAD
+echo '// changed' >> "$J/PlanetOnly.java"; pick
+LABEL='a class only GlobeCheck names picks the nightly harness'; ok test "$PICKED" = GlobeCheck
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='the direct nightly selection names GlobeCheck'; ok test "$PICKED" = GlobeCheck
+PICKED=$(CBS_PICK_FANOUT=0 sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='ALL from fanout never names a nightly harness'; ok test -z "$PICKED"
+reset; echo '// changed' >> "$J/AllChecks.java"
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='ALL from the runner never names a nightly harness'; ok test -z "$PICKED"
+echo '// directly changed' >> "$J/PlanetOnly.java"
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='a runner change cannot hide a direct nightly pick'; ok test "$PICKED" = GlobeCheck
 
 echo "pick-selftest: $((N - FAILS)) of $N passed"
 exit "$FAILS"

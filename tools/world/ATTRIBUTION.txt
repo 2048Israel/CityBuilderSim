@@ -251,3 +251,13 @@ Mineral Commodity Summaries 2026 (US Geological Survey)
   Licence: CC0 1.0 (the data release's rights statement); the publication is a US government work
   Used for: gold's price 2023-2025, dollars a troy ounce (2025 estimated by the USGS from January to November)
   Source:  https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries
+
+Gold mining calibration (GD4)
+USGS Mineral Commodity Summaries 2026 (gold) and 2025 (copper), public domain.
+The associated MCS2026 data release is CC0 1.0, DOI 10.5066/P1WKQ63T.
+https://pubs.usgs.gov/periodicals/mcs2026/mcs2026.pdf
+https://pubs.usgs.gov/periodicals/mcs2025/mcs2025.pdf
+Geological settings informed by Cox and Singer, Mineral Deposit Models,
+USGS Bulletin 1693 (1986), USGS-authored descriptions, public domain.
+https://pubs.usgs.gov/bul/1693/report.pdf
+Field densities, grades, recovery and building coefficients are game estimates.

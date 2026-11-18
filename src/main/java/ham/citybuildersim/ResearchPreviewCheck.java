@@ -143,7 +143,7 @@ public class ResearchPreviewCheck {
         return new City("young city, June 1955", 666, piles, new HashMap<>(), byField(8.8, 8.8, 2.4, 2.4));
     }
 
-    /** The big city of 5.4: June 1979 (game month 954), four finds here, the study's piles. */
+    /** The big city of 5.4: June 1979, four study finds and the study's piles, with later catalogue additions already resolved. */
     static City big() {
         Map<String, Double> piles = new HashMap<>();
         piles.put("E17", 463.663382);
@@ -156,6 +156,9 @@ public class ResearchPreviewCheck {
         found.put("E15", 883);
         found.put("M8", 928);
         found.put("E16", 954);
+        // R2e: these rows were added after the study. Keep its one-open-engineering-problem experiment.
+        found.put("E19", ResearchView.FIRST_MONTH);
+        found.put("E20", ResearchView.FIRST_MONTH);
         return new City("big city, June 1979", 954, piles, found, byField(412.1452285841101, 226.87444794952683, 90.26938775510204, 18.4));
     }
 
@@ -312,7 +315,9 @@ public class ResearchPreviewCheck {
         check("fixture: engineering has one open problem (E17, rail), medicine two (M9, M10), business one (B6) and law one (L3) (5.4)",
                 codes(r.openProblems(ENG, c.month())).equals(List.of("E17")) && codes(r.openProblems(MED, c.month())).equals(List.of("M9", "M10"))
                         && codes(r.openProblems(BUS, c.month())).equals(List.of("B6")) && codes(r.openProblems(LAW, c.month())).equals(List.of("L3")), open.toString());
-        check("fixture: the four finds are known here and nothing else of the piles is", r.foundHere().equals(c.found()) && r.pile("M9") == 207.968244, r.foundHere().toString());
+        check("fixture: the four study finds and founding knowledge of E19/E20 are restored, and nothing else of the piles is",
+                r.foundHere().equals(c.found()) && r.foundMonth("E19") == ResearchView.FIRST_MONTH
+                        && r.foundMonth("E20") == ResearchView.FIRST_MONTH && r.pile("M9") == 207.968244, r.foundHere().toString());
 
         System.out.println("      as is");
         ResearchPreview.Result asIs = run(c, c.people(), noPrize());
@@ -481,10 +486,10 @@ public class ResearchPreviewCheck {
         Research copy = copyOf(base);
         int end = city.month() + ResearchPreview.YEARS * Research.MONTHS_A_YEAR;
         for (int m = city.month() + 1; m <= end; m++) {
-            EnumMap<Field, Integer> labs = new EnumMap<>(Field.class);
+            EnumMap<Field, Long> labs = new EnumMap<>(Field.class);
             EnumMap<Field, Double> labPeople = new EnumMap<>(Field.class);
             for (Field f : Field.values()) {
-                int n = copy.prize(f) > 0 ? copy.labsWanted(f, m, w) : 0;
+                long n = copy.prize(f) > 0 ? copy.labsWanted(f, m, w) : 0;
                 labs.put(f, n);
                 labPeople.put(f, n * (double) Research.LAB_POSTS);
             }

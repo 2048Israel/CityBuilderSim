@@ -235,7 +235,7 @@ final class InfrastructureScreen {
                     : Kept.column(Palette.GAP, Kept.scope("head", this::head), Kept.scope("vitals", () -> vitals(all)), strip);
             frame.setMaxWidth(PAGE_WIDE);
             frame.setFillWidth(true);
-            frame.setPadding(new javafx.geometry.Insets(0, 18, 4, 18));
+            Pieces.pad(frame, Pieces.FRAME_ROOM);
 
             // THE FRAME DOES NOT SCROLL (as Services' since 0.7.28): the head, the
             // five figures and the pages stay put; only the page under them moves.
@@ -681,7 +681,9 @@ final class InfrastructureScreen {
             VBox card = Kept.scope(s, () -> {
                 int i = s.ordinal();
                 String colour = streamColour(s);
-                VBox c = ServicesScreen.card(cardHead(streamIcon(s), colour, s.label(), null),
+                VBox c = ServicesScreen.card(() -> open(reliefPage(s)),
+                        s == Traffic.COMMUTERS ? "Transit: who rides, and what the cars cost" : "The railway: what it carries",
+                        cardHead(streamIcon(s), colour, s.label(), null),
                         figureLine(shortNumber(walk.raw()[i]), "trips made ·", shortNumber(walk.onRoad()[i]), "on the road"));
                 double gets = roads.throughputOf(s);
                 SegmentBar bar = segmentBar(List.of(Segment.of(gets, colour)), 1, List.of(), 0, 8);
@@ -697,8 +699,6 @@ final class InfrastructureScreen {
                             + " · rail and highways take " + shortNumber(walk.freightOff()[i]) + " trips off";
                 }
                 c.getChildren().add(words(relief, Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-                ServicesScreen.doorCard(c, () -> open(reliefPage(s)),
-                        s == Traffic.COMMUTERS ? "Transit: who rides, and what the cars cost" : "The railway: what it carries");
                 return c;
             });
             grid.add(card, at, 0);
@@ -827,14 +827,14 @@ final class InfrastructureScreen {
             curve.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_LABEL));
             curve.setStrokeWidth(2);
             curve.setFill(null);
-            curve.setMouseTransparent(true);
+            Kept.give(curve.mouseTransparentProperty(), true);
 
             down = new javafx.scene.shape.Line();
             across = new javafx.scene.shape.Line();
             for (javafx.scene.shape.Line l : new javafx.scene.shape.Line[] {down, across}) {
                 l.setStroke(javafx.scene.paint.Color.web(Palette.TEXT_MUTED));
                 l.getStrokeDashArray().addAll(3.0, 3.0);
-                l.setMouseTransparent(true);
+                Kept.give(l.mouseTransparentProperty(), true);
             }
 
             hollow = new javafx.scene.shape.Circle(DOT);
@@ -860,7 +860,7 @@ final class InfrastructureScreen {
 
             double wide = LEFT + W + RIGHT, tall = TOP + H + BOTTOM;
             setMinSize(wide, tall);
-            setPrefSize(wide, tall);
+            Pieces.prefSize(this, wide, tall);
             setMaxSize(wide, tall);
         }
 
@@ -885,7 +885,7 @@ final class InfrastructureScreen {
                     Region band = bands[k];
                     band.setStyle("-fx-background-color: " + tint(tones[k], .30) + ";");
                     band.relocate(x(cuts[k]), TOP + H - 5);
-                    band.setPrefSize(x(cuts[k + 1]) - x(cuts[k]), 5);
+                    Pieces.prefSize(band, x(cuts[k + 1]) - x(cuts[k]), 5);
                     band.resize(x(cuts[k + 1]) - x(cuts[k]), 5);
                     bandTips[k].setText(k == 0 ? CityNeeds.servedPct(lines[1]) + " " + CityNeeds.SERVED
                                        + " or less: congested, the flow falls"
@@ -948,7 +948,7 @@ final class InfrastructureScreen {
             yHigh.setText("100%");
             yLow.setText(pct(InfrastructureManager.MIN_THROUGHPUT));
             over.setText("›");
-            over.setVisible(u > CURVE_MAX);
+            Kept.give(over.visibleProperty(), u > CURVE_MAX);
 
             // The hollow dot is a child only while it is drawn, as it was when each month built the curve afresh.
             if (!told || showHollow != hollowShown) {
@@ -973,7 +973,7 @@ final class InfrastructureScreen {
             Label l = new Label();
             l.setStyle(Palette.figure(Palette.SIZE_CAPTION, tone));
             l.setMinWidth(Region.USE_PREF_SIZE);
-            l.setMouseTransparent(true);
+            Kept.give(l.mouseTransparentProperty(), true);
             return l;
         }
 
@@ -993,10 +993,10 @@ final class InfrastructureScreen {
             place(xHigh, LEFT + W - xHigh.prefWidth(-1) / 2, baseY);
             place(yHigh, LEFT - 4 - yHigh.prefWidth(-1), TOP - yHigh.prefHeight(-1) / 2);
             place(yLow, LEFT - 4 - yLow.prefWidth(-1), TOP + H - yLow.prefHeight(-1) / 2);
-            xLow.setVisible(Math.abs(ux - LEFT) > 24);
-            xHigh.setVisible(Math.abs(ux - (LEFT + W)) > 28);
-            yHigh.setVisible(Math.abs(fy - TOP) > 10);
-            yLow.setVisible(Math.abs(fy - (TOP + H)) > 10);
+            Kept.give(xLow.visibleProperty(), Math.abs(ux - LEFT) > 24);
+            Kept.give(xHigh.visibleProperty(), Math.abs(ux - (LEFT + W)) > 28);
+            Kept.give(yHigh.visibleProperty(), Math.abs(fy - TOP) > 10);
+            Kept.give(yLow.visibleProperty(), Math.abs(fy - (TOP + H)) > 10);
             place(over, LEFT + W + 6, fy - over.prefHeight(-1) / 2);
         }
 
@@ -1695,7 +1695,7 @@ final class InfrastructureScreen {
                 keySwatch(Palette.BUSINESS, "the railway's charge"));
         Region mark = Kept.region();
         mark.setMinSize(2, 12);
-        mark.setPrefSize(2, 12);
+        Pieces.prefSize(mark, 2, 12);
         mark.setMaxSize(2, 12);
         mark.setStyle("-fx-background-color: " + Palette.TEXT_HEAD + ";");
         Label by = Kept.label("by lorry");
@@ -1937,11 +1937,14 @@ final class InfrastructureScreen {
 
     /** The trucks' (i) (FR4). */
     static final String TRUCKS_INFO = String.format(
-            "A truck carries about %,.0f tonnes a month. Haulage owns the fleet and buys toward what the "
+            "A truck carries about %,.0f tonnes a month on its driver's shift, and about %,.0f with no "
+            + "driver, where its depot has the driverless kit. Haulage owns the fleet and buys toward what the "
             + "plant standing and the plant on site will ask of it, an eighth of the gap a month - so a "
             + "town that is growing is short for a while, and a short fleet carries only its share of the "
             + "city leg: the shippers collect the rest in their own vans.",
-            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH);
+            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH,
+            ham.citybuildersim.sectors.Haulage.TONNES_A_TRUCK_MONTH * ham.citybuildersim.sectors.Haulage.DRIVERLESS_HOURS
+                    / ham.citybuildersim.sectors.Haulage.SHIFT_HOURS);
 
     /** The depots' (i) (FR4). */
     static final String DEPOTS_INFO = String.format(

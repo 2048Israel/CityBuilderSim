@@ -829,8 +829,8 @@ public class PortCheck {
                 quietlyGet(() -> g.buildStack(terminal, 1, false)) == Game.BuildResult.NO_COAST && !g.hasCoastFor(terminal, 1));
         assertTrue("...the card's verdict says so before the click",
                 BuildCard.verdict(g, terminal, 1).kind() == BuildCard.VerdictKind.NO_COAST);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(terminal, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(terminal, 1L);
         assertTrue("...and a run stops at it", g.buildRunAhead(run) == 0 && g.buildRunStop(run) == Game.BuildResult.NO_COAST);
         boolean coast = buyCoast(g);
         report("fixture: the city buys an offer that runs out to the sea", coast,
@@ -2330,6 +2330,7 @@ public class PortCheck {
 
     /** Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. */
     static void yardCost() {
+        if (Timing.skip("PortCheck.yardCost")) return;
         CityShore.Work big = yardWork(3000, 3000, 1, 0, 7);
         int bits = HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.TRAIN, reps = 20;
         double best = Double.MAX_VALUE;

@@ -158,7 +158,7 @@ public class Game {
      * not the count, which made the two numbers it did carry unreadable: $4,200
      * means nothing until you know whether it bought one clinic or three.
      */
-    int lastBuildQuantity = 0;
+    long lastBuildQuantity = 0;
 
     /**
      * WHICH receipt this is, counted up forever.
@@ -304,6 +304,8 @@ public class Game {
         }
 
         buildingManager = new BuildingManager();
+        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE).
+        buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
@@ -356,7 +358,10 @@ public class Game {
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)));   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5); so does the gold, unless the autopilot aims at inflation (GD3)
         debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+        buildingManager.setOnScrap(stack -> fittings.scrapped(stack.getBuilding().getId(), stack::getUnfitted));
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
+        businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
+        businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
         businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
         businessInvestment.setDeepWaterPrice((t, n, factor) -> {   // and a floating platform's deep-water works (DW1)
@@ -393,6 +398,7 @@ public class Game {
         // ...and the builders' month for the sites with every post offered, which
         // says whether the crews' rule would starve a depot (0.7.130).
         buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
+        buildingManager.setPriorityWork(fittings::pointsOwed);
         // ...and their whole month, every post offered, which with the sites' says how short they are:
         // the scarcity price of a point and the foreign contractor's orders (FC1; BuildersShort).
         buildingManager.setOutputAtEveryPost(this::getConstructionOutputAtEveryPost);
@@ -557,6 +563,7 @@ public class Game {
         world.setSeed(founding.getPathSeed());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
+        labQuotes.clear();
         monthRun = false;
 
         this.isRunning = true;
@@ -679,6 +686,7 @@ public class Game {
         this.lastSaveResult = null;
         this.loadFailure = null;
         this.skipFailure = null;
+        this.ranThrough = true;
 
         /*
          * The warning about construction shedding.
@@ -710,6 +718,10 @@ public class Game {
         equipmentForms.clear();
         // ...and the recipes chosen (R1c): the last city's choices, for templates this city does not have.
         recipes.clear();
+        licenceFees = java.util.Map.of();
+        // ...and the public works' licence bill (R2c-P): the last city's, accrued and paid.
+        publicIpPending = 0;
+        publicIpPaid = 0;
         // ...and the fittings on site (R1b): jobs for the last city's buildings.
         fittings.clear();
         // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
@@ -738,9 +750,15 @@ public class Game {
     }
 
     public void run() {
+        boolean starting = !initialized;
+        if (starting) {
+            layTheLadder(true);
+            basketHearsTheYear();
+        }
         initialize();
         foundingBank();
         foundingYard();
+        if (starting && founding.isUnfitted()) unfitTheFounding();
     }
         
     private void initialize() {
@@ -841,6 +859,8 @@ public class Game {
          * and state their own settings over. An older save keeps whatever it
          * saved: the dial's hand (DataSave.getPolicyAutopilot(), off when the
          * key is missing), and the rollover as MANUAL - see the load path.
+         * In a city founded the 1900 way the rule waits for the central bank
+         * (March 1935, R0f) and takes the dial then (DebtManager.isAutopilotAtOpening()).
          */
         debtManager.setAutopilot(true);
         rollover.setMode(Rollover.Mode.SAME_STRUCTURE);
@@ -901,8 +921,7 @@ public class Game {
          * still thought was free.
          *
          * It showed up as a SAVE bug, which is the interesting part. The load
-         * path does not restore the allocation: it derives it from what is
-         * standing, deliberately, so that any drift heals on the next load. So
+         * path then derived allocation from what was standing. So
          * the live city read 1,397,000 sq ft allocated and its own reload read
          * 1,442,000 - the reload was right - and a 1.3% difference in the land
          * price walked through the building costs into the treasury. Caught by
@@ -979,8 +998,7 @@ public class Game {
         buildingManager.addStack(yard, 1, true);
 
         // The ground under it, for the reason the bank's note gives: addStack()
-        // does not tell the land office, and the load path derives the
-        // allocation from what stands.
+        // does not tell the land office.
         landManager.allocate(yard.getLandSqFt());
     }
 
@@ -1060,6 +1078,8 @@ public class Game {
          * Two rebuild passes were always one too many. There is one now.
          */
         loadGame(slot);
+        // A hand save can carry the broken-skip warning; loading restores the completion guard (UP6b).
+        inbox.autosavesPaused(month, false, autosaveStatus());
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
         decisions.release();
@@ -1108,20 +1128,24 @@ public class Game {
     /**
      * The quit's autosave (UP1): asked for, and on disk when this returns -
      * System.exit does not wait for the writer's thread, so quitting waits
-     * for it here.
+     * for it here. After a broken skip the shared guard keeps the earlier autosave instead.
      */
     public void saveForQuit(){
-        autosave("on quit");
-        awaitSaves();
+        saveForExit("on quit");
     }
 
     /**
      * The window's close autosave (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): Quit's, under its own
-     * name, and on disk when this returns - the JVM ends once the window's stop() returns, and the writer's thread does not
-     * hold it. UserInterface.stop() calls it.
+     * name, and on disk when this returns unless a broken skip has suspended autosaves. Then it keeps the return point.
+     * The JVM ends once the window's stop() returns. UserInterface.stop() calls it.
      */
     public void saveForClose(){
-        autosave("on close");
+        saveForExit("on close");
+    }
+
+    /** Both exits keep the skip's return point when its last month stopped part-way (UP6b). */
+    private void saveForExit(String reason) {
+        autosave(reason);
         awaitSaves();
     }
 
@@ -1156,12 +1180,20 @@ public class Game {
 
     /** Whether a Policy lever is open in this city (R0): from the month Canada first had it, or the month a find brought it to. For the screen and the inbox. */
     public boolean isLeverOpen(PolicyDates.Lever lever) {
-        return economyManager.getTaxPolicy().isOpen(lever);
+        return PolicyDates.isMoney(lever) ? !foundedUnfitted() || PolicyDates.isOpen(lever, month) : economyManager.getTaxPolicy().isOpen(lever);
     }
 
     /** The game month a Policy lever opens in this city (R0): history's (PolicyDates), earlier where a find brought it forward, 1 where it is open from the start. */
     public int leverOpeningMonth(PolicyDates.Lever lever) {
-        return economyManager.getTaxPolicy().openingMonth(lever);
+        return PolicyDates.isMoney(lever) ? (foundedUnfitted() ? PolicyDates.openingMonth(lever) : 1) : economyManager.getTaxPolicy().openingMonth(lever);
+    }
+
+    /** The same dated Money switch at founding, both halves of the month, and after the saved books return. */
+    void moneyHearsTheMonth() {
+        int moneyMonth = foundedUnfitted() ? month : Integer.MAX_VALUE;
+        foreign.hearMoneyMonth(moneyMonth, denomination.money(ForeignAccounts.OPENING_RATE));
+        debtManager.hearMoneyMonth(moneyMonth, foreign.isCanadaGold());
+        centralBank.hearMoneyMonth(moneyMonth);
     }
 
     /**
@@ -1171,6 +1203,7 @@ public class Game {
      * buildings and their unfitted counts are back (loadGame(): the stacks do not stand yet where it says the rest).
      */
     private void policyHearsTheMonth() {
+        moneyHearsTheMonth();
         economyManager.getTaxPolicy().setMonth(month);
         labourMarket.setFloorBinding(economyManager.getTaxPolicy().isOpen(PolicyDates.Lever.MINIMUM_WAGE));
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
@@ -1187,6 +1220,37 @@ public class Game {
     /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
     private final Recipes recipes = new Recipes();
 
+    /** The last dispatched royalty per building, immutable and saved because production rows do not survive a load (R2c). */
+    private volatile java.util.Map<Integer, Double> licenceFees = java.util.Map.of();
+
+    public double getLicenceFee(int templateId) { return licenceFees.getOrDefault(templateId, 0.0); }
+
+    java.util.Map<Integer, Double> licenceFeesForSave() { return new java.util.TreeMap<>(licenceFees); }
+
+    /** Publish a complete capture or restore its saved memo; it is a cost reading, never a second payment. */
+    void restoreLicenceFees(java.util.Map<Integer, Double> saved) {
+        java.util.Map<Integer, Double> kept = new java.util.TreeMap<>();
+        if (saved != null) for (var e : saved.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() > 0) kept.put(e.getKey(), e.getValue());
+        }
+        licenceFees = java.util.Map.copyOf(kept);
+    }
+
+    /** The month's bill on the city's own patented works, struck at production and paid at the next strike, and what that strike paid (R2c-P; LicenceFees.capturePublic()). */
+    private double publicIpPending, publicIpPaid;
+
+    /** The licence the city's own works accrued this month, to be paid at the next strike (R2c-P). */
+    public double getPublicIpPending() { return publicIpPending; }
+
+    /** The licence the city's own works were paid out of the treasury at the last strike (R2c-P). */
+    public double getPublicIpPaid() { return publicIpPaid; }
+
+    /** Restores the public works' licence bill from a save (R2c-P): a figure that is not finite and not below 0 reads 0, as an old save's does. */
+    public void restorePublicLicences(double pending, double paid) {
+        publicIpPending = Double.isFinite(pending) && pending >= 0 ? pending : 0;
+        publicIpPaid = Double.isFinite(paid) && paid >= 0 ? paid : 0;
+    }
+
     /** The recipes' driver, for the harnesses and the screens that read which way each template runs (R1c). */
     public Recipes getRecipes() { return recipes; }
 
@@ -1199,18 +1263,18 @@ public class Game {
     /* ===== THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6) =====
      *
      * R1 made a piece of equipment a count of the buildings still without it, empty in every played city: a building that finishes came
-     * fitted. A city founded the 1900 way (Founding.isUnfitted(), off by default until R1d) starts with every piece its buildings can carry
+     * fitted. A city founded the 1900 way (Founding.isUnfitted(): the founding screen's "1900" chip and the playtest's flag since R1d) starts with every piece its buildings can carry
      * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
      * default way calls nothing here: every building finishes fitted, as it did. */
 
-    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): false for every city a player or a harness founds until R1d. */
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): the founding screen's "1900" chip and the playtest's flag since R1d. */
     public boolean foundedUnfitted() { return founding.isUnfitted(); }
 
     /**
      * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
      * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
-     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and no gain written for it yet), so its farms stay on horses. newGame() calls it after the
-     * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
+     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and its gain including the horse form's saved feed and hands), so its farms stay on horses. newGame() calls it after the
+     * buildings the founding stands up are placed (the bank's later pieces remain unknown in 1900); package-private so that a
      * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
      */
     void unfitTheFounding() {
@@ -1273,8 +1337,9 @@ public class Game {
             BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
             BuildingsStacks stack = t == null || t.getEquipment().isEmpty() ? null : buildingManager.getStack(t);
             if (stack == null || done.quantity <= 0) continue;
+            java.util.Set<String> fitted = EquipmentFit.fittedForNew(this, t);
             for (Equipment piece : t.getEquipment()) {
-                if (EquipmentFit.verdictForNew(this, t, piece).kind() == EquipmentFit.Kind.PAYS) continue;
+                if (fitted.contains(piece.getId())) continue;
                 stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.quantity);
             }
         }
@@ -1372,15 +1437,15 @@ public class Game {
     }
 
     /** The Research Labs of a field standing: the quantity of every stack whose template researches it, several stacks adding up (R4). */
-    public int labsStanding(ResearchCatalog.Field f) {
-        int n = 0;
+    public long labsStanding(ResearchCatalog.Field f) {
+        long n = 0;
         for (BuildingsStacks stack : buildingManager.getStacksView()) if (stack.getBuilding().getResearches() == f) n += stack.getQuantity();
         return n;
     }
 
     /** The Research Labs of a field on site, not yet standing (R4). */
-    public int labsOnSite(ResearchCatalog.Field f) {
-        int n = 0;
+    public long labsOnSite(ResearchCatalog.Field f) {
+        long n = 0;
         for (BuildingsStacks stack : buildingManager.getStacksView()) if (stack.getBuilding().getResearches() == f) n += stack.getUnderConstruction();
         return n;
     }
@@ -1427,10 +1492,10 @@ public class Game {
             researchers.put(f, Research.faculty(staffed.getOrDefault(f, 0.0)) + Research.filledResearchers(f, research.posts(f), fill));
         }
         // ...and the Research Labs' (R4): the labs standing in each field and the researchers their posts give at the month's fill.
-        java.util.EnumMap<ResearchCatalog.Field, Integer> labs = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+        java.util.EnumMap<ResearchCatalog.Field, Long> labs = new java.util.EnumMap<>(ResearchCatalog.Field.class);
         java.util.EnumMap<ResearchCatalog.Field, Double> labResearchers = new java.util.EnumMap<>(ResearchCatalog.Field.class);
         for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) {
-            int standing = labsStanding(f);
+            long standing = labsStanding(f);
             labs.put(f, standing);
             labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
         }
@@ -1443,11 +1508,39 @@ public class Game {
     }
 
     /**
-     * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code. For R2b,
-     * which gates the planners by it; nothing asks yet.
+     * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code.
+     * BuildingManager's candidate rule applies this reading only in a city founded the 1900 way (R2b); in one founded the default way it knows
+     * every building but those a near-future row opens, which it never knows (R6b's call 1, ResearchCatalog.nearFuture()).
      */
     public boolean knows(BuildingsTemplate t) {
         return t.knownAt(month, research);
+    }
+
+    /** The medical rows this city knows (R2f): its research in a city founded the 1900 way, MedicalRows.TODAY in any other. */
+    public MedicalRows medicalRows() {
+        return MedicalRows.of(research, foundedUnfitted());
+    }
+
+    /** The suppliers' sales tax credited on a local draw, weighted exactly as Markets.draw() divides their stock (R1d). */
+    private double fittingSupplierRate(Good good) {
+        double held = 0, taxed = 0;
+        for (Sector supplier : getSectors().all()) {
+            if (!supplier.isMaker(good) || !(supplier.getStock(good) > 0)) continue;
+            double stock = supplier.getStock(good);
+            held += stock;
+            taxed += stock * economyManager.getTaxPolicy().effectiveSalesRate(supplier);
+        }
+        return held > 0 ? taxed / held : 0;
+    }
+
+    /** A fitting's exact goods and work quote, including builders' sales tax and their suppliers' input credits (R1d). */
+    public double quoteFitting(Equipment piece) {
+        double net = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
+        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            Markets.Draw draw = getMarkets().quote(e.getKey(), e.getValue(), getSectors());
+            net += draw.cost() - draw.localCost() * fittingSupplierRate(e.getKey());
+        }
+        return net / (1 - buildersSalesRate());
     }
 
     /**
@@ -1458,7 +1551,7 @@ public class Game {
      * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
      * charged) and the work at the builders' price a point (BuildingManager.nonMaterialPricePerPoint(), what EquipmentFit.verdict() prices it at):
      * a shortfall over the payer's cash is borrowed if the payer can (buildFor()'s rule, SHORTFALL_DUST included) and refuses the order if it
-     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn it (no sales tax in this batch).
+     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn what was paid, including sales tax and local input credits (R1d).
      * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
      * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
      */
@@ -1476,8 +1569,7 @@ public class Game {
 
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
         double work = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
-        double quoted = work;
-        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) quoted += getMarkets().quote(e.getKey(), e.getValue(), getSectors()).cost();
+        double quoted = quoteFitting(piece);
         if (!(quoted >= 0) || !Double.isFinite(quoted)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " cannot be priced";
         double short_ = quoted - payer.getCash();
         if (short_ > SHORTFALL_DUST * Math.max(1, quoted) && !payer.canBorrow(short_)) {
@@ -1488,19 +1580,25 @@ public class Game {
 
         double goods = 0;
         for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            double inputRate = fittingSupplierRate(e.getKey());
             Markets.Draw d = getMarkets().draw(e.getKey(), builders, null, e.getValue(), getSectors());
-            goods += d.cost();
+            goods += d.cost() - d.localCost() * inputRate;
             if (piece.getEnds() == Equipment.Form.CART_HORSES && e.getKey() == Good.TRUCKS) getSectors().freight().deliverTrucks(d.units());
         }
-        double total = goods + work;
+        double total = (goods + work) / (1 - buildersSalesRate());
         double over = total - payer.getCash();
         if (over > SHORTFALL_DUST * Math.max(1, total)) payer.borrow(over, month);
         if (payer == government) {
             // The city's own money goes out through its journal, as the player's buildings do (processBuildOrder()): a capital line.
-            treasuryPays(TreasuryLine.BUILDINGS, total);
+            total = treasuryPays(TreasuryLine.BUILDINGS, total);
             cityCapitalSpending += total;
         } else {
             payer.spend(total);
+            // ...and the share of the builders' tax on it the owner gets back, by the build orders' own rule (buildFor(): a business's credit,
+            // a landlord's rebate), so the credit is struck on that share and no more (R1d).
+            Sector owner = getSectors().byKey(payer.getName());
+            if (owner != null) owner.recordCapitalPurchase(builders.key(),
+                    total * economyManager.taxRecoveredShare(payer.getName(), t, total * buildersSalesRate()));
         }
         builders.earnFitting(total);
         fittings.add(t.getId(), id, payer.getName(), piece.getWork());
@@ -1794,7 +1892,7 @@ public class Game {
 
     /** Whether any sea terminal stands: the berth the market gives the city a sea leg by. */
     private boolean hasBerth() {
-        for (int count : Ports.berthCounts(buildingManager)) if (count > 0) return true;
+        for (long count : Ports.berthCounts(buildingManager)) if (count > 0) return true;
         return false;
     }
 
@@ -1881,6 +1979,7 @@ public class Game {
         takeTheDollarsGoldDates();
         // ...AND THE US'S POLICY RATE TO THE CITY, the world's price of money for everything that reads it (XR4).
         handTheUsRate();
+        moneyHearsTheMonth();
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -1925,7 +2024,7 @@ public class Game {
     private void restoreWorldMarket(DataSave loaded) {
         WorldMarket market = ensureWorldMarket();
         if (market == null) {
-            getMarkets().clearWorldPrices();
+            getMarkets().clearWorldPricesExcept(Good.GOLD);
             return;
         }
         market.setBerth(hasBerth());
@@ -2047,6 +2146,8 @@ public class Game {
         double[] annual = new double[WorldMoneys.EIGHT.size()];
         for (int k = 0; k < annual.length; k++) annual[k] = rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.rate(k);
         debtManager.setMoneyRates(annual);
+        // R0f: the saved world's rate returns later than the saved dial. Inherited interest must hear that final rate too.
+        if (foundedUnfitted()) debtManager.hearMoneyMonth(month, foreign.isCanadaGold());
     }
 
     /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
@@ -2178,7 +2279,7 @@ public class Game {
 
     /** Gold's price in a month, US$ a troy ounce (GoldPrice): the month is an index as the moneys' are, months since January of Nations.FIRST_YEAR (WorldMoneys.monthIndex). NaN with no nations or a month before the first. */
     public double goldUsdPerOunce(int month) {
-        return priceOrNaN(goldPrice(), month);
+        return priceOrNaN(goldPrice(), month) * (PriceLevel.FACTOR / PriceLevel.HISTORICAL_FACTOR);
     }
 
     /**
@@ -2594,9 +2695,9 @@ public class Game {
         }
         List<CityMap.Pipe> pipes = new java.util.ArrayList<>();
         CityLand land = landManager.getCityLand();
-        int left = oil.pipeKmStanding();
+        long left = oil.pipeKmStanding();
         for (ham.citybuildersim.sectors.Oil.Pipeline l : ls) {
-            int in = Math.min(left, l.km());
+            long in = Math.min(left, l.km());
             left -= in;
             Deposit f = seaFieldOf(fields, l.cell(), l.index());
             if (f == null || in <= 0) continue;
@@ -3800,6 +3901,10 @@ public class Game {
             }
         }
 
+        // BF1: the loss just booked must reach the growth desk before it
+        // finances replacements. Above-target lending is still finite.
+        restructured.setProjectBudget(bank);
+
         /*
          * EVERY SECTOR IN THE REGISTRY'S ORDER, each asked its own question.
          *
@@ -3870,12 +3975,27 @@ public class Game {
      * shortage a wage answers) asks nothing; a building that would not carry its interest even at today's wage
      * (consider()'s own test at prime) asks nothing; the rest ask for the posts of the bands they are short in, with
      * how far those wages could rise and the building still carry its interest.
+     *
+     * A hold the gate tied (TQ1; Sector.Staffing.held(), A TIE AT THE GATE IS SHARED) is noted as each of its
+     * buildings, in the order of their ids, so the order a sector lists them in moves nothing to the bit, and each that
+     * asks, asks for its part of its posts.
      */
     void noteStaffingHold(Sector.Staffing held) {
+        List<Sector.Staffing> alike = held.alike();
+        if (alike.size() > 1) {
+            wantedPosts.heldInATie();
+            alike = new ArrayList<>(alike);
+            alike.sort(java.util.Comparator.comparingInt(s -> s.template() == null ? Integer.MAX_VALUE : s.template().getId()));
+        }
+        for (Sector.Staffing one : alike) noteStaffingHold(one, alike.size());
+    }
+
+    /** One building of a hold, one of {@code ways} tied (TQ1): sorted as above, and its ask its part of its posts. */
+    private void noteStaffingHold(Sector.Staffing held, int ways) {
         Sector owner = held.owner();
         BuildingsTemplate t = held.template();
         if (owner == null || t == null) return;
-        int n = Math.max(1, held.count());
+        long n = Math.max(1, held.count());
         Sector.Staffing free = owner.staffingWithCrewsSpare(t, n);
         if (free.passes()) {
             wantedPosts.heldForCrews();
@@ -3898,7 +4018,7 @@ public class Game {
             }
         }
         WantedPosts.Ask a = WantedPosts.askOf(owner.key(), t.getName(), wanted, spare, margin, shortBill);
-        if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a);
+        if (a == null) wantedPosts.heldUnpaid(); else wantedPosts.ask(a.part(ways));
     }
 
     /**
@@ -3938,10 +4058,25 @@ public class Game {
             BuildingsTemplate lab = labTemplate(f);
             ResearchCatalog.Entry target = research.labTarget(f, month, wages);
             if (lab == null || target == null) continue;
-            said.add(orderLab(lab, target, research.labStake(f, month, wages)));
+            said.add(orderLab(f, lab, target, research.labStake(f, month, wages)));
         }
         if (said.isEmpty()) lastInvestment.remove(LABS_SLOT);
         else lastInvestment.put(LABS_SLOT, String.join("; ", said));
+    }
+
+    /**
+     * What a field's lab order reckoned in the month it was made: the lab's cost and the stake its owners were asked to make up with the till.
+     * WHY (RT2-P): the cost moves within the month (a village's lab quoted 597.69 before the month, 612.88 at the order and 611.69 after it), so
+     * PrizeCheck could hold the owners' raise to the order only by the order's own quote. Not saved: the month that made it reads it.
+     */
+    public record LabQuote(int month, double cost, double stake) { }
+
+    private final java.util.Map<ResearchCatalog.Field, LabQuote> labQuotes = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+
+    /** The quote of the lab field f's investors ordered or asked their owners for this month, or null in a month that reckoned none. */
+    public LabQuote getLabQuote(ResearchCatalog.Field f) {
+        LabQuote q = labQuotes.get(f);
+        return q != null && q.month() == month ? q : null;
     }
 
     /**
@@ -3952,7 +4087,7 @@ public class Game {
      * when the till covers the cost. The same staffing test the sector's planner asks (staffing(t).passes()) holds it first, without a staffing hold noted:
      * a lab the city cannot staff is not a want the labour market should price.
      */
-    private String orderLab(BuildingsTemplate lab, ResearchCatalog.Entry target, double stake) {
+    private String orderLab(ResearchCatalog.Field f, BuildingsTemplate lab, ResearchCatalog.Entry target, double stake) {
         ham.citybuildersim.sectors.BusinessServices sector = getSectors().businessServices();
         String key = sector.key();
         Sector.Staffing staffing = sector.staffing(lab);
@@ -3967,7 +4102,8 @@ public class Game {
             @Override public void borrow(double amount, int month) { }
         };
         double cost = businessInvestment.getCostOf(lab, 1);
-        double need = cost + (stake > 0 ? stake : 0);
+        double kept = stake > 0 ? stake : 0, need = cost + kept;
+        labQuotes.put(f, new LabQuote(month, cost, kept));
         double lacking = need - till.getCash();
         double raised = 0;
         int company = Equity.indexOf(key);
@@ -4254,10 +4390,10 @@ public class Game {
         // told here); with both shares at 0 there is none and the shopping is the shop's sales to the bit.
         if (homeFuel.getBill() > 0) retailSales = Math.max(0, retailSales - homeFuel.getBill());
         // ...AND LESS THE DRIVERS' PETROL (PD1): Retail books each litre as a sale of PETROL to the households (sellFuel()), so its value is in
-        // salesToHouseholds too, and the same month's petrol is the households' fuel line (households.setCommute(), above: Motoring's bill, the
-        // duty in it), paid out of the cells' cash as the row's fees: left in the shopping, the households would pay it twice. Read from the same
-        // statement on both paths (its petrol sold at home, the bill less the treasury's duty), the month the bill is of; with no drivers there
-        // is none and the shopping is the shop's sales to the bit.
+        // salesToHouseholds too. In the monthly update the fuel line (setCommute(), above) carries the same bill, duty included, paid as row fees:
+        // leave the petrol in shopping too and the households pay it twice. Both paths subtract Retail's own statement's petrol sold at home.
+        // On load the saved Motoring bill is a month ahead of Retail's statement: the rebuilt fuel uses that later bill until restoreStatement
+        // puts the saved household statement back. With no drivers there is no petrol sale and shopping is the shop's sales to the bit.
         Sector.Split petrolSold = getSectors().retail().statement().sold.get(Good.PETROL);
         if (petrolSold != null && petrolSold.atHome > 0) retailSales = Math.max(0, retailSales - petrolSold.atHome);
 
@@ -4893,6 +5029,9 @@ public class Game {
      * on the book past the step it was posted at.
      */
     private final Exchange.Companies exchangeCompanies = new Exchange.Companies() {
+            @Override public double averageMonthlyWage() {
+                return populationManager.getAverageWage();
+            }
             @Override public double cashAvailable(int company, double wanted) {
                 String sector = Equity.COMPANIES[company];
                 double till = economyManager.getSectorCash(sector);
@@ -5505,10 +5644,11 @@ public class Game {
     /**
      * The fund's idle cash (RB1): the cash its caps leave no room for - TreasuryFund.idleCash() on its cash less the hand's reserve,
      * past the room its share bids (Exchange.fundShareRoom()) and bond bids (BondMarket.fundBondRoom()) have left. The part of the
-     * transfer that is struck on it, at the larger of the dial and IDLE_TRANSFER_SHARE (TreasuryFund.dueAt()).
+     * transfer that is struck on it, at the larger of the dial and IDLE_TRANSFER_SHARE (TreasuryFund.dueAt()). RB1-R: the cash the top
+     * of the month pays last month's toRaise from first is not idle, so it is read on the cash less that toRaise (0 at or under the default).
      */
     public double fundIdleCash() {
-        return TreasuryFund.idleCash(fund.getCash(), fund.handReserve(), exchange.fundShareRoom(), bondMarket.fundBondRoom(month));
+        return TreasuryFund.idleCash(fund.getCash() - Math.max(0, fund.getToRaise()), fund.handReserve(), exchange.fundShareRoom(), bondMarket.fundBondRoom(month));
     }
     /** What this month's transfer is on the fund as it stands, at the withdrawal in force and the idle cash it holds: TreasuryFund.dueOn(fundValue(), fundIdleCash()) - transferOn() at the default with none idle (RB1). */
     public double fundTransferDue()       { return fund.dueOn(fundValue(), fundIdleCash()); }
@@ -5925,6 +6065,7 @@ public class Game {
      * one-argument purchase does. The logs name the money.
      */
     public double buyForeignCurrency(double amount, String code) {
+        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return 0;
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
         treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
@@ -5956,6 +6097,7 @@ public class Game {
      * anything; null sells from the largest holding, as the one-argument sale does. The logs name the money.
      */
     public double sellForeignCurrency(double amount, String code) {
+        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return 0;
         double sold = foreign.sellReserves(Math.max(0, amount), code);
         if (sold <= 0) return 0;
         cash += sold;
@@ -6210,6 +6352,17 @@ public class Game {
         economyManager.setReserveCrude(bought, sold);
     }
 
+    /**
+     * The licence the city's own patented works accrued last month, paid abroad at the strike (R2c-P; LicenceFees.capturePublic()): a promise,
+     * the service having been used, on the city's services line. The bill is cleared as it is paid, so no month pays it twice.
+     */
+    private void settlePublicLicences() {
+        double owed = publicIpPending;
+        publicIpPending = 0;
+        publicIpPaid = owed > 0 && Double.isFinite(owed) ? treasuryPays(TreasuryLine.CITY_SERVICES, owed) : 0;
+        economyManager.setPublicIpCharges(publicIpPaid);
+    }
+
     /** Tells the investment engine what land is left to sell, right now - and since 0.7.107 what each zone holds and at what share of the price (BusinessInvestment, THE INVESTORS' GROUND BY ZONE). */
     private void refreshLand(){
         businessInvestment.setLandAvailable(landManager.getAvailableSqFt(),
@@ -6343,6 +6496,7 @@ public class Game {
             double net = sector.getNetIncome();
             double covered = paySubsidyIfOwed(sector, net);
             businessInvestment.recordSectorResult(sector.key(), net + covered);
+            businessInvestment.recordOperatingResult(sector);
         }
 
         // ...and the Research Labs a field has had too many of for too long are sold back (R4), before the sectors below plan their month.
@@ -6375,9 +6529,9 @@ public class Game {
              * written about the investment loop and is just as true here.
              */
             if (businessInvestment.isHeld(sector.key())) continue;
-            int orders = buildingManager.getUnderConstructionBySector(sector.key());
+            long orders = buildingManager.getUnderConstructionBySector(sector.key());
             // The wells past their life first (0.7.84), and nothing else of the sector's that month.
-            int shed = sector == getSectors().oil() ? retireWornOutWells() : 0;
+            long shed = sector == getSectors().oil() ? retireWornOutWells() : 0;
             double[] measure = shed > 0 ? null : sector.retirementDemandAndCapacity(this);
             if (measure != null) {
                 shed = retire(businessInvestment.planRetirement(
@@ -6408,7 +6562,7 @@ public class Game {
          * builders. What the bank was founded with stays in the bank.
          */
         // ...unless a harness holds them (BusinessInvestment.holdBranches(), ST3).
-        int branchesStanding = buildingManager.countByName("Commercial Bank");
+        long branchesStanding = buildingManager.countByName("Commercial Bank");
         if (!businessInvestment.areBranchesHeld() && bank.closesBranch(branchesStanding))
             closeBranches(bank.branchesToClose(branchesStanding));
     }
@@ -6428,9 +6582,9 @@ public class Game {
      * @return the wells retired, so the month's other rules leave the sector
      *         alone this month
      */
-    private int retireWornOutWells() {
+    private long retireWornOutWells() {
         ham.citybuildersim.sectors.Oil wells = getSectors().oil();
-        int retired = 0;
+        long retired = 0;
         // OV1: the vintages are struck before the retirement (a well opened this month stands in the book as its own month's) and
         // after it (a well that opens later in the month is not netted against it), since Oil.view() nets the wells standing
         // against the book as one figure and would drop the oldest of the old where the fresh well should be recorded.
@@ -6438,7 +6592,7 @@ public class Game {
         // Each kind past its own life (0.7.91): the land wells at 263 months, the platforms' at 348.
         for (ham.citybuildersim.sectors.Oil.WellKind kind : ham.citybuildersim.sectors.Oil.WellKind.values()) {
             boolean land = kind == ham.citybuildersim.sectors.Oil.WellKind.LAND;
-            int worn = land ? wells.wornOut() - wells.wornOut(ham.citybuildersim.sectors.Oil.WellKind.PLATFORM) : wells.wornOut(kind);
+            long worn = land ? wells.wornOut() - wells.wornOut(ham.citybuildersim.sectors.Oil.WellKind.PLATFORM) : wells.wornOut(kind);
             BuildingsTemplate well = land ? wells.landWell() : wells.platformWell();
             if (worn <= 0 || well == null) continue;
             String why = String.format("%d well(s) past their life: under %.0f barrels a day after %d months",
@@ -6448,7 +6602,7 @@ public class Game {
             if (!land && wells.deepPlatformsStanding() > 0) {
                 why += String.format(" (%d in deep water)", ham.citybuildersim.sectors.Oil.lifeMonths(kind, true));
             }
-            int gone = retire(new BusinessInvestment.Decision(wells.key(), well, worn, why, true),
+            long gone = retire(new BusinessInvestment.Decision(wells.key(), well, worn, why, true),
                     sectorInvestor(wells.key()), false);
             wellsWornOut += gone;
             retired += gone;
@@ -6467,11 +6621,11 @@ public class Game {
      * oil under the sea - since 0.7.93 the offshore pool's, which is all a
      * platform lifts (LandManager's THE TWO OIL POOLS).
      */
-    private int decommissionAtSea(ham.citybuildersim.sectors.Oil wells) {
+    private long decommissionAtSea(ham.citybuildersim.sectors.Oil wells) {
         if (landManager.getOilLeftAtSea() > 0) return 0;
-        int retired = 0;
+        long retired = 0;
         BuildingsTemplate jacket = wells.platformTemplate(), pipe = wells.pipelineTemplate();
-        int jackets = wells.jacketsStanding();
+        long jackets = wells.jacketsStanding();
         if (jacket != null && jackets > 0) {
             int empty = 0;
             for (ham.citybuildersim.sectors.Oil.Platform p : wells.platformsNow()) if (p.wells() == 0) empty++;
@@ -6481,7 +6635,7 @@ public class Game {
                         sectorInvestor(wells.key()), false);
             }
         }
-        int km = wells.pipeKmStanding();
+        long km = wells.pipeKmStanding();
         if (pipe != null && km > 0 && wells.jacketsStanding() <= 0) {
             retired += retire(new BusinessInvestment.Decision(wells.key(), pipe, km,
                     String.format("%d km of pipeline decommissioned: no platform left and the oil under the sea worked out", km), true),
@@ -6491,8 +6645,8 @@ public class Game {
     }
 
     /** Wells retired worn out over the run (0.7.84): a count for the playtest, not saved. */
-    private int wellsWornOut;
-    public int getWellsWornOut() { return wellsWornOut; }
+    private long wellsWornOut;
+    public long getWellsWornOut() { return wellsWornOut; }
 
     /**
      * Closes branches (0.7.19: as many as the rule says, at once; one at a
@@ -6503,13 +6657,13 @@ public class Game {
      */
     private void closeBranches(int wanted) {
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
-        int standing = buildingManager.countByName("Commercial Bank");
-        int n = Math.min(wanted, standing - 1);
+        long standing = buildingManager.countByName("Commercial Bank");
+        long n = Math.min(wanted, standing - 1);
         if (branch == null || n <= 0) return;
         String owner = getSectors().retail().key();
         String why = String.format("its customers' fees of %s a branch do not cover the %s a branch past the first costs",
                 cityK("%,.1fk", bank.feesPerBranch()), cityK("%,.1fk", bank.laterBranchCost()));
-        int closed = retire(new BusinessInvestment.Decision(owner, branch, n, why, true),
+        long closed = retire(new BusinessInvestment.Decision(owner, branch, n, why, true),
                 sectorInvestor(owner), false);
         if (closed > 0) {
             branchesClosed += closed;
@@ -6518,8 +6672,8 @@ public class Game {
     }
 
     /** Branches the bank has closed over the run (0.7.11, round 2): a count for the playtest, not saved. */
-    private int branchesClosed;
-    public int getBranchesClosed() { return branchesClosed; }
+    private long branchesClosed;
+    public long getBranchesClosed() { return branchesClosed; }
 
     /**
      * Scraps what the decision named, sells the plot back to the city, and
@@ -6532,16 +6686,18 @@ public class Game {
      * @return how many buildings went, so a caller can tell whether to try
      *         the distress rule next
      */
-    private int retire(BusinessInvestment.Decision decision, Investor seller, boolean distress){
+    private long retire(BusinessInvestment.Decision decision, Investor seller, boolean distress){
 
         if (decision == null || !decision.build) {
             return 0;   // planRetirement's reasons are noise on the sector screens
         }
 
-        int scrapped = buildingManager.retire(decision.template, decision.quantity);
+        long scrapped = buildingManager.retire(decision.template, decision.quantity);
         if (scrapped <= 0) {
             return 0;
         }
+        Sector closing = getSectors().byKey(decision.sector);
+        if (closing != null) closing.writeOffUnhousedStock();
         // ...its steel to the city's old steel, its owner's to sell (0.7.123; OldMetal).
         oldMetal.demolished(decision.template, scrapped, decision.sector);
 
@@ -6560,6 +6716,16 @@ public class Game {
         }
 
         double material = sellMaterialToTheBuilders(decision, scrapped, seller, distress);
+
+        // BF1: selling the collateral also settles its financing. Carry debt
+        // against the remaining plant; an emptied borrower resolves this turn.
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        boolean empty = !(buildingManager.getBuildingsValueBySector(decision.sector) > 0);
+        double available = Math.max(0, seller.getCash());
+        if (!empty) available = Math.min(available, proceeds + material);
+        double repaid = credit.settleRetirement(decision.sector, available, empty,
+                closing == null ? 0 : closing.retirementRecovery());
+        economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,
                 String.format("Sold %,d %s - %s%s%s",
@@ -6910,7 +7076,7 @@ public class Game {
         // LARGEST SLICE, WITHOUT COUNTING TO IT, below.
         Afford afford = largestSliceThatCarries(decision, cash, perUnitProfit);
         if (orderWatch != null) orderWatch.invested(decision, cash, perUnitProfit, afford);
-        int affordable = afford.quantity();
+        long affordable = afford.quantity();
         boolean atPrime = afford.atPrime();
         double firstRate = afford.firstRate();
 
@@ -6928,7 +7094,7 @@ public class Game {
             return;
         }
 
-        int quantity = affordable;
+        long quantity = affordable;
         String trimmed = quantity < decision.quantity
                 ? String.format(" (trimmed from %,d - could not carry the interest on its whole cost)",
                         decision.quantity)
@@ -7117,8 +7283,8 @@ public class Game {
     public static final int PRIME_SCAN_SLICES = 4096;
 
     /** The most times an order of this many may ask the bond desk: the countdown's slices, then doubling down, halving and halving again above the first slice that borrows, each at most once a bit of the order, and that slice itself (OS1). */
-    public static int deskCallsMost(int quantity) {
-        int bits = 32 - Integer.numberOfLeadingZeros(Math.max(1, quantity));
+    public static int deskCallsMost(long quantity) {
+        int bits = 64 - Long.numberOfLeadingZeros(Math.max(1, quantity));
         return COUNTDOWN_SLICES + 3 * bits + 2;
     }
 
@@ -7128,7 +7294,7 @@ public class Game {
      * it at prime and its record, for the refusal; the rate at the whole
      * order; and how many times the bond desk was asked (financeProject()).
      */
-    public record Afford(int quantity, boolean atPrime, double firstRate, int deskCalls) { }
+    public record Afford(long quantity, boolean atPrime, double firstRate, int deskCalls) { }
 
     /** Harnesses only (InvestCheck, 0.7.113; BuildCardCheck 11, 0.7.122): consider()'s answer to an order with `cash` in the till and `perUnitProfit` a building - the largest slice that carries the interest on its whole cost. Books nothing. */
     Afford sliceFor(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
@@ -7138,13 +7304,13 @@ public class Game {
     /** The largest slice of the order that carries its interest - see THE LARGEST SLICE, WITHOUT COUNTING TO IT. */
     private Afford largestSliceThatCarries(BusinessInvestment.Decision decision, double cash, double perUnitProfit) {
         Slices test = new Slices(decision, cash, perUnitProfit);
-        int pass = largestSlice(decision.quantity, test::passes, () -> test.firstThatBorrows(decision.quantity));
+        long pass = largestSlice(decision.quantity, test::passes, () -> test.firstThatBorrows(decision.quantity));
         if (pass == 0) test.askPrimeOfTheRest(decision.quantity);
         return test.result(pass);
     }
 
     /** largestSlice() for a test with no first slice that borrows to look at: the countdown's slices, doubling down and halving. */
-    static int largestSlice(int quantity, java.util.function.IntPredicate passes) {
+    static long largestSlice(long quantity, java.util.function.LongPredicate passes) {
         return largestSlice(quantity, passes, () -> 0);
     }
 
@@ -7166,41 +7332,41 @@ public class Game {
      * countdown on every boundary of a run from one, and with a window a bond
      * opens at the first slice that borrows.
      */
-    static int largestSlice(int quantity, java.util.function.IntPredicate passes, java.util.function.IntSupplier borrowsFrom) {
-        int[] failed = new int[2 * 32 + 2];   // the slices asked below the counted ones that failed, for the window's wall
+    static long largestSlice(long quantity, java.util.function.LongPredicate passes, java.util.function.LongSupplier borrowsFrom) {
+        long[] failed = new long[2 * 64 + 2];   // the slices asked below the counted ones that failed, for the window's wall
         int failures = 0;
-        int fail = Math.max(1, quantity);   // the smallest slice known to fail, once one has
+        long fail = Math.max(1, quantity);   // the smallest slice known to fail, once one has
         // 1. The countdown itself, for its first COUNTDOWN_SLICES slices.
-        for (int n = quantity; n >= 1 && n > quantity - COUNTDOWN_SLICES; n--) {
+        for (long n = quantity; n >= 1 && n > quantity - COUNTDOWN_SLICES; n--) {
             if (passes.test(n)) return n;
             fail = n;
         }
         failed[failures++] = fail;
         // 2. Doubling down from the last that failed...
-        int pass = 0;              // the largest slice known to pass; 0 for none
+        long pass = 0;              // the largest slice known to pass; 0 for none
         for (long step = 1; fail > 1; step *= 2) {
-            int n = (int) Math.max(1, fail - step);
+            long n = Math.max(1, fail - step);
             if (passes.test(n)) { pass = n; break; }
             fail = n;
             failed[failures++] = n;
         }
         // 3. ...then halving between the two.
         while (fail - pass > 1) {
-            int mid = (int) (((long) pass + fail) >>> 1);
+            long mid = ((long) pass + fail) >>> 1;
             if (passes.test(mid)) pass = mid; else { fail = mid; failed[failures++] = mid; }
         }
         // 4. The first slice that borrows, if the doubling stepped over it (OS1): where a bond's cheaper rate opens a window
         //    above slices that fail, and halving above it up to the lowest slice known to fail over it.
-        int first = quantity > COUNTDOWN_SLICES ? borrowsFrom.getAsInt() : 0;   // asked of the till only when the counted slices all failed
+        long first = quantity > COUNTDOWN_SLICES ? borrowsFrom.getAsLong() : 0;   // asked of the till only when the counted slices all failed
         if (first > pass && first <= quantity - COUNTDOWN_SLICES) {
             boolean asked = false;
             for (int i = 0; i < failures; i++) asked |= failed[i] == first;
             if (!asked && passes.test(first)) {
                 pass = first;
-                int wall = Integer.MAX_VALUE;
+                long wall = Long.MAX_VALUE;
                 for (int i = 0; i < failures; i++) if (failed[i] > pass && failed[i] < wall) wall = failed[i];
                 while (wall - pass > 1) {
-                    int mid = (int) (((long) pass + wall) >>> 1);
+                    long mid = ((long) pass + wall) >>> 1;
                     if (passes.test(mid)) pass = mid; else wall = mid;
                 }
             }
@@ -7226,13 +7392,13 @@ public class Game {
         }
 
         /** The first slice the till does not pay for, which largestSlice() looks at (OS1): one more than the largest whose cost the till covers, quantity + 1 when it covers the order, 0 under a ban (no slice that borrows is built). Asks no bond desk. */
-        int firstThatBorrows(int q) {
+        long firstThatBorrows(long q) {
             if (banned) return 0;
             return largestSlice(q, n -> businessInvestment.getCostOf(decision.template, n) <= cash) + 1;
         }
 
         /** Whether n of them carry the interest on their whole cost (0.7.113); what failed at prime and the rate at the whole order are kept for the refusal. */
-        boolean passes(int n) {
+        boolean passes(long n) {
             double cost = businessInvestment.getCostOf(decision.template, n);
             double borrowed = Math.max(cost - cash, 0);
             // Under a ban the largest slice is the one its own cash pays for.
@@ -7250,34 +7416,34 @@ public class Game {
         }
 
         /** Whether n of them would carry the interest on `on` at prime and the sector's record - their whole cost since 0.7.113 (orderGate()), grown over the wait at that rate since BA1. */
-        boolean carriesAtPrime(int n, double on) {
+        boolean carriesAtPrime(long n, double on) {
             double prime = credit.getPrimeRate() + credit.getRecordSurcharge(decision.sector);
             return businessInvestment.servicesItsOwnDebt(perUnitProfit * n,
                     grownOver(on, businessInvestment.carryOf(decision.template, n, prime)), prime);
         }
 
         /** When none passes: whether any of the q slices would have carried it at prime - every slice to PRIME_SCAN_SLICES, the four that decide it past that, and under a ban the last the till pays for. */
-        void askPrimeOfTheRest(int q) {
+        void askPrimeOfTheRest(long q) {
             if (q <= PRIME_SCAN_SLICES) {
-                for (int n = 1; n <= q && !atPrime; n++) askPrime(n);
+                for (long n = 1; n <= q && !atPrime; n++) askPrime(n);
                 return;
             }
             long yard = businessInvestment.yardCovers(decision.template);
             // ...under a ban only what the till pays for is asked: its last slice is the line's other end (0.7.113).
             long till = banned ? largestSlice(q, n -> businessInvestment.getCostOf(decision.template, n) <= cash) : q;
             for (long n : new long[] { 1, q, yard, yard + 1, till }) {
-                if (n >= 1 && n <= q && !atPrime) askPrime((int) n);
+                if (n >= 1 && n <= q && !atPrime) askPrime(n);
             }
         }
 
         /** Whether n of them would have carried it at prime, as the countdown asked it of a slice that failed. */
-        void askPrime(int n) {
+        void askPrime(long n) {
             double cost = businessInvestment.getCostOf(decision.template, n);
             if (banned && cost > cash) return;
             if (carriesAtPrime(n, orderGate.testedOn(cost, cash))) atPrime = true;
         }
 
-        Afford result(int quantity) { return new Afford(quantity, atPrime, firstRate, deskCalls); }
+        Afford result(long quantity) { return new Afford(quantity, atPrime, firstRate, deskCalls); }
     }
 
     /** The rate a slice is judged at: the loan's, and the one tested - a bond's blended with the bank's where one is cheaper and raises it all; and whether the bond desk was asked. */
@@ -7324,7 +7490,7 @@ public class Game {
      * the planner passes the template and the count, so it asks what
      * consider() will. Books nothing.
      */
-    public boolean carriesItsWholeCost(String sector, BuildingsTemplate t, int n, double earns, double cost) {
+    public boolean carriesItsWholeCost(String sector, BuildingsTemplate t, long n, double earns, double cost) {
         if (!(earns > 0)) return false;
         return interestTest(sector, t, n, earns, cost).carries();
     }
@@ -7350,7 +7516,7 @@ public class Game {
     }
 
     /** ...for an order of `n` of `t` by `sector` costing `cost` and earning `earns` a month, its till and what it holds abroad paying first; the cost grown over that order's wait (BA1). */
-    public InterestTest interestTest(String sector, BuildingsTemplate t, int n, double earns, double cost) {
+    public InterestTest interestTest(String sector, BuildingsTemplate t, long n, double earns, double cost) {
         double till = economyManager.getSectorCash(sector) + Math.max(0, economyManager.getForeignAssets(sector));
         double borrowed = Math.max(cost - till, 0);
         boolean banned = borrowed > 0 && economyManager.getBusinessDebtManager().isBorrowingBlocked(sector);
@@ -7482,16 +7648,16 @@ public class Game {
     /* ----- the lender's test for one home, for the build card (I13-L) ----- */
 
     /** What the lender reads for an order: what n cost, the insured rate and the real rate it is tested at, one's rent net of carrying it, and Mortgage.decide()'s answer. */
-    private record LenderReading(java.util.function.IntToDoubleFunction costOf, double insured, double tested, double noi,
+    private record LenderReading(java.util.function.LongToDoubleFunction costOf, double insured, double tested, double noi,
                                  Mortgage.Decision decision) { }
 
     /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
-    private LenderReading lenderReads(BuildingsTemplate t, int quantity, double cash, double perUnitRent) {
+    private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
-        java.util.function.IntToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
+        java.util.function.LongToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
         // ...the shortfall grown over the order's wait (BA1; carryOf() applies the real rate itself, so it is handed the insured one).
-        java.util.function.IntToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
+        java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
         double noi = perUnitRent - economyManager.housingCarry(t);
         return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested, carryOf));
     }
@@ -7572,7 +7738,7 @@ public class Game {
             return;
         }
 
-        int quantity = d.quantity();
+        long quantity = d.quantity();
         String trimmed = d.trimmed(decision.quantity);
         double downShare = 1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST;
 
@@ -7703,7 +7869,7 @@ public class Game {
      * what they could afford, the units they could not pay for, and which
      * rule retired it. A month's flow, read in the month.
      */
-    public record Salvage(String seller, String building, int buildings, double units,
+    public record Salvage(String seller, String building, long buildings, double units,
                           double price, double paid, double unitsBought, boolean distress) { }
 
     private final java.util.List<Salvage> salvageThisMonth = new java.util.ArrayList<>();
@@ -7724,7 +7890,7 @@ public class Game {
     public double getSalvageUsedThisMonth() { return salvageUsedThisMonth; }
 
     /** @return what the builders paid */
-    private double sellMaterialToTheBuilders(BusinessInvestment.Decision decision, int scrapped,
+    private double sellMaterialToTheBuilders(BusinessInvestment.Decision decision, long scrapped,
                                              Investor seller, boolean distress) {
         // ...the share of it a demolition recovers (0.7.106; ConstructionControl.SALVAGE_SHARE).
         double units = decision.template.getConstructionMaterials() * (double) scrapped * ConstructionControl.SALVAGE_SHARE;
@@ -7973,7 +8139,7 @@ public class Game {
                 * servicesManager.getRoadRatio() * health.getWorkRatio());
     }
 
-    /** ...and what that leaves for the sites after the repairs: getBuildingOutput() with every post offered. */
+    /** ...and what that leaves for the sites after repairs with every post offered; fittings add a finite priority delay to the wait, not a permanent capacity loss (R1d). */
     public int getBuildingOutputAtEveryPost() {
         return (int) Math.max(0,
                 Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
@@ -8368,9 +8534,9 @@ public class Game {
 
         int completed = 0;
 
-        // Set when every month has run: a skip that stopped part-way (the catch below, or an Error the
-        // finally lets through) does not autosave at its end - its city stopped inside a month.
-        boolean ranThrough = false;
+        // Keep the last whole city's guard during the loop, so a healthy skip can still autosave
+        // completed months. The finally latches ranThrough false if this skip stops inside one.
+        boolean completedAll = false;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -8406,7 +8572,7 @@ public class Game {
                 // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
                 skipReport.sampleSales(autoSalesThisMonth);
             }
-            ranThrough = true;
+            completedAll = true;
 
         } catch (RuntimeException e) {
             /*
@@ -8429,6 +8595,13 @@ public class Game {
                     + (GameLog.file() == null ? "(no log file)" : GameLog.file());
 
         } finally {
+            // Later months cannot repair the part-month left by a failed skip. Only buildWorld()
+            // (new city or load) restores this one guard, shared by every autosave path (UP6b).
+            ranThrough &= completedAll;
+            if (!ranThrough) {
+                inbox.autosavesPaused(month, true, autosaveStatus());
+                if (skipFailure != null) skipFailure += "\n" + autosaveStatus();
+            }
             graphs = previousGraphs;
             reports = previousReports;
             skipping = previousSkipping;
@@ -8447,7 +8620,7 @@ public class Game {
             // skip do. A skip that stopped part-way leaves the "before skipping" autosave as
             // the point to come back to (the catch above).
             awaitSaves();
-            if (months > 1 && ranThrough) autosave("after skipping " + months + " months");
+            if (months > 1) autosave("after skipping " + months + " months");
         }
 
         return completed;
@@ -8456,13 +8629,13 @@ public class Game {
     /** One end of the fast-forward diff. Reads finished figures; moves nothing. */
     private void captureSkipSnapshot(boolean atStart){
 
-        java.util.Map<String, Integer> owned = new java.util.LinkedHashMap<>();
+        java.util.Map<String, Long> owned = new java.util.LinkedHashMap<>();
 
         for (BuildingsTemplate template : buildingManager.getTemplates()) {
             if (template == null) {
                 continue;
             }
-            int quantity = buildingManager.getQuantity(template.getId());
+            long quantity = buildingManager.getQuantity(template.getId());
             if (quantity > 0) {
                 owned.put(template.getName(), quantity);
             }
@@ -8501,7 +8674,7 @@ public class Game {
      * calculateTotalCost() is its total, and the screen prints its fields.
      */
     public static final class BuildQuote {
-        public final int quantity;
+        public final long quantity;
         public final double sticker;
         public final double materialsNeeded;
         /** What the city's own yard covers, free. */
@@ -8588,7 +8761,7 @@ public class Game {
          */
         public final double deepWaterDepthM, deepWaterPoints, deepWaterCost;
 
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate) {
@@ -8597,7 +8770,7 @@ public class Game {
         }
 
         /** ...with the bitumen its paving takes, quoted (Markets.quote()), and the refiners' sales tax rate it is credited at (0.7.83). */
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate) {
@@ -8606,7 +8779,7 @@ public class Game {
         }
 
         /** ...with the foothill preparation an order carries (ET2): the sticker already holds prepCost, the money for prepPoints. */
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
@@ -8617,7 +8790,7 @@ public class Game {
         }
 
         /** ...with the works a run's land needs on the city's ground (ET4): the sticker already holds worksCost, the money for worksPoints. */
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
@@ -8629,7 +8802,7 @@ public class Game {
         }
 
         /** ...with the span of a long bridge (ET6): the sticker already holds bridgeCost, the money for bridgePoints. */
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
@@ -8643,7 +8816,7 @@ public class Game {
         }
 
         /** ...with the deep-water works of a floating platform or its well (DW1): the sticker already holds deepWaterCost, the money for deepWaterPoints. */
-        BuildQuote(int quantity, double sticker, double materialsNeeded, double materialsInStock,
+        BuildQuote(long quantity, double sticker, double materialsNeeded, double materialsInStock,
                    Markets.Draw boughtIn, double plantPrice, double materialsPrice,
                    double landNeeded, double landFree, double months,
                    double buildersRate, double plantRate, Markets.Draw bitumen, double refinersRate,
@@ -8840,17 +9013,17 @@ public class Game {
      * builders' wages and the rest of its cash cost, and the price carries
      * the sales tax the builders pass on. See THE BUILDERS' PRICE.
      */
-    public BuildQuote quoteBuild(BuildingsTemplate selected, int quantity) {
+    public BuildQuote quoteBuild(BuildingsTemplate selected, long quantity) {
         return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials());
     }
 
     /** ...against a yard holding `yardHolds` units (0.7.40): an order in a run, priced on the yard the orders before it leave (buildRunInvoice()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds) {
         return quoteBuild(selected, quantity, yardHolds, 0);
     }
 
     /** ...and with `bitumenAhead` tonnes of the refiners' bitumen taken by the orders before it in a run (0.7.83; drawBitumen()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
     }
 
@@ -8862,7 +9035,7 @@ public class Game {
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
 
     /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
                                   GroundAhead ahead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, ahead, Landmasses.CHOSEN);
     }
@@ -8873,11 +9046,11 @@ public class Game {
      * buildStack() and processBuildOrder() place it on. quoteBuild() is this asked for CHOSEN, and every other building
      * is quoted the same whatever is asked.
      */
-    public BuildQuote quoteBuildOn(BuildingsTemplate selected, int quantity, int asked) {
+    public BuildQuote quoteBuildOn(BuildingsTemplate selected, long quantity, int asked) {
         return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials(), 0, NO_GROUND_AHEAD, asked);
     }
 
-    private BuildQuote quoteBuild(BuildingsTemplate selected, int quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
                                   GroundAhead ahead, int asked) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
@@ -9008,7 +9181,7 @@ public class Game {
      * so it keeps up with wages as the pad's does). Null for what is not a run, for a city with neither foothill nor
      * steep ground, and for a template with no points to price them on.
      */
-    private RunWorksNeed runWorksFor(BuildingsTemplate run, int quantity) {
+    private RunWorksNeed runWorksFor(BuildingsTemplate run, long quantity) {
         if (!isRun(run) || landManager.isFlatOnly() || run.getConstructionPoints() <= 0 || quantity < 1) return null;
         CityLand ground = landManager.getCityLand();
         double flat = ground.totalReliefKm2(CityLand.RELIEF_FLAT), foothill = ground.totalReliefKm2(CityLand.RELIEF_FOOTHILL);
@@ -9024,7 +9197,7 @@ public class Game {
     }
 
     /** What the cuts, viaducts and tunnels of an order of these would cost, before the builders' tax (runWorksFor()); 0 for every order but a run's on a city with ground above flat. Reads. */
-    public double runWorksCost(BuildingsTemplate run, int quantity) {
+    public double runWorksCost(BuildingsTemplate run, long quantity) {
         RunWorksNeed need = runWorksFor(run, quantity);
         return need == null ? 0 : need.cost();
     }
@@ -9128,7 +9301,7 @@ public class Game {
      * order's points over the builders' whole output, repairs included, as
      * though the order had them to itself. NaN when there is no site output.
      */
-    public double quoteMonths(BuildingsTemplate template, int quantity) {
+    public double quoteMonths(BuildingsTemplate template, long quantity) {
         double months = buildingManager.waitFor(template, quantity, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
@@ -9171,12 +9344,12 @@ public class Game {
      * with nothing of it on site, a new city site at the bottom. The build
      * quote's months. NaN when there is no site output. Reads.
      */
-    public double quoteCityMonths(BuildingsTemplate template, int quantity) {
+    public double quoteCityMonths(BuildingsTemplate template, long quantity) {
         return quoteCityMonths(template, quantity, 0);
     }
 
     /** ...with `extraPoints` more owed on its site than its buildings' own (ET2: a foothill pad's preparation, BuildQuote.prepPoints); quoteCityMonths() exactly for none. */
-    public double quoteCityMonths(BuildingsTemplate template, int quantity, double extraPoints) {
+    public double quoteCityMonths(BuildingsTemplate template, long quantity, double extraPoints) {
         double months = buildingManager.cityOrderWait(template, quantity, extraPoints, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
@@ -9393,7 +9566,7 @@ public class Game {
      * its price, what it closes, what comes back and when. Every figure the
      * staging card prints; books nothing.
      */
-    public record DemolitionQuote(BuildingsTemplate template, int buildings, double points, BuildQuote price,
+    public record DemolitionQuote(BuildingsTemplate template, long buildings, double points, BuildQuote price,
                                   double salvageUnits, double salvagePrice, double salvageAffordable,
                                   double landSqFt, double months, long homes, double households,
                                   double places, long posts, double runningCost) {
@@ -9432,7 +9605,7 @@ public class Game {
     }
 
     /** What demolishing n standing buildings of this kind would do and cost. Reads. */
-    public DemolitionQuote quoteDemolition(BuildingsTemplate t, int n) {
+    public DemolitionQuote quoteDemolition(BuildingsTemplate t, long n) {
         if (t == null || n < 1) return null;
         double points = ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * (double) n;
         double months = demolitionMonths(t, n, points);
@@ -9481,7 +9654,7 @@ public class Game {
     }
 
     /** Months a demolition of these points would take at today's queue, at the output the quote reads. NaN with no output. */
-    private double demolitionMonths(BuildingsTemplate t, int n, double points) {
+    private double demolitionMonths(BuildingsTemplate t, long n, double points) {
         double months = buildingManager.waitForDemolition(n, points, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
@@ -9494,7 +9667,7 @@ public class Game {
      * nothing if that is a loss. Then the demolition. Reads; null if the
      * builders have no output to time a replacement by.
      */
-    public BuyOutQuote quoteBuyOut(BuildingsTemplate t, int n) {
+    public BuyOutQuote quoteBuyOut(BuildingsTemplate t, long n) {
         if (!isBuyOutable(t) || n < 1) return null;
         Sector owner = getSectors().byKey(t.getSector());
         double each = t.getCashCost() + t.getConstructionMaterials() * buildingManager.getConstructionMaterialPrice();
@@ -9516,7 +9689,7 @@ public class Game {
     public String getLastHandRefusal() { return lastHandRefusal; }
 
     /** D. Demolishes n of the city's own standing buildings of this kind: pays the quote and puts the demolition on site; they close as the next month starts (closeDemolished()). */
-    public boolean demolish(BuildingsTemplate t, int n) {
+    public boolean demolish(BuildingsTemplate t, long n) {
         lastHandRefusal = null;
         if (!isCitysToDemolish(t)) { lastHandRefusal = "not the city's to demolish"; return false; }
         if (n < 1 || demolishable(t) < n) {
@@ -9536,7 +9709,7 @@ public class Game {
     }
 
     /** E. Buys n of a sector's buildings by compulsory purchase and demolishes them. */
-    public boolean buyOutAndDemolish(BuildingsTemplate t, int n) {
+    public boolean buyOutAndDemolish(BuildingsTemplate t, long n) {
         lastHandRefusal = null;
         if (!isBuyOutable(t)) { lastHandRefusal = "not a business's or a landlord's"; return false; }
         if (n < 1 || demolishable(t) < n) { lastHandRefusal = "not that many standing"; return false; }
@@ -9574,12 +9747,12 @@ public class Game {
     }
 
     /** How many of this kind stand that no demolition has been ordered for - nor, a gravel road, its paving (0.7.70). */
-    public int demolishable(BuildingsTemplate t) {
+    public long demolishable(BuildingsTemplate t) {
         if (t == null) return 0;
         // A long bridge stands for good (ET6-C): taking one down would unlink a landmass nobody could account for under pooled ground.
         if (t.isBridge()) return 0;
-        int paving = ConstructionControl.paves(t) ? buildingManager.getControl().paving() : 0;
-        int n = Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
+        long paving = ConstructionControl.paves(t) ? buildingManager.getControl().paving() : 0;
+        long n = Math.max(0, buildingManager.getQuantity(t.getId()) - buildingManager.getControl().closingOf(t.getId())
                 - paving);
         /*
          * THE BUILDERS' LAST DEPOT CANNOT BE BOUGHT OUT AND DEMOLISHED (PT1-M4):
@@ -9597,7 +9770,7 @@ public class Game {
     }
 
     /** Why a port cannot be demolished, if it is the one that links a landmass (ET5 D11): "it is the port that links Island 2"; null when it is not. */
-    private String linkingWords(BuildingsTemplate t, int n) {
+    private String linkingWords(BuildingsTemplate t, long n) {
         if (t != null && t.isBridge()) return BRIDGE_FOR_GOOD;
         if (!Ports.isPort(t) || landManager.getLandmasses().single()) return null;
         String linked = landManager.getLandmasses().linkedBy(t.getId());
@@ -9615,8 +9788,8 @@ public class Game {
      * bought out and ordered demolished this month still stands until the month starts (closeDemolished()), and
      * counting it let the city buy out the depot and then the yard in the same window and leave no builders.
      */
-    private int otherBuildersDepotsStanding(BuildingsTemplate t) {
-        int standing = 0;
+    private long otherBuildersDepotsStanding(BuildingsTemplate t) {
+        long standing = 0;
         for (BuildingsTemplate d : buildingManager.getTemplatesBySector(getSectors().construction().key())) {
             if (d.getId() != t.getId() && d.makes(Good.BUILDING_WORK) > 0) {
                 standing += Math.max(0, buildingManager.getQuantity(d.getId())
@@ -9659,7 +9832,7 @@ public class Game {
         for (ConstructionControl.Demolition d : buildingManager.getControl().demolitions()) {
             if (!d.closing) continue;
             BuildingsTemplate t = buildingManager.getTemplate(d.templateId);
-            int closed = t == null ? 0 : buildingManager.retire(t, d.buildings);
+            long closed = t == null ? 0 : buildingManager.retire(t, d.buildings);
             d.closing = false;
             // ...its steel to the city's old steel, the builders' who pull it down (0.7.123; OldMetal).
             oldMetal.demolished(t, closed, getSectors().construction().key());
@@ -9720,7 +9893,7 @@ public class Game {
     }
 
     /** A restart's wait, by the one wait (BuildingManager.restartWait()). NaN with no output. */
-    private double restartMonths(BuildingsTemplate t, int n, double pointsLeft) {
+    private double restartMonths(BuildingsTemplate t, long n, double pointsLeft) {
         double months = buildingManager.restartWait(t, n, pointsLeft, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
@@ -9745,10 +9918,10 @@ public class Game {
         // The yard's share to the sites now, free, as the quote priced it; the
         // rest drawn as the crews build - see processBuildOrder().
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
-        buildingManager.bookContract(t, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, pointsLeft);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(t, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
         GameLog.note(String.format("The city restarted %d %s, for %s.", shell.buildings, t.getName(),
                 cityK("%,.0fk", q.total)));
@@ -9762,7 +9935,7 @@ public class Game {
     private BuildingsTemplate paveTo()   { return buildingManager.getTemplateByName(ConstructionControl.PAVE_TO); }
 
     /** Gravel roads the city could pave now: standing, not ordered demolished, and not already being paved. */
-    public int paveable() {
+    public long paveable() {
         BuildingsTemplate from = paveFrom();
         if (from == null || paveTo() == null) return 0;
         ConstructionControl control = buildingManager.getControl();
@@ -9770,7 +9943,7 @@ public class Game {
     }
 
     /** Gravel roads being paved now: their Paved Roads on site, the gravel roads still standing and carrying traffic. */
-    public int pavingNow() { return buildingManager.getControl().paving(); }
+    public long pavingNow() { return buildingManager.getControl().paving(); }
 
     /** Whether a site is the Paved Road site with paving on it, which is not stopped (ConstructionControl, F). */
     public boolean isPavingSite(String key) {
@@ -9792,7 +9965,7 @@ public class Game {
      * queue (quoteCityMonths()). Reads; null with n under one or either road
      * missing from the catalogue.
      */
-    public BuildQuote quotePave(int n) {
+    public BuildQuote quotePave(long n) {
         BuildingsTemplate from = paveFrom(), to = paveTo();
         if (from == null || to == null || n < 1) return null;
         double needed = Math.max(0, to.getConstructionMaterials() - from.getConstructionMaterials()) * (double) n;
@@ -9822,7 +9995,7 @@ public class Game {
      * (BuildingManager.retirePaved(), settleConstructionControl()). Out of
      * the treasury's cash: short of the quote, nothing is placed.
      */
-    public boolean paveRoads(int n) {
+    public boolean paveRoads(long n) {
         lastHandRefusal = null;
         BuildingsTemplate from = paveFrom(), to = paveTo();
         if (from == null || to == null) { lastHandRefusal = "no road to pave"; return false; }
@@ -9833,17 +10006,17 @@ public class Game {
         BuildQuote q = quotePave(n);
         if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
         BuildingsStacks site = buildingManager.getStack(to);
-        int ahead = site == null ? 0 : site.getUnderConstruction();
+        long ahead = site == null ? 0 : site.getUnderConstruction();
         buildingManager.addStack(to, n, false);
         // The gravel roads' own material, on site already: the new roads' bed.
         buildingManager.deliverToSites(to, from.getConstructionMaterials() * (double) n);
         double fromYard = deliverYardToSites(to, q.materialsNeeded);
         // ...and the surface's bitumen, bought by the builders with it (0.7.83; drawBitumen()).
         drawBitumen(q.bitumenNeeded);
-        buildingManager.bookContract(to, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, to.getConstructionPoints() * (double) n);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(to, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, to.getConstructionPoints() * (double) n);
         buildingManager.getControl().addPaving(n, ahead, month);
         decisions.record(DecisionLog.CONSTRUCTION, "Paved " + n + " " + from.getName()
                 + (n == 1 ? "" : "s") + " for " + DecisionLog.money(q.total));
@@ -10071,7 +10244,7 @@ public class Game {
      * month one - and it now goes through the land and cash checks like any
      * other order rather than around them.
      */
-    private void processBuildOrder(BuildingsTemplate selected, int quantity,
+    private void processBuildOrder(BuildingsTemplate selected, long quantity,
                                    boolean noConstruction, int landmass) {
         /*
          * QUOTED AND CHARGED BY THE SAME METHOD.
@@ -10122,6 +10295,7 @@ public class Game {
         }
 
         if (totalCost <= cash) {
+            totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
             else landManager.allocate(landNeeded, selected.getSector(), works);
             this.hasNewReceipt = true;
@@ -10181,7 +10355,6 @@ public class Game {
             }
 
             // 4. Subtract everything at once
-            treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             cityCapitalSpending += totalCost;
 
             // ...and it lands somewhere now. The construction sector did the
@@ -10222,7 +10395,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -10239,7 +10412,7 @@ public class Game {
     public static final double LICENCE_COVER_TO_OPEN = .5;
 
     /** Spare licences the city holds against what this order would need staffed. */
-    public double licencesNeededFor(BuildingsTemplate template, int quantity) {
+    public double licencesNeededFor(BuildingsTemplate template, long quantity) {
         if (template == null || template.getRequiresLicence() == null) return 0;
         return template.getLicensedPosts() * Math.max(1, quantity) * LICENCE_COVER_TO_OPEN;
     }
@@ -10251,7 +10424,7 @@ public class Game {
      * forty-nine. See BuildingsTemplate.requiresLicence for why this is a hard
      * refusal and not left to the licence premium.
      */
-    public boolean hasLicencesFor(BuildingsTemplate template, int quantity) {
+    public boolean hasLicencesFor(BuildingsTemplate template, long quantity) {
         JobType licence = template == null ? null : template.getRequiresLicence();
         if (licence == null) return true;
         return populationManager.spareLicences(licence) >= licencesNeededFor(template, quantity);
@@ -10269,21 +10442,21 @@ public class Game {
      * 0.7.124 (batch I5) the iron SITES they take, a large mine's twenty: the
      * figure the sites owned are counted against.
      */
-    public int minesCommitted() { return committedOn(Resource.IRON); }
+    public long minesCommitted() { return committedOn(Resource.IRON); }
 
     /** ...and the Oil Wells standing, being built or ordered (0.7.62): one an oil site - since 0.7.91 the land wells and the platforms' wells. */
-    public int wellsCommitted() { return committedOn(Resource.OIL); }
+    public long wellsCommitted() { return committedOn(Resource.OIL); }
 
     /** The land wells standing, being built or ordered (0.7.91): what the dry sites are counted against - every oil well until the platforms' came. */
-    public int landWellsCommitted() { return committedWhere(ham.citybuildersim.sectors.Oil::isLandWell); }
+    public long landWellsCommitted() { return committedWhere(ham.citybuildersim.sectors.Oil::isLandWell); }
 
     /** ...and the platforms' wells (0.7.91): what the platforms' slots are counted against. */
-    public int platformWellsCommitted() { return committedWhere(BuildingsTemplate::isPlatformWell); }
+    public long platformWellsCommitted() { return committedWhere(BuildingsTemplate::isPlatformWell); }
 
     /** The buildings `which` picks, standing, on site or ordered. */
-    private int committedWhere(java.util.function.Predicate<BuildingsTemplate> which) {
-        int committed = 0;
-        int[] underConstruction = buildingManager.getUnderConstructionById();
+    private long committedWhere(java.util.function.Predicate<BuildingsTemplate> which) {
+        long committed = 0;
+        long[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
             if (!which.test(t)) continue;
             committed += buildingManager.getQuantity(t.getId());
@@ -10303,7 +10476,7 @@ public class Game {
      * template's site's sites, one for every building until the materials
      * chains', so the count is the buildings' as it was.
      */
-    public int committedOn(Resource r) {
+    public long committedOn(Resource r) {
         return committedOn(r, null, true);
     }
 
@@ -10313,7 +10486,7 @@ public class Game {
      * counts those on ANY - the Iron Mine's until batch I5, none of iron's
      * since (0.7.124) - and not the typed ones; committedOn(r) counts all.
      */
-    public int committedOn(Resource r, Deposit.FieldType type) {
+    public long committedOn(Resource r, Deposit.FieldType type) {
         return committedOn(r, type, false);
     }
 
@@ -10327,11 +10500,11 @@ public class Game {
      */
     public java.util.List<LandManager.Claim> claimsOn(Resource r) {
         java.util.List<LandManager.Claim> claims = new java.util.ArrayList<>();
-        int[] underConstruction = buildingManager.getUnderConstructionById();
+        long[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
             BuildingsTemplate.Site site = t.site();
             if (site == null || site.resource() != r || t.isPlatform()) continue;
-            int n = buildingManager.getQuantity(t.getId());
+            long n = buildingManager.getQuantity(t.getId());
             if (t.getId() < underConstruction.length) n += underConstruction[t.getId()];
             if (n > 0) claims.add(new LandManager.Claim(site.type(), site.sites(), n));
         }
@@ -10350,14 +10523,14 @@ public class Game {
         return t != null && t.site() != null && t.site().resource().hasTypes() && !t.isPlatform();
     }
 
-    private int committedOn(Resource r, Deposit.FieldType type, boolean everyType) {
-        int committed = 0;
-        int[] underConstruction = buildingManager.getUnderConstructionById();
+    private long committedOn(Resource r, Deposit.FieldType type, boolean everyType) {
+        long committed = 0;
+        long[] underConstruction = buildingManager.getUnderConstructionById();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
             BuildingsTemplate.Site site = t.site();
             if (site == null || site.resource() != r || t.isPlatform()) continue;
             if (!everyType && site.type() != type) continue;
-            int n = buildingManager.getQuantity(t.getId());
+            long n = buildingManager.getQuantity(t.getId());
             if (t.getId() < underConstruction.length) {
                 n += underConstruction[t.getId()];
             }
@@ -10374,7 +10547,7 @@ public class Game {
      * building on its resource's sites (committedOn()). The same as
      * committedOn() in a city with no platform.
      */
-    public int committedFor(BuildingsTemplate t) {
+    public long committedFor(BuildingsTemplate t) {
         if (t == null) return 0;
         if (t.isPlatform()) return getSectors().oil().jacketsOnSite();
         if (t.isPlatformWell()) return platformWellsCommitted();
@@ -10466,7 +10639,7 @@ public class Game {
      * its type's ore left in the ground (remainingFor()). Until then a free
      * site anywhere and the resource's ore, a mine a site.
      */
-    public boolean hasDepositFor(BuildingsTemplate template, int quantity) {
+    public boolean hasDepositFor(BuildingsTemplate template, long quantity) {
         return hasDepositFor(template, quantity, 0, null);
     }
 
@@ -10476,7 +10649,7 @@ public class Game {
      * 0.7.124 a packed works with `ahead`, the claims those orders make on
      * its resource's fields, packed with the standing.
      */
-    private boolean hasDepositFor(BuildingsTemplate template, int quantity, int before, java.util.List<LandManager.Claim> ahead) {
+    private boolean hasDepositFor(BuildingsTemplate template, long quantity, long before, java.util.List<LandManager.Claim> ahead) {
         Resource r = siteOf(template);
         if (r == null) return true;
         if (packs(template)) {
@@ -10524,12 +10697,12 @@ public class Game {
      * platform's jacket the platforms the sea fields the city owns
      * could still take (sectors.Oil.platformRoom()).
      */
-    public int sitesFor(BuildingsTemplate template) {
+    public long sitesFor(BuildingsTemplate template) {
         Resource r = siteOf(template);
         if (r == null) return 0;
         if (template.isPlatform()) return getSectors().oil().platformRoom();
         if (template.isPlatformWell()) {
-            int seaFree = landManager.getSites(r, false) - Math.max(0, landWellsCommitted() - landManager.getSites(r, true));
+            long seaFree = landManager.getSites(r, false) - Math.max(0, landWellsCommitted() - landManager.getSites(r, true));
             return Math.max(0, Math.min(getSectors().oil().slotsStanding(), seaFree));
         }
         // ...a works on a typed resource (0.7.124): its own type's sites (LandManager.getSites(r, type)).
@@ -10595,7 +10768,7 @@ public class Game {
     }
 
     /** Whether this order can stand on the city's coast: true for everything but a desalination plant and a sea terminal (0.7.86), which need owned sea. */
-    public boolean hasCoastFor(BuildingsTemplate template, int quantity) {
+    public boolean hasCoastFor(BuildingsTemplate template, long quantity) {
         return hasCoastFor(template, quantity, Landmasses.CHOSEN);
     }
 
@@ -10610,7 +10783,7 @@ public class Game {
        automatic builder and the advice order by, so they never link an island - or an id. */
 
     /** Whether this order can stand on the city's coast, on the landmass asked for (Landmasses.CHOSEN, RULE or an id). */
-    public boolean hasCoastFor(BuildingsTemplate template, int quantity, int asked) {
+    public boolean hasCoastFor(BuildingsTemplate template, long quantity, int asked) {
         Landmasses lms = landManager.getLandmasses();
         if (lms.single()) return template == null || !template.needsCoast() || landManager.getSeaKm2() > 0;
         if (template == null || !template.needsCoast()) return true;
@@ -10628,20 +10801,20 @@ public class Game {
        unlinked): only new orders are held. */
 
     /** How many stations of this template the city's linked hydro sites hold in all (HydroSites.slots()); 0 for a template that is not a hydro station. */
-    public int hydroSlots(BuildingsTemplate t) {
+    public long hydroSlots(BuildingsTemplate t) {
         return t == null || !t.isHydro() ? 0 : landManager.getHydroSites().slots(t.getProduction1());
     }
 
     /** The hydro stations standing, on site or ordered: what the slots are counted against. */
-    public int hydroCommitted() { return committedWhere(BuildingsTemplate::isHydro); }
+    public long hydroCommitted() { return committedWhere(BuildingsTemplate::isHydro); }
 
     /** The slots left for this template: the slots less the stations committed, never below nothing - a site lost never stops a station standing, it only holds new orders. */
-    public int hydroSlotsFree(BuildingsTemplate t) {
+    public long hydroSlotsFree(BuildingsTemplate t) {
         return Math.max(0, hydroSlots(t) - hydroCommitted());
     }
 
     /** Whether this order has a river: true for every building but a hydro station, whose order of n needs n slots free. */
-    public boolean hasRiverFor(BuildingsTemplate t, int n) {
+    public boolean hasRiverFor(BuildingsTemplate t, long n) {
         return t == null || !t.isHydro() || hydroSlotsFree(t) >= n;
     }
 
@@ -10735,7 +10908,7 @@ public class Game {
     }
 
     /** Whether this order has a crossing: true for every building but a bridge, whose order needs the survey to find one (before land and money: no bond for an impossible bridge). */
-    public boolean hasBridgeFor(BuildingsTemplate t, int n) {
+    public boolean hasBridgeFor(BuildingsTemplate t, long n) {
         if (t == null || !t.isBridge()) return true;
         BridgeSurvey.Result r = bridgeSurvey(t);
         return r != null && r.ok();
@@ -10751,7 +10924,7 @@ public class Game {
         return bridgeWorksFor(t, quantity);
     }
 
-    private BridgeSpan bridgeWorksFor(BuildingsTemplate t, int quantity) {
+    private BridgeSpan bridgeWorksFor(BuildingsTemplate t, long quantity) {
         if (t == null || !t.isBridge() || t.getConstructionPoints() <= 0 || quantity < 1) return null;
         BridgeSurvey.Result r = bridgeSurvey(t);
         if (r == null || !r.ok()) return null;
@@ -10780,13 +10953,13 @@ public class Game {
      * with wages as a span's does). Null for what is no platform or platform well, a sea a jacket stands in (factor 1), a
      * city with no Oil sector and a template with no points to price it on. Reads.
      */
-    public DeepWater deepWater(BuildingsTemplate t, int quantity) {
+    public DeepWater deepWater(BuildingsTemplate t, long quantity) {
         ham.citybuildersim.sectors.Oil oil = getSectors() == null ? null : getSectors().oil();
         if (oil == null || t == null || !(t.isPlatform() || t.isPlatformWell()) || quantity < 1) return null;
         return deepWaterAt(t, quantity, oil.depthOfNext(t), oil.deepWaterFactor(t));
     }
 
-    private DeepWater deepWaterAt(BuildingsTemplate t, int quantity, double depthM, double factor) {
+    private DeepWater deepWaterAt(BuildingsTemplate t, long quantity, double depthM, double factor) {
         if (t == null || !(factor > 1) || t.getConstructionPoints() <= 0 || quantity < 1) return null;
         double points = (factor - 1) * t.getConstructionPoints() * (double) quantity;
         return new DeepWater(depthM, factor, points, points * buildingManager.nonMaterialCost(t) / t.getConstructionPoints());
@@ -10804,15 +10977,15 @@ public class Game {
             @Override public boolean known(int template) {
                 return buildingManager != null && buildingManager.getTemplate(template) != null && buildingManager.getTemplate(template).isBridge();
             }
-            @Override public int standing(int template) {
+            @Override public long standing(int template) {
                 return Math.max(0, buildingManager.getQuantity(template) - buildingManager.getControl().closingOf(template));
             }
-            @Override public int onSite(int template) {
+            @Override public long onSite(int template) {
                 BuildingsTemplate t = buildingManager.getTemplate(template);
                 BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
                 return stack == null ? 0 : stack.getUnderConstruction();
             }
-            @Override public int shell(int template) {
+            @Override public long shell(int template) {
                 ConstructionControl.Shell shell = buildingManager.getControl().shellOf(template);
                 return shell == null ? 0 : shell.buildings;
             }
@@ -10907,22 +11080,22 @@ public class Game {
             @Override public boolean known(int template) {
                 return buildingManager != null && Ports.isPort(buildingManager.getTemplate(template));
             }
-            @Override public int standing(int template) {
+            @Override public long standing(int template) {
                 return Math.max(0, buildingManager.getQuantity(template) - buildingManager.getControl().closingOf(template));
             }
-            @Override public int onSite(int template) {
+            @Override public long onSite(int template) {
                 BuildingsTemplate t = buildingManager.getTemplate(template);
                 BuildingsStacks stack = t == null ? null : buildingManager.getStack(t);
                 return stack == null ? 0 : stack.getUnderConstruction();
             }
-            @Override public int shell(int template) {
+            @Override public long shell(int template) {
                 ConstructionControl.Shell shell = buildingManager.getControl().shellOf(template);
                 return shell == null ? 0 : shell.buildings;
             }
-            @Override public java.util.List<int[]> demolitions(int template) {
-                java.util.List<int[]> out = new java.util.ArrayList<>();
+            @Override public java.util.List<long[]> demolitions(int template) {
+                java.util.List<long[]> out = new java.util.ArrayList<>();
                 for (ConstructionControl.Demolition d : buildingManager.getControl().demolitions()) {
-                    if (d.templateId == template) out.add(new int[] { d.id, d.buildings });
+                    if (d.templateId == template) out.add(new long[] { d.id, d.buildings });
                 }
                 return out;
             }
@@ -10946,8 +11119,9 @@ public class Game {
      * the same construction capacity, which is the point: a city whose builders
      * are busy on private work builds its own power station more slowly.
      */
-    public boolean buildFor(Investor payer, BuildingsTemplate template, int quantity) {
+    public boolean buildFor(Investor payer, BuildingsTemplate template, long quantity) {
 
+        if (!buildingManager.isTemplateKnown(template)) return false;
         BuildQuote quote = quoteBuild(template, quantity);
 
         double landNeeded = template.getLandSqFt() * quantity;
@@ -11067,7 +11241,7 @@ public class Game {
     /** One sector's till and credit as a payer, as the month's investment builds with it (sectorInvestor()): what a harness borrows a building's loan through. */
     public Investor getSectorInvestor(String sector) { return sectorInvestor(sector); }
     
-    public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction){
+    public BuildResult buildStack(BuildingsTemplate template, long quantity, boolean noConstruction){
         return buildStack(template, quantity, noConstruction, Landmasses.CHOSEN);
     }
 
@@ -11077,7 +11251,11 @@ public class Game {
      * coast are known, and carried into the order. For an island no port links the ground it needs is that island's own room
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
-    public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction, int asked){
+    public BuildResult buildStack(BuildingsTemplate template, long quantity, boolean noConstruction, int asked){
+        if (!buildingManager.isTemplateKnown(template)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NOT_KNOWN;
+        }
         double totalCost = noConstruction
                 ? template.getCashCost() * quantity
                 : quoteBuildOn(template, quantity, asked).total;
@@ -11141,7 +11319,7 @@ public class Game {
         
     }
     /** Square feet a build order of this size would need. For the refusal screen. */
-    public double landNeededFor(BuildingsTemplate template, int quantity){
+    public double landNeededFor(BuildingsTemplate template, long quantity){
         return template.getLandSqFt() * (double) quantity;
     }
 
@@ -11196,7 +11374,7 @@ public class Game {
        ------------------------------------------------------------------- */
 
     /** What placing these orders in turn would charge altogether: each one's quote on the yard the ones before it leave. */
-    public double buildRunInvoice(java.util.Map<BuildingsTemplate, Integer> run) {
+    public double buildRunInvoice(java.util.Map<BuildingsTemplate, Long> run) {
         int yard = buildingManager.getConstructionMaterials();
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
@@ -11204,7 +11382,7 @@ public class Game {
         double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0;
         // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
         java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
                     new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead));
@@ -11235,28 +11413,28 @@ public class Game {
     }
 
     /** What the treasury is short of for the whole run: its invoice less the cash, never below nothing - an overdraft counted in full, as one order's buildFundingGap(template, quantity) counts it. */
-    public double buildFundingGap(java.util.Map<BuildingsTemplate, Integer> run) {
+    public double buildFundingGap(java.util.Map<BuildingsTemplate, Long> run) {
         return Math.max(0, buildRunInvoice(run) - cash);
     }
 
     /** How many of the run's orders, from the first, would pass the checks money cannot fix - ore, the coast, the river (HY1), licences, ground - each placed after the ones before it. */
-    public int buildRunAhead(java.util.Map<BuildingsTemplate, Integer> run) {
+    public int buildRunAhead(java.util.Map<BuildingsTemplate, Long> run) {
         return runAhead(run, null);
     }
 
     /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
-    public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Integer> run) {
+    public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Long> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
         return stop[0];
     }
 
-    private int runAhead(java.util.Map<BuildingsTemplate, Integer> run, BuildResult[] stop) {
+    private int runAhead(java.util.Map<BuildingsTemplate, Long> run, BuildResult[] stop) {
         int ahead = 0;
         // ...the run's own orders on each resource's sites so far (0.7.62: iron and oil apart; since 0.7.91 a platform's
         // wells and its jackets each apart from the land's, sitePool()) - and since 0.7.124 a packed works' claims on its
         // resource's fields, by resource, packed with the standing (hasDepositFor()): a large mine's twenty sites, not one.
-        int[] onSites = new int[Resource.values().length + 2];
+        long[] onSites = new long[Resource.values().length + 2];
         java.util.Map<Resource, java.util.List<LandManager.Claim>> claimsAhead = new java.util.EnumMap<>(Resource.class);
         double ground = 0;
         // ...and how much of it is works's (ET2): a works takes the steep ground no building may have, so it is not all of it off a building's free ground.
@@ -11265,10 +11443,10 @@ public class Game {
         // ...and (ET5) the ground the run's sea terminals take on each island no port links: that island's room, never the linked ground.
         java.util.Map<Integer, Double> aheadOn = new java.util.HashMap<>();
         // ...and (HY1) the hydro stations the run has ordered so far: each counts against the slots free of the ones after it.
-        int hydroAhead = 0;
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+        long hydroAhead = 0;
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            int n = e.getValue() == null ? 0 : e.getValue();
+            long n = e.getValue() == null ? 0 : e.getValue();
             int pool = sitePool(t);
             if (t != null && n > 0) {
                 LandManager.Use use = groundUse(t);
@@ -11276,7 +11454,8 @@ public class Game {
                         : Math.min(worksAhead + runsAhead * landManager.getSlopeShare(), landManager.idleSlopeSqFt());
                 java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
                 int island = islandPortLandmass(t, Landmasses.CHOSEN);
-                BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
+                BuildResult refused = !buildingManager.isTemplateKnown(t) ? BuildResult.NOT_KNOWN
+                        : !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
                         : !hasBridgeFor(t, n) ? BuildResult.NO_BRIDGE
@@ -11335,7 +11514,7 @@ public class Game {
     public String getBuildingName(){
         return lastBuildingName;
     }
-    public int getBuildQuantity(){
+    public long getBuildQuantity(){
         return lastBuildQuantity;
     }
 
@@ -11922,7 +12101,7 @@ public class Game {
         Auction.Result r = quote.auction();
         Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years, quote.callable()) : null;
         if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
-            // BD1: a premium eats the line's discount left, the settled part's too; the book's figure for the bank moves with no trade behind it.
+            // BK2: the premium stays with the unsettled sale until the settle; each holder's own discount is unchanged here.
             double bankCarriedBefore = bank.getUnearnedDiscount(), bankBookBefore = debtManager.bankUnearnedDiscount();
             line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate(), month, saleHow);
             restrikeBankDiscountCarried(bankCarriedBefore, bankBookBefore);
@@ -13364,7 +13543,9 @@ public class Game {
          * when it is today's line, the inflation rule, untied: "aim at inflation instead and watch the gold go".
          */
         ForeignAccounts.Regime fxRegime = foreign.getRegime();
-        if (fxRegime == ForeignAccounts.Regime.PEG) {
+        if (!isLeverOpen(PolicyDates.Lever.POLICY_RATE) || foreign.isCanadaGold()) {
+            debtManager.setPolicyRate(debtManager.worldRate());
+        } else if (fxRegime == ForeignAccounts.Regime.PEG) {
             debtManager.setPolicyRate(debtManager.tiedRate(foreign.currencyGap()));
         } else if (fxRegime == ForeignAccounts.Regime.GOLD
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)) {
@@ -13453,6 +13634,9 @@ public class Game {
          */
         economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));
 
+        // FB3 (FW6-C): the seller-priced goods' markets begin their month here, as the traded goods' do in their clearing: their trades and tally
+        // grew for the city's whole life. Before startOfMonthUpdate(), whose luxury counter makes the earliest of a press's seller-priced fills.
+        getMarkets().startSellerPricedMonth();
         startOfMonthUpdate();
         simulationEngine.simulateMonth(this);
         finalUpdateEconomy();
@@ -13522,6 +13706,7 @@ public class Game {
         bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
 
         refreshBank();
+        lender.projectLoansSettled();
         // ...and what it sets aside against it, now every loan and write-off
         // of the month is on the books (0.7.8). See provideForLosses().
         provideForLosses();
@@ -13921,7 +14106,7 @@ public class Game {
         // REACHES THE D$); zeros with no world.
         handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
-        boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD;
+        boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD || foreign.isCanadaGold();
         foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)
         foreign.repriceCurrency();
         /*
@@ -13938,6 +14123,8 @@ public class Game {
                     foreign.getLastBreakCause().words, getCurrency().qualifiedSymbol(), rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
             if (onGoldBeforeReprice) debtManager.dropGoldAim();
+            // R0f: a 1926-31 exhaustion frees the Advance Rate now, as a load of this same month does.
+            if (foundedUnfitted()) debtManager.hearMoneyMonth(month, foreign.isCanadaGold());
         }
         // ...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke.
         noteTheWorldMoneys(rateBeforeReprice);
@@ -14079,6 +14266,12 @@ public class Game {
         // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
         reconcileMap();
 
+        // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Closed BEFORE the
+        // autosave and the recording (FB3, REV-FB3-1): a save carries the draws (FW6-C), and one taken with the month's still open put
+        // them back on a load, where the next strike rowed them and the next clearing filled them again - last month's imports
+        // counted twice into the partners' trade. Nothing below draws. ReloadCheck's autosave section holds it.
+        getMarkets().closeMonth();
+
         /*
          * THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52). It was written near the
          * top of this method until 0.7.51, after the calendar had turned and
@@ -14110,8 +14303,6 @@ public class Game {
         }
         // A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING), from the autosave's fill when it made one (TR2). Moves no pool.
         recordForReplay(autosaved);
-        // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Last, on purpose.
-        getMarkets().closeMonth();
     }
     
     private void startOfMonthUpdate(){
@@ -14171,6 +14362,14 @@ public class Game {
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
         // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.
         strikeTheWorldMarket();
+        // Bullion's nominal US$ path and spot exchange already include the dollar's price path (GD4).
+        double gold = goldUsdPerOunce(WorldMoneys.monthIndex(month));
+        if (Double.isFinite(gold) && gold > 0) {
+            GoodsMarket bullion = economyManager.getMarkets().get(Good.GOLD);
+            bullion.setExchangeRate(foreign.getRate());
+            bullion.setWorldPrices(gold * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000,
+                    gold * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000);
+        }
 
         /*
          * ...and wages start chasing what the basket now costs.
@@ -14250,6 +14449,7 @@ public class Game {
         // is short of like any loan (BusinessDebtManager, THE LANDLORDS'
         // MORTGAGES).
         economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
+        economyManager.getBusinessDebtManager().setProjectBudget(bank);
         householdBalance.setCapitalRule(growth, keepGoingOnly);
         // ...and every business's spread sits on the bank's prime (0.7.7; the
         // city's rate until then), on the dial as it stands this month - and
@@ -14309,6 +14509,8 @@ public class Game {
         getMarkets().rowDrawsBeforeStrike(getSectors());
         // ...and the strategic reserve's month, beside the businesses it traded with (0.7.85).
         settleReserve();
+        // ...and the licences the city's own patented works accrued last month (R2c-P), paid abroad in the same strike.
+        settlePublicLicences();
         // ...and the sales tax a business claimed back on the buildings it
         // bought reached its till at the bank (Sector.bank()) as cash back on
         // them, so the month's building spending is net of it (0.7.19).
@@ -14340,7 +14542,9 @@ public class Game {
                         + education.getGrossCost()
                         // ...and the research grants' posts and laboratories (R3), valued at what they cost: none at a grant of 0.
                         + economyManager.getResearchBill()
-                        + economyManager.getTransitBill(),
+                        + economyManager.getTransitBill()
+                        // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
+                        + publicIpPaid,
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -14630,7 +14834,7 @@ public class Game {
      * four have to be current before updateInterest() or any quote, which is
      * why this is one call rather than four scattered ones.
      */
-    private void priceTheDebtMarket(){
+    void priceTheDebtMarket(){
         debtManager.setGDP(economyManager.getMonthGdp());
         debtManager.setTaxRevenue(economyManager.getTaxIncome());
         debtManager.setCashPosition(cash);
@@ -14782,7 +14986,9 @@ public class Game {
         servicesManager.updateServices();
         economyManager.setPricePerWatt(servicesManager.getPricePerWatt());
         economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
-        
+        // The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices; paid at the next strike.
+        publicIpPending = LicenceFees.capturePublic(this);
+
         if (Double.isFinite(tempCash)) {
             // The tax take in, and every line out - the promises whole.
             // tempCash is the guard it always was: a month whose books do not
@@ -15074,6 +15280,19 @@ public class Game {
         // ...and the service keeps the three, so a screen shows the coverage
         // the month read rather than one it worked out from the beds.
         healthcare.noteCoverage(childcareCoverage, generalCoverage, seniorCoverage);
+        /*
+         * ...AND THE MEDICINE THE CITY KNOWS (R2f, research-design Q17). A
+         * city founded the 1900 way lacks each medical row until history's
+         * month or its own find: general care cures less before the stays
+         * rows, the year-or-more sick recover slower before the TB drugs and
+         * the served long sick die more before the breathing machine
+         * (Sickness), and a row found ahead of the world brings its step on
+         * a cause of death forward (CausesOfDeath.ahead()). Any other city
+         * is MedicalRows.TODAY, which changes nothing. Derived from the
+         * research each month, so nothing is saved.
+         */
+        MedicalRows medicalRows = medicalRows();
+        sickness.setMedicine(medicalRows, month, generalCoverage);
 
         // What the beds could do; the service takes the priced-out off it.
         double[] served = new double[CareType.values().length];
@@ -15135,7 +15354,8 @@ public class Game {
          * or nobody could die of sickness for two months. See Sickness.
          */
         if (!sickness.isSeeded()) {
-            sickness.seed(health.getSickRate(), generalCoverage, childcareCoverage, seniorCoverage);
+            sickness.seed(health.getSickRate(), health.getSickRateWithoutInfluenza(),
+                    generalCoverage, childcareCoverage, seniorCoverage);
         }
         double[] illness = sickness.deathRates();
         /*
@@ -15168,7 +15388,7 @@ public class Game {
          */
         double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,
                 getWaterRatio(), householdBalance.getHungerRate(), generalCoverage,
-                health.getOutbreakSeverity(), cohorts.getLastBirths());
+                health.getOutbreakSeverity(), cohorts.getLastBirths(), medicalRows);
         double[] causeTotals = CausesOfDeath.bandTotals(causeRates);
         // ...held off for a harness fixture (R0b call 7): no cause, and the swing whole.
         for (AgeBand b : AgeBand.values()) {
@@ -15592,8 +15812,8 @@ public class Game {
          *    a month longer, and whoever fell ill this month joins. Next month's
          *    deaths are struck from what this leaves.
          */
-        sickness.advanceMonth(health.getSickRate(), generalCoverage,
-                childcareCoverage, seniorCoverage);
+        sickness.advanceMonth(health.getSickRate(), health.getSickRateWithoutInfluenza(),
+                generalCoverage, childcareCoverage, seniorCoverage);
     }
 
     /* =====================================================================
@@ -16389,7 +16609,7 @@ public class Game {
     public Bank getBank() { return bank; }
 
     /** Commercial Banks standing now, counted from the buildings: a founded city has one before its first month opens it (bank.getBranches() is 0 until the month runs). */
-    public int getBankBranchesStanding() { return buildingManager.countByName("Commercial Bank"); }
+    public long getBankBranchesStanding() { return buildingManager.countByName("Commercial Bank"); }
 
     /**
      * The central bank - the balance sheet money is made on (0.7.0).
@@ -16551,8 +16771,7 @@ public class Game {
         double[] priced = wantedPosts.pricedOn(populationManager.staffablePostsByBand());
         labourMarket.advanceMonth(
                 priced,
-                // (a harness may fill against the refused posts too, as LD1 did: WantedPosts.carryKeptOut)
-                WantedPosts.carryKeptOut ? populationManager.supplyByBand() : populationManager.supplyByBand(priced),
+                populationManager.supplyByBand(),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
         populationManager.takeWagesFrom(labourMarket);
@@ -16696,8 +16915,14 @@ public class Game {
         return Math.max(0, AUTOSAVE_MONTHS - monthsSinceAutosave);
     }
 
+    /** What the failure page, inbox and Quit say about the one autosave guard (UP6b). */
+    public String autosaveStatus() {
+        return ranThrough ? "This city is autosaved."
+                : "Autosaves are off until this city is loaded again. Save by hand, then load that save to turn them back on.";
+    }
+
     /**
-     * Writes the autosave slot, if there is a city to write.
+     * Writes the autosave slot, if there is a city to write and no skip has left a partial month.
      *
      * Called on five occasions, and each covers a different way of losing a
      * city: every twelve months for the ordinary case, before a multi-month skip
@@ -16705,6 +16930,8 @@ public class Game {
      * after one so the skip's last month is on disk too (UP6), on quit, and on
      * the window's close (UP6), because the window closing is the most common
      * accident of all.
+     * After a skip fails, every path preserves the last whole autosave until a
+     * load or a new city restores the shared completion guard (UP6b).
      *
      * Failures are reported and swallowed. An autosave that cannot write must
      * not stop a month advancing or a player quitting - it is a safety net, and
@@ -16719,10 +16946,10 @@ public class Game {
         autosaveJob(reason);
     }
 
-    /** The autosave, returning the job it made (null when the city is not initialised) so the month that autosaves can hand its fill to the recording (TR2). */
+    /** The autosave, returning its job (null before a city is initialised or after a broken skip) so the month that autosaves can hand its fill to the recording (TR2). */
     private SaveWriter.Job autosaveJob(String reason) {
 
-        if (!initialized) return null;
+        if (!initialized || !ranThrough) return null;
 
         reportSaves();
 
@@ -16730,7 +16957,7 @@ public class Game {
         SaveWriter.shared().submit(job,
                 result -> {
                     System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
-                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, result));
+                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, job.data().getMonth(), result));
                 });
         // A recorded city's history goes at the autosave's pace, from the snapshot the save already made (TR1; THE RECORDING).
         recordHistoryFrom(job);
@@ -16774,8 +17001,8 @@ public class Game {
      * "Autosave at the skip's end"). The running clock keeps its floor.
      * ====================================================================== */
 
-    /** A result the writer finished, and the slot it was for (UP6): an autosave's goes to the inbox, the player's Save is told by its page. */
-    private record Written(int slot, GameFiles.Result result) { }
+    /** A result the writer finished, with its slot and snapshot's month (UP6b): the report may arrive in a later month. */
+    private record Written(int slot, int month, GameFiles.Result result) { }
 
     /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */
     private final java.util.concurrent.ConcurrentLinkedQueue<Written> savesWritten =
@@ -16807,7 +17034,7 @@ public class Game {
                     System.out.println("Autosave failed: " + w.result().error);
                 }
                 // The inbox keeps the autosave's trouble standing until one lands whole (UP6, LB3-S).
-                inbox.autosaveWritten(month, w.result());
+                inbox.autosaveWritten(w.month(), w.result());
             }
         }
     }
@@ -16878,7 +17105,7 @@ public class Game {
         playerSavesInWriter.incrementAndGet();
         SaveWriter.shared().submit(job, result -> {
             System.out.println(GameFiles.slotLabel(slot) + ": " + result.message());
-            savesWritten.add(new Written(slot, result));
+            savesWritten.add(new Written(slot, job.data().getMonth(), result));
             playerSavesInWriter.decrementAndGet();
             done.accept(result);
         });
@@ -16951,6 +17178,10 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        dataSave.setLicenceFees(licenceFeesForSave());
+        // ...and the licence the city's own patented works accrued and last paid (R2c-P).
+        dataSave.setPublicIpPending(publicIpPending);
+        dataSave.setPublicIpPaid(publicIpPaid);
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
         // ...and the city's research with the month's bill, only where it holds anything (R3; none in a city that never funded any).
@@ -17085,7 +17316,7 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
-        dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        dataSave.setPolicyAutopilot(debtManager.isAutopilot() || debtManager.isAutopilotAtOpening());   // the saved key carries a rule still waiting for its bank (R1d), which the load's setAutopilot() and moneyHearsTheMonth() put back to waiting
         // ...and what the autopilot aims at and the spread the dial stands at under a peg (XR2).
         dataSave.setPolicyAim(debtManager.getAim().name());
         dataSave.setPegSpread(debtManager.getPegSpread());
@@ -17187,6 +17418,7 @@ public class Game {
         dataSave.setMigration(migration.toSaveArray());
         dataSave.setUnemployment(unemployment.toSaveArray());
         dataSave.setSickness(sickness.getState());
+        dataSave.setSicknessAcute(sickness.getAcuteShares());
         dataSave.setCrime(crime.getState());
         dataSave.setHealth(health.getState());
         dataSave.setCausesOfDeath(causesOfDeath.getState());
@@ -17203,6 +17435,7 @@ public class Game {
          * a month ended in. See the note in DataSave.
          */
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
+        dataSave.setSectorOperatingLossMonths(businessInvestment.getOperatingLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
@@ -17247,6 +17480,8 @@ public class Game {
         // NOTE: reports/graphs settings were never saved at all - they'd silently
         // reset to their true/true defaults on every load.
         dataSave.setLandOwned(landManager.getOwnedSqFt());
+        dataSave.setLandAllocatedSqFt(landManager.getAllocatedSqFt());
+        dataSave.setLandFootprintSqFt(buildingManager.getTotalLandFootprint());
         dataSave.setLandBlocksPurchased(landManager.getBlocksPurchased());
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
         // ...the works' ground and the foothill prepared (ET2).
@@ -17529,6 +17764,31 @@ public class Game {
         return true;
     }
 
+    /** A prepared replay map and its owning copy (CM2): never transferable to another Game or the normal game. */
+    public static final class ReplayMap {
+        private final Game owner;
+        private final CityMap map;
+
+        private ReplayMap(Game owner, CityMap map) {
+            this.owner = owner;
+            this.map = map;
+        }
+    }
+
+    /** Keeps the map with its lazy sea, rail and land pictures already handed over, on the replay's calling thread. */
+    public ReplayMap keepReplayMap() {
+        return replayCopy ? new ReplayMap(this, getCityMap()) : null;
+    }
+
+    /** Puts back this copy's prepared map without decoding or rebuilding its pictures (CM2's loaded move, FX thread only). */
+    public boolean replayMap(ReplayMap prepared) {
+        if (!replayCopy || prepared == null || prepared.owner != this) return false;
+        cityMap = prepared.map;
+        mapGeneration++;
+        mapAtSeaStale = false;
+        return true;
+    }
+
     /** Replay's history: a parsed history put in place of the copy's, as loadHistory() does with the file's, and the partner trade's years with it. A game that is not a replay copy keeps its own. */
     public void replayHistory(HistorySave h) {
         if (!replayCopy || h == null) return;
@@ -17545,6 +17805,9 @@ public class Game {
      */
     private String skipFailure;
 
+    /** The skip's completion guard (UP6b), shared by every autosave; only a new or loaded city restores it after failure. */
+    private boolean ranThrough = true;
+
     public String takeSkipFailure() {
         String failure = skipFailure;
         skipFailure = null;
@@ -17553,9 +17816,11 @@ public class Game {
 
     /**
      * What the last write attempt did. Null until something has been saved.
-     * A numbered slot's save is here at once; an autosave's once reportSaves()
-     * has collected it from the writer (the next month's end, the next save,
-     * awaitSaves()).
+     * A synchronous save() sets it before returning. An autosave or a numbered
+     * saveInBackground() sets it once reportSaves() collects the writer's result
+     * (the next month's end, the next autosave, or awaitSaves()). The background
+     * Save's callback receives its result on the writer's thread without waiting
+     * for that report.
      */
     private GameFiles.Result lastSaveResult;
 
@@ -17637,7 +17902,7 @@ public class Game {
             BuildingsTemplate template = buildingManager.getTemplate(i);
             // ...an id no template has (a gap, sendBuildingSave()'s note) holds nothing.
             if (template == null) continue;
-            int quantity = 0;
+            long quantity = 0;
 
             if (i < dataSave.getBuildingsLength()) {
                 quantity = dataSave.getBuildingQuantity(i);
@@ -18160,11 +18425,10 @@ public class Game {
     /**
      * BD1: books the bank's gain or loss from a line's discount moving the book's figure outside the settle
      * (Bank.restrikeCarriedDiscount()): a reopening at a premium, or the desk handing the bank the whole line's
-     * discount while the book counts the settled part's. Not at the treasury's buyback or the call: a settled piece's
-     * two figures move together there (Debt.retirePart() scales the discount with the face; canCall() takes no piece
-     * with a sale unsettled), and a piece bought back whole before its settle must not be re-struck - the settle still
-     * pays for the sale, which cancels what the bank sold back of it, as it always did (the gate's finding on BD1:
-     * a re-strike there left the piece's whole discount unexplained for good). The gain is what the bank's carried
+     * discount while the book counts the settled part's. A treasury buyback removes each paid holder's own face and
+     * discount together. A whole piece closed before its settle cancels the unpaid sale at its original proceeds
+     * (BS1), leaving the bank's trade confined to its paid holdings. A call likewise moves paid holdings together.
+     * The gain is what the bank's carried
      * unearned discount moved by, less what the book's figure for it moved by, struck from the two figures taken
      * just before any face or discount moved. The 1e-9 is BK1's numerical guard: sums of thousands of pieces.
      * Since BK2 each holder's own discount moves with its face, so this books nothing at a reopening at a discount; what is left is a
@@ -19250,8 +19514,9 @@ public class Game {
          * and over the default, last month's sale first - a revenue line
          * beside the remittance. Before the advances are settled below, so a
          * treasury it lifts over nothing repays them with it. Nothing from an
-         * empty fund. The cash its rule cannot invest under its caps and its
-         * mix (fundIdleCash()) is taken at the larger of the dial and
+         * empty fund. The cash its rule cannot invest under its caps (not its
+         * mix, RB1's call b), on its cash less last month's toRaise (RB1-R)
+         * (fundIdleCash()), is taken at the larger of the dial and
          * TreasuryFund.IDLE_TRANSFER_SHARE, so it does not pile up (RB1);
          * at a dial of nothing, nothing.
          */
@@ -19543,13 +19808,13 @@ public class Game {
      * The face asked is held to what can be offered (buybackOfferable()). A
      * piece with a sale not yet settled can be bought back WHOLE and not in
      * part: its buyers have not paid for it, and the settle cannot be split
-     * between what stays and what goes, so a whole piece goes off the books as
-     * it always did (the settle does not see a piece that is not on the list,
-     * and the bank, which was to pay for it, keeps what the treasury paid it)
-     * and a part of it quotes nothing. Whole means every offer taken and none
+     * between what stays and what goes. Its unpaid sale is cancelled at the
+     * proceeds the treasury received, and that amount leaves the bank's next
+     * settle. The bank offers its paid face. A part quotes nothing.
+     * Whole means every offer taken and none
      * of the piece the central bank's; a highest price that leaves some
      * behind makes it a part. Its holders are the ones it has now: a new
-     * piece is the bank's, a reopening has its older part with the others.
+     * piece is entirely unpaid, a reopening has its older part with the others.
      *
      * @param face      the face wanted, local money
      * @param maxPer100 the most to pay per 100 of face, or NaN for any price
@@ -19579,14 +19844,18 @@ public class Game {
                 // and a linker's on the dial and the index it expects; every other piece's own, as before.
                 // A piece the city can call now is never bought back over the call price (BB1, CD4-C ★6).
                 : new Buyback.Line(principal, debtManager.pricingFlows(debt), fair, debt.getCarryingValue(),
-                        debt.bankPrincipal(), debt.householdPrincipal(), debt.firmPrincipal(),
+                        debt.bankPrincipalPaid(), debt.householdPrincipal(), debt.firmPrincipal(),
                         debt.worldPrincipal(), debt.centralBankPrincipal(), false,
-                        canCall(debt) ? CallTree.CALL_PRICE : Double.NaN);
+                        canCall(debt) ? CallTree.CALL_PRICE : Double.NaN,
+                        debt.unsettledFace(), debt.getSettleDue());
         double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
+        boolean unsettled = debt.unsettledFace() > 0 || debt.getSettleDue() > 0;
+        // A typed face within the whole-piece tolerance closes every offer at its full price.
+        if (unsettled && takesTheWholePiece(asked, principal)) asked = Math.max(principal, line.offerable());
         Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
         // A sale not yet settled: the whole piece or nothing (see above).
-        boolean unsettled = debt.unsettledFace() > 0 || debt.getSettleDue() > 0;
-        if (unsettled && !takesTheWholePiece(quote.takenFace(), principal)) return Buyback.Result.none(face);
+        if (unsettled && (debt.centralBankPrincipal() > 0 || !takesTheWholePiece(quote.takenFace(), principal)
+                || quote.takenFace() != quote.offeredFace())) return Buyback.Result.none(face);
         return quote;
     }
 
@@ -19655,6 +19924,9 @@ public class Game {
             if (!debtManager.retire(debt)) {
                 return Buyback.Result.none(face);   // not on the books; do not charge for it
             }
+            // BY1: the treasury returns the unpaid sale's proceeds. The bank never buys or sells that face.
+            cityDebtRaisedThisMonth -= debt.getSettleDue();
+            cityDiscountThisMonth -= debt.unsettledFace() - debt.getSettleDue();
         } else {
             debt.retirePart(deal.bankFace(), deal.householdFace(), deal.firmFace(), deal.worldFace());
         }
@@ -19775,7 +20047,7 @@ public class Game {
 
     /** What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. */
     public double callCost(Debt debt) {
-        return debt == null ? 0 : debt.getOustandingPrincipal() * CallTree.CALL_PRICE / 100;
+        return debt == null ? 0 : debt.getOustandingPrincipal() * (CallTree.CALL_PRICE / 100);
     }
 
     /**
@@ -20394,6 +20666,11 @@ public class Game {
                     + "), its file left as it was. " + earth);
             return earth;
         }
+        if (!CityLand.hasSavedCentre(loaded.getLandCentre())) {
+            String why = "This save's land centre is missing or damaged.";
+            System.out.println(GameFiles.slotLabel(slot) + " not loaded, its file left as it was. " + why);
+            return why;
+        }
         return null;
     }
 
@@ -20470,33 +20747,6 @@ public class Game {
         }
     }
 
-    /*
-     * THE LAND ON THE WORLD, PUT BACK OR CONVERTED (0.7.57, SAVE_FORMAT 31;
-     * on the block grid since 0.7.67, SAVE_FORMAT 32).
-     *
-     * A format-32 save carries the city's land whole - its centre and its
-     * blocks, every purchase, the fields it holds in part, the twenty-four
-     * offers standing, what has been taken out of its ground and the world's
-     * totals - and it comes back as it was, the grid replayed from the
-     * rectangles. Its square feet (landOwned) are the land's dry ground, and
-     * are checked against it: a save whose figure is more than a plot from it
-     * has its land drawn again to hold the figure (LandConversion.restate()),
-     * and says so.
-     *
-     * A save of format 31 carries a centre and forty lanes, and is snapped to
-     * the grid, once (LandConversion.convertLanes(), spec-grid 2.6): one
-     * converted holding, its books the plots drawn, no field changing hands,
-     * no money moving. An older save carries one figure, a pool of iron and
-     * nine parcels with no place, and is converted, once (LandConversion.
-     * convert()): on its own world, a centre of blocks holding its ground to
-     * within a plot, its iron as it had it. Either way its figure becomes the
-     * converted ground's dry plots, and its old listing goes: twenty-four
-     * offers are listed afresh once the buildings are back (landConverted,
-     * readTheSave()), at the prices the save last struck: a load strikes
-     * none, and the next month strikes them on the converted ground.
-     *
-     * Returns whether the land was converted.
-     */
     /**
      * THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO
      * OIL POOLS): once the land is in place, the offshore pool's E as saved -
@@ -20518,37 +20768,11 @@ public class Game {
         }
     }
 
-    private boolean restoreLandOnTheWorld(DataSave loaded, double owned) {
-        long seed = founding.getWorldSeed();
+    private void restoreLandOnTheWorld(DataSave loaded, double owned) {
         double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(founding.getWorldKey()).seaTheta();
         int format = loaded.getSaveFormat();
-        CityLand land = format > LandConversion.LAST_LANES_FORMAT
-                ? CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
-                        loaded.getLandPartFields(), loaded.getLandConverted(), loaded.getLandCentreRelief(), loaded.getLandHoldingsRelief())
-                : null;
-        if (land == null) {
-            long t0 = System.nanoTime();
-            boolean lanes = format == LandConversion.LAST_LANES_FORMAT && LandConversion.convertLanes(landManager, seed,
-                    loaded.getLandCentre(), loaded.getLandLanes(), loaded.getLandPurchases(), loaded.getGameVersion(),
-                    loaded.getDepletion(), loaded.getWorldTotals(), sea);
-            if (!lanes) {
-                LandConversion.convert(landManager, seed, owned, loaded.getIronDeposits(), loaded.getIronReserveTonnes(),
-                        minesCommitted());
-            }
-            CityLand on = landManager.getCityLand();
-            // Converted on the old world's fields (GridConversion, World.legacyFieldsInCell()): its ground is the old world's (0.7.99).
-            on.setOldWorldHoldings(1 + on.purchases().size());
-            System.out.printf("Put the city's land on the block grid (save format %d, %s): %s of dry ground for the save's %s,"
-                            + " %s in all, in blocks of %,.0f m at (%d, %d) on world %d, %d fields held in part; %d iron sites and"
-                            + " %,.0f t; %.0f ms.%n",
-                    format, lanes ? "its lanes snapped" : "a centre drawn to the plot",
-                    LandManager.areaWords(landManager.getOwnedSqFt()), LandManager.areaWords(owned),
-                    LandManager.areaWords(LandManager.sqFt(on.totalKm2(CityLand.TOTAL))),
-                    (1L << on.level()) * World.PLOT_M, on.siteX(), on.siteY(), seed,
-                    on.partFields().size(), landManager.getIronDeposits(), landManager.getIronReserveTonnes(),
-                    (System.nanoTime() - t0) / 1e6);
-            return true;
-        }
+        CityLand land = CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
+                loaded.getLandPartFields(), loaded.getLandConverted(), loaded.getLandCentreRelief(), loaded.getLandHoldingsRelief());
         // THE OLD WORLD'S GROUND (0.7.99, batch W1; CityLand.oldWorldHoldings()): a save since says how many of its
         // holdings hold the fields the world had to 0.7.98; one from before carries no such key, and holds them on all
         // the ground it owned, as saved. The key decides where it stands (a harness's save written again under an older
@@ -20571,15 +20795,13 @@ public class Game {
         }
         landManager.restoreOwnedSqFt(owned);
         double ground = landManager.getLandDrySqFt();
-        if (!LandConversion.sameGround(owned, ground)) {
+        if (!LandDrawing.sameGround(owned, ground)) {
             System.out.printf("The save's ground (%s) is not its land's (%s): the land is drawn again to hold it.%n",
                     LandManager.areaWords(owned), LandManager.areaWords(ground));
-            LandConversion.restate(landManager, owned);
+            LandDrawing.restate(landManager, owned);
         } else {
-            // A place the save listed nothing for gets its next, at the prices restored.
             landManager.getMarket().listMissing();
         }
-        return false;
     }
 
     /** The load itself; see loadGame(). */
@@ -20883,6 +21105,7 @@ public class Game {
             // the default - six months, the constant it was.
             centralBank.setAdvancesCeilingMonths(loaded.getAdvancesCeilingMonths() != null
                     ? loaded.getAdvancesCeilingMonths() : CentralBank.DEFAULT_ADVANCES_MONTHS);
+            moneyHearsTheMonth();   // R0f: after foreign accounts and the saved policy rate, so a load keeps an exhausted gold episode.
             hotMoney.restore(loaded.getCapitalFlows());
             hotMoney.restoreStopReason(loaded.getCapitalFlowsStopReason());   // an older save has none: blank, as it was (FW6)
             hotMoney.setMonth(month);
@@ -21046,9 +21269,9 @@ public class Game {
 
             for (int id = 0; id < highestId; id++) {
 
-                int quantity = (id < loaded.getBuildingsLength())
+                long quantity = (id < loaded.getBuildingsLength())
                         ? loaded.getBuildingQuantity(id) : 0;
-                int building = loaded.hasConstructionById()
+                long building = loaded.hasConstructionById()
                         ? loaded.getUnderConstructionById(id) : 0;
 
                 if (quantity <= 0 && building <= 0) continue;
@@ -21123,6 +21346,8 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            restoreLicenceFees(loaded.getLicenceFees());
+            restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);
             equipmentForms.apply(this);
 
@@ -21219,8 +21444,9 @@ public class Game {
             if (loaded.getContractRecords() != null) {
                 buildingManager.restoreContractRecords(loaded.getContractRecords());
             } else {
-                // ...once the land price is back (below), which the share of
-                // the tax a landlord's home gets back reads (revised 0.7.19).
+                // ...at the end of the load, once the land price and the wages are
+                // back, which the share of the tax a landlord's home gets back
+                // reads (revised 0.7.19; FB3).
                 contractsToInfer = true;
             }
 
@@ -21256,8 +21482,13 @@ public class Game {
             }
 
             /*
-             * Land, after the buildings, because the allocation is derived from
-             * them rather than stored. A save from before land existed has
+             * Land, after the buildings: AW2 restores the live allocation, with
+             * the footprint as the fallback for a save without that key. Raw
+             * fixture stacks (KeptCheck's 760M sq ft behind WG2/RT3) can stand
+             * outside the ledger; replacing it on load stopped construction.
+             * The saved footprint lets later catalogue plot changes adjust the
+             * counter by their delta without losing that city's original gap.
+             * A save from before land existed has
              * landOwned 0; that is not a city with no land, it is a save that
              * never knew about land, so it keeps the opening allocation - and
              * if what is already built exceeds that, the city is loaded owning
@@ -21278,13 +21509,17 @@ public class Game {
                 landManager.setPricePerSqFt(loaded.getLandPricePerSqFt());
             }
 
-            boolean landConverted = restoreLandOnTheWorld(loaded, owned);
+            restoreLandOnTheWorld(loaded, owned);
             restoreOilPools(loaded);
             // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
             landManager.restoreDepletionByType(loaded.getDepletionByType());
-            landManager.setAllocatedSqFt(built);
+            double allocated = loaded.getLandAllocatedSqFt() != null ? loaded.getLandAllocatedSqFt() : built;
+            if (loaded.getLandAllocatedSqFt() != null && loaded.getLandFootprintSqFt() != null) {
+                allocated = Math.max(0, allocated + (built - loaded.getLandFootprintSqFt()));
+            }
+            landManager.setAllocatedSqFt(allocated);
             // ...and the part of it that works stand on, and the foothill prepared (ET2): a save from before them has
-            // neither, and reads the standing works' ground (as the allocation is read from the buildings) and the
+            // neither, and reads the standing works' ground and the
             // foothill the buildings stand on now.
             landManager.restoreWorks(loaded.getLandWorksSqFt() != null ? loaded.getLandWorksSqFt()
                     : buildingManager.getWorksLandFootprint(Game::standsAnywhere));
@@ -21301,12 +21536,6 @@ public class Game {
             // ...after its long bridges, which the linked set is closed over (ET6; a save with none has no key).
             landManager.restoreBridges(loaded.getBridges());
             landManager.restoreLandmasses(loaded.getLandmasses());
-            // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
-            // places listed afresh, once, with the buildings back, at the
-            // prices the save last struck (settled above for an older save's
-            // local quote) - a load strikes no prices; the first month strikes
-            // them on the converted ground.
-            if (landConverted) landManager.getMarket().listMissing();
             landManager.clearMonth();
 
             // The water rights (0.7.59), after the buildings and the land they
@@ -21430,6 +21659,7 @@ public class Game {
             // Load business loans. Same shape as the government debts above, in
             // its own array so the two hierarchies never have to be told apart
             // by type string alone.
+            // Gson restores retirementClaim on every subtype: liquidation repayment survives a save (BF1).
             JsonArray businessArray = loaded.getBusinessDebt();
             List<BusinessDebt> loadedLoans = new ArrayList<>();
 
@@ -21532,13 +21762,7 @@ public class Game {
          */
         economyManager.setLandPricePerSqFt(landManager.getPricePerSqFt());
         pushLandByRelief();
-
-        // An older save's contracts, read as their owners' (OLD CONTRACTS),
-        // now the land price the rebate on a new rental home reads is back.
-        if (contractsToInfer) {
-            contractsToInfer = false;
-            buildingManager.inferContracts(this::ownerOfOrder, this::recoveredOnOldContract);
-        }
+        // (An older save's contracts are read as their owners' at the end of the load, FB3.)
 
         /*
          * The property tax each sector was charged came back inside its own
@@ -21582,6 +21806,7 @@ public class Game {
             migration.restore(restoredFlows.getMigration());
             unemployment.restore(restoredFlows.getUnemployment());
             sickness.restore(savedBands, restoredFlows.getSickness());
+            sickness.restoreAcute(savedBands, restoredFlows.getSicknessAcute());
             // The prisoners are out of the supply on the load path as on the
             // monthly one, like the students below - or a reloaded city has
             // more workers than the live one until its first month.
@@ -21627,12 +21852,14 @@ public class Game {
             // Hoisted here with the rest: rebuildSimulationState() reads
             // cityCapitalSpending when it refreshes the government's books.
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
+            businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
             // is the "nothing recorded" a reloaded city read until then.
             lastInvestment = new java.util.LinkedHashMap<>();
+            labQuotes.clear();   // ...and no lab order quoted: only the month that made one reads it (RT2-P)
             if (restoredFlows.getLastInvestment() != null) {
                 for (java.util.Map.Entry<String, String> e : restoredFlows.getLastInvestment().entrySet()) {
                     if (e.getKey() != null && e.getValue() != null) lastInvestment.put(e.getKey(), e.getValue());
@@ -21660,11 +21887,15 @@ public class Game {
          * See carriedRetailCapacity: the rebuild re-derives these and does not
          * reproduce them to the cent, and everything downstream of the budget
          * constraint amplifies the difference. Carried whole, applied after.
+         *
+         * Always, zeros too (FB3, R0f-S): the guard here applied them only when
+         * one was over zero, so a city saved in a month its shops wanted nothing
+         * (a founding's second month) came back wanting what the rebuild struck,
+         * 0.0625 on MoneyDatesCheck's exhausted-gold town. Every save a build
+         * opens carries both (Retail's extras since format 21).
          */
-        if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-            getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
-            getSectors().retail().setWantedSpend(carriedRetailWant);
-        }
+        getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+        getSectors().retail().setWantedSpend(carriedRetailWant);
         if (carriedRentWeight > 0) {
             // Both halves, and the family one by subtraction so the two always
             // sum to the figure the landlords were paid. See the note at the
@@ -21755,10 +21986,12 @@ public class Game {
             // where the treasury pays them in the month (chargeBuildingMaintenance(), settleTreasury(), settleReserve()):
             // the same refresh struck the loaded city's repairs as nothing, and its first pass read a resident as costing
             // $0.90k a month where the city it was saved from read $1.12k (AutoBuildCheck 4 on FR7's path, 2026-10-19).
+            // The public works' licence (R2c-P), paid at the same strike, is one of them: the same refresh would strike a loaded city's licence line as nothing.
             economyManager.setCityRepairsPaid(economyManager.getNationalAccounts().getCityRepairs());
             economyManager.setArrearsPaidDown(economyManager.getNationalAccounts().getArrearsPaid());
             economyManager.setReserveCrude(economyManager.getNationalAccounts().getReserveCrudeBought(),
                     economyManager.getNationalAccounts().getReserveCrudeSold());
+            economyManager.setPublicIpCharges(economyManager.getNationalAccounts().getPublicIpCharges());
             loadedGovernmentMonth = null;
         }
 
@@ -21816,6 +22049,10 @@ public class Game {
              * is not restoration when the thing being derived is a flow.
              */
             economyManager.restoreSectorBills(restoredFlows.getSectors());
+            // The rebuild dispatches a notional month. Standing readers need
+            // the saved production's royalty, just as the ledgers need its bill.
+            restoreLicenceFees(restoredFlows.getLicenceFees());
+            restorePublicLicences(restoredFlows.getPublicIpPending(), restoredFlows.getPublicIpPaid());
 
             // And the utility's bill, which is read off those statements, has
             // to be re-struck now that they are the carried ones rather than
@@ -21849,10 +22086,9 @@ public class Game {
              * carriedRetailCapacity.
              */
             refreshHouseholdAccounts();
-            if (carriedRetailCapacity > 0 || carriedRetailWant > 0) {
-                getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
-                getSectors().retail().setWantedSpend(carriedRetailWant);
-            }
+            // ...zeros too, as above (FB3, R0f-S).
+            getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
+            getSectors().retail().setWantedSpend(carriedRetailWant);
 
             /*
              * ...and then the statement the save was taken with, over the top of
@@ -22042,6 +22278,14 @@ public class Game {
         for (Sector s : getSectors().all()) s.deriveCarriedTrade();
         // ...and, last, the fund's cost basis for a save from before it (0.7.39): every price is back now.
         if (fund.needsLedgerSeed()) seedFundLedger();
+        // ...and an older save's contracts on site, read as their owners' (OLD CONTRACTS), last of all (FB3, RT2-L): the share of the
+        // tax a landlord's home gets back reads the builders' labour at today's wages, and the rebuild strikes those; read before it, at
+        // the founding ladder, a House on InvestCheck's town stood under the rebate's line and the loaded city's rule over it
+        // (.0000625 against 0). The month that follows reads them (its dues, the city's sites); the load reads none.
+        if (contractsToInfer) {
+            contractsToInfer = false;
+            buildingManager.inferContracts(this::ownerOfOrder, this::recoveredOnOldContract);
+        }
     }
 
     /**
@@ -22168,6 +22412,7 @@ public class Game {
      * @return true if the reform happened
      */
     public boolean reformCurrency(double factor) {
+        if (!forcedReform && !isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return false;
 
         if ((!forcedReform && !canReformCurrency()) || !denomination.canLop(factor)) return false;
 
@@ -22258,6 +22503,11 @@ public class Game {
         // ...and the strategic reserve's book and its month's trades (0.7.85).
         reserve.redenominate(scale);
         oldMetal.scale(scale);
+        java.util.Map<Integer, Double> scaledLicenceFees = new java.util.TreeMap<>(licenceFees);
+        scaledLicenceFees.replaceAll((id, fee) -> fee * scale);
+        restoreLicenceFees(scaledLicenceFees);
+        // ...and the public works' licence bill (R2c-P), accrued and paid, in the same money.
+        publicIpPending *= scale;  publicIpPaid *= scale;
         ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);
@@ -22381,7 +22631,7 @@ public class Game {
 
 
     /**
-     * The reform without the price-level gate, for a harness.
+     * The reform without the player's eligibility gates (price level and dated Bank of Canada), for a harness.
      *
      * DenominationCheck needs a city that has been reformed in order to test
      * what a reform does; it does not need that city to have inflated tenfold
@@ -22401,4 +22651,4 @@ public class Game {
 
 
  
-   
+

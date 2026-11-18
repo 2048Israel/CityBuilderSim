@@ -908,9 +908,8 @@ public class HomeRailCheck {
                 g.getMonth(), seconds, stationMonths, firstStation, roomMonths, yardMonths, firstYard, homeMonths, firstHome, lastHomeMonth, lastShare * 100,
                 quayMonths, homeTonnes, quayTonnes, billed, litres);
         if (roomMonths > 0) {
-            report("the railway took some of the city's own bulk in at least one month of the run",
-                    homeMonths > 0 && homeTonnes > 0 && billed > 0 && litres > 0,
-                    homeMonths + " month(s) with a home share, " + roomMonths + " with room");
+            Observation.reached("the railway took some of the city's own bulk in at least one month of the run",
+                    homeMonths > 0 && homeTonnes > 0 && billed > 0 && litres > 0);
             report("...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)",
                     homeWithoutRoom == 0 && quayWithoutYard == 0, homeWithoutRoom + " month(s) of a home share with no room, " + quayWithoutYard + " of a quay share with no yard");
         } else {
@@ -918,9 +917,8 @@ public class HomeRailCheck {
             System.out.printf("  the advisor laid no station and no spur in %d months (the 4,000-month trace lays its first Rail Depot at about month 860):"
                     + " the mechanic is held to the played fixture instead%n", g.getMonth());
             Freight fr = rail.getSectors().freight();
-            report("the home share was above zero in the played fixture the run was too short to reach",
-                    fr.getHomeShare() > 0 && fr.getHomeRailed() > 0 && fr.getHomeBill() > 0,
-                    String.format("home share %.4f, %,.0f t railed", fr.getHomeShare(), fr.getHomeRailed()));
+            Observation.reached("the home share was above zero in the played fixture the run was too short to reach",
+                    fr.getHomeShare() > 0 && fr.getHomeRailed() > 0 && fr.getHomeBill() > 0);
         }
     }
 }

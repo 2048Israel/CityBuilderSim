@@ -6,6 +6,8 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Currency;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.Trade;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Traffic;
 
@@ -101,6 +103,23 @@ public abstract class ProcessingSector extends Sector {
 
     /** Its spread planner (a check or a probe sets its money gate for the counterfactual). */
     public SpreadPlanner planner() { return planner; }
+
+    /**
+     * The planner's world buyers also buy from its wholesale shed (BF1).
+     * Local orders clear first; unsold stock follows the same marginal-cost
+     * and dump-line rule at the net export bid. Previously a lightly staffed
+     * pellet mill filled its shed for months with no sale at all.
+     */
+    @Override
+    public void shipUnsoldStock(Good g, GoodsMarket market) {
+        if (!g.stockable() || !g.exportable()) return;
+        double held = getStock(g);
+        double units = market.netExportPrice() >= getMarginalCostPerUnit(g)
+                ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
+        if (!(units > 0)) return;
+        bookSale(market.record(key(), Trade.WORLD, units, market.exportPrice()));
+        takeFromStock(g, units);
+    }
 
     /* ----- captive use (Sector, CAPTIVE USE) ----- */
 
@@ -528,7 +547,16 @@ public abstract class ProcessingSector extends Sector {
     private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
         double share = feedShareStanding(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
-        return lastEarns(t, v, city, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
+        SpreadPlanner.City standing = game == null ? city : new SpreadPlanner.City() {
+            public double cost(BuildingsTemplate b) { return city.cost(b); }
+            public double running(BuildingsTemplate b) { return game.getBusinessInvestment().standingRunningCostOf(b); }
+            public double standing(BuildingsTemplate b) { return city.standing(b); }
+            public double rate() { return city.rate(); }
+            public String land(BuildingsTemplate b) { return city.land(b); }
+            public String staff(BuildingsTemplate b) { return city.staff(b); }
+            public String money(double earns, double cost) { return city.money(earns, cost); }
+        };
+        return lastEarns(t, v, standing, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
     }
 
     /** Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. */
@@ -540,5 +568,15 @@ public abstract class ProcessingSector extends Sector {
     public double lastEarns(BuildingsTemplate t) {
         if (t == null || game == null || buildings == null || markets == null || game.getBusinessInvestment() == null) return Double.NaN;
         return lastOneEarns(t, values(), planner.city(this, game.getBusinessInvestment(), game));
+    }
+
+    /** Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). */
+    public double lastEarnsAt(BuildingsTemplate t, double rate) {
+        if (t == null || game == null || markets == null) return Double.NaN;
+        BusinessInvestment plans = game.getBusinessInvestment();
+        SpreadPlanner.Values v = values();
+        return grossStanding(t, v, rate) - plans.standingRunningCostOf(t) - plans.standingCostOf(this, t)
+                - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), tariff())
+                - offMarketFeed(t, rate) - freightRunning(t, v, rate, legPrice());
     }
 }

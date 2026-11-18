@@ -70,9 +70,14 @@ import java.util.stream.Stream;
  *      the cost of a cold quote by level is measured and printed (what moved the hover's quote off the screen's thread); a LandMarket.Quoter made
  *      here and used on another thread gives the office's quote to the bit, block by block; it is the office as it stood when it was made, a purchase
  *      since not seen by it; making one takes no more than a frame; and the map's source quotes through one on its own thread.
+ *  13. PICKED GROUND (WN5c). A click by level and monthly pricing of 1, 10 and 50 picks are measured at the river and coast.
+ *      Worker results never change the live office before acceptance; a month that passes during pricing still gets today's
+ *      price, to the bit. Retained splits read no seller plots in the month. Changed ground and cancelled requests are rejected.
+ *  14. HOVER LIFECYCLE (WN5d). Slow work spans months, the previous price stays visible, an unwanted quote yields,
+ *      RuntimeException and Error release their requests for retry, and low-priority counts stay off the common pool.
  *
  * Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
- * sections 1 to 4 run and 5 to 12 say so and are skipped. The one timing it asserts is section 12's making of a quoter (Timing.within; TimingCheck owns the mechanism).
+ * sections 1 to 4 run and 5 to 14 say so and are skipped. Sections 12 to 14 hold frame budgets through Timing.within (TimingCheck owns the mechanism).
  *
  * @author Jerus
  */
@@ -144,6 +149,16 @@ public class LandNationsCheck {
             });
         }
 
+        /** Copy a played fixture through slot 10 in two scratch folders; neither folder is a player's save folder. */
+        City(String label, City played) throws IOException {
+            files = GameFiles.scratch(label);
+            quietly(() -> played.g.saveGame(10));
+            Files.createDirectories(files.saveFile(10).getParent());
+            Files.copy(played.files.saveFile(10), files.saveFile(10), StandardCopyOption.REPLACE_EXISTING);
+            g = new Game(files);
+            quietly(() -> g.loadGame(10));
+        }
+
         LandSellers sellers() { return g.getLandSellers(); }
 
         LandMarket office() { return g.getLandManager().getMarket(); }
@@ -200,7 +215,7 @@ public class LandNationsCheck {
             randomMovesIt(file, hist, randA, randB);
             EarthSite.Data earth = EarthSite.gameData();
             if (!earth.here()) {
-                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 12 were not run");
+                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 14 were not run");
             } else {
                 out.println("\n--- the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world ---");
                 City windsor = new City("land-nations-windsor", onEarth(WINDSOR_LAT, WINDSOR_LON));
@@ -223,6 +238,8 @@ public class LandNationsCheck {
                 howOften(file);
                 theWords(file, windsor, windsorFounded, detroitQuote);
                 theHover(file, windsor, strait);
+                thePicks(windsor, strait);
+                hoverLifecycle();
             }
         }
         finish(started);
@@ -1099,6 +1116,8 @@ public class LandNationsCheck {
         if (a == null || b == null) return a == b;
         boolean same = bits(a.getPriceUsd(), b.getPriceUsd());
         for (int k = 0; k < CityLand.AREAS; k++) same &= bits(a.getKm2(k), b.getKm2(k));
+        for (int k = 0; k < CityLand.RELIEF_AREAS; k++) same &= bits(a.getReliefKm2(k), b.getReliefKm2(k));
+        for (Resource r : Resource.values()) same &= a.getSites(r) == b.getSites(r) && bits(a.getAmount(r), b.getAmount(r));
         List<LandParcel.Sale> sa = a.getSellers(), sb = b.getSellers();
         same &= sa.size() == sb.size();
         for (int i = 0; i < Math.min(sa.size(), sb.size()); i++) {
@@ -1247,7 +1266,577 @@ public class LandNationsCheck {
         } else {
             String src = Files.readString(view, StandardCharsets.UTF_8);
             check("the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread",
-                    !src.contains("market.quote(") && src.contains(".quoter()") && src.contains("QUOTES.submit("));
+                    !src.contains("market.quote(") && src.contains("new LandMap.Quotes(") && src.contains("QUOTES, Platform::runLater"));
         }
+    }
+    /* =====================================================================
+       13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH
+       ===================================================================== */
+
+    /** Individual rectangles supplied directly so the 50-pick case cannot collapse into one rectangle. */
+    static List<long[]> pickedRects(City c, double lat, double lon, int level, int count) {
+        long[] base = blockAround(c.g.getWorld(), lat, lon, level);
+        long side = 1L << level;
+        List<long[]> rects = new ArrayList<>();
+        for (int n = 0; n < count; n++) {
+            long x = base[0] + (n % 10) * side, y = base[1] + (n / 10) * side;
+            rects.add(new long[] { x, y, x + side, y + side });
+        }
+        return rects;
+    }
+
+    static void reprice(City c, int month) {
+        LandManager lm = c.g.getLandManager();
+        c.office().update(lm.getOwnedSqFt(), lm.getAllocatedSqFt(), c.g.getPopulationManager().getPopulation(),
+                c.office().getUsPriceLevel() * 1.01, month);
+    }
+
+    static void frameTime(String label, double ms) {
+        boolean ok = Timing.within(ms, LandMarket.QUOTER_MS);
+        if (!ok) fails++;
+        out.printf("%-118s %s (%.3f ms, QUOTER_MS %.0f)%n", label, Timing.verdict(ok, label), ms, LandMarket.QUOTER_MS);
+    }
+
+    static boolean sameDraft(LandParcel a, LandParcel b) {
+        return sameQuote(a, b, new int[1]) && a != null && b != null
+                && bits(a.getUnlinkedDryKm2(), b.getUnlinkedDryKm2())
+                && bits(a.getUnlinkedBuildableKm2(), b.getUnlinkedBuildableKm2())
+                && a.getUnlinkedLargest() == b.getUnlinkedLargest();
+    }
+
+    static void thePicks(City windsor, City strait) throws Exception {
+        out.println("\n--- 13. picked ground: worker measurement, current-month prices, and no seller walk in the month ---");
+        windsor = new City("wn5c-windsor-copy", windsor);
+        strait = new City("wn5c-strait-copy", strait);
+        ExecutorService worker = Executors.newSingleThreadExecutor();
+        try {
+            for (City c : List.of(windsor, strait)) {
+                boolean river = c == windsor;
+                double lat = river ? RIVER_LAT : COAST_LAT, lon = river ? RIVER_LON : COAST_LON;
+                String where = river ? "Windsor" : "Strait";
+                LandMarket market = c.office();
+                for (int level = 4; level <= 12; level++) {
+                    long[] r = blockAround(c.g.getWorld(), lat, lon, level);
+                    market.draft(List.of());
+                    long start = System.nanoTime();
+                    LandMarket.DraftRequest request = market.requestDrafts(List.of(r));
+                    double ownerMs = (System.nanoTime() - start) / 1e6;
+                    long liveLinkage = c.g.getLandManager().getLandmasses().plotsRead();
+                    start = System.nanoTime();
+                    worker.submit(request).get();
+                    double workerMs = (System.nanoTime() - start) / 1e6;
+                    check(where + " level " + level + ": worker leaves the live draft shelf empty", market.getDrafts().isEmpty());
+                    check(where + " level " + level + ": worker leaves the live landmass cache untouched",
+                            liveLinkage == c.g.getLandManager().getLandmasses().plotsRead());
+                    start = System.nanoTime();
+                    boolean accepted = market.acceptDrafts(request);
+                    double acceptMs = (System.nanoTime() - start) / 1e6;
+                    check(where + " level " + level + ": accepts the copied measurement", accepted);
+                    check(where + " level " + level + ": price and sellers match a synchronous quote to the bit",
+                            sameDraft(quoteOf(market, r), market.getDrafts().get(0)));
+                    out.printf("   %s click level %d: owner %.3f ms, worker %.3f ms, acceptance %.3f ms%n", where, level, ownerMs, workerMs, acceptMs);
+                    frameTime(where + " level " + level + ": making the picked-ground request fits a frame", ownerMs);
+                    frameTime(where + " level " + level + ": accepting the picked-ground price fits a frame", acceptMs);
+                }
+                for (int count : new int[] { 1, 10, 50 }) {
+                    List<long[]> rects = pickedRects(c, lat, lon, 8, count);
+                    LandMarket.DraftRequest request = market.requestDrafts(rects);
+                    int newMonth = c.g.getMonth() + count;
+                    reprice(c, newMonth); // the month passes while the price is still coming
+                    worker.submit(request).get();
+                    check(where + ": accepts " + count + " picks after a month passed", market.acceptDrafts(request));
+                    List<LandParcel> before = market.getDrafts();
+                    long plots = c.sellers().plotsRead(), linkagePlots = c.g.getLandManager().getLandmasses().plotsRead(), start = System.nanoTime();
+                    reprice(c, newMonth + 1);
+                    double ms = (System.nanoTime() - start) / 1e6;
+                    long walked = c.sellers().plotsRead() - plots;
+                    long linkedWalk = c.g.getLandManager().getLandmasses().plotsRead() - linkagePlots;
+                    List<LandParcel> now = market.getDrafts();
+                    boolean same = now.size() == count;
+                    for (int n = 0; n < now.size(); n++) {
+                        LandParcel p = now.get(n);
+                        long[] r = { p.getX0(), p.getY0(), p.getX1(), p.getY1() };
+                        same &= sameDraft(p, quoteOf(market, r)) && p.getId() == before.get(n).getId()
+                                && p.getListedMonth() == newMonth + 1;
+                    }
+                    report(where + ": " + count + " picks use THIS month's price, ids kept, with no seller plots walked",
+                            same && walked == 0 && linkedWalk == 0, String.format("%.3f ms, %d seller plots, %d linkage plots", ms, walked, linkedWalk));
+                    frameTime(where + ": monthly repricing of " + count + " picks fits a frame", ms);
+                }
+                c.months(1);
+                boolean current = !market.getDrafts().isEmpty();
+                for (LandParcel p : market.getDrafts()) current &= p.getListedMonth() == c.g.getMonth()
+                        && sameDraft(p, market.quote(p.getX0(), p.getY0(), p.getX1(), p.getY1()));
+                check(where + ": a real Game.nextMonth/SimulationEngine month leaves drafts at that month's exact prices", current);
+                LandMarket.DraftRequest cancelled = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
+                cancelled.cancel();
+                worker.submit(cancelled).get();
+                check(where + ": a cancelled result cannot restore a draft", !market.acceptDrafts(cancelled) && market.getDrafts().isEmpty());
+
+                LandParcel offer = c.offers().get(0);
+                long[] r = { offer.getX0(), offer.getY0(), offer.getX1(), offer.getY1() };
+                LandMarket.DraftRequest changed = market.requestDrafts(List.of(r));
+                worker.submit(changed).get();
+                quietly(() -> { c.g.setCashForTest(Founding.WEALTHY_CASH); c.g.setLandPaidFromVault(false); });
+                boolean bought = quietlyGet(() -> c.g.buyLandParcel(offer.getId()));
+                check(where + ": a purchase while pricing rejects the old ground", bought && !market.acceptDrafts(changed));
+                market.draft(List.of());
+                picksLifecycle(c, worker, where);
+                reviewCases(c, worker, where);
+                LandMarket.DraftRequest relinked = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
+                worker.submit(relinked).get();
+                Landmasses masses = c.g.getLandManager().getLandmasses();
+                int[] linked = masses.linkedIds();
+                int extra = Arrays.stream(linked).max().orElse(0) + 1;
+                check(where + ": premise: the fixture has an unlinked landmass id", !masses.linked(extra));
+                masses.setJoins(id -> new int[] { extra });
+                masses.refresh();
+                check(where + ": a changed linked set rejects an old worker split", !market.acceptDrafts(relinked));
+                market.draft(List.of());
+            }
+        } finally { worker.shutdownNow(); }
+
+        // Game.nextMonth delegates the simulation to the same engine; this batch leaves that order untouched.
+        Path game = Path.of("src/main/java/ham/citybuildersim/Game.java");
+        if (Files.isRegularFile(game)) check("the month still runs through SimulationEngine, with no asynchronous month-end price delivery",
+                Files.readString(game, StandardCharsets.UTF_8).contains("simulationEngine.simulateMonth(this);"));
+    }
+
+    /** Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. */
+    static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception {
+        List<Runnable> work = new ArrayList<>(), returned = new ArrayList<>();
+        int[] changes = { 0 };
+        LandMap.Picks picks = new LandMap.Picks(work::add, returned::add, () -> changes[0]++);
+        int level = c.office().getLevel();
+        long picked = 0;
+        outer: for (LandParcel offer : c.offers()) {
+            for (long y = offer.getY0() >> level; y <= (offer.getY1() - 1) >> level; y++) {
+                for (long x = offer.getX0() >> level; x <= (offer.getX1() - 1) >> level; x++) {
+                    long key = LandMap.blockKey(x, y);
+                    if (picks.onlyBlock(c.g, key) && picks.pricing()) { picked = key; break outer; }
+                }
+            }
+        }
+        check(where + ": premise: a clicked block needs a worker draft rather than becoming a whole listed offer", picks.pricing());
+        if (!picks.pricing()) return;
+        check(where + ": while pricing the block stays outlined and no draft is purchasable",
+                picks.blocks().contains(picked) && picks.draftIds().isEmpty() && c.office().getDrafts().isEmpty());
+        for (Runnable job : work) worker.submit(job).get();
+        work.clear();
+        check(where + ": completing work does not publish before the owner dispatch", picks.pricing() && c.office().getDrafts().isEmpty());
+        for (Runnable completion : returned) completion.run();
+        returned.clear();
+        check(where + ": the owner installs drafts and redraws once", !picks.pricing() && !picks.live(c.g).isEmpty() && changes[0] == 1);
+
+        picks.toggleBlock(c.g, picked); // drop the original, then queue its replacement
+        picks.onlyBlock(c.g, picked);
+        check(where + ": a second click can start another measurement", picks.pricing());
+        picks.clear();
+        for (Runnable job : work) worker.submit(job).get();
+        for (Runnable completion : returned) completion.run();
+        check(where + ": clearing picks while queued prevents a late card or draft from returning",
+                !picks.pricing() && picks.live(c.g).isEmpty() && c.office().getDrafts().isEmpty() && changes[0] == 1);
+    }
+
+    /** A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. */
+    static void reviewCases(City c, ExecutorService worker, String where) throws Exception {
+        for (boolean offerInstead : new boolean[] { false, true }) {
+            List<Runnable> jobs = new ArrayList<>(), returns = new ArrayList<>();
+            LandMap.Picks picks = new LandMap.Picks(jobs::add, returns::add, () -> { });
+            int level = c.office().getLevel();
+            long key = -1;
+            outer: for (LandParcel offer : c.offers()) {
+                for (long y = offer.getY0() >> level; y <= (offer.getY1() - 1) >> level; y++) {
+                    for (long x = offer.getX0() >> level; x <= (offer.getX1() - 1) >> level; x++) {
+                        long candidate = LandMap.blockKey(x, y);
+                        if (picks.onlyBlock(c.g, candidate) && picks.pricing()) { key = candidate; break outer; }
+                    }
+                }
+            }
+            check(where + ": review premise: a picked block is still pricing", key >= 0 && picks.pricing());
+            if (key < 0) continue;
+            List<String> words = picks.groundWords(c.g, amount -> "test-money " + amount);
+            check(where + ": a pending picked block's hover says the price is coming, never zero or offers-only money",
+                    words.contains(LandMap.QUOTING) && words.stream().noneMatch(s -> s.startsWith("Price ")));
+            if (offerInstead) {
+                long[] block = LandMap.blockRect(level, key);
+                LandParcel separate = c.offers().stream().filter(p -> p.getX1() <= block[0] || p.getX0() >= block[2]
+                        || p.getY1() <= block[1] || p.getY0() >= block[3]).findFirst().orElse(null);
+                check(where + ": review premise: a separate standing offer can be picked beside the pending block", separate != null);
+                if (separate != null) {
+                    picks.add(c.g, List.of(separate.getId()));
+                    words = picks.groundWords(c.g, amount -> "test-money " + amount);
+                    check(where + ": a hover over mixed offers and pending ground still withholds the unfinished price",
+                            picks.pricing() && picks.live(c.g).stream().anyMatch(id -> id > 0)
+                                    && words.contains(LandMap.QUOTING) && words.stream().noneMatch(s -> s.startsWith("Price ")));
+                }
+            }
+            for (Runnable job : jobs) worker.submit(job).get(); // result waiting for the FX dispatch
+            if (offerInstead) picks.only(c.g, c.offers().get(0).getId());
+            else picks.toggleBlock(c.g, key);
+            String edit = offerInstead ? "selecting an offer instead" : "removing the last pending block";
+            check(where + ": " + edit + " cancels pending measurement", !picks.pricing() && picks.blocks().isEmpty());
+            for (Runnable result : returns) result.run();
+            check(where + ": " + edit + " cannot restore removed ground as a buyable draft",
+                    picks.live(c.g).stream().noneMatch(id -> id < 0) && c.office().getDrafts().isEmpty());
+            picks.clear();
+        }
+
+        CityLand copy = c.g.getCityLand().copy();
+        LandMarket market = new LandMarket();
+        market.attach(copy);
+        market.setSellers(c.sellers());
+        Landmasses masses = c.g.getLandManager().getLandmasses().forOffers();
+        market.setLandmasses(masses);
+        double owned = c.g.getLandManager().getOwnedSqFt();
+        int month = c.g.getMonth();
+        market.update(owned, 0, 1000, 1, month);
+        boolean river = where.equals("Windsor");
+        long[] rect = blockAround(c.g.getWorld(), river ? RIVER_LAT : COAST_LAT, river ? RIVER_LON : COAST_LON, 8);
+        LandMarket.DraftRequest request = market.requestDrafts(List.of(rect));
+        worker.submit(request).get();
+        check(where + ": review premise: a worker draft is accepted before the level-changing purchase", market.acceptDrafts(request));
+        long free = copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]);
+        int levelBefore = copy.level();
+        long side = (1L << (levelBefore + 1)) * LandGrid.FACE_BLOCKS;
+        long x = rect[2] + side * 2, y = rect[1];
+        LandParcel purchase = market.quote(x, y, x + side, y + side);
+        copy.extend(purchase, month, 0);
+        check(where + ": review premise: a disjoint purchase raises the block level without changing the draft's free plots",
+                copy.level() > levelBefore && copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]) == free);
+        // update() also lists previously unavailable standing offers at the new level. Measure its draft step alone,
+        // as the original WN5c probe did, so new standing offers' expected geometry is not attributed to these drafts.
+        java.lang.reflect.Method remeasure = LandMarket.class.getDeclaredMethod("remeasureDrafts");
+        remeasure.setAccessible(true);
+        for (int after = 0; after < 2; after++) {
+            long sellerBefore = c.sellers().plotsRead(), linkageBefore = masses.plotsRead();
+            market.syncMonth(month + after);
+            remeasure.invoke(market);
+            long sellersWalked = c.sellers().plotsRead() - sellerBefore, linkageWalked = masses.plotsRead() - linkageBefore;
+            report(where + ": a level-raising purchase then month reprices retained geometry without an FX split (pass " + after + ")",
+                    sellersWalked == 0 && linkageWalked == 0,
+                    sellersWalked + " seller plots, " + linkageWalked + " linkage plots");
+            LandParcel retained = market.getDrafts().get(0);
+            check(where + ": the level-changed draft has the current level and the synchronous quote's exact price and ground",
+                    retained.getLevel() == copy.level() && sameDraft(retained, quoteOf(market, rect)));
+        }
+    }
+    /* =====================================================================
+       14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK
+       ===================================================================== */
+
+    /** A worker held until the fixture releases it, and an owner dispatcher drained explicitly. */
+    static final class HoverFixture implements AutoCloseable {
+        final City city = new City("hover-lifecycle", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        final List<Runnable> jobs = new ArrayList<>(), returns = new ArrayList<>();
+        final ExecutorService worker = Executors.newSingleThreadExecutor();
+        final long[] now = { 1 };
+        final LandMap.Quotes quotes;
+        final long block;
+        int fault;
+        int changes;
+
+        HoverFixture(int fault) {
+            this.fault = fault;
+            LandParcel offer = city.offers().get(0);
+            block = LandMap.blockAt(city.office().getLevel(), offer.getX0(), offer.getY0());
+            quotes = new LandMap.Quotes(() -> city.g, jobs::add, returns::add, () -> changes++, () -> now[0]) {
+                @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
+                    int fail = HoverFixture.this.fault;
+                    HoverFixture.this.fault = 0;
+                    if (fail == 1) throw new IllegalStateException("fixture quote failure");
+                    if (fail == 2) throw new AssertionError("fixture quote Error");
+                    if (fail == 3) return null;
+                    return super.measure(use, rect);
+                }
+            };
+        }
+
+        List<String> words() { return quotes.words(block, usd -> Double.toString(usd)); }
+
+        void work() throws Exception {
+            Runnable job = jobs.remove(0);
+            try { worker.submit(job).get(); }
+            catch (java.util.concurrent.ExecutionException e) {
+                if (!(e.getCause() instanceof AssertionError)) throw e;
+            }
+        }
+
+        void handBack() {
+            List<Runnable> ready = List.copyOf(returns);
+            returns.clear();
+            ready.forEach(Runnable::run);
+        }
+
+        @Override public void close() { quotes.leave(); worker.shutdownNow(); }
+    }
+
+    static boolean hasPrice(List<String> words) {
+        return words != null && words.stream().anyMatch(s -> s.startsWith("Price ") && !s.equals(LandMap.Quotes.FAILED));
+    }
+
+    static void hoverLifecycle() throws Exception {
+        out.println("\n--- 14. the hover keeps a price across months, yields to a newer block, and retries failures ---");
+        try (HoverFixture f = new HoverFixture(0)) {
+            check("a first hover queues a worker and shows the pricing line", f.words().contains(LandMap.QUOTING) && f.jobs.size() == 1);
+            f.city.months(2);
+            f.words();
+            f.work();
+            f.handBack();
+            List<String> words = f.words();
+            long[] rect = LandMap.blockRect(f.city.office().getLevel(), f.block);
+            LandParcel current = quoteOf(f.city.office().quoter(), rect);
+            check("a quote held through two played months becomes visible at the current month's exact price",
+                    hasPrice(words) && words.contains("Price " + current.getPriceUsd()));
+            while (!f.jobs.isEmpty()) { f.work(); f.handBack(); }
+            List<String> before = f.words();
+            f.city.months(1);
+            List<String> after = f.words();
+            check("while a new month's measurement is queued the block keeps its last price, labelled Last month",
+                    hasPrice(before) && hasPrice(after) && after.stream().anyMatch(s -> s.endsWith(" · Last month")));
+        }
+        for (int fault : new int[] { 1, 2 }) {
+            try (HoverFixture f = new HoverFixture(fault)) {
+                f.words();
+                f.work();
+                f.handBack();
+                List<String> words = f.words();
+                String kind = fault == 1 ? "RuntimeException" : "Error";
+                check(kind + " hands its request back and shows the failure line", words != null && words.contains(LandMap.Quotes.FAILED));
+                check(kind + " waits before retrying the same month", f.jobs.isEmpty());
+                f.now[0] += java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(LandMap.Quotes.RETRY_MS);
+                f.quotes.tick();
+                f.words();
+                boolean retry = f.jobs.size() == 1;
+                check(kind + " releases its asked key so the same block is retried after RETRY_MS", retry);
+                if (retry) { f.work(); f.handBack(); }
+                check(kind + " retry recovers a visible price in the same month", hasPrice(f.words()));
+            }
+        }
+        try (HoverFixture f = new HoverFixture(3)) {
+            f.words(); f.work(); f.handBack();
+            check("a successful empty quote keeps its none result for the month", f.words() == null && f.jobs.isEmpty());
+        }
+        for (boolean purchase : new boolean[] { true, false }) {
+            try (HoverFixture f = new HoverFixture(0)) {
+                f.words(); f.work();
+                if (purchase) {
+                    LandParcel offer = f.city.offers().get(0);
+                    f.city.g.getCityLand().extend(offer, f.city.g.getMonth(), 0);
+                } else quietly(() -> f.city.g.newGame(onEarth(GIBRALTAR_LAT, GIBRALTAR_LON)));
+                f.handBack();
+                List<String> words = f.words();
+                check((purchase ? "changed ownership" : "a new city's office") + " rejects a completed quote before owner dispatch",
+                        words != null && words.contains(LandMap.QUOTING) && !hasPrice(words));
+            }
+        }
+        try (HoverFixture f = new HoverFixture(0)) {
+            f.words(); f.work(); f.quotes.leave(); f.handBack();
+            check("leaving ground after worker completion rejects its still-queued owner result", f.words().contains(LandMap.QUOTING) && f.jobs.size() == 1);
+        }
+        try (HoverFixture f = new HoverFixture(0)) {
+            f.words(); f.work(); f.handBack();
+            f.fault = 1;
+            f.city.months(1);
+            f.words(); f.work(); f.handBack();
+            List<String> failed = f.words();
+            check("a failed refresh keeps the old price with its age and a separate failure line",
+                    hasPrice(failed) && failed.contains(LandMap.Quotes.FAILED) && failed.stream().anyMatch(s -> s.endsWith(" · Last month")));
+            f.city.months(1);
+            f.words();
+            check("the next month retries a failed refresh even before RETRY_MS elapses", f.jobs.size() == 1);
+        }
+        try (HoverFixture f = new HoverFixture(0)) {
+            f.words(); f.work();
+            int before = f.city.office().getLevel();
+            long side = (1L << (before + 1)) * LandGrid.FACE_BLOCKS;
+            long[] rect = LandMap.blockRect(before, f.block);
+            LandParcel ground = f.city.office().quoter().quote(rect[2] + side, rect[1], rect[2] + side * 2, rect[1] + side);
+            f.city.g.getCityLand().extend(ground, f.city.g.getMonth(), 0);
+            check("level premise: a measured disjoint purchase raises the grid level", f.city.office().getLevel() > before);
+            f.handBack();
+            check("a changed grid level rejects the old block's still-queued quote", f.words().contains(LandMap.QUOTING));
+        }
+        try (HoverFixture f = new HoverFixture(0)) {
+            f.words(); f.quotes.leave(); f.work(); f.handBack();
+            check("an unwanted quote cancelled before execution is released for a later hover", f.words().contains(LandMap.QUOTING) && f.jobs.size() == 1);
+            f.work(); f.handBack();
+            check("a later hover of the cancelled block receives its price", hasPrice(f.words()));
+        }
+        hoverAdoption();
+        hoverQueueWait();
+        hoverRealCancellation();
+        hoverCountPriority();
+    }
+
+    static void hoverAdoption() throws Exception {
+        try (HoverFixture f = new HoverFixture(0)) {
+            List<String> card = f.words();
+            check("adoption premise: a stationary pointer has a quote out and its pricing card", card.contains(LandMap.QUOTING) && f.jobs.size() == 1);
+            f.quotes.redraw(); // MapView.reset(), called by keepUp() when its initial map draft is adopted
+            if (f.changes > 0) card = f.words(); // the screen's changed callback re-asks the same pointer
+            while (!f.jobs.isEmpty()) { f.work(); f.handBack(); }
+            if (f.changes > 0) card = f.words();
+            check("adopting the map draft re-asks a stationary hover and replaces its pricing card with a price", f.changes > 0 && hasPrice(card));
+        }
+        Path view = Path.of("src", "main", "java", "ham", "citybuildersim", "ui", "MapView.java");
+        if (Files.isRegularFile(view)) {
+            String source = Files.readString(view, StandardCharsets.UTF_8);
+            int reset = source.indexOf("private void reset()");
+            int end = source.indexOf("private void", reset + 1);
+            check("the normal map reset delegates to the stationary-hover redraw lifecycle", source.substring(reset, end).contains("hoverQuotes.redraw()"));
+        }
+    }
+
+    static void hoverRealCancellation() throws Exception {
+        City city = new City("hover-real-cancellation", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "hover-real-quote"); t.setDaemon(true); t.setPriority(Thread.MIN_PRIORITY); return t;
+        });
+        java.util.concurrent.CountDownLatch next = new java.util.concurrent.CountDownLatch(1), finished = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.ConcurrentLinkedQueue<Runnable> returns = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        long[] slow = blockAround(city.g.getWorld(), RIVER_LAT, RIVER_LON, 12);
+        long block = LandMap.blockAt(city.office().getLevel(), city.offers().get(0).getX0(), city.offers().get(0).getY0());
+        LandMap.Quotes quotes = new LandMap.Quotes(() -> city.g, worker, returns::add, () -> { }) {
+            int calls;
+            @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
+                if (calls++ == 0) {
+                    // Keep real quote work out until the model's cancellation checks stop it. A fast warm
+                    // measurement must not finish between observing seller progress and moving the pointer.
+                    try {
+                        for (;;) {
+                            super.measure(use, slow);
+                        }
+                    }
+                    finally { finished.countDown(); }
+                }
+                next.countDown();
+                return super.measure(use, rect);
+            }
+        };
+        try {
+            long plots = city.sellers().plotsRead();
+            quotes.words(block, Double::toString);
+            while (city.sellers().plotsRead() == plots && finished.getCount() != 0) Thread.sleep(2);
+            boolean splitting = city.sellers().plotsRead() > plots && finished.getCount() != 0;
+            check("real cancellation premise: the level-12 river quote has reached seller rows and is still running", splitting);
+            long start = System.nanoTime();
+            quotes.words(block + 1, Double::toString);
+            boolean began = next.await(10, java.util.concurrent.TimeUnit.SECONDS);
+            double ms = (System.nanoTime() - start) / 1e6;
+            String label = "a real level-12 seller split yields to the next hover within eight frames";
+            boolean ok = splitting && began && Timing.within(ms, LandMarket.QUOTER_MS * 8);
+            if (!ok) fails++;
+            out.printf("%-118s %s  %.2f ms%n", label, Timing.verdict(ok, label), ms);
+        } finally {
+            quotes.leave();
+            worker.shutdownNow();
+            if (!worker.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("The real quote did not release its worker");
+        }
+    }
+
+    static void hoverQueueWait() throws Exception {
+        City city = new City("hover-queue", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        ExecutorService worker = Executors.newSingleThreadExecutor();
+        java.util.concurrent.CountDownLatch started = new java.util.concurrent.CountDownLatch(1), next = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.ConcurrentLinkedQueue<Runnable> returns = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        long first = LandMap.blockAt(city.office().getLevel(), city.offers().get(0).getX0(), city.offers().get(0).getY0());
+        long second = first + 1;
+        LandMap.Quotes quotes = new LandMap.Quotes(() -> city.g, worker, returns::add, () -> { }) {
+            int calls;
+            @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
+                if (calls++ == 0) {
+                    started.countDown();
+                    try { new java.util.concurrent.CountDownLatch(1).await(400, java.util.concurrent.TimeUnit.MILLISECONDS); }
+                    catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new java.util.concurrent.CancellationException(); }
+                } else next.countDown();
+                return super.measure(use, rect);
+            }
+        };
+        try {
+            quotes.words(first, Double::toString);
+            check("queue premise: the old block is already measuring", started.await(5, java.util.concurrent.TimeUnit.SECONDS));
+            long start = System.nanoTime();
+            quotes.words(second, Double::toString);
+            boolean began = next.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            double ms = (System.nanoTime() - start) / 1e6;
+            String label = "a newer hover starts within eight frames after cancelling a running unwanted quote";
+            boolean ok = began && Timing.within(ms, LandMarket.QUOTER_MS * 8);
+            if (!ok) fails++;
+            out.printf("%-118s %s  %.2f ms%n", label, Timing.verdict(ok, label), ms);
+        } finally { quotes.leave(); worker.shutdownNow(); worker.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS); }
+    }
+
+    static void hoverCountPriority() throws Exception {
+        java.util.stream.IntStream.range(0, Runtime.getRuntime().availableProcessors() * 4).parallel().forEach(i -> {
+            try { Thread.sleep(5); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        });
+        City city = new City("hover-priority", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        CityLand copy = city.g.getCityLand().copy();
+        long[] rect = blockAround(city.g.getWorld(), RIVER_LAT, RIVER_LON, 12);
+        long tiles = ((rect[2] - rect[0]) / World.TILE) * ((rect[3] - rect[1]) / World.TILE);
+        check("priority premise: a level-12 quote crosses the parallel tile threshold", tiles >= CityLand.PARALLEL_TILES);
+        ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "hover-count-fixture"); t.setDaemon(true); t.setPriority(Thread.MIN_PRIORITY); return t;
+        });
+        Set<String> readers = new HashSet<>(), normal = new HashSet<>();
+        java.util.concurrent.atomic.AtomicBoolean sampled = new java.util.concurrent.atomic.AtomicBoolean();
+        try {
+            double idleMs = hoverFrameMs(city);
+            java.util.concurrent.Future<long[]> counting = worker.submit(() -> {
+                long[] last;
+                do {
+                    last = copy.unownedCounts(rect[0], rect[1], rect[2], rect[3]);
+                } while (!sampled.get());
+                return last;
+            });
+            // Observe actual row work before timing. Counting continues until the owner releases it, so a
+            // cold first count and a descheduled sampler cannot turn either premise into an empty observation.
+            while (readers.size() < CityLand.QUOTE_COUNT_WORKERS && !counting.isDone()) {
+                for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                    boolean row = Arrays.stream(e.getValue()).anyMatch(s -> s.getClassName().equals(CityLand.class.getName()) && s.getMethodName().equals("rowClasses"));
+                    if (row) {
+                        readers.add(e.getKey().getName());
+                        if (e.getKey().getPriority() > Thread.MIN_PRIORITY) normal.add(e.getKey().getName());
+                    }
+                }
+                if (readers.size() < CityLand.QUOTE_COUNT_WORKERS) Thread.sleep(1);
+            }
+            boolean active = !readers.isEmpty() && !counting.isDone();
+            double busyMs = hoverFrameMs(city);
+            active &= !counting.isDone();
+            check("frame premise: the level-12 count is out while the map's owner-thread geometry is timed", active && frameChecksum != 0);
+            String label = "the map frame's geometry stays within one frame with a low-priority quote out";
+            boolean framed = Timing.within(busyMs, LandMarket.QUOTER_MS) && Timing.within(Math.max(0, busyMs - idleMs), LandMarket.QUOTER_MS / 4);
+            if (!framed) fails++;
+            out.printf("%-118s %s  idle %.3f ms, with quote %.3f ms%n", label, Timing.verdict(framed, label), idleMs, busyMs);
+            sampled.set(true);
+            long sum = Arrays.stream(counting.get(), 0, World.CLASSES).sum();
+            long expected = copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]);
+            report("the parallel count really walked rows and counted the block's unowned plots", !readers.isEmpty() && sum == expected,
+                    readers.size() + " readers, " + sum + " plots against " + expected);
+            report("every row of a low-priority quote runs at low priority", normal.isEmpty(), "readers " + readers + ", normal-priority " + normal);
+        } finally { sampled.set(true); worker.shutdownNow(); }
+    }
+
+    static long frameChecksum;
+
+    /** The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. */
+    static double hoverFrameMs(City city) {
+        MapFrame frame = new MapFrame(1280, 720);
+        LandMap.open(frame, city.g.getCityLand(), city.office());
+        double[] times = new double[9];
+        for (int i = 0; i < times.length; i++) {
+            long start = System.nanoTime();
+            frameChecksum += frame.blockLines(city.office().getLevel(), true).length;
+            frameChecksum += frame.blockLines(city.office().getLevel(), false).length;
+            for (int x = 0; x < 1280; x += 32) {
+                LandMap.Pick pick = LandMap.pick(city.g.getCityLand(), city.office(), (long) frame.plotX(x), (long) frame.plotY(360));
+                frameChecksum += pick.owner();
+            }
+            times[i] = (System.nanoTime() - start) / 1e6;
+        }
+        Arrays.sort(times);
+        return times[times.length / 2];
     }
 }

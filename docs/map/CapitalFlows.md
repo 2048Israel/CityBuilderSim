@@ -1,6 +1,6 @@
-# CapitalFlows.java - 871 lines · 55 methods · 17 constants · model
+# CapitalFlows.java - 911 lines · 58 methods · 20 constants · model
 
-`ham/citybuildersim/CapitalFlows.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalFlows.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Hot money: what comes in chasing a spread, and what happens when it leaves.
 > 
@@ -31,7 +31,7 @@
 
 **Uses:** [PriceLevel](PriceLevel.md) (1)
 
-**Used by (21):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (21):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -73,6 +73,9 @@
 | 685 | `CapitalFlows.RISK_OFF_HOT_UNWIND` | `.05` | The share of the hot money's stock that runs home in a month of a risk-off of size one, scaled by the risk-off's level as it fades: a size-one risk-off takes about a fifth of the stock over the year after it, a size-1... |
 | 688 | `CapitalFlows.RISK_OFF_CARRY_UNWIND` | `.50` | The share of the carry book repaid in a month of a risk-off of size one, scaled by the level (est.: the yen carry of July 2024, at a risk-off smaller than one, was mostly gone in six weeks). |
 | 695 | `CapitalFlows.RISK_OFF_FELT` | `.05` | The risk-off level under which money no longer runs home, nor is a month of one counted (getRiskOffMonths()) or logged (est.: WorldMoneys.riskOff() fades by half in three months and never reaches 0, so a size-one risk... |
+| 756 | `CapitalFlows.PEAK_STOCK_SLOT` | `24` | Saved slot of the most that was ever here (FB3, FW6-C). |
+| 758 | `CapitalFlows.PEAK_SPREAD_SLOT` | `25` | Saved slot of the widest the gap ever got (FB3, FW6-C). |
+| 760 | `CapitalFlows.SAVE_SLOTS` | `PEAK_SPREAD_SLOT + 1` | Exact length of toSaveArray(), through the peaks. |
 
 ## Fields (state)
 
@@ -112,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 839 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
+| 33 | 879 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
 ### HOW MUCH WANTS TO COME (lines 35-135)
 
@@ -199,13 +202,16 @@
 | 748 | 1 | `public void setMonth(int month)` |  |
 | 751 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
 
-### carrying (lines 753-871)
+### carrying (lines 753-911)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 755 | 17 | `public double[] toSaveArray()` |  |
-| 773 | 37 | `public void restore(double[] saved)` |  |
-| 816 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
-| 820 | 19 | `public void reset()` |  |
-| 841 | 29 | `public void redenominate(double scale)` | Hot money, in the new unit. |
+| 762 | 19 | `public double[] toSaveArray()` |  |
+| 782 | 42 | `public void restore(double[] saved)` |  |
+| 829 | 3 | `public void setStockForTest(double stock)` | A harness's stock, set by the field's name (HZ1): SaveFileCheck held it at half its target through raw slots of toSaveArray(), which a reordering of that array would have moved to another field without a word. |
+| 837 | 6 | `public void placeArrivalForTest(double amount)` | ...and a month's arrival placed, by name (HZ1): the stock, the arrivals since founding and the month's, each grown by it, as takeMonth() leaves them when that much came in. |
+| 845 | 5 | `public void startStopForTest(String reason)` | A harness's stop, by name (FB3, FW6-C): starts a break as takeMonth() does when a new one begins, with the reason given, for PANIC_MONTHS from the month last told. |
+| 856 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
+| 860 | 19 | `public void reset()` |  |
+| 881 | 29 | `public void redenominate(double scale)` | Hot money, in the new unit. |
 

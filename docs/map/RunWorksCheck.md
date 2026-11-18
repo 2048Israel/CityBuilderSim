@@ -1,6 +1,6 @@
 # RunWorksCheck.java - 1,310 lines · 40 methods · 8 constants · harnesses
 
-`ham/citybuildersim/RunWorksCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RunWorksCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a
 > highway's or a railway line's ground comes from every class of ground in the city's proportions, not from the
@@ -60,7 +60,7 @@
 
 **Uses:** [Game](Game.md) (95), [LandManager](LandManager.md) (83), [RunWorks](RunWorks.md) (73), [World](World.md) (61), [TileRaster](TileRaster.md) (40), [TilePainter](TilePainter.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (24), [SlopeCheck](SlopeCheck.md) (19), [Sectors](Sectors.md) (18), [BuildingVisual](BuildingVisual.md) (11), [BuildingManager](BuildingManager.md) (10), [BuildingType](BuildingType.md) (6), [LandMap](LandMap.md) (6), [EconomyManager](EconomyManager.md) (4), [SitePreparation](SitePreparation.md) (4), [GameFiles](GameFiles.md) (3), [Sector](Sector.md) (2), [Mining](Mining.md) (2), [CityLand](CityLand.md) (2), [SectorStatementCheck](SectorStatementCheck.md) (2), [Construction](Construction.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [LandClassCheck](LandClassCheck.md) (1), [BuildCard](BuildCard.md) (1), [Money](Money.md) (1), [DistrictPlan](DistrictPlan.md) (1)
 
-**Used by (1):** [RunRenders](RunRenders.md)
+**Used by (2):** [RunRenders](RunRenders.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 
@@ -124,7 +124,7 @@
 |---:|---:|---|---|
 | 165 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 178 | 18 | `static Game hills(String label, double owned, double flat, double foothill, double steep, double veryStep)` | A city founded as a harness founds one, OWNED square feet of dry ground (its founded size where `owned` is 0, which is what a save keeps the ground by relief of: the relief must add up to the centre's own) of the shar... |
-| 198 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, int n)` | The city's own order, as the build screen places it. |
+| 198 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, long n)` | The city's own order, as the build screen places it. |
 | 205 | 6 | `static boolean businessOrder(Game g, String sector, BuildingsTemplate t, int n)` | A business's order, built by hand from cash it is given. |
 | 213 | 7 | `static void closeBooks(Game g)` | The books as a month's close leaves them (Game.recordMonth(): the land's price and its classes pushed, the sheets pushed, the books taken), without playing the month. |
 | 222 | 4 | `static double[] shares(LandManager lm)` | The share of the city's owned dry ground that is flat, foothill and steep (steep and very steep together): what a run's ground is spread by. |

@@ -210,10 +210,9 @@ final class ResearchScreen {
 
     /** What a city founded the default way says on the Overview: nothing is in reach and nothing is found, and a grant's posts, if one is set, have nothing to work on. */
     VBox defaultOverviewCard(ResearchView.Overview ov) {
-        int all = ResearchView.knownAtFounding(ui.game);
         VBox card = PolicyScreen.card(
                 PolicyScreen.cardHead(Icons.FLASK, Palette.DISCOVERY, "NOTHING TO RESEARCH", null, null),
-                PolicyScreen.words("This city was founded knowing all " + all + " discoveries in the catalogue, so no problem is in reach and nothing is "
+                PolicyScreen.words("This city was " + ResearchView.foundedKnowingWords(ui.game) + ", so no problem is in reach and nothing is "
                         + "found here.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL),
                 PolicyScreen.muted("A grant still buys research posts, but their researchers have nothing to work on: this page fills in a city founded "
                         + "the 1900 way."));
@@ -259,9 +258,9 @@ final class ResearchScreen {
         Kept.tip(row, fieldName(f) + ": click for its funding.", 300);
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         row.setStyle(row.isHover() ? DOOR_LIT : DOOR_STYLE);
-        row.setOnMouseEntered(e -> row.setStyle(DOOR_LIT));
-        row.setOnMouseExited(e -> row.setStyle(DOOR_STYLE));
-        row.setOnMouseClicked(e -> go(FUNDING));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(DOOR_LIT));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(DOOR_STYLE));
+        Kept.give(row.onMouseClickedProperty(), e -> go(FUNDING));
         return row;
     }
 
@@ -508,7 +507,7 @@ final class ResearchScreen {
     }
 
     /** "2 labs". */
-    static String labsWords(int labs) {
+    static String labsWords(long labs) {
         return labs + (labs == 1 ? " lab" : " labs");
     }
 
@@ -643,10 +642,9 @@ final class ResearchScreen {
 
     /** What a city founded the default way says: it knew every discovery from the start, so nothing arrives and nothing is found. */
     VBox defaultCard() {
-        int all = ResearchView.knownAtFounding(ui.game);
         return PolicyScreen.card(
                 PolicyScreen.cardHead(Icons.FLASK, Palette.DISCOVERY, "NOTHING TO FIND", null, null),
-                PolicyScreen.words("This city was founded knowing all " + all + " discoveries in the catalogue, so nothing arrives from abroad and "
+                PolicyScreen.words("This city was " + ResearchView.foundedKnowingWords(ui.game) + ", so nothing arrives from abroad and "
                         + "nothing is found here.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL),
                 PolicyScreen.muted("A grant still buys research posts, but their researchers have nothing to work on: this page fills in a city "
                         + "founded the 1900 way."));
@@ -683,11 +681,11 @@ final class ResearchScreen {
         };
     }
 
-    /** How the city came to know a discovery: "found here in June 1973, 4.6 years before the world" or "from abroad, June 1955". */
+    /** How the city came to know a discovery: "found here in June 1973, 4.6 years before the world" or "from abroad, June 1955", with the mark after it for a projected row ("from abroad, June 2028 (projected, 2027-2030)"). */
     static String whenWords(Discovery d) {
-        return d.source() == Source.HERE
+        return ResearchView.marked(d.entry(), d.source() == Source.HERE
                 ? String.format(Locale.ROOT, "found here in %s, %.1f years before the world", CityCalendar.format(d.month()), d.yearsAhead())
-                : "from abroad, " + CityCalendar.format(d.month());
+                : "from abroad, " + CityCalendar.format(d.month()));
     }
 
     /** ...and "known since the founding" for what no discovery made known. */
@@ -709,7 +707,7 @@ final class ResearchScreen {
     }
 
     /** "12 of 20 buildings". */
-    static String ofWords(int n, int of, String what) {
+    static String ofWords(long n, long of, String what) {
         return n + " of " + of + " " + what + (of == 1 ? "" : "s");
     }
 
@@ -755,7 +753,7 @@ final class ResearchScreen {
         Label name = PolicyScreen.words(d.entry().name(), Palette.SIZE_BODY + 1, Palette.TEXT_BODY);
         Label field = chip(fieldName(d.field()), fieldColour(d.field()));
         Label when = PolicyScreen.figure(CityCalendar.format(d.month()), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        Label ahead = PolicyScreen.words(String.format(Locale.ROOT, "%.1f years before the world", d.yearsAhead()), Palette.SIZE_LABEL + 1,
+        Label ahead = PolicyScreen.words(ResearchView.marked(d.entry(), String.format(Locale.ROOT, "%.1f years before the world", d.yearsAhead())), Palette.SIZE_LABEL + 1,
                 Palette.TEXT_HEAD);
         HBox row = Kept.row(12, cell(250, name), cell(90, field), cell(110, when), ahead);
         HBox.setHgrow(ahead, Priority.ALWAYS);
@@ -799,9 +797,9 @@ final class ResearchScreen {
         if (sector != null) {
             // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
             row.setStyle(row.isHover() ? DOOR_LIT : DOOR_STYLE);
-            row.setOnMouseEntered(e -> row.setStyle(DOOR_LIT));
-            row.setOnMouseExited(e -> row.setStyle(DOOR_STYLE));
-            row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(DOOR_LIT));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(DOOR_STYLE));
+            Kept.give(row.onMouseClickedProperty(), e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
         } else {
             row.setStyle(ROW_STYLE);
         }
@@ -929,7 +927,7 @@ final class ResearchScreen {
         boolean here = d.source() == Source.HERE;
         Region r = Kept.region();
         r.setMinSize(DOT, DOT);
-        r.setPrefSize(DOT, DOT);
+        Pieces.prefSize(r, DOT, DOT);
         r.setMaxSize(DOT, DOT);
         String round = " -fx-background-radius: " + DOT / 2 + "; -fx-border-radius: " + DOT / 2 + "; -fx-border-color: " + colour + "; -fx-border-width: 2;";
         r.setStyle("-fx-background-color: " + (here ? colour : Palette.RAISED) + ";" + round);
@@ -955,7 +953,7 @@ final class ResearchScreen {
         private int first = ResearchView.FIRST_MONTH, last = ResearchView.FIRST_MONTH + 12, rows;
 
         Timeline() {
-            canvas.setMouseTransparent(true);
+            Kept.give(canvas.mouseTransparentProperty(), true);
             super.getChildren().add(canvas);
             setMinWidth(0);
         }

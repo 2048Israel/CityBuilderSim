@@ -1,6 +1,6 @@
-# InfrastructureScreen.java - 2,215 lines · 77 methods · 33 constants · interface
+# InfrastructureScreen.java - 2,218 lines · 77 methods · 33 constants · interface
 
-`ham/citybuildersim/ui/InfrastructureScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/InfrastructureScreen.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The infrastructure tab: the roads, the trams, the freight and the ports -
 > four pages under the five figures the whole tab is about, each page led by
@@ -25,7 +25,7 @@
 > a division strip (All, Haulage, Rail, Ports), and the Ports are a page of
 > their own (FREIGHT AND PORTS, below). open("The railway") is still a door in.
 
-**Uses:** [Palette](Palette.md) (365), [Kept](Kept.md) (154), [InfrastructureManager](InfrastructureManager.md) (47), [Icons](Icons.md) (32), [Traffic](Traffic.md) (31), [CityNeeds](CityNeeds.md) (30), [BuildAdvice](BuildAdvice.md) (21), [Freight](Freight.md) (20), [ServicesScreen](ServicesScreen.md) (16), [FreightView](FreightView.md) (13), [TaxPolicy](TaxPolicy.md) (10), [Sector](Sector.md) (9), [BuildScreen](BuildScreen.md) (8), [Ports](Ports.md) (7), [Pieces](Pieces.md) (6), [EconomyManager](EconomyManager.md) (5), [Money](Money.md) (5), [Good](Good.md) (4), [MiniMapFrame](MiniMapFrame.md) (4), [CareType](CareType.md) (3), [PolicyScreen](PolicyScreen.md) (3), [Haulage](Haulage.md) (3), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [SummaryScreen](SummaryScreen.md) (1), [Ladder](Ladder.md) (1), [Levers](Levers.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [PayTier](PayTier.md) (1), [BoatSchedule](BoatSchedule.md) (1)... and 1 more
+**Uses:** [Palette](Palette.md) (365), [Kept](Kept.md) (162), [InfrastructureManager](InfrastructureManager.md) (47), [Icons](Icons.md) (32), [Traffic](Traffic.md) (31), [CityNeeds](CityNeeds.md) (30), [BuildAdvice](BuildAdvice.md) (21), [Freight](Freight.md) (20), [ServicesScreen](ServicesScreen.md) (15), [FreightView](FreightView.md) (13), [Pieces](Pieces.md) (11), [TaxPolicy](TaxPolicy.md) (10), [Sector](Sector.md) (9), [BuildScreen](BuildScreen.md) (8), [Ports](Ports.md) (7), [Haulage](Haulage.md) (6), [EconomyManager](EconomyManager.md) (5), [Money](Money.md) (5), [Good](Good.md) (4), [MiniMapFrame](MiniMapFrame.md) (4), [CareType](CareType.md) (3), [PolicyScreen](PolicyScreen.md) (3), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [SummaryScreen](SummaryScreen.md) (1), [Ladder](Ladder.md) (1), [Levers](Levers.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [PayTier](PayTier.md) (1), [BoatSchedule](BoatSchedule.md) (1)... and 1 more
 
 **Used by (2):** [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 
@@ -41,8 +41,8 @@
 | 1356 | THE RAILWAY - the twelfth sector, and the only mode the city does not |
 | 1631 | FREIGHT - the band, the bill, and the lorries (0.7.29) |
 | 1907 | FREIGHT AND PORTS (FR4, 2026-10-19) |
-| 1976 | · Haulage |
-| 2072 | · Ports |
+| 1979 | · Haulage |
+| 2075 | · Ports |
 
 ## Constants
 
@@ -77,10 +77,10 @@
 | 1678 | `InfrastructureScreen.BAND_INFO` | `"Every traded good's price has a cost of MOVING it inside the gap between " +...` | The bars' (i) (P18 and P20, for bars rather than a grid). |
 | 1828 | `InfrastructureScreen.LORRY_INFO` | `String.format("A vehicle moves about %,.0f tonnes a month and lasts %.0f year...` | The lorries' (i) (P23). |
 | 1930 | `InfrastructureScreen.HAULAGE_QUOTE_INFO` | `String.format("What it charges for a tonne's city leg, from the depot or the ...` | Haulage's quote (i) (FR4). |
-| 1939 | `InfrastructureScreen.TRUCKS_INFO` | `String.format("A truck carries about %,.0f tonnes a month.Haulage owns the fl...` | The trucks' (i) (FR4). |
-| 1947 | `InfrastructureScreen.DEPOTS_INFO` | `String.format("A Truck Depot keeps trucks, and its posts are the drivers and ...` | The depots' (i) (FR4). |
-| 1954 | `InfrastructureScreen.PORTS_INFO` | `"The sea terminals are the city's: only the player builds them.Freight works ...` | The ports' (i) (FR4). |
-| 1961 | `InfrastructureScreen.BERTHS_INFO` | `"A berth handles one kind of cargo: liquid bulk, dry bulk, containers or " + ...` | The berths' (i) (FR4). |
+| 1939 | `InfrastructureScreen.TRUCKS_INFO` | `String.format("A truck carries about %,.0f tonnes a month on its driver's shi...` | The trucks' (i) (FR4). |
+| 1950 | `InfrastructureScreen.DEPOTS_INFO` | `String.format("A Truck Depot keeps trucks, and its posts are the drivers and ...` | The depots' (i) (FR4). |
+| 1957 | `InfrastructureScreen.PORTS_INFO` | `"The sea terminals are the city's: only the player builds them.Freight works ...` | The ports' (i) (FR4). |
+| 1964 | `InfrastructureScreen.BERTHS_INFO` | `"A berth handles one kind of cargo: liquid bulk, dry bulk, containers or " + ...` | The berths' (i) (FR4). |
 
 ## Fields (state)
 
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 2172 | **type** `final class InfrastructureScreen` | The infrastructure tab: the roads, the trams, the freight and the ports - four pages under the five figures the whole tab is about, each page led by the one picture that answers its question. |
+| 44 | 2175 | **type** `final class InfrastructureScreen` | The infrastructure tab: the roads, the trams, the freight and the ports - four pages under the five figures the whole tab is about, each page led by the one picture that answers its question. |
 | 49 | 1 | `InfrastructureScreen(UserInterface ui)` |  |
 | 52 | 12 | `void open(String page)` | The tab opened on one of its pages, at the top of it (0.7.28): Services' road card, Build's road and transit doors, a figure or a part of a picture on this tab. |
 | 72 | 3 | `void forget()` | A new city or a load: nothing of the last city's page is kept. |
@@ -215,29 +215,29 @@
 | 1847 | 48 | `VBox freightStatement()` | The old Freight page's two grids, in its fold. |
 | 1901 | 5 | `static String abroadWords(double bill, double imported, String whole)` | How much of a fuel bill was bought abroad (0.7.62), after the bill's own words: all of it, `whole` (", bought abroad"); part, ", $1.2M of it bought abroad"; none, ", off the city's refineries". |
 
-### FREIGHT AND PORTS (FR4, 2026-10-19) (lines 1907-1975)
+### FREIGHT AND PORTS (FR4, 2026-10-19) (lines 1907-1978)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1967 | 8 | `static String cargoColour(Ports.Cargo kind)` | A kind of cargo's colour on this screen: categories, never verdicts. |
+| 1970 | 8 | `static String cargoColour(Ports.Cargo kind)` | A kind of cargo's colour on this screen: categories, never verdicts. |
 
-### Haulage (lines 1976-2071)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1979 | 40 | `void haulagePage(VBox page)` | The Haulage division: the quote, the month's city leg, and the trucks, the depots and the business against them. |
-| 2021 | 21 | `VBox trucksCard(FreightView.HaulagePage h)` | THE TRUCKS: owned against what the plant asks, the ones it is short, the ones it wore out. |
-| 2044 | 14 | `VBox depotsCard(FreightView.HaulagePage h)` | THE DEPOTS: how many stand, the trucks they keep, and the ones parked on the street. |
-| 2060 | 11 | `VBox haulageBusinessCard(ham.citybuildersim.sectors.Freight freight, FreightView.HaulagePage h)` | THE BUSINESS: billed against what the rule allows, the diesel, the share of the need its trucks reach, and the door to the books. |
-
-### Ports (lines 2072-2215)
+### Haulage (lines 1979-2074)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2075 | 34 | `void portsPage(VBox page)` | The Ports page: the month's handling and dues, the berths by kind, then each kind's bill and the ships that called. |
-| 2111 | 16 | `VBox berthRow(FreightView.Berth b)` | One kind of berth: its name, how many stand and the room they are, and the month's tonnes against it. |
-| 2129 | 26 | `VBox portBillCard(FreightView.PortsPage p)` | HANDLING AND DUES, BY KIND: what a tonne is billed, what the kind billed, and the dues it paid the city. |
-| 2157 | 29 | `VBox shipsCard(FreightView.PortsPage p)` | THE SHIPS THAT CALLED: the month's calls by ship class, and what a call carries. |
-| 2188 | 7 | `java.util.Map<Ports.Ship, Integer> callsByShip()` | The month's calls by ship class, in the classes' order, those with none left out. |
-| 2203 | 12 | `void openMapAtPort()` | "The ships on the map": the land office's map over the window on the city's terminals (the same door the minimap opens, UserInterface .openMapOn()) - the box round every berthed work on the shore, its quay's end inclu... |
+| 1982 | 40 | `void haulagePage(VBox page)` | The Haulage division: the quote, the month's city leg, and the trucks, the depots and the business against them. |
+| 2024 | 21 | `VBox trucksCard(FreightView.HaulagePage h)` | THE TRUCKS: owned against what the plant asks, the ones it is short, the ones it wore out. |
+| 2047 | 14 | `VBox depotsCard(FreightView.HaulagePage h)` | THE DEPOTS: how many stand, the trucks they keep, and the ones parked on the street. |
+| 2063 | 11 | `VBox haulageBusinessCard(ham.citybuildersim.sectors.Freight freight, FreightView.HaulagePage h)` | THE BUSINESS: billed against what the rule allows, the diesel, the share of the need its trucks reach, and the door to the books. |
+
+### Ports (lines 2075-2218)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2078 | 34 | `void portsPage(VBox page)` | The Ports page: the month's handling and dues, the berths by kind, then each kind's bill and the ships that called. |
+| 2114 | 16 | `VBox berthRow(FreightView.Berth b)` | One kind of berth: its name, how many stand and the room they are, and the month's tonnes against it. |
+| 2132 | 26 | `VBox portBillCard(FreightView.PortsPage p)` | HANDLING AND DUES, BY KIND: what a tonne is billed, what the kind billed, and the dues it paid the city. |
+| 2160 | 29 | `VBox shipsCard(FreightView.PortsPage p)` | THE SHIPS THAT CALLED: the month's calls by ship class, and what a call carries. |
+| 2191 | 7 | `java.util.Map<Ports.Ship, Integer> callsByShip()` | The month's calls by ship class, in the classes' order, those with none left out. |
+| 2206 | 12 | `void openMapAtPort()` | "The ships on the map": the land office's map over the window on the city's terminals (the same door the minimap opens, UserInterface .openMapOn()) - the box round every berthed work on the shore, its quay's end inclu... |
 

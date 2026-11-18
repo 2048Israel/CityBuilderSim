@@ -249,12 +249,12 @@ public abstract class ExtractionSector extends Sector {
     }
 
     /** The sites of its resource the city owns: how many of its buildings can stand. */
-    public int sitesOwned() {
+    public long sitesOwned() {
         return game == null ? 0 : game.getLandManager().getSites(resource);
     }
 
     /** ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). */
-    public int sitesWorked() {
+    public long sitesWorked() {
         return game == null ? 0 : game.committedOn(resource);
     }
 
@@ -290,7 +290,7 @@ public abstract class ExtractionSector extends Sector {
         String sector = key();
 
         LandManager land = game.getLandManager();
-        int unminedDeposits = land.getSites(resource) - game.committedOn(resource);
+        long unminedDeposits = land.getSites(resource) - game.committedOn(resource);
         double reserveTonnes = land.getRemaining(resource);
 
         if (unminedDeposits <= 0) return BusinessInvestment.Decision.no(sector, "no deposit to dig");
@@ -302,7 +302,6 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         BuildingsTemplate moneyHold = null;
         double moneyEarns = 0, moneyCost = 0;
         BuildingsTemplate fieldHold = null;
@@ -316,10 +315,7 @@ public abstract class ExtractionSector extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -348,7 +344,7 @@ public abstract class ExtractionSector extends Sector {
                 return BusinessInvestment.Decision.no(sector, ProcessingSector.a(moneyHold.getName()) + " "
                         + planner.city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
-            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+            if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             return BusinessInvestment.Decision.no(sector, fieldHold != null ? noField(land, fieldHold) : "nothing worth sinking");
         }
         if (plans.plotsAvailableFor(best) < 1) {
@@ -357,8 +353,8 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate.Site site = best.site();
         Deposit.FieldType type = site == null ? null : site.type();
         return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("%d deposit(s) unworked, %,.0fk tonnes %sin the ground",
-                        unminedDeposits, land.getRemaining(resource, type) / 1000,
+                String.format("%d deposit(s) unworked, %,.0fk %s %sin the ground",
+                        unminedDeposits, land.getRemaining(resource, type) / 1000, resource.unit() + "s",
                         type == null ? "" : "of " + typeWord(type) + " "), true);
     }
 
@@ -490,7 +486,7 @@ public abstract class ExtractionSector extends Sector {
         if (buildings == null || land == null) return 0;
         Good g = groundGood();
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * t.makes(g);
         }
         return spare;
@@ -524,7 +520,7 @@ public abstract class ExtractionSector extends Sector {
         List<Line> lines = new java.util.ArrayList<>();
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
-        int owned = sitesOwned(), worked = sitesWorked();
+        long owned = sitesOwned(), worked = sitesWorked();
         lines.add(Line.head("What is under the ground"));
         lines.add(Line.of("Deposits found", f.count(owned)));
         lines.add(Line.of("Being worked", f.count(worked),

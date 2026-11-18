@@ -329,14 +329,28 @@ public class CementConcreteCheck {
             b.addStack(b.getTemplate(CementConcrete.CEMENT_PLANT), 1, true);
         });
         MaterialsCheck.handWorkers(g);
-        quietly(() -> g.simulateMonths(2));
+        quietly(() -> g.simulateMonths(1));
+        GoodsMarket market = g.getMarkets().get(Good.CEMENT);
+        double costBefore = c.flowCostPerUnit(Good.CEMENT), saleBefore = market.netExportPrice();
+        quietly(() -> g.simulateMonths(1));
+        Sector.Output undemanded = c.outputRow(Good.CEMENT);
+        report("with no local cement demand and a negative feed spread, the original empty silo buys no buffer feed (CPB1)",
+                market.getDemand() == 0 && costBefore > saleBefore
+                        && undemanded.produced == 0 && undemanded.exportBound == 0 && c.inputRow(Good.LIMESTONE).bid == 0,
+                String.format("cost before %.6f, sale %.6f; %.0f made", costBefore, saleBefore, undemanded.produced));
+        // The quarry's first operating month's supply has now lowered the
+        // landed feed quote. The next buffer is profitable without changing
+        // the original town, world prices or demand premise (CPB1).
+        assertTrue("the quarry's first operating supply makes the next cement buffer profitable",
+                c.flowCostPerUnit(Good.CEMENT) <= market.netExportPrice());
+        quietly(() -> g.simulateMonths(1));
         Sector.Output cement = c.outputRow(Good.CEMENT);
         double made = cement == null ? 0 : cement.planned + cement.exportBound;
         double stock = c.getStock(Good.CEMENT), direct = cement == null ? 0 : cement.exportBound;
         // ...its statement struck at the top of the next month (Game.startOfMonthUpdate()).
         quietly(() -> g.simulateMonths(1));
         Sector.Split bought = c.statement().bought.get(Good.LIMESTONE);
-        report("fixture: a Quarry and a Cement Plant standing, two months on: the plant bought the quarry's limestone at home (its"
+        report("fixture: a Quarry and a Cement Plant standing, the first profitable buffer: the plant bought the quarry's limestone at home (its"
                         + " statement, struck at the next month's top)",
                 bought != null && bought.atHome > 0 && q.statement().sold.get(Good.LIMESTONE) != null
                         && q.statement().sold.get(Good.LIMESTONE).atHome > 0,

@@ -70,9 +70,12 @@ import java.util.stream.Stream;
  * deleted when the JVM exits; the replay's copy is on its own scratch folder (ReplayCity); the window's preferences are
  * read from the scratch folder, never from %APPDATA%; the only file written outside is the recording folder it is given.
  *
- * THE WINDOW IS OFF EVERY SCREEN unless -Dcbs.probe.onscreen=true: the primary screen's size, undecorated, left of the
+ * THE WINDOW IS OFF EVERY SCREEN unless -Dcbs.probe.onscreen=true: by default the primary screen's size, undecorated, left of the
  * leftmost screen, so a run does not cover the PC's screen while someone works on it (CM1, 2026-11-03). It still draws
  * every frame; it does take the keyboard's focus when it opens, until another window is clicked.
+ * With -Dcbs.probe.film=true the main() measure uses a 1920 x 1080 cinematic canvas, even on a smaller desktop (CM2).
+ * -Dcbs.probe.moves=M6 runs only that move; a comma-separated list selects several. -Dcbs.replay.stepProfile=true logs
+ * each month's read, decode, whole load or prepared switch to stderr, with the move's LOAD/RUN boundaries.
  *
  * Where JavaFX cannot start - no display, a headless JVM, the jars missing - it says so in one line and exits 0.
  *
@@ -216,12 +219,28 @@ public final class ReplayMoveProbe {
             cam = ui.replayCamera();
             cam.setGlideSeconds(GLIDE_S);
             canvas = (Canvas) get(canvasField, map);
+            if (Boolean.getBoolean("cbs.probe.film")) {
+                call(method(ReplayMode.class, "setCinematic", boolean.class), mode, true);
+                stage.setWidth(ReplayMode.FILM_W);
+                stage.setHeight(ReplayMode.FILM_H);
+                if (!ON_SCREEN) {
+                    double left = Screen.getScreens().stream().mapToDouble(s -> s.getBounds().getMinX()).min().orElse(0);
+                    stage.setX(left - stage.getWidth() - 200);
+                }
+            }
             return null;
         });
         CameraPath.View whole = waitForWhole();
         cityLat = whole.a();
         cityLon = whole.b();
         waitForCanvas();
+        if (Boolean.getBoolean("cbs.probe.film") && fx(() -> canvas.getWidth() != ReplayMode.FILM_W || canvas.getHeight() != ReplayMode.FILM_H)) {
+            throw new IllegalStateException("the film probe needs a 1920 x 1080 canvas");
+        }
+        if (Boolean.getBoolean("cbs.probe.film") && !ON_SCREEN && fx(() -> Screen.getScreens().stream().anyMatch(s ->
+                s.getBounds().intersects(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight())))) {
+            throw new IllegalStateException("the film probe must stay off every screen");
+        }
 
         double street = GlobeFrame.leastKmPx();
         double handoff = GlobeFrame.HANDOFF_KM;
@@ -450,7 +469,10 @@ public final class ReplayMoveProbe {
      * Ready runs nothing.
      */
     private static void move(String heading, Runnable start, boolean glide) throws Exception {
+        String selected = System.getProperty("cbs.probe.moves");
+        if (selected != null && !java.util.Arrays.asList(selected.split(",")).contains(heading.substring(0, 2))) return;
         MapView.MoveTally tally = map.moveTally();
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.println(heading + " LOAD");
         long t0 = System.nanoTime();
         fx(() -> {
             start.run();
@@ -479,6 +501,7 @@ public final class ReplayMoveProbe {
             return;
         }
         report.printf("  loaded in %.1f s, %d plan views, heap %d MB: %s%n", loadS, views, heap, words);
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.println(heading + " RUN");
         t0 = System.nanoTime();
         fx(() -> {
             tally.reset();
@@ -528,21 +551,81 @@ public final class ReplayMoveProbe {
      * it passed; while it waited, whether the map held the move and how many of the six caches were pinned; how it was run (the click
      * or the key), whether the key was taken and the phase at once after; then the run's tally (frames, frames with anything
      * unpainted, the worker's asks, the pictures let go, and the frames by where they drew) and, after the run, whether the map still
-     * held the move and how many caches were pinned (and the seconds it took to let go, -1 if it did not in 3 s).
+     * held the move and how many caches were pinned (and the seconds it took to let go, -1 if it did not in 3 s); last, the frames
+     * whose asks came out below nothing (FB7: none can).
      */
     public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean heldWhileReady,
                         int pinnedWhileReady, String ranBy, boolean taken, String phaseAfterTrigger, double runSeconds,
                         long frames, long unpaintedFrames, long asks, long evicted, Map<String, Long> levelFrames,
-                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan) { }
+                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan, int preparedMonths, int preparedContexts,
+                        long asksBelowNothing) { }
+
+    /**
+     * FB7's fixture for the count of asks the glides are held to, on a Worker built as the map's own (MapView.Worker, one thread)
+     * whose queue stops the thread after it takes a job and before it begins it: the moment getTaskCount(), the old count, counts
+     * the job nowhere, and which a loaded machine makes long. The readings, of getTaskCount() and of Worker.asked(): with one job
+     * handed in and the thread not yet taking it (queued), with the thread holding it unbegun (inTransit), and after one more job is
+     * handed in during that moment (another); and whether the Worker ended when let go.
+     */
+    public record Transit(long taskCountQueued, long taskCountInTransit, long askedQueued, long askedInTransit, long askedAnother,
+                          boolean ended) { }
+
+    /** Causes the moment Transit names, by latches and no clock, and reads both counts across it. Needs no JavaFX. */
+    public static Transit inTransit() throws Exception {
+        CountDownLatch atTake = new CountDownLatch(1), mayTake = new CountDownLatch(1), taken = new CountDownLatch(1), mayBegin = new CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger takes = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.LinkedBlockingQueue<Runnable> queue = new java.util.concurrent.LinkedBlockingQueue<>() {
+            @Override
+            public Runnable take() throws InterruptedException {
+                if (takes.getAndIncrement() > 0) return super.take();
+                // The thread's first take, after its first job (run as the job it was made with, never queued) has ended.
+                atTake.countDown();
+                mayTake.await();
+                Runnable job = super.take();
+                taken.countDown();
+                mayBegin.await();
+                return job;
+            }
+        };
+        MapView.Worker worker = new MapView.Worker(queue, r -> {
+            Thread t = new Thread(r, "transit-fixture");
+            t.setDaemon(true);
+            return t;
+        });
+        try {
+            worker.execute(() -> { });
+            if (!atTake.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("the fixture's worker never came to take a job");
+            worker.execute(() -> { });
+            long countQueued = worker.getTaskCount(), askedQueued = worker.asked();
+            mayTake.countDown();
+            if (!taken.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("the fixture's worker never took its job");
+            long countInTransit = worker.getTaskCount(), askedInTransit = worker.asked();
+            worker.execute(() -> { });
+            long askedAnother = worker.asked();
+            mayBegin.countDown();
+            worker.shutdown();
+            boolean ended = worker.awaitTermination(10, TimeUnit.SECONDS);
+            return new Transit(countQueued, countInTransit, askedQueued, askedInTransit, askedAnother, ended);
+        } finally {
+            mayTake.countDown();
+            mayBegin.countDown();
+            worker.shutdownNow();
+        }
+    }
 
     /** Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. */
     public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinnedAfter) { }
+
+    /** Leaving a Ready move, measured in the same FX call before a detached canvas could tick again (CM2). */
+    public record Left(boolean ready, int preparedBefore, boolean replayAfter, boolean heldAfter, int pinnedAfter,
+                       int preparedAfter, long chartPoints, long chartMissed) { }
 
     /**
      * What check() measured. {@code cannot} is non-null, and nothing else, when JavaFX cannot start here; {@code globe} whether the
      * window's map was the Earth's (else a generated world's plane).
      */
-    public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled escape) { }
+    public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled escape, Left left,
+                          Map<String, Boolean> followups) { }
 
     /**
      * CM1's check, run by ReplayCheck 5d (2026-11-03): the window off screen on a game of its own (windowFiles), first as the normal
@@ -553,19 +636,37 @@ public final class ReplayMoveProbe {
      */
     public static Checked check(Path recordingFolder, GameFiles windowFiles, double glideSeconds) throws Exception {
         String cannot = startJavaFx();
-        if (cannot != null) return new Checked(cannot, false, null, null, null, null);
+        if (cannot != null) return new Checked(cannot, false, null, null, null, null, null, null);
         PrintStream was = System.out;
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         silent = true;
+        Map<String, Boolean> followups = new LinkedHashMap<>();
+        String cleanup = "check cleanup turns replay off and unregisters both pumps before the timed section";
+        followups.put(cleanup, false);
         try {
             bind();
-            return measureAll(recordingFolder, windowFiles, glideSeconds);
+            return measureAll(recordingFolder, windowFiles, glideSeconds, followups);
         } finally {
             silent = false;
             System.setOut(was);
             try {
                 fx(() -> {
+                    if (mode != null) mode.leave();
                     if (mode != null) ((AnimationTimer) get(field(ReplayMode.class, "timer"), mode)).stop();
+                    Object mini = ui == null ? null : get(field(UserInterface.class, "miniMap"), ui);
+                    if (stage != null && stage.getScene() != null) stage.getScene().setRoot(new javafx.scene.Group());
+                    if (ui != null) {
+                        AnimationTimer clock = (AnimationTimer) get(field(UserInterface.class, "clock"), ui);
+                        if (clock != null) clock.stop();
+                    }
+                    stopPump(map);
+                    stopPump(mini);
+                    // A late worker adoption still asks for a frame; a detached canvas must not register its pump again.
+                    if (map != null) call(requestDraw, map);
+                    followups.put(cleanup,
+                            ui != null && !ui.replayOn() && map != null && !(Boolean) get(field(MapView.class, "running"), map)
+                                    && canvas.getScene() == null && mini != null && ((MiniMap) mini).node().getScene() == null
+                                    && !(Boolean) get(field(MiniMap.class, "running"), mini));
                     if (stage != null) stage.close();
                     return null;
                 });
@@ -582,7 +683,7 @@ public final class ReplayMoveProbe {
         }
     }
 
-    private static Checked measureAll(Path folder, GameFiles windowFiles, double glideSeconds) throws Exception {
+    private static Checked measureAll(Path folder, GameFiles windowFiles, double glideSeconds, Map<String, Boolean> followups) throws Exception {
         Recording rec = Recording.at(folder);
         int[] ms = rec.months();
         if (rec.meta() == null || ms.length < 2) throw new IllegalStateException("fewer than two months in the recording at " + folder);
@@ -673,7 +774,179 @@ public final class ReplayMoveProbe {
         // Escape while a glide loads.
         markMonths(first, last);
         Cancelled escape = cancelWhileLoading();
-        return new Checked(null, !plane, normal, zoomOut, months, escape);
+        reviewFollowups(followups);
+        Left left = leaveWhileReady();
+        // Leave one more replay active: check()'s finally, rather than leaveWhileReady(), must clean it up.
+        fx(() -> { call(enter, mode, rec); return null; });
+        return new Checked(null, !plane, normal, zoomOut, months, escape, left, followups);
+    }
+
+    /** Stop and unregister a harness window's pump now; a closed stage alone does not unregister AnimationTimer (CM1b). */
+    private static void stopPump(Object owner) throws Exception {
+        if (owner == null) return;
+        ((AnimationTimer) get(field(owner.getClass(), "pump"), owner)).stop();
+        field(owner.getClass(), "running").setBoolean(owner, false);
+    }
+
+    /** Cause the review's retained-store, half-view input, stalled-job and heap cases on the real replay window (CM1b). */
+    @SuppressWarnings("unchecked")
+    private static void reviewFollowups(Map<String, Boolean> results) throws Exception {
+        for (KeyCode key : new KeyCode[] { KeyCode.ESCAPE, KeyCode.X }) {
+            fx(() -> { cam.glide(); return null; });
+            long began = System.nanoTime();
+            while (fx(() -> cam.loading()) && (System.nanoTime() - began) / 1e9 < CHECK_LOAD_MAX_S) Thread.sleep(25);
+            results.put(key + " while Ready releases the store, pins and prepared months in the same FX call", fx(() -> {
+                boolean ready = cam.ready() && map.moveHeld() && cam.moveCity().preparedMonths() >= 2;
+                ham.citybuildersim.ReplayCity city = cam.moveCity();
+                boolean taken = mode.key(press(key), false);
+                boolean released = ready && taken && !cam.busy() && !map.moveHeld() && map.cachesPinned() == 0 && city.preparedMonths() == 0;
+                finishFixtureLoad();
+                return released;
+            }));
+        }
+        results.put("all other keys are consumed during a load without changing its marks, month, camera or replay", fx(() -> {
+            startFixtureLoad();
+            CameraPath.View middle = cam.planView(cam.planViews() / 2);
+            cam.showMonthOf(middle);
+            call(applyView, map, middle);
+            CameraPath.View a = cam.markA(), b = cam.markB();
+            int serial = cam.serial(), month = mode.shownMonth();
+            boolean taken = true;
+            for (KeyCode k : new KeyCode[] { KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.O, KeyCode.I, KeyCode.LEFT, KeyCode.RIGHT,
+                    KeyCode.SPACE, KeyCode.C, KeyCode.L, KeyCode.W, KeyCode.X, KeyCode.F11, KeyCode.SHIFT }) {
+                taken &= mode.key(press(k), false);
+            }
+            boolean unchanged = taken && cam.loading() && cam.serial() == serial && mode.shownMonth() == month
+                    && java.util.Objects.equals(a, cam.markA()) && java.util.Objects.equals(b, cam.markB());
+            finishFixtureLoad();
+            field(ReplayCamera.class, "markA").set(cam, a);
+            field(ReplayCamera.class, "markB").set(cam, b);
+            return unchanged;
+        }));
+        results.put("a map lost at the middle of loading restores the move's starting month and view before detaching", fx(() -> {
+            startFixtureLoad();
+            CameraPath.View start = cam.startView(), middle = cam.planView(cam.planViews() - 1);
+            cam.showMonthOf(middle);
+            call(method(MapView.class, "keepUp"), map);
+            call(applyView, map, middle);
+            boolean changed = mode.shownMonth() != start.month();
+            map.collapse(false);
+            GlobeFrame ground = (GlobeFrame) get(field(MapView.class, "globe"), map);
+            ham.citybuildersim.MapFrame flat = (ham.citybuildersim.MapFrame) get(field(MapView.class, "big"), map);
+            CameraPath.View restored = ground != null
+                    ? new CameraPath.View(true, ground.centreLat(), ground.centreLon(), ground.kmPx(), 0)
+                    : new CameraPath.View(false, flat.centreX(), flat.centreY(), flat.scale(), 0);
+            boolean released = !cam.busy() && !map.moveHeld() && map.cachesPinned() == 0 && mode.shownMonth() == start.month();
+            finishFixtureLoad();
+            ui.replayOpenMap();
+            call(applyView, map, start);
+            return changed && released && restored.a() == start.a() && restored.b() == start.b() && restored.scale() == start.scale();
+        }));
+        results.put("passing a missing cell and a district picture remembers both on later views", fx(() -> {
+            startFixtureLoad();
+            Object m = get(field(MapView.class, "move"), map);
+            Object globeWas = get(field(MapView.class, "globe"), map);
+            ham.citybuildersim.MapFrame f = (ham.citybuildersim.MapFrame) get(field(MapView.class, "big"), map);
+            field(MapView.class, "globe").set(map, null);
+            f.set(0, 0, 1);
+            Object pictures = call(method(MapView.class, "picturesFor", int.class, int.class), map, f.level(), ham.citybuildersim.MapFrame.tilePx(f.level(), f.scale()));
+            ((java.util.Map<?, ?>) pictures).clear();
+            java.util.Set<ham.citybuildersim.CityMap.District> asked = (java.util.Set<ham.citybuildersim.CityMap.District>) get(field(MapView.class, "picturesAsked"), map);
+            asked.add(ui.game.getCityMap().districts().get(0));
+            Method settled = method(MapView.class, "loadSettled", m.getClass());
+            boolean missing = !(Boolean) call(settled, map, m);
+            call(method(MapView.class, "passView", m.getClass()), map, m);
+            boolean remembered = (Boolean) call(settled, map, m);
+            asked.clear();
+            // The FAR and globe branches must remember cells absent even from the request sets.
+            ((java.util.Set<?>) get(field(MapView.class, "nodesAsked"), map)).clear();
+            ((java.util.Set<?>) get(field(MapView.class, "chartsAsked"), map)).clear();
+            ((java.util.Map<?, ?>) get(field(MapView.class, "nodes"), map)).clear();
+            f.set(0, 0, f.leastScale());
+            boolean missingNodes = f.level() == ham.citybuildersim.MapFrame.FAR && !(Boolean) call(settled, map, m);
+            call(method(MapView.class, "passView", m.getClass()), map, m);
+            results.put("unasked FAR nodes are remembered when a view is passed", missingNodes && (Boolean) call(settled, map, m));
+            GlobeFrame chartView = new GlobeFrame(canvas.getWidth(), canvas.getHeight(), 42.507, 1.522);
+            chartView.set(42.507, 1.522, (GlobeFrame.HANDOFF_KM + GlobeFrame.PICTURE_FROM_KM) / 2);
+            field(MapView.class, "globe").set(map, chartView);
+            ((java.util.Map<?, ?>) get(field(MapView.class, "charts"), map)).clear();
+            boolean missingCharts = !(Boolean) call(settled, map, m);
+            call(method(MapView.class, "passView", m.getClass()), map, m);
+            results.put("unasked globe chart cells are remembered when a view is passed", missingCharts && (Boolean) call(settled, map, m));
+            field(MapView.class, "globe").set(map, globeWas);
+            finishFixtureLoad();
+            return missing && remembered;
+        }));
+
+        // A real WORKER job throws on a missing world. Its failure must be adopted on FX and never asked again by paintNodes().
+        long[] key = fx(() -> {
+            startFixtureLoad();
+            long plots = 1, nx = 123, ny = 456;
+            long k = (Long) call(method(MapView.class, "nodeKey", long.class, long.class, long.class), null, plots, nx, ny);
+            long[] wanted = { plots, nx, nx, ny, ny };
+            field(MapView.class, "nodesWanted").set(map, wanted);
+            ((java.util.Set<Long>) get(field(MapView.class, "nodesAsked"), map)).add(k);
+            call(method(MapView.class, "askNodes", java.util.List.class, long.class, long.class, ham.citybuildersim.World.Key.class, long[].class),
+                    map, new java.util.ArrayList<>(java.util.List.of(new long[] { nx, ny, k })), plots, (long) ham.citybuildersim.MapFrame.NODE_PX, null, wanted);
+            return new long[] { k, nx, ny };
+        });
+        MapView.Worker worker = MapView.WORKER;
+        worker.submit(() -> {}).get(10, TimeUnit.SECONDS);
+        results.put("a failed worker job is given up on FX and later paints never ask it again", fx(() -> {
+            Object m = get(field(MapView.class, "move"), map);
+            boolean failed = m != null && ((java.util.Set<Long>) get(field(m.getClass(), "stuckNodes"), m)).contains(key[0]);
+            long tasks = worker.asked();
+            for (int i = 0; i < 3; i++) call(method(MapView.class, "paintNodes", long.class, long.class, long.class, long.class, long.class, long.class, long.class, ham.citybuildersim.MapFrame.class),
+                    map, 1L, key[1], key[1], key[2], key[2], System.nanoTime() + 1_000_000_000L, ui.game.getCityMap().picturesKept(), new ham.citybuildersim.MapFrame(100, 100));
+            finishFixtureLoad();
+            return failed && tasks == worker.asked();
+        }));
+        CountDownLatch busy = new CountDownLatch(1), release = new CountDownLatch(1);
+        worker.submit(() -> { busy.countDown(); try { release.await(10, TimeUnit.SECONDS); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } });
+        busy.await(10, TimeUnit.SECONDS);
+        try {
+            results.put("the overall load cap fires while the worker is busy and the card names its dial", fx(() -> {
+                startFixtureLoad();
+                Object m = get(field(MapView.class, "move"), map);
+                field(m.getClass(), "started").setLong(m, System.nanoTime() - (long) ((MapView.LOAD_MAX_S + 1) * 1e9));
+                call(method(MapView.class, "loadStep", ReplayCamera.class), map, cam);
+                String words = (String) get(field(ReplayMode.class, "note"), mode);
+                return !cam.busy() && !map.moveHeld() && map.cachesPinned() == 0 && words.contains((int) MapView.LOAD_MAX_S + " s load limit");
+            }));
+        } finally { release.countDown(); }
+        long most = 1_000_000, start = (long) Math.ceil(most * (1 + MapView.LOAD_HEAP_SHARE) / 2);
+        MapView.LoadMemory memory = new MapView.LoadMemory(start, most);
+        int[] collections = { 0 };
+        boolean baselineFits = start > MapView.LOAD_HEAP_SHARE * most && !memory.over(() -> start, () -> collections[0]++);
+        boolean growthFits = !memory.over(() -> memory.limit, () -> collections[0]++);
+        boolean over = memory.over(() -> memory.limit + 1, () -> collections[0]++);
+        for (int i = 0; i < 5; i++) over &= memory.over(() -> memory.limit + 1, () -> collections[0]++);
+        results.put("a city starting above the old heap threshold can load and excess growth collects at most once", baselineFits && growthFits && over && collections[0] == 1);
+        MapView.LoadMemory reclaimed = new MapView.LoadMemory(0, most);
+        long[] used = { reclaimed.limit + 1 };
+        int[] reclaimedCollections = { 0 };
+        boolean recovered = !reclaimed.over(() -> used[0], () -> { reclaimedCollections[0]++; used[0] = 0; });
+        used[0] = reclaimed.limit + 1;
+        results.put("a collection that recovers room is still the load's only collection", recovered
+                && reclaimed.over(() -> used[0], () -> reclaimedCollections[0]++) && reclaimedCollections[0] == 1);
+    }
+
+    private static KeyEvent press(KeyCode key) {
+        return new KeyEvent(KeyEvent.KEY_PRESSED, "", "", key, false, false, false, false);
+    }
+
+    private static void startFixtureLoad() {
+        cam.glide();
+        cam.showMonthOf(cam.startView());
+        call(method(MapView.class, "keepUp"), map);
+        call(applyView, map, cam.startView());
+        call(method(MapView.class, "beginMove", ReplayCamera.class), map, cam);
+    }
+
+    /** Restore the fixture even when the cancellation under test is broken, so a later finding has its own premise. */
+    private static void finishFixtureLoad() {
+        cam.stop();
+        map.cancelMove(cam);
     }
 
     /** M6's marks: the last month at `last` is B, the first month at `first` is A, and the view is settled on A. */
@@ -731,10 +1004,12 @@ public final class ReplayMoveProbe {
             if (m.find()) passed = Integer.parseInt(m.group(1));
         }
         String by = byKey ? "key" : "click";
-        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0);
+        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0, 0, 0, 0);
         Thread.sleep(300);      // it waits: nothing runs it, nothing lets go of what it loaded
         boolean held = fx(() -> map.moveHeld() && cam.ready());
         int pinned = fx(() -> map.cachesPinned());
+        int preparedMonths = fx(() -> cam.moveCity().preparedMonths());
+        int preparedContexts = fx(() -> cam.moveCity().preparedContexts());
 
         // Run it as the window does: the click is fired at the canvas, the key goes to ReplayMode.key() as UserInterface's filter sends it.
         double cx = canvas.getWidth() / 2, cy = canvas.getHeight() / 2;
@@ -768,7 +1043,7 @@ public final class ReplayMoveProbe {
         Object[] figures = fx(() -> {
             Map<String, Long> levels = new LinkedHashMap<>();
             for (Map.Entry<String, long[]> e : tally.byWhere.entrySet()) levels.put(e.getKey(), e.getValue()[0]);
-            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels, tally.offPlan };
+            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels, tally.offPlan, tally.asksBelowNothing };
         });
         // The map lets go of the move on its next frame (endMove()); give it a few seconds to have one.
         long t2 = System.nanoTime();
@@ -782,7 +1057,37 @@ public final class ReplayMoveProbe {
         @SuppressWarnings("unchecked")
         Map<String, Long> levels = (Map<String, Long>) figures[4];
         return new Moved(name, true, loadS, views, passed, held, pinned, by, taken, after, runS, (Long) figures[0], (Long) figures[1],
-                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5]);
+                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5], preparedMonths, preparedContexts,
+                (Long) figures[6]);
+    }
+
+    /** Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. */
+    private static Left leaveWhileReady() throws Exception {
+        fx(() -> { cam.glide(); return null; });
+        long began = System.nanoTime();
+        while (fx(() -> cam.loading()) && (System.nanoTime() - began) / 1e9 < CHECK_LOAD_MAX_S) Thread.sleep(25);
+        return fx(() -> {
+            boolean ready = cam.ready() && map.moveHeld();
+            ham.citybuildersim.ReplayCity city = cam.moveCity();
+            int preparedBefore = city.preparedMonths();
+            GlobeFrame view = new GlobeFrame(ReplayMode.FILM_W, ReplayMode.FILM_H, 42.507, 1.522);
+            view.set(42.507, 1.522, (GlobeFrame.HANDOFF_KM + GlobeFrame.PICTURE_FROM_KM) / 2);
+            long[] range = (long[]) call(method(MapView.class, "chartNodes", GlobeFrame.class), map, view);
+            double step = ((Number) get(field(MapView.class, "NODE_SAMPLE_PX"), null)).doubleValue();
+            long points = 0, missed = 0;
+            double[] xy = new double[2];
+            for (double y = .5; y < view.height(); y += step) for (double x = .5; x < view.width(); x += step) {
+                if (!view.onPlanet(x, y) || view.drawsHold(x, y)) continue;
+                points++;
+                if (!view.chartAt(x, y, xy)) { missed++; continue; }
+                long nx = (long) Math.floor(xy[0] / ham.citybuildersim.MapFrame.NODE_PX);
+                long ny = (long) Math.floor(xy[1] / ham.citybuildersim.MapFrame.NODE_PX);
+                if (range == null || range[0] != ham.citybuildersim.MapFrame.nodePlotsAt(view.planeScale()) || range[1] != view.chart().id()
+                        || nx < range[2] || nx > range[3] || ny < range[4] || ny > range[5]) missed++;
+            }
+            mode.leave();
+            return new Left(ready, preparedBefore, ui.replayOn(), map.moveHeld(), map.cachesPinned(), city.preparedMonths(), points, missed);
+        });
     }
 
     /** A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. */

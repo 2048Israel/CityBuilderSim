@@ -226,6 +226,9 @@ final class ReplayMode {
     /** The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). */
     ReplayCamera camera() { return camera; }
 
+    /** The replay copy whose months a loaded camera move retains, on the FX thread (CM2). */
+    ReplayCity moveCity() { return city; }
+
     /** The recorded month on screen. */
     int shownMonth() { return months[at]; }
 
@@ -412,6 +415,7 @@ final class ReplayMode {
         beganNs = System.nanoTime();
         lastMoveNs = beganNs;
         on = true;
+        ui.replayHoldPrefs();            // TR2-G: the copy's clicks change prefs of its own, never the player's
         ui.game = rc.game();
         ui.replaySetResumeTo(null);
         ui.replayAnotherCity();
@@ -444,6 +448,7 @@ final class ReplayMode {
         graphs.leave();
         hideBar();
         on = false;
+        ui.replayReleasePrefs();         // TR2-G: the player's own prefs, untouched by the copy
         ui.game = realGame;
         ui.replayAnotherCity();
         ui.replaySetCityOpen(realCityOpen);
@@ -578,6 +583,7 @@ final class ReplayMode {
         if (!on) return false;
         viewerKey(e);
         KeyCode code = e.getCode();
+        if (camera.loading() && code != KeyCode.ESCAPE) return true;
         boolean menuUp = ui.replayGameMenuUp();
         if (code == KeyCode.ESCAPE) {
             if (menuUp) return false;
@@ -591,6 +597,10 @@ final class ReplayMode {
         }
         if (typing || menuUp || e.isControlDown() || e.isAltDown() || e.isMetaDown()) return false;
         // A loaded move waits for its click (CM1): any other key runs it, so a recording can be started first.
+        if (camera.ready() && code == KeyCode.X) {
+            camera.stillAll();
+            return true;
+        }
         if (camera.ready() && !code.isModifierKey()) {
             camera.run();
             return true;
@@ -733,6 +743,7 @@ final class ReplayMode {
         restFailed = -1;
         int month = months[at];
         if (city.stepQuick(month)) {
+            ui.game = city.game();       // CM2: a prepared land-change month has its own already-loaded context
             ui.replayMapChanged();
             return;
         }
@@ -761,6 +772,7 @@ final class ReplayMode {
 
     /** A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. */
     private void afterWhole() {
+        ui.game = city.game();
         ui.replayAnotherCity();
         ui.redraw();
     }

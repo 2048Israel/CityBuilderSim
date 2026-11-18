@@ -623,7 +623,7 @@ public class BridgeCheck {
                 g.getCash() == cash0 && g.getBridges().size() == 0 && LandmassCheck.onSite(c, road) == 0 && !lms.linked(island) && g.quoteBuild(road, 1).bridgePoints == 0);
         check("the card's verdict is NO_BRIDGE, and a run of the order stops there with NO_BRIDGE",
                 BuildCard.verdict(g, road, 1).kind() == BuildCard.VerdictKind.NO_BRIDGE
-                        && g.buildRunStop(new java.util.LinkedHashMap<>(java.util.Map.of(LandmassCheck.own(c, road), 1))) == Game.BuildResult.NO_BRIDGE);
+                        && g.buildRunStop(new java.util.LinkedHashMap<>(java.util.Map.of(LandmassCheck.own(c, road), 1L))) == Game.BuildResult.NO_BRIDGE);
 
         // A channel the survey can cross: shallow, ten metres deep.
         int w = 14;
@@ -761,7 +761,7 @@ public class BridgeCheck {
         Game g = c.g;
         BuildingsTemplate road = LandmassCheck.tpl(c, "Road Bridge");
         Landmasses lms = c.books();
-        int standing = LandmassCheck.standing(c, road);
+        long standing = LandmassCheck.standing(c, road);
         report("premise: three bridges stand and the island they link is linked", standing == 3 && lms.linked(f.id()) && g.getBridges().count(Bridges.STANDING) == 3, standing + " standing");
         double cash = g.getCash();
         boolean done = g.demolish(road, 1);

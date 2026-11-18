@@ -1,134 +1,38 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  The orchestrator's gate and ship in one call: a batch's branch merged into
-#  main, its records written, checked on the merge, tagged with the version
-#  this ship sets and pushed.
-#
-#      ./ship.sh batch/I12                      gate, merge, tag, push
-#      ./ship.sh batch/I12 -m "the title"       the same, the merge's title given
-#      ./ship.sh batch/I12 -F body.txt          the same, the message's body (and trailers) from a file
-#      ./ship.sh --dry-run batch/I12            the gate alone: nothing committed or pushed
-#      ./ship.sh --no-tag some/branch           a merge that is not a version's (tools, records): no tag
-#      ./ship.sh --version 0.9.0 batch/I12      the version {next} takes, instead of the last tag's patch + 1
-#      ./ship.sh --red-ok "his words" --red-line "<part of a red line>" ... batch/I12
-#                                               ships past the red lines he approved and no others (step 9; repeat
-#                                               the option; --red-ok without one is refused), his words in the body
-#      ./ship.sh --dry-run batch/I12 -- money bank   the suite only the harnesses named (to try the script)
-#
-#  Run it in the clone where main is checked out, with nothing uncommitted.
-#  Exit 0 shipped (or a dry run passed), 1 stopped, 2 usage. In order,
-#  stopping at the first that fails:
-#    1. main is brought up to origin/main and the tags fetched (fast-forward only);
-#    2. the branch, local or origin's, with something main does not have;
-#    3. the last version tag (the highest x.y.z) must be main's GameVersion.VERSION;
-#    4. the branch's ship file docs/queue/<id>-ship.md: the version and the
-#       records are set here from it; a branch without one (an assistant's, a
-#       docs pass's) ships --no-tag, its records as it wrote them, or stops;
-#    5. stops before any merge: "-- names" without --dry-run (a partial suite
-#       never ships); a branch that changes docs/notes/gate.txt, adds a
-#       docs/queue/*-ship.md that is not its own, or is built on another batch
-#       that main lacks (tools/carries.sh, RL1: merging it would ship that one
-#       ungated, with no records); with --no-tag, one that
-#       changes GameVersion's VERSION line (main's VERSION would stay untagged
-#       and step 3 would stop every later ship); with a ship file, one that
-#       changes GameVersion's VERSION line, adds a docs/ensemble/<x.y.z>.md,
-#       edits QUEUE.md or the changelog, has a "## " heading in its ship file
-#       other than changelog, pending and queued, a pending or queued row with
-#       no first cell, asks for a version ({next}) with --no-tag or without a
-#       "## changelog" block whose first line starts "### {next} ", or is a
-#       batch/ branch with no {next} and no --no-tag; a --version that is
-#       not x.y.z, does not sort above the last tag or is tagged here or on origin;
-#    6. the version: NEXT is --version, or the last tag's patch + 1, when the
-#       ship file has {next}; the tag is NEXT unless --no-tag;
-#    7. the merge, uncommitted; a conflict only in the generated docs (docs/map/,
-#       dials.md, month-order.md, harnesses.md) takes the branch's side, said
-#       in a line, and the checks regenerate them; any other conflict is
-#       aborted and its files named. From here every stop undoes the merge;
-#    8. the records (new way), before the checks so the compile, the suite
-#       and the maps see NEXT, all of them staged so that one abort undoes
-#       them: {next} filled in the ship file, docs/queue/<id>-notes.md and
-#       docs/ensemble/<id>.md, GameVersion's VERSION set; the ship file's
-#       "## changelog" section on top of docs/notes/changelog.md (after its
-#       first "---"); QUEUE.md's Queued row for the id out, the "## pending"
-#       rows at the top of the Pending table, the "## queued" rows at the end
-#       of the Queued table; the baseline moved to docs/ensemble/<NEXT>.md;
-#       the ship file deleted. Of its pending and queued sections only the
-#       table's data rows are taken: a header row (first cell "item" or
-#       "batch") and a separator row are dropped. A {next} left in another
-#       file the branch changed is named, not filled;
-#    9. the checks: batch-check.sh on the merge (compile, suite, maps, Stale,
-#       line endings), the suite timed soft so that timing is judged once;
-#       exit 0 and 3 (red only as main's record has it) pass, 4 (a new red
-#       line) passes only with --red-ok and a --red-line naming each new line
-#       (a harness's own "exit N" and "N FAILED" lines pass with a line of it
-#       that does, when no other line of it is left unnamed), 1 and 2 stop. On a
-#       chatgpt/ or gemini/ branch tools.Names too: said, never a gate. Then the
-#       timing harnesses alone and hard (batch-check.sh --timing), at once (GP1);
-#       its red lines less those the suite step judged and main's recorded ones
-#       are the timing's own, and each timing red - a figure that missed its budget
-#       in target/checks/timing.tsv - is judged side by side with main
-#       (docs/orchestrator.md, The gate 6; tools/timing-pair.awk): first against
-#       main's figure of the day (GT2: gate.txt's "# figure" lines, dated today),
-#       then, for a harness with a miss that leaves uncovered, in CBS_TIMING_ROUNDS
-#       rounds (3) of main's classes (target/main-timing) and the merge's in turn
-#       (TM3, SP1 item 7). A red that is no timing red, one that is the batch's and
-#       one with no pair to compare stops - unless --red-ok and a --red-line name
-#       it, said in the body; no timing red passed so is ever a recorded one. A
-#       merge that changes only .md files outside docs/ensemble/ runs --fast alone;
-#   10. docs/notes/gate.txt written (every gate that ran the suite) and added:
-#       "#" lines (the merge's title, the date, whether earth-2.bin was named,
-#       the last nightly's verdict (tools/nightly.sh),
-#       the suite's and the timing's summary lines, each timing red that passed
-#       "# timing red not the batch's (paired): ..." with the medians, the merged
-#       main's figure of each miss ("# figure", GT2), each passed on his word
-#       "# timing red passed on Jerus's word ..."), then
-#       the suite's red lines, which are the next ship's "main's recorded reds". A
-#       timing red is a "#" line only, never a recorded one: the next ship judges
-#       it side by side with main again. Only this script writes it;
-#   11. --dry-run says what it would commit, tag and push, and the records it
-#       would write, then takes the merge back: the tree and HEAD as they were;
-#   12. the merge committed as "Merge <branch>: <title>, <version>", the title
-#       QUEUE.md's on main unless -m gives one, the body the -F file then
-#       "Gate: ..." lines (green, known red only, NEW red on his word, or
-#       docs only);
-#   13. tagged NEXT;
-#   14. main and the tag pushed together (git push --atomic), a failed push
-#       tried four more times; when main moved on origin meanwhile, the
-#       merge and the tag are taken back here: run ship.sh again, the number
-#       comes from freshly fetched tags.
-#  A failure before 12 leaves main where it was. It prints a line a step.
-#
-#  The ship file, docs/queue/<id>-ship.md (docs/batch.md has the shape):
-#      ## changelog       "### {next} - id, title - date, state, see ..." and one paragraph
-#      ## pending         table rows, optional
-#      ## queued          table rows the batch decided, optional
-#  {next} is the version this script sets; a batch branch never writes one.
-#
-#  WHY (2026-10-13; BP1, TM3, RL1): the gate was a conversation, a dozen calls doing the same
-#  steps in the same order; the long story of each step is docs/notes/batch-history.md,
-#  "The scripts' headers" (moved there in GT1). tools/ship-selftest.sh runs this script
-#  against a throwaway origin with a stub for the checks (no JVM): run it after changing this file.
-# ---------------------------------------------------------------------------
+# Gate, merge, records, tag and atomic push. Run through tools/gate.sh (logs and stop).
+# ./ship.sh [--dry-run] [--reuse RUN_DIRECTORY] [--no-tag] [--version X.Y.Z] [--red-ok WORDS --red-line PART ...]
+#           batch/ID [-m TITLE] [-F BODY] [-- harness names (dry runs only)]
+# Exit 0 passed/shipped, 1 stopped, 2 usage. docs/orchestrator.md describes the policy.
+# WHY (GF1, LM1): a stopped timing check reused the suite's status and published.
+# Every check has fresh output and a completion entry, checked before records and commit.
+# tools/ship-selftest.sh exercises this against a throwaway origin with a stub suite.
 
 # TM3: run from a copy of this script, made before anything is merged. A shell reads its script as it goes, at the
 # offsets of the file it opened, and a batch that changes ship.sh rewrites that file in the merge. CBS_SHIP_SHELL is the
 # shell that runs the copy (the self-test runs it under dash); CBS_SHIP_COPY, once set, says this is the copy.
 if [ -z "$CBS_SHIP_COPY" ]; then
-    CBS_SHIP_HOME=$(cd "$(dirname "$0")" && pwd) || exit 1
+    CBS_SHIP_HOME=${CBS_SHIP_HOME:-$(cd "$(dirname "$0")" && pwd)}
     CBS_SHIP_COPY=$(mktemp "${TMPDIR:-/tmp}/ship-run.XXXXXX") || { echo "ship      cannot make a copy of itself in ${TMPDIR:-/tmp}"; exit 1; }
     cp "$0" "$CBS_SHIP_COPY" || { rm -f "$CBS_SHIP_COPY"; echo "ship      cannot copy $0 to $CBS_SHIP_COPY"; exit 1; }
     export CBS_SHIP_HOME CBS_SHIP_COPY
-    exec ${CBS_SHIP_SHELL:-sh} "$CBS_SHIP_COPY" "$@"
+    CBS_SHIP_OWNER=$$; export CBS_SHIP_OWNER
+    trap 'rm -f "$CBS_SHIP_COPY" "$CBS_SHIP_COPY.status"' EXIT
+    trap 'exit 130' INT TERM HUP
+    { ${CBS_SHIP_SHELL:-sh} "$CBS_SHIP_COPY" "$@"; echo $? > "$CBS_SHIP_COPY.status"; } 2>&1 |
+        awk '{ print strftime("[%Y-%m-%d %H:%M:%S]"), $0; fflush() }'
+    [ -f "$CBS_SHIP_COPY.status" ] || { echo "$(date '+[%Y-%m-%d %H:%M:%S]') ship      the check did not finish"; exit 1; }
+    exit "$(cat "$CBS_SHIP_COPY.status")"
 fi
 cd "${CBS_SHIP_HOME:-$(dirname "$0")}" || exit 1
 
-USAGE='usage: ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
-DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""
+USAGE='usage: ship.sh [--dry-run] [--reuse RUN_DIRECTORY] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
+DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""; REUSE=""
 NL='
 '
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY=1 ;;
+        --reuse) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; REUSE=$1 ;;
         --no-tag) NOTAG=1 ;;
         --version) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; OVERRIDE="$1" ;;
         --red-ok) [ $# -ge 2 ] && [ -n "$2" ] || { echo "$USAGE"; exit 2; }; shift; REDOK="$1" ;;
@@ -150,13 +54,29 @@ GV=src/main/java/ham/citybuildersim/GameVersion.java
 GENERATED="docs/map docs/dials.md docs/month-order.md docs/harnesses.md"
 GENRE='^docs/(map/|dials\.md$|month-order\.md$|harnesses\.md$)'
 T=target/ship-tmp          # this script's scratch folder, gone when it ends
-MT=target/main-timing      # the worktree of main whose classes the paired timing rounds run (TM3)
-MERGING=0
+MERGING=0; COMMITTED=0
 
 say() { echo "ship      $*"; }
 die() { [ "$MERGING" = 0 ] || undo; echo "ship      STOPPED - $*"; exit 1; }
+rollback() {
+    [ "$COMMITTED" = 1 ] || return 0
+    [ -z "$TAG" ] || git tag -d "$TAG" >/dev/null 2>&1
+    git reset -q --hard "$HEAD0"
+    COMMITTED=0
+}
+alive() {
+    if ! kill -0 "$CBS_SHIP_OWNER" 2>/dev/null || { [ -n "$CBS_GATE_RUN" ] && [ -e "$CBS_GATE_RUN/cancelled" ]; }; then
+        rollback; die "the gate was stopped; publication cancelled"
+    fi
+    if [ "$DRY" = 0 ] || [ -n "$CBS_GATE_RUN" ]; then
+        [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/guardian.ready" ] &&
+            [ -f "$CBS_GATE_RUN/guardian" ] && kill -0 "$(cat "$CBS_GATE_RUN/guardian")" 2>/dev/null && return 0
+        rollback; die "publishing requires tools/gate.sh with a running guardian"
+    fi
+}
 retry() {   # a network call, tried again after 2, 4, 8 and 16 seconds
     for wait in 2 4 8 16 0; do
+        if [ "$1" = git ] && [ "$2" = push ]; then alive; fi
         "$@" >/dev/null 2>&1 && return 0
         [ "$wait" = 0 ] && return 1
         sleep "$wait"
@@ -174,22 +94,23 @@ undo() {   # the merge taken back: the maps the checks rewrote first, or the abo
     LEFT=$(git status --porcelain | head -5 | tr '\n' ' ')
     [ -z "$LEFT" ] || say "left in the tree after the abort (not tracked by the merge): $LEFT"
 }
-cleanup() {   # on every way out: an unfinished merge taken back, main's timing worktree and the scratch folder removed
+cleanup() {   # on every way out: an unfinished merge taken back, the scratch folder removed
     [ "$MERGING" = 0 ] || undo
-    if [ -d "$MT" ]; then
-        git worktree remove --force "$MT" >/dev/null 2>&1
-        rm -rf "$MT"
-        git worktree prune
-    fi
+    if [ -n "$CBS_GATE_RUN" ] && [ -d "$T" ]; then cp -R "$T" "$CBS_GATE_RUN/stages"; fi
     rm -rf "$T"
     [ -z "$CBS_SHIP_HOME" ] || rm -f "$CBS_SHIP_COPY" 2>/dev/null   # the copy this run is (TM3); a shell on Windows may still hold it open: left, it is a few kilobytes in the temp folder
 }
 trap cleanup EXIT
-trap 'exit 130' INT TERM HUP
+trap 'rollback; exit 130' INT TERM HUP
 
+alive
 [ "$(git rev-parse --abbrev-ref HEAD)" = main ] || die "main is not checked out here"
 [ -z "$(git status --porcelain)" ] || die "the tree has uncommitted changes"
 rm -rf "$T"; mkdir -p "$T"
+T=$(cd "$T" && pwd)
+: > "$T/needed"; : > "$T/finished"; : > "$T/used-parts"
+mkdir -p "${CBS_GATE_RUN:-target/checks}" || die "cannot create the gate output directory"
+: > "${CBS_GATE_RUN:-target/checks}/unnamed.txt" || die "cannot clear the previous unnamed reds"
 printf '%s\n' "$REDLINES" | grep . > "$T/redlines" || : > "$T/redlines"   # the parts of red lines his words pass, one a line
 
 # 1. main up to date, the tags fetched
@@ -204,6 +125,7 @@ else
     retry git fetch -q origin "$BRANCH" || die "no branch $BRANCH here or on origin"
     REF=$(git rev-parse -q --verify 'FETCH_HEAD^{commit}') || die "cannot read origin's $BRANCH"
 fi
+GATED=$(git rev-parse "$REF^{commit}")
 AHEAD=$(git rev-list --count "main..$REF")
 [ "$AHEAD" -gt 0 ] || die "$BRANCH has nothing main does not"
 CHANGED=$(git diff --name-only --no-renames "main...$REF")   # what the branch itself changes
@@ -247,10 +169,8 @@ else
 fi
 
 # 5. stops, before any merge
-[ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "a partial suite never ships: '-- harness names' only with --dry-run"
+[ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "an explicitly filtered partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
-CARRIED=$(sh tools/carries.sh "$REF" "$BRANCH" | tr '\n' ' ')   # RL1: a successor cut from its predecessor's tip, which main lacks; its ship file is the predecessor's too
-[ -z "$CARRIED" ] || die "$BRANCH is built on ${CARRIED% }, which is not on main yet: gate that first, then $BRANCH merges main (docs/batch.md, A batch session)"
 OTHERSHIP=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/queue/.+-ship\.md$' | grep -v -x -F "$SHIPF" | head -3 | tr '\n' ' ')
 [ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/batch.md)"
 VCHG=0
@@ -261,8 +181,9 @@ if [ "$NEW" = 1 ]; then
     [ -z "$ADDED" ] || die "$BRANCH adds $ADDED: a batch commits its baseline as docs/ensemble/$ID.md, and ship.sh names it by the version"
     RECORDS=$(printf '%s\n' "$CHANGED" | grep -x -e QUEUE.md -e docs/notes/changelog.md | tr '\n' ' ' | sed 's/ *$//')
     [ -z "$RECORDS" ] || die "$BRANCH edits $RECORDS: records go in the ship file $SHIPF (docs/batch.md)"
-    BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued)' | head -3 | tr '\n' ' ')
-    [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- only '## changelog', '## pending' and '## queued'"
+    BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued|known-reds)' | head -3 | tr '\n' ' ')
+    [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- use changelog, pending, queued or known-reds"
+    [ "$DRY" = 1 ] || ! grep -q -x '<!-- readiness: provisional -->' "$T/ship-on-branch" || die "$SHIPF is provisional: finish its dry run before readiness"
     if [ "$WANT" = 0 ] && git cat-file -e "$REF:docs/ensemble/$ID.md" 2>/dev/null; then
         die "docs/ensemble/$ID.md is a baseline and $SHIPF has no {next} to name it by"
     fi
@@ -277,6 +198,8 @@ if [ "$NEW" = 1 ]; then
     elif [ "$ISBATCH" = 1 ] && [ "$NOTAG" = 0 ]; then
         die "$SHIPF has no {next}: write {next} in its changelog heading, or ship it --no-tag"
     fi
+    HEADING=$(sect changelog "$T/ship-on-branch" | awk 'NF { print; exit }')
+    printf '%s\n' "$HEADING" | grep -q -E '^### .+ — .+ — .+' || die "$SHIPF changelog heading needs two UTF-8 em-dash separators ( — ); write records through Git Bash"
 else   # no ship file, --no-tag (step 4): the merge carries main's version, and one that moves it leaves main untagged and stops every later ship (step 3)
     [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line and --no-tag was given: main's VERSION would stay untagged and stop every later ship; leave VERSION as main has it"
 fi
@@ -295,14 +218,21 @@ fi
 
 # the merge's title: QUEUE.md's row on main (before the records take it out), or -m
 [ -n "$TITLE" ] || TITLE=$(queued main | awk '{ print tolower(substr($0, 1, 1)) substr($0, 2) }')
+[ -n "$TITLE" ] || [ "$NEW" = 0 ] || TITLE=$(printf '%s\n' "$HEADING" | awk -F ' — ' -v id="$ID" '{ t = $2; sub("^" id ", *", "", t); print t }')
 [ -n "$TITLE" ] || TITLE=$(git log -1 --format=%s "$REF")
 
 # 7. the merge, not yet committed
 if printf '%s
 ' "$CHANGED" | grep -q -x 'ship.sh'; then
-    say "$BRANCH changes ship.sh: this run goes on from its copy ($0), so the merge cannot rewrite it under the shell; the new one runs from the next ship"
+    say "$BRANCH changes ship.sh: this run goes on from its copy ($0), so the merge cannot rewrite it under the shell"
 fi
 HEAD0=$(git rev-parse HEAD)
+[ -z "$CBS_GATE_RUN" ] || echo "$HEAD0" > "$CBS_GATE_RUN/head.before"
+if [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ]; then
+    printf '%s\n' "$HEAD0" > "$CBS_GATE_RUN/main.commit"
+    printf '%s\n' "$GATED" > "$CBS_GATE_RUN/branch.commit"
+fi
+say "commits: branch $GATED, main $HEAD0"
 MERGING=1
 if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     CONFLICTS=$(git diff --name-only --diff-filter=U)
@@ -319,6 +249,15 @@ if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     fi
 fi
 say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
+[ "$ISBATCH" = 0 ] || sh tools/batch-id.sh "$ID" main || die "batch ID $ID was already used"
+# WHY (GG1, BS1): record substitution never reaches source assertion labels.
+git diff -U0 "$HEAD0" -- src | grep '^+' | grep -v '^+++' | grep -q -F '{next}' &&
+    die "{next} remains in added source; use the batch ID in source labels"
+
+# Select the actual merge before publisher-generated VERSION and records can widen it.
+PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
+PICKED_NIGHTLY=$(sh tools/pick.sh --nightly "$HEAD0") || die "the nightly pick failed"
+cat "$T/pick.txt"
 
 # 8. the records (new way): staged, so one abort undoes them
 NFILL=0; NPEND=0; NQUEUED=0; GONE=0; BLOCK=0
@@ -371,13 +310,6 @@ records() {
     GONE=$(cat "$T/gone")
     git add -- docs/notes/changelog.md QUEUE.md
     git rm -q -f -- "$SHIPF" || die "cannot delete $SHIPF"
-    if [ "$WANT" = 1 ]; then   # a {next} left in another file the branch changed: said, not filled
-        printf '%s\n' "$CHANGED" | grep -v -x -F "$SHIPF" > "$T/changed"
-        if [ -s "$T/changed" ]; then
-            STRAY=$(xargs git --literal-pathspecs grep -l -F '{next}' -- < "$T/changed" 2>/dev/null | head -3 | tr '\n' ' ')
-            [ -z "$STRAY" ] || say "note: {next} also in $STRAY- not a record file, left as written"
-        fi
-    fi
 }
 if [ "$NEW" = 1 ]; then
     records
@@ -391,6 +323,16 @@ if [ "$NEW" = 1 ]; then
     say "records: $RECS"
 fi
 
+# GR2: file new unrelated reds, then remove this batch's own exemptions before judgment.
+REDPARTS=docs/notes/known-reds.txt
+if [ "$NEW" = 1 ]; then
+    [ -n "$REUSE" ] || REUSE=$(sed -n 's/^<!-- gate-run: \(.*\) -->$/\1/p' "$T/ship-on-branch" | head -1)
+fi
+sh tools/known-reds.sh "$ID" "$T/ship-on-branch" > "$T/parts" || die "$SHIPF has a malformed known-reds row"
+sed -n '/^! /p' "$T/parts" > "$T/removed"
+sed '/^! /d' "$T/parts" > "$REDPARTS"
+git add -- "$REDPARTS"
+
 # the version this merge carries: NEXT, or what the tree reads
 if [ "$WANT" = 1 ]; then V=$NEXT; else V=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$GV" | head -1); fi
 [ "$NOTAG" = 0 ] || [ "$V" = "$LAST" ] \
@@ -403,187 +345,180 @@ DOCSONLY=0
 if ! printf '%s\n' "$CHANGED" | grep -v -E '\.md$' | grep -q . && ! printf '%s\n' "$CHANGED" | grep -q '^docs/ensemble/'; then DOCSONLY=1; fi
 recorded() {   # main's recorded reds: the non-# lines of origin/main's docs/notes/gate.txt, else main's, else the tree's
     { git show origin/main:docs/notes/gate.txt 2>/dev/null || git show main:docs/notes/gate.txt 2>/dev/null || cat docs/notes/gate.txt 2>/dev/null; } \
-        | tr -d '\r' | tee "$T/gate-main.txt" | grep -v '^#' | grep -v '^$'   # the whole of it kept: its "# figure" lines are main's of the day (GT2)
+        | tr -d '\r' | grep -v '^#' | grep -v '^$'
 }
 recorded > "$T/recorded"
-run_check() {   # the command given, its output on the screen and in $T/check.out, its exit status in CHECKED
-    { "$@"; echo $? > "$T/code"; } 2>&1 | tee "$T/check.out"
-    CHECKED=$(cat "$T/code")
+{ cat "$T/recorded" "$T/removed"; [ ! -f "$REDPARTS" ] || cat "$REDPARTS"; } > "$T/known"
+complete() {
+    alive
+    MISSING=$(grep -v -x -F -f "$T/finished" "$T/needed" | tr '\n' ' ')
+    [ -z "$MISSING" ] || die "the check did not finish: $MISSING"
+}
+run_check() {   # stage, directory, command: no status or output survives from an earlier stage
+    STAGE=$1; DIR=$2; shift 2
+    alive
+    STAGE_STARTED=$(date +%s)
+    say "check $STAGE started"
+    echo "$STAGE" >> "$T/needed"
+    rm -f "$T/code" || die "cannot clear the previous status"
+    if [ -z "$TAKEN" ]; then
+        rm -f "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
+            || die "cannot clear the previous check results for $STAGE"
+    fi
+    { ( cd "$DIR" && "$@" ); echo "$STAGE $?" > "$T/code"; } 2>&1 | tee "$T/check.out"
+    alive
+    [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
+    read -r FINISHED CHECKED < "$T/code"
+    [ "$FINISHED" = "$STAGE" ] || die "the check did not finish: $STAGE (wrong status)"
+    [ "$STAGE" != fast ] || [ "$CHECKED" = 0 ] || die "the fast check failed (exit $CHECKED)"
+    case "$STAGE:$CHECKED" in
+        *:0|*:3|*:4) if [ "$STAGE" != fast ]; then
+                   for f in reds.txt suite.txt; do
+                       [ -f "$DIR/target/checks/$f" ] || die "the check did not finish: $STAGE ($f missing)"
+                   done
+               fi ;;
+        *) die "the check did not finish successfully: $STAGE (exit $CHECKED)" ;;
+    esac
+    echo "$STAGE" >> "$T/finished"
+    say "check $STAGE finished in $(( $(date +%s) - STAGE_STARTED )) s (exit $CHECKED)"
+}
+show_unnamed() {   # WG2: keep every line even when the screen shows twelve
+    cat "$1" >> "${CBS_GATE_RUN:-target/checks}/unnamed.txt"
+    say "$(wc -l < "$1" | tr -d ' ') unnamed red line(s), all in ${CBS_GATE_RUN:-target/checks}/unnamed.txt"
+    sed 's/^/    NOT NAMED: /' "$1" | cut -c1-260 | head -12
 }
 heads() { sed 's/ |.*//' "$1" | sort -u | tr '\n' ' ' | sed 's/ *$//'; }   # the harness of each red line of a file
-# unnamed LINES CONTEXT: the red lines ("Harness | text") of file LINES that no --red-line passes, in order (TM3 review). A line
-# passes when it contains one of the --red-line parts, as written. A harness's own count ("H | exit N", "H | N FAILED") passes
-# too when H has a line that passes - in LINES, or among the lines of file CONTEXT, which are passed already - and no other
-# line of H that does not: his words pass the lines he named and what only follows from them, never another red.
-unnamed() {
-    awk -v pf="$T/redlines" '
-    BEGIN { while ((getline l < pf) > 0) if (l != "") p[++np] = l }
-    function agg(s) { return s ~ /^[^ ]+ \| (exit -?[0-9]+|[0-9]+ FAILED)$/ }
-    function head(s) { return substr(s, 1, index(s, " | ") - 1) }
-    function named(s,   i) { for (i = 1; i <= np; i++) if (index(s, p[i])) return 1; return 0 }
-    FILENAME == ARGV[1] { if (!agg($0)) okc[head($0)]++; next }
-    { n++; line[n] = $0
-      if (named($0)) { pass[n] = 1; if (!agg($0)) okc[head($0)]++ }
-      else if (!agg($0)) bad[head($0)] = 1 }
-    END { for (i = 1; i <= n; i++) {
-              if (pass[i]) continue
-              if (agg(line[i]) && okc[head(line[i])] > 0 && !(head(line[i]) in bad)) continue
-              print line[i] } }' "$2" "$1"
-}
 shortlines() { awk '{ printf "%s%s", sep, substr($0, 1, 150); sep = "; " }' "$1"; }   # the lines of a file in one, each cut at 150
-without() {   # the lines of file $1 that are in none of the files after it, whole lines as written; an empty file takes nothing out
-    cp "$1" "$T/without.cur"; shift
-    for f in "$@"; do
-        [ -s "$f" ] || continue   # grep -f with an empty pattern file: some greps take every line out, some none
-        { grep -v -x -F -f "$f" "$T/without.cur" || :; } > "$T/without.next"
-        cat "$T/without.next" > "$T/without.cur"
-    done
-    cat "$T/without.cur"
+GAME=$(printf '%s\n' "$CHANGED" | grep '^src/main/java/.*\.java$' | grep -v -E '/tools/|/(LongPlaytest|[^/]*Check)\.java$' | grep .)
+FULL=0; [ -z "$GAME" ] && ! printf '%s\n' "$CHANGED" | grep -q -E '^pom\.xml$|^src/main/resources/|^batch-check\.sh$' || FULL=1
+[ "$PICKED" != ALL ] || FULL=1
+SELECTION="full${PICKED_NIGHTLY:+ nightly $PICKED_NIGHTLY}"; SCOPE=""; TAKEN=""
+[ "$#" = 0 ] || SELECTION="manual $*"
+if [ "$DOCSONLY" = 1 ]; then SELECTION=docs
+elif [ "$FULL" = 0 ]; then
+    SELECTION="pick $PICKED"
+    SCOPE="no game code: $(printf '%s\n' "$PICKED" | awk '$0 != "NONE" {print NF} $0 == "NONE" {print 0}') harnesses; "
+fi
+SELECTION="$SELECTION version=$V"
+# Changed scripts with a companion self-test run once, as part of the retained evidence.
+selftests() {
+    [ "${CBS_SELFTEST:-}" != 1 ] || return 0
+    printf '%s\n' "$CHANGED" | while IFS= read -r file; do
+        case "$file" in
+            ship.sh|batch-check.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk|tools/known-reds.sh|tools/batch-id.sh) echo tools/ship-selftest.sh ;;
+            *-selftest.sh) echo "$file" ;;
+            *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
+        esac
+    done | sort -u > "$T/selftests"
+    while IFS= read -r testfile; do
+        testlog="target/checks/$(basename "$testfile" .sh).log"
+        sh "$testfile" > "$testlog" 2>&1 || { tail -16 "$testlog"; die "$testfile failed"; }
+        tail -1 "$testlog"
+    done < "$T/selftests"
 }
-GATE=""; TIMINGLINE=""; SUMMARY=""; TSUMMARY=""; EARTH="named"
+if [ -n "$REUSE" ]; then
+    if sh tools/gate-reuse.sh load "$REUSE" "$GATED" "$HEAD0" "$SELECTION"; then TAKEN=$REUSE
+    else say "kept run refused: $REUSE; running checks"; fi
+fi
+GATE=""; SUMMARY=""; EARTH="named"
+
 if [ "$DOCSONLY" = 1 ]; then
-    say "docs only (every path the branch changed is a .md outside docs/ensemble/): batch-check.sh --fast alone, no suite, no timing, gate.txt untouched"
-    run_check ./batch-check.sh --fast
+    say "docs only (every path the branch changed is a .md outside docs/ensemble/): batch-check.sh --fast alone, no suite, gate.txt untouched"
+    echo fast > "$T/needed"
+    if [ -n "$TAKEN" ]; then run_check fast . true
+    else run_check fast . ./batch-check.sh --fast; fi
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"
-    GATE="docs only, --fast"
+    [ -z "$CBS_GATE_RUN" ] || sh tools/gate-reuse.sh save "$CBS_GATE_RUN" "$SELECTION" || die "cannot seal kept checks"
+    GATE="docs only, --fast${TAKEN:+; reused $TAKEN}"
 else
-    run_check ./batch-check.sh "$@"   # the suite times soft (batch-check.sh does it, BP1): timing is judged once, hard, below
-    cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
-    cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
-    cp "$T/check.out" "$T/suite.out"
-    case "$BRANCH" in
-        chatgpt/*|gemini/*)   # RV1: what a review used to ask by hand, a name at a time
-            if [ -f target/classes/ham/citybuildersim/tools/Names.class ]; then
-                java -cp target/classes ham.citybuildersim.tools.Names "$REF" HEAD 2>&1 \
-                    | grep -v '^Picked up JAVA_TOOL_OPTIONS' > target/checks/names.txt
-                say "names: $(tail -1 target/checks/names.txt)"
-                sed '$d' target/checks/names.txt | head -20 | sed 's/^/    /'
-                MORE=$(( $(wc -l < target/checks/names.txt) - 21 ))
-                [ "$MORE" -le 0 ] || echo "    ... and $MORE more: target/checks/names.txt"
-            else
-                say "names: not run - no tools.Names in the build"
-            fi ;;
-    esac
-    case "$CHECKED" in
-        0) GATE="green" ;;
-        3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
-        4) if [ -n "$REDOK" ]; then
-               without "$T/suite-reds.txt" "$T/recorded" > "$T/suite-new"   # the lines batch-check.sh judged NEW, as ship.sh reads the record
-               [ -s "$T/suite-new" ] || die "the suite exited 4 (a NEW red line), but main's record has every red line it printed: the two records disagree; main is where it was"
-               unnamed "$T/suite-new" /dev/null > "$T/suite-unnamed"
-               if [ -s "$T/suite-unnamed" ]; then
-                   sed 's/^/    NOT NAMED: /' "$T/suite-unnamed" | cut -c1-260 | head -12
-                   die "NEW red line(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
-               fi
-               GATE="NEW red on Jerus's word: $REDOK (lines: $(shortlines "$T/suite-new"))"
-           else die "NEW red line(s) on the merge, the known reds aside (above); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""; fi ;;
-        *) die "the checks failed on the merge (above, exit $CHECKED); main is where it was" ;;
-    esac
-    say "gate: $GATE"
-    grep -q 'no earth-2.bin here' "$T/suite.out" && EARTH="not named: the Earth harnesses' full-file sections did not run"
-    SUMMARY=$(grep 'harness.* run in ' "$T/suite.txt" | tail -1)
-
-    # TM1: timing held hard, here, once the other batches' JVMs are done
-    run_check ./batch-check.sh --timing
-    cp target/checks/reds.txt "$T/timing-reds.txt" 2>/dev/null || : > "$T/timing-reds.txt"
-    cp target/checks/timing.tsv "$T/hard.tsv" 2>/dev/null || : > "$T/hard.tsv"   # TM3: the hard run's figures
-    TSUMMARY=$(grep 'harness.* run in ' target/checks/suite.txt 2>/dev/null | tail -1)
-    case "$CHECKED" in
-        0|3|4) ;;
-        *) die "the timing harnesses failed on the merge (above, exit $CHECKED); main is where it was" ;;
-    esac
-    # BP1 review: exit 3 is no shortcut (a timing red is never main's recorded one) and exit 4 is not all the batch's: the
-    # lines the suite step judged (main's recorded reds, or reds passed with --red-ok) and main's recorded ones come back in
-    # this run whatever harness they are in, and are not judged twice; what is left is the timing's own
-    without "$T/timing-reds.txt" "$T/suite-reds.txt" "$T/recorded" > "$T/residual"
-    : > "$T/accepted"; : > "$T/offenders"; : > "$T/figures"; MARGIN=""; PH=""; TODAY=$(date +%Y-%m-%d)
-    if [ -s "$T/residual" ]; then
-        # TM3: a timing red is judged side by side with main, not by one run of the merge's: main's classes and the merge's
-        # are timed in turn, in the same minutes, and the red counts against the batch only if the merge's median figure is
-        # over main's by more than the margin. tools/timing-pair.awk holds the arithmetic, and the dial (15%).
-        PAIRAWK=tools/timing-pair.awk
-        [ -f "$PAIRAWK" ] || die "$PAIRAWK is missing from the merge: a timing red cannot be judged against main's"
-        MARGIN=${CBS_TIMING_MARGIN:-$(awk -v mode=dial -f "$PAIRAWK" /dev/null)}
-        ROUNDS=${CBS_TIMING_ROUNDS:-3}
-        case "$ROUNDS" in ''|*[!0-9]*|0|1) die "CBS_TIMING_ROUNDS is $ROUNDS: at least 2 rounds, a median needs two figures" ;; esac
-        awk -v mode=harnesses -v margin="$MARGIN" -v rec="$T/gate-main.txt" -v today="$TODAY" -f "$PAIRAWK" "$T/hard.tsv" "$T/residual" > "$T/pair-harnesses"   # GT2: none whose every miss main's figure of the day covers
-        : > target/checks/pairs.tsv
-        if [ -s "$T/pair-harnesses" ]; then
-            PH=$(tr '\n' ' ' < "$T/pair-harnesses"); PH=${PH% }
-            rm -rf "$MT"; git worktree prune
-            git worktree add -q --detach "$MT" HEAD >/dev/null 2>&1 || die "cannot make the worktree $MT of main for its paired timing runs"
-            say "timing red on the merge ($PH): $ROUNDS rounds with main's classes and the merge's in turn, back to back, each round's first side the last one's second, in $MT and here..."
-            r=1
-            while [ "$r" -le "$ROUNDS" ]; do
-                RT=$(date +%s); LINE=""
-                ORDER="main batch"; [ $((r % 2)) = 1 ] || ORDER="batch main"   # SP1 item 7: a run straight after a switch of build was the slower (KeptCheck 6.2-6.9 ms against 5.2-5.5), so neither side always goes first
-                for side in $ORDER; do
-                    if [ "$side" = main ]; then DIR=$MT; else DIR=.; fi
-                    rm -f "$DIR/target/checks/timing.tsv"
-                    ( cd "$DIR" && ./batch-check.sh --timing $PH ) > "target/checks/pair-$side-$r.out" 2>&1
-                    PC=$?
-                    case "$PC" in 0|3|4) ;; *) LINE="$LINE $side: did not run (exit $PC, target/checks/pair-$side-$r.out);" ;; esac
-                    if [ -s "$DIR/target/checks/timing.tsv" ]; then
-                        awk -v s="$side" -v r="$r" 'BEGIN { FS = OFS = "\t" } { print s, r, $0 }' "$DIR/target/checks/timing.tsv" >> target/checks/pairs.tsv
-                    else
-                        LINE="$LINE $side: no figures written;"
-                    fi
-                done
-                say "  round $r of $ROUNDS done in $(( $(date +%s) - RT )) s${LINE:+ -$LINE}"
-                r=$((r + 1))
-            done
-            cp "$T/timing-reds.txt" target/checks/reds.txt; cp "$T/hard.tsv" target/checks/timing.tsv   # the hard run's, which the orchestrator reads if the ship stops
-        fi
-        awk -v mode=judge -v margin="$MARGIN" -v rec="$T/gate-main.txt" -v today="$TODAY" -v recout="$T/figures" -f "$PAIRAWK" target/checks/pairs.tsv "$T/hard.tsv" "$T/residual" > target/checks/pair-judged.txt
-        awk -F'\t' '$1 == "PASS" { print $2 "   [" $3 "]" }' target/checks/pair-judged.txt > "$T/accepted"
-        awk -F'\t' '$1 == "FAIL" { print $2 "   [" $3 "]" }' target/checks/pair-judged.txt > "$T/offenders"
-        # the notes of the Gate-timing line: each timing red's figures, not the harness's own count
-        # (a label that repeats in a harness, WorldCheck's, makes the same note for each of its lines: told once)
-        awk -F'\t' '$1 == "PASS" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); n = h " [" $3 "]"; if (!seen[n]++) { printf "%s%s", sep, n; sep = "; " } }' target/checks/pair-judged.txt > "$T/pass-notes"
-        awk -F'\t' '$1 == "FAIL" && $3 !~ /^the harness.s own count/ { h = $2; sub(/ \|.*/, "", h); n = h " [" $3 "]"; if (!seen[n]++) { printf "%s%s", sep, n; sep = "; " } }' target/checks/pair-judged.txt > "$T/fail-notes"
-        [ -s "$T/offenders" ] && sed 's/^/    /' "$T/offenders" | cut -c1-260 | head -12
-        HOW="${ROUNDS:-3} rounds of $PH in turn, medians"; [ -n "$PH" ] || HOW="no round: main's figure of the day"
-        TIMINGLINE="timing    red on the merge, judged side by side with main ($HOW, margin $MARGIN%)"
-        if [ -s "$T/offenders" ]; then
-            if [ -z "$REDOK" ]; then
-                die "the timing red(s) above are the batch's (over the budget with main within it, and over main's by more than $MARGIN%; or no timing red; or nothing to compare); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""
-            fi
-            awk -F'\t' '$1 == "FAIL" { print $2 }' target/checks/pair-judged.txt > "$T/off-raw"
-            awk -F'\t' '$1 == "PASS" { print $2 }' target/checks/pair-judged.txt > "$T/acc-raw"
-            unnamed "$T/off-raw" "$T/acc-raw" > "$T/off-left"   # (TM3 review) his words pass the lines they name, never another
-            if [ -s "$T/off-left" ]; then
-                sed 's/^/    NOT NAMED: /' "$T/off-left" | cut -c1-260 | head -12
-                die "timing red(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
-            fi
-            TIMINGLINE="$TIMINGLINE, passed on Jerus's word: $REDOK: $(cat "$T/fail-notes")"
-            [ ! -s "$T/pass-notes" ] || TIMINGLINE="$TIMINGLINE; not the batch's: $(cat "$T/pass-notes")"
-        else
-            TIMINGLINE="$TIMINGLINE, not the batch's: $(cat "$T/pass-notes")"
-        fi
-        echo "$TIMINGLINE" | cut -c1-400
-    elif [ -s "$T/timing-reds.txt" ]; then
-        echo "timing    its red lines are ones the suite step judged (main's recorded reds, or passed with --red-ok): no further run"
+    if [ -n "$TAKEN" ]; then
+        if [ "$FULL" = 0 ] && [ "$PICKED" = NONE ]; then run_check fast . true
+        else CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge run_check suite . ./batch-check.sh --judge target/checks/suite.txt; fi
+    else
+        if [ "$FULL" = 1 ]; then CBS_GATE_NIGHTLY="$PICKED_NIGHTLY" CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
+        elif [ "$PICKED" = NONE ]; then run_check fast . ./batch-check.sh --fast
+        else CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh $PICKED; fi
+        [ "$FULL" = 1 ] || selftests
     fi
+    [ -z "$CBS_GATE_RUN" ] || sh tools/gate-reuse.sh save "$CBS_GATE_RUN" "$SELECTION" || die "cannot seal kept checks"
+    if [ "$PICKED" = NONE ] && [ "$FULL" = 0 ]; then
+        GATE="${SCOPE}--fast${TAKEN:+; reused $TAKEN}"
+    else
+        cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
+        cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
+        cp "$T/check.out" "$T/suite.out"
+        case "$BRANCH" in
+            chatgpt/*|gemini/*)   # RV1: what a review used to ask by hand, a name at a time
+                if [ -f target/classes/ham/citybuildersim/tools/Names.class ]; then
+                    java -cp target/classes ham.citybuildersim.tools.Names "$REF" HEAD 2>&1 \
+                        | grep -v '^Picked up JAVA_TOOL_OPTIONS' > target/checks/names.txt
+                    say "names: $(tail -1 target/checks/names.txt)"
+                    sed '$d' target/checks/names.txt | head -20 | sed 's/^/    /'
+                    MORE=$(( $(wc -l < target/checks/names.txt) - 21 ))
+                    [ "$MORE" -le 0 ] || echo "    ... and $MORE more: target/checks/names.txt"
+                else
+                    say "names: not run - no tools.Names in the build"
+                fi ;;
+        esac
+        # Rejudge every kept or fresh log against the merged registry; old tags are evidence of its old verdict.
+        CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge ./batch-check.sh --judge target/checks/suite.txt > "$T/judged" 2>&1
+        VERDICT=$?
+        cp target/checks/new-reds.txt "$T/suite-new"
+        case "$VERDICT" in
+            0) GATE="green" ;;
+            3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
+            4) if [ -n "$REDOK" ]; then
+                   while IFS= read -r part; do printf '@once %s\n' "$part"; done < "$T/redlines" >> "$T/known"
+                   CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge ./batch-check.sh --judge target/checks/suite.txt > "$T/judged" 2>&1
+                   [ "$?" = 3 ] || {
+                       show_unnamed target/checks/new-reds.txt
+                       die "NEW red line(s) that no --red-line names; main is where it was"
+                   }
+                   GATE="NEW red on Jerus's word: $REDOK (lines: $(shortlines "$T/suite-new"))"
+               else
+                   show_unnamed target/checks/new-reds.txt
+                   die "NEW red line(s) on the merge; enter unrelated reds with causes and queued fixes, or --red-ok with --red-line on his word"
+               fi ;;
+            *) cat "$T/judged"; die "the checks failed on the merge (judge exit $VERDICT)" ;;
+        esac
+        cp target/checks/used-reds.txt "$T/used-parts" || die "cannot retain used approval parts"
+        GATE="$SCOPE$GATE${TAKEN:+; reused $TAKEN}"
+        say "gate: $GATE"
+        grep -q 'no earth-2.bin here' "$T/suite.out" && EARTH="not named: the Earth harnesses' full-file sections did not run"
+        SUMMARY=$(grep 'harness.* run in ' "$T/suite.txt" | tail -1)
 
-    # 10. the gate's record: the next ship's "main's recorded reds" - the suite's red lines, nothing from the timing run
-    #     but "#" lines (a timing red is judged again at every gate, never a recorded red; its figure is a "# figure" line, GT2)
-    PART=""; [ "$#" -eq 0 ] || PART=" (partial: $*)"
-    {
-        echo "# gate of $MSG"
-        echo "# date: $(date +%Y-%m-%d)"
-        echo "# earth-2.bin: $EARTH"
-        NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
-        [ ! -f "$NIGHTLY" ] || echo "# nightly: $(head -n 1 "$NIGHTLY" | tr -d '\r')"
-        echo "# suite: ${SUMMARY:-none}$PART"
-        echo "# timing: ${TSUMMARY:-none}${TIMINGLINE:+; its red lines were judged side by side with main's, below}"
-        sed "s/^/# timing red not the batch's (paired): /" "$T/accepted"
-        cat "$T/figures"   # GT2: the merged main's figure of each miss, which the next gate today judges its reds against first
-        if [ -s "$T/offenders" ]; then sed "s/^/# timing red passed on Jerus's word, over main's by more than $MARGIN% or not a timing red ($REDOK): /" "$T/offenders"; fi
-        if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
-        cat "$T/suite-reds.txt"
-        [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
-    } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
-    git add -- docs/notes/gate.txt
+    fi
+    # 10. Only a full gate replaces main's whole-suite record.
+    complete
+    if [ "$FULL" = 1 ] && [ "$#" = 0 ]; then
+        {
+            echo "# gate of $MSG"
+            echo "# date: $(date +%Y-%m-%d)"
+            echo "# earth-2.bin: $EARTH"
+            NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
+            [ ! -f "$NIGHTLY" ] || echo "# nightly: $(head -n 1 "$NIGHTLY" | tr -d '\r')"
+            echo "# suite: ${SUMMARY:-none}"
+            if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
+            cat "$T/suite-reds.txt"
+            awk -v earth="$EARTH" -f tools/gate-record.awk target/checks/times.tsv "$T/recorded"
+        } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
+        git add -- docs/notes/gate.txt
+    fi
+fi
+
+# GF1, LM1: publish only the tip checked, while its readiness marker still exists.
+complete
+REMOTE=$(git ls-remote --exit-code origin "refs/heads/$BRANCH") || die "cannot read origin's $BRANCH before commit"
+REMOTE=${REMOTE%%[[:space:]]*}
+if [ "$REMOTE" != "$GATED" ]; then
+    retry git fetch -q origin "$BRANCH" || die "cannot inspect changed $BRANCH"
+    if [ "$NEW" = 1 ] && ! git cat-file -e "FETCH_HEAD:$SHIPF" 2>/dev/null; then
+        die "$BRANCH withdrew $SHIPF during the gate ($GATED -> $REMOTE)"
+    fi
+    die "$BRANCH changed during the gate ($GATED -> $REMOTE)"
+fi
+if [ "$NEW" = 1 ]; then
+    git cat-file -e "$REMOTE:$SHIPF" 2>/dev/null || die "$BRANCH withdrew $SHIPF during the gate"
 fi
 
 # 11. a dry run: what would be done, then the merge taken back
@@ -599,6 +534,7 @@ if [ "$DRY" = 1 ]; then
 fi
 
 # 12. commit, with the maps the checks regenerated on the merge
+complete
 git add $GENERATED
 {
     echo "$MSG"; echo
@@ -608,13 +544,15 @@ git add $GENERATED
         tail -n 1 "$T/body" | grep -q -E '^[A-Za-z][A-Za-z0-9-]*: ' || echo
     fi
     echo "Gate: $GATE"
-    [ -z "$TIMINGLINE" ] || echo "Gate-timing: ${TIMINGLINE#timing    }"
+    sed 's/^/Known-red: /' "$T/used-parts"
 } > "$T/msg"
+[ -z "$CBS_GATE_RUN" ] || printf '%s\n' "$TAG" > "$CBS_GATE_RUN/tag"
 git commit -q -F "$T/msg" || die "the commit failed"
-MERGING=0
+COMMITTED=1; MERGING=0
 say "committed $(git rev-parse --short HEAD) \"$MSG\""
 
 # 13. tag
+alive
 if [ -n "$TAG" ]; then
     git tag "$TAG" || die "cannot tag $TAG"
     say "tagged $TAG"
@@ -635,4 +573,5 @@ if ! retry git push --atomic origin main ${TAG:+"refs/tags/$TAG"}; then
     fi
     die "the push of main failed five times; it is committed here, push it by hand"
 fi
+COMMITTED=0
 say "pushed main${TAG:+ and $TAG}"

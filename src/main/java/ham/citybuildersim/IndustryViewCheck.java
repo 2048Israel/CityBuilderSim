@@ -466,7 +466,7 @@ public class IndustryViewCheck {
                     for (IndustryView.Part x : f.sellers()) sum += x.units();
                     fills &= near(sum, f.home()) && bought(g, f.good(), s.key(), f.sellers());
                 }
-                int[] building = b.getUnderConstructionById();
+                long[] building = b.getUnderConstructionById();
                 List<SpreadPlanner.Candidate> list = s instanceof ProcessingSector ps ? ps.appraise(plans, g) : null;
                 for (IndustryView.Unit u : v.units()) {
                     kinds++;

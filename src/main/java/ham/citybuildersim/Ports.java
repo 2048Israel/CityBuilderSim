@@ -209,19 +209,19 @@ public final class Ports {
         if (buildings == null) return out;
         for (BuildingsTemplate t : buildings.getTemplates()) {
             if (!isPort(t)) continue;
-            int n = buildings.getQuantity(t.getId());
+            long n = buildings.getQuantity(t.getId());
             if (n > 0) out[t.berthCargo().ordinal()] += n * berthMonth(t);
         }
         return out;
     }
 
     /** How many terminals stand, by kind (Cargo order): the count behind berths()' tonnes, for the Freight screens (FR4, FreightView). */
-    public static int[] berthCounts(BuildingManager buildings) {
-        int[] out = new int[KINDS];
+    public static long[] berthCounts(BuildingManager buildings) {
+        long[] out = new long[KINDS];
         if (buildings == null) return out;
         for (BuildingsTemplate t : buildings.getTemplates()) {
             if (!isPort(t)) continue;
-            int n = buildings.getQuantity(t.getId());
+            long n = buildings.getQuantity(t.getId());
             if (n > 0) out[t.berthCargo().ordinal()] += n;
         }
         return out;

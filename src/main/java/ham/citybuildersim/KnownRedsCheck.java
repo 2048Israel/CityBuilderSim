@@ -2,6 +2,8 @@ package ham.citybuildersim;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,37 +13,17 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The harness for AllChecks' known reds (batch FW7): a failed harness is said
- * to be a known red or a NEW one against main's record, line by line, and
- * batch-check.sh judges the same logs the same way.
+ * The harness for AllChecks' known reds, time limit and resource admission.
  *
- * WHY (FW7, 2026-10-25): HealthCheck was a recorded red of main's, and a second
- * assertion in it went red. AllChecks -q printed "HealthCheck FAILED" as it had
- * the day before and nobody saw it. batch-check.sh already compared the red
- * lines against gate.txt word for word, but AllChecks itself knew nothing of
- * the record, so what a session read of -q and -f could not tell its own reds
- * from main's. A fixture harness (Fixture, below) fails one assertion and then,
- * on request, a second, and this runs it as AllChecks runs a harness, so both
- * cases are caused and not assumed: the same red again is a known red, a second
- * one is a NEW red and is named.
+ * WHY (FW7): a second failing HealthCheck assertion hid behind its known-red
+ * verdict. Fixtures exercise the real runner's line tagging and the shell's
+ * judge. GF1 adds a child whose descendant never ends, reproducing CD9's hang.
  *
- * What it has to prove:
- *   1. the red lines of a failed harness are its exit, each failing line and its
- *      count, and never a section title or a passing line;
- *   2. the record those lines make reads back from a file as three lines, and the
- *      same failure against it is a known red, in one line under -q and every
- *      failing line tagged [known] under -f;
- *   3. a second failing assertion is a NEW red: the header says how many red
- *      lines are new, -f tags that line [NEW] and the first one still [known],
- *      and the count in the header is the count of tags;
- *   4. with no record nothing is tagged, and -f prints as it did before FW7;
- *   5. batch-check.sh --judge reads the same logs: exit 3 for the known red,
- *      exit 4 and the new line for the second, exit 3 again for a log from before
- *      FW7 with no tags, and exit 1 when the header's count and its own disagree
- *      (not run where sh cannot be started).
- *
- * This harness's own output never echoes the fixture's, so that AllChecks -f,
- * reading this log for failing lines, finds only this harness's own.
+ * Proves harness-scoped parts, exact records, count guards and agreement
+ * through the common judge and both shell callers, and (R2b-J) a harness's
+ * own "<Name>: N FAILED of TOTAL" tally, live and in a kept run. The time limit fails and ends a hung process tree,
+ * preserving an in-time child's exit and output. Fixture output stays out of
+ * this harness's own log so its intentional failures cannot be misread.
  */
 public class KnownRedsCheck {
 
@@ -65,11 +47,17 @@ public class KnownRedsCheck {
     /** The system property that makes the fixture fail its second assertion as well. */
     static final String SECOND_PROPERTY = "knownreds.second";
 
+    /** The system property that makes the fixture print its tally as ResearchViewCheck does, "<Name>: N FAILED of TOTAL" (R2b-J). */
+    static final String TALLY_PROPERTY = "knownreds.tally";
+
     /** What a child JVM is started as: the fixture's own main, below. */
     static final String FIXTURE_HARNESS = "KnownRedsCheck$Fixture";
 
     /** The longest a child JVM or the shell may take. */
     static final int WAIT_SECONDS = 120;
+
+    /** The short limit used to exercise the production wait without holding the suite for HARNESS_SECONDS. */
+    static final int LIMIT_SECONDS = 2;
 
     /**
      * A miniature harness for a child JVM: one assertion that fails, a passing
@@ -88,7 +76,8 @@ public class KnownRedsCheck {
                 System.out.println("--- 3. the second ---");
                 System.out.printf("%-70s %s%n", SECOND_LABEL, "FAIL");
             }
-            System.out.println(n + " FAILED");
+            if ("true".equals(System.getProperty(TALLY_PROPERTY))) System.out.println(NAME + ": " + n + " FAILED of " + (n + 1));
+            else System.out.println(n + " FAILED");
             System.exit(n);
         }
     }
@@ -98,40 +87,222 @@ public class KnownRedsCheck {
 
     public static void main(String[] args) throws Exception {
         Path tmp = TempDirs.create("knownreds");
-
-        Run first = run(tmp.resolve("first"), false);
-        List<String> firstRed = redLines(first);
-        redLinesAre(first, firstRed);
-        Path recordFile = tmp.resolve("record").resolve("gate.txt");
-        Files.createDirectories(recordFile.getParent());
-        writeRecord(recordFile, firstRed);
-
-        Set<String> known = AllChecks.knownReds(recordFile);
-        knownRed(first, firstRed, known);
-
-        Run second = run(tmp.resolve("second"), true);
-        newRed(second, known);
-
-        noRecord(tmp, first);
-
-        judged(tmp, first, second, known, recordFile);
-
+        Run first = run(tmp.resolve("first"), false, false);
+        Run second = run(tmp.resolve("second"), true, false);
+        List<String> red = AllChecks.redLines(NAME, first.exit(), first.printed());
+        Set<String> exact = new java.util.LinkedHashSet<>(red);
+        Set<String> parts = Set.of(NAME + " | " + KNOWN_LABEL + " | FIX | 2026-11-12 | fixture");
+        check("the fixture exits with one failing assertion", first.exit() == 1 && red.size() == 3);
+        check("passing FAILS labels and section titles stay out of reds", red.stream().noneMatch(r -> r.contains("FAILS") || r.contains("---")));
+        check("exact main lines cover the fixture", AllChecks.newCount(red, exact) == 0);
+        String pipes = NAME + " | a literal | pipe | inside | an assertion FAIL";
+        check("exact red lines preserve literal pipe characters", KnownReds.fresh(List.of(pipes), Set.of(pipes)).isEmpty());
+        check("a harness-scoped part covers its assertion and both counts", AllChecks.newCount(red, parts) == 0);
+        check("another harness's part covers nothing", AllChecks.newCount(red, Set.of("OtherCheck | " + KNOWN_LABEL + " | FIX | 2026-11-12 | fixture")) == 3);
+        check("counts alone never cover a red", AllChecks.newCount(red, Set.of(NAME + " | exit 1", NAME + " | 1 FAILED")) == 3);
+        List<String> added = AllChecks.redLines(NAME, second.exit(), second.printed());
+        check("a second assertion keeps its counts NEW too", AllChecks.newCount(added, parts) == 3);
+        check("an exit with no assertion remains NEW", AllChecks.newCount(List.of(NAME + " | exit 1"), parts) == 1);
+        check("one-time qualified crash parts retain their explicit approval", KnownReds.fresh(
+                List.of("OtherCheck | exit -1073741819"), Set.of("@once OtherCheck | exit -10")).isEmpty());
+        List<String> report = AllChecks.report(NAME, first.exit(), .5, first.printed(), true, parts);
+        check("the runner tags covered assertion and count known", report.stream().filter(l -> l.contains("[known]")).count() == 2 && report.get(0).endsWith("known red"));
+        check("the quiet report keeps the same verdict", AllChecks.report(NAME, first.exit(), .5, first.printed(), false, parts).equals(List.of(report.get(0))));
+        check("without a record the report has no tags", AllChecks.report(NAME, first.exit(), .5, first.printed(), true, null).stream().noneMatch(l -> l.contains("[known]") || l.contains("[NEW]")));
+        check("a missing record reads as null", AllChecks.knownReds(tmp.resolve("missing")) == null);
+        Set<String> removed = new java.util.LinkedHashSet<>(exact);
+        removed.add("! " + parts.iterator().next());
+        check("a mending batch loses its exact-record cover too", AllChecks.newCount(red, removed) == 3);
+        removed.add("@once " + NAME + " | " + KNOWN_LABEL);
+        check("explicit one-time words can pass a retired line", AllChecks.newCount(red, removed) == 0);
+        Path longLog = tmp.resolve("many.log");
+        Files.write(longLog, java.util.stream.IntStream.range(0, 60).mapToObj(i -> "assertion " + i + " FAIL").toList());
+        check("late failing assertions reach the judge", AllChecks.failingLines(longLog).contains("assertion 59 FAIL"));
+        Path record = tmp.resolve("parts.txt");
+        Files.write(record, parts);
+        check("metadata and comment lines read back intact", AllChecks.knownReds(record).equals(parts));
+        System.out.println("--- one judge through the runner, batch check and publisher entry point ---");
+        for (Run fixture : List.of(first, second)) {
+            Path folder = tmp.resolve("judge-" + fixture.exit());
+            Files.createDirectories(folder);
+            String log = suiteLog(fixture, parts);
+            Path suite = folder.resolve("suite.txt");
+            Files.writeString(suite, log);
+            int expected = fixture.exit() == 1 ? 3 : 4;
+            // The publisher uses this same saved-log entry point after merging its records.
+            Judged shell = judge(folder.resolve("shell"), log, record);
+            int common = quiet(() -> KnownReds.judge(suite, parts, folder.resolve("direct"), false));
+            check("runner and both shell callers agree for fixture " + fixture.exit(), shell.exit() == expected && common == expected);
+            if (fixture.exit() == 2) check("the shell names the extra assertion", shell.output().contains(SECOND_LABEL));
+        }
+        Judged old = judge(tmp.resolve("untagged"), suiteLog(first, null), record);
+        check("an older untagged log gets the same verdict", old.exit() == 3);
+        Judged wrong = judge(tmp.resolve("wrong"), suiteLog(second, parts).replace("NEW red: 3 of", "NEW red: 9 of"), record);
+        check("inconsistent runner tags fail closed", wrong.exit() == 1 && wrong.output().contains("disagree"));
+        check("a missing summary fails closed", judge(tmp.resolve("incomplete"), "unfinished", record).exit() == 1);
+        check("a zero-harness summary fails closed", judge(tmp.resolve("empty"), "0 harnesses run in 1s: 0 passed, 0 failed\n", record).exit() == 1);
+        limited(tmp);
+        resourceAdmission();
+        tallies(tmp, parts, record);
         if (fails > 0) System.out.println("\n" + fails + " FAILED");
         System.exit(fails);
     }
 
-    /** The red lines the fixture's run makes. */
-    private static List<String> redLines(Run run) {
-        return AllChecks.redLines(NAME, run.exit(), run.printed());
+    /** MG1 fixtures cause each hold through injected readings, independently of this PC's load. */
+    static void resourceAdmission() {
+        System.out.println("--- 7. another harness starts only with room for its memory and CPU ---");
+        double full = (AllChecks.HEAP_MB + AllChecks.NON_HEAP_MB) / 1024.0;
+        double ram = AllChecks.AVAILABLE_RAM_GB;
+        double cpu = Math.nextDown(AllChecks.CPU_PCT);
+        double[] growing = { full / 2, full / 4 };
+        double need = full * 2.25;
+        AllChecks.Resources room = new AllChecks.Resources(need, ram, cpu, growing);
+        check("the free commit reserves both running harnesses' remaining growth", room.needed() == need);
+        check("one more starts at the commit and RAM floors, below the CPU ceiling", AllChecks.startBlock(room) == 0);
+        AllChecks.Resources shortCommit = new AllChecks.Resources(Math.nextDown(need), ram, cpu, growing);
+        check("a byte-short commitment holds the next start", AllChecks.startBlock(shortCommit) == 1);
+        check("room for only the new child still holds while the others can grow", AllChecks.startBlock(new AllChecks.Resources(full, ram, cpu, growing)) == 1);
+        check("fully committed children need only one more harness's budget", AllChecks.startBlock(new AllChecks.Resources(full, ram, cpu, new double[] { full, full * 2 })) == 0);
+        check("unknown child commitment reserves its full growth", AllChecks.startBlock(new AllChecks.Resources(Math.nextDown(full * 2), ram, cpu, new double[] { 0 })) == 1);
+        AllChecks.Resources shortRam = new AllChecks.Resources(need, Math.nextDown(ram), cpu, growing);
+        check("RAM just below its floor holds despite free commit", AllChecks.startBlock(shortRam) == 2);
+        AllChecks.Resources busy = new AllChecks.Resources(need, ram, AllChecks.CPU_PCT, growing);
+        check("CPU at its ceiling holds despite both memory figures", AllChecks.startBlock(busy) == 3);
+        double[] currentCpu = { cpu };
+        AllChecks.Resources afterProbe = AllChecks.readResources(() -> {
+            currentCpu[0] = AllChecks.CPU_PCT;
+            return room;
+        }, () -> currentCpu[0]);
+        check("CPU crossing its ceiling during a slow memory probe holds the next start", AllChecks.startBlock(afterProbe) == 3);
+        check("unknown commit holds an extra start", AllChecks.startBlock(new AllChecks.Resources(Double.NaN, ram, cpu, growing)) == 1);
+        check("unknown RAM holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, Double.NaN, cpu, growing)) == 2);
+        check("unknown CPU holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, ram, Double.NaN, growing)) == 3);
+        check("the first harness always starts even without resource readings", AllChecks.startBlock(new AllChecks.Resources(Double.NaN, Double.NaN, Double.NaN, new double[0])) == 0);
+        check("commit holds name free GB and the growth budget", AllChecks.holdLine(shortCommit, 1).contains("GB including running growth"));
+        check("RAM holds name available GB", AllChecks.holdLine(shortRam, 2).contains("RAM") && AllChecks.holdLine(shortRam, 2).contains("GB"));
+        check("CPU holds name percent", AllChecks.holdLine(busy, 3).contains("%"));
+        AllChecks.CpuWindow window = new AllChecks.CpuWindow();
+        check("CPU warmup holds until a full window is collected", Double.isNaN(window.average()));
+        for (int i = 0; i < AllChecks.CPU_SAMPLES; i++) window.add(AllChecks.CPU_PCT);
+        check("the full CPU window keeps the ceiling", window.average() == AllChecks.CPU_PCT);
+        window.add(0);
+        check("a new CPU sample replaces the oldest", window.average() == AllChecks.CPU_PCT * (AllChecks.CPU_SAMPLES - 1) / AllChecks.CPU_SAMPLES);
+        window.add(-1);
+        check("an unavailable CPU sample holds until it ages out", Double.isNaN(window.average()));
+    }
+
+    /** A fixture with a never-ending descendant, or an immediate successful exit. */
+    public static class LimitFixture {
+        public static void main(String[] args) throws Exception {
+            if (args[0].equals("done")) { System.out.println("finished in time"); return; }
+            if (args[0].equals("parent")) {
+                List<String> command = new ArrayList<>(AllChecks.command(
+                        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                        System.getProperty("java.class.path"), "KnownRedsCheck$LimitFixture", true));
+                command.add("leaf"); command.add(args[1]);
+                new ProcessBuilder(command).inheritIO().start();
+            } else Files.writeString(Path.of(args[1]), Long.toString(ProcessHandle.current().pid()));
+            Thread.sleep(Long.MAX_VALUE);
+        }
+    }
+
+    /* =====================================================================
+     * 6. A HARNESS AND ITS DESCENDANTS HAVE A LIMIT (GF1)
+     * ===================================================================== */
+    private static void limited(Path tmp) throws Exception {
+        System.out.println("--- 6. a harness and its descendants have a limit ---");
+        check("the fixture exercises the wait with a shorter limit than production", LIMIT_SECONDS < AllChecks.HARNESS_SECONDS);
+        Path pid = tmp.resolve("descendant.pid");
+        for (String mode : List.of("parent", "done")) {
+            List<String> command = new ArrayList<>(AllChecks.command(
+                    System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                    System.getProperty("java.class.path"), "KnownRedsCheck$LimitFixture", true));
+            command.add(mode); command.add(pid.toString());
+            Path log = tmp.resolve("limit-" + mode + ".log");
+            ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(log.toFile());
+            builder.environment().remove("JDK_JAVA_OPTIONS");
+            Process process = builder.start();
+            try {
+                if (mode.equals("parent")) {
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(WAIT_SECONDS);
+                    while (!Files.exists(pid) && process.isAlive() && System.nanoTime() < deadline) Thread.sleep(20);
+                    check("the fixture really started its never-ending descendant", Files.exists(pid));
+                }
+                int code = AllChecks.waitForHarness(process, LIMIT_SECONDS, log);
+                String output = Files.readString(log);
+                if (mode.equals("parent")) {
+                    check("a harness over its limit is counted failed", code == 1 && !process.isAlive());
+                    check("its failing line names the time limit", AllChecks.failingLines(log).contains("FAIL: timed out after " + LIMIT_SECONDS + " s"));
+                    long child = Long.parseLong(Files.readString(pid));
+                    check("the never-ending descendant was ended with its parent", !ProcessHandle.of(child).map(ProcessHandle::isAlive).orElse(false));
+                } else {
+                    check("a harness that finishes in time keeps its own exit and output", code == 0 && output.strip().equals("finished in time"));
+                }
+            } finally { if (process.isAlive()) AllChecks.endTree(process); }
+        }
+    }
+
+    /* =====================================================================
+     * 8. A HARNESS'S OWN TALLY FOLLOWS ITS ASSERTIONS (R2b-J)
+     * ===================================================================== */
+    private static void tallies(Path tmp, Set<String> parts, Path record) throws Exception {
+        System.out.println("--- 8. a harness's own \"<Name>: N FAILED of TOTAL\" tally follows its assertions, live and in a kept run ---");
+        Run first = run(tmp.resolve("tally-first"), false, true), second = run(tmp.resolve("tally-second"), true, true);
+        String tally = NAME + " | " + NAME + ": 1 FAILED of 2";
+        List<String> red = AllChecks.redLines(NAME, first.exit(), first.printed());
+        check("fixture: the tally headed by the harness's name is one of its three red lines", first.exit() == 1 && red.size() == 3 && red.contains(tally));
+        check("live: a covered assertion covers its exit and its own tally", AllChecks.newCount(red, parts) == 0);
+        List<String> report = AllChecks.report(NAME, first.exit(), .5, first.printed(), true, parts);
+        check("live: the runner tags the tally known with the assertion", report.get(0).endsWith("known red")
+                && report.stream().anyMatch(l -> l.contains("[known]") && l.endsWith(NAME + ": 1 FAILED of 2")));
+        check("live: the tally without its total, as YoungBankCheck prints it, follows too",
+                AllChecks.newCount(red.stream().map(l -> l.replace(" FAILED of 2", " FAILED")).toList(), parts) == 0);
+        List<String> added = AllChecks.redLines(NAME, second.exit(), second.printed());
+        check("live: an uncovered assertion keeps itself, the exit and the tally NEW", AllChecks.newCount(added, parts) == 3
+                && KnownReds.fresh(added, parts).contains(NAME + " | " + NAME + ": 2 FAILED of 3"));
+        List<String> foreign = new ArrayList<>(red);
+        foreign.add(NAME + " | OtherCheck: 1 FAILED of 2");
+        check("a tally headed by another name is an assertion and stays NEW", KnownReds.fresh(foreign, parts).contains(NAME + " | OtherCheck: 1 FAILED of 2"));
+        check("counts and tallies alone never cover a red", AllChecks.newCount(red, Set.of(NAME + " | exit 1", tally)) == 3);
+        for (Run fixture : List.of(first, second)) {
+            int expected = fixture.exit() == 1 ? 3 : 4;
+            String log = suiteLog(fixture, parts);
+            Path suite = tmp.resolve("tally-judge-" + fixture.exit()).resolve("suite.txt");
+            Files.createDirectories(suite.getParent());
+            Files.writeString(suite, log);
+            Judged shell = judge(suite.getParent().resolve("shell"), log, record);
+            check("kept: the shell and the common judge read fixture " + fixture.exit() + "'s tagged log alike (" + expected + ")",
+                    shell.exit() == expected && quiet(() -> KnownReds.judge(suite, parts, suite.getParent().resolve("direct"), false)) == expected);
+        }
+        check("kept: an untagged log of the tally is known red only", judge(tmp.resolve("tally-untagged"), suiteLog(first, null), record).exit() == 3);
+        // A run kept before the mend: its runner tagged the exit and the tally NEW; a rejudgment re-reads the kept log.
+        String before = suiteLog(first, parts).replace("  known red", "  NEW red: 2 of 3 red lines");
+        Path kept = tmp.resolve("tally-kept").resolve("suite.txt");
+        Files.createDirectories(kept.getParent());
+        Files.writeString(kept, before);
+        check("kept: a run the unmended runner tagged NEW is rejudged known red only", before.contains("NEW red: 2 of 3")
+                && quiet(() -> KnownReds.judge(kept, parts, kept.getParent().resolve("rejudged"), true)) == 3);
+    }
+
+    /** The common judge's exit, its console line kept out of this harness's log. */
+    private static int quiet(java.util.concurrent.Callable<Integer> judged) throws Exception {
+        PrintStream console = System.out;
+        try (PrintStream discarded = new PrintStream(OutputStream.nullOutputStream())) {
+            System.setOut(discarded);
+            return judged.call();
+        } finally {
+            System.setOut(console);
+        }
     }
 
     /** Starts the fixture as AllChecks starts a harness and returns its exit status and failing lines. */
-    private static Run run(Path folder, boolean second) throws Exception {
+    private static Run run(Path folder, boolean second, boolean tally) throws Exception {
         Files.createDirectories(folder);
         String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         String classpath = System.getProperty("java.class.path");
         List<String> cmd = new ArrayList<>(AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true));
         if (second) cmd.add(cmd.indexOf("-cp"), "-D" + SECOND_PROPERTY + "=true");
+        if (tally) cmd.add(cmd.indexOf("-cp"), "-D" + TALLY_PROPERTY + "=true");
         Path log = folder.resolve("fixture.log");
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.environment().remove("JDK_JAVA_OPTIONS");
@@ -143,112 +314,6 @@ public class KnownRedsCheck {
         else p.destroyForcibly();
         return new Run(exit, AllChecks.failingLines(log));
     }
-
-    /** Writes a record as ship.sh writes gate.txt: a comment line, a blank, then the red lines. */
-    private static void writeRecord(Path file, List<String> red) throws IOException {
-        StringBuilder text = new StringBuilder("# gate of the fixture\n\n");
-        for (String r : red) text.append(r).append('\n');
-        Files.write(file, text.toString().getBytes(StandardCharsets.UTF_8));
-    }
-
-    /** Whether a red line, without its harness name, is a section title. */
-    private static boolean isSection(String redLine) {
-        return AllChecks.SECTION.matcher(redLine.substring((NAME + " | ").length())).matches();
-    }
-
-    /* =====================================================================
-     * 1. THE RED LINES OF A FAILED HARNESS
-     * ===================================================================== */
-
-    private static void redLinesAre(Run first, List<String> red) {
-        System.out.println("--- 1. the gate's record of a red harness: its exit, its failing line and its count ---");
-        check("the fixture's first run exits 1", first.exit() == 1);
-        check("it has exactly three red lines", red.size() == 3);
-        boolean three = red.size() == 3;
-        check("the first red line is its exit", three && red.get(0).equals(NAME + " | exit 1"));
-        check("the second is the failing assertion's line",
-                three && red.get(1).startsWith(NAME + " | " + KNOWN_LABEL) && red.get(1).endsWith("FAIL"));
-        check("the third is its count of failures, its last line", three && red.get(2).equals(NAME + " | 1 FAILED"));
-        check("the passing line that says FAILS in its words is not a red line", red.stream().noneMatch(r -> r.contains("FAILS")));
-        check("no section title is a red line", red.stream().noneMatch(KnownRedsCheck::isSection));
-        check("the failing lines AllChecks prints do hold a section title, so the walk skipped one",
-                first.printed().stream().anyMatch(p -> AllChecks.SECTION.matcher(p).matches()));
-    }
-
-    /* =====================================================================
-     * 2. THE SAME RED AGAIN IS A KNOWN RED
-     * ===================================================================== */
-
-    private static void knownRed(Run first, List<String> red, Set<String> known) {
-        System.out.println("--- 2. the same red again is a known red, under -q and -f ---");
-        check("the record reads back as a set", known != null);
-        if (known == null) return;
-        check("it holds three lines: the comment and the blank one are not in it", known.size() == 3);
-        check("every red line of the fixture's run is in it", known.containsAll(red));
-        List<String> q = AllChecks.report(NAME, first.exit(), 0.5, first.printed(), false, known);
-        check("under -q the report is one line", q.size() == 1);
-        check("and it ends in the words known red", q.get(0).endsWith("  known red"));
-        List<String> f = AllChecks.report(NAME, first.exit(), 0.5, first.printed(), true, known);
-        check("under -f the header ends in the words known red", f.get(0).endsWith("  known red"));
-        List<String> under = f.subList(1, f.size());
-        List<String> notSections = under.stream().filter(l -> !AllChecks.SECTION.matcher(l).matches()).toList();
-        check("under -f there are lines under the header besides section titles", notSections.size() >= 2);
-        check("every one of them is tagged [known]", notSections.stream().allMatch(l -> l.startsWith("    " + AllChecks.KNOWN_TAG)));
-        check("none is tagged [NEW]", under.stream().noneMatch(l -> l.contains(AllChecks.NEW_TAG.strip())));
-        check("a section title is printed as it was, with no tag", under.stream()
-                .filter(l -> AllChecks.SECTION.matcher(l).matches()).allMatch(l -> l.startsWith("    ---")));
-    }
-
-    /* =====================================================================
-     * 3. A SECOND FAILING ASSERTION IS A NEW RED
-     * ===================================================================== */
-
-    private static void newRed(Run second, Set<String> known) {
-        System.out.println("--- 3. a second failing assertion is a NEW red, and -f names it ---");
-        if (known == null) { check("the record was read", false); return; }
-        List<String> red = redLines(second);
-        int fresh = AllChecks.newCount(red, known);
-        check("the fixture's second run exits 2", second.exit() == 2);
-        check("some of its red lines are not in the record", fresh > 0);
-        check("the line of the second assertion is one of them",
-                red.stream().anyMatch(r -> r.startsWith(NAME + " | " + SECOND_LABEL) && !known.contains(r)));
-        List<String> f = AllChecks.report(NAME, second.exit(), 0.5, second.printed(), true, known);
-        String header = f.get(0);
-        check("the header says NEW red", header.contains("  NEW red: "));
-        check("it states how many red lines are new and how many there are",
-                header.endsWith("  NEW red: " + fresh + " of " + red.size() + " red lines"));
-        check("the second assertion's line is tagged [NEW]", f.stream().anyMatch(l ->
-                l.startsWith("    " + AllChecks.NEW_TAG) && l.contains(SECOND_LABEL)));
-        check("the first assertion's line is still tagged [known]", f.stream().anyMatch(l ->
-                l.startsWith("    " + AllChecks.KNOWN_TAG) && l.contains(KNOWN_LABEL)));
-        long tags = f.stream().filter(l -> l.startsWith("    " + AllChecks.NEW_TAG)).count();
-        boolean exitNew = !known.contains(red.get(0));
-        check("the header's count is the [NEW] tags plus one for a new exit line", tags + (exitNew ? 1 : 0) == fresh);
-        List<String> q = AllChecks.report(NAME, second.exit(), 0.5, second.printed(), false, known);
-        check("under -q the report is the header alone, with the same verdict", q.size() == 1 && q.get(0).equals(header));
-    }
-
-    /* =====================================================================
-     * 4. WITH NO RECORD NOTHING IS TAGGED
-     * ===================================================================== */
-
-    private static void noRecord(Path tmp, Run first) throws IOException {
-        System.out.println("--- 4. with no record nothing is tagged: -f prints as before FW7 ---");
-        check("a record that does not exist reads as null", AllChecks.knownReds(tmp.resolve("no-such-folder").resolve("gate.txt")) == null);
-        List<String> f = AllChecks.report(NAME, first.exit(), 0.5, first.printed(), true, null);
-        check("the header has no verdict, it ends with the time", f.get(0).endsWith("s)"));
-        check("there are as many lines as the header and the failing lines", f.size() == 1 + first.printed().size());
-        boolean same = true;
-        for (int i = 0; i < first.printed().size(); i++) same &= f.get(i + 1).equals("    " + first.printed().get(i));
-        check("each is the failing line, indented four spaces and nothing else", same);
-        check("none has a tag", f.stream().noneMatch(l -> l.contains("[known]") || l.contains("[NEW]")));
-        check("the line under the summary says no record was read",
-                AllChecks.againstLine(AllChecks.GATE, null, List.of(), List.of(NAME)).startsWith("No known reds read ("));
-    }
-
-    /* =====================================================================
-     * 5. BATCH-CHECK.SH JUDGES THE SAME LOGS
-     * ===================================================================== */
 
     /** What batch-check.sh --judge said and exited with. */
     private record Judged(int exit, String output) { }
@@ -283,29 +348,4 @@ public class KnownRedsCheck {
         return String.join("\n", lines) + "\n";
     }
 
-    private static void judged(Path tmp, Run first, Run second, Set<String> known, Path recordFile) throws Exception {
-        System.out.println("--- 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second ---");
-        if (known == null) { check("the record was read", false); return; }
-        String firstTagged = suiteLog(first, known);
-        String secondTagged = suiteLog(second, known);
-        int wrong = AllChecks.newCount(redLines(second), known) + 1;   // a count the script cannot find, whatever the right one is
-        Judged a, b, c, d;
-        try {
-            a = judge(tmp.resolve("judge-a"), firstTagged, recordFile);
-            b = judge(tmp.resolve("judge-b"), secondTagged, recordFile);
-            c = judge(tmp.resolve("judge-c"), suiteLog(first, null), recordFile);
-            d = judge(tmp.resolve("judge-d"), secondTagged.replaceFirst("  NEW red: [0-9]+ of ", "  NEW red: " + wrong + " of "), recordFile);
-        } catch (IOException e) {
-            System.out.println("sh is not on the PATH here, so section 5 did not run (batch-check.sh's suite runs it)");
-            return;
-        }
-        check("the known red, tagged by AllChecks, is judged exit 3", a.exit() == 3);
-        check("and its verdict line says known red", a.output().contains("known red"));
-        check("the second run, tagged, is judged exit 4", b.exit() == 4);
-        check("and its verdict line says NEW red", b.output().contains("NEW red"));
-        check("and it prints the second assertion's line", b.output().contains(SECOND_LABEL));
-        check("a log from before FW7, with no tags, is judged exit 3 as well", c.exit() == 3);
-        check("a header whose count is not the one batch-check.sh finds is refused, exit 1", d.exit() == 1);
-        check("and the line says the two judges disagree", d.output().contains("disagree"));
-    }
 }

@@ -1,6 +1,6 @@
-# Manufacturing.java - 371 lines · 14 methods · 3 constants · sectors
+# Manufacturing.java - 371 lines · 15 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > What the city makes out of its own steel, and ships.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (5):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
+**Used by (6):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 
@@ -108,10 +108,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 224 | 50 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 294 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
-| 304 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
-| 317 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 224 | 46 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 290 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
+| 300 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
+| 313 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 317 | 1 | `public boolean bleedsWhileLent()` | With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 96 months of them). |
 
 ### the screen (lines 319-371)
 

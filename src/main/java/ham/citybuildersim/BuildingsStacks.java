@@ -9,11 +9,11 @@ package ham.citybuildersim;
 public class BuildingsStacks {
 
     private BuildingsTemplate template;
-    private int quantity;
-    private int underConstruction;
+    private long quantity;
+    private long underConstruction;
 
     /** Finished in the most recent advanceConstruction() call. Not saved: monthly. */
-    private int lastFinished;
+    private long lastFinished;
 
     /** Points the most recent advanceConstruction() call put into buildings: never more than the stack owed (0.7.17). Not saved: monthly. */
     private double lastApplied;
@@ -128,7 +128,7 @@ public class BuildingsStacks {
         this.underConstruction = 0;
     }
 
-    public void startConstruction(int n) {
+    public void startConstruction(long n) {
         underConstruction += n;
         materialsOwed += template.getConstructionMaterials() * (double) n;
     }
@@ -222,7 +222,7 @@ public class BuildingsStacks {
      * them and the material they still owe, beside whatever is on site
      * already. The new order's contract is booked apart (bookContract()).
      */
-    void resumeShell(int buildings, double progress, double owedUnits) {
+    void resumeShell(long buildings, double progress, double owedUnits) {
         underConstruction += Math.max(0, buildings);
         // ...a shell cancelled before its site's preparation was done holds it owed, progress below nothing (addPreparation()): it goes back as owed.
         constructionProgress += progress;
@@ -256,24 +256,24 @@ public class BuildingsStacks {
      * unfitted one first, the older plant, so a count never outlives the buildings it counts. Saved, by template id, only where a stack has any
      * (BuildingManager.getUnfittedById(); DataSave.unfittedById). A sorted map, so that anything that walks it walks it in one order.
      */
-    private final java.util.TreeMap<String, Integer> unfitted = new java.util.TreeMap<>();
+    private final java.util.TreeMap<String, Long> unfitted = new java.util.TreeMap<>();
 
     /** How many of this stack's buildings are still without the piece of equipment of this id: 0 for a piece none lacks. */
-    public int getUnfitted(String id) {
-        Integer n = id == null ? null : unfitted.get(id);
+    public long getUnfitted(String id) {
+        Long n = id == null ? null : unfitted.get(id);
         return n == null ? 0 : n;
     }
 
     /** Sets how many of this stack's buildings are without a piece: clamped to 0..quantity, and 0 takes the piece off the count. */
-    public void setUnfitted(String id, int n) {
+    public void setUnfitted(String id, long n) {
         if (id == null) return;
-        int c = Math.max(0, Math.min(n, quantity));
+        long c = Math.max(0, Math.min(n, quantity));
         if (c == 0) unfitted.remove(id);
         else unfitted.put(id, c);
     }
 
     /** Every piece some of this stack's buildings lack, with how many, in the pieces' id order; unmodifiable, and empty for a stack that is fully fitted. For the save. */
-    public java.util.Map<String, Integer> getUnfittedView() {
+    public java.util.Map<String, Long> getUnfittedView() {
         return java.util.Collections.unmodifiableMap(unfitted);
     }
 
@@ -282,21 +282,28 @@ public class BuildingsStacks {
         return !unfitted.isEmpty();
     }
 
+    private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
+
+    /** The city's fitting queue hears every removal, retirement and a harness's immediate removal included, after the counts are lowered (R1d). */
+    void setOnScrap(java.util.function.Consumer<BuildingsStacks> listener) { onScrap = listener; }
+
     /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
-    private void lowerUnfitted(int before) {
-        int removed = before - quantity;
-        java.util.Iterator<java.util.Map.Entry<String, Integer>> it = unfitted.entrySet().iterator();
+    private void lowerUnfitted(long before) {
+        long removed = before - quantity;
+        java.util.Iterator<java.util.Map.Entry<String, Long>> it = unfitted.entrySet().iterator();
         while (it.hasNext()) {
-            java.util.Map.Entry<String, Integer> e = it.next();
-            int n = Math.min(Math.max(0, e.getValue() - Math.max(0, removed)), quantity);
+            java.util.Map.Entry<String, Long> e = it.next();
+            long n = Math.min(Math.max(0, e.getValue() - Math.max(0, removed)), quantity);
             if (n <= 0) it.remove();
             else e.setValue(n);
         }
+        // ...and then the fittings on site, which may now have fewer unfitted buildings than jobs (Fittings.scrapped()).
+        onScrap.accept(this);
     }
 
     // for immediate add
-    public void addQuantity(int n) {
-        int before = quantity;
+    public void addQuantity(long n) {
+        long before = quantity;
         quantity += n;
         if (quantity < before) lowerUnfitted(before);
     }
@@ -324,7 +331,7 @@ public class BuildingsStacks {
             return;
         }
 
-        int finished = 0;
+        long finished = 0;
         double owedPoints = underConstruction * (double) template.getConstructionPoints() - constructionProgress;
 
         /*
@@ -352,7 +359,7 @@ public class BuildingsStacks {
             remainingOutput -= template.getConstructionPoints();
         }
 
-        int startedConstruction = underConstruction + finished;
+        long startedConstruction = underConstruction + finished;
         quantity += finished;
         constructionProgress = underConstruction > 0 ? remainingOutput : 0;
         lastFinished = finished;
@@ -412,7 +419,7 @@ public class BuildingsStacks {
      * completions, and a running total here would need clearing by someone,
      * which is the shape of bug this codebase keeps finding in monthly state.
      */
-    public int getLastFinished() {
+    public long getLastFinished() {
         return lastFinished;
     }
 
@@ -440,18 +447,18 @@ public class BuildingsStacks {
         return (long) template.getJobs(type) * quantity;
     }
 
-    public int getQuantity() {
+    public long getQuantity() {
         return quantity;
     }
 
     /** Scraps finished buildings. Floors at zero rather than going negative. The unfitted ones go first (see the unfitted counts). */
-    public void removeQuantity(int amount) {
-        int before = quantity;
+    public void removeQuantity(long amount) {
+        long before = quantity;
         quantity = Math.max(quantity - amount, 0);
         if (quantity < before) lowerUnfitted(before);
     }
 
-    public int getUnderConstruction() {
+    public long getUnderConstruction() {
         return underConstruction;
     }
 
@@ -463,8 +470,8 @@ public class BuildingsStacks {
         return constructionProgress;
     }
 
-    public void increaseQuantity(int amount) {
-        int before = quantity;
+    public void increaseQuantity(long amount) {
+        long before = quantity;
         this.quantity += amount;
         if (quantity < before) lowerUnfitted(before);
     }
@@ -515,7 +522,7 @@ public class BuildingsStacks {
         this.constructionProgress = progress;
     }
 
-    public void setUnderConstruction(int quantity) {
+    public void setUnderConstruction(long quantity) {
         this.underConstruction = quantity;
     }
 

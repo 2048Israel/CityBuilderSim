@@ -1,6 +1,6 @@
-# FoodIndustry.java - 98 lines · 6 methods · 0 constants · sectors
+# FoodIndustry.java - 105 lines · 7 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/FoodIndustry.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/FoodIndustry.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The mills and the plants that feed the shops.
 > 
@@ -30,19 +30,20 @@
 > what it wrote off when a warehouse was demolished. See Sector.produceStock()
 > and offer().
 
-**Uses:** [Good](Good.md) (8), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [Agriculture](Agriculture.md) (1)
+**Uses:** [Good](Good.md) (10), [Agriculture](Agriculture.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (4):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [Sectors](Sectors.md), [WaterCheck](WaterCheck.md)
+**Used by (5):** [BooksCheck](BooksCheck.md), [CreditCheck](CreditCheck.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Sectors](Sectors.md), [WaterCheck](WaterCheck.md)
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 62 | **type** `public final class FoodIndustry extends Sector` | The mills and the plants that feed the shops. |
-| 39 | 24 | `public FoodIndustry()` |  |
-| 65 | 3 | `public double getCropDemand()` | Tonnes of crops the mills want this month, at the rate they are running. |
-| 70 | 3 | `public double getCropPrice()` | What a tonne is costing them - the number that decides whether milling pays here. |
-| 79 | 3 | `public double getCropPosition()` | Where the crop price sits between a farm's export floor and the world's delivered ceiling: 0 is fields with nobody else to sell to, 1 is a city with no fields at all. |
-| 84 | 4 | `public double cropShare()` | The crop bill as a share of what the mills sold. |
-| 91 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule measures the mills against what the shops can serve, as it always has. |
+| 38 | 68 | **type** `public final class FoodIndustry extends Sector` | The mills and the plants that feed the shops. |
+| 40 | 24 | `public FoodIndustry()` |  |
+| 66 | 3 | `public double getCropDemand()` | Tonnes of crops the mills want this month, at the rate they are running. |
+| 71 | 3 | `public double getCropPrice()` | What a tonne is costing them - the number that decides whether milling pays here. |
+| 80 | 3 | `public double getCropPosition()` | Where the crop price sits between a farm's export floor and the world's delivered ceiling: 0 is fields with nobody else to sell to, 1 is a city with no fields at all. |
+| 85 | 4 | `public double cropShare()` | The crop bill as a share of what the mills sold. |
+| 92 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule measures the mills against what the shops can serve, as it always has. |
+| 102 | 3 | `public double unitsOf(BuildingsTemplate t)` | A mill's part of the retirement measure, in heads served by both its baked goods (RT2). |
 

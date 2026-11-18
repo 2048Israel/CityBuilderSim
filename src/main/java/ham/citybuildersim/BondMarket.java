@@ -150,6 +150,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). */
     static final double CHEAPER_BY = 1e-11;
 
+    /** The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). */
+    static final double ISSUE_ROUNDING = 1e-14;
+
+    /** The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). */
+    static final double PRICE_TICK = 1e-12;
+
     /* ============================ what it reads ============================ */
 
     /** The city's readings the market prices on, which Game supplies. */
@@ -316,12 +322,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
        reform does not move, so OrderBook.DUST stays a literal there.
        ===================================================================== */
 
-    /** OrderBook.DUST of face, in today's money. See above. */
-    private double dust = OrderBook.DUST;
+    /** OrderBook.DUST of face is money, seeded at founding prices (BF1). */
+    static final double FACE_DUST = PriceLevel.atFounding(OrderBook.DUST);
+    private double dust = FACE_DUST;
 
     /** Re-seeds the dust at a given unit, and every open book's with it. See Denomination. */
     public void seedConstants(double unit) {
-        dust = OrderBook.DUST / (unit > 0 ? unit : 1);
+        dust = FACE_DUST / (unit > 0 ? unit : 1);
         for (OrderBook book : books.values()) book.setDust(dust);
     }
 
@@ -652,8 +659,15 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, issuer);
                 room = perDollar > 0 ? Math.max(0, bank.spareCapital()) / perDollar : 0;
             }
-            this.bankRoom = room;
+            this.bankRoom = Math.min(room, bankClaimRoom());
         }
+    }
+
+    /** The same capital allowance as project loans, including loans awaiting settlement. */
+    private double bankClaimRoom() {
+        BusinessDebtManager c = credit();
+        return Math.min(bank == null ? 0 : bank.projectHeadroom(),
+                c == null ? Double.POSITIVE_INFINITY : c.projectRoom());
     }
 
     /** Every participant's bid for one new issue of this size, offered at this size, as a function of its coupon. */
@@ -823,11 +837,11 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         double s = bondRoom;
         double bond = 0, threshold = Double.NaN;
         Demand at = null;
-        for (int i = 0; i < 40 && s > 0; i++) {
+        for (int i = 0; i < 100 && s > 0; i++) {
             Demand dm = i == 0 ? whole : new Demand(who, s, bondRoom, deal, extraAssets);
             double t = loanAllIn - issueCost(s) / s / TERM_YEARS;
             double filled = Math.min(bondRoom, dm.total(t));
-            if (filled >= s * (1 - 1e-9)) { bond = s; threshold = t; at = dm; break; }
+            if (filled >= s * (1 - ISSUE_ROUNDING)) { bond = s; threshold = t; at = dm; break; }
             if (!(filled > 0)) break;
             s = filled;
         }
@@ -1213,7 +1227,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, b.issuer);
                 if (!(perDollar > 0)) continue;
                 double p = b.priceAt(bankYield(b.issuer, n, 0, 0, 0), month);
-                double q = Math.min(b.face - b.bank, spare / perDollar);
+                double q = Math.min(b.face - b.bank, Math.min(spare / perDollar, bankClaimRoom() / p));
                 if (!(q > dust) || !(p > 0)) continue;
                 submit(b, BANK, OrderBook.Side.BUY, p, q, month);
                 spare -= q * perDollar;
@@ -1576,12 +1590,14 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** One order on a bond's book, settled, between two steps: for FundLedgerCheck (0.7.39), as Exchange.tradeForCheck(). The month never calls it. */
     List<OrderBook.Fill> tradeForCheck(CorporateBond b, String who, OrderBook.Side side, double price, double quantity) {
-        return openBook(b).submit(who, side, price, quantity, ledgerMonth(), new Settle(b));
+        return submit(b, who, side, price, quantity, ledgerMonth());
     }
 
-    private void submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
-        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return;
-        openBook(b).submit(who, side, price, quantity, month, new Settle(b));
+    private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
+        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return List.of();
+        double ticked = Math.rint(price / PRICE_TICK) * PRICE_TICK;
+        if (!(ticked > 0) || !Double.isFinite(ticked)) return List.of();
+        return openBook(b).submit(who, side, ticked, quantity, month, new Settle(b));
     }
 
     /** Where each participant's money and holding is, for one bond's book. */
@@ -1592,7 +1608,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         @Override public double capacity(String who, OrderBook.Side side, double price) {
             if (side == OrderBook.Side.BUY) {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
-                if (BANK.equals(who)) return bankBuys() ? Double.POSITIVE_INFINITY : 0;
+                if (BANK.equals(who)) return bankBuys() ? bankClaimRoom() / price : 0;
                 // The city's fund (0.7.14): what its cash buys - the rule's, less what
                 // the hand's buys hold of it (0.7.39, TreasuryFund.handReserve()).
                 if (FUND.equals(who)) return fund == null ? 0 : fund.cashForTheRule() / price;

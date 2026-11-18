@@ -121,7 +121,7 @@ final class PeopleScreen {
     /** Under this share out of work, nobody is spare: amber, "jobs going unfilled". */
     static final double OUT_OF_WORK_SHORT = .03;
 
-    /** Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). */
+    /** Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). Arrivals already slow from Migration.HEALTHY_OUT_OF_WORK (6%), a sixth slower at 7%, which the migration word says while the tile is still green. */
     static final double OUT_OF_WORK_HIGH = .07;
 
     /** Over this, a city in trouble: red, and the share at which nobody moves here for work (Migration.ARRIVALS_STOP_OUT_OF_WORK). */
@@ -232,7 +232,7 @@ final class PeopleScreen {
         javafx.scene.layout.ColumnConstraints right = new javafx.scene.layout.ColumnConstraints();
         right.setPercentWidth(67);
         right.setFillWidth(true);
-        rowD.getColumnConstraints().addAll(left, right);
+        Kept.columns(rowD).addAll(left, right);
         VBox homes = Kept.scope("homes", this::homesCard);
         homesCard = homes;
         rowD.add(homes, 0, 0);
@@ -370,7 +370,7 @@ final class PeopleScreen {
     static String shareWords(double share) {
         double p = share * 100;
         if (p > 0 && p < .5) return "under 1%";
-        return String.format("%.0f%%", p);
+        return Formats.INSTANCE.percentage(p / 100, "%.0f%%");
     }
 
     /* ---------------------------------- homes ---------------------------------- */
@@ -596,9 +596,9 @@ final class PeopleScreen {
         double target = m.getLastTarget();
         PopulationManager pm = ui.game.getPopulationManager();
         long population = pm.getPopulation();
-        // WG2: today's out-of-work share, which the next month's arrivals take their brake from.
+        // WG2: today's out-of-work share, for the words; the brake is the one last month's arrivals took (WG2-R), so the word agrees with them.
         double outOfWork = pm.getUnemploymentRate();
-        double brake = m.arrivalBrakeNow(outOfWork);
+        double brake = m.getLastBrake();
         String why, tone, word;
         if (m.getLastCrowding() <= 0) {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
@@ -619,20 +619,22 @@ final class PeopleScreen {
             tone = Palette.BAD;
             word = "leaving";
         } else if (target > population && brake < 1) {
-            // WG2: the brake on arrivals, read off today's out-of-work share as next month's arrivals will read it.
+            // WG2: the brake on arrivals, as the month's arrivals took it (WG2-R: getLastBrake(), not today's share, which may have crossed 6% or 12% since).
             // It comes before the plain "leaving": past the healthy rate the jobless drift away every month, so
             // the departures are the brake's other half, not news of their own.
             String drift = m.getLastDepartures() > 0
                     ? " Meanwhile the jobless over it drift away." : "";
             why = brake <= 0
-                ? String.format("Nobody is moving here for work while %.1f%% of the labour force is out of "
-                    + "work, past the %.0f%% at which newcomers stay away. Arrivals pick up again as it "
-                    + "falls back toward the healthy %.0f%%.%s", outOfWork * 100,
-                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, Migration.HEALTHY_OUT_OF_WORK * 100, drift)
-                : String.format("Arrivals are running at %.0f%% of the draw's pace while %.1f%% of the "
-                    + "labour force is out of work, past the healthy %.0f%%. They slow further as it "
-                    + "climbs, stop at %.0f%%, and quicken as it falls back.%s", brake * 100, outOfWork * 100,
-                    Migration.HEALTHY_OUT_OF_WORK * 100, Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, drift);
+                ? String.format("Nobody moved here for work last month: the out-of-work share was past the "
+                    + "%.0f%% at which newcomers stay away (%.1f%% now). Arrivals pick up again as it "
+                    + "falls back toward the healthy %.0f%%.%s",
+                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, outOfWork * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100, drift)
+                : String.format("Arrivals ran at %.0f%% of the draw's pace last month, slowed by an "
+                    + "out-of-work share past the healthy %.0f%% (%.1f%% now). They slow further as it "
+                    + "climbs, stop at %.0f%%, and quicken as it falls back.%s", brake * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100, outOfWork * 100,
+                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, drift);
             tone = Palette.WARN;
             word = brake <= 0 ? "stalled" : "slowing";
         } else if (m.getLastDepartures() > 0) {
@@ -744,7 +746,7 @@ final class PeopleScreen {
                                     + "without care rather than without food.",
                                     people(service.getPricedOut(CareType.GENERAL)))
                             : ".",
-                    Sickness.recovery(health.getCoverage()) * 100,
+                    sickness.recoveryAt(health.getCoverage()) * 100,
                     people(sickness.peoplePastTwoMonths(cohorts)), flowText(sickness.getLastDeaths()), illness);
         }
         if (m.kind() == BuildAdvice.Kind.CARE) {
@@ -1008,7 +1010,7 @@ final class PeopleScreen {
         toggle.setWrapText(true);
         VBox box = Kept.column(4, toggle);
         if (open) for (javafx.scene.Node n : inside) if (n != null) box.getChildren().add(n);
-        toggle.setOnMouseClicked(e -> {
+        Kept.give(toggle.onMouseClickedProperty(), e -> {
             if (!detailsOpen.remove(name)) detailsOpen.add(name);
             ui.redraw();
         });
@@ -1202,7 +1204,7 @@ final class PeopleScreen {
         Mirror() {
             ghost.setStyle("-fx-border-color: " + Palette.TEXT_MUTED + "; -fx-border-width: 1;"
                     + " -fx-border-radius: 2; -fx-background-color: transparent;");
-            ghost.setMouseTransparent(true);
+            Kept.give(ghost.mouseTransparentProperty(), true);
             axis.setStyle("-fx-background-color: " + Palette.EDGE + ";");
             getChildren().addAll(axis, bar, ghost);
             setMinWidth(60);
@@ -1230,7 +1232,7 @@ final class PeopleScreen {
             double gw = widest > 0 ? settled / widest * half : 0;
             axis.resizeRelocate(Math.floor(mid), 0, 1, h);
             bar.resizeRelocate(mid - bw, top, 2 * bw, bh);
-            ghost.setVisible(gw > 0);
+            Kept.give(ghost.visibleProperty(), gw > 0);
             ghost.resizeRelocate(mid - gw, top - 3, 2 * gw, bh + 6);
         }
     }
@@ -1461,9 +1463,9 @@ final class PeopleScreen {
                 + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-color: ";
         box.setStyle(rest + Palette.EDGE + ";" + (go != null ? " -fx-cursor: hand;" : ""));
         if (go != null) {
-            box.setOnMouseEntered(e -> box.setStyle(rest + Palette.ACCENT + "; -fx-cursor: hand;"));
-            box.setOnMouseExited(e -> box.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;"));
-            box.setOnMouseClicked(e -> go.run());
+            Kept.give(box.onMouseEnteredProperty(), e -> box.setStyle(rest + Palette.ACCENT + "; -fx-cursor: hand;"));
+            Kept.give(box.onMouseExitedProperty(), e -> box.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;"));
+            Kept.give(box.onMouseClickedProperty(), e -> go.run());
         }
         if (tip != null) Kept.tip(box, tip, 250);
         box.setMaxWidth(Region.USE_PREF_SIZE);
@@ -1738,7 +1740,7 @@ final class PeopleScreen {
                         : b == AgeBand.SENIOR || b == AgeBand.ELDER ? Palette.PEOPLE_DARK : Palette.PEOPLE_LIGHT);
         javafx.scene.layout.StackPane holder = new javafx.scene.layout.StackPane();
         holder.setMinSize(9, 9);
-        holder.setPrefSize(9, 9);
+        Pieces.prefSize(holder, 9, 9);
         holder.setMaxSize(9, 9);
         if (b == AgeBand.SENIOR || b == AgeBand.ELDER) {
             javafx.scene.shape.Circle ring = new javafx.scene.shape.Circle(r - .5);
@@ -1754,7 +1756,7 @@ final class PeopleScreen {
             dot.setFill(colour);
             holder.getChildren().add(dot);
         }
-        holder.setMouseTransparent(true);
+        Kept.give(holder.mouseTransparentProperty(), true);
         return holder;
     }
 
@@ -1983,7 +1985,7 @@ final class PeopleScreen {
             }
             if (moved || built) {
                 // What a new strip's "+n more" starts as: the layout fills it in where tiles fold.
-                more.setVisible(true);
+                Kept.give(more.visibleProperty(), true);
                 String idle = pieces.isEmpty() ? "nobody" : UNUSED;
                 if (!idle.equals(moreLabel.getText())) moreLabel.setText(idle);
                 if (!moreTip.getText().isEmpty()) moreTip.setText("");
@@ -2040,7 +2042,7 @@ final class PeopleScreen {
             double x = 0;
             for (int i = 0; i < n; i++) {
                 VBox t = tiles.get(i).box;
-                t.setVisible(i < k);
+                Kept.give(t.visibleProperty(), i < k);
                 // A folded tile is laid at nothing, as the "+n more" is when nothing folds (PT1-M4):
                 // a kept strip held a tile it had folded where it last stood, so it and a strip
                 // built new differed in what neither shows (KeptCheck, the playtest's month 612).
@@ -2049,7 +2051,7 @@ final class PeopleScreen {
                 t.resizeRelocate(x, 0, Math.max(0, width - 3), h);
                 x += width;
             }
-            more.setVisible(k < n);
+            Kept.give(more.visibleProperty(), k < n);
             if (k < n) {
                 double folded = 0;
                 StringBuilder names = new StringBuilder();
@@ -2106,13 +2108,13 @@ final class PeopleScreen {
                         + " -fx-background-radius: 4; -fx-border-radius: 4; -fx-border-color: ";
                 box.setStyle(rest + Palette.EDGE + ";" + (p.cellKey() != null ? " -fx-cursor: hand;" : ""));
                 if (p.cellKey() != null) {
-                    box.setOnMouseEntered(e -> box.setStyle(rest + Palette.ACCENT + "; -fx-cursor: hand;"));
-                    box.setOnMouseExited(e -> box.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;"));
-                    box.setOnMouseClicked(e -> screen.toBooks(p.cellKey()));
+                    Kept.give(box.onMouseEnteredProperty(), e -> box.setStyle(rest + Palette.ACCENT + "; -fx-cursor: hand;"));
+                    Kept.give(box.onMouseExitedProperty(), e -> box.setStyle(rest + Palette.EDGE + "; -fx-cursor: hand;"));
+                    Kept.give(box.onMouseClickedProperty(), e -> screen.toBooks(p.cellKey()));
                 } else {
-                    box.setOnMouseEntered(null);
-                    box.setOnMouseExited(null);
-                    box.setOnMouseClicked(null);
+                    Kept.give(box.onMouseEnteredProperty(), null);
+                    Kept.give(box.onMouseExitedProperty(), null);
+                    Kept.give(box.onMouseClickedProperty(), null);
                 }
                 StringBuilder text = new StringBuilder(p.full() + "\n" + people(p.count()) + " households");
                 if (p.tiers() != null) {
@@ -2228,9 +2230,9 @@ final class PeopleScreen {
         c.setMaxWidth(Double.MAX_VALUE);
         String rest = CARD + " -fx-cursor: hand; -fx-border-color: ";
         c.setStyle(rest + Palette.EDGE + ";");
-        c.setOnMouseEntered(e -> c.setStyle(rest + Palette.ACCENT + ";"));
-        c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
-        c.setOnMouseClicked(e -> openOutside(t.name()));
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(rest + Palette.ACCENT + ";"));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(c.onMouseClickedProperty(), e -> openOutside(t.name()));
         Kept.tip(c, t.name() + ": " + people(t.count()) + "\n" + t.split()
                 + "\nthe line: the last ten years\nClick: " + t.where(), 250);
         return c;
@@ -2303,9 +2305,9 @@ final class PeopleScreen {
             line.getPoints().setAll(pts);
             javafx.scene.layout.Pane holder = Kept.plain(line);
             holder.setMinSize(w, tall);
-            holder.setPrefSize(w, tall);
+            Pieces.prefSize(holder, w, tall);
             holder.setMaxSize(w, tall);
-            holder.setMouseTransparent(true);
+            Kept.give(holder.mouseTransparentProperty(), true);
             return holder;
         });
     }
@@ -2537,9 +2539,9 @@ final class PeopleScreen {
             double band = 14, y = (h - band) / 2;
             track.resizeRelocate(0, y, w, band);
             double qw = scale > 0 ? w * queue / scale : 0, ow = scale > 0 ? w * open / scale : 0;
-            q.setVisible(qw > 0);
+            Kept.give(q.visibleProperty(), qw > 0);
             q.resizeRelocate(0, y, Math.max(1, qw), band);
-            o.setVisible(ow > 0);
+            Kept.give(o.visibleProperty(), ow > 0);
             o.resizeRelocate(0, y + 3, Math.max(1, ow), band - 6);
         }
     }
@@ -3198,6 +3200,13 @@ final class PeopleScreen {
         page.getChildren().add(Kept.scope("vitals", this::moneyVitals));
         page.getChildren().add(Kept.scope("verdict", this::verdictRow));
 
+        Consumption.YearPoint basket = ui.game.basketYear();
+        if (basket != null) {
+            page.getChildren().add(Kept.scope("year basket", () -> sentence(String.format(
+                    "The year's basket: %.0f%% of bread bought ready made; %.0f%% of homes on lamp oil, %.0f%% on coal; up to %.2f cars a household.",
+                    basket.bought("BREAD") * 100, basket.lampShare() * 100, basket.coalShare() * 100, basket.carCeiling()), Palette.TEXT_MUTED)));
+        }
+
         // The grid is a scope, and the open cell's books a scope keyed by the cell: another cell opened is drawn from
         // nodes of its own, not over the last one's (the quiet books are the key "").
         VBox grid = Kept.scope("grid", () -> affordabilityGrid(hh, bal, families));
@@ -3636,7 +3645,7 @@ final class PeopleScreen {
         @SuppressWarnings("unchecked")
         List<javafx.scene.layout.ColumnConstraints> columns =
                 (List<javafx.scene.layout.ColumnConstraints>) grid.getProperties().computeIfAbsent(MATRIX_COLUMNS, k -> matrixColumns());
-        grid.getColumnConstraints().addAll(columns);
+        Kept.columns(grid).addAll(columns);
 
         Kept.scope("head", () -> {
             grid.add(gridCell("household", Palette.TEXT_LABEL, Palette.SIZE_CAPTION, false), 0, 0);
@@ -3936,7 +3945,7 @@ final class PeopleScreen {
                         : "\nwhat a month leaves one of them, against a full basket")
                 + "\nclick for the month", 300);
 
-        box.setOnMouseClicked(e -> {
+        Kept.give(box.onMouseClickedProperty(), e -> {
             openCell = open ? "" : key;
             revealOpened = !openCell.isEmpty();
             showHouseholdMenu();
@@ -3985,7 +3994,7 @@ final class PeopleScreen {
                 + "\n" + formatter.format(Math.round(s.households())) + " of them"
                 + "\nclick for the month", 300);
 
-        cell.setOnMouseClicked(e -> {
+        Kept.give(cell.onMouseClickedProperty(), e -> {
             openCell = open ? "" : key;
             revealOpened = !openCell.isEmpty();
             showHouseholdMenu();
@@ -4095,7 +4104,7 @@ final class PeopleScreen {
     /** A stake, with enough decimals left on it to still say something. */
     static String stakePct(double share) {
         double p = share * 100;
-        if (p >= 1)   return String.format("%.1f%%", p);
+        if (p >= 1)   return Formats.INSTANCE.percentage(p / 100, "%.1f%%");
         if (p >= .1)  return String.format("%.2f%%", p);
         if (p >= .01) return String.format("%.3f%%", p);
         return String.format("%.4f%%", p);
@@ -4112,8 +4121,8 @@ final class PeopleScreen {
         if (Math.abs(whole) < 1e-9) return "—";
         double p = part / whole * 100;
         if (p > 0 && p < .05) return "under 1%";
-        if (Math.abs(p) < 10)  return String.format("%.1f%%", p);
-        return String.format("%.0f%%", p);
+        if (Math.abs(p) < 10)  return Formats.INSTANCE.percentage(p / 100, "%.1f%%");
+        return Formats.INSTANCE.percentage(p / 100, "%.0f%%");
     }
 
     /** A run of months, said the way a person would say it. */
@@ -4775,7 +4784,7 @@ final class PeopleScreen {
         };
         for (String[] part : parts) {
             Region swatch = Kept.region();
-            swatch.setPrefSize(9, 9);
+            Pieces.prefSize(swatch, 9, 9);
             swatch.setMinSize(9, 9);
             swatch.setStyle("-fx-background-color: " + part[1] + "; -fx-background-radius: 2;");
             Label what = Kept.label(part[0]);

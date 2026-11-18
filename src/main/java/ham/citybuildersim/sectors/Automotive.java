@@ -191,7 +191,6 @@ public final class Automotive extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         boolean sawSupplyWall = false;
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
@@ -209,10 +208,7 @@ public final class Automotive extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -234,7 +230,7 @@ public final class Automotive extends Sector {
                         Formats.INSTANCE.count(Math.max(0, biggestDraw))));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector,
                     "the parts cost more than the vehicle fetches");
@@ -261,6 +257,10 @@ public final class Automotive extends Sector {
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) { return null; }
+
+    /** With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 92 months of them). */
+    @Override
+    public boolean bleedsWhileLent() { return true; }
 
     /* ------------------------------------------------------------ the screen */
 

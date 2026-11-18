@@ -1,6 +1,6 @@
-# LandNationsCheck.java - 1,253 lines · 47 methods · 8 constants · harnesses
+# LandNationsCheck.java - 1,842 lines · 67 methods · 8 constants · harnesses
 
-`ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and
 > how it moves, the seller of every plot of a real-Earth world and the territorial sea, an offer's ground split by its sellers, the price each part
@@ -46,11 +46,16 @@
 >      the cost of a cold quote by level is measured and printed (what moved the hover's quote off the screen's thread); a LandMarket.Quoter made
 >      here and used on another thread gives the office's quote to the bit, block by block; it is the office as it stood when it was made, a purchase
 >      since not seen by it; making one takes no more than a frame; and the map's source quotes through one on its own thread.
+>  13. PICKED GROUND (WN5c). A click by level and monthly pricing of 1, 10 and 50 picks are measured at the river and coast.
+>      Worker results never change the live office before acceptance; a month that passes during pricing still gets today's
+>      price, to the bit. Retained splits read no seller plots in the month. Changed ground and cancelled requests are rejected.
+>  14. HOVER LIFECYCLE (WN5d). Slow work spans months, the previous price stays visible, an unwanted quote yields,
+>      RuntimeException and Error release their requests for retry, and low-priority counts stay off the common pool.
 > 
 > Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
-> sections 1 to 4 run and 5 to 12 say so and are skipped. The one timing it asserts is section 12's making of a quoter (Timing.within; TimingCheck owns the mechanism).
+> sections 1 to 4 run and 5 to 14 say so and are skipped. Sections 12 to 14 hold frame budgets through Timing.within (TimingCheck owns the mechanism).
 
-**Uses:** [LandParcel](LandParcel.md) (108), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (26), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [LandMarket](LandMarket.md) (15), [Game](Game.md) (11), [World](World.md) (11), [Founding](Founding.md) (10), [CityLand](CityLand.md) (10), [GameFiles](GameFiles.md) (7), [CityCalendar](CityCalendar.md) (6), [LandMap](LandMap.md) (6), [ForeignAccounts](ForeignAccounts.md) (4), [EarthData](EarthData.md) (3), [Resource](Resource.md) (2), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [Timing](Timing.md) (2), [LandTable](LandTable.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (124), [LandMap](LandMap.md) (39), [LandMarket](LandMarket.md) (37), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (26), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [CityLand](CityLand.md) (17), [World](World.md) (14), [Game](Game.md) (12), [Founding](Founding.md) (11), [Timing](Timing.md) (11), [GameFiles](GameFiles.md) (8), [CityCalendar](CityCalendar.md) (6), [Resource](Resource.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [EarthData](EarthData.md) (3), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [Landmasses](Landmasses.md) (2), [LandGrid](LandGrid.md) (2), [MapFrame](MapFrame.md) (2), [LandTable](LandTable.md) (1), [LandManager](LandManager.md) (1)
 
 **Used by (1):** [PartnersCheck](PartnersCheck.md)
 
@@ -58,180 +63,222 @@
 
 | line | section |
 |---:|---|
-| 129 | THE FIXTURES |
-| 180 | MAIN |
-| 237 | 1. THE TABLE |
-| 303 | 2. CANADA IS 1 |
-| 334 | 3. THE FOUNDING, AND HISTORICAL'S 2024 |
-| 378 | 4. RANDOM MOVES IT, WITHIN ITS BOUNDS |
-| 425 | 5. THE SELLERS |
-| 575 | 6. THE SPLIT |
-| 659 | 7. THE PRICE |
-| 705 | 8. PAYING |
-| 808 | 9. THE SAVE |
-| 883 | 10. HOW OFTEN IT FIRES IN A REAL RUN |
-| 950 | 11. THE WORDS |
-| 1077 | 12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD |
+| 134 | THE FIXTURES |
+| 195 | MAIN |
+| 254 | 1. THE TABLE |
+| 320 | 2. CANADA IS 1 |
+| 351 | 3. THE FOUNDING, AND HISTORICAL'S 2024 |
+| 395 | 4. RANDOM MOVES IT, WITHIN ITS BOUNDS |
+| 442 | 5. THE SELLERS |
+| 592 | 6. THE SPLIT |
+| 676 | 7. THE PRICE |
+| 722 | 8. PAYING |
+| 825 | 9. THE SAVE |
+| 900 | 10. HOW OFTEN IT FIRES IN A REAL RUN |
+| 967 | 11. THE WORDS |
+| 1094 | 12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD |
+| 1272 | 13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH |
+| 1524 | 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 941 | `LandNationsCheck.Kind.HOME` |  |
-| 941 | `LandNationsCheck.Kind.SPLIT` |  |
-| 941 | `LandNationsCheck.Kind.FOREIGN` |  |
+| 958 | `LandNationsCheck.Kind.HOME` |  |
+| 958 | `LandNationsCheck.Kind.SPLIT` |  |
+| 958 | `LandNationsCheck.Kind.FOREIGN` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 82 | `LandNationsCheck.out` | `System.out` |  |
-| 83 | `LandNationsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 86 | `LandNationsCheck.SEED_A` | `20261101L, SEED_B = 20261102L` | The seeds the Random paths are drawn from. |
-| 93 | `LandNationsCheck.WINDSOR_LAT` | `42.315, WINDSOR_LON = - 83.04, DETROIT_LAT = 42.335, DETROIT_LON = - 83.045` | Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of Gibraltar. |
-| 94 | `LandNationsCheck.HALIFAX_LAT` | `44.64, HALIFAX_LON = - 63.57, GIBRALTAR_LAT = 36.14, GIBRALTAR_LON = - 5.35` |  |
-| 97 | `LandNationsCheck.ACRES_PER_HECTARE` | `ham.citybuildersim.tools.LandTable.ACRES_PER_HECTARE` | A hectare in acres: the unit the USDA and Statistics Canada give their prices in (tools.LandTable converts by the same figure). |
-| 888 | `LandNationsCheck.RUN_YEARS` | `10` | How many years the run plays, a look and some purchases at the start of each. |
-| 1082 | `LandNationsCheck.RIVER_LAT` | `42.32, RIVER_LON = - 83.04, COAST_LAT = 35.95, COAST_LON = - 5.45` | Where the hover is held: a spot on the Detroit River at Windsor, and one off the coast at the Strait of Gibraltar. |
+| 87 | `LandNationsCheck.out` | `System.out` |  |
+| 88 | `LandNationsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 91 | `LandNationsCheck.SEED_A` | `20261101L, SEED_B = 20261102L` | The seeds the Random paths are drawn from. |
+| 98 | `LandNationsCheck.WINDSOR_LAT` | `42.315, WINDSOR_LON = - 83.04, DETROIT_LAT = 42.335, DETROIT_LON = - 83.045` | Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of Gibraltar. |
+| 99 | `LandNationsCheck.HALIFAX_LAT` | `44.64, HALIFAX_LON = - 63.57, GIBRALTAR_LAT = 36.14, GIBRALTAR_LON = - 5.35` |  |
+| 102 | `LandNationsCheck.ACRES_PER_HECTARE` | `ham.citybuildersim.tools.LandTable.ACRES_PER_HECTARE` | A hectare in acres: the unit the USDA and Statistics Canada give their prices in (tools.LandTable converts by the same figure). |
+| 905 | `LandNationsCheck.RUN_YEARS` | `10` | How many years the run plays, a look and some purchases at the start of each. |
+| 1099 | `LandNationsCheck.RIVER_LAT` | `42.32, RIVER_LON = - 83.04, COAST_LAT = 35.95, COAST_LON = - 5.45` | Where the hover is held: a spot on the Detroit River at Windsor, and one off the coast at the Strait of Gibraltar. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 81 | `static int fails` |  |
-| 135 | `final Game g` |  |
-| 136 | `final GameFiles files` |  |
-| 462 | `int salt, kept, given, wrong` |  |
-| 463 | `boolean givenOwnedByMorocco` |  |
-| 464 | `final StringBuilder bad` |  |
-| 465 | `double lastKeptKm` |  |
-| 466 | `boolean givenThenKept` |  |
+| 86 | `static int fails` |  |
+| 140 | `final Game g` |  |
+| 141 | `final GameFiles files` |  |
+| 479 | `int salt, kept, given, wrong` |  |
+| 480 | `boolean givenOwnedByMorocco` |  |
+| 481 | `final StringBuilder bad` |  |
+| 482 | `double lastKeptKm` |  |
+| 483 | `boolean givenThenKept` |  |
+| 1530 | `final City city` |  |
+| 1531 | `final List<Runnable> jobs` |  |
+| 1532 | `final ExecutorService worker` |  |
+| 1533 | `final long[] now` |  |
+| 1534 | `final LandMap.Quotes quotes` |  |
+| 1535 | `final long block` |  |
+| 1536 | `int fault` |  |
+| 1537 | `int changes` |  |
+| 1822 | `static long frameChecksum` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 1175 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
-| 99 | 4 | `static void check(String label, boolean ok)` |  |
-| 104 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 109 | 5 | `static void quietly(Runnable r)` |  |
-| 115 | 5 | `static<T> T quietlyGet(Supplier<T> s)` |  |
-| 122 | 3 | `static boolean near(double a, double b, double rel)` | Two figures within a relative gap (and equal when both are 0). |
-| 127 | 1 | `static int januaryOf(int year)` | The game month of January of a year. |
+| 84 | 1759 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
+| 104 | 4 | `static void check(String label, boolean ok)` |  |
+| 109 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 114 | 5 | `static void quietly(Runnable r)` |  |
+| 120 | 5 | `static<T> T quietlyGet(Supplier<T> s)` |  |
+| 127 | 3 | `static boolean near(double a, double b, double rel)` | Two figures within a relative gap (and equal when both are 0). |
+| 132 | 1 | `static int januaryOf(int year)` | The game month of January of a year. |
 
-### THE FIXTURES (lines 129-179)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 134 | 21 | **type** `static final class City` | A city on a fixture world: its game and its folder. |
-| 138 | 8 | `City(String label, Founding founding)` _(in LandNationsCheck.City)_ |  |
-| 147 | 1 | `LandSellers sellers()` _(in LandNationsCheck.City)_ |  |
-| 149 | 1 | `LandMarket office()` _(in LandNationsCheck.City)_ |  |
-| 151 | 1 | `List<LandParcel> offers()` _(in LandNationsCheck.City)_ |  |
-| 153 | 1 | `void months(int n)` _(in LandNationsCheck.City)_ |  |
-| 157 | 14 | **type** `record Founded(List<LandParcel> offers, double groundUsd, double usLevel)` | A city as it stood when founded: its offers and the numbers they were priced at (the office's, which move with the month). |
-| 158 | 3 | `static Founded of(City c)` _(in LandNationsCheck.Founded)_ |  |
-| 163 | 7 | `double formula(LandParcel p)` _(in LandNationsCheck.Founded)_ | The one-part dollar formula on an offer's own ground, at the numbers it was listed by. |
-| 172 | 1 | `static Founding onEarth(double lat, double lon)` |  |
-| 174 | 5 | `static long[] plotOf(World w, double lat, double lon)` |  |
-
-### MAIN (lines 180-236)
+### THE FIXTURES (lines 134-194)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 184 | 46 | `public static void main(String[] args) throws Exception` |  |
-| 231 | 5 | `static void finish(long started)` |  |
+| 139 | 31 | **type** `static final class City` | A city on a fixture world: its game and its folder. |
+| 143 | 8 | `City(String label, Founding founding)` _(in LandNationsCheck.City)_ |  |
+| 153 | 8 | `City(String label, City played) throws IOException` _(in LandNationsCheck.City)_ | Copy a played fixture through slot 10 in two scratch folders; neither folder is a player's save folder. |
+| 162 | 1 | `LandSellers sellers()` _(in LandNationsCheck.City)_ |  |
+| 164 | 1 | `LandMarket office()` _(in LandNationsCheck.City)_ |  |
+| 166 | 1 | `List<LandParcel> offers()` _(in LandNationsCheck.City)_ |  |
+| 168 | 1 | `void months(int n)` _(in LandNationsCheck.City)_ |  |
+| 172 | 14 | **type** `record Founded(List<LandParcel> offers, double groundUsd, double usLevel)` | A city as it stood when founded: its offers and the numbers they were priced at (the office's, which move with the month). |
+| 173 | 3 | `static Founded of(City c)` _(in LandNationsCheck.Founded)_ |  |
+| 178 | 7 | `double formula(LandParcel p)` _(in LandNationsCheck.Founded)_ | The one-part dollar formula on an offer's own ground, at the numbers it was listed by. |
+| 187 | 1 | `static Founding onEarth(double lat, double lon)` |  |
+| 189 | 5 | `static long[] plotOf(World w, double lat, double lon)` |  |
 
-### 1. THE TABLE (lines 237-302)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 241 | 61 | `static void theTable(WorldData file, LandFactors f) throws IOException` |  |
-
-### 2. CANADA IS 1 (lines 303-333)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 307 | 26 | `static void canadaIsOne(WorldData file, Nations hist, Nations rand)` |  |
-
-### 3. THE FOUNDING, AND HISTORICAL'S 2024 (lines 334-377)
+### MAIN (lines 195-253)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 338 | 39 | `static void theFounding(WorldData file, Nations hist, Nations rand)` |  |
+| 199 | 48 | `public static void main(String[] args) throws Exception` |  |
+| 248 | 5 | `static void finish(long started)` |  |
 
-### 4. RANDOM MOVES IT, WITHIN ITS BOUNDS (lines 378-424)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 382 | 42 | `static void randomMovesIt(WorldData file, Nations hist, Nations randA, Nations randB)` |  |
-
-### 5. THE SELLERS (lines 425-574)
+### 1. THE TABLE (lines 254-319)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 429 | 30 | `static void theSellers(WorldData file, City windsor, City halifax, City strait)` |  |
-| 461 | 7 | **type** `static final class Walk` | What a walk of plots found: how many sea plots it read, how many of a foreign nation's sea were kept and how many given to the host, and the plots that disagreed with the search. |
-| 469 | 17 | `static void territorialSea(WorldData file, City strait)` |  |
-| 492 | 50 | `static Walk walk(WorldData file, LandSellers sellers, World w, double lat0, double lon0, double lat1, double lon1, int samples)` | Walks `samples` points from (lat0, lon0) to (lat1, lon1), takes the plot under each and checks its seller against the rule written out the slow way: the owner at the plot's blend point sells it; a sea plot of a foreig... |
-| 547 | 21 | `static double nearestLandKm(WorldData file, EarthData data, LandSellers sellers, double lat, double lon, int seller)` | The least great-circle distance, in kilometres, from the centre of the 15" cell holding a point to the centre of a land cell (the landmass layer's) whose owner sells through `seller`, looking at every cell of a box th... |
-| 569 | 5 | `static double greatCircleKm(double radius, double lat1, double lon1, double lat2, double lon2)` |  |
+| 258 | 61 | `static void theTable(WorldData file, LandFactors f) throws IOException` |  |
 
-### 6. THE SPLIT (lines 575-658)
+### 2. CANADA IS 1 (lines 320-350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 579 | 73 | `static void theSplit(WorldData file, City windsor)` |  |
-| 653 | 5 | `static long[] sum(List<LandSellers.Part> parts)` |  |
+| 324 | 26 | `static void canadaIsOne(WorldData file, Nations hist, Nations rand)` |  |
 
-### 7. THE PRICE (lines 659-704)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 664 | 4 | `static LandParcel detroitQuote(City windsor)` | A block of the United States' ground in Detroit, quoted by the Windsor office: a draft of it, nothing kept. |
-| 669 | 35 | `static void thePrice(WorldData file, Founded windsorF, City windsor, Founded halifaxF, City halifax, Founded generatedF, City g...` |  |
-
-### 8. PAYING (lines 705-807)
+### 3. THE FOUNDING, AND HISTORICAL'S 2024 (lines 351-394)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 709 | 93 | `static void paying(WorldData file, City windsor, City halifax, City generated)` |  |
-| 803 | 4 | `static LandParcel.Sale part(LandParcel p, int seller)` |  |
+| 355 | 39 | `static void theFounding(WorldData file, Nations hist, Nations rand)` |  |
 
-### 9. THE SAVE (lines 808-882)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 812 | 55 | `static void theSave(WorldData file, City windsor) throws IOException` |  |
-| 869 | 13 | `static Game loadCopy(GameFiles from, String text, String label) throws IOException` | A save's text written to slot 1 of a folder of its own, beside whatever else the city's saves folder holds, and loaded into a fresh game. |
-
-### 10. HOW OFTEN IT FIRES IN A REAL RUN (lines 883-949)
+### 4. RANDOM MOVES IT, WITHIN ITS BOUNDS (lines 395-441)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 890 | 50 | `static void howOften(WorldData file)` |  |
-| 941 | 1 | **type** `enum Kind` |  |
-| 943 | 6 | `static Kind kind(LandParcel p, int host)` |  |
+| 399 | 42 | `static void randomMovesIt(WorldData file, Nations hist, Nations randA, Nations randB)` |  |
 
-### 11. THE WORDS (lines 950-1076)
+### 5. THE SELLERS (lines 442-591)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 954 | 114 | `static void theWords(WorldData file, City windsor, Founded founded, LandParcel detroit)` |  |
-| 1070 | 6 | `private static int[] percentsIn(Pattern percent, String line)` | The whole percents a line shows, in order: the digits before each "%". |
+| 446 | 30 | `static void theSellers(WorldData file, City windsor, City halifax, City strait)` |  |
+| 478 | 7 | **type** `static final class Walk` | What a walk of plots found: how many sea plots it read, how many of a foreign nation's sea were kept and how many given to the host, and the plots that disagreed with the search. |
+| 486 | 17 | `static void territorialSea(WorldData file, City strait)` |  |
+| 509 | 50 | `static Walk walk(WorldData file, LandSellers sellers, World w, double lat0, double lon0, double lat1, double lon1, int samples)` | Walks `samples` points from (lat0, lon0) to (lat1, lon1), takes the plot under each and checks its seller against the rule written out the slow way: the owner at the plot's blend point sells it; a sea plot of a foreig... |
+| 564 | 21 | `static double nearestLandKm(WorldData file, EarthData data, LandSellers sellers, double lat, double lon, int seller)` | The least great-circle distance, in kilometres, from the centre of the 15" cell holding a point to the centre of a land cell (the landmass layer's) whose owner sells through `seller`, looking at every cell of a box th... |
+| 586 | 5 | `static double greatCircleKm(double radius, double lat1, double lon1, double lat2, double lon2)` |  |
 
-### 12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD (lines 1077-1253)
+### 6. THE SPLIT (lines 592-675)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1085 | 4 | `static long[] blockAround(World w, double lat, double lon, int level)` | The block of `level` holding a point, as the map's hover cuts it (LandMap.blockAt(), blockRect()): {x0, y0, x1, y1}. |
-| 1090 | 1 | `static LandParcel quoteOf(LandMarket office, long[] r)` |  |
-| 1092 | 1 | `static LandParcel quoteOf(LandMarket.Quoter quoter, long[] r)` |  |
-| 1095 | 1 | `static boolean bits(double a, double b)` | Two figures the same to the bit. |
-| 1098 | 12 | `static boolean sameQuote(LandParcel a, LandParcel b, int[] parts)` | Whether two quotes of one block are the same to the bit: the price, the area of every kind, and the sellers one by one (seller, area, dollars). |
-| 1112 | 1 | **type** `record Cost(int level, double km, double ms, long plots, int sellers)` | What one cold quote of a block cost: its level, its side in km, its milliseconds, the plots the sellers read for it, and the sellers it named. |
-| 1115 | 3 | `static String costLine(Cost c)` | A cost as a line of the table: level L (km across): N ms, P plots read, S sellers. |
-| 1120 | 9 | `static Cost costOf(City c, double lat, double lon, int level)` | The block of `level` round a point quoted once by the city's office, timed, with the plots LandSellers read beside it. |
-| 1131 | 16 | `static List<LandParcel> quotedElsewhere(LandMarket.Quoter quoter, List<long[]> blocks) throws Exception` | The quotes of blocks asked of a quoter on a thread of its own, in the order given; the thread is stopped after. |
-| 1148 | 105 | `static void theHover(WorldData file, City windsor, City strait) throws Exception` |  |
+| 596 | 73 | `static void theSplit(WorldData file, City windsor)` |  |
+| 670 | 5 | `static long[] sum(List<LandSellers.Part> parts)` |  |
+
+### 7. THE PRICE (lines 676-721)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 681 | 4 | `static LandParcel detroitQuote(City windsor)` | A block of the United States' ground in Detroit, quoted by the Windsor office: a draft of it, nothing kept. |
+| 686 | 35 | `static void thePrice(WorldData file, Founded windsorF, City windsor, Founded halifaxF, City halifax, Founded generatedF, City g...` |  |
+
+### 8. PAYING (lines 722-824)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 726 | 93 | `static void paying(WorldData file, City windsor, City halifax, City generated)` |  |
+| 820 | 4 | `static LandParcel.Sale part(LandParcel p, int seller)` |  |
+
+### 9. THE SAVE (lines 825-899)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 829 | 55 | `static void theSave(WorldData file, City windsor) throws IOException` |  |
+| 886 | 13 | `static Game loadCopy(GameFiles from, String text, String label) throws IOException` | A save's text written to slot 1 of a folder of its own, beside whatever else the city's saves folder holds, and loaded into a fresh game. |
+
+### 10. HOW OFTEN IT FIRES IN A REAL RUN (lines 900-966)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 907 | 50 | `static void howOften(WorldData file)` |  |
+| 958 | 1 | **type** `enum Kind` |  |
+| 960 | 6 | `static Kind kind(LandParcel p, int host)` |  |
+
+### 11. THE WORDS (lines 967-1093)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 971 | 114 | `static void theWords(WorldData file, City windsor, Founded founded, LandParcel detroit)` |  |
+| 1087 | 6 | `private static int[] percentsIn(Pattern percent, String line)` | The whole percents a line shows, in order: the digits before each "%". |
+
+### 12. THE HOVER'S QUOTE AWAY FROM THE SCREEN'S THREAD (lines 1094-1271)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1102 | 4 | `static long[] blockAround(World w, double lat, double lon, int level)` | The block of `level` holding a point, as the map's hover cuts it (LandMap.blockAt(), blockRect()): {x0, y0, x1, y1}. |
+| 1107 | 1 | `static LandParcel quoteOf(LandMarket office, long[] r)` |  |
+| 1109 | 1 | `static LandParcel quoteOf(LandMarket.Quoter quoter, long[] r)` |  |
+| 1112 | 1 | `static boolean bits(double a, double b)` | Two figures the same to the bit. |
+| 1115 | 14 | `static boolean sameQuote(LandParcel a, LandParcel b, int[] parts)` | Whether two quotes of one block are the same to the bit: the price, the area of every kind, and the sellers one by one (seller, area, dollars). |
+| 1131 | 1 | **type** `record Cost(int level, double km, double ms, long plots, int sellers)` | What one cold quote of a block cost: its level, its side in km, its milliseconds, the plots the sellers read for it, and the sellers it named. |
+| 1134 | 3 | `static String costLine(Cost c)` | A cost as a line of the table: level L (km across): N ms, P plots read, S sellers. |
+| 1139 | 9 | `static Cost costOf(City c, double lat, double lon, int level)` | The block of `level` round a point quoted once by the city's office, timed, with the plots LandSellers read beside it. |
+| 1150 | 16 | `static List<LandParcel> quotedElsewhere(LandMarket.Quoter quoter, List<long[]> blocks) throws Exception` | The quotes of blocks asked of a quoter on a thread of its own, in the order given; the thread is stopped after. |
+| 1167 | 105 | `static void theHover(WorldData file, City windsor, City strait) throws Exception` |  |
+
+### 13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH (lines 1272-1523)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1277 | 10 | `static List<long[]> pickedRects(City c, double lat, double lon, int level, int count)` | Individual rectangles supplied directly so the 50-pick case cannot collapse into one rectangle. |
+| 1288 | 5 | `static void reprice(City c, int month)` |  |
+| 1294 | 5 | `static void frameTime(String label, double ms)` |  |
+| 1300 | 6 | `static boolean sameDraft(LandParcel a, LandParcel b)` |  |
+| 1307 | 97 | `static void thePicks(City windsor, City strait) throws Exception` |  |
+| 1406 | 34 | `static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception` | Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. |
+| 1442 | 82 | `static void reviewCases(City c, ExecutorService worker, String where) throws Exception` | A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. |
+
+### 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK (lines 1524-1842)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1529 | 44 | **type** `static final class HoverFixture implements AutoCloseable` | A worker held until the fixture releases it, and an owner dispatcher drained explicitly. |
+| 1539 | 15 | `HoverFixture(int fault)` _(in LandNationsCheck.HoverFixture)_ |  |
+| 1555 | 1 | `List<String> words()` _(in LandNationsCheck.HoverFixture)_ |  |
+| 1557 | 7 | `void work() throws Exception` _(in LandNationsCheck.HoverFixture)_ |  |
+| 1565 | 5 | `void handBack()` _(in LandNationsCheck.HoverFixture)_ |  |
+| 1571 | 1 | `public void close()` _(in LandNationsCheck.HoverFixture)_ |  |
+| 1574 | 3 | `static boolean hasPrice(List<String> words)` |  |
+| 1578 | 93 | `static void hoverLifecycle() throws Exception` |  |
+| 1672 | 18 | `static void hoverAdoption() throws Exception` |  |
+| 1691 | 46 | `static void hoverRealCancellation() throws Exception` |  |
+| 1738 | 31 | `static void hoverQueueWait() throws Exception` |  |
+| 1770 | 51 | `static void hoverCountPriority() throws Exception` |  |
+| 1825 | 17 | `static double hoverFrameMs(City city)` | The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. |
 

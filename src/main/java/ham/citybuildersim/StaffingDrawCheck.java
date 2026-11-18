@@ -741,10 +741,16 @@ public class StaffingDrawCheck {
             }
 
             // The room the draw is cut to is last month's and rides the save: the twin's gate would part from the original's where it binds.
-            int roomBound = 0;
-            for (Ask a : asksOf(g)) if (uncappedPeople(g, a.posts) > roomLeft(mig)) roomBound++;
-            System.out.printf("   %s: last month's room %,.1f of which %,.1f taken by its arrivals; %d orders are cut to the room left%n",
-                    name, mig.getLastRoom(), mig.getLastArrivals(), roomBound);
+            int roomBound = 0, roomCount = 1;
+            // BF1: ask a larger legal order when every single building fits.
+            // Keep the one-building comparisons too; do not repin the city.
+            while (true) {
+                for (Ask a : asksOf(g)) if (uncappedPeople(g, a.posts * roomCount) > roomLeft(mig)) roomBound++;
+                if (roomBound > 0 || roomCount > Integer.MAX_VALUE / 2) break;
+                roomCount *= 2;
+            }
+            System.out.printf("   %s: last month's room %,.1f of which %,.1f taken by its arrivals; %d orders of %d are cut to the room left%n",
+                    name, mig.getLastRoom(), mig.getLastArrivals(), roomBound, roomCount);
             assertTrue("fixture (" + name + "): the city has a census (last month's room is a number) and some orders are cut to the room left",
                     !Double.isNaN(mig.getLastRoom()) && roomBound > 0);
             assertTrue("the twin's last month's room is the original's, to the bit (" + name + ")",
@@ -756,16 +762,18 @@ public class StaffingDrawCheck {
                 Sector s = g.getSectors().all().get(i), twinSector = twin.getSectors().all().get(i);
                 for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(s.key())) {
                     BuildingsTemplate twinTemplate = twin.getBuildingManager().getTemplateByName(t.getName());
-                    Sector.Staffing a = s.staffing(t), b = twinSector.staffing(twinTemplate);
-                    asked++;
-                    if (sum(a.drawn()) > 0) drawing++;
-                    boolean same = Double.doubleToLongBits(a.share) == Double.doubleToLongBits(b.share)
-                            && Double.doubleToLongBits(a.shareNow) == Double.doubleToLongBits(b.shareNow)
-                            && Arrays.equals(a.drawn(), b.drawn());
-                    if (!same) {
-                        differ++;
-                        if (first == null) first = t.getName() + ": share " + a.share + " / " + b.share + ", now " + a.shareNow + " / " + b.shareNow
-                                + ", drawn " + sum(a.drawn()) + " / " + sum(b.drawn());
+                    for (int count : roomCount == 1 ? new int[] { 1 } : new int[] { 1, roomCount }) {
+                        Sector.Staffing a = s.staffing(t, count), b = twinSector.staffing(twinTemplate, count);
+                        asked++;
+                        if (sum(a.drawn()) > 0) drawing++;
+                        boolean same = Double.doubleToLongBits(a.share) == Double.doubleToLongBits(b.share)
+                                && Double.doubleToLongBits(a.shareNow) == Double.doubleToLongBits(b.shareNow)
+                                && Arrays.equals(a.drawn(), b.drawn());
+                        if (!same) {
+                            differ++;
+                            if (first == null) first = t.getName() + ": share " + a.share + " / " + b.share + ", now " + a.shareNow + " / " + b.shareNow
+                                    + ", drawn " + sum(a.drawn()) + " / " + sum(b.drawn());
+                        }
                     }
                 }
             }
@@ -786,9 +794,10 @@ public class StaffingDrawCheck {
         for (double v : noCensus.toSaveArray()) noNaN &= !Double.isNaN(v) && !Double.isInfinite(v);
         readerOfNone.restore(noCensus.toSaveArray());
         // fixture: placed. A room of exactly nothing (a census that found no door) is written into the struck month's own array, in the
-        // slot of the room: the last of the month's scalars, which are followed by the two band mixes and the licences by job.
+        // slot of the room: the last of the month's scalars, which are followed by the two band mixes, the licences by job and
+        // the brake the month applied (WG2-R's tail slot, FB4: the count from the end left it out and placed the 0 in a mix).
         double[] zeroRoom = struck.toSaveArray();
-        zeroRoom[zeroRoom.length - 2 * WageBand.values().length - JobType.values().length - 1] = 0;
+        zeroRoom[zeroRoom.length - Migration.BRAKE_SLOTS - 2 * WageBand.values().length - JobType.values().length - 1] = 0;
         readerOfZero.restore(zeroRoom);
         System.out.printf("   last month's room: struck on doors %,.1f read back %,.1f; placed at 0 read back %.1f; with no census NaN: %s%n",
                 struck.getLastRoom(), reader.getLastRoom(), readerOfZero.getLastRoom(), Double.isNaN(noCensus.getLastRoom()));

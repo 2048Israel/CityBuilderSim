@@ -1,6 +1,6 @@
 # FreightViewCheck.java - 716 lines · 26 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FreightViewCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FreightViewCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > FreightView, the model behind the Freight screens, held to the study's
 > board 2 (docs/studies/spec-freight-and-infrastructure.md 6): the city's
@@ -98,7 +98,7 @@
 | 124 | 8 | `static Game unplayed(String label)` | A founded city that has never been played: no haul has run. |
 | 139 | 11 | `static Game full(String label)` | HomeRailCheck's railed city (HaulageCheck's three iron mines and a pelletising plant, played fourteen months) with two Rail Depots, two Rail Spurs and a Bulk Terminal laid, then a General Cargo Terminal, two Tanker Te... |
 | 152 | 24 | `static String nonFinite(Object o, String path)` | Every double in a record (lists, optionals and nested records included) is finite; the first that is not, named. |
-| 178 | 8 | `static int standing(Game g, Ports.Cargo kind)` | The terminals of a kind standing, counted from the catalogue by the building manager's own quantities. |
+| 178 | 8 | `static long standing(Game g, Ports.Cargo kind)` | The terminals of a kind standing, counted from the catalogue by the building manager's own quantities. |
 
 ### 1. NO FREIGHT (lines 187-227)
 

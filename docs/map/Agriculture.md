@@ -1,6 +1,6 @@
 # Agriculture.java - 539 lines · 22 methods · 5 constants · sectors
 
-`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The fields, and what they cost the city in ground.
 > 
@@ -54,7 +54,7 @@
 
 **Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [Sector](Sector.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1), [EconomyManager](EconomyManager.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (9):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
+**Used by (11):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [RecipeChanges](RecipeChanges.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 

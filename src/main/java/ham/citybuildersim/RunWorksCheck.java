@@ -195,7 +195,7 @@ public class RunWorksCheck {
     }
 
     /** The city's own order, as the build screen places it. */
-    static Game.BuildResult order(Game g, BuildingsTemplate t, int n) {
+    static Game.BuildResult order(Game g, BuildingsTemplate t, long n) {
         Game.BuildResult[] r = new Game.BuildResult[1];
         quietly(() -> r[0] = g.buildStack(t, n, false));
         return r[0];
@@ -393,7 +393,7 @@ public class RunWorksCheck {
         double dFlat = dl.getFlatSqFt();
         boolean dFilled = dl.allocate(0.99 * dFlat - dl.getAllocatedSqFt(), dHouse.getSector(), LandManager.Use.BUILDING);
         double bOF0 = dl.getBuildingsOnFoothillSqFt(), prepared0 = dl.getPreparedSqFt();
-        int n = 40;
+        long n = 40;
         Game.BuildQuote runQuote = d.quoteBuild(dHighway, n);
         report("fixture: the buildings fill 99% of the flat, none on the foothill, no pad cut; a run quoted prepares nothing itself",
                 dFilled && bOF0 == 0 && prepared0 == 0 && runQuote.prepSqFt == 0 && runQuote.prepPoints == 0 && runQuote.prepCost == 0,
@@ -415,9 +415,9 @@ public class RunWorksCheck {
         LandManager el = e.getLandManager();
         BuildingsTemplate eHighway = template(e, HIGHWAY), eHouse = template(e, HOUSE);
         el.allocate(0.99 * el.getFlatSqFt() - el.getAllocatedSqFt(), eHouse.getSector(), LandManager.Use.BUILDING);
-        Map<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
+        Map<BuildingsTemplate, Long> run = new LinkedHashMap<>();
         run.put(eHighway, n);
-        run.put(eHouse, 10);
+        run.put(eHouse, 10L);
         double invoice = e.buildRunInvoice(run), alone = e.quoteBuild(eHighway, n).total + e.quoteBuild(eHouse, 10).total;
         int ahead = e.buildRunAhead(run);
         double cash0 = e.getCash();
@@ -859,8 +859,8 @@ public class RunWorksCheck {
                 g.quoteBuild(highway, 3).worksPoints, 3 * g.quoteBuild(highway, 1).worksPoints, TOL);
         // The works are in every price the player is shown or charged: the card's verdict, the invoice of a run of orders, the cost the treasury checks.
         Game.BuildQuote three = g.quoteBuild(highway, 3);
-        Map<BuildingsTemplate, Integer> invoiced = new LinkedHashMap<>();
-        invoiced.put(highway, 3);
+        Map<BuildingsTemplate, Long> invoiced = new LinkedHashMap<>();
+        invoiced.put(highway, 3L);
         report("...and they are in every price: the build card's verdict, the invoice of a run of orders and the treasury's cost are the quote's total",
                 three.worksCost > 0 && same(BuildCard.verdict(g, highway, 3).quote().total, three.total)
                         && same(g.buildRunInvoice(invoiced), three.total) && same(g.calculateTotalCost(highway, 3), three.total),

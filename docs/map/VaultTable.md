@@ -1,6 +1,6 @@
 # VaultTable.java - 238 lines · 13 methods · 4 constants · interface
 
-`ham/citybuildersim/ui/VaultTable.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/VaultTable.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The vault in eight moneys and gold (WN6, GD2; docs/studies/spec-nations.md 8, board 3): the first card of Trade &gt; The reserves where the vault holds, or can hold,
 > more than the dollar - a table of the eight and gold (what it holds of each in the money's own mark, gold's in ounces, what that is worth in US$, its share, how it moved against
@@ -11,7 +11,7 @@
 > balance in each of the eight (ForeignAccounts, THE VAULT IN EIGHT) and the page showed none of them in a place a player could read across. The card's
 > charts are History's series (the rates are HistorySave's fx&lt;code&gt;, the policy rates policy&lt;code&gt;), drawn in TimeChart as the currency page's are.
 
-**Uses:** [Palette](Palette.md) (31), [TimeChart](TimeChart.md) (14), [Kept](Kept.md) (8), [ForeignAccounts](ForeignAccounts.md) (6), [VaultView](VaultView.md) (6), [HistorySave](HistorySave.md) (6), [TradeScreen](TradeScreen.md) (5), [ChartModel](ChartModel.md) (4), [WorldMoneys](WorldMoneys.md) (3), [UserInterface](UserInterface.md) (2), [Money](Money.md) (2), [Game](Game.md) (1), [Icons](Icons.md) (1), [Pieces](Pieces.md) (1), [HistoryScreen](HistoryScreen.md) (1)
+**Uses:** [Palette](Palette.md) (31), [TimeChart](TimeChart.md) (14), [Kept](Kept.md) (8), [ForeignAccounts](ForeignAccounts.md) (6), [VaultView](VaultView.md) (6), [HistorySave](HistorySave.md) (6), [TradeScreen](TradeScreen.md) (5), [ChartModel](ChartModel.md) (4), [WorldMoneys](WorldMoneys.md) (3), [UserInterface](UserInterface.md) (2), [Money](Money.md) (2), [Game](Game.md) (1), [Icons](Icons.md) (1), [Pieces](Pieces.md) (1), [Formats](Formats.md) (1), [HistoryScreen](HistoryScreen.md) (1)
 
 **Used by (1):** [TradeScreen](TradeScreen.md)
 

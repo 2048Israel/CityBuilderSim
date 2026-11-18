@@ -1,6 +1,6 @@
 # CapChips.java - 213 lines · 8 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/CapChips.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/CapChips.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The highest yield a sale will take, as three chips and a yield box: fair plus
 > a point (the default), a yield the player names, or Fill it (CD2, D28).
@@ -18,7 +18,7 @@
 > box, kept through a month's redraw: a screen calls noteFocus() before it
 > rebuilds, so a box that had the focus takes it back.
 
-**Uses:** [Auction](Auction.md) (19), [Kept](Kept.md) (7), [FinancesScreen](FinancesScreen.md) (6), [Palette](Palette.md) (6)
+**Uses:** [Auction](Auction.md) (19), [Kept](Kept.md) (8), [FinancesScreen](FinancesScreen.md) (6), [Palette](Palette.md) (6)
 
 **Used by (3):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md)
 

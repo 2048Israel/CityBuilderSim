@@ -129,6 +129,29 @@ public final class CopperRefining extends ProcessingSector {
         return pool == null ? 0 : pool.lastBought();
     }
 
+    /** The current clearing's recovered feed, anticipated before its purchase and fixed when it settles (CPB1). */
+    private double orderedOldCopper;
+    private boolean orderingOldCopper;
+
+    @Override
+    public void planOrders() {
+        OldMetal.Pool pool = pool();
+        orderedOldCopper = pool == null ? 0 : Math.min(pool.available(), oldCopperIntake() * getOperatingRate());
+        orderingOldCopper = true;
+        super.planOrders();
+    }
+
+    @Override
+    protected double committedInput(Good g) {
+        return g == Good.COPPER_SCRAP ? orderedOldCopper : 0;
+    }
+
+    @Override
+    public void endOrders() {
+        super.endOrders();
+        orderingOldCopper = false;
+    }
+
     /**
      * Makes a flow good for the month; and with its anode - the first flow
      * good it makes, before any market clears - the month's old copper is
@@ -162,6 +185,7 @@ public final class CopperRefining extends ProcessingSector {
             seller.sellOldMetal(paid);
             billForService(seller.key(), OldMetal.LINE, paid);
         }
+        orderedOldCopper = pool.lastBought();
     }
 
     /** What it asks the market for of a good this month; of scrap, its need past the old copper its refineries took this month (THE OLD COPPER). */
@@ -176,7 +200,8 @@ public final class CopperRefining extends ProcessingSector {
     @Override
     protected double inputCostAtRate() {
         double total = super.inputCostAtRate();
-        double old = Math.min(oldCopperTaken(), getInputAtCapacity(Good.COPPER_SCRAP) * getOperatingRate());
+        double old = Math.min(orderingOldCopper ? orderedOldCopper : oldCopperTaken(),
+                getInputAtCapacity(Good.COPPER_SCRAP) * getOperatingRate());
         if (old > 0) total -= old * (inputPrice(Good.COPPER_SCRAP) - oldCopperPrice());
         return total;
     }

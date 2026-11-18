@@ -1,6 +1,6 @@
 # Crime.java - 525 lines · 61 methods · 18 constants · model
 
-`ham/citybuildersim/Crime.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Crime.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Crime, the police who deter and catch it, and the prisons that hold who
 > they catch.
@@ -66,7 +66,7 @@
 
 **Uses:** [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (18):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityMeasures](CityMeasures.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md)
+**Used by (21):** [AdviceValueOracle](AdviceValueOracle.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityMeasures](CityMeasures.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

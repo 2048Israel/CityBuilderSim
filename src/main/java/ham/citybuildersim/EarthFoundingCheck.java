@@ -689,7 +689,7 @@ public class EarthFoundingCheck {
                 threw[0] = e.toString();
             }
         });
-        int inSlots = threw[0] == null ? g.getSectors().oil().platformWellsInSlots() : 0;
+        long inSlots = threw[0] == null ? g.getSectors().oil().platformWellsInSlots() : 0;
         report("a platform and its wells stand on it, the city plays two months more, the investors planning at sea, and the oil's page"
                         + " reads the platform's depth - nothing throws",
                 threw[0] == null && built[0] == Game.BuildResult.SUCCESS && built[1] == Game.BuildResult.SUCCESS && inSlots > 0

@@ -1,6 +1,6 @@
 # LandmassView.java - 528 lines · 38 methods · 18 constants · model
 
-`ham/citybuildersim/LandmassView.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandmassView.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > What the screens and the investors' words say of the city's landmasses: pure functions of the model's figures, so that
 > the words are written in one place and a harness can rebuild them from getters (ET5, 2026-10-25).
@@ -80,7 +80,7 @@
 |---:|---:|---|---|
 | 65 | 6 | `public static String landmassName(Landmasses lms, int id)` | A landmass's name for a sentence: "Home", the data's name as the founding card writes it, "Island 2" - from the rows the city owns - and "another landmass" for one it owns nothing on (an offer's ground the city has no... |
 | 73 | 5 | `public static boolean hasPort(Landmasses lms, int id)` | Whether a landmass has a port standing on it: some terminal of any kind (Landmasses.portsOn()). |
-| 80 | 5 | `public static int terminalsOn(Landmasses lms, int id)` | The terminals standing on a landmass, all kinds together. |
+| 80 | 5 | `public static long terminalsOn(Landmasses lms, int id)` | The terminals standing on a landmass, all kinds together. |
 | 90 | 6 | `public static String linkedPortName(Landmasses lms)` | The linked landmass that has a port standing - what makes a port on another landmass link it (Landmasses.closure()) - named for a sentence: "home" for home's, else the island's name; null when no linked landmass has one. |
 | 98 | 10 | `public static String ordinal(int n)` | "2nd", "3rd", "4th", "11th", "21st": a count as an ordinal. |
 

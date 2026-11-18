@@ -1,6 +1,6 @@
-# Restaurants.java - 532 lines · 25 methods · 6 constants · sectors
+# Restaurants.java - 528 lines · 25 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Restaurants.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The kitchens. THE FIFTEENTH SECTOR (2026-09-18, Jerus's call).
 > 
@@ -65,8 +65,8 @@
 | 90 | THE MARGIN, AND WHY ITS FLOOR IS SO MUCH HIGHER THAN A BOUTIQUE'S |
 | 187 | THE SALE |
 | 357 | PLANNING - the queue at a door that is not there |
-| 456 | THE SCREEN |
-| 507 | SAVE, RESET (0.7.43) |
+| 452 | THE SCREEN |
+| 503 | SAVE, RESET (0.7.43) |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 465 | **type** `public class Restaurants extends Sector` | The kitchens. |
+| 68 | 461 | **type** `public class Restaurants extends Sector` | The kitchens. |
 
 ### WHAT A MEAL IS, AS A SHARE OF A MONTH OF EATING (lines 70-89)
 
@@ -123,26 +123,26 @@
 | 302 | 23 | `public double serve(Markets markets, double meals)` | ...and serves what the tables and the larder can actually get through. |
 | 336 | 20 | `protected double recentUse(Good g)` | What to restock against, the month-one fallback included. |
 
-### PLANNING - the queue at a door that is not there (lines 357-455)
+### PLANNING - the queue at a door that is not there (lines 357-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 371 | 60 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
-| 444 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
+| 371 | 56 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Builds against the diners who CAME, not against a sales record. |
+| 440 | 11 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more kitchen would earn a month. |
 
-### THE SCREEN (lines 456-506)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 462 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
-| 465 | 1 | `public boolean hasPlantBlock()` |  |
-| 468 | 39 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE, RESET (0.7.43) (lines 507-532)
+### THE SCREEN (lines 452-502)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 513 | 4 | `protected void saveExtras(Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
-| 520 | 6 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its target. |
-| 528 | 4 | `protected void resetExtras()` |  |
+| 458 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a merchant, whose middle line is its gross margin. |
+| 461 | 1 | `public boolean hasPlantBlock()` |  |
+| 464 | 39 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET (0.7.43) (lines 503-528)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 509 | 4 | `protected void saveExtras(Map<String, Double> extras)` | The charged margin, which next month's strike moves from; not written while it is NaN (a fresh sector), since a save carries no NaN. |
+| 516 | 6 | `protected void restoreExtras(Map<String, Double> extras)` | A save from before 0.7.43 has none, and the first strike opens at its target. |
+| 524 | 4 | `protected void resetExtras()` |  |
 

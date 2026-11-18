@@ -1,32 +1,77 @@
-# gate of Merge batch/LM1: the land office map (Jerus's Stockholm city at month 1): the city starts on one compact piece, not a river strip between two lakes; one number per offer across the map; past the zoom where deposits' shading switches off, one icon per deposit, with a Resources toggle, 0.9.94
-# date: 2026-11-11
+# gate of Merge batch/R2c-P: public works' licence fees, 0.9.150
+# date: 2026-11-18
 # earth-2.bin: named
-# nightly: 2026-11-11 10:23 0.9.92 e6bb1787 4,000 months: RED, exit 1 in 86 s: a building on the map moved 2 time(s), months 3002-3004
-# suite: 201 harnesses run in 1661s: 195 passed, 6 failed
-# timing: none
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | ...the avenues were laid in the played city (335 plots in 11 open cells over the samples), every check holding with them FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | 2 FAILED
-MonetaryCheck | exit 1
-MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
-MonetaryCheck | 1 FAILED
+# nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
+# suite: 213 harnesses run in 2163s: 200 passed, 13 failed
+RoadCheck | exit 1
+RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
+RoadCheck | 1 FAILED
+PriceLevelCheck | exit 1
+PriceLevelCheck | FAIL reload.cash (nominal) month 0: 86125.78634 at the factor over the factor, 86185.25829 at today's prices (0.000690 apart)
+PriceLevelCheck | FAIL reload.gdp.month (nominal) month 0: 574.7829190 at the factor over the factor, 572.8807637 at today's prices (0.00331 apart)
+PriceLevelCheck | FAIL reload.bank.deposits (nominal) month 0: 14271.99933 at the factor over the factor, 14094.37218 at today's prices (0.0124 apart)
+PriceLevelCheck | FAIL reload.retail.shelf (nominal) month 0: 0.3739300285 at the factor over the factor, 0.3734308882 at today's prices (0.00133 apart)
+PriceLevelCheck | FAIL reload.rent (nominal) month 0: 0.2672568282 at the factor over the factor, 0.2652960295 at today's prices (0.00734 apart)
+PriceLevelCheck | FAIL reload.rate (real) month 0: 0.7964717458 at the factor , 0.7939081420 at today's prices (0.00322 apart)
+PriceLevelCheck | FAIL reload.priceIndex (real) month 0: 0.9118554424 at the factor , 0.9084617227 at today's prices (0.00372 apart)
+PriceLevelCheck | FAIL reload.pop (real) month 0: 466.0000000 at the factor , 460.0000000 at today's prices (0.0129 apart)
+PriceLevelCheck | FAIL reload.workforce (real) month 0: 243.0000000 at the factor , 240.0000000 at today's prices (0.0123 apart)
+PriceLevelCheck | FAIL reload.unemployed (real) month 0: 107.0000000 at the factor , 104.0000000 at today's prices (0.0280 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.supply (real) month 0: 71.22636598 at the factor , 71.37903119 at today's prices (0.00214 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.demand (real) month 0: 279.3190745 at the factor , 279.9399903 at today's prices (0.00222 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.imported (real) month 0: 217.9042231 at the factor , 218.4226259 at today's prices (0.00237 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.local (nominal) month 0: 0.4298206026 at the factor over the factor, 0.4290930084 at today's prices (0.00169 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.import (nominal) month 0: 0.4657471258 at the factor over the factor, 0.4649562568 at today's prices (0.00170 apart)
+PriceLevelCheck | FAIL reload.mkt.CROPS.export (nominal) month 0: 0.2889322801 at the factor over the factor, 0.2884416538 at today's prices (0.00170 apart)
+PriceLevelCheck | FAIL reload.stock.CROPS (real) month 0: 61.19453921 at the factor , 61.33057236 at today's prices (0.00222 apart)
+PriceLevelCheck | FAIL reload.mkt.GRAINS.demand (real) month 0: 356.7439037 at the factor , 351.1050078 at today's prices (0.0158 apart)
+PriceLevelCheck | FAIL reload.mkt.GRAINS.imported (real) month 0: 356.7439037 at the factor , 351.1050078 at today's prices (0.0158 apart)
+PriceLevelCheck | FAIL reload.mkt.GRAINS.local (nominal) month 0: 0.0007931718454 at the factor over the factor, 0.0007918249832 at today's prices (0.00170 apart)
+PriceLevelCheck | FAIL reload.mkt.GRAINS.import (nominal) month 0: 0.0007931718454 at the factor over the factor, 0.0007918249832 at today's prices (0.00170 apart)
+PriceLevelCheck | FAIL reload.mkt.GRAINS.export (nominal) month 0: 0.0004616455533 at the factor over the factor, 0.0004608616463 at today's prices (0.00170 apart)
+PriceLevelCheck | FAIL reload.mkt.BREAD.supply (real) month 0: 230.8985817 at the factor , 228.8116277 at today's prices (0.00904 apart)
+PriceLevelCheck | FAIL reload.mkt.BREAD.demand (real) month 0: 714.0137234 at the factor , 703.9924829 at today's prices (0.0140 apart)
+PriceLevelCheck | every real series equal within 1.0E-9 (worst 0.10 in reload.mkt.DAIRY_EGGS.exported)   FAIL
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 0.12 in reload.sector.Real Estate.cash) FAIL
+PriceLevelCheck | the town: every live nominal line is shown or left out alike at both levels, 238 series over 121 months (4 of 28798 differ; 9423 shown) FAIL
+PriceLevelCheck | some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): 0 city-months, at most 0 partners FAIL
+PriceLevelCheck | 245 FAILED
+PopulationCheck | exit 1
+PopulationCheck | ...but it does fill, given a decade                        FAIL
+PopulationCheck | 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
 HealthCheck | exit 1
-HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
+HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
 HealthCheck | 1 FAILED
+ScaleCheck | exit 1
+ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 2.83e-02) FAIL
+ScaleCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
-PlanCheck | ...the avenues were laid in the played city (335 plots in 11 open cells over the samples), every check holding with them FAIL
+PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 5
-KeptCheck | a month landing starts a business's KEPT and the Income page's waterfall counting exactly at the rungs countsUp() allows, and when paused (10 clocks) FAIL
+KeptCheck | exit 3
+KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the city has a piece of paper to close                                   FAIL
-KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 5 FAILED
+KeptCheck | ...the property rate staged: the redraw and the next equal a page built new FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
-DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
+DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
-LongPlaytest | exit 1
-LongPlaytest | (no FAIL line)
+DistressBleedCheck | exit 2
+DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
+DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
+PrizeCheck | exit 1
+PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 1 FAILED of 285
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
+ShortSellingCheck | exit 1
+ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
+ShortSellingCheck | 1 FAILED

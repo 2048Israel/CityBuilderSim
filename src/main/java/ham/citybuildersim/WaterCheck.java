@@ -346,8 +346,8 @@ public class WaterCheck {
                 quiet(() -> g.buildStack(desal, 1, false)) == Game.BuildResult.NO_COAST);
         assertTrue("...the card's verdict says so before the click",
                 BuildCard.verdict(g, desal, 1).kind() == BuildCard.VerdictKind.NO_COAST);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(desal, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(desal, 1L);
         assertTrue("...and a run stops at it", g.buildRunAhead(run) == 0 && g.buildRunStop(run) == Game.BuildResult.NO_COAST);
         assertTrue("...the advice values it at nothing",
                 BuildAdvice.unit(g, BuildAdvice.Measure.of(BuildAdvice.Kind.WATER), desal) == 0);
@@ -504,7 +504,7 @@ public class WaterCheck {
                 java.nio.file.Files.readString(conv.saveFile(4))).getAsJsonObject();
         for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landLanes", "landPurchases",
                 "landOffers", "nextOfferId", "depletion", "freshRights" }) j30.remove(key);
-        j30.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+        j30.addProperty("saveFormat", 30);
         j30.addProperty("worldSeed", -2365104814562977942L);
         j30.addProperty("landOwned", 964_751_000);
         j30.addProperty("ironDeposits", 155);

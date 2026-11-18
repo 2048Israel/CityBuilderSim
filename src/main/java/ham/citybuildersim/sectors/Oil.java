@@ -138,7 +138,7 @@ public final class Oil extends Sector {
     public enum WellKind { LAND, PLATFORM }
 
     /** A batch of wells: the month they opened, how many, and their kind. */
-    public record Vintage(int month, int count, WellKind kind) { }
+    public record Vintage(int month, long count, WellKind kind) { }
 
     /** A land well keeps nine tenths of its lift a year: it loses 10% a year (the research's 3.2, est.; [W6]). */
     public static final double LAND_KEEPS_A_YEAR = .9;
@@ -232,9 +232,9 @@ public final class Oil extends Sector {
     }
 
     /** The land wells standing, finished. */
-    public int landWellsStanding() {
+    public long landWellsStanding() {
         if (buildings == null) return 0;
-        int n = 0;
+        long n = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
             if (isLandWell(t)) n += buildings.getQuantity(t.getId());
         }
@@ -261,21 +261,21 @@ public final class Oil extends Sector {
      * standing past those it holds are a new vintage opened in `month`;
      * vintages of the other kind are left as they are.
      */
-    public static List<Vintage> view(List<Vintage> kept, WellKind kind, int standing, int month) {
-        int held = 0;
+    public static List<Vintage> view(List<Vintage> kept, WellKind kind, long standing, int month) {
+        long held = 0;
         for (Vintage v : kept) if (v.kind() == kind) held += v.count();
         List<Vintage> out = new ArrayList<>(kept.size() + 1);
-        int drop = Math.max(0, held - Math.max(0, standing));
+        long drop = Math.max(0, held - Math.max(0, standing));
         for (Vintage v : kept) {
             if (v.kind() != kind || drop == 0) {
                 out.add(v);
                 continue;
             }
-            int gone = Math.min(drop, v.count());
+            long gone = Math.min(drop, v.count());
             drop -= gone;
             if (v.count() > gone) out.add(new Vintage(v.month(), v.count() - gone, kind));
         }
-        int added = Math.max(0, standing - held);
+        long added = Math.max(0, standing - held);
         if (added > 0) {
             Vintage last = out.isEmpty() ? null : out.get(out.size() - 1);
             if (last != null && last.month() == month && last.kind() == kind) {
@@ -298,7 +298,7 @@ public final class Oil extends Sector {
     }
 
     /** The vintages read against `land` land wells and `platform` platform wells in slots, in `month`: the land's view, then the platforms'. */
-    private List<Vintage> vintagesFor(int land, int platform, int month) {
+    private List<Vintage> vintagesFor(long land, long platform, int month) {
         return view(view(vintages, WellKind.LAND, land, month), WellKind.PLATFORM, platform, month);
     }
 
@@ -319,7 +319,8 @@ public final class Oil extends Sector {
     }
 
     /** The lift's cache: the month, the wells standing (land, and platform in slots), the vintages' stamp and the platforms (platformsNow()) it was summed for. */
-    private int liftMonth = Integer.MIN_VALUE, liftStanding = -1, liftAtSea = -1;
+    private int liftMonth = Integer.MIN_VALUE;
+    private long liftStanding = -1, liftAtSea = -1;
     private long liftStamp = -1;
     private List<Platform> liftPlatforms;
     private double liftCached, liftAtSeaCached;
@@ -354,7 +355,8 @@ public final class Oil extends Sector {
      * platform vintages are dealt to the platforms and each piece lifts at its platform's decline (DW1).
      */
     private void strikeLift() {
-        int month = monthNow(), standing = landWellsStanding(), atSea = platformWellsInSlots();
+        int month = monthNow();
+        long standing = landWellsStanding(), atSea = platformWellsInSlots();
         List<Platform> ps = atSea > 0 ? platformsNow() : List.of();
         if (month == liftMonth && standing == liftStanding && atSea == liftAtSea && vintagesStamp == liftStamp && ps == liftPlatforms) return;
         double each = wellNameplate(), eachAtSea = platformWellNameplate(), lift = 0, sea = 0;
@@ -398,18 +400,19 @@ public final class Oil extends Sector {
     }
 
     /** The wells standing that are worn out this month: past their kind's life (lifeMonths()), under ten barrels a day. */
-    public int wornOut() {
+    public long wornOut() {
         return wornOutOf(null);
     }
 
     /** ...of one kind (0.7.91): the land wells at 263 months, the platform wells at 348 - or, on a platform whose field declines deep, at the deep life (DW1). */
-    public int wornOut(WellKind kind) {
+    public long wornOut(WellKind kind) {
         return wornOutOf(kind);
     }
 
     /** The wells of `kind` (both, for null) past their life: the platform wells each at the life of the platform they are dealt to, when one stands on a deep field (DW1), else every vintage at its kind's. */
-    private int wornOutOf(WellKind kind) {
-        int n = 0, month = monthNow();
+    private long wornOutOf(WellKind kind) {
+        long n = 0;
+        int month = monthNow();
         List<Vintage> now = vintagesNow();
         List<Platform> ps = platformsNow();
         boolean[] deep = deepFlags(ps);
@@ -572,7 +575,7 @@ public final class Oil extends Sector {
         String sector = key();
         LandManager land = game.getLandManager();
         int dry = land.getSites(Resource.OIL, true);
-        int unworked = dry - game.landWellsCommitted();
+        long unworked = dry - game.landWellsCommitted();
         // ...the ground pool's (0.7.93, THE TWO OIL POOLS): a land well lifts no other.
         double reserve = land.getOilLeftOnGround();
 
@@ -587,16 +590,12 @@ public final class Oil extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.makes(Good.CRUDE) <= 0 || !isLandWell(t)) continue;
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
             double cost = plans.getCostOf(t, 1);
@@ -610,7 +609,7 @@ public final class Oil extends Sector {
 
         if (best == null) {
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector, "nothing worth sinking");
         }
@@ -675,7 +674,7 @@ public final class Oil extends Sector {
             boolean sea = t.isPlatformWell();
             double mine = sea ? land.getOilLeftAtSea() : land.getOilLeftOnGround();
             double theirs = sea ? land.getOilLeftOnGround() : land.getOilLeftAtSea();
-            int others = sea ? landWellsStanding() : platformWellsStanding();
+            long others = sea ? landWellsStanding() : platformWellsStanding();
             if (mine > 0 && !(theirs > 0) && others > 0) return false;
         }
         return true;
@@ -769,10 +768,10 @@ public final class Oil extends Sector {
     public static final String PIPELINE_KEY = "pipelines.";
 
     /** A platform's jacket as it stands: its field (the world cell and index; -1 when it stands on none), the wells in its slots, and the month it opened. */
-    public record Platform(int cell, int index, int wells, int month) { }
+    public record Platform(int cell, int index, long wells, int month) { }
 
     /** A field's crude pipeline: its field, the kilometres ordered for it, and the month the first was ordered. */
-    public record Pipeline(int cell, int index, int km, int month) { }
+    public record Pipeline(int cell, int index, long km, int month) { }
 
     /** The platforms as struck last, in the order they opened. */
     private final List<Platform> platforms = new ArrayList<>();
@@ -813,18 +812,18 @@ public final class Oil extends Sector {
     public BuildingsTemplate platformWell()       { return templateWhere(t -> t.isPlatformWell() && t.makes(Good.CRUDE) > 0); }
     public BuildingsTemplate pipelineTemplate()   { return templateWhere(BuildingsTemplate::isPipeline); }
 
-    private int standing(BuildingsTemplate t) { return t == null || buildings == null ? 0 : buildings.getQuantity(t.getId()); }
+    private long standing(BuildingsTemplate t) { return t == null || buildings == null ? 0 : buildings.getQuantity(t.getId()); }
 
-    private int onSite(BuildingsTemplate t) {
+    private long onSite(BuildingsTemplate t) {
         BuildingsStacks s = t == null || buildings == null ? null : buildings.getStack(t);
         return s == null ? 0 : s.getUnderConstruction();
     }
 
     /** The jackets standing, finished. */
-    public int jacketsStanding() { return standing(platformTemplate()); }
+    public long jacketsStanding() { return standing(platformTemplate()); }
 
     /** The platform wells standing, finished - in a slot or not. */
-    public int platformWellsStanding() { return standing(platformWell()); }
+    public long platformWellsStanding() { return standing(platformWell()); }
 
     /** A platform well's nameplate a month: its template's crude (415 t); 0 with none. */
     public double platformWellNameplate() {
@@ -956,19 +955,19 @@ public final class Oil extends Sector {
      * them opened in `month` on freeField() (or on none), then the wells in
      * slots dealt oldest platform first - at most every slot's.
      */
-    public static List<Platform> platformView(List<Platform> kept, int jackets, int wells, int month,
+    public static List<Platform> platformView(List<Platform> kept, long jackets, long wells, int month,
                                               List<LandManager.SeaField> fields, int slotsEach, long x, long y) {
-        List<Platform> ps = new ArrayList<>(kept.subList(0, Math.min(kept.size(), Math.max(0, jackets))));
+        List<Platform> ps = new ArrayList<>(kept.subList(0, (int) Math.min(kept.size(), Math.max(0, jackets))));
         while (ps.size() < jackets) {
             int f = freeField(ps, fields, slotsEach, x, y);
             Deposit d = f < 0 ? null : fields.get(f).field();
             ps.add(new Platform(d == null ? -1 : d.cell(), d == null ? -1 : d.index(), 0, month));
         }
         int[] slots = slotsOf(ps, fields, slotsEach);
-        int left = Math.max(0, wells);
+        long left = Math.max(0, wells);
         List<Platform> out = new ArrayList<>(ps.size());
         for (int i = 0; i < ps.size(); i++) {
-            int in = Math.min(left, slots[i]);
+            long in = Math.min(left, slots[i]);
             left -= in;
             Platform p = ps.get(i);
             out.add(new Platform(p.cell(), p.index(), in, p.month()));
@@ -977,16 +976,18 @@ public final class Oil extends Sector {
     }
 
     /** The platforms' cache: the month, the jackets and wells standing, the record's stamp and the fields it was read against. */
-    private int pvMonth = Integer.MIN_VALUE, pvJackets = -1, pvWells = -1;
+    private int pvMonth = Integer.MIN_VALUE;
+    private long pvJackets = -1, pvWells = -1;
     private long pvStamp = -1;
     private Object pvFields;
     private List<Platform> pvCached = List.of();
 
     /** The platforms this month, read against the jackets and platform wells standing (platformView()): what the slots, the lift and the shuttle read. None with no jacket, without reading the ground. */
     public List<Platform> platformsNow() {
-        int jackets = jacketsStanding();
+        long jackets = jacketsStanding();
         if (jackets <= 0 && platforms.isEmpty()) return List.of();
-        int month = monthNow(), wells = platformWellsStanding();
+        int month = monthNow();
+        long wells = platformWellsStanding();
         List<LandManager.SeaField> fields = platformFields();
         if (month == pvMonth && jackets == pvJackets && wells == pvWells && offshoreStamp == pvStamp && sameFields(fields)) return pvCached;
         long[] at = site();
@@ -1002,18 +1003,18 @@ public final class Oil extends Sector {
     private boolean sameFields(List<LandManager.SeaField> fields) { return fields.equals(pvFields); }
 
     /** The slots of the platforms standing, all of them. */
-    public int slotsStanding() {
+    public long slotsStanding() {
         List<Platform> ps = platformsNow();
         if (ps.isEmpty()) return 0;
-        int n = 0;
+        long n = 0;
         for (int s : slotsOf(ps, platformFields(), slotsEach())) n += s;
         return n;
     }
 
     /** The platform wells in a slot: those that lift. */
-    public int platformWellsInSlots() {
+    public long platformWellsInSlots() {
         if (jacketsStanding() <= 0 && platforms.isEmpty()) return 0;
-        int n = 0;
+        long n = 0;
         for (Platform p : platformsNow()) n += p.wells();
         return n;
     }
@@ -1030,10 +1031,10 @@ public final class Oil extends Sector {
     }
 
     /** The jackets ordered and on site, not yet standing: what an order for another counts against platformRoom(). */
-    public int jacketsOnSite() { return onSite(platformTemplate()); }
+    public long jacketsOnSite() { return onSite(platformTemplate()); }
 
     /** The platform wells standing and on site: what an order for another counts against the slots. */
-    public int platformWellsCommitted() {
+    public long platformWellsCommitted() {
         BuildingsTemplate t = platformWell();
         return standing(t) + onSite(t);
     }
@@ -1151,10 +1152,10 @@ public final class Oil extends Sector {
     }
 
     /** The platforms standing on a field that declines deep (declinesDeep()): what the retirements' words name the deep life for. */
-    public int deepPlatformsStanding() {
+    public long deepPlatformsStanding() {
         boolean[] flags = deepFlags(platformsNow());
         if (flags == null) return 0;
-        int n = 0;
+        long n = 0;
         for (boolean f : flags) if (f) n++;
         return n;
     }
@@ -1170,19 +1171,19 @@ public final class Oil extends Sector {
     /** The platform vintages dealt to the platforms, oldest to the oldest, each platform its wells in slots (pure); the land vintages are none of theirs. */
     public static List<List<Vintage>> deal(List<Vintage> vintages, List<Platform> platforms) {
         List<List<Vintage>> out = new ArrayList<>();
-        List<int[]> left = new ArrayList<>();
+        List<long[]> left = new ArrayList<>();
         List<Vintage> sea = new ArrayList<>();
         for (Vintage v : vintages) {
             if (v.kind() != WellKind.PLATFORM) continue;
             sea.add(v);
-            left.add(new int[] { v.count() });
+            left.add(new long[] { v.count() });
         }
         int at = 0;
         for (Platform p : platforms) {
             List<Vintage> mine = new ArrayList<>();
-            int want = Math.max(0, p.wells());
+            long want = Math.max(0, p.wells());
             while (want > 0 && at < sea.size()) {
-                int take = Math.min(want, left.get(at)[0]);
+                long take = Math.min(want, left.get(at)[0]);
                 if (take > 0) mine.add(new Vintage(sea.get(at).month(), take, WellKind.PLATFORM));
                 want -= take;
                 left.get(at)[0] -= take;
@@ -1274,7 +1275,7 @@ public final class Oil extends Sector {
         }
         List<Platform> ps = platformsNow();
         int[] slots = slotsOf(ps, fields, each);
-        int next = platformWellsCommitted();
+        long next = platformWellsCommitted();
         for (int i = 0; i < ps.size(); i++) {
             if (next < slots[i]) return depthOf(fields, ps.get(i).cell(), ps.get(i).index());
             next -= slots[i];
@@ -1349,10 +1350,10 @@ public final class Oil extends Sector {
     }
 
     /** The kilometres of pipe standing, finished. */
-    public int pipeKmStanding() { return standing(pipelineTemplate()); }
+    public long pipeKmStanding() { return standing(pipelineTemplate()); }
 
     /** ...and standing and on site: what the records hold. */
-    public int pipeKmCommitted() {
+    public long pipeKmCommitted() {
         BuildingsTemplate t = pipelineTemplate();
         return standing(t) + onSite(t);
     }
@@ -1364,19 +1365,19 @@ public final class Oil extends Sector {
      * in `ps` with no pipe, else to the last record, else to none, opened in
      * `month`.
      */
-    public static List<Pipeline> pipelineView(List<Pipeline> kept, int km, Platform wanted, List<Platform> ps, int month) {
+    public static List<Pipeline> pipelineView(List<Pipeline> kept, long km, Platform wanted, List<Platform> ps, int month) {
         List<Pipeline> out = new ArrayList<>(kept);
-        int held = 0;
+        long held = 0;
         for (Pipeline p : out) held += p.km();
-        int drop = Math.max(0, held - Math.max(0, km));
+        long drop = Math.max(0, held - Math.max(0, km));
         for (int i = out.size() - 1; i >= 0 && drop > 0; i--) {
             Pipeline p = out.get(i);
-            int gone = Math.min(drop, p.km());
+            long gone = Math.min(drop, p.km());
             drop -= gone;
             if (p.km() > gone) out.set(i, new Pipeline(p.cell(), p.index(), p.km() - gone, p.month()));
             else out.remove(i);
         }
-        int added = Math.max(0, km - held);
+        long added = Math.max(0, km - held);
         if (added <= 0) return out;
         int cell = -1, index = -1;
         if (wanted != null) {
@@ -1408,7 +1409,7 @@ public final class Oil extends Sector {
 
     /** The pipelines this month, read against the kilometres committed (pipelineView()). None with no pipe, without reading anything else. */
     public List<Pipeline> pipelinesNow() {
-        int km = pipeKmCommitted();
+        long km = pipeKmCommitted();
         if (km <= 0 && pipelines.isEmpty()) return List.of();
         return pipelineView(pipelines, km, pipeFor, platformsNow(), monthNow());
     }
@@ -1418,11 +1419,11 @@ public final class Oil extends Sector {
      * to the records oldest first, each field's pipe whole when its
      * kilometres reach its length (lengthKm()). Keyed cell << 32 | index.
      */
-    public static java.util.Set<Long> pipedFields(List<Pipeline> ls, int kmStanding, List<LandManager.SeaField> fields, long x, long y) {
+    public static java.util.Set<Long> pipedFields(List<Pipeline> ls, long kmStanding, List<LandManager.SeaField> fields, long x, long y) {
         java.util.Set<Long> out = new java.util.HashSet<>();
-        int left = Math.max(0, kmStanding);
+        long left = Math.max(0, kmStanding);
         for (Pipeline p : ls) {
-            int in = Math.min(left, p.km());
+            long in = Math.min(left, p.km());
             left -= in;
             Deposit d = p.cell() < 0 ? null : fieldOf(fields, p.cell(), p.index());
             if (d != null && in >= lengthKm(d, x, y)) out.add(((long) p.cell() << 32) | (p.index() & 0xffffffffL));
@@ -1432,11 +1433,11 @@ public final class Oil extends Sector {
 
     /** The share of the platform wells in slots whose field's whole pipe stands: the share of the crude at sea the shuttle tankers do not carry. */
     public double pipedShare() {
-        int inSlots = platformWellsInSlots();
+        long inSlots = platformWellsInSlots();
         if (inSlots <= 0 || pipeKmStanding() <= 0) return 0;
         long[] at = site();
         java.util.Set<Long> piped = pipedFields(pipelinesNow(), pipeKmStanding(), platformFields(), at[0], at[1]);
-        int n = 0;
+        long n = 0;
         for (Platform p : platformsNow()) if (piped.contains(((long) p.cell() << 32) | (p.index() & 0xffffffffL))) n += p.wells();
         return n / (double) inSlots;
     }
@@ -1511,7 +1512,7 @@ public final class Oil extends Sector {
      * - the refiners not losing money, the field's first platform on its
      * plateau.
      */
-    public record PipeCase(Deposit field, int km, double cost, double freight, double standing, double tonnes,
+    public record PipeCase(Deposit field, long km, double cost, double freight, double standing, double tonnes,
                            double months, boolean refinersPay, boolean onPlateau, boolean pays) { }
 
     /** ...for a field the city owns a platform on; null with no pipeline template, or the field's whole pipe ordered. */
@@ -1520,22 +1521,23 @@ public final class Oil extends Sector {
         if (pipe == null || game == null || plans == null) return null;
         long[] at = site();
         Deposit d = f.field();
-        int ordered = 0;
+        long ordered = 0;
         for (Pipeline p : pipelinesNow()) if (p.cell() == d.cell() && p.index() == d.index()) ordered += p.km();
-        int km = lengthKm(d, at[0], at[1]) - ordered;
+        long km = lengthKm(d, at[0], at[1]) - ordered;
         if (km <= 0) return null;
         boolean atSea = f.depth() > 0;
         double scale = atSea || !(pipe.getCashCost() > 0) ? 1 : pipe.onshoreCashPerKm() / pipe.getCashCost();
         double cost = plans.getCostOf(pipe, km) * scale;
         double standing = plans.standingCostOf(this, pipe) * km * scale;
         double freight = atSea ? shuttleFreightPerTonne() : 0;
-        int wells = 0, first = Integer.MAX_VALUE;
+        long wells = 0;
+        int first = Integer.MAX_VALUE;
         for (Platform p : platformsNow()) {
             if (p.cell() != d.cell() || p.index() != d.index()) continue;
             wells += p.wells();
             first = Math.min(first, p.month());
         }
-        int inSlots = platformWellsInSlots();
+        long inSlots = platformWellsInSlots();
         double tonnes = inSlots > 0 ? getCapacityAtSea() * wells / inSlots * homeShareLastMonth() : 0;
         double lift = getCapacityAtSea(), left = game.getLandManager().getOilLeftAtSea();
         double months = lift > 0 ? left / lift : PIPE_LIFE_MONTHS;
@@ -1646,7 +1648,7 @@ public final class Oil extends Sector {
 
         // 1. A platform well into a free slot - one that carries the interest on its whole cost (0.7.113; it earned anything until then).
         BuildingsTemplate well = platformWell();
-        int free = well == null ? 0 : game.sitesFor(well) - platformWellsCommitted();
+        long free = well == null ? 0 : game.sitesFor(well) - platformWellsCommitted();
         BusinessInvestment.Decision held = null;
         if (free > 0) {
             Staffing staffing = staffing(well);
@@ -1701,7 +1703,7 @@ public final class Oil extends Sector {
         LandManager land = game.getLandManager();
         int dry = land.getSites(Resource.OIL, true);
         lines.add(Line.head("What is under the ground"));
-        int landWells = game.landWellsCommitted();
+        long landWells = game.landWellsCommitted();
         lines.add(Line.of("Oil sites owned", f.count(land.getOilSites())));
         lines.add(Line.of("On dry ground", f.count(dry)));
         lines.add(Line.of("Being worked", f.count(landWells),

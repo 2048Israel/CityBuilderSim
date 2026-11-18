@@ -19,12 +19,12 @@ import ham.citybuildersim.CameraPath;
  * just say loading 10 seconds, then let you click to run it ... not for the normal game, only while in replaying mode."
  *
  * <p>A move (a glide, a fly out or a fly in) is set up here and then LOADS: it goes through {@link #PLAN_HZ} views a second of its
- * own clock, {@link #planViews()} in all, which MapView paints one after another with no limit on the time, in every month the move
+ * own clock, {@link #planViews()} in all, which MapView paints one after another up to MapView.LOAD_MAX_S, in every month the move
  * crosses, keeping what it painted until the move has run (MapView.loadStep()). The run shows, frame by frame, the plan's view nearest
  * its own clock, never one between two: a view between two loaded ones can need a tile or a node neither had, and a frame clock lands
  * between them nearly every frame (CM1's gate, 2026-11-04: on a busy PC a glide asked the worker 7 things and drew one frame
  * unpainted; ReplayCheck 5d counted 54 of 56 frames off the plan before this). The bar says "Loading the move... N s", then
- * "Ready - click to run"; a click on the map or any key runs it, so a screen recording can be started first, and Esc cancels at
+ * "Ready - click to run"; a click on the map or a key other than Esc or X runs it, so a screen recording can be started first, and Esc cancels at
  * either point. Only a replay has this camera, so the normal game loads nothing ahead.
  *
  * <p>Everything runs on the FX thread, from MapView's frame. Nothing here touches a node.
@@ -107,6 +107,9 @@ final class ReplayCamera {
 
     /** Whether the move being loaded or run takes time with it: a glide whose two ends are of different months (a fly keeps the month on screen). */
     boolean movesTime() { return glideKind && from != null && to != null && from.month() != to.month(); }
+
+    /** The map's loaded move keeps and releases this copy's prepared months (CM2). */
+    ham.citybuildersim.ReplayCity moveCity() { return mode.moveCity(); }
 
     /** The month of a plan view put on screen, as the glide does it frame by frame (by quick steps); a fly leaves the month alone (CM1: the load shows each view's month). */
     void showMonthOf(CameraPath.View v) {
@@ -295,6 +298,7 @@ final class ReplayCamera {
         if (phase == Phase.IDLE) return;
         String was = phase == Phase.LOAD ? "loading the move" : phase == Phase.READY ? "the loaded move was not run" : status;
         stopMove();
+        ui.replayCancelMove(this);
         mode.say("stopped: " + was);
     }
 
@@ -307,6 +311,7 @@ final class ReplayCamera {
     void mapGone() {
         if (phase != Phase.IDLE) {
             stopMove();
+            ui.replayCancelMove(this);
             mode.say("the map closed: the move stopped");
         }
     }
@@ -314,6 +319,7 @@ final class ReplayCamera {
     /** X: every drift and move stopped, a loading or loaded move, a glide or fly with them. */
     void stillAll() {
         stopMove();
+        ui.replayCancelMove(this);
         smooth.still();
         mode.say("every drift and move stopped");
     }

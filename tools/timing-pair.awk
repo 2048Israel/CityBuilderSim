@@ -1,42 +1,11 @@
-# ---------------------------------------------------------------------------
-#  The gate's arithmetic for a timing red (TM3, 2026-10-27): was the batch slower
-#  than main, or was the PC busy? POSIX awk (gawk, mawk, busybox, the PC's Git Bash).
-#
-#      awk -v mode=dial -f tools/timing-pair.awk /dev/null        the margin, in percent
-#      awk -v mode=harnesses [-v margin=N -v rec=GATE -v today=DAY] -f tools/timing-pair.awk HARD RESIDUAL
-#          the harnesses the rounds run, one a line: those with a timing red main's figure of the day leaves uncovered
-#      awk -v mode=judge [-v margin=N -v rec=GATE -v today=DAY -v recout=FILE] -f tools/timing-pair.awk PAIRS HARD RESIDUAL
-#          for each line of RESIDUAL: PASS or FAIL, a tab, the line, a tab, why; main's figures to RECOUT
-#
-#  HARD is the merge's hard run's target/checks/timing.tsv (Timing's rows: harness, label,
-#  measured, budget, unit, status OK, SOFT or FAIL, part); PAIRS the rounds' rows, the same
-#  with the side (main or batch) and the round in front; RESIDUAL the hard run's red lines
-#  that are neither main's recorded reds nor the suite step's ("Harness | <line>", "Harness |
-#  exit N", "Harness | N FAILED"); GATE origin/main's gate.txt, its "# date: DAY" line and its
-#  "# figure" lines ("# figure", a tab, a HARD row, a tab, the row's place among its key's).
-#
-#  A red line is a timing red when a FAIL row of its harness has its label in the line
-#  (digits masked: a label can print a figure). It passes when for every such row the batch's
-#  median over the rounds is at most MARGIN percent over main's, or main's misses the budget
-#  too, or the batch's is within it (SP1 item 7); or, with no round, main's figure of the day
-#  covers it (GT2). It FAILs otherwise, with fewer than MIN_FIGURES figures a side, and when it
-#  is no clock's. A harness's "exit N" and "N FAILED" pass with its timing reds that pass.
-#
-#  The dial, one place (TM3 item 2): MARGIN, 15 percent. A load that doubles a figure does it
-#  to both sides in the same minutes; 15 is wide enough for their noise at three rounds and
-#  narrow enough that the self-test's 30% stops. CBS_TIMING_MARGIN moves it for a test only.
-#  TimingCheck 9 holds the arithmetic.
-#
-#  WHY (TM3): the gate judged a red by whether main's own run, minutes later, had the same
-#  line; on 2026-10-26 three gates stopped on map lines main itself misses. SP1 item 7 (a
-#  budget that is no number is not used): SC1, a printout, stopped twice on a shifting load.
-#
-#  GT2 (2026-11-07): the judge writes to RECOUT the merged main's figure of each hard miss
-#  (the merge's median over the rounds, else its hard figure) while it still misses, and
-#  ship.sh keeps them in gate.txt; a miss whose figure there, dated today, misses the budget
-#  too, with the merge's at most MARGIN percent over it, needs no round. WHY: SaveSlotCheck
-#  missed 25 ms on main at every gate since 11-05, and its rounds took 20-80 minutes a gate.
-# ---------------------------------------------------------------------------
+# Timing pairs and nightly verdicts, POSIX awk (TM3, GR1).
+# mode=dial prints the margin. mode=night reads yesterday.tsv and tonight.tsv.
+# mode=night-pair reads PAIRS, with wantedh/wantedl/wantedp/wantedo identifying
+# one assertion, and prints its verdict, medians, budget and unit. PAIRS rows
+# prefix Timing's seven columns with side (main/batch) and round. Keys mask
+# label digits and retain part and occurrence. At least two figures per side.
+# mode=judge and mode=harnesses retain TimingCheck's arithmetic fixtures.
+# WHY (TM3): prose labels and single measurements misjudged three map gates.
 
 BEGIN {
     FS = "\t"
@@ -44,18 +13,9 @@ BEGIN {
     if (mode == "dial") { print margin; exit }
     MIN_FIGURES = 2
     LSEP = "\035"   # between the keys of a list: a label has spaces, so a space will not do
-    if (rec != "") while ((getline l < rec) > 0) {   # GT2: main's figures of the day, the "# figure" lines of a gate.txt dated today
-        sub(/\r$/, "", l)
-        if (l ~ /^# date: /) recday = (substr(l, 9) == today)
-        if (recday && split(l, f, "\t") >= 9 && f[1] == "# figure" && isnum(f[4])) rfig[f[2] SUBSEP mask(f[3]) SUBSEP f[8] SUBSEP f[9]] = f[4] + 0
-    }
 }
 
-function covered(key) {   # GT2: main's figure of the day misses the budget too, and the merge's hard figure is within the margin of it
-    return (key in rfig) && isnum(hfig[key]) && isnum(hbud[key]) && rfig[key] > hbud[key] + 0 && hfig[key] * 100 <= rfig[key] * (100 + margin)
-}
-
-# which file this record is from, by its place among the operands (an empty file has no records, so counting files would slip)
+# Operand identity works even when the baseline file is empty.
 { stage = (FILENAME == ARGV[1]) ? 1 : (FILENAME == ARGV[2]) ? 2 : 3 }
 
 function mask(s) { gsub(/[0-9]+/, "N", s); return s }
@@ -79,7 +39,7 @@ function num(v) {   # a figure as the notes print it: a whole number bare, else 
 function hardstage() { return mode == "judge" ? 2 : 1 }
 function resstage() { return mode == "judge" ? 3 : 2 }
 
-mode == "judge" && stage == 1 {   # PAIRS.tsv
+(mode == "judge" || mode == "night-pair") && stage == 1 {   # PAIRS.tsv
     side = $1; harness = $3; label = $4; part = $9
     k = harness SUBSEP mask(label) SUBSEP part
     occ = ++seenp[side SUBSEP $2 SUBSEP k]   # the same label twice in one run: the second is a figure of its own
@@ -88,7 +48,21 @@ mode == "judge" && stage == 1 {   # PAIRS.tsv
         np = ++cnt[side SUBSEP key]
         fig[side SUBSEP key SUBSEP np] = $5 + 0
     }
-    budget[key] = $6; unit[key] = $7
+    if (mode != "night-pair" || side == "batch") { budget[key] = $6; unit[key] = $7 }
+    next
+}
+
+# GR1: same keys and medians as the gate's pairs, with quiet nights as the baseline.
+mode == "night" {
+    k = $1 SUBSEP mask($2) SUBSEP $7
+    occ = ++nightseen[stage SUBSEP k]; key = k SUBSEP occ
+    if (stage == 1) { previous[key] = $3; previousbudget[key] = $4; next }
+    if (!isnum($3) || !isnum($4)) { print "INVALID\t" $0; next }
+    state = "STANDING"
+    if ($3 <= $4) state = "OK"
+    else if (!(key in previous)) state = "FIRST"
+    else if (previous[key] <= previousbudget[key] || $3 * 100 > previous[key] * (100 + margin)) state = "SLOWER"
+    printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", state, $1, $2, (key in previous ? previous[key] : "none"), $3, $4, $5, $7, nightseen[stage SUBSEP k]
     next
 }
 
@@ -127,9 +101,21 @@ stage == resstage() {   # RESIDUAL
 
 END {
     if (mode == "dial") exit
-    if (mode == "harnesses") {   # a harness whose every miss main's figure of the day covers runs no round (GT2)
-        for (n = 1; n <= nl; n++) if (kind[n] == "timing" && !(head[n] in done))
-            for (j = 1; j <= split(hmiss[mkey[n]], ks, LSEP); j++) if (!covered(ks[j])) { done[head[n]] = 1; print head[n]; break }
+    if (mode == "night") exit
+    if (mode == "night-pair") {
+        key = wantedh SUBSEP mask(wantedl) SUBSEP wantedp SUBSEP wantedo
+        nm = cnt["main" SUBSEP key]; nb = cnt["batch" SUBSEP key]
+        if (nm < MIN_FIGURES || nb < MIN_FIGURES || !isnum(budget[key])) { print "INCONCLUSIVE\tmissing paired figures"; exit 2 }
+        for (i = 1; i <= nm; i++) a[i] = fig["main" SUBSEP key SUBSEP i]
+        for (i = 1; i <= nb; i++) b[i] = fig["batch" SUBSEP key SUBSEP i]
+        mm = median(a, nm); bm = median(b, nb)
+        # A standing miss can worsen too (GR1), so both sides missing grants no exemption.
+        state = bm > budget[key] && bm * 100 > mm * (100 + margin) ? "SLOWER" : "STEADY"
+        printf "%s\t%s\t%s\t%s\t%s\n", state, num(mm), num(bm), budget[key], unit[key]
+        exit
+    }
+    if (mode == "harnesses") {
+        for (n = 1; n <= nl; n++) if (kind[n] == "timing" && !(head[n] in done)) { done[head[n]] = 1; print head[n] }
         exit
     }
     # judge: each timing red's rows, by the medians of the two sides
@@ -142,10 +128,6 @@ END {
         for (j = 1; j <= nk; j++) {
             key = ks[j]
             nm = cnt["main" SUBSEP key]; nb = cnt["batch" SUBSEP key]
-            if ((nm < MIN_FIGURES || nb < MIN_FIGURES) && covered(key)) {   # GT2: no round, main's figure of the day
-                rm = rfig[key]; hf = hfig[key] + 0; u = hunit[key] == "" ? "ms" : hunit[key]
-                msg = msg (msg == "" ? "" : "; ") "main " num(rm) " " u " (gate.txt, today), batch " num(hf) " " u sprintf(" (%+.1f%%)", (hf - rm) * 100 / rm) ", budget " hbud[key] " " u ": main over the budget too, no round"; continue
-            }
             if (nm < MIN_FIGURES || nb < MIN_FIGURES) {
                 ok = 0; msg = msg (msg == "" ? "" : "; ") "no pair to compare: " nm + 0 " figure(s) of main's, " nb + 0 " of the batch's (" MIN_FIGURES " needed)"
                 continue
@@ -173,9 +155,4 @@ END {
         else { verdict[n] = "FAIL"; why[n] = (head[n] in bad) ? "the harness's own count, with a red above that is not a timing red that passes" : "a harness that failed with no timing red of its own" }
     }
     for (n = 1; n <= nl; n++) printf "%s\t%s\t%s\n", verdict[n], text[n], why[n]
-    if (recout != "") for (i = 1; i <= nh; i++) for (j = 1; j <= split(hmiss[hlist[i]], ks, LSEP); j++) {   # GT2: the merged main's figure of each miss, while it misses
-        key = ks[j]; nb = cnt["batch" SUBSEP key]; v = hfig[key] + 0; split(key, q, SUBSEP)
-        if (nb >= MIN_FIGURES) { for (x = 1; x <= nb; x++) b[x] = fig["batch" SUBSEP key SUBSEP x]; v = median(b, nb) }
-        if (isnum(hbud[key]) && v > hbud[key] + 0) printf "# figure\t%s\t%s\t%s\t%s\t%s\tFAIL\t%s\t%s\n", q[1], hlab[key], v, hbud[key], hunit[key], q[3], q[4] > recout
-    }
 }

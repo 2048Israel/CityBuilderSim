@@ -1202,7 +1202,7 @@ public class LandManager {
         return kept;
     }
 
-    public boolean hasUnminedDeposit(int minesStanding) {
+    public boolean hasUnminedDeposit(long minesStanding) {
         return minesStanding < getIronDeposits() && getIronReserveTonnes() > 0;
     }
 
@@ -1266,6 +1266,38 @@ public class LandManager {
         return Math.max(0, land().totalAmount(r) - extracted[r.ordinal()]);
     }
 
+    /**
+     * Gold recovered at fixed ore throughput, expressed as ounces at
+     * GOLD_REFERENCE_GRADE (GD4). Walks acquisition-order pieces and saved
+     * depletion. Grade falls linearly with gold worked. Integrating over ore
+     * keeps the result independent of the length of a production step.
+     * Pure, so forecasts and the dig read the same ground.
+     */
+    public double goldOutput(double referenceOunces) {
+        if (!(referenceOunces > 0)) return 0;
+        double skip = getExtracted(Resource.GOLD), made = 0, budget = referenceOunces;
+        double decline = 1 - Deposit.GOLD_LAST_GRADE_SHARE;
+        for (CityLand.Piece piece : land().typedPieces(Resource.GOLD)) {
+            double amount = piece.amount();
+            if (!(amount > 0)) continue;
+            double used = Math.min(skip, amount);
+            skip -= used;
+            if (used >= amount) continue;
+            double grade = piece.field() == null ? Deposit.GOLD_REFERENCE_GRADE : piece.field().goldGrade();
+            if (!(grade > 0)) continue;
+            double factor = grade / Deposit.GOLD_REFERENCE_GRADE;
+            double start = 1 - decline * used / amount;
+            double needed = amount / (decline * factor)
+                    * Math.log(start / Deposit.GOLD_LAST_GRADE_SHARE);
+            double ore = Math.min(budget, needed);
+            made += Math.min(amount - used,
+                    amount * start / decline * -Math.expm1(-decline * factor * ore / amount));
+            budget -= ore;
+            if (!(budget > 0)) break;
+        }
+        return Math.min(made, getRemaining(Resource.GOLD));
+    }
+
     /** What the world holds of it, as stored when the city was founded or converted: W. */
     public double getWorldTotal(Resource r)  { land(); return worldTotals[r.ordinal()]; }
 
@@ -1324,12 +1356,12 @@ public class LandManager {
      * and when the purchases alone hold more than the reserve, the extraction
      * says how much of theirs is gone. What the harnesses' cities are given.
      */
-    public void restoreIron(int deposits, double reserveTonnes) {
+    public void restoreIron(long deposits, double reserveTonnes) {
         restoreSites(Resource.IRON, deposits, reserveTonnes);
     }
 
     /** ...the same for any resource in fields (0.7.62): a fixture's oil, as restoreIron() is its ore. */
-    public void restoreSites(Resource r, int deposits, double reserveTonnes) {
+    public void restoreSites(Resource r, long deposits, double reserveTonnes) {
         CityLand l = land();
         int sites = (int) Math.max(0, Math.max(0, deposits) - l.purchasedSites(r));
         double bought = l.purchasedAmount(r);
@@ -1665,7 +1697,7 @@ public class LandManager {
     }
 
     /** Standing works on a resource's sites, for fits(): the type they stand on (null for ANY), the sites each takes, and how many stand. */
-    public record Claim(Deposit.FieldType type, int sites, int count) { }
+    public record Claim(Deposit.FieldType type, int sites, long count) { }
 
     /**
      * Whether a works of `extra` sites on `type` (null for ANY) fits on the
@@ -1867,7 +1899,7 @@ public class LandManager {
     /**
      * The city's dry ground, set by hand. Since 0.7.57 the land is drawn
      * again to hold it, the city's iron and what it has taken out kept as
-     * they were (LandConversion.restate()) - a harness's ground by fiat.
+     * they were (LandDrawing.restate()) - a harness's ground by fiat.
      * Since 0.7.67 the centre is blocks round the same site, the last split
      * down to the plot, holding the figure to within a plot, the purchases
      * folded in and twenty-four offers listed round it; the figure is the one
@@ -1877,7 +1909,7 @@ public class LandManager {
     public void setOwnedSqFt(double sqFt) {
         land();
         this.ownedSqFt = sqFt;
-        LandConversion.restate(this, sqFt);
+        LandDrawing.restate(this, sqFt);
     }
 
     /** The figure alone, the land as it stands: a load putting back what the save says, or a restatement that has just drawn the land to hold it. */

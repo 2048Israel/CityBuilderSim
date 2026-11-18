@@ -1,6 +1,6 @@
 # Statement.java - 517 lines · 25 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/Statement.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Statement.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The rows a statement is built from: a head, a line, a note, a total, a
 > disclosure that opens, and the two-column book the sector pages and the
@@ -11,9 +11,9 @@
 > uses them, so they belong to no screen. Called unqualified through an
 > import static, exactly as they were when they were methods of the window.
 
-**Uses:** [Palette](Palette.md) (79), [Kept](Kept.md) (54)
+**Uses:** [Palette](Palette.md) (79), [Kept](Kept.md) (64)
 
-**Used by (30):** [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EconomyManager](EconomyManager.md), [Forms1900Check](Forms1900Check.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorBooksCheck](SectorBooksCheck.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [Sectors](Sectors.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (37):** [AdviceValueOracle](AdviceValueOracle.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BusinessInvestment](BusinessInvestment.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EconomyManager](EconomyManager.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Forms1900Check](Forms1900Check.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonthOrder](MonthOrder.md), [NewGameCheck](NewGameCheck.md), [PeopleScreen](PeopleScreen.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorFlow](SectorFlow.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

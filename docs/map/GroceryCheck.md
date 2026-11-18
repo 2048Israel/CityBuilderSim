@@ -1,6 +1,6 @@
-# GroceryCheck.java - 459 lines · 10 methods · 0 constants · harnesses
+# GroceryCheck.java - 463 lines · 10 methods · 0 constants · harnesses
 
-`ham/citybuildersim/GroceryCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GroceryCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Groceries at a price, the shelf cleared stickily, and food assistance
 > (0.7.43): the households' demand curve, the clearing price, who is handed
@@ -45,7 +45,7 @@
 >      priced out and the short of stock to the hunger, and THE BUDGET
 >      previews the dial by the vouchers it would have paid.
 
-**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Retail](Retail.md) (20), [HouseholdBalance](HouseholdBalance.md) (16), [PolicyPreview](PolicyPreview.md) (15), [Household](Household.md) (14), [Game](Game.md) (8), [FamilyStructure](FamilyStructure.md) (7), [PayTier](PayTier.md) (7), [BondCheck](BondCheck.md) (2), [TreasuryLine](TreasuryLine.md) (2), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1), [GameFiles](GameFiles.md) (1), [Sector](Sector.md) (1), [Founding](Founding.md) (1), [LongPlaytest](LongPlaytest.md) (1), [PriceIndex](PriceIndex.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 ## Sections
 
@@ -70,7 +70,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 409 | **type** `public class GroceryCheck` | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the baskets a shortage leaves, the shelf's step toward its target, and th... |
+| 51 | 413 | **type** `public class GroceryCheck` | Groceries at a price, the shelf cleared stickily, and food assistance (0.7.43): the households' demand curve, the clearing price, who is handed the baskets a shortage leaves, the shelf's step toward its target, and th... |
 | 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 62 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 69 | 8 | `static Household cell(HouseholdBalance hb, FamilyStructure shape, PayTier tier, double households, double foodMoney)` | A bench of the household ledger: one cell of each kind the sections need, by hand. |
@@ -78,12 +78,12 @@
 | 231 | 10 | `static double aidedWithIncome(double pSat, double floor)` | A household whose investment income lifts its means past twice its baskets holds no voucher. |
 | 243 | 10 | `static double aidedWithACoupon(double pSat, double floor)` | ...and one that had the same income in one month only - a coupon - which the year's average holds a twelfth of: still a voucher. |
 
-### 9. IN A CITY: THE TREASURY PAYS, TO THE CENT (lines 254-459)
+### 9. IN A CITY: THE TREASURY PAYS, TO THE CENT (lines 254-463)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 267 | 19 | `static Game founding(Path root, String label)` |  |
-| 288 | 9 | `static boolean underTheCap(Game g, double share)` | Whether somebody's voucher at this dial is above nothing and under what their baskets cost at the last sale - the voucher's cap (0.7.62). |
-| 298 | 156 | `static void inACity(Path root)` |  |
-| 455 | 4 | `static Household byKey(HouseholdBalance hb, String key)` |  |
+| 267 | 23 | `static Game founding(Path root, String label)` |  |
+| 292 | 9 | `static boolean underTheCap(Game g, double share)` | Whether somebody's voucher at this dial is above nothing and under what their baskets cost at the last sale - the voucher's cap (0.7.62). |
+| 302 | 156 | `static void inACity(Path root)` |  |
+| 459 | 4 | `static Household byKey(HouseholdBalance hb, String key)` |  |
 

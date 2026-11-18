@@ -1,6 +1,6 @@
 # StatementView.java - 646 lines · 39 methods · 11 constants · interface
 
-`ham/citybuildersim/ui/StatementView.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/StatementView.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > A formal statement on the page (0.7.74): SectorStatements' rows set as an
 > accountant sets them - a title block, the columns (note, this month, last
@@ -19,7 +19,7 @@
 > abbreviated - a statement whose column reads 13.6M over 940k does not
 > line up.
 
-**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (62), [SectorStatements](SectorStatements.md) (36), [Money](Money.md) (3), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
+**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (67), [SectorStatements](SectorStatements.md) (36), [Money](Money.md) (3), [Statement](Statement.md) (2), [SectorScreen](SectorScreen.md) (1)
 
 **Used by (3):** [BankScreen](BankScreen.md), [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md)
 

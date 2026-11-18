@@ -570,6 +570,7 @@ public class EarthTerrainCheck {
        ===================================================================== */
 
     static void tileTime(List<Spot> spots, String id) {
+        if (Timing.skip("EarthTerrainCheck.tileTime")) return;
         out.println("\n--- 5. a tile in no more than " + TILE_MS + " ms: the median of " + TILE_ROUNDS + " rounds over each window's middle " + TIMED_TILES
                 + " x " + TIMED_TILES + " tiles ---");
         byte[] t = new byte[World.TILE * World.TILE];
@@ -595,6 +596,7 @@ public class EarthTerrainCheck {
        ===================================================================== */
 
     static void landmassTime(List<Spot> spots, String id) {
+        if (Timing.skip("EarthTerrainCheck.landmassTime")) return;
         out.println("\n--- 18. a tile's landmass in no more than " + LANDMASS_TILE_MS + " ms: the median of " + TILE_ROUNDS + " rounds over each window's middle " + TIMED_TILES
                 + " x " + TIMED_TILES + " tiles, its cover kept ---");
         int[] ids = new int[World.TILE * World.TILE];
@@ -855,7 +857,7 @@ public class EarthTerrainCheck {
         int n = rings.centreRects().size();
         List<Long> water = blocksOf(land, n, land.centreRects().size());
         Map<Long, Long> fresh = freshBeyondRings(w, rings);
-        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - LandDrawing.WHOLE_PLOT);
         long have = freshInRings(w, rings), held = LandCheck.freshOn(water, fresh);
         long near = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH), most = LandCheck.bestSquareHolds(fresh, CityLand.FRESH_PATCH_MOST), r = 0;
         for (long p = CityLand.FRESH_PATCH; p <= CityLand.FRESH_PATCH_MOST && r == 0; p++) if (have + LandCheck.bestSquareHolds(fresh, p) >= target) r = p;
@@ -932,6 +934,7 @@ public class EarthTerrainCheck {
 
     /** MapCheck 5's screen on Earth: SCREEN_ACROSS x SCREEN_DOWN tiles about the site of a square city at the 5B copy's density, each tile's ground read from the world, painted and rastered. */
     static void screen(Spot s, String id) {
+        if (Timing.skip("EarthTerrainCheck.screen")) return;
         World.Key key = World.Key.earth(SEED, s.lat(), s.lon(), id);
         World w = World.of(key);
         BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
@@ -1383,6 +1386,9 @@ public class EarthTerrainCheck {
         Geology.Kind[] hand = g.kinds(), rules = g.rulesKinds();
         double[] pf = g.petroleum();
         Resource[] six = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER, Resource.URANIUM };
+        double goldZ = m.zOf(Resource.GOLD, g);
+        report("gold Z is the measured land over W_GOLD-weighted land to Z_ROUNDING",
+                Math.abs(goldZ - Geology.Z_GOLD) <= Z_ROUNDING, String.format("%.8f", goldZ));
         boolean zs = true, e3 = true;
         StringBuilder z = new StringBuilder(), zr = new StringBuilder(), z3 = new StringBuilder();
         for (Resource r : six) {
@@ -1594,15 +1600,15 @@ public class EarthTerrainCheck {
         check("...ICE and DESERT take the two bytes after the five, World.CLASSES in all, each with its colour and its own name on the hover",
                 World.ICE == 5 && World.DESERT == 6 && World.CLASSES == World.SHALLOW + 1 && TileRaster.GROUND.length == World.CLASSES
                         && LandMap.groundWords(World.ICE).equals("Snow and ice") && LandMap.groundWords(World.DESERT).equals("Desert"));
-        // The books (GridConversion.km2Of(), what CityLand counts every holding with).
+        // The books (LandDrawing.km2Of(), what CityLand counts every holding with).
         long n = 1000;
-        double[] grass = GridConversion.km2Of(only(World.GRASS, n)), desert = GridConversion.km2Of(only(World.DESERT, n)), ice = GridConversion.km2Of(only(World.ICE, n));
+        double[] grass = LandDrawing.km2Of(only(World.GRASS, n)), desert = LandDrawing.km2Of(only(World.DESERT, n)), ice = LandDrawing.km2Of(only(World.ICE, n));
         check("the books: a desert's plots count as a grass's in all five areas, dry ground", Arrays.equals(grass, desert) && desert[CityLand.DRY] == n * World.KM2_PER_PLOT);
         check("...and ice's in the whole area only - never dry, fresh, sea or forest", ice[CityLand.TOTAL] == n * World.KM2_PER_PLOT
                 && ice[CityLand.DRY] == 0 && ice[CityLand.FRESH] == 0 && ice[CityLand.SEA] == 0 && ice[CityLand.FOREST] == 0);
         long[] five = { 11, 22, 33, 44, 55 }, seven = Arrays.copyOf(five, World.CLASSES);
-        check("...and a count of the five classes alone, as the generated world's are made, reads as it did", Arrays.equals(GridConversion.km2Of(five), GridConversion.km2Of(seven))
-                && GridConversion.km2Of(five)[CityLand.DRY] == (11 + 22 + 55) * World.KM2_PER_PLOT);
+        check("...and a count of the five classes alone, as the generated world's are made, reads as it did", Arrays.equals(LandDrawing.km2Of(five), LandDrawing.km2Of(seven))
+                && LandDrawing.km2Of(five)[CityLand.DRY] == (11 + 22 + 55) * World.KM2_PER_PLOT);
         check("the runs (CityRuns): the desert is dry ground where grass is, ice is not, and off the ground is not", CityRuns.dry(World.DESERT) == CityRuns.dry(World.GRASS)
                 && CityRuns.dry(World.DESERT) && !CityRuns.dry(World.ICE) && !CityRuns.dry(-1));
         // A district's plan (DistrictPlan): PlanCheck's test district, its grass made desert, then half of it ice.
@@ -1757,7 +1763,7 @@ public class EarthTerrainCheck {
                         && LandMap.groundWords(World.SHALLOW).equals(LandMap.SHALLOW_WORDS) && LandMap.SHALLOW_WORDS.startsWith("Shallow sea")
                         && LandMap.legend(GlobeFrame.PICTURE).stream().anyMatch(en -> en.words().equals(LandMap.SHALLOW_WORDS) && en.colour() == lighter));
         long n = 1000;
-        double[] shallow = GridConversion.km2Of(only(World.SHALLOW, n)), salt = GridConversion.km2Of(only(World.SALT, n));
+        double[] shallow = LandDrawing.km2Of(only(World.SHALLOW, n)), salt = LandDrawing.km2Of(only(World.SALT, n));
         check("the books: a shallow sea's plots count as a sea's in the sea area and the whole, never dry, fresh or forest", Arrays.equals(shallow, salt)
                 && shallow[CityLand.SEA] == n * World.KM2_PER_PLOT && shallow[CityLand.TOTAL] == n * World.KM2_PER_PLOT && shallow[CityLand.DRY] == 0
                 && shallow[CityLand.FRESH] == 0 && shallow[CityLand.FOREST] == 0);
@@ -1848,17 +1854,19 @@ public class EarthTerrainCheck {
         }
         report("Halifax: no fringe of deep sea along a shallow coast - a sea plot whose cells' sea is all shallow is shallow, with land in those cells too (the sea-weighted share)",
                 qualifying > 1000 && atCoast > 100 && deep <= qualifying / 1000, String.format("%,d such plots sampled, %,d with land in their cells, %,d of them deep", qualifying, atCoast, deep));
-        // The cost: tiles about a coast holding shallow and deep, the median of rounds, within TILE_MS.
-        long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
-        double[] ms = new double[TILE_ROUNDS];
-        for (int round = -1; round < TILE_ROUNDS; round++) {
-            long t0 = System.nanoTime();
-            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) hw.tileTerrain(tx0 + i, ty0 + j, t);
-            if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+        if (!Timing.skip("EarthTerrainCheck.shallowSea timing")) {
+            // The cost: tiles about a coast holding shallow and deep, the median of rounds, within TILE_MS.
+            long tx0 = EarthTerrain.spotPlot() / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+            double[] ms = new double[TILE_ROUNDS];
+            for (int round = -1; round < TILE_ROUNDS; round++) {
+                long t0 = System.nanoTime();
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) hw.tileTerrain(tx0 + i, ty0 + j, t);
+                if (round >= 0) ms[round] = (System.nanoTime() - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+            }
+            Arrays.sort(ms);
+            report("Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS", Timing.within(ms[TILE_ROUNDS / 2], TILE_MS),
+                    String.format("%.3f ms a tile (rounds %.3f to %.3f)", ms[TILE_ROUNDS / 2], ms[0], ms[TILE_ROUNDS - 1]));
         }
-        Arrays.sort(ms);
-        report("Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS", Timing.within(ms[TILE_ROUNDS / 2], TILE_MS),
-                String.format("%.3f ms a tile (rounds %.3f to %.3f)", ms[TILE_ROUNDS / 2], ms[0], ms[TILE_ROUNDS - 1]));
         // A generated world has none (D19): its far view of the whole world holds sea and no SHALLOW, and so do the tiles about its founding site.
         World g = World.of(SEED);
         byte[] far = new byte[64 * 64];
@@ -1909,6 +1917,7 @@ public class EarthTerrainCheck {
         }
         check("an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (" + oldSea + " plots), and gives no depth it does not have",
                 !old.hasRelief() && oldSea > 0 && oldShallow == 0 && refused);
+
     }
 
     /* =====================================================================
@@ -2314,29 +2323,31 @@ public class EarthTerrainCheck {
         double pts = 100.0 * differ / Math.max(1, both);
         report("the tile rule and the point rule give a dry plot the same relief on all but RELIEF_COPIES_POINTS of the plots",
                 both > 0 && pts <= RELIEF_COPIES_POINTS, String.format("%,d of %,d sampled dry plots differ (%.3f points)", differ, both, pts));
-        // 4. The cost of a tile: each round a world of its own (another seed, the same data), so no tile is kept - the cover's tiles first, kept as a map keeps them, then the relief alone.
-        long tx0 = c / World.TILE - TIMED_TILES / 2, ty0 = tx0;
-        double[] coverMs = new double[TILE_ROUNDS], reliefMs = new double[TILE_ROUNDS];
-        byte[] tile = new byte[World.TILE * World.TILE];
-        for (int round = -1; round < TILE_ROUNDS; round++) {
-            World t0w = World.of(World.Key.earth(SEED + 1000 + round, file != null ? HILLS[0][0] : VALLEY[0], file != null ? HILLS[0][1] : VALLEY[1], did));
-            long t0 = System.nanoTime();
-            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.terrainAt((tx0 + i) * World.TILE, (ty0 + j) * World.TILE);
-            long t1 = System.nanoTime();
-            for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.tileRelief(tx0 + i, ty0 + j, tile);
-            long t2 = System.nanoTime();
-            if (round >= 0) {
-                coverMs[round] = (t1 - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
-                reliefMs[round] = (t2 - t1) / 1e6 / (TIMED_TILES * TIMED_TILES);
+        if (!Timing.skip("EarthTerrainCheck.reliefRule timing")) {
+            // 4. The cost of a tile: each round a world of its own (another seed, the same data), so no tile is kept - the cover's tiles first, kept as a map keeps them, then the relief alone.
+            long tx0 = c / World.TILE - TIMED_TILES / 2, ty0 = tx0;
+            double[] coverMs = new double[TILE_ROUNDS], reliefMs = new double[TILE_ROUNDS];
+            byte[] tile = new byte[World.TILE * World.TILE];
+            for (int round = -1; round < TILE_ROUNDS; round++) {
+                World t0w = World.of(World.Key.earth(SEED + 1000 + round, file != null ? HILLS[0][0] : VALLEY[0], file != null ? HILLS[0][1] : VALLEY[1], did));
+                long t0 = System.nanoTime();
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.terrainAt((tx0 + i) * World.TILE, (ty0 + j) * World.TILE);
+                long t1 = System.nanoTime();
+                for (int j = 0; j < TIMED_TILES; j++) for (int i = 0; i < TIMED_TILES; i++) t0w.tileRelief(tx0 + i, ty0 + j, tile);
+                long t2 = System.nanoTime();
+                if (round >= 0) {
+                    coverMs[round] = (t1 - t0) / 1e6 / (TIMED_TILES * TIMED_TILES);
+                    reliefMs[round] = (t2 - t1) / 1e6 / (TIMED_TILES * TIMED_TILES);
+                }
             }
+            Arrays.sort(coverMs);
+            Arrays.sort(reliefMs);
+            double both3 = coverMs[TILE_ROUNDS / 2] + reliefMs[TILE_ROUNDS / 2];
+            report("a hilly tile's ground and its relief together in no more than TILE_MS (the median of " + TILE_ROUNDS + " rounds over " + TIMED_TILES + " x " + TIMED_TILES
+                            + " tiles about Medellin)", Timing.within(both3, TILE_MS),
+                    String.format("%.3f ms a tile: %.3f for the cover and %.3f for the relief beside it (cover kept; rounds %.3f to %.3f)", both3, coverMs[TILE_ROUNDS / 2],
+                            reliefMs[TILE_ROUNDS / 2], reliefMs[0], reliefMs[TILE_ROUNDS - 1]));
         }
-        Arrays.sort(coverMs);
-        Arrays.sort(reliefMs);
-        double both3 = coverMs[TILE_ROUNDS / 2] + reliefMs[TILE_ROUNDS / 2];
-        report("a hilly tile's ground and its relief together in no more than TILE_MS (the median of " + TILE_ROUNDS + " rounds over " + TIMED_TILES + " x " + TIMED_TILES
-                        + " tiles about Medellin)", Timing.within(both3, TILE_MS),
-                String.format("%.3f ms a tile: %.3f for the cover and %.3f for the relief beside it (cover kept; rounds %.3f to %.3f)", both3, coverMs[TILE_ROUNDS / 2],
-                        reliefMs[TILE_ROUNDS / 2], reliefMs[0], reliefMs[TILE_ROUNDS - 1]));
     }
 
     /** The far views' relief: a far node at a stride, the globe's camera, the picture's, their cost against SCREEN_MS and FRAME_MS. */

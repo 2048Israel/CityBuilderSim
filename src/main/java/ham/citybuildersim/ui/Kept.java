@@ -8,6 +8,9 @@ import javafx.css.StyleOrigin;
 import javafx.css.StyleableProperty;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.event.EventHandler;
+import javafx.event.WeakEventHandler;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -17,6 +20,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -34,6 +39,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
  * A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a
@@ -67,8 +73,10 @@ import java.util.function.Supplier;
  * <li>Rows that come and go are a scope each, keyed by what they show
  * ({@code Kept.scope(sector, () -> row(sector))}): a row that goes takes its own nodes with it,
  * and the rows after it keep theirs. A card is a scope too, so a chip that appears in one card
- * does not shift every label below it onto a neighbour's.</li>
- * <li>A node handed back first loses what the code gives it only sometimes - its click and hover
+ * does not shift every label below it onto a neighbour's. A row the model writes in some months and
+ * not in others (a tax's slice of a ring, a step of a bridge) is a {@link #parkedScope}: its nodes
+ * wait, off the page, for the month it comes back, and are handed back as any kept node is.</li>
+ * <li>A node handed back loses, at the draw's end, what the code did not give it this time - its click and hover
  * handlers, its action, its cursor, visibility, opacity, disabling and tooltip - where the code
  * set them (a value an inline style set is the style's, and left alone); so a row clickable last
  * month and not this one does not keep last month's click.</li>
@@ -88,6 +96,9 @@ import java.util.function.Supplier;
  * style set back to rest at the draw would lose the hover look; and a control keeps the player's
  * hand ({@link #held}, {@link #text}): a slider's value is set only where it differs and never
  * while the player holds it, a field's text only where it differs and never while it has the focus.
+ * A draw gives optional state through {@link #give}, and a grid's constraints through {@link #columns}
+ * and {@link #rows}: reset at the draw's end only what that draw did not set. An unchanged assignment
+ * still counts as given, so a greyed control and an unchanged grid never reset and set back.
  */
 public final class Kept {
 
@@ -134,6 +145,11 @@ public final class Kept {
         private final Map<Class<?>, Integer> taken = new HashMap<>();
         private Map<Object, Scope> inner = new HashMap<>();
         private Map<Object, Scope> innerMaking = new HashMap<>();
+        /**
+         * The inner scopes parkedScope() was asked for, the least recently asked first (an access-ordered map: asking again moves a key to the
+         * end), so a scope that has more than PARKED_MAX lets go the eldest and never an arbitrary one.
+         */
+        private final java.util.LinkedHashMap<Object, Scope> parkedKeys = new java.util.LinkedHashMap<>(16, .75f, true);
 
         void begin() {
             making = new HashMap<>();
@@ -141,12 +157,30 @@ public final class Kept {
             taken.clear();
         }
 
-        /** What was not asked for this draw is let go: the next draw hands back only this one's. */
+        /**
+         * What was not asked for this draw is let go: the next draw hands back only this one's - except the parked scopes (FB2, KS1-Gov),
+         * which stay as their last draw left them, up to PARKED_MAX of them in a scope, for the draw that asks for them again. When there
+         * are more, the ones asked for longest ago go: a row keyed by a figure ("Bought land with D$12.4M of reserves") is asked once and
+         * is the first to go, and the lines that recur stay.
+         */
         void end() {
             made = making;
+            java.util.Iterator<Map.Entry<Object, Scope>> eldest = parkedKeys.entrySet().iterator();
+            for (int over = parkedKeys.size() - PARKED_MAX; eldest.hasNext(); ) {
+                Map.Entry<Object, Scope> e = eldest.next();
+                if (over > 0) {
+                    eldest.remove();
+                    over--;
+                } else if (!innerMaking.containsKey(e.getKey())) {
+                    innerMaking.put(e.getKey(), e.getValue());
+                }
+            }
             inner = innerMaking;
         }
     }
+
+    /** The most scopes a scope parks (parkedScope()): rows are keyed by what they say, and a few dozen is every row a page has had in a year. */
+    static final int PARKED_MAX = 48;
 
     /** A draw in progress. */
     private static final class Draw {
@@ -158,6 +192,8 @@ public final class Kept {
         final List<Node> handedBack = new ArrayList<>();
         final Set<Node> made = Collections.newSetFromMap(new IdentityHashMap<>());
         final Set<Node> tipped = Collections.newSetFromMap(new IdentityHashMap<>());
+        final Set<Property<?>> given = Collections.newSetFromMap(new IdentityHashMap<>());
+        final Map<Node, Scene> detached = new IdentityHashMap<>();
 
         Draw(Draw outer) {
             this.outer = outer;
@@ -172,6 +208,13 @@ public final class Kept {
 
     /** The draw on now, or null: then every call here makes a new node. Only ever touched on the FX thread. */
     private static Draw drawing;
+    /** The draw whose staged lists are committing, when constructors must behave outside a draw. */
+    private static Draw settling;
+
+    /** Bench observation of JavaFX layout requests, null during ordinary play (FX thread only). */
+    static Consumer<Node> layoutObserver;
+    /** The preferred-size convenience setter bypasses Parent.requestLayout; observe its calls directly. */
+    static Consumer<Node> sizeObserver;
 
     /** Whether a kept draw is on. */
     static boolean drawing() {
@@ -206,9 +249,15 @@ public final class Kept {
         } finally {
             // Nothing is being drawn while the boxes are settled: what a children change calls is not this draw's.
             drawing = null;
+            Draw previousSettling = settling;
+            settling = d;
             try {
                 for (Scope s : d.begun) s.end();
+                for (Node n : d.handedBack) resetOmitted(d, n);
                 for (Staging s : d.staged) s.commit();
+                for (Map.Entry<Node, Scene> e : d.detached.entrySet()) {
+                    if (e.getKey().getScene() != e.getValue()) letGo(e.getKey());
+                }
                 // A tooltip the code gave a node last time and not this time goes.
                 for (Node n : d.handedBack) {
                     Tooltip t = tipOf(n);
@@ -218,6 +267,7 @@ public final class Kept {
                 pool.lastMade = d.made.size();
                 pool.lastKept = d.handedBack.size();
             } finally {
+                settling = previousSettling;
                 drawing = outer;
             }
         }
@@ -246,6 +296,44 @@ public final class Kept {
         } finally {
             d.scopes.pop();
         }
+    }
+
+    /**
+     * A scope for a row that comes and goes (FB2, KS1-Gov): as scope(), but the row's nodes are kept for the draw that asks for it again, not
+     * let go at the first draw that does not. WHY: a line the model writes in some months and not in others (a tax's slice of the ring, a
+     * step of the bridge, the arrears' lines) was made new at every return, and the Government Overview's busiest month made 45 nodes of 400
+     * (47 of 378, 40 of 384, 46 of 400 on other cities' paths) against the tenth KeptCheck allows. A parked row is handed back as any kept node
+     * is, set again where the draw sets it and cleared where it does not, so it equals a row built new; it is off the page while it is absent
+     * (the box's children are the draw's own). A row's first appearance still makes its nodes, once; at most PARKED_MAX rows are parked in a
+     * scope, the rest let go as before.
+     */
+    static <T> T parkedScope(Object key, Supplier<T> code) {
+        Draw d = drawing;
+        if (d == null) return code.get();
+        Scope parent = d.scopes.peek();
+        Scope s = parent.innerMaking.get(key);
+        if (s == null) {
+            s = parent.inner.get(key);
+            if (s == null) s = new Scope();
+            s.begin();
+            d.begun.add(s);
+            parent.innerMaking.put(key, s);
+        }
+        parent.parkedKeys.put(key, s);
+        d.scopes.push(s);
+        try {
+            return code.get();
+        } finally {
+            d.scopes.pop();
+        }
+    }
+
+    /** parkedScope() for code that makes nothing to return. */
+    static void parkedScope(Object key, Runnable code) {
+        parkedScope(key, () -> {
+            code.run();
+            return null;
+        });
     }
 
     /** The same, for code that makes nothing to return. */
@@ -292,25 +380,37 @@ public final class Kept {
         return d == null || d.made.contains(n);
     }
 
-    /** A node handed back, made what a new one is in what code gives a node only sometimes. */
+    /** A node handed back: optional state is settled after the drawing code has had its turn. */
     private static void handBack(Draw d, Node n) {
         d.handedBack.add(n);
-        n.setOnMouseClicked(null);
-        n.setOnMousePressed(null);
-        n.setOnMouseReleased(null);
-        n.setOnMouseEntered(null);
-        n.setOnMouseExited(null);
-        n.setOnMouseMoved(null);
-        n.setOnMouseDragged(null);
-        n.setOnScroll(null);
-        if (n instanceof ButtonBase b) b.setOnAction(null);
-        // Each only where it differs: a set, even of the same value, marks a styleable value as code's.
-        if (!n.isManaged()) n.setManaged(true);
-        if (n.isDisable()) n.setDisable(false);
-        if (n.isMouseTransparent()) n.setMouseTransparent(false);
-        resetIfCodeSet(n.cursorProperty(), null);
-        resetIfCodeSet(n.visibleProperty(), true);
-        resetIfCodeSet(n.opacityProperty(), 1.0);
+    }
+
+    /** An explicit optional value, including an unchanged one, belongs to this draw. */
+    static <T> void give(Property<T> property, T value) {
+        if (drawing != null) drawing.given.add(property);
+        property.setValue(value);
+    }
+
+    private static <T> void omitted(Draw d, Property<T> p, T initial) {
+        if (!d.given.contains(p)) resetIfCodeSet(p, initial);
+    }
+
+    private static void resetOmitted(Draw d, Node n) {
+        omitted(d, n.onMouseClickedProperty(), null);
+        omitted(d, n.onMousePressedProperty(), null);
+        omitted(d, n.onMouseReleasedProperty(), null);
+        omitted(d, n.onMouseEnteredProperty(), null);
+        omitted(d, n.onMouseExitedProperty(), null);
+        omitted(d, n.onMouseMovedProperty(), null);
+        omitted(d, n.onMouseDraggedProperty(), null);
+        omitted(d, n.onScrollProperty(), null);
+        if (n instanceof ButtonBase b) omitted(d, b.onActionProperty(), null);
+        omitted(d, n.managedProperty(), true);
+        omitted(d, n.disableProperty(), false);
+        omitted(d, n.mouseTransparentProperty(), false);
+        omitted(d, n.cursorProperty(), null);
+        omitted(d, n.visibleProperty(), true);
+        omitted(d, n.opacityProperty(), 1.0);
     }
 
     /**
@@ -361,6 +461,16 @@ public final class Kept {
 
         Column() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
+
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
         }
@@ -381,6 +491,16 @@ public final class Kept {
         private ObservableList<Node> stage;
 
         Row() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
 
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
@@ -403,6 +523,16 @@ public final class Kept {
 
         Stack() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
+
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
         }
@@ -423,6 +553,16 @@ public final class Kept {
         private ObservableList<Node> stage;
 
         Flow() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
 
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
@@ -445,6 +585,16 @@ public final class Kept {
 
         Plain() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
+
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
         }
@@ -461,13 +611,25 @@ public final class Kept {
     }
 
     /**
-     * A GridPane, kept. Its column and row constraints are a list on the grid, not children, so a
-     * grid handed back starts with none, and the code that adds them each draw adds them once.
+     * A GridPane, kept: constraints stage with children. Equal specifications retain the grid's own
+     * constraints; omitted constraints are cleared only when this draw commits.
      */
     static final class Grid extends GridPane implements Staging {
         private ObservableList<Node> stage;
+        private ObservableList<ColumnConstraints> columns;
+        private ObservableList<RowConstraints> rows;
 
         Grid() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
+        @Override public void requestLayout() {
+            if (layoutObserver != null) layoutObserver.accept(this);
+            super.requestLayout();
+        }
 
         @Override public ObservableList<Node> getChildren() {
             return stage != null ? stage : super.getChildren();
@@ -475,17 +637,52 @@ public final class Kept {
 
         @Override public void stage() {
             stage = FXCollections.observableArrayList();
-            if (!isNew(this)) {
-                getColumnConstraints().clear();
-                getRowConstraints().clear();
-            }
+            columns = FXCollections.observableArrayList();
+            rows = FXCollections.observableArrayList();
         }
 
         @Override public void commit() {
             ObservableList<Node> want = stage;
             stage = null;
+            settleConstraints(getColumnConstraints(), columns, Kept::sameColumn);
+            settleConstraints(getRowConstraints(), rows, Kept::sameRow);
+            columns = null;
+            rows = null;
             if (want != null) settle(super.getChildren(), want);
         }
+    }
+
+    static ObservableList<ColumnConstraints> columns(GridPane grid) {
+        return grid instanceof Grid g && g.columns != null ? g.columns : grid.getColumnConstraints();
+    }
+
+    static ObservableList<RowConstraints> rows(GridPane grid) {
+        return grid instanceof Grid g && g.rows != null ? g.rows : grid.getRowConstraints();
+    }
+
+    private static <T> void settleConstraints(ObservableList<T> actual, List<T> want,
+                                              java.util.function.BiPredicate<T, T> same) {
+        if (want == null) return;
+        if (actual.size() == want.size()) {
+            boolean equal = true;
+            for (int i = 0; i < actual.size(); i++) equal &= same.test(actual.get(i), want.get(i));
+            if (equal) return;
+        }
+        actual.setAll(want);
+    }
+
+    private static boolean sameColumn(ColumnConstraints a, ColumnConstraints b) {
+        return a.getMinWidth() == b.getMinWidth() && a.getPrefWidth() == b.getPrefWidth()
+                && a.getMaxWidth() == b.getMaxWidth() && a.getPercentWidth() == b.getPercentWidth()
+                && a.getHgrow() == b.getHgrow() && a.getHalignment() == b.getHalignment()
+                && a.isFillWidth() == b.isFillWidth();
+    }
+
+    private static boolean sameRow(RowConstraints a, RowConstraints b) {
+        return a.getMinHeight() == b.getMinHeight() && a.getPrefHeight() == b.getPrefHeight()
+                && a.getMaxHeight() == b.getMaxHeight() && a.getPercentHeight() == b.getPercentHeight()
+                && a.getVgrow() == b.getVgrow() && a.getValignment() == b.getValignment()
+                && a.isFillHeight() == b.isFillHeight();
     }
 
     /** A Group, kept: Group's getChildren() is final, so a kept group's children are set through {@link #children}. */
@@ -554,7 +751,15 @@ public final class Kept {
 
     /** A Region: a spacer, a bar, a swatch. */
     static Region region() {
-        return of(Region.class, Region::new);
+        return of(SizedRegion.class, SizedRegion::new);
+    }
+
+    /** A plain Region with the same passive setter observation as the kept boxes. */
+    static final class SizedRegion extends Region {
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
     }
 
     /** A Label with this text and no graphic. */
@@ -640,29 +845,36 @@ public final class Kept {
      * that ends the press. Two event filters, added once in the node's life (a marker in its
      * properties, not {@link #isNew}, so it works outside a draw too): filters run before the node's
      * own handlers, so the release clears the flag before the release handler commits the value
-     * and redraws - and that redraw is free to set the value. A node that cannot hear its release lets go
-     * (the scene listener, and the disabled one below): a node taken off the scene, or greyed with the
-     * button down, would otherwise stay held, and a kept draw would never set its value again.
+     * and redraws - and that redraw is free to set the value. The scene hears a release even when
+     * this node is greyed: a disable/enable during one press keeps the thumb under the hand, and
+     * releasing elsewhere while disabled lets it go. Leaving the scene also lets it go.
      */
     static void grip(Node n) {
         if (n.getProperties().putIfAbsent(GRIP, Boolean.TRUE) != null) return;
         n.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
             if (e.getButton() == MouseButton.PRIMARY) n.getProperties().put(HELD, Boolean.TRUE);
         });
-        n.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
-            if (e.getButton() == MouseButton.PRIMARY) n.getProperties().remove(HELD);
-        });
-        // A node taken off the scene mid-press never hears its release: it is let go with the scene.
+        EventHandler<MouseEvent> release = e -> {
+            if (e.getButton() != MouseButton.PRIMARY) return;
+            letGo(n);
+        };
+        n.addEventFilter(MouseEvent.MOUSE_RELEASED, release);
+        WeakEventHandler<MouseEvent> sceneRelease = new WeakEventHandler<>(release);
         n.sceneProperty().addListener((o, was, now) -> {
-            if (now == null) n.getProperties().remove(HELD);
+            if (was != null) was.removeEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
+            if (now != null) now.addEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
+            else {
+                Draw draw = drawing != null ? drawing : settling;
+                if (draw != null && was != null) draw.detached.putIfAbsent(n, was);
+                else letGo(n);
+            }
         });
-        // ...and so does a node greyed mid-press (KP2b): a disabled node gets no mouse event, so it never hears its release. A slider's own
-        // drag (valueChanging, which counts as held) ends with it, for the same reason.
-        n.disabledProperty().addListener((o, was, now) -> {
-            if (!now) return;
-            n.getProperties().remove(HELD);
-            if (n instanceof Slider s && s.isValueChanging()) s.setValueChanging(false);
-        });
+        if (n.getScene() != null) n.getScene().addEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
+    }
+
+    private static void letGo(Node n) {
+        n.getProperties().remove(HELD);
+        if (n instanceof Slider s && s.isValueChanging()) s.setValueChanging(false);
     }
 
     /**

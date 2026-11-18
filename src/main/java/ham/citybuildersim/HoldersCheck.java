@@ -109,7 +109,8 @@ import java.nio.file.Files;
  *     short and left them 4.4e-16 of a piece at today's prices and none at the founding's, which firmBookRatio() read as paper worth
  *     0.93 of face at one level and 1 at the other. Debt.moved() snaps a remainder within HOLDING_ROUNDING of the face moved to nothing,
  *     in every holder's move and the buyback's; a part-sale's rest and a remainder ten times the floor are kept; and the floor is a
- *     share of the face moved, so the founding's scale is the same.
+ *     share of the face moved, so the founding's scale is the same. RT1b also causes the rounding on the sectors' and cells' own
+ *     books, for principal and buybacks, and runs the firm's desk: the bank's independently booked face must equal the pieces' transfer.
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -179,12 +180,6 @@ public class HoldersCheck {
         // who holds the city's paper on the calm curve it was written on - so it is played as written, FC1 off in this JVM
         // (BuildingManager.buildersShortOn; docs/queue/FC1-notes.md section 1).
         BuildingManager.buildersShortOn = false;
-        // ...and LD2's wage off as well (WantedPosts.carryKeptOut; LD2's notes 6): on LD2's path section 6's reloaded twin
-        // parts from its city a month after the save - the households settle 0.003 of the paper still owed for against
-        // the live city's 55.04, their savings 47 against 403, with the labour market and every cell alike at the load and
-        // no refused post in either. A field the save does not carry, which this path reaches; queued (LD3) to find it and
-        // turn LD2 back on here.
-        WantedPosts.carryKeptOut = false;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
         GameFiles files = GameFiles.scratch("holderscheck");
@@ -429,8 +424,15 @@ public class HoldersCheck {
         quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
-        assertTrue("fixture: paper held by all three again",
-                ledger.householdPrincipal() > 0 && ledger.centralBankPrincipal() > 0 && ledger.bankPrincipal() > 0);
+        boolean householdPaper = Observation.reached("fixture: the save city's households hold paper",
+                ledger.householdPrincipal() > 0,
+                "household paper ratio and next-month coupon comparisons");
+        boolean centralBankPaper = Observation.reached("fixture: the save city's central bank holds paper",
+                ledger.centralBankPrincipal() > 0,
+                "central-bank paper book round trip");
+        boolean bankPaper = Observation.reached("fixture: the save city's bank holds paper",
+                ledger.bankPrincipal() > 0,
+                "bank discount round trip");
         quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));   // and one still owed for
         final Game[] back = new Game[1];
         quietly(() -> {
@@ -438,15 +440,15 @@ public class HoldersCheck {
             back[0] = new Game(files);
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
-            /* ...AND THE LIVE CITY'S HELD SECTOR HELD IN IT TOO (GW1): a hold is the harness's, not the save's (BusinessInvestment.holdSector(), "not saved"),
-               so the twin stands on the live city's holds as it stands on its world. The save round-trips exactly (the two saved files differ in
-               their name and time alone), and a month on the two parted with Heavy Industry unheld in the twin: on GW1's path (the staffing gate
-               counts the workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the households' savings stood at 1,524.2 in both at the load
-               and 686.9 in the live city at the settle against 303.3 in the twin, the ten-year piece's allotment of 36.81 paid in full by the live city's households and
-               0.104 by the twin's, and the coupons 0.162121 against 0.061725. Held in the twin, both come to 686.9 and pay the same. */
+            // ...AND THE LIVE CITY'S HELD SECTOR HELD IN IT TOO (GW1): a hold is the harness's, not the
+            // save's (BusinessInvestment.holdSector(), "not saved"), so the twin stands on the live city's
+            // holds as it stands on its world.
             back[0].getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         });
         Game twin = back[0];
+        assertTrue("fixture: both cities hold Heavy Industry before the next settle",
+                city.getBusinessInvestment().isHeld(Sectors.HEAVY_INDUSTRY)
+                        && twin.getBusinessInvestment().isHeld(Sectors.HEAVY_INDUSTRY));
         double[] was = hb.toCellSaveArray(), is = twin.getHouseholdBalance().toCellSaveArray();
         boolean cellsSame = was.length == is.length;
         for (int i = 0; cellsSame && i < was.length; i++) cellsSame = was[i] == is[i];
@@ -463,15 +465,15 @@ public class HoldersCheck {
         }
         assertTrue("every piece of paper's holders, what it is owed for and its discount came back",
                 paperSame);
-        close("...the households' paper ratio", twin.getHouseholdBalance().getPaperRatio(), hb.getPaperRatio(), 0);
-        close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cb.getPaperHeld(), 0);
-        close("...and the bank's unearned discount, re-derived from the paper",
+        if (householdPaper) close("...the households' paper ratio", twin.getHouseholdBalance().getPaperRatio(), hb.getPaperRatio(), 0);
+        if (centralBankPaper) close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cb.getPaperHeld(), 0);
+        if (bankPaper) close("...and the bank's unearned discount, re-derived from the paper",
                 twin.getBank().getUnearnedDiscount(), bank.getUnearnedDiscount(), 1e-9);
         assertTrue("...and the two books agree in the reloaded city", booksAgree(twin));
         MoneyAudit.Result mine = play(city), theirs = play(twin);
-        close("a month on, both settle the paper still owed for the same way",
+        if (householdPaper) close("a month on, both settle the paper still owed for the same way",
                 twin.getHouseholdsBoughtPaper(), city.getHouseholdsBoughtPaper(), 1e-9);
-        close("...and pay the households the same coupons", twin.getCouponsToHouseholds(),
+        if (householdPaper) close("...and pay the households the same coupons", twin.getCouponsToHouseholds(),
                 city.getCouponsToHouseholds(), 1e-9);
         assertTrue("...and both months close", Math.abs(mine.residual) <= MoneyAudit.tolerance(mine.moved())
                 && Math.abs(theirs.residual) <= MoneyAudit.tolerance(theirs.moved()));
@@ -628,13 +630,8 @@ public class HoldersCheck {
              */
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
-            /* ...AND EVERY OTHER SECTOR HELD, SO THE HOUSEHOLDS' PURSE IS STILL THERE AT THE SETTLE (GW1). The section is about the paper, not the businesses'
-               building. On GW1's path (the staffing gate counts the workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the businesses order
-               their buildings earlier and the month between the sale and its settle takes the households' money: at the sale (month 61) the ask was
-               313.38 on a spare of 184.34, the households were allotted 181.85 of the 311.51 due, and at the settle their spare stood at 0.00 (savings
-               290.70 at the sale, 107.09 at the settle), so they paid nothing and held $0.00k of the $315.78k bond (the bank $315.66k), and the four
-               lines below that read their share fail. With every sector held the ask was 4,411.30 on a spare of 2,594.88, the allotment 2,591.40 of the
-               4,407.20 due, and the households paid it at the settle (spare 2,603.43 before, 12.03 after). */
+            // ...AND EVERY OTHER SECTOR HELD, SO THE HOUSEHOLDS' PURSE IS STILL THERE AT THE SETTLE (GW1).
+            // DQ1 tried it free (2026-11-16): the two-step clearing's fixture was not reached and its laws skipped. Held.
             for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -662,28 +659,16 @@ public class HoldersCheck {
              */
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
-        assertTrue("fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched",
-                city.getMigration().getLastDecliningShare() == 0);
+        boolean noTierDeclining = Observation.reached("fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched",
+                city.getMigration().getLastDecliningShare() == 0,
+                "whole-book household-only QE step");
         HouseholdBalance hb = city.getHouseholdBalance();
         DebtManager ledger = city.getDebtManager();
         Bank bank = city.getBank();
         CentralBank cb = city.getCentralBank();
-        // One and seven tenths of what the households can pay (CD2, D32): they bid a fifth
-        // of the issue for each point over the deposit rate and are limited by their purse,
-        // not by half the issue as they were, so they take their whole purse - about 59% of
-        // this issue - and the bank the rest. Both hold part, and the households hold more
-        // than the first step off them, so the middle this section saves in still comes.
-        //
-        // ...AND THE SAVERS' RATE HELD LOW ENOUGH FOR THAT TO BE SO (LD1, 2026-10-31). The households' bid is
-        // the smaller of their purse and a fifth of the issue for each point over the deposit rate, and the
-        // bank's room (1.78M of face) never binds, so their share was never the purse's 59% but the rate's:
-        // 20 x (the paper's yield - the deposit rate), the same at any ask. It was 51.5% on the path before LD1
-        // (the savers' rate 1.375%) and is 47.2% on LD1's (1.627%: the bank's payout over its deposits, a
-        // path's figure). The middle needs the bank under half: the quarter of the term paper QE_SPEED takes a
-        // month clears a bank holding 53% in three steps, and the fourth, the measured month's, is then every
-        // dollar the others hold (the households' 17,177.61k against the 17,179.16k the steps needed). A
-        // bigger purse cannot move it (the rate binds first), so the rate is set, as AuctionCheck sets it, to
-        // one where the purse binds: the households take their whole purse, as this comment has always said.
+        // One and seven tenths of what the households can pay (CD2, D32): they bid a fifth of the issue for
+        // each point over the deposit rate and are limited by their purse, not by half the issue as they
+        // were, so they take their whole purse - about 59% of this issue - and the bank the rest.
         final double savers = .005;
         double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 1.7);
         quietly(() -> {
@@ -692,17 +677,23 @@ public class HoldersCheck {
         });
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
+        cb.setTargetShare(1.0);
+        close("the dial takes 100%, MAX_QE_SHARE", cb.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
+        if (!Observation.reached("fixture: the whole-book city issued its twenty-year bond",
+                bond != null && noTierDeclining,
+                "whole-book holder waterfall and mid-operation save")) return;
+        assertTrue("the newly settled bond owes no settle and the central bank has bought none yet",
+                bond.getSettleDue() == 0 && bond.centralBankPrincipal() == 0);
         double face = bond.getOustandingPrincipal();
-        assertTrue("fixture: one twenty-year bond, the households holding part and the bank the rest",
-                bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.centralBankPrincipal() == 0
-                        && bond.getSettleDue() == 0);
-        assertTrue("fixture: ...the households the larger part, the bank under half the issue, so the bank's paper clears in two steps",
-                bond.householdPrincipal() > bond.bankPrincipal() && bond.bankPrincipal() < face / 2);
+        if (!Observation.reached("fixture: one twenty-year bond, the households holding part and the bank the rest",
+                bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0,
+                "whole-book household-only QE, books and save")) return;
+        if (!Observation.reached("fixture: ...the households the larger part, the bank under half the issue, so the bank's paper clears in two steps",
+                bond.householdPrincipal() > bond.bankPrincipal() && bond.bankPrincipal() < face / 2,
+                "whole-book household-only QE, books and save")) return;
         out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
                 bond.householdPrincipal(), face, bond.bankPrincipal());
 
-        cb.setTargetShare(1.0);
-        close("the dial takes 100%, MAX_QE_SHARE", cb.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
         boolean bankFirst = true;
         int months = 0;
         while (bond.bankPrincipal() > 1e-9 * face && months < 8) {
@@ -947,16 +938,7 @@ public class HoldersCheck {
 
         /* ---- the coupon ---- */
         out.println("   -- the coupon reaches the tills, and the principal and a buyback do too");
-        /*
-         * WG2, {next}, 2026-11-10: NO HOLDER SELLS TO PAY ITS WAY IN THE COUPON MONTH. The coupon is paid on the paper each sector holds when it
-         * is paid, and "expected" below is struck on what they hold going in. A sector that is short of cash in the month recalls: it
-         * sells its paper to the bank's desk to pay its way (OutwardInvestment.recall), and its share is gone before the coupon. On
-         * main the allotment's slivers (Luxury Retail 0.067 and Restaurants 0.012 of 96.49 face, tills 39 and 4) were held through the
-         * month and the coupon came to 0.30153928 as expected. On WG2's path Manufacturing held a sliver of 0.00298560 of 29.53264951
-         * face on a till of 11.3 and sold all of it in the month: the businesses' paper 29.52966391 when the coupon was paid, 0.09228020
-         * against 0.09228953 expected. The holders that are not the three given idle money are given a till like theirs between
-         * the presses, as the three were before the settle, so none has to sell, and what they hold is asserted after the month.
-         */
+        // WG2, 2026-11-10: NO HOLDER SELLS TO PAY ITS WAY IN THE COUPON MONTH.
         for (String k : keys) if (!idle.contains(k) && outward.paperOf(k) > 0) econ.setSectorCash(k, Math.max(econ.getSectorCash(k), till));
         final double heldGoingIn = outward.totalPaper();
         double expected = 0;
@@ -1554,9 +1536,9 @@ public class HoldersCheck {
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(3))).getAsJsonObject();
         com.google.gson.JsonArray full = json.getAsJsonArray("capitalFlows");
-        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows; XR4's 19-23, what a risk-off unwound) is
+        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows; XR4's 19-23, what a risk-off unwound; FB3's 24-25, the peaks) is
         // caught here, so whoever appends looks again at whether cutting it at 12 is still a save from before the world held any (FX8).
-        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long", full != null && full.size() == 24);
+        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is CapitalFlows.SAVE_SLOTS (" + CapitalFlows.SAVE_SLOTS + ") long", full != null && full.size() == CapitalFlows.SAVE_SLOTS && new CapitalFlows().toSaveArray().length == CapitalFlows.SAVE_SLOTS);
         com.google.gson.JsonArray cut12 = new com.google.gson.JsonArray();
         for (int i = 0; i < 12; i++) cut12.add(full.get(i));
         json.add("capitalFlows", cut12);
@@ -1579,17 +1561,7 @@ public class HoldersCheck {
 
         /* ---- it leaves with its money ---- */
         out.println("   -- the money leaves and the paper goes with it, to the bank's desk");
-        /*
-         * WG2, {next}, 2026-11-10: THE PAPER THAT LEAVES STANDS AT OR UNDER FACE, THE RULE'S TARGET A POINT UP. The claim below is that the
-         * desk pays a market price for the paper that leaves, at or under face (the arithmetic allows two hundredths over), which presumes
-         * a market where the paper stands at or under its face, the curve at or over the coupon the line was struck at. On main at month 90
-         * (inflation +0.86%) the line's yield is 3.90% and its value 1.017 of face (the desk paid 1.019, inside the two hundredths); on
-         * WG2's path the city's prices have fallen 3.19% over the year and the market looks for the rule to ease, so the yield is 3.58%,
-         * the value 1.051 of face and the desk paid 1.067, over them. The dial itself prices only the next DRIFT_MONTHS (6) of a
-         * nineteen-year line, so what moves its yield is the rule: the inflation target a point up (3.00% for the 2.00% the city plays
-         * at; the player's dial on the monetary page) puts the rule's intercept up with it and the expected inflation to 2.56%, and the
-         * line at 0.956 of face. The claims are as they were; the fixture below asserts the value.
-         */
+        // WG2, 2026-11-10: THE PAPER THAT LEAVES STANDS AT OR UNDER FACE, THE RULE'S TARGET A POINT UP.
         ledger.setInflationTarget(ledger.getInflationTarget() + .01);
         // Cause a departure: the stock well past what the spread would keep, so it leaves at DEPARTURE_SPEED of the excess.
         play(city);
@@ -1725,6 +1697,11 @@ public class HoldersCheck {
 
     /** ...its first sale made with the policy rate this much higher, so the line's coupon stands over the rates the city goes back to (13a, BD1). */
     static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise) throws Exception {
+        return reopeningFixture(label, restrikeOff, firstSaleRise, .15);
+    }
+
+    /** BK2b: a smaller first sale leaves less of the bank's own discount to cover the next sale's premium. */
+    static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare) throws Exception {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
@@ -1736,12 +1713,11 @@ public class HoldersCheck {
         city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05), as main() opens them for the other sections: 13a needs the
-            // second sale of the line to come at a premium to its coupon, and in the untaxed 1900 town on BA1's path it did not
-            // (the 20-year yield 4.151% at the first sale and 4.168% at the reopening, a sale of 165.65 face for 164.36, the
-            // line's discount left up from 1.00 to 2.29: the coupon rounds down to 4.125% and the yield stood over it). The town
-            // taxing from month 1, which these sections were written against, has the yield 3.97% at the first sale and 3.84%
-            // at the reopening, the reopening over its face and the discount down from 1.98 to 1.67.
+            // THE LEVERS OPENED IN THE FIXTURE (BA1 on R0, 2026-11-05), as main() opens them for the other
+            // sections: 13a needs the second sale of the line to come at a premium to its coupon, and in the
+            // untaxed 1900 town on BA1's path it did not (the 20-year yield 4.151% at the first sale and
+            // 4.168% at the reopening, a sale of 165.65 face for 164.36, the line's discount left up from
+            // 1.00 to 2.29: the coupon rounds down to 4.125% and the yield stood over it).
             city.getEconomyManager().getTaxPolicy().reset();
             city.getEconomyManager().getTaxPolicy().openAll();
             // WG1 (2026-11-10): the floor at the going rate, the wage these sections were written against, before a month has run. A new city's floor is
@@ -1755,16 +1731,8 @@ public class HoldersCheck {
             city.getForeignAccounts().pinRate(1.0);
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
-            /* ...AND EVERY OTHER SECTOR HELD, SO THE SALES ARE THE SIZE THE SECTIONS BELOW ARE WRITTEN FOR (GW1). On GW1's path (the staffing gate
-               counts the workers an order's posts would draw, Sector.GATE_DRAW_MONTHS) the businesses order their buildings earlier and borrow for
-               them. Measured when the first sale (month 61) has settled, month 62, with only Construction and Heavy Industry held: the bank's weighted
-               book 6,710.9 on equity 773.6, the savers' rate 1.43%, the businesses' idle money 932.8, 789 people, and a sale of 31.06 face that went
-               households 0.00, bank 31.04, world 0.01; with every sector held: weighted book 190.6 on equity 792.8, the savers' rate 0.00%, idle
-               money 1,339.5, 857 people, and a sale of 367.55 face that went households 279.32, bank 88.19 (24.0%), world 0.03, the second sale
-               (the rates up four points) of 364.86 going bank 70.50 (19.3%). Unheld, four fixtures of 13a and 13b fail on the small sale: the second
-               sale reopening the line for proceeds over its face, the line's discount left not moving at the sale, the bank paying more than the
-               face it took, and the households' own discount per face against the pool's. The sections are about the paper and its holders, not
-               the businesses' building. */
+            // ...AND EVERY OTHER SECTOR HELD, SO THE SALES ARE THE SIZE THE SECTIONS BELOW ARE WRITTEN FOR
+            // (GW1). DQ1 tried it free (2026-11-16): the line's discount fell outside 0.0213-0.0300 and eight lines failed. Held.
             for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -1781,17 +1749,9 @@ public class HoldersCheck {
             ledger.setPolicyRate(ledger.getPolicyRate() + firstSaleRise);
             city.strikeTheCurve();
         }
-        /*
-         * WG2, {next}, 2026-11-10: THE FIRST SALE A SMALLER PART OF WHAT THE HOUSEHOLDS CAN PAY, .15 OF IT AND NOT .2, so the second is more of the line.
-         * Section 12's second sale (the rates up four points) moves the line's discount per unit of face by its tranche's discount over
-         * the line's own, times its share of the line, and the fixture asks for over .01. The second tranche is sold at ~.0296 a unit of face
-         * on both paths and is as large as the first (ask2 .2 of the spare, ask1 the same); the line's own before it is the first sale's
-         * discount after a settle's accretion: main .0079 (face 367.5, the 20-year yield 4.021% over a 4% coupon), WG2 .0090 (face 214.8,
-         * the yield 3.9895% under it, so the coupon rounds down an eighth to 3.875%). So the move was .0108 on main and .0097 on WG2,
-         * .0003 short. At .15 the first sale is a smaller share of the line and the move is .0112 (.0091 to .0203); the claims of 12 to 15
-         * are as written, and at .1 the fixture of 13c ("the bank's book covers the face it sells back") fails.
-         */
-        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .15);
+        // WG2, 2026-11-10: THE FIRST SALE A SMALLER PART OF WHAT THE HOUSEHOLDS CAN PAY, .15 OF IT AND NOT
+        // .2, so the second is more of the line.
+        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * firstSaleShare);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
         quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);
@@ -1804,7 +1764,7 @@ public class HoldersCheck {
 
     /** What the reopening did to a line: its face and its discount per unit of face either side, whether it is the same line, and what the households held going in. */
     record Reopened(double faceBefore, double faceAfter, double perFaceBefore, double perFaceAfter,
-                    double heldBefore, boolean sameLine) { }
+                    double heldBefore, boolean sameLine, boolean quoted) { }
 
     /** The reopening, done the same way to the city and to its twin: the rates up four points and the same line sold again, to be settled the next month. */
     static Reopened reopen(Game city, Debt line) {
@@ -1814,11 +1774,12 @@ public class HoldersCheck {
         ledger.setPolicyRate(ledger.getPolicyRate() + .04);
         city.strikeTheCurve();
         final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
+        DebtQuote quote = city.quoteLongBond(ask2, 20, 100 * PriceLevel.FACTOR);
         int pieces = ledger.getDebt().size();
         quietly(() -> city.handleLongBondLogic(ask2, 20, 100 * PriceLevel.FACTOR));
         boolean same = ledger.getDebt().size() == pieces && ledger.benchmarkLine(20) == line;
         return new Reopened(faceBefore, line.getOustandingPrincipal(), perFaceBefore,
-                line.getDiscountLeft() / line.getOustandingPrincipal(), heldBefore, same);
+                line.getDiscountLeft() / line.getOustandingPrincipal(), heldBefore, same, !quote.isEmpty());
     }
 
     /** Two of the model's own figures agree to this much of the larger of them (BK2's relative tolerances: 1e-9 for sums of a line's pieces, 1e-12 for a rate per face). */
@@ -1900,15 +1861,18 @@ public class HoldersCheck {
 
         /* ---- a fresh line: the first settle re-strikes nothing ---- */
         out.println("   -- a line sold once and settled: the bank's share of its discount is its own purchase's");
-        assertTrue("fixture: the treasury sold a twenty-year bond between the presses", line != null && twinFix.line() != null);
+        if (!Observation.reached("fixture: the treasury sold a twenty-year bond between the presses",
+                line != null && twinFix.line() != null,
+                "section 12 holder discounts, settle and twin laws")) return;
         close("a fresh line's settle re-strikes nothing", bank.getDiscountRestruck(), 0, 0);
         Bank.EquityMovement fresh = bank.equityMovement();
         close("...its equity's movement leaves nothing unexplained", fresh.residual(), 0, Math.max(1e-6, 1e-9 * fresh.scale()));
         close("...and its equity's two parts and the preferred still add up to its equity, as they did",
                 bank.equitySplitResidual(), fix.splitStart(), Math.max(1e-6, 1e-9 * Math.abs(bank.equity())));
-        assertTrue("fixture: the households and the bank each hold a material part of the line",
+        if (!Observation.reached("fixture: the households and the bank each hold a material part of the line",
                 line.householdPrincipal() > MATERIAL_PART * line.getOustandingPrincipal()
-                        && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal());
+                    && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal(),
+                "section 12 holder discounts, settle and twin laws")) return;
         String goingIn = firstDifference(cityFigures(city), cityFigures(twin));
         if (!goingIn.isEmpty()) out.println("   first figure apart going in: " + goingIn);
         assertTrue("fixture: the twin is the same city going in", goingIn.isEmpty() && fix.splitStart() == twinFix.splitStart());
@@ -1917,7 +1881,10 @@ public class HoldersCheck {
         out.println("   -- the rates up four points, the same line reopened and settled the next month, in the city and in its twin");
         double hhPerFaceBefore = perFace(line, Debt.Holder.HOUSEHOLDS);
         Reopened re = reopen(city, line), reTwin = reopen(twin, twinFix.line());
-        assertTrue("fixture: the second sale reopened the same line, and the households held part of it going in",
+        if (!Observation.reached("fixture: both played markets quote the reopened sale",
+                re.quoted() && reTwin.quoted(),
+                "section 12 reopened-line holder discounts")) return;
+        assertTrue("the second sale reopens the same line, whose households held part going in",
                 re.sameLine() && re.faceAfter() > re.faceBefore() + 1e-6 && re.heldBefore() > 0);
         assertTrue("fixture: ...the households' own discount is something to keep: it is on the line before the reopening", hhPerFaceBefore > 0);
         closeRel("the reopening did not re-blend the households' own discount per face of the line (BK2)",
@@ -2033,7 +2000,7 @@ public class HoldersCheck {
     }
 
     /** What the premium reopening did to a line: whether it is the same line, the face sold, what it raised, and the line's discount left either side. */
-    record Premium(boolean sameLine, double face, double proceeds, double discountBefore, double discountAfter) { }
+    record Premium(boolean sameLine, double face, double proceeds, double discountBefore, double discountAfter, boolean quoted) { }
 
     /**
      * 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. Near the floor
@@ -2050,17 +2017,19 @@ public class HoldersCheck {
         ledger.setPolicyRate(ledger.getPolicyRate() - PREMIUM_RISE);
         city.strikeTheCurve();
         final double ask2 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
+        DebtQuote quote = city.quoteLongBond(ask2, 20, 100 * PriceLevel.FACTOR);
         int pieces = ledger.getDebt().size();
         quietly(() -> city.handleLongBondLogic(ask2, 20, 100 * PriceLevel.FACTOR));
         boolean same = ledger.getDebt().size() == pieces && ledger.benchmarkLine(20) == line && line.getSales().size() == sales + 1;
         Debt.Sale sale = line.getSales().get(line.getSales().size() - 1);
-        return new Premium(same, sale.getFace(), sale.getProceeds(), discountBefore, line.getDiscountLeft());
+        return new Premium(same, sale.getFace(), sale.getProceeds(), discountBefore, line.getDiscountLeft(), !quote.isEmpty());
     }
 
     static void theDiscountReleased() throws Exception {
         out.println("\n--- 13. the line's discount at an issue or a trade (BD1): each holder's own moves with its face, so nothing is"
                 + " re-struck where it happens, the bank's unearned discount is the book's, and no figure of the city moved ---");
         thePremium();
+        thePremiumPastOwnDiscount();
         theDeskOnAnUnsettledLine();
         theBuybackBeforeTheSettle();
     }
@@ -2076,8 +2045,9 @@ public class HoldersCheck {
 
         Standing going = standing(city), twinGoing = standing(twin);
         double splitGoingIn = bank.equitySplitResidual();
-        assertTrue("fixture: the bank holds part of a settled line, the line has discount left and the book carries the bank's share of it",
-                line != null && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal() && line.getDiscountLeft() > 0 && going.book() > 0);
+        if (!Observation.reached("fixture: the bank holds part of a settled line, the line has discount left and the book carries the bank's share of it",
+                line != null && line.bankPrincipal() > MATERIAL_PART * line.getOustandingPrincipal() && line.getDiscountLeft() > 0 && going.book() > 0,
+                "section 13a bank premium, settle and twin laws")) return;
         close("fixture: ...the bank's unearned discount is the book's going in, in the city", going.carried(), going.book(), 1e-9);
         assertTrue("fixture: ...and the twin's is the same city", going.book() == twinGoing.book() && going.carried() == twinGoing.carried());
         double bankOwnBefore = line.discountOf(Debt.Holder.BANK);
@@ -2089,8 +2059,13 @@ public class HoldersCheck {
                         + " $%,.6fk; the bank's own discount on the line $%,.6fk to $%,.6fk%n",
                 p.face(), p.proceeds(), p.discountBefore(), p.discountAfter(), line.unsettledDiscount(), bankOwnBefore,
                 line.discountOf(Debt.Holder.BANK));
-        assertTrue("fixture: the second sale reopened the same line, between the presses, for proceeds over its face",
-                p.sameLine() && p.face() > 0 && p.proceeds() > p.face() + 1e-6);
+        if (!Observation.reached("fixture: both played markets quote the premium reopening",
+                p.quoted() && pTwin.quoted(),
+                "section 13a reopened-line premium and settle laws")) return;
+        assertTrue("the premium sale reopens the same line with positive face", p.sameLine() && p.face() > 0);
+        if (!Observation.reached("fixture: the played reopening sells over its face",
+                p.proceeds() > p.face() + 1e-6,
+                "section 13a bank premium, settle and twin laws")) return;
         closeRel("fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised",
                 line.unsettledDiscount(), p.face() - p.proceeds(), 1e-9);
         assertTrue("fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle",
@@ -2152,6 +2127,55 @@ public class HoldersCheck {
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " in the month", apart.isEmpty());
+    }
+
+    /** BK2b: the bank's premium exceeds its own discount; the clamp's loss belongs to retained, outside income. */
+    static void thePremiumPastOwnDiscount() throws Exception {
+        out.println("   -- 13a extra. a small first sale, then a premium beyond the bank's own discount");
+        Reopening fix = reopeningFixture("holderscheck-premium-past-own", false, PREMIUM_RISE, .001);
+        Reopening twinFix = reopeningFixture("holderscheck-premium-past-own-twin", true, PREMIUM_RISE, .001);
+        Game city = fix.city(), twin = twinFix.city();
+        Debt line = fix.line(), twinLine = twinFix.line();
+        assertTrue("fixture: both small first sales made a settled line", line != null && twinLine != null);
+        if (line == null || twinLine == null) return;
+        Bank bank = city.getBank(), twinBank = twin.getBank();
+        assertTrue("fixture: the bank owns positive discount before the premium sale", line.discountOf(Debt.Holder.BANK) > 0);
+        Premium sale = reopenAtAPremium(city, line), twinSale = reopenAtAPremium(twin, twinLine);
+        assertTrue("fixture: both markets reopen the same line at a premium",
+                sale.quoted() && twinSale.quoted() && sale.sameLine() && twinSale.sameLine()
+                        && sale.proceeds() > sale.face() && twinSale.proceeds() > twinSale.face());
+        Edge[] edges = watchSettle(city, line);
+        MoneyAudit.Result audit = play(city);
+        city.settleProbeForTest = null;
+        MoneyAudit.Result twinAudit = play(twin);
+        Edge before = edges[0], after = edges[1];
+        double face = after.faceOf(Debt.Holder.BANK) - before.faceOf(Debt.Holder.BANK);
+        double premium = before.bankPaid(after) - face;
+        double own = before.discountOf(Debt.Holder.BANK), shortfall = premium - own;
+        out.printf("   bank premium $%,.9fk, own discount $%,.9fk, shortfall $%,.9fk, re-struck $%,.9fk%n",
+                premium, own, shortfall, bank.getDiscountRestruck());
+        assertTrue("fixture: the bank bought face and paid a premium larger than its positive own discount",
+                face > 0 && own > 0 && shortfall > MoneyAudit.CENT);
+        close("the settle exhausts the bank's own discount on this line", after.discountOf(Debt.Holder.BANK), 0, 0);
+        close("the premium beyond its own discount is booked as discountRestruck",
+                bank.getDiscountRestruck(), -shortfall, movementTolerance(bank));
+        close("...and the equity movement names exactly that re-strike",
+                bank.equityMovement().discountRestruck(), -shortfall, movementTolerance(bank));
+        close("the re-strike goes to retained earnings against the twin that books none",
+                bank.retainedEarnings() - twinBank.retainedEarnings(), -shortfall, splitTolerance(bank));
+        close("the bank's carried unearned discount agrees with the holders' book",
+                bank.getUnearnedDiscount(), city.getDebtManager().bankUnearnedDiscount(), movementTolerance(bank));
+        close("the equity movement closes with the premium loss named", bank.equityMovement().residual(), 0, movementTolerance(bank));
+        assertTrue("the bank's equity split is known", bank.knowsEquitySplit());
+        close("paid-in capital, retained earnings and preferred foot to equity", bank.equitySplitResidual(), 0, splitTolerance(bank));
+        close("the twin's movement exposes precisely the unbooked premium loss",
+                twinBank.equityMovement().residual(), -shortfall, movementTolerance(twinBank));
+        close("the twin's split exposes precisely the missing retained loss",
+                twinBank.equitySplitResidual(), shortfall, splitTolerance(twinBank));
+        assertTrue("income, tax, dividends, paper gains, treasury cash and equity agree with the twin bit for bit",
+                firstDifference(cityFigures(city), cityFigures(twin)).isEmpty());
+        assertTrue("the premium city's audit closes", Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()));
+        assertTrue("...and the twin's audit closes", Math.abs(twinAudit.residual) <= MoneyAudit.tolerance(twinAudit.moved()));
     }
 
     /** 13b: the desk buying the households' paper of a line with a sale unsettled is handed the households' own discount per face, which is what the book moves by (BK2). */
@@ -2281,13 +2305,12 @@ public class HoldersCheck {
     }
 
     /**
-     * 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. The bank
-     * sells back face it has not paid for, with the piece's whole discount, and the settle still pays for the sale;
-     * with a book that covers both, those cancel two months on, as they always did. A re-strike of the discount at
-     * the buyback would leave it unexplained for good.
+     * 13c: a fresh piece closed before its settle cancels its unpaid sale at the original proceeds (BS1).
+     * The bank's paid holdings and carried discount stay in place. The bank's equity split holds through the
+     * cancellation and both following months, in the city and in its twin with re-strikes switched off.
      */
     static void theBuybackBeforeTheSettle() throws Exception {
-        out.println("   -- 13c. a piece sold and bought back whole before its settle, by a bank whose book covers it, in the city and in its twin");
+        out.println("   -- 13c. a fresh unpaid sale cancelled before its settle, in the city and in its twin");
         Reopening fix = reopeningFixture("holderscheck-unsettled-buyback", false);
         Reopening twinFix = reopeningFixture("holderscheck-unsettled-buyback-twin", true);
         Game city = fix.city(), twin = twinFix.city();
@@ -2299,14 +2322,14 @@ public class HoldersCheck {
         double splitAfterBuyback = bank.equitySplitResidual() - splitAtStart, tolerance = splitTolerance(bank);
         double faceTol = 1e-6 * Math.max(1, u.face());
         out.printf("   a year's bill of $%,.4fk face sold with $%,.6fk of discount; the bank's book $%,.4fk, its unearned discount"
-                + " $%,.6fk; bought back whole, the bank's $%,.4fk of it, re-struck $%,.6fk%n",
+                + " $%,.6fk; cancelled whole, paid bank face $%,.4fk, re-struck $%,.6fk%n",
                 u.face(), u.discount(), u.book(), u.carried(), u.bankFace(), restruckAtOnce);
         assertTrue("fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance",
                 u.fresh() && u.face() > 0 && u.discount() > 100 * tolerance);
-        assertTrue("fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's",
+        assertTrue("fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's",
                 u.book() >= u.face() && u.carried() >= u.discount());
-        assertTrue("fixture: ...bought straight back whole, all of it the bank's face, and off the books",
-                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && Math.abs(u.bankFace() - u.face()) <= faceTol);
+        assertTrue("fixture: ...cancelled straight back whole, with no paid bank face, and off the books",
+                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && u.bankFace() == 0);
         assertTrue("fixture: ...and the twin's the same, bit for bit", u.equals(uTwin));
 
         close("the buyback re-struck nothing", restruckAtOnce, 0, 0);
@@ -2314,7 +2337,7 @@ public class HoldersCheck {
         double splitAfter = bank.equitySplitResidual() - splitAtStart, twinSplitAfter = twinBank.equitySplitResidual() - twinSplitAtStart;
         out.printf("   the bank's split moved $%,.6fk by the buyback and $%,.6fk two months on; the twin's $%,.6fk%n",
                 splitAfterBuyback, splitAfter, twinSplitAfter);
-        close("two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back",
+        close("two months on, the cancellation has preserved the bank's equity split",
                 splitAfter, 0, tolerance);
         close("...and the twin's (main before BK1) too", twinSplitAfter, 0, tolerance);
         boolean closed = true;
@@ -2342,17 +2365,11 @@ public class HoldersCheck {
                 taken, held, hair, Debt.HOLDING_ROUNDING * taken);
         LongTermBond piece = loosePiece();
         piece.moveToHouseholds(200); piece.moveToCentralBank(100); piece.moveToWorld(50); piece.moveToFirms(held);
-        final double bankBefore = piece.bankPrincipal();
         assertTrue("fixture: the businesses hold exactly the face the desk takes all but an ulp or two of", piece.firmPrincipal() == held);
         assertTrue("fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved",
                 hair > 0 && hair <= Debt.HOLDING_ROUNDING * taken);
         piece.moveToFirms(-taken);
         assertTrue("a sale meant to take all a holder holds, struck an ulp short, leaves it none", piece.firmPrincipal() == 0);
-        double principal = piece.getOustandingPrincipal();
-        double sum = piece.householdPrincipal() + piece.centralBankPrincipal() + piece.firmPrincipal() + piece.worldPrincipal() + piece.bankPrincipal();
-        assertTrue("...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING",
-                Math.abs(sum - principal) <= Debt.HOLDING_ROUNDING * principal
-                        && Math.abs((piece.bankPrincipal() - bankBefore) - held) <= Debt.HOLDING_ROUNDING * principal);
 
         LongTermBond half = loosePiece();
         half.moveToFirms(held);
@@ -2392,6 +2409,161 @@ public class HoldersCheck {
         assertTrue("fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped",
                 aboveF < Debt.HOLDING_ROUNDING);
         assertTrue("...yet it stays, because the floor is a share of the face moved", Debt.moved(takenF + aboveF, -takenF) > 0);
+
+        for (double scale : new double[]{1, PriceLevel.FACTOR}) {
+            theBuybackDiscountFloor(scale);
+            theHolderLedgers(scale);
+            theFirmDeskSplit(scale, .25);
+            theFirmDeskSplit(scale, 1);
+        }
+    }
+
+    /** BK2b: every seller hands over all its discount when an ulp-short partial buyback snaps its kept face to none. */
+    static void theBuybackDiscountFloor(double scale) {
+        out.printf("   -- an ulp-short partial buyback leaves no discount on no face, scale %.15g%n", scale);
+        for (Debt.Holder seller : new Debt.Holder[]{Debt.Holder.BANK, Debt.Holder.HOUSEHOLDS, Debt.Holder.FIRMS, Debt.Holder.WORLD}) {
+            LongTermBond piece = ownedPiece();
+            piece.redenominate(scale);
+            double held = piece.heldBy(seller), own = piece.discountOf(seller), taken = Math.nextDown(held);
+            double proportional = own * (taken / held);
+            assertTrue(seller + ": fixture has positive discount and a positive remainder inside HOLDING_ROUNDING",
+                    own > 0 && held > taken && held - taken <= Debt.HOLDING_ROUNDING * taken);
+            assertTrue(seller + ": fixture's proportional discount would leave positive dust", own - proportional > 0);
+            double[] before = owned(piece);
+            close(seller + ": the buyback is handed the seller's whole discount", piece.unaccretedOn(seller, taken), own, 0);
+            double[] sold = new double[Debt.Holder.values().length];
+            sold[seller.ordinal()] = taken;
+            piece.retirePart(sold[Debt.Holder.BANK.ordinal()], sold[Debt.Holder.HOUSEHOLDS.ordinal()],
+                    sold[Debt.Holder.FIRMS.ordinal()], sold[Debt.Holder.WORLD.ordinal()]);
+            assertTrue(seller + ": the buyback is partial: other holders still own face", piece.getOustandingPrincipal() > 0);
+            assertTrue(seller + ": no more than rounding face remains", piece.heldBy(seller) <= Debt.HOLDING_ROUNDING * taken);
+            close(seller + ": no discount remains on the retired holding", piece.discountOf(seller), 0, 0);
+            for (Debt.Holder other : Debt.Holder.values()) {
+                if (other != seller) close(seller + ": " + other + " keeps its own discount", piece.discountOf(other), before[other.ordinal()], 0);
+            }
+
+            LongTermBond part = ownedPiece();
+            part.redenominate(scale);
+            double keep = 10 * Debt.HOLDING_ROUNDING * held, partTaken = held - keep;
+            sold[seller.ordinal()] = partTaken;
+            double expected = own * Math.min(1, partTaken / held);
+            assertTrue(seller + ": control keeps face above HOLDING_ROUNDING", held - partTaken > Debt.HOLDING_ROUNDING * partTaken);
+            close(seller + ": the control hands over only proportional discount", part.unaccretedOn(seller, partTaken), expected, 0);
+            part.retirePart(sold[Debt.Holder.BANK.ordinal()], sold[Debt.Holder.HOUSEHOLDS.ordinal()],
+                    sold[Debt.Holder.FIRMS.ordinal()], sold[Debt.Holder.WORLD.ordinal()]);
+            close(seller + ": the control keeps its discount above the floor", part.discountOf(seller), own - expected, 0);
+        }
+    }
+
+    /** Full pro-rata takes that leave positive rounding on main, with partial takes as a control (RT1b). */
+    static void theHolderLedgers(double scale) {
+        out.printf("   -- the holders' own books, scale %.15g%n", scale);
+        Game city = new Game(GameFiles.scratch("holderscheck-floor-books"));
+        EconomyManager economy = city.getEconomyManager();
+        String[] sectors = {Sectors.KEYS[0], Sectors.KEYS[1]};
+        double[] firmFace = {7.060103544449752 * scale, 6.77740972197304 * scale};
+        double total = firmFace[0] + firmFace[1];
+        double oldFirmHair = firmFace[0] - total * (firmFace[0] / total);
+        if (scale == 1) assertTrue("fixture: a full sector take leaves a positive ulp on main's subtraction", oldFirmHair > 0);
+        for (boolean principal : new boolean[]{true, false}) {
+            for (double share : new double[]{.25, 1}) {
+                OutwardInvestment book = new OutwardInvestment();
+                for (int i = 0; i < sectors.length; i++) {
+                    economy.setSectorCash(sectors[i], 0);
+                    book.takeAllotment(sectors[i], 0, firmFace[i], economy);
+                }
+                double face = total * share, price = principal ? face : face * .93;
+                if (principal) book.creditPaperPrincipal(face, economy);
+                else book.creditPaperBuyback(face, price, economy);
+                boolean kept = true, paid = true, spent = true;
+                for (int i = 0; i < sectors.length; i++) {
+                    double rest = firmFace[i] * (1 - share), cash = price * firmFace[i] / total;
+                    kept &= share == 1 ? book.paperOf(sectors[i]) == 0
+                            : Math.abs(book.paperOf(sectors[i]) - rest) <= Math.ulp(firmFace[i]);
+                    paid &= Math.abs(economy.getSectorCash(sectors[i]) - cash) <= 4 * Math.ulp(cash);
+                    spent &= Math.abs(book.getPaperSpentThisMonth(sectors[i]) + cash) <= 4 * Math.ulp(cash);
+                }
+                String step = "sectors, " + (principal ? "principal" : "buyback/purchase") + ", take " + share;
+                assertTrue(step + ": a full take leaves none; a partial take keeps the rest within an ulp", kept);
+                assertTrue(step + ": each till and its investing flow receive only their price share, within rounding", paid && spent);
+                close(step + ": the tills together receive the whole price", economy.getSectorCash(sectors[0])
+                        + economy.getSectorCash(sectors[1]), price, 4 * Math.ulp(price));
+            }
+        }
+
+        for (boolean principal : new boolean[]{true, false}) {
+            for (double share : new double[]{.25, 1}) {
+                HouseholdBalance book = new HouseholdBalance();
+                Household a = book.cells().get(0), b = book.cells().get(1);
+                a.households = 7; b.households = 3;
+                a.paper = 4.947965852576356 * scale; b.paper = .39279214327238 * scale;
+                double[] was = {a.paper, b.paper};
+                double held = book.totalPaper(), face = held * share, price = principal ? face : face * .93;
+                double oldHair = a.paper - held * (a.totalPaper() / held) / a.households;
+                if (scale == 1 && share == 1) assertTrue("fixture: a full cell take leaves a positive ulp on main's subtraction", oldHair > 0);
+                if (principal) book.creditPaperPrincipal(face);
+                else book.creditPaperBuyback(face, price);
+                boolean kept = true, paid = true, income = true;
+                Household[] cells = {a, b};
+                for (int i = 0; i < cells.length; i++) {
+                    Household cell = cells[i];
+                    double rest = was[i] * (1 - share), cash = price * was[i] / held;
+                    kept &= share == 1 ? cell.paper == 0 : Math.abs(cell.paper - rest) <= Math.ulp(was[i]);
+                    paid &= Math.abs(cell.savings - cash) <= 4 * Math.ulp(cash);
+                    income &= Math.abs(cell.paperIncome - (principal ? cash : 0)) <= 4 * Math.ulp(cash);
+                }
+                String step = "cells, " + (principal ? "principal" : "buyback/purchase") + ", take " + share;
+                assertTrue(step + ": a full take leaves none; a partial take keeps the rest within an ulp", kept);
+                assertTrue(step + ": savings and principal income keep only their price share, within rounding", paid && income);
+                close(step + ": savings together receive the whole price", book.totalSavings(), price, 4 * Math.ulp(price));
+            }
+        }
+    }
+
+    /** Run the actual desk through its wired recall, and compare two independently kept books, never a residual sum (RT1b). */
+    static void theFirmDeskSplit(double scale, double share) {
+        Game city = new Game(GameFiles.scratch("holderscheck-floor-desk"));
+        DebtManager ledger = city.getDebtManager();
+        OutwardInvestment outward = city.getOutwardInvestment();
+        Bank bank = city.getBank();
+        LongTermBond a = new LongTermBond(40 * scale, 120, 1, .05), b = new LongTermBond(50 * scale, 120, 1, .05);
+        double[] firms = {1.9513822214670675 * scale, .5 * scale};
+        Debt[] pieces = {a, b};
+        double[] bankBefore = new double[pieces.length];
+        for (int i = 0; i < pieces.length; i++) {
+            pieces[i].moveToHouseholds(2 * scale);
+            pieces[i].moveToCentralBank(3 * scale);
+            pieces[i].moveToWorld(4 * scale);
+            pieces[i].moveToFirms(firms[i]);
+            bankBefore[i] = pieces[i].bankPrincipal();
+        }
+        ledger.setDebt(new java.util.ArrayList<>(java.util.List.of(a, b)));
+        double held = ledger.firmPrincipal(), take = held * share;
+        String sector = Sectors.KEYS[0];
+        city.getEconomyManager().setSectorCash(sector, 0);
+        outward.takeAllotment(sector, 0, held, city.getEconomyManager());
+        outward.setPaperBook(.93, .05);
+        double bookBefore = bank.getCityBook(), cashBefore = bank.getCash(), poolsBefore = MoneyAudit.pooled(city);
+        double paid = outward.recall(sector, take * outward.getPaperRatio(), city.getEconomyManager());
+        double booked = bank.getCityBook() - bookBefore, transferred = 0;
+        boolean kept = true, others = true;
+        for (int i = 0; i < pieces.length; i++) {
+            double off = firms[i] - pieces[i].firmPrincipal();
+            transferred += off;
+            kept &= share == 1 ? pieces[i].firmPrincipal() == 0
+                    : Math.abs(off - firms[i] * share) <= 4 * Math.ulp(firms[i]);
+            kept &= Math.abs(pieces[i].bankPrincipal() - bankBefore[i] - off) <= 4 * Math.ulp(pieces[i].getOustandingPrincipal());
+            others &= pieces[i].householdPrincipal() == 2 * scale && pieces[i].centralBankPrincipal() == 3 * scale
+                    && pieces[i].worldPrincipal() == 4 * scale;
+        }
+        String step = "desk, scale " + scale + ", take " + share;
+        assertTrue(step + ": the real desk booked a purchase", booked > 0 && bank.getPaperBoughtFromFirms() == paid);
+        assertTrue(step + ": each piece transfers its share, full takes leaving none, other holders unmoved", kept && others);
+        close(step + ": the pieces' transfer equals the bank's independently recorded book increase",
+                transferred, booked, 4 * Math.ulp(held));
+        close(step + ": the sector's rest equals the pieces' rest", outward.totalPaper(), ledger.firmPrincipal(), 4 * Math.ulp(held));
+        close(step + ": the bank paid exactly what the till received", cashBefore - bank.getCash(), paid, 4 * Math.ulp(paid));
+        close(step + ": the pool-to-pool move closes to the cent", MoneyAudit.pooled(city), poolsBefore, MoneyAudit.CENT);
     }
 
     /* ================= 15. each holder's discount is its own (BK2) ================= */

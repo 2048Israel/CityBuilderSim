@@ -275,7 +275,7 @@ public class SupplierCreditCheck {
                 ledger.owedTotal(), local, ledger.owedTo(Trade.WORLD));
         assertTrue("fixture: it owes the world and somebody in the city", ledger.owedTo(Trade.WORLD) > 0 && local > 0);
         close("each local supplier is owed its share, on its sheet and its books, and paid that much less", worstSupplier, 0, 1e-9);
-        close("every sector's cash flow still adds up", worstGap, 0, SectorBooksCheck.TOLERANCE);
+        close("every sector's cash flow still adds up", worstGap, 0, SectorStatementCheck.BooksAudit.TOLERANCE);
         close("the world's share crossed the audit as a financial inflow, to the cent",
                 BondCheck.line(r, "+ " + R + " SupplierCreditAbroad"), ledger.owedTo(Trade.WORLD), .005);
         assertTrue("...in the financial account", r.financialIn >= ledger.owedTo(Trade.WORLD) - 1e-9);
@@ -333,7 +333,7 @@ public class SupplierCreditCheck {
                 BondCheck.line(r, "- " + R + " SupplierCreditRepaidAbroad"), ledger.repaidTo(Trade.WORLD), .005);
         worstGap = 0;
         for (String k : Sectors.KEYS) worstGap = Math.max(worstGap, Math.abs(books.get(k).unexplained()));
-        close("every sector's cash flow still adds up", worstGap, 0, SectorBooksCheck.TOLERANCE);
+        close("every sector's cash flow still adds up", worstGap, 0, SectorStatementCheck.BooksAudit.TOLERANCE);
         assertTrue("the month closes", BondCheck.closes(r));
         assertTrue("every month this harness played closed the audit (" + playedMonths + ")", closedMonths == playedMonths);
     }

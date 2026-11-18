@@ -49,6 +49,108 @@ public class SicknessCheck {
         b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
     }
 
+    /** Acute cases must be visible this month and never age into the mortality ring. */
+    static void acuteBesideTheRing() {
+        System.out.println("\n--- acute sickness beside the ring (R0h) ---");
+        Sickness acute = new Sickness(), chronic = new Sickness();
+        double general = .25, child = .4, senior = .6;
+        double base = Health.WELL_SERVED_RATE;
+        double full = base + CausesOfDeath.influenzaSick(CausesOfDeath.INFLUENZA_FIRST);
+        acute.seed(full, base, general, child, senior);
+        chronic.seed(base, general, child, senior);
+        boolean sameRings = java.util.Arrays.equals(acute.getState(), chronic.getState());
+        boolean fullShares = true, sameDeaths = true, sameLong = true;
+        PopulationCohorts people = new PopulationCohorts();
+        people.migrate(10000);
+        double worstPeople = 0;
+        for (int m = 0; m <= Sickness.RING + 1; m++) {
+            // Includes the seed, months at both ceilings, a lifting rate and the end of the epidemic.
+            base = m == 1 ? Health.MAX_SICK_RATE : m == 2 ? Health.MAX_SICK_RATE / 2 : Health.WELL_SERVED_RATE;
+            full = m < Sickness.RING ? Math.min(Health.MAX_SICK_RATE, base +
+                    CausesOfDeath.influenzaSick(CausesOfDeath.INFLUENZA_FIRST)) : base;
+            if (m > 0) {
+                acute.advanceMonth(full, base, general, child, senior);
+                chronic.advanceMonth(base, general, child, senior);
+            }
+            sameRings &= java.util.Arrays.equals(acute.getState(), chronic.getState());
+            sameDeaths &= java.util.Arrays.equals(acute.deathRates(), chronic.deathRates());
+            double expectedAcute = 0;
+            for (AgeBand b : AgeBand.values()) {
+                fullShares &= Math.abs(acute.share(b) - Sickness.shareFor(b, full, child, senior)) < 1e-12;
+                sameLong &= acute.pastTwoMonths(b) == chronic.pastTwoMonths(b);
+                expectedAcute += (Sickness.shareFor(b, full, child, senior)
+                        - Sickness.shareFor(b, base, child, senior)) * people.get(b);
+            }
+            worstPeople = Math.max(worstPeople, Math.abs(acute.peopleInSlot(people, 0)
+                    - chronic.peopleInSlot(people, 0) - expectedAcute));
+            worstPeople = Math.max(worstPeople, Math.abs(acute.peopleSick(people)
+                    - chronic.peopleSick(people) - expectedAcute));
+        }
+        // The five-argument first advance seeds exactly as an explicit seed, including the acute share.
+        Sickness first = new Sickness(), seeded = new Sickness();
+        seeded.seed(full + CausesOfDeath.influenzaSick(CausesOfDeath.INFLUENZA_FIRST), base, general, child, senior);
+        first.advanceMonth(full + CausesOfDeath.influenzaSick(CausesOfDeath.INFLUENZA_FIRST), base, general, child, senior);
+        assertTrue("an unseeded advance carries the acute share beside the same chronic steady state",
+                java.util.Arrays.equals(first.getState(), seeded.getState())
+                && java.util.Arrays.equals(first.getAcuteShares(), seeded.getAcuteShares()));
+        String[] reversed = PopulationCohorts.saveBands();
+        double[] reversedAcute = seeded.getAcuteShares();
+        for (int i = 0; i < reversed.length / 2; i++) {
+            int j = reversed.length - 1 - i;
+            String name = reversed[i]; reversed[i] = reversed[j]; reversed[j] = name;
+            double value = reversedAcute[i]; reversedAcute[i] = reversedAcute[j]; reversedAcute[j] = value;
+        }
+        first.restoreAcute(reversed, reversedAcute);
+        assertTrue("acute shares restore by saved band name, even in reverse order",
+                java.util.Arrays.equals(first.getAcuteShares(), seeded.getAcuteShares()));
+        first.restoreAcute(reversed, null);
+        assertTrue("missing acute state clears any previous month's acute share",
+                java.util.Arrays.stream(first.getAcuteShares()).allMatch(v -> v == 0));
+        seeded.reset();
+        assertTrue("reset clears the acute shares too", java.util.Arrays.stream(seeded.getAcuteShares()).allMatch(v -> v == 0));
+        // Both below and across the ceiling: subtracting influenza from an already capped total is wrong.
+        Health capped = new Health(), heldHealth = new Health();
+        heldHealth.holdInfluenzaOff();
+        for (double injury : new double[]{0, Health.MAX_SICK_RATE - Health.WELL_SERVED_RATE, Health.MAX_SICK_RATE}) {
+            capped.advanceMonth(1000, 1000, CausesOfDeath.INFLUENZA_FIRST, 0, 0, 0, injury);
+            heldHealth.advanceMonth(1000, 1000, CausesOfDeath.INFLUENZA_FIRST, 0, 0, 0, injury);
+            check("the rate without influenza is the held Health's capped rate, injury " + injury,
+                    capped.getSickRateWithoutInfluenza(), heldHealth.getSickRate(), 0);
+        }
+        assertTrue("acute months leave every ring slot exactly as the rate without influenza", sameRings);
+        assertTrue("...and the ring's death rates and long sick are exactly the chronic twin's", sameDeaths && sameLong);
+        assertTrue("every band's visible sick share is the full rate, including at the ceilings", fullShares);
+        check("the acute cases join the youngest bar and the total sick, in people", worstPeople, 0, 1e-9);
+    }
+
+    /** The founding has not struck a Health rate yet; its zero must not seed phantom chronic sickness. */
+    static void theFoundingSeed() {
+        System.out.println("\n--- a fresh city's founding seed remains main's (R0h review) ---");
+        Game city = new Game(GameFiles.scratch("sickness-founding"), LongPlaytest.founding());
+        quietly(city::run);
+        Health health = city.getHealth();
+        double openingRate = health.getSickRate();
+        check("before the first advance, the rate without influenza is the founding sick rate",
+                health.getSickRateWithoutInfluenza(), openingRate, 0);
+        assertTrue("fixture: the founding has no influenza and no seeded sickness ring",
+                health.getInfluenzaRate() == 0 && !city.getSickness().isSeeded());
+        quietly(() -> city.simulateMonths(1));
+        Healthcare care = city.getHealthcare();
+        double general = care.getCoverage(CareType.GENERAL);
+        double child = care.getCoverage(CareType.CHILDCARE), senior = care.getCoverage(CareType.SENIOR);
+        Sickness main = new Sickness();
+        // Main seeds from the full founding rate, then turns the ring on the first month's full rate.
+        main.seed(openingRate, general, child, senior);
+        main.advanceMonth(health.getSickRate(), general, child, senior);
+        boolean same = true;
+        for (AgeBand b : AgeBand.values()) for (int k = 0; k < Sickness.RING; k++) {
+            same &= city.getSickness().slot(b, k) == main.slot(b, k);
+        }
+        assertTrue("the first real month's whole ring equals main's founding seed and handover", same);
+        check("after an advance with no influenza, the two rates still agree", health.getSickRateWithoutInfluenza(),
+                health.getSickRate(), 0);
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* ============ 1. the base rates ============ */
@@ -316,6 +418,8 @@ public class SicknessCheck {
         check("a slot outside the ring holds nobody", rings.peopleInSlot(people, Sickness.RING), 0, 0);
 
         System.out.println();
+        acuteBesideTheRing();
+        theFoundingSeed();
         System.out.println(fails == 0 ? "The long sick die, and clinics save them." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
