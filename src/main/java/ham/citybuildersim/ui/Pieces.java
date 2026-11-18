@@ -1419,9 +1419,11 @@ public final class Pieces {
         count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         Button[] buttons = new Button[4];
         Runnable[] refresh = new Runnable[1];
+        double[] initial = ham.citybuildersim.MagnitudeSteps.of(value.getAsLong(), 1);
         for (int i = 0; i < buttons.length; i++) {
             final int at = i;
-            buttons[i] = stepper("", 26, () -> {
+            double size = initial[i == 0 || i == 3 ? 0 : initial.length - 1];
+            buttons[i] = stepper((i < 2 ? "−" : "+") + countStepWords(size), Region.USE_COMPUTED_SIZE, () -> {
                 double[] steps = ham.citybuildersim.MagnitudeSteps.of(value.getAsLong(), 1);
                 double step = steps[at == 0 || at == 3 ? 0 : steps.length - 1];
                 set.accept(ham.citybuildersim.MagnitudeSteps.count(value.getAsLong(), at < 2 ? -step : step));
@@ -1440,8 +1442,6 @@ public final class Pieces {
                 boolean big = i == 0 || i == 3;
                 double step = steps[big ? 0 : steps.length - 1];
                 buttons[i].setText((i < 2 ? "−" : "+") + countStepWords(step));
-                buttons[i].setMinWidth(26);
-                buttons[i].setPrefWidth(Region.USE_COMPUTED_SIZE);
                 showIf(buttons[i], !big || steps.length > 1);
                 Kept.give(buttons[i].disableProperty(), i < 2 && now <= 0);
             }
@@ -1450,13 +1450,13 @@ public final class Pieces {
         return new CountSteps(row, refresh[0]);
     }
 
-    /** A small button in a stepper, including magnitude labels and reset. */
+    /** A small button in a stepper, including magnitude labels and reset; a negative width fits its words, with a 26px minimum. */
     public static Button stepper(String glyph, double width, Runnable go) {
         return Kept.scope("stepper", () -> {
             // Kept (KP2): the button handed back, its text set; its action set at every draw, since Kept clears it.
             Button b = Kept.of(Button.class, Button::new);
             b.setText(glyph);
-            b.setMinSize(width, 22);
+            b.setMinSize(width < 0 ? 26 : width, 22);
             Pieces.prefSize(b, width, 22);
             /*
              * -fx-padding: 0 IN THE STYLE, not just setPadding.
