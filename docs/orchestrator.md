@@ -36,17 +36,16 @@ ending when a ship file lands without its marker.
 tier, hard timing; GT1, GR1), is due once a night; its verdict is in the next
 `day.sh` and `$HOME/.cbs-nightly.log`, and a red playtest or a slower line is
 mail to `jerus` and the gate's keeper (`CBS_GATE_KEEPER`, else `orchestrator`)
-naming the batch (BW1). A headless orchestrator has no check-in
-to start it: by hand, or a scheduled task (a daily one is Jerus's call, asked
-2026-11-17).
+naming the batch (BW1). A headless orchestrator has no check-in to start it:
+by hand, or a scheduled task (a daily one is Jerus's call, asked 2026-11-17).
 
 ## Dispatch
 
 - Builders start through the launcher (`cbs-bus start <ID> --runtime claude|codex
   --model ... --effort xhigh`), the runtime chosen by the plans' usage. Each
   prompt carries the batch, the batches in flight and their files, and the
-  contract's state lines and mail protocol (3, 5). A launcher name is never reused: a
-  takeover is `<ID>c`.
+  contract's state lines and mail protocol (3, 5). A launcher name is never
+  reused: a takeover is `<ID>c`.
 - How many build at once is Jerus's setting; his latest word (2026-11-17):
   three builders, and a fourth on study, docs or process rows while the plan
   is behind pace: the week's % used plus the last six hours' rate times the
@@ -70,7 +69,8 @@ Each ready branch, one at a time:
    findings go back to the builder by mail. Take the batch's recommended calls.
 3. `sh tools/gate.sh ID [--no-tag] [-m "<title>"]` as a background Bash call
    with timeout 7200000 into a log, then `tools/wait.sh --line` until it ends;
-   a stop mails the batch itself, so a send-back needs no relaying. A ship file without its first-line gate-run comment runs fresh: stop it
+   a stop mails the batch itself, so a send-back needs no relaying. A ship
+   file without its first-line gate-run comment runs fresh: stop it
    (`sh tools/gate.sh --stop RUN_DIRECTORY`) and gate with `--reuse` the kept
    run. `--version X.Y.Z` is Jerus's call.
 4. Verify the publication: one merge, its first parent the gated main; the tag
