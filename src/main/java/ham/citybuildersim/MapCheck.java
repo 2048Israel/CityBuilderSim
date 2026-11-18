@@ -2362,18 +2362,11 @@ public class MapCheck {
             check("the actual " + name + " departure and return record their own months, before another view", excludedBeforeDeparture > 0
                     && exclusionChangeAt(back, unit, 153) == excludedBeforeDeparture && exclusionChangeAt(back, unit, 154) == -1
                     && exclusionChangeAt(back, unit, 156) == 0);
-            // The sidecar `after` is the delayed map's before its view at 156. A month whose source walls a piece in appends its
-            // dated ways at the view (2h-b's twin; FB9: the mine's growth at 151 takes up the streets it is born on, and the
-            // month's join keeps ways it releases when the mine leaves), so the sidecars are compared after the views.
             check("the " + name + " city's actual growth, departure and return give the same watched and delayed layouts", reconciled
-                    && sameSourcePlans(watched, back) && watched.same(back) && Arrays.equals(watched.writeSidecar(156), back.writeSidecar(156)));
-            int waysDated = 0;
-            for (CityMap.District d : watched.districts()) for (int r = 0; r < d.wallMonth.length; r++) if (d.wallMonth[r] > 150) waysDated++;
-            out.printf("      the %s's growth, departure and return: %d wall events dated 151-156 in the watched map, appended to the delayed map's at its view%n", name, waysDated);
+                    && sameSourcePlans(watched, back) && watched.same(back) && Arrays.equals(after, back.writeSidecar(156)));
             CityMap end = CityMap.readSidecar(after, land, remaining, types, 156, CityMap.stampIn(after));
-            check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null
-                    && Arrays.equals(after, end.writeSidecar(156)) && sameSourcePlans(back, end) && back.same(end)
-                    && Arrays.equals(back.writeSidecar(156), end.writeSidecar(156)));
+            check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null && back.same(end)
+                    && sameSourcePlans(back, end) && Arrays.equals(after, end.writeSidecar(156)));
         }
     }
 
@@ -4280,18 +4273,19 @@ public class MapCheck {
        8d. A MINE BORN ON STREETS (batch FB9, 2026-11-18; BF1-M, DM3-R)
 
        MapCheck 1 and 8 on 0.9.148's played city: a mine born at m66 on six
-       plots of a cell's arterial, which the plan kept as a street and the
-       painter stands the mine on whole (TilePainter.standMines()) - 3 paved
+       plots of a cell's arterial, which the plan keeps as a street (the
+       buildings beside it stand by it), and the painter stood the mine on
+       the whole of its site over it (TilePainter.standMines()) - 3 paved
        plots of surface counted and not drawn, and the arterial's stub beyond
        the mine a piece of its own that the city's ground joins (BF1-M's
-       67-plot piece and DM3-R's 1.5 plots on their paths). The copy here causes
-       it on any path: the played city's ground with a house for every dry
-       plot it owns, so its plans fill and lay their cells' streets across the
-       iron field as well (built on last), and the played city's road, so
-       those streets carry surface; at month 100 an iron mine is born on the
-       field. DistrictPlan's NO STREET ON A MINE BORN AFTER IT takes up the
-       streets it stands on, and the month's join (FW11's way, dated) joins
-       what it parted.
+       67-plot piece and DM3-R's 1.5 plots and six buildings beyond REACH on
+       their paths). The copy here causes it on any path: the played city's
+       ground with a house for every dry plot it owns, so its plans fill and
+       lay their cells' streets across the iron field as well (built on
+       last), and the played city's road, so those streets carry surface; at
+       month 100 an iron mine is born on the field. TilePainter's THE STREET
+       ACROSS A MINE draws the plans' streets on it across the mine, and
+       TileRaster keeps their pixels inside the mine's box.
        --------------------------------------------------------------------- */
 
     /** Each plot's street code in a plan's frame (CityMap.Drawn.codeAt()), as FRAME x FRAME bytes row by row. */
@@ -4301,7 +4295,7 @@ public class MapCheck {
         return c;
     }
 
-    /** 8d: the copy a mine is born on, its streets on the mine's ground before and after, and the network on its raster. */
+    /** 8d: the copy a mine is born on, the plans' streets on the mine's ground before and after, drawn across it, and the network on its raster. */
     static void mineOnStreets(Game g) {
         BuildingVisual.Type[] types = g.getMapTypes();
         long[] played = g.getMapCounts(), model = new long[types.length];
@@ -4335,11 +4329,73 @@ public class MapCheck {
                 if ((after[p] & TilePainter.S_KIND) != DistrictPlan.NONE) streetsNow++;
             }
         }
+        Raster r = Raster.of(copy);
+        int roadInMines = 0, minePlots = 0;
+        for (int q = 0; q < r.mined.length; q++) {
+            if (!r.mined[q]) continue;
+            minePlots++;
+            if (r.isRoad(q)) roadInMines++;
+        }
         out.printf("      a copy of the played city's ground, %,d houses (one a dry plot it owns) and its road: the mine born at 100 on %d plots,"
-                + " %d of them its plans' streets at 99; a street on %d of the %d mined plots of its frames now%n", ownedDry, born, streetsBefore, streetsNow, mined);
+                + " %d of them its plans' streets at 99; the plans' streets on %d of the %d mined plots of their frames now, %d road plots"
+                + " drawn in the %d plots of the mines' boxes%n", ownedDry, born, streetsBefore, streetsNow, mined, roadInMines, minePlots);
         check("fixture: a mine is born at month 100 on plots its plans had laid streets on", reconciled && born > 0 && streetsBefore > 0);
-        check("...and from then no plan lays a street on a mine's site: the streets it was born on taken up", streetsNow == 0);
+        check("...its plans keep those streets (the buildings beside them stand by them), and the map draws them across the mine",
+                streetsNow > 0 && roadInMines > 0);
+        int below = TileRaster.LINES_FROM - 1, lined = TileRaster.EDGE_FROM;
+        int[] small = streetsAcrossMines(copy, below), large = streetsAcrossMines(copy, lined);
+        out.printf("      ...drawn at %d and %d px a plot: of the street plots inside the mines' boxes (the mark's apart) %d and %d as the same"
+                + " tiles draw them with no mine, %d and %d not%n", below, lined, small[0] - small[1], large[0] - large[1], small[1], large[1]);
+        check("...its pixels inside the mine's box the street's, as the same tile draws it with no mine on it, below the lines and with them",
+                small[0] > 0 && small[1] == 0 && large[0] > 0 && large[1] == 0);
         networkOn(copy, model, "the copy a mine is born on", false);
+    }
+
+    /**
+     * 8d's pixels: each street plot the painter draws inside a mine's box (Painted.use ROAD), in every tile of map m at px pixels a
+     * plot, against the same tile drawn with no mine (the mines' boxes emptied): {plots compared, plots whose pixels differ}. A plot
+     * the mine's mark reaches (TileRaster draws it from 4 px a plot, at its site's middle, over the street) is left out.
+     */
+    static int[] streetsAcrossMines(CityMap m, int px) {
+        long[] t = tilesOf(m);
+        int tile = TilePainter.TILE, w = tile * px, compared = 0, differ = 0;
+        TilePainter.Input in = new TilePainter.Input();
+        TilePainter.Painted p = new TilePainter.Painted();
+        int[] drawn = new int[w * w], bare = new int[w * w];
+        for (long ty = t[1]; ty < t[1] + t[3]; ty++) {
+            for (long tx = t[0]; tx < t[0] + t[2]; tx++) {
+                m.tileInput(tx, ty, in);
+                TilePainter.paint(in, p);
+                List<int[]> plots = new ArrayList<>();
+                for (int b = 0; b < p.buildings; b++) {
+                    if (p.bsite[b] < 0) continue;
+                    for (int y = p.by[b]; y < Math.min(tile, p.by[b] + p.bh[b]); y++) {
+                        for (int x = p.bx[b]; x < Math.min(tile, p.bx[b] + p.bw[b]); x++) if (p.use[y * tile + x] == TilePainter.ROAD) plots.add(new int[] { y * tile + x, b });
+                    }
+                }
+                if (plots.isEmpty()) continue;
+                Arrays.fill(drawn, 0);
+                TileRaster.raster(in, p, px, drawn);
+                int[] bw = p.bw.clone(), bh = p.bh.clone();
+                for (int b = 0; b < p.buildings; b++) if (p.bsite[b] >= 0) { p.bw[b] = 0; p.bh[b] = 0; }
+                Arrays.fill(bare, 0);
+                TileRaster.raster(in, p, px, bare);
+                System.arraycopy(bw, 0, p.bw, 0, bw.length);
+                System.arraycopy(bh, 0, p.bh, 0, bh.length);
+                for (int[] q : plots) {
+                    int i = q[0], s = p.bsite[q[1]], x0 = (i % tile) * px, y0 = (i / tile) * px;
+                    if (px >= 4) {
+                        int cx = (in.siteFX0[s] + in.siteFX1[s] + 1) * px / 2, cy = (in.siteFY0[s] + in.siteFY1[s] + 1) * px / 2, r = Math.max(1, px / 2);
+                        if (cx + r >= x0 && cx - r < x0 + px && cy + r >= y0 && cy - r < y0 + px) continue;
+                    }
+                    compared++;
+                    boolean same = true;
+                    for (int y = y0; y < y0 + px && same; y++) for (int x = x0; x < x0 + px; x++) if (drawn[y * w + x] != bare[y * w + x]) { same = false; break; }
+                    if (!same) differ++;
+                }
+            }
+        }
+        return new int[] { compared, differ };
     }
 
     static void network(Squares sq, Game city, String[] saves) throws Exception {
@@ -10521,6 +10577,7 @@ public class MapCheck {
         // each laid box judged by the same plot-by-plot oracle and counted in the coverage (M6-F: GDP1's offers left two of 24
         // untaken by the scatter, whose cover depends on where the city's offers lie).
         int alone = 0, laid = 0, laidExact = 0;
+        java.util.Set<Integer> laidTaking = new java.util.HashSet<>(), laidMissing = new java.util.HashSet<>();
         for (LandParcel p : listing) {
             double[] c = LandMap.freeCells(land, p).get(0);
             double sx0 = f.screenX(c[0] + 0.25), sy0 = f.screenY(c[1] + 0.25), sx1 = f.screenX(c[0] + 0.75), sy1 = f.screenY(c[1] + 0.75);
@@ -10531,6 +10588,7 @@ public class MapCheck {
             if (!got.isEmpty()) boxesTaking++;
             if (got.size() > 1) boxesSeveral++;
             for (LandParcel o : listing) (got.contains(o.getId()) ? takenBy : missedBy).add(o.getId());
+            for (LandParcel o : listing) (got.contains(o.getId()) ? laidTaking : laidMissing).add(o.getId());
         }
         double[] twoBox = acrossTwo(land, listing);
         List<Integer> acrossGot = List.of();
@@ -10542,15 +10600,17 @@ public class MapCheck {
             if (!acrossGot.isEmpty()) boxesTaking++;
             if (acrossGot.size() > 1) boxesSeveral++;
             for (LandParcel o : listing) (acrossGot.contains(o.getId()) ? takenBy : missedBy).add(o.getId());
+            for (LandParcel o : listing) (acrossGot.contains(o.getId()) ? laidTaking : laidMissing).add(o.getId());
         }
         out.printf("      %d boxes at %.2f px a plot: %d as every plot under them says, %d taking an offer, %d several; %d of %d offers taken by"
                 + " some and %d missed by others; a box in one free plot of each takes it alone for %d%n", BOXES, f.scale(), boxesExact,
                 boxesTaking, boxesSeveral, takenBy.size(), listing.size(), missedBy.size(), alone);
         out.printf("      ...of them the %d scattered take %d of the offers and miss %d; %d laid (one in a free plot of each offer, one across"
-                + " the nearest two: %s, %.0f x %.0f plots), %d as every plot under them says%n", BOXES, scatterTaken, scatterMissed, laid,
-                acrossGot, twoBox == null ? 0 : twoBox[2] - twoBox[0], twoBox == null ? 0 : twoBox[3] - twoBox[1], laidExact);
+                + " the nearest two: %s, %.0f x %.0f plots), %d as every plot under them says, the laid alone taking %d and missing %d%n", BOXES, scatterTaken, scatterMissed, laid,
+                acrossGot, twoBox == null ? 0 : twoBox[2] - twoBox[0], twoBox == null ? 0 : twoBox[3] - twoBox[1], laidExact, laidTaking.size(), laidMissing.size());
         check("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
-                boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size());
+                boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size()
+                        && acrossGot.size() > 1 && laidTaking.size() == listing.size() && laidMissing.size() == listing.size());
         check("a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given",
                 boxesExact == BOXES && laidExact == laid);
         check("...and a box inside one free plot of an offer takes that offer alone, for every offer", alone == listing.size());
