@@ -445,3 +445,30 @@ it is within the unchanged limit and the school is ordered. This confirms the fi
 `--fast` after HN1 merge: exit 0, compile 41 s, indexes regenerated, 0 firm Stale findings
 (187 soft). HN1 supplies the new current ensemble baseline docs/ensemble/0.9.151.md; the final
 HL1 ensemble must compare with the newest baseline after LM1-D, not the old 0.9.93 record.
+
+HousingDoorCheck on the HN1 merge, watched m431-500: the added household assertion passes in all
+499 played months (worst relative month 143). It has four real trims, all down-payment refusals
+(m435, 436, 439, 493), two whole-order holds (m440, 443), no stranded landlord that could buy one,
+no household with no door, and 160 studio/819 family homes finished. Its one NEW red is the
+required fixture `the door trimmed an order it first refused for the bank's capital`: that event
+no longer fires in the old 70-month window on HL1's path. The next run retains all those months
+and extends the watched period to m900, retaining the capital-trim requirement, halving rule,
+refusal-mark assertion, no-door watch and every monthly household closure check. No model dial
+or tolerance moved. The old result is target/HL1-HousingDoorCheck-500.log.
+
+HousingDoorCheck through m900: **exit 0**. 151 watched months with an order at the door, 22 trims
+(all valid halvings), 18 whole-order holds, eight trims first refused for capital, none left marked
+held. The first capital trim is m502, only two months past the old endpoint: the till 2,421.1 buys
+one at 2,205.7 outright after the plan passed two, from seven asked. So the missing fixture was a
+window, not a broken retry. No month strands a landlord whose till buys one. Homes finished:
+880 studio, 6,426 size-4 family, four size-6 family; no household past the housing valves. Every
+one of the 899 played months closes the household identity; worst relative month 614, held
+315,105.93 -> 316,642.36, to 9,184.96, from 7,649.15, own .63, residual zero at displayed precision.
+The window keeps all former months and eight actual capital events for margin, not one lucky
+month; no requirement or tolerance is dropped.
+
+`./batch-check.sh HealthCheck` on the HN1 merge: exit 3, 20 s suite, only the recorded main red
+`...and the households who skipped a bill ate with it: over the last year the dear city is no
+hungrier than the free one by more than the price of care`. The old HL1 burial red does not
+recur: deaths/year/1,000 are 10.27 at fee x1 and 14.33 at x15, old deaths 54.75 against 88.00;
+both "buries more" and "its old first" pass. No new red.

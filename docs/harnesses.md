@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**222 harness files, 25,623 labelled assertions.** AllChecks runs 222 of them.
+**222 harness files, 25,624 labelled assertions.** AllChecks runs 222 of them.
 
 ## Which harnesses read which class
 
@@ -223,7 +223,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | KeptCheck, LandClassCheck, MoneySignCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HousingDoorCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BankFailureCheck, BooksCheck, BuildCardCheck, CreditCheck, HousingDoorCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
@@ -14728,7 +14728,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L956 1200 places down to none: the whole debt is a closed home's
   - L958 ...and a count from nothing leaves it
 
-## HousingDoorCheck.java - 7 labelled assertions
+## HousingDoorCheck.java - 8 labelled assertions
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed
@@ -14744,17 +14744,19 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the till: five blocks bought outright. Nothing was built for four years;
 > ...
 
-- **L138 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
-  - L152 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
-- **L155 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
-  - L168 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
-- **L171 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
-  - L185 every order the door cut is the plan's order halved, down to one
-  - L186 ...and the advisor's line says it was trimmed
-  - L187 fixture: the door trimmed an order it first refused for the bank's capital
-  - L188 ...and no month the door trimmed is left marked as held for the bank's capital
-- **L190 4. LongPlaytest's watch, and the homes that finished by size**
-  - L198 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+- **L148 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
+  - L162 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
+- **L165 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
+  - L178 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
+- **L181 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
+  - L195 every order the door cut is the plan's order halved, down to one
+  - L196 ...and the advisor's line says it was trimmed
+  - L197 fixture: the door trimmed an order it first refused for the bank's capital
+  - L198 ...and no month the door trimmed is left marked as held for the bank's capital
+- **L200 4. LongPlaytest's watch, and the homes that finished by size**
+  - L208 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+- **L211 5. the households' identity through the mortgage door (HL1)**
+  - L213 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
 ## HydroCheck.java - 101 labelled assertions
 
