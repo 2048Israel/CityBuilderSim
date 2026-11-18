@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-LM1-D-XbqCj7nU -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — LM1-D, the founding's water widened to six blocks — 2026-11-18, ready, see docs/queue/LM1-notes.md

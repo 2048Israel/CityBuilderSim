@@ -271,7 +271,15 @@ accident; the premise is kept, not moved.
 **The checks** on the merge: `--fast` OK (Stale 0 firm); LandCheck and
 EarthTerrainCheck (the full file named) green; MapCheck, with BridgeMapCheck,
 green after the mend. The pick is ALL (`LandManager.java`, 52 readers, for
-its javadoc); review not needed (no money, saves or threading).
+its javadoc); review not needed (no money, saves or threading). Merged
+again with main at 0.9.151 (36157fb19, in 63c66021; only the generated docs
+conflicted, and no LM1-D source changed). `--fast` OK. The dry run
+(`/tmp/cbs-gate-LM1-D-XbqCj7nU`, main's `ship.sh` in a fresh clone, the
+whole suite in 2,089 s) exited 0, with known reds only: DeathRecordCheck,
+DenominationCheck, DistressBleedCheck, GoldStandardCheck, HealthCheck,
+PopulationCheck, PriceLevelCheck, RoadCheck, ScaleCheck, YoungBankCheck. It
+had no unnamed lines and set `{next}` = 0.9.152. MapCheck and PlanCheck are
+green there.
 
 **The timing.** The row's "its timing hard covers LM1's, cut short at
 0.9.94" was written before GR1. Since then a gate's suite times soft
