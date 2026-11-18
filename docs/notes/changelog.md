@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.143 — CR1-L, the libraries' notices on the Credits page — 2026-11-18, ready, see docs/queue/CR1-L-notes.md
+The Credits page now shows Gson's Apache 2.0 licence and OpenJFX's GPL v2
+with the Classpath Exception, its additional notices and the graphics
+module's JPEG and Mesa notices, after the fonts. These releases omit legal
+files from their jars, so the build packages one exact upstream release
+copy of each; CreditsCheck pins their versions, hashes and full page text.
+Runtime notices, source delivery and the Microsoft DLL terms await CR1-J.
+
 ### 0.9.142 — FB8, DM2's three follow-ups, the map's sidecar — 2026-11-17, ready, see docs/queue/FB8-notes.md
 DM2-B: LX1's 4,000-month city refused its own sidecar at m3589 and m3952 because at m3551 the map wrote a wrong site
 history: `relay()`, laying a resource's works again, took a district's last site runs off without moving its version,

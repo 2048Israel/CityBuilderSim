@@ -1,6 +1,6 @@
 # OrderBookCheck.java - 353 lines · 18 methods · 0 constants · harnesses
 
-`ham/citybuildersim/OrderBookCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderBookCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The limit-order book (0.7.12), on its own: the rules any instrument trades
 > by, proved on a book that knows nothing about what it trades.

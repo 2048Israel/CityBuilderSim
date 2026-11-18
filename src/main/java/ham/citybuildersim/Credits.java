@@ -9,16 +9,18 @@ import java.util.function.Function;
 
 /**
  * The Credits page's sections: the Earth data's attribution, the nations' attribution and the
- * fonts' notice with its licence, each read from the jar as the exe ships it, and the text of each
- * cut into paragraphs for the screen to draw (CR1, 2026-11-09). No JavaFX; the page is
+ * fonts' and libraries' notices with their licences, each read from the jar as the exe ships it,
+ * and the text of each cut into paragraphs for the screen to draw (CR1, CR1-L). No JavaFX; the page is
  * UserInterface.showCreditsMenu(), which computes nothing of its own.
  *
  * WHY THIS EXISTS. The two attribution files (tools/earth/ATTRIBUTION-2.txt, tools/world/ATTRIBUTION.txt)
  * said "the Credits page", and the game had none. It is sold, and the licences of what it is made
  * from, CC BY and the SIL Open Font License among them, ask that the credit reach the player, not
  * only a file beside the exe. The page reads the same files the exe ships (pom.xml puts them in the
- * jar as credits/, the fonts' licence is already in fonts/), so there is one source of each text
- * and a page that drifts from the file is not possible. CreditsCheck holds that.
+ * jar as credits/, the fonts' licence is already in fonts/). The libraries' jars omit legal files,
+ * so tools/credits holds their upstream release texts, pinned to the dependencies (CR1-L).
+ * There is one source of each text and a page that drifts from the file is not possible.
+ * CreditsCheck holds that.
  */
 public final class Credits {
 
@@ -39,13 +41,30 @@ public final class Credits {
     /** The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. */
     public static final String FONTS = "/fonts/OFL.txt";
 
+    /** Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. */
+    public static final String GSON = "/credits/gson/LICENSE";
+
+    /** OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. */
+    public static final String OPENJFX = "/credits/openjfx/LICENSE";
+
+    /** OpenJFX's licence and notices, including the third-party code in the bundled graphics module. */
+    public static final List<String> OPENJFX_FILES = List.of(OPENJFX,
+            "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY_EXCEPTION",
+            "/credits/openjfx/jpeg_fx.md", "/credits/openjfx/mesa3d.md");
+
     /** The line above the fonts' licence: what the type is, whose, and the licence it is used under. */
     public static final String FONT_NOTICE = "The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., "
             + "with Reserved Font Name \"Plex\", used under the SIL Open Font License, Version 1.1, which follows in full.";
 
-    /** The page's sections, in order, read from the jar. */
+    /** The page's sections, in order, loaded once; later menu visits do no archive I/O. */
     public static List<Section> sections() {
-        return sections(Credits::readResource);
+        return Loaded.SECTIONS;
+    }
+
+    /** The first visit loads the immutable texts; JVM class initialization safely publishes them. */
+    private static final class Loaded {
+        /** The shared snapshot of the page's sections and complete legal texts. */
+        private static final List<Section> SECTIONS = List.copyOf(sections(Credits::readResource));
     }
 
     /** The same through any reader of a classpath path to its text (null for a file this build lacks); a harness's fixture. */
@@ -54,7 +73,25 @@ public final class Credits {
         out.add(new Section("The Earth", EARTH, "data/earth-2-ATTRIBUTION.txt", null, reader.apply(EARTH)));
         out.add(new Section("The nations", NATIONS, "data/world-ATTRIBUTION.txt", null, reader.apply(NATIONS)));
         out.add(new Section("The fonts", FONTS, null, FONT_NOTICE, reader.apply(FONTS)));
+        out.add(new Section("Gson", GSON, null,
+                "Gson, used under the Apache License, Version 2.0, which follows in full.", reader.apply(GSON)));
+        out.add(new Section("OpenJFX", OPENJFX, null,
+                "OpenJFX, used under the GNU General Public License, version 2, with the Classpath Exception. "
+                + "Its licence and notices follow in full. This software is based in part on the work of the Independent JPEG Group.",
+                readAll(reader, OPENJFX_FILES)));
         return out;
+    }
+
+    /** All the named files in order, with their names; missing if any one is absent, rather than showing a partial licence. */
+    static String readAll(Function<String, String> reader, List<String> paths) {
+        StringBuilder out = new StringBuilder();
+        for (String path : paths) {
+            String text = reader.apply(path);
+            if (text == null) return null;
+            if (out.length() > 0) out.append("\n\n");
+            out.append(path.substring(path.lastIndexOf('/') + 1)).append("\n\n").append(text);
+        }
+        return out.toString();
     }
 
     /** A classpath file as UTF-8 text, unchanged but for a leading byte-order mark; null when it is not there or cannot be read. */
@@ -94,7 +131,7 @@ public final class Credits {
     /** What the page says for a section this build lacks: where the file is. */
     public static String missingNote(Section s) {
         return s.besideExe() == null
-                ? "This build carries no copy of the fonts' licence."
+                ? "This build carries no complete copy of the licence and notices for " + s.title() + "."
                 : "This build carries no copy of it; it ships beside the exe as " + s.besideExe() + ".";
     }
 }

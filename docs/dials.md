@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,151 constants in 589 files.**
+**6,155 constants in 589 files.**
 
-## model (2922 constants)
+## model (2926 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -847,10 +847,14 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 34 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
-| 37 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
-| 40 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
-| 43 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 36 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
+| 39 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
+| 42 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
+| 45 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
+| 48 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
+| 51 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
+| 56 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 67 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource))` | The shared snapshot of the page's sections and complete legal texts. |
 
 ### Crime.java ([map](map/Crime.md))
 
@@ -1671,7 +1675,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.142"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.143"` | Bump on release. |
 | 8306 | `GameVersion.SAVE_FORMAT` | `55` | The save shape. |
 | 8359 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `55` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8367 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

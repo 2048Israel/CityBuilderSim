@@ -1,6 +1,6 @@
 # YearBookCheck.java - 1,132 lines · 44 methods · 5 constants · harnesses
 
-`ham/citybuildersim/YearBookCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YearBookCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Proves the year book folds each series the way that series has to be folded,
 > and that the file says so. Not part of the game.

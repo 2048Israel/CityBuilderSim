@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**218 harness files, 25,232 labelled assertions.** AllChecks runs 218 of them.
+**218 harness files, 25,245 labelled assertions.** AllChecks runs 218 of them.
 
 ## Which harnesses read which class
 
@@ -5850,10 +5850,11 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2011 the issue and the fair buyback value read the same curve
   - L2015 ...and the buyback takes it off the books at that price
 
-## CreditsCheck.java - 16 labelled assertions
+## CreditsCheck.java - 29 labelled assertions
 
 > The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
-> licence, and says where a file is when this build lacks it (CR1, 2026-11-09).
+> licence, the libraries' licences and notices, and says where a file is when this build lacks it
+> (CR1, CR1-L).
 > 
 > WHY THIS EXISTS. The game is sold, and the licences of its data (CC BY among them) and of its
 > type (the SIL Open Font License) ask that the credit reach the player. The page reads the files
@@ -5863,31 +5864,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 > error. Files are read from the working directory (the repository), as BrandingCheck reads
 > them; elsewhere those sections say so and are skipped.
 > 
-> What it has to prove:
 > ...
 
-- **L60 CreditsCheck: the Credits page carries every attribution the exe ships and the fonts' licence, in full (CR1)**
-- **L69 every file the exe ships as a credit is on the page, in full**
-  - L75 Build EXE.bat copies at least two ATTRIBUTION files beside the exe
-  - L92 every one of them was matched to a section
-- **L97 the fonts' notice and licence**
-  - L100 the page has a fonts section reading
-  - L101 the notice says 2017 IBM Corp.
-  - L102 the notice names the SIL Open Font License, Version 1.1
-  - L104 the fonts' section leads with the notice
-  - L105 the fonts' section is not missing
-  - L118 there is at least one font in resources/fonts/
-  - L119 every font there is IBM Plex, whose licence the page carries
-  - L121 OFL.txt is beside the fonts
-  - L124 OFL.txt carries Copyright
-  - L125 OFL.txt names the SIL Open Font License, Version 1.1
-  - L127 the fonts' section shows OFL.txt exactly
-- **L133 a build without a file says where the file is**
-  - L140 and its note names
-- **L144 the paragraphs keep the whole text**
-  - L162 \"a\\nb\\n\\n\\nc\\r\\n\" is [\"a\\nb\", \"c\"]
-  - L163 a null text has no paragraphs
-- **L165 each shipped file names the page**
+- **L75 the libraries' release notices and licences**
+  - L76 the libraries follow the fonts, one section each
+  - L79 the jar carries the legal texts' release provenance
+  - L102 Gson shows its Apache licence exactly
+  - L107 OpenJFX shows every release notice exactly, in order
+  - L108 OpenJFX includes GPL v2 and the Classpath Exception
+  - L110 the JPEG credit is given explicitly
+  - L117 missing
+  - L118 its missing note identifies the library
+  - L123 Gson's legal release version is pinned to pom.xml
+  - L125 OpenJFX's legal release version is pinned to pom.xml
+  - L127 both OpenJFX dependencies use the audited version
+- **L149 CreditsCheck: the Credits page carries the data, fonts and libraries' notices and licences, in full (CR1, CR1-L)**
+- **L158 later visits reuse the loaded notices**
+  - L159 another visit receives the same loaded sections
+  - L166 a caller cannot change the cached sections
+- **L168 every file the exe ships as a credit is on the page, in full**
+  - L174 Build EXE.bat copies at least two ATTRIBUTION files beside the exe
+  - L191 every one of them was matched to a section
+- **L196 the fonts' notice and licence**
+  - L199 the page has a fonts section reading
+  - L200 the notice says 2017 IBM Corp.
+  - L201 the notice names the SIL Open Font License, Version 1.1
+  - L203 the fonts' section leads with the notice
+  - L204 the fonts' section is not missing
+  - L217 there is at least one font in resources/fonts/
+  - L218 every font there is IBM Plex, whose licence the page carries
+  - L220 OFL.txt is beside the fonts
+  - L223 OFL.txt carries Copyright
+  - L224 OFL.txt names the SIL Open Font License, Version 1.1
+  - L226 the fonts' section shows OFL.txt exactly
+- **L232 a build without a file says where the file is**
+  - L239 and its note names
+- **L243 the paragraphs keep the whole text**
+  - L261 \"a\\nb\\n\\n\\nc\\r\\n\" is [\"a\\nb\", \"c\"]
+  - L262 a null text has no paragraphs
+- **L264 each shipped file names the page**
 
 ## CrimeCheck.java - 79 labelled assertions
 

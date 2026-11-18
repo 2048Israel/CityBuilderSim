@@ -1,6 +1,6 @@
 # WorldChain.java - 151 lines · 4 methods · 1 constants · model
 
-`ham/citybuildersim/WorldChain.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldChain.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The world market's chain: for each good made of other goods, which goods and in what shares of its price, and the order the January solves
 > the goods in (inputs first), so that a made good's price in a nation is what its inputs cost that nation plus its own part (CU2;
