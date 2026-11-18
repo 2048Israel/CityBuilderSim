@@ -511,14 +511,22 @@ public class CopperRefiningCheck {
                         + " sector's sale its other revenue",
                 line > 0 && households > 0 && sold > 0 && Math.abs(line - households - sold) < .01,
                 String.format("D$%,.1fk: households D$%,.1fk, Manufacturing D$%,.1fk", line, households, sold));
-        // ...and a month with less old copper than it takes: all of it bought, the rest of its need bid on the market.
+        // ...and less old copper than its intake: retain the no-demand,
+        // loss-making imported-scrap premise (CPB1), and use the paid feed.
         g.getOldMetal().carsScrapped(500 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
         quietly(() -> g.simulateMonths(1));
         Sector.Input scrap2 = cr.input(Good.COPPER_SCRAP);
-        report("with less old copper than its intake it buys all of it, nothing to landfill, and bids for the rest of its scrap",
-                cu.lastLandfill() == 0 && cu.lastBought() == cu.lastArisen() && cu.lastArisen() < scrap2.needed
-                        && Math.abs(scrap2.bid - (scrap2.needed - cu.lastBought())) < 1e-6,
-                String.format("%,.1f t bought, %,.1f t bid of %,.1f needed", cu.lastBought(), scrap2.bid, scrap2.needed));
+        Sector.Output recycled = cr.outputRow(Good.COPPER);
+        BuildingsTemplate scrapWorks = b.getTemplate(CopperRefining.SCRAP_REFINERY);
+        double used = (recycled.produced + recycled.exportBound + recycled.captive)
+                * scrapWorks.uses(Good.COPPER_SCRAP) / scrapWorks.makes(Good.COPPER);
+        report("with less old copper than its intake it buys and makes all of it, nothing to landfill or loss-making imported scrap",
+                cu.lastLandfill() == 0 && near(cu.lastBought(), cu.lastArisen()) && cu.lastArisen() < scrap2.needed
+                        && cr.flowCostPerUnit(Good.COPPER) > g.getMarkets().get(Good.COPPER).netExportPrice()
+                        && g.getMarkets().get(Good.COPPER).getDemand() == 0 && near(scrap2.bid, 0) && near(used, cu.lastBought()),
+                String.format("%,.9f t bought of %,.9f arose, %,.9f landfill; %,.9f used; %,.1f bid of %,.1f needed; demand %.9f, cost %.9f, sale %.9f",
+                        cu.lastBought(), cu.lastArisen(), cu.lastLandfill(), used, scrap2.bid, scrap2.needed,
+                        g.getMarkets().get(Good.COPPER).getDemand(), cr.flowCostPerUnit(Good.COPPER), g.getMarkets().get(Good.COPPER).netExportPrice()));
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes (MoneyCheck holds its old-metal lines over two years)", audit != null && audit.relative() < 1e-4,
                 audit == null ? "none" : String.format("residual %.3g of what moved", audit.relative()));
@@ -726,17 +734,19 @@ public class CopperRefiningCheck {
                 pin != null && near(pbought, pused),
                 String.format("bought %,.1f t; used %,.1f t", pbought, pused));
 
-        // (c) a month that makes its whole rate is unchanged: the order is nameplate at the rate, less what is captive.
+        // (c) retain WN3's original empty-yard fixture. It has no local
+        // demand and imported anode loses money: CPB1 now idles this buffer.
+        // CopperBufferCheck separately causes and checks a profitable full run.
         Game full = copperWorks("copperrefiningcheck-whole", 0, 1, 0, Double.NaN);
         CopperRefining fr = full.getSectors().copperRefining();
         quietly(() -> full.simulateMonths(1));
         Sector.Output fcu = fr.outputRow(Good.COPPER);
         Sector.Input fin = fr.inputRow(Good.ANODE);
         double nameplate = fr.getCapacity(Good.COPPER) * fr.getOperatingRate();
-        report("(c) a refinery that makes its whole rate (a yard with room) orders exactly its need at the rate: getInputAtCapacity() times"
-                        + " the operating rate, to the bit",
-                fcu != null && fin != null && fr.getOperatingRate() > 0 && fcu.produced == nameplate
-                        && fin.bid == fr.getInputAtCapacity(Good.ANODE) * fr.getOperatingRate(),
+        report("(c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode",
+                fcu != null && fin != null && fr.getOperatingRate() > 0 && fcu.produced == 0 && fcu.exportBound == 0 && fin.bid == 0
+                        && full.getMarkets().get(Good.COPPER).getDemand() == 0
+                        && fr.flowCostPerUnit(Good.COPPER) > full.getMarkets().get(Good.COPPER).netExportPrice(),
                 fin == null || fcu == null ? "none" : String.format("made %,.1f of %,.1f t; ordered %,.1f t of anode", fcu.produced, nameplate, fin.bid));
         Game chain = copperWorks("copperrefiningcheck-wholechain", 1, 1, 1, Double.NaN);
         // ...its rod's world prices doubled before its third month: this premise is a chain whose month makes its whole rate, and a Rod Mill's rod on

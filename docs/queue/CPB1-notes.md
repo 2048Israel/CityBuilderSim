@@ -28,6 +28,26 @@ active downstream Rod Mill. The harness causes a partially captive refinery
 and proves the anode/cathode identity through the real clearing, with no
 unprofitable surplus. Full-rate fractions remain exactly 1.
 
+★ Stock production follows the buildings' actual run shares (the same
+nameplate-weighted calculation as flow co-products), including committed
+feed, rather than just the output good's speculative order fraction.
+`Sector.committedInput` defaults to zero. Copper Refining supplies only the
+recovered scrap its existing monthly purchase commits; a building's floor
+applies only if that building uses that input. An Electrolytic Refinery
+standing alongside the scrap refinery therefore stays idle. The purchase
+still settles in its original flow-production phase, at its existing price
+and allocation. These are no new save fields: the preview is local to a
+clearing and is refreshed before every order decision.
+
+The copper declaration hook is necessary because the city buys recovered
+copper outside the goods market before cathode production, even with no
+demand. Cutting that output without using its paid feed would break the
+input/output identity. Its marginal-cost forecast now uses this clearing's
+anticipated purchase, rather than last month's settled purchase; otherwise
+last month's cheap feed could authorize this month's dear imported scrap.
+The harness tests both a mixed pair of refinery recipes and a standalone
+scrap refinery whose next month has no recovered feed.
+
 The mended empty-yard clearing has no anode bid, import or cathode production.
 Raw imports and GDP are respectively 14.328309080 and −14.328309080: the
 separately booked consumables still cost money. No accounting rule was
@@ -49,14 +69,40 @@ existing-stock sales, feed/output identity, and the expenditure identity.
 The unchanged-main reproduction passes the preservation controls and fails
 the loss-prevention assertions. The final-model run currently passes all.
 
-Mutation runs keep the final fixture and its premise fixed, compiling only a
-shadow Sector class under `target/cpb1-mutations/`. Main's Sector fails five
-assertions, including all four loss-prevention assertions and the partially
-captive identity. Removing only the captive order correction fails two;
-removing only the captive production correction fails the partially captive
-identity. Each variant exits 1; logs are the respective `fixture.log` files
-in `main`, `no-captive-order`, and `no-captive-production`. No model source
-is changed by the mutation runs.
+Mutation runs keep the final fixture and its premise fixed, compiling shadow
+model classes under `target/cpb1-mutations/`. Main's Sector and CopperRefining
+fail nine assertions, including all four primary loss-prevention assertions
+and the partially captive identity. Removing only the captive order
+correction fails two; restoring the old stock-production cap fails two;
+removing the committed-input floor fails the paid-feed identity; reverting
+the recovered-feed cost preview fails the standalone next-month assertion.
+Each variant exits 1; logs are the respective `fixture.log` files in `main`,
+`no-captive-order`, `no-captive-production`, `no-committed-input`, and
+`stale-recovered-feed`. No model source is changed by mutation runs.
+
+The first named run found three affected old assumptions. Their original
+fixtures are retained, with the corrected behavior asserted, rather than
+raising prices or adding a buyer to let them pass:
+
+- CopperRefiningCheck's original empty-yard WN3 full-rate example actually
+  has no demand and a negative feed spread: it now asserts no feed or output.
+  CopperBufferCheck separately causes a profitable full-rate buffer and
+  checks production and the feed order to the bit. The old full-rate chain
+  control remains unchanged.
+- Its original partial recovered-scrap case still buys all 500 recovered
+  tonnes and landfills none. It now proves they become cathode at the real
+  recipe ratio, without importing the loss-making remainder of full intake.
+  Bid rounding is compared with the harness's existing `near` helper.
+- CementConcreteCheck's original month-two quarry/plant has cost 0.001801
+  versus cement's 0.001684 before the order and makes no speculative buffer.
+  That is now a regression assertion. Its first operating quarry supply then
+  lowers the feed quote to 0.000752 versus cement's 0.001688; the identical
+  town makes its first profitable buffer in month three, buying limestone at
+  home. The original home-purchase, production and audit assertions remain.
+
+Two other CopperRefiningCheck reds in that first run are the already recorded
+FF1 (no cut observed in the Rotterdam run) and CL7 (seed 1's distant industry
+finding in its child playtest). No CPB1 cover is used for them.
 
 Named checks, seed windows, final trace/ensemble and orchestrator review/gate
 results will be recorded here as they finish. The picked set is ALL because

@@ -2907,7 +2907,7 @@ public abstract class Sector {
     }
 
     /**
-     * The share of its nameplate a flow good is made at this month (THE ORDER, FL1): the share of the run of the buildings that make it, nameplate-weighted -
+     * The share of its nameplate a good is made at this month (THE ORDER, FL1; stock too since CPB1): the share of the run of the buildings that make it, nameplate-weighted -
      * what buildingOrder() orders their inputs for - and not the good's own share, because a by-product comes out of the run whatever it fetches. WHY: the
      * Copper Smelter orders its concentrate for the whole run when its acid has a home buyer, but made 17% of its anode when the anode sold under its
      * inputs, and the rest of the concentrate was lost. Exactly 1 where every building's order is 1 (x * 1.0 is x, so the two sums are one sum); the good's own
@@ -3257,8 +3257,19 @@ public abstract class Sector {
             traded = true;
             most = Math.max(most, orderShare(e.getKey()));
         }
+        // CPB1: a feed already committed outside the goods market must be
+        // transformed too. Apply its floor only to buildings that use it.
+        for (Good g : t.goodsUsed().keySet()) {
+            double committed = committedInput(g);
+            if (!(committed > 0)) continue;
+            double need = getInputAtCapacity(g) * getOperatingRate();
+            if (need > 0) most = Math.max(most, Math.min(1, committed / need));
+        }
         return traded ? most : 1;
     }
+
+    /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */
+    protected double committedInput(Good g) { return 0; }
 
     /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
     protected double inputToMake(Good g) {
@@ -3363,7 +3374,8 @@ public abstract class Sector {
         if (share != null) {
             // The order covers the whole run, including the captive output
             // already counted above (CPB1); only the rest can enter the shed.
-            double ordered = Math.max(0, madeAtRate(g) * share - o.captive);
+            // A building using committed feed runs even if the buffer is cut.
+            double ordered = Math.max(0, madeAtRate(g) * flowRunShare(g) - o.captive);
             planned = Math.min(planned, ordered);
             direct = Math.min(direct, ordered - planned);
             rest = ordered - planned - direct;

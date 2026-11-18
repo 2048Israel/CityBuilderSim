@@ -141,6 +141,61 @@ public class CopperBufferCheck {
         profitable.endOrders();
         clear(pays);
         check("the profitable buffer is replenished through the real clearing", profitable.getStock(Good.COPPER) > 0);
+        check("a profitable full-rate buffer keeps its full production and input order to the bit",
+                profitable.outputRow(Good.COPPER).produced == profitable.madeAtRate(Good.COPPER)
+                && profitable.inputRow(Good.ANODE).bid == profitable.getInputAtCapacity(Good.ANODE) * profitable.getOperatingRate());
+    }
+
+    static void committedFeed() {
+        out.println("--- 4. recovered copper already committed is made, without starting the other refinery ---");
+        Game g = fixture("committed", 11, 9);
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate scrap = b.getTemplate(CopperRefining.SCRAP_REFINERY);
+        b.addStack(scrap, 1, true);
+        GoodsMarket feed = g.getMarkets().get(Good.COPPER_SCRAP);
+        feed.setWorldPrices(11, 10);
+        feed.strike(0, 0, 0);
+        double recovered = scrap.uses(Good.COPPER_SCRAP) * g.getSectors().copperRefining().getOperatingRate() / 4;
+        g.getOldMetal().carsScrapped(recovered / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+        CopperRefining cr = g.getSectors().copperRefining();
+        clear(g);
+        Sector.Output cu = cr.outputRow(Good.COPPER);
+        double made = cu.produced + cu.exportBound + cu.captive;
+        double ratio = scrap.uses(Good.COPPER_SCRAP) / scrap.makes(Good.COPPER);
+        check("premise: the two refinery recipes have no local demand and imported feed loses money",
+                g.getMarkets().get(Good.COPPER).getDemand() == 0 && recovered > 0
+                && cr.flowCostPerUnit(Good.COPPER) > g.getMarkets().get(Good.COPPER).netExportPrice());
+        check("all recovered copper paid for becomes cathode at the scrap recipe ratio",
+                near(cr.oldCopperTaken(), recovered) && near(made * ratio, recovered));
+        check("committed scrap starts only its own works, with no imported anode or scrap",
+                cr.inputRow(Good.ANODE).bid == 0 && cr.inputRow(Good.COPPER_SCRAP).bid == 0
+                && cr.inputRow(Good.ANODE).imported == 0 && cr.inputRow(Good.COPPER_SCRAP).imported == 0);
+        // The next clearing has no new recovered feed. Last month's purchase
+        // must not make its marginal export forecast look profitable.
+        clear(g);
+        cu = cr.outputRow(Good.COPPER);
+        check("last month's recovered feed never permits this month's speculative imports",
+                cr.oldCopperTaken() == 0 && cr.inputRow(Good.ANODE).bid == 0 && cr.inputRow(Good.COPPER_SCRAP).bid == 0
+                && cu.produced + cu.exportBound + cu.captive == 0);
+
+        Game solo = fixture("committed-last-month", 11, 9);
+        BuildingManager sb = solo.getBuildingManager();
+        sb.retire(sb.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), 1);
+        sb.addStack(sb.getTemplate(CopperRefining.SCRAP_REFINERY), 1, true);
+        feed = solo.getMarkets().get(Good.COPPER_SCRAP);
+        feed.setWorldPrices(11, 10);
+        feed.strike(0, 0, 0);
+        CopperRefining single = solo.getSectors().copperRefining();
+        double full = single.getInputAtCapacity(Good.COPPER_SCRAP) * single.getOperatingRate();
+        solo.getOldMetal().carsScrapped(full / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+        clear(solo);
+        check("premise: recovered feed made the standalone scrap refinery's last run profitable",
+                single.oldCopperTaken() > 0 && single.getMarginalCostPerUnit(Good.COPPER)
+                < solo.getMarkets().get(Good.COPPER).netExportPrice());
+        clear(solo);
+        check("the standalone refinery costs this month's zero recovered feed before ordering imports",
+                single.oldCopperTaken() == 0 && single.inputRow(Good.COPPER_SCRAP).bid == 0
+                && single.outputRow(Good.COPPER).produced + single.outputRow(Good.COPPER).exportBound == 0);
     }
 
     static void existingStock() {
@@ -176,6 +231,7 @@ public class CopperBufferCheck {
         loss();
         demandAndProfit();
         existingStock();
+        committedFeed();
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
