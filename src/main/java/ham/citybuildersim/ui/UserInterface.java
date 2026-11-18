@@ -4455,8 +4455,8 @@ public class UserInterface extends Application {
         column.setMaxWidth(Region.USE_PREF_SIZE);
 
         column.getChildren().add(statementNote(
-                "The data the city's world is made from, the type it is set in, and the libraries it uses. "
-                + "Their licences and notices are shown in full."));
+                "The data the city's world is made from, the type it is set in, the libraries and the Java runtime it uses, "
+                + "and where their source code is. Their licences and notices are shown in full."));
         for (Credits.Section s : Credits.sections()) {
             column.getChildren().add(statementHead(s.title()));
             if (s.lead() != null) column.getChildren().add(statementNote(s.lead()));

@@ -18,6 +18,23 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.144 — CR1-J, source archives beside the exe and the OpenJDK runtime — 2026-11-18, ready, see docs/queue/CR1-J-notes.md
+The sold exe now runs on Eclipse Temurin 21.0.13+9, an OpenJDK build under
+the GPL with the Classpath Exception, not Oracle's runtime, whose No-Fee
+Terms bar a sold product. Build EXE.bat names that JDK and checks it, and
+ships beside the exe, in source\, the complete source of OpenJFX 21+31 and
+of the runtime with the scripts that built it, pinned by SHA-256 and fetched
+once into a cache outside git. The exe and Credits carry the game's own
+copyright line; Credits adds the runtime's notices, read from the image the
+game runs on, Microsoft's terms for its C and C++ runtime DLLs (the Visual
+C++ and Windows SDK licences), and where the source is. A missing notice,
+terms file or archive stops the build with nothing published (PackagingCheck).
+
+### DM1-P — batch-check.sh names the Earth and world files — 2026-11-18, ready, see docs/queue/DM1-P-notes.md
+Batch checks fill missing Earth and world properties from the checkout's data, falling back to the main checkout.
+Batch checks, nightly and the gate share one helper. Unrelated Java flags and explicit data paths are preserved;
+Windows paths use C:/ form, and one line labels each property named, already set, or not found.
+
 ### 0.9.143 — CR1-L, the libraries' notices on the Credits page — 2026-11-18, ready, see docs/queue/CR1-L-notes.md
 The Credits page now shows Gson's Apache 2.0 licence and OpenJFX's GPL v2
 with the Classpath Exception, its additional notices and the graphics

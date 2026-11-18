@@ -1,8 +1,8 @@
-# gate of Merge batch/CR1-L: the libraries' notices (Gson's Apache 2.0, OpenJFX's GPL v2 with the Classpath Exception) on the Credits page (0.9.62) (from Pending on 2026-11-16; it waited: ★1: the brief named the data and the fonts only), 0.9.143
+# gate of Merge batch/CR1-J: build and check corresponding-source archives beside the exe for OpenJFX 21 and the OpenJDK runtime (Jerus chose this); move packaging from Oracle NFTC to OpenJDK (Temurin 21 recommended, PC installation awaiting Jerus); expose runtime notices and include Microsoft's DLL terms, 0.9.144
 # date: 2026-11-18
 # earth-2.bin: named
-# nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 203 harnesses run in 2337s: 193 passed, 10 failed
+# nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
+# suite: 204 harnesses run in 2203s: 194 passed, 10 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
