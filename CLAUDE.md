@@ -153,7 +153,8 @@ Conventions the code is written to, which the indexes rely on:
   line in `AllChecks`; its line in `docs/tree.md`.
 - **A saved field:** the field, `DataSave` out and in, `HistorySave` if it is
   a series, and the reader in `Game`'s load path; then `SaveFileCheck`. A
-  format bump only if an old save would now read wrongly (the rule above).
+  format bump only if an old save would now read wrongly (the old-saves rule,
+  `docs/contract.md`).
 - **A screen section:** a banner in the tab's own class in `ui/`
   (`UserInterface` is the window), drawn through `Kept` (`ui/Kept.java`'s
   rules), so the clock's redraw sets the month on the nodes on show and the
