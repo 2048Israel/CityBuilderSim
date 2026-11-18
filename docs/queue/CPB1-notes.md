@@ -347,3 +347,38 @@ source. `target/cpb1-go-fast.log` exits 0. The versioned launcher is run with
 a 10,800-second limit, waiting for its explicit gate-exit record. The PC's
 scheduled 08:00 offline time is noted. After a green gate only notes and the
 ship record may change; the provisional marker is removed last.
+
+## Kept versioned merge dry run
+
+`sh tools/gate.sh CPB1 --dry-run` completed on 2026-11-18 at 04:43:34,
+with **gate exit 0**. The kept run is `/tmp/cbs-gate-CPB1-feq6rsNr`
+(`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CPB1-feq6rsNr`). Its recorded
+inputs are branch `3c2d05e23d2ec806ef10f89a8ae10f47c4dc9f09` and main
+`2fc5f02c60fe9595bc401ab742d0b660024d59e3` (0.9.145). `ship.log`,
+`branch.commit`, `main.commit`, `exit`, and the retained `checks/` are the
+evidence. The launcher used the explicit shared Earth/world data and the
+10,800-second timeout; it finished before the scheduled PC shutdown.
+
+The versioned merge prepared 0.9.146, selected ALL (220 registered
+harnesses), and ran 206 harnesses in the ordinary suite: 195 passed and
+11 had only known reds. The check command exited 3 after 2,296 seconds;
+the dry-run launcher exited 0. `checks/new-reds.txt` is empty. The known
+red harnesses are CopperRefiningCheck, DeathRecordCheck, DistressBleedCheck,
+HealthCheck, MapCheck, PlanCheck, PopulationCheck, PriceLevelCheck,
+RoadCheck, ScaleCheck and YoungBankCheck. No new cover was needed.
+
+CopperBufferCheck passes. CopperRefiningCheck's sole failure is the
+inherited FF1 assertion that the Rotterdam rule cut an order in at least
+one month (0 months); all CPB1 regression controls pass. Its seed-1 child
+finishes 2,400 months with exit 0 and zero Rod Mills in 7.4 minutes.
+CementConcreteCheck, MaterialsCheck, WoodProductsCheck, RefineryCheck,
+ManufacturingCheck, GdpCheck, BooksCheck, SectorStatementCheck,
+SectorFlowCheck, HistoryCheck and TreasuryCheck pass, as does the default
+LongPlaytest with its monthly money checks and final MoneyFixtures.
+
+Maps regenerate, Stale reports 0 firm findings and 187 soft, and the
+dry-run clone returns to its original main HEAD with a clean tree. The
+source branch remains unchanged after this verdict: only these notes and
+the ship file advance. The kept-run comment is the ship file's first line;
+the provisional marker is removed last, in its own commit, after validating
+the ship record with `tools/known-reds.sh`.

@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-CPB1-feq6rsNr -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CPB1, the cathode buffer at a loss — 2026-11-18, ready, see docs/queue/CPB1-notes.md
