@@ -94,8 +94,10 @@ launcher, to `docs/queue/BW1.md`. Scripts and docs only; untagged.
 - `./batch-check.sh --fast` on the merge of main 2d895d646 (0.9.149): compile
   OK, maps regenerated, Stale 0 firm findings, tree clean but the notes and
   ship file; after the rules' cuts, `./batch-check.sh StaleCheck` at
-  aec321fd0: compile OK, StaleCheck OK, Stale 0 firm, tree clean. The pick (`sh tools/pick.sh origin/main HEAD`) is NONE: no game
-  code; review not needed (no money, saves or threading in the diff).
+  aec321fd0 and again at f05c19035 (the heavy-slot bullet): compile OK,
+  StaleCheck OK, Stale 0 firm, tree clean. The pick (`sh tools/pick.sh
+  origin/main HEAD`) is NONE: no game code; review not needed (no money,
+  saves or threading in the diff).
 - `sh tools/ship-selftest.sh .` whole, at 2ade01672: 168 of 168. After the
   `pid` and `started` keys and the two `bus.sh` cases cut (the gate's BT3 and
   BT4 cover them), its setup and BW1 cases alone: 19 of 19. The gate runs it
