@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-CPB1-feq6rsNr -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — CPB1, the cathode buffer at a loss — 2026-11-18, ready, see docs/queue/CPB1-notes.md
 The zero-demand cathode buffer no longer buys anode for an empty yard at a negative feed spread. Sector's planner gates speculative stock fills while domestic and captive demand and profitable replenishment keep running; recovered copper already committed is transformed by its own works without starting an idle refinery beside it. Real-market checks reproduce the old loss, preserve feed/output and GDP identities, and retain the original copper and cement premises as regressions. Existing stock sales and national-account rules are unchanged; the separate export-spare and no-world-outlet paths are queued as CPB2.
