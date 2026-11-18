@@ -2625,6 +2625,7 @@ public final class DistrictPlan {
             while (siteNext < siteN && in.siteLogMonth[siteNext] <= month) {
                 int r = in.siteLog[siteNext++];
                 site[r >>> 4] = (byte) (r & 3);
+                if ((r & 3) == SITE_MINED) minedNote(r >>> 4);
                 laid++;
             }
             if (n == 0 && laid == 0) return;
@@ -2643,6 +2644,8 @@ public final class DistrictPlan {
             }
             // No street across an interchange's reserve laid after them (MF2).
             if (nRsv > 0) streetsOffReserve();
+            // ...nor on a mine born after them (FB9).
+            if (nMined > 0) streetsOffMined();
             // Each new plot is as a build begins; in the interior of a cell that is open it is room (freshCell()'s rule, less
             // streets: a plot just bought holds none), and that cell looks again.
             boolean[] roomed = new boolean[CELLS], refree = new boolean[CELLS];
@@ -2713,6 +2716,56 @@ public final class DistrictPlan {
          * streets of the cells themselves stay (FX7: the buildings beside the reserve stand by them - 7 boxes of MF2's fixture
          * were out of reach of every street when they were taken up too, and moving them is MF1's business, not this).
          */
+
+        /*
+         * NO STREET ON A MINE BORN AFTER IT (batch FB9, 2026-11-18; BF1-M, DM3-R). No street is laid on a mine's site (SITE_MINED
+         * bars a cell's lines, the join, the wall's way and the avenues), but a mine born on a site after a street was laid across
+         * it - a site record growGround() lays (DM2: the sites replayed from their source months) - kept every street on it, and
+         * the painter stands a mine on the whole of its site before it draws the streets (TilePainter.standMines()): the street's
+         * plots were the mine's, their surface counted by the plan and drawn by nobody, and the street beyond the mine a piece
+         * the plan took for joined. FX7 keeps a street under a run laid later because the run lets it pass (a highway's deck over
+         * it, a level crossing over a track); a mine lets nothing pass.
+         * WHY: MapCheck's played city on 0.9.148 had a mine born at m66 on six plots of a cell's arterial: 3 paved plots of its
+         * surface not drawn (153 of 156) and the arterial's 12-plot stub beyond the mine a piece its own ground joins (MapCheck 1
+         * and 8; BF1-M's 67-plot piece on BF1's path and DM3-R's 1.5 plots on HW1's were the same arterial, mine and stub).
+         * HOW: the plots a record makes a mine's are listed as growGround() lays the records (minedNote()), and once the ground is
+         * worked out again each street on them is taken up (streetsOffMined()): no street, no avenue (counted not laid, as an
+         * avenue meeting the mine from the start is), the mine's ground. The record makes the month a change of the ground, so
+         * its wall decision (wallMonthEnd()) joins what the mine parted, over free ground, or keeps a way over the buildings that
+         * wall it in (FW11), dated at the mine's month: the boxes crossing that way are the birth's displacement, as those under
+         * the mine are (MapCheck 2h-c's "its plots or new ways"). The surface is drawn on the streets that stand.
+         */
+
+        /** The plots the site records just laid made a mine's (minedNote()), and how many: what streetsOffMined() looks at. */
+        int[] minedAt = new int[64];
+        int nMined;
+
+        /** Plot p just made a mine's: listed. */
+        void minedNote(int p) {
+            if (nMined == minedAt.length) minedAt = Arrays.copyOf(minedAt, nMined * 2);
+            minedAt[nMined++] = p;
+        }
+
+        /** The streets on the plots just made a mine's taken up: no street, no avenue (counted not laid), the mine's ground. */
+        void streetsOffMined() {
+            for (int k = 0; k < nMined; k++) {
+                int p = minedAt[k];
+                if (site[p] != SITE_MINED) continue;
+                if (avDone[p] == 1) {
+                    avUnlay(p);
+                    avN[AV_BROKEN]++;
+                }
+                avOwn[p] = false;
+                if (!str[p] && !under[p]) continue;
+                setStr(p, false);
+                under[p] = false;
+                art[p] = false;
+                blvd[p] = false;
+                role[p] = 0;
+                occ[p] = cvKeep[p] ? -1 : occStart[p];
+            }
+            nMined = 0;
+        }
 
         /** The plots the records just laid made a reserve's (rsvNote()), and how many: what streetsOffReserve() looks at. */
         int[] rsvAt = new int[64];
