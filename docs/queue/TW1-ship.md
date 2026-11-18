@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### TW1 — TreasuryCheck's dollar-note fixture causes its own window — 2026-11-18, ready, see docs/queue/TW1-notes.md
 TreasuryCheck's rollover section no longer lets the path decide whether the borrowing window is open as its dollar note
