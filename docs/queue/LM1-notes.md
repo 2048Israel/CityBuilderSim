@@ -5,10 +5,12 @@ west-northwest of Stockholm (2026-11-02). Three commits, one a finding:
 LM1-A the founding (a Sonnet slice), LM1-B the deposits (a Sonnet slice, in
 its own worktree), LM1-C the numbers (by hand); each diff reviewed here.
 
-**LM1-D ({next}, 2026-11-11)** widens the founding's water to six blocks
-where three hold too little, the orchestrator's condition on ★1: 0.9.94
-shipped the 3-block patch alone (its gate ran 94ef193b), and the widening
-follows. Sections 1, 4, 5 and 6 below are as of LM1-D.
+**LM1-D ({next}, 2026-11-11, taken up again 2026-11-18)** widens the
+founding's water to six blocks where three hold too little, the
+orchestrator's condition on ★1: 0.9.94 shipped the 3-block patch alone (its
+gate ran 94ef193b), and the widening follows. Sections 1, 4, 5 and 6 below
+are as of LM1-D; Jerus stopped it on 2026-11-11 ("Stop now"), and section 8
+is its merge with main at 0.9.150, every figure measured again there.
 
 ## 1. The starting ground: the water is one patch (LM1-A)
 
@@ -161,15 +163,15 @@ Two fixtures the founding moved, each mended to cause its condition again:
   (section 1's map against the city at every 30th month, five of 2d's yard).
   Their fault is not mended: LM1's city no longer reaches it.
 
-**One red passed by name, its fix queued as BQ1: MapCheck 14**, buying from
-the map. "short, the card's bond is the funding page's first: the 20-year
-term for the gap ..." and "...and issued, the card's bond buys them all"
-fail on LM1-D's founding: the played city is set short by D$966.1k and its
-20-year auction sells nothing ("face D$0.0k for D$0.0k": `bondQuote()`'s
-auction sold 0), so there is no bond to compare or issue. The fixture looks
-for a term market that clears in the played city instead of causing one, as
-KeptCheck's three did on RB1's path (KS2); LM1 touches no debt code, and
-the section passed before LM1 and on 0.9.94's 3-block founding.
+**MapCheck 14**, buying from the map, on 0.9.94: "short, the card's bond is
+the funding page's first: the 20-year term for the gap ..." and "...and
+issued, the card's bond buys them all" failed on LM1-D's founding: the
+played city was set short by D$966.1k and its 20-year auction sold nothing
+("face D$0.0k for D$0.0k": `bondQuote()`'s auction sold 0), so there was no
+bond to compare or issue. The fixture looks for a term market that clears in
+the played city instead of causing one, as KeptCheck's three did on RB1's
+path (KS2); BQ1 is queued for it. On 0.9.150 both lines are green (section
+8), so no red passes by name.
 
 **A fault found on the way, queued as PX1** (0.9.94 shipped it red by name): on LM1's 3-block founding
 (before the widening), PlanCheck 6 failed its two assertions on one fault.
@@ -196,6 +198,7 @@ ground is cut that way.
 - **LongPlaytest** traced against main on the 3-block founding: byte-
   identical. The widening cannot move it: the default world's 3-block patch
   holds the target, and `freshWater()` returns that patch unchanged.
+- **On 0.9.150**: section 8.
 
 ## 7. Left
 
@@ -206,3 +209,73 @@ ground is cut that way.
   zoom past the shading (2 km bar under 70 px) round a city with iron, the
   Resources chip on a generated world, and a new city's numbers 1 to 24 on
   the map against the list.
+
+## 8. LM1-D on 0.9.150 (2026-11-18)
+
+Taken up again on Jerus's word ("That stop is over"), merged with main at
+0.9.150 (dfdc1b4ad, about 1,130 commits on) in 78647d7b, never rebased.
+
+**The merge.** Only the generated docs conflicted, and they were
+regenerated. In the widening's four files main had: HA1 (0a9c387d) took out
+the unreachable land save converters (`GridConversion`, `LandConversion`,
+`LegacyLand`), their live helpers now `LandDrawing`'s, so
+`EarthTerrainCheck.riverOnlyPatch()` reads `LandDrawing.WHOLE_PLOT` as main's
+LandCheck does (the one line changed by hand); GD4 (8a3d1887) gold,
+`LandManager.goldOutput()` and EarthTerrainCheck's gold Z; SQ1 (ee772fab)
+counts as longs; WN5d and 1600618c the quotes' count pool and hover quotes
+in CityLand; HA1's `Timing.skip` on EarthTerrainCheck's timing rounds. Both
+kept; none of it touches `found()`, `freshPatch()` or `freshWater()`.
+
+**Measured again** (a probe, not committed, and the harnesses): nothing
+moved. The default world 54 blocks, 0.4941 km2 fresh, the same at
+`FRESH_PATCH_MOST` 3 and 6 (a CityLand built with 3 ahead on the classpath);
+Stockholm at 268/280/288/292 deg the same at 3 and 6 (288: 61 blocks in 30 x
+14, water 41 blocks, 0.4968 km2); on the full file Paris (48.8566, 2.3522)
+0.3267 km2 in 60 blocks (0.1935 at 3), Rome 0.2529 in 58 (0.1404), Windsor
+0.2709 in 55 (0.1827); generated worlds 1-200, 41 short at 6 and 75 at 3;
+world 35, MapCheck's played city, 68 blocks and 0.4356 km2 (58 and 0.3879 at
+3). LandCheck (e): 559 plots for 549 at r = 5 (364 at 3), the thin river 104
+against 56, (a)'s map 36 blocks, not widened. EarthTerrainCheck's Paris (the
+fixture's spot): 324 plots after the rings' 62, 177 at 3, 0.3474 km2.
+
+**The trace did not move.** The default playtest traced (`-Dplaytest.trace`,
+both data files named) on main dfdc1b4ad built apart and on the merge: the
+eight CSVs byte-identical; the reports differ only in run times (474 s
+against 539 s), clock stamps and an object's identity hash in one works
+line. No ensemble.
+
+**MapCheck 14 is green** on FB9's (0.9.149) fixtures: three short by
+D$1,350.3k, the card's bond 20 years, face D$1,366.6k for D$1,351.8k, all 3
+bought once issued. The ship file's red-by-name line and its BQ1 row are
+dropped; BQ1 stays on the queue as it was (its fixture still finds the
+clearing market rather than causing it).
+
+**MapCheck 2h-c, mended** (f3a02311). The merge had one NEW red: "first
+viewed at 150, the mine city has the monthly watched city's layout and
+source dates". FB9 built the mine copy from the played city with a house for
+every owned dry plot; LM1-D founds world 35 on 68 blocks where main has 58,
+and the mine district's plan finds 7 wall ways, dated 99. A probe running
+`playedCity()` and 2h-c's mine: the plans the same, `watched.same(back)`,
+and the sidecar round trip before the view byte for byte. But planning
+`back` appends the 7 ways (the watched map's, month and record), so its
+sidecar after the view is not `unseen`'s from before it. `CityMap.sameSources()`
+says that is the design (DM2-A: "before a first view appends the walls its
+plans discover"), and 2h-b's twin asserts it that way. The line now asks
+`back` to keep the sources it was saved with and to write the watched
+city's sidecar byte for byte. On main's founding no wall is found and both
+forms hold. It is red without the mend and green with it, as are the yard's
+and the shore's.
+
+**The checks** on the merge: `--fast` OK (Stale 0 firm); LandCheck and
+EarthTerrainCheck (the full file named) green; MapCheck, with BridgeMapCheck,
+green after the mend. The pick is ALL (`LandManager.java`, 52 readers, for
+its javadoc); review not needed (no money, saves or threading).
+
+**The timing.** The row's "its timing hard covers LM1's, cut short at
+0.9.94" was written before GR1. Since then a gate's suite times soft
+(`batch-check.sh`), and only the nightly on main (`tools/nightly.sh`: 4,000
+months, the nightly tier, hard) judges speed. LM1's code has been on main
+since 0.9.94, through every nightly since (the last, 0.9.143 on 2026-11-18:
+0 SLOWER). LM1-D's widening is timed by the first nightly after it ships.
+Warm, `found()` at Stockholm, Paris and Rome takes 11-22, 18 and 7 ms
+(section 1).
