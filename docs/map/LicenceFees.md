@@ -1,4 +1,4 @@
-# LicenceFees.java - 334 lines · 25 methods · 4 constants · model
+# LicenceFees.java - 441 lines · 32 methods · 4 constants · model
 
 `ham/citybuildersim/LicenceFees.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -12,9 +12,15 @@
 > DataSave/SectorState keeps pending and settled inputs and the standing-cost
 > memo; HistorySave keeps paid and accrued monthly series.
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (15), [Game](Game.md) (13), [Recipe](Recipe.md) (9), [Recipes](Recipes.md) (9), [BuildingsStacks](BuildingsStacks.md) (8), [ResearchCatalog](ResearchCatalog.md) (6), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (5), [RecipeChanges](RecipeChanges.md) (5), [Research](Research.md) (4), [Refining](Refining.md) (3), [ProcessingSector](ProcessingSector.md) (3), [EquipmentFit](EquipmentFit.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [Equipment](Equipment.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (24), [Game](Game.md) (19), [Sector](Sector.md) (15), [Recipes](Recipes.md) (13), [BuildingsStacks](BuildingsStacks.md) (10), [Recipe](Recipe.md) (9), [RecipeChanges](RecipeChanges.md) (8), [BuildingType](BuildingType.md) (7), [Research](Research.md) (6), [ResearchCatalog](ResearchCatalog.md) (6), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (5), [UtilitiesHandler](UtilitiesHandler.md) (5), [Equipment](Equipment.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Refining](Refining.md) (3), [ProcessingSector](ProcessingSector.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1), [BuildAdvice](BuildAdvice.md) (1)
 
-**Used by (15):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
+**Used by (17):** [BuildAdvice](BuildAdvice.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
+
+## Sections
+
+| line | section |
+|---:|---|
+| 335 | THE CITY'S OWN WORKS (R2c-P) |
 
 ## Constants
 
@@ -34,11 +40,11 @@
 | 208 | `private final Map<Ground, Double> beforeGround` |  |
 | 209 | `private final List<Bill> bills` |  |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 309 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
+| 26 | 416 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
 | 27 | 1 | `private LicenceFees()` |  |
 | 37 | 6 | `public static boolean payable(String code, int month, Research found)` | A patent is payable from history's month, excluding its twentieth anniversary. |
 | 45 | 3 | `public static double onGain(String code, int month, Research found, double gain)` | A loss, year, unknown code or unpatented entry costs nothing. |
@@ -67,4 +73,16 @@
 | 292 | 28 | `private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
 | 322 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
 | 329 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
+
+### THE CITY'S OWN WORKS (R2c-P) (lines 335-441)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 338 | 3 | `static boolean citysWork(Game game, BuildingsTemplate t)` | Whether this template is one of the city's own works, the stacks no sector owns (the bank's branch excepted), which pay their licences too (R2c-P). |
+| 343 | 3 | `static double powerDelivered(UtilitiesHandler u, double nameplate)` | What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). |
+| 348 | 5 | `static double waterDelivered(Game game, UtilitiesHandler u, double freshMove, double desalMove)` | What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). |
+| 360 | 19 | `public static double publicGain(Game game, BuildingsStacks stack, String pieceId)` | The month's public gain of one entry on one standing stack of a city utility, in money (R2c-P): the service delivered with it less the service delivered without it, at the tariff the planners price it at (Recipes.pric... |
+| 384 | 20 | `public static double capturePublic(Game game)` | The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices: each entry once a stack, SHARE of its positive public gain while its patent runs. |
+| 406 | 8 | `private static double added(Game game, BuildingsTemplate t, double plate)` | The service one more building of this nameplate adds to what the grid or the works deliver, in money, at the planners' tariff (R2c-P). |
+| 420 | 21 | `public static double forNewWork(Game game, BuildingsTemplate t, double running)` | The planners' licence cost of ONE more building of a city utility (R2c-P), added to its running cost: SHARE of the positive gain of each patented entry it would carry (the building's own over its running cost, each pi... |
 
