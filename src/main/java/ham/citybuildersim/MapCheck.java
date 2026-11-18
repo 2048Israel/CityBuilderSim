@@ -2340,8 +2340,11 @@ public class MapCheck {
                 }
                 check("the mine's actual claimed plots are dated 100 when first viewed at 150", minedPlots > 0 && wrongDate == 0);
             }
+            // A first view appends the walls its plans discover (CityMap.sameSources(), DM2-A), so the viewed map keeps the sources it was
+            // saved with and its sidecar is the watched city's, not its own before the view (LM1-D: the 6-block founding's mine district
+            // finds 7 ways dated 99 in both; main's founding found none, and the bytes before the view held by chance).
             check("first viewed at 150, the " + name + " city has the monthly watched city's layout and source dates", sameSourcePlans(watched, back)
-                    && Arrays.equals(side, back.writeSidecar(150)) && watched.same(back));
+                    && back.sameSources(unseen) && Arrays.equals(watched.writeSidecar(150), back.writeSidecar(150)) && watched.same(back));
 
             // Growth, departure and return all go through the model's actual source path, with houses arriving between them.
             int excludedBeforeDeparture = 0, excludedAtGrowth = 0;

@@ -1,14 +1,13 @@
 # HL1: the households' books closed ({next}, resumed 2026-11-18)
 
-**Where it stands (2026-11-18, mends handoff).** Jerus lifted the stop. Main was merged,
-never rebased: 477bdb1c3, HN1 f17ff2141, FB12 36157fb19; measured source tip e425b1810.
-All resumed named checks exit 0 or 3, no new red; the default LongPlaytest and all HL1 money
-fixtures pass, every one of 2,404 default months closed and all nine unchanged own-line bounds
-green. Changed figures and per-file merge notes are below; the 2026-11-11 measurements remain
-historical. The ship file is provisional for review. LM1-D still must land and be merged before
-the final 80-run ensemble, which waits for the orchestrator's quiet-slot go; then the scheduled
-ALL dry run and the final marker-drop go. No ensemble, full pick or dry run has started in this
-resumed phase. The stopped state below is retained for provenance.
+**Where it stands (2026-11-18, ensemble go).** REV-HL1-2 said SHIP and the orchestrator
+reserved the heavy slot for HL1's final 80 after LM1-D's gate. Main 608bf7025 (including LM1-D,
+0.9.152) is merged, source clean, generated indexes regenerated, --fast exit 0. The previous
+2,404-month default and all HL1 money fixtures passed with nine unchanged bounds; the combined
+LM1-D tree is being traced against that preserved HL1 run before the ensemble. The ship marker
+remains provisional. No ensemble or dry run has started in this phase yet; the dry run needs a
+separate go after the final baseline and score are committed. Current results and all changed
+figures are below; the 2026-11-11 measurements are historical.
 
 Brief: `docs/studies/spec-wealth.md` 2.4 and 3.4. Four slices (A the instrument, B the upkeep, C the
 books closed and asserted, D what the ensemble then found), each coded by a Sonnet slice and reviewed;
@@ -53,7 +52,7 @@ So the study's "44% transit and the bank" was the lags and the faults, not a bil
   (`householdsInTransit()`, the "out of step" row). The households' share trades with the world and
   what migrants bring and take are pairs of lines, so the balance of payments sees them; the two
   no-cash write-off halves are `Scope.BOOK`.
-- **The upkeep is bought of Business Services** (★5 of the study, as recommended): its other revenue
+- **The upkeep is bought of Business Services** (â˜…5 of the study, as recommended): its other revenue
   (`Sector.UPKEEP_SOLD`, "Upkeep work"), three quarters of it an imported service on its own books
   (`BusinessServices.UPKEEP_IMPORTED = 0.75`, measured: the grocers import 0.75-0.78 of their inputs,
   the restaurants 0.73-0.77, the builders 0.62-0.80), all of it where the sector has no seats. The
@@ -86,7 +85,7 @@ The last two rows are a finding: with no income any debt is "at the ceiling", so
 discharged are overwhelmingly ones that could repay (mean savings of a discharging cell 2,845 against
 a debt of 1.11; 10,605 against 64.58). The old rule destroyed 4% of such a cell's savings a month:
 that was most of the leak. They are still marked bankrupt, locked out a year, and a quarter leave (994
-and 3,862 households in 661 months): HL2's ★2.
+and 3,862 households in 661 months): HL2's â˜…2.
 
 ## What moves for the player
 
@@ -278,14 +277,14 @@ such a month; HL1's path does, once in 192,000 city-months. Queued as NG1.
 ## Calls
 
 Taken, each overturnable:
-- ★5 (the study's): the upkeep bought of Business Services, three quarters imported. As recommended.
+- â˜…5 (the study's): the upkeep bought of Business Services, three quarters imported. As recommended.
 - **The bankrupt's savings repay the bank first.** The other way kept the rule and named the loss as
   a line, which leaves up to 3.5% of GDP a year vanishing: the row's own bug.
 - **The faults are named and HL2 mends them**, rather than a rule for each inside this batch.
 
 For Jerus (in `docs/queue/HL2.md`, both with a recommendation):
-- ★1 who bears an unfunded bill: recommended nobody is sold to (it comes off the sellers' sales).
-- ★2 a household whose savings cover its debt is not bankrupt: recommended.
+- â˜…1 who bears an unfunded bill: recommended nobody is sold to (it comes off the sellers' sales).
+- â˜…2 a household whose savings cover its debt is not bankrupt: recommended.
 
 ## Left
 
@@ -338,7 +337,7 @@ left alone. Main's QB1 ScaleCheck fixture month 225 replaces HL1's obsolete mont
 scan narrative. These two decisions keep main's repaired fixtures; fresh checks decide whether the
 new path still causes their premises. Orchestrator notified before resolving KeptCheck.
 
-★ Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
+â˜… Keep LF1b's established share labels and BOOK-classify LF1c's noncash offset legs: a noncash
 valuation is not income from or spending by a household. All real new money flows remain in the
 pool audit, either household DOMESTIC flows or the named TRADE/MONEY/FINANCIAL lanes beside them.
 No save-format bump: the upkeep pending field is additive and missing means no previously booked
@@ -585,3 +584,29 @@ the final ensemble/dry run remain due and is not a final publication claim.
 The final byte check caught PowerShell stdin replacing the two publication-heading em dashes
 and the new design-choice star with question marks. They were restored with explicit Unicode
 code points through Git Bash, UTF-8 and LF checked before the mends handoff; no code changed.
+
+## Final-model ensemble phase (2026-11-18)
+
+REV-HL1-2 said SHIP (orchestrator's 18:56 ensemble-go mail); no P1 was sent back. The heavy
+slot is now HL1's alone, trace verification then ensemble in sequence, no pick or dry run beside
+it. The dry run still needs a separate go.
+
+### LM1-D and current main merged: 608bf7025 (0.9.152)
+
+LM1-D b3c4b614e supplies its CityLand/FRESH_PATCH_MOST=6 widening and LandManager explanation,
+plus LandCheck, EarthTerrainCheck and MapCheck repairs. All five files are main's verbatim;
+no HL1 manual edit to those files. Queue-only FS1/BW2 entries are retained. No source conflict;
+only generated conflicts were taken from main as inputs then regenerated. `--fast`: exit 0,
+compile 56 s, 0 firm Stale findings (187 soft).
+
+LM1-D says its default-world lake already reaches the target in three blocks, so the six-block
+fallback does not change it and its eight default trace CSVs were byte-identical. To verify the
+combined HL1 tree too, the e425b1810 traces/logs are preserved in target/HL1-before-LM1-D, and
+LongPlaytest is run again with target/HL1-final-trace as its prefix. This justified rerun tests
+new merged model code; no main baseline suite is run. The final 80 use the resulting committed
+classes only once; newest baseline is HN1's docs/ensemble/0.9.151.md, since LM1-D moved no default
+trace and did not need another ensemble.
+
+Jerus's FS1 practice received 18:18: at dry run/gate, an unrelated moved-city pinned figure or
+load-timeout red gets a named ship known-reds row with already-queued FS1, no new queue row or
+FB bundle. A real bug found in passing is still queued, and code-caused failures are still mended.
