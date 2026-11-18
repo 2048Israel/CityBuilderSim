@@ -172,8 +172,11 @@ batch verdict PASS, hard criteria 10/10. M1 is 0 months on every policy, and F1 
 - The dry run (`/tmp/cbs-gate-HN1-7jjAaTes`, 32138d2b2: main d6844edc4 merged, 0.9.151): the suite ran 221 harnesses in
   2,513 s and the gate stopped, exit 1, on 30 unnamed lines in three harnesses (5a). Each is main's code on HN1's moved
   path, none of them the door's, and each is named in the ship file's `## known-reds`. Judged again with those rows
-  (`KnownReds`, the kept `suite.txt`, main's `gate.txt`): "known red only - 12 harnesses", no NEW line. The ship file's
-  first line names the run for the gate to reuse.
+  (`KnownReds`, the kept `suite.txt`, main's `gate.txt`): "known red only - 12 harnesses", no NEW line. The kept run
+  no longer stands for the merge, because main moved to 28ee126e8 (R1f changed seven harnesses, PriceLevelCheck among
+  them), so the gate runs the suite fresh.
+- On main 28ee126e8 merged: `--fast` exit 0. DenominationCheck exit 1 on the same 8 lines, to the same figures.
+  PriceLevelCheck exit 1 on 40 red lines, every one of them main's `gate.txt` or HN1's named rows.
 
 ## 5a. The dry run's three reds, traced
 
