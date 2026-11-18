@@ -47,7 +47,7 @@ cd "$CLONE" || failed clone
 mvn -q -B compile > "$STEP" 2>&1 || failed compile
 mvn -q -B dependency:build-classpath -Dmdep.outputFile=target/classpath.txt > "$STEP" 2>&1 || failed classpath
 
-nightly_data
+. "$ORIG/tools/check-data.sh"; cbs_check_data "$MAIN"
 T0=$(date +%s)
 java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dstdout.encoding=UTF-8 -Dplaytest.months=$MONTHS \
     -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.LongPlaytest > "$STEP" 2>&1

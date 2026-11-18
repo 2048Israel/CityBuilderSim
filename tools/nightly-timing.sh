@@ -1,5 +1,5 @@
 #!/bin/sh
-# GR1: nightly ownership, data paths and timing away from the gate.
+# GR1: nightly ownership and timing away from the gate.
 # Sourced by nightly.sh and its no-JVM self-test. All temporary builds stay in its clone.
 nightly_owner() {
     case "$1" in ''|*[!0-9]*) return ;; esac
@@ -40,14 +40,6 @@ nightly_lock() {  # Publish a prepared, nonempty directory atomically (GR1 revie
         rmdir "$LOCK_PATH" 2>/dev/null || :
     done
     rmdir "$LOCK_STAGE/owner-$LOCK_TOKEN" "$LOCK_STAGE"; return 3
-}
-nightly_data() {
-    [ -z "${JDK_JAVA_OPTIONS:-}" ] || return 0
-    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) MAIN=$(cygpath -m "$MAIN") ;; esac
-    for f in earth-2:cbs.earth world-1:cbs.world; do
-        [ ! -f "$MAIN/data/${f%%:*}.bin" ] || JDK_JAVA_OPTIONS="${JDK_JAVA_OPTIONS:+$JDK_JAVA_OPTIONS }-D${f#*:}=\"$MAIN/data/${f%%:*}.bin\""
-    done
-    export JDK_JAVA_OPTIONS
 }
 timing_quiet() {
     case "$(uname -s)" in
