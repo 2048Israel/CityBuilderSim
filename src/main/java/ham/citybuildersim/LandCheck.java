@@ -68,7 +68,9 @@ import ham.citybuildersim.sectors.Mining;
  * as the getters the sector pages read give them, "nothing is digging" for an
  * ore with a deposit and no mine, and not for one a mine stands on, iron's as
  * it was (30); and, since LM1, the founding's water as one patch of blocks,
- * never a strip along a river (section 1, theFoundingsWaterIsOnePatch()).
+ * never a strip along a river, the square widened a block at a time to
+ * FRESH_PATCH_MOST where FRESH_PATCH holds too little (section 1,
+ * theFoundingsWaterIsOnePatch()).
  */
 public class LandCheck {
 
@@ -857,6 +859,13 @@ public class LandCheck {
        world, rings of dry ground on it that hold none unless a fixture says
        so, and the lake's centre at the site, as on an Earth world. Each
        fixture is built to cause its condition and asserts that it does.
+       (a)-(d) are freshPatch(): the Stockholm shape, a river alone, a lake
+       against the rings, the default world. (e) is freshWater(), which
+       widens the square a block at a time to FRESH_PATCH_MOST where
+       FRESH_PATCH holds too little: a wide river that needs more than
+       FRESH_PATCH and stops at the first half-side that holds the target,
+       a river too thin even at FRESH_PATCH_MOST that takes its best patch,
+       and (a)'s map, which is not widened.
        ===================================================================== */
 
     /** A painted map of fresh plots a block (by CityLand.blockKey()), as CityLand.freshPatch() reads one. */
@@ -1021,6 +1030,51 @@ public class LandCheck {
         assertTrue("the default world's water is one patch inside FRESH_PATCH of its first block", !lake.isEmpty() && onePiece(lake) && inSquareOfFirst(lake, patch));
         assertTrue("...holding FOUNDING_FRESH_KM2, and less than a block more", opening.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2
                 && opening.centreKm2(CityLand.FRESH) - LandManager.FOUNDING_FRESH_KM2 < b * b * World.KM2_PER_PLOT);
+
+        /* (e) the square widens where FRESH_PATCH holds too little (freshWater()): to the first half-side that holds the target, to FRESH_PATCH_MOST's best where none does, and not at all where FRESH_PATCH holds it */
+        long most = CityLand.FRESH_PATCH_MOST;
+        // e1: a river four blocks across, each block holding the same share of its plots, the share such that the target is held at a half-side of FRESH_PATCH + 2 and (checked below, not assumed) not a block narrower
+        long rows = 4, intended = patch + 2, across = rows * (2 * intended + 1);
+        long share = (target + across - 1) / across;
+        java.util.Map<Long, Long> wide = new java.util.HashMap<>();
+        for (long x = -14; x <= 14; x++) for (long y = 4; y < 4 + rows; y++) wide.put(CityLand.blockKey(sbx + x, sby + y), share);
+        long wideRings = freshOn(rings, wide), wide3 = bestSquareHolds(wide, patch), needs = 0;
+        for (long r = patch; r <= most && needs == 0; r++) if (wideRings + bestSquareHolds(wide, r) >= target) needs = r;
+        System.out.printf("   a wide river: %d blocks of %d of their %d plots; the best square holds %d at %d blocks, the target %d plots; the least half-side that holds it is %d (%d held there, %d one block narrower)%n",
+                wide.size(), share, b * b, wide3, patch, target, needs, needs > 0 ? bestSquareHolds(wide, needs) : -1, needs > patch ? bestSquareHolds(wide, needs - 1) : -1);
+        assertTrue("the fixture: a river " + rows + " blocks across whose blocks hold no more than a block does, and the rings none of it",
+                share >= 1 && share <= b * b && wideRings == 0 && wide.keySet().stream().noneMatch(rings::contains));
+        assertTrue("...the square of FRESH_PATCH blocks holds less than the target", wideRings + wide3 < target);
+        assertTrue("...but some square of at most FRESH_PATCH_MOST blocks holds it, the least a half-side r over FRESH_PATCH", needs > patch && needs <= most);
+        java.util.List<Long> widened = CityLand.freshWater(painted(wide), rings, sbx, sby, reach, last, lx, ly, b, target);
+        long widenedHeld = freshOn(widened, wide);
+        System.out.printf("   freshWater: %d blocks holding %d plots after widening to r = %d%n", widened.size(), widenedHeld, needs);
+        assertTrue("a river FRESH_PATCH could not hold: freshWater's patch reaches the target", wideRings + widenedHeld >= target);
+        assertTrue("...is one piece, edge to edge, outside the rings", onePiece(widened) && widened.stream().noneMatch(rings::contains));
+        assertTrue("...lies inside the square of 2 * r + 1 blocks round its first block", inSquareOfFirst(widened, needs));
+        assertTrue("...and the square of r - 1 could not hold it, so it widened and stopped at the first that does",
+                wideRings + bestSquareHolds(wide, needs - 1) < target && !inSquareOfFirst(widened, needs - 1)
+                && widened.equals(CityLand.freshPatch(painted(wide), rings, sbx, sby, reach, last, lx, ly, b, target, needs)));
+
+        // e2: the river of (a), one plot wide, too thin to hold the target in any square up to FRESH_PATCH_MOST
+        long thinRings = freshOn(rings, river), thin3 = bestSquareHolds(river, patch), thinMost = bestSquareHolds(river, most);
+        java.util.List<Long> thinWater = CityLand.freshWater(painted(river), rings, sbx, sby, reach, last, lx, ly, b, target);
+        long thinHeld = freshOn(thinWater, river);
+        System.out.printf("   a thin river: the best square holds %d at %d blocks and %d at %d, the target %d plots; freshWater takes %d blocks holding %d%n",
+                thin3, patch, thinMost, most, target, thinWater.size(), thinHeld);
+        assertTrue("the fixture: a river one plot wide holds less than the target even in the square of FRESH_PATCH_MOST blocks", thinRings + thinMost < target);
+        assertTrue("...and more there than in the square of FRESH_PATCH blocks, so widening takes more", thinMost > thin3);
+        assertTrue("a river too thin for the target: freshWater is freshPatch at FRESH_PATCH_MOST, the widest square's best patch",
+                thinWater.equals(CityLand.freshPatch(painted(river), rings, sbx, sby, reach, last, lx, ly, b, target, most)));
+        assertTrue("...holding the widest square's best, short of the target, and more than FRESH_PATCH's best",
+                thinHeld == thinMost && thinRings + thinHeld < target && thinHeld > thin3);
+        assertTrue("...one piece inside the square of 2 * FRESH_PATCH_MOST + 1 blocks round its first block", onePiece(thinWater) && inSquareOfFirst(thinWater, most));
+
+        // e3: (a)'s map, where the square of FRESH_PATCH blocks reaches the target: no widening
+        java.util.List<Long> stays = CityLand.freshWater(painted(both), rings, sbx, sby, reach, last, lx, ly, b, target);
+        System.out.printf("   (a)'s map: freshWater takes %d blocks, as freshPatch at FRESH_PATCH does (%d)%n", stays.size(), water.size());
+        assertTrue("the Stockholm shape, where the square of FRESH_PATCH blocks holds the target: freshWater is freshPatch at FRESH_PATCH, the same blocks in the same order",
+                held >= target && stays.equals(water));
     }
 
     /* ==================================================================
