@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FB12 — fixtures on two landmasses — 2026-11-18, ready, see docs/queue/FB12-notes.md
 IslandRailCheck proves a bridge-linked map island's founding-side hub, own
