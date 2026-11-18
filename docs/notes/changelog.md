@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.147 — LB5-B, a slot's previous city kept whole while its history lands — 2026-11-18, ready, see docs/queue/LB5-B-notes.md
+While a saved slot's header month and its history's last month disagree (a save landed before its history, SaveWriter's order, or its
+history write failed, LB3-S), the Rankings board keeps that slot's last whole city, header and history together, instead of the new
+header's name and land over the old history's figures. A whole slot's two months are equal, so a healthy slot reads as before; a slot
+first read with them apart is read as it stands (no whole city of it exists). The held row is read again only when a file moves (the
+stamp), so a history that never lands leaves the slot at its last whole city until the next save lands both. The mend is
+`SavedCities.keepWhole`; the screen is untouched, nothing new is saved and `SAVE_FORMAT` is unchanged. `RankingsCheck` 21 holds the row
+between the save and its history and 22 the failed history, a second save, the landing, a newer build and a deletion; 8 assertions
+fail with the mend removed. No model change: the default trace is unmoved, no ensemble.
+
 ### 0.9.146 — CPB1, the cathode buffer at a loss — 2026-11-18, ready, see docs/queue/CPB1-notes.md
 The zero-demand cathode buffer no longer buys anode for an empty yard at a negative feed spread. Sector's planner gates speculative stock fills while domestic and captive demand and profitable replenishment keep running; recovered copper already committed is transformed by its own works without starting an idle refinery beside it. Real-market checks reproduce the old loss, preserve feed/output and GDP identities, and retain the original copper and cement premises as regressions. Existing stock sales and national-account rules are unchanged; the separate export-spare and no-world-outlet paths are queued as CPB2.
 

@@ -1,8 +1,8 @@
-# gate of Merge batch/CPB1: stop the zero-demand cathode buffer buying anode at a negative feed spread; main 0.9.102 reproduces the two F1 seed paths and a reduced real-market fixture, so the finding passes by name per orchestrator 20261114-180838, 0.9.146
+# gate of Merge batch/LB5-B: while a slot's header month and its history's last month disagree, keep the slot's previous city whole instead of the new header over the old history (a name over another city's figures until the history lands) (0.9.76) (from Pending on 2026-11-16; it waited: a change of what the board shows (a slot whose history write failed, LB3-S, would keep its last whole city, not its new save); recommended, with its fixture (RankingsCheck 21's two steps, the row held between them); a healthy slot's two months are equal), 0.9.147
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 206 harnesses run in 2236s: 195 passed, 11 failed
+# suite: 206 harnesses run in 2314s: 195 passed, 11 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -55,21 +55,23 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
+KeptCheck | exit 3
+KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | ...the property rate staged: the redraw and the next equal a page built new FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
-KeptCheck | exit 1
-KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
-KeptCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 285

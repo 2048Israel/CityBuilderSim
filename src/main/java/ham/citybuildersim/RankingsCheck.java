@@ -107,6 +107,13 @@ import java.util.function.Supplier;
  *      row follows; a city landing in SaveWriter's order, the save and then the history, is read at each step, not again between them, and ends
  *      as the finished slot reads.
  *
+ * LB5-B, THE SLOT'S PREVIOUS CITY KEPT WHOLE. Section 21's two steps also hold the row between them: a save ahead of its history leaves the board the last whole city, not its
+ * new name over the old history's figures, and the history landing ends it at the finished slot.
+ *  22. A SLOT WHOSE HEADER AND HISTORY SAY TWO MONTHS KEEPS ITS LAST WHOLE CITY: a slot first read so is read as it stands; a whole slot whose save lands and
+ *      whose history never does (LB3-S) keeps its very same city through every refresh and through a second save, in the rows, the "stopped at" line and
+ *      the count; the history landing ends it as the finished slot; a save the board does not take (a newer build) or a deleted one is not kept; a
+ *      healthy slot's two months are equal and a healthy re-save is read as it is.
+ *
  * Every fixture causes its condition: the founding city is a founded one, a tie is a real file with three
  * figures set equal, a missing figure a real file with one removed, a save from an older build a real save with its
  * format set below the oldest this build loads.
@@ -268,6 +275,8 @@ public class RankingsCheck {
             thePackedRead();
             // LB5: the stamp of a slot follows each of its files alone, and a save that lands before its history.
             theStamp(saves);
+            // LB5-B: a slot whose header and history say two months keeps its last whole city.
+            theHeldCity(saves);
         }
 
         out.printf("%nRankingsCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -1646,6 +1655,8 @@ public class RankingsCheck {
         check("fixture: the slot is read once and is the founded city (" + name + ", month " + first.month() + "), reads " + read[0].reads(), read[0].reads() == 1 && name.equals(f.game.getCityName()) && first.month() == f.youngLast);
         check("nothing moved: the next refresh reads no slot and keeps the very same city", read[0].refresh(files).reads() == 0
                 && read[0].refresh(files).now(SavedCities.Played.NONE).get(0).city() == first);
+        check("fixture: a whole slot's header month is its history's last month (slot 1: " + f.files.readHeader(1).getMonth() + " and " + f.youngLast + ", slot 2: "
+                + f.files.readHeader(2).getMonth() + " and " + f.oldLast + ")", f.files.readHeader(1).getMonth() == f.youngLast && f.files.readHeader(2).getMonth() == f.oldLast);
 
         Path save = files.saveFile(1);
         FileTime t0 = Files.getLastModifiedTime(save);
@@ -1662,30 +1673,132 @@ public class RankingsCheck {
                 byTime.reads() == 1 && byTime.now(SavedCities.Played.NONE).get(0).city().name().equals(name + " I2"));
         check("...and then nothing moved: no slot is read", byTime.refresh(files).reads() == 0);
 
+        // LB5-B: the save lands ahead of its history (a new name and a header a year on, the history still to the old month): the slot is read again, and the
+        // board keeps the last whole city, the very one it had, not the new name over the old history's figures.
+        Rankings.City whole = byTime.now(SavedCities.Played.NONE).get(0).city();
+        rewriteSave(save, json -> {
+            json.addProperty("cityName", name + " III");
+            json.addProperty("month", f.oldLast);
+        }, FileTime.fromMillis(t0.toMillis() + 2000));
+        SavedCities ahead = byTime.refresh(files);
+        Rankings.City held = ahead.now(SavedCities.Played.NONE).get(0).city();
+        check("the header at month " + f.oldLast + " over a history to month " + f.youngLast + ": the slot is read again (reads " + ahead.reads() + ") and the row is the last whole city, "
+                        + "the very one it was (" + held.name() + ", month " + held.month() + "), not " + name + " III",
+                ahead.reads() == 1 && held == whole && held.name().equals(name + " I2") && held.month() == f.youngLast);
+        check("...and while nothing moves it is read no more and the row stays that city", ahead.refresh(files).reads() == 0 && ahead.refresh(files).now(SavedCities.Played.NONE).get(0).city() == whole);
+
         // The history lands alone: the row follows it.
         Files.copy(f.files.historyFile(2), files.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
-        SavedCities byHistory = byTime.refresh(files);
-        check("the history alone: the slot is read again and the row ends at the longer history's last month (" + f.oldLast + "), reads " + byHistory.reads(),
-                byHistory.reads() == 1 && byHistory.now(SavedCities.Played.NONE).get(0).city().month() == f.oldLast);
+        SavedCities byHistory = ahead.refresh(files);
+        Rankings.City landed = byHistory.now(SavedCities.Played.NONE).get(0).city();
+        check("the history alone: the slot is read again and the row ends at the longer history's last month (" + f.oldLast + ") under the new header's name (" + landed.name() + "), reads " + byHistory.reads(),
+                byHistory.reads() == 1 && landed.month() == f.oldLast && landed.name().equals(name + " III"));
 
         // A city lands in two steps, in SaveWriter's order (the save, then the history): each step moves the stamp, the board reads between, and the end is the finished slot.
         GameFiles landing = GameFiles.scratch("rankingsstamplanding");
         copySlot(f.files, 1, landing, 1, 0, true);
         GameFiles finished = GameFiles.scratch("rankingsstampfinished");
         copySlot(f.files, 2, finished, 1, 0, true);
+        // The new city is told from the old by its name (both are the one game's saves): the finished slot and the landing save carry the same new name.
+        String landedName = name + " Landed";
+        rewriteSave(finished.saveFile(1), json -> json.addProperty("cityName", landedName), Files.getLastModifiedTime(finished.saveFile(1)));
         SavedCities[] before = new SavedCities[2];
         quietly(() -> before[0] = SavedCities.read(landing));
         quietly(() -> before[1] = SavedCities.read(finished));
+        Rankings.City oldCity = before[0].now(SavedCities.Played.NONE).get(0).city();
         Files.copy(f.files.saveFile(2), landing.saveFile(1), StandardCopyOption.REPLACE_EXISTING);
+        rewriteSave(landing.saveFile(1), json -> json.addProperty("cityName", landedName), FileTime.fromMillis(Files.getLastModifiedTime(landing.saveFile(1)).toMillis() + 1000));
         SavedCities saveLanded = before[0].refresh(landing);
         boolean savedRead = saveLanded.reads() == 1;
         boolean quiet = saveLanded.refresh(landing).reads() == 0;
+        // LB5-B: between the two files the board has the old city whole (its name and its last month), not the new name over the old history.
+        Rankings.City between = saveLanded.now(SavedCities.Played.NONE).get(0).city();
+        check("between the save and its history the row is the old city whole, the very one it was: " + between.name() + " at month " + between.month() + ", not " + landedName,
+                between == oldCity && between.name().equals(f.game.getCityName()) && between.month() == f.youngLast);
         Files.copy(f.files.historyFile(2), landing.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
         SavedCities historyLanded = saveLanded.refresh(landing);
         Rankings.City end = historyLanded.now(SavedCities.Played.NONE).get(0).city(), done = before[1].now(SavedCities.Played.NONE).get(0).city();
         check("a save that lands before its history is read (" + savedRead + "), nothing is read again while the history is owed (" + quiet + "), and the history landing moves it once more (reads " + historyLanded.reads() + ")",
                 savedRead && quiet && historyLanded.reads() == 1);
         check("...and the row ends as the finished slot reads: its name (" + end.name() + "), its last month (" + end.month() + " of " + done.month() + ") and its people",
-                end.name().equals(done.name()) && end.month() == done.month() && end.month() == f.oldLast && end.figures().get("people").value() == done.figures().get("people").value());
+                end.name().equals(done.name()) && end.name().equals(landedName) && end.month() == done.month() && end.month() == f.oldLast && end.figures().get("people").value() == done.figures().get("people").value());
+    }
+
+    /* =====================================================================
+       22. A SLOT WHOSE HEADER AND HISTORY SAY TWO MONTHS KEEPS ITS LAST WHOLE CITY (LB5-B)
+       ===================================================================== */
+
+    static void theHeldCity(Saves f) throws IOException {
+        out.println("--- 22. a slot whose header and history say two months keeps its last whole city ---");
+        // A save lands, then its history (SaveWriter's order); between them, or for good when the history write failed (LB3-S), the header is the new save's and
+        // the history the old city's. The board keeps the slot's last whole city until a file moves. A scratch folder of copies of the fixture's own saves.
+        String landedName = f.game.getCityName() + " Third";
+
+        // A slot first read with its two months apart has no whole city before it: it is read as it stands (the header's name and land, the history's months).
+        GameFiles first = GameFiles.scratch("rankingsheldfirst");
+        copySlot(f.files, 2, first, 1, 0, false);
+        Files.copy(f.files.historyFile(1), first.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
+        SavedCities firstRead = SavedCities.read(first);
+        List<Rankings.Saved> firstNow = firstRead.now(SavedCities.Played.NONE);
+        check("a slot first read with its header at month " + f.oldLast + " and its history to " + f.youngLast + " is read as it stands: on the board (" + firstNow.size() + "), at the history's month ("
+                        + (firstNow.isEmpty() ? "none" : firstNow.get(0).city().month()) + "), reads " + firstRead.reads(),
+                firstNow.size() == 1 && firstNow.get(0).city().month() == f.youngLast && firstRead.reads() == 1 && firstRead.left().total() == 0);
+        check("...and nothing moved: it is read no more", firstRead.refresh(first).reads() == 0);
+
+        // A whole slot (slot 1's save and history), then a save lands over it and its history never does.
+        GameFiles files = GameFiles.scratch("rankingsheld");
+        copySlot(f.files, 1, files, 1, 0, true);
+        SavedCities whole = SavedCities.read(files);
+        Rankings.City city = whole.now(SavedCities.Played.NONE).get(0).city();
+        check("fixture: the slot is whole before the save lands (header month " + files.readHeader(1).getMonth() + ", history to " + city.month() + "), its city " + city.name(),
+                files.readHeader(1).getMonth() == city.month() && city.month() == f.youngLast && city.name().equals(f.game.getCityName()));
+        Files.copy(f.files.saveFile(2), files.saveFile(1), StandardCopyOption.REPLACE_EXISTING);
+        rewriteSave(files.saveFile(1), json -> json.addProperty("cityName", landedName), FileTime.fromMillis(Files.getLastModifiedTime(files.saveFile(1)).toMillis() + 1000));
+        SavedCities failed = whole.refresh(files);
+        check("the save lands and its history never does: the slot is read once (reads " + failed.reads() + ") and the row is the last whole city, the very one it was, not " + landedName,
+                failed.reads() == 1 && failed.now(SavedCities.Played.NONE).get(0).city() == city);
+        check("...it is still that city a refresh later, with nothing read", failed.refresh(files).reads() == 0 && failed.refresh(files).now(SavedCities.Played.NONE).get(0).city() == city);
+        List<SavedCities.Stopped> stopped = failed.stoppedAt(f.oldLast, SavedCities.Played.NONE);
+        check("...in the 'stopped at' line too: slot 1 under " + f.game.getCityName() + ", at month " + f.youngLast + " (" + stopped + ")",
+                stopped.equals(List.of(new SavedCities.Stopped(1, f.game.getCityName(), f.youngLast))) && failed.left().total() == 0);
+        SavedCities.Played played = SavedCities.Played.of(f.game);
+        check("...and it is still the city in play's, by the founding of the city it holds", failed.now(played).get(0).inPlay() && failed.at(f.youngLast, played).isEmpty());
+
+        // A second save lands over it, the history still owed: the board keeps the whole city, not the first save's mixed one.
+        rewriteSave(files.saveFile(1), json -> json.addProperty("cityName", landedName + " again"), FileTime.fromMillis(Files.getLastModifiedTime(files.saveFile(1)).toMillis() + 1000));
+        SavedCities again = failed.refresh(files);
+        check("a second save over it, its history still owed: the slot is read (reads " + again.reads() + ") and the row is still the last whole city", again.reads() == 1 && again.now(SavedCities.Played.NONE).get(0).city() == city);
+
+        // The history lands: the slot is whole again, and the row is the finished slot's.
+        Files.copy(f.files.historyFile(2), files.historyFile(1), StandardCopyOption.REPLACE_EXISTING);
+        SavedCities done = again.refresh(files);
+        Rankings.City now = done.now(SavedCities.Played.NONE).get(0).city();
+        GameFiles finished = GameFiles.scratch("rankingsheldfinished");
+        copySlot(f.files, 2, finished, 1, 0, true);
+        rewriteSave(finished.saveFile(1), json -> json.addProperty("cityName", landedName + " again"), Files.getLastModifiedTime(finished.saveFile(1)));
+        Rankings.City end = SavedCities.read(finished).now(SavedCities.Played.NONE).get(0).city();
+        check("the history lands: the slot is read (reads " + done.reads() + ") and the row is the new city, " + now.name() + " at month " + now.month() + ", as the finished slot reads it",
+                done.reads() == 1 && now.name().equals(landedName + " again") && now.month() == f.oldLast && now.name().equals(end.name()) && now.month() == end.month()
+                        && now.figures().get("people").value() == end.figures().get("people").value());
+
+        // A healthy slot is not touched by any of this: both files land, equal months, and the row is the new city at once.
+        copySlot(f.files, 1, files, 1, 0, true);
+        SavedCities healthy = done.refresh(files);
+        Rankings.City back = healthy.now(SavedCities.Played.NONE).get(0).city();
+        check("a healthy re-save (the save and its history, equal months) is read as it is: the slot is read once and the row is the city of the save (" + back.name() + ", month " + back.month() + ")",
+                healthy.reads() == 1 && back.month() == f.youngLast && back.name().equals(f.game.getCityName()));
+
+        // The board keeps a whole CITY of the slot, nothing else: a save from a newer build over it is left off and counted, and a deleted one is gone.
+        Files.copy(f.files.saveFile(2), files.saveFile(1), StandardCopyOption.REPLACE_EXISTING);
+        rewriteSave(files.saveFile(1), json -> json.addProperty("saveFormat", GameVersion.SAVE_FORMAT + 1), FileTime.fromMillis(Files.getLastModifiedTime(files.saveFile(1)).toMillis() + 1000));
+        SavedCities newer = healthy.refresh(files);
+        check("a save from a newer build over a whole city, its months apart, is not the city kept: it is left off and counted (" + newer.left() + ")",
+                newer.now(SavedCities.Played.NONE).isEmpty() && newer.left().newerBuild() == 1);
+        copySlot(f.files, 1, files, 1, 0, true);
+        SavedCities restored = newer.refresh(files);
+        Files.delete(files.saveFile(1));
+        SavedCities gone = restored.refresh(files);
+        check("a deleted save over a whole city is not kept: the slot is empty and counted nowhere (" + gone.now(SavedCities.Played.NONE).size() + " on the board, " + gone.left().total() + " left off)",
+                restored.now(SavedCities.Played.NONE).size() == 1 && gone.now(SavedCities.Played.NONE).isEmpty() && gone.left().total() == 0);
     }
 }
