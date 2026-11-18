@@ -480,3 +480,19 @@ settled lot and thus none watched for three months). No new red. One path assert
 OBSERVED by main's rules. KS1's supplied sawmill has a counted month and works to draw; the
 historic HL1 quiet-node red does not recur. Quiet-month counts across those assertions: [25, 24, 23, 19, 25, 25, 25, 25, 25, 24, 19, 22, 22, 18, 25, 24, 25, 25, 25, 25, 19, 25, 25, 20, 25, 22, 23, 25, 23, 21, 25, 23, 25, 20]
 of 25, all pass. Main's KeptCheck source was retained without a new HL1 edit.
+
+### FB12 merged: 36157fb19
+
+FB12 landed at the next clean point after KeptCheck. Its IslandRailCheck and self-contained
+KeptCheck landmass-table section are taken from main verbatim, with no HL1 edit. BridgeMapCheck
+already stands on main and remains untouched.
+The source merge is clean; generated conflicts are regenerated. KeptCheck's result immediately
+above is explicitly on the HN1 tree before FB12, so the final gate must also exercise the new
+section on the combined tree. FB12 changes harnesses, not the model; the current model baseline
+remains HN1's 0.9.151. LM1-D still precedes HL1 and its merge remains mandatory before the final
+ensemble. The default playtest is next on this combined tree.
+
+`--fast` after FB12 merge: exit 0, compile 55 s, indexes regenerated, 0 firm Stale findings
+(187 soft). No hand-merged generated text. The next default LongPlaytest keeps its trace at
+`target/HL1-trace-*.csv`; it also executes all former MoneyCheck fixtures and HL1 additions in
+LongPlaytest.MoneyFixtures. Only that one named harness runs beside the reserved machine work.
