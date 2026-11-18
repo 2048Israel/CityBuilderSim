@@ -73,6 +73,18 @@ public final class PublicLicenceCheck {
      * The caller steps the month that captures the bill.
      */
     static Works waterWorks(String label, String abroad, boolean overload) throws Exception {
+        Works w = plantOnly(label, abroad);
+        UtilitiesHandler u = w.u();
+        BuildingsTemplate mill = w.g.getBuildingManager().getTemplateByName("Pulp Mill");
+        double ceiling = UtilitiesHandler.waterOutput(u.getFreshNameplate() - (overload ? 0 : w.delta()), u.getDesalNameplate(), 1,
+                u.getFreshCap(), w.g.getBuildingManager().getFoundingEndowments());
+        w.mills = (long) Math.floor(Math.max(0, ceiling - u.getWaterConsumption()) / mill.getWaterConsumption()) + 1;
+        HistoricalLicenceCheck.stand(w.g, "Pulp Mill", (int) w.mills);
+        return w;
+    }
+
+    /** A 1900 town at PE5's own month with one water works carrying rapid sand, one month played and nothing yet drawing on it (waterWorks() and smallShortage() stand the mills). */
+    static Works plantOnly(String label, String abroad) throws Exception {
         wire();
         Works w = new Works();
         w.g = HistoricalLicenceCheck.town(label, true);
@@ -82,13 +94,61 @@ public final class PublicLicenceCheck {
         w.stack = w.g.getBuildingManager().getStack(w.plant);
         w.change = w.plant.getRecipeChanges().stream().filter(c -> c.code().equals("PE5") && c.piece() != null).findFirst().orElseThrow();
         months(w.g, 1);
-        UtilitiesHandler u = w.u();
-        BuildingsTemplate mill = w.g.getBuildingManager().getTemplateByName("Pulp Mill");
-        double ceiling = UtilitiesHandler.waterOutput(u.getFreshNameplate() - (overload ? 0 : w.delta()), u.getDesalNameplate(), 1,
-                u.getFreshCap(), w.g.getBuildingManager().getFoundingEndowments());
-        w.mills = (long) Math.floor(Math.max(0, ceiling - u.getWaterConsumption()) / mill.getWaterConsumption()) + 1;
-        HistoricalLicenceCheck.stand(w.g, "Pulp Mill", (int) w.mills);
         return w;
+    }
+
+    /**
+     * The least shortage the works can be made short by (REV-R2c-P-1): Pulp Mills one at a time, a month played after each, until the city asks
+     * more water than the works make. Three new plants then more than fill what is missing.
+     */
+    static Works smallShortage(String label) throws Exception {
+        Works w = plantOnly(label, "PE5");
+        UtilitiesHandler u = w.u();
+        long endowments = w.g.getBuildingManager().getFoundingEndowments();
+        while (w.mills < 12 && u.getWaterConsumption() <= UtilitiesHandler.waterOutput(u.getFreshNameplate(), u.getDesalNameplate(),
+                u.getAverageUtilityFill(), u.getFreshCap(), endowments)) {
+            HistoricalLicenceCheck.stand(w.g, "Pulp Mill", (int) ++w.mills);   // stand() asks for at least this many
+            months(w.g, 1);
+        }
+        return w;
+    }
+
+    /**
+     * The patent share of what `units` new plants of this works' template add to the water delivered, over `units` lacking the rapid sand, at the
+     * planners' tariff (REV-R2c-P-1): worked from the handler's own water rule at rest, the plants beside the city as it stands. Before any weight for
+     * the term left.
+     */
+    static double newFee(Works w, long units) {
+        UtilitiesHandler u = w.u();
+        long endowments = w.g.getBuildingManager().getFoundingEndowments();
+        double with = w.plant.getProduction1(), less = with + w.change.production();
+        double demand = u.getWaterConsumption();
+        double added = Math.min(demand, UtilitiesHandler.waterOutput(u.getFreshNameplate() + units * with, u.getDesalNameplate(), u.getAverageUtilityFill(),
+                u.getFreshCap(), endowments))
+                - Math.min(demand, UtilitiesHandler.waterOutput(u.getFreshNameplate() + units * less, u.getDesalNameplate(), u.getAverageUtilityFill(),
+                u.getFreshCap(), endowments));
+        return LicenceFees.SHARE * Recipes.pricesOf(w.g).pricePerWaterUnit() * added;
+    }
+
+    /**
+     * The share of a building's life a patent with `termLeft` months to run covers (REV-R2c-P-1), worked here from the city's life rate: the level
+     * annuity over the lesser of LIFE_MONTHS and the term left, over the annuity over LIFE_MONTHS; the months' ratio at no rate; nothing at the end.
+     */
+    static double share(Game g, int termLeft) {
+        if (termLeft <= 0) return 0;
+        double i = BuildAdvice.lifeRate(g) / 12;
+        int n = Math.min(BuildAdvice.LIFE_MONTHS, termLeft);
+        return i > 0 ? (1 - Math.pow(1 + i, -n)) / (1 - Math.pow(1 + i, -BuildAdvice.LIFE_MONTHS)) : (double) n / BuildAdvice.LIFE_MONTHS;
+    }
+
+    /** What the works' fitting adds to the running cost of an order of plants `monthsAhead` ahead: the order's change with the discovery abroad less the same with it found at home (REV-R2c-P-1). */
+    static double licenceOfOrder(Game g, BuildingsTemplate plant, long units, double monthsAhead) {
+        BuildAdvice.Ahead at = new BuildAdvice.Ahead(monthsAhead, 1, 0);
+        double abroad = BuildAdvice.runningChange(g, Map.of(), Map.of(plant, units), at);
+        allExcept(g, "");
+        double home = BuildAdvice.runningChange(g, Map.of(), Map.of(plant, units), at);
+        allExcept(g, "PE5");
+        return abroad - home;
     }
 
     /** What the works deliver with and without the piece, and the patent share of the difference at the planners' tariff: read at rest, independently. */
@@ -345,6 +405,16 @@ public final class PublicLicenceCheck {
                 "demand " + u.getConsumption() + " without " + without + " delta " + delta);
         double pendingBefore = g.getPublicIpPending(), paidBefore = g.getPublicIpPaid();
         double gainBefore = LicenceFees.publicGain(g, stack, c6.piece());
+        // P2-1 (REV-R2c-P-1): the same surplus, read by the public fitting verdict: with no fee struck on the stack, none is subtracted for a new building.
+        Equipment turbine = plant.getEquipment(c6.piece());
+        double grossTurbine = RecipeChanges.gainOf(g, plant, turbine);
+        double verdictTurbine = EquipmentFit.verdictForNew(g, plant, turbine).gain();
+        double billTurbine = LicenceFees.publicBillOf(g, stack), newTurbine = LicenceFees.forNewWork(g, plant, BuildAdvice.rawRunningCostAt(g, plant, 0));
+        System.out.printf("   (a) P2-1 surplus: gross %.9f, verdict %.9f, the stack's bill %.9f, one new plant's licence %.9f%n", grossTurbine, verdictTurbine, billTurbine, newTurbine);
+        check("P2-1 surplus: with the grid asking no more than it makes without the steam turbine, the public fitting verdict of the piece is its whole gross gain while the patent runs,"
+                        + " and the capture's bill and a new plant's licence are nothing",
+                grossTurbine > 0 && near(verdictTurbine, grossTurbine) && billTurbine == 0 && newTurbine == 0 && LicenceFees.payable("PE6", g.getMonth(), g.getResearch()),
+                "gross " + grossTurbine + " verdict " + verdictTurbine + " bill " + billTurbine + " new " + newTurbine);
         // The control: power-hungry works past what the grid makes at full staffing, so the same turbine now serves demand it did not.
         BuildingsTemplate hungry = null;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
@@ -397,18 +467,27 @@ public final class PublicLicenceCheck {
     /* ===================== 7. the planners net the fee ===================== */
 
     static void planners(Works w) throws Exception {
-        System.out.println("--- 7. the planners net the fee ---");
+        System.out.println("--- 7. the planners net the fee the capture would strike (REV-R2c-P-1) ---");
         Game g = w.g;
+        UtilitiesHandler served = w.u();
+        long servedEndowments = g.getBuildingManager().getFoundingEndowments();
+        double servedOutput = UtilitiesHandler.waterOutput(served.getFreshNameplate(), served.getDesalNameplate(), served.getAverageUtilityFill(),
+                served.getFreshCap(), servedEndowments);
         Equipment piece = w.plant.getEquipment("rapid-sand");
         double gross = RecipeChanges.gainOf(g, w.plant, piece);
         double netImported = EquipmentFit.verdictForNew(g, w.plant, piece).gain();
+        double billOfStack = LicenceFees.publicBillOf(g, w.stack);
+        double oneMore = LicenceFees.forNewWork(g, w.plant, BuildAdvice.rawRunningCostAt(g, w.plant, 0));
         allExcept(g, "");   // the same city and prices, the discovery found at home
         double grossLocal = RecipeChanges.gainOf(g, w.plant, piece);
         double netLocal = EquipmentFit.verdictForNew(g, w.plant, piece).gain();
         allExcept(g, "PE5");
-        check("the public fitting verdict nets the patent share of the gross gain of PE5's piece, and keeps the whole gain in the same city once the discovery is local",
-                gross > 0 && grossLocal > 0 && near(netImported, gross * (1 - LicenceFees.SHARE)) && near(netLocal, grossLocal) && netImported < netLocal,
-                "imported " + netImported + " of " + gross + ", local " + netLocal + " of " + grossLocal);
+        check("fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share",
+                served.getWaterConsumption() <= servedOutput && billOfStack > 0 && LicenceFees.payable("PE5", g.getMonth(), g.getResearch()),
+                "demand " + served.getWaterConsumption() + " output " + servedOutput + " stack bill " + billOfStack);
+        check("P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discovery local",
+                gross > 0 && grossLocal > 0 && oneMore == 0 && near(netImported, gross) && near(netLocal, grossLocal) && near(gross, grossLocal),
+                "imported " + netImported + " of " + gross + ", local " + netLocal + " of " + grossLocal + ", one more's licence " + oneMore);
 
         Works busy = waterWorks("pl-plan-new", "PE5", true);
         months(busy.g, 1);
@@ -423,16 +502,146 @@ public final class PublicLicenceCheck {
                 - Math.min(demand, UtilitiesHandler.waterOutput(fresh + less, u.getDesalNameplate(), u.getAverageUtilityFill(), u.getFreshCap(), endowments));
         double expected = LicenceFees.SHARE * Recipes.pricesOf(b).pricePerWaterUnit() * added;
         double raw = BuildAdvice.rawRunningCostAt(b, busy.plant, 0);
+        int termLeft = ResearchCatalog.get().entry("PE5").worldMonth() + LicenceFees.TERM_MONTHS - b.getMonth();
+        double life = share(b, termLeft);
         double fee = LicenceFees.forNewWork(b, busy.plant, raw);
         double running = BuildAdvice.running(b, busy.plant, Map.of());
-        System.out.printf("   one more plant: demand %.3f, output %.3f, adds %.3f over the unfitted one, expected fee %.9f, forNewWork %.9f, running %.9f over raw %.9f%n",
-                demand, UtilitiesHandler.waterOutput(fresh, u.getDesalNameplate(), u.getAverageUtilityFill(), u.getFreshCap(), endowments), added, expected, fee, running, raw);
+        Equipment sand = busy.plant.getEquipment("rapid-sand");
+        double grossBusy = RecipeChanges.gainOf(b, busy.plant, sand);
+        double verdictBusy = EquipmentFit.verdictForNew(b, busy.plant, sand).gain();
+        allExcept(b, "");
+        double verdictHome = EquipmentFit.verdictForNew(b, busy.plant, sand).gain();
+        allExcept(b, "PE5");
+        System.out.printf("   one more plant: demand %.3f, output %.3f, adds %.3f over the unfitted one, fee %.9f, over the %d months left (annuity share %.9f) %.9f, forNewWork %.9f, running %.9f over raw %.9f%n",
+                demand, UtilitiesHandler.waterOutput(fresh, u.getDesalNameplate(), u.getAverageUtilityFill(), u.getFreshCap(), endowments), added, expected, termLeft,
+                life, expected * life, fee, running, raw);
         check("fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one",
                 demand > UtilitiesHandler.waterOutput(fresh, u.getDesalNameplate(), u.getAverageUtilityFill(), u.getFreshCap(), endowments) && added > 0 && with > less,
                 "demand " + demand + " added " + added);
-        check("a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, is what forNewWork charges"
-                        + " and what the running cost the planners read adds to the building's own",
-                expected > 0 && near(fee, expected) && near(running - raw, expected), "fee " + fee + " running-raw " + (running - raw) + " expected " + expected);
+        check("P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building"
+                        + " (the patent share of the water it adds), which is above nothing and under the share of the gross; the discovery local keeps the gross",
+                expected > 0 && expected < LicenceFees.SHARE * grossBusy && near(verdictBusy, grossBusy - expected) && near(verdictHome, grossBusy),
+                "verdict " + verdictBusy + " gross " + grossBusy + " fee " + expected + " local " + verdictHome);
+        check("a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share"
+                        + " the term left covers (the patent has " + termLeft + " months to run, under a life), is what forNewWork charges and what the running cost the planners read adds to the building's own",
+                expected > 0 && life > 0 && life < 1 && near(fee, expected * life) && near(running - raw, expected * life),
+                "fee " + fee + " running-raw " + (running - raw) + " expected " + expected + " x " + life);
+    }
+
+    /* ===================== 7b. the term a new plant's licence is weighed by ===================== */
+
+    static void term() throws Exception {
+        System.out.println("--- 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1) ---");
+        Works w = waterWorks("pl-term", "PE5", true);
+        months(w.g, 1);
+        Game g = w.g;
+        int end = ResearchCatalog.get().entry("PE5").worldMonth() + LicenceFees.TERM_MONTHS;
+        double raw = BuildAdvice.rawRunningCostAt(g, w.plant, 0);
+        double fee = newFee(w, 1);
+        int k = 6;
+        check("fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way from its end",
+                LicenceFees.TERM_MONTHS >= BuildAdvice.LIFE_MONTHS && k > 0 && k < BuildAdvice.LIFE_MONTHS && fee > 0, "fee " + fee);
+        ResearchCheck.atMonth(g, end - k);
+        double carried = BuildAdvice.running(g, w.plant, Map.of()) - raw;
+        double share = share(g, k);
+        System.out.printf("   %d months before expiry: fee %.9f, annuity share %.9f, carried by running() %.9f (forNewWork %.9f)%n", k, fee, share, carried,
+                LicenceFees.forNewWork(g, w.plant, raw));
+        check("P2-2 term: " + k + " months before the patent ends, running() carries the independent fee times the annuity share of " + k + " months in the life,"
+                        + " and that is under the fee", share > 0 && share < 1 && near(carried, fee * share) && carried < fee && carried > 0,
+                "carried " + carried + " fee " + fee + " share " + share);
+        ResearchCheck.atMonth(g, end - 1);
+        double last = BuildAdvice.running(g, w.plant, Map.of()) - raw;
+        check("P2-2 term: in the patent's last month it carries the fee times one month's share of the life", near(last, fee * share(g, 1)) && last > 0 && last < carried,
+                "last " + last + " expected " + fee * share(g, 1));
+        ResearchCheck.atMonth(g, end - LicenceFees.TERM_MONTHS);
+        double first = BuildAdvice.running(g, w.plant, Map.of()) - raw;
+        check("P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee", near(first, fee) && near(share(g, LicenceFees.TERM_MONTHS), 1),
+                "first " + first + " fee " + fee);
+        ResearchCheck.atMonth(g, end);
+        double past = BuildAdvice.running(g, w.plant, Map.of()) - raw;
+        check("P2-2 term: past the patent's end it carries nothing", Math.abs(past) <= 1e-12 && LicenceFees.forNewWork(g, w.plant, raw) == 0,
+                "past " + past + " forNewWork " + LicenceFees.forNewWork(g, w.plant, raw));
+
+        ResearchCheck.atMonth(g, end - k);
+        double[] ahead = { 0, 3, 5, 6, 9, 30 };
+        boolean inTerm = true, afterTerm = true;
+        StringBuilder seen = new StringBuilder();
+        for (double months : ahead) {
+            double charged = licenceOfOrder(g, w.plant, 1, months);
+            seen.append(String.format(" %.0f:%.9f", months, charged));
+            if (months < k) inTerm &= near(charged, fee);
+            else afterTerm &= Math.abs(charged) <= 1e-12;
+        }
+        System.out.println("   runningChange's licence of one plant by months ahead (" + k + " months of term left):" + seen);
+        check("P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)", inTerm, seen.toString());
+        check("P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged", afterTerm && fee > 0, seen.toString());
+    }
+
+    /* ===================== 7c. an order of plants is billed as one ===================== */
+
+    static void units() throws Exception {
+        System.out.println("--- 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1) ---");
+        Works w = smallShortage("pl-units");
+        Game g = w.g;
+        UtilitiesHandler u = w.u();
+        long endowments = g.getBuildingManager().getFoundingEndowments();
+        double demand = u.getWaterConsumption();
+        double output = UtilitiesHandler.waterOutput(u.getFreshNameplate(), u.getDesalNameplate(), u.getAverageUtilityFill(), u.getFreshCap(), endowments);
+        double three = UtilitiesHandler.waterOutput(u.getFreshNameplate() + 3 * w.plant.getProduction1(), u.getDesalNameplate(), u.getAverageUtilityFill(),
+                u.getFreshCap(), endowments);
+        double one = newFee(w, 1), threeFee = newFee(w, 3);
+        System.out.printf("   %d mills: demand %.3f, output %.3f, with three more plants %.3f; fee of one %.9f, of three %.9f (three times one %.9f)%n",
+                w.mills, demand, output, three, one, threeFee, 3 * one);
+        check("fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)",
+                demand > output && three >= demand && one > 0, "demand " + demand + " output " + output + " with three " + three);
+        check("fixture: three plants' fee, worked independently, is above nothing and under three times one plant's", threeFee > 0 && threeFee < 3 * one,
+                "three " + threeFee + " one " + one);
+        int termLeft = ResearchCatalog.get().entry("PE5").worldMonth() + LicenceFees.TERM_MONTHS - g.getMonth();
+        check("fixture: the patent has run its term's first months only, so the order's months are inside it", termLeft > 6 && LicenceFees.payable("PE5", g.getMonth() + 3, g.getResearch()),
+                "term left " + termLeft);
+        double charged1 = licenceOfOrder(g, w.plant, 1, 0), charged3 = licenceOfOrder(g, w.plant, 3, 0);
+        System.out.printf("   runningChange's licence: one plant %.9f, three plants %.9f%n", charged1, charged3);
+        check("P2-2 units: runningChange charges one plant the fee of one", near(charged1, one), charged1 + " vs " + one);
+        check("P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee",
+                near(charged3, threeFee) && charged3 < 3 * charged1 && charged3 > 0, "three " + charged3 + " independent " + threeFee + " one " + charged1);
+    }
+
+    /* ===================== 7d. what the auto-builder reads of a utility's cost ===================== */
+
+    static void costs(Works w) {
+        System.out.println("--- 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1) ---");
+        Game g = w.g;
+        AutoBuilder auto = g.getAutoBuilder();
+        BuildAdvice.Measure water = BuildAdvice.Measure.of(BuildAdvice.Kind.WATER);
+        BuildingManager bm = g.getBuildingManager();
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        double people = g.getPopulationManager().getPopulation();
+        double spend = na.getTotalExpenses() - na.getCapitalSpending() - na.getLandPurchases() - na.getArrearsPaid() - na.getReserveCrudeBought();
+        long[] site = bm.getUnderConstructionById();
+        double own = 0, ownRunning = 0, sites = 0;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (!AutoBuilder.inRemit(t)) continue;
+            int id = t.getId();
+            if (water.serves(t)) {
+                own += bm.getQuantity(id) * (auto.running(g, t) - BuildAdvice.licenceOf(g, t));
+                ownRunning += bm.getQuantity(id) * auto.running(g, t);
+            } else if (id < site.length && site[id] > 0 && AutoBuilder.staffedBuilding(t)) sites += site[id] * auto.running(g, t);
+        }
+        double bill = LicenceFees.publicBillOf(g, w.stack);
+        double expected = (spend - own - bill + sites) / people;
+        double before = (spend - ownRunning + sites) / people;
+        double got = auto.costs(g, water);
+        System.out.printf("   water works: people %.0f, spend %.6f, the stack's bill %.9f (pending %.9f, paid %.9f), one more's licence %.9f; costs %.9f, expected %.9f, with q x running %.9f%n",
+                people, spend, bill, g.getPublicIpPending(), g.getPublicIpPaid(), BuildAdvice.licenceOf(g, w.plant), got, expected, before);
+        check("fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many",
+                g.foundedUnfitted() && bill > 0 && BuildAdvice.licenceOf(g, w.plant) == 0 && people > 0 && w.stack.getQuantity() > 0 && na.getPublicIpCharges() > 0,
+                "bill " + bill + " licence " + BuildAdvice.licenceOf(g, w.plant) + " people " + people + " paid " + na.getPublicIpCharges());
+        check("the public bill of the stack is the month's bill the capture struck on it", near(bill, g.getPublicIpPending()) && near(bill, LicenceFees.capturePublic(g)),
+                bill + " vs pending " + g.getPublicIpPending() + " capture " + LicenceFees.capturePublic(g));
+        check("P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms",
+                near(got, expected), got + " vs " + expected);
+        check("P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people",
+                near(before - got, bill / people) && got < before, "q x running " + before + " costs " + got + " bill/people " + bill / people);
     }
 
     /* ===================== 8. the month both ways ===================== */
@@ -550,6 +759,9 @@ public final class PublicLicenceCheck {
         berth();
         noGain();
         planners(imported);
+        term();
+        units();
+        costs(imported);
         bothWays();
         today();
         System.out.println("--- 10. the bill crosses a save, and a read leaves it still ---");

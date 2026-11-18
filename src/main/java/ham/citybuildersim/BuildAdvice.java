@@ -1635,6 +1635,15 @@ public final class BuildAdvice {
         return raw + LicenceFees.forNewWork(game, t, raw);
     }
 
+    /**
+     * The licence running() adds for one more of this building (R2c-P, REV-R2c-P-1): LicenceFees.forNewWork() on its raw running cost, over a
+     * life; 0 for any work that is not one of a 1900 city's own utilities, and in any other city.
+     */
+    static double licenceOf(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted() || !LicenceFees.citysWork(game, t)) return 0;
+        return LicenceFees.forNewWork(game, t, rawRunningCostAt(game, t, 0));
+    }
+
     /** The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation. */
     static double rawRunningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
         BuildingManager bm = game.getBuildingManager();
@@ -1658,7 +1667,11 @@ public final class BuildAdvice {
         double cost = 0;
         for (Map.Entry<BuildingsTemplate, Long> e : change.entrySet()) {
             long n = e.getValue();
-            if (n != 0) cost += n * runningCostAt(game, e.getKey(),
+            if (n > 0 && game.foundedUnfitted()) {
+                // R2c-P, REV-R2c-P-1: a city utility's licence is the bill of the whole order, at the month it opens, not one more's fee times n.
+                double raw = rawRunningCostAt(game, e.getKey(), r1.getUtilisation());
+                cost += n * raw + LicenceFees.forNewWork(game, e.getKey(), raw, n, (int) Math.round(at.months()));
+            } else if (n != 0) cost += n * runningCostAt(game, e.getKey(),
                     n > 0 ? r1.getUtilisation() : r0.getUtilisation());
         }
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {

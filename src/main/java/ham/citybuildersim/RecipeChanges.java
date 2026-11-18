@@ -250,7 +250,8 @@ public final class RecipeChanges {
         return decode(t, selected);
     }
 
-    private static String[] newChoices(Game game, BuildingsTemplate t, Recipes.Prices prices) {
+    /** The recipes a new building of this template would run, the fitted part's and the unfitted part's (R2c-P, REV-R2c-P-1: the planners' licence prices the state they run in). */
+    static String[] newChoices(Game game, BuildingsTemplate t, Recipes.Prices prices) {
         if (t.hasRunningRecipes()) {
             String[] saved = game.getRecipes().chosen(t.getId());
             return saved == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : saved;
@@ -268,28 +269,17 @@ public final class RecipeChanges {
     }
 
     /**
-     * The nameplate production of a building with these unfitted counts and these running recipes, by apply()'s own sum (R2c-P).
+     * The nameplate production of a building with these unfitted counts and these running recipes, by apply()'s own sum (R2c-P; package-private for
+     * LicenceFees.billOf(), REV-R2c-P-1).
      * A template with no process improvements keeps its one figure.
      */
-    private static double productionAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids) {
+    static double productionAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids) {
         if (t.getRecipeChanges().isEmpty()) return t.getProduction1();
         String[] chosen = ids == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : ids;
         Map<String, Double> absent = absencesAt(game, t, counts, quantity, chosen);
         double production = t.recipeProduction();
         for (RecipeChange c : t.getRecipeChanges()) production += share(c, absent) * c.production();
         return production;
-    }
-
-    /** One building's nameplate production with this piece off every building of the stack, the rest as they stand (R2c-P). */
-    static double productionWithout(Game game, BuildingsTemplate t, BuildingsStacks stack, String pieceId) {
-        Map<String, Long> counts = new TreeMap<>(stack.getUnfittedView());
-        counts.put(pieceId, stack.getQuantity());
-        return productionAt(game, t, counts, stack.getQuantity(), t.runningRecipeIds());
-    }
-
-    /** A new building's nameplate production with exactly these pieces fitted, on the recipes it would run (R2c-P). */
-    static double productionFor(Game game, BuildingsTemplate t, java.util.Set<String> fitted) {
-        return productionAt(game, t, counts(t, fitted), 1, newChoices(game, t, Recipes.pricesOf(game)));
     }
 
     private static double valueAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity,
@@ -358,8 +348,13 @@ public final class RecipeChanges {
     }
 
     private static double feesAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids, boolean proposed) {
-        // R2c-P: the city's own works pay their licences too, so the public fitting verdict nets them; the bank's branch still pays none.
-        if (!t.isOwnedBySector() && !game.isCitysToDemolish(t)) return 0;
+        // R2c-P: the city's own works pay their licences too, so the public fitting verdict nets exactly the bill the capture would strike in the
+        // same state (REV-R2c-P-1: LicenceFees.billOf(), not the nameplate gain the verdict's own difference counts); the bank's branch pays none.
+        if (!t.isOwnedBySector()) {
+            if (!game.isCitysToDemolish(t)) return 0;
+            LicenceFees.Fitting state = proposed ? LicenceFees.Fitting.added(counts, 1, ids) : LicenceFees.Fitting.standing(counts, quantity, ids);
+            return LicenceFees.billOf(game, t, state, BuildAdvice.rawRunningCostAt(game, t, 0), game.getMonth(), false);
+        }
         java.util.Set<String> charged = new java.util.HashSet<>();
         double bill = 0;
         Recipes.Prices prices = Recipes.pricesOf(game);
