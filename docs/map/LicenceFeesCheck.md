@@ -12,7 +12,7 @@
 
 **Uses:** [LicenceFees](LicenceFees.md) (40), [Good](Good.md) (39), [Recipes](Recipes.md) (20), [Game](Game.md) (19), [ResearchCatalog](ResearchCatalog.md) (17), [ResearchCheck](ResearchCheck.md) (13), [Recipe](Recipe.md) (12), [MoneyAudit](MoneyAudit.md) (11), [Sectors](Sectors.md) (11), [Resource](Resource.md) (11), [MaterialsCheck](MaterialsCheck.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [Deposit](Deposit.md) (6), [SpreadPlanner](SpreadPlanner.md) (5), [Refining](Refining.md) (4), [GoodsMarket](GoodsMarket.md) (4), [RefineryFlow](RefineryFlow.md) (4), [DataSave](DataSave.md) (4), [JobType](JobType.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Mining](Mining.md) (4), [Sector](Sector.md) (4), [HistorySave](HistorySave.md) (4), [Equipment](Equipment.md) (3), [SectorState](SectorState.md) (2), [LandParcel](LandParcel.md) (2), [LandCheck](LandCheck.md) (2), [MiningCheck](MiningCheck.md) (2), [NewGameCheck](NewGameCheck.md) (2), [BuildingManager](BuildingManager.md) (1)... and 6 more
 
-**Used by (3):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (4):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Fields (state)
 

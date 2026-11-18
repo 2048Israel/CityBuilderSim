@@ -1,8 +1,8 @@
-# gate of Merge batch/FB9: the map's renderer and MapCheck's fixtures, 3 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): M6-F, BF1-M, DM3-R; not beside FB5, FB8 (`MapCheck`, `CityMap`, `DistrictPlan`), 0.9.149
+# gate of Merge batch/R2c-P: public works' licence fees, 0.9.150
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 211 harnesses run in 2780s: 202 passed, 9 failed
+# suite: 213 harnesses run in 2163s: 200 passed, 13 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -39,6 +39,9 @@ PriceLevelCheck | 245 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
 HealthCheck | 1 FAILED
@@ -49,29 +52,26 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
+KeptCheck | exit 3
+KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | ...the property rate staged: the redraw and the next equal a page built new FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED
-KeptCheck | exit 3
-KeptCheck | Construction, Cash & debt as a statement: the redraw and the next equal a page built new FAIL
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | ...the property rate staged: the redraw and the next equal a page built new FAIL
-KeptCheck | 3 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 285
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
 ShortSellingCheck | exit 1
 ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
 ShortSellingCheck | 1 FAILED
-EducationCheck | exit 1
-EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
-EducationCheck | 1 FAILED

@@ -1593,6 +1593,7 @@ public class ReadPathCheck {
         assertTrue("reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit", java.util.Arrays.equals(supportBefore, supportedFx.toSaveArray()));
         out.println("--- R2c: IP service flows and planner reads ---");
         assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
+        assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
 
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
