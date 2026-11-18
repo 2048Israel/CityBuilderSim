@@ -43,7 +43,18 @@ public final class Equipment {
          * way is today's: the driverless kit is a near-future piece, so a building that lacks it is today's, and one not yet known is on no
          * building (EquipmentForms, THE DRIVERS).
          */
-        CAB_DRIVERS
+        CAB_DRIVERS,
+        /**
+         * The farms' tractors and combines with an operator in the cab (R6d, FE8): Agriculture.setOperatedShare(). Like CAB_DRIVERS, the old way
+         * is today's: the autonomy kit is a speculative piece, so a building that lacks it is today's, and a city founded today's way has none
+         * (EquipmentForms, THE OPERATORS).
+         */
+        FIELD_OPERATORS,
+        /**
+         * A Hydrogen Steel Works whose electrolysers make a kilogram of hydrogen on 55 kWh, today's system (R6d, FE10): HeavyIndustry.setElectrolyserWorks()
+         * counts the works that have the 46 kWh piece. Today's way is the old one here too, and a city founded today's way has no works fitted.
+         */
+        ELECTROLYSERS
     }
 
     private final String id;

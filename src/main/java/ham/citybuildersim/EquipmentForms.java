@@ -48,6 +48,8 @@ public final class EquipmentForms {
     public void apply(Game game) {
         List<BuildingsStacks> stacks = game.getBuildingManager().getStacksView();
         setDriven(game, stacks);
+        setOperated(game, stacks);
+        setElectrolysers(game, stacks);
         boolean any = false;
         for (BuildingsStacks s : stacks) {
             if (s.hasUnfitted()) { any = true; break; }
@@ -112,6 +114,55 @@ public final class EquipmentForms {
             }
         }
         sectors.freight().haulage().setDriverShare(total > 0 ? Math.min(1, off / total) : 1);
+    }
+
+    /**
+     * THE OPERATORS (R6d, FE8: the autonomy kit's piece ends FIELD_OPERATORS). Sets the share of the farms' machines still operated, a machine
+     * being a tractor or a combine the template carries (Agriculture.machinesOf()): in a city founded the 1900 way, the machines of the buildings
+     * lacking the kit over all of them, and 1 where there are none; in a city founded today's way, always 1 (the kit is on no building there).
+     * Set at every call and not saved, as setDriven() is: the counts are.
+     */
+    private static void setOperated(Game game, List<BuildingsStacks> stacks) {
+        Sectors sectors = game.getSectors();
+        if (sectors == null) return;
+        Agriculture agriculture = sectors.agriculture();
+        double total = 0, off = 0;
+        if (game.foundedUnfitted()) {
+            for (BuildingsStacks stack : stacks) {
+                BuildingsTemplate t = stack.getBuilding();
+                if (!t.getSector().equals(agriculture.key())) continue;
+                int machines = Agriculture.machinesOf(t);
+                if (machines <= 0) continue;
+                total += stack.getQuantity() * machines;
+                off += unfitted(stack, Equipment.Form.FIELD_OPERATORS) * machines;
+            }
+        }
+        agriculture.setOperatedShare(total > 0 ? Math.min(1, off / total) : 1);
+    }
+
+    /**
+     * THE ELECTROLYSERS (R6d, FE10: the Hydrogen Steel Works' piece ends ELECTROLYSERS). Sets how many works carry the 46 kWh a kilogram system, which
+     * HeavyIndustry takes off its draw: in a city founded the 1900 way, the works standing less those lacking the piece (never below 0); in a
+     * city founded today's way, 0. Set at every call and not saved: the counts are.
+     */
+    private static void setElectrolysers(Game game, List<BuildingsStacks> stacks) {
+        Sectors sectors = game.getSectors();
+        if (sectors == null) return;
+        long fitted = 0;
+        if (game.foundedUnfitted()) {
+            for (BuildingsStacks stack : stacks) {
+                BuildingsTemplate t = stack.getBuilding();
+                if (!hasPieceEnding(t, Equipment.Form.ELECTROLYSERS)) continue;
+                fitted += Math.max(0, stack.getQuantity() - unfitted(stack, Equipment.Form.ELECTROLYSERS));
+            }
+        }
+        sectors.heavyIndustry().setElectrolyserWorks(fitted);
+    }
+
+    /** Whether a template carries a piece that ends this form: a count that is gone from every stack of it reads as every building fitted only where the piece exists at all. */
+    private static boolean hasPieceEnding(BuildingsTemplate t, Equipment.Form form) {
+        for (Equipment e : t.getEquipment()) if (e.getEnds() == form) return true;
+        return false;
     }
 
     /**
