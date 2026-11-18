@@ -226,6 +226,7 @@ public class AuctionCheck {
         section7(city);
         section8(city);
         section11();
+        historicalAuction();
 
         out.println();
         if (fails == 0) {
@@ -1030,6 +1031,25 @@ public class AuctionCheck {
     }
 
     /* ============== 11. the real run (D33) ============== */
+    /** R1f: a young 1900 city need not borrow on its own; the player's actual bill sale causes an auction. */
+    static void historicalAuction() {
+        out.println("--- 12. the 1900 city: a player's bill sale clears and is counted ---");
+        Game g = new Game(GameFiles.scratch("auctioncheck-1900"), LongPlaytest.founding().withUnfitted(true));
+        quietly(() -> { g.run(); g.simulateMonths(12); });
+        double granule = Game.BUILD_NOTE_GRANULE;
+        double ask = 10 * granule;
+        DebtQuote q = g.quoteTBill(ask, 6, granule);
+        assertTrue("fixture: the 1900 bill has a nonempty auction", !q.isEmpty() && q.auction() != null && q.auction().sold() > 0);
+        AuctionTally tally = g.getDebtManager().getAuctionTally();
+        int sales = tally.auctionSales();
+        double sold = tally.faceSold(), cash = g.getCash();
+        quietly(() -> g.handleTBillLogic(ask, 6, granule));
+        assertTrue("the actual 1900 sale fires the auction tally once", tally.auctionSales() == sales + 1);
+        close("the tally books the quoted face", tally.faceSold() - sold, q.auction().sold(), 1e-9);
+        close("the treasury receives the quote's proceeds", g.getCash() - cash, q.cashReceived(), 1e-9);
+        assertTrue("the 1900 bill's stop respects the auction cap", q.auction().tail() <= Auction.MAX_TAIL + Auction.STOP_TOLERANCE);
+    }
+
     static void section11() {
         out.println("--- 11. the real run: LongPlaytest's city on automatic building, 1,200 months, its auctions counted ---");
         final int months = 1200;

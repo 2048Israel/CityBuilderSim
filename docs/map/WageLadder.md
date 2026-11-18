@@ -33,7 +33,7 @@
 
 **Uses:** [PayTier](PayTier.md) (17), [PriceLevel](PriceLevel.md) (2), [Founding](Founding.md) (1), [JobType](JobType.md) (1)
 
-**Used by (7):** [Game](Game.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (9):** [Game](Game.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 
