@@ -1595,7 +1595,8 @@ public class KeptCheck {
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
-        check("each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
+        // (The page named in the line, so that a known red can name one page's line and not every page's: KBP1, FB6.)
+        check(page.name() + ": each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
                 + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
         if (eventful) {
             check("no month makes more than a tenth of the nodes the first draw made (the most made in one: " + madeMost + " of " + firstMade
@@ -2450,9 +2451,14 @@ public class KeptCheck {
         stopSites();
     }
 
+    /** How many times over the funding page's run is short of what the market lends: each offer's bids reach at most this part of the gap (KBF1). */
+    static final double FUNDING_SHORT_BY = 4;
+
     /**
      * Section 44: the pages a build is stopped on and the run's funding and fell-short pages, each caused where the model can
-     * cause it (a count Game.buildRunStop() refuses for the reason; a run larger than the cash) and each drawn as an arrival,
+     * cause it (a count Game.buildRunStop() refuses for the reason; a run larger than the cash, and FUNDING_SHORT_BY times larger
+     * than the market lends, so its shortfall and cap chips are on the page throughout; and the usual funding page, a run larger than
+     * the cash that the market would lend for FUNDING_SHORT_BY times over, so neither comes onto it) and each drawn as an arrival,
      * then a month later again, equal to a page built new. The line says which were caused and which were drawn for a building
      * that merely names the page.
      */
@@ -2472,23 +2478,117 @@ public class KeptCheck {
         }
         System.out.println("  caused (the model refuses the order for it): " + (caused.length() == 0 ? "none" : caused));
         System.out.println("  drawn for a building that merely names the page (the city meets no such refusal): " + (named.length() == 0 ? "none" : named));
-        Object[] run = fx(bench::fundingRun);
-        if (run == null) {
+        Object[] gapped = fx(bench::fundingRun);
+        // KBF1: a run short of the cash by a little lets the market cover it one month and not the next (both offers flipped from covered
+        // to short, adding the shortfall's 19 nodes): the run is made short of what the market lends, FUNDING_SHORT_BY times over at the
+        // page's own cap, so the shortfall's lines and the cap's chips are drawn from the first draw and stay through the month watched.
+        Object[] run = gapped == null ? null : fx(() -> bench.fundingRunShort(FUNDING_SHORT_BY));
+        if (gapped == null) {
             System.out.println("  the city can pay for every order it could place: no funding page to draw");
         } else {
+            check("fixture: a run of orders the market lends too little for, both offers short " + (int) FUNDING_SHORT_BY + " times over at the page's cap", run != null);
+        }
+        if (run != null) {
             BuildingsTemplate t = (BuildingsTemplate) run[0];
             int q = (int) run[1];
-            System.out.println("  funding page caused: " + q + " x " + t.getName() + " costs more than the cash (" + String.format("%,.0f", g.getCash()) + ")");
-            pages.add(fx(() -> bench.buildFunding(t, q)));
+            System.out.printf("  funding page caused: %d x %s costs more than the cash (%,.0f), short by %,.0f; the market's bids reach %,.0f on the bond and %,.0f on the bill%n",
+                    q, t.getName(), g.getCash(), (double) run[2], (double) run[3], (double) run[4]);
+            KeptBench.Page funding = fx(() -> bench.buildFunding(t, q));
+            pages.add(funding);
+            List<String> shortLines = fx(() -> bench.fundingShortWords(t, q));
+            boolean[] shown = fx(() -> {
+                bench.home(funding);
+                bench.drawKept(funding);
+                bench.passes();
+                boolean all = !shortLines.isEmpty();
+                for (String line : shortLines) all &= pageSays(bench, line);
+                return new boolean[]{all, pageSays(bench, KeptBench.FUNDING_CAP_TITLE)};
+            });
+            check("fixture: the funding page's first draw has the shortfall's " + shortLines.size() + " lines (\"" + (shortLines.isEmpty() ? "none" : shortLines.get(0))
+                    + "\") and the cap's chips (\"" + KeptBench.FUNDING_CAP_TITLE + "\")", shown[0] && shown[1]);
             // The fell-short page is never reached by the model (the loan's invoice is the run's): drawn for these orders, as the model words them.
             BuildingsTemplate road = g.getBuildingManager().getTemplateByName("Gravel Road");
             System.out.println("  fell-short pages: drawn for the same run, which the model would not leave unbuilt (no way to cause it)");
             pages.add(fx(() -> bench.buildFellShort(road, 2, t, q, "20-year bond")));
             pages.add(fx(() -> bench.buildFellShort(null, 0, t, q, "20-year bond")));
         }
-        for (KeptBench.Page p : pages) {
-            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)), true);
+        // ...and the usual funding page, an offer covering the gap (REV-FB6-1): a run the market would lend for FUNDING_SHORT_BY times
+        // over at the page's cap, so that no shortfall line comes onto it in the month watched.
+        Object[] covered = gapped == null ? null : fx(() -> bench.fundingRunCovered(FUNDING_SHORT_BY));
+        if (gapped != null) {
+            check("fixture: a run of orders the market lends for, both offers covering " + (int) FUNDING_SHORT_BY + " times its gap at the page's cap", covered != null);
         }
+        if (covered != null) {
+            BuildingsTemplate t = (BuildingsTemplate) covered[0];
+            int q = (int) covered[1];
+            System.out.printf("  covered funding page caused: %d x %s costs more than the cash (%,.0f), short by %,.0f, which the market covers%n",
+                    q, t.getName(), g.getCash(), (double) covered[2]);
+            KeptBench.Page funding = fx(() -> bench.buildFunding(t, q));
+            pages.add(funding);
+            List<String> shortLines = fx(() -> bench.fundingShortWords(t, q));
+            boolean capShown = fx(() -> {
+                bench.home(funding);
+                bench.drawKept(funding);
+                bench.passes();
+                return pageSays(bench, KeptBench.FUNDING_CAP_TITLE);
+            });
+            check("fixture: the covered funding page's first draw has no shortfall line and no cap chips (" + shortLines.size() + " lines)",
+                    shortLines.isEmpty() && !capShown);
+        }
+        for (KeptBench.Page p : pages) {
+            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+        }
+    }
+
+    /** A file's size as the trace prints it: its bytes, or "missing". */
+    static String bytesOf(java.nio.file.Path file) {
+        try {
+            return java.nio.file.Files.isRegularFile(file) ? String.format("%,d bytes", java.nio.file.Files.size(file)) : "missing";
+        } catch (java.io.IOException e) {
+            return "unreadable (" + e.getMessage() + ")";
+        }
+    }
+
+    /** The name of the Rankings tab's one thread for the saved cities (RankingsScreen's WORKER). */
+    static final String RANKINGS_WORKER = "rankings-saved-cities";
+
+    /**
+     * A thread by its name, as the trace needs it: its state, its priority, the CPU it has had, the machine's CPU load, the top of its stack and
+     * its first frames in the game's own code (which file it reads); or that there is none.
+     */
+    static String workerThread(String name) {
+        java.lang.management.ThreadMXBean mx = java.lang.management.ManagementFactory.getThreadMXBean();
+        double load = cpuLoad();
+        for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+            Thread t = e.getKey();
+            if (!t.getName().equals(name)) continue;
+            long cpu = mx.isThreadCpuTimeSupported() ? mx.getThreadCpuTime(t.threadId()) : -1;
+            StringBuilder s = new StringBuilder(t.getState() + " at priority " + t.getPriority() + ", " + String.format("%.1f", cpu / 1e9)
+                    + " s of CPU, the machine's CPU " + (load < 0 ? "unknown" : String.format("%.0f%% busy", 100 * load)));
+            StackTraceElement[] stack = e.getValue();
+            int ours = 0;
+            for (int i = 0; i < stack.length && ours < 4; i++) {
+                boolean game = stack[i].getClassName().startsWith("ham.citybuildersim");
+                if (i >= 3 && !game) continue;
+                if (game) ours++;
+                s.append(i == 0 ? ", in " : " < ").append(stack[i]);
+            }
+            return s.toString();
+        }
+        return "is no thread (" + name + " never started)";
+    }
+
+    /** The machine's CPU load since the last call, 0 to 1, or -1 when the platform will not say (its first call answers 0: call it once to start). */
+    static double cpuLoad() {
+        return java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os ? os.getCpuLoad() : -1;
+    }
+
+    /** Whether a label on the page as drawn says these words (its whole text, or the start of it). */
+    static boolean pageSays(KeptBench bench, String words) {
+        for (javafx.scene.Node n : bench.nodesOnPage()) {
+            if (n instanceof javafx.scene.control.Labeled l && l.getText() != null && l.getText().startsWith(words)) return true;
+        }
+        return false;
     }
 
     /**
@@ -3388,6 +3488,68 @@ public class KeptCheck {
         return !words[0][0].equals(words[0][1]) && cards && (!business || !words[1][0].equals(words[1][1]));
     }
 
+    /**
+     * KS2: the plain business's month made to move while 51 is watched, and what puts it back. Section 51 reads a count-up on a business's
+     * figures in a month that moved them, and a business can stand still at the page's tenth of a unit for a year (RB1's path: "no month in
+     * twelve moved the figures"). Its property tax is swung every month, the way the player's zone tax row moves it, by SWING_STEPS of the
+     * steps its net income is printed in (Money.tightMoney: a tenth of a billion on "$1.2B"), up where the tax allows it and down otherwise,
+     * so the figure moves every month and the city's months are not upset (a swing to the far end of the tax was $41B a month on FB6's
+     * Construction); the offset it had is put back after.
+     */
+    static Runnable businessMoving(Game g, KeptBench bench, String key) throws Exception {
+        Runnable before = afterMonth;
+        TaxPolicy p = fx(() -> g.getEconomyManager().getTaxPolicy());
+        double offset = fx(() -> p.getPropertyOffset(key)), rate = fx(() -> p.effectivePropertyRate(key));
+        double step = fx(() -> printedStep(bench.sectorsWords(key)[1][1]));
+        double assessed = fx(() -> g.getEconomyManager().getAssessedValue(g.getSectors().byKey(key)));
+        // The bill is the assessed value at the annual rate over the year's months (TaxPolicy.effectiveMonthlyPropertyRate).
+        double points = assessed > 0 ? SWING_STEPS * step * TreasuryFund.YEAR_MONTHS / assessed : TaxPolicy.MAX_PROPERTY_TAX;
+        double to = rate + points <= TaxPolicy.MAX_PROPERTY_TAX ? rate + points
+                : rate - points >= 0 ? rate - points : rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0;
+        double swung = offset + to - rate;
+        boolean[] high = {false};
+        Runnable swing = () -> {
+            high[0] = !high[0];
+            g.setZoneTax(key, Zoning.Tax.PROPERTY, high[0] ? swung : offset);
+        };
+        String bills = fx(() -> {
+            Sector s = g.getSectors().byKey(key);
+            double was = g.getEconomyManager().getPropertyTaxFor(s);
+            swing.run();
+            return Money.money(was) + " and " + Money.money(g.getEconomyManager().getPropertyTaxFor(s));
+        });
+        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of its net income's printed steps of %s): a bill of %s a month%n",
+                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, Money.money(step), bills);
+        afterMonth = () -> {
+            if (before != null) before.run();
+            swing.run();
+        };
+        return () -> {
+            afterMonth = before;
+            g.setZoneTax(key, Zoning.Tax.PROPERTY, offset);
+        };
+    }
+
+    /** How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. */
+    static final int SWING_STEPS = 3;
+
+    /** The step a figure is printed in, in the model's thousands: its unit's tenth ("$1.2B" moves in tenths of a billion), a thousand on "$418k", a dollar below. */
+    static double printedStep(String words) {
+        // (The unit is the letter after the figure's last digit: a currency may write its sign after the number.)
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("[0-9]([QTBMk])").matcher(words);
+        char unit = ' ';
+        while (m.find()) unit = m.group(1).charAt(0);
+        double dollars = switch (unit) {
+            case 'Q' -> 1e14;
+            case 'T' -> 1e11;
+            case 'B' -> 1e8;
+            case 'M' -> 1e5;
+            case 'k' -> 1e3;
+            default -> 1;
+        };
+        return dollars / 1_000;
+    }
+
     /** The figures on a Sectors page that count up: the KEPT, and on the list every card's net income. */
     private static List<javafx.scene.control.Label> countingFigures(KeptBench bench, String key) {
         List<javafx.scene.control.Label> out = new ArrayList<>();
@@ -3471,7 +3633,8 @@ public class KeptCheck {
      * Section 51: the count-up only at 1x-10x, on the list's KEPT figure and its cards', a business's KEPT, the Income page's waterfall
      * and the Operations page's ring. With the clock at each rung of the speed ladder a month that lands starts a count on every figure
      * that moved exactly at the rungs UserInterface.countsUp() allows (COUNT_UP_TOP) and when the clock is paused; past it nothing counts
-     * and the page is the page a month's figures draw; a count still running when a month lands past it is stopped.
+     * and the page is the page a month's figures draw; a count still running when a month lands past it is stopped. The business's month is
+     * made to move (businessMoving, KS2), so every rung has a month to read.
      */
     static void sectorsCountUp(Game g, KeptBench bench, String plain) throws Exception {
         System.out.println("\n--- 51: the count-up only at 1x-10x (Sectors) ---");
@@ -3482,6 +3645,7 @@ public class KeptCheck {
         System.out.printf("  the ladder has %d rungs, %d of them at or under COUNT_UP_TOP (%.0fx)%n", ladder.length, countingRungs, top);
         String[][] views = {{null, "Operations", "the list's KEPT and its cards'"}, {plain, "Income", "a business's KEPT and the Income page's waterfall"},
                 {plain, "Operations", "a business's KEPT and the Operations page's ring"}};
+        Runnable back = businessMoving(g, bench, plain);
         for (String[] view : views) {
             StringBuilder wrong = new StringBuilder();
             fx(() -> {
@@ -3494,16 +3658,10 @@ public class KeptCheck {
                 int at = paused ? ladder.length - 1 : rung;
                 boolean expect = paused || ladder[at] <= top;
                 String result = fx(() -> countRung(g, bench, view[0], view[1], at, paused, expect));
-                if (Observation.reached("sectorsCountUp: : a played month moves the count-up figures at rung",
-                        view[2] + ": a played month moves the count-up figures at rung " + rung,
-                        !"no month in twelve moved the figures".equals(result),
-                        "this rung's count-up and waterfall laws")) {
-                    check(view[2] + ": count-up and waterfall at rung " + rung, result == null);
-                    if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
-                }
+                check(view[2] + ": count-up and waterfall at rung " + rung, result == null);
+                if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
             }
             if (wrong.length() > 0) System.out.println("  " + view[2] + ": " + wrong);
-
 
             // A count running when the clock has been sped past the top: the next month sets the figures at once and stops it.
             String stopped = fx(() -> {
@@ -3540,11 +3698,12 @@ public class KeptCheck {
                 return d == null ? null : "the page is not the page built new: " + d.replace('\n', ' ');
             });
             if (stopped != null) System.out.println("  " + view[2] + ": " + stopped);
-            if (Observation.reached(view[2] + ": a played month moves the figures for a running count",
-                    !"no month in twelve moved the figures".equals(stopped),
-                    "stopping the count above COUNT_UP_TOP"))
             check("a count running when a month lands past COUNT_UP_TOP is stopped on " + view[2] + ", and each figure is the month's", stopped == null);
         }
+        fx(() -> {
+            back.run();
+            return null;
+        });
     }
 
     /** The oil reserve's city: OilViewCheck's sea town (a platform with its wells, two land wells, a Strategic Reserve with FILL ordered), its fixture's report lines kept off this output. */
@@ -4223,6 +4382,70 @@ public class KeptCheck {
         return null;
     }
 
+    /** How many months of the fund's transfer its cash is kept over while 63's choices are watched: the transfer is paid from cash, and nothing is sold for it (KF63). */
+    static final int FUND_HELD_DUES = 3;
+
+    /**
+     * KF63: the fund's rule held still while 63's choices are watched, and what puts it back. The rule spends the fund's cash on every live
+     * bond each month (BondMarket's and the Exchange's postFund), so in the month the bond issuers' folds are open on Portfolio its buys are
+     * new rows (FB6's city: 511 nodes made of 2,755, a page that was not reshaped). A withdrawal over the default sells to pay and buys
+     * nothing, and cash kept over FUND_HELD_DUES months' transfer (topped up to twice that after any month that leaves it under) leaves the
+     * withdrawal nothing to sell: the lots the fund holds are the ones it held.
+     */
+    static Runnable fundHeld(Game g) throws Exception {
+        Runnable before = afterMonth;
+        int steps = fx(() -> g.getFund().getWithdrawalSteps());
+        Runnable topUp = () -> {
+            TreasuryFund fund = g.getFund();
+            double floor = FUND_HELD_DUES * TreasuryFund.dueAt(fund.getWithdrawalSteps(), g.fundValue(), 0);
+            if (fund.getCash() < floor) g.fundPayIn(2 * floor - fund.getCash());
+        };
+        fx(() -> {
+            g.getFund().setWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + 1) * TreasuryFund.WITHDRAWAL_STEP);
+            topUp.run();
+            return null;
+        });
+        afterMonth = () -> {
+            if (before != null) before.run();
+            topUp.run();
+        };
+        return () -> {
+            afterMonth = before;
+            g.getFund().setWithdrawal(steps * TreasuryFund.WITHDRAWAL_STEP);
+        };
+    }
+
+    /** Under fundHeld(), the rule let go (the default withdrawal: it buys) or held again (a step over it: it buys nothing), KF63. */
+    static void fundRule(Game g, boolean letGo) {
+        g.getFund().setWithdrawal((TreasuryFund.DEFAULT_WITHDRAWAL_STEPS + (letGo ? 0 : 1)) * TreasuryFund.WITHDRAWAL_STEP);
+    }
+
+    /** The bond among `from` and not in `not` that runs the longest (none of the rescue's), or null: a bond's page watched for a run of months must not be repaid in it (KF63). */
+    static String lastingBond(Game g, List<String> from, List<String> not) throws Exception {
+        return fx(() -> {
+            String best = null;
+            int most = -1;
+            for (String key : from) {
+                if (!key.startsWith("B:") || key.contains(":rescue") || not.contains(key)) continue;
+                CorporateBond b = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
+                int left = b == null ? 0 : b.remainingMonths(g.getMonth());
+                if (left > most) {
+                    most = left;
+                    best = key;
+                }
+            }
+            return best;
+        });
+    }
+
+    /** How many months the bond under `key` runs from now, 0 when it is gone. */
+    static int monthsLeft(Game g, String key) throws Exception {
+        return fx(() -> {
+            CorporateBond b = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
+            return b == null ? 0 : b.remainingMonths(g.getMonth());
+        });
+    }
+
     /** Sections 61 to 63: the city's fund kept. */
     static void fund(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The city's fund (KP5) ===");
@@ -4264,9 +4487,21 @@ public class KeptCheck {
         pageShows(g, bench, portfolio, 62);
         t = took("Portfolio kept and shown", t);
 
-        // 63: what reshapes the fund.
+        // 63: what reshapes the fund, with the fund's rule held still (fundHeld): only the choices reshape it.
+        Runnable fundBack = fundHeld(g);
+        List<String> lots = fx(bench::fundHoldings);
         KeptBench.Page tab = fx(() -> bench.finances("the city's fund", "The city's fund", "Portfolio"));
         List<Choice> pages = new ArrayList<>();
+        // A bond the fund holds, its page from Portfolio and from Search, first: while the rule is held still the fund's bonds only fall due
+        // (FB6's played city held none by the security pages below), so it is the bond held that runs longest as the hold begins, and it must
+        // run past the month after its second page (KF63).
+        String bond = lastingBond(g, lots, List.of());
+        if (bond != null) {
+            pages.add(acting("the page of " + bond + " from Portfolio", securityOf(bond, "Portfolio")));
+            pages.add(acting("the page of " + bond + " from Search", securityOf(bond, "Search")));
+        }
+        int bondLeft = bond == null ? 0 : monthsLeft(g, bond);
+        check("fixture: the fund holds a bond, " + bond + ", that runs " + bondLeft + " months, past the 2 months its pages are watched", bondLeft > 2);
         for (String page : KeptBench.financePages("The city's fund")) {
             // (Activity's rows are the month's events: see the Activity choices below.)
             pages.add(page.equals("Activity") ? acting("the fund's " + page, fundOn(page)) : choice("the fund's " + page, fundOn(page)));
@@ -4326,12 +4561,15 @@ public class KeptCheck {
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
         List<String> none = List.of();
-        String share = lotOf(holdings, "S:", none, false), bond = lotOf(holdings, "B:", none, false), rescue = lotOf(holdings, "S:", none, true);
-        String freeShare = lotOf(securities, "S:", holdings, false), freeBond = lotOf(securities, "B:", holdings, false);
-        System.out.println("  securities drawn: a share held " + share + ", a bond held " + bond + ", the rescue book " + rescue
-                + ", a share not held " + freeShare + ", a bond not held " + freeBond);
+        // (The fund's lots and reach as they stand now, after 63's months; the bond held was watched first, above. The free bond is the one
+        // that runs the longest: a bond repaid while its page is watched is a page the model reshaped, FB6's free bond.)
+        List<String> heldNow = fx(bench::fundHoldings), reach = fx(bench::fundSecurities);
+        String share = lotOf(heldNow, "S:", none, false), rescue = lotOf(heldNow, "S:", none, true);
+        String freeShare = lotOf(reach, "S:", heldNow, false), freeBond = lastingBond(g, reach, heldNow);
+        System.out.println("  securities drawn: a share held " + share + ", a bond held " + bond + " (on the fund's pages, above), the rescue book "
+                + rescue + ", a share not held " + freeShare + ", a bond not held " + freeBond);
         List<Choice> security = new ArrayList<>();
-        for (String key : new String[]{share, bond, rescue, freeShare, freeBond}) {
+        for (String key : new String[]{share, rescue, freeShare, freeBond}) {
             if (key == null) continue;
             // (A security's page lists its own record, a dozen lines of the month's events: the nodes a month makes there are the new lines.)
             security.add(acting("the page of " + key + " from Portfolio", securityOf(key, "Portfolio")));
@@ -4356,7 +4594,87 @@ public class KeptCheck {
                 }
             }
         }
+        if (freeBond != null) {
+            // (Choice i is drawn and then a month lands, its (i + 1)th: the bond is on the market through the month after its last choice.)
+            int last = -1;
+            for (int i = 0; i < security.size(); i++) if (security.get(i).name().contains(freeBond + " ") || security.get(i).name().contains(freeBond + ":")) last = i;
+            int left = monthsLeft(g, freeBond);
+            check("fixture: " + freeBond + " runs " + left + " months, past the " + (last + 1) + " months its page is watched", left > last + 1);
+        }
         pageReshaped(g, bench, tab, 63, security);
+        List<String> lotsAfter = fx(bench::fundHoldings);
+        List<String> bought = new ArrayList<>(lotsAfter);
+        bought.removeAll(lots);
+        check("fixture: the fund's rule held still through 63's choices, no lot it did not hold before (" + lots.size() + " lots, then "
+                + lotsAfter.size() + (bought.isEmpty() ? "" : "; new " + bought) + ")", bought.isEmpty());
+
+        // KF63 (PO1-notes: "a newly settled holding exposing book fields must receive deliberate coverage"; the 88.7% red was a lot settling
+        // while its page was watched): the rule let go for one month, on Portfolio with every row that folds open, so that its buys settle
+        // holdings the fund did not hold; then held again, and the months after it counted - Portfolio with the rows it settled, a settled
+        // lot's page, and its ticket at its buy and sell review.
+        List<String> letGoFrom = new ArrayList<>(), settled = new ArrayList<>();
+        String[] watched = {null};
+        int[] watchedLeft = {0};
+        List<Choice> settles = new ArrayList<>();
+        settles.add(acting("the rule let go a month, every row that folds opened on Portfolio: its buys settle holdings", b -> {
+            letGoFrom.clear();
+            letGoFrom.addAll(b.fundHoldings());
+            fundRule(g, true);
+            b.fundPage("Portfolio");
+            b.fundUnfold();
+            return null;
+        }));
+        settles.add(choice("...the rule held again, Portfolio with the holdings its month settled, every row that folds opened", b -> {
+            fundRule(g, false);
+            settled.clear();
+            settled.addAll(b.fundHoldings());
+            settled.removeAll(letGoFrom);
+            b.fundPage("Portfolio");
+            b.fundUnfold();
+            return settled.isEmpty() ? "the month the rule was let go settled no holding" : null;
+        }));
+        settles.add(choice("the page of a holding the let-go month settled, from Portfolio", b -> {
+            if (settled.isEmpty()) return "the month the rule was let go settled no holding";
+            // (The settled bond that runs the longest, as the free bond is: a bond repaid while its page is watched is a page the model
+            // reshaped - REV-FB6-1's first run took the first settled, #3089, repaid at par a month later. A share when no bond settled.)
+            String pick = null;
+            int most = -1;
+            for (String k : settled) {
+                if (!k.startsWith("B:") || k.contains(":rescue")) continue;
+                CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(k.substring(2)));
+                int left = cb == null ? 0 : cb.remainingMonths(g.getMonth());
+                if (left > most) {
+                    pick = k;
+                    most = left;
+                }
+            }
+            if (pick == null) {
+                pick = settled.get(0);
+                most = Integer.MAX_VALUE;
+            }
+            watched[0] = pick;
+            watchedLeft[0] = most;
+            b.fundOpen(pick, "Portfolio");
+            return null;
+        }));
+        settles.add(choice("...its ticket, buy by amount at fair, at its review", ticket(true, true, 25_000, "fair", 0, true)));
+        settles.add(choice("...its ticket, sell by amount at fair, at its review", ticket(false, true, 25_000, "fair", 0, true)));
+        pageReshaped(g, bench, tab, 63, settles);
+        List<String> lotsLast = fx(bench::fundHoldings);
+        List<String> other = new ArrayList<>(lotsLast);
+        other.removeAll(lotsAfter);
+        other.removeAll(settled);
+        check("fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it ("
+                + settled.size() + " settled)", !settled.isEmpty());
+        // (Its page and its two reviews: choice i is drawn and then a month lands, so the lot is held through the month after the third.)
+        check("fixture: the settled lot watched, " + watched[0] + ", runs " + (watchedLeft[0] == Integer.MAX_VALUE ? "on (a share)" : watchedLeft[0] + " months")
+                + ", past the 3 months its page is watched", watchedLeft[0] > 3);
+        check("fixture: the rule held again after its month, no lot but the ones it settled (" + lotsAfter.size() + " lots, then " + lotsLast.size()
+                + (other.isEmpty() ? "" : "; new " + other) + ")", other.isEmpty());
+        fx(() -> {
+            fundBack.run();
+            return null;
+        });
         took("the securities", t);
         fx(() -> {
             bench.fundOnShow(false);
@@ -4445,17 +4763,69 @@ public class KeptCheck {
         }
     }
 
+
+    /**
+     * FB6 (LX1's two Search lines): the fund's Search list made longer than two of its pages. The list is the market, every listed share and
+     * live bond (a held lot twice), and a played city can hold fewer: LX1's 600-month city had 61 against 2 x SEARCH_ROWS, and Show more never
+     * reached a third page. The fixture sells small bonds of the market's largest issuer through the market's own issue, at the highest coupon
+     * the market pays, the proceeds handed to the issuer's till as a bond's are, until the list is long enough. Returns how many it sold.
+     */
+    static int searchPagesLong(Game g, int rows) throws Exception {
+        return fx(() -> {
+            BondMarket bm = g.getBondMarket();
+            int month = g.getMonth(), sold = 0;
+            CorporateBond largest = null;
+            double coupon = 0;
+            for (CorporateBond b : bm.getBonds()) {
+                if (b.isMatured(month) || !(b.face() > 0)) continue;
+                if (largest == null || b.face() > largest.face()) largest = b;
+                coupon = Math.max(coupon, b.coupon());
+            }
+            Sector issuer = largest == null ? null : g.getSectors().byKey(largest.issuer());
+            if (issuer == null) return 0;
+            double face = g.minimumIssueSize();
+            while (FundView.search(g, "", "All").size() <= rows * 2 && sold <= rows * 2) {
+                double proceeds = bm.issue(new BusinessDebtManager.Plan(issuer.key(), face, face, coupon, coupon, 0, coupon, coupon,
+                        bm.issueCost(face), coupon, 0, face, face), month);
+                if (!(proceeds > 0)) break;
+                issuer.addCash(proceeds);
+                sold++;
+            }
+            return sold;
+        });
+    }
+
+    /**
+     * FB6 (LX1's Activity line): the fund's record given lines in two older years. The Activity page folds each line older than ACTIVITY_MONTHS
+     * by its year, and a played city's record can hold one such year (FundLedger keeps its newest ACTIVITY_ROWS lines, and a rule that trades
+     * every month fills them within two years: LX1's city); the fixture writes a pay-in line of a thousand in the month before the window and
+     * one a year before that, as fundYearNet writes its year. Returns how many it wrote.
+     */
+    static int olderYears(Game g) throws Exception {
+        return fx(() -> {
+            int recentMonths = fundDial("ACTIVITY_MONTHS");
+            if (FundView.activityRecord(g, "All", recentMonths).years().size() > 1) return 0;
+            FundLedger ledger = g.getFund().getLedger();
+            int older = g.getMonth() - recentMonths;
+            ledger.flow(FundLedger.PAY_IN, 1, true, older - TreasuryFund.YEAR_MONTHS);
+            ledger.flow(FundLedger.PAY_IN, 1, true, older);
+            return 2;
+        });
+    }
     /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
     static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
         System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
         fx(() -> { fundYearNet(g); return null; });
         int rows = fundDial("SEARCH_ROWS");
+        int sold = searchPagesLong(g, rows), listed = fx(() -> FundView.search(g, "", "All").size());
+        check("fixture: the market lists more than two Search pages (" + listed + " securities against 2 x SEARCH_ROWS = " + rows * 2
+                + (sold > 0 ? ", " + sold + " small bonds sold for it" : "") + ")", listed > rows * 2);
         List<Choice> choices = new ArrayList<>();
         choices.add(choice("Search starts with SEARCH_ROWS", b -> {
             b.fundPage("Search");
             b.fundSearch("", "All");
             b.drawKept(tab);
-            check("the played city's market causes at least three Search pages", FundView.search(g, "", "All").size() > rows * 2);
+            check("the market still lists more than two Search pages", FundView.search(g, "", "All").size() > rows * 2);
             fundSearchPage(g, b, rows);
             return null;
         }));
@@ -4538,13 +4908,15 @@ public class KeptCheck {
             check("the replacement fixture leaves the model in the same month", g.getMonth() == month);
             return null;
         });
+        int wrote = olderYears(g);
         fx(() -> {
             bench.fundPage("Activity");
             bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
             bench.fundFoldsClosed();
             bench.drawKept(tab);
             List<FundView.ActivityYear> years = FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years();
-            check("the played city's record causes multiple older year folds", years.size() > 1);
+            check("fixture: the record folds lines older than ACTIVITY_MONTHS into more than one year (" + years.size() + " years"
+                    + (wrote > 0 ? ", " + wrote + " pay-in lines written in two of them" : "") + ")", years.size() > 1);
             for (FundView.ActivityYear year : years) {
                 String closed = "▸ " + year.year() + " · " + year.months() + (year.months() == 1 ? " month" : " months");
                 check("year " + year.year() + " starts shut with its recorded month count", bench.chipWith(closed::equals) != null);
@@ -4639,6 +5011,32 @@ public class KeptCheck {
         return best;
     }
 
+    /** The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. */
+    static final int PAPER_LASTS = 60;
+
+    /**
+     * KS2: the piece of paper sections 66 and 67 draw on, caused. The city's own longest piece when it runs PAPER_LASTS months more;
+     * otherwise a long-dated bond put on the books as section 71 puts one (KS1), since what the market sold the city, and when it
+     * falls due, is the city's path: on RB1's the only paper (a 20-year callable) fell due between 66's boxes, and on others there
+     * was none to close and no row on the hub. The piece is checked on the books, lasting, before anything is drawn on it.
+     */
+    static Debt paperLasting(Game g, KeptBench bench, String what) throws Exception {
+        Debt piece = longestPiece(bench);
+        int month = fx(g::getMonth);
+        if (piece == null || piece.getMaturityMonth() < month + PAPER_LASTS) {
+            piece = fx(() -> {
+                LongTermBond paper = new LongTermBond(g.minimumIssueSize() * 3, 1_200, g.getMonth(), .04);
+                g.getDebtManager().getDebt().add(paper);
+                return paper;
+            });
+            System.out.println("  the city's paper runs out within " + PAPER_LASTS + " months: a long-dated bond put on the books for " + what);
+        }
+        Debt held = piece;
+        check("fixture: " + what + " have a piece of paper on the books that runs " + PAPER_LASTS + " months more (due month " + held.getMaturityMonth() + ")",
+                fx(() -> bench.financesPieces().contains(held)) && held.getMaturityMonth() >= month + PAPER_LASTS);
+        return piece;
+    }
+
     /** The places the money screens' pictures are: one page of each tab that holds some, and the pages behind them. */
     static List<Spot> pictureSpots(Game g, KeptBench bench, Debt piece) throws Exception {
         List<String> moneys = KeptBench.borrowMoneys();
@@ -4663,6 +5061,9 @@ public class KeptCheck {
         }
         spots.add(new Spot("Borrow at home, asking for a sixth of the cash", fx(() -> bench.finances("Borrow at home", "Borrow", "At home")), b -> {
             b.financesBorrow("Term", 10, moneys.get(0), ask, false, false);
+            // The ladder this would build is drawn only while the quote is not empty, and at the tail's cap a month's bids can all
+            // stand above it (FB6: seven of ten handed back, the card there in four months of six): the player takes what fills it.
+            b.financesCap(true, 0);
             return null;
         }));
         spots.add(new Spot("Money", fx(() -> bench.finances("Money", "Money", "Money")), b -> null));
@@ -4728,6 +5129,7 @@ public class KeptCheck {
                 pictureKept(g, bench, spot, kind, kind.equals("BuybackLadder") && spot.label().equals("Close it now"));
             }
         }
+        fx(() -> { bench.financesCapDefault(); return null; });
     }
 
     /** One kind of picture on one page, watched for PICTURE_MONTHS months. */
@@ -5095,7 +5497,11 @@ public class KeptCheck {
             bench.restoreKeptPage();
             show.run();
             bench.passes();
-            KeptBench.boxBlur(find.get());
+            javafx.scene.control.TextField last = find.get();
+            // (A box gone from the page is a failure said, not a NullPointerException on the FX thread, which kept the JVM alive: FB6.)
+            if (s1 == null || s2 == null) return new Object[]{"the box is not on the page a month later"};
+            if (s3 == null || last == null) return new Object[]{"the box is not on the page drawn again after the chip"};
+            KeptBench.boxBlur(last);
             String d = againstNew(bench, page);
             return new Object[]{null, how, s0, s1, s2, pressed, s3, freshText, d};
         });
@@ -5186,7 +5592,7 @@ public class KeptCheck {
     /** Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips (typed into, a chip pressed, and Enter), the fund's search box. */
     static void moneyControls(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 66: the boxes keep the player's hand ---");
-        Debt piece = longestPiece(bench);
+        Debt piece = paperLasting(g, bench, "Close it now's boxes");
         List<String> moneys = KeptBench.borrowMoneys();
         double ask = fx(() -> Math.max(g.minimumIssueSize() * 4, g.getCash() / 6));
         Auction.Cap rollover = g.getRolloverCap();
@@ -5195,9 +5601,7 @@ public class KeptCheck {
             return null;
         };
         if (piece == null) {
-            Observation.reached("the city has a piece of paper to close",
-                    false,
-                    "Close it now face and price box retention");
+            check("the city has a piece of paper to close", false);
         } else {
             KeptBench.Page close = fx(() -> bench.finances("Close it now", "The book", "Every piece"));
             boxHeld(g, bench, "Close it now's face box", close, closeOf(piece), bench::showFinances, () -> bench.financesCloseBoxes()[0], "1,000,000", 5, "a half");
@@ -5227,7 +5631,8 @@ public class KeptCheck {
     static void moneyHover(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 67: the hover is kept (Bank, Finances, the fund) ---");
         java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
-        Debt piece = longestPiece(bench);
+        // KS2: the hub draws a row for each piece the city owes; a city that owes nothing draws none to put the pointer on.
+        paperLasting(g, bench, "the hub's book rows");
         List<Spot> spots = new ArrayList<>(List.of(
                 new Spot("the Bank Overview", fx(bench::bank), b -> null),
                 new Spot("the Bank's Lending page", fx(() -> bench.bank("the Bank's Lending page", "pages", "Lending", false)), b -> null),
@@ -5250,8 +5655,7 @@ public class KeptCheck {
             hoverLine(found, at.label(), k[1], d);
         }
         for (String kind : List.of("bankCard", "rungName", "financeCard", "bookRow", "holdingRow")) {
-            Observation.reached("a " + kind + " was found on a money page of this city, to put the pointer on",
-                    found.getOrDefault(kind, false));
+            check("a " + kind + " was found on a money page of this city, to put the pointer on", found.getOrDefault(kind, false));
         }
     }
 
@@ -7945,17 +8349,32 @@ public class KeptCheck {
         // The saved cities: the city saved into slot 10 of the harness's own folder, a read of the folder, the answer waited for (it comes back through the FX thread).
         boolean wrote = quietly(() -> fx(bench::rankingsSaveSlot10));
         check("the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)", wrote);
+        long asked = System.nanoTime();
+        cpuLoad();
         fx(() -> {
             bench.rankingsRead();
             return null;
         });
-        long deadline = System.nanoTime() + 60_000_000_000L;
+        long deadline = asked + 60_000_000_000L;
         boolean landed = fx(bench::rankingsReadLanded);
         while (!landed && System.nanoTime() < deadline) {
             Thread.sleep(200);
             landed = fx(bench::rankingsReadLanded);
         }
+        double waited = (System.nanoTime() - asked) / 1e9;
         int onBoard = fx(bench::rankingsSavedOnBoard);
+        // KS1-Saved: a save that landed and a board with none on it, traced - whether the worker's answer came back, what the screen's
+        // snapshot left off the board and why (SavedCities.left()), the slot's two files on disk, and the folder read again here, off the screen.
+        String left = fx(bench::rankingsSavedLeft);
+        GameFiles files = g.getGameFiles();
+        String worker = workerThread(RANKINGS_WORKER);
+        long readAt = System.nanoTime();
+        SavedCities again = SavedCities.read(files);
+        System.out.printf("  the read %s after %.1f s; the screen's snapshot: %d on the board, left off %s; slot 10's save %s, its history %s;"
+                        + " the folder read again here, in %.1f s: %d on the board, left off %s; the screen's worker %s%n",
+                landed ? "landed" : "had not landed (" + fx(bench::rankingsReadState) + ")", waited, onBoard, left,
+                bytesOf(files.saveFile(10)), bytesOf(files.historyFile(10)), (System.nanoTime() - readAt) / 1e9,
+                again.now(SavedCities.Played.NONE).size(), again.left(), worker);
         check("the read of the saved cities landed within a minute, with the saved city on the board (" + onBoard + " on it)", landed && onBoard >= 1);
         List<Choice> y = new ArrayList<>();
         y.add(choice("the filter YOUR_CITIES with the saved city on it, Now", x -> { x.rankingsFilter("YOUR_CITIES"); x.rankingsAtAge(false); return null; }));
@@ -7968,38 +8387,59 @@ public class KeptCheck {
         y.add(choice("the drawer closed, Now, the filter ALL (the saved city among the rows)", x -> { x.rankingsDrawer(null); x.rankingsAtAge(false); x.rankingsFilter("ALL"); return null; }));
         y.add(choice("the filter YOUR_SIZE", x -> { x.rankingsFilter("YOUR_SIZE"); return null; }));
         pageReshaped(g, bench, page, 87, y, HANDED_BACK, true);
+        if (!landed) {
+            // KS1-Saved: whether the worker's answer came back at all, minutes later, after the Your cities run.
+            boolean late = fx(bench::rankingsReadLanded);
+            System.out.printf("  by the end of 87, %.0f s after the read was asked, it %s; the screen's worker %s%n", (System.nanoTime() - asked) / 1e9,
+                    late ? "had landed (" + fx(bench::rankingsSavedOnBoard) + " on the board)" : "had still not landed", workerThread(RANKINGS_WORKER));
+        }
         fx(() -> {
             bench.home(page);
             return null;
         });
     }
 
-    /** The tooltips on a page across a month's kept redraw (setup made first): {tooltips before, on a node that has one after, the same Tooltip, on a node kept without one}. */
-    static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page, boolean observeEmptyCell) throws Exception {
+    /**
+     * The tooltips on a page across a month's kept redraw (setup made first): {tooltips before, on a node that has one after, the same Tooltip,
+     * on a node kept without one, cells the grid opens before and not after, cells the month alone would have closed}. KHT1: the families
+     * are held through the month. The family model is rebuilt from the pyramid and the jobs every month, and a cash-grid cell of under half
+     * a household (HouseholdAccounts.statementFor's households, as KeptBench.householdCells reads the grid) draws its dash and no tooltip
+     * (FB6's city: Couple, no children, Senior professional, at .5 one month and under it the next), so a cell that empties is the month's
+     * doing and not the page's. The model is put back as it stood before the month, through its save array, and that acts as a load does:
+     * the next month's rebuild starts from what it carries (FamilyModel.rebuild's adults at home and with them), so the city goes on from
+     * the held families.
+     */
+    static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception {
         return fx(() -> {
             bench.drawKept(page);
             bench.passes();
             java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> before = bench.tooltips();
+            FamilyModel families = g.getFamilies();
+            List<String> cells = bench.householdCells();
+            double[] held = families.toSaveArray();
+            double owners = families.getOwnerAdults();
             month(g);
+            List<String> unheld = bench.householdCells();
+            g.getFamilies().restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), held);
+            g.getFamilies().restoreOwnerAdults(owners);
+            List<String> kept = bench.householdCells();
+            int emptied = 0, wouldHave = 0;
+            for (String cell : cells) {
+                if (!kept.contains(cell)) emptied++;
+                if (!unheld.contains(cell)) wouldHave++;
+            }
             bench.drawKept(page);
             bench.passes();
             java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
             java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
-            int both = 0, same = 0, lost = 0, emptyCell = 0;
+            int both = 0, same = 0, lost = 0;
             for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
                 javafx.scene.control.Tooltip now = after.get(e.getKey());
                 if (now == null) {
                     // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
                     if (still.contains(e.getKey())) {
+                        lost++;
                         javafx.scene.Node node = e.getKey();
-                        boolean listedCell = observeEmptyCell
-                                && e.getValue().getText().startsWith("Couple, no children, Senior professional\n")
-                                && g.getHouseholds().statementFor(g.getFamilies(), FamilyStructure.COUPLE, PayTier.SENIOR_PROFESSIONAL).households() < .5;
-                        if (listedCell) {
-                            emptyCell++;
-                            check("the emptied listed household cell draws its dash",
-                                    node instanceof javafx.scene.control.Labeled label && label.getText().equals("—"));
-                        } else lost++;
                         String words = node instanceof javafx.scene.control.Labeled label ? label.getText() : node.getClass().getSimpleName();
                         System.out.printf("  tooltip removed from kept %s, width %.4f, text %s, former tip %s%n",
                                 node.getClass().getSimpleName(), node.getLayoutBounds().getWidth(), words,
@@ -8010,7 +8450,7 @@ public class KeptCheck {
                 both++;
                 if (now == e.getValue()) same++;
             }
-            return new int[]{before.size(), both, same, lost, emptyCell};
+            return new int[]{before.size(), both, same, lost, emptied, wouldHave};
         });
     }
 
@@ -8068,27 +8508,18 @@ public class KeptCheck {
                 bench.home(w.page());
                 return null;
             });
-            boolean observeEmptyCell = w.name().equals("Household money, all of them");
-            int[] c = tipsAcrossMonth(g, bench, w.page(), observeEmptyCell);
+            int[] c = tipsAcrossMonth(g, bench, w.page());
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
-            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3] + c[4]);
+            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
+            check("fixture: " + w.name() + ": every cell the household grid opens before the month it opens after, the families held (" + c[4]
+                    + " closed; the month alone would have closed " + c[5] + ")", c[4] == 0);
             check(w.name() + ": none is lost from a node the page keeps", c[3] == 0);
-            if (observeEmptyCell) Observation.reached("kp7Tips Couple, no children, Senior professional tooltip availability",
-                    "Household money, all of them: the listed household cell retains its tooltip", c[4] == 0, "");
-            if (Observation.reached("kp7Tips retained tooltip",
-                    w.name() + ": a tooltip survives the played month",
-                    c[1] > 0,
-                    "surviving Tooltip identity")) {
-                check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
-                        c[1] == c[2]);
-            }
+            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
+                    c[1] == c[2]);
         }
         for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
-            Observation.reached("kp7Tips:  carry tooltips that a month leaves on their nodes, to be kept",
-                    "the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")",
-                    e.getValue()[1] > 0,
-                    "");
+            check("the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
         }
     }
 

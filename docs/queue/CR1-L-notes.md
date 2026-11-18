@@ -132,3 +132,9 @@ Built from origin/main 45de48dc2 (0.9.140), on batch/CR1-L.
   git diff --check passed. The pick remains ALL (pom.xml), 218 harnesses;
   the review line remains UI-wide threading. The orchestrator reserves the
   dry run after HW1-V and will mail the go; it has not been run here yet.
+- Dry-run go received in bus message 20261117-233351-919-orchestrator-429d.
+  Merged origin/main 3f09922826b1562f42c6b3cf510de58935d0d884 (0.9.142,
+  including HW1-V and FB8). Only generated dials/harness/index docs conflicted;
+  took this branch's copies and regenerated all maps on the merged source.
+  ./batch-check.sh --fast passed (exit 0), Stale 0 firm; no source conflict
+  or change to CR1-L's implementation. Merge summary: /tmp/CR1-L-merge-fast.log.

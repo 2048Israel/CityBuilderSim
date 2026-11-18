@@ -1,0 +1,16 @@
+series,label,line,2023Q4_musd,2024Q4_musd,2025Q4_musd,2025Q2_musd,2026Q2_musd
+FL152000005.Q,Households and nonprofit organizations; total assets,Line 1,175945380,189507832,203778920,196310392,217751104
+LM152010005.Q,Households and nonprofit organizations; nonfinancial assets,Line 2,57611091,60023972,61695658,61962825,64263839
+LM155035005.Q,Households and nonprofit organizations; real estate at market value,Line 3,48842748,50955452,52015266,52563982,54073947
+LM155111005.Q,"Households and nonprofit organizations; consumer durable goods, current cost basis",Line 8,7856571,8111190,8653778,8416937,9114821
+FL154090005.Q,Households and nonprofit organizations; total financial assets ,Line 9,118334289,129483860,142083262,134347567,153487265
+LM153064105.Q,Households and nonprofit organizations; corporate equities; asset,Line 22,30370239,36999300,44322838,39641419,52119174
+LM153064205.Q,Households and nonprofit organizations; mutual fund shares; asset,Line 25,11074689,12187350,13410400,12798451,14412656
+FL153050005.Q,Households and nonprofit organizations; pension entitlements; asset,Line 29,30632136,32582561,34493042,33376388,35728286
+FL154190005.Q,Households and nonprofit organizations; total liabilities,Line 32,20271124,20786322,21504713,21063877,21880608
+FL152090005.Q,Households and nonprofit organizations; net worth ,Line 42,155674256,168721510,182274207,175246515,195870496
+FA156012005.Q,Households and nonprofit organizations; disposable personal income ,Line 51,21168040,22249490,23113194,22786610,23642219
+FL152090006.Q,Households and nonprofit organizations; net worth as a percentage of disposable personal income,Line 52,735.4212118793731,758.3163020815309,788.6153971190654,769.0767279555845,828.4776300945932
+derived,"net worth (year-end) / GDP (calendar year), ratio",,5.595,5.743,5.906,,
+derived,"net worth (year-end) / DPI (calendar year), ratio",,7.481,7.653,7.930,,
+derived,net worth (year-end) in billions of dollars,,155674.3,168721.5,182274.2,,

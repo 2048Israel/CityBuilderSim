@@ -18,6 +18,49 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.142 — FB8, DM2's three follow-ups, the map's sidecar — 2026-11-17, ready, see docs/queue/FB8-notes.md
+DM2-B: LX1's 4,000-month city refused its own sidecar at m3589 and m3952 because at m3551 the map wrote a wrong site
+history: `relay()`, laying a resource's works again, took a district's last site runs off without moving its version,
+so its kept site list still drew the mines, the plans over it stood, and the month's history saw no change there.
+`relay()` moves it now, as `markRun()` does: LX1's tree reads back 10 of 10 reloads (8 before); MapCheck 4c causes the
+route on the iron square (3 lines red before). The whole-sidecar refusal stays, documented on `matchesCurrent()`: the
+one mismatch on record was the writer's; a per-district recovery is DM4, for a mismatch no writer caused. DM2-A:
+MapCheck 2h-f's city has an unseen twin, never planned through the wall's birth, cure, return and second cure, saved
+before its first view and then dated and drawn as the watched map. DM2-C: the site history's rectangle key is laid out
+from DISTRICT, `CityMap.DISTRICT_MOST` guards the journals' packing beside it, MapCheck 4b holds the district's edges.
+The map only: the trace is unmoved.
+
+### 0.9.141 — HW1-V, refine projected ground and borrowing cash — 2026-11-17, ready, see docs/queue/HW1-V-notes.md
+Projected works retain only the linked ground their class and zoning let
+them reuse from purchased parcels, and keep rounded bond proceeds above
+each funding gap as cash for later additions. Both the value model and its
+independent advice oracle carry the corrected ground and cash. Hard parcel
+and bond fixtures prove successive additions, including steep and zoned
+ground, unlinked forest and exhausted offers; twelve removal checks fail
+with their premises intact. Advice, ground, finance and save-path checks
+pass; the default playtest trace is unchanged.
+
+### LQ1 — the luxury queue's size, a study — 2026-11-17, ready, see docs/queue/LQ1-notes.md
+`docs/studies/luxury-budget.md`, its probe, two prototypes and the real figures in `docs/studies/luxury-budget/`: the
+households' luxury budget on 0.9.139 against BEA, the Census, BLS and the Fed. The counter takes 13-19% of GDP (36% in
+seed 0's old city) against BEA's other goods' 9.5%. Nearly all of it is the wealth term, the whole of a wealth effect
+spent at one counter on a pile of 10-17 years of disposable income (the Fed's 7.9), and the shops keep 2.66 times the
+landed cost against the specialty stores' 1.92. On three seeds a margin of 1.89 takes the shops' workers down 23-45%
+with the spend and the pile held; a cut in the counter's share alone grows the pile. The Department Store is never
+chosen, and by the Census it has no edge to give it (REV-LX1-1). Three calls (LQ1-K); LQ2 (the margin) and LQ3 (the
+fortune's other spending, a study) queued. No code.
+
+### FB6 — KeptCheck's fixtures cause their own conditions — 2026-11-17, ready, see docs/queue/FB6-notes.md
+KeptCheck's sections 44, 51, 63, 64, 66, 67 and 89 now cause what they read instead of finding it on the city's path, each with
+a `fixture:` line, and their Observation guards are out; no floor or premise moved. 44 draws a run both offers fall four times
+short of, with the shortfall's lines and the cap's chips, beside the usual page that an offer covers (KBF1). 51 swings the plain
+business's property tax by three printed steps of its net income each month; 66 and 67 put sixty months of paper on the books
+(KS2). 63 holds the fund's rule still and watches the bonds that run longest, then lets the rule go one month and watches the
+holdings it settles. It also sells small bonds until Search has a third page, and gives the record a second older year (KF63,
+LX1's three). 64 quotes Borrow at the fill cap; 89 holds the families across its month (KHT1). 87's trace finds the Rankings
+worker's read stalling under load, not the save: KRW1. 55's Bank Profit page, red only in R6b's dry run, is KBP1. The change
+is harness only; the playtest's trace is unchanged.
+
 ### 0.9.140 — FB4, three gate reviews' follow-ups — 2026-11-17, ready, see docs/queue/FB4-notes.md
 GV1-R: the wealth band's notice leaves a band only 10% past its bound (`GovernmentView.BAND_MARGIN`), so wealth on a
 bound no longer posts a notice a month (241 over 243 readings before, 3 now, InboxCheck); the government's debt counts

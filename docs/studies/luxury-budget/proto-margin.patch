@@ -1,0 +1,62 @@
+--- a/src/main/java/ham/citybuildersim/sectors/LuxuryRetail.java
++++ b/src/main/java/ham/citybuildersim/sectors/LuxuryRetail.java
+@@ -103,7 +103,7 @@
+      * it charges, so a city has to be genuinely short of counters - not of
+      * counters at a floor price nobody is charged - to see it.
+      */
+-    public static final double MARGIN_CEILING = 4.0;
++    public static final double MARGIN_CEILING = 2.5; // LQ1's prototype: settles at 1.89x (main 4.0, 2.66x)
+ 
+     /**
+      * The share of the way, in logs, a shop's charged margin moves toward the
+--- a/src/main/resources/buildings.json
++++ b/src/main/resources/buildings.json
+@@ -2874,7 +2874,7 @@
+    "name": "Boutique",
+    "category": "LUXURY",
+    "sector": "Luxury Retail",
+-   "coverage": 7,
++   "coverage": 13,
+    "cashCost": 1180,
+    "constructionPoints": 190,
+    "constructionMaterials": 26,
+@@ -2888,19 +2888,19 @@
+    "land": 6000,
+    "roadLoad": 8,
+    "makes": {
+-    "LUXURY_TRADE": 7
++    "LUXURY_TRADE": 13
+    },
+    "uses": {
+-    "LUXURIES": 7
++    "LUXURIES": 13
+    },
+-   "stock": 21
++   "stock": 39
+   },
+   {
+    "id": 70,
+    "name": "Department Store",
+    "category": "LUXURY",
+    "sector": "Luxury Retail",
+-   "coverage": 80,
++   "coverage": 149,
+    "cashCost": 21600,
+    "constructionPoints": 2900,
+    "constructionMaterials": 560,
+@@ -2915,12 +2915,12 @@
+    "land": 90000,
+    "roadLoad": 70,
+    "makes": {
+-    "LUXURY_TRADE": 80
++    "LUXURY_TRADE": 149
+    },
+    "uses": {
+-    "LUXURIES": 80
++    "LUXURIES": 149
+    },
+-   "stock": 240
++   "stock": 447
+   },
+   {
+    "id": 71,

@@ -541,6 +541,7 @@ public final class Landmasses {
         int[] ids = new int[n];
         boolean[] owned = new boolean[n];
         TreeMap<Integer, long[]> counts = new TreeMap<>();
+        long forest = 0;
         for (long ty = Math.floorDiv(y0, t); ty <= Math.floorDiv(y1 - 1, t); ty++) {
             for (long tx = Math.floorDiv(x0, t); tx <= Math.floorDiv(x1 - 1, t); tx++) {
                 int cov = grid.cover(5, tx, ty);
@@ -559,6 +560,7 @@ public final class Landmasses {
                         if (owned[at] || !World.dry(cover[at])) continue;
                         int id = ids[at] == 0 ? home : ids[at];
                         if (linked(id)) continue;
+                        if (cover[at] == World.FOREST) forest++;
                         counts.computeIfAbsent(id, k -> new long[World.RELIEFS])[rel[at]]++;
                     }
                 }
@@ -577,7 +579,8 @@ public final class Landmasses {
                 largest = e.getKey();
             }
         }
-        p.setUnlinked(dry * World.KM2_PER_PLOT, buildable * World.KM2_PER_PLOT, largest);
+        p.setUnlinked(dry * World.KM2_PER_PLOT, buildable * World.KM2_PER_PLOT,
+                forest * World.KM2_PER_PLOT, largest);
     }
 
     /* =====================================================================
