@@ -102,6 +102,7 @@ stuff".
 | CPB2 | Close the allocated-cost export-spare bypass and NaN no-world-outlet buffer paths found by REV-CPB1-1; pre-existing and uncovered, queued by the orchestrator's call | [brief](docs/queue/CPB2.md) |
 | KFP1 | KeptCheck's city keeps its wage floor at the going rate for two lines written on that path: section 68's Government Overview (no month makes more than a tenth of the first draw's nodes: 46 of 395 on the default floor) and the Partners' chart pixel check in Trade & the World (3 pixels differ); trace each, cause its condition in its own fixture, take the pin out; with KBP1's Bank Profit page if it flakes | docs/queue/WG1-R-notes.md §1 |
 | DK1 | The share desk's room, a difference of two money sums when its book is full (Exchange.deskLimits: BOOK_LIMIT times equity less the book at fair), reads as none under the arithmetic's resolution of those sums (MoneyAudit.tolerance at the larger), so a full desk takes no dust lot whose fill sets a book's last price; recommended, the fix's measure DenominationCheck's decade on HN1's path (1e-9) and main's | [HN1 notes 5a](docs/queue/HN1-notes.md) |
+| BW2 | The gate says "published" only for its own push: a dry run beside a stranger's push to main mailed "LM1-D shipped" (orchestrator, 2026-11-18). Process, untagged | [brief](docs/queue/BW2.md) |
 
 ## Pending
 
