@@ -7330,6 +7330,28 @@ public class UserInterface extends Application {
 
     void replayStopClock() { setClockRunning(false); }
 
+    /** The player's own prefs while a replay's copy is on screen holding prefs of its own (replayHoldPrefs); null when none is. */
+    private GamePrefs playerPrefs;
+
+    /**
+     * The copy takes prefs of its own (TR2-G): the player's values, in a copy that never writes (GamePrefs.copyForReplay), so a
+     * click in the copy on the drawer's pin, the construction tab, a map toggle or the Reports' pins changes the copy's and no
+     * more, in memory and on disk. One seam, at the replay's entry, in place of a guard in each handler that writes a pref.
+     * The player's F11 on the window in a replay is not remembered for the same reason (the window is the film's there).
+     */
+    void replayHoldPrefs() {
+        if (playerPrefs != null || prefs == null) return;
+        playerPrefs = prefs;
+        prefs = prefs.copyForReplay();
+    }
+
+    /** The replay is left: the player's own prefs are the window's again, as they were when it was entered. */
+    void replayReleasePrefs() {
+        if (playerPrefs == null) return;
+        prefs = playerPrefs;
+        playerPrefs = null;
+    }
+
     /** Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. */
     void replayAnotherCity() {
         anotherCity();

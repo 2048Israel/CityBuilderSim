@@ -415,6 +415,7 @@ final class ReplayMode {
         beganNs = System.nanoTime();
         lastMoveNs = beganNs;
         on = true;
+        ui.replayHoldPrefs();            // TR2-G: the copy's clicks change prefs of its own, never the player's
         ui.game = rc.game();
         ui.replaySetResumeTo(null);
         ui.replayAnotherCity();
@@ -447,6 +448,7 @@ final class ReplayMode {
         graphs.leave();
         hideBar();
         on = false;
+        ui.replayReleasePrefs();         // TR2-G: the player's own prefs, untouched by the copy
         ui.game = realGame;
         ui.replayAnotherCity();
         ui.replaySetCityOpen(realCityOpen);

@@ -2,6 +2,7 @@ package ham.citybuildersim.ui;
 
 import ham.citybuildersim.Game;
 import ham.citybuildersim.GameFiles;
+import ham.citybuildersim.GamePrefs;
 import ham.citybuildersim.InputLog;
 import ham.citybuildersim.InputTimeline;
 import ham.citybuildersim.LongPlaytest;
@@ -783,6 +784,105 @@ public final class FollowBench {
 
     private static boolean near(double[] at, double x, double y) {
         return at != null && Math.hypot(at[0] - x, at[1] - y) <= GHOST_PX;
+    }
+
+    /* ------------------------------- the copy's clicks and the player's prefs (TR2-G) ------------------------------- */
+
+    /**
+     * What the copy's clicks do to the player's prefs, in the real window, on the FX thread, for the city {@code game} (TR2-G,
+     * ReplayCheck section 11): the drawer's pin and the construction tab clicked outside the copy, in it, and outside it again, the
+     * prefs file (in the city's own scratch folder, never the player's) and the prefs in memory read after each. The findings are
+     * {label, "true"/"false"} pairs.
+     */
+    public static List<String[]> prefsCheck(Game game, Path recording) {
+        List<String[]> out = new ArrayList<>();
+        UserInterface ui = new UserInterface(game);
+        Stage stage = invisibleStage();
+        try {
+            startWindow(ui, stage);
+            prefsSitting(game, ui, recording, out);
+        } catch (Throwable t) {
+            t.printStackTrace(System.out);
+            add(out, "the window was made and clicked in, in the copy and out of it, without an error", false);
+        } finally {
+            ui.replayMode().leave();
+            stage.hide();
+        }
+        return out;
+    }
+
+    private static void prefsSitting(Game game, UserInterface ui, Path recording, List<String[]> out) throws Exception {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        GameFiles files = game.getGameFiles();
+        Path file = files.getDirectory().resolve(GamePrefs.FILE);
+        GamePrefs player = ui.prefs;
+        player.setDrawerPinned(false);
+        player.setConstructionOpen(false);
+        add(out, "fixture: the player's prefs, unpinned and folded, are on disk in the window's own scratch folder", player.save(files) && Files.isRegularFile(file));
+        byte[] before = ReplayCheck.bytesOrNull(file);
+        String values = gson.toJson(player);
+
+        // Outside the copy a click on the pin and on the tab still changes the prefs and saves them.
+        clicked(ui, pin(ui));
+        clicked(ui, ui.constructionTab);
+        GamePrefs saved = GamePrefs.load(files);
+        add(out, "outside the copy a click on the drawer's pin and on the construction tab change the player's prefs and save them to his folder",
+                player.isDrawerPinned() && player.isConstructionOpen() && saved.isDrawerPinned() && saved.isConstructionOpen());
+        clicked(ui, pin(ui));
+        clicked(ui, ui.constructionTab);
+        add(out, "fixture: a second click on each puts them back, the file as it was at the start", !player.isDrawerPinned() && !player.isConstructionOpen()
+                && Arrays.equals(before, ReplayCheck.bytesOrNull(file)));
+
+        // In the copy the same clicks do what they do there, and no more.
+        ReplayMode mode = ui.replayMode();
+        mode.enterFolder(recording);
+        add(out, "fixture: the replay is on and the window's game is the recording's copy", mode.isOn() && ui.game != game && ui.game.isReplayCopy());
+        clicked(ui, pin(ui));
+        clicked(ui, ui.constructionTab);
+        add(out, "in the copy the pin pins and the tab opens the panel, as they do outside it", ui.prefs.isDrawerPinned() && ui.prefs.isConstructionOpen());
+        // Whatever else a click in the copy can set: the map's toggles, the Reports' pins, the dashboard, the settings menu's two.
+        ui.prefs.setPanelDashboard(!ui.prefs.isPanelDashboard());
+        ui.prefs.setPauseOnEvents(!ui.prefs.isPauseOnEvents());
+        ui.prefs.setPinnedLeft("population");
+        ui.prefs.setPinnedRight("realGdp");
+        ui.prefs.setTrucksOnMap(!ui.prefs.isTrucksOnMap());
+        ui.prefs.setNationsOnMap(!ui.prefs.isNationsOnMap());
+        ui.prefs.setResourcesOnMap(!ui.prefs.isResourcesOnMap());
+        ui.prefs.setBordersOnMap(!ui.prefs.isBordersOnMap());
+        ui.prefs.setTradeRoutesOnMap(!ui.prefs.isTradeRoutesOnMap());
+        ui.prefs.setMapLegendFolded(!ui.prefs.isMapLegendFolded());
+        ui.prefs.save(ui.game.getGameFiles());
+        add(out, "in the copy, the prefs in memory that the clicks changed are the copy's: the player's are as they were, every value",
+                gson.toJson(player).equals(values) && !player.isDrawerPinned() && !player.isConstructionOpen());
+        add(out, "in the copy, the prefs save leaves the player's file byte for byte as it was", Arrays.equals(before, ReplayCheck.bytesOrNull(file)));
+        add(out, "in the copy, the prefs save writes no prefs file to the copy's own folder either",
+                !Files.exists(ui.game.getGameFiles().getDirectory().resolve(GamePrefs.FILE)));
+
+        // Back out, the next prefs save is the player's own, with the player's values.
+        mode.leave();
+        add(out, "leaving the replay gives the window the player's own prefs, the values they had", !mode.isOn() && ui.game == game && gson.toJson(ui.prefs).equals(values));
+        ui.prefs.save(game.getGameFiles());
+        add(out, "the first prefs save after the replay leaves the player's file as it was before the copy's clicks", Arrays.equals(before, ReplayCheck.bytesOrNull(file)));
+
+        // And the player's clicks outside the copy still save as they did.
+        clicked(ui, pin(ui));
+        clicked(ui, ui.constructionTab);
+        GamePrefs after = GamePrefs.load(files);
+        add(out, "after the replay a click on the drawer's pin and on the construction tab still change the player's prefs and save them",
+                ui.prefs.isDrawerPinned() && ui.prefs.isConstructionOpen() && after.isDrawerPinned() && after.isConstructionOpen());
+    }
+
+    /** The drawer's pin: the first of the bar's two parts, made again at every draw (UserInterface.drawDrawerBar), so asked for each time. */
+    private static Node pin(UserInterface ui) {
+        return ui.drawerBar.getChildren().get(0);
+    }
+
+    /** A click the way the scene delivers one to the node's handler: the event the node's onMouseClicked is given. */
+    private static void clicked(UserInterface ui, Node target) {
+        MouseEvent e = new MouseEvent(ui.replayScene(), target, MouseEvent.MOUSE_CLICKED, 1, 1, 1, 1, MouseButton.PRIMARY, 1,
+                false, false, false, false, false, false, false, false, false, true, new PickResult(target, 1, 1));
+        javafx.event.Event.fireEvent(target, e);
+        layout(ui);
     }
 
     /** A real mouse event of the viewer's, not the Reenactor's (it is not counted as firing), sent to the node through the scene. */
