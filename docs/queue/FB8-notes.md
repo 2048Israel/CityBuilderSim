@@ -92,3 +92,6 @@ docs/notes/known-reds.txt (LX1's two LongPlaytest entries under FB8) and LX1-not
   TimingCheck TruckRouteCheck); review not needed (no money, saves or threading).
 - No save format change: the reader is as it was; a sidecar the old writer wrote with a wrong journal is refused and
   the map drawn afresh, as before. The model reads no map: the playtest trace is unmoved, no ensemble.
+- The branch at 4,000 months, seed 0 (ccdcb9924's classes, the nightly's length): "10 of 10 reload(s) read it back
+  the same", "All checks passed", exit 0; its map summary is main's c471e961f's to the figure (48 districts, 78 of 157
+  owned iron sites under mines), the trace unmoved (target/fb8/branch-4000.txt).
