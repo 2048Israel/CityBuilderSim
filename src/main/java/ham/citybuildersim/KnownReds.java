@@ -20,6 +20,7 @@ public class KnownReds {
     static final Path PARTS = Path.of("docs/notes/known-reds.txt");
     private static final Pattern HEADER = Pattern.compile("^([A-Za-z0-9_]+) +FAILED - exit (-?[0-9]+).*");
     private static final Pattern TOTAL = Pattern.compile("^([0-9]+) harness(?:es)? run in .*, ([0-9]+) failed$");
+    private static final Pattern TAG = Pattern.compile(".*  NEW red: ([0-9]+) of [0-9]+ red lines$");
 
     static Set<String> read(Path file) throws IOException {
         if (!Files.isRegularFile(file)) return null;
@@ -31,12 +32,10 @@ public class KnownReds {
     }
 
     private static String harness(String line) { return line.substring(0, line.indexOf(" | ")); }
-
-    /** Exit lines and failure tallies, bare or headed by the harness's own name. WHY (R2b-J): "ResearchViewCheck: 1 FAILED of 217" stayed NEW. */
+    /** Exits and failure tallies, bare or headed by the harness's own name. WHY (R2b-J): "ResearchViewCheck: 1 FAILED of 217" stayed NEW. */
     private static boolean count(String line) {
-        if (line.matches("[^ ]+ \\| (exit -?[0-9]+|[0-9]+ FAILED)")) return true;
-        String name = line.contains(" | ") ? Pattern.quote(harness(line)) : null;
-        return name != null && line.matches(name + " \\| " + name + ": [0-9]+ FAILED( of [0-9]+)?");
+        String name = line.contains(" | ") ? Pattern.quote(harness(line)) : "[^ ]+";
+        return line.matches("[^ ]+ \\| (exit -?[0-9]+|[0-9]+ FAILED)") || line.matches(name + " \\| " + name + ": [0-9]+ FAILED( of [0-9]+)?");
     }
 
     /** Exact gate lines and five-column, harness-scoped parts share this representation. */
@@ -110,11 +109,7 @@ public class KnownReds {
             return 1;
         }
         if (!rejudge && log.stream().anyMatch(l -> l.matches(".*  (known red|NEW red: [0-9]+ of [0-9]+ red lines)$"))) {
-            int tagged = 0;
-            for (String line : log) {
-                Matcher tag = Pattern.compile(".*  NEW red: ([0-9]+) of [0-9]+ red lines$").matcher(line);
-                if (tag.matches()) tagged += Integer.parseInt(tag.group(1));
-            }
+            int tagged = log.stream().map(TAG::matcher).filter(Matcher::matches).mapToInt(t -> Integer.parseInt(t.group(1))).sum();
             if (tagged != fresh.size()) {
                 System.out.println("suite     FAILED - the two judges disagree on NEW red counts");
                 return 1;
