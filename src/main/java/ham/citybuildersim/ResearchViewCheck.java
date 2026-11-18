@@ -42,7 +42,8 @@ import java.util.Map;
  *   5. THE FLAGS. One entry a discovery, of its kind, at its month, in the words of its source; not in the decision log; and ChartModel.flags(log, more) puts a
  *      month's decisions and discoveries in one flag, decisions first, and keeps other months apart.
  *   6. THE EQUIPMENT. fitted + unfitted = buildings; the verdict is the Fit pill's; a piece not known at the month is absent and appears once it is; what is
- *      on site is counted; the sector filter keeps only its sector's templates; the discovery that made a piece known is on its row.
+ *      on site is counted; the sector filter keeps only its sector's templates, in every sector the city's stacks stand in (a third, a Fabrication
+ *      Shop in Manufacturing, caused: R2b-V); the discovery that made a piece known is on its row.
  *   7. THE RECIPES IN USE. Each listed recipe is non-default and known; running is Recipes.chosen() over the parts' sizes (a template with no piece is all
  *      one part); a recipe known and not chosen is listed with nothing running.
  *   8. WHERE A BUILDING CAME FROM. A template opened by a code found here is HERE at the month found, new for NEW_MONTHS - 1 months after it and not at
@@ -534,7 +535,7 @@ public class ResearchViewCheck {
 
     /* ==================== 6. the equipment ==================== */
 
-    static void sectionSix(Game town) {
+    static void sectionSix(Game town) throws Exception {
         System.out.println("\n--- 6. the equipment: what stands and is known, with the Fit pill's verdict, from both sides of a piece being known ---");
         int month = town.getMonth();
         List<ResearchView.PieceRow> rows = ResearchView.equipment(town, null);
@@ -589,21 +590,40 @@ public class ResearchViewCheck {
         check("...found here (PE14 in month " + (month - 1) + "), the tractor's two rows appear, unfitted, with a verdict that is no longer NOT_KNOWN and the discovery that made it known on them",
                 farms && withTractor.size() == rows.size() + 2);
 
-        // The sector filter, over the city with both sectors' rows (and, since R1d, a Fabrication Shop the town builds, its pieces fitted).
-        String sector = bakery.getSector(), farmSector = mixed.getSector();
-        List<ResearchView.PieceRow> mine = ResearchView.equipment(town, sector);
-        List<ResearchView.PieceRow> theirs = ResearchView.equipment(town, farmSector);
-        boolean onlyMine = !mine.isEmpty() && !theirs.isEmpty() && !sector.equals(farmSector);
-        for (ResearchView.PieceRow row : mine) onlyMine &= row.template().isOwnedBySector() && sector.equals(row.template().getSector());
-        for (ResearchView.PieceRow row : theirs) onlyMine &= row.template().isOwnedBySector() && farmSector.equals(row.template().getSector());
-        int summed = 0;
-        java.util.Set<String> sectors = new java.util.LinkedHashSet<>();
-        for (ResearchView.PieceRow row : withTractor) sectors.add(row.template().getSector());
-        for (String key : sectors) summed += ResearchView.equipment(town, key).size();
-        check("the sector filter keeps only its sector's templates (" + sector + ": " + mine.size() + " rows, " + farmSector + ": " + theirs.size() + " of " + withTractor.size() + "), and the sectors' rows add up to the city's",
-                onlyMine && summed == withTractor.size() && sectors.contains(sector) && sectors.contains(farmSector));
         check("...a sector with no stack, or no sector at all, has none", ResearchView.equipment(town, "No Such Sector").isEmpty());
         setFinds(town, Map.of("PE1", pe1Month));
+
+        // The sector filter, over every sector (R2b-V). The town's planner builds in a third sector or not (R2b: a Fabrication Shop, which
+        // failed a filter law that assumed two), so a second research town causes one, the tractor found as above, and the expected
+        // sectors are counted from its own standing stacks; this town and section 10's guarantees are left as they were.
+        Game three = researchTown();
+        BuildingsTemplate shop = template(three, "Fabrication Shop");
+        Game.BuildResult[] built = new Game.BuildResult[1];
+        quietly(() -> {
+            three.setCashForTest(Founding.WEALTHY_CASH * 100);
+            built[0] = three.buildStack(shop, 1, true);
+        });
+        setFinds(three, Map.of("PE1", three.getResearch().foundMonth("PE1"), "PE14", month - 1));
+        java.util.Set<String> standing = new java.util.LinkedHashSet<>();
+        for (BuildingsTemplate t : three.getBuildingManager().getTemplates()) {
+            BuildingsStacks stack = three.getBuildingManager().getStack(t);
+            if (stack != null && stack.getQuantity() > 0 && t.isOwnedBySector() && t.getEquipment().stream().anyMatch(p -> p.knownAt(month, three.getResearch()))) standing.add(t.getSector());
+        }
+        List<ResearchView.PieceRow> city = ResearchView.equipment(three, null);
+        check("fixture: a second research town builds a known Fabrication Shop, a " + shop.getSector() + " stack with equipment rows beside the Bakery's " + bakery.getSector() + " and the farms' " + mixed.getSector(),
+                built[0] == Game.BuildResult.SUCCESS && three.getMonth() == month && Sectors.MANUFACTURING.equals(shop.getSector())
+                        && city.stream().anyMatch(r -> r.template() == shop) && standing.containsAll(List.of(bakery.getSector(), mixed.getSector(), shop.getSector())), String.valueOf(built[0]));
+        Map<String, Integer> bySector = new LinkedHashMap<>();
+        boolean onlyMine = true;
+        int summed = 0;
+        for (String key : Sectors.KEYS) {
+            List<ResearchView.PieceRow> mine = ResearchView.equipment(three, key);
+            for (ResearchView.PieceRow row : mine) onlyMine &= row.template().isOwnedBySector() && key.equals(row.template().getSector());
+            if (!mine.isEmpty()) bySector.put(key, mine.size());
+            summed += mine.size();
+        }
+        check("the sector filter keeps only its sector's templates (" + bySector + " of " + city.size() + "), in each of the " + standing.size() + " sectors the city's stacks stand in, and the sectors' rows add up to the city's",
+                onlyMine && summed == city.size() && bySector.keySet().equals(standing));
 
         // On site: a fitting ordered is counted, and cleared. Since R1d the town orders the Bakery's drive itself (4 points of work, it pays), so
         // the fixture clears what the town has on site before it orders the one it counts.
