@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FB6 — KeptCheck's fixtures cause their own conditions — 2026-11-17, ready, see docs/queue/FB6-notes.md
+KeptCheck's sections 44, 51, 63, 64, 66, 67 and 89 now cause what they read instead of finding it on the city's path, each with
+a `fixture:` line, and their Observation guards are out; no floor or premise moved. 44 draws a run both offers fall four times
+short of, with the shortfall's lines and the cap's chips, beside the usual page that an offer covers (KBF1). 51 swings the plain
+business's property tax by three printed steps of its net income each month; 66 and 67 put sixty months of paper on the books
+(KS2). 63 holds the fund's rule still and watches the bonds that run longest, then lets the rule go one month and watches the
+holdings it settles. It also sells small bonds until Search has a third page, and gives the record a second older year (KF63,
+LX1's three). 64 quotes Borrow at the fill cap; 89 holds the families across its month (KHT1). 87's trace finds the Rankings
+worker's read stalling under load, not the save: KRW1. 55's Bank Profit page, red only in R6b's dry run, is KBP1. The change
+is harness only; the playtest's trace is unchanged.
+
 ### 0.9.140 — FB4, three gate reviews' follow-ups — 2026-11-17, ready, see docs/queue/FB4-notes.md
 GV1-R: the wealth band's notice leaves a band only 10% past its bound (`GovernmentView.BAND_MARGIN`), so wealth on a
 bound no longer posts a notice a month (241 over 243 readings before, 3 now, InboxCheck); the government's debt counts
