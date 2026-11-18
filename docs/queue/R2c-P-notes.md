@@ -241,6 +241,14 @@ But sections 63 to the end never ran on the merge, so the orchestrator is
 asked to choose: a fresh dry run in a quiet slot (recommended), or a
 known-reds row with a queued fix.
 
+The orchestrator chose a fresh dry run, with no known-reds row. On the quiet
+machine (HN1's paired run ended, no ensemble, no full pick beside it), it
+ran on the same merge, b972383f0 on main 2d895d646: run
+/tmp/cbs-gate-R2c-P-dIFjs3NN, gate exit 0, suite 2222 s (exit 3, only
+main's known reds), 213 harnesses. KeptCheck ran in 816 s to its last
+section, exit 3 with main's three gate.txt lines. The ship file's first line
+names this run.
+
 ## The default trace
 
 Main's default LongPlaytest made fresh at c17b92f0f (FB4's retained trace,

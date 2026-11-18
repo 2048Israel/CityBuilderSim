@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-R2c-P-dIFjs3NN -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — R2c-P, public works' licence fees — 2026-11-18, ready, see docs/queue/R2c-P-notes.md
