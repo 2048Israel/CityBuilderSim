@@ -79,7 +79,8 @@ Named runs are in `target/R1f-*.txt` and `target/checks/<Harness>.log`.
 The modern ScaleCheck savings miss, 2.83e-2 against .016, is main's HP2
 known red, already in `docs/notes/known-reds.txt`; no new modern failure.
 Modern PriceLevelCheck retains HP1's reload and cut-off reds and HP2's
-absent lane. The ship file names their existing queued repairs.
+absent lane. These are already recorded on main under their queued repairs;
+the ship file does not repeat them.
 
 - ExchangeRateCheck, AutoBuildCheck, AuctionCheck, SlopeCheck and
   BuildAdviceCheck pass. ScaleCheck and PriceLevelCheck have only those
@@ -112,6 +113,12 @@ The machine coordinator authorized the seven named harnesses while other
 gates run, so no full `--pick` or standalone playtest was started. The
 orchestrator's gate runs the pick fresh on the main it merges onto. No dry
 run or kept gate directory is owed for this harness-only pick.
+
+The orchestrator gave the non-ALL go on 2026-11-18 at 14:53, asking that
+the five duplicate known-red rows be removed before readiness. They are
+already in main's known-red records. The corrected ship file passes
+`tools/known-reds.sh`; the provisional marker is dropped last, in its own
+commit, and nothing is pushed after reporting ready.
 
 ## Default trace
 
