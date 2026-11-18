@@ -735,7 +735,7 @@ public final class AutoBuilder {
     /** The bond for `gap` as the auction would sell it, short or not: null where there is no gap or the paper cannot be issued. */
     static DebtQuote bondQuote(Game game, double gap, Auction.Cap cap) {
         if (!(gap > 0)) return null;
-        return game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+        return game.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, game.issueLot("Term"), cap);
     }
 
     /**
@@ -1591,7 +1591,7 @@ public final class AutoBuilder {
                 return false;
             }
             double cashBefore = game.getCash();
-            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, game.issueLot("Term"), cap);
             raised = game.getCash() - cashBefore;
             bonds++;
             borrowed += raised;
@@ -1727,7 +1727,7 @@ public final class AutoBuilder {
                 return;
             }
             double cashBefore = game.getCash();
-            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+            game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, game.issueLot("Term"), cap);
             raised = game.getCash() - cashBefore;
             bonds++;
             borrowed += raised;
@@ -2326,7 +2326,7 @@ public final class AutoBuilder {
         double got = 0;
         if (q != null && !q.isEmpty()) {
             double before = game.getCash();
-            game.handleLongBondForCash(need, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+            game.handleLongBondForCash(need, Game.BUILD_BOND_YEARS, game.issueLot("Term"), cap);
             got = game.getCash() - before;
             bonds++;
             borrowed += got;

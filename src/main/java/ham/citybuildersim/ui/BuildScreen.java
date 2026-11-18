@@ -1146,30 +1146,26 @@ final class BuildScreen {
         if (p0.beatsPaved()) block.getChildren().add(Kept.scope("beats", () -> tag(PAVE_TAG, Palette.GOOD)));
         block.getChildren().addAll(what, against);
 
-        Label count = Kept.label("0");
-        count.setMinWidth(30);
-        count.setAlignment(Pos.CENTER);
         Label of = Kept.label(said[3]);
         of.setStyle(wordsAt(9.5, Palette.TEXT_MUTED));
         Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         Pieces.ActionButton pave = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, pavePress(p0, 0), null);
+        Pieces.CountSteps[] controls = new Pieces.CountSteps[1];
         Runnable reprice = () -> {
             BuildCard.Paving p = BuildCard.paving(ui.game, gravel);
             paveQty = Math.max(0, Math.min(paveQty, p.paveable()));
-            count.setText(String.valueOf(paveQty));
-            count.setStyle(Palette.figure(Palette.SIZE_BODY, paveQty > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
+            controls[0].refresh().run();
             String[] words = pavingWords(p, paveQty);
             pave.show(pavePress(p, paveQty));
             quoted.setText(words[2]);
             quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         };
-        Button less = stepper("−", 26, () -> { paveQty = Math.max(0, paveQty - 1); reprice.run(); });
-        Button more = stepper("+", 26, () -> { paveQty++; reprice.run(); });
-        Button ten = stepper("+10", 36, () -> { paveQty += 10; reprice.run(); });
+        controls[0] = Pieces.countSteps(() -> paveQty, n -> paveQty = n, reprice);
         Button all = stepper("all", 30, () -> { paveQty = Long.MAX_VALUE; reprice.run(); });
-        HBox steps = Kept.row(4, less, count, more, ten, all, of);
+        HBox steps = controls[0].row();
+        steps.getChildren().addAll(all, of);
         steps.setAlignment(Pos.CENTER_LEFT);
         pave.onPress(() -> {
             if (paveQty <= 0) { paveQty = 1; reprice.run(); return; }
@@ -2258,8 +2254,8 @@ final class BuildScreen {
     record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice) { }
 
     /**
-     * − N + +10 +100 and ↺, then Build, and the quote under them - as the
-     * 0.7.21 card had them, on every card now (the city's had lost +100).
+     * The count's leading unit and its tenth in both directions, then ↺,
+     * Build and its quote. Every step is at least one (SZ1).
      *
      * BUILD ASKS TO BE PRESSED (0.7.34). Jerus: "everywhere you have build,
      * like the build button, it should be more intuitive aka like an actual
@@ -2290,10 +2286,6 @@ final class BuildScreen {
         Label quoted = Kept.label(" ");
         quoted.setWrapText(true);
         quoted.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
-        Label count = Kept.label("0");
-        count.setMinWidth(30);
-        count.setAlignment(Pos.CENTER);
-        count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         Pieces.ActionButton build = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_TALL, orderPress(null, 0), null);
         /*
          * The reset button is built below but referenced above, because
@@ -2302,10 +2294,10 @@ final class BuildScreen {
          */
         final javafx.scene.Node[] resetHolder = new javafx.scene.Node[1];
         final HBox[] stepsHolder = new HBox[1];
+        final Pieces.CountSteps[] controls = new Pieces.CountSteps[1];
         Runnable reprice = () -> {
             long n = orderQty.getOrDefault(key, 0L);
-            count.setText(String.valueOf(n));
-            count.setStyle(Palette.figure(Palette.SIZE_BODY, n > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
+            controls[0].refresh().run();
             // Kept (KP3): the ↺ is in the row only while there is an order to clear. A button hidden with showIf() keeps the
             // place it last stood, which a button never shown has not (KeptCheck 38 saw it at 250,0 on a kept card, 0,0 on a new one).
             List<javafx.scene.Node> row = stepsHolder[0].getChildren();
@@ -2343,31 +2335,7 @@ final class BuildScreen {
             if (!Kept.drawing()) refreshOrderBar();
             after.run();
         };
-        Button less = stepper("−", 26, () -> {
-            // compute, not merge: merge() STORES the -1 when the card has no
-            // entry yet, so a "-" on an empty card read "-1" until 0.7.5.
-            orderQty.compute(key, (k, v) -> Math.max(0, (v == null ? 0 : v) - 1));
-            reprice.run();
-        });
-        Button more = stepper("+", 26, () -> {
-            orderQty.merge(key, 1L, Long::sum);
-            reprice.run();
-        });
-        /*
-         * TEN AND A HUNDRED, not just ten. Jerus: "+10 sometimes isnt
-         * enough". It is not - housing goes up in hundreds in a city this
-         * size, and the advice suggests forty clinics and eighty-eight gravel
-         * roads. A hundred is the order of magnitude above ten, and anything
-         * larger is a decision worth making a hundred at a time anyway.
-         */
-        Button ten = stepper("+10", 36, () -> {
-            orderQty.merge(key, 10L, Long::sum);
-            reprice.run();
-        });
-        Button hundred = stepper("+100", 42, () -> {
-            orderQty.merge(key, 100L, Long::sum);
-            reprice.run();
-        });
+        controls[0] = Pieces.countSteps(() -> orderQty.getOrDefault(key, 0L), n -> orderQty.put(key, n), reprice);
         /*
          * AND A WAY BACK TO ZERO: with a +100 on the card, overshooting is one
          * click away. Hidden until there is something to clear.
@@ -2393,7 +2361,8 @@ final class BuildScreen {
         Kept.tip(build, "Enter builds every pending order on this page; Backspace clears them", 300);
         Region spread = Kept.region();
         HBox.setHgrow(spread, Priority.ALWAYS);
-        HBox steps = Kept.row(4, less, count, more, ten, hundred, spread);
+        HBox steps = controls[0].row();
+        steps.getChildren().add(spread);
         steps.setAlignment(Pos.CENTER_LEFT);
         stepsHolder[0] = steps;
         return new Order(steps, build, quoted, reprice);
@@ -6232,12 +6201,12 @@ final class BuildScreen {
         double gap = w.gap();
         // Each offer is the auction's preview at the cap the page is set to (CD2, D30): automatic building's, until the chips on this page move it.
         Auction.Cap cap = fundingCap();
-        DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
-        DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+        DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+        DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
         String bondName = Game.BUILD_BOND_YEARS + "-year bond", noteName = Game.BUILD_NOTE_MONTHS + "-month bill";
         // Each quotes its paper again, identically, at the same cap, and books it.
-        Runnable bookBond = () -> ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
-        Runnable bookNote = () -> ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+        Runnable bookBond = () -> ui.game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+        Runnable bookNote = () -> ui.game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
         List<RunOffer> out = new ArrayList<>();
         out.add(new RunOffer(bondName, bond,
                 pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",

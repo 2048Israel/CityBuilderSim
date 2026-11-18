@@ -2437,7 +2437,7 @@ public class KeptCheck {
                 b.buildOpen(at);
                 b.drawKept(page);
                 b.passes();
-                return b.buildStep(0, "+10") && b.buildStep(1, "+") ? null : "the page has no two cards to dial";
+            return b.buildStep(0, b.buildStepLabel(0, true)) && b.buildStep(1, b.buildStepLabel(1, false)) ? null : "the page has no two cards to dial";
             }));
             choices.add(choice("...a card's order cleared with its own ↺", b -> {
                 b.buildOpen(at);
@@ -2875,7 +2875,7 @@ public class KeptCheck {
             List<String> names = bench.buildCardNames();
             String word = "1 × " + names.get(0);
             int fillsBefore = bench.buildBarFills();
-            boolean pressed = bench.buildStep(0, "+");
+            boolean pressed = bench.buildStep(0, bench.buildStepLabel(0, false));
             int fillsByPress = bench.buildBarFills() - fillsBefore;
             String count = bench.buildCount(0);
             boolean barBetween = bench.buildBarShows(word);
@@ -2885,7 +2885,7 @@ public class KeptCheck {
             String after = againstNew(bench, cards);
             // ...and a hundred more, a month, and the draw.
             bench.drawKept(cards);
-            boolean pressed100 = bench.buildStep(0, "+100");
+            boolean pressed100 = bench.buildStep(0, bench.buildStepLabel(0, true));
             month(g);
             bench.drawKept(cards);
             String monthLater = againstNew(bench, cards);
@@ -2902,7 +2902,7 @@ public class KeptCheck {
         check("...the order bar is refilled in place at once, outside any draw, once (" + press[10] + " fill)", (boolean) press[2] && (int) press[10] == 1);
         check("...and the next kept draw keeps the bar and equals a page built new", (boolean) press[3] && press[4] == null);
         if (press[4] != null) System.out.println("  " + press[4]);
-        check("+100, a month and a kept draw equal a page built new", (boolean) press[5] && press[6] == null);
+        check("the current large step, a month and a kept draw equal a page built new", (boolean) press[5] && press[6] == null);
         if (press[6] != null) System.out.println("  " + press[6]);
         check("the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new", (boolean) press[7] && (boolean) press[8] && press[9] == null);
         if (press[9] != null) System.out.println("  " + press[9]);

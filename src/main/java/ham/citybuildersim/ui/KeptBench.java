@@ -2037,7 +2037,19 @@ public final class KeptBench {
         return n[0];
     }
 
-    /** A press on a card's stepper ("+", "+10", "+100", "−" or "↺"), as the pointer's: its order repriced and the order bar refilled in place, outside any draw. False when there is no such card or button. */
+    /** The current label of a card's small or large positive step, rather than a fixed +10/+100 assumption. */
+    public String buildStepLabel(int card, boolean large) {
+        List<javafx.scene.layout.StackPane> cards = cardNodes();
+        if (card >= cards.size()) return null;
+        List<javafx.scene.control.Button> steps = new ArrayList<>();
+        each(cards.get(card), n -> {
+            if (n instanceof javafx.scene.control.Button b && b.isVisible() && b.isManaged()
+                    && b.getText().matches("\\+[0-9]+[kMBTPE]?")) steps.add(b);
+        });
+        return steps.isEmpty() ? null : steps.get(large ? steps.size() - 1 : 0).getText();
+    }
+
+    /** A press by the card's current step label, or ↺, with its actual repricing and order-bar refill. */
     public boolean buildStep(int card, String glyph) {
         List<javafx.scene.layout.StackPane> cards = cardNodes();
         if (card >= cards.size()) return false;
@@ -2934,6 +2946,24 @@ public final class KeptBench {
         ui.financesScreen.fundAsk = ask;
     }
 
+    /** The amount after a press on PAY IN, DRAW OUT's actual steps. */
+    public double fundAsk() {
+        return ui.financesScreen.fundAsk;
+    }
+
+    /** The positive cash-step labels on the fund page, as the player sees them. */
+    public List<String> fundStepLabels() {
+        List<String> labels = new ArrayList<>();
+        each(column, n -> {
+            if (n instanceof Label l && l.getText().startsWith("+") && !l.getText().contains("point") && l.getOnMouseClicked() != null)
+                labels.add(l.getText());
+        });
+        return labels;
+    }
+
+    /** The order ticket's or PAY IN, DRAW OUT's least money step, in the model's thousands. */
+    public static double fundMoneyStep() { return FundScreen.MONEY_STEP; }
+
     /**
      * Whether the fund's tab was on show before the next draw, as the show method tells it (FinancesScreen sets it): only then does the
      * worth count on and a holding's payment pop when the month has moved, and (UserInterface.countsUp()) at a speed a figure can follow.
@@ -2970,10 +3000,10 @@ public final class KeptBench {
         Game g = ui.game;
         FinancesScreen.Instrument kit = FinancesScreen.instrument(kind);
         Auction.Cap cap = Auction.Cap.DEFAULT;
-        bookedQuote = foreign ? g.quoteForeign(kit.key(), money, ask, term, kit.rounding())
-                : g.quoteDebt(kit.key(), ask, term, kit.rounding(), cap);
-        bookedSummary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, kit.rounding(), false)
-                : s.executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+        bookedQuote = foreign ? g.quoteForeign(kit.key(), money, ask, term, ham.citybuildersim.BondMarket.issueLot(g, kit.key(), foreign ? money : null))
+                : g.quoteDebt(kit.key(), ask, term, ham.citybuildersim.BondMarket.issueLot(g, kit.key(), foreign ? money : null), cap);
+        bookedSummary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, ham.citybuildersim.BondMarket.issueLot(g, kit.key(), foreign ? money : null), false)
+                : s.executeDebtLogic(kit.key(), ask, term, ham.citybuildersim.BondMarket.issueLot(g, kit.key(), foreign ? money : null), cap);
         bookedForeign = foreign;
         bookedMoney = money;
         return bookedSummary;
@@ -3027,7 +3057,7 @@ public final class KeptBench {
      */
     public String financesSell(String kind, int term, double ask, boolean callable) {
         FinancesScreen.Instrument kit = FinancesScreen.instrument(kind);
-        return ui.financesScreen.executeDebtLogic(kit.key(), ask, term, kit.rounding(), Auction.Cap.DEFAULT, callable);
+        return ui.financesScreen.executeDebtLogic(kit.key(), ask, term, ui.game.issueLot(kit.key()), Auction.Cap.DEFAULT, callable);
     }
 
     /* ----- the boxes, given the focus and pressed under ----- */

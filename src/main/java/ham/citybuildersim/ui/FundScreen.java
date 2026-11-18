@@ -115,8 +115,8 @@ final class FundScreen {
     /** The most closed lots the CLOSED card lists with its fold open, the newest; the older are counted, not drawn (CD9: a fund 2,400 months old had closed 5,562, and the fold drew every one, over a gigabyte of nodes, which took KeptCheck past its heap). */
     static final int CLOSED_FOLD_ROWS = 200;
 
-    /** The money steps: the ticket's on a buy by amount and on a bond's face, and PAY IN, DRAW OUT's; a quantity of shares steps by 1, 10, 100 and 1,000 instead. */
-    static final double[] MONEY_STEPS = {1_000, 10_000, 100_000, 1_000_000};
+    /** The least money step in thousands for the order ticket and PAY IN, DRAW OUT; larger steps follow the amount. */
+    static final double MONEY_STEP = 1_000;
 
     /** The security page's two columns at the 1,389 window: the picture and its facts, then the position and the ticket. */
     static final double LEFT = 812, RIGHT = 412;
@@ -1997,7 +1997,8 @@ final class FundScreen {
             + "place it. Past the cap the rule asks the excess back " + nth(TreasuryFund.LIMIT_SALE_SHARE)
             + " a month at fair value, from the next step, ahead of the companies' buybacks. "
             + "The quote reads today's book, which the step withdraws and posts afresh, so it says what stands now, not "
-            + "what will fill.";
+            + "what will fill. Steps follow the figure's leading digit and its tenth, never below the least money "
+            + "step for an amount or a bond's face, and one for a count of shares.";
 
     VBox ticketCard(Game g, String key) {
         if (!key.equals(ticketKey)) resetTicket(key);
@@ -2034,12 +2035,12 @@ final class FundScreen {
         FlowPane up = Kept.flow(4, 4), down = Kept.flow(4, 4);
         double held = t.quote() == null ? 0 : t.quote().unitsHeld();
         if (byAmount || bond) {
-            for (double s : MONEY_STEPS) {
+            for (double s : ham.citybuildersim.MagnitudeSteps.of(amount, MONEY_STEP)) {
                 up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + d(g, s), () -> { amount += s; review = false; redraw(); }, false)));
                 down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + d(g, s), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
         } else {
-            for (double s : new double[] {1, 10, 100, 1_000}) {
+            for (double s : ham.citybuildersim.MagnitudeSteps.of(amount, 1)) {
                 up.getChildren().add(Kept.scope("up:+" + s, () -> stepChip("+" + shares(s).replace(".00", ""), () -> { amount += s; review = false; redraw(); }, false)));
                 down.getChildren().add(Kept.scope("down:-" + s, () -> stepChip("−" + shares(s).replace(".00", ""), () -> { amount = Math.max(0, amount - s); review = false; redraw(); }, true)));
             }
@@ -2146,7 +2147,7 @@ final class FundScreen {
         Press p = t.press();
         if (p.look() == Look.CHOOSE) {
             // Nothing chosen: the first step of the amount.
-            amount = byAmount ? MONEY_STEPS[0] : 1;
+            amount = byAmount ? MONEY_STEP : 1;
             redraw();
             return;
         }
@@ -2614,7 +2615,8 @@ final class FundScreen {
         VBox card = card(caption("PAY IN, DRAW OUT", "A transfer between the treasury and its own fund: not revenue and "
                         + "not spending, so the budget and its surplus do not see it. The treasury journal carries it, as "
                         + "\"Paid into the fund\" or \"Drawn from the fund\". Only the fund's free cash can be drawn - "
-                        + "not what your orders hold - and only the treasury's paid in; sell first to draw more."),
+                        + "not what your orders hold - and only the treasury's paid in; sell first to draw more. "
+                        + "Steps follow the amount's leading digit and its tenth, never below " + d(g, MONEY_STEP) + "."),
                 cardLine("The treasury holds", d(g, g.getCash()), null),
                 cardLine("The fund's cash", d(g, fund.getCash()), null),
                 cardLine("...of it free, not held for your orders", d(g, g.fundCashFree()), null));
@@ -2622,7 +2624,7 @@ final class FundScreen {
                 Palette.SIZE_TITLE, fin.fundAsk > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT));
         FlowPane up = Kept.flow(6, 6), down = Kept.flow(6, 6);
         // Kept (KP5): a step is a scope keyed by its words in its row.
-        for (double step : MONEY_STEPS) {
+        for (double step : ham.citybuildersim.MagnitudeSteps.of(fin.fundAsk, MONEY_STEP)) {
             up.getChildren().add(Kept.scope("up:" + step, () -> stepChip("+" + d(g, step), () -> { fin.fundAsk += step; redraw(); }, false)));
             down.getChildren().add(Kept.scope("down:" + step, () -> stepChip("−" + d(g, step), () -> { fin.fundAsk = Math.max(0, fin.fundAsk - step); redraw(); }, false)));
         }

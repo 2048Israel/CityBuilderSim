@@ -44,7 +44,7 @@ public class AllChecks {
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "BuybackCheck", "CallCheck", "FloatLinkCheck", "DeskCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ExchangeRateCheck", "InterventionCheck", "CurrencyRegimeCheck", "PassThroughCheck", "ForeignDebtCheck", "DebtExchangeCheck", "DebtMoneysCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "ShortSellingCheck", "MarketCheck", "MonetaryCheck", "ExpectationsCheck", "CurveCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "FormatsCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
-        "DenominationCheck", "PriceLevelCheck", "DeterminismCheck",
+        "DenominationCheck", "PriceLevelCheck", "DeterminismCheck", "StepsCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
         "SaveSlotCheck", "ScaleCheck", "BuildingStackCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
@@ -157,7 +157,7 @@ public class AllChecks {
             if (observations && !Observation.HARNESSES.contains(name) && (!nightly || !NIGHTLY.contains(name))) continue;
             if (!selected(name, timingOnly, gate, nightly && !observations, only)) continue;
             picked.add(name);
-            if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
+                if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("StepsCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
         }
         int atOnce = parallel(logged, timingOnly);
         if (atOnce > 1) order.sort(longestFirst(TIMES, Path.of(System.getProperty("user.home"), ".cbs-gate-times.tsv")));
