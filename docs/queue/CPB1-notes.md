@@ -337,3 +337,13 @@ At 02:49 the orchestrator accepts the ensemble result and holds CPB1's dry
 run until after CR1-J's dry run/gate and FB10's dry run/gate, likely about
 04:15. No JVM meanwhile. Await its go and merge current origin/main again
 then, so the kept dry run is made on the main that will judge it.
+
+At 03:57 the orchestrator grants DRY RUN GO on main 2fc5f02c6 (0.9.145),
+after CR1-J and FB10. It confirms neither changes the simulation path;
+FB10's Game change records the month's lab quote for its check. The merge
+keeps both CopperBufferCheck and main's new PackagingCheck in the registry;
+all other conflicts are generated indexes, regenerated from the combined
+source. `target/cpb1-go-fast.log` exits 0. The versioned launcher is run with
+a 10,800-second limit, waiting for its explicit gate-exit record. The PC's
+scheduled 08:00 offline time is noted. After a green gate only notes and the
+ship record may change; the provisional marker is removed last.

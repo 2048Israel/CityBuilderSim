@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.145 — FB10, the research checks and the judge — 2026-11-18, ready, see docs/queue/FB10-notes.md
+R2b-J: the judge read a harness's own tally, "ResearchViewCheck: 1 FAILED of 217", as an assertion, so a harness whose
+every assertion was known stayed NEW on its count. `KnownReds.count()` takes a tally headed by the line's own harness,
+with or without its total (YoungBankCheck prints none), live and in a kept run alike; a tally under another name is an
+assertion, and an uncovered assertion keeps its exit and tally NEW (KnownRedsCheck 8, 7 of 11 red without the mend).
+R2b-V: ResearchViewCheck 6's sector filter holds over every sector the city's stacks stand in, and a second research
+town builds a known Fabrication Shop, a third sector beside the Bakery's and the farms'. RT2-P: a lab order's cost
+moves within the month (597.69 before it, 612.88 at the order), so `Game.getLabQuote()` keeps each field's quote, not
+saved, and PrizeCheck 12 caps the owners' raise by it. PrizeCheck 20's cushion law leaves the bundle as R3b-R, the labs'
+stake reserved from the Exchange's buyback. Checks and one unsaved record: the trace is unmoved.
+
+### 0.9.144 — CR1-J, source archives beside the exe and the OpenJDK runtime — 2026-11-18, ready, see docs/queue/CR1-J-notes.md
+The sold exe now runs on Eclipse Temurin 21.0.13+9, an OpenJDK build under
+the GPL with the Classpath Exception, not Oracle's runtime, whose No-Fee
+Terms bar a sold product. Build EXE.bat names that JDK and checks it, and
+ships beside the exe, in source\, the complete source of OpenJFX 21+31 and
+of the runtime with the scripts that built it, pinned by SHA-256 and fetched
+once into a cache outside git. The exe and Credits carry the game's own
+copyright line; Credits adds the runtime's notices, read from the image the
+game runs on, Microsoft's terms for its C and C++ runtime DLLs (the Visual
+C++ and Windows SDK licences), and where the source is. A missing notice,
+terms file or archive stops the build with nothing published (PackagingCheck).
+
 ### DM1-P — batch-check.sh names the Earth and world files — 2026-11-18, ready, see docs/queue/DM1-P-notes.md
 Batch checks fill missing Earth and world properties from the checkout's data, falling back to the main checkout.
 Batch checks, nightly and the gate share one helper. Unrelated Java flags and explicit data paths are preserved;

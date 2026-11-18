@@ -1,20 +1,8 @@
-# gate of Merge batch/DM1-P: a batch session's `batch-check.sh` builds cities without the Earth and world files, unlike the gate: its MapCheck is red in 16 places on BD1's tip and its 2h shows a drift the gate's city does not have. Name `data/earth-2.bin` and `data/world-1.bin` as `tools/nightly.sh` does (`$MAIN/data/..` when they exist and `JDK_JAVA_OPTIONS` is empty); one in, one out. Recommended: queue it as a process batch (from Pending on 2026-11-16; it waited: orchestrator), 0.9.143
+# gate of Merge batch/FB10: the research checks and the judge, 3 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): R2b-V, RT2-P, R2b-J; runs beside any, 0.9.145
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 203 harnesses run in 2773s: 192 passed, 11 failed
-LandNationsCheck | exit 1
-LandNationsCheck | A block's price could not be worked out: java.lang.IllegalStateException: fixture quote failure
-LandNationsCheck | RuntimeException hands its request back and shows the failure line                                                     OK
-LandNationsCheck | RuntimeException waits before retrying the same month                                                                  OK
-LandNationsCheck | RuntimeException releases its asked key so the same block is retried after RETRY_MS                                    OK
-LandNationsCheck | RuntimeException retry recovers a visible price in the same month                                                      OK
-LandNationsCheck | Error hands its request back and shows the failure line                                                                OK
-LandNationsCheck | Error waits before retrying the same month                                                                             OK
-LandNationsCheck | Error releases its asked key so the same block is retried after RETRY_MS                                               OK
-LandNationsCheck | Error retry recovers a visible price in the same month                                                                 OK
-LandNationsCheck | a real level-12 seller split yields to the next hover within eight frames                                              FAIL  10004.40 ms
-LandNationsCheck | Exception in thread "main" java.lang.IllegalStateException: The real quote did not release its worker
+# suite: 206 harnesses run in 2372s: 194 passed, 12 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -67,18 +55,21 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
+KeptCheck | exit 1
+KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
+KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
+PrizeCheck | exit 1
+PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 1 FAILED of 285
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
-KeptCheck | exit 1
-KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
-KeptCheck | 1 FAILED
 ShortSellingCheck | exit 1
 ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
 ShortSellingCheck | 1 FAILED
@@ -89,7 +80,3 @@ CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 4.4 minutes; its output: C:\Users\Jerus\AppData\Local\Temp\citybuildersim-tmp\27692\copperrefiningcheck-rodmills13564987232594708350\seed1.log
 CopperRefiningCheck | 2 FAILED
-PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1060.0377948361418 of 1044.8565391780962)
-PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 2 FAILED of 284

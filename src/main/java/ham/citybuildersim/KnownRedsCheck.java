@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
  * judge. GF1 adds a child whose descendant never ends, reproducing CD9's hang.
  *
  * Proves harness-scoped parts, exact records, count guards and agreement
- * through the common judge and both shell callers. The time limit fails and ends a hung process tree,
+ * through the common judge and both shell callers, and (R2b-J) a harness's
+ * own "<Name>: N FAILED of TOTAL" tally, live and in a kept run. The time limit fails and ends a hung process tree,
  * preserving an in-time child's exit and output. Fixture output stays out of
  * this harness's own log so its intentional failures cannot be misread.
  */
@@ -45,6 +46,9 @@ public class KnownRedsCheck {
 
     /** The system property that makes the fixture fail its second assertion as well. */
     static final String SECOND_PROPERTY = "knownreds.second";
+
+    /** The system property that makes the fixture print its tally as ResearchViewCheck does, "<Name>: N FAILED of TOTAL" (R2b-J). */
+    static final String TALLY_PROPERTY = "knownreds.tally";
 
     /** What a child JVM is started as: the fixture's own main, below. */
     static final String FIXTURE_HARNESS = "KnownRedsCheck$Fixture";
@@ -72,7 +76,8 @@ public class KnownRedsCheck {
                 System.out.println("--- 3. the second ---");
                 System.out.printf("%-70s %s%n", SECOND_LABEL, "FAIL");
             }
-            System.out.println(n + " FAILED");
+            if ("true".equals(System.getProperty(TALLY_PROPERTY))) System.out.println(NAME + ": " + n + " FAILED of " + (n + 1));
+            else System.out.println(n + " FAILED");
             System.exit(n);
         }
     }
@@ -82,8 +87,8 @@ public class KnownRedsCheck {
 
     public static void main(String[] args) throws Exception {
         Path tmp = TempDirs.create("knownreds");
-        Run first = run(tmp.resolve("first"), false);
-        Run second = run(tmp.resolve("second"), true);
+        Run first = run(tmp.resolve("first"), false, false);
+        Run second = run(tmp.resolve("second"), true, false);
         List<String> red = AllChecks.redLines(NAME, first.exit(), first.printed());
         Set<String> exact = new java.util.LinkedHashSet<>(red);
         Set<String> parts = Set.of(NAME + " | " + KNOWN_LABEL + " | FIX | 2026-11-12 | fixture");
@@ -126,14 +131,7 @@ public class KnownRedsCheck {
             int expected = fixture.exit() == 1 ? 3 : 4;
             // The publisher uses this same saved-log entry point after merging its records.
             Judged shell = judge(folder.resolve("shell"), log, record);
-            int common;
-            PrintStream console = System.out;
-            try (PrintStream discarded = new PrintStream(OutputStream.nullOutputStream())) {
-                System.setOut(discarded);
-                common = KnownReds.judge(suite, parts, folder.resolve("direct"), false);
-            } finally {
-                System.setOut(console);
-            }
+            int common = quiet(() -> KnownReds.judge(suite, parts, folder.resolve("direct"), false));
             check("runner and both shell callers agree for fixture " + fixture.exit(), shell.exit() == expected && common == expected);
             if (fixture.exit() == 2) check("the shell names the extra assertion", shell.output().contains(SECOND_LABEL));
         }
@@ -145,6 +143,7 @@ public class KnownRedsCheck {
         check("a zero-harness summary fails closed", judge(tmp.resolve("empty"), "0 harnesses run in 1s: 0 passed, 0 failed\n", record).exit() == 1);
         limited(tmp);
         resourceAdmission();
+        tallies(tmp, parts, record);
         if (fails > 0) System.out.println("\n" + fails + " FAILED");
         System.exit(fails);
     }
@@ -243,13 +242,67 @@ public class KnownRedsCheck {
         }
     }
 
+    /* =====================================================================
+     * 8. A HARNESS'S OWN TALLY FOLLOWS ITS ASSERTIONS (R2b-J)
+     * ===================================================================== */
+    private static void tallies(Path tmp, Set<String> parts, Path record) throws Exception {
+        System.out.println("--- 8. a harness's own \"<Name>: N FAILED of TOTAL\" tally follows its assertions, live and in a kept run ---");
+        Run first = run(tmp.resolve("tally-first"), false, true), second = run(tmp.resolve("tally-second"), true, true);
+        String tally = NAME + " | " + NAME + ": 1 FAILED of 2";
+        List<String> red = AllChecks.redLines(NAME, first.exit(), first.printed());
+        check("fixture: the tally headed by the harness's name is one of its three red lines", first.exit() == 1 && red.size() == 3 && red.contains(tally));
+        check("live: a covered assertion covers its exit and its own tally", AllChecks.newCount(red, parts) == 0);
+        List<String> report = AllChecks.report(NAME, first.exit(), .5, first.printed(), true, parts);
+        check("live: the runner tags the tally known with the assertion", report.get(0).endsWith("known red")
+                && report.stream().anyMatch(l -> l.contains("[known]") && l.endsWith(NAME + ": 1 FAILED of 2")));
+        check("live: the tally without its total, as YoungBankCheck prints it, follows too",
+                AllChecks.newCount(red.stream().map(l -> l.replace(" FAILED of 2", " FAILED")).toList(), parts) == 0);
+        List<String> added = AllChecks.redLines(NAME, second.exit(), second.printed());
+        check("live: an uncovered assertion keeps itself, the exit and the tally NEW", AllChecks.newCount(added, parts) == 3
+                && KnownReds.fresh(added, parts).contains(NAME + " | " + NAME + ": 2 FAILED of 3"));
+        List<String> foreign = new ArrayList<>(red);
+        foreign.add(NAME + " | OtherCheck: 1 FAILED of 2");
+        check("a tally headed by another name is an assertion and stays NEW", KnownReds.fresh(foreign, parts).contains(NAME + " | OtherCheck: 1 FAILED of 2"));
+        check("counts and tallies alone never cover a red", AllChecks.newCount(red, Set.of(NAME + " | exit 1", tally)) == 3);
+        for (Run fixture : List.of(first, second)) {
+            int expected = fixture.exit() == 1 ? 3 : 4;
+            String log = suiteLog(fixture, parts);
+            Path suite = tmp.resolve("tally-judge-" + fixture.exit()).resolve("suite.txt");
+            Files.createDirectories(suite.getParent());
+            Files.writeString(suite, log);
+            Judged shell = judge(suite.getParent().resolve("shell"), log, record);
+            check("kept: the shell and the common judge read fixture " + fixture.exit() + "'s tagged log alike (" + expected + ")",
+                    shell.exit() == expected && quiet(() -> KnownReds.judge(suite, parts, suite.getParent().resolve("direct"), false)) == expected);
+        }
+        check("kept: an untagged log of the tally is known red only", judge(tmp.resolve("tally-untagged"), suiteLog(first, null), record).exit() == 3);
+        // A run kept before the mend: its runner tagged the exit and the tally NEW; a rejudgment re-reads the kept log.
+        String before = suiteLog(first, parts).replace("  known red", "  NEW red: 2 of 3 red lines");
+        Path kept = tmp.resolve("tally-kept").resolve("suite.txt");
+        Files.createDirectories(kept.getParent());
+        Files.writeString(kept, before);
+        check("kept: a run the unmended runner tagged NEW is rejudged known red only", before.contains("NEW red: 2 of 3")
+                && quiet(() -> KnownReds.judge(kept, parts, kept.getParent().resolve("rejudged"), true)) == 3);
+    }
+
+    /** The common judge's exit, its console line kept out of this harness's log. */
+    private static int quiet(java.util.concurrent.Callable<Integer> judged) throws Exception {
+        PrintStream console = System.out;
+        try (PrintStream discarded = new PrintStream(OutputStream.nullOutputStream())) {
+            System.setOut(discarded);
+            return judged.call();
+        } finally {
+            System.setOut(console);
+        }
+    }
+
     /** Starts the fixture as AllChecks starts a harness and returns its exit status and failing lines. */
-    private static Run run(Path folder, boolean second) throws Exception {
+    private static Run run(Path folder, boolean second, boolean tally) throws Exception {
         Files.createDirectories(folder);
         String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         String classpath = System.getProperty("java.class.path");
         List<String> cmd = new ArrayList<>(AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true));
         if (second) cmd.add(cmd.indexOf("-cp"), "-D" + SECOND_PROPERTY + "=true");
+        if (tally) cmd.add(cmd.indexOf("-cp"), "-D" + TALLY_PROPERTY + "=true");
         Path log = folder.resolve("fixture.log");
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.environment().remove("JDK_JAVA_OPTIONS");

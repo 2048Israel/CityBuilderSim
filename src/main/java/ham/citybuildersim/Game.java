@@ -563,6 +563,7 @@ public class Game {
         world.setSeed(founding.getPathSeed());
         world.reset();
         lastInvestment = new java.util.LinkedHashMap<>();
+        labQuotes.clear();
         monthRun = false;
 
         this.isRunning = true;
@@ -4039,10 +4040,25 @@ public class Game {
             BuildingsTemplate lab = labTemplate(f);
             ResearchCatalog.Entry target = research.labTarget(f, month, wages);
             if (lab == null || target == null) continue;
-            said.add(orderLab(lab, target, research.labStake(f, month, wages)));
+            said.add(orderLab(f, lab, target, research.labStake(f, month, wages)));
         }
         if (said.isEmpty()) lastInvestment.remove(LABS_SLOT);
         else lastInvestment.put(LABS_SLOT, String.join("; ", said));
+    }
+
+    /**
+     * What a field's lab order reckoned in the month it was made: the lab's cost and the stake its owners were asked to make up with the till.
+     * WHY (RT2-P): the cost moves within the month (a village's lab quoted 597.69 before the month, 612.88 at the order and 611.69 after it), so
+     * PrizeCheck could hold the owners' raise to the order only by the order's own quote. Not saved: the month that made it reads it.
+     */
+    public record LabQuote(int month, double cost, double stake) { }
+
+    private final java.util.Map<ResearchCatalog.Field, LabQuote> labQuotes = new java.util.EnumMap<>(ResearchCatalog.Field.class);
+
+    /** The quote of the lab field f's investors ordered or asked their owners for this month, or null in a month that reckoned none. */
+    public LabQuote getLabQuote(ResearchCatalog.Field f) {
+        LabQuote q = labQuotes.get(f);
+        return q != null && q.month() == month ? q : null;
     }
 
     /**
@@ -4053,7 +4069,7 @@ public class Game {
      * when the till covers the cost. The same staffing test the sector's planner asks (staffing(t).passes()) holds it first, without a staffing hold noted:
      * a lab the city cannot staff is not a want the labour market should price.
      */
-    private String orderLab(BuildingsTemplate lab, ResearchCatalog.Entry target, double stake) {
+    private String orderLab(ResearchCatalog.Field f, BuildingsTemplate lab, ResearchCatalog.Entry target, double stake) {
         ham.citybuildersim.sectors.BusinessServices sector = getSectors().businessServices();
         String key = sector.key();
         Sector.Staffing staffing = sector.staffing(lab);
@@ -4068,7 +4084,8 @@ public class Game {
             @Override public void borrow(double amount, int month) { }
         };
         double cost = businessInvestment.getCostOf(lab, 1);
-        double need = cost + (stake > 0 ? stake : 0);
+        double kept = stake > 0 ? stake : 0, need = cost + kept;
+        labQuotes.put(f, new LabQuote(month, cost, kept));
         double lacking = need - till.getCash();
         double raised = 0;
         int company = Equity.indexOf(key);
@@ -21803,6 +21820,7 @@ public class Game {
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
             // is the "nothing recorded" a reloaded city read until then.
             lastInvestment = new java.util.LinkedHashMap<>();
+            labQuotes.clear();   // ...and no lab order quoted: only the month that made one reads it (RT2-P)
             if (restoredFlows.getLastInvestment() != null) {
                 for (java.util.Map.Entry<String, String> e : restoredFlows.getLastInvestment().entrySet()) {
                     if (e.getKey() != null && e.getValue() != null) lastInvestment.put(e.getKey(), e.getValue());
