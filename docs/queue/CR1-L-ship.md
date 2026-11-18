@@ -1,6 +1,7 @@
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CR1-L-20261118T0339 -->
 <!-- readiness: provisional -->
 ## changelog
-### {next} — CR1-L, the libraries' notices on the Credits page — 2026-11-17, ready, see docs/queue/CR1-L-notes.md
+### {next} — CR1-L, the libraries' notices on the Credits page — 2026-11-18, ready, see docs/queue/CR1-L-notes.md
 The Credits page now shows Gson's Apache 2.0 licence and OpenJFX's GPL v2
 with the Classpath Exception, its additional notices and the graphics
 module's JPEG and Mesa notices, after the fonts. These releases omit legal

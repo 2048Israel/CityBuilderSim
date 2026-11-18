@@ -131,10 +131,41 @@ Built from origin/main 45de48dc2 (0.9.140), on batch/CR1-L.
   /tmp/CR1-L-review-credits.log in Git Bash, and target/checks/CreditsCheck.log.
   git diff --check passed. The pick remains ALL (pom.xml), 218 harnesses;
   the review line remains UI-wide threading. The orchestrator reserves the
-  dry run after HW1-V and will mail the go; it has not been run here yet.
+  dry run after HW1-V; at that handoff it was still awaiting the go.
 - Dry-run go received in bus message 20261117-233351-919-orchestrator-429d.
   Merged origin/main 3f09922826b1562f42c6b3cf510de58935d0d884 (0.9.142,
   including HW1-V and FB8). Only generated dials/harness/index docs conflicted;
   took this branch's copies and regenerated all maps on the merged source.
   ./batch-check.sh --fast passed (exit 0), Stale 0 firm; no source conflict
   or change to CR1-L's implementation. Merge summary: /tmp/CR1-L-merge-fast.log.
+
+## Final launcher dry run
+
+- Retained run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CR1-L-20261118T0339`;
+  `ship.log` is the complete publisher log, `checks/` holds each harness log,
+  `selection` says full, and `checks.complete` records version 0.9.143.
+- The two commits tested were branch
+  `f1b6d6810dbbe25f7f22436db2d357ab1fe0a266` and main
+  `3f09922826b1562f42c6b3cf510de58935d0d884`, as the launcher's
+  `branch.commit` and `main.commit` record. The provisional branch was pushed
+  before launch. Command: `timeout 10800 sh tools/gate.sh CR1-L --dry-run`.
+  No other build, harness or ensemble was started alongside it by this session.
+- Finished 2026-11-18 00:19:08 Atlantic with **gate exit 0**. The suite's
+  check stage took 2,402 seconds and returned exit 3: 203 gate-tier harnesses,
+  193 passed and 10 failed only on recorded known reds. Those harnesses were
+  DeathRecordCheck, DistressBleedCheck, HealthCheck, MapCheck, PlanCheck,
+  PopulationCheck, PriceLevelCheck, RoadCheck, ScaleCheck and YoungBankCheck.
+  No NEW red or unnamed line (`unnamed.txt` is empty); no exemption added.
+  CreditsCheck passed all 93 assertions in the fresh merge clone.
+- Maps regenerated and Stale found 0 firm findings. Ten timing assertions
+  were soft (EarthTerrainCheck 2, SaveSlotCheck 1, MapCheck 6, PlanCheck 1);
+  nine path assertions were informational observations. Two starts waited
+  for CPU admission. No ensemble: CR1-L still changes no month input.
+- The launcher restored its clone's tree and made no publication. Its logs
+  were retained; the successful scratch clone was removed by the launcher.
+  The orchestrator was told at 00:19 that the machine slot was released,
+  before the 01:15 nightly reservation.
+- After this run, only these notes and the ship file changed. The gate-run
+  comment is the ship file's first line; its known-reds parser was checked.
+  The provisional marker is removed last in its own commit and checked
+  absent on origin before reporting ready.
