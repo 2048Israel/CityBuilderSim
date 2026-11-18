@@ -111,6 +111,9 @@ own words, and it is the requirement.
   never from its tip (2026-11-11: "After it ships (Recommended)").
 - **The brief** names the source files it expects to change and says whether
   it moves the playtest; the prompt names the batches in flight, to keep off.
+- **Where it is** goes to MemWatch by `sh tools/bus.sh` (BW1: MemWatch guessed
+  it from logs): `state ID building builder=claude|codex model=M session=$CBS_ME
+  branch=batch/ID` once cut; `blocked` or `held` with `--note WHY`; ready, 5.6.
 - **Which batches run together** (2026-11-11: "by files only, but like in a
   smart way"). Whoever starts a batch lays its files beside those each batch in
   flight has changed (`git diff --name-only origin/main...origin/batch/<id>`)
@@ -256,8 +259,10 @@ own words, and it is the requirement.
 6. **Ready.** On the go (after a green dry run, or at once when none is owed):
    drop the marker last, in its own commit, check it is gone on origin, and
    mail "ID ready at <commit>" (GR2, WG2: a change to shared code needs the
-   whole merge's verdict first; 2026-11-11: "When it touches shared code").
-   Sent back, restore and push the marker first.
+   whole merge's verdict first; 2026-11-11: "When it touches shared code"),
+   then `sh tools/bus.sh state ID ready commit=C base=MAIN files=SRC,SRC
+   moves_playtest=yes|no [run=DRY_RUN]`. A stopped gate mails the batch why:
+   sent back, restore and push the marker first.
 7. **Waiting** for the orchestrator: mail the question and end the turn; the
    reply resumes you. A session told to wait on `sh tools/wait.sh --row ID`
    runs, reads and plans nothing until the wait ends (2026-11-02: eight of ten
@@ -272,7 +277,8 @@ own words, and it is the requirement.
   never the branch's (a publisher edit tests its own first with `--branch-gate
   --dry-run`, 5.5), the data files named, the run's logs kept in its run
   directory; it publishes only on green (the merge, the records from the ship file, the version, the
-  tag, one atomic push). What it checks follows the diff (2026-11-11: "Yes,
+  tag, one atomic push), posting its steps to MemWatch and mailing the batch a
+  publication or a stop (BW1). What it checks follows the diff (2026-11-11: "Yes,
   make it the rule"): only `.md` outside `docs/ensemble/`, `--fast` alone; no
   game code (scripts, docs, tools, harness-only repairs), the compile, the
   picked harnesses, the maps, Stale and the changed scripts' self-tests; game

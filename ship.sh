@@ -57,6 +57,10 @@ T=target/ship-tmp          # this script's scratch folder, gone when it ends
 MERGING=0; COMMITTED=0
 
 say() { echo "ship      $*"; }
+step() {   # BW1: a step begins, to MemWatch's state\gate.txt under tools/gate.sh (tools/bus.sh: nothing depends on it)
+    [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ] && [ -f tools/bus.sh ] || return 0
+    sh tools/bus.sh gate "$ID" "$@" ${CBS_GATE_NUMBER:+--run "$CBS_GATE_NUMBER"} ${HEAD0:+commit="$GATED" base="$HEAD0"} > /dev/null
+}
 die() { [ "$MERGING" = 0 ] || undo; echo "ship      STOPPED - $*"; exit 1; }
 rollback() {
     [ "$COMMITTED" = 1 ] || return 0
@@ -165,22 +169,22 @@ if git cat-file -e "$REF:$SHIPF" 2>/dev/null; then
 elif [ "$NOTAG" = 1 ]; then
     say "no $SHIPF - its records as it wrote them"
 else
-    die "$BRANCH has no $SHIPF: its records go there (docs/batch.md), or ship it --no-tag (a branch with no version of its own)"
+    die "$BRANCH has no $SHIPF: its records go there (docs/contract.md), or ship it --no-tag (a branch with no version of its own)"
 fi
 
 # 5. stops, before any merge
 [ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "an explicitly filtered partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
 OTHERSHIP=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/queue/.+-ship\.md$' | grep -v -x -F "$SHIPF" | head -3 | tr '\n' ' ')
-[ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/batch.md)"
+[ -z "$OTHERSHIP" ] || die "$BRANCH adds a ship file for another id: ${OTHERSHIP% }; this branch's is $SHIPF (the branch's name, each / a -: docs/contract.md)"
 VCHG=0
 git diff -U0 --no-renames "main...$REF" -- "$GV" | grep -q -E '^[+-] *public static final String VERSION = ' && VCHG=1
 if [ "$NEW" = 1 ]; then
-    [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line: a batch writes {next} in its ship file, and ship.sh sets the version (docs/batch.md)"
+    [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line: a batch writes {next} in its ship file, and ship.sh sets the version (docs/contract.md)"
     ADDED=$(git diff --name-only --diff-filter=A --no-renames "main...$REF" | grep -E '^docs/ensemble/[0-9]+\.[0-9]+\.[0-9]+\.md$' | head -1)
     [ -z "$ADDED" ] || die "$BRANCH adds $ADDED: a batch commits its baseline as docs/ensemble/$ID.md, and ship.sh names it by the version"
     RECORDS=$(printf '%s\n' "$CHANGED" | grep -x -e QUEUE.md -e docs/notes/changelog.md | tr '\n' ' ' | sed 's/ *$//')
-    [ -z "$RECORDS" ] || die "$BRANCH edits $RECORDS: records go in the ship file $SHIPF (docs/batch.md)"
+    [ -z "$RECORDS" ] || die "$BRANCH edits $RECORDS: records go in the ship file $SHIPF (docs/contract.md)"
     BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued|known-reds)' | head -3 | tr '\n' ' ')
     [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- use changelog, pending, queued or known-reds"
     [ "$DRY" = 1 ] || ! grep -q -x '<!-- readiness: provisional -->' "$T/ship-on-branch" || die "$SHIPF is provisional: finish its dry run before readiness"
@@ -233,6 +237,7 @@ if [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ]; then
     printf '%s\n' "$GATED" > "$CBS_GATE_RUN/branch.commit"
 fi
 say "commits: branch $GATED, main $HEAD0"
+step merge version="${NEXT:-$MAINV}"
 MERGING=1
 if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     CONFLICTS=$(git diff --name-only --diff-filter=U)
@@ -358,14 +363,17 @@ run_check() {   # stage, directory, command: no status or output survives from a
     STAGE=$1; DIR=$2; shift 2
     alive
     STAGE_STARTED=$(date +%s)
-    say "check $STAGE started"
+    say "check $STAGE started"; step suite
     echo "$STAGE" >> "$T/needed"
     rm -f "$T/code" || die "cannot clear the previous status"
     if [ -z "$TAKEN" ]; then
         rm -f "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
             || die "cannot clear the previous check results for $STAGE"
     fi
-    { ( cd "$DIR" && "$@" ); echo "$STAGE $?" > "$T/code"; } 2>&1 | tee "$T/check.out"
+    { ( cd "$DIR" && "$@" ); echo "$STAGE $?" > "$T/code"; } 2>&1 | tee "$T/check.out" |
+        while IFS= read -r line || [ -n "$line" ]; do   # the maps follow the suite's verdict, or a fast check's compile
+            printf '%s\n' "$line"; case "$STAGE:$line" in "suite:suite "*|"fast:compile "*) step maps ;; esac
+        done
     alive
     [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
     read -r FINISHED CHECKED < "$T/code"
@@ -405,11 +413,13 @@ selftests() {
     [ "${CBS_SELFTEST:-}" != 1 ] || return 0
     printf '%s\n' "$CHANGED" | while IFS= read -r file; do
         case "$file" in
-            ship.sh|batch-check.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk|tools/known-reds.sh|tools/batch-id.sh) echo tools/ship-selftest.sh ;;
+            ship.sh|batch-check.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk|tools/known-reds.sh|tools/batch-id.sh|tools/bus.sh) echo tools/ship-selftest.sh ;;
+            tools/nightly*.sh) echo tools/nightly-selftest.sh ;;
             *-selftest.sh) echo "$file" ;;
             *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
         esac
     done | sort -u > "$T/selftests"
+    [ ! -s "$T/selftests" ] || step suite   # the self-tests are checks too, after the maps
     while IFS= read -r testfile; do
         testlog="target/checks/$(basename "$testfile" .sh).log"
         sh "$testfile" > "$testlog" 2>&1 || { tail -16 "$testlog"; die "$testfile failed"; }
@@ -554,7 +564,7 @@ say "committed $(git rev-parse --short HEAD) \"$MSG\""
 # 13. tag
 alive
 if [ -n "$TAG" ]; then
-    git tag "$TAG" || die "cannot tag $TAG"
+    step tag; git tag "$TAG" || die "cannot tag $TAG"
     say "tagged $TAG"
 elif [ "$NOTAG" = 1 ]; then
     say "not tagged (--no-tag)"
@@ -563,6 +573,7 @@ else
 fi
 
 # 14. push, main and the tag together
+step push
 if ! retry git push --atomic origin main ${TAG:+"refs/tags/$TAG"}; then
     # the usual cause: somebody shipped while the checks ran, and the push is not a fast-forward
     git fetch -q origin main

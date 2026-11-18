@@ -1094,6 +1094,8 @@ adds its line here, not in `CLAUDE.md`.
                                          origin has its ship file (--ship, the orchestrator's: GP1, 2026-10-27),
                                          or a line of a file matches (--line); --for MIN gives up after so long
                                          (BP1, 2026-10-24)
+    tools/bus.sh                         the one way to MemWatch's bus: cbs-bus ($CBS_BUS, else MemWatch's own),
+                                         nothing where there is none, exit 0 always (BW1, 2026-11-18)
     tools/ship-selftest.sh               ship.sh run against a throwaway local origin with a stub batch-check.sh, so
                                          no JVM: its stops and its records in about two minutes; run it after any
                                          change to ship.sh (BP1's review, 2026-10-25)
