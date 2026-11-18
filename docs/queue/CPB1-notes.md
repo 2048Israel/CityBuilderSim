@@ -259,5 +259,17 @@ cutoff helper will invoke the ensemble's own stop helper at 01:15 if needed;
 the snapshot and completed cases stay for the same-label resume.
 
 The seed-window results above are on CPB1's 231f16270 base plus its own model.
+The final merged ensemble snapshot, 272cacc55 (main 3f0992282 plus CPB1),
+also has both requested AUTO2 paths completed through month 2400. Reading
+their existing CSVs launches no additional simulation:
+
+| final AUTO2 seed | window | negative GDP months | minimum GDP in window | old failing month, now GDP | audit failures in full run |
+|---|---|---:|---|---|---:|
+| 3 | 700–760 (61 months) | 0 | 17,907.9234 at 702 | 735: 21,644.3475 | 0 |
+| 9 | 1490–1530 (41 months) | 0 | 7,331,211.53 at 1521 | 1514: 7,568,526.93 | 0 |
+
+Source: `target/ensemble/CPB1/AUTO2-{3,9}.csv`, summarized in
+`target/cpb1-ensemble-windows.log`. The overall 80-case ensemble score is
+still pending; these readings do not substitute for its M1/F1 verdict.
 The ship file forwards the bounded-run placement class to the already queued
 CL7 with a scoped LongPlaytest row; it does not cover negative GDP.
