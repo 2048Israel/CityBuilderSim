@@ -109,8 +109,8 @@ and the ship file (40 added, 23 removed):
   (QUEUE.md and docs/queue/FB3-notes.md, The dry run).
 - These changes affect notes/ship only. The source, main and selection remain
   eligible for rejudging the retained completed run. The gate-run comment is
-  line 1; the provisional marker stays until a green rejudge. No further JVM
-  or suite has started; the orchestrator has the completed verdict and cause.
+  line 1. The marker was held pending the decision recorded below; no further
+  JVM or suite was started.
 
 ## Accepted outcome and readiness
 
