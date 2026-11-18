@@ -80,6 +80,9 @@ public final class LandParcel {
     /** ...the part of it a building could stand on: its flat and foothill, or all of it where the offer is all flat. */
     private transient double unlinkedBuildableKm2;
 
+    /** The forest on that unlinked dry ground, square kilometres, for projected forest-law room. */
+    private transient double unlinkedForestKm2;
+
     /** ...and the id of the unlinked landmass holding most of it, 0 for none. */
     private transient int unlinkedLargest;
 
@@ -225,8 +228,13 @@ public final class LandParcel {
 
     /** Sets what is on unlinked ground (Landmasses.offerSplit()): its dry ground and the buildable part of it, square kilometres, and the landmass with most of it. */
     void setUnlinked(double dryKm2, double buildableKm2, int largest) {
+        setUnlinked(dryKm2, buildableKm2, 0, largest);
+    }
+
+    void setUnlinked(double dryKm2, double buildableKm2, double forestKm2, int largest) {
         this.unlinkedDryKm2 = dryKm2;
         this.unlinkedBuildableKm2 = buildableKm2;
+        this.unlinkedForestKm2 = forestKm2;
         this.unlinkedLargest = largest;
     }
 
@@ -235,6 +243,9 @@ public final class LandParcel {
 
     /** ...the part of it a building could stand on (flat and foothill; all of it for an offer all flat), square kilometres. */
     public double getUnlinkedBuildableKm2() { return unlinkedBuildableKm2; }
+
+    /** The part of its forest on landmasses the city has not linked, square kilometres. */
+    public double getUnlinkedForestKm2() { return unlinkedForestKm2; }
 
     /** The id of the unlinked landmass holding most of its unlinked dry ground; 0 for none. */
     public int getUnlinkedLargest() { return unlinkedLargest; }

@@ -168,6 +168,12 @@ default GDP (138.929554161 at 47, 136.984000010 at 48). The targeted old-stock-
 production mutation has identical GDP and openings through 51. Logs:
 `target/cpb1-openings{,-old-production}.log`. The orchestrator was notified
 of the comparison error before the ensemble; its explicit ensemble GO stands.
+Running that same observer with `playtest.autopilot=true` reproduces the
+retained AUTO2 baseline at 47 (138.921867088) and 48 (136.830974208), to its
+CSV precision. Thus the month-47 GDP move was the preceding policy/FX change,
+not a CPB1 production change when the Boutique completed. Luxury Retail's
+Boutique completion is common to both policy paths. The matched-policy log
+is `target/cpb1-openings-auto2.log`; main was not rerun.
 
 The ensemble will compare like policies with the newest committed baseline,
 currently `docs/ensemble/0.9.140.md` (snapshot 10cc0ca20), without rerunning

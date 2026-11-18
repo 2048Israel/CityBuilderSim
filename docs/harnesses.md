@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**219 harness files, 25,230 labelled assertions.** AllChecks runs 219 of them.
+**219 harness files, 25,243 labelled assertions.** AllChecks runs 219 of them.
 
 ## Which harnesses read which class
 
@@ -64,7 +64,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorldCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
@@ -133,7 +133,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
 | [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, TruckRouteCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, GoldMiningCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -195,7 +195,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ER1Check, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ER1Check, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
-| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ER1Check, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
+| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ER1Check, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck, WorksFinanceCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
 | [LandSellers](map/LandSellers.md) | LandNationsCheck, PartnersCheck |
 | [LandSellersView](map/LandSellersView.md) | LandNationsCheck |
@@ -311,7 +311,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HistoricalLicenceCheck, HomeRailCheck, LicenceFeesCheck, RailCheck, SectorStatementCheck, TruckRouteCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, OilCheck, OilViewCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, OilCheck, OilViewCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -377,7 +377,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, GlobeCheck, GoldMiningCheck, GoldStandardCheck, InterestAbroadCheck, KeptCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [YearBook](map/YearBook.md) | ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, RankingsCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurrencyRegimeCheck, CurveCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
-| [Zoning](map/Zoning.md) | ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, ZoningCheck, ZoningViewCheck |
+| [Zoning](map/Zoning.md) | ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyDatesCheck, PolicyPreviewCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
 | [ZoningView](map/ZoningView.md) | LandmassCheck, ZoningViewCheck |
 
@@ -5380,7 +5380,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L307 ...and is importable, because nothing here is made at home
   - L310 every good in the file has a good in the market
 
-## CopperBufferCheck.java - 21 labelled assertions
+## CopperBufferCheck.java - 22 labelled assertions
 
 > A stock buffer must not buy feed worth more than its undemanded output (CPB1).
 > 
@@ -5398,21 +5398,22 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L98 the accounts keep GDP = C + I + G + NX
 - **L103 2. domestic demand, captive demand and profitable buffer replenishment survive**
   - L111 actual local demand still plans its stock cover and orders anode despite the negative spread
-  - L123 cathode for a domestic rod order is still captive and its refinery still orders feed
-  - L131 the partially captive refinery buys exactly the feed it makes, without an unprofitable surplus buffer
-  - L139 a profitable empty buffer keeps the model's full buffer target and feed order
-  - L143 the profitable buffer is replenished through the real clearing
-  - L144 a profitable full-rate buffer keeps its full production and input order to the bit
-- **L150 4. recovered copper already committed is made, without starting the other refinery**
-  - L165 premise: the two refinery recipes have no local demand and imported feed loses money
-  - L168 all recovered copper paid for becomes cathode at the scrap recipe ratio
-  - L170 committed scrap starts only its own works, with no imported anode or scrap
-  - L177 last month's recovered feed never permits this month's speculative imports
-  - L192 premise: recovered feed made the standalone scrap refinery's last run profitable
-  - L196 the standalone refinery costs this month's zero recovered feed before ordering imports
-- **L202 3. existing stock still sells and an actual trading loss stays in GDP**
-  - L209 existing stock above the dump line still exports at a loss
-  - L225 a forced loss is still negative GDP, held output less the actual imported feed
+  - L119 the real clearing makes the demanded stock cover and buys exactly its feed at the negative spread
+  - L131 cathode for a domestic rod order is still captive and its refinery still orders feed
+  - L139 the partially captive refinery buys exactly the feed it makes, without an unprofitable surplus buffer
+  - L147 a profitable empty buffer keeps the model's full buffer target and feed order
+  - L151 the profitable buffer is replenished through the real clearing
+  - L152 a profitable full-rate buffer keeps its full production and input order to the bit
+- **L158 4. recovered copper already committed is made, without starting the other refinery**
+  - L173 premise: the two refinery recipes have no local demand and imported feed loses money
+  - L176 all recovered copper paid for becomes cathode at the scrap recipe ratio
+  - L178 committed scrap starts only its own works, with no imported anode or scrap
+  - L185 last month's recovered feed never permits this month's speculative imports
+  - L200 premise: recovered feed made the standalone scrap refinery's last run profitable
+  - L204 the standalone refinery costs this month's zero recovered feed before ordering imports
+- **L210 3. existing stock still sells and an actual trading loss stays in GDP**
+  - L219 the real clearing exports existing stock above the dump line at a loss, with no new output or feed
+  - L237 a forced loss is still negative GDP, held output less the actual imported feed
 
 ## CopperMiningCheck.java - 36 labelled assertions
 
@@ -5474,7 +5475,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L519 ...the leach plant bought its acid - from the world, no smelter standing
   - L522 the month's money audit closes
 
-## CopperRefiningCheck.java - 81 labelled assertions
+## CopperRefiningCheck.java - 84 labelled assertions
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -5526,62 +5527,65 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L510 ...on the books at the next strike: its input line \"Old metal\" what it paid, the households' part billed by them, the
   - L523 with less old copper than its intake it buys and makes all of it, nothing to landfill or loss-making imported scrap
   - L531 the month's money audit closes (MoneyCheck holds its old-metal lines over two years)
-  - L538 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
-- **L545 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
-  - L555 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
-  - L565 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
-  - L570 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
-- **L598 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
-  - L611 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
-  - L617 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
-- **L656 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
-  - L672 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
-  - L682 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
-  - L686 ...and in this case it orders no anode and makes no cathode
-  - L699 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
-  - L703 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
-  - L716 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
-  - L725 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
-  - L733 ...and the anode it bought from the world is likewise used, none of it lost
-  - L746 (c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode
-  - L766 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
-- **L812 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count**
-  - L827 fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net
-  - L833 (a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,
-  - L839 ...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G
-  - L857 fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for
-  - L862 (b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod
-  - L866 ...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make
-  - L879 fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom
-  - L882 (c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and
-  - L904 fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over
-  - L915 (d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still
-  - L924 ...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads
-  - L937 fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its
-  - L943 (e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery
-  - L955 ...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from
-  - L978 fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of
-  - L988 (g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's
-  - L1013 fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a
-  - L1025 (h) in the chain's
-  - L1030 ...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or
-  - L1143 (f) the run played its months with no month's GDP negative
-  - L1148 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
-  - L1165 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
-- **L1217 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen**
-  - L1248 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
-  - L1299 the city has a world market in every month played
-  - L1303 the world market solved the founding year and every January after it, WORLD_YEARS (
-  - L1309 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
-  - L1321 ...the years played hold at least PEAKS_HELD (
-  - L1338 (a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp
-  - L1340 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
-  - L1345 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
-  - L1347 (b) ...and the margin's range is at least RANGE_KEPT (
-- **L1371 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
-  - L1398 the playtest's seed 1 finishes in
-  - L1418 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
-  - L1424 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
+  - L545 the same town on profitable cathode has a positive scrap remainder after 500 t of recovered copper
+  - L550 ...it bids and buys its full positive market remainder, not just the recovered copper
+  - L557 ...the actual cathode uses the recovered copper and the market remainder at the same recipe ratio
+  - L566 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
+- **L573 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
+  - L583 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
+  - L593 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
+  - L598 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
+- **L626 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
+  - L639 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
+  - L645 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
+- **L684 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
+  - L700 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
+  - L710 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
+  - L714 ...and in this case it orders no anode and makes no cathode
+  - L727 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
+  - L731 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
+  - L744 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
+  - L753 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
+  - L761 ...and the anode it bought from the world is likewise used, none of it lost
+  - L774 (c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode
+  - L794 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
+- **L840 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count**
+  - L855 fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net
+  - L861 (a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,
+  - L867 ...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G
+  - L885 fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for
+  - L890 (b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod
+  - L894 ...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make
+  - L907 fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom
+  - L910 (c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and
+  - L932 fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over
+  - L943 (d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still
+  - L952 ...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads
+  - L965 fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its
+  - L971 (e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery
+  - L983 ...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from
+  - L1006 fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of
+  - L1016 (g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's
+  - L1041 fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a
+  - L1053 (h) in the chain's
+  - L1058 ...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or
+  - L1171 (f) the run played its months with no month's GDP negative
+  - L1176 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
+  - L1193 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
+- **L1245 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen**
+  - L1276 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
+  - L1327 the city has a world market in every month played
+  - L1331 the world market solved the founding year and every January after it, WORLD_YEARS (
+  - L1337 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
+  - L1349 ...the years played hold at least PEAKS_HELD (
+  - L1366 (a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp
+  - L1368 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
+  - L1373 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
+  - L1375 (b) ...and the margin's range is at least RANGE_KEPT (
+- **L1399 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
+  - L1426 the playtest's seed 1 finishes in
+  - L1446 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
+  - L1452 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
 
 ## CreditCheck.java - 265 labelled assertions
 
@@ -30916,7 +30920,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L617 saved and reloaded: the sector's cash and its five yards the same, and the accounts' held units
   - L625 ...a month on, the two the same month to the reload's known residual: Wood Products' cash and yards, the city's cash
 
-## WorksFinanceCheck.java - 52 labelled assertions
+## WorksFinanceCheck.java - 61 labelled assertions
 
 > Essential funding reservations, actual parcel cash and quoted bond terms (HW1).
 > WHY. A plan could count available cash twice, finance fractional parcels,
@@ -30936,54 +30940,63 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L127 fixture: the growing care need has an actual clinic advice plan
   - L132 fixture: cash covers the first plan and growth requires later units
   - L137 later financed additions use their own capped quotes, independently recomputed
-  - L175 fixture: streets have the higher current monetary loss and both works are proposed
-  - L203 fixture: the higher ask has raised its full cost, cash held is short, and a new gap loan would be available
-  - L208 fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing
-  - L216 the higher-loss service is actually ordered using the released cash
-  - L218 the lower funded reservation is released
-  - L220 the already funded higher-loss order sells no additional paper
-  - L222 releasing the reservation leaves outstanding debt intact
-  - L240 fixture: building-only room is short, while the order's actual use has enough owned ground
-  - L253 fixture: the flat-demand comparison borrows its build price and needs no later unit
-  - L255 owned run or works ground adds no parcel borrowing
-- **L260 the independent oracle sizes its own pending electrical load**
-  - L279 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly
-  - L286 the independent pending-load schedule and sizing reproduce the complete power plan
-- **L296 prospective unit completion matches the actually changed queue**
-  - L318 prospective quote places no order or cash flow, mode
-  - L323 the quoted first unit matches the actual queue after placement, mode
-  - L374 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
-  - L397 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
-  - L404 the reserve order respects the saved essential completion
-  - L409 the actual card explains the construction-capacity limit
-  - L414 a real reload keeps the construction-capacity reason
-  - L418 switching off clears both construction-capacity reasons
-- **L442 the hard construction-hold reader resolves the actual paving template**
-  - L452 fixture: unrelated essential services already have their operating capacity
-  - L473 fixture: physically served streets have a real paving reserve proposal with positive site output
-  - L485 fixture: even one paving would move unserved care past its one-month saved promise
-  - L499 the real automatic ask path records a paving construction hold
-  - L502 the hard hold-reason reader accepts the actual paving construction hold
-- **L507 an early street cannot cover a later highway's saved promise**
-  - L515 fixture: unrelated essential services already have their operating capacity
-  - L533 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic
-  - L554 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
-  - L561 the actual reserve order preserves the highway-only completion promise
-- **L571 a reserve order can promote a previously unstarved depot**
-  - L603 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
-  - L636 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
-  - L641 the actual reserve pass trims the promoted-depot delay and preserves care's completion
-  - L650 the full reserve actually promotes the depot and its prospective quote matches the changed queue
-- **L659 a work opening after the common comparison end earns no operating credit**
-  - L678 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
-  - L685 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
-- **L692 growing works share a calendar end before their actual funded choice**
-  - L695 fixture: unrelated essential services already have their operating capacity
-  - L739 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
-  - L753 the independent common-calendar values favour the timely road and match both complete plan sums
-  - L760 the real automatic order takes the timely road with less new borrowing than rail requires
-  - L776 Elevated Highway
-  - L777 Hydro Station
+  - L180 fixture: no clinic ground is free, and each listed parcel has
+  - L215 projecting purchases leaves the live shelf and ownership alone
+  - L238 fixture: the growing clinic plan exists
+  - L244 fixture: the actual plan has later clinic additions
+  - L254 fixture: the initial bond strictly exceeds the gap, or the first plan is paid entirely in cash
+  - L285 fixture: at least two later purchase dates, with rounded later cash spent at the next date
+  - L287 fixture: the initial quote's rounded excess is spent by the first later addition when it borrows
+  - L289 projected financing retains the initial and later quoted proceeds above their gaps
+  - L293 the independent advice oracle retains the same hard-ledger cash
+  - L330 fixture: streets have the higher current monetary loss and both works are proposed
+  - L358 fixture: the higher ask has raised its full cost, cash held is short, and a new gap loan would be available
+  - L363 fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing
+  - L371 the higher-loss service is actually ordered using the released cash
+  - L373 the lower funded reservation is released
+  - L375 the already funded higher-loss order sells no additional paper
+  - L377 releasing the reservation leaves outstanding debt intact
+  - L395 fixture: building-only room is short, while the order's actual use has enough owned ground
+  - L408 fixture: the flat-demand comparison borrows its build price and needs no later unit
+  - L410 owned run or works ground adds no parcel borrowing
+- **L415 the independent oracle sizes its own pending electrical load**
+  - L434 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly
+  - L441 the independent pending-load schedule and sizing reproduce the complete power plan
+- **L451 prospective unit completion matches the actually changed queue**
+  - L473 prospective quote places no order or cash flow, mode
+  - L478 the quoted first unit matches the actual queue after placement, mode
+  - L529 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
+  - L552 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
+  - L559 the reserve order respects the saved essential completion
+  - L564 the actual card explains the construction-capacity limit
+  - L569 a real reload keeps the construction-capacity reason
+  - L573 switching off clears both construction-capacity reasons
+- **L597 the hard construction-hold reader resolves the actual paving template**
+  - L607 fixture: unrelated essential services already have their operating capacity
+  - L628 fixture: physically served streets have a real paving reserve proposal with positive site output
+  - L640 fixture: even one paving would move unserved care past its one-month saved promise
+  - L654 the real automatic ask path records a paving construction hold
+  - L657 the hard hold-reason reader accepts the actual paving construction hold
+- **L662 an early street cannot cover a later highway's saved promise**
+  - L670 fixture: unrelated essential services already have their operating capacity
+  - L688 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic
+  - L709 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
+  - L716 the actual reserve order preserves the highway-only completion promise
+- **L726 a reserve order can promote a previously unstarved depot**
+  - L758 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
+  - L791 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
+  - L796 the actual reserve pass trims the promoted-depot delay and preserves care's completion
+  - L805 the full reserve actually promotes the depot and its prospective quote matches the changed queue
+- **L814 a work opening after the common comparison end earns no operating credit**
+  - L833 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
+  - L840 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
+- **L847 growing works share a calendar end before their actual funded choice**
+  - L850 fixture: unrelated essential services already have their operating capacity
+  - L894 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
+  - L908 the independent common-calendar values favour the timely road and match both complete plan sums
+  - L915 the real automatic order takes the timely road with less new borrowing than rail requires
+  - L944 Elevated Highway
+  - L945 Hydro Station
 
 ## WorldCheck.java - 61 labelled assertions
 
