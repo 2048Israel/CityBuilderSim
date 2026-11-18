@@ -95,3 +95,11 @@ docs/notes/known-reds.txt (LX1's two LongPlaytest entries under FB8) and LX1-not
 - The branch at 4,000 months, seed 0 (ccdcb9924's classes, the nightly's length): "10 of 10 reload(s) read it back
   the same", "All checks passed", exit 0; its map summary is main's c471e961f's to the figure (48 districts, 78 of 157
   owned iron sites under mines), the trace unmoved (target/fb8/branch-4000.txt).
+
+## The gate
+
+- No dry run: the orchestrator's call (2026-11-17, mail 20261117-204021-048): the pick is 32 harnesses, not ALL, so
+  docs/batch.md 4 asks only that the picked harnesses end 0 or 3, and the gate runs exactly those on the main it
+  merges onto; a kept run would be refused as main moves tonight. The ship file names no gate run; {next} is kept.
+- A stranger's review, REV-FB8-1, reads b2939c8c4 (the map code that ships); the provisional marker stays until the
+  orchestrator mails its word.
