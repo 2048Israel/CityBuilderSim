@@ -111,3 +111,21 @@ and the ship file (40 added, 23 removed):
   eligible for rejudging the retained completed run. The gate-run comment is
   line 1; the provisional marker stays until a green rejudge. No further JVM
   or suite has started; the orchestrator has the completed verdict and cause.
+
+## Accepted outcome and readiness
+
+The orchestrator's mail **20261118-012156-922-orchestrator-0ad0** approves
+LandNationsCheck by name under QW1, Jerus's 2026-11-04 rule: it is main's
+latent fault and this batch's src/ is byte-identical to main. He instructed
+the marker to be dropped last and readiness reported now. The original gate
+exit remains 1; no green rejudge is claimed. The ten ship entries are the
+unique non-count unnamed lines exactly, and the derived exit follows all
+covered assertions. Shell known-reds validation passes. The completed run's
+origin main/branch/tag refs before and after are identical.
+
+No JVM was started after the gate ended. The nightly owns the machine from
+01:20 for about an hour; the orchestrator's no-tag gate with reuse follows
+it. The first-line gate-run reference names the sealed completed checks.
+Only notes and ship advanced after source commit 5711390a0. Readiness is on
+this explicit QW1 approval; the provisional marker is dropped last in its
+own commit and its absence checked on origin.
