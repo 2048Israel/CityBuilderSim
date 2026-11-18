@@ -1,4 +1,4 @@
-# CreditsCheck.java - 266 lines · 6 methods · 0 constants · harnesses
+# CreditsCheck.java - 278 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CreditsCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -30,24 +30,26 @@
 >   6. THE LIBRARIES FOLLOW THE FONTS, WITH THEIR RELEASE TEXTS IN FULL. The fallback copies'
 >      hashes and versions are pinned to upstream releases and pom.xml. The jars lack legal
 >      files; if that changes, re-audit and take their texts from the dependency instead.
+>   7. REVISITING THE PAGE REUSES ITS TEXTS. All visits share an immutable section list;
+>      the injected reader remains independent for missing-file fixtures.
 
-**Uses:** [Credits](Credits.md) (44)
+**Uses:** [Credits](Credits.md) (45)
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 53 | `private static int fails` |  |
+| 55 | `private static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 216 | **type** `public class CreditsCheck` | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, and says where a file is when this build lacks it (CR1, CR1-L). |
-| 55 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 60 | 3 | `static String read(Path p) throws IOException` |  |
-| 65 | 5 | `static List<String> lines(String text)` | The text's non-blank lines, in order, with any \r gone. |
-| 72 | 59 | `static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception` | The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. |
-| 133 | 12 | `static void dependencyNotices() throws IOException` | The audited jars omit legal files; a new NOTICE or licence must be taken from the jar, not ignored. |
-| 146 | 120 | `public static void main(String[] args) throws Exception` |  |
+| 53 | 226 | **type** `public class CreditsCheck` | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, and says where a file is when this build lacks it (CR1, CR1-L). |
+| 57 | 4 | `static void check(String label, boolean ok, String detail)` |  |
+| 62 | 3 | `static String read(Path p) throws IOException` |  |
+| 67 | 5 | `static List<String> lines(String text)` | The text's non-blank lines, in order, with any \r gone. |
+| 74 | 59 | `static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception` | The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. |
+| 135 | 12 | `static void dependencyNotices() throws IOException` | The audited jars omit legal files; a new NOTICE or licence must be taken from the jar, not ignored. |
+| 148 | 130 | `public static void main(String[] args) throws Exception` |  |
 

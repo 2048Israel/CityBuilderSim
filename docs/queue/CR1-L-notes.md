@@ -55,6 +55,44 @@ Built from origin/main 45de48dc2 (0.9.140), on batch/CR1-L.
   graphics jar also carries its native renderer/font/image DLLs and Microsoft
   runtime DLLs; its upstream graphics notices are included here. CR1-J should
   audit accompanying Windows runtime notices while inventorying the image.
+  After review, its dedicated brief is [CR1-J.md](CR1-J.md), expanded to
+  source delivery and the Microsoft terms as well as runtime notices.
+
+## Review mends and deferred calls
+
+- REV-CR1-L-1 raised four findings. ★ The orchestrator explicitly assigned
+  findings 3 and 4 here and deferred findings 1 and 2 to CR1-J, as a call
+  for Jerus, in bus message 20261117-201821-406-orchestrator-4df2.
+- Finding 3: Maven Enforcer 3.6.2's requireFilesExist runs at validate,
+  before compilation or resource copying. It requires all six upstream
+  legal texts and sources.properties. An absent tools/credits directory or
+  file now fails the build instead of silently producing an incomplete jar.
+  Rule behavior follows [Maven's built-in requireFilesExist documentation](https://maven.apache.org/enforcer/enforcer-rules/requireFilesExist.html).
+  Negative build checks: with the whole tools/credits directory temporarily
+  renamed, mvn -q -B -DskipTests clean package failed at RequireFilesExist
+  (exit 1). Then removed each of the seven files individually and ran
+  mvn -q -B validate: all seven failed at the same rule, exit 1. Each
+  rename was restored in finally; with every file restored, validate passed.
+  Full log: C:/Users/Jerus/AppData/Local/Temp/CR1-L-omissions.log.
+- Finding 4: Credits.sections() uses a lazy class holder and an immutable
+  list. JVM initialization publishes one complete snapshot; later menu
+  visits reuse the list without jar reads. The reader-injected overload is
+  still uncached, preserving the missing-file fixtures. CreditsCheck holds
+  repeat-visit identity and immutability as well as those fixtures.
+- ★ Findings 1 and 2 remain for CR1-J: OpenJFX's GPL v2 corresponding
+  source delivery, the JRE's distribution/source terms, and the Microsoft
+  runtime DLL terms. Adding licence texts here does not complete those
+  obligations. Jerus chose source archives beside the exe at 20:23,
+  conveyed in bus message 20261117-202537-635-orchestrator-77f2: the build
+  must make and check the archives for OpenJFX 21 and the OpenJDK runtime.
+- Further inspection of the existing image found that
+  runtime/legal/java.base/LICENSE starts with Oracle No-Fee Terms and
+  Conditions (NFTC), rather than GPL. This was reported to the orchestrator;
+  the licence's redistribution clause at lines 62–66 includes a prohibition
+  on fees for products bundled with it. CR1-J moves packaging to OpenJDK,
+  Eclipse Temurin 21 recommended by the orchestrator. PC installation awaits
+  Jerus's word, asked at 20:26. No runtime or packaging change is made here.
+  The dedicated CR1-J brief records the decision and its image/source checks.
 
 ## Checks and review
 
@@ -86,3 +124,11 @@ Built from origin/main 45de48dc2 (0.9.140), on batch/CR1-L.
   the menu's prose is the only screen behavior change. No --pick suite was
   run locally: ALL requires the orchestrator's dry-run slot. origin/main
   remained 45de48dc2 at the final pre-handoff fetch.
+- After review mends: ./batch-check.sh --fast exit 0; compile OK (64s),
+  maps regenerated, Stale 0 firm. ./batch-check.sh CreditsCheck exit 0;
+  93 successful assertions, no FAIL, including cache identity and immutable
+  sections. Logs: /tmp/CR1-L-review-fast.log and
+  /tmp/CR1-L-review-credits.log in Git Bash, and target/checks/CreditsCheck.log.
+  git diff --check passed. The pick remains ALL (pom.xml), 218 harnesses;
+  the review line remains UI-wide threading. The orchestrator reserves the
+  dry run after HW1-V and will mail the go; it has not been run here yet.

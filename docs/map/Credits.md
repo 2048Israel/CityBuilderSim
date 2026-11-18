@@ -1,4 +1,4 @@
-# Credits.java - 131 lines · 8 methods · 7 constants · model
+# Credits.java - 137 lines · 8 methods · 8 constants · model
 
 `ham/citybuildersim/Credits.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -29,19 +29,21 @@
 | 48 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
 | 51 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjf...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
 | 56 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " +...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 67 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource))` | The shared snapshot of the page's sections and complete legal texts. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 107 | **type** `public final class Credits` | The Credits page's sections: the Earth data's attribution, the nations' attribution and the fonts' and libraries' notices with their licences, each read from the jar as the exe ships it, and the text of each cut into ... |
+| 25 | 113 | **type** `public final class Credits` | The Credits page's sections: the Earth data's attribution, the nations' attribution and the fonts' and libraries' notices with their licences, each read from the jar as the exe ships it, and the text of each cut into ... |
 | 27 | 1 | `private Credits()` |  |
 | 30 | 4 | **type** `public record Section(String title, String resource, String besideExe, String lead, String text)` | One block of the page: its heading, where its text is, the file that ships beside the exe, the line above it, and the text itself. |
 | 32 | 1 | `public boolean missing()` _(in Credits.Section)_ | True when this build carries no copy of the text; the page then says where the file is. |
-| 60 | 3 | `public static List<Section> sections()` | The page's sections, in order, read from the jar. |
-| 65 | 13 | `static List<Section> sections(Function<String, String> reader)` | The same through any reader of a classpath path to its text (null for a file this build lacks); a harness's fixture. |
-| 80 | 10 | `static String readAll(Function<String, String> reader, List<String> paths)` | All the named files in order, with their names; missing if any one is absent, rather than showing a partial licence. |
-| 92 | 10 | `static String readResource(String path)` | A classpath file as UTF-8 text, unchanged but for a leading byte-order mark; null when it is not there or cannot be read. |
-| 108 | 16 | `public static List<String> paragraphs(String text)` | The text cut on its blank lines (empty or whitespace), each paragraph keeping its own line breaks, with \r removed and no blank paragraph at either end; empty for null. |
-| 126 | 5 | `public static String missingNote(Section s)` | What the page says for a section this build lacks: where the file is. |
+| 60 | 3 | `public static List<Section> sections()` | The page's sections, in order, loaded once; later menu visits do no archive I/O. |
+| 65 | 4 | **type** `private static final class Loaded` | The first visit loads the immutable texts; JVM class initialization safely publishes them. |
+| 71 | 13 | `static List<Section> sections(Function<String, String> reader)` | The same through any reader of a classpath path to its text (null for a file this build lacks); a harness's fixture. |
+| 86 | 10 | `static String readAll(Function<String, String> reader, List<String> paths)` | All the named files in order, with their names; missing if any one is absent, rather than showing a partial licence. |
+| 98 | 10 | `static String readResource(String path)` | A classpath file as UTF-8 text, unchanged but for a leading byte-order mark; null when it is not there or cannot be read. |
+| 114 | 16 | `public static List<String> paragraphs(String text)` | The text cut on its blank lines (empty or whitespace), each paragraph keeping its own line breaks, with \r removed and no blank paragraph at either end; empty for null. |
+| 132 | 5 | `public static String missingNote(Section s)` | What the page says for a section this build lacks: where the file is. |
 

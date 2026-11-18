@@ -2,9 +2,9 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,145 constants in 589 files.**
+**6,146 constants in 589 files.**
 
-## model (2923 constants)
+## model (2924 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -852,6 +852,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 48 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
 | 51 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
 | 56 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 67 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource))` | The shared snapshot of the page's sections and complete legal texts. |
 
 ### Crime.java ([map](map/Crime.md))
 
