@@ -1894,6 +1894,108 @@ public class KeptCheck {
         pageCost(g, bench, page, 28, KEPT_SERVICES_MS, "KEPT_SERVICES_MS");
     }
 
+    /* ============ FB12: the landmass table reached and kept (KP2b-N) ============ */
+
+    /** Labels under a node, in the order the table puts them in its cells. */
+    static List<String> landmassWords(javafx.scene.Node node) {
+        List<String> out = new ArrayList<>();
+        if (node instanceof javafx.scene.control.Label label) out.add(label.getText());
+        else if (node instanceof javafx.scene.Parent parent) for (javafx.scene.Node child : parent.getChildrenUnmodifiable()) out.addAll(landmassWords(child));
+        return out;
+    }
+
+    /** Every authored node of the grid, omitting a control's toolkit-owned skin. */
+    static List<javafx.scene.Node> landmassNodes(javafx.scene.Node node) {
+        List<javafx.scene.Node> out = new ArrayList<>();
+        if (node == null) return out;
+        out.add(node);
+        if (node instanceof javafx.scene.Parent parent && !(node instanceof javafx.scene.control.Control))
+            for (javafx.scene.Node child : parent.getChildrenUnmodifiable()) out.addAll(landmassNodes(child));
+        return out;
+    }
+
+    /** The actual page's landmass grid, identified by the model's own column heads. */
+    static javafx.scene.layout.GridPane landmassGrid(KeptBench bench) {
+        for (javafx.scene.Node node : bench.nodesOnPage()) if (node instanceof javafx.scene.layout.GridPane grid
+                && landmassWords(grid).containsAll(java.util.Arrays.stream(LandmassView.HEADS).map(s -> s.toUpperCase(java.util.Locale.ROOT)).toList())) return grid;
+        return null;
+    }
+
+    /** The table's actual cells against the model's rows; an absent table cannot pass. */
+    static boolean landmassCells(javafx.scene.layout.GridPane grid, LandManager land) {
+        if (grid == null) return false;
+        List<LandmassView.Line> rows = LandmassView.rows(land);
+        for (int i = 0; i < rows.size(); i++) {
+            LandmassView.Line line = rows.get(i);
+            String[] want = { line.name(), line.dry(), line.free(), line.ports(), line.linked() };
+            for (int col = 0; col < LandmassView.HEADS.length; col++) {
+                final int c = col, row = 2 * i + 2;
+                javafx.scene.Node cell = grid.getChildren().stream().filter(n -> java.util.Objects.equals(javafx.scene.layout.GridPane.getColumnIndex(n), c)
+                        && java.util.Objects.equals(javafx.scene.layout.GridPane.getRowIndex(n), row)).findFirst().orElse(null);
+                if (cell == null || !landmassWords(cell).equals(List.of(want[col]))) return false;
+            }
+        }
+        return grid.getChildren().size() == LandmassView.HEADS.length * (rows.size() + 1) + rows.size();
+    }
+
+    /** An Earth scratch city causes the missing table: owning a second landmass, then more of that same island. */
+    static void landmassTable() throws Exception {
+        System.out.println("\n--- FB12: owned ground on two landmasses reaches the land office's kept table ---");
+        byte[] fixture = EarthCheck.resource(EarthCheck.FIXTURE);
+        check("fixture: the Earth landmass data is beside the classes", fixture != null);
+        if (fixture == null) return;
+        String id = EarthTerrain.use(EarthData.of(fixture));
+        World.Key key = World.Key.earth(LandmassCheck.SEED, LandmassCheck.RLAT, LandmassCheck.RLON, id);
+        World world = World.of(key);
+        long[] tip = LandmassCheck.plotOf(world, 51.848, 3.998);
+        LandmassCheck.Square square = LandmassCheck.squareWith(world, 648, tip[0], tip[1], 40, s -> s.pure() && s.onId() >= 2000 && s.shore() >= 20);
+        check("fixture: a measured square owns dry plots on a second Earth landmass", square != null);
+        if (square == null) return;
+        LandmassCheck.City city = new LandmassCheck.City("fb12-landmass-table", key, 0);
+        KeptBench bench = fx(() -> new KeptBench(city.g));
+        try {
+            fx(() -> {
+                KeptBench.Page page = bench.land();
+                bench.drawKept(page);
+                bench.settle();
+                check("before the island purchase the model has one row and the page has no landmass grid", city.books().single() && city.books().rows().size() == 1 && landmassGrid(bench) == null);
+                city.buy(square);
+                List<Landmasses.Row> rows = city.books().rows();
+                check("the purchase causes two Landmasses.rows(), home first and the measured island second", !city.books().single() && rows.size() == 2 && rows.get(0).home()
+                        && rows.get(1).id() == square.id() && rows.get(1).dryPlots() == square.onId() && !rows.get(1).linked());
+                bench.drawKept(page);
+                bench.settle();
+                javafx.scene.layout.GridPane table = landmassGrid(bench);
+                check("the owned island causes the actual land-office grid with every cell from LandmassView", landmassCells(table, city.lm));
+                List<javafx.scene.Node> cells = landmassNodes(table);
+                bench.drawKept(page);
+                bench.settle();
+                check("an unchanged redraw keeps the same landmass grid and every row cell", table != null && landmassGrid(bench) == table && cells.equals(landmassNodes(table)));
+                check("the unchanged kept table still shows all model values", landmassCells(landmassGrid(bench), city.lm));
+                // A second measured purchase changes this row's dry-owned figure without adding another row.
+                LandmassCheck.Square more = LandmassCheck.squareWith(world, square.id(), tip[0], tip[1], 40,
+                        s -> s.pure() && s.onId() >= 2000 && !city.lm.getCityLand().ownsPlot(s.x0(), s.y0()));
+                check("fixture: another unowned square of the same island is available", more != null);
+                List<String> oldWords = table == null ? List.of() : landmassWords(table);
+                if (more != null) city.buy(more);
+                month(city.g);
+                bench.drawKept(page);
+                bench.settle();
+                javafx.scene.layout.GridPane after = landmassGrid(bench);
+                check("a month and more island ground keep the grid and every existing row cell", table != null && after == table && cells.equals(landmassNodes(after)));
+                check("the changed table updates its values from the model", landmassCells(after, city.lm) && !oldWords.equals(after == null ? List.of() : landmassWords(after)));
+                List<String> kept = after == null ? List.of() : landmassWords(after);
+                bench.showFresh(page);
+                check("the kept landmass table says exactly what a freshly built table says", !kept.isEmpty() && kept.equals(landmassWords(landmassGrid(bench))));
+                bench.restoreKeptPage();
+                check("restoring the kept page restores that same grid and its row cells", table != null && landmassGrid(bench) == table && cells.equals(landmassNodes(table)));
+                return null;
+            });
+        } finally {
+            fx(() -> { bench.home(bench.land()); bench.release(); return null; });
+        }
+    }
+
     /** Sections 29 to 33: the land office kept - its sides, places, count, fold and way of paying, a plot bought, the funding page and the page for when the city fell short. */
     static void land(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The land office (KP2) ===");
@@ -9944,6 +10046,7 @@ public class KeptCheck {
         infrastructure(g, bench);
         services(g, bench);
         land(g, bench);
+        landmassTable();
         controls(g, bench);
         hover(g, bench);
         build(g, bench);

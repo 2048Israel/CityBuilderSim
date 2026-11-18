@@ -43,3 +43,21 @@ before the final whole KeptCheck; normal suite coverage remains unconditional.
 Review scope: money no; saves no; threading no. All additions are harness
 code; the FX fixture uses KeptCheck's existing fx() handoff. Only generated
 dependency indexes mention the read-only model classes.
+
+Construction checks: initial `--fast` green; IslandRailCheck green (20 s);
+focused landmass-table KeptCheck green, all 12 assertions reached. Both Earth
+and world paths were supplied with JDK_JAVA_OPTIONS on every check.
+
+Cause-removal runs (harness source only, restored immediately; no model edit):
+
+- Omit both island purchases: eight new assertions fail, including the
+  second Landmasses.rows() entry, real grid presence, every value/identity
+  check and the fresh-table comparison. The original one-row/no-table
+  control still passes. `target/FB12-Kept-no-ownership.log`.
+- Forget the kept pool before each draw: all three identity assertions fail
+  (unchanged redraw, changed month, restored kept page); the value assertions
+  pass. `target/FB12-Kept-no-keeping.log`.
+
+The passing construction logs are `target/FB12-IslandRail-positive.log` and
+`target/FB12-Kept-focused.log`. Target logs are local evidence, not shipped
+files; the outcomes and the exact cause changes are kept here.
