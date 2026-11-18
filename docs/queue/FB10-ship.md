@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-FB10-AMlPXs74 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FB10, the research checks and the judge — 2026-11-18, ready, see docs/queue/FB10-notes.md
 R2b-J: the judge read a harness's own tally, "ResearchViewCheck: 1 FAILED of 217", as an assertion, so a harness whose
