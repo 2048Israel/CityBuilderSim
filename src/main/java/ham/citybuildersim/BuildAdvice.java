@@ -1626,7 +1626,17 @@ public final class BuildAdvice {
         return runningCostAt(game, t, utilisation) - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
     }
 
+    /**
+     * The running cost the planners read: the building's own (rawRunningCostAt()) with a patented public work's licence added (R2c-P,
+     * LicenceFees.forNewWork()), so WorksValue and the auto-builder net the rent a new utility would pay.
+     */
     private static double runningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
+        double raw = rawRunningCostAt(game, t, streetUtilisation);
+        return raw + LicenceFees.forNewWork(game, t, raw);
+    }
+
+    /** The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation. */
+    static double rawRunningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
         BuildingManager bm = game.getBuildingManager();
         EconomyManager econ = game.getEconomyManager();
         double materials = Math.max(0, bm.getConstructionMaterialPrice());

@@ -252,6 +252,10 @@ public class HistorySave {
     private List<Double> ipCharges = new ArrayList<>();
     /** Production's accrued IP bill, paid at the following strike (R2c). */
     private List<Double> ipAccrued = new ArrayList<>();
+    /** The licence the city's own patented works paid abroad at the strike, local money, inside importsAbroad (R2c-P). */
+    private List<Double> publicIpCharges = new ArrayList<>();
+    /** The public works' bill the month accrued, paid at the following strike (R2c-P). */
+    private List<Double> publicIpAccrued = new ArrayList<>();
 
     /* ------------------------ money and credit ------------------------
 
@@ -795,6 +799,8 @@ public class HistorySave {
         importsAbroad.add(round2(abroad.tradeImports()));
         ipCharges.add(round2(LicenceFees.paid(game)));
         ipAccrued.add(round2(LicenceFees.accrued(game)));
+        publicIpCharges.add(round2(game.getPublicIpPaid()));
+        publicIpAccrued.add(round2(game.getPublicIpPending()));
         // ...and the world's moneys, where the city has them (WN4): the seven majors against the US dollar, the cycle and the risk-off.
         WorldMoneys moneys = game.getWorldMoneys();
         if (moneys != null) {
@@ -1256,6 +1262,8 @@ public class HistorySave {
         importsAbroad = copy(loaded.importsAbroad);
         ipCharges = copy(loaded.ipCharges);
         ipAccrued = copy(loaded.ipAccrued);
+        publicIpCharges = copy(loaded.publicIpCharges);
+        publicIpAccrued = copy(loaded.publicIpAccrued);
 
         priceIndex = copy(loaded.priceIndex);
         usPrices = copy(loaded.usPrices);
@@ -1865,6 +1873,8 @@ public class HistorySave {
         map.put("importsAbroad", importsAbroad);
         map.put("ipCharges", ipCharges);
         map.put("ipAccrued", ipAccrued);
+        map.put("publicIpCharges", publicIpCharges);
+        map.put("publicIpAccrued", publicIpAccrued);
 
         map.put("priceIndex", priceIndex);
         map.put("usPrices", usPrices);
@@ -2055,7 +2065,7 @@ public class HistorySave {
          * of things, and landUse is a share -
          * none of them is money at all.
          */
-        scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued,
+        scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued, publicIpCharges, publicIpAccrued,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
                 householdSavings, bankFees,

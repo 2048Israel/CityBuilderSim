@@ -331,4 +331,111 @@ public final class LicenceFees {
         for (Sector s : game.getSectors().all()) sum += s.pending().otherInputs.getOrDefault(IP_CHARGES, 0.0);
         return sum;
     }
+
+    /* ===== THE CITY'S OWN WORKS (R2c-P) ===== */
+
+    /** Whether this template is one of the city's own works, the stacks no sector owns (the bank's branch excepted), which pay their licences too (R2c-P). */
+    static boolean citysWork(Game game, BuildingsTemplate t) {
+        return t != null && game.isCitysToDemolish(t);
+    }
+
+    /** What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). */
+    static double powerDelivered(UtilitiesHandler u, double nameplate) {
+        return Math.max(0, Math.min(u.getConsumption(), Math.max(0, u.getProduction() + nameplate * u.getAverageUtilityFill())));
+    }
+
+    /** What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). */
+    static double waterDelivered(Game game, UtilitiesHandler u, double freshMove, double desalMove) {
+        return Math.max(0, Math.min(u.getWaterConsumption(), UtilitiesHandler.waterOutput(
+                Math.max(0, u.getFreshNameplate() + freshMove), Math.max(0, u.getDesalNameplate() + desalMove),
+                u.getAverageUtilityFill(), u.getFreshCap(), game.getBuildingManager().getFoundingEndowments())));
+    }
+
+    /**
+     * The month's public gain of one entry on one standing stack of a city utility, in money (R2c-P): the service delivered with it less the
+     * service delivered without it, at the tariff the planners price it at (Recipes.pricesOf()). Surplus capacity adds nothing. pieceId null is
+     * the building entry itself (the stack gone, less its running cost); a piece is every building of the stack lacking it. 0 for a stack
+     * that is not standing or not a utility.
+     */
+    public static double publicGain(Game game, BuildingsStacks stack, String pieceId) {
+        BuildingsTemplate t = stack.getBuilding();
+        long q = stack.getQuantity();
+        BuildingType category = t.getCategory();
+        if (q <= 0 || category != BuildingType.ELECTRICITY && category != BuildingType.WATER) return 0;
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        double move = pieceId == null ? t.getProduction1() * q
+                : (t.getProduction1() - RecipeChanges.productionWithout(game, t, stack, pieceId)) * q;
+        double gain;
+        if (category == BuildingType.ELECTRICITY) {
+            gain = (powerDelivered(u, 0) - powerDelivered(u, -move)) * prices.pricePerWatt();
+        } else {
+            boolean sea = t.isSeaWater();
+            gain = (waterDelivered(game, u, 0, 0) - waterDelivered(game, u, sea ? 0 : -move, sea ? -move : 0)) * prices.pricePerWaterUnit();
+        }
+        if (pieceId == null) gain -= q * BuildAdvice.rawRunningCostAt(game, t, 0);
+        return gain;
+    }
+
+    /**
+     * The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices: each entry once a
+     * stack, SHARE of its positive public gain while its patent runs. 0 in a city not founded the 1900 way, and for anything not finite.
+     */
+    public static double capturePublic(Game game) {
+        if (!game.foundedUnfitted()) return 0;
+        int month = game.getMonth();
+        Research found = game.getResearch();
+        double bill = 0;
+        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            long q = stack.getQuantity();
+            if (q <= 0 || !citysWork(game, t)) continue;
+            Set<String> charged = new HashSet<>();
+            String code = t.getSinceText();
+            if (charged.add(code) && payable(code, month, found)) bill += onGain(code, month, found, publicGain(game, stack, null));
+            for (Equipment piece : t.getEquipment()) {
+                if (q - Math.min(q, stack.getUnfitted(piece.getId())) <= 0 || !piece.knownAt(month, found)
+                        || !charged.add(piece.getSince()) || !payable(piece.getSince(), month, found)) continue;
+                bill += onGain(piece.getSince(), month, found, publicGain(game, stack, piece.getId()));
+            }
+        }
+        return Double.isFinite(bill) ? bill : 0;
+    }
+
+    /** The service one more building of this nameplate adds to what the grid or the works deliver, in money, at the planners' tariff (R2c-P). */
+    private static double added(Game game, BuildingsTemplate t, double plate) {
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        if (t.getCategory() == BuildingType.ELECTRICITY)
+            return (powerDelivered(u, plate) - powerDelivered(u, 0)) * prices.pricePerWatt();
+        boolean sea = t.isSeaWater();
+        return (waterDelivered(game, u, sea ? 0 : plate, sea ? plate : 0) - waterDelivered(game, u, 0, 0)) * prices.pricePerWaterUnit();
+    }
+
+    /**
+     * The planners' licence cost of ONE more building of a city utility (R2c-P), added to its running cost: SHARE of the positive gain of
+     * each patented entry it would carry (the building's own over its running cost, each piece it would be fitted with over the same building
+     * without it). 0 in a city not founded the 1900 way, inside another licence pricing, and for any work that is not a city utility.
+     */
+    public static double forNewWork(Game game, BuildingsTemplate t, double running) {
+        if (!game.foundedUnfitted() || pricing.get() || !citysWork(game, t)) return 0;
+        if (t.getCategory() != BuildingType.ELECTRICITY && t.getCategory() != BuildingType.WATER) return 0;
+        int month = game.getMonth();
+        Research found = game.getResearch();
+        Set<String> fitted = EquipmentFit.fittedForNew(game, t);
+        double plate = RecipeChanges.productionFor(game, t, fitted);
+        double with = added(game, t, plate);
+        Set<String> charged = new HashSet<>();
+        double bill = 0;
+        String code = t.getSinceText();
+        if (charged.add(code)) bill += onGain(code, month, found, with - running);
+        for (Equipment piece : t.getEquipment()) {
+            if (!fitted.contains(piece.getId()) || !piece.knownAt(month, found) || !charged.add(piece.getSince())
+                    || !payable(piece.getSince(), month, found)) continue;
+            Set<String> less = new HashSet<>(fitted);
+            less.remove(piece.getId());
+            bill += onGain(piece.getSince(), month, found, with - added(game, t, RecipeChanges.productionFor(game, t, less)));
+        }
+        return Double.isFinite(bill) ? bill : 0;
+    }
 }

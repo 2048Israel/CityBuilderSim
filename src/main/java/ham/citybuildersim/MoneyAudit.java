@@ -1027,6 +1027,8 @@ public final class MoneyAudit {
         // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
         // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
         out += debit.apply("- city ReserveFill", g.getReserve().getSettledImports(), Scope.TRADE);
+        // ...and the licences the city's own patented works paid abroad (R2c-P), at the strike: TRADE, so ForeignAccounts takes it the same month.
+        if (g.getPublicIpPaid() != 0) out += debit.apply("- city IP charges", g.getPublicIpPaid(), Scope.TRADE);
         /*
          * ...and the steel in the households' scrapped cars, bought by the
          * Scrap Yards (0.7.123, batch I4; OldMetal): paid into their savings
