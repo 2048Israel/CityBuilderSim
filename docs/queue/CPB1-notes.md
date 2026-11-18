@@ -203,10 +203,21 @@ Both pass in `target/cpb1-review-buffer.log`.
 
 ## Orchestrator review and reserved runs
 
-Provisional mends only. The ensemble and ALL merge dry run require the
-orchestrator's machine slots. They have not been started. Merge origin/main
-before the ensemble, and again before the dry run if main has advanced.
-At the handoff fetch, main has advanced to 0e32d5330 (HW1-V, 0.9.141).
-The results above are on CPB1's 231f16270 base plus its own final model.
+Provisional mends only. Review mends are a13a31b37. Main 0e32d5330 (HW1-V,
+0.9.141) is merged in f42cc74bc; only generated indexes conflicted and were
+regenerated. Merged `batch-check.sh --fast` exits 0 (219-second compile),
+zero firm Stale findings, 187 soft (`target/cpb1-merged-fast.log`). The named
+review run is `target/cpb1-review-named.log`.
+
+The orchestrator's 22:34 instruction supplies main's retained default trace,
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-FB4-10cc0ca2/trace-*.csv`, and
+requires an eight-file byte comparison before the ensemble. The complete
+default LongPlaytest on the merged model is running with its new traces at
+`target/cpb1-merged-trace/trace-*.csv` and report/status in the same directory.
+If all eight match, no ensemble; otherwise record the first changed month
+and column and use the existing ensemble GO. The ALL dry run still requires
+a machine slot after DM1-P's; merge main again first if it advances.
+
+The seed-window results above are on CPB1's 231f16270 base plus its own model.
 The ship file forwards the bounded-run placement class to the already queued
 CL7 with a scoped LongPlaytest row; it does not cover negative GDP.
