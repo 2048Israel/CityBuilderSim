@@ -47,7 +47,8 @@ to start it: by hand, or a scheduled task (a daily one is Jerus's call, asked
   takeover is `<ID>c`.
 - How many build at once is Jerus's setting; his latest word (2026-11-17):
   three builders, and a fourth on study, docs or process rows while the plan
-  is behind pace.
+  is behind pace: the week's % used plus the last six hours' rate times the
+  hours to the reset under 95 (2026-11-07: "Yes, standing rule").
 - **The heavy slot:** never two dry runs or two ensembles at once; one dry run
   beside one ensemble, but then no builder's full pick as well (DQ1's dry run
   died on a fork failure, 2026-11-17 20:05, with 1.4 GB free).

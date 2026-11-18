@@ -103,7 +103,7 @@ own words, and it is the requirement.
 - **The branch.** `git fetch origin`, then `sh tools/batch-id.sh ID` (GG1, PD1:
   a reused merged branch was pushed again), then a worktree on `batch/ID` cut
   from `origin/main` (`.claude/worktrees/cl-ID` for Claude, `codex-ID` for
-  Codex). A chain's next batch is cut from main once its predecessor is tagged,
+  Codex). A chain's next batch is cut from main once its predecessor is on main,
   never from its tip (2026-11-11: "After it ships (Recommended)").
 - **The brief** names the source files it expects to change and says whether
   it moves the playtest; the prompt names the batches in flight, to keep off.
