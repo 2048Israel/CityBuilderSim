@@ -1,4 +1,4 @@
-# SavedCities.java - 328 lines · 24 methods · 4 constants · model
+# SavedCities.java - 327 lines · 24 methods · 4 constants · model
 
 `ham/citybuildersim/SavedCities.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -38,7 +38,7 @@
 | line | section |
 |---:|---|
 | 124 | · reading |
-| 266 | · answering |
+| 265 | · answering |
 
 ## Enum constants
 
@@ -69,7 +69,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 287 | **type** `public final class SavedCities` | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read only, the autosave (slot 0) left out, each as a Rankings.City at its la... |
+| 42 | 286 | **type** `public final class SavedCities` | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read only, the autosave (slot 0) left out, each as a Rankings.City at its la... |
 | 50 | 7 | `private static Set<String> keptSeries()` |  |
 | 64 | 15 | **type** `public record Played(String name, long seed, double foundingCash)` | The city in play, by its founding: its name, its world seed (LB4) and the cash it was founded with (LB5). |
 | 69 | 3 | `public static Played of(Game g)` _(in SavedCities.Played)_ | The game's city, by its founding. |
@@ -85,30 +85,30 @@
 | 111 | 1 | **type** `private record Entry(int slot, Stamp stamp, Holding kept, Why left)` | One slot as read: its stamp, and either the city it keeps, or why it is left off, or neither (an empty slot). |
 | 119 | 4 | `private SavedCities(List<Entry> entries, int reads)` |  |
 
-### reading (lines 124-265)
+### reading (lines 124-264)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 127 | 3 | `public static SavedCities read(GameFiles files)` | Every slot of the files read afresh: NONE.refresh(files). |
 | 135 | 15 | `public SavedCities refresh(GameFiles files)` | A new snapshot of the files, reusing every slot of this one whose save and history files have the size and modified time they had (and the path), so that only the slot saved since is read again. |
-| 156 | 6 | `private static Entry keepWhole(Entry old, Entry read)` | What the board keeps of a slot just read (LB5-B): the read itself, unless it pairs a header and a history of two months (a save landed before its history, or its history never did) and the slot's last entry was a whol... |
-| 164 | 3 | `public int reads()` | How many slots the refresh that made this snapshot parsed from disk (the rest were reused or empty): 0 when nothing was saved since the last. |
-| 168 | 3 | `private Entry entryOf(int slot)` |  |
-| 178 | 4 | `private static Stamp stampOf(GameFiles files, int slot)` | Both files of a slot as the disk has them now. |
-| 183 | 7 | `private static long sizeOf(Path file)` |  |
-| 191 | 7 | `private static long timeOf(Path file)` |  |
-| 203 | 8 | `private static Entry readSafely(GameFiles files, int slot, Stamp stamp)` | One slot, and whatever goes wrong in it stays in it (LB3's gate review): a slot whose header or history will not decode, or that runs the heap out, is DAMAGED and logged, and the other slots are read as before, so one... |
-| 218 | 33 | `private static Entry readSlot(GameFiles files, int slot, Stamp stamp)` | One slot: the header through GameFiles.readHeader, then the history file read WHOLE (Files.readAllBytes, the handle closed) and only then parsed, skipping every series but the kept ones and keeping those as primitive ... |
-| 252 | 3 | `private static Entry left(int slot, Stamp stamp, Why why)` |  |
-| 257 | 8 | `private static CityMeasures.Extras extrasOf(SaveHeader header)` | What the history does not keep, from the header: the people in each age band (PopulationCohorts.restore by name) and the city's dry ground in square kilometres (LandManager.km2). |
+| 156 | 5 | `private static Entry keepWhole(Entry old, Entry read)` | What the board keeps of a slot just read (LB5-B): the read itself, unless it pairs a header and a history of two months (a save landed before its history, or its history never did) and the slot's last entry was a whol... |
+| 163 | 3 | `public int reads()` | How many slots the refresh that made this snapshot parsed from disk (the rest were reused or empty): 0 when nothing was saved since the last. |
+| 167 | 3 | `private Entry entryOf(int slot)` |  |
+| 177 | 4 | `private static Stamp stampOf(GameFiles files, int slot)` | Both files of a slot as the disk has them now. |
+| 182 | 7 | `private static long sizeOf(Path file)` |  |
+| 190 | 7 | `private static long timeOf(Path file)` |  |
+| 202 | 8 | `private static Entry readSafely(GameFiles files, int slot, Stamp stamp)` | One slot, and whatever goes wrong in it stays in it (LB3's gate review): a slot whose header or history will not decode, or that runs the heap out, is DAMAGED and logged, and the other slots are read as before, so one... |
+| 217 | 33 | `private static Entry readSlot(GameFiles files, int slot, Stamp stamp)` | One slot: the header through GameFiles.readHeader, then the history file read WHOLE (Files.readAllBytes, the handle closed) and only then parsed, skipping every series but the kept ones and keeping those as primitive ... |
+| 251 | 3 | `private static Entry left(int slot, Stamp stamp, Why why)` |  |
+| 256 | 8 | `private static CityMeasures.Extras extrasOf(SaveHeader header)` | What the history does not keep, from the header: the people in each age band (PopulationCohorts.restore by name) and the city's dry ground in square kilometres (LandManager.km2). |
 
-### answering (lines 266-328)
+### answering (lines 265-327)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 272 | 8 | `public List<Rankings.Saved> now(Played played)` | The saved cities at their last saved month, in slot order: their figures from the whole history and the header's land and bands, in the units of their last save. |
-| 286 | 11 | `public List<Rankings.Saved> at(int month, Played played)` | The saved cities at game month `month` (D3, the active city's age), in slot order: each read from its history at that month, its rate, parity and price level the series' there, its figures CityMeasures.at with Extras.... |
-| 299 | 8 | `public List<Stopped> stoppedAt(int month, Played played)` | The saved cities whose history ends before game month `month`: "stopped at Feb 2031" (CityCalendar.formatShort(lastMonth)), no figure and no row. |
-| 309 | 13 | `public LeftOut left()` | The saves left off the board and why, counted; an empty slot is no save and is not counted. |
-| 324 | 4 | `HistorySave history(int slot)` | The slim history a slot keeps, or null when the slot is not a city on the board: for a harness that holds it to the file's. |
+| 271 | 8 | `public List<Rankings.Saved> now(Played played)` | The saved cities at their last saved month, in slot order: their figures from the whole history and the header's land and bands, in the units of their last save. |
+| 285 | 11 | `public List<Rankings.Saved> at(int month, Played played)` | The saved cities at game month `month` (D3, the active city's age), in slot order: each read from its history at that month, its rate, parity and price level the series' there, its figures CityMeasures.at with Extras.... |
+| 298 | 8 | `public List<Stopped> stoppedAt(int month, Played played)` | The saved cities whose history ends before game month `month`: "stopped at Feb 2031" (CityCalendar.formatShort(lastMonth)), no figure and no row. |
+| 308 | 13 | `public LeftOut left()` | The saves left off the board and why, counted; an empty slot is no save and is not counted. |
+| 323 | 4 | `HistorySave history(int slot)` | The slim history a slot keeps, or null when the slot is not a city on the board: for a harness that holds it to the file's. |
 
