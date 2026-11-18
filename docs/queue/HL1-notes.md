@@ -1,10 +1,14 @@
 # HL1: the households' books closed ({next}, resumed 2026-11-18)
 
-**Where it stands (2026-11-18).** Jerus lifted the stop. The existing batch/HL1 was merged with
-origin/main 477bdb1c3 (0.9.150), never rebased. The old measurements below are historical; the resumed
-checks and final ensemble are recorded under "Resumed on current main". The ship file stays off the
-tip during building. HN1 and LM1-D must land before the final model is measured; the orchestrator
-places the ensemble and dry run. The 2026-11-11 stopped state follows for provenance.
+**Where it stands (2026-11-18, mends handoff).** Jerus lifted the stop. Main was merged,
+never rebased: 477bdb1c3, HN1 f17ff2141, FB12 36157fb19; measured source tip e425b1810.
+All resumed named checks exit 0 or 3, no new red; the default LongPlaytest and all HL1 money
+fixtures pass, every one of 2,404 default months closed and all nine unchanged own-line bounds
+green. Changed figures and per-file merge notes are below; the 2026-11-11 measurements remain
+historical. The ship file is provisional for review. LM1-D still must land and be merged before
+the final 80-run ensemble, which waits for the orchestrator's quiet-slot go; then the scheduled
+ALL dry run and the final marker-drop go. No ensemble, full pick or dry run has started in this
+resumed phase. The stopped state below is retained for provenance.
 
 Brief: `docs/studies/spec-wealth.md` 2.4 and 3.4. Four slices (A the instrument, B the upkeep, C the
 books closed and asserted, D what the ensemble then found), each coded by a Sonnet slice and reviewed;
@@ -496,3 +500,84 @@ ensemble. The default playtest is next on this combined tree.
 (187 soft). No hand-merged generated text. The next default LongPlaytest keeps its trace at
 `target/HL1-trace-*.csv`; it also executes all former MoneyCheck fixtures and HL1 additions in
 LongPlaytest.MoneyFixtures. Only that one named harness runs beside the reserved machine work.
+
+### Default playtest and all HL1 money fixtures: e425b1810 over main 36157fb19
+
+`./batch-check.sh LongPlaytest`: **exit 0**, 1,104 s suite. The default 2,404 months through m2405
+have no finding; every monthly household identity and pool identity closes, every own sum is
+exactly the nine named lines within its unchanged tolerance, and all nine unchanged bounds pass.
+The default moved 956,934,678,600 between pools and households. The current table replaces the
+old default-run figures above (means are monthly shares, not ratios of nominal run totals):
+
+| own line | months fired / 2,404 | absolute run amount | mean monthly share | unchanged bound |
+|---|---:|---:|---:|---:|
+| Unfunded | 1,602 | 428,940,853.19 | 2.30e-3 | 9e-3 |
+| UnsettledIncome | 2,402 | 896,880.60 | 1.56e-3 | 5e-3 |
+| UnsettledRent | 2,403 | 50,463.42 | 1.58e-4 | 5e-4 |
+| UnsettledFees | 2,402 | 5,553.95 | 8.61e-6 | 3e-5 |
+| UnsettledShopping | 100 | 1,663.46 | 1.01e-5 | 7e-5 |
+| CensusStranded | 4 | .04 | 3.85e-10 | 2e-7 |
+| CensusCreated | 15 | .03 | 6.32e-9 | 7e-8 |
+| BondFaceOrphaned | 0 | below displayed .01 | 8.25e-18 | 1e-7 |
+| PublicWagesRestruck | 1,016 | 154,333.47 (net +150,602.94) | 9.97e-5 | 4e-4 |
+
+The same invocation runs every transplanted money fixture. Current figures:
+
+- The industrial household identity: 240 months closed; worst displayed residual -0.000000 at
+  m238 (held 50,736.22 -> 50,436.57, to 937.31, from 1,249.19, own 12.23). Fired in those months:
+  Unfunded 225, Income/Rent/Fees 240 each, Shopping 14, PublicWages 83, the other three zero.
+  No bankruptcy seizure there; BankCheck deliberately causes it at half/twice debt instead.
+- Old steel and copper: each carrier positive in 23/24 months and changing by over a cent in
+  23/24; zero months open. Removing the carrier misses by 10.510909 at m3 for steel, 75.884922
+  at m25 for copper. The premise is still caused on the merged model.
+- Upkeep paid: 600 seats, care 2.33, schools .98, research zero (none standing), safety 13.46,
+  transit .93 inside 74.43, bank 14.75; pending sale 32.46. Next strike: services input
+  13.278216951447927 on 17.70 sold, bank input 11.065180792873273 on 14.75, imports 24.34.
+  Without seats the whole 32.45786365909493 is imported, bank input 14.753574390497697.
+  All payment/strike household closures, separate inputs, save and ordinary reload of the pending
+  sale pass; no flow is inferred from the ending till.
+- The theft premise: X=5.67, the game's later-opened strike closes, a strike opened before the
+  theft sees -5.67 (1.3768%).
+- Bond orphan premise: Retail bond 1, record 12.42, cells 9.52, D=2.9059; orphaned coupon
+  .008185 appears on its own line and would fail without it. At maturity m180, 59 presses on,
+  the own line is 2.9141; every intervening month closes.
+- Payslips: 24 presses, contributions/premiums change by more than a cent in 23; worst residual
+  3.046e-11, largest carrier change 97.435109 at m123, which would miss by that amount without
+  the carrier. Every month closes. No threshold was moved.
+
+All eight kept trace CSVs differ from the supplied FB4 reference
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-FB4-10cc0ca2/`. Both have 2,404 month rows. Common
+non-runtime columns first differ: cash m20 (1227.581 -> 1227.582), GDP m24 (128.864 -> 128.861),
+population m48 (751 -> 752). At m2405 population is 1,339,820 -> 2,485,020, treasury cash
+2,932,454,584.037 -> 3,695,694,645.519, monthly GDP 1,224,905,421.161 -> 1,200,604,851.022.
+This confirms a moved model trace; FB4 predates the HN1 main baseline, so it is not a controlled
+estimate of HL1's growth effect. The final ensemble compares the newest committed baseline,
+currently docs/ensemble/0.9.151.md, after LM1-D is merged. No baseline suite of main was rerun.
+Logs: target/HL1-LongPlaytest.txt, target/HL1-LongPlaytest-suite.txt,
+target/checks/LongPlaytest.log; trace target/HL1-trace-{bank,bonds,borrow,build,house,labour,month,pop}.csv.
+
+### Mends handoff and remaining machine work
+
+No process machinery changed (0 lines added/removed in the tracked scripts or rules). The new
+money assertions belong to existing harnesses. The first-school and mortgage-door fixtures were
+re-caused with their claims/dials intact; all former MoneyCheck assertions remain in HA1's host.
+HL2, NG1 and BI1 are absent as row IDs from current QUEUE.md and pass tools/batch-id.sh; their
+held ship rows are retained once. HL1-R already has a row and is not queued twice; its obsolete
+month-165 ScaleCheck low has been superseded by main's QB1 fixture (now green at 225).
+
+Code is ready for the stranger's integration review, with named checks exit 0 or 3 and no new red.
+Only the orchestrator's machine steps remain: LM1-D must ship and be merged, then ask `HL1
+ensemble?` and wait for the quiet-slot go; run the 80 once on that final model and replace
+`docs/ensemble/HL1.md` with its baseline, current score and growth comparison in these notes.
+Fetch/merge again before the ALL dry run if main moved, ask `HL1 dry run?`, wait for go, run the
+launcher with at least 7,200 s allowed and wait for `gate exit`. After the dry run edit only notes
+and ship, gate-run comment first, validate known-reds, and on the final go drop the provisional
+marker last in its own commit, verify it gone on origin, mail `HL1 ready at COMMIT` and set bus
+state ready. No ensemble, full pick or dry run has been started in this resumed phase.
+
+Before the provisional handoff, origin/main 79e336def (Queue: SZ1) was merged too. This changes
+QUEUE.md only, no model, harness, save path or generated index; the measured source is still
+e425b1810 over 36157fb19. Pick remains ALL 222 (Game 185 readers); review line: needed, money
+Bank.java and BondMarket.java. The additive SectorState pending upkeep/load seam is also part of
+the requested stranger review. No threading change. The provisional ship text deliberately says
+the final ensemble/dry run remain due and is not a final publication claim.
