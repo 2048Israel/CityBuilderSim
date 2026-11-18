@@ -239,6 +239,19 @@ public class PriceLevelCheck {
             observedTwin(townPlain, townToday, TOWN_MONTHS, "--twin-town");
             out.println("\n--- 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown ---");
             theCutOffs(plain, today, builtPlain, builtToday, townPlain, townToday);
+            out.println("\n--- 11. the 1900 founding: the same real city at both price levels ---");
+            Child historicalPlain = Child.run(false, "--twin-1900");
+            Child historicalToday = Child.run(true, "--twin-1900");
+            theTwin(historicalPlain, historicalToday, TWIN_MONTHS);
+            if (historicalPlain.ok && historicalToday.ok) {
+                double[] lanes = historicalPlain.counts.get("lanes");
+                List<String> first = new ArrayList<>();
+                assertTrue("1900 partners receive the same lanes at both price levels in every month",
+                        lanes != null && unequal(lanes, historicalToday.counts.get("lanes"), first) == 0);
+                int active = 0;
+                if (lanes != null) for (double n : lanes) if (n > 0) active++;
+                out.printf("   1900 partner lanes active in %d of %d months (no modern lane is required)%n", active, TWIN_MONTHS + 1);
+            }
         }
 
         out.printf("%nPriceLevelCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
@@ -936,6 +949,7 @@ public class PriceLevelCheck {
 
         static void run(String flag) throws Exception {
             boolean built = flag.equals("--twin-built"), played = flag.equals("--twin-played"), town = flag.equals("--twin-town");
+            boolean historical = flag.equals("--twin-1900");
             PrintStream real = System.out;
             PrintStream sink = new PrintStream(OutputStream.nullOutputStream());
             System.setOut(sink);
@@ -947,7 +961,7 @@ public class PriceLevelCheck {
                 Digest d = new Digest(months + 1);
                 Counts k = new Counts(months + 1);
                 GameFiles townFiles = town ? GameFiles.scratch("pricelevel-town") : null;
-                Game g = town ? townCity(sink, townFiles) : played ? playedCity(sink) : built ? builtCity() : foundedCity();
+                Game g = town ? townCity(sink, townFiles) : played ? playedCity(sink) : built ? builtCity() : historical ? historicalCity() : foundedCity();
                 d.sample(g, 0);
                 k.sample(g, d, 0);
                 for (int m = 1; m <= months; m++) {
@@ -978,6 +992,12 @@ public class PriceLevelCheck {
                 System.exit(2);
             }
             System.exit(0);
+        }
+
+        static Game historicalCity() {
+            Game g = new Game(GameFiles.scratch("pricelevel-1900"), LongPlaytest.founding().withUnfitted(true));
+            g.run();
+            return g;
         }
 
         /** The default founding, as a player starts it. */
@@ -1172,6 +1192,10 @@ public class PriceLevelCheck {
         }
 
         void sample(Game g, int m) {
+            if (g.getFounding().isUnfitted()) {
+                for (PayTier tier : PayTier.values()) put("wage1901." + tier, 'N', m, WageLadder.of(g.getFounding()).monthlyWage(tier));
+                put("teamHire1900", 'N', m, g.getSectors().freight().haulage().teamHirePerMonth());
+            }
             put("cash", 'N', m, g.getCash());
             put("gdp.month", 'N', m, g.getEconomyManager().getMonthGdp());
             put("bank.deposits", 'N', m, g.getBank().getDeposits());
