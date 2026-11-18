@@ -246,6 +246,18 @@ interrupted wrapper's exit 0 is **not** an ensemble pass. The once-only
 ensemble has not run its cases; resume setup only on the orchestrator's go.
 No named harness, playtest, compilation or other JVM is launched during HOLD.
 
+The orchestrator lifts HOLD at 23:33 and grants the ensemble with default
+JOBS beside CR1-L's dry run, requiring a stop at 01:15 for the nightly and a
+restart only on its 02:30 mail. Main has advanced to FB8, 3f0992282 (0.9.142),
+which is merged before the ensemble snapshot. Its incoming source changes
+are CityMap, MapSiteHistory, MapCheck and GameVersion; LongPlaytest is
+unchanged. FB8's notes explicitly record an unmoved model trace, and none of
+those map changes feeds the economy, so the supplied trace reference remains
+applicable. Generated-index conflicts are regenerated, and the post-FB8
+`batch-check.sh --fast` exits 0 (`target/cpb1-fb8-fast.log`). A task-owned
+cutoff helper will invoke the ensemble's own stop helper at 01:15 if needed;
+the snapshot and completed cases stay for the same-label resume.
+
 The seed-window results above are on CPB1's 231f16270 base plus its own model.
 The ship file forwards the bounded-run placement class to the already queued
 CL7 with a scoped LongPlaytest row; it does not cover negative GDP.

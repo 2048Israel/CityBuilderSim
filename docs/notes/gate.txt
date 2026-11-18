@@ -1,8 +1,8 @@
-# gate of Merge batch/HW1-V: refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4, 0.9.141
+# gate of Merge batch/FB8: dM2's three follow-ups, the map's sidecar, 3 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): DM2-A, DM2-B, DM2-C; not beside FB5, FB9 (`MapCheck`, `CityMap`), 0.9.142
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 206 harnesses run in 2377s: 195 passed, 11 failed
+# suite: 209 harnesses run in 1696s: 199 passed, 10 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -55,9 +55,6 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 1
-KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
@@ -67,6 +64,9 @@ DistressBleedCheck | a loss that is only interest holds: months at or above the 
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
+KeptCheck | exit 1
+KeptCheck | ...and the page is the same slider, kept, equal to a page built new      FAIL
+KeptCheck | 1 FAILED
 ShortSellingCheck | exit 1
 ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
 ShortSellingCheck | 1 FAILED

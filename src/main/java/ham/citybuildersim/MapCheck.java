@@ -551,6 +551,8 @@ public class MapCheck {
         String[] saves = Arrays.stream(args).filter(a -> !a.startsWith("-")).toArray(String[]::new);
         network(sq, city, saves);
         sidecar(city, root, sq);
+        siteCodecEdges();
+        relayTakesLastRuns(sq);
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
@@ -1193,6 +1195,8 @@ public class MapCheck {
         /** The month the next one is run in. */
         int month;
         boolean reconciled = true;
+        /** A second map of the same city reconciled beside it to the same counts in the same months, or null: one nothing plans (DM2-A). */
+        CityMap twin;
 
         Months(CityMap map, long[] model, int house, int month) {
             this.map = map;
@@ -1207,7 +1211,9 @@ public class MapCheck {
         /** One month of `houses` more houses. */
         void run(int houses) {
             model[house] += houses;
-            reconciled &= map.reconcile(model, month++);
+            int at = month++;
+            reconciled &= map.reconcile(model, at);
+            if (twin != null) reconciled &= twin.reconcile(model, at);
         }
     }
 
@@ -2084,6 +2090,9 @@ public class MapCheck {
         // Like MainLineCheck's open-ground fixture, choose the eastward gateway: its first main-line arm then follows the owned neck.
         map.runs().setGateway(0);
         Months h = new Months(map, model, house, 1);
+        // Its unseen twin (DM2-A): the same ground and counts, reconciled beside it every month and never planned (unseenWallTwin()).
+        h.twin = CityMap.canonical(land, land::amountsInOrder, types, model, 0);
+        h.twin.runs().setGateway(0);
         CityMap.District d = map.districts().get(0);
         int firstWall = 0, movesAfterWall = 0;
         Snap previous = new Snap(map, d);
@@ -2159,6 +2168,38 @@ public class MapCheck {
                 && back[0] == back[1] && back[2] == 0 && back[6] == 0 && back[7] == 0);
         wallRunArrivals(h, d, store, "after the actual rail and yard return");
         wallRunRoundTrip(map, land, types, "after actual removal, new wall and return");
+        unseenWallTwin(map, h.twin, land, types, d);
+    }
+
+    /**
+     * 2h-f's city unseen (DM2-A): its twin, reconciled beside the watched map to the same counts in the same months through the wall's
+     * birth, its cure by the actual rail and yard, their removal, the wall's return and its second cure, is never planned. Saved before
+     * its first view it holds the watched map's source journals and no wall, and that view must discover every wall event in the month
+     * the watched map's monthly plans dated it and draw the same boxes and streets.
+     */
+    static void unseenWallTwin(CityMap watched, CityMap unseen, CityLand land, BuildingVisual.Type[] types, CityMap.District d) {
+        int month = watched.month(), kept = 0, released = 0;
+        for (int r : d.wallChange) if ((r & 1) != 0) kept++; else released++;
+        int wallMonths = (int) Arrays.stream(d.wallMonth).distinct().count();
+        CityMap.District u = unseen.district(d.dx, d.dy);
+        out.printf("      the watched map's wall journal: %d ways kept and %d released in %d months; the unseen twin's before its first view: %d records%n",
+                kept, released, wallMonths, u == null ? -1 : u.wallMonth.length);
+        check("fixture: the unseen twin is the watched city at its month, reconciled beside it and never planned: its source journals and no wall yet",
+                unseen.month() == month && u != null && u.wallMonth.length == 0 && unseen.sameSources(watched));
+        check("fixture: the watched map dated the wall's birth, its cure, its return and its second cure (ways kept and released, in four months at least)",
+                kept > 0 && released > 0 && wallMonths >= 4);
+        byte[] side = unseen.writeSidecar(month);
+        CityMap back = CityMap.readSidecar(side, land, land::amountsInOrder, types, month, CityMap.stampIn(side));
+        check("the unseen twin's sidecar, saved before its first view, round trips byte for byte", back != null && back.same(unseen)
+                && Arrays.equals(side, back.writeSidecar(month)));
+        if (back == null) return;
+        CityMap.District b = back.district(d.dx, d.dy);
+        back.plan(b);
+        check("first viewed after the wall's birth, cure, return and second cure, the twin dates every wall event in the watched map's month",
+                Arrays.equals(b.wallMonth, d.wallMonth) && Arrays.equals(b.wallChange, d.wallChange));
+        check("...draws the watched map's boxes and streets in every district", sameSourcePlans(watched, back));
+        check("...and keeps the source journals it was saved with: the whole twin is then the watched map, wall journals and all",
+                back.sameSources(unseen) && watched.same(back));
     }
 
     /** Standing moves, legal intersections, outside moves, newly kept/released ways, old way plots covered by new work, bad dates and a changed prefix. */
@@ -2321,6 +2362,83 @@ public class MapCheck {
             check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null && back.same(end)
                     && sameSourcePlans(back, end) && Arrays.equals(after, end.writeSidecar(156)));
         }
+    }
+
+    /**
+     * 4c (DM2-B): the route LX1's 4,000-month city took to a refused sidecar at m3589, caused here on a fresh copy of Jerus's city x 1
+     * where its square holds iron (Squares.ironX1's square). A works whose sites run past its walk's entry is owed the rest from the
+     * next (CityMap.fill()): that district holds runs and no works counted, so no count of its moves its version. A month that moves
+     * two of the resource's claims lays its works again (relay()), and the walks laid anew need nothing of that district. Until DM2-B
+     * its runs were taken off and its version left, its sites' list (kept against the version) was read as it was, its mines drawn
+     * still, the month's site history saw no change in it, and the reread found none where the journal kept them: the whole sidecar
+     * refused.
+     */
+    static void relayTakesLastRuns(Squares sq) {
+        out.println("\n--- 4c. a relay that takes a district's last site runs off draws, journals and saves its sites afresh (DM2-B) ---");
+        BuildingVisual.Type[] types = sq.types;
+        long[] model = sq.ironCounts.clone();
+        CityMap probe = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        int[] cl = probe.claims(Arrays.asList(CityMap.SITED).indexOf(Resource.IRON));
+        int spread = -1, other = -1;
+        for (int t : cl) if (spread < 0 || types[t].sites() > types[spread].sites()) spread = t;
+        for (int t : cl) if (t != spread && other < 0) other = t;
+        check("fixture: iron has two claims on its sites, one a works on more than one site", other >= 0 && types[spread].sites() > 1);
+        if (other < 0 || types[spread].sites() <= 1) return;
+        // The square's iron claims none at month 0; the spread claim then grows a works a month until one is owed into a district that counts none,
+        // and the map is viewed, every district planned, so each one's sites' list is kept.
+        for (int t : cl) model[t] = 0;
+        CityMap map = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        CityLand land = map.land();
+        java.util.function.Function<Resource, double[]> remaining = land::amountsInOrder;
+        boolean reconciled = true;
+        CityMap.District owed = null;
+        int month = 1;
+        for (; month <= RELAY_GROWTH_MONTHS && owed == null; month++) {
+            model[spread]++;
+            reconciled &= map.reconcile(model, month);
+            for (CityMap.District d : map.districts()) if (owed == null && hasRuns(d) && countedOnSites(d, cl) == 0) owed = d;
+        }
+        for (CityMap.District d : map.districts()) map.plan(d);
+        out.printf("      %d works of type %d (%d sites each) by m%d on %,d iron sites; owed into district %s%n", model[spread], spread, types[spread].sites(),
+                month - 1, map.ownedSites(Resource.IRON), owed == null ? "none" : owed.dx + "," + owed.dy);
+        check("fixture: a works is owed sites in a district that counts no works on its sites, its sites' list drawn", reconciled && owed != null);
+        if (owed == null) return;
+        // ...then the spread claim's works all leave in the month the other claim's first arrives: two claims moved, the works laid again from the first site.
+        int relayMonth = month;
+        model[spread] = 0;
+        model[other] = 1;
+        reconciled &= map.reconcile(model, relayMonth);
+        check("fixture: two claims moving in one month lay the works again and take that district's last runs off", reconciled && !hasRuns(owed)
+                && map.districts().stream().anyMatch(MapCheck::hasRuns));
+        int stale = 0;
+        for (CityMap.District d : map.districts()) if (!hasRuns(d)) for (CityMap.DrawnSite s : map.siteList(d.dx, d.dy)) if (s.mine() >= 0) stale++;
+        check("a district a relay took its last runs off draws no mine on its sites", stale == 0);
+        DistrictPlan.Input in = map.planInput(owed);
+        int left = 0;
+        for (int q = 0; in.siteLog != null && q < in.siteLog.length; q++) {
+            if (in.siteLogMonth[q] == relayMonth && (in.siteLog[q] >>> 2 & 3) == DistrictPlan.SITE_MINED && (in.siteLog[q] & 3) == DistrictPlan.SITE_FIELD) left++;
+        }
+        check("its mined plots are journalled back to field in the relay's month", left > 0);
+        byte[] side = map.writeSidecar(relayMonth);
+        CityMap back = CityMap.readSidecar(side, land, remaining, types, relayMonth, CityMap.stampIn(side));
+        check("the city's sidecar written that month is read back, the same map and plans, byte for byte", back != null && map.same(back)
+                && sameSourcePlans(map, back) && Arrays.equals(side, back.writeSidecar(relayMonth)));
+    }
+
+    /** The months 4c grows its spread claim at most, a works a month, to find one owed into a district that counts none: 60. */
+    static final int RELAY_GROWTH_MONTHS = 60;
+
+    /** Whether any slot of a district holds site runs. */
+    static boolean hasRuns(CityMap.District d) {
+        for (int[] rs : d.siteRuns) if (rs != null) return true;
+        return false;
+    }
+
+    /** The works of the given claims counted on sites in a district. */
+    static int countedOnSites(CityMap.District d, int[] claims) {
+        int n = 0;
+        if (d.sited != null) for (int t : claims) n += d.sited[t];
+        return n;
     }
 
     /** The visual-unit adjustment recorded by actual sources for a type and month, over the whole map. */
@@ -5051,6 +5169,58 @@ public class MapCheck {
             check("...and is written and read back in no more than SIDECAR_MS (" + (int) SIDECAR_MS + " ms) each", Timing.within(wms, SIDECAR_MS)
                     && Timing.within(rms, SIDECAR_MS));
         }
+    }
+
+    /**
+     * The source history's rectangle codec at the district's own edges (DM2-C): through the history's own recording, one month turns a
+     * whole district to field, the next mines a whole row, half the row under it from the same column, and the last column down the
+     * rest. A key too narrow for a width of DISTRICT would match the whole row and the half row (one column, one transition) and write
+     * them as one rectangle two rows high, mining plots no record names; the right key writes the four rectangles the spans make.
+     */
+    static void siteCodecEdges() throws java.io.IOException {
+        out.println("\n--- 4b. the source history's rectangles hold at the district's edges: a whole district, a whole row and the last column (DM2-C) ---");
+        int side = CityMap.DISTRICT;
+        // The plan frame's last plot, packed as fixedLogInto() packs a run record (plot << 8 | before << 4 | after, an int), at
+        // DISTRICT_MOST and one side longer: the frame is DISTRICT + 1 a side (DistrictPlan.FRAME), its last plot the south-east corner's.
+        int frameMost = CityMap.DISTRICT_MOST + 1, framePast = frameMost + 1;
+        int lastMost = frameMost * frameMost - 1, lastPast = framePast * framePast - 1;
+        check("CityMap.DISTRICT is within DISTRICT_MOST, the longest side whose plan frame packs its last plot into a positive run record, "
+                + "plot << 8 | 255, and no side longer does", side >= 1 && side <= CityMap.DISTRICT_MOST && side + 1 == DistrictPlan.FRAME
+                && (lastMost << 8 | 255) >= 0 && (lastPast << 8 | 255) < 0);
+        CityMap.District d = new CityMap.District(0, 0, 1, 0);
+        byte[][] masks = { new byte[side * side], null };
+        // The month's mask as it ends, and (an override given) as it began.
+        MapSiteHistory.MaskReader reader = (district, overrides) -> (overrides.isEmpty() ? masks[0] : masks[1]).clone();
+        java.util.function.BiFunction<Integer, Integer, CityMap.District> lookup = (x, y) -> x == 0 && y == 0 ? d : null;
+        MapSiteHistory history = new MapSiteHistory();
+        masks[1] = masks[0].clone();
+        Arrays.fill(masks[0], DistrictPlan.SITE_FIELD);
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 1);
+        masks[1] = masks[0].clone();
+        for (int x = 0; x < side; x++) masks[0][x] = DistrictPlan.SITE_MINED;
+        for (int x = 0; x < side / 2; x++) masks[0][side + x] = DistrictPlan.SITE_MINED;
+        for (int y = 2; y < side; y++) masks[0][y * side + side - 1] = DistrictPlan.SITE_MINED;
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 2);
+        java.io.ByteArrayOutputStream written = new java.io.ByteArrayOutputStream();
+        history.writeDistrict(new java.io.DataOutputStream(written), d, reader);
+        byte[] bytes = written.toByteArray();
+        java.io.DataInputStream head = new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes));
+        int mode = CityMap.readVarint(head), rectangles = CityMap.readVarint(head);
+        MapSiteHistory back = new MapSiteHistory();
+        back.readDistrict(new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes)), d, 2, bytes.length);
+        java.io.ByteArrayOutputStream again = new java.io.ByteArrayOutputStream();
+        back.writeDistrict(new java.io.DataOutputStream(again), d, reader);
+        out.printf("      %d plots a side: %d rectangles in %d bytes for the district's field and the row, half row and last column mined%n",
+                side, rectangles, bytes.length);
+        check("fixture: the history records both months, the whole district and then its spans at the edges, as rectangles", history.hash(d) != 0 && mode == 1);
+        check("the codec writes the four rectangles the spans make: the whole district, the whole row, the half row under it and the last column",
+                rectangles == 4);
+        check("...and reads back the same dated transitions, plot for plot, written again byte for byte", back.same(d, history, d)
+                && Arrays.equals(bytes, again.toByteArray()));
     }
 
     /**

@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
  */
 final class MapSiteHistory {
 
-    /** Reads a district's own 256 by 256 mask; an override replaces its site runs, and a null override means absent before. */
+    /** Reads a district's own DISTRICT by DISTRICT mask; an override replaces its site runs, and a null override means absent before. */
     @FunctionalInterface
     interface MaskReader {
         byte[] mask(CityMap.District district, Map<CityMap.District, int[][]> overrides);
@@ -104,7 +104,7 @@ final class MapSiteHistory {
         return j == null ? 0 : j.hash;
     }
 
-    /** The own district and its east/south seams, transformed to the plan's 257 by 257 frame, in month and plot order. */
+    /** The own district and its east/south seams, transformed to the plan's FRAME by FRAME frame, in month and plot order. */
     void frameInto(CityMap.District d, DistrictPlan.Input in,
                    BiFunction<Integer, Integer, CityMap.District> lookup) {
         Journal[] from = { journals.get(d), journals.get(neighbour(d, 1, 0, lookup)),
@@ -197,16 +197,20 @@ final class MapSiteHistory {
         return k == j.n;
     }
 
-    /** Equal row spans on consecutive rows become one rectangle, without changing any expanded plot transition. */
+    /**
+     * Equal row spans on consecutive rows become one rectangle, without changing any expanded plot transition. A span is matched by
+     * its column, width less one and kinds, one number in DISTRICT's own radix (DM2-C): two different spans never share it, at any
+     * DISTRICT up to CityMap.DISTRICT_MOST, where the 8-bit fields it replaced held only while DISTRICT was 256.
+     */
     private static List<SiteRectangle> rectangles(Journal j) {
         if (j == null) return List.of();
         List<SiteRectangle> out = new ArrayList<>();
-        Map<Integer, SiteRectangle> active = new HashMap<>();
+        Map<Long, SiteRectangle> active = new HashMap<>();
         int month = -1;
         for (int k = 0; k < j.n; ) {
             if (j.month[k] != month) { active.clear(); month = j.month[k]; }
             int end = spanEnd(j, k), plot = j.rec[k] >>> 4, width = end - k, kinds = j.rec[k] & 15;
-            int key = (plot % CityMap.DISTRICT << 12) | ((width - 1) << 4) | kinds;
+            long key = ((long) (plot % CityMap.DISTRICT) * CityMap.DISTRICT + width - 1) << 4 | kinds;
             SiteRectangle r = active.get(key);
             if (r != null && r.plot / CityMap.DISTRICT + r.height == plot / CityMap.DISTRICT) r.height++;
             else {
@@ -304,7 +308,14 @@ final class MapSiteHistory {
                 && Arrays.equals(left.rec, 0, n, right.rec, 0, n);
     }
 
-    /** A loaded journal must end on the actual claims; only districts with transitions need a mask read. */
+    /**
+     * A loaded journal must end on the actual claims; only districts with transitions need a mask read. One district that does not
+     * refuses the whole sidecar (CityMap.readSidecar() answers null and the game draws the map afresh), never that district alone.
+     * WHY (DM2-B, 2026-11-17): the one mismatch on record, LX1's 4,000-month city at m3589 and m3952, was the writer's, not the
+     * reader's: relay() took a district's last runs off without moving its version, so the month's history was written from its kept
+     * site list (MapCheck 4c). Re-born at the load month, its journal would have loaded a map whose dates were wrong there and hidden
+     * the bug the refusal found; a recovery waits for a mismatch no writer caused (DM4).
+     */
     boolean matchesCurrent(MaskReader reader) {
         if (journals.isEmpty() && pendingBirths.isEmpty()) return true;
         for (Map.Entry<CityMap.District, MinedBirth> entry : pendingBirths.entrySet()) {
