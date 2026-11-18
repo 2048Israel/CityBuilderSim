@@ -89,7 +89,7 @@ if not exist "%JDK%\release" (
     exit /b 1
 )
 findstr /b /c:"IMPLEMENTOR=\"Eclipse Adoptium\"" "%JDK%\release" >nul
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo   %JDK% is not Eclipse Temurin: its release file does not say
     echo   IMPLEMENTOR="Eclipse Adoptium". A sold build carries Temurin's runtime
     echo   and no other, so no build.
@@ -98,7 +98,7 @@ if errorlevel 1 (
     exit /b 1
 )
 findstr /b /r /c:"JAVA_VERSION=.21\." "%JDK%\release" >nul
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo   %JDK% is not Java 21: its release file's JAVA_VERSION is another,
     echo   so no build.
     echo.
@@ -132,7 +132,7 @@ echo.
 
 rem  The JDK against the pins: the exact Temurin whose source archive ships.
 "%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging jdk "%JDK%"
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   This JDK is not the one whose source ships with the game - the
     echo   reason is above - so no build.
@@ -146,7 +146,7 @@ rem  The real Earth, data\earth-2.bin (about 282 MB), is not in git. A build
 rem  must carry it, so this fetches it when this PC lacks it or holds a bad
 rem  copy, and stops before jpackage when it cannot be had.
 call "tools\earth\get-earth.bat" nopause
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   No good data\earth-2.bin, so no build: without it the game would
     echo   offer only the generated world. The reason is above.
@@ -162,7 +162,7 @@ rem  Since LC3 (2026-11-02) it holds no figure a sold game may not ship, so a
 rem  build carries it: without it the game has no nations, no world market
 rem  and no partners (IR1: 0.9.0 went out so). Fetched as the Earth is.
 call "tools\earth\get-earth.bat" nopause world-1
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   No good data\world-1.bin, so no build: without it the game would
     echo   have no nations. The reason is above.
@@ -182,7 +182,7 @@ rem  and checked every build. One missing or changed and there is no build.
 set "SOURCES=%USERPROFILE%\Tools\CityBuilderSim-sources"
 if defined CBS_SOURCE_CACHE set "SOURCES=%CBS_SOURCE_CACHE%"
 "%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging fetch "%SOURCES%"
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   No good copy of every source archive, so no build: a sold build
     echo   carries the complete source of OpenJFX and of its Java runtime.
@@ -220,15 +220,20 @@ rem  have used itself, and jpackage takes it as it is. Temurin's NOTICE, its
 rem  distribution's notice, goes beside the runtime's release file and legal
 rem  folder, where the Credits page reads them.
 if exist "build\runtime" rmdir /s /q "build\runtime"
+rem  source\README.txt gives this command as runtime.jlink in the pins, and
+rem  PackagingCheck holds the two the same: change one, change the other.
 "%JDK%\bin\jlink.exe" --add-modules %MODULES% --strip-native-commands --strip-debug --no-man-pages --no-header-files --output "build\runtime"
-if errorlevel 1 (
+if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   jlink failed - the reason is above.
-    echo.
-    %PAUSE%
-    exit /b 1
+    goto unfit
 )
 copy /y "%JDK%\NOTICE" "build\runtime\NOTICE" >nul
+if not "%ERRORLEVEL%"=="0" (
+    echo.
+    echo   Could not copy the JDK's NOTICE into the runtime.
+    goto unfit
+)
 
 rem ------------------------------- build -------------------------------
 echo  Running jpackage. This takes a minute.
@@ -251,15 +256,14 @@ rem  name would strand each of them at the first update.
   --runtime-image "build\runtime" ^
   --dest "dist" ^
   --vendor "Jerus" ^
+  --copyright "Copyright (c) 2026 Jerus" ^
   --icon "src\main\resources\icons\icon.ico" ^
   --description "Civic Ledger"
 
 if not "%ERRORLEVEL%"=="0" (
     echo.
     echo   jpackage failed with code %ERRORLEVEL% - the reason is above.
-    echo.
-    %PAUSE%
-    exit /b 1
+    goto unfit
 )
 
 rem ------------------- put the balance file where it is editable -------------------
@@ -289,17 +293,13 @@ if not exist "dist\%APPNAME%\data\earth-2.bin" (
     echo.
     echo   Could not copy data\earth-2.bin into dist\%APPNAME%\data - stopping
     echo   rather than leave a build without the Earth.
-    echo.
-    %PAUSE%
-    exit /b 1
+    goto unfit
 )
 if not exist "dist\%APPNAME%\data\world-1.bin" (
     echo.
     echo   Could not copy data\world-1.bin into dist\%APPNAME%\data - stopping
     echo   rather than leave a build without the nations.
-    echo.
-    %PAUSE%
-    exit /b 1
+    goto unfit
 )
 echo  Copied data\earth-2.bin and data\world-1.bin next to the exe, with their credits.
 
@@ -311,9 +311,9 @@ rem  its legal folder, every notice and terms file, every archive against its
 rem  pin - and an image that fails is removed, so nothing unfit is shipped.
 echo  Staging the source archives and the notices...
 "%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging stage "%SOURCES%" "dist\%APPNAME%"
-if errorlevel 1 goto unfit
+if not "%ERRORLEVEL%"=="0" goto unfit
 "%JDK%\bin\java.exe" -cp "%JARPATH%" ham.citybuildersim.tools.Packaging verify "dist\%APPNAME%"
-if errorlevel 1 goto unfit
+if not "%ERRORLEVEL%"=="0" goto unfit
 
 rem ------------------------------- the zip -------------------------------
 rem  What goes up as the release: the whole folder under its own name, as
@@ -324,7 +324,7 @@ set "ZIP=dist\%APPNAME%-%APPVER%.zip"
 if exist "%ZIP%" del /q "%ZIP%"
 echo  Zipping it as %ZIP% ...
 tar -a -c -f "%ZIP%" -C dist "%APPNAME%" 2>nul
-if errorlevel 1 if exist "%ZIP%" del /q "%ZIP%"
+if not "%ERRORLEVEL%"=="0" if exist "%ZIP%" del /q "%ZIP%"
 if not exist "%ZIP%" powershell -NoProfile -Command "Compress-Archive -Path 'dist\%APPNAME%' -DestinationPath '%ZIP%'"
 
 echo.
@@ -355,10 +355,14 @@ start "" /D "dist\%APPNAME%" "%APPNAME%.exe"
 pause
 exit /b 0
 
+rem  Every stop after the previous build is cleared comes here (the CR1-J
+rem  review): a half-built image, an exe without its source or notices, is
+rem  removed with this version's zip, so nothing unfit is left to upload.
 :unfit
 echo.
-echo   The built image lacks what a sold build must carry, listed above, so
-echo   dist\%APPNAME% and this version's zip are removed: nothing is published.
+echo   The build stopped - the reason is above - or the image lacks what a
+echo   sold build must carry, so dist\%APPNAME% and this version's zip are
+echo   removed: nothing is published.
 echo.
 if exist "dist\%APPNAME%" rmdir /s /q "dist\%APPNAME%"
 if exist "dist\%APPNAME%-%APPVER%.zip" del /q "dist\%APPNAME%-%APPVER%.zip"

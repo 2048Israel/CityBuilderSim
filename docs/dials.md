@@ -2,9 +2,9 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,171 constants in 591 files.**
+**6,173 constants in 591 files.**
 
-## model (2934 constants)
+## model (2936 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -847,22 +847,24 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 47 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
-| 50 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
-| 53 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
-| 56 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
-| 59 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
-| 62 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
-| 67 | `Credits.MICROSOFT` | `"/credits/microsoft/NOTICE.txt"` | The notice that names Microsoft's runtime files the game carries and the terms they come under (CR1-J). |
-| 70 | `Credits.MICROSOFT_FILES` | `List.of(MICROSOFT, "/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt")` | The notice and Microsoft's licence terms for the Visual C++ 2015-2022 runtime, in full. |
-| 74 | `Credits.SOURCE_PINS` | `"/credits/source-archives.properties"` | The source archives' pins: each archive's file, version, origin and SHA-256 (CR1-J); tools.Packaging stages them. |
-| 77 | `Credits.SOURCE_FOLDER` | `"source"` | The folder beside the exe that holds the complete corresponding source archives and their README. |
-| 80 | `Credits.LEGAL_FOLDER` | `"legal"` | The folder beside the exe that holds a copy of tools/credits, the libraries' and Microsoft's texts. |
-| 83 | `Credits.RUNTIME_LEGAL` | `"runtime/legal"` | The runtime's legal folder as the exe ships it, beside the exe; the page reads it from java.home. |
-| 86 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
-| 90 | `Credits.MICROSOFT_LEAD` | `"Microsoft's C and C++ runtime libraries, which the Java runtime and OpenJFX's " + "gra...` | The line above Microsoft's notice and terms. |
-| 101 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource, javaHome()))` | The shared snapshot of the page's sections and complete legal texts. |
-| 181 | `Credits.REFERENCE` | `Pattern.compile("\\A\\s*Please see(\\S+)\\s*\\z")` | jlink's note in place of a file another module already ships: on Windows, where it makes no links, "Please see ..\java.base\LICENSE"; the path is relative to the module's folder. |
+| 48 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
+| 51 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
+| 54 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
+| 57 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
+| 60 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
+| 63 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
+| 68 | `Credits.MICROSOFT` | `"/credits/microsoft/NOTICE.txt"` | The notice that names Microsoft's runtime files the game carries and the terms they come under (CR1-J). |
+| 71 | `Credits.MICROSOFT_FILES` | `List.of(MICROSOFT, "/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt", "/credits/mic...` | The notice and Microsoft's licence terms in full: the Visual C++ 2015-2022 runtime's, and the Windows SDK's, whose Distributable Code the Universal C Runtime is. |
+| 75 | `Credits.SOURCE_PINS` | `"/credits/source-archives.properties"` | The source archives' pins: each archive's file, version, origin and SHA-256 (CR1-J); tools.Packaging stages them. |
+| 78 | `Credits.SOURCE_FOLDER` | `"source"` | The folder beside the exe that holds the complete corresponding source archives and their README. |
+| 81 | `Credits.LEGAL_FOLDER` | `"legal"` | The folder beside the exe that holds a copy of tools/credits, the libraries' and Microsoft's texts. |
+| 84 | `Credits.RUNTIME_LEGAL` | `"runtime/legal"` | The runtime's legal folder as the exe ships it, beside the exe; the page reads it from java.home. |
+| 87 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 91 | `Credits.MICROSOFT_LEAD` | `"Microsoft's C and C++ runtime libraries, which the Java runtime and OpenJFX's " + "gra...` | The line above Microsoft's notice and terms. |
+| 101 | `Credits.COPYRIGHT` | `"Copyright(c) 2026 Jerus"` | The game's own copyright notice. |
+| 104 | `Credits.GAME_NOTICE` | `GameVersion.NAME + " is " + COPYRIGHT + ".The game's own code, rules, " + "tables, art ...` | The page's first section: whose the game is, and that the works below are their authors'. |
+| 116 | `Credits.Loaded.SECTIONS` | `List.copyOf(sections(Credits : : readResource, javaHome()))` | The shared snapshot of the page's sections and complete legal texts. |
+| 197 | `Credits.REFERENCE` | `Pattern.compile("\\A\\s*Please see(\\S+)\\s*\\z")` | jlink's note in place of a file another module already ships: on Windows, where it makes no links, "Please see ..\java.base\LICENSE"; the path is relative to the module's folder. |
 
 ### Crime.java ([map](map/Crime.md))
 
@@ -7591,7 +7593,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `PackagingCheck.CREDITS` | `Packaging : : credit` | The jar's credits texts, as Build EXE.bat's java -cp reads them. |
+| 78 | `PackagingCheck.CREDITS` | `Packaging : : credit` | The jar's credits texts, as Build EXE.bat's java -cp reads them. |
 
 ### PartnerCallsCheck.java ([map](map/PartnerCallsCheck.md))
 

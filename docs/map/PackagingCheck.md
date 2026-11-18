@@ -1,4 +1,4 @@
-# PackagingCheck.java - 337 lines · 9 methods · 1 constants · harnesses
+# PackagingCheck.java - 380 lines · 9 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PackagingCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -27,40 +27,43 @@
 >   4. A RUNTIME THAT IS NOT THE PINNED TEMURIN STOPS THE BUILD. Another vendor or version, Oracle's
 >      No-Fee Terms, a non-GPL java.base licence, another OpenJFX build, a Microsoft library the
 >      notice does not name.
->   5. THE PACKAGING JDK IS HELD TO THE PINS: vendor, vendor version and Java version, exactly.
->   6. THE PINS ARE THE SHIPPED BINARIES'. OpenJFX's pinned build is the one in the dependency jars,
->      pom.xml's version; the probes read the vendor from a real runtime.
+>   5. THE PACKAGING JDK IS HELD TO THE PINS: vendor, vendor version and Java version, exactly, and
+>      the temurin-build commit its release file names (BUILD_SOURCE), whose archive ships too.
+>   6. THE PINS ARE THE SHIPPED BINARIES', AND AGREE WITH THEMSELVES. OpenJFX's pinned build is the
+>      one in the dependency jars, pom.xml's version; the probes read the vendor from a real
+>      runtime; each archive's file and URL name its version, so a version bumped alone fails.
 >   7. BUILD EXE.BAT NAMES ITS JDK AND CHECKS THE IMAGE BEFORE THE ZIP. No jpackage from PATH or
 >      Program Files; Temurin's own jlink and jpackage; fetch before jpackage, stage and verify
->      after it and before the zip, and a failed image removed.
+>      after it and before the zip; every stop from the runtime step on removes the image and this
+>      version's zip; no "if errorlevel"; the exe's copyright the game's; its jlink line the README's.
 
-**Uses:** [Packaging](Packaging.md) (35), [Credits](Credits.md) (11), [TempDirs](TempDirs.md) (5)
+**Uses:** [Packaging](Packaging.md) (43), [Credits](Credits.md) (13), [TempDirs](TempDirs.md) (5)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `PackagingCheck.CREDITS` | `Packaging : : credit` | The jar's credits texts, as Build EXE.bat's java -cp reads them. |
+| 78 | `PackagingCheck.CREDITS` | `Packaging : : credit` | The jar's credits texts, as Build EXE.bat's java -cp reads them. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 57 | `private static int fails` |  |
+| 60 | `private static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 283 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
-| 59 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 65 | 8 | `static boolean names(List<String> problems, String...words)` | True when some problem contains every one of the words. |
-| 78 | 12 | `static Properties fixturePins(Path cache) throws IOException` | Pins of two small fixture archives, the rest as the real pins have them. |
-| 92 | 4 | `static Packaging.Probes pinnedProbes(Properties pins)` | Probes that say the runtime is the pinned Temurin and the jar's OpenJFX the pinned build. |
-| 98 | 30 | `static Path image(Properties pins) throws IOException` | An image as Build EXE.bat leaves it before staging: runtime, notices, legal folder, a jar, the data's credits. |
-| 130 | 1 | **type** `record Fixture(Path cache, Path image, Properties pins)` | A complete, staged fixture image and its cache and pins. |
-| 132 | 8 | `static Fixture staged() throws IOException` |  |
-| 141 | 3 | `static List<String> verify(Fixture f) throws IOException` |  |
-| 145 | 184 | `public static void main(String[] args) throws Exception` |  |
-| 330 | 7 | `static void deleteTree(Path root) throws IOException` |  |
+| 58 | 323 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
+| 62 | 4 | `static void check(String label, boolean ok, String detail)` |  |
+| 68 | 8 | `static boolean names(List<String> problems, String...words)` | True when some problem contains every one of the words. |
+| 81 | 13 | `static Properties fixturePins(Path cache) throws IOException` | Pins of two small fixture archives, the rest as the real pins have them. |
+| 96 | 4 | `static Packaging.Probes pinnedProbes(Properties pins)` | Probes that say the runtime is the pinned Temurin and the jar's OpenJFX the pinned build. |
+| 102 | 30 | `static Path image(Properties pins) throws IOException` | An image as Build EXE.bat leaves it before staging: runtime, notices, legal folder, a jar, the data's credits. |
+| 134 | 1 | **type** `record Fixture(Path cache, Path image, Properties pins)` | A complete, staged fixture image and its cache and pins. |
+| 136 | 8 | `static Fixture staged() throws IOException` |  |
+| 145 | 3 | `static List<String> verify(Fixture f) throws IOException` |  |
+| 149 | 223 | `public static void main(String[] args) throws Exception` |  |
+| 373 | 7 | `static void deleteTree(Path root) throws IOException` |  |
 

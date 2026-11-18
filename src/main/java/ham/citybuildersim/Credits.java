@@ -3,6 +3,7 @@ package ham.citybuildersim;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -66,9 +67,9 @@ public final class Credits {
     /** The notice that names Microsoft's runtime files the game carries and the terms they come under (CR1-J). */
     public static final String MICROSOFT = "/credits/microsoft/NOTICE.txt";
 
-    /** The notice and Microsoft's licence terms for the Visual C++ 2015-2022 runtime, in full. */
+    /** The notice and Microsoft's licence terms in full: the Visual C++ 2015-2022 runtime's, and the Windows SDK's, whose Distributable Code the Universal C Runtime is. */
     public static final List<String> MICROSOFT_FILES = List.of(MICROSOFT,
-            "/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt");
+            "/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt", "/credits/microsoft/LICENSE-windows-sdk.txt");
 
     /** The source archives' pins: each archive's file, version, origin and SHA-256 (CR1-J); tools.Packaging stages them. */
     public static final String SOURCE_PINS = "/credits/source-archives.properties";
@@ -88,7 +89,21 @@ public final class Credits {
 
     /** The line above Microsoft's notice and terms. */
     public static final String MICROSOFT_LEAD = "Microsoft's C and C++ runtime libraries, which the Java runtime and OpenJFX's "
-            + "graphics library carry. Their notice and Microsoft's licence terms for them follow in full.";
+            + "graphics library carry. Their notice and Microsoft's licence terms for them, the Visual C++ runtime's and "
+            + "the Windows SDK's, follow in full.";
+
+    /**
+     * The game's own copyright notice. The CR1-J review: Microsoft's Distributable Code terms ask the
+     * program that carries the code to display its valid copyright notice. The name is the one the
+     * exe has shown since the itch.io build (jpackage's --vendor); Build EXE.bat passes this as
+     * --copyright, and the page's first section says it.
+     */
+    public static final String COPYRIGHT = "Copyright (c) 2026 Jerus";
+
+    /** The page's first section: whose the game is, and that the works below are their authors'. */
+    public static final String GAME_NOTICE = GameVersion.NAME + " is " + COPYRIGHT + ". The game's own code, rules, "
+            + "tables, art and words are Jerus's. The data, type, libraries and runtime in the sections below are their "
+            + "authors' and are used under the licences shown with them.";
 
     /** The page's sections, in order, loaded once; later menu visits do no archive or disk I/O. */
     public static List<Section> sections() {
@@ -114,6 +129,7 @@ public final class Credits {
     /** The same over a runtime folder of the harness's choosing, whose legal/ and NOTICE are read. */
     static List<Section> sections(Function<String, String> reader, Path runtime) {
         List<Section> out = new ArrayList<>();
+        out.add(new Section(GameVersion.NAME, null, null, null, GAME_NOTICE));
         out.add(new Section("The Earth", EARTH, "data/earth-2-ATTRIBUTION.txt", null, reader.apply(EARTH)));
         out.add(new Section("The nations", NATIONS, "data/world-ATTRIBUTION.txt", null, reader.apply(NATIONS)));
         out.add(new Section("The fonts", FONTS, null, FONT_NOTICE, reader.apply(FONTS)));
@@ -131,7 +147,7 @@ public final class Credits {
                 readAll(reader, MICROSOFT_FILES)));
         String pins = reader.apply(SOURCE_PINS);
         out.add(new Section("The source code", SOURCE_PINS, SOURCE_FOLDER + "/README.txt",
-                "Where the complete source code of OpenJFX and of the Java runtime is.",
+                "Where the complete source code of OpenJFX and of the Java runtime is, with the scripts that built them.",
                 pins == null ? null : sourceReadme(properties(pins))));
         return out;
     }
@@ -196,7 +212,8 @@ public final class Credits {
         List<Path> files;
         try (Stream<Path> walk = Files.walk(legal)) {
             files = new ArrayList<>(walk.filter(Files::isRegularFile).toList());
-        } catch (IOException e) {
+        } catch (IOException | UncheckedIOException e) {
+            // The walk reports a folder it cannot read mid-stream, unchecked; either way the page says so rather than fail to load.
             problems.add(legal + " could not be listed: " + e.getMessage());
             return null;
         }
@@ -299,14 +316,19 @@ public final class Credits {
         out.append("The complete corresponding source code\n\n");
         out.append("OpenJFX and the Java runtime are free software under the GNU General Public License, version 2, "
                 + "with the Classpath Exception. As section 3 of that licence asks, the game carries their complete "
-                + "corresponding source code, unchanged from their publishers' releases, in the folder "
-                + SOURCE_FOLDER + " beside CityBuilderSim.exe:");
+                + "corresponding source code, with the scripts that built them, unchanged from their publishers' releases, "
+                + "in the folder " + SOURCE_FOLDER + " beside CityBuilderSim.exe:");
         for (String a : archives(pins)) {
             out.append("\n\n").append(pins.getProperty(a + ".file")).append('\n')
                     .append(pins.getProperty(a + ".what")).append(", version ").append(pins.getProperty(a + ".version")).append('\n')
                     .append("from ").append(pins.getProperty(a + ".url")).append('\n')
                     .append("SHA-256 ").append(pins.getProperty(a + ".sha256"));
         }
+        String jlink = pins.getProperty("runtime.jlink");
+        if (jlink != null) out.append("\n\nThe folder runtime beside CityBuilderSim.exe is Temurin's JDK, version ")
+                .append(pins.getProperty("runtime.version")).append(", cut down by its own jlink, unchanged otherwise, with this command:\n\n")
+                .append(jlink).append("\n\nand the JDK's NOTICE copied into it. jpackage, from the same JDK, then made "
+                + "CityBuilderSim.exe around that runtime and the game's jar.");
         out.append("\n\nEach archive is the publisher's own, byte for byte; its SHA-256 above lets anyone check it "
                 + "against the publisher's copy.\n");
         return out.toString();

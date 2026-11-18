@@ -89,6 +89,7 @@
                                         <file>${project.basedir}/tools/credits/openjfx/mesa3d.md</file>
                                         <file>${project.basedir}/tools/credits/microsoft/NOTICE.txt</file>
                                         <file>${project.basedir}/tools/credits/microsoft/LICENSE-vc-runtime-2015-2022.txt</file>
+                                        <file>${project.basedir}/tools/credits/microsoft/LICENSE-windows-sdk.txt</file>
                                         <file>${project.basedir}/tools/credits/source-archives.properties</file>
                                         <file>${project.basedir}/tools/credits/sources.properties</file>
                                     </files>

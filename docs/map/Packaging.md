@@ -1,4 +1,4 @@
-# Packaging.java - 427 lines · 20 methods · 7 constants · tools
+# Packaging.java - 454 lines · 21 methods · 7 constants · tools
 
 `ham/citybuildersim/tools/Packaging.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 > PackagingCheck holds on fixtures: a missing archive, a changed one, a lost notice or a runtime
 > from another vendor each stop the build before the zip.
 
-**Uses:** [Credits](Credits.md) (25)
+**Uses:** [Credits](Credits.md) (26)
 
 **Used by (2):** [CreditsCheck](CreditsCheck.md), [PackagingCheck](PackagingCheck.md)
 
@@ -32,9 +32,9 @@
 | line | section |
 |---:|---|
 | 145 | · the packaging JDK |
-| 181 | · the archives |
-| 262 | · the check of the built image |
-| 377 | · the probes |
+| 208 | · the archives |
+| 289 | · the check of the built image |
+| 404 | · the probes |
 
 ## Constants
 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 370 | **type** `public final class Packaging` | Build EXE.bat's source archives and its check of the built image (CR1-J): the packaging JDK checked against the pins, the complete corresponding sources fetched once into a cache outside git and staged beside the exe,... |
+| 58 | 397 | **type** `public final class Packaging` | Build EXE.bat's source archives and its check of the built image (CR1-J): the packaging JDK checked against the pins, the complete corresponding sources fetched once into a cache outside git and staged beside the exe,... |
 | 60 | 1 | `private Packaging()` |  |
 | 78 | 1 | **type** `public record Probes(Function<Path, Set<String>> runtimeStrings, Function<Path, String> fxVersion)` | How a check reads what is inside the built binaries; PackagingCheck's fixtures replace it. |
 | 83 | 19 | `public static void main(String[] args) throws Exception` |  |
@@ -61,37 +61,38 @@
 | 121 | 7 | `public static String credit(String resource)` | A credits text from this jar, as the Credits page reads it; null when the jar lacks it. |
 | 130 | 9 | `public static List<String> legalFiles()` | The classpath texts the folder beside the exe carries, as legal/ followed by their path under credits/. |
 
-### the packaging JDK (lines 145-180)
+### the packaging JDK (lines 145-207)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 148 | 11 | `public static Map<String, String> release(Path file) throws IOException` | A release file's KEY="value" lines. |
-| 161 | 15 | `public static List<String> checkJdk(Path jdk, Properties pins) throws IOException` | The packaging JDK is the one whose source the pins name: vendor, vendor version and Java version, exactly. |
-| 177 | 3 | `private static void expect(List<String> problems, String what, String got, String want)` |  |
+| 161 | 19 | `public static List<String> checkJdk(Path jdk, Properties pins) throws IOException` | The packaging JDK is the one whose source the pins name: vendor, vendor version and Java version, exactly. |
+| 186 | 17 | `public static List<String> pinProblems(Properties pins)` | The pins agree with themselves: each archive's file and URL name its version (a "+" written "_" in a file name, "%2B" in a URL), and the runtime's vendor and Java versions are its version's. |
+| 204 | 3 | `private static void expect(List<String> problems, String what, String got, String want)` |  |
 
-### the archives (lines 181-261)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 184 | 10 | `public static String sha256(Path file) throws IOException` | A file's SHA-256 in lower-case hex, read as a stream. |
-| 196 | 3 | `public static boolean pinned(Path file, String sha) throws IOException` | True when the file is there and its SHA-256 is the pin's. |
-| 201 | 33 | `public static List<String> fetch(Path cache, Properties pins) throws IOException` | Fetches each pinned archive the cache lacks or holds changed, through the system's proxy settings; a download whose hash differs is thrown away. |
-| 240 | 21 | `public static List<String> stage(Path cache, Path image, Properties pins, Function<String, String> credits) throws IOException` | Copies each pinned archive from the cache into the image's source folder with the README, and the jar's legal texts into its legal folder; an archive missing from the cache or changed there is a problem, and nothing i... |
-
-### the check of the built image (lines 262-376)
+### the archives (lines 208-288)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 270 | 71 | `public static List<String> verify(Path image, Properties pins, Function<String, String> credits, Probes probes) throws IOException` | Everything the image must carry before it is zipped: Temurin's runtime and its notices with every reference inside its legal folder, no Oracle No-Fee Terms, Microsoft's terms for every Microsoft library it carries, th... |
-| 343 | 6 | `private static void same(List<String> problems, Path image, Path file, String want, String what) throws IOException` | A file beside the exe holds the jar's text exactly. |
-| 351 | 3 | `public static List<String> microsoftLibraries(Path image) throws IOException` | Microsoft's libraries the image carries: in the runtime's bin, and inside the game's jar. |
-| 356 | 20 | `public static List<String> microsoftLibraries(Path image, List<String> problems) throws IOException` | The same, a jar that cannot be opened named in {@code problems}: its libraries cannot be seen, so the image is not fit. |
+| 211 | 10 | `public static String sha256(Path file) throws IOException` | A file's SHA-256 in lower-case hex, read as a stream. |
+| 223 | 3 | `public static boolean pinned(Path file, String sha) throws IOException` | True when the file is there and its SHA-256 is the pin's. |
+| 228 | 33 | `public static List<String> fetch(Path cache, Properties pins) throws IOException` | Fetches each pinned archive the cache lacks or holds changed, through the system's proxy settings; a download whose hash differs is thrown away. |
+| 267 | 21 | `public static List<String> stage(Path cache, Path image, Properties pins, Function<String, String> credits) throws IOException` | Copies each pinned archive from the cache into the image's source folder with the README, and the jar's legal texts into its legal folder; an archive missing from the cache or changed there is a problem, and nothing i... |
 
-### the probes (lines 377-427)
+### the check of the built image (lines 289-403)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 385 | 8 | `public static Set<String> runtimeStrings(Path runtime)` | The string constants of java.lang.VersionProps in a runtime image's java.base, read through that image's own jrt file system: its vendor ("Eclipse Adoptium") and vendor version ("Temurin-21.0.13+9") among them. |
-| 395 | 21 | `public static Set<String> constants(byte[] classFile) throws IOException` | A class file's UTF-8 constants. |
-| 418 | 9 | `public static String fxVersion(Path jar)` | OpenJFX's build in a jar, as its own VersionInfo says ("21+31"); null when the jar has none. |
+| 297 | 71 | `public static List<String> verify(Path image, Properties pins, Function<String, String> credits, Probes probes) throws IOException` | Everything the image must carry before it is zipped: Temurin's runtime and its notices with every reference inside its legal folder, no Oracle No-Fee Terms, Microsoft's terms for every Microsoft library it carries, th... |
+| 370 | 6 | `private static void same(List<String> problems, Path image, Path file, String want, String what) throws IOException` | A file beside the exe holds the jar's text exactly. |
+| 378 | 3 | `public static List<String> microsoftLibraries(Path image) throws IOException` | Microsoft's libraries the image carries: in the runtime's bin, and inside the game's jar. |
+| 383 | 20 | `public static List<String> microsoftLibraries(Path image, List<String> problems) throws IOException` | The same, a jar that cannot be opened named in {@code problems}: its libraries cannot be seen, so the image is not fit. |
+
+### the probes (lines 404-454)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 412 | 8 | `public static Set<String> runtimeStrings(Path runtime)` | The string constants of java.lang.VersionProps in a runtime image's java.base, read through that image's own jrt file system: its vendor ("Eclipse Adoptium") and vendor version ("Temurin-21.0.13+9") among them. |
+| 422 | 21 | `public static Set<String> constants(byte[] classFile) throws IOException` | A class file's UTF-8 constants. |
+| 445 | 9 | `public static String fxVersion(Path jar)` | OpenJFX's build in a jar, as its own VersionInfo says ("21+31"); null when the jar has none. |
 

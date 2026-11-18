@@ -56,9 +56,12 @@ import javax.xml.xpath.XPathFactory;
  *   8. THE JAVA RUNTIME'S NOTICES ARE ITS OWN (CR1-J). The runtime's NOTICE and every file of
  *      its legal folder, java.base's first, in full; jlink's "Please see" notes kept and resolved
  *      inside the folder, and one naming a file it lacks, or outside it, marks the section missing.
- *   9. MICROSOFT'S TERMS FOR ITS RUNTIME FILES. The notice and Microsoft's pinned licence text in
- *      full, the notice naming every Microsoft library in OpenJFX's Windows graphics jar.
+ *   9. MICROSOFT'S TERMS FOR ITS RUNTIME FILES. The notice and Microsoft's two pinned licences in
+ *      full, the C++ files under Visual Studio's, the C runtime under the SDK's, the notice naming
+ *      every Microsoft library in OpenJFX's Windows graphics jar (skipped where Maven gives no -win jar).
  *  10. WHERE THE SOURCE IS. The section is the README the pins make, naming each archive.
+ *  11. THE GAME'S OWN COPYRIGHT FIRST (the CR1-J review). Microsoft's Distributable Code terms ask
+ *      for the program's copyright notice: the page opens with it, and the exe carries the same.
  */
 public class CreditsCheck {
 
@@ -83,8 +86,8 @@ public class CreditsCheck {
     /** The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. */
     static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception {
         System.out.println("--- the libraries' release notices and licences ---");
-        check("the libraries follow the fonts, one section each, then the runtime, Microsoft's libraries and the source",
-                sections.stream().map(Credits.Section::title).toList().equals(List.of("The Earth", "The nations", "The fonts", "Gson", "OpenJFX",
+        check("the game's own notice first; the libraries follow the fonts, one section each, then the runtime, Microsoft's libraries and the source",
+                sections.stream().map(Credits.Section::title).toList().equals(List.of(GameVersion.NAME, "The Earth", "The nations", "The fonts", "Gson", "OpenJFX",
                         "The Java runtime", "Microsoft's runtime libraries", "The source code")), null);
         String provenance = Credits.readResource("/credits/sources.properties");
         check("the jar carries the legal texts' release provenance", provenance != null, null);
@@ -106,7 +109,7 @@ public class CreditsCheck {
             }
         }
         for (String resource : List.of(Credits.GSON, Credits.OPENJFX)) {
-            Credits.Section section = sections.stream().filter(s -> s.resource().equals(resource)).findFirst().orElse(null);
+            Credits.Section section = sections.stream().filter(s -> java.util.Objects.equals(s.resource(), resource)).findFirst().orElse(null);
             check(resource + " has a section with all its texts", section != null && !section.missing(), null);
             if (section == null || section.missing()) continue;
             if (resource.equals(Credits.GSON)) {
@@ -124,7 +127,7 @@ public class CreditsCheck {
         for (String missing : paths) {
             String resource = missing.equals(Credits.GSON) ? Credits.GSON : Credits.OPENJFX;
             Credits.Section section = Credits.sections(path -> path.equals(missing) ? null : Credits.readResource(path)).stream()
-                    .filter(s -> s.resource().equals(resource)).findFirst().orElseThrow();
+                    .filter(s -> java.util.Objects.equals(s.resource(), resource)).findFirst().orElseThrow();
             check("missing " + missing + " marks the whole library section missing", section.missing(), null);
             check("its missing note identifies the library", Credits.missingNote(section).contains(section.title()), null);
         }
@@ -227,42 +230,67 @@ public class CreditsCheck {
 
     /** Microsoft's notice and terms, and where the source is, as the jar and the pins hold them (CR1-J). */
     static void microsoftAndSource(List<Credits.Section> sections, boolean inRepository) throws IOException {
+        System.out.println("--- the game's own copyright notice comes first ---");
+        Credits.Section game = sections.isEmpty() ? null : sections.get(0);
+        check("the page opens with " + GameVersion.NAME + "'s own notice", game != null && game.title().equals(GameVersion.NAME)
+                && Credits.GAME_NOTICE.equals(game.text()), null);
+        check("it gives the game's copyright, Credits.COPYRIGHT, which Build EXE.bat stamps on the exe", Credits.GAME_NOTICE.contains(Credits.COPYRIGHT)
+                && Credits.COPYRIGHT.matches("Copyright \\(c\\) 20\\d\\d(-20\\d\\d)? \\S.*"), Credits.COPYRIGHT);
+        if (inRepository) check("Build EXE.bat's --copyright is it", read(Path.of("Build EXE.bat")).contains("--copyright \"" + Credits.COPYRIGHT + "\""), null);
+
         System.out.println("--- Microsoft's runtime libraries: the notice and Microsoft's terms in full ---");
         Credits.Section ms = section(sections, "Microsoft's runtime libraries");
         check("the page has Microsoft's section, not missing", ms != null && !ms.missing(), null);
         String notice = Credits.readResource(Credits.MICROSOFT);
         String terms = Credits.readResource(Credits.MICROSOFT_FILES.get(1));
+        String sdk = Credits.readResource(Credits.MICROSOFT_FILES.get(2));
         Properties sources = Credits.properties(String.valueOf(Credits.readResource("/credits/sources.properties")));
-        if (ms != null && !ms.missing() && notice != null && terms != null) {
-            check("it shows the notice and the terms exactly, in order, under their names", ms.text().equals(Credits.readAll(Credits::readResource, Credits.MICROSOFT_FILES)), null);
-            check("the terms are Microsoft's for the Visual C++ 2015 - 2022 runtime", terms.contains("MICROSOFT VISUAL C++ 2015 - 2022 RUNTIME")
+        if (ms != null && !ms.missing() && notice != null && terms != null && sdk != null) {
+            check("it shows the notice and both licences exactly, in order, under their names", ms.text().equals(Credits.readAll(Credits::readResource, Credits.MICROSOFT_FILES)), null);
+            check("the first terms are Microsoft's for the Visual C++ 2015 - 2022 runtime", terms.contains("MICROSOFT VISUAL C++ 2015 - 2022 RUNTIME")
                     && terms.contains("EULA ID: " + sources.getProperty("microsoft.version")), sources.getProperty("microsoft.version"));
             String hash = HexFormat.of().formatHex(sha256(terms.getBytes(StandardCharsets.UTF_8)));
-            check("the terms are the pinned text of Microsoft's document", hash.equals(sources.getProperty("sha256.microsoft/LICENSE-vc-runtime-2015-2022.txt"))
+            check("they are the pinned text of Microsoft's document", hash.equals(sources.getProperty("sha256.microsoft/LICENSE-vc-runtime-2015-2022.txt"))
                     && sources.getProperty("microsoft.source", "").startsWith("https://visualstudio.microsoft.com/"), hash);
-            check("the notice gives Microsoft's copyright and points at the terms", notice.contains("Copyright (c) Microsoft Corporation.")
-                    && notice.contains("LICENSE-vc-runtime-2015-2022.txt"), null);
+            check("the second are the Windows SDK's, with their Distributable Code terms", sdk.contains("MICROSOFT WINDOWS SOFTWARE DEVELOPMENT KIT")
+                    && sdk.contains("Distributable Code") && sdk.contains("EULAID:" + sources.getProperty("microsoft.sdk.version")), sources.getProperty("microsoft.sdk.version"));
+            String sdkHash = HexFormat.of().formatHex(sha256(sdk.getBytes(StandardCharsets.UTF_8)));
+            check("and the pinned text of the SDK's own licence file", sdkHash.equals(sources.getProperty("sha256.microsoft/LICENSE-windows-sdk.txt")), sdkHash);
+            check("the notice gives the game's copyright and Microsoft's", notice.contains(Credits.COPYRIGHT) && notice.contains("Copyright (c) Microsoft Corporation."), null);
+            int vc = notice.indexOf("vcruntime140.dll"), ucrt = notice.indexOf("ucrtbase.dll"), vcTerms = notice.indexOf("LICENSE-vc-runtime-2015-2022.txt"),
+                    sdkTerms = notice.indexOf("LICENSE-windows-sdk.txt");
+            check("it puts the C++ files under Visual Studio's terms and the C runtime under the SDK's, each in its own paragraph",
+                    vc >= 0 && vcTerms > vc && ucrt > vcTerms && sdkTerms > ucrt && notice.indexOf("Visual Studio 2022") > vc
+                    && notice.indexOf("Visual Studio 2022") < ucrt && notice.indexOf("Software Development Kit") > ucrt, null);
             check("the lead says whose libraries they are", Credits.MICROSOFT_LEAD.equals(ms.lead()), null);
             if (inRepository) {
                 Path source = Path.of("tools", "credits", "microsoft");
                 check("the jar's notice and terms are tools/credits/microsoft's", Files.exists(source.resolve("NOTICE.txt"))
-                        && notice.equals(read(source.resolve("NOTICE.txt"))) && terms.equals(read(source.resolve("LICENSE-vc-runtime-2015-2022.txt"))), null);
+                        && notice.equals(read(source.resolve("NOTICE.txt"))) && terms.equals(read(source.resolve("LICENSE-vc-runtime-2015-2022.txt")))
+                        && sdk.equals(read(source.resolve("LICENSE-windows-sdk.txt"))), null);
                 List<String> dlls = new ArrayList<>();
+                boolean windowsJar = false;
                 for (String entry : System.getProperty("java.class.path").split(Pattern.quote(File.pathSeparator))) {
                     Path path = Path.of(entry);
                     if (!path.getFileName().toString().matches("javafx-graphics-.*-win\\.jar")) continue;
+                    windowsJar = true;
                     try (JarFile jar = new JarFile(path.toFile())) {
                         jar.stream().map(e -> e.getName()).filter(n -> Packaging.MICROSOFT_DLL.matcher(n.substring(n.lastIndexOf('/') + 1)).matches()).forEach(dlls::add);
                     }
                 }
-                check("OpenJFX's Windows graphics jar carries Microsoft libraries", !dlls.isEmpty(), dlls.size() + " found");
-                List<String> unnamed = new ArrayList<>();
-                for (String dll : dlls) {
-                    String name = dll.substring(dll.lastIndexOf('/') + 1);
-                    boolean named = name.startsWith("api-ms-win-") ? notice.contains("api-ms-win-*.dll") : notice.contains(name);
-                    if (!named || !Packaging.MICROSOFT_COVERED.matcher(name).matches()) unnamed.add(name);
+                // Maven resolves OpenJFX's jars for the platform it runs on: off Windows there is no -win jar to read (the CR1-J review).
+                if (!windowsJar) {
+                    System.out.println("  (no javafx-graphics -win jar on this classpath, which is not Windows': its DLLs skipped)");
+                } else {
+                    check("OpenJFX's Windows graphics jar carries Microsoft libraries", !dlls.isEmpty(), dlls.size() + " found");
+                    List<String> unnamed = new ArrayList<>();
+                    for (String dll : dlls) {
+                        String name = dll.substring(dll.lastIndexOf('/') + 1);
+                        boolean named = name.startsWith("api-ms-win-") ? notice.contains("api-ms-win-*.dll") : notice.contains(name);
+                        if (!named || !Packaging.MICROSOFT_COVERED.matcher(name).matches()) unnamed.add(name);
+                    }
+                    check("the notice names every one of them, and the image check covers it", unnamed.isEmpty(), unnamed.toString());
                 }
-                check("the notice names every one of them, and the image check covers it", unnamed.isEmpty(), unnamed.toString());
             }
         }
         for (String missing : Credits.MICROSOFT_FILES) {
@@ -330,7 +358,7 @@ public class CreditsCheck {
                 String source = c[0], dest = c[1].substring(c[1].lastIndexOf("/data/") + 1);
                 String resource = "/credits/" + (source.startsWith("tools/") ? source.substring("tools/".length()) : source);
                 Credits.Section s = null;
-                for (Credits.Section each : sections) if (each.resource().equals(resource)) s = each;
+                for (Credits.Section each : sections) if (java.util.Objects.equals(each.resource(), resource)) s = each;
                 check(source + " has a section on the page, reading " + resource, s != null, null);
                 if (s == null) continue;
                 check(source + "'s section is not missing", !s.missing(), s.title());
@@ -349,7 +377,7 @@ public class CreditsCheck {
 
         System.out.println("--- the fonts' notice and licence ---");
         Credits.Section fontsSection = null;
-        for (Credits.Section s : sections) if (s.resource().equals(Credits.FONTS)) fontsSection = s;
+        for (Credits.Section s : sections) if (java.util.Objects.equals(s.resource(), Credits.FONTS)) fontsSection = s;
         check("the page has a fonts section reading " + Credits.FONTS, fontsSection != null, null);
         check("the notice says 2017 IBM Corp.", Credits.FONT_NOTICE.contains("2017 IBM Corp."), null);
         check("the notice names the SIL Open Font License, Version 1.1", Credits.FONT_NOTICE.contains("SIL Open Font License, Version 1.1"), null);
@@ -386,7 +414,7 @@ public class CreditsCheck {
         System.out.println("--- a build without a file says where the file is ---");
         List<Credits.Section> without = Credits.sections(path -> path.equals(Credits.NATIONS) ? null : Credits.readResource(path));
         for (Credits.Section s : without) {
-            boolean gone = s.resource().equals(Credits.NATIONS);
+            boolean gone = java.util.Objects.equals(s.resource(), Credits.NATIONS);
             check(s.title() + (gone ? " is missing when its file is not read" : " is not missing"), s.missing() == gone, null);
             if (gone) {
                 String note = Credits.missingNote(s);

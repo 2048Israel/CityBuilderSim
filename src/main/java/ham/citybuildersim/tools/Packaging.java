@@ -169,8 +169,35 @@ public final class Packaging {
         expect(problems, "its IMPLEMENTOR", release.get("IMPLEMENTOR"), pins.getProperty("runtime.implementor"));
         expect(problems, "its IMPLEMENTOR_VERSION", release.get("IMPLEMENTOR_VERSION"), pins.getProperty("runtime.vendorVersion"));
         expect(problems, "its JAVA_VERSION", release.get("JAVA_VERSION"), pins.getProperty("runtime.javaVersion"));
-        if (!problems.isEmpty()) problems.add("The source archive pinned in tools/credits/source-archives.properties is for "
-                + pins.getProperty("runtime.vendorVersion") + ": package with that JDK, or pin the source archive of this one.");
+        // The scripts that built it (the CR1-J review): the temurin-build commit its release file names.
+        expect(problems, "its BUILD_SOURCE", release.get("BUILD_SOURCE"), "git:" + pins.getProperty("build.version"));
+        expect(problems, "its BUILD_SOURCE_REPO", release.get("BUILD_SOURCE_REPO"), pins.getProperty("build.repo"));
+        if (!problems.isEmpty()) problems.add("The source archives pinned in tools/credits/source-archives.properties are for "
+                + pins.getProperty("runtime.vendorVersion") + ": package with that JDK, or pin the source archives of this one.");
+        problems.addAll(pinProblems(pins));
+        return problems;
+    }
+
+    /**
+     * The pins agree with themselves: each archive's file and URL name its version (a "+" written
+     * "_" in a file name, "%2B" in a URL), and the runtime's vendor and Java versions are its
+     * version's. A version bumped alone, the file and URL left behind, is a problem (the CR1-J review).
+     */
+    public static List<String> pinProblems(Properties pins) {
+        List<String> problems = new ArrayList<>();
+        for (String a : Credits.archives(pins)) {
+            String v = pins.getProperty(a + ".version", ""), file = pins.getProperty(a + ".file", ""), url = pins.getProperty(a + ".url", "");
+            if (v.isBlank()) { problems.add("the pins give " + a + " no version."); continue; }
+            if (!file.contains(v) && !file.contains(v.replace('+', '_')))
+                problems.add("the pinned " + a + ".file, " + file + ", does not name its version " + v + ".");
+            if (!url.contains(v.replace("+", "%2B")))
+                problems.add("the pinned " + a + ".url, " + url + ", does not name its version " + v + ".");
+        }
+        String version = pins.getProperty("runtime.version", "");
+        if (!pins.getProperty("runtime.vendorVersion", "").endsWith("-" + version))
+            problems.add("the pinned runtime.vendorVersion, " + pins.getProperty("runtime.vendorVersion") + ", is not runtime.version " + version + "'s.");
+        if (!version.startsWith(pins.getProperty("runtime.javaVersion", "?") + "+"))
+            problems.add("the pinned runtime.javaVersion, " + pins.getProperty("runtime.javaVersion") + ", is not runtime.version " + version + "'s.");
         return problems;
     }
 
@@ -268,7 +295,7 @@ public final class Packaging {
      * them, each pinned source archive unchanged with its README, and OpenJFX's build the archive's.
      */
     public static List<String> verify(Path image, Properties pins, Function<String, String> credits, Probes probes) throws IOException {
-        List<String> problems = new ArrayList<>();
+        List<String> problems = new ArrayList<>(pinProblems(pins));
         Path runtime = image.resolve("runtime");
 
         // The runtime: Temurin, the pinned version.

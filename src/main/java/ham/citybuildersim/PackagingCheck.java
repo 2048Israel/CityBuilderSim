@@ -45,12 +45,15 @@ import javax.xml.xpath.XPathFactory;
  *   4. A RUNTIME THAT IS NOT THE PINNED TEMURIN STOPS THE BUILD. Another vendor or version, Oracle's
  *      No-Fee Terms, a non-GPL java.base licence, another OpenJFX build, a Microsoft library the
  *      notice does not name.
- *   5. THE PACKAGING JDK IS HELD TO THE PINS: vendor, vendor version and Java version, exactly.
- *   6. THE PINS ARE THE SHIPPED BINARIES'. OpenJFX's pinned build is the one in the dependency jars,
- *      pom.xml's version; the probes read the vendor from a real runtime.
+ *   5. THE PACKAGING JDK IS HELD TO THE PINS: vendor, vendor version and Java version, exactly, and
+ *      the temurin-build commit its release file names (BUILD_SOURCE), whose archive ships too.
+ *   6. THE PINS ARE THE SHIPPED BINARIES', AND AGREE WITH THEMSELVES. OpenJFX's pinned build is the
+ *      one in the dependency jars, pom.xml's version; the probes read the vendor from a real
+ *      runtime; each archive's file and URL name its version, so a version bumped alone fails.
  *   7. BUILD EXE.BAT NAMES ITS JDK AND CHECKS THE IMAGE BEFORE THE ZIP. No jpackage from PATH or
  *      Program Files; Temurin's own jlink and jpackage; fetch before jpackage, stage and verify
- *      after it and before the zip, and a failed image removed.
+ *      after it and before the zip; every stop from the runtime step on removes the image and this
+ *      version's zip; no "if errorlevel"; the exe's copyright the game's; its jlink line the README's.
  */
 public class PackagingCheck {
 
@@ -83,7 +86,8 @@ public class PackagingCheck {
             Path file = cache.resolve(real.getProperty(a + ".file"));
             Files.writeString(file, "the " + a + " source, a fixture\n", StandardCharsets.UTF_8);
             pins.setProperty(a + ".sha256", Packaging.sha256(file));
-            pins.setProperty(a + ".url", "http://127.0.0.1:9/" + real.getProperty(a + ".file"));
+            // An address that refuses the fetch, the real URL's path kept, so the URL still names its version.
+            pins.setProperty(a + ".url", "http://127.0.0.1:9" + java.net.URI.create(real.getProperty(a + ".url")).getRawPath());
         }
         return pins;
     }
@@ -189,7 +193,7 @@ public class PackagingCheck {
         check("a cache holding every pinned archive fetches nothing and passes", inPlace.isEmpty(), inPlace.toString());
 
         System.out.println("--- a lost notice or terms file stops the build ---");
-        for (String lost : List.of("legal/microsoft/NOTICE.txt", "legal/microsoft/LICENSE-vc-runtime-2015-2022.txt", "legal/openjfx/LICENSE",
+        for (String lost : List.of("legal/microsoft/NOTICE.txt", "legal/microsoft/LICENSE-vc-runtime-2015-2022.txt", "legal/microsoft/LICENSE-windows-sdk.txt", "legal/openjfx/LICENSE",
                 "data/world-ATTRIBUTION.txt", "data/earth-2-ATTRIBUTION.txt", "runtime/NOTICE", "source/README.txt", "legal/source-archives.properties")) {
             Fixture g = staged();
             Files.delete(g.image().resolve(lost));
@@ -235,12 +239,32 @@ public class PackagingCheck {
         Files.write(twoJars.image().resolve("app/other.jar"), new byte[0]);
         check("an app folder of more than the game's jar fails", names(verify(twoJars), "2 jars"), null);
         check("a jar that cannot be opened is named, its libraries not skipped unseen", names(verify(twoJars), "app/other.jar cannot be opened"), null);
+        Fixture bumped = staged();
+        Properties ahead = new Properties();
+        ahead.putAll(bumped.pins());
+        ahead.setProperty("runtime.version", "21.0.14+7");
+        ahead.setProperty("runtime.vendorVersion", "Temurin-21.0.14+7");
+        ahead.setProperty("runtime.javaVersion", "21.0.14");
+        p = Packaging.verify(bumped.image(), ahead, CREDITS, pinnedProbes(ahead));
+        check("a runtime version bumped in the pins alone, its archive's file and URL left behind, fails", names(p, "runtime.file", "21.0.14+7")
+                && names(p, "runtime.url", "21.0.14+7"), p.toString());
+        ahead.setProperty("runtime.vendorVersion", "Temurin-21.0.13+9");
+        check("and a vendor version that is not the runtime version's fails", names(Packaging.pinProblems(ahead), "runtime.vendorVersion"), null);
+        check("the real pins agree with themselves", Packaging.pinProblems(Packaging.pins()).isEmpty(), Packaging.pinProblems(Packaging.pins()).toString());
 
         System.out.println("--- the packaging JDK is held to the pins ---");
         Path jdk = TempDirs.create("packaging-jdk");
-        Files.writeString(jdk.resolve("release"), "IMPLEMENTOR=\"" + pins.getProperty("runtime.implementor") + "\"\nIMPLEMENTOR_VERSION=\""
-                + pins.getProperty("runtime.vendorVersion") + "\"\nJAVA_VERSION=\"" + pins.getProperty("runtime.javaVersion") + "\"\n");
+        String pinnedRelease = "IMPLEMENTOR=\"" + pins.getProperty("runtime.implementor") + "\"\nIMPLEMENTOR_VERSION=\""
+                + pins.getProperty("runtime.vendorVersion") + "\"\nJAVA_VERSION=\"" + pins.getProperty("runtime.javaVersion") + "\"\n";
+        String buildLines = "BUILD_SOURCE=\"git:" + pins.getProperty("build.version") + "\"\nBUILD_SOURCE_REPO=\"" + pins.getProperty("build.repo") + "\"\n";
+        Files.writeString(jdk.resolve("release"), pinnedRelease + buildLines);
         check("the pinned Temurin passes", Packaging.checkJdk(jdk, pins).isEmpty(), Packaging.checkJdk(jdk, pins).toString());
+        Files.writeString(jdk.resolve("release"), pinnedRelease + "BUILD_SOURCE=\"git:0000000000000000000000000000000000000000\"\nBUILD_SOURCE_REPO=\""
+                + pins.getProperty("build.repo") + "\"\n");
+        p = Packaging.checkJdk(jdk, pins);
+        check("a JDK built by other scripts than the pinned temurin-build commit fails", names(p, "BUILD_SOURCE is \"git:0000"), p.toString());
+        Files.writeString(jdk.resolve("release"), pinnedRelease);
+        check("and one whose release file names no build scripts fails", names(Packaging.checkJdk(jdk, pins), "BUILD_SOURCE is absent"), null);
         Files.writeString(jdk.resolve("release"), "IMPLEMENTOR=\"Oracle Corporation\"\nJAVA_VERSION=\"21.0.4\"\n");
         p = Packaging.checkJdk(jdk, pins);
         check("Oracle's JDK fails on its IMPLEMENTOR", names(p, "IMPLEMENTOR is \"Oracle Corporation\""), p.toString());
@@ -261,7 +285,7 @@ public class PackagingCheck {
 
         System.out.println("--- the pins are the shipped binaries' ---");
         Properties real = Packaging.pins();
-        check("the pins name OpenJFX's archive and the runtime's, in that order", Credits.archives(real).equals(List.of("openjfx", "runtime")), Credits.archives(real).toString());
+        check("the pins name OpenJFX's archive, the runtime's and its build scripts', in that order", Credits.archives(real).equals(List.of("openjfx", "runtime", "build")), Credits.archives(real).toString());
         for (String a : Credits.archives(real)) {
             check(a + "'s SHA-256 is 64 hex digits", real.getProperty(a + ".sha256", "").matches("[0-9a-f]{64}"), real.getProperty(a + ".sha256"));
             check(a + "'s origin is an https URL", real.getProperty(a + ".url", "").startsWith("https://"), real.getProperty(a + ".url"));
@@ -272,6 +296,12 @@ public class PackagingCheck {
                 && real.getProperty("runtime.version").startsWith(real.getProperty("runtime.javaVersion") + "+"), real.getProperty("runtime.vendorVersion"));
         check("OpenJFX's archive is the openjdk/jfx tag of its version", real.getProperty("openjfx.url").contains("/openjdk/jfx/")
                 && real.getProperty("openjfx.url").contains(real.getProperty("openjfx.version").replace("+", "%2B")), real.getProperty("openjfx.url"));
+        check("the build scripts' archive is the pinned repository at its commit", real.getProperty("build.version", "").matches("[0-9a-f]{40}")
+                && real.getProperty("build.url", "").startsWith(real.getProperty("build.repo", "?").replaceAll("\\.git$", "") + "/archive/" + real.getProperty("build.version")),
+                real.getProperty("build.url"));
+        String readme = Credits.sourceReadme(real);
+        check("the README gives the jlink command the runtime is made with", real.getProperty("runtime.jlink") != null
+                && readme.contains(real.getProperty("runtime.jlink")), null);
         Path pom = Path.of("pom.xml");
         if (Files.exists(pom)) {
             String javafx = XPathFactory.newInstance().newXPath().evaluate("/project/properties/javafx.version",
@@ -309,13 +339,26 @@ public class PackagingCheck {
                     unfit = bat.indexOf(":unfit");
             check("the JDK is held to the pins and the archives fetched before jpackage", jdkCheck > 0 && fetch > jdkCheck && jpackage > fetch, null);
             check("the image is staged and checked after jpackage and before the zip", stage > jpackage && verify > stage && zip > verify, null);
-            check("a failed stage or check goes to the removal of the image", bat.contains("Packaging stage \"%SOURCES%\" \"dist\\%APPNAME%\"\nif errorlevel 1 goto unfit")
-                    && bat.contains("Packaging verify \"dist\\%APPNAME%\"\nif errorlevel 1 goto unfit")
+            check("a failed stage or check goes to the removal of the image", bat.contains("Packaging stage \"%SOURCES%\" \"dist\\%APPNAME%\"\nif not \"%ERRORLEVEL%\"==\"0\" goto unfit")
+                    && bat.contains("Packaging verify \"dist\\%APPNAME%\"\nif not \"%ERRORLEVEL%\"==\"0\" goto unfit")
                     && unfit > zip && bat.indexOf("rmdir /s /q \"dist\\%APPNAME%\"", unfit) > unfit, null);
             check("and of this version's zip, an earlier build's left by none", bat.indexOf("del /q \"dist\\%APPNAME%-%APPVER%.zip\"", unfit) > unfit
                     && bat.indexOf("exit /b 1", unfit) > bat.indexOf("del /q \"dist\\%APPNAME%-%APPVER%.zip\"", unfit), null);
-            check("a failed fetch stops the build", bat.substring(fetch).startsWith("Packaging fetch \"%SOURCES%\"\nif errorlevel 1 (")
+            check("a failed fetch stops the build", bat.substring(fetch).startsWith("Packaging fetch \"%SOURCES%\"\nif not \"%ERRORLEVEL%\"==\"0\" (")
                     && bat.indexOf("exit /b 1", fetch) < jpackage, null);
+            // The CR1-J review: "if errorlevel 1" passes a negative code (a crash's 0xC0000005), and a stop
+            // after the previous build is cleared left an exe without its source or notices.
+            check("no exit code is read with \"if errorlevel\", which a negative code passes", !bat.matches("(?is).*\\bif\\s+(not\\s+)?errorlevel\\b.*"), null);
+            int runtimeStep = bat.indexOf("rem ------------------------------ the runtime");
+            check("from the runtime step on, every stop goes through :unfit", runtimeStep > bat.indexOf("does not look like a previous build")
+                    && !bat.substring(runtimeStep, unfit).contains("exit /b 1"), null);
+            check("jpackage, jlink and the NOTICE copy each go to :unfit when they fail", bat.substring(runtimeStep, unfit).split("goto unfit", -1).length - 1 >= 7, null);
+            check("the exe carries the game's copyright, Credits.COPYRIGHT", bat.contains("--copyright \"" + Credits.COPYRIGHT + "\""), null);
+            java.util.regex.Matcher modules = Pattern.compile("set \"MODULES=([^\"]+)\"").matcher(bat);
+            java.util.regex.Matcher jlinkLine = Pattern.compile("\"%JDK%\\\\bin\\\\jlink\\.exe\" ([^\n]+)").matcher(bat);
+            String asRun = modules.find() && jlinkLine.find()
+                    ? "jlink " + jlinkLine.group(1).replace("%MODULES%", modules.group(1)).replace("\"build\\runtime\"", "runtime") : null;
+            check("its jlink line is the pins' runtime.jlink, which the README gives", asRun != null && asRun.equals(real.getProperty("runtime.jlink")), asRun);
             check("nopause neither pauses nor starts the game", bat.contains("if /i \"%~1\"==\"nopause\" (\n    set \"PAUSE=rem\"\n    set \"LAUNCH=\"")
                     && bat.contains("if not defined LAUNCH exit /b 0") && bat.indexOf("if not defined LAUNCH exit /b 0") < bat.indexOf("start \"\" /D"), null);
             check("every other pause is %PAUSE%", bat.split("\n\\s*pause\\s*\n", -1).length == 2, null);

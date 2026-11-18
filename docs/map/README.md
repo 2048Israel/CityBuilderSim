@@ -4,7 +4,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 591 files, 642,811 lines, 27,968 methods, 6,171 constants. `GameVersion.VERSION` is "0.9.143", `SAVE_FORMAT` 55.
+**The tree:** 591 files, 642,931 lines, 27,969 methods, 6,173 constants. `GameVersion.VERSION` is "0.9.143", `SAVE_FORMAT` 55.
 
 ## model (267 files)
 
@@ -63,7 +63,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ConstructionControl.java](ConstructionControl.md) | 911 | 66 | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it... | 27 |
 | [Consumption.java](Consumption.md) | 763 | 35 | What a household eats, and what changes it. | 9 |
 | [CorporateBond.java](CorporateBond.md) | 248 | 29 | A corporate bond: a sector's debt to investors, issued at par through bookbuilding, paying a fixed coupon every month and its whole face at the end. | 16 |
-| [Credits.java](Credits.md) | 345 | 18 | The Credits page's sections: the Earth data's attribution, the nations' attribution, the fonts' and libraries' notices with their licences, the Jav... | 4 |
+| [Credits.java](Credits.md) | 367 | 18 | The Credits page's sections: the Earth data's attribution, the nations' attribution, the fonts' and libraries' notices with their licences, the Jav... | 4 |
 | [Crime.java](Crime.md) | 525 | 61 | Crime, the police who deter and catch it, and the prisons that hold who they catch. | 21 |
 | [Currency.java](Currency.md) | 458 | 37 | What the city's money is called, and how it is written. | 52 |
 | [DataSave.java](DataSave.md) | 2,946 | 455 | sections: land and ore, the shedding warning... | 20 |
@@ -108,7 +108,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 190 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 260 | 29 | How the player likes the window, kept between runs. | 6 |
-| [GameVersion.java](GameVersion.md) | 8,419 | 6 | What build this is, and what shape its saves are. | 23 |
+| [GameVersion.java](GameVersion.md) | 8,419 | 6 | What build this is, and what shape its saves are. | 25 |
 | [Gateways.java](Gateways.md) | 207 | 11 | The city's two gateways - the highway's and the railway's - as one point on the city's edge: the bearing, every SeaRoutes.BEARING_STEP degrees, wit... | 2 |
 | [Geology.java](Geology.md) | 1,306 | 49 | The Earth's geology as its deposits read it: each USGS province's class - ocean, shield, fold belt, rift, shelf, basin or other - by the data's nam... | 10 |
 | [GlobeFrame.java](GlobeFrame.md) | 1,088 | 93 | The Earth's map as a globe, without the toolkit: where the view looks on the planet, how close and which way is up, how a notch of the wheel, a dra... | 12 |
@@ -415,7 +415,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CopperMiningCheck.java](CopperMiningCheck.md) | 525 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 3 |
 | [CopperRefiningCheck.java](CopperRefiningCheck.md) | 1,417 | 31 | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-r... | 0 |
 | [CreditCheck.java](CreditCheck.md) | 2,111 | 19 | Verifies private-sector credit: pricing, origination, rollover, cash conservation. | 0 |
-| [CreditsCheck.java](CreditsCheck.md) | 434 | 10 | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, the J... | 0 |
+| [CreditsCheck.java](CreditsCheck.md) | 462 | 10 | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, the J... | 0 |
 | [CrimeCheck.java](CrimeCheck.md) | 346 | 8 | Crime, the police and the prisons: every claim in claude/crime-has-reasons.md, each with its own cause. | 0 |
 | [CrossingCheck.java](CrossingCheck.md) | 520 | 27 | Short crossings of bridgeable water (ET6; spec-earth2-terrain 6.2, D12): the shallow sea is water a road or a railway may bridge, exactly as fresh ... | 0 |
 | [CurrencyCheck.java](CurrencyCheck.md) | 1,027 | 25 | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry ap... | 6 |
@@ -521,7 +521,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OrderSearchCheck.java](OrderSearchCheck.md) | 944 | 23 | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). | 2 |
 | [OutsideCheck.java](OutsideCheck.md) | 707 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
 | [OwnerCheck.java](OwnerCheck.md) | 764 | 19 | The owner families (BO1): one two-adult household per company that has listed and not gone broke, holding the company's founding stake alone. | 0 |
-| [PackagingCheck.java](PackagingCheck.md) | 337 | 9 | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corres... | 0 |
+| [PackagingCheck.java](PackagingCheck.md) | 380 | 9 | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corres... | 0 |
 | [PartnerCallsCheck.java](PartnerCallsCheck.md) | 1,322 | 40 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
 | [PartnersCheck.java](PartnersCheck.md) | 838 | 18 | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 759 | 21 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
@@ -613,7 +613,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Maps.java](Maps.md) | 30 | 1 | Regenerates every generated document in one go: the code map, the dials, the month order and the harness map. | 0 |
 | [MonthOrder.java](MonthOrder.md) | 167 | 6 | The month as a numbered list: docs/month-order.md walks the top-level statements of the methods that make up a month, in order, each with its line ... | 1 |
 | [Names.java](Names.md) | 436 | 26 | Lists the names a branch's new prose uses that the tree does not declare. | 1 |
-| [Packaging.java](Packaging.md) | 427 | 20 | Build EXE.bat's source archives and its check of the built image (CR1-J): the packaging JDK checked against the pins, the complete corresponding so... | 2 |
+| [Packaging.java](Packaging.md) | 454 | 21 | Build EXE.bat's source archives and its check of the built image (CR1-J): the packaging JDK checked against the pins, the complete corresponding so... | 2 |
 | [ReliefRenders.java](ReliefRenders.md) | 152 | 6 | Renders the map's relief for review: six PNG files drawn by the game's own painters, headless. | 0 |
 | [RunRenders.java](RunRenders.md) | 206 | 7 | Renders what ET4 slice C did to the map, for review: where a city's highways and railway run across steep ground, a viaduct, and across very steep ... | 0 |
 | [SaveDump.java](SaveDump.md) | 133 | 4 | Looks inside a save without loading the game - or reading the file. | 0 |
