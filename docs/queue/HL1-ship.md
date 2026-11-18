@@ -1,6 +1,6 @@
 <!-- readiness: provisional -->
 ## changelog
-### {next} ? HL1, the households' books closed ? 2026-11-18, ready, see docs/queue/HL1-notes.md
+### {next} — HL1, the households' books closed — 2026-11-18, ready, see docs/queue/HL1-notes.md
 Every dollar households gain or lose now has a line: their savings identity is struck beside the pools each month
 and asserted by LongPlaytest and the ensemble. Care, schools, research, safety and transit buy their upkeep from
 Business Services, three quarters imported with seats and all of it without; the bank buys its upkeep too, on a
