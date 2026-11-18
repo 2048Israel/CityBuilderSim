@@ -7715,6 +7715,8 @@ public class Game {
 
         String[] refusal = { null };
         int written = credit.getMortgagesWrittenThisMonth();
+        boolean capitalBefore = credit.wasRefusedForCapital(decision.sector),
+                mortgageCapitalBefore = credit.wasMortgageRefusedForCapital(decision.sector);
         boolean built = buildFor(mortgageInvestor(decision.sector, refusal), t, quantity);
         /*
          * THE DOOR'S NO IS TO THE ORDER, NOT TO THE LANDLORD (HN1, 2026-11-18).
@@ -7731,7 +7733,10 @@ public class Game {
          * half the order, down to one: a smaller order needs a smaller loan,
          * and one its till covers needs none - what a banned landlord may
          * build too (consider()). A failed buildFor() changes nothing before
-         * canBorrow() says no.
+         * canBorrow() says no. An order the door trimmed was not held: the
+         * capital no a larger try left is taken back (REV-HN1-1), so the next
+         * line and the playtest's count of months held for the bank's
+         * leverage read what happened.
          */
         long tried = quantity;
         String doorRefusal = refusal[0];
@@ -7740,9 +7745,12 @@ public class Game {
             refusal[0] = null;
             built = buildFor(mortgageInvestor(decision.sector, refusal), t, quantity);
         }
-        if (built && quantity < tried) trimmed = doorTrimmed(doorRefusal, decision.quantity, quantity);
         if (built) {
             boolean mortgaged = credit.getMortgagesWrittenThisMonth() > written;
+            if (quantity < tried) {
+                credit.takeBackCapitalRefusal(decision.sector, capitalBefore, mortgageCapitalBefore);
+                trimmed = doorTrimmed(doorRefusal, decision.quantity, quantity, mortgaged);
+            }
             lastInvestment.put(slot, String.format("Built %,d %s%s%s - %s", quantity, t.getName(),
                     mortgaged ? " on an insured mortgage" : "", trimmed, decision.reason));
         } else if (refusal[0] != null) {
@@ -7782,8 +7790,26 @@ public class Game {
         }
     }
 
-    /** The advisor's words for an order the door cut down (HN1): from what the planner asked, to what was built, by the door's first no. */
-    private static String doorTrimmed(String refusal, long asked, long built) {
+    /**
+     * The advisor's words for an order the door cut down (HN1): from what the
+     * planner asked, by the door's first no, to what was built - on a
+     * mortgage, or bought outright when the smaller order needed none
+     * (REV-HN1-1: "15% down" on an order with no loan was not what happened).
+     */
+    private static String doorTrimmed(String refusal, long asked, long built, boolean mortgaged) {
+        if (!mortgaged) return String.format(" (trimmed from %,d - %s, so what its own funds buy outright)", asked,
+                switch (refusal) {
+                    case BusinessDebtManager.MORTGAGE_CAPITAL -> "the bank is short of capital for a mortgage";
+                    case BusinessDebtManager.MORTGAGE_DOWN_PAYMENT -> String.format(
+                            "its own funds were short of the %.0f%% down on more",
+                            (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100);
+                    case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
+                            "a mortgage would leave it owing past %.2f times what it owns",
+                            BusinessDebtManager.INSOLVENCY_TRIGGER);
+                    case BusinessDebtManager.MORTGAGE_BANK_SHUT -> "the bank has failed";
+                    case BusinessDebtManager.MORTGAGE_BANNED -> "it may not borrow";
+                    default -> "the lender said " + refusal;
+                });
         return switch (refusal) {
             case BusinessDebtManager.MORTGAGE_CAPITAL -> String.format(
                     " (trimmed from %,d - the bank is short of capital for more)", asked);
@@ -7793,8 +7819,6 @@ public class Game {
             case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
                     " (trimmed from %,d - more would leave it owing past %.2f times what it owns)",
                     asked, BusinessDebtManager.INSOLVENCY_TRIGGER);
-            case BusinessDebtManager.MORTGAGE_BANK_SHUT -> String.format(
-                    " (trimmed from %,d - the bank has failed, so what its own funds buy)", asked);
             default -> String.format(" (trimmed from %,d - the lender would not write more: %s)", asked, refusal);
         };
     }

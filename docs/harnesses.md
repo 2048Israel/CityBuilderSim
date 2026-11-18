@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**221 harness files, 25,436 labelled assertions.** AllChecks runs 221 of them.
+**221 harness files, 25,438 labelled assertions.** AllChecks runs 221 of them.
 
 ## Which harnesses read which class
 
@@ -14684,7 +14684,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L949 1200 places down to none: the whole debt is a closed home's
   - L951 ...and a count from nothing leaves it
 
-## HousingDoorCheck.java - 5 labelled assertions
+## HousingDoorCheck.java - 7 labelled assertions
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed
@@ -14700,15 +14700,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the till: five blocks bought outright. Nothing was built for four years;
 > ...
 
-- **L133 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
-  - L147 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
-- **L150 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
-  - L163 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
-- **L166 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
-  - L176 every order the door cut is the plan's order halved, down to one
-  - L177 ...and the advisor's line says it was trimmed
-- **L179 4. LongPlaytest's watch, and the homes that finished by size**
-  - L187 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+- **L138 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
+  - L152 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
+- **L155 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
+  - L168 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
+- **L171 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
+  - L185 every order the door cut is the plan's order halved, down to one
+  - L186 ...and the advisor's line says it was trimmed
+  - L187 fixture: the door trimmed an order it first refused for the bank's capital
+  - L188 ...and no month the door trimmed is left marked as held for the bank's capital
+- **L190 4. LongPlaytest's watch, and the homes that finished by size**
+  - L198 no month of the window leaves more than one household with no door (LongPlaytest's watch)
 
 ## HydroCheck.java - 101 labelled assertions
 

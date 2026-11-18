@@ -36,7 +36,9 @@ import java.util.Locale;
  *      segment's households have no door of their own, left with none
  *      (Game.considerOnMortgage(), THE DOOR'S NO IS TO THE ORDER);
  *   3. an order the door cut is a halving of what the plan passed, and the
- *      advisor says it was trimmed;
+ *      advisor says it was trimmed; a month the door trimmed for the bank's
+ *      capital is not left marked as held for it (REV-HN1-1: LongPlaytest
+ *      counts the mark as a month held for the bank's leverage);
  *   4. LongPlaytest's watch holds - no month leaves more than one household
  *      with no door - and the homes that finish are counted by size.
  */
@@ -68,6 +70,8 @@ public final class HousingDoorCheck {
         boolean groundForOne;
         String line;
         long built;
+        /** The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). */
+        boolean markedForCapital;
     }
 
     static Ask pending;
@@ -115,6 +119,7 @@ public final class HousingDoorCheck {
                     pending.month = m;
                     pending.line = g.getLastInvestment(RE);
                     pending.built = builtIn(pending.line);
+                    pending.markedForCapital = g.getEconomyManager().getBusinessDebtManager().wasMortgageRefusedForCapital(RE);
                     asks.add(pending);
                     pending = null;
                 }
@@ -164,17 +169,23 @@ public final class HousingDoorCheck {
                 + " is short of doors", stranded == 0);
 
         out.println("\n--- 3. an order the door cut is a halving of what the plan passed, and says it was trimmed ---");
-        int halved = 0, notHalved = 0, unsaid = 0;
+        int halved = 0, notHalved = 0, unsaid = 0, forCapital = 0, leftMarked = 0;
         for (Ask a : asks) {
             if (a.built < 1 || a.built >= a.passed) continue;
             boolean isHalving = false;
             for (long q = a.passed / 2; q >= 1 && !isHalving; q /= 2) isHalving = q == a.built;
             if (isHalving) halved++; else notHalved++;
             if (a.line == null || !a.line.contains("(trimmed from ")) unsaid++;
+            // Game.doorTrimmed()'s words for a first no for the capital: "...the bank is short of capital for more".
+            if (a.line != null && a.line.contains("the bank is short of capital")) forCapital++;
+            if (a.markedForCapital) leftMarked++;
         }
-        out.printf("   %d cut order(s): %d a halving of what the plan passed%n", halved + notHalved, halved);
+        out.printf("   %d cut order(s): %d a halving of what the plan passed; %d first refused for the bank's capital,"
+                + " %d left marked as held for it%n", halved + notHalved, halved, forCapital, leftMarked);
         check("every order the door cut is the plan's order halved, down to one", notHalved == 0);
         check("...and the advisor's line says it was trimmed", unsaid == 0);
+        check("fixture: the door trimmed an order it first refused for the bank's capital", forCapital > 0);
+        check("...and no month the door trimmed is left marked as held for the bank's capital", leftMarked == 0);
 
         out.println("\n--- 4. LongPlaytest's watch, and the homes that finished by size ---");
         StringBuilder by = new StringBuilder();

@@ -1,4 +1,4 @@
-# HousingDoorCheck.java - 312 lines · 6 methods · 5 constants · harnesses
+# HousingDoorCheck.java - 323 lines · 6 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,9 @@
 >      segment's households have no door of their own, left with none
 >      (Game.considerOnMortgage(), THE DOOR'S NO IS TO THE ORDER);
 >   3. an order the door cut is a halving of what the plan passed, and the
->      advisor says it was trimmed;
+>      advisor says it was trimmed; a month the door trimmed for the bank's
+>      capital is not left marked as held for it (REV-HN1-1: LongPlaytest
+>      counts the mark as a month held for the bank's leverage);
 >   4. LongPlaytest's watch holds - no month leaves more than one household
 >      with no door - and the homes that finish are counted by size.
 
@@ -41,50 +43,51 @@
 
 | line | section |
 |---:|---|
-| 224 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
+| 235 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 49 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
-| 51 | `HousingDoorCheck.FROM` | `430, TO = 500` | The months watched, months already run: the door's holds on today's main fall in m437-m496. |
-| 53 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 54 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 74 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
+| 51 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
+| 53 | `HousingDoorCheck.FROM` | `430, TO = 500` | The months watched, months already run: the door's holds on today's main fall in m437-m496. |
+| 55 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 56 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 78 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 45 | `static PrintStream out` |  |
-| 46 | `static int fails` |  |
-| 63 | `int month` |  |
-| 64 | `String building` |  |
-| 65 | `boolean family` |  |
-| 66 | `long asked, passed` |  |
-| 67 | `double till, doorOne, shortfall` |  |
-| 68 | `boolean groundForOne` |  |
-| 69 | `String line` |  |
-| 70 | `long built` |  |
-| 73 | `static Ask pending` |  |
-| 229 | `static boolean stuck` |  |
+| 47 | `static PrintStream out` |  |
+| 48 | `static int fails` |  |
+| 65 | `int month` |  |
+| 66 | `String building` |  |
+| 67 | `boolean family` |  |
+| 68 | `long asked, passed` |  |
+| 69 | `double till, doorOne, shortfall` |  |
+| 70 | `boolean groundForOne` |  |
+| 71 | `String line` |  |
+| 72 | `long built` |  |
+| 74 | `boolean markedForCapital` | The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). |
+| 77 | `static Ask pending` |  |
+| 240 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 270 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
-| 56 | 4 | `static void check(String label, boolean ok)` |  |
-| 62 | 10 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
-| 76 | 117 | `public static void main(String[] args) throws Exception` |  |
-| 195 | 21 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
-| 218 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
+| 45 | 279 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
+| 58 | 4 | `static void check(String label, boolean ok)` |  |
+| 64 | 12 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
+| 80 | 124 | `public static void main(String[] args) throws Exception` |  |
+| 206 | 21 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
+| 229 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 224-312)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 235-323)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 231 | 11 | `static void run(Game g, int months, Runnable after)` |  |
-| 243 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
+| 242 | 11 | `static void run(Game g, int months, Runnable after)` |  |
+| 254 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
 

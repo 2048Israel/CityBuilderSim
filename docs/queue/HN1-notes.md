@@ -1,14 +1,20 @@
 # HN1 - households housed before the matching homes finish
 
-A model change: `Game.considerOnMortgage()` (+44 -1) and a new harness, `HousingDoorCheck` (+312), with its line in
-`AllChecks` and `docs/tree.md`. The default trace moves (section 4), so the ensemble runs on the final model.
+A model change: `Game.considerOnMortgage()` and `doorTrimmed()` (+68 -1), `BusinessDebtManager.takeBackCapitalRefusal()`
+(+11), and a new harness, `HousingDoorCheck` (+323), with its line in `AllChecks` and `docs/tree.md`. The default trace moves (section 4), so the ensemble runs on the final model.
 
 ## 1. What was found
 
 **The evidence, rebuilt.** R0h's `target/r0h-homeless/` was gone, so the run was made again: the ensemble's driver
 (`tools/ensemble/`, AUTO2 = the autopilot at a 2% target) on R0h's tree 8e09577ab, seed 12, founded and played to
 m748 with a probe reading the housing, the landlords' tills, the plan's order and the lender's door every month. It
-reproduces R0h's finding: households with no door at m744-747 (3.6, 8.5, 13.2 at the most), zero at 748.
+reproduces R0h's finding: households with no door at m744-747, none at m748. Played straight through, as the ensemble
+plays, it left 3.5928, 5.8487, 8.4962 and 13.2172 with no door. At m744 that is R0h's 3.592771... to the digit, the
+same path to the bit. R0h's 7.85, 12.49 and 17.20 for m745-747 were played from its saved m743 checkpoint (the brief:
+"from their valid month-743 checkpoint"), not straight through. The gaps, 2.00, 3.99 and 3.98 households, are about the
+2 and then 4 more homes this run finished at m745 and m746 (3,044, 3,046, 3,048; 3,112 at m748 against R0h's 3,107).
+Not misquoted, then, but a different start point from m745; that checkpoint went with R0h's folder, so whether the
+reload parts from the straight run's path there cannot be checked again.
 
 **What the shortage was.** It was not placement, the forecast, the building choice or the queue. The landlords' plan
 (`RealEstate.plan()`, off the family-door shortfall) asked for 26-35 Low-Rise Apartments (size 4, the family home)
@@ -39,10 +45,33 @@ by `doorTrimmed()`, which gives the door's first refusal: "Built 1 Low-Rise Apar
 from 3 - its own funds put the 15% down on 1)", "(trimmed from 4 - the bank is short of capital for more)". The
 plan, the lender's test, the capital rule and every dial are untouched.
 
+After the stranger's review (REV-HN1-1, SHIP, no P1), two report-only mends:
+
+- A trimmed build takes back the capital marks the larger try left (`BusinessDebtManager.takeBackCapitalRefusal()`,
+  restoring them as they stood before the first try). Otherwise LongPlaytest counted the month as "held for the bank's
+  leverage", and `consider()`'s next line could blame capital.
+- A trimmed order bought outright says so ("trimmed from 5 - the bank is short of capital for a mortgage, so what its
+  own funds buy outright"), not "15% down".
+
+Neither moves the model: the marks are read only by the advisor's words and the playtest's count. The traced default
+playtest run again after them is identical to the one before in all eight CSVs, the advisor's words included (section 4).
+
 On R0h's tree with the mend: no finding in 748 months. At m743 there are 6,560 homes against 3,044, and 28,018 people
 against 19,745. Nobody is past the valves.
 
 ## 3. The regression: HousingDoorCheck
+
+**The fixture differs from the brief's (REV-HN1-1 asked that it be said).** The brief asked for the m743 checkpoint,
+played through m744-748. That checkpoint went with R0h's `target/r0h-homeless/`, and a save would not outlive the next
+`SAVE_FORMAT` raise. Neither today's main nor 6114b00f reaches the shortage on seed 12 from founding: their paths part
+from R0h's. So, as the orchestrator's brief allows, the harness causes the same state on today's main. Over m430-500,
+the window in which today's seed 12 holds orders, the landlords' segment is short of the homes its households need
+while other homes stand, and the auto-builder plays as normal.
+
+Its red on main is section 2, the door's own rule (a till that holds the door's price of one, on ground for one, builds
+it), not section 4. LongPlaytest's >1 watch passes on main in that window, because doubling up is still under its
+ceiling there. It cannot be compiled on 6114b00f, which has no `LongPlaytest.played(null)`, so its red is on today's
+main before the mend, the brief's second case.
 
 It plays the ensemble's AUTO2 seed 12 on today's main (the same founding, policy and seed; a scratch city from
 `GameFiles.scratch`), watching m430-500 through `Game.watchOrders`'s `mortgaged()` hook. Each month it records the
@@ -53,7 +82,11 @@ built and the homes finished by size.
 1. The fixture: the plan passed an order the door did not write whole, while the segment was short of doors.
 2. No month holds a landlord whose till buys one of the homes the plan passed outright, on ground for one, while its
    segment is short of doors.
-3. Every order the door cut is the plan's order halved down to one, and the advisor's line says it was trimmed.
+3. Every order the door cut is the plan's order halved down to one, and the advisor's line says it was trimmed. Since
+   REV-HN1-1, the fixture also holds an order the door trimmed after a first no for the bank's capital (m495: "trimmed
+   from 4 - the bank is short of capital for more"), and no month the door trimmed ends marked as refused a mortgage
+   for capital (`wasMortgageRefusedForCapital`, what LongPlaytest counts). With the take-back commented out that line
+   is red ("1 left marked"); with it, green.
 4. LongPlaytest's watch: no month leaves more than one household with no door.
 
 On c17b92f0f without the mend: **FAIL in section 2**. 5 months stranded, the first m472: Low-Rise Apartments, a till of
@@ -73,7 +106,9 @@ main's was made fresh, as the orchestrator allowed; it is in `target/hn1/tr-c17/
 - All eight CSVs are identical through m1683. At m1684 the door, which held the order whole on main, writes 2 of 5 Low-Rise
   Apartments ("trimmed from 5 - its own funds put the 15% down on 2"). That is the landlords' 35th mortgage, and the paths
   part there.
-- Over the run: the landlords are held for the bank's leverage in 3 months (main 34). They write 551 mortgages (main
+- Over the run: the landlords are held for the bank's leverage in 3 months (main 34). This figure stands after
+  REV-HN1-1's take-back, run again: none of the run's door trims followed a no for the capital (all 486 lines that
+  say "its own funds put the 15% down" are down-payment trims or the lender's own), so no trim was counted as held. They write 551 mortgages (main
   355), 223 owed at the end (main 47). The leverage ratio is the larger requirement in 1,163 months (main 1,412).
 - Both find nothing ("Every month passed the audit and every reload matched"). No household is past both valves in any
   month of either (`stillUnplaced` 0 throughout). At its worst, 48,423 of 149,047 households doubled up (m2363), against
@@ -86,7 +121,9 @@ main's was made fresh, as the orchestrator allowed; it is in `target/hn1/tr-c17/
 ## 5. Checks run
 
 - `./batch-check.sh --fast`: exit 0 (compile, maps, Stale, tree).
-- One at a time, with the data named: HousingDoorCheck exit 0 (40 s), MortgageCheck 0, BuildCardCheck 0, CreditCheck
+- After REV-HN1-1's mends: `--fast` exit 0; HousingDoorCheck exit 0 (and exit 4, the take-back line red, with the
+  take-back commented out); MortgageCheck 0; CreditCheck 0; the traced default playtest identical to the run before.
+- Before them, one at a time, with the data named: HousingDoorCheck exit 0 (40 s), MortgageCheck 0, BuildCardCheck 0, CreditCheck
   0, BankFailureCheck 0, LongPlaytest exit 0 (501 s, "Nothing. Every month passed
   the audit and every reload matched").
 - The two traced default playtests above (main and branch), one JVM at a time.

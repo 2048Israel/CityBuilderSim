@@ -4,7 +4,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 593 files, 644,179 lines, 28,008 methods, 6,184 constants. `GameVersion.VERSION` is "0.9.148", `SAVE_FORMAT` 55.
+**The tree:** 593 files, 644,225 lines, 28,009 methods, 6,184 constants. `GameVersion.VERSION` is "0.9.148", `SAVE_FORMAT` 55.
 
 ## model (267 files)
 
@@ -38,7 +38,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingsStacks.java](BuildingsStacks.md) | 538 | 49 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 57 |
 | [BuildingsTemplate.java](BuildingsTemplate.md) | 1,579 | 166 | One kind of building, and what it costs to put up. | 213 |
 | [BusinessDebt.java](BusinessDebt.md) | 100 | 14 | Base class for private-sector borrowing. | 10 |
-| [BusinessDebtManager.java](BusinessDebtManager.md) | 3,761 | 246 | Private-sector credit. | 36 |
+| [BusinessDebtManager.java](BusinessDebtManager.md) | 3,772 | 247 | Private-sector credit. | 36 |
 | [BusinessInvestment.java](BusinessInvestment.md) | 1,634 | 90 | Capacity planning for the private sector. | 93 |
 | [BusinessLoan.java](BusinessLoan.md) | 72 | 7 | A fixed-term business loan: interest-only each month, principal repaid in full at maturity. | 8 |
 | [Buyback.java](Buyback.md) | 432 | 28 | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would s... | 13 |
@@ -104,7 +104,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 789 | 94 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 13 |
 | [FundView.java](FundView.md) | 921 | 41 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 8 |
-| [Game.java](Game.md) | 22,653 | 1014 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 300 |
+| [Game.java](Game.md) | 22,677 | 1014 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 300 |
 | [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 192 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 282 | 31 | How the player likes the window, kept between runs. | 8 |
@@ -478,7 +478,7 @@ Generated 2026-11-18 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HouseholdCheck.java](HouseholdCheck.md) | 1,701 | 7 | Verifies the residents' books and the demolition log. | 0 |
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 292 | 6 | The households remember: the builder keeps what still fits. | 0 |
 | [HousingCheck.java](HousingCheck.md) | 967 | 9 | Audits the three subsystems that describe the same housing, every month, and makes them agree. | 0 |
-| [HousingDoorCheck.java](HousingDoorCheck.md) | 312 | 6 | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed tho... | 0 |
+| [HousingDoorCheck.java](HousingDoorCheck.md) | 323 | 6 | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed tho... | 0 |
 | [HydroCheck.java](HydroCheck.md) | 613 | 17 | The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against its own constants, the sites on ... | 0 |
 | [HydrogenSteelCheck.java](HydrogenSteelCheck.md) | 509 | 22 | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from ... | 0 |
 | [InboxCheck.java](InboxCheck.md) | 727 | 14 | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. | 0 |
