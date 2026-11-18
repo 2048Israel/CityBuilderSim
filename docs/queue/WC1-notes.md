@@ -138,6 +138,13 @@ than the process text it replaces (579 lines taken out of `CLAUDE.md` 110,
   needed (no money, saves or threading). The pick is not ALL, but the branch
   edits `ship.sh`, so it owes `sh tools/gate.sh WC1 --branch-gate --dry-run
   --no-tag` (REV-WC1-1), asked as "WC1 dry run?".
+- That dry run, on the orchestrator's go: run `/tmp/cbs-gate-WC1-oM23NTYF`,
+  branch b6bf51152 on main c17b92f0f, the branch's own `ship.sh` (the run's
+  `publisher.sh`). Records: WC1's block on top, 0 Pending rows, its Queued
+  row out; `--fast` exit 0 (65 s); `pick-selftest` 19 of 19, `ship-selftest`
+  149 of 149, `wait-selftest` 20 of 20; "the tree is as it was"; **gate exit
+  0**, 08:44 to 09:16. Its would-be merge title is the Queued row's whole
+  text; `-m "one contract for both builders"` at the gate gives a short one.
 - The changed scripts' self-tests: `ship-selftest.sh` 149 of 149 (main's
   less its 7 RL1 cases; it ran 37 minutes), `pick-selftest.sh` 19 of 19,
   `wait-selftest.sh` 20 of 20 (its RL1 section rewritten as a plain `--row`

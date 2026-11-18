@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-WC1-oM23NTYF -->
 <!-- readiness: provisional -->
 ## changelog
 ### WC1 — one contract for both builders — 2026-11-18, ready, see docs/queue/WC1-notes.md
