@@ -34,8 +34,13 @@ CASE='legacy empty lock is taken over'; nightly_lock "$TEST/lock"; ok grep -q 'r
     touch data/earth-2.bin; unset JDK_JAVA_OPTIONS; cbs_check_data "$MAIN"
     LOCAL=$(pwd); command -v cygpath >/dev/null 2>&1 && LOCAL=$(cygpath -m "$LOCAL")
     CASE='checkout Earth wins while missing world falls back to main'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$LOCAL/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
-    JDK_JAVA_OPTIONS='-Dfixture=kept'; cbs_check_data "$MAIN"
-    CASE='caller Java options take precedence'; ok test "$JDK_JAVA_OPTIONS" = '-Dfixture=kept'
+    JDK_JAVA_OPTIONS='-Xmx64m'; cbs_check_data "$MAIN"
+    CASE='unrelated caller flags keep both data defaults'; ok test "$JDK_JAVA_OPTIONS" = "-Xmx64m -Dcbs.earth=\"$LOCAL/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    CALLER='-Xmx64m -Dcbs.earth="manual Earth.bin"'; JDK_JAVA_OPTIONS=$CALLER; cbs_check_data "$MAIN" > "$TEST/data-report"
+    CASE='hand-set Earth stays while world is added'; ok test "$JDK_JAVA_OPTIONS" = "$CALLER -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    CASE='the report separates caller and named properties'; ok grep -q 'cbs.earth already set;.*cbs.world=.* named;' "$TEST/data-report"
+    CALLER="$CALLER -Dcbs.world=\"manual world.bin\""; JDK_JAVA_OPTIONS=$CALLER; cbs_check_data "$MAIN"
+    CASE='both hand-set data paths stay unchanged'; ok test "$JDK_JAVA_OPTIONS" = "$CALLER"
 )
 row() { printf 'PlanCheck\tplan 42 ms\t%s\t100\tms\tFAIL\t1\n' "$1"; }
 judge() { awk -v mode=night -f "$PAIRAWK" "$TEST/old" "$TEST/new"; }
