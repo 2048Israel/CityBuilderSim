@@ -46,9 +46,11 @@ line is mailed to `jerus` and the gate's keeper, naming the batch (BW1).
   three builders, and a fourth on study, docs or process rows while the plan
   is behind pace: the week's % used plus the last six hours' rate times the
   hours to the reset under 95 (2026-11-07: "Yes, standing rule").
-- **The heavy slot:** never two dry runs or two ensembles at once; one dry run
-  beside one ensemble, but then no builder's full pick as well (DQ1's dry run
-  died on a fork failure, 2026-11-17 20:05, with 1.4 GB free).
+- **The heavy slot:** never two dry runs or two ensembles at once, and no
+  ensemble beside a dry run or a gate (2026-11-18: R2c-P's dry run went red
+  when KeptCheck timed out at 1740 s beside HN1's 80-run ensemble; DQ1's died
+  on a fork failure, 2026-11-17 20:05, with 1.4 GB free); no builder's full
+  pick beside either.
 - Before removing a worktree, check its session is done and its work is on
   origin, and grep `docs/queue` for references to its `target/` (2026-11-18:
   HN1's probe was lost to a `git worktree remove`).

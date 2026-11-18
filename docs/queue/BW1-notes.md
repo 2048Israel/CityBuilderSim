@@ -124,12 +124,12 @@ launcher, to `docs/queue/BW1.md`. Scripts and docs only; untagged.
 ## One in, one out
 
 `git diff --numstat origin/main` (2d895d646) over the process files, the notes
-and ship file left out: 206 added, 75 removed, 131 more.
+and ship file left out: 211 added, 78 removed, 133 more.
 
 | file | + | - |
 |---|---|---|
 | `docs/contract.md` | 9 | 3 |
-| `docs/orchestrator.md` | 46 | 56 |
+| `docs/orchestrator.md` | 51 | 59 |
 | `docs/tree.md` | 2 | 0 |
 | `ship.sh` | 19 | 8 |
 | `tools/bus.sh` (new) | 11 | 0 |
@@ -139,11 +139,13 @@ and ship file left out: 206 added, 75 removed, 131 more.
 | `tools/nightly-selftest.sh` | 11 | 0 |
 | `tools/ship-selftest.sh` | 49 | 4 |
 
-The rules a session reads balance, 57 in and 59 out (the orchestrator's call
+The rules a session reads balance, 62 in and 62 out (the orchestrator's call
 of 2026-11-18, on the first count of 14 more): the contract's state lines, the
 stop's mail and the gate's posts (+6) and `docs/tree.md`'s entry (+2), against
-`docs/orchestrator.md` ten lines shorter. Its waking is cut to its fallback
-(the check-in's minute and re-arming out, MemWatch's drawing in), its gate
+`docs/orchestrator.md` eight lines shorter, with the heavy slot's bullet the
+orchestrator gave (no ensemble beside a dry run or a gate, +2). Its waking is
+cut to its fallback (the check-in's minute and re-arming out, MemWatch's
+drawing in), its gate
 step 5 from seven lines to four (the self-tests by name are `ship.sh`'s
 `selftests()`), its relaying of a send-back gone, and the rest of its prose
 tightened with no rule, decision or quote out. Gone as said elsewhere: the
