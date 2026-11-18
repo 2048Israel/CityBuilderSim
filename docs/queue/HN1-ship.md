@@ -10,7 +10,8 @@ the order was trimmed. HousingDoorCheck plays seed 12 on today's main and fails 
 landlord that could buy one outright while families were short of doors. With the mend the R0h path has no finding in
 748 months. LongPlaytest's watch, seed and floor are unchanged. The default playtest is main's to m1683 and parts at
 m1684, when the door writes 2 of the 5 homes main held whole; the landlords are held for the bank's leverage in 3 months
-against main's 34. The ensemble passes (M1 0, F1 0/16 on every policy) with larger cities: AUTO2's median 2.66 million.
+against main's 34. The ensemble passes (M1 0, F1 0/16) with larger cities; paired with main, debt and claims do not rise.
 ## pending
 | HN1-A | the plan prices a landlord's order 2-5% under the door's price, so its down payment, raised to the plan's figure, fails at the door even for one ({next}) | recommended: size the order and the equity raise at the door's own price (quoteBuild() + the land) | [notes](docs/queue/HN1-notes.md) |
 | HN1-B | Game.consider()'s order with no mortgage is still all or nothing at the door on the bank's capital ({next}) | recommended: the same halving, once a fixture shows it holding a sector's whole order with the till for part of it | [notes](docs/queue/HN1-notes.md) |
+| HN1-C | `tools/ensemble/ensemble.sh --stop HN1` left the run's xargs (started 09:21) at its first call; it started 5 runs at 11:12, and a second `--stop` ended them ({next}) | why it outlived both of stop.ps1's passes is not known: its command line ends in the run's folder, which the pattern matches. Recommended: stop.ps1 looks once more after its passes and says what of the run is left, so a resume never starts beside survivors | [notes](docs/queue/HN1-notes.md) |

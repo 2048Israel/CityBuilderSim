@@ -138,14 +138,25 @@ batch verdict PASS, hard criteria 10/10. M1 is 0 months on every policy, and F1 
   where 12 are needed; the median is -0.56% against -0.60%.
 - The other info rows move within their ranges: A1 3.10% against 3.16%, A2 24 against 23 months, S1 2.33% against
   3.04%.
-- What the baseline does not carry: the city's debt and the insurance claims. Neither is in 0.9.146.md, and the
-  driver's CSV has no claims, so neither can be compared across the runs. On HN1's own runs, the AUTO2 city's debt ends
-  at a median of 0.14 years of GDP [0.03 to 0.40], and ZERO_SLACK's at 0.15 [0.00 to 0.67].
+- **Paired with main** (the orchestrator's ask; the seed-by-seed table is in `docs/ensemble/HN1.md`). AUTO2's 16 seeds
+  were run on main's merge base, da6f5347e, with the same driver and data, in a detached worktree removed afterwards.
+  HN1's 16 seeds were run again beside them, and they match its ensemble pop for pop. Both sides read claims, premiums,
+  mortgages and the capital rule's refusals through `-Densemble.extra`.
+  - Debt in years of GDP: 0.14 against 0.17 at the end (HN1 higher in 6 of 16), 0.16 against 0.18 at m2000.
+  - Claims: $0.1k against $3.0k (HN1 higher in 3 of 16).
+  - Neither rises beyond the seeds' spread.
+  - What rises is the capital rule's no to the other sectors' building loans: 842 against 562 sector-months, higher in
+    13 of 16 seeds. The landlords' holds for capital fall from 168 to 26 months in every seed, and the mortgages
+    written rise from 411 to 488. The landlords now use capital room that a held order left to the sectors asking
+    after them, REV-HN1-1's (5a).
+- What the kept baseline does not carry: the city's debt and the insurance claims. Neither is in 0.9.146.md, and the
+  driver's CSV has no claims by default, hence the paired runs above. On HN1's own runs, ZERO_SLACK's debt ends at a
+  median of 0.15 years of GDP [0.00 to 0.67].
 - The run went past the 2-hour limit of the shell that started it, so it was stopped at 62 of 80 with
   `tools/ensemble/ensemble.sh --stop HN1` and resumed under the same label ("18 of 80 runs to do", the snapshot kept).
   The helper's first stop left the run's `xargs` (from 09:21), which started five runs at 11:12. A second `--stop`
   ended them (16 processes), and nothing of the run was left before the resume. The helper's header says it stops
-  xargs; on this run it did so only at the second call.
+  xargs; on this run it did so only at the second call (Pending HN1-C).
 
 ## 5. Checks run
 
@@ -171,8 +182,12 @@ batch verdict PASS, hard criteria 10/10. M1 is 0 months on every policy, and F1 
   door on the bank's capital too. Recommended: the same halving, once a fixture shows it holding a sector's whole
   order with the till for part of it.
 
+- **HN1-C, the ensemble's stop.** `ensemble.sh --stop` left the run's xargs at its first call (section 4).
+  Recommended: `stop.ps1` looks once more after its two passes and says what of the run is left, so a resume never
+  starts beside survivors.
+
 ## 7. Process
 
 No process file changed. The coding was done in-session, not by a Sonnet slice: the diff is small, and it was tied
-closely to the diagnosis's runs. Scratch runs lived in `target/hn1/` with a detached checkout at `target/hn1-main`,
-removed at the end.
+closely to the diagnosis's runs. Scratch runs lived in `target/hn1/` with detached checkouts of main for the diagnosis
+and of the merge base for the paired ensemble, each removed when its runs ended.

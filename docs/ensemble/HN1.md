@@ -239,3 +239,59 @@ What `--baseline` reads: T1, T2 and F1 compare with it.
  }
 }
 ```
+
+## Paired with main: AUTO2, 16 seeds
+
+Asked by the orchestrator after REV-HN1-1, because this baseline does not carry the city's debt or the insurance
+claims. Main's side is da6f5347e, the merge base of the classes above (2c205e493 without HN1). It uses the same
+driver, settings and data files, in a detached worktree that was removed afterwards. Both sides were run again with
+`-Densemble.extra` reading five figures a month off `BusinessDebtManager`:
+
+- `getInsuredWrittenOffThisMonth` (the claims, $k)
+- `getPremiumsThisMonth` ($k)
+- `getMortgagesWrittenThisMonth`
+- the sizes of `refusedProjectForCapital` (sectors the capital rule refused a building's loan, the project door; the
+  landlords borrow at the mortgage door) and of `refusedMortgageForCapital` (the landlords refused a mortgage)
+
+HN1's 16 seeds, run again, match the runs above pop for pop in every month. Main's final populations are 0.9.146's to
+the person. Debt is `treasury_debt` over a year of `gdp_month`.
+
+| seed | final pop, HN1 / main | debt end | debt m2000 | claims $k | building loans refused (sector-months) | landlords refused (months) | mortgages written | premiums $k |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 1,951,774 / 1,973,419 | 0.38 / 0.08 | 0.25 / 0.24 | 0.0 / 0.5 | 1,051 / 669 | 50 / 166 | 400 / 318 | 5,439,394 / 10,848,461 |
+| 1 | 1,695,293 / 1,703,048 | 0.10 / 0.13 | 0.43 / 0.31 | 1.1 / 2.8 | 586 / 586 | 17 / 189 | 432 / 326 | 4,005,505 / 4,178,531 |
+| 2 | 1,915,269 / 3,065,762 | 0.14 / 0.25 | 0.03 / 0.19 | 0.0 / 9.2 | 610 / 557 | 37 / 103 | 416 / 385 | 8,599,133 / 10,054,157 |
+| 3 | 2,181,175 / 1,242,257 | 0.11 / 0.04 | 0.08 / 0.05 | 0.0 / 0.9 | 828 / 349 | 102 / 139 | 364 / 338 | 7,086,765 / 1,751,999 |
+| 4 | 2,071,695 / 3,992,204 | 0.14 / 0.23 | 0.14 / 0.23 | 0.0 / 3.1 | 837 / 812 | 9 / 231 | 472 / 420 | 3,679,444 / 7,575,712 |
+| 5 | 3,501,228 / 1,909,514 | 0.40 / 0.24 | 0.40 / 0.17 | 0.1 / 0.0 | 1,220 / 567 | 57 / 143 | 444 / 353 | 8,363,874 / 13,390,432 |
+| 6 | 3,152,414 / 4,406,993 | 0.15 / 0.38 | 0.09 / 0.20 | 0.3 / 4.9 | 1,215 / 386 | 18 / 105 | 502 / 523 | 5,742,308 / 6,775,558 |
+| 7 | 2,479,407 / 1,509,072 | 0.16 / 0.04 | 0.13 / 0.42 | 0.1 / 0.2 | 1,092 / 1,571 | 14 / 201 | 516 / 409 | 4,453,923 / 5,174,540 |
+| 8 | 5,695,603 / 1,937,258 | 0.04 / 0.18 | 0.08 / 0.12 | 0.8 / 4.5 | 1,382 / 1,043 | 36 / 407 | 683 / 405 | 5,218,375 / 4,524,160 |
+| 9 | 5,863,916 / 4,873,682 | 0.03 / 0.10 | 0.05 / 0.05 | 15.0 / 40.5 | 487 / 779 | 4 / 410 | 620 / 413 | 7,066,175 / 7,452,838 |
+| 10 | 5,882,191 / 2,672,063 | 0.11 / 0.15 | 0.18 / 0.14 | 0.1 / 0.0 | 823 / 499 | 16 / 170 | 554 / 467 | 12,089,920 / 6,495,473 |
+| 11 | 4,300,415 / 3,057,458 | 0.17 / 0.44 | 0.21 / 0.04 | 0.0 / 179.3 | 1,568 / 734 | 41 / 200 | 558 / 541 | 7,168,261 / 8,373,412 |
+| 12 | 1,651,580 / 1,902,239 | 0.29 / 0.10 | 0.03 / 0.50 | 0.0 / 8.3 | 848 / 433 | 28 / 117 | 330 / 384 | 9,391,305 / 12,332,131 |
+| 13 | 1,392,715 / 2,331,270 | 0.11 / 0.16 | 0.95 / 0.10 | 0.0 / 32.3 | 959 / 444 | 13 / 111 | 486 / 565 | 3,304,884 / 7,162,278 |
+| 14 | 3,447,095 / 2,341,614 | 0.12 / 0.26 | 0.19 / 0.01 | 0.2 / 0.1 | 541 / 396 | 25 / 146 | 595 / 430 | 7,631,974 / 10,106,150 |
+| 15 | 2,833,317 / 2,339,910 | 0.29 / 0.24 | 0.33 / 0.31 | 0.0 / 0.2 | 440 / 417 | 36 / 175 | 489 / 432 | 7,188,211 / 7,363,448 |
+
+| figure | HN1 median [min to max] | main median [min to max] | paired HN1 - main, median [min to max] | seeds HN1 higher |
+|---|---|---|---|---|
+| final population | 2,656,362 [1,392,715 to 5,882,191] | 2,335,590 [1,242,257 to 4,873,682] | 716,162 [-1,920,509 to 3,758,345] | 9 of 16 |
+| debt, years of GDP, end | 0.14 [0.03 to 0.40] | 0.17 [0.04 to 0.44] | -0.05 [-0.27 to 0.30] | 6 of 16 |
+| debt, years of GDP, m2000 | 0.16 [0.03 to 0.95] | 0.18 [0.01 to 0.50] | 0.02 [-0.47 to 0.85] | 9 of 16 |
+| insured claims, run total | 0.1 [0.0 to 15.0] | 3.0 [0.0 to 179.3] | -2.4 [-179.2 to 0.2] | 3 of 16 |
+| capital rule's no to a building's loan, sector-months | 842 [440 to 1,568] | 562 [349 to 1,571] | 332 [-479 to 834] | 13 of 16 |
+| ...to a landlord's mortgage, months | 26 [4 to 102] | 168 [103 to 410] | -130 [-406 to -37] | 0 of 16 |
+| mortgages written | 488 [330 to 683] | 411 [318 to 565] | 70 [-79 to 278] | 13 of 16 |
+| insurance premiums, run total | 7,076,470 [3,304,884 to 12,089,920] | 7,408,143 [1,751,999 to 13,390,432] | -1,119,201 [-5,409,067 to 5,594,447] | 3 of 16 |
+
+**The reading.** Neither the city's debt nor the claims rise.
+
+- Debt at the end is a median 0.14 years of GDP against 0.17, and HN1 is higher in 6 of 16 seeds. At m2000 it is
+  0.16 against 0.18, a paired +0.02 inside a spread of -0.47 to +0.85.
+- Claims are a median $0.1k against $3.0k, and HN1 is higher in 3 of 16.
+- What rises is the bank's capital going to the landlords, REV-HN1-1's (5a). The capital rule refuses a building's loan
+  in a median of 842 sector-months against 562, higher in 13 of 16 seeds. It refuses the landlords in 26 months
+  against 168, fewer in all 16. HN1 writes 488 mortgages against 411.
+- The cities end larger in 9 of 16 seeds, a paired median of +716,162 people.
