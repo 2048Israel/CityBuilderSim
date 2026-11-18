@@ -286,7 +286,32 @@ their existing CSVs launches no additional simulation:
 | 9 | 1490–1530 (41 months) | 0 | 7,331,211.53 at 1521 | 1514: 7,568,526.93 | 0 |
 
 Source: `target/ensemble/CPB1/AUTO2-{3,9}.csv`, summarized in
-`target/cpb1-ensemble-windows.log`. The overall 80-case ensemble score is
-still pending; these readings do not substitute for its M1/F1 verdict.
+`target/cpb1-ensemble-windows.log`. The overall 80-case ensemble score below
+also passes M1/F1; the two windows are additional case-specific evidence.
 The ship file forwards the bounded-run placement class to the already queued
 CL7 with a scoped LongPlaytest row; it does not cover negative GDP.
+
+## Completed ensemble
+
+The orchestrator sends RESUME at 02:11. The same CPB1 snapshot and data
+settings resume with 46 cases left, keeping all 34 completed records and
+without rearming the past cutoff. It finishes all **80 of 80** cases, with
+no missing or short runs, exit 0. The resumed segment takes 29.0 minutes;
+the earlier segment and nightly pause are recorded above.
+
+| result | CPB1 | baseline 0.9.140 |
+|---|---|---|
+| counted criteria | 24/26 | 24/26 |
+| hard criteria | 10/10 PASS | 10/10 PASS |
+| M1, all policies | 0 failed and 0 unread months | 0 failed and 0 unread months |
+| F1, AUTO2 and ZERO_SLACK | 0/16 runs with findings each | 1/16 each, households with no home |
+| F1, other policies | 0/16 each | 0/16 each |
+| A1, informational FAIL | inflation median 3.16%, 5/16 in band | 3.25%, 5/16 in band |
+| A2, informational FAIL | longest spell median 23 months | 24 months |
+
+No criterion verdict changes. M1 and F1 pass without exceptions. One retired
+criterion is not counted. The raw score, summary and case files remain in
+`target/ensemble/CPB1/`; `baseline.md` is committed as `docs/ensemble/CPB1.md`
+with only the heading and introductory version changed to the publisher's
+next-version token. Snapshot provenance remains 272cacc55 and both shared
+data paths are named. No main ensemble was rerun for comparison.
