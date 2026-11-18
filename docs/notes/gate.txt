@@ -1,8 +1,8 @@
-# gate of Merge batch/TR2-G: a click in replay's copy on the drawer's pin or the construction tab changes the in-memory GamePrefs, which the next prefs save takes to the player's folder (TR1's viewer clicks too; 0.9.77) (from Pending on 2026-11-16; it waited: TR2's stranger's review, low, not this batch's), 0.9.148
+# gate of Merge batch/FB9: the map's renderer and MapCheck's fixtures, 3 fix rows in one batch (Jerus, 2026-11-16: "Yes, bundle them"): M6-F, BF1-M, DM3-R; not beside FB5, FB8 (`MapCheck`, `CityMap`, `DistrictPlan`), 0.9.149
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 206 harnesses run in 1585s: 196 passed, 10 failed
+# suite: 211 harnesses run in 2780s: 202 passed, 9 failed
 RoadCheck | exit 1
 RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | 1 FAILED
@@ -45,12 +45,6 @@ HealthCheck | 1 FAILED
 ScaleCheck | exit 1
 ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 2.83e-02) FAIL
 ScaleCheck | 1 FAILED
-MapCheck | exit 1
-MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
-MapCheck | fixture: boxes stand on the mine source's actual future ground before month 100 FAIL
-MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
-MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
-MapCheck | 4 FAILED
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
