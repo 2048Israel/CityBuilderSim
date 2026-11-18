@@ -1,6 +1,6 @@
 # ReadPathCheck.java - 2,501 lines · 19 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ReadPathCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReadPathCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Reading the city must not change the city.
 > 

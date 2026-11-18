@@ -152,6 +152,29 @@ public final class CityMap {
     /** Plots on a district's side: World.DISTRICT, 256 (7.68 km). */
     public static final int DISTRICT = World.DISTRICT;
 
+    /**
+     * The plots a journal record's plot field may number while the record stays a positive int: 1 << 23, an int's 31 value bits
+     * less the 8 of a run record's kinds (`plot << 8 | before << 4 | after`, jRec and the plan's fixedLog), the tightest of the
+     * journals' packings (a site record's `plot << 4` and a wall record's `plot << 1` are looser).
+     */
+    static final int RECORD_PLOTS = 1 << (Integer.SIZE - 1 - 8);
+
+    /**
+     * The longest side a district may have while the map's journals keep a plot in an int: 2,895 plots, worked out from the plan's
+     * frame, not the district: fixedLogInto() packs the frame's plots, DISTRICT + 1 a side (DistrictPlan.FRAME), into run records
+     * and drops a negative one, so the frame's last plot, (DISTRICT + 1)^2 - 1, must be below RECORD_PLOTS.
+     * WHY (DM2-C): the site history's rectangle codec (MapSiteHistory) matched a row's spans by a key packing the column and the
+     * width less one in 8 bits each, right for this DISTRICT of 256 and wrong past it, where a span 257 plots wide takes the next
+     * column's key and two spans are written as one rectangle. The key is laid out from DISTRICT now and the codec's bounds are
+     * DISTRICT's; past this side the class fails as it loads, rather than write records that wrap. REV-FB8-1: first set from the
+     * district's own plots (2,896), where the frame's south-east plot packs negative and its dated change is silently dropped.
+     */
+    static final int DISTRICT_MOST = (int) Math.sqrt(RECORD_PLOTS) - 1;
+
+    static {
+        if (DISTRICT < 1 || DISTRICT > DISTRICT_MOST) throw new IllegalStateException("CityMap.DISTRICT " + DISTRICT + " is past DISTRICT_MOST");
+    }
+
     /** Tiles on a district's side: 8. */
     public static final int TILES_A_SIDE = DISTRICT / World.TILE;
 
@@ -2302,7 +2325,15 @@ public final class CityMap {
                 for (int e = 0; e < w.length; e++) {
                     siteHistory.changed(w.at[e]);
                     siteExclusionDirty.add(w.at[e]);
-                    w.at[e].siteRuns[w.slot] = null;
+                    // DM2-B: a district whose runs are taken off moves its version, as markRun()'s writes do: its sites' list (siteList()) and
+                    // every plan whose frame it is in (ownKey()) are kept against that version, and a district the new walks lay nothing on
+                    // again was otherwise read from its old list - its mines still drawn, the month's site history written from them, the
+                    // sidecar refused on its next load (MapCheck 4c; LX1's 4,000-month city at m3589).
+                    if (w.at[e].siteRuns[w.slot] != null) {
+                        w.at[e].siteRuns[w.slot] = null;
+                        moved(w.at[e]);
+                        changes++;
+                    }
                     minedTouched.add((baseDX + w.at[e].dx) << 32 ^ ((baseDY + w.at[e].dy) & 0xffffffffL));
                 }
             }
@@ -11376,11 +11407,25 @@ public final class CityMap {
 
     /** Compares district figures, optionally including their arrival logs and dated histories. */
     public boolean sameDistricts(CityMap o, boolean withLogs) {
+        return sameDistricts(o, withLogs, true);
+    }
+
+    /**
+     * Whether two maps hold the same districts, logs and dated source histories (the runs' journal, the sites', the units' exclusions)
+     * and the same runs and shore, the wall ways' journals left out: what a city reconciled unseen holds before a first view appends
+     * the walls its plans discover (DM2-A).
+     */
+    boolean sameSources(CityMap o) {
+        return sameDistricts(o, true, false) && runs.same(o.runs) && shore.same(o.shore);
+    }
+
+    private boolean sameDistricts(CityMap o, boolean withLogs, boolean withWalls) {
         if (o == null || o.seed != seed || o.districts.size() != districts.size() || o.types.length != types.length) return false;
         for (int i = 0; i < districts.size(); i++) {
             District a = districts.get(i), b = o.districts.get(i);
             if (a.dx != b.dx || a.dy != b.dy || a.owned != b.owned || a.usedHalf != b.usedHalf || !Arrays.equals(a.counts, b.counts)) return false;
-            if (withLogs && (!a.sameLog(b) || !a.sameJournal(b) || !Arrays.equals(a.wallMonth, b.wallMonth) || !Arrays.equals(a.wallChange, b.wallChange)
+            if (withLogs && (!a.sameLog(b) || !a.sameJournal(b)
+                    || withWalls && (!Arrays.equals(a.wallMonth, b.wallMonth) || !Arrays.equals(a.wallChange, b.wallChange))
                     || a.excludeBatch != b.excludeBatch || !Arrays.equals(a.excludeMonth, b.excludeMonth) || !Arrays.equals(a.excludeType, b.excludeType)
                     || !Arrays.equals(a.excludeChange, b.excludeChange) || !siteHistory.same(a, o.siteHistory, b))) return false;
         }

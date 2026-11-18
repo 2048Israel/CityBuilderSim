@@ -1,6 +1,6 @@
 # WorksFinanceCheck.java - 965 lines · 25 methods · 1 constants · harnesses
 
-`ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > Essential funding reservations, actual parcel cash and quoted bond terms (HW1).
 > WHY. A plan could count available cash twice, finance fractional parcels,

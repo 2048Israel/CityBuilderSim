@@ -1,6 +1,6 @@
 # UserInterface.java - 7,443 lines · 248 methods · 47 constants · interface
 
-`ham/citybuildersim/ui/UserInterface.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/UserInterface.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The window: the stage and its theme, the header - the clock and the speed,
 > the money block, five headline tiles, the "Needs you" chip, the rating and
@@ -467,7 +467,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4447 | 37 | `private void showCreditsMenu()` | The Credits page: the Earth and nations attribution files in full and the fonts' notice with its licence, each as Credits reads it from the jar (the game is sold, and those licences ask that the credit reach the player). |
+| 4447 | 37 | `private void showCreditsMenu()` | The Credits page: the data's, fonts' and libraries' notices and licences in full, each as Credits reads it from the jar (the game is sold, and those licences ask that the credit reach the player). |
 | 4495 | 29 | `private VBox toggleRow(String label, boolean on, String what, Runnable flip)` | A setting: what it is, what it does, and a switch that says which way it is set without having to read the word next to it. |
 
 ### THE MAIN SCREEN IS GONE, AND THAT IS THE POINT. (lines 4525-4547)
