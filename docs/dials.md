@@ -2,9 +2,9 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,142 constants in 589 files.**
+**6,145 constants in 589 files.**
 
-## model (2920 constants)
+## model (2923 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -845,10 +845,13 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 34 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
-| 37 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
-| 40 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
-| 43 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
+| 36 | `Credits.EARTH` | `"/credits/earth/ATTRIBUTION-2.txt"` | The Earth data's attribution, in the jar (pom.xml copies tools/earth/ATTRIBUTION-2.txt there). |
+| 39 | `Credits.NATIONS` | `"/credits/world/ATTRIBUTION.txt"` | The nations' attribution, in the jar (pom.xml copies tools/world/ATTRIBUTION.txt there). |
+| 42 | `Credits.FONTS` | `"/fonts/OFL.txt"` | The fonts' licence in full, the SIL Open Font License 1.1 with IBM's copyright line, as it sits beside the fonts. |
+| 45 | `Credits.GSON` | `"/credits/gson/LICENSE"` | Gson's Apache 2.0 licence, copied from its upstream release because its jar omits it. |
+| 48 | `Credits.OPENJFX` | `"/credits/openjfx/LICENSE"` | OpenJFX's GPL v2 licence including the Classpath Exception, copied from its upstream release. |
+| 51 | `Credits.OPENJFX_FILES` | `List.of(OPENJFX, "/credits/openjfx/ADDITIONAL_LICENSE_INFO", "/credits/openjfx/ASSEMBLY...` | OpenJFX's licence and notices, including the third-party code in the bundled graphics module. |
+| 56 | `Credits.FONT_NOTICE` | `"The type is IBM Plex Sans and IBM Plex Mono, Copyright © 2017 IBM Corp., " + "with Res...` | The line above the fonts' licence: what the type is, whose, and the licence it is used under. |
 
 ### Crime.java ([map](map/Crime.md))
 

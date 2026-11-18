@@ -1,18 +1,27 @@
 package ham.citybuildersim;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
+import java.util.Properties;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPathFactory;
 
 /**
  * The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
- * licence, and says where a file is when this build lacks it (CR1, 2026-11-09).
+ * licence, the libraries' licences and notices, and says where a file is when this build lacks it
+ * (CR1, CR1-L).
  *
  * WHY THIS EXISTS. The game is sold, and the licences of its data (CC BY among them) and of its
  * type (the SIL Open Font License) ask that the credit reach the player. The page reads the files
@@ -35,6 +44,9 @@ import java.util.stream.Stream;
  *   4. THE PARAGRAPHS KEEP THE WHOLE TEXT. Cut on blank lines, no non-blank line is lost or
  *      moved; a blank run is one cut and a \r goes.
  *   5. EACH SHIPPED FILE NAMES THE PAGE. Both files say "Credits page", where the game shows them.
+ *   6. THE LIBRARIES FOLLOW THE FONTS, WITH THEIR RELEASE TEXTS IN FULL. The fallback copies'
+ *      hashes and versions are pinned to upstream releases and pom.xml. The jars lack legal
+ *      files; if that changes, re-audit and take their texts from the dependency instead.
  */
 public class CreditsCheck {
 
@@ -56,8 +68,83 @@ public class CreditsCheck {
         return out;
     }
 
+    /** The release copies reach the page unchanged, and a dependency upgrade cannot silently keep old notices. */
+    static void libraryNotices(List<Credits.Section> sections, boolean inRepository) throws Exception {
+        System.out.println("--- the libraries' release notices and licences ---");
+        check("the libraries follow the fonts, one section each", sections.stream().map(Credits.Section::title).toList()
+                .equals(List.of("The Earth", "The nations", "The fonts", "Gson", "OpenJFX")), null);
+        String provenance = Credits.readResource("/credits/sources.properties");
+        check("the jar carries the legal texts' release provenance", provenance != null, null);
+        if (provenance == null) return;
+        Properties sources = new Properties();
+        sources.load(new StringReader(provenance));
+        List<String> paths = new ArrayList<>(List.of(Credits.GSON));
+        paths.addAll(Credits.OPENJFX_FILES);
+        for (String path : paths) {
+            String text = Credits.readResource(path);
+            check(path + " is present and nonempty", text != null && !text.isBlank(), null);
+            if (text == null) continue;
+            String relative = path.substring("/credits/".length());
+            String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));
+            check(path + " matches the unmodified upstream release text", hash.equals(sources.getProperty("sha256." + relative)), hash);
+            if (inRepository) {
+                Path source = Path.of("tools", "credits", relative);
+                check(path + " matches its single source copy", Files.exists(source) && text.equals(read(source)), source.toString());
+            }
+        }
+        for (String resource : List.of(Credits.GSON, Credits.OPENJFX)) {
+            Credits.Section section = sections.stream().filter(s -> s.resource().equals(resource)).findFirst().orElse(null);
+            check(resource + " has a section with all its texts", section != null && !section.missing(), null);
+            if (section == null || section.missing()) continue;
+            if (resource.equals(Credits.GSON)) {
+                check("Gson shows its Apache licence exactly", section.text().equals(Credits.readResource(Credits.GSON))
+                        && section.text().contains("Apache License") && section.lead().contains("Version 2.0"), null);
+            } else {
+                List<String> files = new ArrayList<>();
+                for (String path : Credits.OPENJFX_FILES) files.add(path.substring(path.lastIndexOf('/') + 1) + "\n\n" + Credits.readResource(path));
+                check("OpenJFX shows every release notice exactly, in order", section.text().equals(String.join("\n\n", files)), null);
+                check("OpenJFX includes GPL v2 and the Classpath Exception", section.text().contains("Version 2, June 1991")
+                        && section.text().contains("\"CLASSPATH\" EXCEPTION TO THE GPL"), null);
+                check("the JPEG credit is given explicitly", section.lead().contains("This software is based in part on the work of the Independent JPEG Group."), null);
+            }
+        }
+        for (String missing : paths) {
+            String resource = missing.equals(Credits.GSON) ? Credits.GSON : Credits.OPENJFX;
+            Credits.Section section = Credits.sections(path -> path.equals(missing) ? null : Credits.readResource(path)).stream()
+                    .filter(s -> s.resource().equals(resource)).findFirst().orElseThrow();
+            check("missing " + missing + " marks the whole library section missing", section.missing(), null);
+            check("its missing note identifies the library", Credits.missingNote(section).contains(section.title()), null);
+        }
+        if (inRepository) {
+            var pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(Path.of("pom.xml").toFile());
+            var xpath = XPathFactory.newInstance().newXPath();
+            check("Gson's legal release version is pinned to pom.xml", sources.getProperty("gson.version").equals(xpath.evaluate(
+                    "/project/dependencies/dependency[artifactId='gson']/version", pom)), sources.getProperty("gson.source"));
+            check("OpenJFX's legal release version is pinned to pom.xml", sources.getProperty("openjfx.version").equals(xpath.evaluate(
+                    "/project/properties/javafx.version", pom)), sources.getProperty("openjfx.source"));
+            check("both OpenJFX dependencies use the audited version", "${javafx.version}".equals(xpath.evaluate(
+                    "/project/dependencies/dependency[artifactId='javafx-controls']/version", pom)) && "${javafx.version}".equals(xpath.evaluate(
+                    "/project/dependencies/dependency[artifactId='javafx-fxml']/version", pom)), null);
+            dependencyNotices();
+        }
+    }
+
+    /** The audited jars omit legal files; a new NOTICE or licence must be taken from the jar, not ignored. */
+    static void dependencyNotices() throws IOException {
+        for (String entry : System.getProperty("java.class.path").split(Pattern.quote(File.pathSeparator))) {
+            Path path = Path.of(entry);
+            if (!path.getFileName().toString().matches("(?:gson|javafx-(?:base|controls|fxml|graphics))-.*\\.jar")) continue;
+            try (JarFile jar = new JarFile(path.toFile())) {
+                List<String> legal = jar.stream().map(e -> e.getName()).filter(n -> !n.endsWith("/"))
+                        .filter(n -> n.matches("(?i)(?:.*/)?(?:LICENSE|NOTICE|COPYING|COPYRIGHT|ASSEMBLY_EXCEPTION|ADDITIONAL_LICENSE_INFO)(?:[._-].*)?")
+                                || n.matches("(?i)(?:.*/)?legal/.*")).toList();
+                check(path.getFileName() + " still omits legal files; fallback applies", legal.isEmpty(), legal.toString());
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-        System.out.println("=== CreditsCheck: the Credits page carries every attribution the exe ships and the fonts' licence, in full (CR1) ===");
+        System.out.println("=== CreditsCheck: the Credits page carries the data, fonts and libraries' notices and licences, in full (CR1, CR1-L) ===");
 
         Path bat = Path.of("Build EXE.bat");
         Path fonts = Path.of("src", "main", "resources", "fonts");
@@ -170,6 +257,8 @@ public class CreditsCheck {
         } else {
             System.out.println("  (skipped)");
         }
+
+        libraryNotices(sections, inRepository);
 
         System.out.println(fails == 0 ? "CreditsCheck: all ok" : "CreditsCheck: " + fails + " FAILED");
         System.exit(fails);
