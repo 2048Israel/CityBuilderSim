@@ -1033,9 +1033,9 @@ adds its line here, not in `CLAUDE.md`.
                                          tools/world/measures.py and read by WorldMeasures; and land-2024.json,
                                          each nation's land a hectare (WN5), made by tools.LandTable from
                                          tools/world/land.tsv and read by LandFactors
-    tools/credits/                       the libraries' notices the jar carries under credits/ (CR1-L), Microsoft's runtime terms
+    tools/credits/                       the libraries' notices the jar carries under credits/ (CR1-L), Microsoft's VC++ and SDK terms
                                          and our notice (CR1-J), sources.properties their provenance, source-archives.properties
-                                         the OpenJFX and Temurin source archives pinned by version and SHA-256 (CR1-J)
+                                         the OpenJFX, Temurin and temurin-build archives pinned by version and SHA-256 (CR1-J)
     tools/earth/                         E0's pipeline that bakes earth-1.bin (Python, outside the game; the file
                                          itself is not in the repository), its FORMAT.txt and ATTRIBUTION.txt, and
                                          fixture.py, which cuts EarthCheck's fixture from it; and since f99d62c
