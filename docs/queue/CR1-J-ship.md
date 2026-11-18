@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-CR1-J-Oo6lVTc9 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — CR1-J, source archives beside the exe and the OpenJDK runtime — 2026-11-18, ready, see docs/queue/CR1-J-notes.md
 The sold exe now runs on Eclipse Temurin 21.0.13+9, an OpenJDK build under
