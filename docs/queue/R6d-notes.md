@@ -196,3 +196,11 @@ row: its `EquipmentForms` shares are 1 and 0, its posts and draw the buildings'.
 
 `sh tools/pick.sh origin/main HEAD`: **ALL 224 harnesses** (`AllChecks` changed), review **needed - saves:
 +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT**. A dry run is owed (the orchestrator's go).
+
+## Merged again (after REV-R6d's mends)
+
+Main moved to 608bf7025 (0.9.152: LM1-D, the founding's water widened to six blocks, and BW2's queue row) and is merged in; the five
+generated indexes took main's side in the conflict and were regenerated (`--fast`: exit 0, Stale 0 firm). The traces above were made on
+36157fb19, before LM1-D, and compare this batch's change alone to main as it was; LM1-D's own is its notes'. After the merge,
+alone and green: `ElectrolyserCheck` 71, `FieldOperatorsCheck` 70, `HydrogenSteelCheck`, `DriverlessTruckCheck` 66, `ResearchCheck` 235,
+`EquipmentCheck`, `WaterCheck`, `Forms1900Check`, `HydroCheck`. The pick is still ALL 224, the review line the same: saves.
