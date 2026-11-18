@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-WC1-oM23NTYF -->
-<!-- readiness: provisional -->
 ## changelog
 ### WC1 — one contract for both builders — 2026-11-18, ready, see docs/queue/WC1-notes.md
 The workflow redesign's last step (Jerus, 2026-11-11): `docs/contract.md`, one file Claude and Codex builders both
