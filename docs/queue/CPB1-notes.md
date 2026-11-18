@@ -258,6 +258,23 @@ applicable. Generated-index conflicts are regenerated, and the post-FB8
 cutoff helper will invoke the ensemble's own stop helper at 01:15 if needed;
 the snapshot and completed cases stay for the same-label resume.
 
+At 01:15 on November 18 the cutoff helper invokes the supplied stop helper,
+which reports 18 stopped processes. Verification finds orphan JVMs and later
+ZERO_HOT jobs spawning despite that stop. CPB1 then stops only the owned
+run-path launcher/JVM PIDs, launchers first, repeating the scoped check:
+24 additional PIDs stopped by 01:16:42, and zero owned run processes on the
+following checks. Other sessions are untouched. This stop-helper finding is
+reported to the orchestrator as outside CPB1; no tool source is changed.
+
+The final kept count is **34 of 80**: AUTO2 16, ZERO_SLACK 12, ZERO_HOT 6,
+with 34 time records. The initial post-cutoff count was 32; two more cases
+completed during cleanup. There is no baseline/overall score yet, and the
+interrupted wrapper's exit 0 is not a pass. Snapshot 272cacc55 is kept in
+`target/ensemble/CPB1`, with 46 cases left. No further JVM runs until the
+orchestrator's resume mail after the nightly (whose start shifted to about
+01:30–01:45). Resume the same label with the same data settings, without
+rearming the now-past 01:15 cutoff guard. The dry run is still pending.
+
 The seed-window results above are on CPB1's 231f16270 base plus its own model.
 The final merged ensemble snapshot, 272cacc55 (main 3f0992282 plus CPB1),
 also has both requested AUTO2 paths completed through month 2400. Reading
