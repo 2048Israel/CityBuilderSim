@@ -151,16 +151,49 @@ Both monthly money checks and all final MoneyFixtures pass. The original
 0.9.102 negative seeded totals are historical replays, not a baseline rerun;
 the reduced fixture independently proves main 0.9.140 still has the defect.
 
-The default trace moves. A default seed prefix through month 60 exits 0
-(`target/cpb1-default60.log` and `target/cpb1-default60-month.csv`). Against
-the retained 0.9.140 AUTO2-0 data in
-`../cl-FB4/target/ensemble/FB4-merged/AUTO2-0.csv`, GDP first differs beyond
-CSV rounding at 47; at 48 it is 136.984 versus baseline 136.830974. The
-baseline is the committed `docs/ensemble/0.9.140.md`, snapshot 10cc0ca20.
-Between that snapshot and CPB1's base, the only change to model code is
-Migration.BRAKE_SLOTS visibility; other changed files are version, renderer,
-or harness code. No main run was repeated for comparison. Seed 3 and 9
-traces also differ from that retained baseline from month 47.
+Correction after REV-CPB1-1: the previously claimed month-47 default trace
+move was an invalid comparison of policies. The default prefix through month
+60 exits 0 (`target/cpb1-default60.log` and `target/cpb1-default60-month.csv`),
+but the retained 0.9.140 `AUTO2-0.csv` uses the autopilot, while the default
+LongPlaytest holds 3% by hand. Their policy rates first diverge at month 46:
+AUTO2 13.9709079% versus default 3%; FX is already 0.708041023 versus 0.820237.
+The GDP difference at 47 cannot establish a CPB1 model change. The prior
+seed comparisons to AUTO2 have the same policy mismatch and are not used as
+evidence of a model change. The seed-window GDP readings above remain valid.
+
+An observing probe follows LongPlaytest's default founding and actions, with
+no edits to LongPlaytest. The only building opening at 47 is a Boutique in
+Luxury Retail; no cement or wood works stand then. It reproduces the exact
+default GDP (138.929554161 at 47, 136.984000010 at 48). The targeted old-stock-
+production mutation has identical GDP and openings through 51. Logs:
+`target/cpb1-openings{,-old-production}.log`. The orchestrator was notified
+of the comparison error before the ensemble; its explicit ensemble GO stands.
+
+The ensemble will compare like policies with the newest committed baseline,
+currently `docs/ensemble/0.9.140.md` (snapshot 10cc0ca20), without rerunning
+main for a baseline.
+
+## REV-CPB1-1 mends
+
+The orchestrator calls for findings 2 and 3 to be mended here, and finding 1
+queued as CPB2. The ship file queues `docs/queue/CPB2.md`: the allocated-
+marginal-cost export-spare bypass and NaN export prices for goods with no
+world buyer are pre-existing uncovered paths, intentionally not mended here.
+
+The original 500-tonne loss case remains. In the same recycler town, a
+separate profitable cathode band now causes a positive market remainder:
+3,169.247573112 tonnes needed, 500 recovered, and 2,669.247573112 bid and
+actually bought. The cathode made uses the sum at the recipe ratio. A shadow
+CopperRefining whose scrap bid drops the remainder fails both the bid/bought
+and actual feed/output assertions, with the profitable premise still passing
+(`target/cpb1-review-mutation/sections.log`, exit 1). Focused sections pass
+without that mutation (`target/cpb1-review-sections.log`).
+
+CopperBufferCheck's domestic-demand control now clears the real month and
+checks the stock cover produced and its exact received anode. Its existing-
+stock control also clears the month, asserting the excess stock exported,
+the retained dump-line stock and no fresh cathode production or feed bought.
+Both pass in `target/cpb1-review-buffer.log`.
 
 ## Orchestrator review and reserved runs
 

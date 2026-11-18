@@ -111,6 +111,14 @@ public class CopperBufferCheck {
         check("actual local demand still plans its stock cover and orders anode despite the negative spread",
                 near(cr.getPlannedOutput(Good.COPPER), expected) && cr.bid(Good.ANODE) > 0);
         cr.endOrders();
+        clear(g);
+        Sector.Output home = cr.outputRow(Good.COPPER);
+        Sector.Input homeFeed = cr.inputRow(Good.ANODE);
+        BuildingsTemplate homeWorks = g.getBuildingManager().getTemplate(CopperRefining.ELECTROLYTIC_REFINERY);
+        double expectedFeed = expected * homeWorks.uses(Good.ANODE) / homeWorks.makes(Good.COPPER);
+        check("the real clearing makes the demanded stock cover and buys exactly its feed at the negative spread",
+                near(home.produced, expected) && home.exportBound == 0 && near(cr.getStock(Good.COPPER), expected)
+                && near(homeFeed.bid, expectedFeed) && near(homeFeed.boughtLocal + homeFeed.imported, expectedFeed));
 
         Game captive = fixture("captive", 11, 9);
         BuildingManager b = captive.getBuildingManager();
@@ -205,10 +213,14 @@ public class CopperBufferCheck {
         GoodsMarket market = g.getMarkets().get(Good.COPPER);
         double room = cr.getStockCapacity(Good.COPPER);
         cr.setStock(Good.COPPER, room);
-        cr.shipUnsoldStock(Good.COPPER, market);
-        check("existing stock above the dump line still exports at a loss",
+        clear(g);
+        Sector.Output sold = cr.outputRow(Good.COPPER);
+        Sector.Input stockFeed = cr.inputRow(Good.ANODE);
+        check("the real clearing exports existing stock above the dump line at a loss, with no new output or feed",
                 near(cr.getStock(Good.COPPER), room * Sector.DUMP_THRESHOLD)
-                && near(cr.pending().exports, room * (1 - Sector.DUMP_THRESHOLD) * market.exportPrice()));
+                && near(sold.exported, room * (1 - Sector.DUMP_THRESHOLD)) && sold.produced == 0 && sold.exportBound == 0
+                && stockFeed.bid == 0 && stockFeed.boughtLocal + stockFeed.imported == 0
+                && near(cr.pending().exports, sold.exported * market.exportPrice()));
 
         Game raw = fixture("raw-gdp", 11, 9);
         Sector r = raw.getSectors().copperRefining();

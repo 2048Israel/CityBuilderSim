@@ -530,6 +530,34 @@ public class CopperRefiningCheck {
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes (MoneyCheck holds its old-metal lines over two years)", audit != null && audit.relative() < 1e-4,
                 audit == null ? "none" : String.format("residual %.3g of what moved", audit.relative()));
+        // REV-CPB1-1: retain the loss case above, then cause a positive market
+        // remainder in the same town. On a fixed profitable band, 500 t of
+        // recovered copper covers only part of the run: bid() must buy the rest.
+        g.playOnLiterals();
+        GoodsMarket cathode = g.getMarkets().get(Good.COPPER);
+        double sale = 2 * cr.flowCostPerUnit(Good.COPPER);
+        cathode.setWorldPrices(sale * 2, sale);
+        g.getOldMetal().carsScrapped(500 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+        quietly(() -> g.simulateMonths(1));
+        Sector.Input remainder = cr.inputRow(Good.COPPER_SCRAP);
+        Sector.Output paying = cr.outputRow(Good.COPPER);
+        double marketNeed = remainder.needed - cu.lastBought();
+        report("the same town on profitable cathode has a positive scrap remainder after 500 t of recovered copper",
+                near(cu.lastBought(), 500) && marketNeed > 0
+                        && cr.flowCostPerUnit(Good.COPPER) < cathode.netExportPrice(),
+                String.format("old %.1f t; remainder %.1f t; cost %.6f, sale %.6f", cu.lastBought(), marketNeed,
+                        cr.flowCostPerUnit(Good.COPPER), cathode.netExportPrice()));
+        report("...it bids and buys its full positive market remainder, not just the recovered copper",
+                remainder.bid > 0 && near(remainder.bid, marketNeed)
+                        && near(remainder.boughtLocal + remainder.imported, marketNeed),
+                String.format("needed %.9f, old %.9f, bid %.9f, bought %.9f", remainder.needed, cu.lastBought(), remainder.bid,
+                        remainder.boughtLocal + remainder.imported));
+        double payingUsed = (paying.produced + paying.exportBound + paying.captive)
+                * scrapWorks.uses(Good.COPPER_SCRAP) / scrapWorks.makes(Good.COPPER);
+        report("...the actual cathode uses the recovered copper and the market remainder at the same recipe ratio",
+                near(payingUsed, cu.lastBought() + remainder.boughtLocal + remainder.imported)
+                        && near(payingUsed, remainder.needed),
+                String.format("used %.9f t; needed %.9f t", payingUsed, remainder.needed));
         // With no refinery standing it all goes to landfill.
         Game none = CopperMiningCheck.copperTown("copperrefiningcheck-landfill", 0);
         none.getOldMetal().carsScrapped(1_000 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
