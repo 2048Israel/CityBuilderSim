@@ -6,7 +6,7 @@ with the Classpath Exception, its additional notices and the graphics
 module's JPEG and Mesa notices, after the fonts. These releases omit legal
 files from their jars, so the build packages one exact upstream release
 copy of each; CreditsCheck pins their versions, hashes and full page text.
-The packaged runtime's notices on the page are queued as CR1-J.
+Runtime notices, source delivery and the Microsoft DLL terms await CR1-J.
 
 ## queued
-| CR1-J | Show the packaged Java runtime's notices on the Credits page, reading its actual runtime/legal inventory and resolving its internal references; audit accompanying Windows runtime notices | docs/queue/CR1-L-notes.md |
+| CR1-J | Build and check corresponding-source archives beside the exe for OpenJFX 21 and the OpenJDK runtime (Jerus chose this); move packaging from Oracle NFTC to OpenJDK (Temurin 21 recommended, PC installation awaiting Jerus); expose runtime notices and include Microsoft's DLL terms | docs/queue/CR1-J.md |
