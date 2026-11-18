@@ -110,6 +110,10 @@ NEW red.
 
 ## Calls
 
+Both taken as recommended by the orchestrator on 2026-11-18 (cbs-bus
+20261118-091407-991): the street drawn through the mine, and the four
+entries closed as not reproduced on main's path.
+
 - ★ Where a mine is born on a street, the map now draws the street through
   the mine, the mine on the rest of its site. The other ways either moved
   buildings or stranded them out of reach (above). Recommended: as built.
