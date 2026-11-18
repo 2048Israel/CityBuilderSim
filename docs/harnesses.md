@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**221 harness files, 25,481 labelled assertions.** AllChecks runs 221 of them.
+**221 harness files, 25,500 labelled assertions.** AllChecks runs 221 of them.
 
 ## Which harnesses read which class
 
@@ -16,7 +16,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
-| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
+| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
@@ -30,15 +30,15 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeView](map/BridgeView.md) | BridgeCheck, EarthFoundingCheck, IslandLinkCheck, ReadPathCheck |
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
-| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, WaterCheck, WorksFinanceCheck |
+| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, HistoricalLicenceCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, WaterCheck, WorksFinanceCheck |
 | [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck, WorldMarketCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalRecipeCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -359,7 +359,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, GovernmentViewCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
@@ -13384,44 +13384,44 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L147 fixture: known catalytic cracking is rejected while thermal cracking still produces
 - **L158 public patent estimates net the city's own licence and carry no firm royalty (R2c-P)**
   - L166 fixture:
-  - L168 the public fitting estimate nets the patent share of the gross gain for
-  - L172 the public
-- **L178 demolition preserves the invoice's cached engine share (REV-R2d-4)**
-  - L192 the private PE21 fitting still nets exactly the patent share of its own positive estimate
-  - L207 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
-  - L219 the demolition fixture's real haul draws exactly half diesel at its cached share
-  - L221 its royalty uses that same drawn diesel share, rather than the new all-fitted count
-  - L224 later goods capture retains the demolition invoice's exact standing bill
-- **L229 the last depot closes before its final real invoice**
-  - L240 the fitted service period saves a valid zero steam snapshot
-  - L256 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
-  - L259 that final real service still owes its exact positive patent bill
-  - L262 goods capture preserves that pending final bill without assigning cost to an absent depot
-- **L268 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
-  - L283 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
-  - L300 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
-  - L310 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
-  - L313 the unfitted final depot's real invoice burns coal and no diesel, load
-  - L315 equipment never fitted creates no PE21 royalty after final demolition, load
-  - L317 that actual steam-service month closes its audit and current account, load
-- **L324 PE21 liability belongs to its production month, not its later invoice**
-  - L343 fixture: a local find after production leaves the imported period's frozen eligibility
-  - L348 actual disk load keeps earned eligibility despite the now-local patent
-  - L352 fixture: the last patent month really produces a fitted diesel period with eligibility
-  - L359 the last period's real haul is invoiced after patent expiry
-  - L362 the already-produced
-  - L365 the following
-- **L379 the PE21 private rail service, on both month routes**
-  - L399 fixture: real diesel rail service earns haul revenue, route
-  - L403 PE21's captured bill is positive and paid exactly once, route
-  - L405 the rail IP service is in the same closed audit and current account, route
-  - L410 goods production retains the rail service's saved standing memo, route
-  - L418 a new goods capture cannot revalue or erase the last rail invoice, route
-  - L452 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
-  - L455 actual diesel and its city component exclude the steam share
-  - L458 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
-  - L460 the partial line's saved bill divides its fitted capacity share across the whole stack
-  - L472 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
+  - L180 the public fitting estimate nets exactly the bill the capture would strike on the new building's piece for
+  - L184 the public
+- **L190 demolition preserves the invoice's cached engine share (REV-R2d-4)**
+  - L204 the private PE21 fitting still nets exactly the patent share of its own positive estimate
+  - L219 fixture: a real ordered demolition closes the unfitted one of two depots while the invoice retains its half-steam cache
+  - L231 the demolition fixture's real haul draws exactly half diesel at its cached share
+  - L233 its royalty uses that same drawn diesel share, rather than the new all-fitted count
+  - L236 later goods capture retains the demolition invoice's exact standing bill
+- **L241 the last depot closes before its final real invoice**
+  - L252 the fitted service period saves a valid zero steam snapshot
+  - L268 fixture: the last real depot closes, but Freight still invoices its positive prior-month haul
+  - L271 that final real service still owes its exact positive patent bill
+  - L274 goods capture preserves that pending final bill without assigning cost to an absent depot
+- **L280 the final unfitted depot's service stays steam across closure and load (REV-R2d-5)**
+  - L295 fixture: the unfitted depot really serves a period with a captured all-steam mix, load
+  - L312 legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period
+  - L322 fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load
+  - L325 the unfitted final depot's real invoice burns coal and no diesel, load
+  - L327 equipment never fitted creates no PE21 royalty after final demolition, load
+  - L329 that actual steam-service month closes its audit and current account, load
+- **L336 PE21 liability belongs to its production month, not its later invoice**
+  - L355 fixture: a local find after production leaves the imported period's frozen eligibility
+  - L360 actual disk load keeps earned eligibility despite the now-local patent
+  - L364 fixture: the last patent month really produces a fitted diesel period with eligibility
+  - L371 the last period's real haul is invoiced after patent expiry
+  - L374 the already-produced
+  - L377 the following
+- **L391 the PE21 private rail service, on both month routes**
+  - L411 fixture: real diesel rail service earns haul revenue, route
+  - L415 PE21's captured bill is positive and paid exactly once, route
+  - L417 the rail IP service is in the same closed audit and current account, route
+  - L422 goods production retains the rail service's saved standing memo, route
+  - L430 a new goods capture cannot revalue or erase the last rail invoice, route
+  - L464 fixture: the no-port haul overload invoices both boundary and city tonnes with a genuinely mixed fleet
+  - L467 actual diesel and its city component exclude the steam share
+  - L470 PE21 bills exactly a quarter of the fitted share's actual boundary and city fuel saving
+  - L472 the partial line's saved bill divides its fitted capacity share across the whole stack
+  - L484 the actual rail pending bill and standing memo survive the normal sector and DataSave JSON fields
 
 ## HistoricalRecipeCheck.java - 54 labelled assertions
 
@@ -24307,7 +24307,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2003 ...because it never qualified to bid: a record that is bad (
   - L2005 ...and its till (at most
 
-## PublicLicenceCheck.java - 48 labelled assertions
+## PublicLicenceCheck.java - 67 labelled assertions
 
 > The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the
 > service it delivers with that upgrade over what it would deliver without it, in a city founded the 1900 way, while the patent runs.
@@ -24319,64 +24319,86 @@ _(this harness does not label its checks through a helper - it prints its findin
 > save and a load. A guard (the catalogue's premise, a city founded today, a local find, a berth, a gain of nothing) is asserted beside
 > the thing it guards, so a fee that is wrong in either direction fails by name.
 
-- **L118 1. the catalogue's premise: only the city's electricity and water works carry a payable entry**
-  - L137 fixture: the city's own works carry payable entries in the catalogue, and the five sea terminals and the berth are among its works
-  - L139 every payable entry on a city work's template or piece sits on an electricity or water work, the only works whose gain the capture values
-  - L141 no berth (the Freight-crewed port templates) carries a payable entry, so no port saving is ever valued as a patent gain
-  - L143 no city work's recipe or free-standing recipe change carries a payable entry (the capture reads a template's and its pieces' only)
-  - L147 the Container Terminal's own entry is in the catalogue and is not patented
-- **L154 2. a patented piece on the city's water works pays the patent share of what it delivers**
-  - L162 fixture: the harness's reading of the handler's water rule, moved by nothing, is the output the works hold
-  - L164 fixture: a city founded the 1900 way, its water works one of the city's own, with rapid sand fitted and PE5 abroad inside its patent term
-  - L167 fixture: the water-hungry works cause a shortage without the rapid sand, and the piece serves more of the demand
-  - L174 the month's captured bill is the patent share of the water the rapid sand adds, at the planners' tariff
-  - L176 the bill is the city's own and not a firm's: no private firm's accrued or paid licence beside it
-  - L178 fixture: nothing has been paid yet, the bill waits for the next strike
-  - L181 the next strike pays the bill accrued before it, to the bit
-  - L183 the payment is in the same month's named audit, which closes, and the foreign accounts take it that month
-  - L188 the national accounts carry it as a budget line and the economy as the month's licence
-  - L192 fixture: no reserve crude crosses the edge, so the accounts' imports are the sectors' and the licence
-  - L194 the licence is one of the month's imports in the national accounts
-  - L196 the history carries the paid flow to cents, and the bill accrued beside it
-  - L200 the freight statement carries no IP charge of its own beside the paid licence: nothing here is a firm's bill
-  - L203 a budget with the licence alone spends exactly the licence (the line is in the total expenses)
-- **L211 3. the patent ends TERM_MONTHS after history's month**
-  - L244 fixture: the months played run through the term's last month and beyond it, and the works hold a gain in every one
-  - L246 the bill accrues, at the independently worked fee, in every month the patent runs (the capture month decides)
-  - L247 nothing accrues in a month after the patent's last: its gain is the same and its fee is none, where the term's months accrued
-  - L248 each month's bill is paid at the following strike, the term's last month's included, and nothing is paid after it
-- **L255 4. a local discovery pays nothing**
-  - L267 fixture: the same shortage the piece relieves (a gain that would be billed) and the patent's term open, but PE5 found at home
-  - L271 a local find pays nothing in two months where the same works on an imported find paid the patent share
-- **L302 5. an unpatented berth pays nothing and Freight none**
-  - L316 fixture: a Container Terminal stands, known in its year and abroad, the city's own berth in a city founded the 1900 way
-  - L320 fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive
-  - L323 the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge
-- **L331 6. no gain, no fee**
-  - L343 fixture (a): the grid asks no more than it makes without the steam turbine, the piece fitted inside PE6's term
-  - L361 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
-  - L375 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
-  - L389 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
-  - L391 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
-- **L400 7. the planners net the fee**
-  - L409 the public fitting verdict nets the patent share of the gross gain of PE5's piece, and keeps the whole gain in the same city once the discovery is local
-  - L430 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
-  - L433 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, is what forNewWork charges
-- **L441 8. the month both ways: the same city live and loaded**
-  - L448 fixture: a bill is accrued and waiting, and the save was written
-  - L449 (a) the loaded city holds the saved bill to the bit
-  - L453 (b) the strike pays the same bill in both
-  - L455 the treasury's cash is the same to the bit in both after the month
-  - L456 the budget's licence line and its total expenses are the same to the bit
-  - L459 the month's next bill is the same to the bit in both
-- **L466 9. a city founded today pays nothing**
-  - L478 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
-  - L483 no bill is struck, and no new plant is charged, in a city founded today
-  - L486 two months leave nothing pending and nothing paid
-  - L489 its save carries neither key
-- **L555 10. the bill crosses a save, and a read leaves it still**
-  - L556 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
-  - L557 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
+- **L178 1. the catalogue's premise: only the city's electricity and water works carry a payable entry**
+  - L197 fixture: the city's own works carry payable entries in the catalogue, and the five sea terminals and the berth are among its works
+  - L199 every payable entry on a city work's template or piece sits on an electricity or water work, the only works whose gain the capture values
+  - L201 no berth (the Freight-crewed port templates) carries a payable entry, so no port saving is ever valued as a patent gain
+  - L203 no city work's recipe or free-standing recipe change carries a payable entry (the capture reads a template's and its pieces' only)
+  - L207 the Container Terminal's own entry is in the catalogue and is not patented
+- **L214 2. a patented piece on the city's water works pays the patent share of what it delivers**
+  - L222 fixture: the harness's reading of the handler's water rule, moved by nothing, is the output the works hold
+  - L224 fixture: a city founded the 1900 way, its water works one of the city's own, with rapid sand fitted and PE5 abroad inside its patent term
+  - L227 fixture: the water-hungry works cause a shortage without the rapid sand, and the piece serves more of the demand
+  - L234 the month's captured bill is the patent share of the water the rapid sand adds, at the planners' tariff
+  - L236 the bill is the city's own and not a firm's: no private firm's accrued or paid licence beside it
+  - L238 fixture: nothing has been paid yet, the bill waits for the next strike
+  - L241 the next strike pays the bill accrued before it, to the bit
+  - L243 the payment is in the same month's named audit, which closes, and the foreign accounts take it that month
+  - L248 the national accounts carry it as a budget line and the economy as the month's licence
+  - L252 fixture: no reserve crude crosses the edge, so the accounts' imports are the sectors' and the licence
+  - L254 the licence is one of the month's imports in the national accounts
+  - L256 the history carries the paid flow to cents, and the bill accrued beside it
+  - L260 the freight statement carries no IP charge of its own beside the paid licence: nothing here is a firm's bill
+  - L263 a budget with the licence alone spends exactly the licence (the line is in the total expenses)
+- **L271 3. the patent ends TERM_MONTHS after history's month**
+  - L304 fixture: the months played run through the term's last month and beyond it, and the works hold a gain in every one
+  - L306 the bill accrues, at the independently worked fee, in every month the patent runs (the capture month decides)
+  - L307 nothing accrues in a month after the patent's last: its gain is the same and its fee is none, where the term's months accrued
+  - L308 each month's bill is paid at the following strike, the term's last month's included, and nothing is paid after it
+- **L315 4. a local discovery pays nothing**
+  - L327 fixture: the same shortage the piece relieves (a gain that would be billed) and the patent's term open, but PE5 found at home
+  - L331 a local find pays nothing in two months where the same works on an imported find paid the patent share
+- **L362 5. an unpatented berth pays nothing and Freight none**
+  - L376 fixture: a Container Terminal stands, known in its year and abroad, the city's own berth in a city founded the 1900 way
+  - L380 fixture: beside it a patented desalination plant the city needs: its gain over its running cost is positive
+  - L383 the berth adds nothing to the bill, which is the desalination plant's patent share alone, and Freight's statement carries no IP charge
+- **L391 6. no gain, no fee**
+  - L403 fixture (a): the grid asks no more than it makes without the steam turbine, the piece fitted inside PE6's term
+  - L414 P2-1 surplus: with the grid asking no more than it makes without the steam turbine, the public fitting verdict of the piece is its whole gross gain while the...
+  - L431 (a) the turbine adds nothing the city was short of, so its gain and its bill are nothing though the patent runs; once the grid is short it pays its share
+  - L445 fixture (b): the Desalination Plant's entry is abroad inside its term and the city's supply covers its demand without the plant
+  - L459 fixture (c'): the works fall short without the plant and it serves more of the demand, over its running cost
+  - L461 (b) a building entry that serves no demand has a negative gain (its running cost) and pays nothing, and (c') once the city needs its water
+- **L470 7. the planners net the fee the capture would strike (REV-R2c-P-1)**
+  - L485 fixture: the served city: the works already meet the demand (one more fitted plant delivers nothing more) while its standing stack pays PE5's share
+  - L488 P2-1 surplus: in the served city the public fitting verdict of PE5's piece is its whole gross gain, no fee, the patent running; the same as with the discover...
+  - L518 fixture: the city asks more water than its works make even with the rapid sand, so one more fitted plant adds more than an unfitted one
+  - L521 P2-1 shortage: the public fitting verdict of PE5's piece is its gross gain less the fee worked independently for the new building
+  - L525 a new patented water plant's licence, worked independently as the patent share of the water the rapid sand adds, weighted by the annuity share
+- **L534 7b. a new plant's licence is weighed by the term its patent has left, and is nothing past it (REV-R2c-P-1)**
+  - L542 fixture: a patent's term is not less than a building's life, so a whole life fits inside it only in the term's first month, and k months left is a short way ...
+  - L549 P2-2 term:
+  - L554 P2-2 term: in the patent's last month it carries the fee times one month's share of the life
+  - L558 P2-2 term: in the patent's first month, a whole life inside its term, it carries the whole fee
+  - L562 P2-2 term: past the patent's end it carries nothing
+  - L576 P2-2 term: an order of one plant opening before the patent ends is charged the fee, not weighted by a life (each month of the term counts alone)
+  - L577 P2-2 term: an order of one plant opening in or after the patent's last month is charged nothing, the same plant today being charged
+- **L583 7c. an order of three plants is charged the bill of three, not three times one's (REV-R2c-P-1)**
+  - L595 fixture: the works fall short, and three new fitted plants more than make up what is missing (the demand binds the delivered water)
+  - L597 fixture: three plants' fee, worked independently, is above nothing and under three times one plant's
+  - L600 fixture: the patent has run its term's first months only, so the order's months are inside it
+  - L604 P2-2 units: runningChange charges one plant the fee of one
+  - L605 P2-2 units: runningChange charges three plants the bill of three, worked independently, which is under three times one plant's fee
+- **L612 7d. the auto-builder's costs take out the licence the city paid, not one more's (REV-R2c-P-1)**
+  - L636 fixture: the served city: a patent bill is struck on the stack, the next plant would pay none, and the city is founded the 1900 way, its people many
+  - L639 the public bill of the stack is the month's bill the capture struck on it
+  - L641 P2-3: costs() for the water measure, over the people, is the spend less q x (running less licenceOf) less the stack's bill, plus the site's terms
+  - L643 P2-3: it is the spend's licence it leaves out, not q x running's: under what q x running would leave by the bill over the people
+- **L650 8. the month both ways: the same city live and loaded**
+  - L657 fixture: a bill is accrued and waiting, and the save was written
+  - L658 (a) the loaded city holds the saved bill to the bit
+  - L662 (b) the strike pays the same bill in both
+  - L664 the treasury's cash is the same to the bit in both after the month
+  - L665 the budget's licence line and its total expenses are the same to the bit
+  - L668 the month's next bill is the same to the bit in both
+- **L675 9. a city founded today pays nothing**
+  - L687 fixture: the works are short of water, PE5's term is open and its piece would earn a gain in a city founded the 1900 way
+  - L692 no bill is struck, and no new plant is charged, in a city founded today
+  - L695 two months leave nothing pending and nothing paid
+  - L698 its save carries neither key
+- **L767 10. the bill crosses a save, and a read leaves it still**
+  - L768 DataSave and HistorySave JSON, scratch slot 10 and the load keep the bill, the licence line and the series
+  - L769 repeated reads of the bill, the gain and the planners' figures keep every money pool and every figure still
 
 ## QuarryingCheck.java - 47 labelled assertions
 
