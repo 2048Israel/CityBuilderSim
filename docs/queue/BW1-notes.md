@@ -123,13 +123,13 @@ launcher, to `docs/queue/BW1.md`. Scripts and docs only; untagged.
 ## One in, one out
 
 `git diff --numstat origin/main` (2d895d646) over the process files, the notes
-and ship file left out: 185 added, 38 removed, 147 more.
+and ship file left out: 206 added, 75 removed, 131 more.
 
 | file | + | - |
 |---|---|---|
-| `docs/contract.md` | 14 | 3 |
-| `docs/orchestrator.md` | 18 | 19 |
-| `docs/tree.md` | 4 | 0 |
+| `docs/contract.md` | 9 | 3 |
+| `docs/orchestrator.md` | 46 | 56 |
+| `docs/tree.md` | 2 | 0 |
 | `ship.sh` | 19 | 8 |
 | `tools/bus.sh` (new) | 11 | 0 |
 | `tools/gate.sh` | 45 | 1 |
@@ -138,20 +138,19 @@ and ship file left out: 185 added, 38 removed, 147 more.
 | `tools/nightly-selftest.sh` | 11 | 0 |
 | `tools/ship-selftest.sh` | 49 | 4 |
 
-The rules a session reads grow by 14 (36 in, 22 out): the contract's state
-lines, the stop's mail and the gate's posts (+11), `docs/tree.md`'s entry
-(+4), against `docs/orchestrator.md` one line shorter for three lines of new
-text: its waking cut to its fallback (the hourly check-in's minute and the
-re-arming out, MemWatch's drawing in, six lines for six), its gate step 5
-from six lines to three (the self-tests by name are `ship.sh`'s
-`selftests()`), its relaying of a send-back gone. The scripts grow by 77 and
-their self-tests by 56. BW1 is a new capability: nothing in the tree told
-MemWatch anything, so nothing here did what it replaces; the log scraping it
-does replace is MemWatch's, in MemWatch's repository, to drop (SPEC 7:
-"drops that once the workflow writes them"). Cut to balance: the two
-`bus.sh` unit cases the gate's cases cover; `step()` and the gate's end
-block are one-line guards, each key, step and message written once. Not
-balanced, then: about 150 lines over, the orchestrator's call.
+The rules a session reads balance, 57 in and 59 out (the orchestrator's call
+of 2026-11-18, on the first count of 14 more): the contract's state lines, the
+stop's mail and the gate's posts (+6) and `docs/tree.md`'s entry (+2), against
+`docs/orchestrator.md` ten lines shorter. Its waking is cut to its fallback
+(the check-in's minute and re-arming out, MemWatch's drawing in), its gate
+step 5 from seven lines to four (the self-tests by name are `ship.sh`'s
+`selftests()`), its relaying of a send-back gone, and the rest of its prose
+tightened with no rule, decision or quote out. Gone as said elsewhere: the
+docs pass's `.md`-only `--fast` (the contract, 6), `Batch check.bat`'s no
+`--pick` and no exit 3 (`CLAUDE.md`), "the older text is in git history".
+The scripts (+77) and their self-tests (+56) the orchestrator
+accepts as the new capability Jerus queued: nothing in the tree told MemWatch
+anything, and the log scraping it replaces is MemWatch's to drop (SPEC 7).
 
 ## Left
 
