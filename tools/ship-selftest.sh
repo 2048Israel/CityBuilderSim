@@ -99,12 +99,12 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3): files under test
 cp "$SRC/tools/gate-record.awk" "$TA/main/tools/"
 for helper in known-reds batch-id; do [ ! -f "$SRC/tools/$helper.sh" ] || cp "$SRC/tools/$helper.sh" "$TA/main/tools/"; done
 cp "$SRC/src/main/java/ham/citybuildersim/KnownReds.java" "$TA/main/src/main/java/ham/citybuildersim/"
 printf '\nMapCheck | stub known | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"
-IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
+IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH"; FAKE=""
 for i in $IDS; do FAKE="$FAKE| $i | A fake queued batch $i | [x](y) |
 "; done
 printf '%s' "$FAKE" > "$TA/fake-rows.txt"
@@ -182,13 +182,6 @@ mk docs/pass-t; printf '## changelog\n### docs pass — a pass — 2026-11-13\n\
 mk docs/pass-ok; printf '## changelog\n### docs pass — a pass — 2026-11-13\n\np.\n' > "$TA/work/docs/queue/docs-pass-ok-ship.md"; fin DPO docs/pass-ok   # and named by its branch
 mk chatgpt/vt; jv CGV Land; setv "$VOLD"; fin CGV chatgpt/vt           # a branch that moves VERSION
 mk chatgpt/ok; jv CGO Land; fin CGO chatgpt/ok                         # one that leaves it
-# RL1: PS is cut from PP's tip (ready), PT from PR's (sent back: no ship file on its tip); both have a ship file of their own
-mk batch/PP; printf '## changelog\n### PP — a predecessor — 2026-10-27, no tag\n\np.\n' > "$TA/work/docs/queue/PP-ship.md"; jv PP Markets; fin PP batch/PP
-mk batch/PR; jv PR Markets; fin PR batch/PR
-for pair in PP:PS PR:PT; do
-    W checkout -q -B "batch/${pair##*:}" "origin/batch/${pair%%:*}"; printf '## changelog\n### %s — a successor — 2026-10-27, no tag\n\np.\n' "${pair##*:}" > "$TA/work/docs/queue/${pair##*:}-ship.md"
-    jv "${pair##*:}" Zoning; fin "${pair##*:}" "batch/${pair##*:}"
-done
 W checkout -q -B scratch origin/main
 
 # --- the cases ---------------------------------------------------------------------------------------------------
@@ -386,14 +379,6 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'batch/SH changes ship.sh: this run goes on 
 LABEL="ship.sh: ...and the tree is as it was"; ok clean
 LABEL="ship.sh: the copy keeps the arguments and the clone it was started in (a branch after options)"; run --dry-run --no-tag chatgpt/ok
 ok sh -c "[ $RC = 0 ] && grep -q -F 'not tag it' $TA/out.txt"
-# RL1: a lane's next batch is cut from its predecessor's tip, and ships only once the predecessor is on main
-LABEL="a successor (PS) cut from its predecessor's tip (PP) stops while PP is not on main";  run --dry-run --no-tag batch/PS;  ok stopped "batch/PS is built on PP, which is not on main yet"
-LABEL="...so does one whose predecessor was sent back (PR: no ship file on its tip)";        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
-LABEL="...the predecessor is not held back by its successor";                                run --dry-run --no-tag batch/PP;  ok rc_is 0
-LABEL="...and the tree is clean";                                                            ok clean
-LABEL="ship PP, the predecessor";                                                            run --no-tag batch/PP;            ok sh -c "[ $RC = 0 ] && git -C $TA/origin.git log -1 --format=%s main | grep -q -F 'Merge batch/PP'"
-LABEL="PP on main: PS ships, with no merge of main in it first, its own ship file the only one"; run --dry-run --no-tag batch/PS;  ok sh -c "[ $RC = 0 ] && grep -q -F \"PS's block on top\" $TA/out.txt"
-LABEL="PR is still not on main: PT is still stopped";                                        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
 # GR2 fixtures exercise filing, removal, partial selection and the launcher's evidence.
 mk batch/KR; shipf KR; jv KR KnownRedsCheck
 cat >> "$TA/work/docs/queue/KR-ship.md" <<'EOF'
@@ -462,7 +447,7 @@ done
 # GG1.1: the provisional versioned ship is available to a dry run, but is not ready.
 mk batch/RQ; jv RQ SimulationEngine; shipf RQ
 printf '\n<!-- readiness: provisional -->\n' >> "$TA/work/docs/queue/RQ-ship.md"; fin RQ-source batch/RQ
-( cd "$TA/main" && sh "$SRC/tools/wait.sh" --ship --skip RED SH GN NS GV GG GX GH GQ GC GE GB TM ER NC NC2 OS PS PT PR RF HF AR FM FW CQ --for 0 ) > "$TA/provisional-wait.out" 2>&1
+( cd "$TA/main" && sh "$SRC/tools/wait.sh" --ship --skip RED SH GN NS GV GG GX GH GQ GC GE GB TM ER NC NC2 OS RF HF AR FM FW CQ --for 0 ) > "$TA/provisional-wait.out" 2>&1
 LABEL="GG1.1 provisional ship does not wake the waiter"; ok sh -c "! grep -q 'ready to ship:.*RQ' $TA/provisional-wait.out"
 ( cd "$TA/main" && sh "$SRC/tools/day.sh" ) > "$TA/provisional-day.out" 2>&1
 LABEL="GG1.1 day does not advertise provisional records as ready"; ok sh -c "! grep -q '^ready     RQ ' $TA/provisional-day.out"

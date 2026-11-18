@@ -26,7 +26,7 @@ trap 'exit 2' HUP INT TERM
 rev() { git rev-parse -q --verify "$1^{commit}" 2>/dev/null; }
 
 # --- what is compared with what -----------------------------------------------
-REF=""; P=""   # REF: the commit whose files are read, empty: the working tree; P: the unmerged batch the tree is built on (RL1)
+REF=""   # the commit whose files are read, empty: the working tree
 if [ $# = 2 ]; then
     A=$1; B=$2
     rev "$A" >/dev/null && rev "$B" >/dev/null || { say pick "no such commit: $A or $B"; exit 2; }
@@ -39,7 +39,6 @@ else
     else
         BASE=origin/main
         rev "$BASE" >/dev/null || BASE=main
-        P=$(sh tools/carries.sh | tail -n 1); [ -z "$P" ] || BASE=origin/batch/$P
     fi
     MB=$(git merge-base HEAD "$BASE" 2>/dev/null)
     RANGE=$MB
@@ -49,7 +48,7 @@ if [ -z "$MB" ]; then
     say pick "ALL - no common ancestor with $BASE here (a shallow clone, or no such branch): the whole suite"
     exit 0
 fi
-SHORT=$(git rev-parse --short=8 "$MB"); [ -z "$P" ] || SHORT="$SHORT, $P's tip (not on main yet)"
+SHORT=$(git rev-parse --short=8 "$MB")
 
 show()  { if [ -n "$REF" ]; then git show "$REF:$1"; else cat -- "$1"; fi; }
 # files_with FLAG NAMEFILE PATHSPEC... : the paths whose text holds a name of NAMEFILE (FLAG -w for a whole word, else -F)

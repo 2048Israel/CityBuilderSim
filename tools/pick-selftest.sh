@@ -15,7 +15,7 @@ J=src/main/java/ham/citybuildersim
 cd "$TA" || exit 2
 git init -q . && git config user.name selftest && git config user.email selftest@example.invalid
 mkdir -p tools docs "$J"
-cp "$SRC/tools/pick.sh" "$SRC/tools/carries.sh" tools/
+cp "$SRC/tools/pick.sh" tools/
 for h in AllChecks FooCheck BarCheck TimingCheck; do printf 'class %s { }\n' "$h" > "$J/$h.java"; done
 printf 'class Widget { }\n' > "$J/Widget.java"
 printf 'class Gadget { }\n' > "$J/Gadget.java"
@@ -79,15 +79,6 @@ LABEL="the common verdict runner changed picks ALL"; ok test "$PICKED" = ALL
 reset; echo "// changed" >> "$J/Timing.java"; pick
 LABEL="Timing runner changed picks ALL"; ok test "$PICKED" = ALL
 reset; git reset -q --hard HEAD~1; git update-ref refs/remotes/origin/main HEAD
-
-# RL1: a branch built on its predecessor's tip (origin/batch/P, not in origin/main) is picked from its own diff, not P's
-reset; git checkout -q -B batch/S; echo "// P's" >> "$J/BarCheck.java"; git add -A; git commit -q -m "P's work"; git update-ref refs/remotes/origin/batch/P HEAD
-echo "// S's" >> "$J/Widget.java"; git add -A; git commit -q -m "S's work"; PICKED=$(sh tools/pick.sh 2>"$TA/err"); PERR=$(head -2 "$TA/err" | tr '\n' '/')
-LABEL="built on an unmerged predecessor, the diff is against its tip: only this batch's own file picks"; ok test "$PICKED" = "FooCheck"
-git update-ref -d refs/remotes/origin/batch/P; PICKED=$(sh tools/pick.sh 2>"$TA/err")
-LABEL="...once the predecessor's branch is gone from origin (merged) the diff is main's again: both pick"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
-git update-ref refs/remotes/origin/batch/S HEAD~1; PICKED=$(sh tools/pick.sh 2>"$TA/err")
-LABEL="the branch's own pushed tip, behind its unpushed commits, is not a predecessor: the diff stays main's"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
 
 reset
 # HA1: this class is named only by a nightly harness; ALL cannot widen the tier.

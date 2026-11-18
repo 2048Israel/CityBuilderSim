@@ -1,6 +1,6 @@
 ---
 name: slice
-description: One coding slice of a CityBuilderSim batch - edits the worktree to the brief, runs the harness the brief names, commits nothing, reports in 15 lines. Start every Sonnet slice with it (docs/deepseek.md); the brief must name the files, the methods and the harness.
+description: One coding slice of a CityBuilderSim batch - edits the worktree to the brief, runs the harness the brief names, commits nothing, reports in 15 lines. Start every Sonnet slice with it (docs/contract.md, section 4); the brief must name the files, the methods and the harness.
 tools: Read, Edit, Write, Grep, Glob, Bash
 model: sonnet
 effort: xhigh
@@ -16,7 +16,8 @@ and commit. You edit the worktree and nothing else: no commit, push, merge,
 name. The brief is the whole task. Report in 15 lines or fewer: files changed,
 what you ran and its result, anything the brief got wrong. In the code, a
 comment that starts `Jerus:` is the author's brief in his own words, and it is
-the requirement.
+the requirement. The rules below are `docs/contract.md`'s for a slice; you need
+not read it.
 
 - Save slots 1-9 are his cities: never write one. A harness city uses
   `GameFiles.scratch(label)` or `TempDirs.create(prefix)`, never `new Game()` or
