@@ -29,6 +29,12 @@ import java.util.Set;
  * saved since. The header supplies what the history does not keep (the money's name, the founding rate, the land and the people by age band) and is
  * decoded by the classes that own each field (WorldEconomy, Denomination, PopulationCohorts, LandManager), never by array index.
  *
+ * A SAVE LANDING BEFORE ITS HISTORY (LB5-B). SaveWriter lands a save, its map, then its history, so for a moment (for good, when the history write
+ * failed, LB3-S) the header is the new save's and the history is the old city's: read as they stand they are a new name over another city's figures. The
+ * header and the history each say a month, and a whole slot's two are equal (a save is made between the months' presses, and the history ends at the month
+ * the save carries), so a read of a slot whose two disagree, while the slot's last read was whole, keeps that last read, header and history together, until
+ * a file moves again; a slot first read with them disagreeing is read as it stands, since there is no whole city of it to keep.
+ *
  * AT AN AGE. A city at month m has its figures from CityMeasures.at with Extras.UNKNOWN: the history keeps neither the land nor the bands, so area, density
  * and the measures over the bands are absent at an earlier month (never wrong). Its rate, parity and price level are the series at m; where a history
  * did not record the price level (usPrices, from LB3) the money figures are absent for that city rather than guessed.
@@ -89,7 +95,12 @@ public final class SavedCities {
     record Stamp(Path save, long saveSize, long saveTime, long historySize, long historyTime) { }
 
     /** What a readable slot keeps: the city as its last save has it, the slim history behind it, and what an earlier month needs of the header. */
-    private record Holding(String name, Long worldSeed, Double foundingCash, String currency, double foundingRate, HistorySave history, int lastMonth, Rankings.City now) {
+    private record Holding(String name, Long worldSeed, Double foundingCash, String currency, double foundingRate, HistorySave history, int headerMonth, int lastMonth, Rankings.City now) {
+        /** True when the header and the history say the same month: a save and its history that both landed (LB5-B). */
+        boolean isWhole() {
+            return headerMonth == lastMonth;
+        }
+
         /** True when this slot's founding is the city in play's (LB5: name, seed and founding cash). */
         boolean isTheCityIn(Played played) {
             return played.matches(name, worldSeed, foundingCash);
@@ -132,9 +143,20 @@ public final class SavedCities {
                 continue;
             }
             if (stamp.saveSize() >= 0) read++;
-            next.add(readSafely(files, slot, stamp));
+            next.add(keepWhole(old, readSafely(files, slot, stamp)));
         }
         return new SavedCities(next, read);
+    }
+
+    /**
+     * What the board keeps of a slot just read (LB5-B): the read itself, unless it pairs a header and a history of two months (a save landed before its
+     * history, or its history never did) and the slot's last entry was a whole city, which is then kept in its place, under the new stamp so that it is read
+     * again only when a file moves. A slot with no whole city before it, or one that is not a city on the board (left off, empty), is the read as it is.
+     */
+    private static Entry keepWhole(Entry old, Entry read) {
+        if (read.kept() == null || read.kept().isWhole()) return read;
+        if (old == null || old.kept() == null || !old.kept().isWhole()) return read;
+        return new Entry(read.slot(), read.stamp(), old.kept(), null);
     }
 
     /** How many slots the refresh that made this snapshot parsed from disk (the rest were reused or empty): 0 when nothing was saved since the last. */
@@ -148,7 +170,8 @@ public final class SavedCities {
 
     /**
      * Both files of a slot as the disk has them now. The header the row reads first is not a file of its own (SaveHeader parses the save itself), so the
-     * save's size and time are the header's, and the history's are the history's: a file landing alone moves the stamp (RankingsCheck 21, LB5). Taken BEFORE
+     * save's size and time are the header's, and the history's are the history's: a file landing alone moves the stamp (RankingsCheck 21, LB5), and what the
+     * row shows while the two disagree is keepWhole's (LB5-B). Taken BEFORE
      * the slot is read, so that a file landing during the read leaves the entry's stamp behind the disk's and the next refresh reads the slot again.
      */
     private static Stamp stampOf(GameFiles files, int slot) {
@@ -222,7 +245,7 @@ public final class SavedCities {
             world.restore(header.getWorldEconomy());
             now = new Rankings.City(now.name(), now.currency(), now.month(), now.year(), now.fx(), now.parity(), world.getPriceLevel(), now.foundingRate(), now.figures());
         }
-        return new Entry(slot, stamp, new Holding(name, header.getWorldSeed(), header.getFoundingCash(), currency, foundingRate, slim, last, now), null);
+        return new Entry(slot, stamp, new Holding(name, header.getWorldSeed(), header.getFoundingCash(), currency, foundingRate, slim, header.getMonth(), last, now), null);
     }
 
     private static Entry left(int slot, Stamp stamp, Why why) {
