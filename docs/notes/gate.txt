@@ -1,8 +1,8 @@
-# gate of Merge batch/HN1: the door's mortgage: a trimmed order where the full one is refused, 0.9.151
+# gate of Merge batch/LM1-D: the founding's water widened to six blocks, 0.9.152
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 210 harnesses run in 2136s: 198 passed, 12 failed
+# suite: 213 harnesses run in 2040s: 203 passed, 10 failed
 GoldStandardCheck | exit 1
 GoldStandardCheck | the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read                FAIL
 GoldStandardCheck | 1 FAILED
@@ -20,18 +20,6 @@ DenominationCheck | the same shops' till                                        
 DenominationCheck | the same bank                                                  FAIL  1,238.5201216364 != 1,238.5185320049  (1.28e-06 apart)
 DenominationCheck | 8 FAILED
 PriceLevelCheck | exit 1
-PriceLevelCheck | FAIL h.m2 (nominal) month 105: 1030511.224 at the factor over the factor, 1030513.010 at today's prices (8.97 apart)
-PriceLevelCheck | FAIL h.sharePrice.Luxury Retail (nominal) month 102: 3.281840000 at the factor over the factor, 3.252530000 at today's prices (0.00893 apart)
-PriceLevelCheck | FAIL h.sharePrice.Industry (nominal) month 102: 0.3227390000 at the factor over the factor, 0.3224080000 at today's prices (0.00103 apart)
-PriceLevelCheck | FAIL h.sharePrice.Manufacturing (nominal) month 92: 0.3264690000 at the factor over the factor, 0.3917630000 at today's prices (0.167 apart)
-PriceLevelCheck | FAIL h.sharePrice.Mining (nominal) month 76: 5.161400000 at the factor over the factor, 5.463650000 at today's prices (0.0553 apart)
-PriceLevelCheck | FAIL h.sharePrice.Food Processing (nominal) month 57: 0.9891280000 at the factor over the factor, 0.9892670000 at today's prices (0.000141 apart)
-PriceLevelCheck | FAIL h.shareValue.Luxury Retail (nominal) month 105: 3.991650000 at the factor over the factor, 3.991500000 at today's prices (3.76e-05 apart)
-PriceLevelCheck | FAIL h.shareValue.Restaurants (nominal) month 105: 24.28620000 at the factor over the factor, 24.28520000 at today's prices (4.12e-05 apart)
-PriceLevelCheck | FAIL h.shareValue.Industry (nominal) month 102: 0.2858950000 at the factor over the factor, 0.2855930000 at today's prices (0.00106 apart)
-PriceLevelCheck | FAIL h.shareValue.Mining (nominal) month 66: 4.041170000 at the factor over the factor, 4.103170000 at today's prices (0.0151 apart)
-PriceLevelCheck | FAIL h.shareValue.Food Processing (nominal) month 57: 0.8242740000 at the factor over the factor, 0.8243890000 at today's prices (0.000139 apart)
-PriceLevelCheck | the history's 93 money series equal over the factor to the rounding they were recorded at FAIL
 PriceLevelCheck | FAIL reload.cash (nominal) month 0: 86125.78634 at the factor over the factor, 86185.25829 at today's prices (0.000690 apart)
 PriceLevelCheck | FAIL reload.gdp.month (nominal) month 0: 574.7829190 at the factor over the factor, 572.8807637 at today's prices (0.00331 apart)
 PriceLevelCheck | FAIL reload.bank.deposits (nominal) month 0: 14271.99933 at the factor over the factor, 14094.37218 at today's prices (0.0124 apart)
@@ -60,7 +48,7 @@ PriceLevelCheck | every real series equal within 1.0E-9 (worst 0.10 in reload.mk
 PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 0.12 in reload.sector.Real Estate.cash) FAIL
 PriceLevelCheck | the town: every live nominal line is shown or left out alike at both levels, 238 series over 121 months (4 of 28798 differ; 9423 shown) FAIL
 PriceLevelCheck | some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): 0 city-months, at most 0 partners FAIL
-PriceLevelCheck | 256 FAILED
+PriceLevelCheck | 245 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
@@ -70,16 +58,6 @@ HealthCheck | 1 FAILED
 ScaleCheck | exit 1
 ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 2.83e-02) FAIL
 ScaleCheck | 1 FAILED
-PlanCheck | exit 1
-PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
-PlanCheck | ...the avenues were laid in the played city (411 plots in 19 open cells over the samples), every check holding with them FAIL
-PlanCheck | 2 FAILED
-KeptCheck | exit 4
-KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
-KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
-KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
-KeptCheck | 4 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
@@ -89,6 +67,12 @@ DistressBleedCheck | a loss that is only interest holds: months at or above the 
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
+KeptCheck | exit 4
+KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
+KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
+KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
+KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
+KeptCheck | 4 FAILED
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED
