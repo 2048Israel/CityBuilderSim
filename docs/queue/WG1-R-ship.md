@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### WG1-R — WG1's review fixtures cause their own conditions — 2026-11-18, ready, see docs/queue/WG1-R-notes.md
 WG1-D's five going-rate pins (CurveCheck 7, CentralBankCheck 20, HoldersCheck 12-13, HousingCheck's closed homes, KeptCheck 64) were each
