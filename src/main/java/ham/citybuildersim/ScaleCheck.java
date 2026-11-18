@@ -473,6 +473,82 @@ public class ScaleCheck {
 
         /* ============== 9. a copy tracks its city month by month ============== */
         tracks(root, grown);
+        historicalScale(root);
+    }
+
+    /** R1f: keep this historical fixture separate from the all-fitted scale laws above. */
+    static void historicalScale(Path root) throws Exception {
+        out.println("\n--- 10. the 1900 city: unfitted plant scales; whole horse posts are bounded ---");
+        Path historical = root.resolve("1900");
+        GameFiles files = new GameFiles(historical.resolve("town"), historical.resolve("no-legacy"));
+        Game g = new Game(files, LongPlaytest.founding().withUnfitted(true));
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        try {
+            quietly(() -> {
+                g.run();
+                LongPlaytest.build(g, "House", 40);
+                LongPlaytest.build(g, "Convenience Store", 3);
+                LongPlaytest.build(g, "Mixed Farm", 2);
+                g.simulateMonths(3);
+                LongPlaytest.build(g, "House", 20);
+                g.simulateMonths(4);
+                LongPlaytest.build(g, "Convenience Store", 2);
+                LongPlaytest.build(g, "Construction Depot", 1);
+                g.simulateMonths(FIXTURE_MONTHS - g.getMonth());
+                g.saveGame(10, "scalecheck 1900");
+            });
+        } finally { LongPlaytest.out = was; }
+        assertTrue("fixture: the city keeps its 1900 founding and 1901 ladder", g.getFounding().isUnfitted()
+                && WageLadder.of(g.getFounding()) == WageLadder.Y1901);
+        assertTrue("fixture: horse hands put posts past the buildings", postsPast(g.getBuildingManager()) > 0);
+        addsUp(g, "1900");
+        GameFiles copy = new GameFiles(historical.resolve("plant-copy"), historical.resolve("plant-no-legacy"));
+        scale(files.saveFile(10), copy.saveFile(10), TRACK_TIMES);
+        JsonObject a = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(10))).getAsJsonObject();
+        JsonObject b = com.google.gson.JsonParser.parseString(Files.readString(copy.saveFile(10))).getAsJsonObject();
+        int pieces = 0;
+        boolean exact = true;
+        if (a.has("unfittedById")) for (var row : a.getAsJsonObject("unfittedById").entrySet()) {
+            for (var piece : row.getValue().getAsJsonObject().entrySet()) {
+                pieces++;
+                exact &= b.getAsJsonObject("unfittedById").getAsJsonObject(row.getKey()).get(piece.getKey()).getAsLong()
+                        == TRACK_TIMES * piece.getValue().getAsLong();
+            }
+        }
+        assertTrue("fixture: the 1900 save carries unfitted pieces", pieces > 0);
+        assertTrue("every unfitted piece count is K times the city's, as its buildings are", exact);
+        // A farm's extra hands are whole posts per tier, not a missing extensive stock.
+        var farm = g.getSectors().agriculture();
+        long[] extra = farm.postsPastBuildings();
+        long[] base = g.getBuildingManager().getJobArrayBySector(farm.key());
+        double worst = 0;
+        for (int j = 0; j < extra.length; j++) {
+            double ideal = base[j] * farm.getHorseShare() * (ham.citybuildersim.sectors.Agriculture.HORSE_POSTS_FACTOR - 1);
+            worst = Math.max(worst, Math.abs(extra[j] - ideal));
+        }
+        assertTrue("horse hands differ from the model's factor by at most half a post per tier", worst <= .5);
+        out.printf("   %d unfitted piece counts scaled; horse rounding at most %.6f post per tier%n", pieces, worst);
+        var haul = g.getSectors().freight().haulage();
+        double carters = haul.getHorseShare() * haul.getNeed() / ham.citybuildersim.sectors.Haulage.TONNES_A_TEAM_MONTH
+                * ham.citybuildersim.sectors.Haulage.CARTERS_A_TEAM;
+        assertTrue("fixture: the historical city needs horse teams", carters > 0 && haul.getTeams() > 0);
+        assertTrue("carters round by at most half a post at the model's team capacity", Math.abs(haul.getCarters() - carters) <= .5);
+        out.printf("   carters %.6f -> %d whole posts; teams billed %.6f (teams themselves are divisible)%n", carters, haul.getCarters(), haul.getTeams());
+        // Fitting work is continuous; completion delivers one whole building. A K-times
+        // workforce cannot be compared while only one copy is delivered that whole piece.
+        BuildingsTemplate bakery = LongPlaytest.template(g, "Bakery");
+        Equipment drive = bakery.getEquipment("electric-drive");
+        assertTrue("fixture: a historical Bakery's drive has positive work", drive != null && drive.getWork() > 0);
+        if (drive != null) {
+            Fittings work = new Fittings();
+            work.add(bakery.getId(), drive.getId(), "City", drive.getWork());
+            assertTrue("a partial fitting delivers no fraction of a building", work.work(drive.getWork() / 2).isEmpty()
+                    && work.onSite(bakery.getId(), drive.getId()) == 1);
+            same("the remaining work delivers exactly one whole fitting", work.work(drive.getWork() / 2).size(), 1);
+        }
+        assertTrue("fixture: no indivisible fitting is on site when the tracking save is taken", g.getFittings().isEmpty());
+        tracks(historical, files);
     }
 
     /**
@@ -923,7 +999,7 @@ public class ScaleCheck {
         for (long n : bm.homesBySize()) bySize += n;
         var landlords = g.getSectors().realEstate();
         return everyPost(g) == byStack && byType == people.getTotalJobs()
-                && people.getTotalJobs() == everyPost(g) - bm.getPostsWithheld()
+                && people.getTotalJobs() == everyPost(g) - bm.getPostsWithheld() + postsPast(bm)
                 && bm.getTotalHomes() == homesByStack && bySize == bm.getTotalHomes()
                 && landlords.getStudioHomes() + landlords.getFamilyHomes() == bm.getTotalHomes()
                 && g.getHouseholdCapacity() == 100 * bm.getFoundingEndowments() + placesByStack;
@@ -1246,8 +1322,8 @@ public class ScaleCheck {
         long byType = 0;
         for (long n : people.getJobs()) byType += n;
         same("...the posts on offer by job type add up to the total", byType, people.getTotalJobs());
-        same("...and the total is every post less those withheld", people.getTotalJobs(),
-                everyPost(g) - bm.getPostsWithheld());
+        same("...and the total is every post less those withheld plus the posts past the buildings", people.getTotalJobs(),
+                everyPost(g) - bm.getPostsWithheld() + postsPast(bm));
 
         long bySize = 0;
         for (long n : bm.homesBySize()) bySize += n;
@@ -1264,6 +1340,12 @@ public class ScaleCheck {
     static long everyPost(Game g) {
         long n = 0;
         for (JobType j : JobType.values()) n += g.getBuildingManager().getTotalJobsAtEveryPost(j);
+        return n;
+    }
+
+    static long postsPast(BuildingManager bm) {
+        long n = 0;
+        for (JobType j : JobType.values()) n += bm.getPostsPast(j);
         return n;
     }
 
@@ -1344,7 +1426,7 @@ public class ScaleCheck {
             // FL1-R: the bank's desk inventory as it carries it, saved since FL1; the load used to re-mark it from the scaled shares.
             "bankSecurities", "cityMaintenancePaid", "bankProfitLastMonth",
             "bankTaxCharged", "population", "workforce", "landBlocksPurchased",
-            "materialsConsumed", "buildings", "underConstructionById", "constructionProgressById",
+            "materialsConsumed", "buildings", "unfittedById", "underConstructionById", "constructionProgressById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",
             "populationTrend", "treasuryJournalAmounts", "governmentMonth", "householdStatement",
             "sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefore", "creditStatements",

@@ -181,6 +181,7 @@ public class ExchangeRateCheck {
         oneSeedOnePath();
         aSaveMidSwing();
         inARealCity();
+        inThe1900City();
         theGameSurvivesTheSpiral();
         noWorldIsMains();
         theCycleMovesTheRate();
@@ -849,9 +850,9 @@ public class ExchangeRateCheck {
         quietly(() -> saved.simulateMonths(40));
         ForeignAccounts fx = saved.getForeignAccounts();
         assertTrue("fixture: 40 months played: the market has taken draws and moved", fx.getMarketDraws() > 0 && fx.getMarket() != 0);
-        assertTrue("saved to its scratch folder", saved.saveGame(2, "the swing").ok);
+        assertTrue("saved to its scratch folder", saved.saveGame(10, "the swing").ok);
         Game back = new Game(saved.getGameFiles());
-        quietly(() -> back.loadGameSave(2));
+        quietly(() -> back.loadGameSave(10));
         ForeignAccounts bfx = back.getForeignAccounts();
         out.printf("   a city saved at month %d: market seed %d, %d draws, trend %.6f, market %+.5f, rate %.6f; loaded: %d, %d, %.6f, %+.5f, %.6f%n",
                 saved.getMonth(), fx.getMarketSeed(), fx.getMarketDraws(), fx.getParityTrend(), fx.getMarket(), fx.getRate(),
@@ -889,7 +890,7 @@ public class ExchangeRateCheck {
             double move = Math.log(fx.getRate() / before);
             // ...and the world's line (WN4), the sixth beside the five: a city on the world file feels the world.
             double six = fx.getMoveTrend() + fx.getMoveGap() + fx.getMoveBalance() + fx.getMoveCover() + fx.getMoveIntervention()
-                    + fx.getMoveWorld() + fx.getMoveMarket();
+                    + fx.getMoveWorld() + fx.getMoveMarket() + fx.getMoveHeld();
             worstAdd = Math.max(worstAdd, Math.abs(six - move));
             months++;
             if (g.getMonth() >= 60) { fromMonth60++; sum += move; sum2 += move * move; }
@@ -925,12 +926,17 @@ public class ExchangeRateCheck {
      * scratch folder.
      */
     static Game playtestCity(String label, int target, Tally tally) {
+        return playtestCity(label, target, tally, LongPlaytest.founding());
+    }
+
+    static Game playtestCity(String label, int target, Tally tally, Founding founding) {
         PrintStream was = LongPlaytest.out, system = System.out;
         LongPlaytest.out = quiet;
         System.setOut(quiet);
         try {
-            Game g = new Game(GameFiles.scratch(label), LongPlaytest.founding());
+            Game g = new Game(GameFiles.scratch(label), founding);
             g.run();
+            if (founding.isUnfitted()) LongPlaytest.seedMarket(g, 0);
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
             g.setRolloverMode(LongPlaytest.ROLLOVER);
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
@@ -989,7 +995,7 @@ public class ExchangeRateCheck {
                 t.months - t.gateShut, t.months, fx.getOpenness());
         assertTrue("fixture: the city played its " + target + " months", g.getMonth() >= target && t.months >= target - 10);
         assertTrue("fixture: the market took a draw every month it was not pinned", fx.getMarketDraws() >= g.getMonth() - 3 && fx.isMarketSeeded());
-        close("the six moves (and the world's line, where the city has the world) add to the month's move, every month", t.worstAdd, 0, 1e-12);
+        close("the float's moves, the world's line and the hold add to the month's move, every month", t.worstAdd, 0, 1e-12);
         assertTrue("the volatility a year is a float's: between 3% and 20% (today's rule: 1.2%)", vol >= .03 && vol <= .20);
         assertTrue("the longest run one way is under 36 months (today's: 78)", t.longest < 36);
         // The mechanics fire, and the playtest counts what the harness counts.
@@ -1015,6 +1021,36 @@ public class ExchangeRateCheck {
         stepQuietly(t, g);
         assertTrue("a month that opens with a purchase of dollars pending is counted as one the treasury dealt in, here and in the playtest",
                 t.dealt == dealtRun + 1 && LongPlaytest.floatDealt == playtestDealt + 1);
+    }
+
+    /** R1f: the dated peg's release is a hold move, already recorded by the model, not unexplained market noise. */
+    static void inThe1900City() {
+        out.println("\n--- 8b. the 1900 city's D$: gold, the August 1914 suspension and the 1926 return ---");
+        Tally t = new Tally();
+        int suspension = PolicyDates.openingMonth(PolicyDates.Lever.POLICY_RATE);
+        Game g = playtestCity("exchange-rate-1900", suspension - 1, t,
+                LongPlaytest.founding().withUnfitted(true));
+        ForeignAccounts fx = g.getForeignAccounts();
+        assertTrue("fixture: the dated gold peg survives to the eve of suspension", fx.isCanadaGold());
+        double before = fx.getRate(), shadowBefore = fx.getShadowRate();
+        stepQuietly(t, g);
+        double move = Math.log(fx.getRate() / before);
+        double shadowMove = Math.log(fx.getShadowRate() / shadowBefore);
+        out.printf("   August 1914: %.4f -> %.4f (%+.2f%%), parity %.4f; shadow %.4f -> %.4f; float log move %+.6f, hold %+.6f%n",
+                before, fx.getRate(), 100 * Math.expm1(move), fx.getParity(), shadowBefore, fx.getShadowRate(), shadowMove, fx.getMoveHeld());
+        assertTrue("the suspension opens Float on its model date", g.getMonth() == suspension
+                && fx.getRegime() == ForeignAccounts.Regime.FLOAT && !fx.isCanadaGold());
+        close("the first month's large step releases the old peg-shadow gap", fx.getMoveHeld(), Math.log(shadowBefore / before), 1e-12);
+        close("the float starts at the shadow, with only this month's shadow move added", move, shadowMove + fx.getMoveHeld(), 1e-12);
+        assertTrue("fixture: the released hold is larger than the month's float news", Math.abs(fx.getMoveHeld()) > Math.abs(shadowMove));
+        while (g.getMonth() < PolicyDates.GOLD_RETURN - 1) stepQuietly(t, g);
+        before = fx.getRate();
+        stepQuietly(t, g);
+        out.printf("   July 1926: %.4f -> %.4f; hold log move %+.6f; %d months counted, worst decomposition %.2e%n",
+                before, fx.getRate(), fx.getMoveHeld(), t.months, t.worstAdd);
+        assertTrue("the model's return date restores Canada's gold peg", g.getMonth() == PolicyDates.GOLD_RETURN && fx.isCanadaGold());
+        close("the return holds the model's par", fx.getRate(), fx.getPegRate(), 1e-12);
+        close("all named moves include the suspension and the return, every month", t.worstAdd, 0, 1e-12);
     }
 
     /** One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). */
@@ -1073,9 +1109,9 @@ public class ExchangeRateCheck {
         assertTrue("the month's audit closes every month, as it does in the playtest" + (unclosed == 0 ? "" : " (first not: month " + firstUnclosed + ")"),
                 unclosed == 0);
 
-        assertTrue("it saves to its scratch folder", g.saveGame(2, "the spiral").ok);
+        assertTrue("it saves to its scratch folder", g.saveGame(10, "the spiral").ok);
         Game back = new Game(g.getGameFiles());
-        quietly(() -> back.loadGameSave(2));
+        quietly(() -> back.loadGameSave(10));
         assertTrue("...and loads into a second city, whose figures are numbers", back.getMonth() == g.getMonth() && notANumber(back) == null);
         int backLost = 0, backUnclosed = 0;
         for (int m = 0; m < 12; m++) {
