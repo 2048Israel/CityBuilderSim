@@ -342,8 +342,12 @@ adds its line here, not in `CLAUDE.md`.
                                    applied again after the sites advance and on a load; saved by template id
         RecipeChange.java          R2d's sourced signed undo for one discovery, independent of other pieces.
         RecipeChanges.java         Composes those changes, preserving saved process choices and each piece's fitted count.
+        NewUnit.java               QN1's one new building as it would run (its fitted pieces and process), a value beside
+                                   its template, which every order, stack and key keeps; what future readers read
         HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
         PostwarRecipeCheck.java    R2e's postwar row transitions, independent and catalyst-stage composition, wood dates and default control.
+        NewUnitCheck.java          QN1's new-building readers: the rejected robot's 300 posts, staffing, the order bar, the bank's
+                                   clerks and fee boundary, identities, what is on site and the power ahead
         HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's

@@ -7168,7 +7168,7 @@ public class BuildingManager {
     public long getJobsUnderConstruction() {
         long jobs = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
-            jobs += (long) stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
+            jobs += (long) stack.getUnderConstruction() * newUnit(stack.getBuilding()).getTotalJobs();
         }
         return jobs;
     }
@@ -7509,6 +7509,34 @@ public class BuildingManager {
         return total;
     }
 
+    /*
+     * WHAT IS ON SITE, AS IT WILL OPEN (QN1, 2026-11-19). A building under construction opens on the recipe and the
+     * pieces a new building gets (Game.fitWhatFinished(), the saved process), not on the standing fleet's mix: its
+     * posts, output and input ahead are a new building's (NewUnit), resolved by Game (setNewUnits()) for each stack
+     * with buildings on site. The stack, its template and what it is keyed by are untouched; what is standing keeps
+     * the installed figures (totalBySector()).
+     */
+    private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits = NewUnit::standing;
+
+    /** Game hands in how a new building of a template is resolved (NewUnit.of()); null puts back the template as it stands. */
+    public void setNewUnits(java.util.function.Function<BuildingsTemplate, NewUnit> resolve) {
+        newUnits = resolve == null ? NewUnit::standing : resolve;
+    }
+
+    /** One new building of `t` as it would open now (NewUnit.of()); null for none. */
+    public NewUnit newUnit(BuildingsTemplate t) { return t == null ? null : newUnits.apply(t); }
+
+    /** Buildings on site only, each read as the new building it will open as (QN1): a sector's posts, output and input to come. */
+    public double underConstructionOfNew(String sector, java.util.function.ToDoubleFunction<NewUnit> getter) {
+        double total = 0;
+        for (BuildingsStacks stack : stacks) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (!t.getSector().equals(sector) || stack.getUnderConstruction() == 0) continue;
+            total += stack.getUnderConstruction() * getter.applyAsDouble(newUnit(t));
+        }
+        return total;
+    }
+
     /** Orders on site for a sector, in buildings. */
     public long getUnderConstructionBySector(String sector) {
         long total = 0;
@@ -7520,11 +7548,11 @@ public class BuildingManager {
 
     /**
      * The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site
-     * times the template's jobs of that tier (BA1). Sector.staffing() counts them as spoken for, since with more than
+     * times the jobs of that tier each will open with (BA1; QN1, newUnit()). Sector.staffing() counts them as spoken for, since with more than
      * one order on site two of them must not be staffed from the same spare workers.
      */
     public double postsOnSite(String sector, JobType job) {
-        return underConstructionBySector(sector, t -> t.getJobs(job));
+        return underConstructionOfNew(sector, u -> u.getJobs(job));
     }
 
     /**

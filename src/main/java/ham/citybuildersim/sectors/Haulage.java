@@ -810,20 +810,25 @@ public final class Haulage {
         double t = 0;
         for (Sector s : sectors.all()) {
             if (s == freight) continue;
-            t += freight.buildings().underConstructionBySector(s.key(), this::templateLegs);
+            t += freight.buildings().underConstructionOfNew(s.key(), u -> templateLegs(u.goodsUsed(), u.goodsMade()));
         }
         return Double.isFinite(t) ? Math.max(0, t) : 0;
     }
 
     /** One building's legs a month at nameplate, as nameplateNeed() weighs a sector's: its BULK inputs and outputs, VANS and TRUCKS aside. */
     private double templateLegs(BuildingsTemplate b) {
+        return templateLegs(b.goodsUsed(), b.goodsMade());
+    }
+
+    /** ...of what one building uses and makes (QN1: a building on site as it will open, NewUnit). */
+    private double templateLegs(Map<Good, Double> used, Map<Good, Double> made) {
         double t = 0;
-        for (Map.Entry<Good, Double> e : b.goodsUsed().entrySet()) {
+        for (Map.Entry<Good, Double> e : used.entrySet()) {
             Good g = e.getKey();
             if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
             t += e.getValue() * g.tonnesPerUnit() * inWeight(g);
         }
-        for (Map.Entry<Good, Double> e : b.goodsMade().entrySet()) {
+        for (Map.Entry<Good, Double> e : made.entrySet()) {
             Good g = e.getKey();
             if (g == Good.VANS || g == Good.TRUCKS || g.traffic() != Traffic.BULK) continue;
             t += e.getValue() * g.tonnesPerUnit() * outWeight(g);

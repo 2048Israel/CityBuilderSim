@@ -575,7 +575,7 @@ public abstract class Sector {
 
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
     public Staffing staffing(BuildingsTemplate t) {
-        return staffing(t, 1);
+        return staffing(newUnit(t), 1, true, false);
     }
 
     /**
@@ -594,11 +594,12 @@ public abstract class Sector {
 
     /** ...for an order or a stack that may pass 2^31 (SQ1). */
     public long staffableCount(BuildingsTemplate t, long wanted) {
-        if (wanted <= 0 || !staffing(t, 1).passes()) return 0;
+        NewUnit u = wanted <= 0 ? null : newUnit(t);
+        if (wanted <= 0 || !staffing(u, 1, true, false).passes()) return 0;
         long lo = 1, hi = wanted;
         while (lo < hi) {
             long mid = (lo + hi + 1) >>> 1;
-            if (staffing(t, mid).passes()) lo = mid; else hi = mid - 1;
+            if (staffing(u, mid, true, false).passes()) lo = mid; else hi = mid - 1;
         }
         return lo;
     }
@@ -624,7 +625,12 @@ public abstract class Sector {
 
     /** The same test for {@code count} of these at once. */
     public Staffing staffing(BuildingsTemplate t, long count) {
-        return staffing(t, count, true, false);
+        return staffing(newUnit(t), count, true, false);
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts, the template it is of in the answer. */
+    public Staffing staffing(NewUnit u, long count) {
+        return staffing(u, count, true, false);
     }
 
     /**
@@ -636,7 +642,7 @@ public abstract class Sector {
      * the village's depot opened in month 49 against main's 22.
      */
     public Staffing staffingWithOwnSites(BuildingsTemplate t, long count) {
-        return staffing(t, count, true, true);
+        return staffing(newUnit(t), count, true, true);
     }
 
     /**
@@ -651,10 +657,14 @@ public abstract class Sector {
      * withheld posts, caused.
      */
     public Staffing staffingWithCrewsSpare(BuildingsTemplate t, long count) {
-        return staffing(t, count, false, false);
+        return staffing(newUnit(t), count, false, false);
     }
 
-    private Staffing staffing(BuildingsTemplate t, long count, boolean crewsSpokenFor, boolean ownSitesInCount) {
+    /** One new building of `t` as it would open now (QN1, NewUnit.of()): what this sector's estimates and gates read of it. */
+    protected NewUnit newUnit(BuildingsTemplate t) { return NewUnit.of(game, t); }
+
+    private Staffing staffing(NewUnit u, long count, boolean crewsSpokenFor, boolean ownSitesInCount) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -693,7 +703,7 @@ public abstract class Sector {
             BuildingsStacks own = ownSitesInCount ? bm.getStack(t) : null;
             long ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
             for (JobType job : JobType.values()) {
-                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) t.getJobs(job) * ownOnSite;
+                withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) u.getJobs(job) * ownOnSite;
             }
             posts = withSites;
         }
@@ -703,7 +713,7 @@ public abstract class Sector {
         double[] wanted = new double[WageBand.values().length];
         double total = 0;
         for (JobType job : JobType.values()) {
-            double n = t.getJobs(job) * (double) Math.max(1, count);
+            double n = u.getJobs(job) * (double) Math.max(1, count);
             if (n <= 0) continue;
             wanted[WageBand.of(job).ordinal()] += n;
             total += n;
@@ -1613,7 +1623,8 @@ public abstract class Sector {
 
     /** ...and what is on site, which counts as supply for the planner. */
     public double getPipeline(Good g) {
-        return buildings == null ? 0 : buildings.underConstructionBySector(key, t -> t.makes(g));
+        // ...each on its new buildings' own output (QN1): a site opens on the recipe a new building would run.
+        return buildings == null ? 0 : buildings.underConstructionOfNew(key, u -> u.makes(g));
     }
 
     /** Input a good needs a month at nameplate, across its buildings. */
@@ -3516,7 +3527,15 @@ public abstract class Sector {
     public double visibleDemandOver(double months, EconomyManager economy) { return Double.MAX_VALUE; }
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public final double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        return estimatedMonthlyProfit(plans != null ? plans.newUnit(t) : newUnit(t), plans);
+    }
+
+    /**
+     * ...for one new building already resolved (QN1; NewUnit): every sector's estimate reads its figures off the unit
+     * and its identity off the template the unit is of. LicenceFees prices a new building's rent on the same unit.
+     */
+    public double estimatedMonthlyProfit(NewUnit t, BusinessInvestment plans) {
         double maker = plans.estimatedMakerProfit(this, t);
         /*
          * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the

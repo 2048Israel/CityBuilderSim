@@ -7,6 +7,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.TaxPolicy;
 
@@ -196,6 +197,11 @@ public final class FoodProcessing extends Sector {
 
     /** How much of one of these the city would eat today, as a share of what it makes. */
     public double fillFor(BuildingsTemplate t) {
+        return fillFor(NewUnit.standing(t));
+    }
+
+    /** ...for one new plant already resolved (QN1): what its own recipe makes. */
+    public double fillFor(NewUnit t) {
         double onePlant = 0, uncovered = 0;
         for (Good g : t.goodsMade().keySet()) {
             double made = t.makes(g);
@@ -233,7 +239,9 @@ public final class FoodProcessing extends Sector {
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
-            double fill = fillFor(t);
+            // ...of one new plant as it would open (QN1, NewUnit): what it makes and uses is its own recipe's.
+            NewUnit unit = plans.newUnit(t);
+            double fill = fillFor(unit);
             if (fill < FILLED) {
                 if (fill >= bestFill) { bestFill = fill; fullest = t.getName(); }
                 continue;
@@ -247,11 +255,11 @@ public final class FoodProcessing extends Sector {
 
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double income = estimatedMonthlyProfit(t, plans);
+            double income = estimatedMonthlyProfit(unit, plans);
             if (income <= 0) {
                 if (unprofitable == null) {
                     unprofitable = t.getName();
-                    unprofitableEatsMeat = t.goodsUsed().containsKey(Good.MEAT);
+                    unprofitableEatsMeat = unit.goodsUsed().containsKey(Good.MEAT);
                 }
                 continue;
             }
@@ -347,12 +355,14 @@ public final class FoodProcessing extends Sector {
         return null;
     }
 
+    /** ...for one new building already resolved (QN1): its own makes, uses and running cost. */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (markets == null || t == null) return 0;
 
         double revenue = 0, localSales = 0;
-        for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+        for (java.util.Map.Entry<Good, Double> e : u.goodsMade().entrySet()) {
             Good g = e.getKey();
             if (!g.traded()) continue;
             GoodsMarket m = markets.get(g);
@@ -373,7 +383,7 @@ public final class FoodProcessing extends Sector {
 
         double inputs = 0, credited = 0;
         TaxPolicy tax = game == null ? null : game.getEconomyManager().getTaxPolicy();
-        for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+        for (java.util.Map.Entry<Good, Double> e : u.goodsUsed().entrySet()) {
             Good g = e.getKey();
             if (!g.traded()) continue;
             GoodsMarket m = markets.get(g);
@@ -398,7 +408,7 @@ public final class FoodProcessing extends Sector {
         double vat = tax == null ? 0 : Math.max(0, localSales * tax.effectiveSalesRate(this) - credited);
 
         return (revenue - inputs) * rate
-                - plans.runningCostOf(t) - plans.standingCostOf(this, t) - vat;
+                - plans.runningCostOf(u) - plans.standingCostOf(this, t) - vat;
     }
 
     /* ------------------------------------------------------------ the screen */

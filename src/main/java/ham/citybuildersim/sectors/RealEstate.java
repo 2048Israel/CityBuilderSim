@@ -7,6 +7,7 @@ import ham.citybuildersim.FamilyModel;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.PayTier;
@@ -825,9 +826,12 @@ public final class RealEstate extends Sector {
      * What the city's households would pay for it, not what it would collect
      * if it were full. THE SAME VALUATION plan() uses, and it has to be: this
      * decides whether the sector may BORROW for the building.
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its dwellings, capacity and home size are the template's.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         int units = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
         FamilyModel families = plans.families();
         if (families == null) return t.getCapacity() * rentPrice;

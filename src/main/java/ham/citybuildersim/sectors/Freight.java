@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.InfrastructureManager;
 import ham.citybuildersim.JobType;
@@ -1619,9 +1620,12 @@ public final class Freight extends Sector {
      * down. BusinessInvestment.PROFIT_OVER_INTEREST is the margin of safety and
      * the quote's own floor is the backstop: a line that does not pay at
      * RAIL_FLOOR never pays.
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its own posts, draw and steam share.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || plans == null) return 0;
         /*
          * A TRUCK DEPOT (FR2) carries no track and picks up no tonnes, so the
@@ -1653,10 +1657,10 @@ public final class Freight extends Sector {
         // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's - diesel's (0.7.76).
         double litre = markets == null ? Good.DIESEL.worldImportPrice() : markets.get(Good.DIESEL).landedPrice();
         double coalPrice = markets == null ? Good.THERMAL_COAL.worldImportPrice() : markets.get(Good.THERMAL_COAL).landedPrice();
-        double steam = game != null && game.foundedUnfitted() ? t.steamRailShare() : 0;
+        double steam = game != null && game.foundedUnfitted() ? u.steamRailShare() : 0;
         double fuel = picked * FUEL_LITRES_PER_TONNE * ((1 - steam) * (Double.isFinite(litre) ? Math.max(0, litre) : 0)
                 + steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE * Math.max(0, coalPrice));
-        return revenue - fuel - plans.runningCostOf(t) - plans.standingCostOf(this, t);
+        return revenue - fuel - plans.runningCostOf(u) - plans.standingCostOf(this, t);
     }
 
     /**

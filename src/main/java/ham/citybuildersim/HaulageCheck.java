@@ -1274,7 +1274,7 @@ public class HaulageCheck {
         for (Good g : pt.goodsMade().keySet()) if (g.traffic() == Traffic.BULK) legs += pt.makes(g) * g.tonnesPerUnit() * p.out(g);
         report("cityLegs() is its bulk inputs' tonnes x p.in() plus its outputs' x p.out(), at the rate",
                 legs > 0 && near(ProcessingSector.cityLegs(pt, rate, p), legs * rate, 1e-12) && same(ProcessingSector.cityLegs(pt, 0, p), 0)
-                        && same(ProcessingSector.cityLegs(null, rate, p), 0),
+                        && same(ProcessingSector.cityLegs((BuildingsTemplate) null, rate, p), 0),
                 String.format("D$%,.1fk a month at a rate of %.1f", ProcessingSector.cityLegs(pt, rate, p), rate));
         report("...and the plant's freight is its legs and nothing else: freightRunning() = fleetRunning() + cityLegs(), vans being nought",
                 near(ProcessingSector.freightRunning(pt, v, rate, p), ProcessingSector.cityLegs(pt, rate, p), 1e-12),

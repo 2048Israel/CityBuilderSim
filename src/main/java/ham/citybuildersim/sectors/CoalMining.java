@@ -9,6 +9,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sectors;
 
@@ -152,7 +153,13 @@ public final class CoalMining extends ExtractionSector {
 
     /** A building's part of the flow's streams at nameplate: {surface, raw, wash}. */
     static double[] streamsOf(BuildingsTemplate t) {
-        double coal = t.makes(Good.THERMAL_COAL);
+        return streamsOf(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the coal its own recipe makes; the site and the wash are its template's. */
+    static double[] streamsOf(NewUnit u) {
+        BuildingsTemplate t = u.template();
+        double coal = u.makes(Good.THERMAL_COAL);
         return digsRaw(t) ? new double[] { 0, coal, t.getWash() } : new double[] { coal, 0, t.getWash() };
     }
 
@@ -163,7 +170,7 @@ public final class CoalMining extends ExtractionSector {
         for (int i = 0; i < 3; i++) {
             final int k = i;
             s[k] = buildings.totalBySector(key(), t -> streamsOf(t)[k]);
-            if (onSite) s[k] += buildings.underConstructionBySector(key(), t -> streamsOf(t)[k]);
+            if (onSite) s[k] += buildings.underConstructionOfNew(key(), u -> streamsOf(u)[k]);
         }
         return s;
     }
@@ -306,6 +313,11 @@ public final class CoalMining extends ExtractionSector {
      * it washes no longer makes.
      */
     public Map<Good, Double> madeBy(BuildingsTemplate t) {
+        return madeBy(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): what its own recipe adds to the flow. */
+    public Map<Good, Double> madeBy(NewUnit t) {
         Map<Good, Double> out = new EnumMap<>(Good.class);
         if (t == null) return out;
         double[] base = streams(true), one = streamsOf(t);
@@ -324,19 +336,21 @@ public final class CoalMining extends ExtractionSector {
      * the thermal coal a plant stops selling raw valued as it would have
      * sold (lostValue()) - less its consumables and its freight. A surface
      * mine adds its own makes, so its figure is the maker's on them.
+     * ...for one new building already resolved (QN1; NewUnit): its own makes and consumables.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        if (t == null || plans == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(t, plans);
-        Map<Good, Double> made = madeBy(t), gains = new EnumMap<>(Good.class);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        if (t == null || plans == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(u, plans);
+        Map<Good, Double> made = madeBy(u), gains = new EnumMap<>(Good.class);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
         double lost = 0;
         for (Map.Entry<Good, Double> e : made.entrySet()) {
             if (e.getValue() > 0) gains.put(e.getKey(), e.getValue());
             else lost += lostValue(e.getKey(), -e.getValue(), plans);
         }
-        double maker = plans.estimatedMakerProfit(this, t, gains) - lost * rate;
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
+        double maker = plans.estimatedMakerProfit(this, u, gains) - lost * rate;
+        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), pricePerWatt) - freightRunning(u, rate);
     }
 
     /**
@@ -397,8 +411,10 @@ public final class CoalMining extends ExtractionSector {
             if (!(t.getWash() > 0) || !staffing(t).passes()) continue;
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            // ...of one new plant as it would open (QN1, NewUnit): its own vans and its own earnings.
+            NewUnit unit = plans.newUnit(t);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             if (!planner().passesMoney(this, plans, game, t, 1, earns, cost)) continue;
             if (earns / cost > bestScore) {
                 bestScore = earns / cost;

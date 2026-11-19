@@ -940,6 +940,7 @@ public class BusinessInvestment {
         double demand = forecast(sector, market);
 
         BuildingsTemplate best = null;
+        NewUnit bestUnit = null;
         double bestScore = 0;
         double demandAtOpening = 0;
         Sector.Staffing staffingHold = null;
@@ -957,7 +958,9 @@ public class BusinessInvestment {
          * is growthFactor(), which the city's build advice reads too.
          */
         for (BuildingsTemplate t : buildingManager.getTemplatesBySector(key)) {
-            if (t.makes(good) <= 0) continue;
+            // One new building as it would open (QN1, NewUnit): the output it is sized by is its own recipe's, not the fleet's mix.
+            NewUnit unit = newUnit(t);
+            if (unit.makes(good) <= 0) continue;
 
             /*
              * A FIRST PLANT HAS TO HAVE SOMETHING TO DO. A sector with nothing
@@ -969,7 +972,7 @@ public class BusinessInvestment {
              * be taking before its first one is worth sinking; the default is
              * none, which is what the food industry has always done.
              */
-            if (currentOutput <= 0 && demand < t.makes(good) * sector.firstPlantUtilisation()) {
+            if (currentOutput <= 0 && demand < unit.makes(good) * sector.firstPlantUtilisation()) {
                 return Decision.no(key, String.format("%,.0f %s/mo is not enough for a first %s",
                         demand, Formats.plural(good.unit()), t.getName()));
             }
@@ -1005,7 +1008,7 @@ public class BusinessInvestment {
                 continue;
             }
 
-            double monthlyIncome = sector.estimatedMonthlyProfit(t, this);
+            double monthlyIncome = sector.estimatedMonthlyProfit(unit, this);
             double cost = getCostOf(t, 1);
             if (cost <= 0 || monthlyIncome <= 0) continue;
 
@@ -1013,6 +1016,7 @@ public class BusinessInvestment {
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
+                bestUnit = unit;
                 demandAtOpening = projected;
             }
         }
@@ -1022,7 +1026,7 @@ public class BusinessInvestment {
                     : Decision.no(key, "output ahead of demand");
         }
 
-        int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best);
+        int quantity = orderSize(demandAtOpening - currentOutput, bestUnit.makes(good), best);
         if (quantity <= 0) return Decision.noLand(key, landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = sector.staffableCount(best, quantity);
@@ -1112,6 +1116,11 @@ public class BusinessInvestment {
      * mills to buy it IS the export price.
      */
     public double estimatedMakerProfit(Sector sector, BuildingsTemplate t) {
+        return estimatedMakerProfit(sector, newUnit(t));
+    }
+
+    /** ...for one new building already resolved (QN1): what it makes, uses and costs to run. */
+    public double estimatedMakerProfit(Sector sector, NewUnit t) {
         return estimatedMakerProfit(sector, t, t.goodsMade());
     }
 
@@ -1122,6 +1131,11 @@ public class BusinessInvestment {
      * order - for every other building the template's own map, to the bit.
      */
     public double estimatedMakerProfit(Sector sector, BuildingsTemplate t, java.util.Map<Good, Double> made) {
+        return estimatedMakerProfit(sector, newUnit(t), made);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public double estimatedMakerProfit(Sector sector, NewUnit t, java.util.Map<Good, Double> made) {
         Markets markets = economyManager.getMarkets();
         double gross = 0;
         for (java.util.Map.Entry<Good, Double> e : made.entrySet()) {
@@ -1153,7 +1167,7 @@ public class BusinessInvestment {
             inputs += e.getValue() * markets.get(g).getLocalPrice();
         }
         return (gross - inputs) * operatingRateOf(sector.getOperatingRate())
-                - runningCostOf(t) - standingCostOf(sector, t);
+                - runningCostOf(t) - standingCostOf(sector, t.template());
     }
 
     /**
@@ -1441,10 +1455,44 @@ public class BusinessInvestment {
 
     /** The bank, so the advisor can see when credit has got dear. */
     private Bank bank;
-    public void setBank(Bank bank) { this.bank = bank; }
+    public void setBank(Bank bank) {
+        this.bank = bank;
+        // ...and the bank's opening gate prices a new branch's own crew (QN1): C_new - C, nothing in a city founded the default way.
+        if (bank != null) bank.setNewBranchExtra(() -> newBranchExtra(newUnit(buildingManager.getTemplateByName("Commercial Bank"))));
+    }
+
+    /*
+     * A NEW BUILDING'S FIGURES (QN1, 2026-11-19): every estimate, gate and future total here reads one new building of a
+     * template as a NewUnit - the recipe, posts, draw, output and input the building would open with - resolved by Game
+     * (NewUnit.of()); a bare planner reads the template as it stands. The template itself is what is ordered and kept.
+     */
+    private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits = NewUnit::standing;
+
+    /** Game hands in how one new building of a template is resolved (NewUnit.of()); null puts back the template as it stands. */
+    public void setNewUnits(java.util.function.Function<BuildingsTemplate, NewUnit> resolve) {
+        newUnits = resolve == null ? NewUnit::standing : resolve;
+    }
+
+    /** One new building of `t` as it would open now (NewUnit.of()); null for none. */
+    public NewUnit newUnit(BuildingsTemplate t) { return t == null ? null : newUnits.apply(t); }
+
+    /**
+     * What a new branch's own crew costs over a later branch's cached cost (QN1; Bank.newBranchCost()): the proposed
+     * branch's wage bill less the bill of the posts the standing branches have, 0 where the proposal is the template as it
+     * stands. Only the branch being opened carries it; the standing branches keep the cost they paid.
+     */
+    double newBranchExtra(NewUnit branch) {
+        if (branch == null || !branch.proposed()) return 0;
+        return wageBillFor(branch) - wageBillFor(NewUnit.standing(branch.template()));
+    }
 
     /** What one of these would cost to staff, at what the city pays today. */
     public double wageBillFor(BuildingsTemplate t) {
+        return wageBillFor(newUnit(t));
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public double wageBillFor(NewUnit t) {
         double bill = 0;
         double[] wages = economyManager.getWageRates();
         if (wages == null) return 0;
@@ -1466,13 +1514,15 @@ public class BusinessInvestment {
         if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
             // ...at what a branch past the charter carries, its operating cost
             // with it (revised 0.7.19: the charter is exempt from that).
+            NewUnit branch = newUnit(t);
             double cost = bank.laterBranchCost();
-            if (cost <= 0) cost = wageBillFor(t) + t.getUpkeep();
+            if (cost <= 0) cost = wageBillFor(branch) + t.getUpkeep();
+            else if (branch.proposed()) cost += newBranchExtra(branch);   // ...the new branch's own crew (QN1): C_new, once
             return bank.feesPerBranchWithAnother(buildingManager.countByName("Commercial Bank")) - cost;
         }
 
         Sector s = economyManager.getSectors().byKey(sector);
-        return s == null || t == null ? 0 : s.estimatedMonthlyProfit(t, this);
+        return s == null || t == null ? 0 : s.estimatedMonthlyProfit(newUnit(t), this);
     }
 
     /**
@@ -1484,12 +1534,12 @@ public class BusinessInvestment {
         return (Double.isFinite(rate) && rate > 0) ? Math.min(1, rate) : 1;
     }
 
-    private java.util.function.ToDoubleFunction<BuildingsTemplate> licenceCost = t -> 0;
+    private java.util.function.ToDoubleFunction<NewUnit> licenceCost = u -> 0;
     private java.util.function.ToDoubleFunction<BuildingsTemplate> standingLicenceCost = t -> 0;
 
     /** Game supplies patent rent; a bare planner reads zero. */
-    public void setLicenceCost(java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
-        licenceCost = cost == null ? t -> 0 : cost;
+    public void setLicenceCost(java.util.function.ToDoubleFunction<NewUnit> cost) {
+        licenceCost = cost == null ? u -> 0 : cost;
     }
 
     /** The corresponding royalty for an installed building's standing valuation. */
@@ -1503,22 +1553,26 @@ public class BusinessInvestment {
      * income statement, because the first mine in a city has no sector to read.
      */
     public double runningCostOf(BuildingsTemplate t) {
-        return runningCostOf(t, licenceCost);
+        return runningCostOf(newUnit(t));
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts, draw and water, and the rent LicenceFees.forNew() strikes on it. */
+    public double runningCostOf(NewUnit t) {
+        return runningCostOf(t, licenceCost.applyAsDouble(t));
     }
 
     /** The same operating costs with the installed entry's standing royalty (R2c). */
     public double standingRunningCostOf(BuildingsTemplate t) {
-        return runningCostOf(t, standingLicenceCost);
+        return runningCostOf(NewUnit.standing(t), standingLicenceCost.applyAsDouble(t));
     }
 
-    private double runningCostOf(BuildingsTemplate t, java.util.function.ToDoubleFunction<BuildingsTemplate> royalty) {
+    private double runningCostOf(NewUnit t, double fee) {
         double[] rates = economyManager.getWageRates();
         double payroll = 0;
         for (JobType type : JobType.values()) {
             int slot = type.ordinal();
             if (slot < rates.length) payroll += t.getJobs(type) * rates[slot];
         }
-        double fee = royalty.applyAsDouble(t);
         if (fee != 0) payroll += fee;
         return payroll
                 + t.getElectricityConsumption() * economyManager.getPricePerWatt()

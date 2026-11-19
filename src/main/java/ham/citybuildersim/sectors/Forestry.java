@@ -8,6 +8,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.Investor;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sectors;
 
@@ -134,6 +135,11 @@ public final class Forestry extends ExtractionSector {
 
     /** Cubic metres of forest a building of its cuts a month at nameplate - sawlogs and pulpwood - nothing for a planted stand. */
     public static double cutOf(BuildingsTemplate t) {
+        return cutOf(NewUnit.standing(t));
+    }
+
+    /** ...of one new building already resolved (QN1): what its own recipe cuts. */
+    public static double cutOf(NewUnit t) {
         return t == null ? 0 : t.makes(Good.SAWLOGS) + t.makes(Good.PULPWOOD);
     }
 
@@ -162,7 +168,7 @@ public final class Forestry extends ExtractionSector {
     public double crewsCut(boolean coming) {
         if (buildings == null) return 0;
         double cut = buildings.totalBySector(key(), Forestry::cutOf);
-        return coming ? cut + buildings.underConstructionBySector(key(), Forestry::cutOf) : cut;
+        return coming ? cut + buildings.underConstructionOfNew(key(), u -> cutOf(u)) : cut;
     }
 
     /** The planted stands' growth a month, cubic metres: those standing, and with `coming` those being planted too. */
@@ -284,7 +290,7 @@ public final class Forestry extends ExtractionSector {
 
     /** One crew's running cost a month at today's wages: its posts, power and water, and its consumables at the exchange factor. */
     double crewRunning(BuildingsTemplate t, BusinessInvestment plans) {
-        return plans.runningCostOf(t) + Math.max(0, t.getConsumables()) * exchangeFactor();
+        return plans.runningCostOf(NewUnit.standing(t)) + Math.max(0, t.getConsumables()) * exchangeFactor();
     }
 
     /** The crews' cut this month, cubic metres, the salvage not in it. */
@@ -379,6 +385,11 @@ public final class Forestry extends ExtractionSector {
      * `t` (pure).
      */
     public static boolean roomFor(double cuttable, double committed, BuildingsTemplate t) {
+        return roomFor(cuttable, committed, NewUnit.standing(t));
+    }
+
+    /** ...for one new crew already resolved (QN1): the cut of its own recipe. */
+    public static boolean roomFor(double cuttable, double committed, NewUnit t) {
         return cuttable >= FOREST_CREW_MONTHS * (committed + cutOf(t));
     }
 
@@ -401,13 +412,19 @@ public final class Forestry extends ExtractionSector {
         double committed = crewsCut(true);
 
         BuildingsTemplate best = null, forestHold = null, moneyHold = null;
+        NewUnit bestUnit = null, forestHoldUnit = null;
         double bestScore = 0, moneyEarns = 0, moneyCost = 0;
         Staffing staffingHold = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (!isCrew(t)) continue;
+            // ...of one new crew as it would open (QN1, NewUnit): its cut, vans and earnings are its own recipe's.
+            NewUnit unit = plans.newUnit(t);
             // ...E: the forest it may cut lasts 120 months of every crew's cut with it.
-            if (!roomFor(cuttable, committed, t)) {
-                if (forestHold == null || cutOf(t) < cutOf(forestHold)) forestHold = t;
+            if (!roomFor(cuttable, committed, unit)) {
+                if (forestHold == null || cutOf(unit) < cutOf(forestHoldUnit)) {
+                    forestHold = t;
+                    forestHoldUnit = unit;
+                }
                 continue;
             }
             Staffing staffing = staffing(t);
@@ -417,8 +434,8 @@ public final class Forestry extends ExtractionSector {
             }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             if (!planner().passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
                     moneyHold = t;
@@ -431,6 +448,7 @@ public final class Forestry extends ExtractionSector {
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
+                bestUnit = unit;
             }
         }
         if (best == null) {
@@ -439,7 +457,7 @@ public final class Forestry extends ExtractionSector {
                         + planner().city(this, plans, game).money(moneyHold, moneyEarns, moneyCost));
             }
             if (staffingHold != null) return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
-            if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHold));
+            if (forestHold != null) return BusinessInvestment.Decision.no(sector, eWords(cuttable, committed, forestHoldUnit));
             return BusinessInvestment.Decision.no(sector, "nothing worth building");
         }
         if (plans.plotsAvailableFor(best) < 1) {
@@ -447,14 +465,19 @@ public final class Forestry extends ExtractionSector {
         }
         return new BusinessInvestment.Decision(sector, best, 1,
                 String.format("%,.0fk m³ of forest it may cut, %.0f months of the crews' cut with %s",
-                        cuttable / 1000, cuttable / (committed + cutOf(best)), ProcessingSector.a(best.getName())), true);
+                        cuttable / 1000, cuttable / (committed + cutOf(bestUnit)), ProcessingSector.a(best.getName())), true);
     }
 
     /** E's refusal in words: the forest it may cut, and the months it would last with the smallest crew. */
     static String eWords(double cuttable, double committed, BuildingsTemplate t) {
+        return eWords(cuttable, committed, NewUnit.standing(t));
+    }
+
+    /** ...for one new crew already resolved (QN1): the cut of its own recipe, the name its template's. */
+    static String eWords(double cuttable, double committed, NewUnit t) {
         double with = committed + cutOf(t);
         return String.format("the forest it may cut, %,.0fk m³, would last %.0f months of the crews' cut with %s; it asks %d",
-                cuttable / 1000, with > 0 ? cuttable / with : 0, ProcessingSector.a(t.getName()), FOREST_CREW_MONTHS);
+                cuttable / 1000, with > 0 ? cuttable / with : 0, ProcessingSector.a(t.template().getName()), FOREST_CREW_MONTHS);
     }
 
     /* ----- the retirement ----- */
@@ -618,6 +641,12 @@ public final class Forestry extends ExtractionSector {
     /** A crew's ground is the forest it may cut, in plan()'s words: none at all, or E - room for 120 months of every crew's cut with one more (roomFor(), eWords()). */
     @Override
     protected String groundRefusal(BuildingsTemplate t) {
+        return groundRefusal(NewUnit.standing(t));
+    }
+
+    /** ...for one new crew already resolved (QN1): E's room is its own recipe's cut. */
+    @Override
+    protected String groundRefusal(NewUnit t) {
         double cuttable = game.getLandManager().cuttableForest();
         if (!(cuttable > 0)) return "no forest it may cut";
         double committed = crewsCut(true);

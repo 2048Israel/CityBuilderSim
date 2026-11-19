@@ -262,6 +262,35 @@ public final class RecipeChanges {
                 choose(t, second, game.getMonth(), game.getResearch(), prices)};
     }
 
+    /**
+     * One new building's figures (QN1, NewUnit.of()): apply()'s own sum for a stack of one with exactly the pieces
+     * `fitted`, on the process newChoices() gives, the template untouched. A recipe list with no changes of its own is
+     * Recipes.apply()'s runRecipes() for that one building: the fitted part's recipe, or the unfitted part's when the list's
+     * piece is not among `fitted` (recipeForNew()'s choice).
+     */
+    static NewUnit newUnit(Game game, BuildingsTemplate t, java.util.Set<String> fitted) {
+        String[] ids = newChoices(game, t, Recipes.pricesOf(game));
+        if (t.getRecipeChanges().isEmpty()) {
+            String selected = t.recipePieceId() == null || fitted.contains(t.recipePieceId()) ? ids[0] : ids[1];
+            Recipe chosen = selected == null ? null : t.getRecipe(selected);
+            return NewUnit.proposed(t, chosen != null ? chosen : t.defaultRecipe(), fitted);
+        }
+        Map<String, Long> counts = counts(t, fitted);
+        Map<String, Double> absent = absencesAt(game, t, counts, 1, ids);
+        long unfitted = t.recipePieceId() == null ? 0 : Math.min(1, counts.getOrDefault(t.recipePieceId(), 0L));
+        Recipe composed = compose(t, base(t, ids[0]), 1 - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
+        double production = t.recipeProduction(), steamRail = 0, petrol = 0.55;
+        double dig = t.recipeSite() == null ? 0 : t.recipeSite().dig();
+        for (RecipeChange c : t.getRecipeChanges()) {
+            double share = share(c, absent);
+            production += share * c.production();
+            steamRail += share * c.steamRail();
+            petrol += share * c.crackerPetrol();
+            dig += share * c.dig();
+        }
+        return NewUnit.proposed(t, composed, fitted, production, steamRail, petrol, dig);
+    }
+
     static Map<String, Long> counts(BuildingsTemplate t, java.util.Set<String> fitted) {
         Map<String, Long> counts = new TreeMap<>();
         for (Equipment piece : t.getEquipment()) if (!fitted.contains(piece.getId())) counts.put(piece.getId(), 1L);

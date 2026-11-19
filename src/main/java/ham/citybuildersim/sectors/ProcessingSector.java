@@ -7,6 +7,7 @@ import ham.citybuildersim.Currency;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Trade;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Traffic;
@@ -133,6 +134,11 @@ public abstract class ProcessingSector extends Sector {
 
     /** Whether the planner weighs a building of its: one that makes something. */
     protected boolean weighs(BuildingsTemplate t) {
+        return weighs(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): whether it makes something. */
+    protected boolean weighs(NewUnit t) {
         return t != null && !t.goodsMade().isEmpty();
     }
 
@@ -179,6 +185,11 @@ public abstract class ProcessingSector extends Sector {
 
     /** What one of `t` would make less what it would use a month at `rate`, each valued as one more of it would change the city's trade (pure): made at Values.out(), used at Values.in(). */
     public static double gross(BuildingsTemplate t, SpreadPlanner.Values v, double rate) {
+        return gross(NewUnit.standing(t), v, rate);
+    }
+
+    /** ...for one new building already resolved (QN1): its own makes and uses. */
+    public static double gross(NewUnit t, SpreadPlanner.Values v, double rate) {
         double g = 0;
         for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) g += v.out(e.getKey(), e.getValue() * rate);
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) g -= v.in(e.getKey(), e.getValue() * rate);
@@ -201,8 +212,15 @@ public abstract class ProcessingSector extends Sector {
      */
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed) {
+        return estimate(city.unit(t), v, city, factor, tariff, feed);
+    }
+
+    /** ...for one new building already resolved (QN1): its own makes, uses, posts, draw, consumables and power. */
+    public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                                   double factor, double tariff, String feed) {
+        BuildingsTemplate t = u.template();
         double rate = city.rate();
-        double earns = gross(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
+        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff);
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
     }
 
@@ -218,9 +236,17 @@ public abstract class ProcessingSector extends Sector {
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed, double share, double other,
                                                    double extraCost) {
-        if (share == 1 && other == 0 && extraCost == 0) return estimate(t, v, city, factor, tariff, feed);
+        return estimate(city.unit(t), v, city, factor, tariff, feed, share, other, extraCost);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                                   double factor, double tariff, String feed, double share, double other,
+                                                   double extraCost) {
+        if (share == 1 && other == 0 && extraCost == 0) return estimate(u, v, city, factor, tariff, feed);
+        BuildingsTemplate t = u.template();
         double rate = city.rate() * share;
-        double earns = gross(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
+        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff)
                 - other;
         return SpreadPlanner.judge(t, earns, city.cost(t) + extraCost, feed, city, null);
     }
@@ -229,7 +255,7 @@ public abstract class ProcessingSector extends Sector {
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                    double factor, double tariff) {
         double rate = city.rate();
-        return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
     }
 
     /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. */
@@ -237,7 +263,7 @@ public abstract class ProcessingSector extends Sector {
                                    double factor, double tariff, double share, double other) {
         if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff);
         double rate = city.rate() * share;
-        return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
                 - other;
     }
 
@@ -280,6 +306,11 @@ public abstract class ProcessingSector extends Sector {
      * and the fleet does not haul itself: not the vans, and not the trucks.
      */
     public static double vansFor(BuildingsTemplate t) {
+        return vansFor(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the goods tonnes its own recipe moves. */
+    public static double vansFor(NewUnit t) {
         if (t == null) return 0;
         double tonnes = 0;
         for (Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
@@ -295,6 +326,11 @@ public abstract class ProcessingSector extends Sector {
 
     /** What one of `t`'s vans cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. */
     public static double fleetRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate) {
+        return fleetRunning(NewUnit.standing(t), v, rate);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public static double fleetRunning(NewUnit t, SpreadPlanner.Values v, double rate) {
         double vans = vansFor(t);
         if (!(vans > 0)) return 0;
         return v.in(Good.VANS, vans / Sector.VAN_LIFE_MONTHS) + v.in(Good.DIESEL, vans * rate * Sector.DIESEL_LITRES_A_VAN_MONTH);
@@ -302,6 +338,11 @@ public abstract class ProcessingSector extends Sector {
 
     /** ...and buying them (pure): its vans at what a van costs here. The only fleet in a works' capital: no truck is (FR2). */
     public static double fleetCapital(BuildingsTemplate t, SpreadPlanner.Values v) {
+        return fleetCapital(NewUnit.standing(t), v);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public static double fleetCapital(NewUnit t, SpreadPlanner.Values v) {
         double vans = vansFor(t);
         return vans > 0 ? v.in(Good.VANS, vans) : 0;
     }
@@ -314,6 +355,11 @@ public abstract class ProcessingSector extends Sector {
      * no leg. 0 for no template or a rate that is not above zero.
      */
     public static double cityLegs(BuildingsTemplate t, double rate, Haulage.LegPrice p) {
+        return cityLegs(NewUnit.standing(t), rate, p);
+    }
+
+    /** ...for one new building already resolved (QN1): the bulk its own recipe uses and makes. */
+    public static double cityLegs(NewUnit t, double rate, Haulage.LegPrice p) {
         if (t == null || p == null || !(rate > 0)) return 0;
         double legs = 0;
         for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
@@ -331,15 +377,26 @@ public abstract class ProcessingSector extends Sector {
 
     /** What one more of `t` pays for its freight a month at `rate` (pure; FR2): its vans' wear and diesel, and its bulk's city legs at the quote. */
     public static double freightRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p) {
+        return freightRunning(NewUnit.standing(t), v, rate, p);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public static double freightRunning(NewUnit t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p) {
         return fleetRunning(t, v, rate) + cityLegs(t, rate, p);
     }
 
     /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. */
     private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
+        return weigh(city.unit(t), v, city);
+    }
+
+    /** ...for one new building already resolved (QN1): the feed it takes and the freight it moves are its own recipe's. */
+    private SpreadPlanner.Candidate weigh(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city) {
+        BuildingsTemplate t = u.template();
         double share = feedShare(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
-        return estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
-                offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()), fleetCapital(t, v));
+        return estimate(u, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
+                offMarketFeed(t, rate) + freightRunning(u, v, rate, legPrice()), fleetCapital(u, v));
     }
 
     /*
@@ -382,7 +439,7 @@ public abstract class ProcessingSector extends Sector {
         SpreadPlanner.Values v = values();
         if (buildings == null || buildings.getUnderConstructionBySector(key()) == 0) return v;
         return SpreadPlanner.after(v, this::getPipeline,
-                g -> buildings.underConstructionBySector(key(), t -> t.uses(g)));
+                g -> buildings.underConstructionOfNew(key(), u -> u.uses(g)));
     }
 
     /** Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. */
@@ -400,7 +457,12 @@ public abstract class ProcessingSector extends Sector {
 
     /** One building of its weighed now. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return weigh(t, plannedValues(), planner.city(this, plans, game));
+        return appraise(plans != null ? plans.newUnit(t) : newUnit(t), plans);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public SpreadPlanner.Candidate appraise(NewUnit u, BusinessInvestment plans) {
+        return weigh(u, plannedValues(), planner.city(this, plans, game));
     }
 
     /* ----- the plan ----- */
@@ -447,9 +509,10 @@ public abstract class ProcessingSector extends Sector {
 
     /** What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        if (!weighs(t) || markets == null || buildings == null) return t == null ? 0 : super.estimatedMonthlyProfit(t, plans);
-        return appraise(t, plans).earns();
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        if (!weighs(u) || markets == null || buildings == null) return t == null ? 0 : super.estimatedMonthlyProfit(u, plans);
+        return appraise(u, plans).earns();
     }
 
     /* ----- idle, then shed ----- */

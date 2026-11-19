@@ -108,6 +108,8 @@ public final class BuildCard {
      * @param siteMonths ...and their wait at today's queue (Game.onSiteMonths()); 0 with none
      * @param landFree   the land free, for the needs line's share of it: since 0.7.109 the ground its sector may
      *                   build on (LandManager.freeFor(); getAvailableSqFt() until then, the same with no zone)
+     * @param newUnit    one new building of `template` as it would open now (NewUnit.of(), resolved once for the card): the
+     *                   posts, power, water, output and input the card read it by; the template is what is ordered and stacked
      */
     public record Figures(BuildingsTemplate template, Kind kind, String group,
                           String verb, double figure, String words, double unit,
@@ -116,7 +118,7 @@ public final class BuildCard {
                           double bar1, double bar2, Bar2 bar2Kind,
                           String per, String perTag,
                           double staffable, double staffableWithArrivals, double running, double[] detail,
-                          long owned, long onSite, double siteMonths, double landFree) {
+                          long owned, long onSite, double siteMonths, double landFree, NewUnit newUnit) {
 
         /** No positive unit to price against: a maker whose inputs cost more than it makes, or a city building nobody could staff. Both bars read "—". */
         public boolean addsNothing() { return !(unit > 0); }
@@ -206,8 +208,13 @@ public final class BuildCard {
      * BuildAdvice.unit() is the advice's trips relieved.
      */
     public static double served(Game game, BuildAdvice.Measure m, BuildingsTemplate t) {
-        if (BuildAdvice.roadKind(m)) return t.getCapacity();
-        return BuildAdvice.unit(game, m, t);
+        return served(game, m, NewUnit.of(game, t));
+    }
+
+    /** ...of one new building already resolved (QN1). */
+    public static double served(Game game, BuildAdvice.Measure m, NewUnit u) {
+        if (BuildAdvice.roadKind(m)) return u.template().getCapacity();
+        return BuildAdvice.unit(game, m, u);
     }
 
     /** The first ring of its category a city building serves - its group on a page that has none picked. */
@@ -412,12 +419,18 @@ public final class BuildCard {
      * flow (sectors.CoalMining.madeBy()).
      */
     public static double valueAdded(Game game, BuildingsTemplate t) {
+        return valueAdded(game, NewUnit.of(game, t));
+    }
+
+    /** ...of one new building already resolved (QN1): what its own recipe makes and uses. */
+    public static double valueAdded(Game game, NewUnit u) {
+        BuildingsTemplate t = u.template();
         double v = 0;
-        for (Map.Entry<Good, Double> e : ham.citybuildersim.sectors.Refining.madeBy(t).entrySet()) {
+        for (Map.Entry<Good, Double> e : ham.citybuildersim.sectors.Refining.madeBy(u).entrySet()) {
             double p = priceOf(game, e.getKey());
             if (Double.isFinite(p)) v += e.getValue() * p;
         }
-        for (Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+        for (Map.Entry<Good, Double> e : u.goodsUsed().entrySet()) {
             double p = priceOf(game, e.getKey());
             if (Double.isFinite(p)) v -= e.getValue() * p;
         }
@@ -428,7 +441,7 @@ public final class BuildCard {
         // ...and a coal preparation plant (0.7.126) uses no good either: what it adds to Coal Mining's flow, the coking coal
         // it makes less the thermal its raw coal no longer sells as (sectors.CoalMining.madeBy()) - nothing with no raw coal.
         if (t.getWash() > 0 && game.getSectors() != null) {
-            for (Map.Entry<Good, Double> e : game.getSectors().coalMining().madeBy(t).entrySet()) {
+            for (Map.Entry<Good, Double> e : game.getSectors().coalMining().madeBy(u).entrySet()) {
                 double p = priceOf(game, e.getKey());
                 if (Double.isFinite(p)) v += e.getValue() * p;
             }
@@ -464,7 +477,12 @@ public final class BuildCard {
 
     /** The good a maker's or an office's hero names: the first it makes. */
     static Good firstGood(BuildingsTemplate t) {
-        for (Good g : t.goodsMade().keySet()) return g;
+        return firstGood(NewUnit.standing(t));
+    }
+
+    /** ...of one new building already resolved (QN1): the first its own recipe makes. */
+    static Good firstGood(NewUnit u) {
+        for (Good g : u.goodsMade().keySet()) return g;
         return null;
     }
 
@@ -505,22 +523,27 @@ public final class BuildCard {
 
     /** What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. */
     public static double runningCost(Game game, BuildingsTemplate t) {
+        return runningCost(game, NewUnit.of(game, t));
+    }
+
+    /** ...of one new building already resolved (QN1): its own posts; its upkeep is the template's. BuildAdvice.rawRunningCostAt() asks it so. */
+    public static double runningCost(Game game, NewUnit u) {
         double[] wages = game.getPopulationManager().getWagesPerType();
         double[] fill = game.getPopulationManager().getJobFillRate();
         double bill = 0;
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            int n = u.getJobs(job);
             if (n == 0) continue;
             if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()] * fill[job.ordinal()];
         }
-        return t.getUpkeep() + bill;
+        return u.template().getUpkeep() + bill;
     }
 
     /** The same full-horizon sum the advice uses, exposed to every city work's card (HW1). */
     public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
         BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
         if (on == null) return null;
-        return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
+        return WorksValue.of(game, on, BuildAdvice.onSite(game, on), NewUnit.of(game, t), 1,
                 game.getLandManager().getAvailableSqFt());
     }
 
@@ -535,10 +558,12 @@ public final class BuildCard {
      * (m), or with m null its first ring; a market building with m ignored.
      */
     public static Figures of(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
+        // One new building of the template as it would open now (QN1): the posts, power, output and input every figure below reads, resolved once.
+        NewUnit nu = NewUnit.of(game, t);
         Kind kind = kindOf(t);
         Game.BuildQuote one = game.quoteBuild(t, 1);
         double price = one.total, sticker = one.sticker;
-        double running = runningCost(game, t);
+        double running = runningCost(game, nu);
         double land = t.getLandSqFt();
         // ...on the ground its sector may build on (0.7.109, Z2): free for anyone, and its zone's (LandManager.freeFor()) - a works's, any dry ground (ET2).
         double free = game.freeGroundFor(t);
@@ -552,34 +577,34 @@ public final class BuildCard {
             BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
             if (on == null) on = m;
             String[] does = doesWords(on, t);
-            double served = served(game, on, t);
+            double served = served(game, on, nu);
             double[] fill = game.getPopulationManager().getJobFillRate();
-            boolean posts = BuildAdvice.hasPosts(t);
+            boolean posts = BuildAdvice.hasPosts(nu);
             if (BuildAdvice.roadKind(on)) {
                 // A ROAD, OVER ITS LIFE (0.7.70; the streets' and the highways' since FR7): the advice's own figure - its
                 // cost over its life with its ground (BuildAdvice.lifetime()) a
                 // trip it takes off the road (BuildAdvice.unit(), its freight
                 // grade in it) - and its ground a trip, where a road's price a
                 // trip carried tagged the gravel road the cheapest in every city.
-                double off = BuildAdvice.unit(game, on, t);
-                double bar1 = off > 0 ? BuildAdvice.lifetime(game, t, free, BuildAdvice.onSite(game, on)) / off
+                double off = BuildAdvice.unit(game, on, nu);
+                double bar1 = off > 0 ? BuildAdvice.lifetime(game, nu, free, BuildAdvice.onSite(game, on)) / off
                         : Double.POSITIVE_INFINITY;
                 double bar2 = off > 0 ? land / off : Double.POSITIVE_INFINITY;
                 return new Figures(t, kind, on.label(), does[0], served, does[1], served,
-                        BuildAdvice.built(game, on, t), Double.NaN, null, price, sticker,
+                        BuildAdvice.built(game, on, nu), Double.NaN, null, price, sticker,
                         bar1, bar2, Bar2.LAND, ROAD_PER, perWords(on),
-                        Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                        Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free, nu);
             }
             // The cost per unit served at today's staffing, and the posts the
             // city likely cannot fill per 10,000 of it (0.7.24, Jerus's pick):
             // infinite for one nobody could staff, none for one with no posts.
             double bar1 = served > 0 ? price / served : Double.POSITIVE_INFINITY;
             double bar2 = !posts ? Double.NaN
-                    : served > 0 ? BuildAdvice.unfilledPosts(t, fill) * 10_000.0 / served : Double.POSITIVE_INFINITY;
+                    : served > 0 ? BuildAdvice.unfilledPosts(nu, fill) * 10_000.0 / served : Double.POSITIVE_INFINITY;
             return new Figures(t, kind, on.label(), does[0], served, does[1], served,
-                    BuildAdvice.built(game, on, t), Double.NaN, null, price, sticker,
+                    BuildAdvice.built(game, on, nu), Double.NaN, null, price, sticker,
                     bar1, bar2, posts ? Bar2.UNFILLED : Bar2.NONE, perWords(on), perWords(on),
-                    Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                    Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free, nu);
         }
 
         if (kind == Kind.BRIDGE) {
@@ -587,12 +612,12 @@ public final class BuildCard {
             // landings', per metre of it; the span is billed per order (Game.bridgeSpan()), not on the card's price.
             double deck = BridgeWorks.deckWidthM(t.bridgeKind());
             return new Figures(t, kind, group(t), "carries a deck ", deck, " m wide", deck, Double.NaN, Double.NaN, null, price, sticker,
-                    price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free);
+                    price / deck, land / deck, Bar2.LAND, "m of deck", "m of deck", Double.NaN, Double.NaN, running, new double[0], owned, onSite, siteMonths, free, nu);
         }
         Sector builder = ownerOf(game, t);
         // ...a landlord's block is not held to its posts being staffable (Sector.ordersOnlyWhatItCanStaff()): 1, no "could staff" words.
         // ...asked once: the spare workers alone, and with the arrivals the gate counts (GW1).
-        Sector.Staffing staffing = builder.ordersOnlyWhatItCanStaff() ? builder.staffing(t) : null;
+        Sector.Staffing staffing = builder.ordersOnlyWhatItCanStaff() ? builder.staffing(nu, 1) : null;
         double staffable = staffing != null ? staffing.shareNow : 1;
         double staffableWithArrivals = staffing != null ? staffing.share : 1;
         String group = group(t);
@@ -685,26 +710,26 @@ public final class BuildCard {
                 break;
             }
             case POINTS:
-                verb = "adds "; words = " building points a month"; figure = unit = t.makes(Good.BUILDING_WORK);
+                verb = "adds "; words = " building points a month"; figure = unit = nu.makes(Good.BUILDING_WORK);
                 per = perTag = "point a month";
                 detail = new double[] { game.getConstructionOutput() };
                 break;
             case OFFICE:
-                good = firstGood(t);
+                good = firstGood(nu);
                 verb = "exports "; words = (good == null ? "" : goodWords(good)) + " a month";
-                figure = good == null ? 0 : t.makes(good);
-                va = valueAdded(game, t); unit = va;
+                figure = good == null ? 0 : nu.makes(good);
+                va = valueAdded(game, nu); unit = va;
                 detail = new double[] { priceOf(game, good) };
                 break;
             default:
-                good = firstGood(t);
+                good = firstGood(nu);
                 verb = makerVerb(t); words = (good == null ? "" : goodWords(good)) + " a month";
-                figure = good == null ? 0 : t.makes(good);
+                figure = good == null ? 0 : nu.makes(good);
                 // ...a crude unit (0.7.76) by the crude it refines: what it makes is the slate of it.
                 if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
                     good = Good.CRUDE;
                     verb = "refines "; words = goodWords(good) + " a month";
-                    figure = t.uses(good);
+                    figure = nu.uses(good);
                 }
                 // ...and a conversion unit (0.7.80) by the feed it upgrades: a stream of the crude units' run, no good.
                 if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
@@ -716,7 +741,7 @@ public final class BuildCard {
                     verb = "washes "; words = " t of raw coal a month";
                     figure = t.getWash();
                 }
-                va = valueAdded(game, t); unit = va;
+                va = valueAdded(game, nu); unit = va;
                 Resource site = Game.siteOf(t);
                 if (site != null) {
                     // ...the sites of its own resource (0.7.62): an Oil Well's oil, a mine's iron - a land well's dry ones (0.7.84,
@@ -746,7 +771,7 @@ public final class BuildCard {
             kind2 = Bar2.LAND;
         }
         return new Figures(t, kind, group, verb, figure, words, unit, Double.NaN, va, good, price, sticker,
-                bar1, bar2, kind2, per, perTag, staffable, staffableWithArrivals, running, detail, owned, onSite, siteMonths, free);
+                bar1, bar2, kind2, per, perTag, staffable, staffableWithArrivals, running, detail, owned, onSite, siteMonths, free, nu);
     }
 
     /* =====================================================================
@@ -1174,6 +1199,7 @@ public final class BuildCard {
     }
 
     public static Investors investors(Game game, BuildingsTemplate t) {
+        NewUnit nu = NewUnit.of(game, t);   // one new building as it would open (QN1): the gate and the planner read the same one
         String slot = slot(t);
         Sector owner = ownerOf(game, t);
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
@@ -1188,12 +1214,18 @@ public final class BuildCard {
         String word = game.getLastInvestment(slot);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         return new Investors(t.getName(), slot, owner, theirs, theirs && yours, onSite,
-                onSite > 0 ? game.onSiteMonths(t) : 0, word == null ? "" : word, gate(game, t, owner, estimate), estimate,
-                weighed(game, t));
+                onSite > 0 ? game.onSiteMonths(t) : 0, word == null ? "" : word, gate(game, nu, owner, estimate), estimate,
+                weighed(game, nu));
     }
 
     /** The first gate investors would stop this building at now, in buildStack()'s order and then the planners': null when it passes them all. */
     static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate) {
+        return gate(game, NewUnit.of(game, t), owner, estimate);
+    }
+
+    /** ...for one new building already resolved (QN1): its own licensed posts and staffing. */
+    static Gate gate(Game game, NewUnit nu, Sector owner, double estimate) {
+        BuildingsTemplate t = nu.template();
         LandManager ground = game.getLandManager();
         if (!game.hasDepositFor(t, 1)) {
             // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil" - a land well's dry ones (0.7.84).
@@ -1202,12 +1234,12 @@ public final class BuildCard {
         }
         if (!game.hasLicencesFor(t, 1)) {
             JobType licence = t.getRequiresLicence();
-            return new Gate(GateKind.LICENCE, game.licencesNeededFor(t, 1),
+            return new Gate(GateKind.LICENCE, game.licencesNeededFor(nu, 1),
                     game.getPopulationManager().spareLicences(licence), licence, null);
         }
         // ...a landlord's block is not asked it (HD1; Sector.ordersOnlyWhatItCanStaff()): its posts are filled by the people its homes bring.
         if (owner.ordersOnlyWhatItCanStaff()) {
-            Sector.Staffing staffing = owner.staffing(t);
+            Sector.Staffing staffing = owner.staffing(nu, 1);
             if (!staffing.passes()) return new Gate(GateKind.STAFFING, staffing.share, 0, null, staffing.why(t.getName()));
         }
         double free = game.freeGroundFor(t);
@@ -1281,6 +1313,7 @@ public final class BuildCard {
 
     /** Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. */
     public static Appraisal appraise(Game game, BuildingsTemplate t) {
+        NewUnit nu = NewUnit.of(game, t);   // one new building as it would open (QN1), read at every gate
         Sector owner = ownerOf(game, t);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         LandManager ground = game.getLandManager();
@@ -1295,13 +1328,13 @@ public final class BuildCard {
         JobType licence = t.getRequiresLicence();
         gates.add(licence == null ? new GateMark(GateKind.LICENCE, Mark.NONE, null)
                 : game.hasLicencesFor(t, 1) ? new GateMark(GateKind.LICENCE, Mark.PASS, null)
-                : new GateMark(GateKind.LICENCE, Mark.FAIL, new Gate(GateKind.LICENCE, game.licencesNeededFor(t, 1),
+                : new GateMark(GateKind.LICENCE, Mark.FAIL, new Gate(GateKind.LICENCE, game.licencesNeededFor(nu, 1),
                         game.getPopulationManager().spareLicences(licence), licence, null)));
         // Its owner's staffing test, for a building with posts.
         double posts = 0;
-        for (JobType job : JobType.values()) posts += t.getJobs(job);
+        for (JobType job : JobType.values()) posts += nu.getJobs(job);
         // ...a landlord's block is not asked it (HD1): Mark.NONE, as a building with no posts has.
-        Sector.Staffing staffing = owner.staffing(t);
+        Sector.Staffing staffing = owner.staffing(nu, 1);
         gates.add(!(posts > 0) || !owner.ordersOnlyWhatItCanStaff() ? new GateMark(GateKind.STAFFING, Mark.NONE, null)
                 : staffing.passes() ? new GateMark(GateKind.STAFFING, Mark.PASS, null)
                 : new GateMark(GateKind.STAFFING, Mark.FAIL,
@@ -1327,7 +1360,7 @@ public final class BuildCard {
                 : new GateMark(GateKind.LENDER, Mark.FAIL, lender));
         double[] f = game.financingOf(owner.key(), t);
         return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
-                weighed(game, t));
+                weighed(game, nu));
     }
 
     /** Every market building one sector owns, appraised at every gate, in the catalogue's order: the investor report's (R4). */
@@ -1418,8 +1451,10 @@ public final class BuildCard {
         for (int i = 0; i < byType.length; i++) byType[i] = land.getSites(r, types.get(i));
         Sector owner = game.getSectors().ownerOf(t);
         String wanting = owner instanceof ham.citybuildersim.sectors.ExtractionSector e ? e.fieldWanting(t) : null;
-        Map<Good, Double> makes = owner instanceof ham.citybuildersim.sectors.Quarrying q ? q.madeBy(t)
-                : owner instanceof ham.citybuildersim.sectors.CoalMining c ? c.madeBy(t) : t.goodsMade();
+        // ...what one more would make: the new building's own recipe (QN1, NewUnit), on the ground the sector would put it.
+        NewUnit unit = NewUnit.of(game, t);
+        Map<Good, Double> makes = owner instanceof ham.citybuildersim.sectors.Quarrying q ? q.madeBy(unit)
+                : owner instanceof ham.citybuildersim.sectors.CoalMining c ? c.madeBy(unit) : unit.goodsMade();
         return new Stands(r, site.type(), site.sites(), game.sitesFor(t), game.committedFor(t), game.remainingFor(t),
                 byType, game.hasDepositFor(t, 1), wanting, makes);
     }
@@ -1496,13 +1531,19 @@ public final class BuildCard {
      * and does not weigh.
      */
     public static Weighed weighed(Game game, BuildingsTemplate t) {
-        Sector owner = t == null ? null : game.getSectors().ownerOf(t);
+        return t == null ? null : weighed(game, NewUnit.of(game, t));
+    }
+
+    /** ...for one new building already resolved (QN1): the earnings, vans and crew's cut of its own recipe. */
+    public static Weighed weighed(Game game, NewUnit nu) {
+        BuildingsTemplate t = nu.template();
+        Sector owner = game.getSectors().ownerOf(t);
         BusinessInvestment plans = game.getBusinessInvestment();
-        double vans = ham.citybuildersim.sectors.ProcessingSector.vansFor(t);
+        double vans = ham.citybuildersim.sectors.ProcessingSector.vansFor(nu);
         if (owner instanceof ham.citybuildersim.sectors.ProcessingSector p) {
-            if (t.goodsMade().isEmpty() || game.getMarkets() == null) return null;
-            ham.citybuildersim.sectors.SpreadPlanner.Candidate c = p.appraise(t, plans);
-            double fleet = ham.citybuildersim.sectors.ProcessingSector.fleetCapital(t,
+            if (nu.goodsMade().isEmpty() || game.getMarkets() == null) return null;
+            ham.citybuildersim.sectors.SpreadPlanner.Candidate c = p.appraise(nu, plans);
+            double fleet = ham.citybuildersim.sectors.ProcessingSector.fleetCapital(nu,
                     ham.citybuildersim.sectors.SpreadPlanner.values(game.getMarkets()));
             return new Weighed(c.earns(), c.cost(), vans, fleet, p.planner().hurdle(p, plans, game, c.cost()), c.failed(), c.why());
         }
@@ -1510,7 +1551,7 @@ public final class BuildCard {
         String feed;
         if (owner instanceof ham.citybuildersim.sectors.Forestry) {
             if (!ham.citybuildersim.sectors.Forestry.isCrew(t)) return null;
-            CrewRule rule = crewRule(game, t);
+            CrewRule rule = crewRule(game, nu);
             feed = rule.room() ? null : eWords(rule, t);
         } else if (t.getWash() > 0 && owner instanceof ham.citybuildersim.sectors.CoalMining coal) {
             feed = coal.unwashed() > 0 ? null : NOTHING_TO_WASH;
@@ -1519,9 +1560,9 @@ public final class BuildCard {
         } else {
             return null;
         }
-        double fleet = e.fleetCapital(t);
+        double fleet = e.fleetCapital(nu);
         double cost = plans.getCostOf(t, 1) + fleet;
-        double earns = e.estimatedMonthlyProfit(t, plans);
+        double earns = e.estimatedMonthlyProfit(nu, plans);
         ham.citybuildersim.sectors.SpreadPlanner.Candidate c = ham.citybuildersim.sectors.SpreadPlanner.judge(t, earns, cost,
                 feed, e.planner().city(e, plans, game), null);
         return new Weighed(earns, cost, vans, fleet, e.planner().hurdle(e, plans, game, cost), c.failed(), c.why());
@@ -1538,10 +1579,15 @@ public final class BuildCard {
     public record Power(double gen, double draw, double bought, double sold, double soldValue) { }
 
     public static Power power(Game game, BuildingsTemplate t) {
-        if (t == null || !(t.getGen() > 0)) return null;
-        Sector owner = game.getSectors().ownerOf(t);
+        return t == null ? null : power(game, NewUnit.of(game, t));
+    }
+
+    /** ...for one new building already resolved (QN1): the power of its own recipe. */
+    public static Power power(Game game, NewUnit nu) {
+        if (nu == null || !(nu.getGen() > 0)) return null;
+        Sector owner = game.getSectors().ownerOf(nu.template());
         double tariff = owner instanceof ham.citybuildersim.sectors.ProcessingSector p ? p.tariff() : Double.NaN;
-        return new Power(t.getGen(), t.getElectricityConsumption(), t.powerBought(), t.powerSold(), t.powerSold() * tariff);
+        return new Power(nu.getGen(), nu.getElectricityConsumption(), nu.powerBought(), nu.powerSold(), nu.powerSold() * tariff);
     }
 
     /**
@@ -1626,7 +1672,7 @@ public final class BuildCard {
         if (!materials(game, t)) return out;
         Sector owner = game.getSectors().ownerOf(t);
         Stands at = stands(game, t);
-        Map<Good, Double> makes = at != null ? at.makes() : t.goodsMade();
+        Map<Good, Double> makes = at != null ? at.makes() : NewUnit.of(game, t).goodsMade();   // the new building's own output (QN1)
         for (Map.Entry<Good, Double> e : makes.entrySet()) {
             if (!(e.getValue() > 0)) continue;
             Good g = e.getKey();
@@ -1694,6 +1740,11 @@ public final class BuildCard {
                            boolean room, int more, int carries) { }
 
     public static CrewRule crewRule(Game game, BuildingsTemplate t) {
+        return crewRule(game, NewUnit.of(game, t));
+    }
+
+    /** ...for one new crew already resolved (QN1): the cut of its own recipe. */
+    public static CrewRule crewRule(Game game, NewUnit t) {
         ham.citybuildersim.sectors.Forestry f = game.getSectors().forestry();
         double cuttable = game.getLandManager().cuttableForest(), committed = f.crewsCut(true);
         double cut = ham.citybuildersim.sectors.Forestry.cutOf(t);
@@ -1713,7 +1764,7 @@ public final class BuildCard {
     /** ...the rule as the forest law's page says it: for the smallest crew in the catalogue (the one E refuses last); null with none. */
     public static CrewRule crewRule(Game game) {
         BuildingsTemplate smallest = smallestCrew(game);
-        return smallest == null ? null : crewRule(game, smallest);
+        return smallest == null ? null : crewRule(game, NewUnit.standing(smallest));
     }
 
     /** The crew in the catalogue that cuts least a month (Forestry.cutOf()), the first on a tie; null with none. */
@@ -1902,12 +1953,13 @@ public final class BuildCard {
     }
 
     public static Verdict verdict(Game game, BuildingsTemplate t, long n) {
+        NewUnit nu = NewUnit.of(game, t);   // one new building as it would open (QN1): its licensed posts
         Game.BuildQuote q = game.quoteBuild(t, n);
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasRiverFor(t, n)) return new Verdict(VerdictKind.NO_RIVER, q, 0);
         if (!game.hasBridgeFor(t, n)) return new Verdict(VerdictKind.NO_BRIDGE, q, 0);
-        if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(t, n));
+        if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(nu, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);
         if (q.total > game.getCash()) return new Verdict(VerdictKind.BILL, q, q.total - game.getCash());
         return new Verdict(VerdictKind.MONTHS, q, q.months);

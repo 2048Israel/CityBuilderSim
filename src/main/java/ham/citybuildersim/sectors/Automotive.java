@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 
 import java.util.ArrayList;
@@ -185,7 +186,7 @@ public final class Automotive extends Sector {
         // would together want the whole, the plant after one on site judged as
         // if the first were never to open. What the plants on site will draw
         // comes off the quarter.
-        double drawOnSite = buildings.underConstructionBySector(sector, t -> t.uses(Good.FABRICATED_STEEL));
+        double drawOnSite = buildings.underConstructionOfNew(sector, u -> u.uses(Good.FABRICATED_STEEL));
         double biggestDraw = Math.max(0, fabricated * MAX_SHARE_OF_LOCAL_SUPPLY - drawOnSite);
 
         BuildingsTemplate best = null;
@@ -198,7 +199,9 @@ public final class Automotive extends Sector {
             // No plant so large against the city's fabrication that it could
             // never be fed. The machinery it can buy from the world; the steel
             // it cannot. See MAX_SHARE_OF_LOCAL_SUPPLY.
-            if (t.uses(Good.FABRICATED_STEEL) > biggestDraw) {
+            // One new plant as it would open (QN1, NewUnit): the steel it would draw is its own recipe's, not the fleet's mix.
+            NewUnit unit = plans.newUnit(t);
+            if (unit.uses(Good.FABRICATED_STEEL) > biggestDraw) {
                 sawSupplyWall = true;
                 continue;
             }
@@ -214,7 +217,7 @@ public final class Automotive extends Sector {
 
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = estimatedMonthlyProfit(t, plans) * staffable / cost;
+            double score = estimatedMonthlyProfit(unit, plans) * staffable / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;

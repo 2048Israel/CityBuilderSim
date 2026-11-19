@@ -10,6 +10,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.JobType;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 
 import java.util.List;
@@ -466,13 +467,15 @@ public final class Agriculture extends Sector {
          * price the world will ever pay for it, and if the mortgage still
          * clears, the city can afford to grow its own.
          */
+        // ...of one new farm as it would open (QN1, NewUnit): its own harvest and running bill; its ground and tax its template's.
+        NewUnit unit = plans.newUnit(t);
         double atTheFloor = 0;
         for (Good g : goodsMade()) {
-            double made = t.makes(g);
+            double made = unit.makes(g);
             if (made > 0) atTheFloor += made * Math.max(0, markets.get(g).netExportPrice());
         }
         return atTheFloor
-                - plans.runningCostOf(t)
+                - plans.runningCostOf(unit)
                 - plans.standingCostOf(this, t);
     }
 

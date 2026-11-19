@@ -78,12 +78,13 @@ public final class GoldMining extends ExtractionSector {
         return actual > 0 ? super.getMarginalCostPerUnit(g) * getCapacity(g) * getOperatingRate() / actual : Double.MAX_VALUE;
     }
 
-    /** The plan's revenue follows the next field's grade, with ore costs held. */
+    /** The plan's revenue follows the next field's grade, with ore costs held. ...for one new building already resolved (QN1). */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double profit = super.estimatedMonthlyProfit(t, plans);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        double profit = super.estimatedMonthlyProfit(u, plans);
         if (t == null || game == null || markets == null) return profit;
-        double reference = t.makes(Good.GOLD) * BusinessInvestment.operatingRateOf(getOperatingRate());
+        double reference = u.makes(Good.GOLD) * BusinessInvestment.operatingRateOf(getOperatingRate());
         double abroad = markets.get(Good.GOLD).netExportPrice();
         double price = game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD
                 ? game.getForeignAccounts().getMintPrice() / 1000 : abroad;
