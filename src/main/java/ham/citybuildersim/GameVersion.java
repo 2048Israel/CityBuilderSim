@@ -8334,8 +8334,27 @@ public final class GameVersion {
      *     pensioners penniless from the first month, and that money gone from
      *     the households' books with no line to say so. It is refused, naming
      *     the build that still opens it. No conversion is written.
+     *
+     * 58 - TWO ADULT STAGES (batch HS2): the pyramid's adults are the young,
+     *     18-34, and the established, 35-69 (AdultStage). The cohorts' array
+     *     carries the young after its seven scalars, the families' array the
+     *     young part of its matrix and of its record after the kin block
+     *     (FamilyModel.toSaveArray()), and the households' books 42 young
+     *     working cells keyed "COUPLE:SKILLED:YOUNG" and the like
+     *     (WorkingHousehold.key()); the month's flows carry the established's
+     *     retiring share and the young's moving up (DataSave.householdFlows,
+     *     nine slots).
+     *
+     *     THE FLOOR RISES TO 58 WITH IT (the rule): a save of format 57 or
+     *     older would load WRONGLY. Its pyramid and its families hold no
+     *     stage, so all of its working households would load as established
+     *     and its flows would wait with no retiring share for the
+     *     established: nobody would retire out of a working household the
+     *     first month back, and the young cells would fill from the pool's
+     *     strangers' money rather than their own. It is refused, naming the
+     *     build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 57;
+    public static final int SAVE_FORMAT = 58;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8345,7 +8364,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 57 since batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
+     * 58 since batch HS2 (TWO ADULT STAGES above: a save's households hold
+     * no adult stage, and its working cells' money would load all into the
+     * established). 57 from batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
      * are keyed by shape alone and would load into no cell). 56 from batch R6d (THE SPECULATIVE ROWS above: a save holds no count
      * of the farms' kit or the works' electrolyser unfitted, which reads as
      * fitted). 55 from batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
@@ -8391,7 +8412,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 57;
+    public static final int OLDEST_LOADABLE_FORMAT = 58;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

@@ -4366,7 +4366,7 @@ public class Game {
         // constant (restrikeMoneyConstants() seeds the base); at the index
         // until then.
         householdBalance.setAccountFee(bank.accountFee(1));
-        households.setAccountFees(householdBalance.accountFeesByRow(families::get));
+        households.setAccountFees(householdBalance.accountFeesByRow(families));
 
         double interestPaid = householdBalance.totalInterest();
         households.setPensionPerSenior(tax.pensionPerSenior());
@@ -4517,7 +4517,7 @@ public class Game {
                 careFull[r] = households.getRowCareFull(r);
             }
             householdBalance.setCareBills(careBilled, careFull);
-            householdBalance.advanceMonth(families::get, disposable,
+            householdBalance.advanceMonth(families, disposable,
                     households.rentPerHousehold(), fees, actualShopping,
                     // The bank's household rate, which each household's own
                     // months owed sit on (0.7.7; the city's rate until then).
@@ -4538,7 +4538,7 @@ public class Game {
              * split by headcount for a month, which is the load-path parity
              * bug SaveFileCheck catches to the cent.
              */
-            householdBalance.planOnly(families::get, disposable,
+            householdBalance.planOnly(families, disposable,
                     households.rentPerHousehold(), fees,
                     shops.getStoreSellPrice(), bank.householdRate(debtManager.getPolicyRate()));
 
@@ -15649,7 +15649,8 @@ public class Game {
         Crime.Causes causes = offending.causes(this, Crime.coverageOf(officers, cohorts.total()), offenderWeight);
         crime.advanceMonth(causes, cohorts.total(), officers,
                 buildingManager.getStaffedSafetyCapacity(SafetyType.PRISON, fill),
-                lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate(),
+                // The adults' retiring share is the pyramid's own since HS2: the established retire, the young do not.
+                lastAdultMortality + cohorts.promotedShare(AgeBand.ADULT),
                 unskilledWage());
         // Who went in: out of the pool by the pool's share of the pressure,
         // group by group; the rest leave the families, by the labour market's
@@ -15663,6 +15664,7 @@ public class Game {
 
         double outOfWork = populationManager.getUnemployed();
         double studying = populationManager.getStudyingTotal();
+        unemployment.setRetiringShare(cohorts.promotedShare(AgeBand.ADULT));   // HS2
         unemployment.advanceMonth(outOfWork, jobsByTier, postsByTier, wageByTier,
                 unskilledWage(), lastAdultMortality,
                 economyManager.getTaxPolicy().getEiBenefitRate());
@@ -15806,7 +15808,7 @@ public class Game {
                 buildingManager.getUpkeepByCategory(BuildingType.EDUCATION),
                 // The students thin at the rate the adults do - deaths, ageing
                 // out, and this month's share of leavers.
-                lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate()
+                lastAdultMortality + cohorts.promotedShare(AgeBand.ADULT)
                         + (population > 0 ? migration.getLastDepartures() / population : 0));
 
         /*
@@ -16229,6 +16231,8 @@ public class Game {
             double n = c.shape() == null ? outsideHouseholds(c)
                     // A retired shape's census is its six former tiers together (HS1): each cell its share.
                     : c.isRetired() ? families.get(c.shape(), retiredSlot) * householdBalance.tierShareOf(c)
+                    // ...and a working cell its own adult stage's (HS2), so the young and the established of a cell are not each the whole.
+                    : c instanceof WorkingHousehold w ? families.get(w.shape(), w.tier(), w.stage())
                     : families.get(c.shape(), c.tier());
             doors[c.row()] += n * rentShareOf(c);
         }
@@ -16921,7 +16925,8 @@ public class Game {
          * no reason anyone had built.
          */
         populationManager.retireSkilled(
-                lastAdultMortality + AgeBand.ADULT.monthlyOutflowRate());
+                // The share the pyramid retired this month (HS2): only the established retire, so a young city retires fewer.
+                lastAdultMortality + cohorts.promotedShare(AgeBand.ADULT));
 
         /*
          * ADULTS ONLY. The arrival and departure mixes each sum to the whole
@@ -22248,7 +22253,7 @@ public class Game {
             //
             // The cells carry their own counts; a row-only save from before
             // them is seeded from the family model, which is back by now.
-            householdBalance.restore(restoredFlows.getHouseholdBalance(), families::get);
+            householdBalance.restore(restoredFlows.getHouseholdBalance(), families);
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
             householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
