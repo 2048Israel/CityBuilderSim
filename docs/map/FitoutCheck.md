@@ -1,4 +1,4 @@
-# FitoutCheck.java - 654 lines · 30 methods · 3 constants · harnesses
+# FitoutCheck.java - 752 lines · 32 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FitoutCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -41,130 +41,138 @@
 >   8. R1d's rules kept: the builders are credited what the treasury paid for an order, and a building delivered without a
 >      piece, given a fitting job and then scrapped, refunds nothing while an unfitted building is left for the job.
 
-**Uses:** [Game](Game.md) (35), [Fitout](Fitout.md) (19), [BuildingsStacks](BuildingsStacks.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (12), [BuildingManager](BuildingManager.md) (11), [Good](Good.md) (8), [RecipeCheck](RecipeCheck.md) (6), [Equipment](Equipment.md) (5), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (4), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (4), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [Construction](Construction.md) (2), [ConstructionControl](ConstructionControl.md) (2), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [EquipmentFit](EquipmentFit.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Game](Game.md) (37), [Fitout](Fitout.md) (24), [BuildingsTemplate](BuildingsTemplate.md) (16), [BuildingsStacks](BuildingsStacks.md) (16), [BuildingManager](BuildingManager.md) (12), [Equipment](Equipment.md) (9), [Good](Good.md) (9), [RecipeCheck](RecipeCheck.md) (6), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (4), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (4), [Founding](Founding.md) (2), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [Construction](Construction.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BuildersShort](BuildersShort.md) (2), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [EquipmentFit](EquipmentFit.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [Sector](Sector.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 83 | · the harness's own split and price |
-| 164 | · the 1900 farm town |
-| 247 | · 1 |
-| 310 | · 2 |
-| 344 | · 3 |
-| 400 | · 4 |
-| 461 | · 5 |
-| 519 | · 6 |
-| 561 | · 7 |
-| 603 | · 8 |
+| 84 | · the harness's own split and price |
+| 185 | · the 1900 farm town |
+| 268 | · 1 |
+| 357 | · 2 |
+| 391 | · 3 |
+| 464 | · 4 |
+| 525 | · 5 |
+| 583 | · 6 |
+| 625 | · 7 |
+| 667 | · 8 |
+| 695 | · 9 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 66 | `FitoutCheck.out` | `System.out` |  |
-| 68 | `FitoutCheck.COMBINE` | `"combine", KIT = "autonomy-kit"` |  |
-| 70 | `FitoutCheck.KIT_ENTRY` | `"FE8"` | The autonomy kit's discovery: until it is found a new farm's kit is NOT_KNOWN (a near-future entry is known when found, not by a date). |
+| 67 | `FitoutCheck.out` | `System.out` |  |
+| 69 | `FitoutCheck.COMBINE` | `"combine", KIT = "autonomy-kit"` |  |
+| 71 | `FitoutCheck.KIT_ENTRY` | `"FE8"` | The autonomy kit's discovery: until it is found a new farm's kit is NOT_KNOWN (a near-future entry is known when found, not by a date). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 64 | `static int fails, checks` |  |
-| 65 | `static boolean quietRun` |  |
-| 168 | `Game game` |  |
-| 169 | `BuildingsTemplate farm` |  |
-| 170 | `BuildingsStacks stack` |  |
-| 171 | `double cheap` |  |
-| 222 | `Set<String> offA, offB` |  |
-| 223 | `Game.BuildQuote quoteA, quoteB` |  |
-| 224 | `boolean placed` |  |
+| 65 | `static int fails, checks` |  |
+| 66 | `static boolean quietRun` |  |
+| 189 | `Game game` |  |
+| 190 | `BuildingsTemplate farm` |  |
+| 191 | `BuildingsStacks stack` |  |
+| 192 | `double cheap` |  |
+| 243 | `Set<String> offA, offB` |  |
+| 244 | `Game.BuildQuote quoteA, quoteB` |  |
+| 245 | `boolean placed` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 592 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
-| 72 | 6 | `static void check(String label, boolean ok, String detail)` |  |
-| 79 | 1 | `static void section(String title)` |  |
-| 81 | 1 | `static boolean near(double a, double b)` |  |
+| 64 | 689 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
+| 73 | 6 | `static void check(String label, boolean ok, String detail)` |  |
+| 80 | 1 | `static void section(String title)` |  |
+| 82 | 1 | `static boolean near(double a, double b)` |  |
 
-### the harness's own split and price (lines 83-163)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 86 | 6 | `static double share(BuildingsTemplate t, Equipment piece)` | A piece's part of its template's cash, read off the catalogue (R1c call 10): its goods at the import price over the founding cash, for a piece with work; none for one carried in. |
-| 94 | 9 | `static double[] shell(BuildingsTemplate t, Set<String> off)` | One building's cash and points without these pieces: the template's less each built-in piece's share and work. |
-| 105 | 8 | `static double nonMaterial(Game g, double cash, double points)` | BuildingManager.nonMaterialCost()'s arithmetic written out: the cash, its founding labour (the points at the founding wage a point, never more than the cash over the expected level) taken out at the level and put back... |
-| 115 | 3 | `static double buildingsPart(Game.BuildQuote q)` | A quote's work for its buildings alone: its sticker less the pad, the works, the span and the deep water, which no fitout moves but by the multiple. |
-| 120 | 4 | `static double expectedPart(Game g, BuildingsTemplate t, Set<String> off, long n)` | What an order of n of t with these pieces off should be quoted for its buildings: the shell's price at the multiple on its points. |
-| 126 | 6 | `static Set<String> rejected(Game g, BuildingsTemplate t)` | The pieces a new building of t would not get now, by the rule the finish asked before R1e. |
-| 133 | 5 | `static String lots(BuildingsStacks s)` |  |
-| 139 | 1 | `static String lot(long n, Set<String> off)` |  |
-| 141 | 5 | `static Map<String, Long> unfitted(BuildingsStacks s)` |  |
-| 148 | 15 | `static List<BuildingManager.Completion> work(Game g, int points)` | The month's construction statements in SimulationEngine's order on `points` of site output; the completions. |
-
-### the 1900 farm town (lines 164-246)
+### the harness's own split and price (lines 84-184)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 167 | 6 | **type** `static final class Farms` | A 1900 town where every discovery but the autonomy kit's is found, past the combine's date, with a builders' depot, its yard full (no material is bought, so no escalation). |
-| 174 | 23 | `static Farms farmTown(String label) throws Exception` |  |
-| 198 | 4 | `static void cheap(Farms f)` |  |
-| 203 | 4 | `static void dear(Farms f)` |  |
-| 208 | 5 | `static boolean cityOrder(Game g, BuildingsTemplate t, long n)` |  |
-| 214 | 5 | `static boolean farmersOrder(Game g, BuildingsTemplate t, long n)` |  |
-| 221 | 5 | **type** `static final class Two` | Both orders on site: A, two farms with every piece that pays at cheap machinery; B, three at dear machinery. |
-| 227 | 3 | `static Two placeBoth(Farms f)` |  |
-| 232 | 14 | `static Two placeBoth(Farms f, boolean farmersB)` | ...B the farmers' order, or the city's (a site the city may stop is the city's alone). |
+| 87 | 6 | `static double share(BuildingsTemplate t, Equipment piece)` | A piece's part of its template's cash, read off the catalogue (R1c call 10): its goods at the import price over the founding cash, for a piece with work; none for one carried in. |
+| 95 | 9 | `static double goodsAt(Equipment piece)` | A built-in piece's goods at the import price, in founding money; 0 for one carried in. |
+| 111 | 13 | `static double[] shell(BuildingsTemplate t, Set<String> off)` | One building's cash and points without these pieces, from the catalogue in money (REV-R1e): the founding cash less every built-in piece's goods is the frame (its labour, its own goods, the rest), the same a point in e... |
+| 126 | 8 | `static double nonMaterial(Game g, double cash, double points)` | BuildingManager.nonMaterialCost()'s arithmetic written out: the cash, its founding labour (the points at the founding wage a point, never more than the cash over the expected level) taken out at the level and put back... |
+| 136 | 3 | `static double buildingsPart(Game.BuildQuote q)` | A quote's work for its buildings alone: its sticker less the pad, the works, the span and the deep water, which no fitout moves but by the multiple. |
+| 141 | 4 | `static double expectedPart(Game g, BuildingsTemplate t, Set<String> off, long n)` | What an order of n of t with these pieces off should be quoted for its buildings: the shell's price at the multiple on its points. |
+| 147 | 6 | `static Set<String> rejected(Game g, BuildingsTemplate t)` | The pieces a new building of t would not get now, by the rule the finish asked before R1e. |
+| 154 | 5 | `static String lots(BuildingsStacks s)` |  |
+| 160 | 1 | `static String lot(long n, Set<String> off)` |  |
+| 162 | 5 | `static Map<String, Long> unfitted(BuildingsStacks s)` |  |
+| 169 | 15 | `static List<BuildingManager.Completion> work(Game g, int points)` | The month's construction statements in SimulationEngine's order on `points` of site output; the completions. |
 
-### 1 (lines 247-309)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 249 | 58 | `static void splitSourced() throws Exception` |  |
-| 308 | 1 | `static boolean apart(double a, double b)` |  |
-
-### 2 (lines 310-343)
+### the 1900 farm town (lines 185-267)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 312 | 31 | `static void defaultCity() throws Exception` |  |
+| 188 | 6 | **type** `static final class Farms` | A 1900 town where every discovery but the autonomy kit's is found, past the combine's date, with a builders' depot, its yard full (no material is bought, so no escalation). |
+| 195 | 23 | `static Farms farmTown(String label) throws Exception` |  |
+| 219 | 4 | `static void cheap(Farms f)` |  |
+| 224 | 4 | `static void dear(Farms f)` |  |
+| 229 | 5 | `static boolean cityOrder(Game g, BuildingsTemplate t, long n)` |  |
+| 235 | 5 | `static boolean farmersOrder(Game g, BuildingsTemplate t, long n)` |  |
+| 242 | 5 | **type** `static final class Two` | Both orders on site: A, two farms with every piece that pays at cheap machinery; B, three at dear machinery. |
+| 248 | 3 | `static Two placeBoth(Farms f)` |  |
+| 253 | 14 | `static Two placeBoth(Farms f, boolean farmersB)` | ...B the farmers' order, or the city's (a site the city may stop is the city's alone). |
 
-### 3 (lines 344-399)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 346 | 53 | `static void twoOrders() throws Exception` |  |
-
-### 4 (lines 400-460)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 402 | 58 | `static void discoveryOnSite() throws Exception` |  |
-
-### 5 (lines 461-518)
+### 1 (lines 268-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 463 | 55 | `static void saveMidBuild() throws Exception` |  |
+| 270 | 84 | `static void splitSourced() throws Exception` |  |
+| 355 | 1 | `static boolean apart(double a, double b)` |  |
 
-### 6 (lines 519-560)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 521 | 39 | `static void receipts() throws Exception` |  |
-
-### 7 (lines 561-602)
+### 2 (lines 357-390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 563 | 39 | `static void shell() throws Exception` |  |
+| 359 | 31 | `static void defaultCity() throws Exception` |  |
 
-### 8 (lines 603-654)
+### 3 (lines 391-463)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 605 | 25 | `static void r1dKept() throws Exception` |  |
-| 631 | 23 | `public static void main(String[] args) throws Exception` |  |
+| 393 | 70 | `static void twoOrders() throws Exception` |  |
+
+### 4 (lines 464-524)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 466 | 58 | `static void discoveryOnSite() throws Exception` |  |
+
+### 5 (lines 525-582)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 527 | 55 | `static void saveMidBuild() throws Exception` |  |
+
+### 6 (lines 583-624)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 585 | 39 | `static void receipts() throws Exception` |  |
+
+### 7 (lines 625-666)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 627 | 39 | `static void shell() throws Exception` |  |
+
+### 8 (lines 667-694)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 669 | 25 | `static void r1dKept() throws Exception` |  |
+
+### 9 (lines 695-752)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 697 | 30 | `static void runInvoice() throws Exception` |  |
+| 728 | 24 | `public static void main(String[] args) throws Exception` |  |
 

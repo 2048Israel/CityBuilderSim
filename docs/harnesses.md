@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**227 harness files, 26,015 labelled assertions.** AllChecks runs 227 of them.
+**227 harness files, 26,024 labelled assertions.** AllChecks runs 227 of them.
 
 ## Which harnesses read which class
 
@@ -34,7 +34,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, NewUnitCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
-| [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
+| [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck, FitoutCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck, WorldMarketCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
@@ -10026,7 +10026,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L469 ...and it is less than the buildings' posts would have cost at the same rates: the operators struck are paid no more, the watch added is paid
   - L471 ...by exactly the operators' wages less the watch's
 
-## FitoutCheck.java - 66 labelled assertions
+## FitoutCheck.java - 75 labelled assertions
 
 > A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e):
 > Fitout, BuildingsStacks' lots, Game.fitWhatFinished().
@@ -10042,72 +10042,81 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of the points; a piece with no work is carried in and in no price), the price is BuildingManager.nonMaterialCost()'s
 > ...
 
-  - L250 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
-  - L280 fixture: the catalogue carries both kinds of piece
-  - L281 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
-  - L283 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
-  - L285 the whole template is its own cash and points, to the bit, and chosen by no one
-  - L289 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
-  - L295 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
-  - L297 an id the template does not carry is dropped
-  - L303 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
-  - L313 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
-  - L322 fixture: a city founded the default way, with templates that carry equipment
-  - L323 every template's fitout there is the whole template and chosen by no one
-  - L328 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
-  - L330 ...and the money test's multiple reads the template's points
-  - L335 the order, placed, leaves its buildings loose on site: no lot
-  - L338 ...and nothing is saved for it
-  - L341 the save carries no lotsById key
-  - L347 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
-  - L356 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
-  - L359 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
-  - L371 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
-  - L374 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
-  - L377 ...its fitout is the set fittedForNew() keeps at the quote
-  - L379 the investors' estimate prices each set as the quote does: its fall is the quote's
-  - L381 ...and the money test's multiple reads each set's points
-  - L387 both orders placed: the city's two at cheap machinery, the farmers' three at dear
-  - L388 the site keeps each order's set, front first
-  - L389 ...and owes each building the points its set takes
-  - L394 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
-  - L397 ...and the investors' lead time reads it too
-  - L403 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
-  - L414 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
-  - L417 a new order is quoted on the new set, the whole template
-  - L419 ...and the orders on site keep theirs
-  - L421 the new order joins the site behind them with its own set
-  - L438 the site finishes first placed first: A's two open first, with A's set, B's behind them
-  - L444 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
-  - L446 ...which the rule asked at the finish would not have given: every piece pays now
-  - L454 fixture: two put on site with no order's set are loose
-  - L458 ...and come with what the rule keeps at their finish, as before R1e
-  - L464 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
-  - L473 fixture: mid-build, one of A's open, the next part worked, B's three behind
-  - L477 the save carries the sites' sets
-  - L480 loaded, the site holds the same sets, the same progress and owes the same points
-  - L495 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
-  - L505 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
-  - L515 ...and its buildings come with what the rule keeps at the finish, as main delivers them
-  - L522 6. the builders' receipts, investment and VAT entries are each order's own set's price
-  - L540 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
-  - L542 the builders' order book took the set's price, taxed
-  - L543 ...for the points the set takes, three times the shell's
-  - L545 the farmers paid it and their ground
-  - L546 their contract on the site is the set's price
-  - L547 the sales tax in the quote, the builders' VAT, is their rate on the set's price
-  - L555 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
-  - L557 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
-  - L564 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
-  - L582 fixture: the city stops the site with both orders on it
-  - L583 the shell keeps both orders' sets
-  - L588 its restart is priced on the sets' work left: their price a point, at the multiple
-  - L595 restarted, the site holds the sets again
-  - L600 ...and delivers them after a discovery and a price change
-  - L606 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
-  - L615 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
-  - L623 fixture: three farms delivered without the combine, and the city pays for a fitting on one
-  - L627 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
+  - L271 1. the split, sourced: a built-in piece's goods at the import price and its work; a carried-in piece in no price
+  - L301 fixture: the catalogue carries both kinds of piece
+  - L302 each piece's part of its template's cash is its goods at the import price over the founding cash, with work; none without
+  - L304 no template's pieces come to more than its price; the shell without every piece is that cash and those points, never below nothing
+  - L306 the whole template is its own cash and points, to the bit, and chosen by no one
+  - L326 a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its piece...
+  - L331 the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work
+  - L337 the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm...
+  - L342 a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does
+  - L344 an id the template does not carry is dropped
+  - L350 the split does not move with the machinery market: the shell's cash at a hundred times the import price is what it was, while the fitting quote moves
+  - L360 2. a city founded the default way: the whole template, chosen by no one, priced as before, no lot, no key
+  - L369 fixture: a city founded the default way, with templates that carry equipment
+  - L370 every template's fitout there is the whole template and chosen by no one
+  - L375 an order's buildings are priced as before: nonMaterialCost(t) on the template's points, to the bit
+  - L377 ...and the money test's multiple reads the template's points
+  - L382 the order, placed, leaves its buildings loose on site: no lot
+  - L385 ...and nothing is saved for it
+  - L388 the save carries no lotsById key
+  - L394 3. two orders for one template, with and without a piece: each priced, kept and owed on its own set
+  - L403 fixture: a 1900 town; at cheap machinery a new farm keeps its combine, not its autonomy kit (not yet found); at dear it goes without the combine
+  - L406 fixture: the nonMaterialCost() arithmetic written out here reads the whole template as the model does
+  - L418 the quote with every piece that pays is the shell plus its pieces (the kit, carried in, no part of it): with every built-in piece, the template's price
+  - L421 the quote without the combine is the shell plus the pieces it keeps, at the multiple on its own points
+  - L424 ...its fitout is the set fittedForNew() keeps at the quote
+  - L426 the investors' estimate prices each set as the quote does: its fall is the quote's
+  - L428 ...and the money test's multiple reads each set's points
+  - L442 premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)
+  - L444 the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apar...
+  - L451 both orders placed: the city's two at cheap machinery, the farmers' three at dear
+  - L452 the site keeps each order's set, front first
+  - L453 ...and owes each building the points its set takes
+  - L458 the quote's wait reads the work its set owes: three without the combine, on the same site, wait what that work waits, no longer than three with it
+  - L461 ...and the investors' lead time reads it too
+  - L467 4. a discovery and a price change while both are on site: a new order's set moves, the orders on site deliver theirs
+  - L478 fixture: both on site; now a new farm would come with every piece (the kit found, machinery cheap)
+  - L481 a new order is quoted on the new set, the whole template
+  - L483 ...and the orders on site keep theirs
+  - L485 the new order joins the site behind them with its own set
+  - L502 the site finishes first placed first: A's two open first, with A's set, B's behind them
+  - L508 every order's buildings came with the set it froze: the unfitted counts rose by A's two and B's three, C's none
+  - L510 ...which the rule asked at the finish would not have given: every piece pays now
+  - L518 fixture: two put on site with no order's set are loose
+  - L522 ...and come with what the rule keeps at their finish, as before R1e
+  - L528 5. a save and load mid-build: the sets come back and the twins finish alike; a save without the key reads as main
+  - L537 fixture: mid-build, one of A's open, the next part worked, B's three behind
+  - L541 the save carries the sites' sets
+  - L544 loaded, the site holds the same sets, the same progress and owes the same points
+  - L559 the twins, finishing after a discovery and a price change, deliver the frozen sets alike
+  - L569 a save without the key loads its site whole: every building loose, owing the template's points, as it was paid
+  - L579 ...and its buildings come with what the rule keeps at the finish, as main delivers them
+  - L586 6. the builders' receipts, investment and VAT entries are each order's own set's price
+  - L604 fixture: the farmers order three without the combine; the yard covers the material, so nothing is bought
+  - L606 the builders' order book took the set's price, taxed
+  - L607 ...for the points the set takes, three times the shell's
+  - L609 the farmers paid it and their ground
+  - L610 their contract on the site is the set's price
+  - L611 the sales tax in the quote, the builders' VAT, is their rate on the set's price
+  - L619 the work recognised as the builders' revenue, the accounts' investment, is the set's price, earned to the last as the farms open
+  - L621 the farmers' capital purchases from the builders, the base of their VAT credit, are the set's price at their share (no escalation: no material bought)
+  - L628 7. a stopped site's shell keeps its orders' sets; its restart is priced on them and delivers them
+  - L646 fixture: the city stops the site with both orders on it
+  - L647 the shell keeps both orders' sets
+  - L652 its restart is priced on the sets' work left: their price a point, at the multiple
+  - L659 restarted, the site holds the sets again
+  - L664 ...and delivers them after a discovery and a price change
+  - L670 8. R1d's rules kept: the builders credited what the treasury paid; a delivered building without a piece, scrapped mid-fitting, refunds nothing
+  - L679 the city's order without the combine: the builders' book took what the treasury paid (to the rounding of the city's cash), the set's price
+  - L687 fixture: three farms delivered without the combine, and the city pays for a fitting on one
+  - L691 a farm scrapped while the job is on site, with an unfitted farm left for it: the job goes on and nothing is refunded
+  - L698 9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them
+  - L708 fixture: the builders are short, the queue past the knee, and a new farm goes without its combine
+  - L711 premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's
+  - L723 fixture: the run's two orders placed in turn
+  - L724 the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it
 
 ## FittingCheck.java - 237 labelled assertions
 

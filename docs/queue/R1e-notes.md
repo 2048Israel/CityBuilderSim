@@ -48,7 +48,9 @@ So the split is read back off the catalogue, not off today's market:
 
 - a piece with work (built in) is in its template's price: its part of the cash is its goods at the table's import price
   (`Good.worldImportPrice()`, the price its quantity was sized at) over the template's catalogue cash, a fixed share (0.25 for
-  the 25% pieces); its part of the points is its work;
+  the 25% pieces); its part of the points is its work, and with that work the cash a point of the template holds beside its
+  pieces' goods (`Fitout.shareAPoint()`: the frame, its labour and the rest, over its points), so a point of work costs the
+  same with or without a piece (REV-R1e P1, below);
 - a piece with no work (carried in: the truck, the tractor, the shovel, the drill, the cutter, the near-future kits) is bought
   apart and is no part of the template's price, so a building without it costs the same (as on main);
 - the shell is the template less every built-in piece; an order pays the shell and the pieces it comes with, so an order
@@ -90,7 +92,8 @@ bounded by what the template charges and could price a shell below nothing.
 
 1. ★ **The split is the catalogue's own sizing (R1c call 10), not the market.** A piece with work is built in: its part of
    the cash is its goods at `Good.worldImportPrice()` (a constant, the price it was sized at) over the template's founding
-   cash, its part of the points its work; a piece with no work is carried in and no part of the price. A ratio, so it does
+   cash, plus its work's share of the cash beside the pieces' goods (since REV-R1e), its part of the points its work; a piece
+   with no work is carried in and no part of the price. A ratio, so it does
    not move with prices; `Game.quoteFitting()` is not subtracted. "At the prices the planners use": the order's work is
    priced by the one builders' price (`nonMaterialCost`: the cash struck at the expected level, its labour at today's
    builders' wages) on the shell's cash and points, which the quote, the investors, the money test, the bill and the restart
@@ -137,3 +140,32 @@ bounded by what the template charges and could price a shell below nothing.
   ensemble: the default trace does not move.
 - `sh tools/pick.sh origin/main HEAD`: ALL (`AllChecks.java` registers FitoutCheck, so the suite reads the diff); review
   needed (saves: `DataSave.java`). The whole suite is the dry run's.
+
+## REV-R1e's mends (on 9217a1ccc: NOT SHIP, one P1, one P2)
+
+- **P1 (money): a left-off piece's work came off the points but not off the cash.** `cashCost()` took out the goods share only,
+  and `nonMaterialCost()` then swaps founding labour for today's on the points left, so the work left off saved only real wage
+  growth: the Grain Farm without its combine (1,200 cash, 100 points; the combine 300 of goods, 10 points) paid 900 for 90
+  points, the 600 beside its pieces' goods the whole farm pays for 100, and a later refit (`Game.quoteFitting()`) charged the
+  combine's work again. Mended in `Fitout`: `shareAPoint(t)`, the cash a point holds beside the built-in pieces' goods
+  ((1 - their shares) / points), and `cashShareLeftOff()` adds the left-off points at it. The farm without the combine is now
+  0.70 of the cash: 840 for 90, the 600 now 540. ★ **Its work at the template's own cash a point, not at
+  `nonMaterialPricePerPoint()`** (the review's "at least the founding labour"): the city's price a point is a mix over the
+  sites and carries the templates' goods a point, so subtracting it counts the pieces' goods twice and, at a price a point near their own, takes the Oxygen Steel
+  Shop and the Cement Plant (three 25% pieces) below nothing; the frame a point is the catalogue's own, never below the shell,
+  and no more than the cash left beside the goods. A refit still quotes the market's goods and the city's price a point
+  (R1b's), so the twin holds at the split's prices: the shell plus the piece's goods and its work at the whole farm's price a
+  point is the whole farm, and the shell holds none of the piece's work.
+- **P2: `buildRunInvoice()` queued each order's template points**, though `bill()` is handed its set's: a 1900 run with the
+  builders short priced its later orders on a longer queue than placing them charges. Mended: `pointsEach(t, q)`, as
+  `processBuildOrder()` bills. In a default city the same figure to the bit (a whole fitout's points are the template's).
+- **FitoutCheck** (66 assertions): `shell()` now written in money from the catalogue (the frame a point, the kept goods),
+  not the model's shares; section 1 asserts a point costs the same with or without each built-in piece over every template,
+  and the farm's 0.70; section 3 the twin; section 9 a run's invoice is its orders placed in turn (a farm run without the
+  combine and a depot, the builders past the knee). With the old cash split put back: 10 FAIL (sections 1, 3, 6, 7); with the
+  old run queue: 1 FAIL (section 9: 279.470 invoiced against 279.131 charged). Both reverted, the harness green again.
+- No default trace rerun: both mends read a whole fitout to the bit (`cashShareLeftOff()` is 0 before it reads anything;
+  `pointsEach()` is the template's points), so the default city runs the same arithmetic.
+- The mends' readers, each alone on the final classes: FittingCheck, NewUnitCheck, DiscoveryCheck, HistoricalLicenceCheck,
+  LicenceFeesCheck, FieldOperatorsCheck, DriverlessTruckCheck, BuildCardCheck green; BuildAdviceCheck exit 3, main's known
+  red only. The whole suite is the dry run's (the pick is ALL).
