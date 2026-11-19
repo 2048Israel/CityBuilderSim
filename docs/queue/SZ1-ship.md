@@ -5,9 +5,9 @@ Quantity and money buttons follow the figure's leading unit and its tenth,
 never below the control's least step: building, paving, land, borrowing,
 fund tickets and transfers, and reserves. The five city-paper lots follow
 this month's prices, capped by the minimum issue; the player's lot rounds
-down to 1-2-5. Model funding keeps the exact priced and capped amount so
-dollar scaling is preserved. Loading now restores care offered and its
-affordability, so automatic building sees the same care shortfall.
+down to 1-2-5. Model funding, including initial offers, keeps the exact
+priced and capped amount to preserve dollar scaling. Loading restores care
+offered and affordability, so automatic building sees the same shortfall.
 ## known-reds
 KeptCheck | ...the rule held again, Portfolio with the holdings its month settled | FS1 | 2026-11-18 | Main's existing KFP1 class: the fixture settles no new holding; FS1 folds in KFP1.
 KeptCheck | the page of a holding the let-go month settled, from Portfolio | FS1 | 2026-11-18 | Main's existing KFP1 class: the fixture settles no new holding and watches a null holding page.
