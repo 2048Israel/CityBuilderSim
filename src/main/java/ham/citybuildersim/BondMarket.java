@@ -39,14 +39,15 @@ import java.util.Map;
  * bank still buys at issue and its desk still buys back. And not a place
  * where anybody must trade: an order waits until somebody meets it.
  *
- * EVERY DIAL HERE IS ANOTHER CLASS'S. The underwriter's charge is the one
+ * THE CORPORATE DIALS COME FROM THE EXISTING MARKETS. The underwriter's charge is the one
  * the city paid until CD2 (Game.FIXED_ISSUE_COST, UNDERWRITING_SPREAD; the
  * city's auctions pay the fixed cost alone since); each
  * participant bids by the rule it already follows for the nearest thing it
  * holds today - the households by their rule for the city's paper, the
  * companies and the world by the rules that send idle cash and hot money
  * where the return is, the bank by its own loan price. The term is
- * CorporateBond.TERM_MONTHS.
+ * CorporateBond.TERM_MONTHS. SZ1 also keeps the city's reference-price issue
+ * lot dials here, shared by the borrowing pages and automatic funding.
  */
 public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtManager.BondDesk {
 
@@ -155,6 +156,60 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). */
     static final double PRICE_TICK = 1e-12;
+
+    /* ===================== THE CITY'S ISSUE LOTS (SZ1) ===================== */
+
+    /** A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double BILL_LOT = 1_000;
+    /** A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double BOND_LOT = 100_000;
+    /** An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double AMORTIZING_LOT = 10_000;
+    /** A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double FLOATING_LOT = 100_000;
+    /** An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. */
+    public static final double LINKED_LOT = 100_000;
+
+    /** An instrument's reference-price lot; the keys are the city's quoting API's. */
+    public static double referenceLot(String kind) {
+        return switch (kind) {
+            case "Note" -> BILL_LOT;
+            case "Serial" -> AMORTIZING_LOT;
+            case "Term" -> BOND_LOT;
+            case "Float" -> FLOATING_LOT;
+            case "Linked" -> LINKED_LOT;
+            default -> throw new IllegalArgumentException("Unknown issue kind: " + kind);
+        };
+    }
+
+    /** The month's price level is relative to reference prices, in the same money as minimum; round down so a lot never exceeds either. */
+    public static double issueLot(String kind, double priceLevel, double minimum) {
+        return MagnitudeSteps.roundDown125(fundingLot(kind, priceLevel, minimum));
+    }
+
+    /** Exact price-level funding for the model; rounding in nominal money would break EP1's scaled twins. */
+    public static double fundingLot(String kind, double priceLevel, double minimum) {
+        double lot = Math.min(referenceLot(kind) * priceLevel, minimum);
+        if (!(lot > 0) || !Double.isFinite(lot)) throw new IllegalArgumentException("funding needs a positive finite lot");
+        return lot;
+    }
+
+    /** The player's round issue lot, in local money or the foreign paper's own money at this month's cross rate. */
+    public static double issueLot(Game game, String kind, String money) {
+        return MagnitudeSteps.roundDown125(fundingLot(game, kind, money));
+    }
+
+    /** The model's exact priced-and-capped lot, in the paper's own money. */
+    public static double fundingLot(Game game, String kind, String money) {
+        double level = PriceLevel.FACTOR * game.getPriceIndex().getIndex() / game.getDenomination().getUnit();
+        double minimum = game.minimumIssueSize();
+        if (money != null) {
+            double per = game.localPer(money);
+            level /= per;
+            minimum = game.minimumIssueSizeIn(money);
+        }
+        return fundingLot(kind, level, minimum);
+    }
 
     /* ============================ what it reads ============================ */
 

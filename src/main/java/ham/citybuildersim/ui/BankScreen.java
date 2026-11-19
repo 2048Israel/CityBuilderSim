@@ -4396,8 +4396,8 @@ final class BankScreen {
         if (shortBy > 0) {
             Kept.scope("short", () -> {
                 c.getChildren().add(cardLine("Funding required", marked(here, money(shortBy)), Palette.BAD));
-                DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-                DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+                DebtQuote bond = game.quoteLongBondForCash(shortBy, Game.BUILD_BOND_YEARS, game.issueLot("Term"));
+                DebtQuote note = game.quoteTBill(shortBy, Game.BUILD_NOTE_MONTHS, game.issueLot("Note"));
                 DebtManager market = game.getDebtManager();
                 VBox bondCard = coverCash(offerCard(Game.BUILD_BOND_YEARS + "-year bond", null, bond,
                         pct2(bond.marketRate()) + " yield  ·  " + pct2(bond.couponRate()) + " coupon",
@@ -4407,7 +4407,7 @@ final class BankScreen {
                         "Issue the " + Game.BUILD_BOND_YEARS + "-year bond and accept",
                         () -> {
                             game.handleLongBondForCash(game.preferredOfferShortBy(), Game.BUILD_BOND_YEARS,
-                                    Game.BUILD_BOND_GRANULE);
+                                    game.issueLot("Term"));
                             game.acceptPreferredOffer();
                             showBankMenu();
                         }, written), bond);
@@ -4420,7 +4420,7 @@ final class BankScreen {
                         "Issue the " + Game.BUILD_NOTE_MONTHS + "-month bill and accept",
                         () -> {
                             game.handleTBillLogic(game.preferredOfferShortBy(), Game.BUILD_NOTE_MONTHS,
-                                    Game.BUILD_NOTE_GRANULE);
+                                    game.issueLot("Note"));
                             game.acceptPreferredOffer();
                             showBankMenu();
                         }, written), note);

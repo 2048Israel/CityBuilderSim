@@ -2710,11 +2710,11 @@ public final class LandMap {
         double gap = vault ? g.landVaultGapUsd(ids) : g.landCashGap(ids);
         DebtQuote bond = null, note = null;
         if (funding && !vault) {
-            bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-            note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+            bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.issueLot("Term"));
+            note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"));
         } else if (funding && g.foreignWindowOpen()) {
-            bond = g.quoteForeignForCash("Term", gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-            note = g.quoteForeignForCash("Note", gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+            bond = g.quoteForeignForCash("Term", gap, Game.BUILD_BOND_YEARS, BondMarket.issueLot(g, "Term", "USD"));
+            note = g.quoteForeignForCash("Note", gap, Game.BUILD_NOTE_MONTHS, BondMarket.issueLot(g, "Note", "USD"));
         }
         return new Card(List.copyOf(ids), km2, dry, fresh, sea, sqFt, sites, amounts, usd, local, vault, before,
                 before - (vault ? usd : local), funding, gap, bond, note);

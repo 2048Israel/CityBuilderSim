@@ -180,7 +180,7 @@ final class AdviceValueOracle {
     /** Present cost and cash actually raised, including the quoted granule's excess. */
     private static double[] credit(Game g, double gap, double discount, double months) {
         if (!(gap > 0)) return new double[] {0, 0};
-        DebtQuote q = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE,
+        DebtQuote q = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"),
                 g.getAutoBuilder().getCap());
         double coupon, spread, proceeds = gap;
         if (q.cashReceived() > 0) {

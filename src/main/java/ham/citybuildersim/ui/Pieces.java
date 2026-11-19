@@ -1399,13 +1399,64 @@ public final class Pieces {
         return l;
     }
 
-    /** A small square button in a quantity stepper: Build's "−", "+", "+10", "+100" and "↺", the land office's "−" and "+". */
+    /** A magnitude's buttons and their in-place refresh, shared by the building cards and the land office. */
+    public record CountSteps(HBox row, Runnable refresh) { }
+
+    /** A whole count step, compact enough for all four buttons on a building card. */
+    static String countStepWords(double value) {
+        String[] units = { "", "k", "M", "B", "T", "P", "E" };
+        int unit = 0;
+        while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit++; }
+        return String.format(java.util.Locale.ROOT, "%.0f%s", value, units[unit]);
+    }
+
+    /** A count's ± leading unit and its tenth, never below one; refresh changes every label after a press without redrawing the page. */
+    public static CountSteps countSteps(java.util.function.LongSupplier value, java.util.function.LongConsumer set,
+                                        Runnable changed) {
+        Label count = Kept.label(Long.toString(value.getAsLong()));
+        count.setMinWidth(30);
+        count.setAlignment(javafx.geometry.Pos.CENTER);
+        count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        Button[] buttons = new Button[4];
+        Runnable[] refresh = new Runnable[1];
+        double[] initial = ham.citybuildersim.MagnitudeSteps.of(value.getAsLong(), 1);
+        for (int i = 0; i < buttons.length; i++) {
+            final int at = i;
+            double size = initial[i == 0 || i == 3 ? 0 : initial.length - 1];
+            buttons[i] = stepper((i < 2 ? "−" : "+") + countStepWords(size), Region.USE_COMPUTED_SIZE, () -> {
+                double[] steps = ham.citybuildersim.MagnitudeSteps.of(value.getAsLong(), 1);
+                double step = steps[at == 0 || at == 3 ? 0 : steps.length - 1];
+                set.accept(ham.citybuildersim.MagnitudeSteps.count(value.getAsLong(), at < 2 ? -step : step));
+                refresh[0].run();
+                changed.run();
+            });
+            Kept.tip(buttons[i], "Steps follow the count's leading digit and its tenth, never below one", 300);
+        }
+        HBox row = Kept.row(4, buttons[0], buttons[1], count, buttons[2], buttons[3]);
+        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        refresh[0] = () -> {
+            long now = value.getAsLong();
+            double[] steps = ham.citybuildersim.MagnitudeSteps.of(now, 1);
+            count.setText(Long.toString(now));
+            for (int i = 0; i < buttons.length; i++) {
+                boolean big = i == 0 || i == 3;
+                double step = steps[big ? 0 : steps.length - 1];
+                buttons[i].setText((i < 2 ? "−" : "+") + countStepWords(step));
+                showIf(buttons[i], !big || steps.length > 1);
+                Kept.give(buttons[i].disableProperty(), i < 2 && now <= 0);
+            }
+        };
+        refresh[0].run();
+        return new CountSteps(row, refresh[0]);
+    }
+
+    /** A small button in a stepper, including magnitude labels and reset; a negative width fits its words, with a 26px minimum. */
     public static Button stepper(String glyph, double width, Runnable go) {
         return Kept.scope("stepper", () -> {
             // Kept (KP2): the button handed back, its text set; its action set at every draw, since Kept clears it.
             Button b = Kept.of(Button.class, Button::new);
             b.setText(glyph);
-            b.setMinSize(width, 22);
+            b.setMinSize(width < 0 ? 26 : width, 22);
             Pieces.prefSize(b, width, 22);
             /*
              * -fx-padding: 0 IN THE STYLE, not just setPadding.

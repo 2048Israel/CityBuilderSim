@@ -1581,7 +1581,7 @@ public class LandCheck {
             check("the gap is the plot's local price less the cash", gap, price - g.getCash());
             assertTrue("...so its button opens the funding page", g.landNeedsFunding(just));
             boolean bond = paper.equals("bond");
-            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            double granule = g.issueLot(bond ? "Term" : "Note");
             DebtQuote quote = bond
                     ? g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, granule)
                     : g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, granule);
@@ -1623,7 +1623,7 @@ public class LandCheck {
             assertTrue("fixture: the window abroad is open", g.foreignWindowOpen());
             boolean bond = type.equals("Term");
             int term = bond ? Game.BUILD_BOND_YEARS : Game.BUILD_NOTE_MONTHS;
-            double granule = bond ? Game.BUILD_BOND_GRANULE : Game.BUILD_NOTE_GRANULE;
+            double granule = BondMarket.issueLot(g, type, "USD");
             DebtQuote quote = g.quoteForeignForCash(type, gapUsd, term, granule);
             assertTrue("the dollar " + (bond ? "bond" : "note") + "'s dollars cover the gap",
                     quote.cashReceived() >= gapUsd - 1e-9);

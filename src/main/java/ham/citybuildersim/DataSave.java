@@ -2625,6 +2625,9 @@ public class DataSave implements Cloneable {
      */
     private double[] healthcare;
 
+    /** SZ1: the month's offered care and shares who could pay it; null when the save did not carry access. */
+    private double[] healthcareAccess;
+
     /**
      * The minimum wage, then the eleven wages the city is actually paying.
      *
@@ -2739,6 +2742,8 @@ public class DataSave implements Cloneable {
     public double[] getCausesOfDeath()       { return causesOfDeath; }
     public void setHealthcare(double[] a){ this.healthcare = a; }
     public double[] getHealthcare()      { return healthcare; }
+    public void setHealthcareAccess(double[] a) { this.healthcareAccess = a == null ? null : a.clone(); }
+    public double[] getHealthcareAccess()       { return healthcareAccess; }
 
     /*
      * The private sector's memory, and the player's own turn.

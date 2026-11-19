@@ -10746,16 +10746,16 @@ public class MapCheck {
         g.setCashForTest(g.landPriceLocal(three) * 0.4);
         LandMap.Card shortCard = LandMap.card(g, three);
         DebtQuote bond = shortCard.bond(), note = shortCard.note();
-        DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-        DebtQuote noteAgain = g.quoteTBill(g.landCashGap(three), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, g.issueLot("Term"));
+        DebtQuote noteAgain = g.quoteTBill(g.landCashGap(three), Game.BUILD_NOTE_MONTHS, g.issueLot("Note"));
         boolean bondRight = bond != null && bond.equals(again) && bond.duration() == Game.BUILD_BOND_YEARS && bond.requested() == shortCard.gap()
-                && Math.abs(bond.faceValue() / Game.BUILD_BOND_GRANULE - Math.rint(bond.faceValue() / Game.BUILD_BOND_GRANULE)) < 1e-9
+                && Math.abs(bond.faceValue() / g.issueLot("Term") - Math.rint(bond.faceValue() / g.issueLot("Term"))) < 1e-9
                 && bond.cashReceived() >= shortCard.gap();
         boolean noteRight = note != null && note.duration() == Game.BUILD_NOTE_MONTHS && note.cashReceived() >= shortCard.gap();
         System.setOut(QUIET);
         int boughtShort;
         try {
-            g.handleLongBondForCash(shortCard.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            g.handleLongBondForCash(shortCard.gap(), Game.BUILD_BOND_YEARS, g.issueLot("Term"));
             boughtShort = g.buyLandParcels(shortCard.ids());
         } finally {
             System.setOut(real);
@@ -10779,8 +10779,8 @@ public class MapCheck {
         LandMap.Card vaultShort = LandMap.card(g, all);
         boolean open = g.foreignWindowOpen();
         boolean dollars = open
-                ? vaultShort.bond() != null && vaultShort.bond().equals(g.quoteForeignForCash("Term", vaultShort.gap(), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE))
-                        && vaultShort.note() != null && vaultShort.note().equals(g.quoteForeignForCash("Note", vaultShort.gap(), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE))
+                ? vaultShort.bond() != null && vaultShort.bond().equals(g.quoteForeignForCash("Term", vaultShort.gap(), Game.BUILD_BOND_YEARS, BondMarket.issueLot(g, "Term", "USD")))
+                        && vaultShort.note() != null && vaultShort.note().equals(g.quoteForeignForCash("Note", vaultShort.gap(), Game.BUILD_NOTE_MONTHS, BondMarket.issueLot(g, "Note", "USD")))
                 : vaultShort.bond() == null && vaultShort.note() == null;
         g.setLandPaidFromVault(false);
         out.printf("      every offer from the vault: short by US$%,.1fk, the window abroad %s%n", vaultShort.gap(), open ? "open" : "shut");
