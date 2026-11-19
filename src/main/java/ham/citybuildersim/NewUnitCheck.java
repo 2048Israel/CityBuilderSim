@@ -55,9 +55,9 @@ import static ham.citybuildersim.HistoricalRecipeCheck.silent;
  *      and the gate's boundary is told from the removed (N + 1) x (C + extra) one.
  *   6. With the robot accepted again the new unit's figures equal the template's, the template being the same object.
  *   7. Identities: the card, the appraisal and the investors keep the catalogue template through a month and a changed
- *      fitting input; the Build screen's own card, drawn kept, hands back the order it was drawn with a month on, whose
- *      reprice then puts the actual new plants' posts in the order bar and whose Build button orders the catalogue
- *      template; and the order on site is not touched by reading it.
+ *      fitting input; the Build screen's own card, drawn kept, keeps the Build button and steps it was drawn with a month
+ *      on, whose steps pressed then reprice the order bar at the actual new plants' posts and whose Build button orders the
+ *      catalogue template; and the order on site is not touched by reading it.
  *   8. What is on site counts the actual new plants' posts, and the landlords' head shortage counts them too.
  *   9. The power ahead of a queued changed draw: two Cement Plants without their rotary kiln add the shaft kilns' draw,
  *      not the fleet's, and only from their completion.
@@ -65,11 +65,14 @@ import static ham.citybuildersim.HistoricalRecipeCheck.silent;
  *      college posts to the colleges' places (CityNeeds.hires()) and their own posts to the landlords' head shortage.
  *  11. Power ahead: a queued Coal Power Plant whose new unit rejects the turbine and the pulverised coal generates less,
  *      and the power measure reads that generation.
- *  12. The card's goods: a new Electric Arc Furnace without its continuous caster burns fuel oil, and the card's words say
- *      it; a new Logging Camp without its chainsaw cuts less, and the card's outlets list that cut.
+ *  12. The card's goods: a new Electric Arc Furnace without its continuous caster burns fuel oil, and the card's words and
+ *      its group's heading say it; a new Logging Camp without its chainsaw cuts less, and the card's outlets and its
+ *      sentences say that cut; and a tripwire that no piece changes which goods are made, nor what a building on typed
+ *      ground makes, where the heading's made words and stands() would read a new unit and the fleet alike.
  *
  * Sections 7 and 12 draw on the JavaFX toolkit (ui.KeptBench, KeptCheck's way); where it cannot start, their card parts
- * are said to be skipped and the rest runs.
+ * are said to be skipped, section 7 orders through buildStack() and says so, and the rest runs: the harness exits 0
+ * without them, as KeptCheck does.
  */
 public final class NewUnitCheck {
     static int fails, checks;
@@ -477,8 +480,8 @@ public final class NewUnitCheck {
                 first.template() == w && first.newUnit().template() == w && appraisal.template() == w && summary.building().equals(w.getName())
                         && first.newUnit().getJobs(JobType.NO_DIPLOMA) == 100 && w.getJobs(JobType.NO_DIPLOMA) == 100,
                 "posts " + first.newUnit().getJobs(JobType.NO_DIPLOMA));
-        // The Build screen's own card (REV-QN1, D): the Vehicles page drawn kept with two dialled up, its order's reprice and
-        // Build button held from this draw and used after a month and a changed fitting input, as a kept page hands them back.
+        // The Build screen's own card (REV-QN1, D): the Vehicles page drawn kept with two dialled up, its order's Build button
+        // and steps held from this draw and pressed after a month and a changed fitting input, as a player presses the kept page's.
         String down = toolkit();
         final KeptBench bench = down == null ? KeptCheck.fx(() -> new KeptBench(g)) : null;
         final KeptBench.Page page = bench == null ? null : KeptCheck.fx(() -> bench.build("Build, Vehicles, two Vehicle Works dialled",
@@ -491,8 +494,8 @@ public final class NewUnitCheck {
         });
         if (bench == null) out.println("  (no held order: the JavaFX toolkit cannot start here - " + down + ")");
         else check("fixture: the Vehicles page has the catalogue template's card, two dialled up, and the order bar at the fleet's 200 unskilled posts while machinery is cheap",
-                held != null && held.template() == w && held.button() != null && held.reprice() != null
-                        && KeptCheck.fx(() -> bench.buildBarSays(unskilled(200))), held == null ? "no card" : "");
+                held != null && held.template() == w && held.button() != null && held.reprice() != null && held.less() != null
+                        && held.more() != null && KeptCheck.fx(() -> bench.buildBarSays(unskilled(200))), held == null ? "no card" : "");
 
         if (bench != null) KeptCheck.fx(() -> { silent(() -> g.simulateMonths(1)); return null; });
         else silent(() -> g.simulateMonths(1));
@@ -503,19 +506,19 @@ public final class NewUnitCheck {
         check("a month on, a fresh card is of the same template with the current unit",
                 later.template() == w && later.newUnit().template() == w && later.newUnit().getJobs(JobType.NO_DIPLOMA) == 100
                         && g.getBuildingManager().getStack(w) == c.stack, "posts " + later.newUnit().getJobs(JobType.NO_DIPLOMA));
-        if (bench != null) {
-            KeptBench.BuildOrder kept = KeptCheck.fx(() -> {
-                bench.drawKept(page);
-                bench.passes();
-                return bench.buildOrder(w.getName());
-            });
-            // The redraw makes the card's order afresh (orderControls() under Kept.scope("order")), so its reprice is a new one; the
-            // button is the kept node. The held reprice, from the first draw, is the retained callback used below.
-            check("a month on, the kept page keeps the Build button held from the first draw, on the catalogue template's card",
-                    kept != null && held != null && kept.button() == held.button() && kept.template() == w,
-                    kept == null ? "no card" : "button " + (kept.button() == held.button() ? "kept" : "redrawn")
-                            + ", reprice " + (kept.reprice() == held.reprice() ? "the same" : "made afresh"));
-        }
+        final KeptBench.BuildOrder kept = bench == null ? null : KeptCheck.fx(() -> {
+            bench.drawKept(page);
+            bench.passes();
+            return bench.buildOrder(w.getName());
+        });
+        // The redraw makes the card's order afresh (orderControls() under Kept.scope("order")): its reprice is a new one, and the
+        // kept nodes - the Build button, the steps - carry the new closures (Pieces.stepper(), ActionButton.onPress()).
+        if (bench != null) check("a month on, the kept page keeps the Build button and the steps held from the first draw, on the catalogue template's card",
+                kept != null && held != null && kept.button() == held.button() && kept.less() == held.less() && kept.more() == held.more()
+                        && kept.template() == w,
+                kept == null ? "no card" : "button " + (kept.button() == held.button() ? "kept" : "redrawn") + ", steps "
+                        + (kept.more() == held.more() && kept.less() == held.less() ? "kept" : "redrawn")
+                        + ", reprice " + (kept.reprice() == held.reprice() ? "the same" : "made afresh"));
         boolean flips = rejectRobot(c);
         c.actual = whereItRuns(g, w, () -> ranOf(g, w, true));
         BuildCard.Figures dear = BuildCard.of(g, w, null);
@@ -532,21 +535,35 @@ public final class NewUnitCheck {
                 "site output " + g.getBuildingOutputAtEveryPost());
         silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
         if (bench != null) {
-            // The held reprice, run between draws as a stepper's press runs it, then the held Build button pressed.
-            String actualBar = unskilled(2L * c.actual.jobs[NO]), fleetBar = unskilled(2L * w.getJobs(JobType.NO_DIPLOMA));
+            // The kept card's steps, pressed between draws as a player presses them: up to three, then back to two; each press
+            // runs what the last draw set, the card's reprice into the order bar. Then the held Build button, the same node, pressed.
+            long actualPosts = c.actual.jobs[NO], fleetPosts = w.getJobs(JobType.NO_DIPLOMA);
+            String[] words = {unskilled(3 * actualPosts), unskilled(3 * fleetPosts), unskilled(2 * actualPosts), unskilled(2 * fleetPosts)};
             boolean[] bar = KeptCheck.fx(() -> {
-                held.reprice().run();
-                return new boolean[] {bench.buildBarSays(actualBar), bench.buildBarSays(fleetBar)};
+                boolean[] at = new boolean[6];
+                if (held == null || held.more() == null || held.less() == null) return at;   // no steps found: the check below fails
+                KeptBench.press(held.more());
+                at[0] = bench.buildBarSays(words[0]);
+                at[1] = bench.buildBarSays(words[1]);
+                at[2] = bench.buildDialled(w.getName()) == 3;
+                KeptBench.press(held.less());
+                at[3] = bench.buildBarSays(words[2]);
+                at[4] = bench.buildBarSays(words[3]);
+                at[5] = bench.buildDialled(w.getName()) == 2;
+                return at;
             });
-            check("the held reprice, run after the month and the fitting change, puts the actual new plants' 600 unskilled posts in the order bar, not the fleet's 200",
-                    bar[0] && !bar[1] && 2 * c.actual.jobs[NO] == 600, "shows \"" + actualBar + "\" " + bar[0] + ", \"" + fleetBar + "\" " + bar[1]);
-            KeptCheck.fx(() -> { silent(() -> KeptBench.click(held.button())); return null; });
+            check("the kept steps, pressed after the month and the fitting change, reprice the order bar at the actual new plants' posts: 900 at three, 600 back at two, not the fleet's 300 and 200",
+                    bar[0] && !bar[1] && bar[2] && bar[3] && !bar[4] && bar[5] && actualPosts == 300,
+                    "at three \"" + words[0] + "\" " + bar[0] + ", \"" + words[1] + "\" " + bar[1] + ", dialled 3 " + bar[2]
+                            + "; at two \"" + words[2] + "\" " + bar[3] + ", \"" + words[3] + "\" " + bar[4] + ", dialled 2 " + bar[5]);
+            if (held != null && held.button() != null) KeptCheck.fx(() -> { silent(() -> KeptBench.click(held.button())); return null; });
         } else {
             silent(() -> g.buildStack(w, 2, false));
         }
         BuildingsStacks site = bm.getStack(w);
         long dialled = bench == null ? 0 : KeptCheck.fx(() -> bench.buildDialled(w.getName()));
-        check("the held Build button, pressed then, orders the catalogue template: two on its own stack's site, and the card's dial back to none",
+        check(bench != null ? "the held Build button, pressed then, orders the catalogue template: two on its own stack's site, and the card's dial back to none"
+                        : "with no toolkit, the order is placed by buildStack(), not the card: two of the catalogue template on its own stack's site",
                 site == c.stack && site.getBuilding() == w && site.getUnderConstruction() == 2 && dialled == 0,
                 "on site " + site.getUnderConstruction() + ", dialled " + dialled);
         List<Object> before = siteSnapshot(g, w);
@@ -822,6 +839,33 @@ public final class NewUnitCheck {
         check("the camp's card lists its outlets at the actual new camp's cut, not the fleet's",
                 asCut && notFleet && outlets.size() == actualCut.values().stream().filter(v -> v > 0).count(), said + "actual " + actualCut);
 
+        // What no fixture can show today (REV-QN1-2): the group heading's made words read only which goods are made, and the card's
+        // stands() serves buildings on typed ground; no piece in the catalogue changes which goods a building makes, nor what one
+        // on typed ground makes at all, so there a new unit and the fleet read alike. The tripwire: a piece that does fails this,
+        // and must bring the card check those readers then need.
+        List<String> kinds = new java.util.ArrayList<>(), typed = new java.util.ArrayList<>();
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            BuildingsTemplate.Site site = t.site();
+            boolean onTypes = site != null && site.resource() != null && site.resource().hasTypes();
+            Map<Good, Double> top = t.getRecipes().stream().filter(Recipe::isDefault).findFirst().map(Recipe::makes).orElse(Map.of());
+            for (RecipeChange rc : t.getRecipeChanges()) {
+                if (rc.piece() == null) continue;
+                for (Map.Entry<Good, Double> e : rc.makes().entrySet()) {
+                    if (e.getValue() == 0) continue;
+                    double base = top.getOrDefault(e.getKey(), 0.0);
+                    if (base == 0 || base + e.getValue() <= 0) kinds.add(t.getName() + " without " + rc.piece() + ": " + e.getKey());
+                    if (onTypes) typed.add(t.getName() + " without " + rc.piece() + ": " + e.getKey());
+                }
+            }
+            if (t.recipePieceId() == null) continue;
+            for (Recipe r : t.getRecipes()) {
+                if (!r.makes().keySet().equals(top.keySet())) kinds.add(t.getName() + "'s " + r.getId() + " recipe");
+                if (onTypes && !r.makes().equals(top)) typed.add(t.getName() + "'s " + r.getId() + " recipe");
+            }
+        }
+        check("tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike for a new unit)",
+                kinds.isEmpty() && typed.isEmpty(), "which goods: " + kinds + "; on typed ground: " + typed);
+
         String down = toolkit();
         if (down != null) {
             out.println("  (the furnace's card words are not read: the JavaFX toolkit cannot start here - " + down + ")");
@@ -834,6 +878,35 @@ public final class NewUnitCheck {
         check("the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them",
                 card.kind() == BuildCard.Kind.MAKER && words != null && words.contains("from ") && words.contains(fuel),
                 "\"" + words + "\"");
+
+        // The heading of the furnace's group on its market page (BuildScreen.groupSubtitle()): what its cards are made from.
+        BuildCard.Group found = null;
+        for (BuildCard.Group group : BuildCard.groups(g, BuildAdvice.categoryOf(furnace).name(), null))
+            for (BuildCard.Figures f : group.cards()) if (f.template() == furnace) found = group;
+        final BuildCard.Group steel = found;
+        boolean fleetBurnsOil = false;
+        if (steel != null) for (BuildCard.Figures f : steel.cards()) fleetBurnsOil |= f.template().uses(Good.FUEL_OIL) > 0;
+        String heading = steel == null ? null : KeptCheck.fx(() -> bench.buildGroupSubtitle(steel));
+        String oil = Good.FUEL_OIL.label().toLowerCase();
+        check("the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn",
+                steel != null && !fleetBurnsOil && heading != null && heading.contains("from ") && heading.contains(oil),
+                "\"" + heading + "\"" + (fleetBurnsOil ? "; a fleet in the group burns it" : ""));
+
+        // The camp's sentences (whatItDoes(t, unit), the stat cover's): what it makes a month, at the actual new camp's cut.
+        BuildCard.Figures campCard = BuildCard.of(g, camp, null);
+        List<String> does = KeptCheck.fx(() -> bench.buildWhatItDoes(campCard));
+        boolean saysActual = true, saysFleet = false;
+        StringBuilder makes = new StringBuilder();
+        for (Map.Entry<Good, Double> e : actualCut.entrySet()) {
+            String of = " of " + e.getKey().label().toLowerCase() + " a month";
+            String actualLine = "Makes " + ham.citybuildersim.ui.Money.formatter.format(e.getValue()) + " ";
+            String fleetLine = "Makes " + ham.citybuildersim.ui.Money.formatter.format(fleetCut.getOrDefault(e.getKey(), 0.0)) + " ";
+            saysActual &= does.stream().anyMatch(s -> s.startsWith(actualLine) && s.contains(of));
+            saysFleet |= does.stream().anyMatch(s -> s.startsWith(fleetLine) && s.contains(of));
+        }
+        for (String s : does) if (s.startsWith("Makes ")) makes.append('"').append(s).append("\" ");
+        check("the camp's card says it makes the actual new camp's cut a month, not the fleet's",
+                !actualCut.isEmpty() && saysActual && !saysFleet, makes + "actual " + actualCut + ", fleet " + fleetCut);
     }
 
     public static void main(String[] args) throws Exception {
@@ -843,18 +916,25 @@ public final class NewUnitCheck {
         FittingCheck.out = out; FittingCheck.quiet = HistoricalRecipeCheck.quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = HistoricalRecipeCheck.quiet;
         Forms1900Check.out = out; Forms1900Check.quiet = HistoricalRecipeCheck.quiet;
-        standingEverywhere();
-        Cars cars = robotTown("QN1-robot");
-        rejectedRobot(cars);
-        staffingBoundary(cars);
-        pulpChoice();
-        bankClerks();
-        matching(cars);
-        identitiesAndSite();
-        changedDraw();
-        crewDemand();
-        powerAhead();
-        cardGoods();
+        try {
+            standingEverywhere();
+            Cars cars = robotTown("QN1-robot");
+            rejectedRobot(cars);
+            staffingBoundary(cars);
+            pulpChoice();
+            bankClerks();
+            matching(cars);
+            identitiesAndSite();
+            changedDraw();
+            crewDemand();
+            powerAhead();
+            cardGoods();
+        } catch (Throwable t) {
+            // Once sections 7 and 12 have started the JavaFX toolkit, its thread holds the JVM open past a throw: say it, red, and go.
+            out.println("FAIL: " + t);
+            t.printStackTrace();
+            System.exit(1);
+        }
         out.println(fails == 0 ? "All NewUnitCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

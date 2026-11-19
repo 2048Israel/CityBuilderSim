@@ -2094,11 +2094,13 @@ public final class KeptBench {
     }
 
     /**
-     * A Build card's order as the last draw laid it (QN1, NewUnitCheck 7): the building it orders, its reprice and its Build
-     * button (BuildScreen.orderControls()), which a kept page hands back draw after draw, so a caller can hold them through a
-     * month and a changed fitting input and use them there.
+     * A Build card's order as the last draw laid it (QN1, NewUnitCheck 7): the building it orders, its reprice, its Build
+     * button and its small steps down and up (BuildScreen.orderControls(), Pieces.countSteps()). The nodes are kept draw after
+     * draw and carry the last draw's closures, so a caller can hold them through a month and a changed fitting input and press
+     * them there, as a player does; the reprice is the last draw's own, made afresh at each.
      */
-    public record BuildOrder(BuildingsTemplate template, Runnable reprice, Node button) { }
+    public record BuildOrder(BuildingsTemplate template, Runnable reprice, Node button,
+                             javafx.scene.control.Button less, javafx.scene.control.Button more) { }
 
     /** The order on the card of this building, as the last draw laid it; null when the page has no card of it. */
     public BuildOrder buildOrder(String building) {
@@ -2108,9 +2110,21 @@ public final class KeptBench {
             if (!cards.get(i).template().getName().equals(building)) continue;
             Pieces.ActionButton button = find(nodes.get(i), Pieces.ActionButton.class,
                     b -> b.press() != null && b.press().main() != null && b.press().main().startsWith("Build"));
-            return new BuildOrder(cards.get(i).template(), cards.get(i).reprice(), button);
+            // The count's row: the big and small steps down, the count, the small and big steps up (Pieces.countSteps()), then
+            // the card's spacer and, while there is an order, its reset (BuildScreen.orderControls()).
+            HBox steps = find(nodes.get(i), HBox.class, h -> h.getChildren().size() >= 5 && h.getChildren().get(2) instanceof Label
+                    && h.getChildren().get(0) instanceof javafx.scene.control.Button && h.getChildren().get(1) instanceof javafx.scene.control.Button
+                    && h.getChildren().get(3) instanceof javafx.scene.control.Button && h.getChildren().get(4) instanceof javafx.scene.control.Button);
+            return new BuildOrder(cards.get(i).template(), cards.get(i).reprice(), button,
+                    steps == null ? null : (javafx.scene.control.Button) steps.getChildren().get(1),
+                    steps == null ? null : (javafx.scene.control.Button) steps.getChildren().get(3));
         }
         return null;
+    }
+
+    /** A press of a stepper, as the pointer's click fires it: its action, the one the last draw set (Pieces.stepper()). */
+    public static void press(javafx.scene.control.Button b) {
+        b.fire();
     }
 
     /** A primary click on a node, as the pointer's: a Build button's press runs on the click (Pieces.ActionButton). */
@@ -2131,6 +2145,16 @@ public final class KeptBench {
     /** The words under a card's hero figure (BuildScreen.heroDetail()): a maker's other goods and what it is made from. */
     public String buildHeroDetail(ham.citybuildersim.BuildCard.Figures f) {
         return ui.buildScreen.heroDetail(f);
+    }
+
+    /** The words beside a market group's heading (BuildScreen.groupSubtitle()): what a maker group makes and what from. */
+    public String buildGroupSubtitle(ham.citybuildersim.BuildCard.Group group) {
+        return ui.buildScreen.groupSubtitle(group);
+    }
+
+    /** A card's sentences, as its stat cover lays them (BuildScreen.whatItDoes(t, unit)): of the card's new unit. */
+    public List<String> buildWhatItDoes(ham.citybuildersim.BuildCard.Figures f) {
+        return ui.buildScreen.whatItDoes(f.template(), f.newUnit());
     }
 
     /** Whether the stat card of a building is pinned open. */
