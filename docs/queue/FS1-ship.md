@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS1 — the tests that break when another batch moves the played city, a study — 2026-11-19, ready, see docs/queue/FS1-notes.md
 `docs/studies/flaky-suite.md` and its three tables in `docs/studies/flaky-suite/`: every harness in the suite (224, 2,619
