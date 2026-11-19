@@ -29,7 +29,7 @@ LM1-D's gate was in its suite phase at startup. Initially I held named
 harnesses under the contract's `--fast`-only restriction. ★ The launch
 brief's final machine paragraph explicitly allows `--fast` and named
 harnesses one at a time alongside gates. That later direct instruction
-overrides the earlier restriction: each named check below runs alone,
+overrides the earlier restriction: each named invocation runs alone,
 one name per batch-check call. The orchestrator was mailed this reading
 before the first named check. Ensemble/dry-run placement still needs its go.
 
@@ -144,3 +144,70 @@ disabled buttons at one offer and at the listed maximum with the shared
 control. WorksFinanceCheck passes on that merged model, including rounded
 excess proceeds and the independent advice oracle
 (`target/SZ1-WorksFinanceCheck.txt`).
+
+NewGameCheck and LandCheck pass on the merged model. The `MapCheck` name
+filter also selected BridgeMapCheck; both pass. After noticing that filter
+overlap, remaining calls explicitly pin `-Dcbs.parallel=1` as well as using
+one CLI name at a time. No source premise was changed for these checks.
+
+KeptCheck finishes with exit 3: exactly the four main-recorded KFP1 reds
+in section 63, all concerning the let-go fund rule settling zero new
+holdings and the null holding page watched afterwards. The changed building
+step presses, in-place bar refresh, reset and kept/new equality pass. These
+are holding lots, not issue-size granules. The existing known-red record
+describes the uncaused fixture; FS1 now folds in KFP1, so the ship file will
+name FS1 for the four assertions. Logs: `target/SZ1-KeptCheck.txt` and
+`target/SZ1-KeptCheck.log`.
+
+The live-price binding case was strengthened beyond synthetic lot inputs:
+a separate scratch Game's PriceIndex is fed uniform prices and shopping for
+PriceIndex.SETTLING_MONTHS, then all its component prices rise tenfold with
+the issue-size cap strictly inactive. All five live lots rise tenfold.
+During development this caught a local-name collision, then a fixture that
+had not based its basket (the index is a placeholder 1 during settling).
+The fixture now causes basing through the model's own dial; its tenfold
+expectation is unchanged. StepsCheck passes this stronger case, the real
+rollover and the actual UI presses with serial execution pinned.
+
+The proceeds (i) now also distinguishes a bill's face rounded up to cover
+cash and costs from an auction sold short; it no longer attributes an
+underfilled sale to rounding.
+
+## The changed city found a lost carried flow
+
+AutoBuildCheck's first run reported three NEW assertions. Two were its
+quote/book comparisons: its predictions used AutoBuilder.bondFor's live
+lot, but four explicit fixture bookings still passed BUILD_BOND_GRANULE.
+Those bookings now use the same city's live Term lot. Requested borrowing,
+debt limits and the predictions' arithmetic remain unchanged.
+
+The third was genuine: the unchanged saved/live 36-month comparison first
+differed at m601. Snapshots and before/after-builder observations isolated
+General care: the live city ordered a Walk-in Clinic, the loaded city did
+not. Before that pass both had identical CPI, denomination, tax income,
+lot, cash, debt and saved builder plans. Healthcare carried served counts
+but not offered counts; getPricedOut() (Healthcare.java:674 before this
+fix) therefore read zero after loading, and the builder credited the loaded
+city with capacity the live city's fee had made inaccessible. The live
+city had 0x1.224d873b735b8p8 general-care people priced out. Copying only
+its offered[] into the loaded twin as a diagnostic made all 36 subsequent
+months agree exactly, worst difference 0.0. Diagnostic log:
+`target/SZ1-AutoBuildCheck-access-probe.txt`; diagnostic prints, reflective
+copy, snapshot and phase probes were removed afterwards.
+
+★ Save the access flow, rather than reconstruct it from the end state.
+Healthcare now exports/restores offered and affordable figures for the
+three living kinds; DataSave carries a separate optional healthcareAccess
+key, copied at capture, and the existing Game healthcare save/load sites
+carry it. The established healthcare array has no new shape or meaning,
+so there is no conversion and no SAVE_FORMAT bump. An older save lacks
+this new flow and stays incomplete. No saved order keeps a lot. These are
+last-month readings, not a historical series; HistorySave gains no chart.
+The orchestrator was mailed before the two additional reserved Game hooks.
+
+AutoBuildCheck now asserts that its unchanged city actually priced people
+out before saving, and checks the offered, priced-out and affordability
+figures of all three kinds immediately after loading, before retaining its
+original 36-month city comparison. SaveFileCheck also compares those flows
+in its existing complete city's save/load case. This fix is SZ1's finding
+to mend, not an unrelated FS1 waiver.

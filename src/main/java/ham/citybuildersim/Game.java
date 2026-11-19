@@ -17496,6 +17496,7 @@ public class Game {
         dataSave.setHealth(health.getState());
         dataSave.setCausesOfDeath(causesOfDeath.getState());
         dataSave.setHealthcare(healthcare.getState());
+        dataSave.setHealthcareAccess(healthcare.getAccessState());
         dataSave.setLabour(labourMarket.state());
         dataSave.setWantedPosts(wantedPosts.state());
         dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
@@ -21895,6 +21896,7 @@ public class Game {
             // none, which starts them with nobody dead of them.
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
+            healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());
