@@ -43,8 +43,53 @@ package ham.citybuildersim;
  * the city collecting a tax - are deliberately not listed. They cancel if both
  * sides booked the same number, and show up as residual if they did not.
  *
+ * THE HOUSEHOLDS' IDENTITY (HL1, 2026-11-11)
+ *
+ * The households are still outside the pools, but their savings are now
+ * reconciled against the DOMESTIC lines each month, a second strike beside the
+ * first (Households, householdsHeld()): the change in what they hold is what
+ * the pools paid them, less what they paid the pools, and the residual is money
+ * a household gained or lost that no line names. So a DOMESTIC line must be a
+ * household's - a line with no counterparty is not one, and is Scope.BOOK, as
+ * the write-offs' pools-side halves are - and a payment to a household, or from
+ * one to the world, has a line on each side, a pair, as the bonds' have. It is
+ * struck and kept (Game.getLastHouseholdsAudit()) and IS asserted now, by
+ * LongPlaytest.audit() and LongPlaytest.MoneyFixtures, at the pools' own tolerance:
+ *
+ *     held(after) - held(before) == (toHouseholds - fromHouseholds) + own
+ *
+ * Two kinds of term close it besides the pools' DOMESTIC lines. (K) Money in
+ * transit goes INTO householdsHeld(): the pools pay or are credited in one
+ * press, the households are handed or charged the same money at their next
+ * monthly sync, so the public wages, the pensions, the wage tax, the pension
+ * contributions and the EI and health premiums off the same payslips, the fares and
+ * the clinic's and schools' fees, and the cars, boutiques and kitchens that are
+ * paid out of the savings after the sectors' strike, are read live at the open
+ * and at the strike (householdsInTransit()), and so are the households' old
+ * steel and copper the yards have paid into their savings that the yards' books
+ * strike a press later (oldMetalInTransit(), taken OFF what they hold). (O) The households' OWN lines are
+ * money their own settling made or lost with no pool on the other side: the
+ * bills they could not fund, the income, rent, fees and shopping handed to
+ * cells too small to settle, savings the census left in a pool nobody is handed
+ * or made on a growing cell, the principal and coupons paid on a bond's face
+ * no cell holds (BondMarket.getOrphanedToHouseholds()), and the public payrolls
+ * struck again. They are
+ * open FAULTS of the model, NAMED and measured here and mended by HL2, not by
+ * being measured; Households.detail prints each and Households.figure()
+ * reads it. What the identity cannot see: a carrier revalued BETWEEN presses
+ * (restrikeMoneyConstants re-strikes the pension before the window opens) is
+ * outside the window.
+ *
+ * The city's upkeep was one of those bills: the care, schools, research,
+ * safety and transit upkeep and the bank's operating cost left a pool and
+ * reached no household. Since HL1 they are bought of Business Services
+ * (BusinessServices.sellUpkeep()), a pool paying a pool: noted, not declared,
+ * and in transit in the seller's pool from the buyer's payment until its next
+ * strike (pools(): its cash plus Ledger.upkeepSold), as the builders' order
+ * book is. The transit bill's wages stay a DOMESTIC debit ("- transit Wages").
+ *
  * Struck by Game.nextMonth() every month, always, because it costs a few
- * hundred getter reads; asserted by LongPlaytest and MoneyCheck, and its
+ * hundred getter reads; asserted by LongPlaytest and LongPlaytest.MoneyFixtures, and its
  * central bank lines by CentralBankCheck.
  */
 public final class MoneyAudit {
@@ -83,7 +128,7 @@ public final class MoneyAudit {
          * two errors cancel, and the residual stays at $0.00. That is where
          * hot money sat for the whole life of the mechanic. See NOTHING AFTER
          * THE AUDIT MAY MOVE A POOL, the last thing Game.nextMonth() does, and
-         * its assertions in LongPlaytest.audit() and MoneyCheck.
+         * its assertions in LongPlaytest.audit() and LongPlaytest.MoneyFixtures.
          */
         public final double[] poolsAtOpen;
         public final double[] poolsAtClose;
@@ -117,6 +162,13 @@ public final class MoneyAudit {
         public final double moneyIn;
         /** ...and money paid back to it, which it destroyed: repayments, and the window's and the advances' interest. */
         public final double moneyOut;
+
+        /* ---- and the part of it that crossed to or from a household (HL1, 2026-11-11) ---- */
+
+        /** The sum of every DOMESTIC debit ("- ...") the strike recorded: what the pools paid households this month. */
+        public final double toHouseholds;
+        /** The sum of every DOMESTIC credit ("+ ...") the strike recorded: what households paid the pools this month. */
+        public final double fromHouseholds;
 
         /** What the month did to M0, as the audit saw it cross the edge. CentralBankCheck holds it to the bank's own ledger. */
         public double moneyMade()        { return moneyIn - moneyOut; }
@@ -186,6 +238,15 @@ public final class MoneyAudit {
         Result(int month, double before, double after, double inflows, double outflows,
                double residual, String detail, double[] foreign,
                double[] poolsAtOpen, double[] poolsAtClose, java.util.Map<String, Double> figures) {
+            this(month, before, after, inflows, outflows, residual, detail, foreign, poolsAtOpen, poolsAtClose, figures, 0, 0);
+        }
+
+        Result(int month, double before, double after, double inflows, double outflows,
+               double residual, String detail, double[] foreign,
+               double[] poolsAtOpen, double[] poolsAtClose, java.util.Map<String, Double> figures,
+               double toHouseholds, double fromHouseholds) {
+            this.toHouseholds = toHouseholds;
+            this.fromHouseholds = fromHouseholds;
             this.figures = figures == null ? java.util.Map.of() : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(figures));
             this.poolsAtOpen  = poolsAtOpen  == null ? null : poolsAtOpen.clone();
             this.poolsAtClose = poolsAtClose == null ? null : poolsAtClose.clone();
@@ -231,6 +292,203 @@ public final class MoneyAudit {
             return String.format("m%d pooled %,.2f -> %,.2f  in %,.2f  out %,.2f  residual %,.2f (%.4f%%)",
                     month, before, after, inflows, outflows, residual, relative() * 100);
         }
+    }
+
+    /**
+     * One month's strike of the HOUSEHOLDS' identity (HL1, 2026-11-11), the second
+     * the audit makes, beside the pools':
+     *
+     *     held(after) - held(before)  ==  (toHouseholds - fromHouseholds) + own
+     *
+     * where held is householdsHeld(), the two sums are the pools' own DOMESTIC
+     * lines, as Result recorded them, and own is the households' OWN lines: what
+     * their settling made or lost with no pool on the other side (see own). The
+     * residual is money a household gained or lost that NO line names, the pools'
+     * or its own. Immutable, like Result.
+     */
+    public static final class Households {
+        public static final Households NONE = new Households(0, 0, 0, 0, 0, 0, "", null);
+
+        public final int month;
+        /** The households' savings as householdsHeld() read them at the top of the month. */
+        public final double before;
+        /** ...and at the strike. */
+        public final double after;
+        /** What the pools paid households this month: Result.toHouseholds. */
+        public final double toHouseholds;
+        /** What households paid the pools this month: Result.fromHouseholds. */
+        public final double fromHouseholds;
+        /**
+         * The households' own lines, signed: money their own settling made or lost
+         * with no pool on the other side. Each is a fault in the model that this
+         * identity NAMES and measures and the next batch (HL2) mends; see detail.
+         */
+        public final double own;
+        /** The own lines by name, one to a line that is not zero, as Result.detail prints the pools'. */
+        public final String detail;
+        /** The figures behind detail's lines, unrounded, label to amount, as Result.figures are (the label's sign is its direction; PublicWagesRestruck's amount is signed). */
+        public final java.util.Map<String, Double> figures;
+        /** (after - before) - (toHouseholds - fromHouseholds) - own. Zero when no household gained or lost a dollar no line names. */
+        public final double residual;
+
+        Households(int month, double before, double after, double toHouseholds, double fromHouseholds,
+                   double own, String detail, java.util.Map<String, Double> figures) {
+            this.month = month;
+            this.before = before;
+            this.after = after;
+            this.toHouseholds = toHouseholds;
+            this.fromHouseholds = fromHouseholds;
+            this.own = own;
+            this.detail = detail == null ? "" : detail;
+            this.figures = figures == null ? java.util.Map.of()
+                    : java.util.Collections.unmodifiableMap(new java.util.LinkedHashMap<>(figures));
+            this.residual = (after - before) - (toHouseholds - fromHouseholds) - own;
+        }
+
+        /** The figure detail printed for this own line, unrounded; 0 when no such line was struck. */
+        public double figure(String label) {
+            Double v = figures.get(label);
+            return v == null ? 0 : v;
+        }
+
+        /** What crossed between the pools and the households this month, both ways: the size the residual is read against. */
+        public double moved() {
+            return toHouseholds + fromHouseholds;
+        }
+
+        /** Residual as a share of what moved, as Result.relative() reads the pools' (what moved is held to at least 1, so a month nothing moved in reads 0, not noise). */
+        public double relative() {
+            return Math.abs(residual) / Math.max(1, moved());
+        }
+
+        @Override public String toString() {
+            return String.format("m%d households %,.2f -> %,.2f  to %,.2f  from %,.2f  own %,.2f  residual %,.2f (%.4f%%)",
+                    month, before, after, toHouseholds, fromHouseholds, own, residual, relative() * 100);
+        }
+    }
+
+    /**
+     * The households' savings, as the identity above reads them (HL1, 2026-11-11):
+     * HouseholdBalance's total LESS what a buyback between two presses has already
+     * paid them and the next month has not yet declared - the same timing difference
+     * pools() carries on the treasury's side (getBuybackUnsettled()), seen from the
+     * other: the press credits their savings at once (Game.repurchaseDebt()), the
+     * window declares it leaving the pools at the next month's strike, so without
+     * this the opening figure would already hold money the month is about to count -
+     * PLUS what is in transit to them, householdsInTransit().
+     */
+    public static double householdsHeld(Game g) {
+        return g.getHouseholdBalance().totalSavings() - g.getBuybackToHouseholdsUnsettled() + householdsInTransit(g);
+    }
+
+    /**
+     * What the pools have paid, or been paid, that the households' savings have not
+     * yet felt (HL1, 2026-11-11), signed as it adds to what they hold: the pools pay
+     * or are credited in ONE press, and the households are handed or charged the same
+     * money at their next monthly sync (Game.syncHouseholdAccounts(), from
+     * updateHouseholdAccounts() in startOfMonthUpdate). Read live, the same
+     * expression at the window's open and at the strike, so the money in transit at
+     * the close is the money in transit at the next open and the window counts each
+     * dollar once.
+     */
+    static double householdsInTransit(Game g) {
+        PopulationManager p = g.getPopulationManager();
+        EconomyManager e = g.getEconomyManager();
+        Sectors sectors = g.getSectors();
+        return
+                // The public payrolls (bank, utilities, care, schools, research, safety, transit): the payers have paid them, the
+                // households are handed this month's wage bill at the sync.
+                publicWages(g)
+                // ...the pensions the treasury pays, which the pensioners are handed at the sync.
+                + e.getPensionsPaid()
+                // ...the wage tax the households will be charged at the sync, struck from the live wages (the same banded function
+                // as the sync, NOT the stored e.getWageTax(), which is the previous month's).
+                - e.getTaxPolicy().wageTaxOn(p.getStaffedWagePerType(), null)
+                // ...the fares the transit system has taken, which the riders are charged at the sync.
+                - e.getTransitFares()
+                // ...and the clinic's and the schools' fees, the same: the city has them, the households are charged next.
+                - g.getHealthcare().getFees() - g.getEducation().getFees()
+                // ...and what else comes off the payslips: the pension contributions and the EI and health premiums, which the
+                // treasury banks at the strike and the sync charges at those stored figures a press later (HL1, 2026-11-11;
+                // found in BondCheck's town, the one harness city with every lever open: its households' books missed by the
+                // month's change in the three, 0.01 to 0.5 a month, in 40 months of 40).
+                - e.getContributions() - e.getEiPremiums() - e.getHealthPremiums()
+                // ...and the three counters paid out of the savings AFTER the sectors' strike (Game.startOfMonthUpdate():
+                // motoring.month() sells the cars on Automotive, luxuryCounter.shop() the boutiques' pieces on Luxury Retail,
+                // luxuryCounter.dine() the meals on Restaurants): the savings are down already, the sale is on the sector's pending
+                // ledger and the audit counts it at the next strike. Retail's and Real Estate's sales are charged to the households
+                // at the sync, in the statement's own month, so they are not in transit.
+                + sectors.automotive().pending().salesToHouseholds
+                + sectors.luxuryRetail().pending().salesToHouseholds
+                + sectors.restaurants().pending().salesToHouseholds
+                // ...and the households' old steel and copper the yards have bought and paid into their savings at once
+                // (HouseholdBalance.creditScrappedCars()), which the buyer's books strike a press later, where the line
+                // "- sectors OldMetalToHouseholds" reads it: in the savings, not yet out of the pools, so it comes OFF what
+                // they hold (HL1, 2026-11-11; the ensemble found it: no measuring city had a yard).
+                - oldMetalInTransit(sectors);
+    }
+
+    /** The public wages as the households are handed them live: everyone's wages less the sectors' own payrolls, what is left being the bank's, utilities', care's, schools', research's, safety's and transit's. */
+    private static double publicWages(Game g) {
+        double sectorPay = 0;
+        for (Sector s : g.getSectors().all()) sectorPay += s.getPayroll();
+        return g.getPopulationManager().getTotalWage() - sectorPay;
+    }
+
+    /** The strike's own labels for the public payrolls, whose sum the live public wages are set against (households()). */
+    private static final String[] PUBLIC_PAYROLLS = {
+            "- bank Payroll", "- utilities UtilityPayroll", "- care Payroll", "- schools Payroll",
+            "- research Payroll", "- safety Payroll", "- transit Wages" };
+
+    /** The households' nine own lines (HL1) by the label households() notes them under, in the order it adds them; the first character is the sign each enters the own sum with. */
+    public static final String[] OWN_LINES = {
+            "+ households Unfunded", "- households UnsettledIncome", "+ households UnsettledRent", "+ households UnsettledFees",
+            "+ households UnsettledShopping", "- households CensusStranded", "+ households CensusCreated",
+            "- households BondFaceOrphaned", "+ households PublicWagesRestruck" };
+
+    /**
+     * Strikes the households' identity for the month: householdsHeld() now, against the opening figure, the sums the pools' strike
+     * recorded, and the households' OWN lines (HL1): faults of the model's, named and measured here and mended later (HL2).
+     */
+    static Households households(Game g, double before, Result pools) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        StringBuilder detail = new StringBuilder();
+        java.util.Map<String, Double> figures = new java.util.LinkedHashMap<>();
+        double own = 0;
+        // Bills the sellers booked in full and a household could not fund: money in the shops' till that no savings held.
+        own += ownLine(detail, figures, "+ households Unfunded", hb.getUnfunded(), 1);
+        // Income the rows were handed that went to a cell too small to settle: the pools paid it, no household was given it.
+        own += ownLine(detail, figures, "- households UnsettledIncome", hb.getUnsettledIncome(), -1);
+        // The rent of the cells too small to settle: the landlords booked it, no household was charged.
+        own += ownLine(detail, figures, "+ households UnsettledRent", hb.getUnsettledRent(), 1);
+        // The treatment and tuition fees no settled cell was charged.
+        own += ownLine(detail, figures, "+ households UnsettledFees", hb.getUnsettledFees(), 1);
+        // The shopping no settled cell paid, which the shops booked.
+        own += ownLine(detail, figures, "+ households UnsettledShopping", hb.getUnsettledShopping(), 1);
+        // Savings the census left in a pool nobody is handed.
+        own += ownLine(detail, figures, "- households CensusStranded", hb.getCensusStranded(), -1);
+        // ...and savings the census made, a growing cell with no grown-ups keeping its per-household savings on more households.
+        own += ownLine(detail, figures, "+ households CensusCreated", hb.getCensusCreated(), 1);
+        // Principal and coupons the issuers paid on the households' face that no cell holds, the bond's record less the cells' own
+        // (the census's orphans of the bond stock, BondMarket.getOrphanedToHouseholds()): the pools paid it, no household was given
+        // it. Signed, as the two records can drift either way.
+        own += ownLine(detail, figures, "- households BondFaceOrphaned", g.getBondMarket().getOrphanedToHouseholds(), -1);
+        // The public wages struck again: the treasury and the bank paid the payrolls the month's strike read earlier; the households
+        // are handed the live figure. Signed, because the two can miss either way.
+        double struck = 0;
+        for (String label : PUBLIC_PAYROLLS) struck += pools.figure(label);
+        own += ownLine(detail, figures, "+ households PublicWagesRestruck", publicWages(g) - struck, 1);
+        return new Households(g.getMonth(), before, householdsHeld(g), pools.toHouseholds, pools.fromHouseholds,
+                own, detail.toString(), figures);
+    }
+
+    /** One own line: noted as Result.detail's lines are when it is not zero, and its share of the own sum returned (sign 1 adds the amount, -1 takes it off). */
+    private static double ownLine(StringBuilder detail, java.util.Map<String, Double> figures, String label, double amount, int sign) {
+        if (amount != 0) {
+            detail.append(String.format("      %-36s %,14.2f%n", label, amount));
+            figures.putIfAbsent(label, amount);
+        }
+        return sign * amount;
     }
 
     private MoneyAudit() {}
@@ -315,8 +573,17 @@ public final class MoneyAudit {
      *               own because the month's MONEY in less out is the change in
      *               M0, and CentralBankCheck holds the audit to that. See
      *               CentralBank.
+     *
+     *   BOOK      - (HL1, 2026-11-11) a line with no cash behind it and nobody on
+     *               its other side: the pools' half of a write-off whose other
+     *               half is VALUATION, listed so the identity sums. It was
+     *               DOMESTIC until the households' identity (see the class
+     *               comment) began to read every DOMESTIC line as a household's,
+     *               and a write-off is nobody's. It is recorded exactly as
+     *               DOMESTIC is for the balance of payments, so domesticIn()
+     *               and domesticOut() do not move.
      */
-    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE, MONEY }
+    public enum Scope { DOMESTIC, TRADE, INCOME, FINANCIAL, VALUATION, RESERVE, MONEY, BOOK }
 
     /** Label, amount and scope, for one line of the month. */
     private interface Tagged {
@@ -360,7 +627,14 @@ public final class MoneyAudit {
          * See Game.buyBack() and Game.callLine().
          */
         pools[i++] = g.getCash() + g.getBuybackUnsettled();
-        for (Sector s : sectors.all()) pools[i++] = s.getCash();
+        /*
+         * ...AND THE UPKEEP BOUGHT OF BUSINESS SERVICES (HL1): the city's services
+         * and the bank pay it between two presses and the seller banks it at its
+         * next strike, so until then it is in transit, counted with the seller's
+         * pool as the builders' order book is below (Ledger.upkeepSold). Every
+         * sector's is read, though only Business Services is ever sold any.
+         */
+        for (Sector s : sectors.all()) pools[i++] = s.getCash() + s.pending().upkeepSold;
         pools[i++] = sectors.construction().getOrderBookForAudit();
         /*
          * THE BANK, since 2026-09-07. It holds the city's lending, so a loan
@@ -539,9 +813,12 @@ public final class MoneyAudit {
          * become an outflow the way a single tagged helper could.
          */
         double[] foreign = new double[12];
+        // HL1 (2026-11-11): what the DOMESTIC lines paid households and took of them, for Households' identity.
+        double[] household = new double[2];
         Tagged credit = (label, amount, scope) -> {
             note.accept(label, amount);
             switch (scope) {
+                case DOMESTIC  -> household[1] += amount;
                 case TRADE     -> foreign[0] += amount;
                 case INCOME    -> foreign[2] += amount;
                 case FINANCIAL -> foreign[4] += amount;
@@ -555,6 +832,7 @@ public final class MoneyAudit {
         Tagged debit = (label, amount, scope) -> {
             note.accept(label, amount);
             switch (scope) {
+                case DOMESTIC  -> household[0] += amount;
                 case TRADE     -> foreign[1] += amount;
                 case INCOME    -> foreign[3] += amount;
                 case FINANCIAL -> foreign[5] += amount;
@@ -760,6 +1038,17 @@ public final class MoneyAudit {
         in += credit.apply("+ households BroughtHome", g.getHouseholdBalance().getBroughtHome(), Scope.FINANCIAL);
         in += credit.apply("+ households SavedFromAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.DOMESTIC);
         /*
+         * MIGRATION'S MONEY (HL1, 2026-11-11), two more pairs of the same kind. What the month's
+         * newcomers brought as their opening buffer (OPENING_BUFFER_MONTHS) is money from abroad into
+         * their savings: FINANCIAL in here, DOMESTIC out ("- households ArrivedWith (into their
+         * savings)") below. What the leavers took with them is the other way: out of their savings,
+         * DOMESTIC in ("+ households LeftWith (from their savings)"), FINANCIAL out below. The
+         * pools see neither pair; the households' identity does, and the balance of payments now
+         * carries migrants' transfers, as a real one does (spec-wealth 3.4, item 4).
+         */
+        in += credit.apply("+ households ArrivedWith", g.getHouseholdBalance().getArrivedWith(), Scope.FINANCIAL);
+        in += credit.apply("+ households LeftWith (from their savings)", g.getHouseholdBalance().getTakenAway(), Scope.DOMESTIC);
+        /*
          * THE CARS THE HOUSEHOLDS BOUGHT FROM ABROAD (2026-09-16).
          *
          * The first thing a household has ever imported. The domestic half of
@@ -903,7 +1192,7 @@ public final class MoneyAudit {
          * payments counts against the city and the position never held.
          */
         in += credit.apply("+ desk WorldSharesWiped", g.getExchange().getWorldSharesWiped(), Scope.VALUATION);
-        in += credit.apply("+ desk ShortClosedForNothing (no cash)", g.getExchange().getShortClosedForNothing(), Scope.DOMESTIC);
+        in += credit.apply("+ desk ShortClosedForNothing (no cash)", g.getExchange().getShortClosedForNothing(), Scope.BOOK);
         /*
          * A bankrupt sector's creditors absorbing its overdraft, the same
          * way. The bills were paid with money the sector did not have; the
@@ -978,10 +1267,12 @@ public final class MoneyAudit {
         /*
          * ...and its branches' operating cost (0.7.19): the template's upkeep,
          * inside the bank's upkeep beside its repairs. The repairs reach the
-         * builders, a pool; this leaves the audited system the way the city's
-         * own services' upkeep does ("- care Upkeep" below).
+         * builders, a pool; this is bought of Business Services since HL1, as
+         * the city's own services' upkeep is ("chk - care Upkeep" below): a pool
+         * paying a pool, noted and not declared. Until then it left the audited
+         * system to nobody.
          */
-        out += debit.apply("- bank Operating", g.getBank().getOperatingCost(), Scope.DOMESTIC);
+        note.accept("chk - bank Operating", g.getBank().getOperatingCost());
         /*
          * Interest paid to SAVERS, since the bank started paying for its
          * deposits, and it goes to three different places.
@@ -1011,11 +1302,15 @@ public final class MoneyAudit {
         out += debit.apply("- safety Payroll", g.getCrime().getPayroll(), Scope.DOMESTIC);
         /*
          * ...and transit's wages and upkeep (0.7.49, B9), which the treasury
-         * pays at the month's end: wages leave the audited system, like the
-         * schools' and the police's. Unpaid until then - the crews' wages
-         * reached the households and left no pool.
+         * pays at the month's end: the wages leave the pools to the households,
+         * like the schools' and the police's. Unpaid until then - the crews'
+         * wages reached the households and left no pool. The upkeep part of the
+         * bill (the infrastructure's and the ports') is bought of Business
+         * Services since HL1, a pool paying a pool: noted, as "chk - transit
+         * Bill" with the whole bill, and only the wages declared.
          */
-        out += debit.apply("- transit Bill", e.getTransitBill(), Scope.DOMESTIC);
+        note.accept("chk - transit Bill", e.getTransitBill());
+        out += debit.apply("- transit Wages", e.getTransitWages(), Scope.DOMESTIC);
         // Imports: every sector's purchases from the world, as its statement booked them - with the services
         // bought from the world that have no good behind them: the shuttle tankers' freight (0.7.91) and the
         // works' consumables (0.7.112, Sector.buyConsumables()), each in TRADE with the goods.
@@ -1111,7 +1406,8 @@ public final class MoneyAudit {
         out += debit.apply("- bonds PrincipalAbroad", bm.getPrincipalAbroad(), Scope.FINANCIAL);
         out += debit.apply("- bonds HouseholdsSoldAbroad (into their savings)", bm.getHouseholdsSoldAbroad(), Scope.DOMESTIC);
         out += debit.apply("- bonds HouseholdsBoughtAbroad", bm.getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
-        out += debit.apply("- bonds WrittenOffAbroad (no cash)", bm.getWorldWrittenOff(), Scope.DOMESTIC);
+        // BOOK, not DOMESTIC (HL1, 2026-11-11): no household is paid, so the households' identity must not read it as one's.
+        out += debit.apply("- bonds WrittenOffAbroad (no cash)", bm.getWorldWrittenOff(), Scope.BOOK);
         /*
          * WHAT THE BANK PAYS FOR MONEY IT DID NOT HAVE, since 2026-09-07.
          *
@@ -1184,6 +1480,9 @@ public final class MoneyAudit {
         }
         // The households' three, the other way round. See the credits.
         out += debit.apply("- households InvestedAbroad", g.getHouseholdBalance().getSentAbroad(), Scope.FINANCIAL);
+        // ...and migration's two (HL1, 2026-11-11): the newcomers' buffer into their savings, the leavers' savings abroad. See the credits.
+        out += debit.apply("- households ArrivedWith (into their savings)", g.getHouseholdBalance().getArrivedWith(), Scope.DOMESTIC);
+        out += debit.apply("- households LeftWith", g.getHouseholdBalance().getTakenAway(), Scope.FINANCIAL);
         // ...and the cars they bought from the world. See the credit's note.
         out += debit.apply("- households CarImports",
                 g.getHouseholdCarImports(), Scope.TRADE);
@@ -1248,9 +1547,9 @@ public final class MoneyAudit {
         out += debit.apply("- shares HouseholdsBoughtAbroad", g.getExchange().getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
         // ...and the world's shares wiped out at a resolution (0.7.14): the
         // other half of the pair above, no cash.
-        out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.DOMESTIC);
+        out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.BOOK);
         // ...and a short company's wipe and close for nothing (LF1c), the other halves of the two lines above: no cash.
-        out += debit.apply("- desk WorldSharesWiped (no cash)", g.getExchange().getWorldSharesWiped(), Scope.DOMESTIC);
+        out += debit.apply("- desk WorldSharesWiped (no cash)", g.getExchange().getWorldSharesWiped(), Scope.BOOK);
         out += debit.apply("- desk ShortClosedForNothing", g.getExchange().getShortClosedForNothing(), Scope.VALUATION);
         out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
@@ -1281,11 +1580,13 @@ public final class MoneyAudit {
         // pools like EI. See HouseholdBalance.allocateGroceries().
         out += debit.apply("- treasury FoodAssistance", e.getFoodAssistance(), Scope.DOMESTIC);
         out += debit.apply("- treasury StudentLoansLent", g.getStudentLoansLent(), Scope.DOMESTIC);
-        out += debit.apply("- care Upkeep", care.getUpkeep(), Scope.DOMESTIC);
-        out += debit.apply("- schools Upkeep", schools.getUpkeep(), Scope.DOMESTIC);
-        // ...and the research laboratories' other costs (R3), which leave the audited system as the schools' upkeep does.
-        out += debit.apply("- research Costs", e.getResearchCosts(), Scope.DOMESTIC);
-        out += debit.apply("- safety Upkeep", g.getCrime().getUpkeep(), Scope.DOMESTIC);
+        // The services' upkeep (HL1): bought of Business Services, which holds it in transit until its next strike (pools()). A pool paying a
+        // pool, noted: it was a DOMESTIC debit, to a household that was never paid, before.
+        note.accept("chk - care Upkeep", care.getUpkeep());
+        note.accept("chk - schools Upkeep", schools.getUpkeep());
+        // ...and the research laboratories' other costs (R3), bought as the schools' upkeep is.
+        note.accept("chk - research Costs", e.getResearchCosts());
+        note.accept("chk - safety Upkeep", g.getCrime().getUpkeep());
         // What thieves took from the tills, to the offenders' households -
         // out of the pools like a wage. What they took from households never
         // entered them. See Crime.
@@ -1369,7 +1670,7 @@ public final class MoneyAudit {
         }
         double residual = (after - before) - (in - out);
         return new Result(g.getMonth(), before, after, in, out, residual, detail.toString(), foreign,
-                poolsBefore, poolsAfter, figures);
+                poolsBefore, poolsAfter, figures, household[0], household[1]);
     }
 
     /** What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. */
@@ -1379,6 +1680,13 @@ public final class MoneyAudit {
             Double v = s.statement().purchasesBySupplier.get(Trade.HOUSEHOLDS);
             if (v != null) t += v;
         }
+        return t;
+    }
+
+    /** What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. */
+    static double oldMetalInTransit(Sectors sectors) {
+        double t = 0;
+        for (Sector s : sectors.all()) t += s.pending().purchasesBySupplier.getOrDefault(Trade.HOUSEHOLDS, 0.0);
         return t;
     }
 }

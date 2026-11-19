@@ -1,4 +1,4 @@
-# PublicLicenceCheck.java - 773 lines · 34 methods · 0 constants · harnesses
+# PublicLicenceCheck.java - 778 lines · 34 methods · 0 constants · harnesses
 
 `ham/citybuildersim/PublicLicenceCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -12,7 +12,7 @@
 > save and a load. A guard (the catalogue's premise, a city founded today, a local find, a berth, a gain of nothing) is asserted beside
 > the thing it guards, so a fee that is wrong in either direction fails by name.
 
-**Uses:** [LicenceFees](LicenceFees.md) (52), [UtilitiesHandler](UtilitiesHandler.md) (34), [BuildAdvice](BuildAdvice.md) (30), [Game](Game.md) (28), [ResearchCatalog](ResearchCatalog.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (17), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (16), [ResearchCheck](ResearchCheck.md) (11), [RecipeCheck](RecipeCheck.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (5), [Recipes](Recipes.md) (5), [LicenceFeesCheck](LicenceFeesCheck.md) (5), [EquipmentFit](EquipmentFit.md) (5), [RecipeChange](RecipeChange.md) (4), [Equipment](Equipment.md) (4), [Ports](Ports.md) (4), [RecipeChanges](RecipeChanges.md) (4), [HistorySave](HistorySave.md) (4), [AutoBuilder](AutoBuilder.md) (3), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [BuildingType](BuildingType.md) (2), [MoneyAudit](MoneyAudit.md) (2), [GameFiles](GameFiles.md) (2), [DataSave](DataSave.md) (2), [NewGameCheck](NewGameCheck.md) (2), [Recipe](Recipe.md) (1)... and 3 more
+**Uses:** [LicenceFees](LicenceFees.md) (52), [UtilitiesHandler](UtilitiesHandler.md) (34), [BuildAdvice](BuildAdvice.md) (30), [Game](Game.md) (28), [ResearchCatalog](ResearchCatalog.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (17), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (16), [ResearchCheck](ResearchCheck.md) (11), [RecipeCheck](RecipeCheck.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [NationalAccounts](NationalAccounts.md) (6), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (5), [Recipes](Recipes.md) (5), [LicenceFeesCheck](LicenceFeesCheck.md) (5), [EquipmentFit](EquipmentFit.md) (5), [RecipeChange](RecipeChange.md) (4), [Equipment](Equipment.md) (4), [Ports](Ports.md) (4), [MoneyAudit](MoneyAudit.md) (4), [RecipeChanges](RecipeChanges.md) (4), [HistorySave](HistorySave.md) (4), [AutoBuilder](AutoBuilder.md) (3), [FittingCheck](FittingCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [DataSave](DataSave.md) (2), [NewGameCheck](NewGameCheck.md) (2), [Recipe](Recipe.md) (1)... and 4 more
 
 **Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -23,17 +23,17 @@
 | 56 | the fixtures |
 | 169 | 1. the catalogue's premise |
 | 211 | 2. a patented piece pays the patent share of what it delivers |
-| 268 | 3. the patent ends |
-| 312 | 4. a local discovery pays nothing |
-| 336 | 5. an unpatented berth |
-| 388 | 6. no gain, no fee |
-| 467 | 7. the planners net the fee |
-| 531 | 7b. the term a new plant's licence is weighed by |
-| 580 | 7c. an order of plants is billed as one |
-| 609 | 7d. what the auto-builder reads of a utility's cost |
-| 647 | 8. the month both ways |
-| 672 | 9. a city founded today |
-| 701 | SaveFileCheck and ReadPathCheck |
+| 273 | 3. the patent ends |
+| 317 | 4. a local discovery pays nothing |
+| 341 | 5. an unpatented berth |
+| 393 | 6. no gain, no fee |
+| 472 | 7. the planners net the fee |
+| 536 | 7b. the term a new plant's licence is weighed by |
+| 585 | 7c. an order of plants is billed as one |
+| 614 | 7d. what the auto-builder reads of a utility's cost |
+| 652 | 8. the month both ways |
+| 677 | 9. a city founded today |
+| 706 | SaveFileCheck and ReadPathCheck |
 
 ## Fields (state)
 
@@ -50,7 +50,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 755 | **type** `public final class PublicLicenceCheck` | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it delivers with that upgrade over what it would deliver without it, in a cit... |
+| 19 | 760 | **type** `public final class PublicLicenceCheck` | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it delivers with that upgrade over what it would deliver without it, in a cit... |
 | 22 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 28 | 3 | `static boolean near(double a, double b)` |  |
 | 33 | 6 | `static void wire()` | The helper harnesses this one borrows narrate through their own streams; wired as HistoricalLicenceCheck.closedSteamInvoice() does, for a run from SaveFileCheck or ReadPathCheck too. |
@@ -81,80 +81,80 @@
 | 171 | 5 | `static boolean payableEntry(String code)` |  |
 | 177 | 33 | `static void catalogue(Game g)` |  |
 
-### 2. a patented piece pays the patent share of what it delivers (lines 211-267)
+### 2. a patented piece pays the patent share of what it delivers (lines 211-272)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 213 | 54 | `static Works payment() throws Exception` |  |
+| 213 | 59 | `static Works payment() throws Exception` |  |
 
-### 3. the patent ends (lines 268-311)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 270 | 41 | `static void expiry() throws Exception` |  |
-
-### 4. a local discovery pays nothing (lines 312-335)
+### 3. the patent ends (lines 273-316)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 314 | 21 | `static void local(Works imported) throws Exception` |  |
+| 275 | 41 | `static void expiry() throws Exception` |  |
 
-### 5. an unpatented berth (lines 336-387)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 339 | 9 | `static long crowd(Game g, double desalPlate)` | Pulp Mills enough to take the city's demand past what its water makes without this much desalination at full staffing; how many. |
-| 350 | 10 | `static double[] desalReading(Game d, BuildingsTemplate desal, BuildingsStacks sea)` | The desalination stack's month, read at rest and worked independently: [demand, delivered with, delivered without, gain over running cost]. |
-| 361 | 26 | `static void berth() throws Exception` |  |
-
-### 6. no gain, no fee (lines 388-466)
+### 4. a local discovery pays nothing (lines 317-340)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 390 | 76 | `static void noGain() throws Exception` |  |
+| 319 | 21 | `static void local(Works imported) throws Exception` |  |
 
-### 7. the planners net the fee (lines 467-530)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 469 | 61 | `static void planners(Works w) throws Exception` |  |
-
-### 7b. the term a new plant's licence is weighed by (lines 531-579)
+### 5. an unpatented berth (lines 341-392)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 533 | 46 | `static void term() throws Exception` |  |
+| 344 | 9 | `static long crowd(Game g, double desalPlate)` | Pulp Mills enough to take the city's demand past what its water makes without this much desalination at full staffing; how many. |
+| 355 | 10 | `static double[] desalReading(Game d, BuildingsTemplate desal, BuildingsStacks sea)` | The desalination stack's month, read at rest and worked independently: [demand, delivered with, delivered without, gain over running cost]. |
+| 366 | 26 | `static void berth() throws Exception` |  |
 
-### 7c. an order of plants is billed as one (lines 580-608)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 582 | 26 | `static void units() throws Exception` |  |
-
-### 7d. what the auto-builder reads of a utility's cost (lines 609-646)
+### 6. no gain, no fee (lines 393-471)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 611 | 35 | `static void costs(Works w)` |  |
+| 395 | 76 | `static void noGain() throws Exception` |  |
 
-### 8. the month both ways (lines 647-671)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 649 | 22 | `static void bothWays() throws Exception` |  |
-
-### 9. a city founded today (lines 672-700)
+### 7. the planners net the fee (lines 472-535)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 674 | 26 | `static void today() throws Exception` |  |
+| 474 | 61 | `static void planners(Works w) throws Exception` |  |
 
-### SaveFileCheck and ReadPathCheck (lines 701-773)
+### 7b. the term a new plant's licence is weighed by (lines 536-584)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 704 | 27 | `static boolean saveChecks() throws Exception` | The bill across DataSave, HistorySave and the load: nonzero pending and paid, scratch slot 10 only. |
-| 733 | 13 | `static boolean readChecks() throws Exception` | Reading the bill and its planners again and again changes no money pool and no figure. |
-| 747 | 5 | `private static double[] figures(Game g, Works w, double raw)` |  |
-| 753 | 20 | `public static void main(String[] args) throws Exception` |  |
+| 538 | 46 | `static void term() throws Exception` |  |
+
+### 7c. an order of plants is billed as one (lines 585-613)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 587 | 26 | `static void units() throws Exception` |  |
+
+### 7d. what the auto-builder reads of a utility's cost (lines 614-651)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 616 | 35 | `static void costs(Works w)` |  |
+
+### 8. the month both ways (lines 652-676)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 654 | 22 | `static void bothWays() throws Exception` |  |
+
+### 9. a city founded today (lines 677-705)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 679 | 26 | `static void today() throws Exception` |  |
+
+### SaveFileCheck and ReadPathCheck (lines 706-778)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 709 | 27 | `static boolean saveChecks() throws Exception` | The bill across DataSave, HistorySave and the load: nonzero pending and paid, scratch slot 10 only. |
+| 738 | 13 | `static boolean readChecks() throws Exception` | Reading the bill and its planners again and again changes no money pool and no figure. |
+| 752 | 5 | `private static double[] figures(Game g, Works w, double raw)` |  |
+| 758 | 20 | `public static void main(String[] args) throws Exception` |  |
 
