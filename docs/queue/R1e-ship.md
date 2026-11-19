@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R1e, a new building's equipment priced and saved at its order — 2026-11-19, ready, see docs/queue/R1e-notes.md
 A new building's equipment is now chosen when its order is quoted and
