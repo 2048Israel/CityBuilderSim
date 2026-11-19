@@ -158,6 +158,10 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
   sentences, the other two green as the tripwire says (`target/QN1-readers-off-NewUnitCheck.log`). The repair off: 27 of
   63 red (2: 4, 3: 5, 4: 1, 5: 2, 6: 1, 7: 3, 8: 2, 9: 2, 10: 2, 11: 1, 12: 4), section 1 green
   (`target/QN1-off3-NewUnitCheck.log`). `--fast` green.
+- main merged again at d05201e11 (RN1-H, 0.9.157; conflicts only in the generated docs; RealEstate.java merged clean, QN1's
+  hunk there the override's signature alone): RN1-H moved the homes' headroom onto demand, so NewUnitCheck's `latentWith`
+  (the head shortage from its parts) is now `(posts + coming) × 2.25 × (1 + TARGET_HEADROOM) − homes`, as
+  `latentHeadShortfall()` reads. `--fast` green; NewUnitCheck all 63.
 
 ## Left for Jerus
 
