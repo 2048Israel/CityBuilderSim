@@ -17,6 +17,17 @@ The default city's separate retained-bakery layout finding stays queued
 as RN1-H-M; the ensemble does not arm that visual watch. Earlier HL1-only
 comparisons below are historical.
 
+**Returned gate, 2026-11-19.** The first gate stopped on 16 new lines
+in four harnesses. The provisional marker was restored and pushed first
+at `23a7e844b`. Eight separate named runs on RN1-H and exact main
+`ddcb3400e` reproduce all branch failures; main is green (three exit 0,
+KeptCheck exit 3 for its existing FS5 maturity fixture). Measurements
+show missing played-fixture premises, with the underlying rules holding.
+All sixteen lines, including exit and failure totals, are named in the
+ship file under FS12, FS10 and FS4. No production or harness source changes
+follow the final ensemble. The orchestrator's 11:35 instruction permits
+readiness after these records and re-gating with the kept suite.
+
 ## What changed
 
 The housing planner read `TARGET_HEADROOM` backwards. At demand 100 and
@@ -510,3 +521,141 @@ economics and instructed: commit the tables, drop the marker in its own
 commit, check origin and report ready. He will gate at once on a fresh
 suite because the pick is not ALL. No model or driver change follows the
 final ensemble; only these evidence and publication records change.
+
+## Stopped gate and its eight controls (2026-11-19)
+
+The first gate's kept directory is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RN1-H-S9n4H4Rz/`.
+It tested branch `4860daec68f9f75d2ea52bcd3bec97e03e406c88` on main
+`ddcb3400e605899755f923c85fe8e332faf50398`. The suite completed before
+the later power cut; its log, unnamed list and hashes are retained intact.
+Nothing was executed or changed inside that kept directory.
+
+At the orchestrator's instruction, run one harness per batch-check call,
+one JVM workload at a time, with the explicit earth-2.bin/world-1.bin paths
+and cbs.parallel=1. Main is a new detached checkout of exact ddcb3400e;
+the RN1-H source is the same model as the ensemble and first gate.
+
+| Named harness | RN1-H wrapper exit | ddcb3400e wrapper exit | New branch assertions |
+|---|---:|---:|---:|
+| AutoBuildCheck | 4 | 0 | 1 |
+| ExchangeRateCheck | 4 | 0 | 4 |
+| PassThroughCheck | 4 | 0 | 2 |
+| KeptCheck | 4 | 3, existing known red only | 1 |
+
+Main's KeptCheck section 44 is green. Its sole red is the existing FS5
+`fixture: the settled lot watched, B:2732, runs 0 months, past the 3 months
+its page is watched`; it is already covered by the registry. It is not
+the new covered-funding-run failure. Both branch and main named runs
+finish with unchanged tracked trees and zero firm Stale findings.
+
+### AutoBuildCheck 4: FS12
+
+The 600-month city has made 49 orders on RN1-H; main's city has made 30.
+The next 36 months make zero more on RN1-H and twelve on main. Both saved
+and live twins agree to the cent, all buildings and the log included,
+with worst replay drift zero. The original fixture gives both cities
+50,000,000 square feet and withRoom()'s extra tax room; it does not repay
+their accumulated debt or cause a particular new order.
+
+A diagnostic using the unchanged decades() and savedAndLoaded() fixtures
+reads debt/GDP 3.75284594975 at m600 and 4.22553605211 at m636, against
+the model's 2.40 limit. Its held line asks for Death care and explicitly
+holds because the city owes 375%, then 422%, of annual GDP. Orders remain
+49. The existing pass-reader counters after replay are all zero:
+unexplained, falseHolds, underReserve, overLimit and unpaid. This is the
+builder honoring its limit, not refusing an order it promises to make.
+★ FS12 should cause a service shortage and debt/funding room before the
+save and then demand the same positive order in both twins; keep the
+replay identity. Do not move the measured month until a lucky order.
+
+### ExchangeRateCheck 8b: FS10
+
+The natural path at m175, the eve of suspension, already has FLOAT,
+zero vault reserves, one break, cause VAULT, rate 2.68136087720 and hold
+zero. At m176 it remains Float, rate 2.53615686892; its hold is zero
+against float news -0.055675 logs. Both move-decomposition identities
+still pass. The missing old peg makes both opening fixture assertions
+false without a failed rate decomposition.
+
+At m318 the vault is still zero, rate 2.19752537036, one break. The m319
+return opens the new dated episode, then exhaustion breaks it in the same
+month: two breaks, VAULT, zero reserves, FLOAT at 2.612783528664. Comparing
+that float with the stored par 1 does not test an active peg's par.
+ForeignAccounts.hearMoneyMonth(), read through Where, re-arms a new
+episode; breakTheHold() records its exhaustion.
+
+For a controlled component comparison, arrange reserves through
+ForeignAccounts.buyReserves(1e12) at m318 and forget the setup's dealing,
+then take the unchanged month's step. At m319 it is PEG, Canada gold
+true, rate and par exactly 1, vault 455,815,745,195 and breaks still one.
+This stock-arranged component control tests the dated hold, not a fiscal
+flow or money-audit fixture. An earlier attempted treasury top-up bought
+zero and was not treated as a funded control; that raw attempt is kept.
+★ FS10 must cause enough reserves to keep the episode alive, and retain
+the separate controlled exhaustion case. The four assertions and their
+exit/summary lines share this missing solvency premise, not a new peg bug.
+
+### PassThroughCheck 3 and 4: FS10
+
+The 12-month goods-rate step is correct in all 36 samples, as are market
+prices. The diagnostic reads steady/weak struck rates 0.711066393582 /
+0.730774294144, but the same groceries component 1.25111334851. Both
+retailers have floor = opening price = 0.0100322435936, clearing prices
+0.0282459064660 / 0.0281748960653 above CLEARING_CAP (1.5) times that
+floor, and identical shelf 0.0150382539224 and charged price
+0.0150488309849. Both actually sell 1,544 baskets. Thus the common
+opening-floor/cap binds, not the imported food's marginal cost: a positive
+groceries response in this particular twelfth month was not caused.
+
+The one-for-one trace has zero lag error over every compared month and
+zero excess months. Its largest D$ gap is the final sample, t120:
+-1.31321457634 logs. Goods t120 are -1.29550903678, exactly D$ t119.
+There is no t121 goods sample to reach the last D$ peak. The printed
+129.55% against 131.32% is the correct lag, not failed transmission.
+★ FS10 should cause a cost-sensitive shelf and a held peak or complete
+lagged horizon, retaining the month-by-month identity. PassThroughCheck
+belongs to FS10 in flaky-suite.md section 6.9, including its shop response.
+
+### KeptCheck 44: FS4
+
+Main has cash -48,349,463; its helper finds one House, gap 48,820,336,
+that both market offers cover four times over. RN1-H's played city has
+cash 599,140,323. Its short-run fixture succeeds with 100,000 Crude
+Pipelines, gap 57,890,862,074, with bond/bill bids 3,335,388,820 /
+3,081,727,366; its covered-run search returns null. The helper only checks
+counts 1, 10, ... 100,000,000 and stops a building's search at its first
+positive gap whose quotes are short. This search is not a cause of a
+covered run in every possible city's cash, land and lending state.
+All tested kept/new page identities continue to pass.
+★ Cause the cash gap and both offers on an order the model permits,
+rather than relying on this played city's decade-sized candidates. This
+is section 44, below 55, so FS4, not FS5. It does not establish a loan or
+funding-page fault. Its assertion, exit 1 and 1 FAILED are all named.
+
+### Publication records and reuse
+
+All 16 exact unnamed lines from the stopped gate are transferred through
+the ship file: AutoBuildCheck 3 to FS12, ExchangeRateCheck 6 to FS10,
+PassThroughCheck 4 to FS10, KeptCheck 3 to FS4. These sweeps are already
+queued; no new queue row or broad red-ok is used. The separate real
+RN1-H-M layout finding remains under its own queued fix.
+
+The diagnostic Java class and scripts live only in ignored target/;
+their class files use a separate diagnostic-classes directory. The
+production and harness sources remain byte-identical to ready 4860daec6.
+No new ensemble is warranted, and no suite was rerun: only the eight
+requested named controls and the narrow diagnostics above. The complete
+stopped suite is copied into an owned rejudge directory; the gate's
+original hashes and files remain untouched.
+
+Raw named outputs, diagnostics, helper source, original unnamed list,
+suite log and provenance are preserved at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-RN1-H-gate-mends-4860daec6/`.
+
+The copied full suite was rejudged with CBS_REJUDGE=--rejudge and the
+combined fork registry plus ship rows. It exits 3: known red only in 15
+harnesses, no new unnamed line. known-reds.sh validates the ship records.
+Only the ship file and these notes change; the gate can reuse its complete
+kept run, as authorized at 11:35. The owned main control checkout is removed
+after its clean status and complete archived controls are checked.
