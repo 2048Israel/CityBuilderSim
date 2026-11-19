@@ -12,8 +12,11 @@ package ham.citybuildersim;
  *
  * So a ledger with nothing in it. No income, no earner, no credit; they go
  * without, which the hunger measure reads, and their band's mortality is
- * struck at zero care coverage - see Game.advanceDemographics(). Nobody's
- * money follows them: they carry no grown-ups.
+ * struck at zero care coverage - see Game.advanceDemographics(). They carry
+ * no grown-ups, so the census's pool weighs them by their headcount (OH1,
+ * HS1): what a child can hold - savings, shares, money abroad, the city's
+ * paper and bonds - follows them; no debt, student loan or car ever does
+ * (HouseholdBalance.poolWeight()).
  */
 public class OrphanHousehold extends Household {
 

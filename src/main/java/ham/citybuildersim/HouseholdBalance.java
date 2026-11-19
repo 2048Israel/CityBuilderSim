@@ -1469,6 +1469,8 @@ public class HouseholdBalance {
     private interface Stock {
         double get(Household c);
         void set(Household c, double perHousehold);
+        /** A stock an orphan never claims from the pool (HS1's review): a debt, a loan or a car - no credit, no licence. */
+        default boolean notAChildsToClaim() { return false; }
     }
 
     /**
@@ -1487,6 +1489,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.debt; }
             public void set(Household c, double v) { c.debt = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         for (int k = 0; k < Equity.COMPANIES.length; k++) {
             final int company = k;
@@ -1511,6 +1514,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.studentDebt; }
             public void set(Household c, double v) { c.studentDebt = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         /*
          * AND THE CAR GOES WITH THE PEOPLE (2026-09-16), which is the whole
@@ -1524,6 +1528,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.cars; }
             public void set(Household c, double v) { c.cars = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         // ...and the city's paper (0.7.1), named like the loans, not "the last one".
         if (named != null) named[1] = stocks.size();
@@ -1913,7 +1918,7 @@ public class HouseholdBalance {
     public void restoreFlows(double[] saved) {
         java.util.Arrays.fill(flows, 0);
         if (saved == null || saved.length < FLOW_SLOTS) return;
-        for (int k = 0; k < FLOW_SLOTS; k++) flows[k] = Math.max(0, saved[k]);
+        for (int k = 0; k < FLOW_SLOTS; k++) flows[k] = saved[k] > 0 ? saved[k] : 0;   // a NaN or a negative: none
     }
 
     /** Households, by the flow's kind (RETIRING and the rest), that the last census's flows carried out of the cells they left. */
@@ -2003,8 +2008,6 @@ public class HouseholdBalance {
         if (retire + ageOn + leave + evicted + die[AgeBand.ADULT.ordinal()]
                 + die[AgeBand.SENIOR.ordinal()] + die[AgeBand.ELDER.ordinal()] <= 0) return plan;
 
-        boolean heirs = false;
-        for (Household c : cells) if (c instanceof WorkingHousehold && !c.isEmpty()) { heirs = true; break; }
         double[] toSenior = shapeShares(census, b0, AgeBand.SENIOR);
         double[] toElder = shapeShares(census, b0, AgeBand.ELDER);
         int offEi = unemployedIndex[UnemployedHousehold.Status.OFF_EI.ordinal()];
@@ -2017,14 +2020,14 @@ public class HouseholdBalance {
             if (c instanceof WorkingHousehold || c instanceof UnemployedHousehold) {
                 // The out of work retire, die and inherit with the unskilled: their stock group.
                 PayTier t = PayTier.values()[c.stockGroup()];
-                dying(plan, i, h, die[AgeBand.ADULT.ordinal()], t, heirs);
+                dying(plan, i, h, die[AgeBand.ADULT.ordinal()], t);
                 if (retire > 0) into(plan, RETIRING, i, retire * h, g, toSenior, t);
                 if (leave > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, leave * h, 0));
                 if (i == offEi && evicted > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, evicted * h, 0));
             } else if (c instanceof RetiredHousehold r) {
                 AgeBand band = c.shape().membersOf(AgeBand.SENIOR) > 0 ? AgeBand.SENIOR : AgeBand.ELDER;
                 PayTier t = r.formerTier();
-                dying(plan, i, h, die[band.ordinal()], t, heirs);
+                dying(plan, i, h, die[band.ordinal()], t);
                 if (band == AgeBand.SENIOR && ageOn > 0) into(plan, AGEING_ON, i, ageOn * h, g, toElder, t);
                 if (leave > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, leave * h, 0));
             }
@@ -2052,9 +2055,10 @@ public class HouseholdBalance {
      * The band's dead in one cell: in a couple, one of them, and the household
      * goes whole to the alone cell of its row and tier - the survivor keeps
      * everything; otherwise an estate, their share of the household, to the
-     * former tier's heirs (none when nobody is left to inherit).
+     * former tier's heirs, any tier's with none of theirs, and out of the
+     * city with nobody left to inherit (passOn()).
      */
-    private void dying(Plan plan, int i, double h, double share, PayTier tier, boolean heirs) {
+    private void dying(Plan plan, int i, double h, double share, PayTier tier) {
         if (!(share > 0)) return;
         Household c = cells[i];
         double dead = share * h * c.grownUps();
@@ -2063,7 +2067,7 @@ public class HouseholdBalance {
             if (to >= 0) plan.moves.add(new Move(PARTNER_DIES, i, to, -1, dead, dead));
             return;
         }
-        if (heirs) plan.moves.add(new Move(DYING_ALONE, i, AN_ESTATE, tier.ordinal(), dead / c.grownUps(), 0));
+        plan.moves.add(new Move(DYING_ALONE, i, AN_ESTATE, tier.ordinal(), dead / c.grownUps(), 0));
     }
 
     /** People going on to the shapes of a band at the tier they left: `households` of cell i, each `grownUps` people, split by the shapes' shares. */
@@ -2189,7 +2193,6 @@ public class HouseholdBalance {
 
     /** An estate, in kind, to the working households of the tier by grown-ups; with none, the city's; with none at all (no heir after the flows), out with the leavers. */
     private void passOn(double[] e, PayTier tier, double[] b, java.util.List<Stock> stocks, double[] left) {
-        lastEstatePassed += e[0];
         for (int pass = 0; pass < 2; pass++) {
             double weight = 0;
             for (int i = 0; i < cells.length; i++) {
@@ -2209,6 +2212,8 @@ public class HouseholdBalance {
                     st.set(c, st.get(c) + e[s] * share);
                 }
             }
+            // ...counted as passed only when an heir had it: with none, it went out with the rest (LeftWith).
+            lastEstatePassed += e[0];
             return;
         }
         for (int s = 0; s < e.length; s++) left[s] += e[s];
@@ -2268,9 +2273,14 @@ public class HouseholdBalance {
      * its shares left the register with no line to say so (ShortSellingCheck,
      * R0b-S) - and a growing one claimed nothing and stretched what it held
      * over more children.
+     *
+     * Only for what a child can hold (HS1's review): the savings, the shares,
+     * the money abroad, the paper and the bonds. A debt, a student loan or a
+     * car an orphan cell never claims - they have no credit and no licence
+     * (OrphanHousehold) - so those stay with the grown-ups who can carry them.
      */
-    private static int poolWeight(Household c) {
-        return c.grownUps() > 0 ? c.grownUps() : c.size();
+    private static int poolWeight(Household c, Stock stock) {
+        return c.grownUps() > 0 ? c.grownUps() : stock.notAChildsToClaim() ? 0 : c.size();
     }
 
     /**
@@ -2298,7 +2308,7 @@ public class HouseholdBalance {
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
             delta[i] = fresh[i] - before[i];
-            double weight = Math.abs(delta[i]) * poolWeight(c);
+            double weight = Math.abs(delta[i]) * poolWeight(c, stock);
             if (delta[i] < 0) {
                 rowLoss[c.stockGroup()] += weight;
                 rowPool[c.stockGroup()] += stock.get(c) * -delta[i];
@@ -2365,17 +2375,17 @@ public class HouseholdBalance {
         /* ---- and hand it out ---- */
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            if (delta[i] <= 0 || poolWeight(c) <= 0) {
+            if (delta[i] <= 0 || poolWeight(c, stock) <= 0) {
                 // A growing cell with no weight claims nothing and keeps its per-household savings on more households (HL1: CensusCreated, the savings stock only; none since OH1, every cell weighs).
                 if (arrival != null && delta[i] > 0) lastCensusCreated += stock.get(c) * delta[i];
                 continue;
             }
             int r = c.stockGroup();
-            double weight = delta[i] * poolWeight(c);
+            double weight = delta[i] * poolWeight(c, stock);
             double fromRow = rowGain[r] > 0 ? Math.min(weight, weight * rowMoved[r] / rowGain[r]) : 0;
             double rest = Math.max(0, weight - fromRow);
             double fromCity = Math.min(rest, rest * cityShare);
-            double newcomers = Math.max(0, rest - fromCity) / poolWeight(c);
+            double newcomers = Math.max(0, rest - fromCity) / poolWeight(c, stock);
 
             double received = (rowMoved[r] > 0 ? rowPool[r] * fromRow / rowMoved[r] : 0)
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);

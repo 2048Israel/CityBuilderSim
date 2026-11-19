@@ -56,7 +56,8 @@ import java.util.function.ToDoubleFunction;
  *
  *   7. THE ORPHANS WEIGH BY THEIR PEOPLE (OH1): a shrinking orphan cell's
  *      stocks go to the city and no longer vanish, and a growing one claims
- *      from the pool and makes nothing.
+ *      from the pool and makes nothing - but never a debt, a student loan or
+ *      a car (HS1's review).
  *
  *   8. COUNTED IN A REAL RUN: the flows move savings in a city's months, and
  *      the pool is left what no flow explains.
@@ -602,9 +603,10 @@ public class HouseholdFlowCheck {
         check("no savings are stranded in a pool nobody is handed", fading.bal.getCensusStranded(), 0);
 
         // Five households of orphans arrive, holding something, while the unskilled couples with a child shrink by five.
+        // The couples owe, and drive: what they release of that is no child's to claim (HS1's review).
         Town arriving = new Town();
         Household youngsters = holds(arriving.outsideCell(arriving.bal.orphans(AgeBand.CHILD), 4), 5, 0, 1, 0, 0, 0, 0);
-        Household fathers = holds(arriving.cell(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED, 20), 200, 0, 4, 0, 0, 0, 0);
+        Household fathers = holds(arriving.cell(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED, 20), 200, 30, 4, 0, 10, 1.5, 0);
         final double ORPHANS_ARRIVE = 5;
         arriving.expectOutside(youngsters, 4 + ORPHANS_ARRIVE)
                 .expect(FamilyStructure.COUPLE_CHILD, PayTier.UNSKILLED, 20 - ORPHANS_ARRIVE);
@@ -622,6 +624,11 @@ public class HouseholdFlowCheck {
                 total(youngsters, c -> c.shares[0]) - youngShares + arriving.bal.getSharesTakenAway(0),
                 ORPHANS_ARRIVE * 4);
         check("the couples keep their savings a household", fathers.savings, 200);
+        check("a growing orphan cell claims none of the couples' debt", youngsters.debt, 0);
+        check("...none of their student loans", youngsters.studentDebt, 0);
+        check("...and none of their cars", youngsters.cars, 0);
+        check("...the cars the couples released are kept or left the city, none made or lost",
+                total(fathers, c -> c.cars) + total(youngsters, c -> c.cars) + arriving.bal.getCarsTakenAway(), 20 * 1.5);
 
         /* ======= 8. counted in a real run ======= */
         out.println("\n--- counted in a real run ---");

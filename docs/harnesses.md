@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**225 harness files, 25,919 labelled assertions.** AllChecks runs 225 of them.
+**225 harness files, 25,923 labelled assertions.** AllChecks runs 225 of them.
 
 ## Which harnesses read which class
 
@@ -14760,7 +14760,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1693 the fares fall on the rows that ride and the fuel on the rows that drive
   - L1702 the commute is paid out of the waterfall like the clinic's fee
 
-## HouseholdFlowCheck.java - 116 labelled assertions
+## HouseholdFlowCheck.java - 120 labelled assertions
 
 > Money follows people: the households' balance carries each month's own flows
 > - the retiring, the ageing on, the dead and the leavers - with the stocks
@@ -14776,130 +14776,134 @@ _(this harness does not label its checks through a helper - it prints its findin
 > row, so a pool that read the net change alone would hand the money to the
 > ...
 
-- **L240 1. a quiet month moves nothing**
-  - L265 fixture: the balance holds savings, debt, shares, abroad, loans and cars
-  - L272 no flow, no change: the city's
-  - L274 ...and its paper
-  - L281 ...every cell with its households and its savings a household
-  - L286 ...and every flow record at nought
-  - L287 ...the estates' and the leavers' records at nought
-- **L292 2. a retirement and an ageing on carry the average**
-  - L314 the professionals' retirees are households of the senior couples' professional cell
-  - L316 ...holding ten times a professional couple's savings
-  - L318 ...ten times its debt
-  - L319 ...its shares
-  - L320 ...its dollars abroad
-  - L321 ...its student loans
-  - L322 ...its cars
-  - L323 ...and its paper
-  - L324 the skilled retirees are households of the skilled senior cell
-  - L326 ...holding ten times a skilled couple's savings
-  - L328 no other retired cell holds a household or a stock
-  - L333 the professional couples keep their households less the retirees
-  - L335 ...and their savings a household
-  - L336 ...their debt
-  - L337 ...their shares
-  - L338 ...and their cars
-  - L339 the claimant's row, grown by the households that came in, holds no savings
-  - L341 ...though it has its households
-  - L342 the retiring households, counted
-  - L344 ...and the savings they carried
-  - L346 ...the pool handed nobody any
-  - L361 the skilled seniors who age on are households of the skilled elder cell
-  - L362 ...holding a skilled senior's savings
-  - L363 ...its debt
-  - L364 ...its shares
-  - L365 ...and its car
-  - L366 the unskilled who age on are the unskilled elder cell's
-  - L367 ...holding an unskilled senior's savings
-  - L368 the seniors left keep their savings a household
-  - L370 ...the unskilled theirs
-  - L371 the seniors left are the ones who did not age on
-  - L372 the ageing households, counted
-  - L373 ...and the savings they carried
-- **L376 3. a partner's death leaves the survivor everything**
-  - L398 the senior survivors are households of the skilled senior alone cell
-  - L399 ...each with the couple's whole savings
-  - L400 ...its shares
-  - L401 ...its car
-  - L402 ...and its paper
-  - L403 the couples left keep 800 each too
-  - L404 ...on the households that did not lose a partner
-  - L406 a working couple with a child leaves a single parent, not a single adult
-  - L409 the working survivors are households of the single parents
-  - L410 ...each with the couple's whole savings
-  - L411 ...its debt
-  - L412 ...and its car
-  - L413 the working couples keep 300 each
-  - L414 nothing is written off
-  - L415 ...no estate passes
-  - L416 ...none repays the bank
-  - L417 the partners' deaths, counted in households
-  - L419 ...and the savings that moved with the survivors
-  - L421 ...the pool handed nobody any
-- **L423 4. an estate reaches the tier's working households**
-  - L450 the estates repay the bank out of the dead's savings
-  - L451 ...it is in the month's total repaid
-  - L452 the debt their savings did not cover is written off
-  - L453 ...and is in the written off
-  - L454 the savings passed to the heirs are what the debts left
-  - L455 ...each college couple's household gains its grown-ups' share
-  - L457 ...each college single adult's household gains its share
-  - L459 ...and the heirs hold exactly what was passed
-  - L461 the skilled couples, another tier, gain no savings
-  - L462 the student loans are written off with the leavers'
-  - L464 the elders left keep their savings a household
-  - L465 ...their debt
-  - L466 ...on the households that did not die
-  - L467 ...and the senior professionals theirs
-  - L468 the estates, counted in households
-  - L470 ...and the savings the dead held
-  - L472 the college estate's shares go to the college working households, by grown-ups
-  - L474 ...a single adult's household gains half a couple's
-  - L476 the senior professionals' estate has no heir of its tier: every working cell shares it, by grown-ups
-  - L478 the shares are conserved across the city
-  - L479 ...and none left it
-  - L480 the savings after, with what repaid the bank, are the savings before
-- **L483 5. a leaver takes the average out**
-  - L501 the savings that left the city are the leavers' averages
-  - L503 ...the debt, written off
-  - L504 ...the shares
-  - L505 ...the dollars abroad
-  - L506 ...the student loans
-  - L507 ...and the cars
-  - L508 the cells they left keep their averages: couples
-  - L509 ...the seniors
-  - L510 ...on the households that stayed
-  - L511 the newcomers hold their households but none of the leavers' savings
-  - L513 the leavers, counted in households
-  - L515 ...and the savings they took
-  - L526 the evicted who gave up leave: households out of the cell off benefits
-  - L528 ...taking the cell's savings with them
-  - L529 ...the cell keeps its average
-  - L530 ...on the households that stayed
-- **L532 6. every stock is conserved**
-  - L568 what is held of
-  - L575 fixture: every kind of flow moved households
-  - L576 ...money left the city and an estate repaid the bank
-  - L578 ...and the pool still had a reshuffle to net
-  - L579 no savings stranded by the census
-  - L580 ...and none made by it
-- **L582 7. the orphans weigh by their people**
-  - L595 the register is whole: the shares across the city are as they were
-  - L597 ...the shrinking orphans keep theirs, per household
-  - L598 ...and the households that grew hold the shares the orphans released
-  - L600 ...none left the city
-  - L601 the released savings reached them too
-  - L602 no savings are stranded in a pool nobody is handed
-  - L615 a growing orphan cell makes no savings
-  - L616 ...it claimed from the pool: the savings it gained are what the pool handed it
-  - L618 ...and it gained some
-  - L619 ...what it gained and what left the city are what the couples released
-  - L621 ...the shares likewise: the cell's gain and what left are what the couples released
-  - L624 the couples keep their savings a household
-- **L626 8. counted in a real run**
-  - L680 the retirements and the deaths moved households in the city's months
-  - L683 ...and moved savings with them
+- **L241 1. a quiet month moves nothing**
+  - L266 fixture: the balance holds savings, debt, shares, abroad, loans and cars
+  - L273 no flow, no change: the city's
+  - L275 ...and its paper
+  - L282 ...every cell with its households and its savings a household
+  - L287 ...and every flow record at nought
+  - L288 ...the estates' and the leavers' records at nought
+- **L293 2. a retirement and an ageing on carry the average**
+  - L315 the professionals' retirees are households of the senior couples' professional cell
+  - L317 ...holding ten times a professional couple's savings
+  - L319 ...ten times its debt
+  - L320 ...its shares
+  - L321 ...its dollars abroad
+  - L322 ...its student loans
+  - L323 ...its cars
+  - L324 ...and its paper
+  - L325 the skilled retirees are households of the skilled senior cell
+  - L327 ...holding ten times a skilled couple's savings
+  - L329 no other retired cell holds a household or a stock
+  - L334 the professional couples keep their households less the retirees
+  - L336 ...and their savings a household
+  - L337 ...their debt
+  - L338 ...their shares
+  - L339 ...and their cars
+  - L340 the claimant's row, grown by the households that came in, holds no savings
+  - L342 ...though it has its households
+  - L343 the retiring households, counted
+  - L345 ...and the savings they carried
+  - L347 ...the pool handed nobody any
+  - L362 the skilled seniors who age on are households of the skilled elder cell
+  - L363 ...holding a skilled senior's savings
+  - L364 ...its debt
+  - L365 ...its shares
+  - L366 ...and its car
+  - L367 the unskilled who age on are the unskilled elder cell's
+  - L368 ...holding an unskilled senior's savings
+  - L369 the seniors left keep their savings a household
+  - L371 ...the unskilled theirs
+  - L372 the seniors left are the ones who did not age on
+  - L373 the ageing households, counted
+  - L374 ...and the savings they carried
+- **L377 3. a partner's death leaves the survivor everything**
+  - L399 the senior survivors are households of the skilled senior alone cell
+  - L400 ...each with the couple's whole savings
+  - L401 ...its shares
+  - L402 ...its car
+  - L403 ...and its paper
+  - L404 the couples left keep 800 each too
+  - L405 ...on the households that did not lose a partner
+  - L407 a working couple with a child leaves a single parent, not a single adult
+  - L410 the working survivors are households of the single parents
+  - L411 ...each with the couple's whole savings
+  - L412 ...its debt
+  - L413 ...and its car
+  - L414 the working couples keep 300 each
+  - L415 nothing is written off
+  - L416 ...no estate passes
+  - L417 ...none repays the bank
+  - L418 the partners' deaths, counted in households
+  - L420 ...and the savings that moved with the survivors
+  - L422 ...the pool handed nobody any
+- **L424 4. an estate reaches the tier's working households**
+  - L451 the estates repay the bank out of the dead's savings
+  - L452 ...it is in the month's total repaid
+  - L453 the debt their savings did not cover is written off
+  - L454 ...and is in the written off
+  - L455 the savings passed to the heirs are what the debts left
+  - L456 ...each college couple's household gains its grown-ups' share
+  - L458 ...each college single adult's household gains its share
+  - L460 ...and the heirs hold exactly what was passed
+  - L462 the skilled couples, another tier, gain no savings
+  - L463 the student loans are written off with the leavers'
+  - L465 the elders left keep their savings a household
+  - L466 ...their debt
+  - L467 ...on the households that did not die
+  - L468 ...and the senior professionals theirs
+  - L469 the estates, counted in households
+  - L471 ...and the savings the dead held
+  - L473 the college estate's shares go to the college working households, by grown-ups
+  - L475 ...a single adult's household gains half a couple's
+  - L477 the senior professionals' estate has no heir of its tier: every working cell shares it, by grown-ups
+  - L479 the shares are conserved across the city
+  - L480 ...and none left it
+  - L481 the savings after, with what repaid the bank, are the savings before
+- **L484 5. a leaver takes the average out**
+  - L502 the savings that left the city are the leavers' averages
+  - L504 ...the debt, written off
+  - L505 ...the shares
+  - L506 ...the dollars abroad
+  - L507 ...the student loans
+  - L508 ...and the cars
+  - L509 the cells they left keep their averages: couples
+  - L510 ...the seniors
+  - L511 ...on the households that stayed
+  - L512 the newcomers hold their households but none of the leavers' savings
+  - L514 the leavers, counted in households
+  - L516 ...and the savings they took
+  - L527 the evicted who gave up leave: households out of the cell off benefits
+  - L529 ...taking the cell's savings with them
+  - L530 ...the cell keeps its average
+  - L531 ...on the households that stayed
+- **L533 6. every stock is conserved**
+  - L569 what is held of
+  - L576 fixture: every kind of flow moved households
+  - L577 ...money left the city and an estate repaid the bank
+  - L579 ...and the pool still had a reshuffle to net
+  - L580 no savings stranded by the census
+  - L581 ...and none made by it
+- **L583 7. the orphans weigh by their people**
+  - L596 the register is whole: the shares across the city are as they were
+  - L598 ...the shrinking orphans keep theirs, per household
+  - L599 ...and the households that grew hold the shares the orphans released
+  - L601 ...none left the city
+  - L602 the released savings reached them too
+  - L603 no savings are stranded in a pool nobody is handed
+  - L617 a growing orphan cell makes no savings
+  - L618 ...it claimed from the pool: the savings it gained are what the pool handed it
+  - L620 ...and it gained some
+  - L621 ...what it gained and what left the city are what the couples released
+  - L623 ...the shares likewise: the cell's gain and what left are what the couples released
+  - L626 the couples keep their savings a household
+  - L627 a growing orphan cell claims none of the couples' debt
+  - L628 ...none of their student loans
+  - L629 ...and none of their cars
+  - L630 ...the cars the couples released are kept or left the city, none made or lost
+- **L633 8. counted in a real run**
+  - L687 the retirements and the deaths moved households in the city's months
+  - L690 ...and moved savings with them
 
 ## HouseholdMemoryCheck.java - 27 labelled assertions
 
