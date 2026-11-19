@@ -522,3 +522,20 @@ are intact. All raw CSVs/logs/times, the unmodified score and summary,
 classes, dependency list and snapshot are retained under
 `target/ensemble/SZ1/`; launcher `target/SZ1-ensemble.txt`. No source changed
 after the snapshot. This completed ensemble stands for the dry run.
+
+## Current-main records and dry-run handoff — 2026-11-19
+
+Merged main **1041df81b** after the ensemble, in **8a0ca2cb4**. Its FS1
+study and queue/known-red records change no source, tools, data or model
+parameter; the ensemble's final model is unchanged. `--fast` passes,
+zero firm stale findings and zero generated changes; log
+`target/SZ1-FS1-records-fast.txt`. The fresh selection is **ALL, 225
+harnesses**, against this main. Its money/save review line remains covered
+by REV-SZ1 and the isolated P1 mend; no further review finding arrived.
+
+★ Follow FS1's published successors for the same nine known-red rows:
+KeptCheck's KFP1 class goes to **FS5**, PriceLevelCheck's HP1/HP2 classes to
+**FS2**, HealthCheck's HP2 class to **FS11**. Main's registry already names
+these exact prefixes and successor IDs. The ship file adds no red class;
+its PriceLevel explanation now names this model's 96-month town horizon.
+The provisional marker remains until the authorized dry run and ready go.
