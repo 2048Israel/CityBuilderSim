@@ -1496,6 +1496,8 @@ public class ScaleCheck {
             "bankSecurities", "cityMaintenancePaid", "bankProfitLastMonth",
             "bankTaxCharged", "population", "workforce", "landBlocksPurchased",
             "materialsConsumed", "buildings", "unfittedById", "underConstructionById", "constructionProgressById",
+            // R1e: the orders' sets on site, so many buildings each (their "buildings"; the pieces left off are ids).
+            "lotsById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",
             "populationTrend", "treasuryJournalAmounts", "governmentMonth", "householdStatement",
             "sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefore", "creditStatements",

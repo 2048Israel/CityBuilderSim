@@ -398,6 +398,12 @@ adds its line here, not in `CLAUDE.md`.
         FittingCheck.java          R1b's fit acted on: the forms at rest and cleared, the 1900 founding, what
                                    a new building comes with, the order ranked with the buildings, its money,
                                    goods and work, one at a time, the depot's trucks, the player's Fit, the save
+        Fitout.java                R1e's new building's equipment as its order fixes it: the pieces it comes
+                                   without (fittedForNew() at the quote), what that makes its cash and points
+                                   (each built-in piece its goods at the catalogue's prices and its work);
+                                   on site as BuildingsStacks' lots, delivered at the finish, saved
+        FitoutCheck.java           R1e's orders: the split, the default city, two orders, a discovery on site,
+                                   a save mid-build, the receipts, VAT and investment, the shell, R1d kept
         DriverlessTruckCheck.java  R6b's FE1: the driven share's dials, the kit unknown then known by history or
                                    a find, its gain, the depots fitted (tonnes a truck, the drivers struck), the
                                    room-weighted share, a city founded today's way at 1, a played count

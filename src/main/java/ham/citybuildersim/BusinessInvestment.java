@@ -361,7 +361,10 @@ public class BusinessInvestment {
      */
     public double leadTime(BuildingsTemplate template, long quantity, double siteOutput) {
         if (siteOutput <= 0) return Double.MAX_VALUE;
-        return buildingManager.waitFor(template, quantity, siteOutput);
+        // ...on the work its buildings would owe with the equipment they would come with (R1e), as the quote's wait reads it.
+        Fitout fit = template == null ? null : fitoutOf(template);
+        if (fit == null || fit.isWhole()) return buildingManager.waitFor(template, quantity, siteOutput);
+        return buildingManager.waitFor(template, quantity, -(quantity * fit.pointsLeftOff()), siteOutput);
     }
 
     /**
@@ -1445,7 +1448,8 @@ public class BusinessInvestment {
      */
     public double dearOf(BuildingsTemplate t, long n) {
         if (t == null || n < 1) return 1;
-        return buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), n);
+        // ...its buildings' points as their equipment takes them (R1e), as getCostOf() prices them.
+        return buildingManager.orderPriceMultiplier(0, fitoutOf(t).points(), n);
     }
 
     /** The household mix, so a residential building can be priced on who would actually live in it. */
@@ -1601,11 +1605,30 @@ public class BusinessInvestment {
         // The work's price carries the builders' scarcity multiple (FC1; BuildersShort), as the quote does, so a planner
         // sees what it will pay and backs off while the builders are short; the material and the ground do not. Each building
         // of the order is priced on the queue the ones before it leave (BA1; BuildersShort.meanPremium()), as the quote prices them.
-        double scarcity = buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), quantity);
+        // ...on the equipment the order's buildings would come with (R1e; Game hands in Fitout.of()), as the quote prices it:
+        // the template's own cash and points for the whole template, to the bit.
+        Fitout fit = fitoutOf(t);
+        double scarcity = buildingManager.orderPriceMultiplier(0, fit.points(), quantity);
         // (Summed in the order it always was, so a multiple of one is the old price to the last bit.)
-        return economyManager.withBuildersTax(buildingManager.nonMaterialCost(t) * quantity * scarcity
+        return economyManager.withBuildersTax(buildingManager.nonMaterialCost(fit) * quantity * scarcity
                         + shortfall * buildingManager.getConstructionMaterialPrice() + works * scarcity)
                 + groundCostOf(t, quantity);
+    }
+
+    /**
+     * The equipment a new building of a template would come with if ordered now (R1e; Fitout.of(), wired by Game): what the
+     * quote prices and the site keeps, so what a business reckons is what it is charged. The whole template until handed in.
+     */
+    private java.util.function.Function<BuildingsTemplate, Fitout> fitout = Fitout::whole;
+
+    /** Hands in the fitout of a new building (Game: Fitout.of()); null clears it. */
+    public void setFitout(java.util.function.Function<BuildingsTemplate, Fitout> fit) {
+        this.fitout = fit == null ? Fitout::whole : fit;
+    }
+
+    private Fitout fitoutOf(BuildingsTemplate t) {
+        Fitout fit = fitout.apply(t);
+        return fit == null || fit.template() != t ? Fitout.whole(t) : fit;
     }
 
     /**

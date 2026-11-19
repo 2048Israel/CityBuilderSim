@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.160 — R1e, a new building's equipment priced and saved at its order — 2026-11-19, ready, see docs/queue/R1e-notes.md
+A new building's equipment is now chosen when its order is quoted and
+accepted, not when it opens. In a city founded the 1900 way, where a plant
+ordered now may go without a piece that does not pay, the quote prices the
+shell and the pieces the order keeps (a piece's part of the price its goods
+at the catalogue's own prices and its work at the template's own price a
+point); the builders bill that, the site owes that work, the tax and the
+investment are booked on it, the set is saved and delivered at the finish.
+A discovery or a price change afterwards changes a new order only. The
+investors, the money test, the wait, the auto-builder and a stopped site's
+restart read the same set. A city founded the default way is unchanged, its
+traces byte for byte.
+
 ### 0.9.159 — HS1, money follows people — 2026-11-19, ready, see docs/queue/HS1-notes.md
 The month's flows now carry their money. A household that retires, ages on, loses a partner, dies
 alone or leaves takes its cell's average of every stock with it before the census's pool nets the
