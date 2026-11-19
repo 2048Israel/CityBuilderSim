@@ -1337,6 +1337,122 @@ public class LongPlaytest {
     /** Months the utility had draw nobody is invoiced for - the premise of the electricity law. */
     static int unbilledMonths = 0;
 
+    /* ===== THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) =====
+
+       The households' identity (MoneyAudit.households()) is struck every month and audit() flags its residual, but the residual is
+       what is left AFTER nine own lines, each a fault of the model's that HL2 will mend, and it cannot see them. Two of the nine
+       cancel by construction: PublicWagesRestruck is the live public wages less the struck payrolls, and householdsInTransit() adds
+       the same live figure back; BondFaceOrphaned likewise for the bonds. However large either grows the residual stays at nought,
+       and nothing bounded any of the nine. So each is summed over the run, printed as a table, and held to a bound on its MEAN
+       MONTHLY SHARE: the month's absolute amount over what moved between the pools and the households that month (floored at 1,
+       as Households.relative() reads it), averaged over the months struck. Not the run's total over the run's total moved: what
+       moved is nominal and the last years' prices swamp the sum (5.3e14 in the nightly's 4,000 months against 5.7e11 in the gate's
+       2,400, so every line's total share read 1,000 times smaller), and a line could grow a hundredfold in the first thousand
+       months and stay under a bound set on the total. The mean weighs every month alike.
+
+       The rule for the bounds: three times the larger of the mean monthly shares the gate's run (2,400 months) and the nightly's
+       (4,000) measured on 2026-11-11, rounded UP to one significant figure; a line that did not fire in either run is held to
+       OWN_BOUND_UNFIRED. A bound is never set from a guess: it is the run's own figure with room for the months the run did not play.
+
+       HL2 takes the lines to nought and deletes all of this.
+       ================================================================== */
+
+    /** The part in ten million the identity itself allows (audit()'s 1e-7 of what moved), the bound of a line that fired in neither run it was set from. */
+    static final double OWN_BOUND_UNFIRED = 1e-7;
+    /** Unfunded: a mean monthly share of 2.77e-3 of what moved in the gate's run (2,400 months; 1.66e-3 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNFUNDED = 9e-3;
+    /** UnsettledIncome: a mean monthly share of 1.53e-3 of what moved in the gate's run (2,400 months; 9.19e-4 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_INCOME = 5e-3;
+    /** UnsettledRent: a mean monthly share of 1.45e-4 of what moved in the gate's run (2,400 months; 8.69e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_RENT = 5e-4;
+    /** UnsettledFees: a mean monthly share of 7.77e-6 of what moved in the gate's run (2,400 months; 4.67e-6 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_FEES = 3e-5;
+    /** UnsettledShopping: a mean monthly share of 2.06e-5 of what moved in the gate's run (2,400 months; 1.24e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_UNSETTLED_SHOPPING = 7e-5;
+    /** CensusStranded: a mean monthly share of 6.21e-8 of what moved in the gate's run (2,400 months; 3.73e-8 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_CENSUS_STRANDED = 2e-7;
+    /** CensusCreated: a mean monthly share of 2.16e-8 of what moved in the gate's run (2,400 months; 1.29e-8 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_CENSUS_CREATED = 7e-8;
+    /** BondFaceOrphaned: fired in neither run (no month over a cent in the gate's 2,400 months or the nightly's 4,000; the mean monthly share 1.4e-17 and 8.4e-18), so held to OWN_BOUND_UNFIRED. */
+    static final double OWN_BOUND_BOND_FACE_ORPHANED = OWN_BOUND_UNFIRED;
+    /** PublicWagesRestruck: a mean monthly share of 1.32e-4 of what moved in the gate's run (2,400 months; 7.95e-5 in the nightly's 4,000), three times the larger rounded up. */
+    static final double OWN_BOUND_PUBLIC_WAGES_RESTRUCK = 4e-4;
+    /** The nine bounds on the mean monthly share, in the order of MoneyAudit.OWN_LINES. */
+    static final double[] OWN_BOUNDS = {
+            OWN_BOUND_UNFUNDED, OWN_BOUND_UNSETTLED_INCOME, OWN_BOUND_UNSETTLED_RENT, OWN_BOUND_UNSETTLED_FEES,
+            OWN_BOUND_UNSETTLED_SHOPPING, OWN_BOUND_CENSUS_STRANDED, OWN_BOUND_CENSUS_CREATED,
+            OWN_BOUND_BOND_FACE_ORPHANED, OWN_BOUND_PUBLIC_WAGES_RESTRUCK };
+
+    /**
+     * Per own line, in MoneyAudit.OWN_LINES' order: the net sum as it enters own, the sum of absolute amounts, the sum over the months
+     * of the month's absolute amount over what moved that month (ownShare; over the months struck it is the mean monthly share the
+     * bound is set on), the months it fired, and its largest month.
+     */
+    static final double[] ownNet = new double[MoneyAudit.OWN_LINES.length], ownAbs = new double[MoneyAudit.OWN_LINES.length],
+            ownShare = new double[MoneyAudit.OWN_LINES.length], ownLargest = new double[MoneyAudit.OWN_LINES.length];
+    static final int[] ownFired = new int[MoneyAudit.OWN_LINES.length], ownLargestMonth = new int[MoneyAudit.OWN_LINES.length];
+    /** What moved between the pools and the households over the run (the sum of Households.moved()), and the months struck. */
+    static double ownMoved = 0;
+    static int ownMonths = 0;
+    /** The audit last summed, so a month audit() reads twice is summed once. */
+    static MoneyAudit.Households ownLast = MoneyAudit.Households.NONE;
+
+    /**
+     * Sums the month's nine own lines into the run's, and checks the nine are all of own: their signed figures add to hh.own to a
+     * cent or a part in a thousand million of what moved, else a tenth line was added to households() and not to OWN_LINES, and
+     * would escape every bound.
+     */
+    static void noteOwnLines(int month, MoneyAudit.Households hh) {
+        if (hh == MoneyAudit.Households.NONE || hh == ownLast) return;
+        ownLast = hh;
+        ownMonths++;
+        ownMoved += hh.moved();
+        double named = 0;
+        for (int i = 0; i < MoneyAudit.OWN_LINES.length; i++) {
+            String label = MoneyAudit.OWN_LINES[i];
+            double amount = hh.figure(label);
+            double signed = label.charAt(0) == '-' ? -amount : amount;
+            named += signed;
+            ownNet[i] += signed;
+            ownAbs[i] += Math.abs(amount);
+            ownShare[i] += Math.abs(amount) / Math.max(1, hh.moved());
+            if (Math.abs(amount) > MoneyAudit.CENT) ownFired[i]++;
+            if (Math.abs(amount) > Math.abs(ownLargest[i])) { ownLargest[i] = signed; ownLargestMonth[i] = month; }
+        }
+        double unnamed = hh.own - named;
+        if (Math.abs(unnamed) > Math.max(MoneyAudit.CENT, 1e-9 * hh.moved())) {
+            flag(month, "a households' own line the list does not name", hh.toString() + "\n" + hh.detail, Math.abs(unnamed));
+        }
+    }
+
+    /**
+     * The run's table of the households' own lines, one row each, and the finding for every line past its bound. Called once, at the
+     * end, before the findings are printed and counted; another driver can call it with its own stream.
+     */
+    static void ownLinesOverTheRun(PrintStream out, int endMonth) {
+        out.printf("  the households' own lines over the run (HL1): %,d month(s) struck, %,.0f moved between the pools and the households;"
+                + " net as it enters own, absolute sum, months fired, largest month, the absolute sum per million moved over the run,"
+                + " the mean monthly share per million (the month's amount over what moved that month, averaged over the months struck),"
+                + " and the bound on that mean per million:%n",
+                ownMonths, ownMoved);
+        if (OWN_BOUNDS.length != MoneyAudit.OWN_LINES.length) {
+            flag(endMonth, "the households' own lines and their bounds are not the same list",
+                    OWN_BOUNDS.length + " bounds for " + MoneyAudit.OWN_LINES.length + " lines");
+        }
+        for (int i = 0; i < MoneyAudit.OWN_LINES.length; i++) {
+            double total = ownMoved > 0 ? ownAbs[i] / ownMoved : 0;
+            double mean = ownMonths > 0 ? ownShare[i] / ownMonths : 0;
+            double bound = i < OWN_BOUNDS.length ? OWN_BOUNDS[i] : OWN_BOUND_UNFIRED;
+            String row = String.format("%-34s net %,16.2f  abs %,16.2f  fired %,5d of %,5d  largest %,16.2f (m%d)  run %9.3g ppm  mean month %9.3g ppm  bound %s ppm",
+                    MoneyAudit.OWN_LINES[i], ownNet[i], ownAbs[i], ownFired[i], ownMonths, ownLargest[i], ownLargestMonth[i],
+                    total * 1e6, mean * 1e6, bound >= Double.MAX_VALUE ? "none" : String.format("%.3g", bound * 1e6));
+            out.println("    " + row);
+            if (mean > bound) {
+                flag(endMonth, "the households' own line " + MoneyAudit.OWN_LINES[i] + " ran past its bound", row, mean / bound);
+            }
+        }
+    }
+
     static final String FOOD_BROKEN = "food was not conserved";
     static final String POWER_BROKEN = "the utility's electricity revenue is not what the sectors were charged";
     static final String WATER_BROKEN = "the water utility's revenue is not what the sectors were charged";
@@ -1449,6 +1565,24 @@ public class LongPlaytest {
         if (Math.abs(money.residual) > MoneyAudit.CENT && money.relative() > 1e-7) {
             flag(month, "money was not conserved", money.toString());
         }
+
+        /*
+         * ...AND SO IS THE HOUSEHOLDS' (HL1, 2026-11-11). The pools' strike above
+         * cannot see a household: it holds what the shops, the payrolls and the
+         * bank paid it and what it paid back, and the second strike beside it
+         * (MoneyAudit.Households) sets the change in what they hold against exactly
+         * those DOMESTIC lines, less the households' own named lines. A residual
+         * is a household that gained or lost money no line names: a bill paid to
+         * nobody, a payment received from nowhere, or a line the pools declare
+         * that the households never felt. The same tolerance as the pools': a
+         * cent, or a part in ten million of what moved.
+         */
+        MoneyAudit.Households hh = g.getLastHouseholdsAudit();
+        if (Math.abs(hh.residual) > MoneyAudit.CENT && hh.relative() > 1e-7) {
+            flag(month, "the households' money was not conserved", hh.toString() + "\n" + hh.detail);
+        }
+        // ...and the nine own lines the residual is read after, summed over the run and checked to be all of own (HL1, 2026-11-11).
+        noteOwnLines(month, hh);
 
         /*
          * ...AND THE MONEY THE CENTRAL BANK MADE IS THE MONEY THE AUDIT SAW
@@ -8034,6 +8168,8 @@ public class LongPlaytest {
                         + " electricity and water revenue %s the sectors' bills every month; unbilled draw in %,d month(s)%n",
                 breadMadeRun, breadSoldRun, foodMonths, foodMonths > 0 ? breadLow : 0, foodMonths > 0 ? breadHigh : 0,
                 findings.containsKey(POWER_BROKEN) || findings.containsKey(WATER_BROKEN) ? "did NOT match" : "matched", unbilledMonths);
+        // The households' own lines over the run (HL1, 2026-11-11): flagged here, above the place the findings are printed and counted.
+        ownLinesOverTheRun(out, endMonth);
 
         /*
          * CREDIT, BY SECTOR. The bank's line above says what it holds; this
@@ -8510,16 +8646,93 @@ public class LongPlaytest {
         static double worstDrift = 0;
         static String worstDriftPool = "";
 
+        /** The households' own lines (HL1), by the label MoneyAudit.households() notes them under. */
+        static final String[] OWN_LINES = MoneyAudit.OWN_LINES;
+
+        /** The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. */
+        static final class HouseholdsRun {
+            int months = 0, breaches = 0, seizedMonths = 0;
+            /** What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). */
+            double seized = 0;
+            MoneyAudit.Households worst = MoneyAudit.Households.NONE, firstBreach = null;
+            final java.util.Map<String, Integer> fired = new java.util.LinkedHashMap<>();
+        }
+        static HouseholdsRun lastRun = new HouseholdsRun();
+
+        /** The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. */
+        static boolean householdsClose(MoneyAudit.Households h) {
+            return !(Math.abs(h.residual) > MoneyAudit.CENT && h.relative() > 1e-7);
+        }
+
+        /** The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. */
+        static boolean closes(double residual, MoneyAudit.Households h) {
+            return !(Math.abs(residual) > MoneyAudit.CENT && Math.abs(residual) / Math.max(1, h.moved()) > 1e-7);
+        }
+
+        /**
+         * HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end
+         * (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the households' identity closed that month.
+         * householdsHeld() carries "- oldMetalInTransit()", so without the carrier it would be higher by the amount in transit: at the close by
+         * `now`, at the open by `previous`, the change in what they hold by (now - previous), and the residual, which is that change less what
+         * the pools' lines name, by the same: the audit's residual plus (now - previous).
+         */
+        static final class OldMetalTransit {
+            private final Game city;
+            private double previous;
+            int months = 0, heldMonths = 0, movedMonths = 0, breaches = 0;
+            double worstResidual = 0;
+            /** The press the amount in transit moved most in: by how much (signed) and the audit struck that month. */
+            double movedMostBy = 0;
+            MoneyAudit.Households movedMostIn = MoneyAudit.Households.NONE;
+
+            /** Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. */
+            OldMetalTransit(Game city) {
+                this.city = city;
+                this.previous = MoneyAudit.oldMetalInTransit(city.getSectors());
+            }
+
+            /** Read at the end of every press. */
+            void pressed() {
+                double now = MoneyAudit.oldMetalInTransit(city.getSectors());
+                MoneyAudit.Households hh = city.getLastHouseholdsAudit();
+                months++;
+                if (now > MoneyAudit.CENT) heldMonths++;
+                double by = now - previous;
+                if (Math.abs(by) > MoneyAudit.CENT) movedMonths++;
+                if (!householdsClose(hh)) breaches++;
+                if (Math.abs(hh.residual) > Math.abs(worstResidual)) worstResidual = hh.residual;
+                if (Math.abs(by) > Math.abs(movedMostBy)) { movedMostBy = by; movedMostIn = hh; }
+                previous = now;
+            }
+
+            /** The residual of the press the amount moved most in, had the carrier not been counted. */
+            double residualWithoutCarrier() {
+                return movedMostIn.residual + movedMostBy;
+            }
+        }
+
         /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
         static MoneyAudit.Result play(String label, Game g, int months, boolean verbose) {
             MoneyAudit.Result worst = MoneyAudit.Result.NONE;
             double worstRel = -1;
             worstDrift = 0;
             worstDriftPool = "";
+            HouseholdsRun run = lastRun = new HouseholdsRun();
             for (int i = 0; i < months; i++) {
                 final Game gg = g;
                 quietly(() -> gg.simulateMonths(1));
                 MoneyAudit.Result r = g.getLastMoneyAudit();
+                MoneyAudit.Households hh = g.getLastHouseholdsAudit();
+                run.months++;
+                if (Math.abs(hh.residual) > Math.abs(run.worst.residual)) run.worst = hh;
+                if (!householdsClose(hh)) {
+                    run.breaches++;
+                    if (run.firstBreach == null) run.firstBreach = hh;
+                }
+                double seizedNow = g.getHouseholdBalance().getSeizedAtBankruptcy();
+                if (seizedNow > MoneyAudit.CENT) { run.seizedMonths++; run.seized += seizedNow; }
+                // Fired: more than a cent, so the rounding of a sum of sums is not counted as a mechanic.
+                for (String own : OWN_LINES) if (Math.abs(hh.figure(own)) > MoneyAudit.CENT) run.fired.merge(own, 1, Integer::sum);
                 if (verbose) System.out.println("   " + r);
                 if (r.relative() > worstRel) { worstRel = r.relative(); worst = r; }
                 if (Math.abs(g.getPostAuditDrift()) > Math.abs(worstDrift)) {
@@ -8530,6 +8743,68 @@ public class LongPlaytest {
             System.out.printf("   %s: worst month %s%n", label, worst);
             if (worst.relative() >= 1e-4) System.out.print(worst.detail);
             return worst;
+        }
+
+        /** HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. */
+        static Game upkeepCity(GameFiles files, boolean office) {
+            Game c = new Game(files);
+            quietly(() -> {
+                c.run();
+                c.setCashForTest(Founding.WEALTHY_CASH);
+                c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 400_000_000L);
+                BuildingManager b = c.getBuildingManager();
+                b.addStack(b.getTemplateByName("House"), 400, true);
+                b.addStack(b.getTemplateByName("Low-Rise Apartments"), 4, true);
+                b.addStack(b.getTemplateByName("Small Grocery Store"), 4, true);
+                b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+                b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
+                b.addStack(b.getTemplateByName("Paved Road"), 10, true);
+                b.addStack(b.getTemplateByName("Walk-in Clinic"), 2, true);
+                b.addStack(b.getTemplateByName("Elementary School"), 1, true);
+                b.addStack(b.getTemplateByName("Police Station"), 2, true);
+                // The catalogue gives no road, line or terminal an upkeep, so the transit bill's upkeep part is nothing in any city until one has: the bus is given one.
+                b.getTemplateByName("Bus Network").setUpkeep(b.getTemplateByName("Bus Network").getCashCost() * .001);
+                b.addStack(b.getTemplateByName("Bus Network"), 3, true);
+                if (office) b.addStack(b.getTemplateByName("Contact Centre"), 2, true);
+                c.simulateMonths(6);
+                // ...the branches last, and held: the branch rule closes a branch the fees do not cover (Bank.branchesToClose()), and a young city's do not.
+                c.getBusinessInvestment().holdBranches();
+                b.addStack(b.getTemplateByName("Commercial Bank"), 3, true);
+            });
+            return c;
+        }
+
+        /**
+         * HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months,
+         * the town whose sectors have issued bonds the households hold, and whose households' books close in every one of those months. (BondCheck's
+         * town, tried first, issues bonds from its second year and left 0.01 to 0.5 of its households' money unnamed every month: the contributions
+         * and premiums off its payslips, a press out of step, which section 16 causes on this city and householdsInTransit() now carries.)
+         */
+        static Game foundingCity(GameFiles files) {
+            Game c = new Game(files);
+            quietly(() -> {
+                c.run();
+                c.setCashForTest(Founding.WEALTHY_CASH);
+                c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 400_000_000L);
+                c.buildStack(t(c, "House"), 400, false);
+                c.buildStack(t(c, "Low-Rise Apartments"), 4, false);
+                c.buildStack(t(c, "Small Grocery Store"), 4, false);
+                c.buildStack(t(c, "Industrial Bakery"), 3, false);
+                c.buildStack(t(c, "Construction Depot"), 3, false);
+                c.buildStack(t(c, "Coal Power Plant"), 1, false);
+                c.buildStack(t(c, "Water Treatment Plant"), 1, false);
+                c.buildStack(t(c, "Paved Road"), 10, false);
+                c.buildStack(t(c, "Walk-in Clinic"), 2, false);
+                c.buildStack(t(c, "Elementary School"), 1, false);
+                c.simulateMonths(120);
+            });
+            return c;
+        }
+
+        /** The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). */
+        static double upkeepBills(Game c) {
+            return c.getHealthcare().getUpkeep() + c.getEducation().getUpkeep() + c.getEconomyManager().getResearchCosts()
+                    + c.getCrime().getUpkeep() + c.getEconomyManager().getTransitUpkeep() + c.getBank().getOperatingCost();
         }
 
         static void run(String[] args) {
@@ -8598,6 +8873,8 @@ public class LongPlaytest {
             g.buildStack(t(g, "Bus Network"), 3, false);
 
             worst = play("with mines, mills, a cemetery, a college and a bus, 240 months", g, 240, verbose);
+            // ...the longest this file plays: the households' books over it are section 13's.
+            HouseholdsRun industrialRun = lastRun;
             assertTrue("an industrial city conserves money to within 0.01% of what moved",
                     worst.relative() < 1e-4);
             assertTrue("...and it really did carry passengers, so the fare was really charged",
@@ -8853,10 +9130,12 @@ public class LongPlaytest {
             });
             MoneyAudit.Result worstYard = MoneyAudit.Result.NONE;
             double householdsDeclared = 0, sectorsSold = 0, yardBought = 0;
+            OldMetalTransit steelTransit = new OldMetalTransit(yards);
             for (int m = 0; m < 24; m++) {
                 yards.getOldMetal().carsScrapped(6_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY);
                 yards.getOldMetal().fabricated(Sectors.MANUFACTURING, 6_000 / OldMetal.OFFCUTS_A_TONNE_FABRICATED / OldMetal.RECOVERY);
                 quietly(() -> yards.simulateMonths(1));
+                steelTransit.pressed();
                 MoneyAudit.Result r = yards.getLastMoneyAudit();
                 if (r.relative() > worstYard.relative()) worstYard = r;
                 householdsDeclared += MoneyAudit.oldMetalBoughtOfHouseholds(yards.getSectors());
@@ -8878,6 +9157,20 @@ public class LongPlaytest {
             assertTrue("...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it",
                     lastYard.detail.contains("- sectors OldMetalToHouseholds") && lastYard.detail.contains("chk + households OldMetalSold")
                             && lastYard.detail.contains("chk + sectors OldMetalSold") && lastYard.detail.contains("chk - sectors OldMetalBought"));
+            // HL1 (2026-11-11; the ensemble found it): the yard pays the households' savings at once and its books strike the purchase a press
+            // later, so in a press the savings rise by this month's and the line "- sectors OldMetalToHouseholds" says last month's. The
+            // households' held figure takes the amount still on the yard's pending ledger OFF (MoneyAudit.householdsInTransit()).
+            System.out.printf("   the households' old steel in transit at a press's end in %d of %d months, moved by more than a cent between"
+                            + " two presses in %d; the worst household residual %,.6f (%d months open); the month it moved most (m%d, by %,.4f):"
+                            + " %,.6f without the carrier%n",
+                    steelTransit.heldMonths, steelTransit.months, steelTransit.movedMonths, steelTransit.worstResidual, steelTransit.breaches,
+                    steelTransit.movedMostIn.month, steelTransit.movedMostBy, steelTransit.residualWithoutCarrier());
+            assertTrue("fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses",
+                    steelTransit.heldMonths >= 1 && steelTransit.movedMonths >= 1);
+            assertTrue("the households' books close in every one of the yard's months (worst residual "
+                            + String.format("%.6f", steelTransit.worstResidual) + ")", steelTransit.breaches == 0);
+            assertTrue("...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close",
+                    !closes(steelTransit.residualWithoutCarrier(), steelTransit.movedMostIn));
 
             /* ==================================================================
                OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):
@@ -8905,10 +9198,12 @@ public class LongPlaytest {
             });
             MoneyAudit.Result worstCopper = MoneyAudit.Result.NONE;
             double copperHouseholds = 0, copperSectors = 0, copperBought = 0;
+            OldMetalTransit copperTransit = new OldMetalTransit(refiners);
             for (int m = 0; m < 24; m++) {
                 refiners.getOldMetal().carsScrapped(3_000 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
                 refiners.getOldMetal().copper().arise(OldMetal.Source.DEMOLITIONS, Sectors.MANUFACTURING, 3_000 / OldMetal.RECOVERY);
                 quietly(() -> refiners.simulateMonths(1));
+                copperTransit.pressed();
                 MoneyAudit.Result r = refiners.getLastMoneyAudit();
                 if (r.relative() > worstCopper.relative()) worstCopper = r;
                 copperHouseholds += MoneyAudit.oldMetalBoughtOfHouseholds(refiners.getSectors());
@@ -8927,6 +9222,18 @@ public class LongPlaytest {
                             + " leaves the pools (\"- sectors OldMetalToHouseholds\"), the sectors' a pool paying a pool",
                     Math.abs(copperBought - copperHouseholds - copperSectors) < .01
                             && refiners.getLastMoneyAudit().detail.contains("- sectors OldMetalToHouseholds"));
+            // HL1: the same carrier, the refinery's pending ledger (see the old steel above).
+            System.out.printf("   the households' old copper in transit at a press's end in %d of %d months, moved by more than a cent between"
+                            + " two presses in %d; the worst household residual %,.6f (%d months open); the month it moved most (m%d, by %,.4f):"
+                            + " %,.6f without the carrier%n",
+                    copperTransit.heldMonths, copperTransit.months, copperTransit.movedMonths, copperTransit.worstResidual, copperTransit.breaches,
+                    copperTransit.movedMostIn.month, copperTransit.movedMostBy, copperTransit.residualWithoutCarrier());
+            assertTrue("fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses",
+                    copperTransit.heldMonths >= 1 && copperTransit.movedMonths >= 1);
+            assertTrue("the households' books close in every one of the refinery's months (worst residual "
+                            + String.format("%.6f", copperTransit.worstResidual) + ")", copperTransit.breaches == 0);
+            assertTrue("...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close",
+                    !closes(copperTransit.residualWithoutCarrier(), copperTransit.movedMostIn));
 
             /* ==================================================================
                THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;
@@ -9042,6 +9349,307 @@ public class LongPlaytest {
             assertTrue("the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool",
                     worstCouponGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
             assertTrue("...and it is the cash coupons the budget calls its cash interest", worstCashGap < MoneyAudit.tolerance(1e-6, paperCity.getCash()));
+
+            /* ==================== 12. the services' upkeep is bought of Business Services ==================== */
+            System.out.println("--- the services' upkeep is bought of Business Services (HL1) ---");
+            /*
+             * HL1 (2026-11-11): the care, schools, research, safety and transit upkeep and the bank's operating cost left the pools and reached
+             * nobody. They are Business Services' other revenue now, booked the moment the buyer pays (Sector.bookUpkeepSold()), struck and banked
+             * at its next strike, with the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) booked as an imported service.
+             * Between the press that pays and the press that strikes the money is in transit in the seller's pool (MoneyAudit.pools()).
+             */
+            GameFiles upkeepFiles = GameFiles.scratch("moneycheck-upkeep");
+            Game up = upkeepCity(upkeepFiles, true);
+            ham.citybuildersim.sectors.BusinessServices office = up.getSectors().businessServices();
+            quietly(() -> up.simulateMonths(1));
+            MoneyAudit.Result paidMonth = up.getLastMoneyAudit();
+            MoneyAudit.Households paidHouseholds = up.getLastHouseholdsAudit();
+            double bills = upkeepBills(up);
+            // ...the bank's part of them, read in the month it is paid, for the next press to be read against (it has its own input line since the review's finding, HL1 2026-11-11).
+            double bankPaid = up.getBank().getOperatingCost();
+            System.out.printf("   month paid: seats %.0f; care %.2f, schools %.2f, research %.2f, safety %.2f, transit %.2f of %.2f, bank %.2f; sold %.2f%n",
+                    office.getSeats(), up.getHealthcare().getUpkeep(), up.getEducation().getUpkeep(), up.getEconomyManager().getResearchCosts(),
+                    up.getCrime().getUpkeep(), up.getEconomyManager().getTransitUpkeep(), up.getEconomyManager().getTransitBill(),
+                    up.getBank().getOperatingCost(), office.pending().upkeepSold);
+            assertTrue("fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but the laboratories' (none stand: DiscoveryCheck's)",
+                    office.getSeats() > 0 && up.getHealthcare().getUpkeep() > 0 && up.getCrime().getUpkeep() > 0
+                            && up.getEconomyManager().getTransitUpkeep() > 0 && up.getBank().getOperatingCost() > 0 && up.getEducation().getUpkeep() > 0);
+            assertTrue("the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost",
+                    bills > 0 && Math.abs(office.pending().upkeepSold - bills) <= MoneyAudit.CENT);
+            assertTrue("...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead",
+                    paidMonth.relative() < 1e-4 && paidMonth.figure("- care Upkeep") == 0 && paidMonth.figure("- schools Upkeep") == 0
+                            && paidMonth.figure("- safety Upkeep") == 0 && paidMonth.figure("- bank Operating") == 0 && paidMonth.figure("- transit Bill") == 0
+                            && Math.abs(paidMonth.figure("chk - care Upkeep") - up.getHealthcare().getUpkeep()) <= MoneyAudit.CENT
+                            && Math.abs(paidMonth.figure("chk - safety Upkeep") - up.getCrime().getUpkeep()) <= MoneyAudit.CENT
+                            && Math.abs(paidMonth.figure("chk - bank Operating") - up.getBank().getOperatingCost()) <= MoneyAudit.CENT
+                            && Math.abs(paidMonth.figure("chk - transit Bill") - up.getEconomyManager().getTransitBill()) <= MoneyAudit.CENT
+                            && Math.abs(paidMonth.figure("- transit Wages") - up.getEconomyManager().getTransitWages()) <= MoneyAudit.CENT
+                            && up.getEconomyManager().getTransitWages() > 0);
+            // ...and the households' books close in the month the bank's operating cost is paid: a line no measured city had exercised.
+            System.out.printf("   month paid: households %s%n", paidHouseholds);
+            assertTrue("...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)",
+                    householdsClose(paidHouseholds));
+            // Saved between the two presses, reloaded below: the money in transit is in the file.
+            quietly(() -> up.saveGame(10));
+            quietly(() -> up.simulateMonths(1));
+            MoneyAudit.Result struckMonth = up.getLastMoneyAudit();
+            Sector.Statement officeBooks = office.statement();
+            Double upkeepPart = officeBooks.otherParts.get(Sector.UPKEEP_SOLD);
+            Double upkeepSupplies = officeBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES);
+            Double bankSupplies = officeBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES);
+            System.out.printf("   month struck: services' line %s of %.2f; bank's line %s of %.2f; Business Services Imports %.2f%n",
+                    upkeepSupplies, bills - bankPaid, bankSupplies, bankPaid, struckMonth.figure("- Business Services Imports"));
+            assertTrue("the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent",
+                    upkeepPart != null && Math.abs(upkeepPart - bills) <= MoneyAudit.CENT);
+            assertTrue("...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own",
+                    upkeepSupplies != null
+                            && Math.abs(upkeepSupplies - (bills - bankPaid) * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
+            assertTrue("...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports",
+                    bankSupplies != null && bankPaid > 0
+                            && Math.abs(bankSupplies - bankPaid * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
+            assertTrue("...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least",
+                    struckMonth.relative() < 1e-4 && upkeepSupplies != null && bankSupplies != null
+                            && struckMonth.figure("- Business Services Imports") >= upkeepSupplies + bankSupplies - MoneyAudit.CENT);
+            MoneyAudit.Households struckHouseholds = up.getLastHouseholdsAudit();
+            System.out.printf("   month struck: households %s%n", struckHouseholds);
+            assertTrue("...and that month's households' books close too (a cent, or a part in ten million of what moved)", householdsClose(struckHouseholds));
+            Game upBack = new Game(upkeepFiles);
+            quietly(() -> { upBack.run(); upBack.loadGame(10); });
+            assertTrue("saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold",
+                    upBack.getLoadFailure() == null
+                            && Math.abs(upBack.getSectors().businessServices().pending().upkeepSold - bills) <= MoneyAudit.CENT);
+            quietly(() -> upBack.simulateMonths(1));
+            Sector.Statement backBooks = upBack.getSectors().businessServices().statement();
+            assertTrue("...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit",
+                    upBack.getLastMoneyAudit().relative() < 1e-4 && backBooks.otherParts.get(Sector.UPKEEP_SOLD) != null
+                            && Math.abs(backBooks.otherParts.get(Sector.UPKEEP_SOLD) - bills) <= MoneyAudit.CENT);
+            // A city whose Business Services has no seats: nobody there to do the work, so all of it is bought abroad.
+            Game bare = upkeepCity(GameFiles.scratch("moneycheck-upkeep-bare"), false);
+            quietly(() -> bare.simulateMonths(1));
+            double bareBank = bare.getBank().getOperatingCost();
+            quietly(() -> bare.simulateMonths(1));
+            Sector.Statement bareBooks = bare.getSectors().businessServices().statement();
+            Double bareParts = bareBooks.otherParts.get(Sector.UPKEEP_SOLD);
+            double bareSupplies = bareBooks.otherInputs.getOrDefault(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES, 0.0);
+            Double bareBankSupplies = bareBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES);
+            System.out.printf("   bare city: sold %s; services' line %.2f; bank's line %s of %.2f%n", bareParts, bareSupplies, bareBankSupplies, bareBank);
+            assertTrue("a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum",
+                    bare.getSectors().businessServices().getSeats() <= 0 && bareParts != null && bareParts > 0
+                            && bareBankSupplies != null && Math.abs(bareSupplies + bareBankSupplies - bareParts) <= MoneyAudit.CENT
+                            && bare.getLastMoneyAudit().relative() < 1e-4);
+            assertTrue("...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest",
+                    bareBank > 0 && bareBankSupplies != null && Math.abs(bareBankSupplies - bareBank) <= MoneyAudit.CENT
+                            && bareParts != null && Math.abs(bareSupplies - (bareParts - bareBank)) <= MoneyAudit.CENT);
+            MoneyAudit.Households bareHouseholds = bare.getLastHouseholdsAudit();
+            System.out.printf("   bare city: households %s%n", bareHouseholds);
+            assertTrue("...and that month's households' books close too (a cent, or a part in ten million of what moved)", householdsClose(bareHouseholds));
+
+            /* ==================== 13. the households' books close ==================== */
+            System.out.println("--- the households' books close (HL1) ---");
+            /*
+             * HL1 (2026-11-11): the change in what the households hold, month on month, is what the pools paid them less what they paid the pools
+             * (MoneyAudit.Households), plus the households' own lines: faults of the model that the audit names and measures (HL2 mends them).
+             * The city is the industrial one above, the longest this file plays, its 240 months struck one by one by play().
+             */
+            System.out.printf("   %d months struck; the worst residual %,.6f (%s)%n",
+                    industrialRun.months, industrialRun.worst.residual, industrialRun.worst);
+            assertTrue("fixture: the longest city this file plays gave at least 24 months to read",
+                    industrialRun.months >= 24);
+            assertTrue("every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)"
+                            + (industrialRun.firstBreach == null ? "" : ": first to fail " + industrialRun.firstBreach),
+                    industrialRun.breaches == 0);
+            // The count: how often each own line fired, in months of more than a cent. A mechanic no run exercises has no test.
+            StringBuilder counts = new StringBuilder();
+            for (String own : OWN_LINES) counts.append(String.format("%n   %-36s %4d of %d months", own, industrialRun.fired.getOrDefault(own, 0), industrialRun.months));
+            System.out.println("   the households' own lines fired:" + counts);
+            System.out.printf("   a bankrupt's savings repaid the bank in %d of %d months, %,.2f in all (BankCheck causes one)%n",
+                    industrialRun.seizedMonths, industrialRun.months, industrialRun.seized);
+            assertTrue("the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run",
+                    industrialRun.fired.getOrDefault("+ households Unfunded", 0) > 0
+                            && industrialRun.fired.getOrDefault("- households UnsettledIncome", 0) > 0);
+
+            /* ==================== 14. a cent that vanishes from a household is seen ==================== */
+            System.out.println("--- and a cent that vanishes from a household is seen (HL1's premise) ---");
+            /*
+             * The identity is only worth asserting if it can fail. A played city (the one above with no seats at Business Services) has
+             * 1% of its households' savings taken out of the cells between two presses with no line, X. The game's own strike read its opening
+             * figure AFTER the theft and so closes; a strike from the figure read BEFORE it has to show -X: the savings' interest on the smaller
+             * balance is a DOMESTIC line (the deposit interest, struck from the cells at the sync), so it moves with the theft by a line, not
+             * by a residual.
+             */
+            HouseholdBalance books = bare.getHouseholdBalance();
+            double allSavings = books.totalSavings();
+            double stolen = Math.max(.01 * allSavings, 100 * MoneyAudit.CENT);
+            assertTrue("fixture: the city holds savings enough that 1% of them is a hundred cents or more",
+                    allSavings > 0 && stolen <= allSavings);
+            double heldBefore = MoneyAudit.householdsHeld(bare);
+            // Taken from every cell alike, per household: the cells' savings are averages, so the cells' total falls by exactly `stolen`.
+            for (Household cell : books.cellsForMarket()) cell.savings *= 1 - stolen / allSavings;
+            assertTrue("the theft took what it was meant to: the savings fell by X, to the cent",
+                    Math.abs(allSavings - books.totalSavings() - stolen) <= MoneyAudit.CENT);
+            quietly(() -> bare.simulateMonths(1));
+            MoneyAudit.Households games = bare.getLastHouseholdsAudit();
+            MoneyAudit.Households mine = MoneyAudit.households(bare, heldBefore, bare.getLastMoneyAudit());
+            System.out.printf("   X %,.2f; the game's strike (opened after the theft) %s%n   a strike opened before it: %s%n", stolen, games, mine);
+            assertTrue("the game's own strike, whose opening figure was read after the theft, closes", householdsClose(games));
+            assertTrue("...and a strike from the figure read BEFORE the theft shows -X, to the cent",
+                    Math.abs(mine.residual + stolen) <= MoneyAudit.CENT);
+
+            /* ==================== 15. a bond's face that no cell holds is named ==================== */
+            System.out.println("--- and a bond's face that no cell holds is named (HL1) ---");
+            /*
+             * HL1 (2026-11-11; the ensemble found it, seeds 10 and 14): a corporate bond keeps the households' face twice, in its own record
+             * (CorporateBond.households()) and in each cell's (Household.bondFace(), HouseholdBalance.bondFaceHeld()). The census moves the
+             * cells' stocks with its orphan clamps and tells the record nothing, so the two drift; the issuer pays the record, the cells are
+             * credited their own, and the difference is money the pools paid that no household was given: "- households BondFaceOrphaned"
+             * (BondMarket.getOrphanedToHouseholds(), the coupons' part and the principal's). HL2 reconciles the two records.
+             * THE FIXTURE CAUSES THE DRIFT, as the census does, on section 1's founding city rebuilt at its 121st month (foundingCity(): the
+             * industrial city above has no bond the households hold left by its end, all its issues having matured): the households' bond
+             * that matures soonest has the face of the cells that hold it halved, the biggest cell first, until the coupon on what the
+             * record exceeds the cells by is a few times what the identity can tell from rounding. A bond is issued for TERM_MONTHS (ten
+             * years) and this town's first was issued in its 60th month, so the maturity is about sixty presses on (printed below), played
+             * one by one to it: a few seconds.
+             */
+            final String bondLine = "- households BondFaceOrphaned";
+            Game bondTown = foundingCity(GameFiles.scratch("moneycheck-bonds"));
+            BondMarket bondMarket = bondTown.getBondMarket();
+            HouseholdBalance gBooks = bondTown.getHouseholdBalance();
+            CorporateBond soonest = null;
+            for (CorporateBond b : bondMarket.getBonds()) {
+                if (!(b.households() > 0) || !(gBooks.bondFaceHeld(b.id) > 0)) continue;
+                if (soonest == null || b.maturityMonth() < soonest.maturityMonth()) soonest = b;
+            }
+            assertTrue("fixture: the bond town's households hold a corporate bond", soonest != null);
+            if (soonest != null) {
+                final int bondId = soonest.id;
+                final double monthlyCoupon = soonest.coupon / CorporateBond.COUPONS_A_YEAR;
+                java.util.List<Household> holders = new java.util.ArrayList<>();
+                for (Household c : gBooks.cellsForMarket()) if (c.bondFace(bondId) > 0 && c.households() > 0) holders.add(c);
+                holders.sort((a, z) -> Double.compare(z.bondFace(bondId) * z.households(), a.bondFace(bondId) * a.households()));
+                // Seen from the identity: a residual it can tell from rounding is a cent, and a part in ten million of what the month moves.
+                double visible = 4 * Math.max(MoneyAudit.CENT, 1e-7 * Math.max(1, bondTown.getLastHouseholdsAudit().moved()));
+                int halved = 0;
+                for (Household c : holders) {
+                    c.setBondFace(bondId, c.bondFace(bondId) / 2);
+                    halved++;
+                    if ((soonest.households() - gBooks.bondFaceHeld(bondId)) * monthlyCoupon > visible) break;
+                }
+                double drift = soonest.households() - gBooks.bondFaceHeld(bondId);
+                System.out.printf("   bond %d (%s, maturing m%d, now m%d): the record %,.2f, the cells' own %,.2f; %d of %d holding cells halved,"
+                                + " D %,.4f, its coupon a month %,.6f (visible from %,.6f)%n",
+                        bondId, soonest.issuer, soonest.maturityMonth(), bondTown.getMonth(), soonest.households(), gBooks.bondFaceHeld(bondId),
+                        halved, holders.size(), drift, drift * monthlyCoupon, visible);
+                assertTrue("fixture: the bond's record now exceeds the cells' own by D, over a cent", drift > MoneyAudit.CENT);
+
+                // The coupon month: one press.
+                quietly(() -> bondTown.simulateMonths(1));
+                MoneyAudit.Households couponMonth = bondTown.getLastHouseholdsAudit();
+                double orphanedCoupon = bondMarket.getOrphanedToHouseholds();
+                System.out.printf("   the coupon month: orphaned %,.6f, the line %,.6f; %s; without the line %,.6f%n",
+                        orphanedCoupon, couponMonth.figure(bondLine), couponMonth, couponMonth.residual - orphanedCoupon);
+                assertTrue("the press that paid the coupon on D declares it orphaned: " + String.format("%.6f", orphanedCoupon)
+                                + " against the coupon on D " + String.format("%.6f", drift * monthlyCoupon),
+                        orphanedCoupon > MoneyAudit.CENT && orphanedCoupon >= .5 * drift * monthlyCoupon);
+                assertTrue("...and the own line fired with that figure", Math.abs(couponMonth.figure(bondLine) - orphanedCoupon) <= 1e-9);
+                assertTrue("...the households' books close", householdsClose(couponMonth));
+                // The pools paid the record and the cells were credited their own, so the households gained the line less than the pools paid:
+                // the residual is own's (-orphaned) taken off, and without the line it is the audit's residual less the orphaned.
+                assertTrue("...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved",
+                        !closes(couponMonth.residual - orphanedCoupon, couponMonth));
+
+                // On to the maturity, every month struck.
+                int presses = 1, breaches = 0;
+                boolean matured = false;
+                double driftBeforeMaturity = drift, maturityFigure = 0;
+                MoneyAudit.Households maturityMonth = null;
+                while (!matured && presses < CorporateBond.TERM_MONTHS) {
+                    double driftBefore = soonest.households() - gBooks.bondFaceHeld(bondId);
+                    quietly(() -> bondTown.simulateMonths(1));
+                    presses++;
+                    MoneyAudit.Households hh = bondTown.getLastHouseholdsAudit();
+                    if (!householdsClose(hh)) breaches++;
+                    if (!bondMarket.getBonds().contains(soonest)) {
+                        matured = true;
+                        maturityMonth = hh;
+                        maturityFigure = hh.figure(bondLine);
+                        driftBeforeMaturity = driftBefore;
+                    }
+                }
+                System.out.printf("   %d presses to the maturity: the record less the cells' own at the end of the press before %,.4f, the line"
+                                + " in the month it matured %,.4f (%s)%n", presses, driftBeforeMaturity, maturityFigure, maturityMonth);
+                assertTrue("the bond matured within its term (m" + soonest.maturityMonth() + ", " + presses + " presses on)",
+                        matured && soonest.isMatured(maturityMonth.month));
+                assertTrue("...every month on the way closed its households' books", breaches == 0);
+                assertTrue("...the month it matured the line is at least the principal part of the drift, half of what it was the press before"
+                                + " (a default may have written both records down in between, so not equal)",
+                        maturityFigure >= .5 * driftBeforeMaturity);
+                assertTrue("...and the households' books close that month, the principal paid on a face no cell held",
+                        maturityMonth != null && householdsClose(maturityMonth));
+            }
+
+            /* ==================== 16. what comes off the payslips is in transit a press ==================== */
+            System.out.println("--- and the contributions and premiums off the payslips are in transit a press (HL1) ---");
+            /*
+             * HL1 (2026-11-11; found in BondCheck's town, the one harness city with every lever open): the pension contributions and the EI and
+             * health premiums are struck off the staffed wage bill and banked by the treasury at the strike (EconomyManager's stored figures, the
+             * lines "+ e Contributions", "+ e EiPremiums", "+ e HealthPremiums"), and Game.syncHouseholdAccounts() charges the households those
+             * stored figures at the NEXT press. So in a month the three move the pools are paid this month's and the savings lose last month's,
+             * and the households' books missed by the change: 0.01 to 0.5 a month in that town, in 40 months of 40. householdsInTransit() carries
+             * them now ("- contributions - EI premiums - health premiums"), as it does the wage tax.
+             * THE FIXTURE CAUSES IT on section 15's founding city, whose three levers are shut in 1900 (nothing comes off its payslips but the
+             * wage tax): the three levers opened (TaxPolicy.openNow(), the others as they were), the three rates set to half their caps a press
+             * later and to a quarter a year on, so the amount in transit moves from nothing, and twice more.
+             * householdsHeld() carries the three with a minus, so without the carrier it would be higher by the stored figure: at the close by
+             * this press's, at the open by the last's, and the residual by (now - previous), as the old metal's is.
+             */
+            Game slips = foundingCity(GameFiles.scratch("moneycheck-payslips"));
+            EconomyManager slipsBooks = slips.getEconomyManager();
+            TaxPolicy slipsTax = slipsBooks.getTaxPolicy();
+            java.util.function.DoubleSupplier offThePayslips =
+                    () -> slipsBooks.getContributions() + slipsBooks.getEiPremiums() + slipsBooks.getHealthPremiums();
+            assertTrue("fixture: with the three levers shut nothing comes off the payslips but the wage tax", offThePayslips.getAsDouble() == 0);
+            slipsTax.openNow(PolicyDates.Lever.PENSION_CONTRIBUTION);
+            slipsTax.openNow(PolicyDates.Lever.EI);
+            slipsTax.openNow(PolicyDates.Lever.HEALTH_PREMIUM);
+            final int slipPresses = 24, ratesSetAt = 1, ratesMovedAt = 13;
+            int slipBreaches = 0, slipMoved = 0;
+            double slipWorst = 0, slipMovedMostBy = 0, slipPrevious = offThePayslips.getAsDouble();
+            MoneyAudit.Households slipMovedMostIn = MoneyAudit.Households.NONE;
+            for (int i = 0; i < slipPresses; i++) {
+                if (i == ratesSetAt || i == ratesMovedAt) {
+                    double share = i == ratesSetAt ? .5 : .25;
+                    slipsTax.setContributionRate(share * TaxPolicy.MAX_CONTRIBUTION);
+                    slipsTax.setEiPremiumRate(share * TaxPolicy.MAX_EI_PREMIUM);
+                    slipsTax.setHealthPremiumRate(share * TaxPolicy.MAX_HEALTH_PREMIUM);
+                }
+                quietly(() -> slips.simulateMonths(1));
+                MoneyAudit.Households hh = slips.getLastHouseholdsAudit();
+                double now = offThePayslips.getAsDouble(), movedBy = now - slipPrevious;
+                if (!householdsClose(hh)) slipBreaches++;
+                slipWorst = Math.max(slipWorst, Math.abs(hh.residual));
+                if (Math.abs(movedBy) > MoneyAudit.CENT) slipMoved++;
+                if (Math.abs(movedBy) > Math.abs(slipMovedMostBy)) { slipMovedMostBy = movedBy; slipMovedMostIn = hh; }
+                if (i == ratesSetAt) {
+                    System.out.printf("   the press the rates were set: contributions %,.4f, EI premiums %,.4f, health premiums %,.4f%n",
+                            slipsBooks.getContributions(), slipsBooks.getEiPremiums(), slipsBooks.getHealthPremiums());
+                    assertTrue("fixture: the treasury banked all three that press",
+                            slipsBooks.getContributions() > MoneyAudit.CENT && slipsBooks.getEiPremiums() > MoneyAudit.CENT
+                                    && slipsBooks.getHealthPremiums() > MoneyAudit.CENT);
+                    assertTrue("...by the lines the pools' identity reads",
+                            Math.abs(slips.getLastMoneyAudit().figure("+ e Contributions") - slipsBooks.getContributions()) <= 1e-9
+                                    && Math.abs(slips.getLastMoneyAudit().figure("+ e EiPremiums") - slipsBooks.getEiPremiums()) <= 1e-9
+                                    && Math.abs(slips.getLastMoneyAudit().figure("+ e HealthPremiums") - slipsBooks.getHealthPremiums()) <= 1e-9);
+                }
+                slipPrevious = now;
+            }
+            double slipWithout = slipMovedMostIn.residual + slipMovedMostBy;
+            System.out.printf("   %d presses: what comes off the payslips moved by over a cent in %d; worst residual %.3e; m%d moved it most,"
+                            + " by %,.4f (%s; without the carrier %,.6f)%n",
+                    slipPresses, slipMoved, slipWorst, slipMovedMostIn.month, slipMovedMostBy, slipMovedMostIn, slipWithout);
+            assertTrue("fixture: what comes off the payslips moved by over a cent in at least three presses", slipMoved >= 3);
+            assertTrue("the households' books close in every one of the " + slipPresses + " months", slipBreaches == 0);
+            assertTrue("...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part"
+                    + " in ten million of what moved", !closes(slipWithout, slipMovedMostIn));
 
             System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
 

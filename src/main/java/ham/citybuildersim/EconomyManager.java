@@ -2082,6 +2082,20 @@ public class EconomyManager {
         this.transitFares = Math.max(0, fares);
     }
     public double getTransitBill()  { return transitBill; }
+
+    /** The part of the transit bill that is upkeep (HL1): the infrastructure's and the ports', bought of Business Services; the rest is the crews' wages. */
+    private double transitUpkeep;
+
+    /** Sets the month's transit upkeep, clamped to [0, the bill] (HL1). */
+    public void setTransitUpkeep(double upkeep) {
+        this.transitUpkeep = Math.max(0, Math.min(transitBill, upkeep));
+    }
+
+    /** The transit bill's upkeep (HL1), never more than the bill. */
+    public double getTransitUpkeep() { return Math.min(transitBill, transitUpkeep); }
+
+    /** The transit bill's wages (HL1): what is left of the bill once the upkeep is taken out. */
+    public double getTransitWages()  { return transitBill - getTransitUpkeep(); }
     public double getTransitFares() { return transitFares; }
 
     /** Negative when the fare more than covers the wages, which a player can arrange. */
@@ -2284,6 +2298,13 @@ public class EconomyManager {
             exports += s.statement().exports;
             if (s != retail && s != construction) rawImports += s.statement().imports;
         }
+        // ...less the bank's upkeep Business Services bought abroad (HL1, 2026-11-11, the review's finding). The rule is the drivers'
+        // fuel's, above: what is in no final term is not taken off as an import either. The bank is not the government, so its
+        // operating cost is in no G, and nobody buys its output over a counter, so it is in no C; the world's part of it is in
+        // neither C nor the imports. The money audit and the balance of payments still see the import, because the cash did leave
+        // (the sector's own statement keeps it). The five services' upkeep stays in: it is in G.
+        rawImports -= sectors.businessServices().statement().otherInputs
+                .getOrDefault(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
         // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
         if (cityCrudeExports > 0) exports += cityCrudeExports;
         if (cityCrudeImports > 0) rawImports += cityCrudeImports;
@@ -2690,6 +2711,7 @@ public class EconomyManager {
         // households.setTransitFares()), and in the old unit a reform by a
         // thousand billed every working row a thousand times its ride.
         transitBill *= scale;
+        transitUpkeep *= scale;
         transitFares *= scale;
         exchangeRate *= scale;
         struckRate *= scale;   // the D$ the goods are struck at is a rate in today's unit too (AN1)
