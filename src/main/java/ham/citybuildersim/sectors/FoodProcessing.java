@@ -7,6 +7,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.TaxPolicy;
 
@@ -347,12 +348,14 @@ public final class FoodProcessing extends Sector {
         return null;
     }
 
+    /** ...for one new building already resolved (QN1): its own makes, uses and running cost. */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (markets == null || t == null) return 0;
 
         double revenue = 0, localSales = 0;
-        for (java.util.Map.Entry<Good, Double> e : t.goodsMade().entrySet()) {
+        for (java.util.Map.Entry<Good, Double> e : u.goodsMade().entrySet()) {
             Good g = e.getKey();
             if (!g.traded()) continue;
             GoodsMarket m = markets.get(g);
@@ -373,7 +376,7 @@ public final class FoodProcessing extends Sector {
 
         double inputs = 0, credited = 0;
         TaxPolicy tax = game == null ? null : game.getEconomyManager().getTaxPolicy();
-        for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+        for (java.util.Map.Entry<Good, Double> e : u.goodsUsed().entrySet()) {
             Good g = e.getKey();
             if (!g.traded()) continue;
             GoodsMarket m = markets.get(g);
@@ -398,7 +401,7 @@ public final class FoodProcessing extends Sector {
         double vat = tax == null ? 0 : Math.max(0, localSales * tax.effectiveSalesRate(this) - credited);
 
         return (revenue - inputs) * rate
-                - plans.runningCostOf(t) - plans.standingCostOf(this, t) - vat;
+                - plans.runningCostOf(u) - plans.standingCostOf(this, t) - vat;
     }
 
     /* ------------------------------------------------------------ the screen */

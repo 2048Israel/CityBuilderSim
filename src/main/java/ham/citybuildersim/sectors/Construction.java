@@ -7,6 +7,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 
 import java.util.List;
@@ -844,14 +845,17 @@ public final class Construction extends Sector {
      * wages, and a price for a point that no point was ever paid - in
      * Jerus's city 400 x 93.7 = $37.5M a month for one depot, against work
      * billed at 4.25 a point (the trace's Q5).
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its own points, posts and draw; its repairs and tax are the template's.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        double points = t.makes(Good.BUILDING_WORK);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u.template();
+        double points = u.makes(Good.BUILDING_WORK);
         if (!(points > 0)) return 0;
-        double share = Math.max(0, Math.min(1, staffing(t).share));
-        double wages = plans.wageBillFor(t);
-        double utilities = Math.max(0, plans.runningCostOf(t) - wages);
+        double share = Math.max(0, Math.min(1, staffing(u, 1).share));
+        double wages = plans.wageBillFor(u);
+        double utilities = Math.max(0, plans.runningCostOf(u) - wages);
         return points * share * buildings.nonMaterialPricePerPoint()
                 - wages * share - utilities - plans.standingCostOf(this, t);
     }

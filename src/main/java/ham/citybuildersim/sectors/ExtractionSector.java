@@ -8,6 +8,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 
@@ -196,14 +197,16 @@ public abstract class ExtractionSector extends Sector {
      * Iron Mine's explosives and wear parts, D$199.8k a month at nameplate,
      * and no power). The figure the plan, Game.consider() and the build card
      * read.
+     * ...for one new building already resolved (QN1; NewUnit): its own makes, posts, draw and consumables.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         // The maker's estimate itself (not Sector's, which would weigh the legs a second time): its freight below.
-        if (t == null) return super.estimatedMonthlyProfit(t, plans);
-        double maker = plans.estimatedMakerProfit(this, t);
+        if (t == null) return super.estimatedMonthlyProfit(u, plans);
+        double maker = plans.estimatedMakerProfit(this, u);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), pricePerWatt) - freightRunning(u, rate);
     }
 
     /*
@@ -232,6 +235,11 @@ public abstract class ExtractionSector extends Sector {
 
     /** What the freight of one of `t` costs a month at `rate`: ProcessingSector.freightRunning() at what a van and a litre cost here and at Haulage's quote (legPrice()); none with no markets. */
     public double freightRunning(BuildingsTemplate t, double rate) {
+        return freightRunning(NewUnit.standing(t), rate);
+    }
+
+    /** ...for one new building already resolved (QN1): the freight of its own recipe. */
+    public double freightRunning(NewUnit t, double rate) {
         return markets == null || t == null ? 0
                 : ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }

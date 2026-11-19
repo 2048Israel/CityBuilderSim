@@ -8,6 +8,7 @@ import ham.citybuildersim.Deposit;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.LandManager;
 import ham.citybuildersim.Resource;
@@ -1598,8 +1599,8 @@ public final class Oil extends Sector {
         return new JacketCase(fields.get(f), n, earns, cost);
     }
 
-    /** The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProfit()'s split), at the shuttle's freight, less a whole pipe's share. */
-    private double shuttleOnOneMore(BuildingsTemplate well, BusinessInvestment plans) {
+    /** The platform crude's shuttle freight a month on one more well's crude sold at home: its nameplate at the plants' rate, as much of it as the house forecast leaves room for at home (BusinessInvestment.estimatedMakerProfit()'s split), at the shuttle's freight, less a whole pipe's share. For one new building already resolved (QN1): its own crude. */
+    private double shuttleOnOneMore(NewUnit well, BusinessInvestment plans) {
         GoodsMarket m = markets == null ? null : markets.get(Good.CRUDE);
         if (m == null) return 0;
         double units = well.makes(Good.CRUDE);
@@ -1615,18 +1616,20 @@ public final class Oil extends Sector {
      * (jacketCase()), so the investors' interest test on the jacket's own
      * cost is the package's on its; a kilometre of pipe its share of this
      * month's pipe's saving less its repairs and tax. A land well as ever.
+     * ...for one new building already resolved (QN1; NewUnit): a platform well's own makes and crude; the jacket's and the pipe's cases are of their templates.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        if (t == null || plans == null || !t.standsAtSea()) return super.estimatedMonthlyProfit(t, plans);
-        if (t.isPlatformWell()) return super.estimatedMonthlyProfit(t, plans) - shuttleOnOneMore(t, plans);
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
+        if (t == null || plans == null || !t.standsAtSea()) return super.estimatedMonthlyProfit(u, plans);
+        if (t.isPlatformWell()) return super.estimatedMonthlyProfit(u, plans) - shuttleOnOneMore(u, plans);
         if (t.isPlatform()) {
             JacketCase c = jacketCase(plans);
-            if (c == null || !(c.cost() > 0)) return super.estimatedMonthlyProfit(t, plans);
+            if (c == null || !(c.cost() > 0)) return super.estimatedMonthlyProfit(u, plans);
             return c.earns() * plans.getCostOfAt(t, 1, platformCostFactor(c.field().depth(), slotsEach())) / c.cost();
         }
         PipeCase c = pipeFor != null ? pipeCaseOf(pipeFor, plans) : bestPipe(plans);
-        if (c == null || c.km() <= 0) return super.estimatedMonthlyProfit(t, plans);
+        if (c == null || c.km() <= 0) return super.estimatedMonthlyProfit(u, plans);
         return (c.freight() * c.tonnes() - c.standing()) / c.km();
     }
 

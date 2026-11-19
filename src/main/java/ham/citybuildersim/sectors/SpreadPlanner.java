@@ -8,6 +8,7 @@ import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Sector;
 
 import java.util.Collections;
@@ -259,6 +260,11 @@ public final class SpreadPlanner {
 
     /** A works' consumables at `factor` and `rate`, less its power at `tariff` (pure; above): what its earnings lose past running and standing. */
     public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff) {
+        return ownCosts(NewUnit.standing(t), rate, factor, tariff);
+    }
+
+    /** ...for one new building already resolved (QN1): its own consumables and power. */
+    public static double ownCosts(NewUnit t, double rate, double factor, double tariff) {
         if (t == null) return 0;
         double c = t.getConsumables() > 0 ? t.getConsumables() * rate * factor : 0;
         double p = t.getGen() > 0 ? t.getGen() * tariff : 0;
@@ -366,6 +372,8 @@ public final class SpreadPlanner {
         double cost(BuildingsTemplate t);
         /** A month's wages, power and water for one, at today's prices. */
         double running(BuildingsTemplate t);
+        /** ...for one new building already resolved (QN1): a frame that knows no unit answers running() of its template. */
+        default double running(NewUnit u) { return running(u.template()); }
         /** A month's repairs and property tax on one. */
         double standing(BuildingsTemplate t);
         /** The share of nameplate the sector's buildings run at. */
@@ -387,7 +395,12 @@ public final class SpreadPlanner {
 
     /** What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. */
     public static double earns(BuildingsTemplate t, double gross, City city) {
-        return gross * city.rate() - city.running(t) - city.standing(t);
+        return earns(NewUnit.standing(t), gross, city);
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. */
+    public static double earns(NewUnit t, double gross, City city) {
+        return gross * city.rate() - city.running(t) - city.standing(t.template());
     }
 
     /**
@@ -554,6 +567,7 @@ public final class SpreadPlanner {
         return new City() {
             @Override public double cost(BuildingsTemplate t) { return plans.getCostOf(t, 1); }
             @Override public double running(BuildingsTemplate t) { return plans.runningCostOf(t); }
+            @Override public double running(NewUnit u) { return plans.runningCostOf(u); }
             @Override public double standing(BuildingsTemplate t) { return plans.standingCostOf(sector, t); }
             // The plant's rate: the refiners' run is not in it (0.7.105; Refining.plantRate(), THE RUN) - an order is weighed at the run it would take.
             @Override public double rate() {
