@@ -234,8 +234,8 @@ public class EquipmentCheck {
         quietly(bm::initializeTemplates);
 
         // R1c: a piece may end no form (it enables a recipe), so "ends" may be missing from the file; the pieces that DO end one are the notes' whole.
-        // The depot's two: the motor truck (R1) and the driverless kit (R6b, FE1: it ends CAB_DRIVERS), which is why it is 2 and not 1 here.
-        int expectedPieces = DRIVES.length + 2 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
+        // The depot's two: the motor truck (R1) and the driverless kit (R6b, FE1: it ends CAB_DRIVERS), which is why it is 2 and not 1 here; then (R6d) the Hydrogen Steel Works' electrolyser (FE10: ELECTROLYSERS) and the Mixed Farm's and the Grain Farm's autonomy kit (FE8: FIELD_OPERATORS), the + 1 + 2.
+        int expectedPieces = DRIVES.length + 2 + FARMS.length + 1 + 2, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
         String firstMismatch = null;
         for (JsonObject o : file.values()) {
             if (!o.has("equipment")) continue;
@@ -323,6 +323,7 @@ public class EquipmentCheck {
         List<String> named = new ArrayList<>(List.of(DRIVES));
         named.addAll(List.of(FARMS));
         named.add("Truck Depot");
+        named.add("Hydrogen Steel Works");   // R6d, FE10: its electrolyser, the one piece it carries
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null || !t.getRecipeChanges().isEmpty()) continue;
             other++;

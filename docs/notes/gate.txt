@@ -1,8 +1,8 @@
-# gate of Merge batch/LM1-D: the founding's water widened to six blocks, 0.9.152
+# gate of Merge batch/R6d: research: the speculative rows with something behind them, 0.9.153
 # date: 2026-11-18
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 213 harnesses run in 2040s: 203 passed, 10 failed
+# suite: 221 harnesses run in 3035s: 208 passed, 13 failed
 GoldStandardCheck | exit 1
 GoldStandardCheck | the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read                FAIL
 GoldStandardCheck | 1 FAILED
@@ -52,36 +52,33 @@ PriceLevelCheck | 245 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
 HealthCheck | 1 FAILED
 ScaleCheck | exit 1
 ScaleCheck | ...savings: the copy is K times the city's within 0.0160 in all 6 months (worst 2.83e-02) FAIL
 ScaleCheck | 1 FAILED
-DeathRecordCheck | exit 1
-DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 1 FAILED
-DistressBleedCheck | exit 2
-DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
-DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED
 KeptCheck | exit 4
 KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
 KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
 KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
 KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
 KeptCheck | 4 FAILED
-EducationCheck | exit 1
-EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
-EducationCheck | 1 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
+DeathRecordCheck | exit 1
+DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
+DeathRecordCheck | 1 FAILED
+DistressBleedCheck | exit 2
+DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
+DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 285
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
 ShortSellingCheck | exit 1
 ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 269 months and bought from it in 0 FAIL
 ShortSellingCheck | 1 FAILED
