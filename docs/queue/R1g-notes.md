@@ -257,6 +257,19 @@ founded the 1900 way (`Game.foundedUnfitted()`):
 |---|---|
 | `./batch-check.sh Village1900Check`, both on (52450660b + f57009450) | All checks passed; home village 973 people at m60 (stalled 471), rent 0.236 (stalled 0.612, today 0.231), 41.4 arrivals in the last 5 months; 4.31 apprentices in five years, as expected; 63.2 diploma workers (stalled 58.3) |
 | the same, `-Dr1g.home=off -Dr1g.apprentices=off` | 7 FAILED: section 5's five, section 6's two; section 7 passes (it sets both switches itself) |
+| on 0.9.158 (merge 2e6a856f2), both on | All checks passed; home village 1,011 at m60, rent 0.209 |
+| on 0.9.159 (merge d455a6eb4), both on, before the restatement below | 1 FAILED: "nobody arrives in the 1900 village in the last 5 months", 2.6 (HS1's households' money moved the stalled village: 504 at m60, not 471) |
+| on 0.9.159 with `STALLED` (3397d8191), both on | All checks passed; home village 1,000 at m60 (stalled 504), rent 0.258 (stalled 0.613, today 0.232), 35.9 arrivals in the last 5 months against today's twin's 35.5; 4.40 apprentices, as expected; 67.4 diploma workers (stalled 62.5) |
+| the same, both off | 7 FAILED: section 5's five (its arrivals check now 2.6 against 35.5), section 6's two |
+
+★ **The stall restated against today's twin** (`Village1900Check.STALLED`,
+a tenth): on 0.9.159 the stalled village draws 2.6 people in the quiet
+months, not none, so "nobody arrives" is no longer the finding; it is
+"under a tenth of what today's twin draws" (2.6 of 35.5, 0.07), and section
+5's "people still arrive" became "at least a tenth of today's twin's"
+(35.9 of 35.5), so that check still fails with the home off (it passed on
+2.6 ≥ 1). The premise, that the stalled village has all but stopped drawing
+anyone while today's twin still draws, is what it was.
 
 ## 4. The pace (0.9.158, the 2,400-month playtest, R1d's table re-measured)
 
