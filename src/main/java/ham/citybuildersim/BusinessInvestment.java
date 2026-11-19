@@ -940,6 +940,7 @@ public class BusinessInvestment {
         double demand = forecast(sector, market);
 
         BuildingsTemplate best = null;
+        NewUnit bestUnit = null;
         double bestScore = 0;
         double demandAtOpening = 0;
         Sector.Staffing staffingHold = null;
@@ -957,7 +958,9 @@ public class BusinessInvestment {
          * is growthFactor(), which the city's build advice reads too.
          */
         for (BuildingsTemplate t : buildingManager.getTemplatesBySector(key)) {
-            if (t.makes(good) <= 0) continue;
+            // One new building as it would open (QN1, NewUnit): the output it is sized by is its own recipe's, not the fleet's mix.
+            NewUnit unit = newUnit(t);
+            if (unit.makes(good) <= 0) continue;
 
             /*
              * A FIRST PLANT HAS TO HAVE SOMETHING TO DO. A sector with nothing
@@ -969,7 +972,7 @@ public class BusinessInvestment {
              * be taking before its first one is worth sinking; the default is
              * none, which is what the food industry has always done.
              */
-            if (currentOutput <= 0 && demand < t.makes(good) * sector.firstPlantUtilisation()) {
+            if (currentOutput <= 0 && demand < unit.makes(good) * sector.firstPlantUtilisation()) {
                 return Decision.no(key, String.format("%,.0f %s/mo is not enough for a first %s",
                         demand, Formats.plural(good.unit()), t.getName()));
             }
@@ -1005,7 +1008,7 @@ public class BusinessInvestment {
                 continue;
             }
 
-            double monthlyIncome = sector.estimatedMonthlyProfit(t, this);
+            double monthlyIncome = sector.estimatedMonthlyProfit(unit, this);
             double cost = getCostOf(t, 1);
             if (cost <= 0 || monthlyIncome <= 0) continue;
 
@@ -1013,6 +1016,7 @@ public class BusinessInvestment {
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
+                bestUnit = unit;
                 demandAtOpening = projected;
             }
         }
@@ -1022,7 +1026,7 @@ public class BusinessInvestment {
                     : Decision.no(key, "output ahead of demand");
         }
 
-        int quantity = orderSize(demandAtOpening - currentOutput, best.makes(good), best);
+        int quantity = orderSize(demandAtOpening - currentOutput, bestUnit.makes(good), best);
         if (quantity <= 0) return Decision.noLand(key, landReason(best));
         // No more of them than the city could staff together (0.7.18).
         quantity = sector.staffableCount(best, quantity);

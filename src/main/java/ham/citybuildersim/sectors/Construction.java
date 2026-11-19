@@ -785,7 +785,8 @@ public final class Construction extends Sector {
         double bestScore = 0;
         Staffing staffingHold = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            double points = t.makes(Good.BUILDING_WORK);
+            // One new yard or depot as it would open (QN1, NewUnit): its points are its own recipe's, not the fleet's mix.
+            double points = plans.newUnit(t).makes(Good.BUILDING_WORK);
             if (points <= 0) continue;
 
             // Every post fillable at MIN_STAFFABLE_TO_ORDER, and none in a band

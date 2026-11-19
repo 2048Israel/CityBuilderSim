@@ -7168,7 +7168,7 @@ public class BuildingManager {
     public long getJobsUnderConstruction() {
         long jobs = 0;
         for (BuildingsStacks stack : getStacksUnderConstruction()) {
-            jobs += (long) stack.getUnderConstruction() * stack.getBuilding().getTotalJobs();
+            jobs += (long) stack.getUnderConstruction() * newUnit(stack.getBuilding()).getTotalJobs();
         }
         return jobs;
     }
@@ -7548,7 +7548,7 @@ public class BuildingManager {
 
     /**
      * The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site
-     * times the template's jobs of that tier (BA1). Sector.staffing() counts them as spoken for, since with more than
+     * times the jobs of that tier each will open with (BA1; QN1, newUnit()). Sector.staffing() counts them as spoken for, since with more than
      * one order on site two of them must not be staffed from the same spare workers.
      */
     public double postsOnSite(String sector, JobType job) {

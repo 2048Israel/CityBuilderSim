@@ -197,6 +197,11 @@ public final class FoodProcessing extends Sector {
 
     /** How much of one of these the city would eat today, as a share of what it makes. */
     public double fillFor(BuildingsTemplate t) {
+        return fillFor(NewUnit.standing(t));
+    }
+
+    /** ...for one new plant already resolved (QN1): what its own recipe makes. */
+    public double fillFor(NewUnit t) {
         double onePlant = 0, uncovered = 0;
         for (Good g : t.goodsMade().keySet()) {
             double made = t.makes(g);
@@ -234,7 +239,9 @@ public final class FoodProcessing extends Sector {
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
-            double fill = fillFor(t);
+            // ...of one new plant as it would open (QN1, NewUnit): what it makes and uses is its own recipe's.
+            NewUnit unit = plans.newUnit(t);
+            double fill = fillFor(unit);
             if (fill < FILLED) {
                 if (fill >= bestFill) { bestFill = fill; fullest = t.getName(); }
                 continue;
@@ -248,11 +255,11 @@ public final class FoodProcessing extends Sector {
 
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double income = estimatedMonthlyProfit(t, plans);
+            double income = estimatedMonthlyProfit(unit, plans);
             if (income <= 0) {
                 if (unprofitable == null) {
                     unprofitable = t.getName();
-                    unprofitableEatsMeat = t.goodsUsed().containsKey(Good.MEAT);
+                    unprofitableEatsMeat = unit.goodsUsed().containsKey(Good.MEAT);
                 }
                 continue;
             }

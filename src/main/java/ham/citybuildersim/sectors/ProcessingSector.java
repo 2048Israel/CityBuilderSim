@@ -212,7 +212,7 @@ public abstract class ProcessingSector extends Sector {
      */
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed) {
-        return estimate(NewUnit.standing(t), v, city, factor, tariff, feed);
+        return estimate(city.unit(t), v, city, factor, tariff, feed);
     }
 
     /** ...for one new building already resolved (QN1): its own makes, uses, posts, draw, consumables and power. */
@@ -236,7 +236,7 @@ public abstract class ProcessingSector extends Sector {
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed, double share, double other,
                                                    double extraCost) {
-        return estimate(NewUnit.standing(t), v, city, factor, tariff, feed, share, other, extraCost);
+        return estimate(city.unit(t), v, city, factor, tariff, feed, share, other, extraCost);
     }
 
     /** ...for one new building already resolved (QN1). */
@@ -255,7 +255,7 @@ public abstract class ProcessingSector extends Sector {
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                    double factor, double tariff) {
         double rate = city.rate();
-        return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
     }
 
     /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. */
@@ -263,7 +263,7 @@ public abstract class ProcessingSector extends Sector {
                                    double factor, double tariff, double share, double other) {
         if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff);
         double rate = city.rate() * share;
-        return grossStanding(t, v, rate) - city.running(t) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
                 - other;
     }
 
@@ -387,7 +387,7 @@ public abstract class ProcessingSector extends Sector {
 
     /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. */
     private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
-        return weigh(NewUnit.standing(t), v, city);
+        return weigh(city.unit(t), v, city);
     }
 
     /** ...for one new building already resolved (QN1): the feed it takes and the freight it moves are its own recipe's. */
@@ -439,7 +439,7 @@ public abstract class ProcessingSector extends Sector {
         SpreadPlanner.Values v = values();
         if (buildings == null || buildings.getUnderConstructionBySector(key()) == 0) return v;
         return SpreadPlanner.after(v, this::getPipeline,
-                g -> buildings.underConstructionBySector(key(), t -> t.uses(g)));
+                g -> buildings.underConstructionOfNew(key(), u -> u.uses(g)));
     }
 
     /** Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. */
@@ -457,7 +457,7 @@ public abstract class ProcessingSector extends Sector {
 
     /** One building of its weighed now. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return appraise(NewUnit.standing(t), plans);
+        return appraise(plans != null ? plans.newUnit(t) : newUnit(t), plans);
     }
 
     /** ...for one new building already resolved (QN1). */

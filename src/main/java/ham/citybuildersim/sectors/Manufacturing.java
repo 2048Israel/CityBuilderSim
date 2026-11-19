@@ -244,10 +244,12 @@ public final class Manufacturing extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             // ...the Wire & Cable Works' lorries with it (0.7.133, ★ as every works of the materials chains is weighed).
-            if (t.getId() == WIRE_CABLE_WORKS) cost += fleetCapital(t);
+            // ...of one new works as it would open (QN1, NewUnit): its own vans and earnings.
+            NewUnit unit = plans.newUnit(t);
+            if (t.getId() == WIRE_CABLE_WORKS) cost += fleetCapital(unit);
             // Still discounted as well as floored: the floor says whether any
             // of them is worth opening, the weight says which.
-            double score = estimatedMonthlyProfit(t, plans) * staffable / cost;
+            double score = estimatedMonthlyProfit(unit, plans) * staffable / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
@@ -302,6 +304,11 @@ public final class Manufacturing extends Sector {
 
     /** The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. */
     double fleetCapital(BuildingsTemplate t) {
+        return fleetCapital(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the vans of its own recipe. */
+    double fleetCapital(NewUnit t) {
         return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
 

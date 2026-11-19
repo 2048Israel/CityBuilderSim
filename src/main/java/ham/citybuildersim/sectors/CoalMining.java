@@ -170,7 +170,7 @@ public final class CoalMining extends ExtractionSector {
         for (int i = 0; i < 3; i++) {
             final int k = i;
             s[k] = buildings.totalBySector(key(), t -> streamsOf(t)[k]);
-            if (onSite) s[k] += buildings.underConstructionBySector(key(), t -> streamsOf(t)[k]);
+            if (onSite) s[k] += buildings.underConstructionOfNew(key(), u -> streamsOf(u)[k]);
         }
         return s;
     }
@@ -411,8 +411,10 @@ public final class CoalMining extends ExtractionSector {
             if (!(t.getWash() > 0) || !staffing(t).passes()) continue;
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            // ...of one new plant as it would open (QN1, NewUnit): its own vans and its own earnings.
+            NewUnit unit = plans.newUnit(t);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             if (!planner().passesMoney(this, plans, game, t, 1, earns, cost)) continue;
             if (earns / cost > bestScore) {
                 bestScore = earns / cost;

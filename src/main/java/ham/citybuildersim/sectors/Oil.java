@@ -592,7 +592,9 @@ public final class Oil extends Sector {
         double bestScore = 0;
         Staffing staffingHold = null;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
-            if (t.makes(Good.CRUDE) <= 0 || !isLandWell(t)) continue;
+            // One new well as it would open (QN1, NewUnit): the crude it lifts is its own recipe's, not the fleet's mix.
+            NewUnit unit = plans.newUnit(t);
+            if (unit.makes(Good.CRUDE) <= 0 || !isLandWell(t)) continue;
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
@@ -601,7 +603,7 @@ public final class Oil extends Sector {
             }
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = estimatedMonthlyProfit(t, plans) / cost;
+            double score = estimatedMonthlyProfit(unit, plans) / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;

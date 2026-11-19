@@ -246,6 +246,11 @@ public abstract class ExtractionSector extends Sector {
 
     /** ...and buying its vans: ProcessingSector.fleetCapital() (no truck is in a mine's cost: FR2); none with no markets. */
     public double fleetCapital(BuildingsTemplate t) {
+        return fleetCapital(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the vans of its own recipe. */
+    public double fleetCapital(NewUnit t) {
         return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
 
@@ -329,8 +334,10 @@ public abstract class ExtractionSector extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             // ...its lorries with it (0.7.124, ★): their wear and diesel in what it earns, the vans in what it costs.
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            // ...of one new mine as it would open (QN1, NewUnit): its own vans and its own earnings.
+            NewUnit unit = plans.newUnit(t);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             // ...and one that would carry the interest on its whole cost (0.7.120, batch I3; spec-materials 2.6b).
             if (!planner.passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
@@ -586,6 +593,11 @@ public abstract class ExtractionSector extends Sector {
         return fits(land, t, game.claimsOn(resource)) ? null : noField(land, t);
     }
 
+    /** ...for one new building already resolved (QN1): the ground's test is its template's, as it is here; a sector whose test reads its recipe's figures (Forestry's cut) overrides this. */
+    protected String groundRefusal(NewUnit u) {
+        return groundRefusal(u.template());
+    }
+
     /**
      * One more of `t` weighed as plan() weighs it (above), every gate asked:
      * its ground (groundRefusal()), the ground for the building, the staff,
@@ -595,8 +607,9 @@ public abstract class ExtractionSector extends Sector {
      */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
         if (t == null || plans == null || game == null || buildings == null || markets == null || !isWeighed(t)) return null;
-        double cost = plans.getCostOf(t, 1) + fleetCapital(t);
-        return SpreadPlanner.judge(t, estimatedMonthlyProfit(t, plans), cost, groundRefusal(t), planner.city(this, plans, game), null);
+        NewUnit unit = plans.newUnit(t);
+        double cost = plans.getCostOf(t, 1) + fleetCapital(unit);
+        return SpreadPlanner.judge(t, estimatedMonthlyProfit(unit, plans), cost, groundRefusal(unit), planner.city(this, plans, game), null);
     }
 
     /** Whether a building of its stands over ground with nothing left of its type (workedOut()): a mine that lifts nothing; false with no city. */

@@ -756,7 +756,7 @@ public final class Refining extends Sector {
 
     /** The crude the crude units on site will take, in tonnes a month. */
     private double crudeOnSite() {
-        return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.uses(Good.CRUDE));
+        return buildings == null ? 0 : buildings.underConstructionOfNew(key(), u -> u.uses(Good.CRUDE));
     }
 
     /** Tonnes of crude the refineries want this month, at the rate they are running. */
@@ -1677,7 +1677,7 @@ public final class Refining extends Sector {
     /** ...and with an outlook (0.7.105, R1), past the city's imports at the net export price and at the run with it standing; none, as before. */
     private static SpreadPlanner.Candidate unitEstimate(RefineryFlow.Flow flow, BuildingsTemplate t, SpreadPlanner.City city,
                                                        double lubricantsHome, Outlook o) {
-        return unitEstimate(flow, NewUnit.standing(t), city, lubricantsHome, o);
+        return unitEstimate(flow, city.unit(t), city, lubricantsHome, o);
     }
 
     /** ...for one new building already resolved (QN1): its own posts, draw and water in its running costs; its kind and feed are its template's. */
@@ -1737,7 +1737,7 @@ public final class Refining extends Sector {
      */
     public static SpreadPlanner.Candidate packageEstimate(Outlook o, RefineryFlow.Flow before, BuildingsTemplate t,
                                                           List<BuildingsTemplate> templates, SpreadPlanner.City city) {
-        return packageEstimate(o, before, NewUnit.standing(t), templates, city);
+        return packageEstimate(o, before, city.unit(t), templates, city);
     }
 
     /** ...for one new building already resolved (QN1): its own crude and running costs; the units its cuts would feed are the templates'. */
@@ -1938,7 +1938,7 @@ public final class Refining extends Sector {
 
     /** One building of the refiners' weighed now (THE SPREAD PLANNER), at this month's outlook and the game's gates. */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
-        return appraise(NewUnit.standing(t), plans);
+        return appraise(plans != null ? plans.newUnit(t) : newUnit(t), plans);
     }
 
     /** ...for one new building already resolved (QN1): its own crude and running costs weighed at the same outlook. */
