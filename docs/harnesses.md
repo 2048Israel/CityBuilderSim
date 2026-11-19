@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**226 harness files, 25,894 labelled assertions.** AllChecks runs 226 of them.
+**226 harness files, 25,910 labelled assertions.** AllChecks runs 226 of them.
 
 ## Which harnesses read which class
 
@@ -11,9 +11,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | class | harnesses that mention it |
 |---|---|
 | [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, WorksFinanceCheck |
-| [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
+| [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, Village1900Check |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
-| [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck |
+| [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck, Village1900Check |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
@@ -256,7 +256,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, KeptCheck, LongPlaytest, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, StaffingDrawCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, StepsCheck |
@@ -273,7 +273,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [RecipeChange](map/RecipeChange.md) | PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [RecipeChanges](map/RecipeChanges.md) | FittingCheck, HistoricalLicenceCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
-| [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck |
+| [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, Village1900Check |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [Reenactor](map/Reenactor.md) | **none** |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, OilCheck, OilViewCheck, PostwarRecipeCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
@@ -31072,45 +31072,64 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1077 ...and puts spend / rate / price in ounces in the vault
   - L1078 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
-## Village1900Check.java - 19 labelled assertions
+## Village1900Check.java - 35 labelled assertions
 
-> Why the 1900 city stalls (R1g's finding): the playtest's village founded the 1900 way, played the playtest's way for five years beside
-> its twin founded today's way. Not part of the game.
+> Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
+> playtest's way for five years beside its twin founded today's way. Not part of the game.
 > 
-> WHAT THIS HAS TO PROVE (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause). R1d's 1900 playtest stalled: 472 people at month 60 and
-> 159 at month 900, against today's city's 1,674 and 23,180. It stalls on two things together, each of which the controls in the notes
-> show is not enough alone, and neither is the dated money:
+> WHAT THIS HAS TO PROVE (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix). R1d's 1900 playtest stalled: 472 people at month
+> 60 and 159 at month 900, against today's city's 1,674 and 23,180. It stalls on two things together, each of which the controls in the notes
+> show is not enough alone, and neither is the dated money. Sections 1-4 are the village as R1g found it, both switches off:
 > 
->   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both played the way
->      LongPlaytest.probeCity() and main() play it (the same village, the advisor and the automatic works every month)
+>   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both founded and played the
+>      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
 >   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
 >      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
 >      twin pays no more than the target
 > ...
 
-- **L84 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
-  - L85 the 1900 village is founded the 1900 way
-  - L86 today's twin is founded today's way
-  - L87 both are played to month
-- **L103 2. the rent: 1901's wages pay for today's homes**
-  - L112 the 1900 village's households pay over
-  - L114 today's twin's households pay no more than TARGET_RENT_BURDEN
-  - L115 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
-  - L118 and the city the 1900 village's conditions support is smaller than the people already in it
-  - L121 while today's twin's supports more than its people
-- **L128 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
-  - L134 the 1900 village's diploma posts outnumber its diploma workers over
-  - L136 today's twin's diploma workers cover its diploma posts
-  - L141 the 1900
-  - L144 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
-  - L146 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
-- **L153 4. the stall: nobody comes, no exporter is built, and the money is not what holds it**
-  - L159 nobody arrives in the 1900 village in the last
-  - L161 while people still arrive in today's twin
-  - L162 no
-  - L163 and its
-  - L168 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
-  - L170 while today's twin, building, has spent its cash and borrowed
+- **L103 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
+  - L104 the 1900 village is founded the 1900 way
+  - L105 today's twin is founded today's way
+  - L106 both are played to month
+- **L129 2. the rent: 1901's wages pay for today's homes**
+  - L138 the 1900 village's households pay over
+  - L140 today's twin's households pay no more than TARGET_RENT_BURDEN
+  - L141 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
+  - L144 and the city the 1900 village's conditions support is smaller than the people already in it
+  - L147 while today's twin's supports more than its people
+- **L154 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
+  - L160 the 1900 village's diploma posts outnumber its diploma workers over
+  - L162 today's twin's diploma workers cover its diploma posts
+  - L167 the 1900
+  - L170 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
+  - L172 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
+- **L179 4. the stall: nobody comes, no exporter is built, and the money is not what holds it**
+  - L185 nobody arrives in the 1900 village in the last
+  - L187 while people still arrive in today's twin
+  - L188 no
+  - L189 and its
+  - L194 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
+  - L196 while today's twin, building, has spent its cash and borrowed
+- **L202 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
+  - L208 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
+  - L210 the village's
+  - L213 its materials and its points are today's times the scale, rounded
+  - L217 and its plot is today's
+  - L218 the city knows the home is dated
+  - L225 the 1900 home's households pay at most
+  - L227 and people still arrive at the end of the five years
+- **L233 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
+  - L238 the young learn trades in the 1900 village
+  - L239 as many as came of age times the year's trade share, there being no school
+  - L242 so the village holds more diploma workers than the stalled one
+  - L244 and the stalled village, the switch off, made none
+- **L250 7. today's city does not move: both switches on and both off, the same city to the bit**
+  - L252 the same people
+  - L254 the same cash and the same month's GDP
+  - L257 the same rent burden and the same workers by band
+  - L259 the same
+  - L262 and no apprentice
 
 ## WageLadderCheck.java - 63 labelled assertions
 
