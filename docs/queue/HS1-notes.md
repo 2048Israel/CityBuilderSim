@@ -410,6 +410,53 @@ and these readings are per household.
   stalls of sixteen carry.
 - No fault was found in the flows, and nothing was mended.
 
+## The dry run's reds (2026-11-19)
+
+The first dry run (`sh tools/gate.sh HS1 --dry-run` on 26f3f8d31, kept folder
+`/tmp/cbs-gate-HS1-T3IhSIS5`) stopped on 37 unnamed lines in 11 harnesses. One is a money
+residual, traced to main's car draw and queued as CQ1. The other ten are played-city fixtures that
+HS1's moved path no longer causes. Each is in the class of a sweep queued in
+`docs/studies/flaky-suite.md` section 6, except BusinessServicesCheck, queued as BC1. Every line
+is a known-reds row in the ship file. The kept suite log, rejudged against them, gives exit 3:
+known reds only, 18 harnesses.
+
+**The residual: SlopeCheck 9, CQ1.** The Medellin run's households' identity was out by +14.1176
+at m861. I traced it with a probe that replays the run with an instrumented `HouseholdBalance`
+printing every stage of the month (`target/hs1-leak/`, not committed).
+- **The car.** The +14.1176 is one car, at 14.117593.
+- **The draw.** `Motoring.month()` (Motoring.java:343-354) quotes the cars wanted at the asking
+  price, then sizes the draw by `carsWanted(perCar)` at the quote's price per car (347). The draw
+  (350) takes 50 cars at a higher average.
+- **The take.** `HouseholdBalance.takeCars()` (2902) re-counts whole cars at that average. Its
+  scale (2922) caps the take at the draw and never lifts it, so the cells take 49.
+- **The gap.** The car sold and not taken sits in the households' transit at the month's close.
+  The audit strikes it there.
+- **Whose bug.** `Motoring.java` and the car methods are main's, untouched by HS1. HS1's path is
+  only the first to reach it.
+- **The fix, CQ1.** Quote again at the count it would draw, until `carsWanted` at that price
+  holds it, then draw that. It moves every car-buying city, so it is its own batch (the
+  orchestrator, 2026-11-19).
+
+**The ten fixtures.** Each played city is moved by HS1's flows, so the condition its fixture
+reads no longer arises:
+
+| harness | what HS1's path does to it | queued |
+|---|---|---|
+| ChildcareCheck 2 | the advice plans Large x5 at 2.4404; the harness's weigh() picks Childcare Centre x7, reading a different lack | FS15 |
+| EssentialWorksCheck (two fixtures) | on ChildcareCheck's town, their compound conditions no longer hold | FS15 |
+| ExchangeRateCheck 8b | FS10's class (the vault empty before suspension) with a moved figure: par 3.3935 at the 1926 return, against main's 2.6128 | FS10 |
+| GroceryCheck | a year at 50% hands voucher holders and their twins both 99.9% of their baskets | FS11 |
+| FundCheck, the withdrawal dial | the desk's bid sells 0.0000 of both holdings at the step | FS13 |
+| HoldersCheck 2 | a month's paper sale moves the coupon's split by 6e-6 | FS14 |
+| HoldersCheck 9 | the bank's term paper is gone within 3 months, so the central bank's purchase reads a different sale (the book 320.31 against 320.07), and no middle stands | FS14 |
+| HoldersCheck 13 | the bank holds no paid paper with that discount at the cancelled sale | FS14 |
+| PriceLevelCheck 9 | the horizon ends at month 94 and the h.* series are compared a month past it (worst 0.89; main's own line is 0.25) | FS2 |
+| KeptCheck 40 | the construction page hands back 499 of its first draw's 559 nodes (89%) | FS4 |
+| BusinessServicesCheck | its 24 played months on two Contact Centres: the sector's own plan orders a third, 900 seats against 600 | BC1 |
+
+BC1, queued: the harness should assert the seats against the centres standing, or read them before
+the months play. Nothing in the source changed after the dry run.
+
 ## Open, for the orchestrator
 
 1. **The ensemble**: done, above. M1 passes. F1's one finding (ZERO_HOT seed 0, months 205-207)
@@ -418,8 +465,11 @@ and these readings are per household.
 2. **LongPlaytest's finding**: done, b338ee4ba (FAIL lines; CL7's row matches it). **The
    stall**: above, with the ensemble's answer.
 3. **SB1**, queued: `BuildingManager.retire()`'s first-stack return.
+4. **The dry run's reds**: above. CQ1 (the car draw) is queued as the orchestrator agreed. BC1
+   (BusinessServicesCheck's played seats) is queued with its own id: has the orchestrator a
+   sweep it should join instead?
 
-Nothing is left for Jerus.
+For Jerus: HS1-A (pending), the senior care pull at its cap.
 
 ## Commits
 
@@ -429,4 +479,5 @@ prose; b6c4c1932 the three readings; c8da97ab3 main merged (FS1); 9fb10bf4d the 
 b338ee4ba LongPlaytest's FAIL lines; 1d2aaa100 the stall; 62e8221ea the review's mends; 4e45a8b08
 main merged (SZ1, 0.9.155); 425c69bc7 the maps; 116e6fc83 the review in the notes; 62972fd34
 main merged (HL1-R, 0.9.156); 2c0163238 the maps; acf3a0606 main merged (RN1-H and QN1,
-0.9.158); ed9a1ad35 the maps; then the ensemble's baseline and these notes.
+0.9.158); ed9a1ad35 the maps; 4867b8769 the ensemble's baseline and its reading; 26f3f8d31
+HS1-A; then the dry run's reds, in these notes and the ship file.
