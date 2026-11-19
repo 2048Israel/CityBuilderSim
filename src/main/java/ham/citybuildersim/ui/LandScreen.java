@@ -1299,13 +1299,14 @@ final class LandScreen {
      * whose ghosts are the N it buys (each a click to pick on the map).
      * ---------------------------------------------------------------------------------------------------------------- */
     HBox nextPlots(Next next) {
-        Button fewer = stepper("−", 26, () -> { nextCount--; showLandMenu(); });
-        Kept.give(fewer.disableProperty(), next.n() <= 1);
-        Label count = Kept.label(String.valueOf(next.n()));
-        count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
-        count.setMinWidth(Region.USE_PREF_SIZE);
-        Button more = stepper("+", 26, () -> { nextCount++; showLandMenu(); });
-        Kept.give(more.disableProperty(), next.n() >= next.listed());
+        Pieces.CountSteps controls = Pieces.countSteps(() -> next.n(),
+                n -> nextCount = (int) Math.max(1, Math.min(n, next.listed())), this::showLandMenu);
+        for (javafx.scene.Node node : controls.row().getChildren()) {
+            if (node instanceof Button button) {
+                Kept.give(button.disableProperty(), button.getText().startsWith("−")
+                        ? next.n() <= 1 : next.n() >= next.listed());
+            }
+        }
 
         Label total = Kept.label(next.total());
         total.setStyle(Palette.figure(Palette.SIZE_SECTION, next.totalTone()));
@@ -1322,7 +1323,7 @@ final class LandScreen {
         showIf(buy, !ids.isEmpty());
         Kept.tip(buy, next.buttonTip(), 250);
 
-        HBox row = Kept.row(6, fewer, count, more, total, other, buy);
+        HBox row = Kept.row(6, controls.row(), total, other, buy);
         Pieces.hMargin(total, new javafx.geometry.Insets(0, 0, 0, 8));
         Pieces.hMargin(buy, new javafx.geometry.Insets(0, 0, 0, 6));
         row.setAlignment(Pos.CENTER_RIGHT);
@@ -1992,7 +1993,7 @@ final class LandScreen {
                             bond.duration(), money(bond.faceValue())),
                     new Pieces.Press(Pieces.Look.GO, buy, "issues the " + Game.BUILD_BOND_YEARS + "-year bond, then buys"),
                     () -> {
-                        game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+                        game.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, game.issueLot("Term"));
                         buyOnTheLoan(ids, "bond");
                     }, Money::money));
             out.add(new Offer(Game.BUILD_NOTE_MONTHS + "-month note", null, note,
@@ -2004,7 +2005,7 @@ final class LandScreen {
                             note.duration(), money(note.faceValue())),
                     new Pieces.Press(Pieces.Look.GO, buy, "issues the " + Game.BUILD_NOTE_MONTHS + "-month note, then buys"),
                     () -> {
-                        game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+                        game.handleTBillLogic(gap, Game.BUILD_NOTE_MONTHS, game.issueLot("Note"));
                         buyOnTheLoan(ids, "note");
                     }, Money::money));
         } else if (game.foreignWindowOpen()) {
@@ -2019,7 +2020,7 @@ final class LandScreen {
                     new Pieces.Press(Pieces.Look.GO, buy, "issues it abroad, then buys from the vault"),
                     () -> {
                         game.handleForeignForCash("Term", gapUsd, Game.BUILD_BOND_YEARS,
-                                Game.BUILD_BOND_GRANULE, true);
+                                ham.citybuildersim.BondMarket.issueLot(game, "Term", "USD"), true);
                         buyOnTheLoan(ids, "dollar bond");
                     }, Money::usd));
             out.add(new Offer(Game.BUILD_NOTE_MONTHS + "-month dollar note", ABROAD_INFO, note,
@@ -2030,7 +2031,7 @@ final class LandScreen {
                     new Pieces.Press(Pieces.Look.GO, buy, "issues it abroad, then buys from the vault"),
                     () -> {
                         game.handleForeignForCash("Note", gapUsd, Game.BUILD_NOTE_MONTHS,
-                                Game.BUILD_NOTE_GRANULE, true);
+                                ham.citybuildersim.BondMarket.issueLot(game, "Note", "USD"), true);
                         buyOnTheLoan(ids, "dollar note");
                     }, Money::usd));
         }

@@ -6028,8 +6028,9 @@ public class Game {
      * founded as given and not yet played, by the model's own quote
      * functions: no revenue and no output, so DebtManager.spreadFor()
      * charges the full spread on both measures. The Found a city screen's
-     * "what it buys" for Insane read it until 0.7.20; nothing calls it since
-     * (the playtest and FundCheck quote their day-0 offers themselves). A
+     * "what it buys" for Insane read it until 0.7.20; no gameplay caller since
+     * (the playtest and FundCheck quote their day-0 offers themselves).
+     * PriceLevelCheck exercises its exact scaling with the price level. A
      * scratch city, founded in a temporary folder and thrown away; nothing is
      * written.
      *
@@ -6042,8 +6043,8 @@ public class Game {
             System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
             scratch.run();
             return new DebtQuote[] {
-                    scratch.quoteLongBondForCash(cashNeeded, BUILD_BOND_YEARS, BUILD_BOND_GRANULE),
-                    scratch.quoteTBill(cashNeeded, BUILD_NOTE_MONTHS, BUILD_NOTE_GRANULE) };
+                    scratch.quoteLongBondForCash(cashNeeded, BUILD_BOND_YEARS, scratch.fundingLot("Term")),
+                    scratch.quoteTBill(cashNeeded, BUILD_NOTE_MONTHS, scratch.fundingLot("Note")) };
         } finally {
             System.setOut(out);
         }
@@ -12838,7 +12839,7 @@ public class Game {
        costs are the existing ones.
        ----------------------------------------------------------------------- */
 
-    /** The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    /** A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). */
     public static final double BUILD_NOTE_GRANULE = 1000 * PriceLevel.FACTOR;
 
     /**
@@ -12944,8 +12945,10 @@ public class Game {
            lacking", which he chose over face for face knowing what it does
            (0.7.13, round 2) - through the existing quotes: quoteTBill(),
            quoteMediumBondForCash(), quoteLongBondForCash(),
-           quoteForeignForCash(), at the build screen's granules,
-           BUILD_NOTE_GRANULE for a note and BUILD_BOND_GRANULE for a bond.
+           quoteForeignForCash(), at the month's exact price-level lot,
+           capped by the minimum issue (BondMarket.fundingLot()). The
+           player's controls round their lots to 1-2-5; model funding keeps
+           EP1's exact scaling with the price level.
            Paper sells under its face - a bill by its discount, a bond by its
            coupon rounded down to an eighth, any of them by the tail over fair
            and the fixed fee (CD2: the underwriter's spread went with the
@@ -13266,7 +13269,7 @@ public class Game {
 
     /** ...abroad in a money of the eight (CD8): the share in that money's units at the day's rate (localPer()), the quote on its curve. */
     private DebtQuote rolloverQuote(String type, int term, boolean abroad, String money, double cash) {
-        double granule = "Note".equals(type) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
+        double granule = BondMarket.fundingLot(this, type, abroad ? money : null);
         if (abroad) return quoteForeignForCash(type, money, cash / localPer(money), term, granule);
         // At the rollover's own cap (CD2, D28); dollar paper is not sold at auction and has none.
         Auction.Cap cap = rollover.getCap();
@@ -13361,7 +13364,7 @@ public class Game {
      */
     private String issueForRollover(Rollover.Issue issue, DebtQuote quote) {
         if (quote == null || quote.isEmpty()) return "Nothing issued.";
-        double granule = "Note".equals(issue.type()) ? BUILD_NOTE_GRANULE : BUILD_BOND_GRANULE;
+        double granule = BondMarket.fundingLot(this, issue.type(), issue.foreign() ? issue.money() : null);
         // The player's setting at work, not a decision: the issue is not in the log (0.7.23).
         decisions.hold();
         saleHow = Debt.ROLLOVER;
@@ -14761,8 +14764,19 @@ public class Game {
      */
     public static final int BUILD_BOND_YEARS = 20;
 
-    /** The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). */
+    /** A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). */
     public static final double BUILD_BOND_GRANULE = 100 * PriceLevel.FACTOR;
+
+    /** The player's lot for city paper in local money, rounded and capped by the smallest issue. */
+    public double issueLot(String kind) {
+        return BondMarket.issueLot(this, kind, null);
+    }
+
+    /** The model's exact price-level lot, capped by the smallest issue, preserves EP1's scaling. */
+    public double fundingLot(String kind) {
+        return BondMarket.fundingLot(this, kind, null);
+    }
+
 
     /**
      * Bond counsel, rating and printing. Payable however small the deal is.
@@ -17518,6 +17532,7 @@ public class Game {
         dataSave.setHealth(health.getState());
         dataSave.setCausesOfDeath(causesOfDeath.getState());
         dataSave.setHealthcare(healthcare.getState());
+        dataSave.setHealthcareAccess(healthcare.getAccessState());
         dataSave.setLabour(labourMarket.state());
         dataSave.setWantedPosts(wantedPosts.state());
         dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
@@ -21925,6 +21940,7 @@ public class Game {
             // none, which starts them with nobody dead of them.
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
+            healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());

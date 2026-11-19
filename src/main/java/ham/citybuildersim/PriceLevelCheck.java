@@ -223,6 +223,7 @@ public class PriceLevelCheck {
             out.println("\n--- 5. the named literals and the cross-file ratios, against today's figures ---");
             theLiterals(plain, today);
             theRatios(plain, today);
+            dayZeroQuotes(plain, today);
             out.println("\n--- 6. the twin: the default founding at the factor and at today's prices, " + TWIN_MONTHS + " months, month by month ---");
             observedTwin(plain, today, TWIN_MONTHS, "--twin");
             Child builtPlain = Child.run(false, true);
@@ -523,6 +524,30 @@ public class PriceLevelCheck {
         fails += off;
         out.printf("%-86s %s%n", "...and the " + others + " more read the same way (the tuition table, the rungs, the water and the power, every good's prices)", off == 0 && others > 0 ? "OK" : "FAIL");
         if (others == 0) fails++;
+    }
+
+    /** REV-SZ1 P1: a real day-zero quote must commute with the founding price factor. */
+    static void dayZeroQuotes(Child plain, Child today) {
+        for (Child child : new Child[] { plain, today }) {
+            Double minimum = child.dayZero.get("minimum"), floor = child.dayZero.get("floor");
+            assertTrue("fixture: day-zero minimum is its positive dial floor at factor " + child.factor,
+                    minimum != null && floor != null && floor > 0 && gap(minimum, floor) <= CONSTANT_TOLERANCE);
+            for (String kind : new String[] { "Term", "Note" }) {
+                Double face = child.dayZero.get(kind + ".face"), cash = child.dayZero.get(kind + ".cash");
+                assertTrue("fixture: day-zero " + kind + " quote really sells paper at factor " + child.factor,
+                        face != null && cash != null && face > 0 && cash > 0);
+            }
+        }
+        for (String kind : new String[] { "Term", "Note" }) {
+            for (String field : new String[] { "requested", "face", "cash", "interest", "cost" }) {
+                String key = kind + "." + field;
+                Double a = plain.dayZero.get(key), b = today.dayZero.get(key);
+                assertTrue("day-zero " + key + " is today's quote times the factor (" + a + " against "
+                                + (b == null ? null : b * PriceLevel.FACTOR) + ")",
+                        a != null && b != null && Double.isFinite(a) && Double.isFinite(b)
+                                && gap(a, b * PriceLevel.FACTOR) <= CONSTANT_TOLERANCE);
+            }
+        }
     }
 
     static void theRatios(Child plain, Child today) {
@@ -850,6 +875,7 @@ public class PriceLevelCheck {
         boolean ok;
         final Map<String, Double> consts = new LinkedHashMap<>();
         final Map<String, Double> ratios = new LinkedHashMap<>();
+        final Map<String, Double> dayZero = new LinkedHashMap<>();
         final Map<String, Series> series = new LinkedHashMap<>();
         /** What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. */
         final Map<String, double[]> counts = new LinkedHashMap<>();
@@ -923,6 +949,7 @@ public class PriceLevelCheck {
                 case "F" -> factor = Double.parseDouble(f[1]);
                 case "C" -> consts.put(f[1], Double.parseDouble(f[2]));
                 case "Q" -> ratios.put(f[1], Double.parseDouble(f[2]));
+                case "D" -> dayZero.put(f[1], Double.parseDouble(f[2]));
                 case "S" -> {
                     String[] parts = f.length > 3 ? f[3].split(",") : new String[0];
                     double[] v = new double[parts.length];
@@ -962,6 +989,7 @@ public class PriceLevelCheck {
                 Counts k = new Counts(months + 1);
                 GameFiles townFiles = town ? GameFiles.scratch("pricelevel-town") : null;
                 Game g = town ? townCity(sink, townFiles) : played ? playedCity(sink) : built ? builtCity() : historical ? historicalCity() : foundedCity();
+                double openingMinimum = flag.equals("--twin") ? g.minimumIssueSize() : 0;
                 d.sample(g, 0);
                 k.sample(g, d, 0);
                 for (int m = 1; m <= months; m++) {
@@ -972,6 +1000,9 @@ public class PriceLevelCheck {
                     k.sample(g, d, m);
                 }
                 d.history(g);
+                // Record the played city first: these independent scratch
+                // quotes must not disturb the existing monthly comparison.
+                if (flag.equals("--twin")) firstQuotes(real, g.getFounding(), openingMinimum);
                 if (town) {
                     // ScaleCheck reads the town as its own save loads it: the save, then the city that comes back, month by month the same figures
                     g.saveGame(10, "pricelevel town");
@@ -992,6 +1023,21 @@ public class PriceLevelCheck {
                 System.exit(2);
             }
             System.exit(0);
+        }
+
+        /** The actual API, at an ask derived from the minimum dial; the parent checks both children's cap premise. */
+        static void firstQuotes(PrintStream real, Founding founding, double openingMinimum) {
+            real.println("D\tminimum\t" + openingMinimum);
+            real.println("D\tfloor\t" + Game.MINIMUM_ISSUE_FLOOR);
+            double ask = 3.4 * Game.MINIMUM_ISSUE_FLOOR;
+            for (DebtQuote quote : Game.dayZeroQuotes(founding, ask)) {
+                String kind = quote.instrument();
+                real.println("D\t" + kind + ".requested\t" + quote.requested());
+                real.println("D\t" + kind + ".face\t" + quote.faceValue());
+                real.println("D\t" + kind + ".cash\t" + quote.cashReceived());
+                real.println("D\t" + kind + ".interest\t" + quote.monthlyInterest());
+                real.println("D\t" + kind + ".cost\t" + quote.totalCost());
+            }
         }
 
         static Game historicalCity() {

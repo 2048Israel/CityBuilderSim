@@ -194,7 +194,7 @@ final class FinancesScreen {
      * blurb behind the tile's (i).
      */
     record Instrument(String key, String name, String short_,
-                              int[] terms, double rounding,
+                              int[] terms,
                               String unit, String blurb, String colour, String range, String line) { }
 
     /**
@@ -210,25 +210,25 @@ final class FinancesScreen {
      * spec 2.7).
      */
     static final Instrument[] INSTRUMENTS = {
-        new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, 1000, "months",
+        new Instrument("Note", "Bills", "BILL", ShortTermTBill.TERMS, "months",
                 "Sold at a discount to the face and repaid at the face: the buyer's return is the difference, so a "
                 + "bill pays no coupon, costs nothing monthly and everything at once. Sold at auction at 1, 3, 6 or "
                 + "12 months, each sale its own line, never reopened.",
                 Palette.LADDER[0], "1–12 months", "At a discount: no coupon."),
-        new Instrument("Term", "Bonds", "BOND", LongTermBond.MATURITIES, 100000, "years",
+        new Instrument("Term", "Bonds", "BOND", LongTermBond.MATURITIES, "years",
                 "A coupon every month on the whole face and the whole face at the end. A new line's coupon is the "
                 + "auction's yield rounded down to an eighth of a point, so it sells just under 100; a sale at a term "
                 + "whose line still has " + pc(Auction.BENCHMARK_LIFE) + " of its life left reopens that line, at its "
                 + "coupon and its date, at today's price. Sold at 2, 5, 10, 20, 30 or 50 years.",
                 Palette.LADDER[2], "2–50 years", "The market's coupon, near par; lines reopen."),
-        new Instrument("Serial", "Amortizing", "AMORTIZING", MediumTermBond.YEARS, 10000, "years",
+        new Instrument("Serial", "Amortizing", "AMORTIZING", MediumTermBond.YEARS, "years",
                 "The face is repaid in equal yearly slices and one coupon, the auction's yield itself, is paid "
                 + "monthly on what is left, so the debt and the coupon shrink together and nothing falls due in a "
                 + "lump. Sold at 5 to 30 years in fives, each sale its own line, never reopened.",
                 Palette.LADDER[1], "5–30 years", "Repaid in yearly slices, on one coupon."),
         // CD5: the floating-rate note and the inflation-linked bond. The ladder draws both as bonds, so their tiles
         // are cousins of the bonds' blue (not Palette.LADDER's, which stays three) and differ from every other tile.
-        new Instrument("Float", "Floating", "FLOATING", FloatingRateNote.MATURITIES, 100000, "years",
+        new Instrument("Float", "Floating", "FLOATING", FloatingRateNote.MATURITIES, "years",
                 "A coupon every month on the whole face and the whole face at the end, as a bond's - but the coupon "
                 + "is the policy rate of the month plus a margin the sale fixes, never under nothing. The margin is "
                 + "what prices the note at 100 on today's curve, plus the tail the auction cleared at, so a note "
@@ -236,7 +236,7 @@ final class FinancesScreen {
                 + "costs it more every month, a fall costs it less. Sold at 2 or 5 years, each sale its own line, "
                 + "never reopened, at home only.",
                 Palette.REVENUE_RAMP[3], "2 or 5 years", "The dial each month, plus a fixed margin."),
-        new Instrument("Linked", "Linked", "LINKED", InflationLinkedBond.MATURITIES, 100000, "years",
+        new Instrument("Linked", "Linked", "LINKED", InflationLinkedBond.MATURITIES, "years",
                 "A real coupon every month on a principal that follows the city's price index, and at the end the "
                 + "indexed principal - never less than the face: if prices end lower than they began, the city still "
                 + "repays what it borrowed. The real coupon is what prices the bond at 100 on the inflation the "
@@ -295,6 +295,11 @@ final class FinancesScreen {
     static Instrument instrument(String key) {
         for (Instrument i : INSTRUMENTS) if (i.key().equals(key)) return i;
         return INSTRUMENTS[1];
+    }
+
+    /** The instrument's lot in the paper's own money at the month shown. */
+    double lot(Instrument kit, boolean foreign) {
+        return ham.citybuildersim.BondMarket.issueLot(ui.game, kit.key(), foreign ? borrowMoney : null);
     }
 
     /** The auction's name for an instrument's kind of paper. */
@@ -5154,8 +5159,10 @@ final class FinancesScreen {
             + "the world's appetite, not the bank's room - and says what that costs.";
 
     /** The ask's (i): the spec's T56. */
-    static final String LOTS_INFO = "Issues round to a lot, and the market will not arrange anything under the "
-            + "smallest issue for a city this size - the legal and rating work costs the same however little you raise.";
+    static final String LOTS_INFO = "Each kind's lot follows this month's price level, rounded down to 1, 2 or 5 "
+            + "times a power of ten, never above the smallest issue for this city. Steps follow the ask's leading "
+            + "digit and its tenth, never below a lot. The market will not arrange anything under the smallest "
+            + "issue: the legal and rating work costs the same however little you raise.";
 
     /** The quote's empty state: the spec's T57. */
     static final String NO_ASK = "Ask for something and the quote appears here - at home the auction itself, run on "
@@ -5163,9 +5170,10 @@ final class FinancesScreen {
             + "button.";
 
     /** Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). */
-    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise, and its face is the lot that brings "
-            + "it, so the proceeds land on whichever side of the request the rounding puts them - and the smallest "
-            + "issue worth arranging can be more than a lot. A bond's ask is its face; what it raises is the face at "
+    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise. Its face rounds up to lots large "
+            + "enough to cover that cash and the fixed cost; a short auction can raise less. The smallest "
+            + "issue worth arranging can be more than a lot. Lots follow this month's prices and are rounded down "
+            + "to 1, 2 or 5 times a power of ten, capped at the minimum issue. A bond's ask is its face; what it raises is the face at "
             + "the auction's price, less the fixed cost.";
 
     /** Who bids: the spec's T61 and 4.2 (CD2). */
@@ -5226,9 +5234,9 @@ final class FinancesScreen {
         // ...a bond asked callable (CD4) goes through the callable overload of the same quote.
         boolean callable = callableAsked(kit, foreign);
         DebtQuote quote = borrowAsk > 0
-                ? (foreign ? g.quoteForeign(kit.key(), borrowMoney, borrowAsk, borrowTerm, kit.rounding())
-                   : callable ? g.quoteLongBond(borrowAsk, borrowTerm, kit.rounding(), borrowCap, true)
-                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, kit.rounding(), borrowCap))
+                ? (foreign ? g.quoteForeign(kit.key(), borrowMoney, borrowAsk, borrowTerm, lot(kit, foreign))
+                   : callable ? g.quoteLongBond(borrowAsk, borrowTerm, lot(kit, foreign), borrowCap, true)
+                           : g.quoteDebt(kit.key(), borrowAsk, borrowTerm, lot(kit, foreign), borrowCap))
                 : null;
         // What the call adds to the coupon, read once off the model for the three places that say it.
         callWords = quote != null && quote.callable()
@@ -5341,7 +5349,7 @@ final class FinancesScreen {
         DebtManager ledger = ui.game.getDebtManager();
         double from = ledger.usdPer(borrowMoney), to = ledger.usdPer(code);
         if (borrowAsk > 0 && from > 0 && to > 0 && Double.isFinite(from) && Double.isFinite(to)) {
-            double lot = instrument(borrowType).rounding();
+            double lot = ham.citybuildersim.BondMarket.issueLot(ui.game, borrowType, code);
             borrowAsk = Math.max(lot, Math.round(borrowAsk * from / to / lot) * lot);
         } else {
             borrowAsk = 0;
@@ -5407,7 +5415,7 @@ final class FinancesScreen {
 
         java.util.function.DoubleFunction<String> w = foreign ? figuresIn(borrowMoney) : this::d;
         double base = askBase();
-        double[] by = askSteps(base, kit.rounding());
+        double[] by = askSteps(base, lot(kit, foreign));
         javafx.scene.layout.FlowPane steps = Kept.flow(6, 6);
         if (base > 0) {
             steps.getChildren().add(Kept.scope("÷10", () -> stepChip("÷10", () -> setAsk(askBase() / 10), false)));
@@ -5424,7 +5432,7 @@ final class FinancesScreen {
         }
         presets.getChildren().add(Kept.scope("clear", () -> stepChip("clear", () -> setAsk(0), true)));
         card.getChildren().addAll(steps, presets);
-        card.getChildren().add(noteLine("lots of " + w.apply(kit.rounding()) + " · nothing under "
+        card.getChildren().add(noteLine("lots of " + w.apply(lot(kit, foreign)) + " · nothing under "
                 + w.apply(foreign ? g.minimumIssueSizeIn(borrowMoney) : minimum),
                 LOTS_INFO, 560));
         if (!foreign) card.getChildren().addAll(Kept.scope("cap", () -> capControls(fair)));
@@ -5587,10 +5595,7 @@ final class FinancesScreen {
 
     /** The ± steps for an ask: one unit of its leading digit and a tenth of that - D$1B and D$100M at D$3.4B - never under a lot; at nothing, one lot. Pure. */
     static double[] askSteps(double ask, double lot) {
-        if (!(ask > 0)) return new double[] { lot };
-        double big = Math.max(lot, Math.pow(10, Math.floor(Math.log10(ask))));
-        double fine = Math.max(lot, big / 10);
-        return fine < big ? new double[] { big, fine } : new double[] { big };
+        return ham.citybuildersim.MagnitudeSteps.of(ask, lot);
     }
 
     /** What a step or a scale starts from: what is typed and not yet set, when it reads as an amount, else the ask. */
@@ -5629,7 +5634,7 @@ final class FinancesScreen {
         Game g = ui.game;
         DebtManager ledger = g.getDebtManager();
         List<AskPreset> out = new ArrayList<>();
-        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeIn(borrowMoney) : g.minimumIssueSize(), kit.rounding())));
+        out.add(new AskPreset("the minimum", Math.max(foreign ? g.minimumIssueSizeIn(borrowMoney) : g.minimumIssueSize(), lot(kit, foreign))));
         double[] figures = foreign
                 ? new double[] { ledger.dueAbroadWithinUsd(12) / ledger.usdPer(borrowMoney) }
                 : new double[] { ledger.dueWithin(12), g.monthOfSpending(), ledger.annualCapacityRevenue(), g.cashShortfall() };
@@ -5929,8 +5934,8 @@ final class FinancesScreen {
         return Kept.scope("offer", () -> {
             VBox offer = offerCard(quoteName(kit, foreign), foreign ? abroadBlurb(kit, money) : kit.blurb(), quote, pct2(quote.marketRate()) + " a year",
                     rateColour(quote, ledger), ending, "Issue for " + w.apply(quote.cashReceived()), () -> {
-                        String summary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, kit.rounding(), hold)
-                                                 : executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap);
+                        String summary = foreign ? g.handleForeignLogic(kit.key(), money, ask, term, lot(kit, foreign), hold)
+                                                 : executeDebtLogic(kit.key(), ask, term, lot(kit, foreign), cap);
                         borrowAsk = 0;
                         showDebtResultMenu(booked, foreign, money, summary);
                     }, w);
@@ -6035,7 +6040,7 @@ final class FinancesScreen {
         go.setMaxWidth(Double.MAX_VALUE);
         go.setStyle(Palette.words(Palette.SIZE_LABEL, "white") + " -fx-background-color: " + Palette.CONFIRM + ";");
         Kept.give(go.onActionProperty(), e -> {
-            String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap, callable);
+            String summary = executeDebtLogic(kit.key(), ask, term, lot(kit, false), cap, callable);
             borrowAsk = 0;
             showDebtResultMenu(booked, false, null, summary);
         });
