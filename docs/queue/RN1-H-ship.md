@@ -1,3 +1,4 @@
+<!-- readiness: provisional -->
 ## changelog
 ### {next} — RN1-H, the homes' headroom a margin over demand — 2026-11-19, ready, see docs/queue/RN1-H-notes.md
 Homes now plan capacity at demand plus `BusinessInvestment.TARGET_HEADROOM`, counting standing homes and those on site once. Previously the planner waited until demand exceeded capacity by that margin, then ordered only to bare demand. The planner's quantity and the credit check use the same target. HousingCheck causes equal demand and capacity, orders exactly the margin, and proves that planned and completed reserve homes stop further orders. DiscoveryCheck includes headroom in the capacity required by research jobs. The other planners' readings were audited and left unchanged.
