@@ -1416,8 +1416,9 @@ public class DiscoveryCheck {
         r.restore(grants, Map.of(), piles, finds);
         double withoutPosts = landlords.latentHeadShortfall();
         r.restore(grants, held, piles, finds);
-        near("the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write), " + postsJobs + " jobs",
-                withPosts - withoutPosts, postsJobs * 2.25, 1e-9 * postsJobs * 2.25);
+        double headsWithHeadroom = postsJobs * 2.25 * (1 + BusinessInvestment.TARGET_HEADROOM);
+        near("the credit check counts each research job's 2.25 heads of demand plus TARGET_HEADROOM, " + postsJobs + " jobs",
+                withPosts - withoutPosts, headsWithHeadroom, 1e-9 * headsWithHeadroom);
         near("...and with the posts held again it is what it was", landlords.latentHeadShortfall(), withPosts, 1e-9 * Math.max(1, Math.abs(withPosts)));
     }
 }

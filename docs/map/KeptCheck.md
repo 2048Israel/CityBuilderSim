@@ -66,7 +66,7 @@
 
 **Uses:** [KeptBench](KeptBench.md) (712), [Game](Game.md) (160), [ResearchView](ResearchView.md) (122), [Money](Money.md) (62), [Sectors](Sectors.md) (51), [FundView](FundView.md) (36), [Debt](Debt.md) (25), [DecisionLog](DecisionLog.md) (21), [ResearchViewCheck](ResearchViewCheck.md) (20), [Where](Where.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (18), [BuildAdvice](BuildAdvice.md) (17), [ForeignAccounts](ForeignAccounts.md) (17), [FundLedger](FundLedger.md) (16), [Timing](Timing.md) (15), [ResearchCatalog](ResearchCatalog.md) (15), [Observation](Observation.md) (14), [CityCalendar](CityCalendar.md) (13), [Notice](Notice.md) (12), [ChartModel](ChartModel.md) (11), [LandmassCheck](LandmassCheck.md) (10), [TreasuryFund](TreasuryFund.md) (10), [Auction](Auction.md) (9), [Research](Research.md) (7), [Equity](Equity.md) (7), [LandmassView](LandmassView.md) (6), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [DebtManager](DebtManager.md) (6), [CorporateBond](CorporateBond.md) (6)... and 50 more
 
-**Used by (4):** [ChartFitCheck](ChartFitCheck.md), [MapCheck](MapCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [ToastCheck](ToastCheck.md)
+**Used by (5):** [ChartFitCheck](ChartFitCheck.md), [MapCheck](MapCheck.md), [NewUnitCheck](NewUnitCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [ToastCheck](ToastCheck.md)
 
 ## Sections
 

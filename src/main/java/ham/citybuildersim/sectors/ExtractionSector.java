@@ -8,6 +8,7 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.LandManager;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 
@@ -196,14 +197,16 @@ public abstract class ExtractionSector extends Sector {
      * Iron Mine's explosives and wear parts, D$199.8k a month at nameplate,
      * and no power). The figure the plan, Game.consider() and the build card
      * read.
+     * ...for one new building already resolved (QN1; NewUnit): its own makes, posts, draw and consumables.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         // The maker's estimate itself (not Sector's, which would weigh the legs a second time): its freight below.
-        if (t == null) return super.estimatedMonthlyProfit(t, plans);
-        double maker = plans.estimatedMakerProfit(this, t);
+        if (t == null) return super.estimatedMonthlyProfit(u, plans);
+        double maker = plans.estimatedMakerProfit(this, u);
         double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
-        return maker - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), pricePerWatt) - freightRunning(t, rate);
+        return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), pricePerWatt) - freightRunning(u, rate);
     }
 
     /*
@@ -232,12 +235,22 @@ public abstract class ExtractionSector extends Sector {
 
     /** What the freight of one of `t` costs a month at `rate`: ProcessingSector.freightRunning() at what a van and a litre cost here and at Haulage's quote (legPrice()); none with no markets. */
     public double freightRunning(BuildingsTemplate t, double rate) {
+        return freightRunning(NewUnit.standing(t), rate);
+    }
+
+    /** ...for one new building already resolved (QN1): the freight of its own recipe. */
+    public double freightRunning(NewUnit t, double rate) {
         return markets == null || t == null ? 0
                 : ProcessingSector.freightRunning(t, SpreadPlanner.values(markets), rate, legPrice());
     }
 
     /** ...and buying its vans: ProcessingSector.fleetCapital() (no truck is in a mine's cost: FR2); none with no markets. */
     public double fleetCapital(BuildingsTemplate t) {
+        return fleetCapital(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): the vans of its own recipe. */
+    public double fleetCapital(NewUnit t) {
         return markets == null || t == null ? 0 : ProcessingSector.fleetCapital(t, SpreadPlanner.values(markets));
     }
 
@@ -321,8 +334,10 @@ public abstract class ExtractionSector extends Sector {
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
             // ...its lorries with it (0.7.124, ★): their wear and diesel in what it earns, the vans in what it costs.
-            cost += fleetCapital(t);
-            double earns = estimatedMonthlyProfit(t, plans);
+            // ...of one new mine as it would open (QN1, NewUnit): its own vans and its own earnings.
+            NewUnit unit = plans.newUnit(t);
+            cost += fleetCapital(unit);
+            double earns = estimatedMonthlyProfit(unit, plans);
             // ...and one that would carry the interest on its whole cost (0.7.120, batch I3; spec-materials 2.6b).
             if (!planner.passesMoney(this, plans, game, t, 1, earns, cost)) {
                 if (moneyHold == null || earns / cost > moneyEarns / moneyCost) {
@@ -578,6 +593,11 @@ public abstract class ExtractionSector extends Sector {
         return fits(land, t, game.claimsOn(resource)) ? null : noField(land, t);
     }
 
+    /** ...for one new building already resolved (QN1): the ground's test is its template's, as it is here; a sector whose test reads its recipe's figures (Forestry's cut) overrides this. */
+    protected String groundRefusal(NewUnit u) {
+        return groundRefusal(u.template());
+    }
+
     /**
      * One more of `t` weighed as plan() weighs it (above), every gate asked:
      * its ground (groundRefusal()), the ground for the building, the staff,
@@ -587,8 +607,9 @@ public abstract class ExtractionSector extends Sector {
      */
     public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans) {
         if (t == null || plans == null || game == null || buildings == null || markets == null || !isWeighed(t)) return null;
-        double cost = plans.getCostOf(t, 1) + fleetCapital(t);
-        return SpreadPlanner.judge(t, estimatedMonthlyProfit(t, plans), cost, groundRefusal(t), planner.city(this, plans, game), null);
+        NewUnit unit = plans.newUnit(t);
+        double cost = plans.getCostOf(t, 1) + fleetCapital(unit);
+        return SpreadPlanner.judge(t, estimatedMonthlyProfit(unit, plans), cost, groundRefusal(unit), planner.city(this, plans, game), null);
     }
 
     /** Whether a building of its stands over ground with nothing left of its type (workedOut()): a mine that lifts nothing; false with no city. */

@@ -1428,17 +1428,17 @@ final class BuildScreen {
                 List<String> parts = new ArrayList<>();
                 if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
                     // A conversion unit (0.7.80): the hero names its feed, and this what the feed becomes.
-                    parts.add("into " + goodsList(ham.citybuildersim.sectors.Refining.madeBy(t)) + " from the crude units' run"
+                    parts.add("into " + goodsList(ham.citybuildersim.sectors.Refining.madeBy(f.newUnit())) + " from the crude units' run"
                             + (t.refineryUnit() == ham.citybuildersim.sectors.RefineryFlow.Kind.HYDROCRACKER
                             ? " and a reformer's hydrogen" : ""));
                 } else if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
                     // A crude unit (0.7.76): the hero names its crude, and this what the crude becomes.
-                    parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(t)));
+                    parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(f.newUnit())));
                 } else {
-                    java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(t.goodsMade());
+                    java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(f.newUnit().goodsMade());
                     others.remove(f.good());
                     if (!others.isEmpty()) parts.add("and " + goodsList(others));
-                    if (!t.goodsUsed().isEmpty()) parts.add("from " + goodsList(t.goodsUsed()));
+                    if (!f.newUnit().goodsUsed().isEmpty()) parts.add("from " + goodsList(f.newUnit().goodsUsed()));
                 }
                 parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
                         : "adds " + money(f.valueAdded()) + " a month at today's prices");
@@ -2222,7 +2222,7 @@ final class BuildScreen {
         BuildingsTemplate t = f.template();
         StringBuilder line = new StringBuilder();
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            int n = f.newUnit().getJobs(job);
             if (n == 0) continue;
             if (line.length() > 0) line.append(" · ");
             line.append(formatter.format(n)).append(" ").append(n == 1 ? jobLabel(job) : jobPlural(job));
@@ -2525,7 +2525,7 @@ final class BuildScreen {
         title.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-font-weight: bold;");
         body.getChildren().add(title);
 
-        List<String> does = whatItDoes(t);
+        List<String> does = whatItDoes(t, f.newUnit());
         body.getChildren().addAll(Kept.scope("does", () -> {
             List<javafx.scene.Node> lines = new ArrayList<>();
             for (String line : does) {
@@ -2549,15 +2549,15 @@ final class BuildScreen {
                 statPair("Materials", formatter.format(t.getConstructionMaterials())),
                 statPair("Build points", formatter.format(t.getConstructionPoints())),
                 statPair("Road load", formatter.format(t.getRoadLoad())),
-                statPair("Electricity", power(t.getElectricityConsumption())),
-                statPair("Water", formatter.format(t.getWaterConsumption())))));
+                statPair("Electricity", power(f.newUnit().getElectricityConsumption())),
+                statPair("Water", formatter.format(f.newUnit().getWaterConsumption())))));
 
         double[] wages = ui.game.getPopulationManager().getWagesPerType();
         StringBuilder mix = new StringBuilder();
         double bill = 0;
         int staff = 0;
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            int n = f.newUnit().getJobs(job);
             if (n == 0) continue;
             staff += n;
             if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()];
@@ -4343,7 +4343,7 @@ final class BuildScreen {
         what.setWrapText(true);
         Label price = Kept.label(money(total) + " all in, of your " + money(game.getCash()));
         price.setStyle(Palette.figure(Palette.SIZE_LABEL, total > game.getCash() ? Palette.WARN : Palette.TEXT_LABEL));
-        double[] needs = BuildAdvice.needs(order);
+        double[] needs = BuildAdvice.needs(game, order);
         StringBuilder staff = new StringBuilder();
         for (JobType job : JobType.values()) {
             double n = needs[job.ordinal()];
@@ -4606,8 +4606,8 @@ final class BuildScreen {
             default: {
                 java.util.Set<String> made = new java.util.LinkedHashSet<>(), used = new java.util.LinkedHashSet<>();
                 for (BuildCard.Figures f : group.cards()) {
-                    for (Good g : ham.citybuildersim.sectors.Refining.madeBy(f.template()).keySet()) made.add(g.label().toLowerCase());
-                    for (Good g : f.template().goodsUsed().keySet()) used.add(g.label().toLowerCase());
+                    for (Good g : ham.citybuildersim.sectors.Refining.madeBy(f.newUnit()).keySet()) made.add(g.label().toLowerCase());
+                    for (Good g : f.newUnit().goodsUsed().keySet()) used.add(g.label().toLowerCase());
                 }
                 used.removeAll(made);
                 String what = andList(new ArrayList<>(made));
@@ -4713,6 +4713,11 @@ final class BuildScreen {
     // each category - and the only way to hold that is to print every one and
     // assert on them. Same for the two below.
     public List<String> whatItDoes(BuildingsTemplate t) {
+        return whatItDoes(t, ham.citybuildersim.NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): its output, draw and inputs are the unit's (a card's, BuildCard.Figures.newUnit()); its kind and words the template's. */
+    List<String> whatItDoes(BuildingsTemplate t, ham.citybuildersim.NewUnit u) {
         List<String> out = new ArrayList<>();
 
         /*
@@ -4812,7 +4817,7 @@ final class BuildScreen {
             return out;
         }
         // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()), a conversion unit's products of its feed since 0.7.80.
-        java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(t);
+        java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(u);
         if (t.isOwnedBySector() && !makesNow.isEmpty()) {
             if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) out.addAll(conversionUnitLines(t));
             for (java.util.Map.Entry<Good, Double> e : makesNow.entrySet()) {
@@ -4838,7 +4843,7 @@ final class BuildScreen {
                             : "."));
                 }
             }
-            for (java.util.Map.Entry<Good, Double> e : t.goodsUsed().entrySet()) {
+            for (java.util.Map.Entry<Good, Double> e : u.goodsUsed().entrySet()) {
                 Good g = e.getKey();
                 if (!g.traded()) continue;
                 double price = ui.game.getMarkets().get(g).getLocalPrice();
@@ -4915,7 +4920,7 @@ final class BuildScreen {
                 break;
 
             case ELECTRICITY:
-                out.add(String.format("Generates %s of electricity.", power(t.getProduction1())));
+                out.add(String.format("Generates %s of electricity.", power(u.getProduction1())));
                 break;
 
             case WATER:
@@ -4923,12 +4928,12 @@ final class BuildScreen {
                 // limit, or the sea, which the limit does not reach.
                 if (t.isSeaWater()) {
                     out.add(String.format("Desalinates %s units of seawater a month, and draws %s of power doing it.",
-                            formatter.format(t.getProduction1()), power(t.getElectricityConsumption())));
+                            formatter.format(u.getProduction1()), power(u.getElectricityConsumption())));
                     out.add("The fresh water limit does not reach it, but it has to stand on the coast: the city"
                             + " must own some sea.");
                 } else {
                     out.add(String.format("Treats %s units of fresh water a month.",
-                            formatter.format(t.getProduction1())));
+                            formatter.format(u.getProduction1())));
                     // ...and a new city is founded with one plant's (0.7.106, Jerus's A24; LandManager.FOUNDING_FRESH_UNITS).
                     out.add(String.format("The plants together treat no more than the city's lakes and river yield:"
                             + " %s units a month for each km² of them it owns - a new city is founded with one plant's.",

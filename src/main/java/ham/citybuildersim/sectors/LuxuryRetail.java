@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
@@ -503,9 +504,12 @@ public class LuxuryRetail extends Sector {
      * THE MARGIN, NOT THE TICKET, and net of what it costs to run. A shop that
      * sells a nine-dollar watch for twelve has made three dollars, owes the
      * world nine, and still has to pay its staff and its lights.
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its own posts, draw and water in what it costs to run.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || t.getCoverage() <= 0) return 0;
         double landed = rLanded > 0 ? rLanded : Good.LUXURIES.worldImportPrice();
         double price = sellPrice > 0 ? sellPrice : landed * MARGIN_FLOOR;
@@ -513,7 +517,7 @@ public class LuxuryRetail extends Sector {
         // city with a hundred spare counters sells nothing.
         double served = Math.min(t.getCoverage(), Math.max(0, rWanted - coverage() - coverageOnSite()));
         if (served <= 0) served = t.getCoverage() * .5;
-        return served * (price - landed) - plans.runningCostOf(t);
+        return served * (price - landed) - plans.runningCostOf(u);
     }
 
     /* ===================================================================

@@ -58,6 +58,10 @@ package ham.citybuildersim;
  *      and the block, once standing, counts whole in the city's housing, bills
  *      its rent with its posts mostly empty, and pays the wages of those filled.
  *
+ *   7. HEADROOM IS SPARE HOMES OVER DEMAND (RN1-H). At equal demand and
+ *      capacity the plan orders the margin, counts homes on site once,
+ *      and stops at that margin, both before and after they finish.
+ *
  * @author Jerus
  */
 public class HousingCheck {
@@ -779,12 +783,100 @@ public class HousingCheck {
 
         heldRateRentsItsGlutAtNoLift();
         aClosedHomesDebtIsTheLandlordsLoss();
+        homesKeepHeadroomOverDemand();
 
         System.out.println(fails == 0
                 ? "\nEvery door, every household and every dollar of rent is accounted for."
                 : "\n" + fails + " FAILED");
 
         if (fails > 0) System.exit(1);
+    }
+
+    static void homesKeepHeadroomOverDemand() {
+        System.out.println("\n--- homes keep headroom over demand ---");
+        Game g = new Game(GameFiles.scratch("housing-headroom"));
+        g.run();
+        BuildingManager built = g.getBuildingManager();
+        built.clearStacks();
+        BuildingsTemplate house = template(g, "House");
+        BuildingsTemplate studio = template(g, "Studio Apartments");
+        BuildingsTemplate shop = template(g, "Convenience Store");
+        BusinessInvestment plans = g.getBusinessInvestment();
+        plans.setLandAvailable(1e12, 0);
+
+        // Find integral catalogue quantities whose jobs support exactly their
+        // homes, with a margin divisible by one House: no rounding allowance
+        // can hide an over-order. The founding endowment counts in both totals.
+        long baseHomes = built.getTotalHouseCapacity();
+        long baseJobs = java.util.Arrays.stream(g.getJobs()).sum();
+        long houses = -1, studios = 0, shops = 0;
+        for (int s = 0; s < 9 && houses < 0; s++) {
+            for (int n = 1; n <= 200; n++) {
+                double heads = (baseJobs + s * studio.getTotalJobs() + n * shop.getTotalJobs()) * 2.25;
+                double h = (heads - baseHomes - s * studio.getCapacity()) / house.getCapacity();
+                double spare = heads * BusinessInvestment.TARGET_HEADROOM / house.getCapacity();
+                if (h >= 0 && spare >= 2 && spare <= 10
+                        && Math.abs(h - Math.rint(h)) < TOLERANCE
+                        && Math.abs(spare - Math.rint(spare)) < TOLERANCE) {
+                    houses = Math.round(h); studios = s; shops = n;
+                    break;
+                }
+            }
+        }
+        assertTrue("fixture: catalogue quantities make equal homes and demand", houses >= 0);
+        if (houses < 0) return;
+        built.addStack(house, houses, true);
+        built.addStack(studio, studios, true);
+        built.addStack(shop, shops, true);
+        g.getPopulationManager().updateJobs(g.getJobs());
+        ham.citybuildersim.sectors.RealEstate re = g.getSectors().realEstate();
+        long[] sizes = built.homesBySize();
+        long studioDoors = 0, familyDoors = 0, studioHeads = 0, familyHeads = 0;
+        for (int size = 1; size < sizes.length; size++) {
+            if (size <= FamilyModel.STUDIO_MAX_SIZE) {
+                studioDoors += sizes[size]; studioHeads += sizes[size] * size;
+            } else {
+                familyDoors += sizes[size]; familyHeads += sizes[size] * size;
+            }
+        }
+        re.setSegments(studioDoors, familyDoors, studioDoors, familyDoors, studioHeads, familyHeads);
+        re.setRentPrice(10);
+        re.setStudioRentPrice(10);
+        double demand = g.getPopulationManager().getTotalJobs() * 2.25;
+        double target = demand * (1 + BusinessInvestment.TARGET_HEADROOM);
+        double gap = target - g.getHouseholdCapacity();
+        isNear("fixture: jobs' demand equals standing capacity", demand, g.getHouseholdCapacity());
+        assertTrue("fixture: neither segment lacks a door", re.doorShortfall(true) == 0 && re.doorShortfall(false) == 0);
+        isNear("the credit check sees the margin still needed", re.latentHeadShortfall(), gap);
+        BusinessInvestment.Decision order = re.plan(plans, g);
+        System.out.printf("   demand %.0f, capacity %d, margin %.0f -> %d x %s%n",
+                demand, g.getHouseholdCapacity(), gap, order.quantity,
+                order.template == null ? "none" : order.template.getName());
+        assertTrue("equal homes and demand still plan the spare homes", order.build && order.quantity > 0);
+        assertTrue("fixture: the spare homes are Houses, with no added jobs", order.template == house && house.getTotalJobs() == 0);
+        if (!order.build || order.template != house) return;
+        isNear("the order reaches the margin without going past it", order.quantity * house.getCapacity(), gap);
+
+        // Leave one House of the margin uncommitted, then commit the last:
+        // sites must reduce the next order, not get the margin added to them.
+        built.addStack(house, order.quantity - 1, false);
+        isNear("the credit check counts the homes on site once", re.latentHeadShortfall(), house.getCapacity());
+        BusinessInvestment.Decision last = re.plan(plans, g);
+        assertTrue("only the last House is ordered beside the existing sites",
+                last.build && last.template == house && last.quantity == 1);
+        built.addStack(house, 1, false);
+        isNear("standing plus planned capacity is demand plus headroom",
+                built.getTotalHouseCapacity() + built.getHouseCapacityUnderConstruction(), target);
+        isNear("the credit check has no gap at the planned margin", re.latentHeadShortfall(), 0);
+        assertTrue("nothing more is ordered at the planned margin", !re.plan(plans, g).build);
+
+        // Replace these sites by the same completed homes, holding jobs fixed.
+        built.getStack(house).setUnderConstruction(0);
+        built.addStack(house, order.quantity, true);
+        isNear("completed capacity is still exactly the target", g.getHouseholdCapacity(), target);
+        assertTrue("nothing more is ordered at the completed margin", !re.plan(plans, g).build);
+        built.addStack(house, 1, true);
+        assertTrue("nothing is ordered above the margin", !re.plan(plans, g).build);
     }
 
     static BuildingsTemplate template(Game game, String name) {

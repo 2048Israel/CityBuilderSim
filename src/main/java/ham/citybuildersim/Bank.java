@@ -5408,7 +5408,7 @@ public class Bank {
     public boolean feesWouldCoverAnother() { return feesWouldCoverAnother(branches); }
     public boolean feesWouldCoverAnother(double standing) {
         double cost = laterBranchCost();
-        return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost;
+        return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost + newBranchExtra();
     }
 
     /**
@@ -5418,6 +5418,28 @@ public class Bank {
      * cost. The same as runningCostPerBranch() for a bank whose branches all
      * paid alike.
      */
+    /*
+     * THE NEW BRANCH'S OWN CREW (QN1, 2026-11-19; docs/queue/QN1.md, REV-R2e-6 finding 4). A later branch's cost C is
+     * what the standing branches paid last month; a branch opened now may open on another recipe (a city founded the
+     * 1900 way rejects a machine the standing branches have, and hires the clerks it replaced), costing C_new. With N
+     * branches standing and the charter's exemption E the opening gate asks fees >= N x C + C_new - E: the new crew once,
+     * on the one branch that would have it. The branches standing, their closures (branchesTheFeesCover()) and the
+     * book's costs keep C. R2e's first repair multiplied the difference by N + 1.
+     */
+    private transient java.util.function.DoubleSupplier newBranchExtra;
+
+    /** The investors hand in C_new - C for the branch they would open (BusinessInvestment.newBranchExtra()); null for none. */
+    public void setNewBranchExtra(java.util.function.DoubleSupplier extra) { newBranchExtra = extra; }
+
+    /** C_new - C: what a new branch's own crew costs over a later branch's cached cost; 0 with none handed in. */
+    double newBranchExtra() { return newBranchExtra == null ? 0 : newBranchExtra.getAsDouble(); }
+
+    /** C_new: what the branch opened next would cost a month, a later branch's cost and its own crew's difference; 0 with nothing known to cost. */
+    public double newBranchCost() {
+        double cost = laterBranchCost();
+        return cost > 0 ? cost + newBranchExtra() : cost;
+    }
+
     public double laterBranchCost() {
         return branches > 0 ? (lastPayroll + lastUpkeep - lastOperating) / branches + lastUpkeepPerLater : 0;
     }
@@ -5474,7 +5496,7 @@ public class Bank {
         if (!feesWouldCoverAnother(standing)) {
             return String.format("another branch's customers would pay %s a month in fees against the %s a branch costs",
                     Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                    Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
+                    Currency.writing().write(String.format("%,.1fk", newBranchCost())));
         }
         return null;
     }
@@ -5484,7 +5506,7 @@ public class Bank {
         if (standing <= 0) return "nowhere in the city to bank - its credit comes from outside, at the window's price";
         return String.format("%,.0f customers - another branch's fees of %s a month would cover the %s it costs",
                 customers, Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
+                Currency.writing().write(String.format("%,.1fk", newBranchCost())));
     }
 
     /* ----------------- a branch whose fees do not cover it is closed (0.7.19) -----------------

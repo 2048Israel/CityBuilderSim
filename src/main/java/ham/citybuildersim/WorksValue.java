@@ -34,12 +34,25 @@ public final class WorksValue {
 
     public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site,
                            BuildingsTemplate t, long count, double landLeft) {
-        return of(g, m, site, t, count, landLeft, g.getCash());
+        return of(g, m, site, NewUnit.of(g, t), count, landLeft, g.getCash());
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts; the template it is of is what is ordered. */
+    public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site,
+                           NewUnit u, long count, double landLeft) {
+        return of(g, m, site, u, count, landLeft, g.getCash());
     }
 
     /** The same comparison after earlier cards have used some of the treasury. */
     public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site,
                            BuildingsTemplate t, long count, double landLeft, double cashLeft) {
+        return of(g, m, site, NewUnit.of(g, t), count, landLeft, cashLeft);
+    }
+
+    /** ...for one new building already resolved (QN1). */
+    public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site,
+                           NewUnit u, long count, double landLeft, double cashLeft) {
+        BuildingsTemplate t = u.template();
         if (count <= 0) return new Value(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Game.BuildQuote q = g.quoteBuild(t, count);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
@@ -50,7 +63,7 @@ public final class WorksValue {
         PopulationManager people = g.getPopulationManager();
         double[] wages = people.getWagesPerType(), fill = people.getJobFillRate();
         for (JobType job : JobType.values()) {
-            double posts = count * (double) t.getJobs(job);
+            double posts = count * (double) u.getJobs(job);
             jobs += posts;
             double paid = posts * wages[job.ordinal()] * fill[job.ordinal()];
             payroll += paid;
@@ -66,7 +79,7 @@ public final class WorksValue {
         return new Value(q.total, BuildAdvice.landValue(g, footprint, usableGround), relief.futureCapital(),
                 relief.futureUnits(), relief.financing(), relief.running(),
                 relief.avoided(), payroll, returned * factor + returned / count * relief.futureMonths(),
-                jobs, count * BuildAdvice.unfilledPosts(t, fill), lead, relief.used());
+                jobs, count * BuildAdvice.unfilledPosts(u, fill), lead, relief.used());
     }
 
     /** A paving is the whole replacement plan, including the ground freed and running-cost difference. */
@@ -309,7 +322,7 @@ public final class WorksValue {
         Map<BuildingsTemplate, Long> loads = new LinkedHashMap<>();
         for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {
             BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.ELECTRICITY && t.getElectricityConsumption() > 0)
+            if (t.getCategory() != BuildingType.ELECTRICITY && NewUnit.of(g, t).getElectricityConsumption() > 0)
                 loads.put(t, stack.getUnderConstruction());
         }
         return loads;
@@ -318,7 +331,7 @@ public final class WorksValue {
     private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months) {
         double load = 0;
         for (Map.Entry<BuildingsTemplate, Long> e : completedAt(g, schedule, months).entrySet())
-            load += e.getValue() * (double) e.getKey().getElectricityConsumption();
+            load += e.getValue() * (double) NewUnit.of(g, e.getKey()).getElectricityConsumption();
         return load;
     }
 

@@ -1052,7 +1052,9 @@ public final class CityNeeds {
         long[] posts = game.getJobs();
         double[] coming = new double[JobType.values().length];
         for (BuildingsStacks site : bm.getStacksUnderConstruction()) {
-            for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) site.getBuilding().getJobs(j);
+            // ...each with the posts it will open with (QN1, NewUnit): a plant on site whose new recipe differs from the fleet's.
+            NewUnit unit = bm.newUnit(site.getBuilding());
+            for (JobType j : JobType.values()) coming[j.ordinal()] += site.getUnderConstruction() * (double) unit.getJobs(j);
         }
         double standing = 0, onSite = 0, qualified;
         if (type.isProfessional()) {

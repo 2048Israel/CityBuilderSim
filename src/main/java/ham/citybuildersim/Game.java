@@ -360,7 +360,9 @@ public class Game {
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         buildingManager.setOnScrap(stack -> fittings.scrapped(stack.getBuilding().getId(), stack::getUnfitted));
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
-        businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
+        businessInvestment.setNewUnits(t -> NewUnit.of(this, t));   // one new building of a template as it would open, beside the template (QN1)
+        buildingManager.setNewUnits(t -> NewUnit.of(this, t));   // ...and a site's posts, output and input to come
+        businessInvestment.setLicenceCost(u -> LicenceFees.forNew(this, u));
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
         businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
@@ -4010,11 +4012,12 @@ public class Game {
                 grownOver(cost, businessInvestment.carryOf(t, n, prime)), prime);
         double[] wanted = free.wanted(), spare = free.spare();
         double[] rates = economyManager.getWageRates();
+        NewUnit unit = owner.newUnit(t);   // ...the posts of the building as it would open (QN1)
         double shortBill = 0;
         for (JobType job : JobType.values()) {
             int b = WageBand.of(job).ordinal();
             if (b < wanted.length && wanted[b] > Math.max(0, spare[b])) {
-                shortBill += t.getJobs(job) * n * rates[job.ordinal()];
+                shortBill += unit.getJobs(job) * n * rates[job.ordinal()];
             }
         }
         WantedPosts.Ask a = WantedPosts.askOf(owner.key(), t.getName(), wanted, spare, margin, shortBill);
@@ -10482,7 +10485,13 @@ public class Game {
     /** Spare licences the city holds against what this order would need staffed. */
     public double licencesNeededFor(BuildingsTemplate template, long quantity) {
         if (template == null || template.getRequiresLicence() == null) return 0;
-        return template.getLicensedPosts() * Math.max(1, quantity) * LICENCE_COVER_TO_OPEN;
+        return template == null ? 0 : licencesNeededFor(NewUnit.of(this, template), quantity);
+    }
+
+    /** ...for one new building already resolved (QN1): its own licensed posts. */
+    public double licencesNeededFor(NewUnit unit, long quantity) {
+        if (unit == null || unit.template().getRequiresLicence() == null) return 0;
+        return unit.getLicensedPosts() * Math.max(1, quantity) * LICENCE_COVER_TO_OPEN;
     }
 
     /**

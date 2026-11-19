@@ -279,6 +279,11 @@ public final class EquipmentFit {
 
     /** Ephemeral new-building choice: remove one worst failure, in catalogue order on ties, then re-evaluate. */
     public static Set<String> fittedForNew(Game game, BuildingsTemplate t) {
+        // ...its pricing reading every template as it stands (QN1, NewUnit.standingWhile()), wherever it is asked from.
+        return NewUnit.standingWhile(() -> chosenForNew(game, t));
+    }
+
+    private static Set<String> chosenForNew(Game game, BuildingsTemplate t) {
         Set<String> chosen = new LinkedHashSet<>();
         for (Equipment piece : t.getEquipment())
             if (!game.foundedUnfitted() || piece.knownAt(game.getMonth(), game.getResearch())) chosen.add(piece.getId());
@@ -304,6 +309,10 @@ public final class EquipmentFit {
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
     private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, long unfitted, Set<String> proposed) {
+        return NewUnit.standingWhile(() -> pricedAsStanding(game, t, piece, unfitted, proposed));
+    }
+
+    private static Verdict pricedAsStanding(Game game, BuildingsTemplate t, Equipment piece, long unfitted, Set<String> proposed) {
         int month = game.getMonth();
         Research found = game.getResearch();
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
