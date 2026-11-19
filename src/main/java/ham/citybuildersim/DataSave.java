@@ -2442,6 +2442,19 @@ public class DataSave implements Cloneable {
     public void setHouseholdGraduates(double[] v) { this.householdGraduates = v == null ? null : v.clone(); }
     public double[] getHouseholdGraduates()       { return householdGraduates == null ? null : householdGraduates.clone(); }
 
+    /**
+     * ...and the month's flows waiting for the next census (HS1,
+     * HouseholdBalance.flowsToSave()): the shares of each band who retired,
+     * aged on, died and left, which carry their own money at the census
+     * before the pool. Struck at the demographics and read at the next
+     * month's census, so every save holds one; shares, so a scaled save
+     * scales none of it.
+     */
+    private double[] householdFlows;
+
+    public void setHouseholdFlows(double[] v) { this.householdFlows = v == null ? null : v.clone(); }
+    public double[] getHouseholdFlows()       { return householdFlows == null ? null : householdFlows.clone(); }
+
     public void setRememberedCommute(double v) { this.rememberedCommute = v; }
     public double getRememberedCommute() {
         return rememberedCommute > 0 ? rememberedCommute : 1;

@@ -519,6 +519,10 @@ public class OutsideCheck {
             long biggestJobs = 0;
             for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
                 if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
+                // Not the builders (HS1): a depot's posts are offered only while it has work
+                // (BuildingManager.getTotalJobs(), THE POSTS A SECTOR OFFERS), so closing idle
+                // depots cost no filled post - HS1's city had twelve, its biggest employer on paper.
+                if (Sectors.CONSTRUCTION.equals(b.getSector())) continue;
                 long jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
                 if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
             }
@@ -529,10 +533,28 @@ public class OutsideCheck {
                     closing == null ? "-" : closing.getName(), biggestJobs);
             assertTrue("fixture: the city has more workers than posts", u.getPool() > 0 && closing != null);
             double beforeClosing = u.getBenefitsPaid();
+            /*
+             * EVERY STACK OF IT, AND THE DEPOTS WITH IT (HS1). BuildingManager.retire()
+             * scraps from the first stack of the template it finds and returns, even an
+             * empty one, so a template built in several stacks would be only partly
+             * closed: the fixture closes every stack of it by hand. And the depots go
+             * too: their posts are withheld while they have no work, and offered the
+             * month a building wave gives them some - on HS1's city 344 more posts in
+             * the closing month than before it, which no closing of one works outran.
+             */
+            long[] scrappedAll = new long[1];
             quietly(() -> {
-                if (closing != null) g.getBuildingManager().retire(closing, g.getBuildingManager().getQuantity(closing.getId()));
+                if (closing != null) {
+                    for (BuildingsStacks stack : g.getBuildingManager().getStacksView()) {
+                        boolean depot = Sectors.CONSTRUCTION.equals(stack.getBuilding().getSector());
+                        if ((stack.getBuilding().getId() != closing.getId() && !depot) || stack.getQuantity() <= 0) continue;
+                        if (!depot) scrappedAll[0] += stack.getQuantity();
+                        stack.removeQuantity(stack.getQuantity());
+                    }
+                }
                 g.simulateMonths(1);
             });
+            System.out.printf("   closed %,d of them%n", scrappedAll[0]);
             System.out.printf("   after: %,d posts, %,d filled, %,.0f out of work, %,.0f jobs lost, %,.0f on EI%n",
                     g.getPopulationManager().getTotalJobs(), g.getPopulationManager().getJobsFilled(), u.getPool(),
                     u.getJobsLost(), u.onEi());

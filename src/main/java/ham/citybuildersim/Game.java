@@ -15685,6 +15685,9 @@ public class Game {
         // the ones who finished: they leave it with their loans at this
         // month's census. See HouseholdBalance.setGraduates().
         householdBalance.setGraduates(education.getFinished());
+        // ...and the month's flows, the pyramid's own (HS1): who retired, died
+        // and left carries their money at this month's census, before the pool.
+        householdBalance.setFlows(cohorts);
 
         // One household, one home - and if there are not enough homes, they
         // crowd rather than sleep outside. See FamilyModel.squeeze().
@@ -16226,7 +16229,9 @@ public class Game {
         PayTier retiredSlot = PayTier.values()[0];
         for (Household c : householdBalance.cells()) {
             double n = c.shape() == null ? outsideHouseholds(c)
-                    : families.get(c.shape(), c.isRetired() ? retiredSlot : c.tier());
+                    // A retired shape's census is its six former tiers together (HS1): each cell its share.
+                    : c.isRetired() ? families.get(c.shape(), retiredSlot) * householdBalance.tierShareOf(c)
+                    : families.get(c.shape(), c.tier());
             doors[c.row()] += n * rentShareOf(c);
         }
         return doors;
@@ -17371,6 +17376,8 @@ public class Game {
         dataSave.setOwnerFamilies(householdBalance.ownerLineForSave());
         // ...and the graduates the next census carries the loans of (0.7.63).
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
+        // ...and the month's flows the next census carries (HS1).
+        dataSave.setHouseholdFlows(householdBalance.flowsToSave());
         dataSave.setBankCash(bank.getCash());
         // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
         dataSave.setBankSecurities(bank.getSecurities());
@@ -22256,6 +22263,8 @@ public class Game {
             // ...and the students waiting to carry their loans at the next
             // census, which only the month sets (0.7.63; an older save: none).
             householdBalance.restoreGraduates(restoredFlows.getHouseholdGraduates());
+            // ...and the month's flows waiting for the next census, which only the month sets (HS1).
+            householdBalance.restoreFlows(restoredFlows.getHouseholdFlows());
             householdBalance.setExchangeRate(foreign.getRate());
 
             /*

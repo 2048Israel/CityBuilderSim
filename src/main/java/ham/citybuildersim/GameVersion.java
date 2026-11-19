@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.158";
+    public static final String VERSION = "0.9.159";
 
     /**
      * The save shape.
@@ -8319,8 +8319,23 @@ public final class GameVersion {
      *     draw less power, with no kit or electrolyser bought and no fee paid.
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
+     *
+     * 57 - MONEY FOLLOWS PEOPLE (batch HS1): the retired keep the tier they
+     *     retired from, so each of the four retired shapes is six cells, one
+     *     a former tier, keyed "SENIOR_ALONE:PROFESSIONAL" and the like
+     *     (RetiredHousehold.key()); and the month's flows wait in the save
+     *     for the next census (DataSave.householdFlows), as the graduates do.
+     *
+     *     THE FLOOR RISES TO 57 WITH IT (the rule): a save of format 56 or
+     *     older would load WRONGLY. Its retired cells are keyed by shape
+     *     alone, which names no cell of this build, and restoreCells() skips
+     *     a key it has no cell for, so every retired household's savings,
+     *     debt, shares, bonds and cars would load into no cell: the city's
+     *     pensioners penniless from the first month, and that money gone from
+     *     the households' books with no line to say so. It is refused, naming
+     *     the build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 56;
+    public static final int SAVE_FORMAT = 57;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8330,7 +8345,8 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 56 since batch R6d (THE SPECULATIVE ROWS above: a save holds no count
+     * 57 since batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
+     * are keyed by shape alone and would load into no cell). 56 from batch R6d (THE SPECULATIVE ROWS above: a save holds no count
      * of the farms' kit or the works' electrolyser unfitted, which reads as
      * fitted). 55 from batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
      * of the depots' kit unfitted, which reads as fitted). 54 from batch CU2
@@ -8375,7 +8391,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 56;
+    public static final int OLDEST_LOADABLE_FORMAT = 57;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
