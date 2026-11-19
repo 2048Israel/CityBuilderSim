@@ -116,13 +116,12 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
 - The eight default traces (LongPlaytest, `-Dplaytest.trace`) on 3c4661a9d before the change and on the final classes
   (200b069de): all eight byte for byte (sha256: bank 965167c4, bonds 36b99679, borrow 6638435e, build 7ce87992, house
   948bb33e, labour 8870a6aa, month ff22d492, pop 7b15aa27). No ensemble: the default trace does not move.
+- main merged at ddcb3400e (HL1-R, 0.9.156; conflicts only in the generated docs): `--fast` green and
+  HL1-R's BusinessServicesCheck green on the merge. `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed); review needed,
+  money: Bank.java.
 
 ## Left for Jerus
 
 Nothing is held. The ★ calls above are the ones to weigh; the one a later batch may want is the plant-wide cracker yield
 (Refining.crackerPetrol()), which with no cracker standing falls back to the Cracking Unit template's yield rather than a new
 cracker's own: blending a new unit into a weighted mean over what stands is a design question, left as main reads it.
-
-(Added to Checks.) main merged at ddcb3400e (HL1-R, 0.9.156; conflicts only in the generated docs): `--fast` green and
-HL1-R's BusinessServicesCheck green on the merge. `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed); review needed,
-money: Bank.java.
