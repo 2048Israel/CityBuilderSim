@@ -4933,17 +4933,36 @@ public class HouseholdBalance {
     }
 
     /**
+     * Of a weight per cell, in the cells' order, the part creditByWeight
+     * would pay: the cells with households in them (HS2, 2026-11-19). Zero
+     * when the array is not one per cell.
+     *
+     * WHY. The theft took first and credited after, and creditByWeight
+     * pays nothing when every weighted cell is empty - so in a city whose
+     * only live cells were the retired, nobody's offenders, the month's
+     * proceeds left the homes and the tills and arrived nowhere, and HL1's
+     * identity lost them. HS2's young cells, split off the working ones,
+     * are small enough in a small city to be empty all at once. The theft
+     * asks this first and steals nothing when it is zero.
+     */
+    public double creditableWeight(double[] weight) {
+        if (weight == null || weight.length != cells.length) return 0;
+        double sum = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (!cells[i].isEmpty() && weight[i] > 0) sum += weight[i];
+        }
+        return sum;
+    }
+
+    /**
      * Credits `total` to the cells in proportion to a weight per cell, in the
      * cells' order - what the offenders' households took home.
      *
      * @return what was credited: all of it, or nothing if no cell has weight
      */
     public double creditByWeight(double total, double[] weight) {
-        if (!(total > 0) || weight == null || weight.length != cells.length) return 0;
-        double sum = 0;
-        for (int i = 0; i < cells.length; i++) {
-            if (!cells[i].isEmpty() && weight[i] > 0) sum += weight[i];
-        }
+        if (!(total > 0)) return 0;
+        double sum = creditableWeight(weight);
         if (sum <= 0) return 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];

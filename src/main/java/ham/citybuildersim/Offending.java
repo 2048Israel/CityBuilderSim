@@ -132,8 +132,9 @@ public final class Offending {
         EconomyManager economyManager = game.getEconomyManager();
 
         double wanted = crime.getTheftWanted();
-        double weight = 0;
-        for (double w : offenderWeight) weight += Math.max(0, w);
+        // Only the offenders whose households can take it home (HS2): with no
+        // live weighted cell the proceeds were taken and credited to nobody.
+        double weight = householdBalance.creditableWeight(offenderWeight);
         if (!(wanted > 0) || !(weight > 0)) {
             crime.recordStolen(0, 0);
             return;
