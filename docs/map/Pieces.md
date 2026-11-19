@@ -43,7 +43,7 @@
 > everywhere, called unqualified through an import static. The scroller is
 > not here: scrolled() reads the shell's current screen, so it stayed there.
 
-**Uses:** [Palette](Palette.md) (590), [Kept](Kept.md) (516), [Money](Money.md) (12), [DebtQuote](DebtQuote.md) (5), [PolicyScreen](PolicyScreen.md) (5), [UserInterface](UserInterface.md) (4), [ChartModel](ChartModel.md) (3), [NationalAccounts](NationalAccounts.md) (3), [Icons](Icons.md) (3), [MagnitudeSteps](MagnitudeSteps.md) (3), [Sector](Sector.md) (3), [Game](Game.md) (2), [PayTier](PayTier.md) (1), [TimeChart](TimeChart.md) (1), [DebtManager](DebtManager.md) (1), [Formats](Formats.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
+**Uses:** [Palette](Palette.md) (590), [Kept](Kept.md) (516), [Money](Money.md) (12), [DebtQuote](DebtQuote.md) (5), [PolicyScreen](PolicyScreen.md) (5), [UserInterface](UserInterface.md) (4), [MagnitudeSteps](MagnitudeSteps.md) (4), [ChartModel](ChartModel.md) (3), [NationalAccounts](NationalAccounts.md) (3), [Icons](Icons.md) (3), [Sector](Sector.md) (3), [Game](Game.md) (2), [PayTier](PayTier.md) (1), [TimeChart](TimeChart.md) (1), [DebtManager](DebtManager.md) (1), [Formats](Formats.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
 **Used by (31):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [MapView](MapView.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md)
 
@@ -362,7 +362,7 @@
 | 1403 | 1 | **type** `public record CountSteps(HBox row, Runnable refresh)` | A magnitude's buttons and their in-place refresh, shared by the building cards and the land office. |
 | 1406 | 6 | `static String countStepWords(double value)` | A whole count step, compact enough for all four buttons on a building card. |
 | 1414 | 38 | `public static CountSteps countSteps(java.util.function.LongSupplier value, java.util.function.LongConsumer set, Runnable changed)` | A count's ± leading unit and its tenth, never below one; refresh changes every label after a press without redrawing the page. |
-| 1454 | 28 | `public static Button stepper(String glyph, double width, Runnable go)` | A small button in a stepper, including magnitude labels and reset. |
+| 1454 | 28 | `public static Button stepper(String glyph, double width, Runnable go)` | A small button in a stepper, including magnitude labels and reset; a negative width fits its words, with a 26px minimum. |
 
 ### a bar of segments (lines 1483-1790)
 

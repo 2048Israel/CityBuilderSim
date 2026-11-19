@@ -280,9 +280,10 @@ all three living care kinds (`target/SZ1-SaveFileCheck.txt` and `.log`).
 
 With exact model funding, the unchanged PriceLevelCheck finishes with known
 reds only (exit 3): the played twins agree through all 120 months. Its 31
-NEW lines are gone; 245 existing HP1 failures remain in reload.* past the
-town's nudge-derived horizon, 73/120 on this run (the main record names
-20/120 on its earlier town). The default horizon is 60/60 and the built
+NEW lines are gone; 245 existing failures remain: HP1's reload.* and screen
+cut-offs past the town's nudge-derived horizon, 73/120 on this run (the main
+record names 20/120 on its earlier town), and HP2's unreached partner-lane
+fixture. The default horizon is 60/60 and the built
 city's 75/120. No new waiver is needed for SZ1's model fix. Log:
 `target/SZ1-PriceLevelCheck-exact.txt`.
 
@@ -293,3 +294,51 @@ decade can round to 5 and skip the valid 2 * 1e-15 lot. The 1-2-5 rule now
 compares the actual candidate amounts. StepsCheck has both reproductions;
 the fractional one uses exact equality so a generic absolute tolerance
 cannot conceal it. These are arithmetic guards, not changed tolerances.
+
+## Checks on the corrected funding model
+
+StepsCheck, AutoBuildCheck, WorksFinanceCheck, AuctionCheck, TreasuryCheck,
+BuildAdviceCheck, ReadPathCheck, SaveSlotCheck and SaveFileCheck all pass.
+AuctionCheck includes its 1,200-month counted-auction run (355 assertions).
+AutoBuildCheck retains its exact 36-month saved/live comparison. Logs are
+`target/SZ1-<Check>-final.txt` and `target/SZ1-<Check>-final.log`.
+SaveSlotCheck has one soft timing observation under the concurrent machine
+load; its functional checks pass. Each call names one harness and pins
+`-Dcbs.parallel=1`. No full pick, own ensemble or dry run was started.
+
+HealthCheck finishes with exit 3 and its one main-recorded HP2 assertion:
+the dear city is no hungrier than the free one by more than the price of
+care. This is the existing food-shops path comparison (known-reds.txt:28),
+not a new care-access save failure. Its other assertions pass. PriceLevelCheck
+also has only the existing HP1/HP2 classes, as traced above; its complete
+exact-model log is retained at `target/SZ1-PriceLevelCheck-exact.log`.
+The full-run screen comparison has 4 of 28,798 series-months different past
+its nudge horizon, and the partner-lane fixture sees zero partner lanes;
+both assertion fragments are already in main's known-red record.
+
+KeptCheck's final run completes with exit 3: exactly the same four KFP1
+fund-settlement assertions named above, no NEW assertion. All changed
+building presses, in-place repricing/reset and funding-page comparisons
+pass. Log: `target/SZ1-KeptCheck-final.txt` and `.log`.
+
+The final old-lot mutation replaces only the priced-and-capped funding lot
+with its fixed nominal reference dial, affecting both model funding and the
+player's lot. StepsCheck fails **70 assertions**. Restoring BondMarket byte
+for byte leaves its source diff empty, and StepsCheck passes with **zero
+failures**, including the two new floating-point boundary cases. Logs:
+`target/SZ1-StepsCheck-final-fixed.txt`/`.log` and
+`target/SZ1-StepsCheck-final-restored.txt`/`.log`. No diagnostic or mutation
+remains, and no backup probe is left active.
+
+The final explicit `--fast` passes (4s compile, regenerated maps, zero firm
+Stale findings). The source tree has no uncommitted change; the new Java
+files and notes are LF. Source/prose whitespace checks pass; generated
+Markdown keeps the generator's own line-break spaces. A fresh fetch still
+finds main at 608bf7025. No VERSION, SAVE_FORMAT, queue or publication-record
+edit was made by SZ1.
+
+This is the provisional review handoff. HL1 has not shipped yet. Its main
+must be merged before SZ1's final-model ensemble; the 80-run ensemble and
+the ALL-pick dry run require the orchestrator's separate machine-slot go.
+Neither has been run by SZ1. The provisional ship marker stays until those
+steps and the stranger's money/save review are accepted.
