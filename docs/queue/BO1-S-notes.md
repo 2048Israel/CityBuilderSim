@@ -41,3 +41,28 @@ bank holds 645 at month 37 and 203 at month 121.
   line does not shrink this city; it ends nearly three times larger.
 - The owners' banked dividends (BO1's second channel): 53% of the city's
   bank savings at month 121 (1,061 of 2,017), 1,747 abroad.
+
+## 3. Which ship turned the line-off city (the orchestrator's question, 11-19)
+
+The probe's line-off run on 0.9.158 (ba734bf85, before HS1) and 0.9.159
+(7117fef6b, HS1), each in a scratch worktree with the probe patched in:
+
+| month | people off: 0.9.158 / 0.9.159 / 0.9.160 | careAff(SENIOR) off | senior pull off |
+|---|---|---|---|
+| 13 | 152 / 152 / 152 | 0.83 / 0.83 / 0.83 | 1.249 / 1.249 / 1.249 |
+| 37 | 509 / 511 / 511 | 0.83 / 1.00 / 1.00 | 1.250 / 1.300 / 1.300 |
+| 61 | 448 / 450 / 450 | 0.83 / 0.98 / 0.98 | 1.250 / 1.294 / 1.294 |
+| 121 | 405 / 404 / 404 | 0.63 / 0.44 / 0.44 | 1.190 / 1.133 / 1.133 |
+
+(Line on, 0.9.158: 437, 698, 1,218 at months 37, 61, 121, careAff(SENIOR) 0.00.)
+The fall is already on 0.9.158: HS1 did not turn it. HS1 moved senior care's
+affordability (0.83 flat to 1.00, then 0.44 at month 121) but not the people.
+0.9.160 is 0.9.159 to the figure.
+
+The playtest's own city (`LongPlaytest -Dplaytest.months=130
+-Dplaytest.trace`, 0.9.160, its `-pop.csv`): 152, 635, 917, 1,172 at months
+13, 37, 61, 121, still growing (jobs flat at 617 from month 91). So the
+playtest city does not fall; only the probe's rhythm does (OwnerCheck
+section 9's: the auto-builder from month 1 with forty houses at once).
+(Run cut at month 130, so its exit 1 is the audit's lines at month 132, the
+short run's end.)
