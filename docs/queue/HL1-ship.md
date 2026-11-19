@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-HL1-Z99ZJVkR -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HL1, the households' books closed — 2026-11-18, ready, see docs/queue/HL1-notes.md
 Every dollar households gain or lose now has a line: their savings identity is struck beside the pools each month
