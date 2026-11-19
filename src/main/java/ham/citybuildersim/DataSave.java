@@ -1195,6 +1195,23 @@ public class DataSave implements Cloneable {
     }
 
     /**
+     * The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots: so many buildings, the pieces they come
+     * without), written only for the sites that have a lot, so only a city founded the 1900 way ever writes the key. A save without it,
+     * every save from before R1e and every city founded the default way, reads every building on site as the whole template, its pieces
+     * decided at the finish, as it was ordered and paid for: Gson leaves a missing key alone, no format bump.
+     */
+    private java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> lotsById;
+
+    public void setLotsById(java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> byId) {
+        this.lotsById = byId == null || byId.isEmpty() ? null : byId;
+    }
+
+    /** The lots the save carries by template id, or an empty map for a save with none (every building on site loose). */
+    public java.util.Map<Integer, java.util.List<BuildingsStacks.Lot>> getLotsById() {
+        return lotsById == null ? java.util.Map.of() : lotsById;
+    }
+
+    /**
      * The recipes the two parts of a stack run (R1c; Recipes), by template id: [the fitted part's recipe id, the unfitted part's], written only for a
      * template where a part runs a recipe other than the default, so only a city founded the 1900 way ever writes the key. A save without one, which
      * is every save from before R1c and every city founded the default way, reads as every building on its default: Gson leaves a missing key alone,

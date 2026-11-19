@@ -362,6 +362,7 @@ public class Game {
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setNewUnits(t -> NewUnit.of(this, t));   // one new building of a template as it would open, beside the template (QN1)
         buildingManager.setNewUnits(t -> NewUnit.of(this, t));   // ...and a site's posts, output and input to come
+        businessInvestment.setFitout(t -> Fitout.of(this, t));   // ...and the equipment its order would price and keep (R1e)
         businessInvestment.setLicenceCost(u -> LicenceFees.forNew(this, u));
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
@@ -1324,11 +1325,15 @@ public class Game {
     }
 
     /**
-     * What a new building comes with (R1b; research-design 2.2 step 6), at the finish and not at the order, so the order's cost stays the template's:
-     * in a city founded the 1900 way, each piece of equipment a finished building's template carries whose verdict for a new building is not PAYS
-     * (EquipmentFit.verdictForNew(): NOT_YET, or NOT_KNOWN like the tractor's before PE14's month, June 1917) is left off those buildings, and the stack's unfitted count of it
-     * rises by the number that finished. The pieces that pay come with them: the count is as it was. Nothing in a city founded the default way.
-     * Not hooked: a building placed without construction (buildStack(t, n, true), the harnesses' and the playtest's village), which comes as placed.
+     * What a new building comes with (R1b; research-design 2.2 step 6): since R1e, what its order froze. In a city founded the 1900 way an order
+     * chooses its buildings' equipment at its quote (Fitout.of(): the pieces EquipmentFit.fittedForNew() keeps), pays for that and no more, and
+     * keeps it on site (BuildingsStacks' lots); the finish delivers it: each piece a lot came without raises the stack's unfitted count by the
+     * buildings of it that finished (Completion.without). A discovery or a price change after the order does not change them; fitting the piece
+     * later is a fitting decision on a standing building (EquipmentFit.choose()). Only a LOOSE building, one no order fitted out (a save from
+     * before R1e, a site a harness put up), is decided at the finish as before R1e, by fittedForNew() then: each piece whose verdict for a new
+     * building is not PAYS (NOT_YET, or NOT_KNOWN like the tractor's before PE14's month, June 1917) is left off it. Nothing in a city founded the
+     * default way. Not hooked: a building placed without construction (buildStack(t, n, true), the harnesses' and the playtest's village), which
+     * comes as placed.
      *
      * Read from the month's own completions and not from the stacks' getLastFinished(), which keeps last month's number in a month that advances
      * no site (BuildingManager.advanceConstruction() skips every stack when none is on site).
@@ -1339,10 +1344,17 @@ public class Game {
             BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
             BuildingsStacks stack = t == null || t.getEquipment().isEmpty() ? null : buildingManager.getStack(t);
             if (stack == null || done.quantity <= 0) continue;
+            // ...what the orders froze, piece by piece (R1e): a piece the catalogue no longer carries is dropped, as a save's is.
+            for (java.util.Map.Entry<String, Long> off : done.without.entrySet()) {
+                if (t.getEquipment(off.getKey()) == null || off.getValue() == null || off.getValue() <= 0) continue;
+                stack.setUnfitted(off.getKey(), stack.getUnfitted(off.getKey()) + off.getValue());
+            }
+            // ...and the loose, decided now.
+            if (done.loose <= 0) continue;
             java.util.Set<String> fitted = EquipmentFit.fittedForNew(this, t);
             for (Equipment piece : t.getEquipment()) {
                 if (fitted.contains(piece.getId())) continue;
-                stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.quantity);
+                stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.loose);
             }
         }
     }
@@ -8938,6 +8950,20 @@ public class Game {
             this.months = months;
         }
 
+        /**
+         * The equipment the order's buildings come with (R1e, Fitout.of()): chosen at the quote, priced in its sticker and its wait,
+         * and frozen on site when the order is accepted (BuildingManager.addStack()). Null for a quote of no template's order.
+         */
+        private Fitout fitout;
+
+        BuildQuote withFitout(Fitout fit) {
+            this.fitout = fit;
+            return this;
+        }
+
+        /** ...that equipment; null for a quote of no template's order (a shell's restart: its buildings keep their own). */
+        public Fitout fitout() { return fitout; }
+
         /** What had to be bought beyond the yard - the plant's and the world's together. */
         public double boughtInCost() { return plantCost + importCost; }
 
@@ -9142,9 +9168,12 @@ public class Game {
         // queue as it stands with the orders before this one in a run - and, since BA1, with each building of the order
         // on the queue the ones before it in the order leave (BuildersShort.meanPremium(): an order of six hundred is not
         // six hundred at the price of the first) - so the parts the quote carries still sum to its sticker.
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), selected.getConstructionPoints(), quantity);
+        // ...and on the equipment the order's buildings come with (R1e; Fitout.of()), chosen here and frozen on site when
+        // the order is accepted: its shell and pieces' cash and points, the template's own in a city founded the default way.
+        Fitout fit = Fitout.of(this, selected);
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), fit.points(), quantity);
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
-        double sticker = buildingManager.nonMaterialCost(selected) * quantity * scarcity;
+        double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;
         // ...and a highway's or a railway's cuts, viaducts and tunnels (ET4), priced at the city's mix of ground and owed
         // on the site like the pad; its money joins the sticker, taxed with the work. Nothing for a building, or on flat.
@@ -9174,8 +9203,9 @@ public class Game {
                 // quoteMonths() exactly with no order set and no rush, and with
                 // one, where the order would land in it (quoteCityMonths()) -
                 // the foothill's preparation owed on its site too (ET2),
-                // and a run's works on the slopes (ET4), and a bridge's span (ET6), and deep water's (DW1).
-                quoteCityMonths(selected, quantity, prepPoints + worksPoints + bridgePoints + deepPoints),
+                // and a run's works on the slopes (ET4), and a bridge's span (ET6), and deep water's (DW1);
+                // less the work of the pieces the order leaves off (R1e).
+                quoteCityMonths(selected, quantity, prepPoints + worksPoints + bridgePoints + deepPoints + leftOffPoints(fit, quantity)),
                 buildersSalesRate(),
                 plantSalesRate(),
                 bitumen,
@@ -9184,7 +9214,21 @@ public class Game {
                 need == null ? 0 : need.sqFt(), worksPoints, worksCost,
                 need == null ? new double[4] : need.mix(),
                 span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost,
-                deep == null ? 0 : deep.depthM(), deepPoints, deepCost);
+                deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit);
+    }
+
+    /** One building's construction points as an order's quote froze them (R1e): its fitout's, the template's own without one. */
+    private static double pointsEach(BuildingsTemplate t, BuildQuote quote) {
+        Fitout fit = quote == null ? null : quote.fitout();
+        return fit != null && fit.template() == t ? fit.points() : t.getConstructionPoints();
+    }
+
+    /**
+     * The work an order of `quantity` with this fitout does not owe (R1e): its pieces' left off, negative, as the extra points
+     * the waits take beside a pad's preparation (BuildingManager.orderPoints()); 0, to add nothing, for the whole template.
+     */
+    private static double leftOffPoints(Fitout fit, long quantity) {
+        return fit == null || fit.isWhole() ? 0 : -(quantity * fit.pointsLeftOff());
     }
 
     /**
@@ -9373,7 +9417,11 @@ public class Game {
      * though the order had them to itself. NaN when there is no site output.
      */
     public double quoteMonths(BuildingsTemplate template, long quantity) {
-        double months = buildingManager.waitFor(template, quantity, getBuildingOutputAtEveryPost());
+        // ...on the work the order's buildings would owe with the equipment they would come with (R1e; Fitout.of()):
+        // waitFor()'s own, to the bit, for the whole template.
+        double leftOff = template == null ? 0 : leftOffPoints(Fitout.of(this, template), quantity);
+        double months = leftOff == 0 ? buildingManager.waitFor(template, quantity, getBuildingOutputAtEveryPost())
+                : buildingManager.waitFor(template, quantity, leftOff, getBuildingOutputAtEveryPost());
         return months == Double.MAX_VALUE ? Double.NaN : months;
     }
 
@@ -9949,10 +9997,13 @@ public class Game {
     public BuildQuote quoteRestart(ConstructionControl.Shell shell) {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null || t.getConstructionPoints() <= 0) return null;
-        double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
+        double pointsLeft = Math.max(0, shellPoints(shell, t) - shell.progress);
         // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
-        double sticker = buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints()
-                * buildingManager.orderPriceMultiplier();
+        double sticker = shell.lots == null || shell.lots.isEmpty()
+                ? buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints()
+                * buildingManager.orderPriceMultiplier()
+                // ...and a shell whose orders froze their equipment (R1e) at what its buildings, so fitted out, cost a point.
+                : shellValue(shell, t) * pointsLeft / Math.max(1e-9, shellPoints(shell, t)) * buildingManager.orderPriceMultiplier();
         double needed = Math.max(0, shell.materialsOwed);
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
@@ -9961,6 +10012,35 @@ public class Game {
                 0, landManager.getAvailableSqFt(),
                 restartMonths(t, shell.buildings, pointsLeft),
                 buildersSalesRate(), plantSalesRate());
+    }
+
+    /**
+     * The points a shell's buildings take before any progress (R1e): those its orders fitted out (Shell.lots) at their fitout's,
+     * the rest at the template's; its buildings times the template's points, to the bit, with no lot (every shell of a city
+     * founded the default way, and of a save from before R1e).
+     */
+    private static double shellPoints(ConstructionControl.Shell shell, BuildingsTemplate t) {
+        if (shell.lots == null || shell.lots.isEmpty()) return shell.buildings * (double) t.getConstructionPoints();
+        long lotted = 0;
+        double points = 0;
+        for (BuildingsStacks.Lot lot : shell.lots) {
+            long n = Math.max(0, Math.min(lot.buildings, shell.buildings - lotted));
+            lotted += n;
+            points += n * lot.fitOf(t).points();
+        }
+        return points + Math.max(0, shell.buildings - lotted) * (double) t.getConstructionPoints();
+    }
+
+    /** ...and their work's non-material price today, before progress and scarcity: each at its fitout's (BuildingManager.nonMaterialCost()). */
+    private double shellValue(ConstructionControl.Shell shell, BuildingsTemplate t) {
+        long lotted = 0;
+        double value = 0;
+        if (shell.lots != null) for (BuildingsStacks.Lot lot : shell.lots) {
+            long n = Math.max(0, Math.min(lot.buildings, shell.buildings - lotted));
+            lotted += n;
+            value += n * buildingManager.nonMaterialCost(lot.fitOf(t));
+        }
+        return value + Math.max(0, shell.buildings - lotted) * buildingManager.nonMaterialCost(t);
     }
 
     /** A restart's wait, by the one wait (BuildingManager.restartWait()). NaN with no output. */
@@ -9977,7 +10057,7 @@ public class Game {
         if (q == null) { lastHandRefusal = "no shell of it"; return false; }
         if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
         BuildingsTemplate t = buildingManager.getTemplate(templateId);
-        double pointsLeft = Math.max(0, shell.buildings * (double) t.getConstructionPoints() - shell.progress);
+        double pointsLeft = Math.max(0, shellPoints(shell, t) - shell.progress);
         boolean terminal = Ports.isPort(t) && landManager.getLandmasses().hasPlacements();
         if (terminal) landManager.getLandmasses().reconcile();
         buildingManager.resumeShell(shell);
@@ -10380,7 +10460,9 @@ public class Game {
             // 0.7.19 the city pays the difference from what the quote allowed,
             // or is refunded it (MATERIAL AT THE PRICE WHEN IT IS USED); the
             // builders carried it until then, as a fixed-price contractor does.
-            buildingManager.addStack(selected, quantity, noConstruction);
+            // ...its buildings' equipment frozen on site as the quote priced it (R1e; BuildQuote.fitout()): an instant build is the
+            // template's cash price and comes as placed, every piece.
+            buildingManager.addStack(selected, quantity, noConstruction, noConstruction ? null : quote.fitout());
             // ...and a long bridge's crossing is kept (ET6): n spans on the one survey, on site until the builders complete them.
             if (selected.isBridge()) {
                 landManager.getBridges().ordered(selected.getId(), selected.bridgeKind(), bridgeSurvey(selected), quantity, noConstruction);
@@ -10440,7 +10522,8 @@ public class Game {
                 // Earned as the work is delivered, material included - the
                 // crews buy it as they go. See sectors.Construction.bill().
                 // ...the foothill's preparation among the points (ET2), as the stack owes it, and a run's works (ET4).
-                double billedPoints = selected.getConstructionPoints() * (double) quantity;
+                // ...the buildings at the points their equipment takes (R1e), the template's own for the whole template.
+                double billedPoints = pointsEach(selected, quote) * (double) quantity;
                 if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
@@ -11264,7 +11347,8 @@ public class Game {
         landManager.recordSale(landNeeded, landPrice);
         cash += landPrice;
 
-        buildingManager.addStack(template, quantity, false);
+        // ...its buildings' equipment frozen on site as the quote priced it (R1e; BuildQuote.fitout()).
+        buildingManager.addStack(template, quantity, false, quote.fitout());
         // ...a foothill site's preparation, owed by the stack before its first building finishes (ET2); it is in the quote.
         if (quote.prepPoints > 0) {
             buildingManager.addPreparation(template, quote.prepPoints);
@@ -11294,7 +11378,8 @@ public class Game {
         // city's, not theirs to be paid for. The material beyond the yard is
         // drawn as the crews build, see drawSiteMaterials().
         // ...the foothill's preparation among the points (ET2), as the stack owes it, and a run's works (ET4).
-        double billedPoints = template.getConstructionPoints() * (double) quantity;
+        // ...the buildings at the points their equipment takes (R1e), the template's own for the whole template.
+        double billedPoints = pointsEach(template, quote) * (double) quantity;
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
@@ -17287,6 +17372,8 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
+        // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
+        dataSave.setLotsById(buildingManager.getLotsById());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         dataSave.setLicenceFees(licenceFeesForSave());
@@ -21444,6 +21531,9 @@ public class Game {
             // (policyHearsTheMonth(), far above), because the stacks did not stand there yet: before rebuildSimulationState(), which re-derives
             // the factories' grid draw from the steam share.
             buildingManager.restoreUnfitted(loaded.getUnfittedById());
+            // ...and the equipment each site's orders froze (R1e), after the sites' counts (restoreConstruction(), above): a save with none
+            // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
+            buildingManager.restoreLots(loaded.getLotsById());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
