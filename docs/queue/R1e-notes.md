@@ -172,3 +172,33 @@ bounded by what the template charges and could price a shell below nothing.
 - REV-R1e on 139fdd823: SHIP (P1's call, the template's own cash a point, judged right; P2 mended; `shell()` independent).
   Its one note for the queue, R1h in the ship file: `fittedForNew()` still chooses the set on R1b's C (city prices and
   `nonMaterialPricePerPoint()`), not on what leaving the piece off saves the order (`Fitout.cashShareLeftOff()`).
+
+## The dry run's reds (on be0dcbd2d, kept /tmp/cbs-gate-R1e-UVlnfjNI; named in the ship file)
+
+Two harnesses, both on a 1900 city played under R1e's prices; neither is the split acting where it is checked.
+
+- **ScaleCheck 10, `1900 month 3..6: prices obeys the existing TRACK law`** (FS2). The 1900 town is played to m120
+  under R1e's prices and saved; R1e acts there (its orders are cheaper and shorter by the pieces they leave off), so the
+  saved town moves. The K = 1 and K = 1,000 copies hold investment and place no orders in months 1-6. No set is chosen
+  and no split is priced there (traced: no `Fitout.of()` call, `lotsById` empty, every site empty), and their unfitted
+  counts stay exactly K apart (1,107 and 1,107,000). The miss is groceries in a food-short town inflating about 6% a
+  month: the K = 1 copy's step comes a month before the K = 1,000 copy's (m3 1.3449 against 1.2586, m4 1.4232
+  against 1.3472). With main's classes (ba734bf85) the check passes. With R1e's and `Fitout.of()` forced whole, it gives
+  main's figures to the digit. The split is a ratio of catalogue figures in founding money times the template's cash,
+  so it moves with the level as the template does. The same four lines appear on the merge with HS1. Also mended:
+  `scale()` now scales `lotsById` (the sets on site: so many buildings each), which no save in this section carries.
+- **ExchangeRateCheck 8b, `the return holds the model's par`** (FS10's class: the 1900 city floats before August 1914,
+  and the July 1926 return opens the peg onto an empty vault). The figure: on ba734bf85 July 1926 is 16.5377 -> 33.1423
+  (main 2.2079 -> 2.5996); on the merge with HS1 it is 19.0629 -> 38.7915, already covered by main's HS1 part row.
+  - **Traced with a driver** (in target/, not committed) replaying the fixture's founding and rhythm. It reproduces both
+    figures to the digit. R1e's city leaves the same pieces off every stack as main's finish did, at every month.
+  - **Where the paths part.** The orders' price and points move as intended: cash 1,871 against 1,857 at m6, and one
+    Convenience Store open at m6 against none. After that the city's own choices part. No Industrial Bakery is ordered
+    (main's is on site by m24 and open by m30), and the advisor orders a food plant at m32 where main lays a second
+    gravel road.
+  - **The vault.** Prices rise from m42 (1.21 against 1.08 at m54; the shadow rate 1.23 against 1.07). The defence
+    empties the vault by m78 (main's by m132-138).
+  - **The float.** It runs five years longer and rises faster: the price level is 25.6 against 3.76 at the return, and
+    the rate on the eve of the return is 16.5 against 2.2. The empty vault's month doubles R1e's rate (main's +18%).
+  - **LongPlaytest's own 1900 city** (`-Dplaytest.founded=1900`, the same founding) stays within 2% of main's to m330.
+    Its peg holds to the 1914 date on both builds (m321: level 1.556 against 1.557, 596 people against 587).
