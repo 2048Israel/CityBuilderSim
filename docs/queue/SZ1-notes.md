@@ -57,9 +57,11 @@ unit. A foreign lot converts that price level at the month's cross rate and
 uses that money's minimum issue before rounding. Currency reforms therefore
 change the unit once, not the CPI ratio as well.
 
-★ All live funding uses those same instrument lots: rollover quotes and
-foreign bookings, automatic construction, opening-city funding previews,
-Build, the land office/map and the bank rescue offer. Game's two old
+★ The model and player share the instrument dials, price level and cap.
+After the EP1 finding below, model funding uses the exact priced-and-capped
+lot; the player's pages round it down to 1-2-5. Rollover and automatic
+construction use fundingLot; opening-city previews, Build, the land
+office/map and the bank rescue offer use issueLot. Game's two old
 BUILD_*_GRANULE constants remain for explicit-granule quote fixtures; they
 no longer choose a live sale's lot. The quoting APIs still accept a caller's
 explicit rounding, as the instrument-pricing harnesses require.
@@ -92,6 +94,9 @@ and still asserts lot divisibility. TreasuryCheck captures the lot before
 the month turns. These are repairs to the source of the asserted dial,
 not relaxations of the harnesses' premises. The orchestrator was mailed
 before the LandCheck/MapCheck and HL1-owned edits.
+
+The model-funding comparisons now read fundingLot; the UI comparisons read
+issueLot. This distinction follows the EP1 finding below.
 
 The first pick is ALL (AllChecks plus shared game classes), with stranger
 review required for BondMarket and the bank/fund screens. No `--pick` suite
@@ -228,3 +233,55 @@ funding page's offers, so they now use the same live Term/Note lots as that
 page. Their shortBy/coverBy conditions and quantity search stay intact;
 KeptCheck will be rerun after this correction. The fixed population figures
 in PeopleScreen are milestone labels, not magnitude controls.
+
+## EP1: exact model scaling and round player lots
+
+PriceLevelCheck on 5eef1297a exposed a real design error in SZ1's initial
+choice to round every caller's lot in nominal money. It finished with 710
+failures, 31 NEW judge lines; most others were the existing HP1 class.
+The played twin's nudge horizon was 120/120 (main's recorded HP1 horizon
+was 105), but its factor/today cities first parted at **month 60**, before
+that horizon. Cash was -511.862154616 normalized at the factor against
+-354.064381968 today. Debt first appeared that month: 15,840.2292092
+normalized against 16,000 today. Both cities had zero debt and equal cash
+through month 59. The lot was 10 at the factor, or 386.347053882 normalized,
+against 500 today. The first actual borrowing therefore took different
+scaled faces: round125(factor * L) is not factor * round125(L).
+
+The diagnostic retained the two children and printed their post-month
+cash, debt, CPI and lots using pure reads. It reproduced the normal run's
+710 failures. Logs: `target/SZ1-PriceLevelCheck-normal.log`,
+`target/SZ1-PriceLevelCheck-probe.txt`, and the two
+`target/SZ1-price-{factor,today}-twin-played.txt` children;
+`target/SZ1-price-first.py` locates the first parting. The diagnostic
+PriceLevelCheck changes were restored byte for byte, checked with an empty
+diff. No tolerance, horizon or comparison in that harness changed.
+
+★ Adopt the orchestrator's 20:49 recommendation and preserve EP1 in the
+model: BondMarket.fundingLot is the exact dial times the current price
+level, capped at the exact minimum issue. Rollover, the auto-builder and
+LongPlaytest's funding driver use it, including foreign funding. The
+player's BondMarket.issueLot rounds that same priced-and-capped amount down
+to 1-2-5; Game.issueLot and every actual UI funding page retain it. Game's
+opening-city scratch quotes are player previews and also stay rounded.
+CD2's generic cash solver continues to use whichever lot its caller passes.
+This keeps Jerus's visible round lots and ★1's cap while preserving the
+standing price-level law in model sales. The model still changes the trace
+from main's old granules, so its ensemble is still required.
+
+StepsCheck now asserts both exact model pricing and the round player lot
+against each instrument dial, the model cap and EP1 scaling, plus the
+foreign conversion and the actual rollover booking. Model-funding
+expectations in the existing harnesses use fundingLot; player-page
+expectations continue to use issueLot. The causal care-access save fix
+remains: it records real flows the builder and screens read after a load.
+SaveFileCheck passed, including offered/priced-out/affordable readings for
+all three living care kinds (`target/SZ1-SaveFileCheck.txt` and `.log`).
+
+With exact model funding, the unchanged PriceLevelCheck finishes with known
+reds only (exit 3): the played twins agree through all 120 months. Its 31
+NEW lines are gone; 245 existing HP1 failures remain in reload.* past the
+town's nudge-derived horizon, 73/120 on this run (the main record names
+20/120 on its earlier town). The default horizon is 60/60 and the built
+city's 75/120. No new waiver is needed for SZ1's model fix. Log:
+`target/SZ1-PriceLevelCheck-exact.txt`.

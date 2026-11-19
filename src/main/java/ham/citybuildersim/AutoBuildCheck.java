@@ -1843,7 +1843,7 @@ public class AutoBuildCheck {
             if (q != null && AutoBuilder.ratioAfter(g, q) <= limit) lo = mid; else hi = mid;
         }
         double borrow = lo;
-        if (borrow > 0) quietly(() -> g.handleLongBondForCash(borrow, Game.BUILD_BOND_YEARS, g.issueLot("Term")));
+        if (borrow > 0) quietly(() -> g.handleLongBondForCash(borrow, Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
         return limit;
     }
 
@@ -1853,7 +1853,7 @@ public class AutoBuildCheck {
      */
     static Game overTheLimit(Game g) {
         double cash = g.getCash();
-        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g), Game.BUILD_BOND_YEARS, g.issueLot("Term")));
+        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g), Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
         g.setCashForTest(cash);
         return g;
     }
@@ -1869,7 +1869,7 @@ public class AutoBuildCheck {
         double before = AutoBuilder.debt(a), gdp = AutoBuilder.annualGdp(a);
         DebtQuote q = AutoBuilder.bondFor(a, gdp / 10);
         double predicted = q == null ? Double.NaN : AutoBuilder.debtAfter(a, q);
-        quietly(() -> a.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, a.issueLot("Term")));
+        quietly(() -> a.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, a.fundingLot("Term")));
         cents(String.format("a bond's face is what it adds to the city's debt: %s raised, %s owed (ratioAfter()'s arithmetic)",
                 q == null ? "none" : DecisionLog.money(q.cashReceived()), q == null ? "none" : DecisionLog.money(q.faceValue())),
                 AutoBuilder.debt(a), predicted);
@@ -1877,7 +1877,7 @@ public class AutoBuildCheck {
         o.setCashForTest(-gdp / 20);
         DebtQuote qo = AutoBuilder.bondFor(o, gdp / 10);
         double predictedO = qo == null ? Double.NaN : AutoBuilder.debtAfter(o, qo);
-        quietly(() -> o.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, o.issueLot("Term")));
+        quietly(() -> o.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, o.fundingLot("Term")));
         cents("...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face"
                 + " with it, and what is still overdrawn (0.7.101; the overdraft outside the debt until then)",
                 AutoBuilder.debt(o), predictedO);

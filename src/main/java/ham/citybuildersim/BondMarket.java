@@ -184,11 +184,23 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** The month's price level is relative to reference prices, in the same money as minimum; round down so a lot never exceeds either. */
     public static double issueLot(String kind, double priceLevel, double minimum) {
-        return MagnitudeSteps.roundDown125(Math.min(referenceLot(kind) * priceLevel, minimum));
+        return MagnitudeSteps.roundDown125(fundingLot(kind, priceLevel, minimum));
     }
 
-    /** The city's issue lot in local money, or in a foreign paper's own money at this month's cross rate. */
+    /** Exact price-level funding for the model; rounding in nominal money would break EP1's scaled twins. */
+    public static double fundingLot(String kind, double priceLevel, double minimum) {
+        double lot = Math.min(referenceLot(kind) * priceLevel, minimum);
+        if (!(lot > 0) || !Double.isFinite(lot)) throw new IllegalArgumentException("funding needs a positive finite lot");
+        return lot;
+    }
+
+    /** The player's round issue lot, in local money or the foreign paper's own money at this month's cross rate. */
     public static double issueLot(Game game, String kind, String money) {
+        return MagnitudeSteps.roundDown125(fundingLot(game, kind, money));
+    }
+
+    /** The model's exact priced-and-capped lot, in the paper's own money. */
+    public static double fundingLot(Game game, String kind, String money) {
         double level = PriceLevel.FACTOR * game.getPriceIndex().getIndex() / game.getDenomination().getUnit();
         double minimum = game.minimumIssueSize();
         if (money != null) {
@@ -196,7 +208,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             level /= per;
             minimum = game.minimumIssueSizeIn(money);
         }
-        return issueLot(kind, level, minimum);
+        return fundingLot(kind, level, minimum);
     }
 
     /* ============================ what it reads ============================ */

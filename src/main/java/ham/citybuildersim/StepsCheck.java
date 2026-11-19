@@ -85,14 +85,22 @@ public final class StepsCheck {
             close(kind + " selects its own dial", BondMarket.referenceLot(kind), dials[k]);
             for (double level : new double[] { PriceLevel.FACTOR, 1, 1e9 }) {
                 double priced = dials[k] * level;
+                close(kind + " model funding prices its dial exactly at level " + level,
+                        BondMarket.fundingLot(kind, level, priced * 2), priced);
                 double lot = BondMarket.issueLot(kind, level, priced * 2);
                 check(kind + " at level " + level + " is positive and 1–2–5", round(lot));
                 check(kind + " follows its dial at level " + level, lot <= priced && lot > priced / 2.5);
                 double minimum = priced * .0037;
+                close(kind + " model funding caps at the exact minimum",
+                        BondMarket.fundingLot(kind, level, minimum), minimum);
                 double capped = BondMarket.issueLot(kind, level, minimum);
                 check(kind + " cap fixture is below the unconstrained lot", minimum < lot);
                 check(kind + " capped lot is round and no larger than the minimum", round(capped) && capped <= minimum && capped > minimum / 2.5);
             }
+            double minimumToday = dials[k] * .0037;
+            close(kind + " model funding commutes with EP1's founding factor",
+                    BondMarket.fundingLot(kind, PriceLevel.FACTOR, minimumToday * PriceLevel.FACTOR),
+                    PriceLevel.FACTOR * BondMarket.fundingLot(kind, 1, minimumToday));
         }
         close("rounding just below a decade goes down", MagnitudeSteps.roundDown125(Math.nextDown(10.0)), 5);
 
@@ -121,8 +129,11 @@ public final class StepsCheck {
         for (String kind : kinds) {
             double priced = PriceLevel.FACTOR * game.getPriceIndex().getIndex() / game.getDenomination().getUnit();
             close(kind + " live local lot", game.issueLot(kind), BondMarket.issueLot(kind, priced, game.minimumIssueSize()));
+            close(kind + " live model lot", game.fundingLot(kind), BondMarket.fundingLot(kind, priced, game.minimumIssueSize()));
             double usd = BondMarket.issueLot(game, kind, "USD");
             check(kind + " live dollar lot is round and within its own minimum", round(usd) && usd <= game.minimumIssueSizeIn("USD"));
+            close(kind + " exact dollar funding converts back to local funding",
+                    BondMarket.fundingLot(game, kind, "USD") * game.localPer("USD"), game.fundingLot(kind));
         }
 
         try (PrintStream quiet = new PrintStream(OutputStream.nullOutputStream())) {
@@ -139,8 +150,8 @@ public final class StepsCheck {
         check("fixture: one month's paper really falls due and needs a rollover", plan.due() > 0 && plan.issues().size() == 1);
         if (plan.issues().size() == 1) {
             Rollover.Issue issue = plan.issues().get(0);
-            DebtQuote expected = game.quoteTBill(issue.cash(), issue.term(), game.issueLot("Note"), Auction.Cap.FILL);
-            close("the real rollover plan rounds at the live lot", issue.face(), expected.faceValue());
+            DebtQuote expected = game.quoteTBill(issue.cash(), issue.term(), game.fundingLot("Note"), Auction.Cap.FILL);
+            close("the real rollover plan uses the exact priced funding lot", issue.face(), expected.faceValue());
             int before = game.getDebtManager().getAuctionTally().auctionSales();
             try (PrintStream quiet = new PrintStream(OutputStream.nullOutputStream())) {
                 System.setOut(quiet);

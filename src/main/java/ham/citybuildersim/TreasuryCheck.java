@@ -875,7 +875,7 @@ public class TreasuryCheck {
         int handDebts = byHand.getDebtManager().getDebt().size();
         double owedBefore = same.getDebtManager().getDomesticPrincipal();
 
-        double rollLot = same.issueLot("Note");
+        double rollLot = same.fundingLot("Note");
         for (Game g : three) press(g);
         m = same.getMonth();
         Rollover roll = same.getRollover();

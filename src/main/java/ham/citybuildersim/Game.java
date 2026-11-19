@@ -12838,7 +12838,7 @@ public class Game {
        costs are the existing ones.
        ----------------------------------------------------------------------- */
 
-    /** A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use issueLot() (SZ1). */
+    /** A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). */
     public static final double BUILD_NOTE_GRANULE = 1000 * PriceLevel.FACTOR;
 
     /**
@@ -12944,8 +12944,10 @@ public class Game {
            lacking", which he chose over face for face knowing what it does
            (0.7.13, round 2) - through the existing quotes: quoteTBill(),
            quoteMediumBondForCash(), quoteLongBondForCash(),
-           quoteForeignForCash(), at the month's rounded, price-level-adjusted lots,
-           capped by the minimum issue (BondMarket.issueLot()).
+           quoteForeignForCash(), at the month's exact price-level lot,
+           capped by the minimum issue (BondMarket.fundingLot()). The
+           player's controls round their lots to 1-2-5; model funding keeps
+           EP1's exact scaling with the price level.
            Paper sells under its face - a bill by its discount, a bond by its
            coupon rounded down to an eighth, any of them by the tail over fair
            and the fixed fee (CD2: the underwriter's spread went with the
@@ -13266,7 +13268,7 @@ public class Game {
 
     /** ...abroad in a money of the eight (CD8): the share in that money's units at the day's rate (localPer()), the quote on its curve. */
     private DebtQuote rolloverQuote(String type, int term, boolean abroad, String money, double cash) {
-        double granule = BondMarket.issueLot(this, type, abroad ? money : null);
+        double granule = BondMarket.fundingLot(this, type, abroad ? money : null);
         if (abroad) return quoteForeignForCash(type, money, cash / localPer(money), term, granule);
         // At the rollover's own cap (CD2, D28); dollar paper is not sold at auction and has none.
         Auction.Cap cap = rollover.getCap();
@@ -13361,7 +13363,7 @@ public class Game {
      */
     private String issueForRollover(Rollover.Issue issue, DebtQuote quote) {
         if (quote == null || quote.isEmpty()) return "Nothing issued.";
-        double granule = BondMarket.issueLot(this, issue.type(), issue.foreign() ? issue.money() : null);
+        double granule = BondMarket.fundingLot(this, issue.type(), issue.foreign() ? issue.money() : null);
         // The player's setting at work, not a decision: the issue is not in the log (0.7.23).
         decisions.hold();
         saleHow = Debt.ROLLOVER;
@@ -14756,12 +14758,17 @@ public class Game {
      */
     public static final int BUILD_BOND_YEARS = 20;
 
-    /** A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use issueLot() (SZ1). */
+    /** A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). */
     public static final double BUILD_BOND_GRANULE = 100 * PriceLevel.FACTOR;
 
-    /** This month's lot for city paper in local money, rounded and capped by the smallest issue. */
+    /** The player's lot for city paper in local money, rounded and capped by the smallest issue. */
     public double issueLot(String kind) {
         return BondMarket.issueLot(this, kind, null);
+    }
+
+    /** The model's exact price-level lot, capped by the smallest issue, preserves EP1's scaling. */
+    public double fundingLot(String kind) {
+        return BondMarket.fundingLot(this, kind, null);
     }
 
 

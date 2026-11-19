@@ -1224,8 +1224,8 @@ public class AuctionCheck {
         g.getBank().setDepositRate(.03);
         g.setCashForTest(cash);
         Rollover.Issue issue = g.rolloverPlan().issues().get(0);
-        DebtQuote capped = g.quoteTBill(issue.cash(), issue.term(), g.issueLot("Note"), Cap.DEFAULT);
-        DebtQuote filled = g.quoteTBill(issue.cash(), issue.term(), g.issueLot("Note"), Cap.FILL);
+        DebtQuote capped = g.quoteTBill(issue.cash(), issue.term(), g.fundingLot("Note"), Cap.DEFAULT);
+        DebtQuote filled = g.quoteTBill(issue.cash(), issue.term(), g.fundingLot("Note"), Cap.FILL);
         Bidders b = g.auctionBidders(issue.term());
         double ask = capped.auction().ask().face();
         double hhCapped = Auction.householdsAt(capped.auction().ceiling(), b, ask);
@@ -1265,18 +1265,18 @@ public class AuctionCheck {
         /* A SHORT SALE: the cash covers the rest. */
         Game s1 = rolloverTown(root, "auction9-short");
         Scene sc = scene(s1, 1_000_000 * PriceLevel.FACTOR);
-        DebtQuote ample = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.issueLot("Note"), Cap.DEFAULT);
+        DebtQuote ample = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: a 3-month note rolls into a 3-month bill, and with the bank's room ample the sale covers at the default cap",
                 sc.issue().type().equals("Note") && sc.issue().term() == 3 && !ample.isShort());
         assertTrue("fixture: the households bid more at Fill it's ceiling than at a point over fair (a fifth of the issue a point over"
                         + " a deposit rate of 3%), so there is a room between the two",
                 sc.hhFilled() > sc.hhCapped() + .01 * sc.askFace() && sc.room() > 0 && sc.room() < sc.askFace());
         roomTo(s1, sc.room());
-        DebtQuote capped = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.issueLot("Note"), Cap.DEFAULT);
-        DebtQuote filled = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.issueLot("Note"), Cap.FILL);
+        DebtQuote capped = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.DEFAULT);
+        DebtQuote filled = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.FILL);
         assertTrue("fixture: with the bank's room left at that, a sale at the default cap sells short and a filled one covers",
                 capped.isShort() && capped.auction().sold() < sc.askFace() && !filled.isShort());
-        DebtQuote atFair = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.issueLot("Note"), Cap.tail(0));
+        DebtQuote atFair = s1.quoteTBill(sc.issue().cash(), sc.issue().term(), s1.fundingLot("Note"), Cap.tail(0));
         assertTrue("a cap at fair allows no tail: the same room sells short at fair itself, and sells less than at fair plus a point",
                 atFair.isShort() && atFair.auction().ceiling() == atFair.auction().ask().fair()
                         && atFair.auction().stop() == atFair.auction().ask().fair() && atFair.auction().sold() < capped.auction().sold());
@@ -1312,7 +1312,7 @@ public class AuctionCheck {
         final double treasury = 300 * PriceLevel.FACTOR;   // D$300k: today's figure, priced at the founding's level (EP1)
         Scene sc2 = scene(s2, treasury);
         roomTo(s2, sc2.room());
-        DebtQuote capped2 = s2.quoteTBill(sc2.issue().cash(), sc2.issue().term(), s2.issueLot("Note"), Cap.DEFAULT);
+        DebtQuote capped2 = s2.quoteTBill(sc2.issue().cash(), sc2.issue().term(), s2.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: a treasury of D$300k, the same room: the sale is short at the default cap, and the treasury cannot pay the rest",
                 capped2.isShort() && s2.getCash() == treasury && sc2.issue().cash() - capped2.cashReceived() > treasury);
         double shortfall = sc2.issue().cash() - capped2.cashReceived();
@@ -1332,7 +1332,7 @@ public class AuctionCheck {
         double advances2 = s2.getCentralBank().getAdvancesToTreasury();
         Game k = rolloverTown(root, "auction9-control");
         scene(k, treasury);
-        DebtQuote coveredK = k.quoteTBill(sc2.issue().cash(), sc2.issue().term(), k.issueLot("Note"), Cap.DEFAULT);
+        DebtQuote coveredK = k.quoteTBill(sc2.issue().cash(), sc2.issue().term(), k.fundingLot("Note"), Cap.DEFAULT);
         quietly(() -> k.simulateMonths(1));
         quietly(() -> k.simulateMonths(1));
         double advancesK = k.getCentralBank().getAdvancesToTreasury();
@@ -1349,8 +1349,8 @@ public class AuctionCheck {
         Scene scf = scene(f, 1_000_000 * PriceLevel.FACTOR);
         roomTo(f, scf.room());
         f.setRolloverCap(Cap.FILL);
-        DebtQuote fq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.issueLot("Note"), Cap.FILL);
-        DebtQuote cq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.issueLot("Note"), Cap.DEFAULT);
+        DebtQuote fq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.fundingLot("Note"), Cap.FILL);
+        DebtQuote cq = f.quoteTBill(scf.issue().cash(), scf.issue().term(), f.fundingLot("Note"), Cap.DEFAULT);
         assertTrue("fixture: the same room, the rollover filled: the sale covers, at a stop above the capped sale's, with a tail past a point",
                 !fq.isShort() && cq.isShort() && fq.auction().stop() > cq.auction().stop()
                         && fq.auction().tail() > Auction.MAX_TAIL);
@@ -1620,7 +1620,7 @@ public class AuctionCheck {
         java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
         for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());
         p.setCashForTest(AutoBuilder.reserve(p));
-        double askLot = p.issueLot("Term");
+        double askLot = p.fundingLot("Term");
         printed(() -> p.simulateMonths(1));
         Notice waits = p.getInbox().live("autobuild");
         double repricedGap = 0;
