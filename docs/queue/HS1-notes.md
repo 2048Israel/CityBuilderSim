@@ -143,9 +143,8 @@ prose, three readings and a check's printout.
 | 2,400 | 2,453,909 / 447,253 | 1.20B / 534M | | |
 
 The trace moves beyond runtime. HS1's city grows faster to month 960. It then stalls for about
-500 months at 35,000-39,000 people with 10-16% unemployed, and takes off about 400 months after
-main's. One run of a chaotic city cannot say whether that is HS1's or the path's: the 80-run
-ensemble is owed.
+700 months at 30,000-39,000 people with 10-16% unemployed, and takes off about 550 months after
+main's. What binds and why: the next section. The 80-run ensemble is owed.
 
 **The households' identity (HL1's own lines) over the run:** every month's audit closed, as did
 every money fixture. CensusStranded and CensusCreated fired in 0 of 2,404 months (main: 4 and
@@ -157,9 +156,110 @@ centuries stalled.
 
 **Its one finding:** "industry stands farther out than the homes", month 2,400 only: industry 4.70
 km from the founding site (493 boxes), the homes' band 4.64 km (5,409). This is CL7's class (main's
-seeds 1, 3 and 9 reach it, and `docs/notes/known-reds.txt` names it). But the suite judges a
-finding as "LongPlaytest | (no FAIL line)", which CL7's row does not match, so at a gate it reads
-NEW. Put to the orchestrator: see the end.
+seeds 1, 3 and 9 reach it, and `docs/notes/known-reds.txt` names it). The suite used to judge
+every finding as "LongPlaytest | (no FAIL line)", which CL7's row could not match. Since b338ee4ba
+(the orchestrator's word) LongPlaytest prints each finding as a FAIL line with its text, so CL7's
+row, `LongPlaytest | industry stands farther out than the homes | CL7`, names it by its exact line.
+Judged by `KnownReds.java` on two fixtures, a suite holding only that line exits 3 (known red);
+one that also holds `FAIL money was not conserved 3 time(s), months 5-9` exits 4, with that
+line NEW on its own. CopperRefiningCheck echoes its child's findings without the token, so they
+stay the child's. nightly.sh's red line reads "RED, exit 1: FAIL industry stands...", one word
+more.
+
+## The stall, m720-m1700 (the orchestrator's question, 2026-11-19)
+
+The question was what binds from about m960, and whether it is the design or a fault in the
+flows. Four runs of the default playtest, each with `-Dplaytest.trace` and a households' probe
+(trace-hh.csv; not committed), traces in `C:/Users/Jerus/AppData/Local/Temp/cbs-probe-*`:
+- **main**: 6b0aa202e, which reproduces main's trace to the person.
+- **HS1**.
+- Two HS1 probes in a scratch worktree:
+  - **stay**: the leavers' stocks, debt and all, go to the established of their tier like an
+    estate, so nothing leaves the city.
+  - **flows off**: carryTheFlows returns at once. That is main's pooling on HS1's ninety-nine
+    cells, OH1 included.
+
+| month | main | flows off | HS1 | stay |
+|---|---|---|---|---|
+| 720 | 18,692 | 26,543 | 27,722 | 23,808 |
+| 960 | 25,037 | 26,706 | 32,192 | 31,697 |
+| 1,200 | 42,588 | 39,290 | 38,550 | 32,040 |
+| 1,440 | 210,132 | 98,068 | 35,244 | 37,595 |
+| 1,680 | 701,523 | 407,834 | 51,781 | 65,462 |
+| 1,920 | 1,315,157 | 1,093,412 | 111,663 | 168,345 |
+| 2,400 | 2,453,909 | 2,151,433 | 447,253 | 880,392 |
+
+**What does not bind**, judged in all four runs and against main at the same months. Money below
+is real, over each run's own price index.
+- **Homes.** Capacity is the people's: 32,490 for 32,192 at m960. From m1320 the landlord holds
+  on "housing ahead of jobs".
+- **Migration's pull and push.** The affordability and crime pulls sit at 1. People stand at
+  2.43-2.45 a job against main's 2.39-2.41.
+- **The retired's share of the people.** 7.9-8.0% in all four runs.
+- **The bank.** 5,000-13,000 of lending room goes unused through the stall.
+- **Demand a head.** Spending a head is 0.032-0.036 in HS1's stall, against 0.034-0.037 in main's
+  own stall (m720-1080).
+- **The policy rate on its own.** The flows-off city took off through 8-10%.
+
+**What binds: jobs, which wait on the city's own building.** The posts are flat:
+- HS1's four tiers stand at 4,415 / 5,120 / 3,160 / 335 from m840 to m1080.
+- The stay run's jobs are 12,865, to the job, from m960 to m1200.
+- HS1's construction trade (9,120 of capacity) has nothing ordered from m780 to m1740.
+
+BusinessInvestment expands on demand it can see: the landlord watches jobs, the shops their
+customers, the makers their market. People follow jobs, so a flat city stays flat until something
+from outside moves it. In every run that something is the city building on borrowed money:
+- **Main:** city debt goes from 5,650 to 186,000 at m1200-1320.
+- **Flows off:** from 1,530 to 47,700 over the same months.
+- **HS1:** it stays at 2,700-8,600 until m1680, and the city's borrowing turns at m1764-1827
+  (bonds of D$8.3M and D$12.5M).
+
+**Why HS1's city did not build sooner.**
+- It went into the m840 bust owing 21,700 at m760, for 32,234 people, against the flows-off
+  city's 9,800 for 27,143. Interest took 31% of its taxes, against 13%.
+- The policy rate went to 12.3%. Its cash was negative from m780 and the advances rose to 7,500.
+- It was in arrears for 227 months, m868-1094, at worst 4,432.
+- Then it paid down, from 13.3 months of GDP to 3.8 by m1320, with nothing built.
+- The stay run tells the same story: 331 months in arrears (m734-1163, at worst 7,071), and debt
+  paid down to 0.3 months of GDP.
+- The runs without the flows fell into arrears too, but shorter and shallower: main for 51
+  months (m932-982, at worst 1,983), after crashing to 32% unemployed at m960, and flows off for
+  126 months (m704-994, at worst 2,188). Both built from m1200.
+
+**Where the flows come in.** The two runs with them share the boom's shape:
+- Dearer money: a policy rate of 14-22% at m560-720 against 9.5-14%, and a mortgage quote of
+  0.15-0.23 against 0.11-0.155.
+- Landlords declining on the rent-cover test, and homes lagging the people (housing pressure
+  1.6-1.74 against 1.2-1.4).
+- Then a late catch-up at the top, in m680-760: HS1's construction capacity went from 2,320 to
+  9,120, and the city's debt from 4,200 to 21,700.
+
+I could not pin why the boom's prices run hotter with the money following people to one line.
+Two candidates:
+- The retired, who in main could not pay up to 41% of their bills, now pay them (the identity's
+  Unfunded fell from 448 ppm to 0.02).
+- The working's want over disposable income is lower: 1.05-1.15, against up to 1.6.
+
+**Verdict: not a fault in the flows; nothing mended.**
+- The census and the flows read the same step: setFlows runs in advanceDemographics after
+  families.rebuild, and the census at the next month's top (startOfMonthUpdate), so nobody is
+  moved twice.
+- The households' identity closes in every month of every run.
+- The leavers' money is not what binds: the stay run stalls the same way.
+
+The stall is the game's own trap. The city's growth waits on the city's borrowing, and the city
+borrowed at the top of a boom. In this seed HS1's flows make the trap likelier, through the
+boom's prices. Two runs a side cannot tell a systematic effect from the path: there is one
+chance in six that the two flows runs are the two late ones by luck.
+
+The ensemble can tell. Against 0.9.154's AUTO2:
+- Final population 2,628,909 [1,115,743 to 6,587,878].
+- Every seed reaching 40,000 people, by m814 [506 to 1,501].
+
+HS1's T1 and T2 against those figures are the answer. If HS1's AUTO2 median falls far (T2 is
+info: at least 75% of the baseline), the lever is the city's borrowing at the top of a boom, or
+an investment rule that waits on an outside push. That is a study of its own, not a change to
+this batch's flows.
 
 ## Open, for the orchestrator
 
@@ -169,12 +269,8 @@ NEW. Put to the orchestrator: see the end.
    `elder_nw=getHouseholdBalance.getElderCouplesToWorkingNetWorth` against the study's 2.6
    (main, savings less debt: 0.13 / 0.36 / 0.94 / 2.48 at months 120 / 600 / 1,200 / 2,400) and
    its toy's rule B (0.86-1.30 a grown-up).
-2. **LongPlaytest's finding** in the default run (CL7's class, above) reads "(no FAIL line)" to the
-   judge. A known-reds row whose part is "(no FAIL line)" would pass every LongPlaytest finding,
-   the money audit's included, so I have not written one. Recommended: LongPlaytest prints each
-   finding as a FAIL line, so CL7's existing row matches as written. That is two lines in
-   LongPlaytest's findings loop, which is SZ1's file, so it waits for the orchestrator's word. The
-   ensemble may also show HS1's late take-off to be this run's path and not the batch's.
+2. **LongPlaytest's finding**: done, b338ee4ba (FAIL lines; CL7's row matches it). **The
+   stall**: above. Read the ensemble's T1 and T2 for AUTO2 against 0.9.154's.
 3. **SB1**, queued: `BuildingManager.retire()`'s first-stack return.
 
 Nothing is left for Jerus.
@@ -183,4 +279,5 @@ Nothing is left for Jerus.
 
 bff15aa14 the core; dfd8d4538 HouseholdFlowCheck and the census seam; 48e261d68 OutsideCheck's
 closing fixture; 6ddda1cff SaveFileCheck's flows round trip; 8a19d313d the cells' count in the
-prose; b6c4c1932 the three readings; c8da97ab3 main merged (FS1); 9fb10bf4d the maps.
+prose; b6c4c1932 the three readings; c8da97ab3 main merged (FS1); 9fb10bf4d the maps;
+b338ee4ba LongPlaytest's FAIL lines.
