@@ -61,9 +61,9 @@ import java.util.function.ToDoubleFunction;
  * when the monthly rebuild moves households between cells - a child ages into
  * a teen, five singles take a flatshare, a worker retires - their money moves
  * with them. See followThePeople(). What used to be seven rows of arrays is
- * sixty-eight objects this class holds, sums and strikes; the row getters the
- * screens read are sums of the cells, and the tier is a view rather than the
- * unit.
+ * sixty-eight objects (ninety-nine since HS1) this class holds, sums and
+ * strikes; the row getters the screens read are sums of the cells, and the
+ * tier is a view rather than the unit.
  *
  * ==================== PER HOUSEHOLD, NOT PER CELL ====================
  *
@@ -413,7 +413,9 @@ public class HouseholdBalance {
     /**
      * Every meaningful cell of the family matrix, in one fixed order: the
      * working shapes by declaration, each across the six tiers, then the two
-     * retired shapes. Sixty-eight. Looked up by shape and tier through
+     * retired shapes, each across the six tiers its households retired from
+     * (HS1), then the nine outside the families and the owners. Ninety-nine.
+     * Looked up by shape and tier through
      * `index`, and by name through key() on the save path.
      */
     private final Household[] cells;
@@ -719,10 +721,11 @@ public class HouseholdBalance {
         }
         for (FamilyStructure shape : FamilyStructure.values()) {
             if (!shape.isRetired()) continue;
-            // The retired sit at tier index 0 in FamilyModel's matrix; the
-            // same convention here, so one lookup serves both.
-            index[shape.ordinal()][0] = built.size();
-            built.add(new RetiredHousehold(shape));
+            // By the tier its people retired from (HS1): four shapes, six cells each.
+            for (PayTier tier : PayTier.values()) {
+                index[shape.ordinal()][tier.ordinal()] = built.size();
+                built.add(new RetiredHousehold(shape, tier));
+            }
         }
         // The people outside the families, after them, so every family cell
         // keeps its place. See Household's rows.
@@ -755,18 +758,42 @@ public class HouseholdBalance {
        These are the sum and the modify.
        ===================================================================== */
 
-    /** The cell for this shape at this tier. For a retired shape the tier is ignored. */
+    /** The cell for this shape at this tier: for a retired shape, the tier its people retired from (HS1). */
     public Household cell(FamilyStructure shape, PayTier tier) {
-        int i = index[shape.ordinal()][shape.isRetired() ? 0 : tier.ordinal()];
-        return cells[i];
+        return cells[index[shape.ordinal()][tier.ordinal()]];
     }
 
-    /** The cell for a retired shape, which has no tier. */
-    public Household cell(FamilyStructure shape) {
+    /**
+     * A retired shape's cells, one for each tier its people retired from, in
+     * tier order (HS1: there was one cell a shape, cell(shape), until the
+     * retired kept their former tier). A row of the screens is their sum.
+     */
+    public java.util.List<Household> cells(FamilyStructure shape) {
         if (!shape.isRetired()) {
-            throw new IllegalArgumentException(shape + " needs a tier");
+            throw new IllegalArgumentException(shape + " is a working shape: one cell a tier, cell(shape, tier)");
         }
-        return cells[index[shape.ordinal()][0]];
+        java.util.List<Household> out = new java.util.ArrayList<>(PayTier.values().length);
+        for (PayTier t : PayTier.values()) out.add(cells[index[shape.ordinal()][t.ordinal()]]);
+        return out;
+    }
+
+    /** Households of a retired shape, every former tier together. */
+    public double retiredHouseholds(FamilyStructure shape) {
+        double n = 0;
+        for (Household c : cells(shape)) n += c.households;
+        return n;
+    }
+
+    /**
+     * A retired cell's share of its shape's households, every former tier
+     * together, as the last census left them: a sixth each when the shape is
+     * empty, so the shares always add to one. 1 for any other cell. For a
+     * reader that has the census by shape and needs it by cell (Game's doors).
+     */
+    public double tierShareOf(Household c) {
+        if (!(c instanceof RetiredHousehold)) return 1;
+        double all = retiredHouseholds(c.shape());
+        return all > 0 ? c.households / all : 1.0 / PayTier.values().length;
     }
 
     /** The out-of-work cell in this situation. */
@@ -963,7 +990,10 @@ public class HouseholdBalance {
             return;   // refused whole, per the standing rule on state arrays
         }
 
-        double[] fresh = takeCensus(census);
+        // The month's flows first, used up here (HS1): the census splits the
+        // retired across their former tiers by the households after them.
+        Plan plan = planFlows(census, true);
+        double[] fresh = takeCensus(census, plan.after);
 
         /*
          * HUNGER, BEFORE ANYTHING IS OVERWRITTEN.
@@ -992,6 +1022,13 @@ public class HouseholdBalance {
         lastUnsettledRent = 0;
         lastCensusStranded = 0;
         lastCensusCreated = 0;
+        // The month's flows and the estates (HS1), struck again by followThePeople().
+        java.util.Arrays.fill(lastFlowHouseholds, 0);
+        java.util.Arrays.fill(lastFlowSavings, 0);
+        lastEstateRepaid = 0;
+        lastEstateWrittenOff = 0;
+        lastEstatePassed = 0;
+        lastPoolSavings = 0;
         lastAbroadTakenAway = 0;
         lastCareSkipped = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
@@ -1131,7 +1168,7 @@ public class HouseholdBalance {
         }
 
         /* ---- the stock belongs to the people, not to the cells ---- */
-        followThePeople(fresh, buffer);
+        followThePeople(fresh, buffer, plan);
 
         /* ---- and every household's month ---- */
         plannedSpend = 0;
@@ -1264,8 +1301,23 @@ public class HouseholdBalance {
         return sum;
     }
 
-    /** Who lives in each cell now, in cell order. */
+    /** Who lives in each cell now, in cell order: the month's flows planned and not used up, for a reader before the month (the account fees). */
     private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census) {
+        return takeCensus(census, planFlows(census, false).after);
+    }
+
+    /**
+     * Who lives in each cell now, in cell order. FamilyModel counts the
+     * retired by shape alone (at tier index 0); each shape's count is split
+     * across the tiers its people retired from by the households the month's
+     * flows leave in each (HS1, MONEY FOLLOWS PEOPLE), so a tier's share of a
+     * shape moves only by the flows - the retirees it took in, the survivors,
+     * the aged-on, the dead and the leavers - and the census's own reshuffles
+     * scale every tier of the shape alike.
+     *
+     * @param after every cell's households after the month's flows (Plan.after)
+     */
+    private double[] takeCensus(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] after) {
         double[] fresh = new double[cells.length];
         PayTier retiredSlot = PayTier.values()[0];
         for (int i = 0; i < cells.length; i++) {
@@ -1274,12 +1326,60 @@ public class HouseholdBalance {
                 fresh[i] = Math.max(0, outsideCensus.applyAsDouble(c));
                 // Struck with the count, from the same month's rebuild.
                 c.dependants = Math.max(0, outsideDependants.applyAsDouble(c));
-            } else {
-                fresh[i] = Math.max(0, census.applyAsDouble(c.shape(),
-                        c.isRetired() ? retiredSlot : c.tier()));
+            } else if (!c.isRetired()) {
+                fresh[i] = Math.max(0, census.applyAsDouble(c.shape(), c.tier()));
+            }
+        }
+        double[] mix = null;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            if (!s.isRetired()) continue;
+            double total = Math.max(0, census.applyAsDouble(s, retiredSlot));
+            double held = 0;
+            for (PayTier t : PayTier.values()) held += after[index[s.ordinal()][t.ordinal()]];
+            for (PayTier t : PayTier.values()) {
+                int i = index[s.ordinal()][t.ordinal()];
+                if (held > 0) {
+                    fresh[i] = total * after[i] / held;
+                } else {
+                    if (mix == null) mix = retiredMix(after, fresh);
+                    fresh[i] = total * mix[t.ordinal()];
+                }
             }
         }
         return fresh;
+    }
+
+    /**
+     * The tiers a retired shape with nobody in it yet is split by: every
+     * retired household's after the flows, by people; in a city with none
+     * (a founding), the working census's grown-ups this month, so the first
+     * retirees retired from the founding's own jobs; with neither, the unskilled.
+     */
+    private double[] retiredMix(double[] after, double[] fresh) {
+        double[] w = new double[PayTier.values().length];
+        double sum = 0;
+        for (int i = 0; i < cells.length; i++) {
+            if (cells[i] instanceof RetiredHousehold r) {
+                double x = after[i] * r.grownUps();
+                w[r.formerTier().ordinal()] += x;
+                sum += x;
+            }
+        }
+        if (!(sum > 0)) {
+            for (int i = 0; i < cells.length; i++) {
+                if (cells[i] instanceof WorkingHousehold c) {
+                    double x = fresh[i] * c.grownUps();
+                    w[c.tier().ordinal()] += x;
+                    sum += x;
+                }
+            }
+        }
+        if (!(sum > 0)) {
+            w[PayTier.UNSKILLED.ordinal()] = 1;
+            return w;
+        }
+        for (int t = 0; t < w.length; t++) w[t] /= sum;
+        return w;
     }
 
     /**
@@ -1369,6 +1469,8 @@ public class HouseholdBalance {
     private interface Stock {
         double get(Household c);
         void set(Household c, double perHousehold);
+        /** A stock an orphan never claims from the pool (HS1's review): a debt, a loan or a car - no credit, no licence. */
+        default boolean notAChildsToClaim() { return false; }
     }
 
     /**
@@ -1387,6 +1489,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.debt; }
             public void set(Household c, double v) { c.debt = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         for (int k = 0; k < Equity.COMPANIES.length; k++) {
             final int company = k;
@@ -1411,6 +1514,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.studentDebt; }
             public void set(Household c, double v) { c.studentDebt = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         /*
          * AND THE CAR GOES WITH THE PEOPLE (2026-09-16), which is the whole
@@ -1424,6 +1528,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.cars; }
             public void set(Household c, double v) { c.cars = v; }
+            public boolean notAChildsToClaim() { return true; }
         });
         // ...and the city's paper (0.7.1), named like the loans, not "the last one".
         if (named != null) named[1] = stocks.size();
@@ -1468,8 +1573,9 @@ public class HouseholdBalance {
      *
      * @param fresh  households in each cell now
      * @param buffer what a newly arrived household of each cell brings, in savings
+     * @param plan   the month's flows (planFlows()), carried before the pool
      */
-    private void followThePeople(double[] fresh, double[] buffer) {
+    private void followThePeople(double[] fresh, double[] buffer, Plan plan) {
         int[] named = new int[3];
         java.util.List<Stock> stocks = stocks(named);
         final int loanSlot = named[0];
@@ -1477,8 +1583,10 @@ public class HouseholdBalance {
         final int bondSlot = named[2];
 
         int n = cells.length;
-        double[] before = new double[n];
-        for (int i = 0; i < n; i++) before[i] = cells[i].households;
+        // The month's flows carry their money first (HS1, MONEY FOLLOWS
+        // PEOPLE); the pool moves what they left, from the households after them.
+        double[] flowLeft = new double[stocks.size()];
+        double[] before = carryTheFlows(plan, stocks, flowLeft, loanSlot);
         double[] beforeLoans = carryGraduatesLoans(before);
 
         /*
@@ -1503,7 +1611,7 @@ public class HouseholdBalance {
         for (int k = 0; k < stocks.size(); k++) {
             boolean loans = k == loanSlot;
             boolean shares = k >= 2 && k < 2 + Equity.COMPANIES.length;
-            left[k] = moveStock(stocks.get(k), fresh, loans ? beforeLoans : shares ? beforeShares : before, k == 0 ? buffer : null);
+            left[k] = flowLeft[k] + moveStock(stocks.get(k), fresh, loans ? beforeLoans : shares ? beforeShares : before, k == 0 ? buffer : null);
         }
         if (ownersLeave) {
             double keep = before[ownerIndex] / fresh[ownerIndex];
@@ -1678,6 +1786,439 @@ public class HouseholdBalance {
     /** Cells emptied this month that still held something when the census left them under EMPTY_CELL. */
     public int getCellsFolded() { return lastCellsFolded; }
 
+    /* =====================================================================
+       MONEY FOLLOWS PEOPLE (HS1, 2026-11-18)
+
+       Jerus: "the elderly are routinely broke." The pool above sees only each
+       cell's net change, so the month's own moves never carried their money:
+       a retiring couple's savings stayed in their pay row for whoever joined
+       it, and the retired row was handed the dead's and the strangers' money
+       the census happened to release. At month 2,400 of the playtest city a
+       household coming into the retired row got 29% of a working household's
+       average, 94% of it from strangers leaving other rows; when one of a
+       senior couple died the survivor kept half; a leaver's money stayed in
+       the city whenever any cell grew (savings left in 2 months of 12 while
+       1,250 people left a month). At month 4,000 a senior living alone held
+       9% of a working household's net worth (the households study, 1-2).
+
+       So the month's own flows move first, before the pool, each carrying
+       the average of every stock in stocks() from the cell it leaves - the
+       pattern carryGraduatesLoans() set for the graduates' loans - and the
+       pool nets only what they did not explain, the reshuffles nobody can
+       trace (a child ageing, five singles taking a flatshare, the job mix):
+
+         retiring        an adult's share of the household, from the working
+                         cells and the out of work, into the senior cells of
+                         the tier they left (the out of work: the unskilled,
+                         their stock group)
+         ageing on       a senior's, into the elder cells of the same tier
+         a partner dies  the whole household into the alone cell of its own
+                         row and tier: THE SURVIVOR KEEPS EVERYTHING (Canada's
+                         spousal rollover)
+         dying alone     an ESTATE: the debt settled from the savings - a
+                         repayment the bank books, in totalRepaid() - the rest
+                         of the debt and the student loan written off as a
+                         leaver's are, and everything else passed in kind to
+                         the working households of the dead's former tier, by
+                         grown-ups (Jerus, 2026-11-02: "estates to the same
+                         former tier"); with none in the tier, the city's
+                         working households
+         leaving         the share out of the city, booked exactly as the
+                         pool's unclaimed rest always was: the savings through
+                         the balance of payments ("- households LeftWith",
+                         HL1's migrants' line), the debt written off, the
+                         shares and the bonds held from abroad, the city's
+                         paper sold to the desk on the way out
+
+       WHO, AND HOW MANY. The demographics hand on SHARES of each band
+       (setFlows(); PopulationCohorts.deathShare() and the rest: who died,
+       aged on and left, over what the band opened the month with), and each
+       cell loses its people at its band's share - the compartment model's
+       own rule, every member of a band alike. The evicted who give up leave
+       the out-of-work cell whose EI has run out, where Unemployment took them
+       from. A destination of two shapes (the senior cells, the elder cells)
+       takes the flow by the census's own growth there, and by grown-ups
+       where nothing grew. Struck at the demographics, read at the next
+       census, and SAVED between them (flowsToSave()): a save is always taken
+       holding a month's flows, as it is the graduates.
+
+       ORDER-FREE AND EXACT. Every outflow is taken at the cell's average at
+       the start of the month, so a source keeps its average on fewer
+       households; then every inflow is added; then the estates. Each flow
+       subtracts what it adds, the shares clamp so no cell loses more
+       households than it has, and every position stays at or above nought
+       (moveStock's 2026-09-16 rule). A stock added to stocks() later is
+       carried for free.
+
+       NOT TRACED, and left to the pool as before: the students (their loans
+       go at graduation, carryGraduatesLoans()), the prisoners (Crime's count,
+       not the pyramid's), the orphans (no grown-up carries their money) and
+       the owner families (BO1's line moves by its own rules). Deaths alone
+       leave no estate when no working household is left to inherit one: the
+       pool's rule, as before.
+       ===================================================================== */
+
+    /** Slots of the month's flows, as setFlows() strikes them and flowsToSave() writes them: the shares of a band, and the evicted who left, a share of the out of work off benefits: every slot a share, so a scaled city's save needs none of them scaled (ScaleCheck). */
+    static final int FLOW_RETIRE = 0, FLOW_AGE_ON = 1, FLOW_DIE_ADULT = 2, FLOW_DIE_SENIOR = 3,
+            FLOW_DIE_ELDER = 4, FLOW_LEAVE = 5, FLOW_EVICTED = 6, FLOW_SLOTS = 7;
+
+    /** The month's flows, as the demographics struck them, waiting for the next census. Saved. */
+    private final double[] flows = new double[FLOW_SLOTS];
+
+    /** The kinds of flow, for the month's record (getFlowHouseholds(), getFlowSavings()). */
+    public static final int RETIRING = 0, AGEING_ON = 1, PARTNER_DIES = 2, DYING_ALONE = 3, LEAVING = 4, FLOW_KINDS = 5;
+
+    private final double[] lastFlowHouseholds = new double[FLOW_KINDS];
+    private final double[] lastFlowSavings = new double[FLOW_KINDS];
+    /** What the estates repaid the bank out of the dead's savings this month: part of totalRepaid(). */
+    private double lastEstateRepaid;
+    /** ...the debt their savings did not cover, written off with the leavers' (in getWrittenOff()). */
+    private double lastEstateWrittenOff;
+    /** ...the savings passed in kind to the heirs. */
+    private double lastEstatePassed;
+    /** Savings the pool moved between cells this month, from its row and city pools: what the flows did not explain. */
+    private double lastPoolSavings;
+
+    /**
+     * Hands the month's flows to the next census (HS1), from the pyramid's own
+     * month: the shares of the adults who retired and of the seniors who aged
+     * on, of each band who died, the share of every band the month's net
+     * migration took away, and the adults who left on their own account (the
+     * evicted who gave up). Struck once a month by Game after the households
+     * are rebuilt; used once, by the next advanceMonth().
+     */
+    public void setFlows(PopulationCohorts cohorts) {
+        if (cohorts == null) return;
+        setFlows(cohorts.promotedShare(AgeBand.ADULT), cohorts.promotedShare(AgeBand.SENIOR),
+                cohorts.deathShare(AgeBand.ADULT), cohorts.deathShare(AgeBand.SENIOR),
+                cohorts.deathShare(AgeBand.ELDER), cohorts.getLeftShare(), cohorts.getLeft(AgeBand.ADULT));
+    }
+
+    /** The same, by hand: for a harness that causes one flow at a time. */
+    void setFlows(double retire, double ageOn, double dieAdult, double dieSenior, double dieElder,
+                  double leave, double evictedLeft) {
+        flows[FLOW_RETIRE] = clampShare(retire);
+        flows[FLOW_AGE_ON] = clampShare(ageOn);
+        flows[FLOW_DIE_ADULT] = clampShare(dieAdult);
+        flows[FLOW_DIE_SENIOR] = clampShare(dieSenior);
+        flows[FLOW_DIE_ELDER] = clampShare(dieElder);
+        flows[FLOW_LEAVE] = clampShare(leave);
+        // The evicted who left are people off the out-of-work cell off benefits, held as a share of it.
+        Household offEi = cells[unemployedIndex[UnemployedHousehold.Status.OFF_EI.ordinal()]];
+        double offEiPeople = offEi.households * offEi.grownUps();
+        flows[FLOW_EVICTED] = evictedLeft > 0 && offEiPeople > 0 ? Math.min(1, evictedLeft / offEiPeople) : 0;
+    }
+
+    private static double clampShare(double s) { return s > 0 ? Math.min(1, s) : 0; }
+
+    /** The month's flows waiting for the next census, in FLOW_ slot order: for the save. */
+    public double[] flowsToSave() { return flows.clone(); }
+
+    /** ...and back; null or short (a save from before HS1) leaves none waiting: the first census back moves money by the pool alone. */
+    public void restoreFlows(double[] saved) {
+        java.util.Arrays.fill(flows, 0);
+        if (saved == null || saved.length < FLOW_SLOTS) return;
+        for (int k = 0; k < FLOW_SLOTS; k++) flows[k] = saved[k] > 0 ? saved[k] : 0;   // a NaN or a negative: none
+    }
+
+    /** Households, by the flow's kind (RETIRING and the rest), that the last census's flows carried out of the cells they left. */
+    public double getFlowHouseholds(int kind) { return lastFlowHouseholds[kind]; }
+    /** ...and the savings they carried with them. */
+    public double getFlowSavings(int kind)    { return lastFlowSavings[kind]; }
+    /** The last census's estates: what they repaid the bank, what was written off, and the savings the heirs were handed. */
+    public double getEstateRepaid()     { return lastEstateRepaid; }
+    public double getEstateWrittenOff() { return lastEstateWrittenOff; }
+    public double getEstatePassed()     { return lastEstatePassed; }
+    /** Savings the census's pool moved between cells at the last census: what no flow explained. */
+    public double getPoolSavings()      { return lastPoolSavings; }
+
+    /* ----- the retired's money against the working's (HS1) -----
+       The study's measure (spec-households.md 2.6, "savings less debt"):
+       a retired household's net worth over a working one's, the working
+       being the six tiers' rows. No-argument, so the ensemble's
+       -Densemble.extra reads them by name; zero while the working hold
+       nothing. */
+
+    /** Every retired household's net worth, per household, over a working household's. */
+    public double getRetiredToWorkingNetWorth() { return netWorthOver(c -> c.row() == Household.RETIRED_ROW); }
+    /** The seniors living alone, the same way: the cell the study found poorest. */
+    public double getSeniorsAloneToWorkingNetWorth() {
+        return netWorthOver(c -> c.shape() == FamilyStructure.SENIOR_ALONE);
+    }
+    /** The elder couples, the same way. */
+    public double getElderCouplesToWorkingNetWorth() {
+        return netWorthOver(c -> c.shape() == FamilyStructure.ELDER_COUPLE);
+    }
+
+    private double netWorthOver(java.util.function.Predicate<Household> which) {
+        double working = 0, workingHomes = 0, these = 0, theseHomes = 0;
+        for (Household c : cells) {
+            if (c.row() < Household.RETIRED_ROW) {
+                working += c.netWorth() * c.households;
+                workingHomes += c.households;
+            }
+            if (which.test(c)) {
+                these += c.netWorth() * c.households;
+                theseHomes += c.households;
+            }
+        }
+        if (workingHomes <= 0 || theseHomes <= 0 || working <= 0) return 0;
+        return (these / theseHomes) / (working / workingHomes);
+    }
+
+    /** One flow out of a cell: households out of `from`, into `to` (a cell), or out of the city, or an estate to `tier`. */
+    private static final class Move {
+        final int kind, from, to, tier;
+        double out, in;
+        Move(int kind, int from, int to, int tier, double out, double in) {
+            this.kind = kind; this.from = from; this.to = to; this.tier = tier; this.out = out; this.in = in;
+        }
+    }
+
+    /** A Move's destination when it leaves the city, or is an estate. */
+    private static final int OUT_OF_THE_CITY = -1, AN_ESTATE = -2;
+
+    /** The month's flows, planned off the households coming in: the moves, and every cell's households after them. */
+    private static final class Plan {
+        final java.util.List<Move> moves = new java.util.ArrayList<>();
+        final double[] after;
+        Plan(double[] after) { this.after = after; }
+    }
+
+    /**
+     * The month's flows as moves between cells, struck off each cell's
+     * households coming into the month and the flows setFlows() handed on -
+     * used up only for the month itself (useUp), so the account fees struck
+     * before it read the same split. Nothing moves yet: the census needs the retired's
+     * households after the flows to split each shape across its tiers
+     * (takeCensus()), before followThePeople() carries the money.
+     */
+    private Plan planFlows(ToDoubleBiFunction<FamilyStructure, PayTier> census, boolean useUp) {
+        int n = cells.length;
+        double[] b0 = new double[n];
+        for (int i = 0; i < n; i++) b0[i] = cells[i].households;
+        Plan plan = new Plan(b0.clone());
+        double retire = flows[FLOW_RETIRE], ageOn = flows[FLOW_AGE_ON], leave = flows[FLOW_LEAVE];
+        double evicted = flows[FLOW_EVICTED];
+        double[] die = new double[AgeBand.values().length];
+        die[AgeBand.ADULT.ordinal()] = flows[FLOW_DIE_ADULT];
+        die[AgeBand.SENIOR.ordinal()] = flows[FLOW_DIE_SENIOR];
+        die[AgeBand.ELDER.ordinal()] = flows[FLOW_DIE_ELDER];
+        if (useUp) java.util.Arrays.fill(flows, 0);
+        if (retire + ageOn + leave + evicted + die[AgeBand.ADULT.ordinal()]
+                + die[AgeBand.SENIOR.ordinal()] + die[AgeBand.ELDER.ordinal()] <= 0) return plan;
+
+        double[] toSenior = shapeShares(census, b0, AgeBand.SENIOR);
+        double[] toElder = shapeShares(census, b0, AgeBand.ELDER);
+        int offEi = unemployedIndex[UnemployedHousehold.Status.OFF_EI.ordinal()];
+
+        for (int i = 0; i < n; i++) {
+            Household c = cells[i];
+            double h = b0[i];
+            if (!(h > 0)) continue;
+            int g = c.grownUps();
+            if (c instanceof WorkingHousehold || c instanceof UnemployedHousehold) {
+                // The out of work retire, die and inherit with the unskilled: their stock group.
+                PayTier t = PayTier.values()[c.stockGroup()];
+                dying(plan, i, h, die[AgeBand.ADULT.ordinal()], t);
+                if (retire > 0) into(plan, RETIRING, i, retire * h, g, toSenior, t);
+                if (leave > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, leave * h, 0));
+                if (i == offEi && evicted > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, evicted * h, 0));
+            } else if (c instanceof RetiredHousehold r) {
+                AgeBand band = c.shape().membersOf(AgeBand.SENIOR) > 0 ? AgeBand.SENIOR : AgeBand.ELDER;
+                PayTier t = r.formerTier();
+                dying(plan, i, h, die[band.ordinal()], t);
+                if (band == AgeBand.SENIOR && ageOn > 0) into(plan, AGEING_ON, i, ageOn * h, g, toElder, t);
+                if (leave > 0) plan.moves.add(new Move(LEAVING, i, OUT_OF_THE_CITY, -1, leave * h, 0));
+            }
+        }
+
+        // No cell loses more households than it has: a source's moves are scaled together.
+        double[] out = new double[n];
+        for (Move m : plan.moves) out[m.from] += m.out;
+        for (Move m : plan.moves) {
+            if (out[m.from] > b0[m.from]) {
+                double keep = b0[m.from] / out[m.from];
+                m.out *= keep;
+                m.in *= keep;
+            }
+        }
+        for (Move m : plan.moves) {
+            plan.after[m.from] -= m.out;
+            if (m.to >= 0) plan.after[m.to] += m.in;
+        }
+        for (int i = 0; i < n; i++) if (plan.after[i] < 0) plan.after[i] = 0;
+        return plan;
+    }
+
+    /**
+     * The band's dead in one cell: in a couple, one of them, and the household
+     * goes whole to the alone cell of its row and tier - the survivor keeps
+     * everything; otherwise an estate, their share of the household, to the
+     * former tier's heirs, any tier's with none of theirs, and out of the
+     * city with nobody left to inherit (passOn()).
+     */
+    private void dying(Plan plan, int i, double h, double share, PayTier tier) {
+        if (!(share > 0)) return;
+        Household c = cells[i];
+        double dead = share * h * c.grownUps();
+        if (c.grownUps() == 2) {
+            int to = aloneOf(c);
+            if (to >= 0) plan.moves.add(new Move(PARTNER_DIES, i, to, -1, dead, dead));
+            return;
+        }
+        plan.moves.add(new Move(DYING_ALONE, i, AN_ESTATE, tier.ordinal(), dead / c.grownUps(), 0));
+    }
+
+    /** People going on to the shapes of a band at the tier they left: `households` of cell i, each `grownUps` people, split by the shapes' shares. */
+    private void into(Plan plan, int kind, int i, double households, int grownUps, double[] shares, PayTier tier) {
+        for (FamilyStructure s : FamilyStructure.values()) {
+            double w = shares[s.ordinal()];
+            if (!(w > 0)) continue;
+            int to = index[s.ordinal()][tier.ordinal()];
+            double people = households * grownUps * w;
+            plan.moves.add(new Move(kind, i, to, -1, households * w, people / cells[to].grownUps()));
+        }
+    }
+
+    /** The alone cell a couple's survivor goes to, in its row and tier: the senior or elder alone, a single adult, or a single parent where there were children. -1 for none. */
+    private int aloneOf(Household c) {
+        FamilyStructure s = c.shape();
+        if (c instanceof RetiredHousehold r) {
+            FamilyStructure alone = s == FamilyStructure.SENIOR_COUPLE ? FamilyStructure.SENIOR_ALONE
+                    : s == FamilyStructure.ELDER_COUPLE ? FamilyStructure.ELDER_ALONE : null;
+            return alone == null ? -1 : index[alone.ordinal()][r.formerTier().ordinal()];
+        }
+        if (!(c instanceof WorkingHousehold) || s.earners() != 2) return -1;
+        FamilyStructure alone = s.dependants() > 0 ? FamilyStructure.SINGLE_PARENT : FamilyStructure.SINGLE_ADULT;
+        return index[alone.ordinal()][c.tier().ordinal()];
+    }
+
+    /**
+     * The shares of a band's people that go to each retired shape holding the
+     * band: by the census's own growth in the shape this month, by its
+     * grown-ups where nothing grew, by the census where it holds nobody yet,
+     * and to the alone shape when there is no census at all.
+     */
+    private double[] shapeShares(ToDoubleBiFunction<FamilyStructure, PayTier> census, double[] b0, AgeBand band) {
+        int shapes = FamilyStructure.values().length;
+        double[] grew = new double[shapes], held = new double[shapes], counted = new double[shapes];
+        FamilyStructure alone = null;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            if (!s.isRetired() || s.membersOf(band) <= 0) continue;
+            if (alone == null || s.size() < alone.size()) alone = s;
+            int g = RetiredHousehold.pensionersIn(s);
+            double now = census == null ? 0 : Math.max(0, census.applyAsDouble(s, PayTier.values()[0]));
+            double before = 0;
+            for (PayTier t : PayTier.values()) before += b0[index[s.ordinal()][t.ordinal()]];
+            grew[s.ordinal()] = Math.max(0, now - before) * g;
+            held[s.ordinal()] = before * g;
+            counted[s.ordinal()] = now * g;
+        }
+        for (double[] w : new double[][] { grew, held, counted }) {
+            double sum = 0;
+            for (double x : w) sum += x;
+            if (sum > 0) {
+                double[] out = new double[shapes];
+                for (int k = 0; k < shapes; k++) out[k] = w[k] / sum;
+                return out;
+            }
+        }
+        double[] out = new double[shapes];
+        if (alone != null) out[alone.ordinal()] = 1;
+        return out;
+    }
+
+    /**
+     * Carries the plan's money (see the banner above): every outflow at its
+     * cell's average coming in, then every inflow, then the estates. What
+     * leaves the city is added to `left`, stock by stock, to be booked with
+     * what the pool leaves unclaimed; an estate's unpaid debt goes there too,
+     * written off, and its student loan with the leavers'.
+     *
+     * @return every cell's households after the flows: the pool's "before"
+     */
+    private double[] carryTheFlows(Plan plan, java.util.List<Stock> stocks, double[] left, int loanSlot) {
+        int n = cells.length, k = stocks.size();
+        double[] b = new double[n];
+        for (int i = 0; i < n; i++) b[i] = cells[i].households;
+        if (plan == null || plan.moves.isEmpty()) return b;
+        double[][] in = new double[n][];
+        double[] inHouseholds = new double[n];
+        double[][] estate = new double[PayTier.values().length][];
+
+        for (Move m : plan.moves) {
+            Household from = cells[m.from];
+            lastFlowHouseholds[m.kind] += m.out;
+            lastFlowSavings[m.kind] += from.savings * m.out;
+            if (m.to >= 0) {
+                if (in[m.to] == null) in[m.to] = new double[k];
+                for (int s = 0; s < k; s++) in[m.to][s] += stocks.get(s).get(from) * m.out;
+                inHouseholds[m.to] += m.in;
+            } else if (m.to == OUT_OF_THE_CITY) {
+                for (int s = 0; s < k; s++) left[s] += stocks.get(s).get(from) * m.out;
+            } else {
+                if (estate[m.tier] == null) estate[m.tier] = new double[k];
+                double[] e = estate[m.tier];
+                // The debt is settled from the savings; the rest of it, and the student loan, are written off.
+                double saved = from.savings * m.out, owed = from.debt * m.out;
+                double repaid = Math.min(saved, owed);
+                lastEstateRepaid += repaid;
+                lastEstateWrittenOff += owed - repaid;
+                e[0] += saved - repaid;
+                left[1] += owed - repaid;
+                left[loanSlot] += from.studentDebt * m.out;
+                for (int s = 2; s < k; s++) if (s != loanSlot) e[s] += stocks.get(s).get(from) * m.out;
+            }
+        }
+        for (Move m : plan.moves) b[m.from] -= m.out;
+        for (int i = 0; i < n; i++) {
+            if (b[i] < 0) b[i] = 0;
+            if (in[i] == null) continue;
+            double now = b[i] + inHouseholds[i];
+            if (!(now > 0)) continue;
+            Household c = cells[i];
+            for (int s = 0; s < k; s++) {
+                Stock st = stocks.get(s);
+                double position = (st.get(c) * b[i] + in[i][s]) / now;
+                st.set(c, position > 0 ? position : 0);
+            }
+            b[i] = now;
+        }
+        for (int t = 0; t < estate.length; t++) {
+            if (estate[t] != null) passOn(estate[t], PayTier.values()[t], b, stocks, left);
+        }
+        return b;
+    }
+
+    /** An estate, in kind, to the working households of the tier by grown-ups; with none, the city's; with none at all (no heir after the flows), out with the leavers. */
+    private void passOn(double[] e, PayTier tier, double[] b, java.util.List<Stock> stocks, double[] left) {
+        for (int pass = 0; pass < 2; pass++) {
+            double weight = 0;
+            for (int i = 0; i < cells.length; i++) {
+                Household c = cells[i];
+                if (c instanceof WorkingHousehold && !c.isEmpty() && b[i] > 0 && (pass == 1 || c.tier() == tier)) {
+                    weight += b[i] * c.grownUps();
+                }
+            }
+            if (!(weight > 0)) continue;
+            for (int i = 0; i < cells.length; i++) {
+                Household c = cells[i];
+                if (!(c instanceof WorkingHousehold) || c.isEmpty() || !(b[i] > 0) || (pass == 0 && c.tier() != tier)) continue;
+                double share = c.grownUps() / weight;     // per household of the cell: b[i] * grownUps / weight of it, over b[i]
+                for (int s = 0; s < e.length; s++) {
+                    if (e[s] == 0) continue;
+                    Stock st = stocks.get(s);
+                    st.set(c, st.get(c) + e[s] * share);
+                }
+            }
+            // ...counted as passed only when an heir had it: with none, it went out with the rest (LeftWith).
+            lastEstatePassed += e[0];
+            return;
+        }
+        for (int s = 0; s < e.length; s++) left[s] += e[s];
+    }
+
     /**
      * The graduates' student loans, handed to the working families before the
      * census moves anything. See setGraduates().
@@ -1700,16 +2241,21 @@ public class HouseholdBalance {
         Household s = students();
         if (s == null || leaving <= 0 || s.households <= 0) return out;
 
+        // Weighed by the households the pool will read the loans on, after the
+        // month's flows (HS1): weighed by the counts coming in, a family the
+        // flows had shrunk carried less of the loan than it was handed.
         double weight = 0;
-        for (Household c : cells) {
-            if (c instanceof WorkingHousehold && !c.isEmpty()) weight += c.households * c.grownUps();
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c instanceof WorkingHousehold && !c.isEmpty()) weight += before[i] * c.grownUps();
         }
         if (weight <= 0) return out;            // nobody working to carry it: it stays with the students
 
         double graduates = Math.min(leaving, s.households);
         double carried = s.studentDebt * graduates;
-        for (Household c : cells) {
-            if (c instanceof WorkingHousehold && !c.isEmpty()) {
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c instanceof WorkingHousehold && !c.isEmpty() && before[i] > 0) {
                 c.studentDebt += carried * c.grownUps() / weight;
             }
         }
@@ -1718,6 +2264,23 @@ public class HouseholdBalance {
         }
         lastGraduated = graduates;
         return out;
+    }
+
+    /**
+     * What a household of a cell weighs in the pool: its grown-ups, and a
+     * cell with none (the orphans) by its people (OH1). Weighed by grown-ups
+     * alone, a shrinking orphan cell released into a pool nobody was handed -
+     * its shares left the register with no line to say so (ShortSellingCheck,
+     * R0b-S) - and a growing one claimed nothing and stretched what it held
+     * over more children.
+     *
+     * Only for what a child can hold (HS1's review): the savings, the shares,
+     * the money abroad, the paper and the bonds. A debt, a student loan or a
+     * car an orphan cell never claims - they have no credit and no licence
+     * (OrphanHousehold) - so those stay with the grown-ups who can carry them.
+     */
+    private static int poolWeight(Household c, Stock stock) {
+        return c.grownUps() > 0 ? c.grownUps() : stock.notAChildsToClaim() ? 0 : c.size();
     }
 
     /**
@@ -1734,9 +2297,10 @@ public class HouseholdBalance {
      */
     private double moveStock(Stock stock, double[] fresh, double[] before, double[] arrival) {
         int n = cells.length;
-        double[] rowLoss = new double[ROWS];
-        double[] rowGain = new double[ROWS];
-        double[] rowPool = new double[ROWS];
+        // A stock group a row, and the retired one a former tier (HS1): Household.STOCK_GROUPS.
+        double[] rowLoss = new double[Household.STOCK_GROUPS];
+        double[] rowGain = new double[Household.STOCK_GROUPS];
+        double[] rowPool = new double[Household.STOCK_GROUPS];
 
         // Matched within the cell's stock group first - its own row, except for
         // the out of work, who move with the unskilled tier. See Household.stockGroup().
@@ -1744,7 +2308,7 @@ public class HouseholdBalance {
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
             delta[i] = fresh[i] - before[i];
-            double weight = Math.abs(delta[i]) * c.grownUps();
+            double weight = Math.abs(delta[i]) * poolWeight(c, stock);
             if (delta[i] < 0) {
                 rowLoss[c.stockGroup()] += weight;
                 rowPool[c.stockGroup()] += stock.get(c) * -delta[i];
@@ -1785,9 +2349,9 @@ public class HouseholdBalance {
            ================================================================= */
 
         /* ---- within each row first ---- */
-        double[] rowMoved = new double[ROWS];
+        double[] rowMoved = new double[Household.STOCK_GROUPS];
         double cityPool = 0, cityLoss = 0, cityGain = 0;
-        for (int r = 0; r < ROWS; r++) {
+        for (int r = 0; r < Household.STOCK_GROUPS; r++) {
             double moved = Math.min(rowLoss[r], rowGain[r]);
             rowMoved[r] = moved;
             // Non-zero only for the savings stock (HL1): a group that shrank with no grown-ups to release it leaves its savings in a pool nobody is handed.
@@ -1811,21 +2375,24 @@ public class HouseholdBalance {
         /* ---- and hand it out ---- */
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            if (delta[i] <= 0 || c.grownUps() <= 0) {
-                // A growing cell with no grown-ups claims nothing and keeps its per-household savings on more households (HL1: CensusCreated, the savings stock only).
+            if (delta[i] <= 0 || poolWeight(c, stock) <= 0) {
+                // A growing cell with no weight claims nothing and keeps its per-household savings on more households (HL1: CensusCreated, the savings stock only; none since OH1, every cell weighs).
                 if (arrival != null && delta[i] > 0) lastCensusCreated += stock.get(c) * delta[i];
                 continue;
             }
             int r = c.stockGroup();
-            double weight = delta[i] * c.grownUps();
+            double weight = delta[i] * poolWeight(c, stock);
             double fromRow = rowGain[r] > 0 ? Math.min(weight, weight * rowMoved[r] / rowGain[r]) : 0;
             double rest = Math.max(0, weight - fromRow);
             double fromCity = Math.min(rest, rest * cityShare);
-            double newcomers = Math.max(0, rest - fromCity) / c.grownUps();
+            double newcomers = Math.max(0, rest - fromCity) / poolWeight(c, stock);
 
             double received = (rowMoved[r] > 0 ? rowPool[r] * fromRow / rowMoved[r] : 0)
                     + (cityMoved > 0 ? cityPool * fromCity / cityMoved : 0);
-            double brought = arrival == null ? 0 : newcomers * arrival[i];
+            // What no flow explained (HS1): the savings the pool handed a cell that grew.
+            if (arrival != null) lastPoolSavings += received;
+            // A child arriving alone brings no savings of its own (OH1).
+            double brought = arrival == null || c.grownUps() <= 0 ? 0 : newcomers * arrival[i];
             // Non-zero only for the savings stock (HL1): the month's opening buffers, summed for the audit's "+ households ArrivedWith".
             lastArrivedWith += brought;
 
@@ -4013,6 +4580,33 @@ public class HouseholdBalance {
     public double bookOwed() { return totalDebt(); }
 
     /**
+     * The census alone (HS1): the month's flows used up, the pool, the fold -
+     * no month settled and nobody arriving with a buffer, so a harness reads
+     * what the people carried to the cent (HouseholdFlowCheck). The records
+     * followThePeople() adds to are cleared first, as advanceMonth() clears
+     * them; the rest of the month's are left as they stood.
+     */
+    void censusOnly(ToDoubleBiFunction<FamilyStructure, PayTier> census) {
+        if (census == null) return;
+        lastWrittenOff = 0;
+        lastTakenAway = 0;
+        lastArrivedWith = 0;
+        lastCensusStranded = 0;
+        lastCensusCreated = 0;
+        java.util.Arrays.fill(lastFlowHouseholds, 0);
+        java.util.Arrays.fill(lastFlowSavings, 0);
+        lastEstateRepaid = 0;
+        lastEstateWrittenOff = 0;
+        lastEstatePassed = 0;
+        lastPoolSavings = 0;
+        lastAbroadTakenAway = 0;
+        java.util.Arrays.fill(lastSharesTakenAway, 0);
+        Plan plan = planFlows(census, true);
+        double[] fresh = takeCensus(census, plan.after);
+        followThePeople(fresh, new double[cells.length], plan);
+    }
+
+    /**
      * The plan alone, without settling a month.
      *
      * FOR THE LOAD PATH, and it is not a nicety. Savings and debt are saved;
@@ -4489,8 +5083,8 @@ public class HouseholdBalance {
     /** New lending to families this month - the bank's money out the door. */
     public double totalBorrowed() { return sum(Household::totalBorrowed); }
 
-    /** ...and what came back. */
-    public double totalRepaid()   { return sum(Household::totalRepaid); }
+    /** ...and what came back: the cells' repayments and the estates' (HS1, the dead's debt settled from their savings). */
+    public double totalRepaid()   { return sum(Household::totalRepaid) + lastEstateRepaid; }
 
     /** What every household in the city has, less what it owes. */
     public double totalNetWorth() { return totalSavings() - totalDebt(); }
@@ -4966,6 +5560,14 @@ public class HouseholdBalance {
         lastUnsettledRent = 0;
         lastCensusStranded = 0;
         lastCensusCreated = 0;
+        // ...and the month's flows waiting, and their record (HS1).
+        java.util.Arrays.fill(flows, 0);
+        java.util.Arrays.fill(lastFlowHouseholds, 0);
+        java.util.Arrays.fill(lastFlowSavings, 0);
+        lastEstateRepaid = 0;
+        lastEstateWrittenOff = 0;
+        lastEstatePassed = 0;
+        lastPoolSavings = 0;
         graduating = 0;
         lastGraduated = 0;
         lastAbroadTakenAway = 0;
@@ -5007,6 +5609,12 @@ public class HouseholdBalance {
         lastUnsettledRent *= scale;
         lastCensusStranded *= scale;
         lastCensusCreated *= scale;
+        // The flows' record and the estates are money; the households they counted are not (HS1).
+        for (int k = 0; k < FLOW_KINDS; k++) lastFlowSavings[k] *= scale;
+        lastEstateRepaid *= scale;
+        lastEstateWrittenOff *= scale;
+        lastEstatePassed *= scale;
+        lastPoolSavings *= scale;
         lastStudentDebtTakenAway *= scale;
         lastBondsTakenAway *= scale;
         localPerUsd *= scale;
