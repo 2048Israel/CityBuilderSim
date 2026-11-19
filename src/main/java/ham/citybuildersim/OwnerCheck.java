@@ -96,6 +96,7 @@ public class OwnerCheck {
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.CANADA);
+        if (Boolean.getBoolean("owner.probe")) { probe(); return; }
         int IND = Equity.indexOf(Sectors.INDUSTRY);
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         double W = DebtManager.WORLD_BASE_RATE;
@@ -584,6 +585,82 @@ public class OwnerCheck {
                 ex.getLifePostedSellBy(Exchange.BY_OWNERS) > 0
                 && ex.getLifeFilledSellBy(Exchange.BY_OWNERS) <= ex.getLifePostedSellBy(Exchange.BY_OWNERS) * (1 + 1e-9));
         check("every family that left said why, once, in the game's log", t.logged == t.dropped);
+    }
+
+    /* ----- the probe (BO1-S): the playtest city, line on against line off; -Downer.probe=true runs it alone, never the default ----- */
+
+    /** The months the probe prints: BO1's table's, with the founding month. */
+    static final int[] PROBE_MONTHS = {1, 13, 37, 61, 121};
+
+    /**
+     * BO1's section 1 re-measured on today's model: the playtest city (the rhythm of section 9) played to month 121 twice,
+     * the owner line on and off, printing at each of PROBE_MONTHS the people, the retired's disposable income a household
+     * and the pension paid, careAffordability(SENIOR), the senior-care pull and the owners' bank and abroad holdings. A
+     * measurement, not an assertion: it prints and exits 0.
+     */
+    static void probe() {
+        System.out.println("--- the probe: the playtest city, the owner line on against off ---");
+        System.out.println("   line month   people  retired disp/hh  pension paid  careAff(SENIOR)  senior pull  owners' bank / all bank  owners abroad  owner fam");
+        for (boolean on : new boolean[] {true, false}) probeRun(on);
+        System.exit(0);
+    }
+
+    static void probeRun(boolean lineOn) {
+        java.io.PrintStream real = System.out, was = LongPlaytest.out;
+        java.io.PrintStream capture = new java.io.PrintStream(java.io.OutputStream.nullOutputStream(), true);
+        boolean flag = LongPlaytest.AUTOBUILD;
+        Game g = new Game(GameFiles.scratch("ownercheck-probe-" + (lineOn ? "on" : "off")), LongPlaytest.founding());
+        g.getHouseholdBalance().setOwnerLine(lineOn);
+        LongPlaytest.AUTOBUILD = true;
+        LongPlaytest.out = capture;
+        System.setOut(capture);
+        java.util.List<String> rows = new java.util.ArrayList<>();
+        try {
+            g.run();
+            g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
+            g.setRolloverMode(LongPlaytest.ROLLOVER);
+            g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+            g.getAutoBuilder().setOn(true, g.getDecisions());
+            probeRow(g, lineOn, rows);
+            LongPlaytest.villageBuild(g, "House", 40);
+            LongPlaytest.villageBuild(g, "Convenience Store", 3);
+            LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+            probePlay(g, 3, lineOn, rows);
+            LongPlaytest.villageBuild(g, "House", 20);
+            probePlay(g, 4, lineOn, rows);
+            LongPlaytest.villageBuild(g, "Convenience Store", 2);
+            LongPlaytest.villageBuild(g, "Construction Depot", 1);
+            probePlay(g, 5, lineOn, rows);
+            LongPlaytest.advise(g);
+            probePlay(g, 6, lineOn, rows);
+            probePlay(g, PROBE_MONTHS[PROBE_MONTHS.length - 1] - g.getMonth(), lineOn, rows);
+        } finally {
+            LongPlaytest.AUTOBUILD = flag;
+            LongPlaytest.out = was;
+            System.setOut(real);
+        }
+        for (String r : rows) System.out.println(r);
+    }
+
+    static void probePlay(Game g, int months, boolean lineOn, java.util.List<String> rows) {
+        for (int i = 0; i < months; i++) {
+            LongPlaytest.run(g, 1);
+            probeRow(g, lineOn, rows);
+        }
+    }
+
+    static void probeRow(Game g, boolean lineOn, java.util.List<String> rows) {
+        int m = g.getMonth();
+        boolean wanted = false;
+        for (int p : PROBE_MONTHS) wanted |= p == m;
+        if (!wanted || (!rows.isEmpty() && rows.get(rows.size() - 1).startsWith(String.format("   %-4s %5d ", lineOn ? "on" : "off", m)))) return;
+        HouseholdBalance hb = g.getHouseholdBalance();
+        Household own = hb.owners();
+        rows.add(String.format("   %-4s %5d %,8d %16.2f %13.0f %16.2f %12.3f %,12.0f / %,-10.0f %,13.0f %10d",
+                lineOn ? "on" : "off", m, g.getPopulationManager().getPopulation(),
+                hb.getDisposable(Household.RETIRED_ROW), g.getEconomyManager().getPensionsPaid(),
+                g.careAffordability(CareType.SENIOR), g.getMigration().getLastSeniorPull(),
+                own.totalSavings(), hb.totalSavings(), own.totalAbroad(), hb.ownerFamilies()));
     }
 
     /** What a real run counts, month by month. */
