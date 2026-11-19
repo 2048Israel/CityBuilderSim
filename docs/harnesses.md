@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**226 harness files, 25,912 labelled assertions.** AllChecks runs 226 of them.
+**226 harness files, 25,932 labelled assertions.** AllChecks runs 226 of them.
 
 ## Which harnesses read which class
 
@@ -44,7 +44,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, DistressBleedCheck, FittingCheck, FundLedgerCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -67,7 +67,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
-| [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
+| [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, NewUnitCheck, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | IslandRailCheck, LandmassCheck, MapCheck, PortCheck, QuayCraneCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
@@ -101,7 +101,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
-| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
+| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
@@ -183,7 +183,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [JavaScan](map/JavaScan.md) | **none** |
 | [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, DriverlessTruckCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
-| [KeptBench](map/KeptBench.md) | KeptCheck, MoneyWordsCheck, ShortSellingCheck, StepsCheck |
+| [KeptBench](map/KeptBench.md) | KeptCheck, MoneyWordsCheck, NewUnitCheck, ShortSellingCheck, StepsCheck |
 | [KnownReds](map/KnownReds.md) | KnownRedsCheck |
 | [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, DiscoveryCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck |
 | [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
@@ -21674,7 +21674,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1442 a place the Earth search found names the city with its own name, trimmed
   - L1454 ...and every place's name in a sample of
 
-## NewUnitCheck.java - 52 labelled assertions
+## NewUnitCheck.java - 72 labelled assertions
 
 > A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every
 > future-building figure.
@@ -21686,62 +21686,82 @@ _(this harness does not label its checks through a helper - it prints its findin
 > fee gate and the power ahead each quoted the fleet's 100. NewUnit.of() resolves one new building's figures where they are
 > read, and the template stays what is ordered, stacked and keyed.
 > 
-> No oracle here calls NewUnit or anything QN1 added. Each expected value is taken from the ACTUAL state a new building runs:
-> the fleet's stack set unfitted for the pieces a new one would not get, the recipes applied, and the template's live figures
+> No oracle here resolves a proposal. Each expected value is taken from the ACTUAL state a new building runs: the fleet's
+> stack set unfitted for the pieces a new one would not get, the recipes applied, and the template's live figures read
 > ...
 
-  - L184 1. the default city reads every template as it stands; no undo moves land
-  - L194 fixture: a city founded the default way, with templates that have a recipe choice
-  - L196 every template's new unit is standing and carries the template's posts, draw, makes and uses
-  - L198 no game, no template: standing figures and null
-  - L217 data guard: no recipeChanges 'without' block in buildings.json moves land (NewUnit keeps the template's)
-  - L225 2. the rejected robot: the fleet keeps 100 posts, the new plant has 300, and every estimate reads the new plant
-  - L233 fixture: stepping machinery from a cent flips the verdict on the robot, kept at a cent and rejected above
-  - L239 fixture: the fleet is fitted at 100 unskilled posts; the actual new plant, without the robot, has 300; wages are positive
-  - L246 the new unit carries the actual new plant's posts and is of the catalogue template
-  - L249 premise: the fleet's quote differs from the actual new plant's estimate, so a reader of the fleet fails
-  - L252 the investors' estimate is the actual new plant's
-  - L256 the appraisal's and the investors' summary's estimates are the actual new plant's
-  - L259 none of them quotes the fleet's
-  - L266 3. the staffing boundary, arrivals closed: the card, the investors' gate and the order bar read the 300 posts
-  - L296 fixture: a staffing pass for the fleet's 100 posts and a fail for the new plant's 300, arrivals closed
-  - L301 the Build card is of the catalogue template and carries the 300-post unit
-  - L304 premise: the fleet's running bill differs from the actual new plant's
-  - L306 the card's running bill is the actual new plant's, not the fleet's
-  - L309 the investors' own gate is STAFFING (the fleet's 100 posts would pass it)
-  - L315 the order bar counts 600 unskilled posts for two; the old overload keeps the fleet's 200 and the fleet's 100 stand
-  - L323 4. a pulp mill's saved choice is the new unit's, not a fresh one (a guard)
-  - L336 fixture: a Pulp Mill with no independent changes saved kraft; moved residue prices now prefer groundwood, which uses no residues
-  - L340 guard: the new pulp mill keeps kraft's figures (residues 21500, the mill's own), whatever a fresh choice would pick
-  - L349 5. the bank's new branch: its own clerks, once, and the fee gate's boundary
-  - L365 fixture: a fitted bank with a branch standing and a cost known; the new branch rejects both machines and hires clerks at positive wages
-  - L371 the investors' new-branch estimate carries the new branch's clerks over a later branch's cost
-  - L388 fixture: positive fees just above and just below N x C + (C + extra) - the charter's exemption
-  - L390 just above, the gate lets the branch open; just below, it does not
-  - L392 premise: the removed (N + 1) x (C + extra) gate would have refused the case above, and the fleet's C would have passed the case below
-  - L399 6. with the robot accepted again, the new unit's figures are the template's
-  - L405 fixture: machinery cheap again keeps the robot for a new plant, and the unit is resolved, not the template as it stands
-  - L408 its figures equal the template's and its template is the same object
-  - L412 the card and the investors' estimate then agree with the fleet's own figures
-  - L438 7. identities: through a month, a changed fitting input and an order on site
-  - L448 the card, the appraisal and the investors keep the catalogue template (machinery cheap: the new unit has the fleet's 100)
-  - L457 a month on, a fresh card is of the same template with the current unit
-  - L463 fixture: machinery dear now rejects the robot; a fresh card is of the same template with the actual new plant's 300 while the fleet keeps 100
-  - L470 fixture: nothing else on site and nothing pending
-  - L478 ordering two through the queue keeps the stack on its catalogue template
-  - L486 with the order on site, the card, the investors and the appraisal leave the stack, its quantity, its sites, the wait and the contracts as they were
-  - L489 ...and still read the unit at the new plant's 300 and 2 on site
-  - L496 placing one beside them, with no construction, keeps the stack on its catalogue template and the queue as it was
-  - L501 8. what is on site: the actual new plants' posts, and the power ahead from their completion
-  - L502 the posts and total jobs under construction are the actual new plants', not the fleet's
-  - L512 guard: the recipe data moves no draw, so a new plant's draw is the fleet's (and the queue's quotes are finite)
-  - L528 the power ahead adds the queued plants' draw only from their completion: none below the first, one at it, both at the last (a guard on the real stack)
-  - L535 9. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
-  - L550 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
-  - L559 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
-  - L583 fixture: the utilities have posts and a fill, and a base to supply from
-  - L585 premise: the fleet's generation would read a different figure than the actual new plant's
-  - L587 the power measure reads the actual new plant's generation (and its draw)
+  - L212 1. the default city reads every template as it stands; no undo moves land
+  - L222 fixture: a city founded the default way, with templates that have a recipe choice
+  - L224 every template's new unit is standing and carries the template's posts, draw, makes and uses
+  - L226 no game, no template: standing figures and null
+  - L245 data guard: no recipeChanges 'without' block in buildings.json moves land (NewUnit keeps the template's)
+  - L253 2. the rejected robot: the fleet keeps 100 posts, the new plant has 300, and every estimate reads the new plant
+  - L261 fixture: stepping machinery from a cent flips the verdict on the robot, kept at a cent and rejected above
+  - L267 fixture: the fleet is fitted at 100 unskilled posts; the actual new plant, without the robot, has 300; wages are positive
+  - L274 the new unit carries the actual new plant's posts and is of the catalogue template
+  - L277 premise: the fleet's quote differs from the actual new plant's estimate, so a reader of the fleet fails
+  - L280 the investors' estimate is the actual new plant's
+  - L284 the appraisal's and the investors' summary's estimates are the actual new plant's
+  - L287 none of them quotes the fleet's
+  - L294 3. the staffing boundary, arrivals closed: the card, the investors' gate and the order bar read the 300 posts
+  - L324 fixture: a staffing pass for the fleet's 100 posts and a fail for the new plant's 300, arrivals closed
+  - L329 the Build card is of the catalogue template and carries the 300-post unit
+  - L332 premise: the fleet's running bill differs from the actual new plant's
+  - L334 the card's running bill is the actual new plant's, not the fleet's
+  - L337 the investors' own gate is STAFFING (the fleet's 100 posts would pass it)
+  - L343 the order bar counts 600 unskilled posts for two; the old overload keeps the fleet's 200 and the fleet's 100 stand
+  - L351 4. a pulp mill's saved choice is the new unit's, not a fresh one (a guard)
+  - L364 fixture: a Pulp Mill with no independent changes saved kraft; moved residue prices now prefer groundwood, which uses no residues
+  - L368 guard: the new pulp mill keeps kraft's figures (residues 21500, the mill's own), whatever a fresh choice would pick
+  - L377 5. the bank's new branch: its own clerks, once, and the fee gate's boundary
+  - L393 fixture: a fitted bank with a branch standing and a cost known; the new branch rejects both machines and hires clerks at positive wages
+  - L399 the investors' new-branch estimate carries the new branch's clerks over a later branch's cost
+  - L416 fixture: positive fees just above and just below N x C + (C + extra) - the charter's exemption
+  - L418 just above, the gate lets the branch open; just below, it does not
+  - L420 premise: the removed (N + 1) x (C + extra) gate would have refused the case above, and the fleet's C would have passed the case below
+  - L427 6. with the robot accepted again, the new unit's figures are the template's
+  - L433 fixture: machinery cheap again keeps the robot for a new plant, and the unit is resolved, not the template as it stands
+  - L436 its figures equal the template's and its template is the same object
+  - L440 the card and the investors' estimate then agree with the fleet's own figures
+  - L466 7. identities: through a month, a changed fitting input and an order on site
+  - L476 the card, the appraisal and the investors keep the catalogue template (machinery cheap: the new unit has the fleet's 100)
+  - L493 fixture: the Vehicles page has the catalogue template's card, two dialled up, and the order bar at the fleet's 200 unskilled posts while machinery is cheap
+  - L503 a month on, a fresh card is of the same template with the current unit
+  - L514 a month on, the kept page keeps the Build button held from the first draw, on the catalogue template's card
+  - L522 fixture: machinery dear now rejects the robot; a fresh card is of the same template with the actual new plant's 300 while the fleet keeps 100
+  - L529 fixture: nothing else on site and nothing pending
+  - L541 the held reprice, run after the month and the fitting change, puts the actual new plants' 600 unskilled posts in the order bar, not the fleet's 200
+  - L549 the held Build button, pressed then, orders the catalogue template: two on its own stack's site, and the card's dial back to none
+  - L557 with the order on site, the card, the investors and the appraisal leave the stack, its quantity, its sites, the wait and the contracts as they were
+  - L560 ...and still read the unit at the new plant's 300 and 2 on site
+  - L567 placing one beside them, with no construction, keeps the stack on its catalogue template and the queue as it was
+  - L572 8. what is on site: the actual new plants' posts, and the power ahead from their completion
+  - L573 the posts and total jobs under construction are the actual new plants', not the fleet's
+  - L585 premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage
+  - L587 the landlords' head shortage counts the actual new plants' posts on site, not the fleet's
+  - L624 9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion
+  - L644 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
+  - L649 fixture: nothing on site and nothing pending
+  - L660 fixture: two queued on the plant's own stack, the first finishing before the last
+  - L665 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
+  - L667 ...and not the fleet's draw
+  - L674 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
+  - L691 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
+  - L701 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
+  - L707 fixture: two queued on the centre's own stack
+  - L710 the colleges' places grow by the queued centres' own college posts, not the fleet's
+  - L714 the landlords' head shortage counts the queued centres' own posts, not the fleet's
+  - L728 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
+  - L743 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
+  - L752 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
+  - L776 fixture: the utilities have posts and a fill, and a base to supply from
+  - L778 premise: the fleet's generation would read a different figure than the actual new plant's
+  - L780 the power measure reads the actual new plant's generation (and its draw)
+  - L787 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
+  - L805 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
+  - L811 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
+  - L822 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
+  - L834 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
 
 ## ObservationCheck.java - 5 labelled assertions
 

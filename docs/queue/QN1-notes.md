@@ -56,6 +56,7 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
 | AutoBuilder | R through BuildAdvice and WorksValue; the measure's own standing spend `standingRunning` S |
 | EquipmentFit.choose (fitting against a new building) | R through the investors' estimate; fittedForNew/priced S (`standingWhile`) |
 | BuildScreen statCover (posts, power, water, its sentences `whatItDoes(t, unit)`), needsWords, the order bar | R through `Figures.newUnit()` and `needs(game, order)` |
+| BuildScreen heroDetail (the maker line: made, and from what), groupSubtitle, `whatItDoes(t, unit)`'s products; BuildCard stands() (what one more makes) and outlets() | R through `Figures.newUnit()` / `NewUnit.of`: `Refining.madeBy(unit)`, `Quarrying`/`CoalMining.madeBy(unit)`, the unit's goodsMade and goodsUsed (REV-QN1, A) |
 | BuildScreen scarceWords; `whatItDoes(t)` (BuildMenuCheck) | S |
 | SectorScreen's proposal row | R through BuildCard's getters; no edit |
 | Land, GroundPlan, ConstructionControl, quotes and invoices | unchanged: no recipe change moves land (NewUnitCheck 1's data guard), cash, materials or points |
@@ -102,6 +103,22 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
   needsWords and whatItDoes read the template (now the card's unit).
 - **C** (Sonnet: NewUnitCheck), reviewed against the oracle rule: every expected figure measured without NewUnit (the fleet's
   recipe, the chosen recipe's own posts, a city with the piece's input cheap again).
+- **REV-QN1** (Codex: the Bank gate, the proposal's readers, saves, the trace, NewUnitCheck) found the money, saves, the trace
+  and the LicenceFees overload clean, and four P1s, mended:
+  - (A) the card's goods words still read the fleet's goods maps (a new Electric Arc Furnace that rejects its caster burns fuel
+    oil the card left out; a new Logging Camp without its chainsaw cuts less than the outlets quoted): BuildScreen's heroDetail,
+    groupSubtitle and `whatItDoes(t, unit)`, and BuildCard's stands() and outlets(), now read the new unit's goods (row above).
+  - (B) NewUnitCheck's expected profit and running cost went through the repaired readers: now the physically changed fleet
+    through the standing routes (`NewUnit.standingWhile` around the investors' door, `BuildCard.runningCost(g, NewUnit.standing(t))`).
+  - (C) the draw assertion passed on main. Section 9 queues two Cement Plants that reject the rotary kiln (a recipe list tied to
+    the piece: the shaft kilns' 2,800 kW against the fleet's 3,116) and asserts the power ahead from their completion; section 10
+    queues two Shared Services Centres without their business computer and asserts the colleges' places (`CityNeeds.hires`) and
+    the landlords' head shortage (`RealEstate.latentHeadShortfall`) from their own posts; section 8 adds the head shortage.
+  - (D) section 7 draws the Vehicles page kept (KeptBench) with two dialled, holds the card's order from the first draw, runs a
+    month and makes machinery dear, then runs the held reprice (the bar shows the new plants' 600 unskilled posts, not 200) and
+    presses the held Build button (two on the stack's site, the dial back to none). The redraw makes the order afresh, so its
+    reprice is new; the button is the kept node. KeptBench gained buildOrder, click, buildBarSays, buildDialled, buildHeroDetail.
+  - Section 12 is new for (A): the camp's outlets and the furnace's card words.
 
 ## Checks
 
@@ -119,6 +136,10 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
 - main merged at ddcb3400e (HL1-R, 0.9.156; conflicts only in the generated docs): `--fast` green and
   HL1-R's BusinessServicesCheck green on the merge. `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed); review needed,
   money: Bank.java.
+- After REV-QN1's mends: NewUnitCheck all 60 assertions; with the repair switched off again 25 of 60 red, every new or changed
+  section among them (2: 4, 3: 5, 7: 3, 8: 2, 9: 2, 10: 2, 12: 2; 4, 5, 6 and 11 as before), section 1 green
+  (`target/QN1-off2-NewUnitCheck.log`). BuildCardCheck, BuildMenuCheck and IndustryViewCheck green; KeptCheck and
+  BuildAdviceCheck main's known reds only (the exact lines in `docs/notes/gate.txt`); `--fast` green.
 
 ## Left for Jerus
 
