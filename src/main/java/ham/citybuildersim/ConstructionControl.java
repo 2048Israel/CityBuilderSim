@@ -403,12 +403,23 @@ public final class ConstructionControl {
         public double refunded;
         /** The month it stopped. */
         public int month;
+        /**
+         * The equipment its buildings' orders froze (R1e; BuildingsStacks' lots): the buildings that come without a piece, by the
+         * pieces; the rest are the whole template, as every building stopped before R1e is. Null for none, so a default city's
+         * shell and an old save's carry none.
+         */
+        public java.util.List<BuildingsStacks.Lot> lots;
         public Shell() { }
 
         /** A copy that shares nothing with this one: the autosave's (UP1). A clone, so a field added later is in it. */
         Shell copy() {
             try {
-                return (Shell) super.clone();
+                Shell c = (Shell) super.clone();
+                if (lots != null) {
+                    c.lots = new java.util.ArrayList<>();
+                    for (BuildingsStacks.Lot lot : lots) c.lots.add(lot.copy());
+                }
+                return c;
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
             }
@@ -722,6 +733,12 @@ public final class ConstructionControl {
 
     /** A stopped order's buildings, onto the shell of that building - a second stop joins the first. */
     Shell addShell(BuildingsTemplate t, long buildings, double progress, double materialsOwed, int month) {
+        return addShell(t, buildings, progress, materialsOwed, month, null);
+    }
+
+    /** ...with the equipment their orders froze (R1e, BuildingsStacks.getLots()), joining the shell's; none for null or empty. */
+    Shell addShell(BuildingsTemplate t, long buildings, double progress, double materialsOwed, int month,
+                   java.util.List<BuildingsStacks.Lot> lots) {
         Shell s = shellOf(t.getId());
         if (s == null) {
             s = new Shell();
@@ -733,6 +750,10 @@ public final class ConstructionControl {
         s.buildings += buildings;
         s.progress += progress;
         s.materialsOwed += materialsOwed;
+        if (lots != null && !lots.isEmpty()) {
+            if (s.lots == null) s.lots = new java.util.ArrayList<>();
+            for (BuildingsStacks.Lot lot : lots) if (lot != null && lot.buildings > 0) s.lots.add(lot.copy());
+        }
         return s;
     }
 

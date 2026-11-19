@@ -1,8 +1,8 @@
-# gate of Merge batch/HS1: money follows people, 0.9.159
+# gate of Merge batch/R1e: a new building's equipment priced and saved at its order, 0.9.160
 # date: 2026-11-19
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 219 harnesses run in 3269s: 201 passed, 18 failed
+# suite: 218 harnesses run in 2803s: 201 passed, 17 failed
 SlopeCheck | exit 1
 SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [the households' money was not conserved] FAIL
 SlopeCheck | 1 FAILED
@@ -17,7 +17,7 @@ ExchangeRateCheck | exit 1
 ExchangeRateCheck | fixture: the dated gold peg survives to the eve of suspension            FAIL
 ExchangeRateCheck | fixture: the released hold is larger than the month's float news         FAIL
 ExchangeRateCheck | the model's return date restores Canada's gold peg                       FAIL
-ExchangeRateCheck | the return holds the model's par                                         FAIL  3.393522768720 != 1.000000000000
+ExchangeRateCheck | the return holds the model's par                                         FAIL  38.791465278974 != 1.000000000000
 ExchangeRateCheck | 4 FAILED
 GroceryCheck | exit 1
 GroceryCheck | the households who held a voucher were handed more of what they need than their twins without FAIL
@@ -69,12 +69,15 @@ PriceLevelCheck | 276 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
-EducationCheck | exit 1
-EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
-EducationCheck | 1 FAILED
 SaveFileCheck | exit 1
 SaveFileCheck | fixture: over the default it owes what it sells for, and paid some late FAIL
 SaveFileCheck | 1 FAILED
+ScaleCheck | exit 1
+ScaleCheck | 1900 month 3: prices obeys the existing TRACK law                                    FAIL
+ScaleCheck | 1900 month 4: prices obeys the existing TRACK law                                    FAIL
+ScaleCheck | 1900 month 5: prices obeys the existing TRACK law                                    FAIL
+ScaleCheck | 1900 month 6: prices obeys the existing TRACK law                                    FAIL
+ScaleCheck | 4 FAILED
 KeptCheck | exit 3
 KeptCheck | the construction page: each month hands back nine in ten of the nodes the first draw made, or more (499 of 559) FAIL
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
@@ -90,9 +93,12 @@ DistressBleedCheck | fixture: the floor is raised again with the net count alrea
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
 LongPlaytest | exit 1
 LongPlaytest | FAIL an old works moved                                 1 time(s), months 2400-2400
-PrizeCheck | exit 1
-PrizeCheck | FAIL ...and its till (at most 411) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 1 FAILED of 285
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
+PrizeCheck | exit 1
+PrizeCheck | FAIL ...and its till (at most 411) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 1 FAILED of 285

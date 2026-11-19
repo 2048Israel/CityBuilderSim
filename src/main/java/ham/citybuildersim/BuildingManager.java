@@ -159,7 +159,18 @@ public class BuildingManager {
      * PRICE KEEPS UP WITH WAGES.
      */
     public double nonMaterialCost(BuildingsTemplate t) {
-        double cash = t.getCashCost();
+        return nonMaterialCost(t.getCashCost(), t.getConstructionPoints());
+    }
+
+    /**
+     * ...for one building of an order's fitout (R1e): the same arithmetic on its own cash cost and points, the template's
+     * shell and the pieces it comes with (Fitout); the template's own figures, to the bit, for the whole template.
+     */
+    public double nonMaterialCost(Fitout fit) {
+        return nonMaterialCost(fit.cashCost(), fit.points());
+    }
+
+    private double nonMaterialCost(double cash, double points) {
         if (buildersWages == null) return cash;
         double then = buildersWages.perPointAtFounding();
         if (!(then > 0)) return cash;
@@ -167,7 +178,7 @@ public class BuildingManager {
         // founding labour is the cash over that level, taken out at the level
         // and put back at today's wages - see THE CASH IS STRUCK AT THE
         // EXPECTED LEVEL.
-        double labourThen = Math.min(cash / expectedLevel, t.getConstructionPoints() * then);
+        double labourThen = Math.min(cash / expectedLevel, points * then);
         return cash - labourThen * expectedLevel + labourThen * buildersWageIndex();
     }
 
@@ -225,7 +236,7 @@ public class BuildingManager {
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
             if (stack.getUnderConstruction() <= 0 || per <= 0) continue;
-            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             if (owed <= 0) continue;
             value += owed * nonMaterialCost(t) / per;
             points += owed;
@@ -5097,6 +5108,15 @@ public class BuildingManager {
     }
 
     public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction) {
+        addStack(template, quantity, noConstruction, null);
+    }
+
+    /**
+     * ...with the order's fitout (R1e; Fitout): a fitout the order chose goes on site as the stack's newest lot (BuildingsStacks,
+     * THE ORDERS' EQUIPMENT ON SITE), which keeps its set and owes its points until it finishes. None, or one no one chose, puts
+     * the buildings up as before. An instant build ignores it: it comes as placed.
+     */
+    public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction, Fitout fit) {
 
         if (template.getName() == null) {
             System.out.println("error");
@@ -5113,7 +5133,7 @@ public class BuildingManager {
                 if (noConstruction) {
                     stack.addQuantity(quantity);
                 } else {
-                    stack.startConstruction(quantity);
+                    stack.startConstruction(quantity, fit);
                 }
                 return;
             }
@@ -5127,7 +5147,7 @@ public class BuildingManager {
         if (noConstruction) {
             newStack.addQuantity(quantity);
         } else {
-            newStack.startConstruction(quantity);
+            newStack.startConstruction(quantity, fit);
         }
     }
 
@@ -5313,7 +5333,7 @@ public class BuildingManager {
                 owed[k] = extraCount * points;
             }
             if (building <= 0) continue;
-            owed[k] += Math.max(0, s.getUnderConstruction() * points - s.getConstructionProgress());
+            owed[k] += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             weight[k] = weightOf(s.getBuilding(), building);
         }
         if (extra != null && extraCount > 0 && !extraHasStack) {
@@ -5430,10 +5450,14 @@ public class BuildingManager {
         return ruleWait(t, quantity, extraPoints, siteOutput);
     }
 
-    /** The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the bit, for none. */
+    /**
+     * The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the
+     * bit, for none. A negative extra is the work of the pieces the order leaves off (R1e, Game.quoteBuild()), never below nothing.
+     */
     private static double orderPoints(BuildingsTemplate t, long quantity, double extraPoints) {
         double points = quantity * (double) t.getConstructionPoints();
-        return extraPoints > 0 ? points + extraPoints : points;
+        if (extraPoints > 0) return points + extraPoints;
+        return extraPoints < 0 ? Math.max(0, points + extraPoints) : points;
     }
 
     /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first - and `extraPoints` more owed on its site (ET2). */
@@ -5446,7 +5470,7 @@ public class BuildingManager {
             if (on <= 0) continue;
             if (s.getBuilding() == t) {
                 aheadUnits = on;
-                aheadOwed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
+                aheadOwed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             } else {
                 others += weightOf(s.getBuilding(), on);
             }
@@ -5498,7 +5522,7 @@ public class BuildingManager {
         double total = 0;
         for (BuildingsStacks s : stacks) {
             if (s.getUnderConstruction() <= 0 || !sector.equals(s.getBuilding().getSector())) continue;
-            total += Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+            total += Math.max(0, s.pointsOnSite()
                     - s.getConstructionProgress());
         }
         return total;
@@ -5513,7 +5537,7 @@ public class BuildingManager {
      */
     public double monthsLeft(BuildingsStacks site, double perSiteOutput) {
         if (perSiteOutput <= 0 || site.getUnderConstruction() <= 0) return Double.NaN;
-        double owed = site.getUnderConstruction() * (double) site.getBuilding().getConstructionPoints()
+        double owed = site.pointsOnSite()
                 - site.getConstructionProgress();
         return Math.ceil(Math.max(0, owed) / perSiteOutput);
     }
@@ -5577,8 +5601,9 @@ public class BuildingManager {
                 revenueDue += stack.getRevenueDue();
                 contractsDue.addAll(stack.getDues());
                 if (stack.getLastFinished() > 0) {
-                    finished.add(new Completion(
-                            stack.getBuilding().getName(), stack.getLastFinished()));
+                    // ...with what each order's buildings come without, as their lots froze it (R1e), and those no order fitted out.
+                    finished.add(new Completion(stack.getBuilding().getName(), stack.getLastFinished(),
+                            stack.getLastFinishedLoose(), stack.getLastFinishedWithout()));
                 }
                 // ...and the gravel roads whose paving opened with them (0.7.70).
                 retirePaved(stack);
@@ -5769,7 +5794,7 @@ public class BuildingManager {
             BuildingsStacks s = stacks.get(k);
             keys.add(ConstructionControl.keyOf(s.getBuilding()));
             if (s.getUnderConstruction() > 0) {
-                owed[k] = Math.max(0, s.getUnderConstruction() * (double) s.getBuilding().getConstructionPoints()
+                owed[k] = Math.max(0, s.pointsOnSite()
                         - s.getConstructionProgress());
             }
         }
@@ -6243,7 +6268,7 @@ public class BuildingManager {
         for (BuildingsStacks s : stacks) {
             int per = s.getBuilding().getConstructionPoints();
             if (s.getUnderConstruction() <= 0 || per <= 0 || !goesFirst(s.getBuilding(), 0)) continue;
-            owed += Math.max(0, s.getUnderConstruction() * (double) per - s.getConstructionProgress());
+            owed += Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
         }
         return owed;
     }
@@ -6404,13 +6429,15 @@ public class BuildingManager {
             BuildingsTemplate t = s.getBuilding();
             // A Paved Road site that paves is not stopped (0.7.70; Game.cancelSite() refuses it).
             if (control.paving() > 0 && ConstructionControl.PAVE_TO.equals(t.getName())) continue;
-            double pointsLeft = Math.max(0, s.getUnderConstruction() * (double) t.getConstructionPoints()
+            double pointsLeft = Math.max(0, s.pointsOnSite()
                     - s.getConstructionProgress());
             // ...read while it is still on site: a depot served first was never on the contractor's book (FC1b).
             boolean servedFirst = goesFirst(t, 0);
+            // ...and the equipment its orders froze (R1e), before the stop clears it.
+            List<BuildingsStacks.Lot> lots = s.getLots();
             double[] stopped = s.stopForShell();
             control.endRun(t.getId());
-            ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0);
+            ConstructionControl.Shell shell = control.addShell(t, (int) stopped[0], stopped[1], stopped[2], 0, lots);
             controlEvents.refunds.add(new ConstructionControl.Refund(t.getId(), t.getName(), (int) stopped[0],
                     stopped[3], stopped[4], pointsLeft, shell, servedFirst));
         }
@@ -6448,7 +6475,7 @@ public class BuildingManager {
             addStack(t, 0, true);
             s = getStack(t);
         }
-        s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed);
+        s.resumeShell(shell.buildings, shell.progress, shell.materialsOwed, shell.lots);
         control.removeShell(shell);
     }
 
@@ -6519,8 +6546,8 @@ public class BuildingManager {
         if (s == null || s.getUnderConstruction() <= 0 || units <= 0) return 0;
         if (!(siteOutput > 0)) return Double.NaN;
         long on = s.getUnderConstruction();
-        double owed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
-        double points = Math.max(0, Math.min(units, on) * (double) t.getConstructionPoints()
+        double owed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+        double points = Math.max(0, s.pointsOfFirst(Math.min(units, on))
                 - s.getConstructionProgress());
         if (!(points > 0) || !(owed > 0)) return 0;
         String key = ConstructionControl.keyOf(t);
@@ -6540,7 +6567,7 @@ public class BuildingManager {
         if (stack == null || stack.getUnderConstruction() <= 0 || units <= 0) return 0;
         if (!(siteOutput > 0)) return Double.NaN;
         long on = stack.getUnderConstruction();
-        double firstPoints = Math.min(units, on) * (double) t.getConstructionPoints() - stack.getConstructionProgress();
+        double firstPoints = stack.pointsOfFirst(Math.min(units, on)) - stack.getConstructionProgress();
         if (additional == t) firstPoints += additionalPoints - quantity * (double) t.getConstructionPoints();
         firstPoints = Math.max(0, firstPoints);
         if (!(firstPoints > 0)) return 0;
@@ -6626,7 +6653,7 @@ public class BuildingManager {
         if (!control.isPrioritySet() && !(onSite && control.isRushed(key)) && !deadFirst) return null;
         long on = onSite ? s.getUnderConstruction() : 0;
         double aheadOwed = onSite
-                ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+                ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, on + n), aheadOwed + owed };
     }
 
@@ -6668,7 +6695,7 @@ public class BuildingManager {
         BuildingsStacks s = getStack(t);
         long ahead = s == null ? 0 : s.getUnderConstruction();
         double aheadOwed = s == null || ahead <= 0 ? 0
-                : Math.max(0, ahead * (double) t.getConstructionPoints() - s.getConstructionProgress());
+                : Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
         double others = 0;
         for (BuildingsStacks st : stacks) {
             if (st == s || st.getUnderConstruction() <= 0) continue;
@@ -6688,7 +6715,7 @@ public class BuildingManager {
         for (BuildingsStacks s : stacks) {
             long on = s.getUnderConstruction();
             if (on <= 0) continue;
-            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
+            double o = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
             by.put(ConstructionControl.keyOf(s.getBuilding()), new double[] { weightOf(s.getBuilding(), on), o });
         }
         for (ConstructionControl.Demolition site : control.demolitions()) {
@@ -6800,7 +6827,7 @@ public class BuildingManager {
     private double[] withMore(BuildingsTemplate t, long n, double owed) {
         BuildingsStacks s = getStack(t);
         long on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
-        double aheadOwed = on > 0 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
+        double aheadOwed = on > 0 ? Math.max(0, s.pointsOnSite() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, (long) on + n), aheadOwed + owed };
     }
 
@@ -6985,10 +7012,22 @@ public class BuildingManager {
 
         public final String building;
         public final long quantity;
+        /** Of those, the ones no order fitted out (loose on site, BuildingsStacks): what they come with is decided at the finish (R1e). */
+        public final long loose;
+        /** ...and of the rest, how many came without each piece, by id, as their orders froze them: unmodifiable (R1e). */
+        public final java.util.Map<String, Long> without;
 
+        /** `quantity` opened, every one loose: a finish decided at the finish, as before R1e. */
         Completion(String building, long quantity) {
+            this(building, quantity, quantity, java.util.Map.of());
+        }
+
+        Completion(String building, long quantity, long loose, java.util.Map<String, Long> without) {
             this.building = building;
             this.quantity = quantity;
+            this.loose = Math.max(0, Math.min(quantity, loose));
+            this.without = without == null || without.isEmpty() ? java.util.Map.of()
+                    : java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(without));
         }
     }
 
@@ -7079,9 +7118,8 @@ public class BuildingManager {
             long building = stack.getUnderConstruction();
             if (building <= 0) continue;
 
-            double perUnit = stack.getBuilding().getConstructionPoints();
             // progress is against the current unit only; the rest are untouched.
-            total += perUnit * building - stack.getConstructionProgress();
+            total += stack.pointsOnSite() - stack.getConstructionProgress();
         }
         // ...and the city's demolitions on site (0.7.22), work like any other.
         for (ConstructionControl.Demolition site : control.demolitions()) total += site.owed();
@@ -8384,6 +8422,35 @@ public class BuildingManager {
         }
     }
 
+    /**
+     * The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots), for the save: only the sites with a lot, so a
+     * city founded the default way writes none and an old save, which has none, reads every building on site as loose - the whole
+     * template, its pieces decided at the finish, as it was ordered. Copies, not the stacks' own.
+     */
+    public java.util.Map<Integer, List<BuildingsStacks.Lot>> getLotsById() {
+        java.util.Map<Integer, List<BuildingsStacks.Lot>> out = new java.util.TreeMap<>();
+        for (BuildingsStacks stack : stacks) {
+            List<BuildingsStacks.Lot> lots = stack.getLots();
+            if (!lots.isEmpty()) out.put(stack.getBuilding().getId(), lots);
+        }
+        return out;
+    }
+
+    /**
+     * ...and back onto the sites the load path has put up (R1e), after their counts (restoreConstruction()): each lot clamped to what is
+     * on site, a piece the template no longer carries dropped (Fitout.without()); a template this catalogue no longer has and a stack the
+     * save did not put up are skipped. Null restores nothing.
+     */
+    public void restoreLots(java.util.Map<Integer, List<BuildingsStacks.Lot>> byId) {
+        if (byId == null) return;
+        for (java.util.Map.Entry<Integer, List<BuildingsStacks.Lot>> e : byId.entrySet()) {
+            if (e.getKey() == null || e.getValue() == null) continue;
+            BuildingsTemplate t = getTemplate(e.getKey());
+            BuildingsStacks stack = t == null ? null : getStack(t);
+            if (stack != null) stack.restoreLots(e.getValue());
+        }
+    }
+
     public long[] getUnderConstructionArray() {
         long[] progress = new long[stacks.size()];
 
@@ -8539,7 +8606,7 @@ public class BuildingManager {
             if (left <= 0 && units <= 0) continue;
             BuildingsTemplate t = stack.getBuilding();
             int per = t.getConstructionPoints();
-            double owed = stack.getUnderConstruction() * (double) per - stack.getConstructionProgress();
+            double owed = stack.pointsOnSite() - stack.getConstructionProgress();
             double work = per > 0 ? t.getCashCost() * Math.max(0, owed) / per : 0;
             String payer = payerOf.apply(t);
             stack.restoreContract(payer, recovers.applyAsDouble(payer, t), left, units, Math.max(0, left - work));
@@ -8552,7 +8619,7 @@ public class BuildingManager {
         double owed = getRemainingConstructionPoints();
         if (owed <= 0) return;
         for (BuildingsStacks stack : stacks) {
-            double points = stack.getUnderConstruction() * (double) stack.getBuilding().getConstructionPoints()
+            double points = stack.pointsOnSite()
                     - stack.getConstructionProgress();
             if (points > 0) stack.setContractValue(unearned * points / owed);
         }

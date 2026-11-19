@@ -104,6 +104,9 @@ public final class NewUnit {
         }
     }
 
+    /** Whether a proposal is being resolved on this thread (inside fittedForNew()'s pricing): Fitout.of() reads the whole template there, as of() reads it standing (R1e). */
+    static boolean resolving() { return RESOLVING.get(); }
+
     /** The template it is of: what is ordered, stacked and looked up. */
     public BuildingsTemplate template() { return template; }
 
