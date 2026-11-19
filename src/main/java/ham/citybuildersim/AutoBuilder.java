@@ -1371,7 +1371,8 @@ public final class AutoBuilder {
                     || BuildAdvice.maintained(game, current, Map.of(), BuildAdvice.NOW)) continue;
             if (quote == null) {
                 quote = suggestion.paving() ? game.quotePave(count) : game.quoteBuild(additional, count);
-                points = count * (double) additional.getConstructionPoints()
+                // ...the order's buildings at the points their equipment takes (R1e; the quote's fitout, the template's own in a default city).
+                points = count * (quote.fitout() == null ? (double) additional.getConstructionPoints() : quote.fitout().points())
                         + quote.prepPoints + quote.worksPoints + quote.bridgePoints + quote.deepWaterPoints;
             }
             double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
