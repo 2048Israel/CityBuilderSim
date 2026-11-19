@@ -119,6 +119,19 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
     presses the held Build button (two on the stack's site, the dial back to none). The redraw makes the order afresh, so its
     reprice is new; the button is the kept node. KeptBench gained buildOrder, click, buildBarSays, buildDialled, buildHeroDetail.
   - Section 12 is new for (A): the camp's outlets and the furnace's card words.
+- **REV-QN1-2** (Codex, on the mends at 2d9d6914c): SHIP, no P1; three small ones, mended in NewUnitCheck:
+  - (P2) section 12 guarded heroDetail and the outlets only. It now asserts the furnace's group heading (groupSubtitle's
+    used words: "from fuel oil") and the camp's sentences (whatItDoes(t, unit)'s products: "Makes 500 cubic metres of
+    sawlogs"), each red with its reader put back on the fleet's maps. The heading's made words and stands()' quarry/coal
+    branch cannot move today: no piece in the catalogue changes which goods a building makes, nor what a building on typed
+    ground makes (only posts and power). A tripwire asserts that, so a piece that does fails it and brings its card check.
+  - (P2) section 7 ran the first draw's reprice after the redraw, which no node holds. It now presses the kept card's own
+    steps (up to three, back to two: their actions are the last draw's) and the bar reads 900 then 600 unskilled, not 300
+    and 200; the Build button pressed is the same kept node. KeptBench's BuildOrder carries the small steps, and press().
+  - (P3) with no toolkit, section 7's last check says the order was placed by buildStack().
+  - With no toolkit, sections 7 and 12 skip their card parts and the harness exits 0, as KeptCheck does.
+  - main exits red on a throw: once the toolkit has started its thread holds the JVM open, so a throw ran to the suite's
+    timeout (a first run of the steps did, 1,740 s).
 
 ## Checks
 
@@ -140,6 +153,11 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
   section among them (2: 4, 3: 5, 7: 3, 8: 2, 9: 2, 10: 2, 12: 2; 4, 5, 6 and 11 as before), section 1 green
   (`target/QN1-off2-NewUnitCheck.log`). BuildCardCheck, BuildMenuCheck and IndustryViewCheck green; KeptCheck and
   BuildAdviceCheck main's known reds only (the exact lines in `docs/notes/gate.txt`); `--fast` green.
+- After REV-QN1-2's mends: NewUnitCheck all 63 assertions. The card readers put back on the fleet's maps (groupSubtitle's
+  made and used lines, whatItDoes(t, unit)'s products, stands()' quarry/coal branch): 2 of 63 red, the heading and the
+  sentences, the other two green as the tripwire says (`target/QN1-readers-off-NewUnitCheck.log`). The repair off: 27 of
+  63 red (2: 4, 3: 5, 4: 1, 5: 2, 6: 1, 7: 3, 8: 2, 9: 2, 10: 2, 11: 1, 12: 4), section 1 green
+  (`target/QN1-off3-NewUnitCheck.log`). `--fast` green.
 
 ## Left for Jerus
 
