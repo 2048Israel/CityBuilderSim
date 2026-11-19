@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HL1-R, Business Services' kept share without a cliff — 2026-11-19, ready, see docs/queue/HL1-R-notes.md
 HL1 kept a quarter of the city's whole upkeep in Business Services from the first seat and none before: a margin with no
