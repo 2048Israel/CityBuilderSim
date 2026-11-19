@@ -1,13 +1,16 @@
 # HL1: the households' books closed (resumed 2026-11-18)
 
-**Where it stands (2026-11-18, dry-run go).** REV-HL1-2 said SHIP. Main
-1f6a9da1a (R6d, 0.9.153, format/floor 56) is merged; --fast and known-reds validation pass. The combined default closes all 2,404
-months, its eight CSVs and nine own-line rows unchanged by LM1-D. The final 80 on snapshot
-7bcbaba3a completed once: **exit 0, 23/26, hard 10/10 PASS**, beside main baseline 0.9.151's
-23/26 and hard 10/10. No changed verdict, missing run, short run, audit failure or finding.
-The baseline is replaced in docs/ensemble/HL1.md; the full comparison is at the end below.
-The ship marker remains provisional. The orchestrator gave the ALL dry-run slot at 22:30;
-the fresh-clone run is next, with no push while it runs. The 2026-11-11 measurements remain historical.
+**Where it stands (2026-11-18, ready handoff).** REV-HL1-2 said SHIP. Main 1f6a9da1a
+(R6d, 0.9.153, format/floor 56) is merged; --fast passes. The final 80 score **23/26, hard
+10/10 PASS**, matching baseline 0.9.151, with no changed verdict, missing/short run, audit failure
+or finding. The fresh-clone ALL dry run completed all its suite work: original gate exit 1 on
+four unnamed assertions, now traced below and named to FS1 or the new hard map finding HL1-M.
+An own copy of that sealed suite **rejudges exit 3, known red only (12 harnesses), no unnamed red**.
+All 834 kept-file hashes remain intact. LongPlaytest closes all 2,404 default months and all money
+fixtures; its nine own-line rows match the earlier measurements exactly. No model or harness
+changed after the dry run. The 22:30 go authorizes the final marker removal and ready push.
+The final record below distinguishes the stopped launcher from the green named rejudge; the
+2026-11-11 measurements remain historical.
 
 Brief: `docs/studies/spec-wealth.md` 2.4 and 3.4. Four slices (A the instrument, B the upkeep, C the
 books closed and asserted, D what the ensemble then found), each coded by a Sonnet slice and reviewed;
@@ -704,3 +707,102 @@ The dry run uses main's launcher, the explicit C:/ earth/world paths, a 10,800 s
 and a foreground tools/wait.sh --line wait. No push during it. Its kept directory and exact main
 and branch commits will be recorded below. After it only these notes and the ship file change.
 The same go authorizes dropping the marker after a green verdict, then pushing ready.
+
+## The dry run and the named rejudge (2026-11-18)
+
+Kept run **`/tmp/cbs-gate-HL1-Z99ZJVkR`**, native
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HL1-Z99ZJVkR`. Exact tested commits:
+
+- branch **586ecb3bbd81d133fb6482a24a202a8e5c01cf72**;
+- main **1f6a9da1abdc2a28cc94595e42fa743df60b1f31**.
+
+The authorized launcher ran with a 10,800 s timeout and both explicit C:/ data paths. Its
+foreground tools/wait.sh --line wait renewed normally. No push or other own JVM ran beside it.
+The pick is ALL 224 (Game 187 readers); the actual AllChecks report is **220 harnesses in
+2,942 s: 208 passed, 12 failed**. Compile 49 s; complete suite/maps/Stale stage 3,020 s; Stale
+0 firm / 187 soft. Eleven timing assertions are soft and eight path assertions observed, as
+main's machinery specifies. Neither category was changed by HL1. ShortSellingCheck,
+LongPlaytest, BankFailureCheck, SaveFileCheck and ReadPathCheck all pass. The default's nine
+printed own-line rows are text-identical to target/HL1-before-LM1-D/LongPlaytest.log, so every
+figure in the default table above still stands after R6d too.
+
+**Original launcher verdict: gate exit 1 at 23:27:43.** Its unnamed.txt contains nine lines:
+four assertions and their five exit/count summary lines in three harnesses. The full suite was
+sealed before this judge stop (checks.complete and checks.sha256 exist). It is retained intact,
+not rerun, and no command was run inside its directory. The launcher also mailed "HL1 shipped
+untagged on 0.9.153" because PP1's queue push moved main meanwhile: the already-queued BW2
+reporting bug. This was not a publication; the marker remained on origin throughout the run.
+
+### BuildAdviceCheck 7: FS1, the old candidate filter
+
+At x0 and x10, the card and the filtered recomputation choose Gravel Road. At x1000, the card
+chooses one Light Rail Line, maintained plan closes, net **-31,238.560770905**. The harness's
+old `count()` / `opening()` filter says its opening does not close and excludes it *before*
+asking the current maintained-plan evaluator; the surviving Paved Road is **111,169.580552817**.
+A scratch-city attribution probe calls the existing shortCity helper and both public planning
+paths: Light Rail's old today count 1 / opening-closes 0, full count 1 / closes true. The card
+therefore chooses the cheaper closing full plan. Gravel full count 5 / closes true / net
+402,828.381589223; Bus full count 2 / closes false / net -32,211.432423842; Metro full count 1 /
+closes false / net -1,614.648623645. No advice or pricing code changed here. This is the moved
+fixture exposing a pre-HW1 filter in the harness, classified FS1; the ranking law is retained.
+
+### DistressBleedCheck 5: FS1, the floor's picked timing
+
+The floor is lifted at net-loss count 12, recovered by count 24, then raised. Only one
+interest-only month occurs at/above the dial; no renewed operating-loss month occurs there.
+The net count resets to 0, operating streak 0, all eight centres still held; the loop ends on
+that reset. It never reaches the condition its two new failing liveness assertions require.
+The already-known interest-only assertion is HP2's same fixture class, folded into FS1.
+Sections 1-4 independently reach 24 operating-loss months and sell while solvent and lent:
+sales at counts 24,28,32,34,36, half the centres gone at count 34, all pacing assertions pass. Thus the
+mechanism works; no bleed or Business Services rule is changed to force this picked timing.
+The two newly reached assertions are named to FS1, without another queue row.
+
+### MapCheck 1: a hard discrepancy, queued HL1-M
+
+This is retained as a real draw/accounting finding, not described as a pinned-figure failure.
+At m121 every one of **1,609 buildings of 27 kinds** and every road kind agrees: gravel surface
+690 / leftover 0 / model 690; paved 0 / 0 / 0; highway 0 / 7 / 7. But the painted map has
+**83 railway plots, trackSurplus 0, model track 0**, with **one Rail Depot**. A fresh canonical
+map from that same land and counts has the same 83 / 0 discrepancy; it is not a stale kept tile.
+The sample totals at m31,61,91 also agree (287,984,1,534 buildings; 46,92,368 road plots).
+The combined hard assertion is where the track discrepancy surfaces.
+
+The small scratch probe runs only MapCheck.playedCity (120 months), reads Drawn's components,
+and paints a fresh canonical map. It also supplies the advice figures above; final probe exit 0,
+log `target/HL1-gate-cause-final.txt`, source under target/hl1-cause. Initial probe setup errors
+were its dependency classpath and BuildAdviceCheck's uninitialized output streams, corrected
+before the reported exit-0 evidence; they were not game findings. No source file in either
+harness or the map/painter was edited. All those files are main's verbatim; their existing
+rendering is reached on the changed city. No baseline suite of main was run.
+
+★ **Keep the map law hard and queue HL1-M.** The next batch must cause the one-depot/no-model-
+track state, establish whether the geometry belongs to the depot or the model track budget,
+and make that intended accounting explicit and the law pass. No tolerance is relaxed and no
+assertion converted to an observation. HL1-M passes tools/batch-id.sh, is absent from QUEUE.md,
+and occurs once in the ship's queued section. HL2, NG1 and BI1 remain once each, unchanged in
+scope. No extra FS1 or FB row is added for the two fragile harnesses.
+
+### Rejudge, provenance and ready
+
+Four precise known-reds rows name the four new assertions (BuildAdvice one and Distress two to
+FS1, MapCheck one to HL1-M). The existing registry names the other failures. Ship validation
+exits 0. The sealed `checks/suite.txt` was copied into this worktree's target/checks only;
+`CBS_REJUDGE=rejudge` with the merged registry gives **exit 3, known red only, 12 harnesses**,
+no unnamed assertion. Log `target/HL1-postdry-judge.txt`; merged registry
+`target/HL1-postdry-known-reds.txt`. This is a named rejudge of the completed run, not a claim
+that the original launcher exited 0. The publisher can reuse the sealed run and judge these rows.
+All **834** recorded SHA-256 file hashes still match. Nothing in the kept directory was changed.
+
+After the dry run, only HL1-notes.md and HL1-ship.md are changed. The gate-run comment is the
+ship file's first line. On the same 22:30 go, the marker is dropped last in its own commit and
+verified absent on origin, then readiness is mailed with the exact commit. Main's intervening
+bd28bab0c is PP1's QUEUE.md/brief only, no model or harness change; the tested base is recorded
+above and is not silently replaced. The completed ensemble still stands.
+
+The orchestrator accepted all three attributions at 23:39 (mail
+20261118-233948-086-orchestrator-20aa): FS1 for the advice filter and the two distress liveness
+assertions, HL1-M for the real depot/track discrepancy. It explicitly confirmed PP1 is docs only,
+that gate-reuse accepts this kept run, and instructed no further merge, rejudge exit 3 with
+nothing unnamed, then drop the marker and push ready. Those conditions are met; the publisher
+will gate with --reuse. This is the final ready authorization, in addition to the 22:30 run go.
