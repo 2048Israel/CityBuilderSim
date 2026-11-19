@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS1 — the tests that break when another batch moves the played city, a study — 2026-11-19, ready, see docs/queue/FS1-notes.md
+`docs/studies/flaky-suite.md` and its three tables in `docs/studies/flaky-suite/`: every harness in the suite (224, 2,619
+sections on 0.9.153) sorted by how each section gets its condition. 2,027 are caused; 543 read a played city (identity
+167, found 258, picked 104, order 14; 66 already Observations), and of those 425 can cause their condition while 118 are
+identities that rightly stay played; 77 are on the wall clock, most through `Timing` already. Sixteen sweeps (FS2-FS17)
+queued after HL1, each a gate of its picked harnesses, grouped by the fixture builders they share and ordered by today's
+reds. They take HP1, HP2, SX2, KFP1, FF1, PK1, KRT1, KBP1, KRW1, QW1, MQ1, BQ1, LM1-R and KS1-rest, and the 44 known-reds
+rows those rows and HL1's three FS1 rows carry are re-filed to them; PX2 is a real fault and stays. One call (FS1-C): a
+plain wall-clock wait becomes a clock-free wait with a hang guard, its speed a `Timing` line. No code.
+
 ### 0.9.154 — HL1, the households' books closed — 2026-11-18, ready, see docs/queue/HL1-notes.md
 Every dollar households gain or lose now has a line: their savings identity is struck beside the pools each month
 and asserted by LongPlaytest and the ensemble. Care, schools, research, safety and transit buy their upkeep from
