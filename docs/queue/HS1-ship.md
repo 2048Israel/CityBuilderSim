@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-HS1-T3IhSIS5 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HS1, money follows people — 2026-11-19, ready, see docs/queue/HS1-notes.md
 The month's flows now carry their money. A household that retires, ages on, loses a partner, dies
