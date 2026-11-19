@@ -570,7 +570,7 @@ public class HouseholdCheck {
             check("every one of a " + shape.getLabel().toLowerCase() + " is a pensioner",
                     RetiredHousehold.pensionersIn(shape), shape.size());
             check("...and the row split weighs them all",
-                    new RetiredHousehold(shape).grownUps(), shape.size());
+                    new RetiredHousehold(shape, PayTier.UNSKILLED).grownUps(), shape.size());
         }
 
         /*
@@ -589,8 +589,9 @@ public class HouseholdCheck {
         retired.advanceMonth((s, t) -> s == FamilyStructure.SENIOR_ALONE
                         || s == FamilyStructure.ELDER_ALONE ? 1 : 0,
                 retIncome, 0, retNone, retSpent, 0, .05, 1);
-        Household senior = retired.cell(FamilyStructure.SENIOR_ALONE);
-        Household elder  = retired.cell(FamilyStructure.ELDER_ALONE);
+        // A city with nobody working retires everybody from the bottom tier (HS1: HouseholdBalance.retiredMix()).
+        Household senior = retired.cell(FamilyStructure.SENIOR_ALONE, PayTier.UNSKILLED);
+        Household elder  = retired.cell(FamilyStructure.ELDER_ALONE, PayTier.UNSKILLED);
         check("a senior living alone draws one pension", senior.disposable(), pensionEach);
         check("...and an elder living alone draws the same one",
                 elder.disposable(), pensionEach);
@@ -785,14 +786,16 @@ public class HouseholdCheck {
         // three situations, the students, the orphans of three bands, and
         // (that night) the prisoners' ledger.
         // Four retired rows since the seniors split at 85 (2026-09-15): the two
-        // senior shapes and the two elder ones, one cell each.
+        // senior shapes and the two elder ones, one cell each; six each since
+        // HS1, one a tier the retired left.
         // And the owner families' ledger since BO1 (2026-11-10), one cell after the prisoners'.
-        assertTrue("seventy-nine cells: eleven working shapes by six tiers, four retired, nine outside the families",
-                cellsBal.cellCount() == 11 * 6 + 4 + 3 + 1 + 3 + 1 + 1);
+        assertTrue("ninety-nine cells: eleven working shapes by six tiers, four retired by six former tiers, nine outside the families",
+                cellsBal.cellCount() == 11 * 6 + 4 * 6 + 3 + 1 + 3 + 1 + 1);
         Household one = cellsBal.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household two = cellsBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household six = cellsBal.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);
-        Household old = cellsBal.cell(FamilyStructure.SENIOR_ALONE);
+        // ...retired from the tier the working census holds, the unskilled here (HS1).
+        Household old = cellsBal.cell(FamilyStructure.SENIOR_ALONE, PayTier.UNSKILLED);
         check("a single adult takes home one wage", one.disposable(), 2.0);
         check("a couple takes home two", two.disposable(), 4.0);
         check("a large family, two earners, takes home two", six.disposable(), 4.0);

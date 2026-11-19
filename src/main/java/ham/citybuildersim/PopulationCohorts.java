@@ -95,6 +95,22 @@ public class PopulationCohorts {
      */
     private double lastCauses;
 
+    /*
+     * ...AND THE MONTH'S SHARES OF EACH BAND, FOR THE HOUSEHOLDS' FLOWS (HS1,
+     * 2026-11-18). The households' books carry a retiree's, the dead's and a
+     * leaver's money from the cell they leave (HouseholdBalance, MONEY FOLLOWS
+     * PEOPLE), and a cell holds people, not a band's count: so the month is
+     * handed on as shares - who died, aged on and left, over what the band
+     * opened with - and each cell loses its people at its band's share. The
+     * month's working, like the by-band arrays above; the households' books
+     * keep what they were handed until their next census, and save it.
+     */
+    private final double[] lastOpening = new double[AgeBand.values().length];
+    /** The share of every band the month's net migration took out of the city, when it was out; 0 when it brought people in. */
+    private double lastLeftShare;
+    /** People of each band who left on their own account (leave(): the evicted who give up). */
+    private final double[] lastLeftByBand = new double[AgeBand.values().length];
+
     public PopulationCohorts() { }
 
     /* ----------------------------- reading ----------------------------- */
@@ -124,6 +140,18 @@ public class PopulationCohorts {
     public double[] getCauseDeaths()     { return lastCauseDeathsByBand.clone(); }
     /** Last month's deaths of the causes of 1900, every band together - saved, unlike the bands (R0b). */
     public double getLastCauseDeaths()   { return lastCauses; }
+    /** Of what the band opened the month with, the share that died - aged out at 120 included (HS1). */
+    public double deathShare(AgeBand b)  { return share(lastDeathsByBand[b.ordinal()], lastOpening[b.ordinal()]); }
+    /** ...and the share that aged into the next band: for the adults, the month's retirements (HS1). */
+    public double promotedShare(AgeBand b) {
+        return b.next() == null ? 0 : share(lastPromoted[b.ordinal()], lastOpening[b.ordinal()]);
+    }
+    /** The share of every band the month's net migration took out of the city: 0 in a month it brought people (HS1). */
+    public double getLeftShare()         { return lastLeftShare; }
+    /** People of a band who left on their own account this month (leave(); HS1). */
+    public double getLeft(AgeBand b)     { return lastLeftByBand[b.ordinal()]; }
+
+    private static double share(double part, double of) { return of > 0 ? Math.min(1, Math.max(0, part / of)) : 0; }
 
     public double total() {
         double sum = 0;
@@ -280,6 +308,9 @@ public class PopulationCohorts {
         lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
+        java.util.Arrays.fill(lastOpening, 0);
+        lastLeftShare = 0;
+        java.util.Arrays.fill(lastLeftByBand, 0);
 
         if (total() <= 0) {
             return;
@@ -298,6 +329,7 @@ public class PopulationCohorts {
 
             AgeBand b = AgeBand.values()[i];
             double opening = band[i];
+            lastOpening[i] = opening;
             if (opening <= 0) continue;
 
             double rate = factor == null
@@ -386,6 +418,7 @@ public class PopulationCohorts {
         }
 
         lastMigration = netArrivals;
+        if (netArrivals < 0) lastLeftShare = Math.min(1, -netArrivals / t);
         if (netArrivals == 0) return;
 
         for (int i = 0; i < band.length; i++) {
@@ -407,6 +440,7 @@ public class PopulationCohorts {
         double gone = Math.min(people, band[i]);
         band[i] -= gone;
         lastMigration -= gone;
+        lastLeftByBand[i] += gone;
         return gone;
     }
 
@@ -648,5 +682,8 @@ public class PopulationCohorts {
         lastCauses = 0;
         lastDeathsOfAge = 0;
         lastAgedOut = 0;
+        java.util.Arrays.fill(lastOpening, 0);
+        lastLeftShare = 0;
+        java.util.Arrays.fill(lastLeftByBand, 0);
     }
 }

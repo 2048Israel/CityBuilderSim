@@ -1787,7 +1787,9 @@ final class PeopleScreen {
             double n = families.totalOf(s);
             if (n < .5) continue;
             if (s.isRetired()) {
-                Household cell = bal == null ? null : bal.cell(s);
+                // The shape's ledger the strip opens: the former tier with the most of them (HS1, six a shape).
+                Household cell = null;
+                if (bal != null) for (Household c : bal.cells(s)) if (cell == null || c.households() > cell.households()) cell = c;
                 retired.add(new Piece(shortShape(s), s.getLabel(), n, membersOf(s), null,
                         cell == null ? null : "OUT:" + cell.key()));
             } else {
@@ -3080,8 +3082,8 @@ final class PeopleScreen {
         if (bal == null) return out;
         for (FamilyStructure shape : FamilyStructure.values()) {
             if (!shape.isRetired()) continue;
-            Household cell = bal.cell(shape);
-            if (cell != null && cell.households() >= .5) out.add(cell);
+            // Each former tier its own row (HS1): a professional's pension years are not a labourer's.
+            for (Household cell : bal.cells(shape)) if (cell.households() >= .5) out.add(cell);
         }
         for (UnemployedHousehold.Status st : UnemployedHousehold.Status.values()) {
             Household h = bal.unemployed(st);
@@ -3826,8 +3828,11 @@ final class PeopleScreen {
                         + " a head", line);
                 headed = true;
             }
-            line = otherRow(grid, shape.getLabel(), bal.cell(shape),
-                    toDollars(s.left()), s.households(), line);
+            // A row a former tier (HS1): the shape's statement - one pension a head - on each tier's own ledger and count.
+            for (Household cell : bal.cells(shape)) {
+                if (cell.households() < .5) continue;
+                line = otherRow(grid, cell.label(), cell, toDollars(s.left()), cell.households(), line);
+            }
         }
 
         /* ------------------------ and outside the families ------------------------ */

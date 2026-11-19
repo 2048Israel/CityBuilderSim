@@ -90,6 +90,8 @@ public abstract class Household {
     public static final int OWNER_ROW = RETIRED_ROW + 5;
     /** Every row: the six tiers, the retired, and the five above. */
     public static final int ROWS = RETIRED_ROW + 6;
+    /** Every stock group (stockGroup()): the rows', then the retired by the tier they left, one a tier (HS1). */
+    public static final int STOCK_GROUPS = ROWS + PayTier.values().length;
     /** The rows a save from before the prisons carries (pinned: ROWS has moved on). */
     public static final int ROWS_BEFORE_PRISON = RETIRED_ROW + 4;
     /** The rows a save from before the owner families carries. */
