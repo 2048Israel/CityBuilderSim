@@ -664,7 +664,16 @@ public class PopulationCheck {
         FamilyModel doubled = new FamilyModel();
         doubled.rebuild(crowd, mix);
         long[] shortOfDoors = new long[7];
-        shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds()) - 200;   // family doors, two hundred short
+        /*
+         * Two hundred short of what the flatshares leave (HS2). The fixture
+         * was two hundred short of the matrix, which valve one absorbs whole
+         * - five singles to a door - so the doubling it asserted was the
+         * second match's rounding dust (1e-10 of a household on 0.9.159),
+         * and HS2's matrix left none. Short by more than the flatshares can
+         * take, two hundred households really do double up.
+         */
+        double flatshares = doubled.totalOf(FamilyStructure.SINGLE_ADULT) / 5 * 4;
+        shortOfDoors[6] = (int) Math.floor(doubled.totalHouseholds() - flatshares) - 200;   // family doors
         doubled.squeezeUnplaced(doubled.house(shortOfDoors));
         doubled.noteUnplaced(doubled.house(shortOfDoors));
         assertTrue("fixture: households doubled up, and nobody with nowhere",
@@ -1574,7 +1583,9 @@ public class PopulationCheck {
          */
         String[] withExtra = java.util.Arrays.copyOf(names, bands + 1);
         withExtra[bands] = "A_BAND_FROM_THE_FUTURE";
-        double[] widened = spliceOneSlot(savedFamilies, savedFamilies.length, 8_888);
+        // The kin block's band slot is before the young's two matrices since HS2 (FamilyModel.stageSlots()).
+        double[] widened = spliceOneSlot(savedFamilies,
+                savedFamilies.length - FamilyModel.stageSlots(shapes.length), 8_888);
         widened = spliceOneSlot(widened, orphanBlockEnd(bands, shapes.length), 7_777);
 
         FamilyModel wider = new FamilyModel();
