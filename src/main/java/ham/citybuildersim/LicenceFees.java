@@ -79,6 +79,11 @@ public final class LicenceFees {
     static boolean pricing() { return pricing.get(); }
 
 
+    /** One building's fee as main read it: a new one on the template as it stands (PostwarRecipeCheck reads this one). */
+    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
+        return buildingFee(game, t, null, owner, standing, rate);
+    }
+
     private static double buildingFee(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, boolean standing, double rate) {
         int accrualMonth = game.getMonth();
         if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
