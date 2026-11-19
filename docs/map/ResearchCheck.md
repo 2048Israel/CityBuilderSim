@@ -1,19 +1,19 @@
-# ResearchCheck.java - 1,058 lines · 26 methods · 10 constants · harnesses
+# ResearchCheck.java - 1,061 lines · 26 methods · 10 constants · harnesses
 
 `ham/citybuildersim/ResearchCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
 > The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
 > what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).
 > 
-> WHY. research.json is 94 entries, 91 typed from two studies' tables and the near future's three (R6b), and a wrong figure in it is no error anywhere: a discovery a year late is an
+> WHY. research.json is 96 entries, 91 typed from two studies' tables, the near future's three (R6b) and the speculative tier's two (R6d), and a wrong figure in it is no error anywhere: a discovery a year late is an
 > oxygen converter that arrives in 1953, and nobody sees it until the ensemble moves. So the dates, the needs, the work and the fees are held to
 > the studies' tables here, with spot values typed out below as the specification and not read back from the class under test; the law rows are
 > held to PolicyDates, whose dates the Policy gate already reads, so the catalogue and the gate cannot disagree about when a lever opens.
 > 
 > What it has to prove:
 > 
->   1. THE FILE READS. The packaged file gives 94 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
->      unique and in the studies' order, the near future's FE1, FE2 and FE4 after them; the counts by prefix and by field are the studies'; the
+>   1. THE FILE READS. The packaged file gives 96 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+>      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
 >      field follows the code (the second letter of an F code); every entry has a name, a world, a touches and an effect; the kinds, the kind
 >      notes and the names of a few are the tables'.
 >   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
@@ -46,14 +46,14 @@
 >      or a local discovery. A paying spread-planner choice, a city's power shortage and funded direct city/private orders cause the refusals;
 >      every candidate and direct order remains available in a default founding but the near future's.
 >  11. THE MARK (R6b). A row is projected exactly when its world month is after HISTORY_ENDS, a projected row has a window of years that holds its
->      year and a history row none; FE4 is projected (2027-2030), FE1 and FE2 are not; mark() and dateWords() say so, and nothing else.
+>      year and a history row none; FE4 is projected (2027-2030), FE8 (2030-2036) and FE10 (2031-2037) too, FE1 and FE2 are not; mark() and dateWords() say so, and nothing else.
 >  12. THE NEAR FUTURE (R6b, call 1). nearFuture(code) is true exactly for the rows dated from NEAR_FUTURE on, and those are exactly the F codes.
 >  13. ITS BUILDINGS. A city founded the default way never knows a near-future building (a candidate nor an order) and knows the oxide leach plant; one
 >      founded the 1900 way knows the Sulphide Leach & SX-EW Plant from FE2's month and the Hydrogen Steel Works from FE4's, and not the month before.
 
 **Uses:** [ResearchCatalog](ResearchCatalog.md) (84), [BuildingsTemplate](BuildingsTemplate.md) (28), [PolicyDates](PolicyDates.md) (22), [Game](Game.md) (17), [CityCalendar](CityCalendar.md) (13), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [BuildAdvice](BuildAdvice.md) (8), [Refining](Refining.md) (7), [Equipment](Equipment.md) (5), [Sectors](Sectors.md) (5), [ResearchView](ResearchView.md) (5), [BuildingManager](BuildingManager.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Ports](Ports.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Founding](Founding.md) (3), [Good](Good.md) (3), [Recipe](Recipe.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BuildingType](BuildingType.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [GameFiles](GameFiles.md) (1), [RefineryFlow](RefineryFlow.md) (1), [Investor](Investor.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
-**Used by (6):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
+**Used by (8):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
 ## Sections
 
@@ -63,17 +63,17 @@
 | 170 | · fixtures for the reader |
 | 229 | · 1. the file reads |
 | 293 | · 2. needs |
-| 325 | · 3. history's dates |
-| 373 | · 4. the work |
-| 416 | · 5. known from |
-| 460 | · 6. the reader's refusals, and the fees |
-| 557 | 7. buildings.json's codes (R2, slice B) |
-| 670 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
-| 758 | 10. the building candidates and orders (R2b) |
-| 910 | 11. the mark against HISTORY_ENDS (R6b) |
-| 951 | 12. the near future (R6b, call 1) |
-| 978 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
-| 1018 | · helpers |
+| 326 | · 3. history's dates |
+| 374 | · 4. the work |
+| 417 | · 5. known from |
+| 461 | · 6. the reader's refusals, and the fees |
+| 558 | 7. buildings.json's codes (R2, slice B) |
+| 671 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
+| 759 | 10. the building candidates and orders (R2b) |
+| 911 | 11. the mark against HISTORY_ENDS (R6b) |
+| 953 | 12. the near future (R6b, call 1) |
+| 981 | 13. a near-future building, by the way the city was founded (R6b, call 1) |
+| 1021 | · helpers |
 
 ## Constants
 
@@ -84,11 +84,11 @@
 | 145 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 91 rows (HISTORY_ROWS). |
 | 146 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 147 | `ResearchCheck.HISTORY_ROWS` | `91` |  |
-| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2 and FE4 (the study has no FE3). |
-| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 3, 0, 0, 0 }` |  |
-| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4")` | The near future's rows, in the file's order, after the studies' 91. |
+| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE8 and FE10 are the s... |
+| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 5, 0, 0, 0 }` |  |
+| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4", "FE8", "FE10")` | The near future's rows, in the file's order, after the studies' 91. |
 | 157 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 560 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 561 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 984 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
+| 75 | 987 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
 | 80 | 4 | `static void check(String label, boolean ok)` |  |
 | 86 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 
@@ -113,7 +113,7 @@
 | 162 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
 | 166 | 3 | `static String prefixOf(String code)` |  |
 
-### fixtures for the reader (lines 170-556)
+### fixtures for the reader (lines 170-557)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -126,53 +126,53 @@
 | 210 | 5 | `static String text(String resource) throws Exception` |  |
 | 216 | 3 | `static Entry of(String code)` |  |
 | 220 | 3 | `static boolean has(Entry e, List<String> kinds)` |  |
-| 224 | 332 | `public static void main(String[] args) throws Exception` |  |
+| 224 | 333 | `public static void main(String[] args) throws Exception` |  |
 
-### 7. buildings.json's codes (R2, slice B) (lines 557-669)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 571 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
-| 576 | 93 | `static void sectionSeven()` |  |
-
-### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 670-757)
+### 7. buildings.json's codes (R2, slice B) (lines 558-670)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 672 | 85 | `static void sectionEightAndNine()` |  |
+| 572 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
+| 577 | 93 | `static void sectionSeven()` |  |
 
-### 10. the building candidates and orders (R2b) (lines 758-909)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 761 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
-| 774 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
-| 780 | 129 | `static void buildingsOnDates() throws Exception` |  |
-
-### 11. the mark against HISTORY_ENDS (R6b) (lines 910-950)
+### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 671-758)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 912 | 38 | `static void theMark()` |  |
+| 673 | 85 | `static void sectionEightAndNine()` |  |
 
-### 12. the near future (R6b, call 1) (lines 951-977)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 953 | 24 | `static void theNearFuture()` |  |
-
-### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 978-1017)
+### 10. the building candidates and orders (R2b) (lines 759-910)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 980 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+| 762 | 11 | `static Game datedCity(String label, boolean historical)` | A scratch city with ample land and cash; the date alone must refuse its orders. |
+| 775 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
+| 781 | 129 | `static void buildingsOnDates() throws Exception` |  |
 
-### helpers (lines 1018-1058)
+### 11. the mark against HISTORY_ENDS (R6b) (lines 911-952)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1020 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
-| 1027 | 12 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E20, then the near future's rows. |
-| 1041 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
-| 1051 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
+| 913 | 39 | `static void theMark()` |  |
+
+### 12. the near future (R6b, call 1) (lines 953-980)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 955 | 25 | `static void theNearFuture()` |  |
+
+### 13. a near-future building, by the way the city was founded (R6b, call 1) (lines 981-1020)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 983 | 37 | `static void nearFutureBuildings() throws Exception` |  |
+
+### helpers (lines 1021-1061)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1023 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
+| 1030 | 12 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E20, then the near future's rows. |
+| 1044 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
+| 1054 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
 

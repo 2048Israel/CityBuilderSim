@@ -41,6 +41,8 @@
 
 **Uses:** [Good](Good.md) (76), [HeavyIndustry](HeavyIndustry.md) (45), [Game](Game.md) (25), [SpreadPlanner](SpreadPlanner.md) (18), [BuildingManager](BuildingManager.md) (16), [MaterialsCheck](MaterialsCheck.md) (14), [Sector](Sector.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (11), [Sectors](Sectors.md) (7), [CityCalendar](CityCalendar.md) (6), [BusinessInvestment](BusinessInvestment.md) (4), [Markets](Markets.md) (4), [MoneyAudit](MoneyAudit.md) (4), [ResearchCatalog](ResearchCatalog.md) (3), [ResearchCheck](ResearchCheck.md) (3), [Founding](Founding.md) (2), [HydroSites](HydroSites.md) (2), [GoodsMarket](GoodsMarket.md) (2), [LicenceFees](LicenceFees.md) (2), [GameFiles](GameFiles.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Trade](Trade.md) (1), [Statement](Statement.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
+**Used by (1):** [ElectrolyserCheck](ElectrolyserCheck.md)
+
 ## Sections
 
 | line | section |

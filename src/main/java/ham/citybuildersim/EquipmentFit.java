@@ -1,6 +1,8 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Agriculture;
 import ham.citybuildersim.sectors.Haulage;
+import ham.citybuildersim.sectors.HeavyIndustry;
 import ham.citybuildersim.sectors.SpreadPlanner;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import java.util.function.ToDoubleFunction;
  * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
- * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), driverGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
+ * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), driverGain(), operatorGain(), electrolyserGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
  * one across the break-even, and the game layer (verdict(), rank()) that reads the city's.
  */
 public final class EquipmentFit {
@@ -118,6 +120,24 @@ public final class EquipmentFit {
                 + truckRoom * (1 - 1 / f) * truckCapitalMonth;
     }
 
+    /**
+     * The autonomy kit's gain a month on one farm (step 1, R6d, FE8): each of its machines (a tractor or a combine) strikes the operator's post,
+     * `wageNoDiploma` a month, and asks for the remote watch, WATCH_A_MACHINE of a DIPLOMA post at `wageDiploma`. The machine is the same machine, so
+     * its fuel, its output and its capital are nowhere in it. At nameplate, the posts unrounded (the sector rounds its whole).
+     */
+    public static double operatorGain(int machines, double wageNoDiploma, double wageDiploma) {
+        return machines * (Agriculture.OPERATORS_A_MACHINE * wageNoDiploma - Agriculture.WATCH_A_MACHINE * wageDiploma);
+    }
+
+    /**
+     * The 46 kWh electrolyser's gain a month on one Hydrogen Steel Works (step 1, R6d, FE10): the grid units it no longer draws at nameplate
+     * (HeavyIndustry.unitsSavedAWorks()) at the unit's price, as steamGain() prices the units a motor draws. Nothing else changes: the same steel from
+     * the same pellets.
+     */
+    public static double electrolyserGain(double unitsSaved, double powerPrice) {
+        return unitsSaved * powerPrice;
+    }
+
     /** What fitting one building costs (step 2): each good the piece buys at its price, plus the piece's work at the price of a point. NaN if a price is. */
     public static double cost(Equipment piece, ToDoubleFunction<Good> price, double pointPrice) {
         double c = piece.getWork() * pointPrice;
@@ -170,7 +190,7 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b), the autonomy kit's from the operators it strikes (R6d, FE8) and the 46 kWh electrolyser's from the grid units it saves (R6d, FE10). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
@@ -216,6 +236,12 @@ public final class EquipmentFit {
                 Haulage haulage = game.getSectors().freight().haulage();
                 return driverGain(t.getTruckRoom(), haulage.driverWage(), haulage.truckCapitalMonth());
             }
+            case FIELD_OPERATORS: {
+                double[] wages = Recipes.pricesOf(game).wages();
+                return operatorGain(Agriculture.machinesOf(t), wages[JobType.NO_DIPLOMA.ordinal()], wages[JobType.DIPLOMA.ordinal()]);
+            }
+            case ELECTROLYSERS:
+                return electrolyserGain(HeavyIndustry.unitsSavedAWorks(t), game.getEconomyManager().getPricePerWatt());
             default:
                 return Double.NaN;
         }
