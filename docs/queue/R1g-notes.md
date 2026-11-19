@@ -1,0 +1,201 @@
+# R1g — the 1900 city grows: notes
+
+Brief: `docs/queue/R1g.md`. Builder: Claude (Opus), headless, 2026-11-19, on
+`batch/R1g` from origin/main 33a626d9f (0.9.156), merged to d05201e11
+(0.9.157, RN1-H) before the harness was run.
+
+## 1. The cause
+
+**The 1900 city stalls on two things at once: 1901's wages pay for today's
+homes (the rent), and today's posts meet 1901's workers (the skills).
+Relieve either alone and it still stalls; relieve both and it grows at
+about today's pace. Neither the dated money, nor the 1900 research, nor the
+unfitted equipment is what holds it.** The harness is `Village1900Check`
+(section 3 below); the controls are runs of the 2,400-month playtest with
+one facet changed in throwaway copies of the classes (`target/r1g/exp`,
+never committed).
+
+### What the 1900 playtest does (0.9.156, `-Dplaytest.founded=1900 -Dplaytest.trace`)
+
+| month | today's city | the 1900 city |
+|---|---|---|
+| 60 | 814 | 476 |
+| 240 | 1,465 | 561 |
+| 900 | 34,860 | 486 |
+| 1200 | 39,038 | 480 |
+| 2400 | 1,650,471 | 990 |
+
+- 462 people arrive in months 13-54, then **nobody for 2,276 months**
+  (to about month 2330). The posts sit at 349-381 from month 40 to 2257,
+  about 56% filled.
+- The treasury hoards ($9.3M at month 1023, $257M at the end) and borrows
+  nothing until month 1037 (US$129k abroad). Construction is idle from
+  month 43 (`consUtil` 0). The automatic works report every service
+  "served 1.0"; there are no school posts in 2,400 months.
+- The sectors' words (`Game.getLastInvestments()`, the probe below) at
+  months 60, 120 and 240: **staffing** holds Manufacturing ("could staff 0%
+  of a Wire & Cable Works now and 35% with a year's arrivals; it wants
+  80%"), Agriculture, Luxury Retail, Wood Products, Retail and Restaurants;
+  **money** holds Heavy Industry's Blast Furnace and Cement's Lime Kiln
+  (returns under 1.25 times the interest, not cash); the Copper Smelter
+  would lose money; Business Services lacks 39 licences; Freight has no
+  rail; Real Estate says "housing ahead of jobs". Today's city orders a
+  Fabrication Shop at month 31, a Fabrication Works at 37, a Vehicle Works
+  at 43 and a Contact Centre at 52.
+
+### The rent: 1901's wages pay for today's homes
+
+A home's required rent is its cost per household times
+`RealEstate.LANDLORD_YIELD` (`RealEstate.rentRequired(boolean)`, L420), the
+cost being the builders' non-material cost, the materials at the
+construction material price, and the plot (`EconomyManager.repriceHousingCosts()`,
+L588). Nothing in it is dated: the 1900 city's family home requires
+0.0088 a month at month 25 against today's 0.0086. Its households earn
+1901's wages (`WageLadder.Y1901`, about a quarter of today's real wage):
+household wage 9.1 at month 25 against today's 27.5, 9.9 against 45.6 at
+month 40, 12.5 against 81.2 at month 120. So rent takes about 0.65 of
+take-home at month 40 (an affordability pull of 0.46), 0.61 at month 60 and
+0.94 at month 240, against `TARGET_RENT_BURDEN` 0.30
+(`RealEstate.java:123`); today's city pays at or under the target (pull
+1.00, 1.00, 0.91). `Migration.affordabilityPull()` (L307) cuts the city the
+conditions support to 416 at month 40 and 474 at month 55 against 477
+people, and 354 at month 240: **under the population, so nobody comes.**
+(`Game.java:15556` hands the burden to the migration each month.)
+
+### The skills: today's posts meet 1901's workers
+
+- 1901's arrivals are 73% without a diploma, 23% with one (the model's
+  diploma band is "a trade": the 1913 knot's mechanics, clerks and traders,
+  `ArrivalMix.java:90`); today's are none without one (`ArrivalMix.TODAY`).
+  A worker takes a post at or below their band, never above.
+- At month 30 the 1900 village has posts [265, 157, 21, 5] by band (none,
+  diploma, college, university) for a workforce of [170.5, 55.7, 4.8,
+  0.05]; today's twin [295, 169, 18, 5] for [0, 389, 22.5, 1.5]. The
+  diploma posts are mostly the Construction Depots' (75 for 5) and the
+  Bakery's (48).
+- R2d's 1900 recipes add the cutting crews (`buildings.json` L1761, "R2d
+  mapping estimate: DIPLOMA posts are the cutting crew"): the 1900
+  Fabrication Shop wants [68, 248, 5, 0] against today's [68, 62, 5, 0]. At
+  month 30 the 1900 village could staff 0.294 of one, today's twin 0.975;
+  the gate is `Sector.MIN_STAFFABLE_TO_ORDER` 0.80 (`Sector.java:262`).
+  Every exporter's first plant is refused the same way.
+- The native-born get no diploma: there is no school (no posts in 2,400
+  months; `AutoBuilder.kept()` builds one only when warranted and with
+  somebody to teach), so the 1900 city's diploma workers die out: 59 at
+  month 60, 36.7 at 240, 16.8 at 600, 6.4 at 900, 2.3 at 1200, 0.3 at 1800.
+- So labourers stand idle beside vacant diploma posts, and from month 240
+  the arrival brake (`Migration.BRAKE_FROM_MONTH`, L461; arrivals stop at
+  `ARRIVALS_STOP_OUT_OF_WORK` 12% out of work, L458) shuts the door the
+  rent had left ajar: the rent-relieved control below runs 13-36% out of
+  work from month 240 to 1200.
+
+### The controls (0.9.156, the 2,400-month 1900 playtest, one facet changed)
+
+| run | m60 | m240 | m600 | m900 | m1200 | m2400 |
+|---|---|---|---|---|---|---|
+| the 1900 city | 476 | 561 | 604 | 486 | 480 | 990 |
+| today's arrival mix (`ArrivalMix.at()` returns `TODAY`) | 345 | 396 | 378 | 342 | 1,117 | 2,344 |
+| today's recipes (`Recipes.choose/apply` skipped) | 354 | 442 | 372 | 355 | 350 | 578 |
+| today's recipes and mix | 486 | 1,618 | 1,971 | 1,785 | 1,713 | 7,009 |
+| the rent relieved (`affordabilityPull` 1) | 984 | 1,156 | 867 | 1,152 | 894 | 44,960 |
+| the rent relieved and today's mix | 812 | 654 | 4,182 | 20,701 | 51,530 | 1,157,156 |
+| today's city (main) | 814 | 1,465 | 9,624 | 34,860 | 39,038 | 1,650,471 |
+
+- Today's mix alone: diplomas are plentiful (the diploma wage falls to
+  0.044 from 0.092 at month 40) but rent still takes over twice the target
+  (pull 0.47), so nobody comes from month 40.
+- Today's recipes and mix: the first 20 years match today's, then the
+  native-born grow up without diplomas (466 diploma workers at month 241,
+  57 at 901), the school posts come only at month 421 (48 posts, 25
+  filled), and the staffing gate holds every exporter at 0% "even with a
+  year's arrivals" from month 420 to 600.
+- The rent relieved alone: 984 people by month 60, then the skills hold it
+  (diploma workers 149 at month 240, 56 at 600; 13-36% out of work, the
+  brake shut).
+- Both relieved: it grows, and the schools come at month 600 (196 posts),
+  as today's do (900 at month 600).
+- R1d's control (1901 on today's wages) grew faster early and then shrank:
+  today's wages ease the rent but not the skills.
+
+### What it is not
+
+- **The dated money.** The 1900 treasury holds its cash and owes nothing at
+  month 60 (the harness) and borrows nothing until month 1037: no build
+  is refused for want of the city's credit. OP1 (every lever open from the
+  first month) does not touch the cause.
+- **The 1900 research and the unfitted equipment.** Both controls that
+  grow keep the 1900 research and the equipment unfitted.
+- **The owners' cash.** The money holds are returns under 1.25 times the
+  interest on two works; the refusals that bind are staffing and the
+  migration target.
+
+### The harness: `Village1900Check` (0.9.157)
+
+The playtest's village (`LongPlaytest.founding()`), founded the 1900 way
+beside its twin founded today's way, each founded and played as
+`LongPlaytest.main()` does (its switches, the automatic works on before the
+village is laid, the founding's months by hand, then its rhythm of a skip,
+a look and two months) to month 60, on scratch folders. 19 assertions,
+green on 0.9.157 in about 20 seconds:
+
+| at month 60 (the gate at 30) | the 1900 village | today's twin |
+|---|---|---|
+| people | 471 | 908 |
+| rent as a share of take-home (target 0.30) | 0.612 | 0.231 |
+| affordability pull | 0.490 | 1.000 |
+| the city the conditions support | 462 | 1,280 |
+| diploma posts / diploma workers | 141 / 58.3 | 194 / 443.1 |
+| Fabrication Shop: diploma posts wanted | 248 | 62 |
+| Fabrication Shop: share the city could staff at month 30 (gate 0.80) | 0.231 | 1.000 |
+| arrivals in months 56-60 | 0.0 | 38.3 |
+| treasury: cash / owed | 253.5 / 0 | 4.5 / 265.4 |
+
+Manufacturing's word in the 1900 village at month 60: "could staff 5% of a
+Wire & Cable Works now and 40% with a year's arrivals; it wants 80%". The
+1900 village's 471 at month 60 is the 0.9.156 trace's 476 within RN1-H's
+move; today's twin's 908 against the 0.9.156 trace's 814 is RN1-H (homes
+planned at demand x 1.05). The 0.9.157 traces themselves wait for the gate.
+
+The first fixture advised every month (`LongPlaytest.probeCity()` and the
+advisor each month, the probes' way): its today's city reached 3,095 at
+month 60 against the trace's 814, so it was not the playtest, and the
+harness follows `main()`'s rhythm instead.
+
+## 2. The fix proposed (★ a design call, Jerus's)
+
+Both halves read `Game.foundedUnfitted()` and nothing else, so **today's
+city does not move** (the default trace bit for bit); neither rests on a
+dated lever, so OP1 does not change it.
+
+- ★ **The rent: the 1900 home.** research-1900 5.3 gives the 1900 family's
+  rent as 25% of its staple budget ($2.37 of $9.37 a week, [CYB18]) and
+  5.2-5.3 its home: no running water, bathroom, electricity or central
+  heat, households of six or more. The game builds today's home and lets
+  it to 1901's wages, 0.61 of take-home. Proposed: in a city founded the
+  1900 way the homes are built to the year's standard through `Recipes`'
+  1900 path (as the plants' recipes are): the residential templates' cash
+  cost and materials scaled so a 1901 household's rent is the study's 25%
+  at the founding, returning to today's home along the year as the wages
+  rise toward today's ladder. Alternatives: more households to a home (the
+  study's large households, a capacity change), or the home costed at the
+  city's wage level outright.
+- ★ **The skills: the apprentices.** The model's diploma band is "a trade"
+  in 1901 (`ArrivalMix`'s 1913 knot), but a native-born worker gains a band
+  only from a school (`PopulationManager`: "Everyone starts unskilled
+  because, until education buildings exist, the only source of a skill is
+  somebody who already had one moving in"), and a 1900 city has none, so
+  its tradesmen die out. Proposed: in a city founded the 1900 way, the
+  young coming into work without a school learn a trade at the year's
+  diploma share (`ArrivalMix.at(month)`, 0.23 in 1901, 0.43 in 1953), as
+  the year's arrivals bring it; a school's graduates count instead once
+  there is one. Only if measured necessary: R2d's 1900 cutting crews
+  ("R2d mapping estimate: DIPLOMA posts are the cutting crew") as machine
+  hands without a diploma.
+- **Files:** `Recipes.java` (and `buildings.json` if the homes' recipes are
+  data, as R2d's are), `PopulationManager.java`, `ArrivalMix.java` (a
+  getter), `Village1900Check` turned to the fix, failing with it taken out.
+  None is HS1's or QN1's (`RealEstate` is QN1's and is not touched).
+- **Measured before it is built:** both candidates as controls on the
+  2,400-month 1900 playtest, beside "the rent relieved and today's mix"
+  (812 / 20,701 / 51,530 / 1,157,156 at months 60, 900, 1200, 2400), once
+  the gate is free.
