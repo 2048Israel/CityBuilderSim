@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-QN1-bckCEBFc -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — QN1, new-building proposals beside canonical templates — 2026-11-19, ready, see docs/queue/QN1-notes.md
 A new building is now valued as it would run, beside the template it is
