@@ -4101,7 +4101,7 @@ public class LongPlaytest {
         if (g.isLandPaidFromVault()) return null;
         double gap = g.landCashGap(ids);
         if (!canService(g, gap)) return null;
-        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
         notePaper(g, purpose + " (the land office's funding page)");   // the trace; nothing else reads it
         if (g.landNeedsFunding(ids)) return null;
         return g.buyLandParcel(p.getId()) ? "bond" : null;
@@ -5341,7 +5341,7 @@ public class LongPlaytest {
         if (q.total > g.getCash()) {
             double needed = Math.max(q.total - g.getCash(), 5000 * PriceLevel.FACTOR);
             if (canService(g, needed)) {
-                g.handleLongBondForCash(needed, 20, 100 * PriceLevel.FACTOR);
+                g.handleLongBondForCash(needed, 20, g.fundingLot("Term"));
                 notePaper(g, n + " x paving");
             }
         }
@@ -5550,11 +5550,11 @@ public class LongPlaytest {
                 if (QUOTED_BORROWING ? borrowsAbroad(g, needed) : abroadByTheRatesBefore(g)) {
                     double rateAbroad = abroadQuote(g, needed).marketRate();   // asked before the sale is booked: after it the debt is in the curve
                     g.handleForeignLogic("Term", needed / Math.max(.01, fxRate(g)),
-                            20, 100 * PriceLevel.FACTOR, false);
+                            20, BondMarket.fundingLot(g, "Term", "USD"), false);
                     bondsAbroad++;
                     dearestAbroad = Math.max(dearestAbroad, rateAbroad);
                 } else {
-                    g.handleLongBondForCash(needed, 20, 100 * PriceLevel.FACTOR);
+                    g.handleLongBondForCash(needed, 20, g.fundingLot("Term"));
                     bondsAtHome++;
                 }
                 notePaper(g, quantity + " x " + name);   // the trace (0.7.10); nothing else reads it
@@ -5617,7 +5617,7 @@ public class LongPlaytest {
 
     /** The 20-year dollar term bond for a local-money need, as the build would sell it; books nothing. */
     static DebtQuote abroadQuote(Game g, double needed) {
-        return g.quoteForeign("Term", needed / Math.max(.01, fxRate(g)), 20, 100 * PriceLevel.FACTOR);
+        return g.quoteForeign("Term", needed / Math.max(.01, fxRate(g)), 20, BondMarket.fundingLot(g, "Term", "USD"));
     }
 
     /**
@@ -6326,7 +6326,7 @@ public class LongPlaytest {
         double gap = g.preferredOfferShortBy();
         if (gap > 0) {
             double before = g.getCash();
-            g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+            g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
             notePaper(g, "the bank's preferred (the offer's funding page)");
             if (g.getCash() > before) { offersFunded++; offerFundingRaised += g.getCash() - before; }
         }
@@ -6473,10 +6473,10 @@ public class LongPlaytest {
      */
     static void borrowForTheVillage(Game g) {
         villageInvoice = Founding.whatItBuys(g.getBuildingManager().getTemplates(), 0, 0).village();
-        dayZeroBond = g.quoteLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
-        dayZeroNote = g.quoteTBill(villageInvoice, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
+        dayZeroBond = g.quoteLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
+        dayZeroNote = g.quoteTBill(villageInvoice, Game.BUILD_NOTE_MONTHS, g.fundingLot("Note"));
         double before = g.getCash();
-        g.handleLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.handleLongBondForCash(villageInvoice, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
         notePaper(g, "the village, borrowed for first (Insane)");
         firstYearBorrowed += Math.max(0, g.getCash() - before);
         insaneBorrowings++;
@@ -6496,7 +6496,7 @@ public class LongPlaytest {
         double gap = g.buildFundingGap(t, quantity);
         if (!(gap > 0)) return false;
         double before = g.getCash();
-        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
         notePaper(g, quantity + " x " + name + " (the funding page, Insane)");
         if (g.getMonth() <= 13) firstYearBorrowed += Math.max(0, g.getCash() - before);
         insaneBorrowings++;
@@ -6724,11 +6724,11 @@ public class LongPlaytest {
                         if (BORROW_AT_HOME) {
                             // The same money, at home - see THE CITY'S OWN PAPER.
                             double local = ask * Math.max(.01, fxRate(g));
-                            g.handleLongBondForCash(local, 20, 100 * PriceLevel.FACTOR);
+                            g.handleLongBondForCash(local, 20, g.fundingLot("Term"));
                             log.add(String.format("  m%-5d borrowed $%,.0fk at home at %.2f%%",
                                     g.getMonth(), local, m.getRate() * 100));
                         } else {
-                            g.handleForeignLogic("Term", ask, 20, 100 * PriceLevel.FACTOR, false);
+                            g.handleForeignLogic("Term", ask, 20, BondMarket.fundingLot(g, "Term", "USD"), false);
                             log.add(String.format("  m%-5d borrowed US$%,.0fk abroad at %.2f%%",
                                     g.getMonth(), ask, m.foreignRate() * 100));
                         }

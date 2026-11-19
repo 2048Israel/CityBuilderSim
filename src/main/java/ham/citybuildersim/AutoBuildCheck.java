@@ -834,6 +834,19 @@ public class AutoBuildCheck {
         // orders nothing proves as little (the budget held every staffed service there until 0.7.104; the payback reads
         // what a resident pays and costs the city, the same in both, since).
         for (Game c : new Game[] { g, back }) withRoom(c);
+        // SZ1: live lots changed this played city enough to expose a lost
+        // carried flow: a reload forgot offered care, saw nobody priced out,
+        // and skipped the live city's first General care order at m601.
+        assertTrue("fixture: the saved city turned people away from general care for its fee",
+                g.getHealthcare().getPricedOut(CareType.GENERAL) > 0);
+        for (CareType care : new CareType[] { CareType.CHILDCARE, CareType.GENERAL, CareType.SENIOR }) {
+            cents(care.getLabel() + ": the offered care survives the load",
+                    back.getHealthcare().getOffered(care), g.getHealthcare().getOffered(care));
+            cents(care.getLabel() + ": the priced-out people survive the load",
+                    back.getHealthcare().getPricedOut(care), g.getHealthcare().getPricedOut(care));
+            cents(care.getLabel() + ": the share who could pay survives the load",
+                    back.getHealthcare().getAffordability(care), g.getHealthcare().getAffordability(care));
+        }
         double worst = 0;
         String first = null;
         for (int i = 0; i < months; i++) {
@@ -1834,7 +1847,7 @@ public class AutoBuildCheck {
             if (q != null && AutoBuilder.ratioAfter(g, q) <= limit) lo = mid; else hi = mid;
         }
         double borrow = lo;
-        if (borrow > 0) quietly(() -> g.handleLongBondForCash(borrow, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        if (borrow > 0) quietly(() -> g.handleLongBondForCash(borrow, Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
         return limit;
     }
 
@@ -1870,7 +1883,7 @@ public class AutoBuildCheck {
      */
     static Game overTheLimit(Game g) {
         double cash = g.getCash();
-        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g), Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
         g.setCashForTest(cash);
         return g;
     }
@@ -1886,7 +1899,7 @@ public class AutoBuildCheck {
         double before = AutoBuilder.debt(a), gdp = AutoBuilder.annualGdp(a);
         DebtQuote q = AutoBuilder.bondFor(a, gdp / 10);
         double predicted = q == null ? Double.NaN : AutoBuilder.debtAfter(a, q);
-        quietly(() -> a.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        quietly(() -> a.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, a.fundingLot("Term")));
         cents(String.format("a bond's face is what it adds to the city's debt: %s raised, %s owed (ratioAfter()'s arithmetic)",
                 q == null ? "none" : DecisionLog.money(q.cashReceived()), q == null ? "none" : DecisionLog.money(q.faceValue())),
                 AutoBuilder.debt(a), predicted);
@@ -1894,7 +1907,7 @@ public class AutoBuildCheck {
         o.setCashForTest(-gdp / 20);
         DebtQuote qo = AutoBuilder.bondFor(o, gdp / 10);
         double predictedO = qo == null ? Double.NaN : AutoBuilder.debtAfter(o, qo);
-        quietly(() -> o.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        quietly(() -> o.handleLongBondForCash(gdp / 10, Game.BUILD_BOND_YEARS, o.fundingLot("Term")));
         cents("...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face"
                 + " with it, and what is still overdrawn (0.7.101; the overdraft outside the debt until then)",
                 AutoBuilder.debt(o), predictedO);

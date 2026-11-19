@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.155 — SZ1, steps and lots that scale — 2026-11-19, ready, see docs/queue/SZ1-notes.md
+Quantity and money buttons follow the figure's leading unit and its tenth,
+never below the control's least step: building, paving, land, borrowing,
+fund tickets and transfers, and reserves. The five city-paper lots follow
+this month's prices, capped by the minimum issue; the player's lot rounds
+down to 1-2-5. Model funding, including initial offers, keeps the exact
+priced and capped amount to preserve dollar scaling. Loading restores care
+offered and affordability, so automatic building sees the same shortfall.
+
 ### FS1 — the tests that break when another batch moves the played city, a study — 2026-11-19, ready, see docs/queue/FS1-notes.md
 `docs/studies/flaky-suite.md` and its three tables in `docs/studies/flaky-suite/`: every harness in the suite (224, 2,619
 sections on 0.9.153) sorted by how each section gets its condition. 2,027 are caused; 543 read a played city (identity

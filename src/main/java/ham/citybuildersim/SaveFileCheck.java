@@ -2124,6 +2124,9 @@ public class SaveFileCheck {
         boolean kindsKept = Math.abs(kindsBack - careBack.getTreatmentFees()) <= 1e-9 * Math.max(1, careBack.getTreatmentFees());
         for (CareType care : new CareType[] { CareType.GENERAL, CareType.CHILDCARE, CareType.SENIOR }) {
             kindsKept &= Math.abs(careBack.feesFrom(care) - careLive.feesFrom(care)) < 1e-9;
+            same(care.getLabel() + ": offered care", careBack.getOffered(care), careLive.getOffered(care));
+            same(care.getLabel() + ": priced out of care", careBack.getPricedOut(care), careLive.getPricedOut(care));
+            same(care.getLabel() + ": the share who could pay", careBack.getAffordability(care), careLive.getAffordability(care));
         }
         assertTrue("just loaded, care's fees by kind add up to its line as the live city's do", kindsKept);
         for (int r = 0; r < full.getHouseholds().getRowCount(); r++) {

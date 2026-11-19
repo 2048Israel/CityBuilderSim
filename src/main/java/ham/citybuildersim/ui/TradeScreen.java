@@ -3907,9 +3907,7 @@ final class TradeScreen {
             Label ask = figure(tradeExchange <= 0 ? "nothing yet" : dFull(tradeExchange), 20,
                     tradeExchange > 0 ? Palette.TEXT_HEAD : Palette.TEXT_SPENT);
             FlowPane pick = Kept.flow(6, 6);
-            for (double share : new double[] {.05, .25, .5}) {
-                double step = reach * share;
-                if (step <= 0) continue;
+            for (double step : ham.citybuildersim.MagnitudeSteps.of(tradeExchange, Math.min(1, reach))) {
                 pick.getChildren().add(stepChip("+" + d(step), () -> {
                     tradeExchange = Math.min(reach, tradeExchange + step);
                     showForeignMenu();
