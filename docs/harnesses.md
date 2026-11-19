@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**225 harness files, 25,860 labelled assertions.** AllChecks runs 225 of them.
+**225 harness files, 25,875 labelled assertions.** AllChecks runs 225 of them.
 
 ## Which harnesses read which class
 
@@ -8029,8 +8029,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1400 at the floor in force it is the payroll the city pays today, the posts' pay in it
   - L1401 ...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against
   - L1409 fixture: the posts are
-  - L1419 the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write),
-  - L1421 ...and with the posts held again it is what it was
+  - L1420 the credit check counts each research job's 2.25 heads of demand plus TARGET_HEADROOM,
+  - L1422 ...and with the posts held again it is what it was
 
 ## DistressBleedCheck.java - 28 labelled assertions
 
@@ -14834,7 +14834,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L280 a played city's record survives a save
   - L286 ...and the month after, both cities hold the same households
 
-## HousingCheck.java - 79 labelled assertions
+## HousingCheck.java - 94 labelled assertions
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
@@ -14850,101 +14850,117 @@ _(this harness does not label its checks through a helper - it prints its findin
 > first time and reported an apparent contradiction: 15,181 homes standing
 > ...
 
-- **L107 1. every door is accounted for**
-  - L110 let plus empty is owned
-  - L111 ...and the landlords own what was built
-  - L117 ...and the sizes add up to the same stock
-  - L128 nobody lets more homes than exist
-- **L131 2. every household is accounted for**
-  - L136 housed plus doubled up is every household
-  - L138 ...and nobody is doubled up who does not exist
-  - L155 ...nor refused by a studio without being somewhere
-- **L158 3. rent paid is rent received**
-  - L164 the households paid what the landlords billed
-  - L173 ...and that is the weight times the price
-  - L177 ...and the two segment weights are the whole weight
-- **L182 3b. the two segments partition everything**
-  - L190 studio doors plus family doors is every door
-  - L192 ...and studio seekers plus family seekers is every household
-  - L194 a studio never bills more than its own doors hold
-- **L198 3c. rent never falls through the floor**
-  - L240 while neither market is in glut, the blended rent target never goes under break-even
-- **L244 3d. repairs are a flow, not a number**
-  - L272 what the city paid for repairs is what the builders were paid
-  - L279 and the landlords' share is the residential charge
-  - L307 ...and the per-household figure is that over the payers
-- **L350 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
-- **L362 a city that built nothing but studios**
-- **L394 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
-  - L469 a studio city either builds family doors or can say who it refused
-  - L472 either way it owns doors a child is allowed in, or refuses openly
-  - L474 ...and every refusal is either crammed in or outside
-- **L478 5. AND ALL OF IT SURVIVES A SAVE.**
-  - L511 fixture: this city really is collecting rent
-  - L512 fixture: ...at two prices that are really being charged
-  - L514 fixture: ...on doors that are really let
-  - L515 saved
-  - L520 households doubled up
-  - L522 ...the ones a studio turned away
-  - L524 ...the ones in something too small
-  - L526 the rent the households paid
-  - L528 the homes the landlords let
-  - L530 ...and the studio market's own price
-  - L533 ...and the family one's
-  - L540 the month after a reload still balances
-- **L543 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
-- **L563 a single adult takes a four-person flat when that is all there is**
-  - L580 fixture: the city really does have households to place
-  - L582 every household is placed when only big doors exist
-  - L584 ...and each one bills its DOOR's size, not its own
-  - L586 ...and none of it is billed as studio
-  - L602 ...and the only crowding is households too big for the flat
-  - L623 fixture: some households really do have a child
-  - L624 a studio-only city turns away exactly the households with a child
-  - L626 ...and those are exactly the ones it could not place
-  - L628 nothing is billed as a family let when only studios exist
-- **L635 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29)**
-- **L674 the landlords build before anyone can staff them**
-  - L697 fixture: the landlords own three homes, two of them over the NAA's 51 units
-  - L701 a House has no posts: a single house's repairs are the builders' order
-  - L702 a Studio and a Low-Rise each have one office and one maintenance post
-  - L704 ...every home's posts as the NAA rule has them, and all of them diploma posts
-  - L724 fixture: jobs for more people than there are beds
-  - L726 fixture: the city could not staff a Studio (it would fail the bar every other owner is held to)
-  - L728 fixture: ...nor a Low-Rise
-  - L729 fixture: the landlords have no posts of their own yet
-  - L734 the landlords are the one owner that does not hold an order to staffing; every other keeps the gate
-  - L742 the landlords still order a home the city could not staff
-  - L747 the investors' gate for a Studio is not STAFFING
-  - L750 ...nor does its appraisal ask staffing at all: no mark, where a shop's would pass or fail
-  - L752 ...and the card reads the city could staff all of it (1), so no \"could staff\" words
-  - L761 two Studios standing: their whole capacity counts in the city's housing, staffed or not
-  - L764 the posts are real: the landlords' posts rose by the blocks' own jobs
-  - L766 ...mostly empty, since no spare worker was there to take them (partly or wholly)
-  - L768 ...and the ones the city did have for them are paid: the landlords' payroll is above zero
-  - L770 the block bills rent with its posts empty: the landlords' rent billed rose
-  - L774 the rent floor carries the wages they pay
-  - L776 ...which the floor without them would not have
-- **L833 a city at a held 15% rents its glut at no lift**
-  - L888 held 15%, neither market in glut: the blended target is not under break-even
-  - L896 fixture: the held dial is the rate the landlords borrow against
-  - L899 fixture: the landlords ran into loss for the retirement's months with the homes over the people by its slack, which is what closes a home
-  - L907 closed-home debt is a share in [0, 1]
-  - L911 saved
-  - L914 a closed home's debt share comes back from a save
-- **L925 a closed home's debt is the landlord's loss**
-  - L932 fixture: nothing closed, nothing stranded
-  - L933 ...and all the interest is carried
-  - L935 1000 places down to 600: 400 of 1000 are closed, a share of .4
-  - L936 ...and the interest carried is the .6 left
-  - L938 600 up to 1200: the share is diluted by places, .4 x 600 / 1200
-  - L940 the break-even over what it owns is maintenance, tax, the interest carried and payroll
-  - L942 ...and it is under what it would be with all the interest counted
-  - L945 the company still pays all its interest: the line is untouched
-  - L950 a saved landlord, loaded: the share is back
-  - L952 ...and the month's first count, from nothing, leaves it as saved
-  - L956 1200 places down to none: the whole debt is a closed home's
-  - L958 ...and a count from nothing leaves it
+- **L111 1. every door is accounted for**
+  - L114 let plus empty is owned
+  - L115 ...and the landlords own what was built
+  - L121 ...and the sizes add up to the same stock
+  - L132 nobody lets more homes than exist
+- **L135 2. every household is accounted for**
+  - L140 housed plus doubled up is every household
+  - L142 ...and nobody is doubled up who does not exist
+  - L159 ...nor refused by a studio without being somewhere
+- **L162 3. rent paid is rent received**
+  - L168 the households paid what the landlords billed
+  - L177 ...and that is the weight times the price
+  - L181 ...and the two segment weights are the whole weight
+- **L186 3b. the two segments partition everything**
+  - L194 studio doors plus family doors is every door
+  - L196 ...and studio seekers plus family seekers is every household
+  - L198 a studio never bills more than its own doors hold
+- **L202 3c. rent never falls through the floor**
+  - L244 while neither market is in glut, the blended rent target never goes under break-even
+- **L248 3d. repairs are a flow, not a number**
+  - L276 what the city paid for repairs is what the builders were paid
+  - L283 and the landlords' share is the residential charge
+  - L311 ...and the per-household figure is that over the payers
+- **L354 4b. A CITY THAT REALLY DOES HOLD BOTH AT ONCE.**
+- **L366 a city that built nothing but studios**
+- **L398 WHAT THIS SECTION CAN AND CANNOT CLAIM, REWRITTEN 2026-09-09.**
+  - L473 a studio city either builds family doors or can say who it refused
+  - L476 either way it owns doors a child is allowed in, or refuses openly
+  - L478 ...and every refusal is either crammed in or outside
+- **L482 5. AND ALL OF IT SURVIVES A SAVE.**
+  - L515 fixture: this city really is collecting rent
+  - L516 fixture: ...at two prices that are really being charged
+  - L518 fixture: ...on doors that are really let
+  - L519 saved
+  - L524 households doubled up
+  - L526 ...the ones a studio turned away
+  - L528 ...the ones in something too small
+  - L530 the rent the households paid
+  - L532 the homes the landlords let
+  - L534 ...and the studio market's own price
+  - L537 ...and the family one's
+  - L544 the month after a reload still balances
+- **L547 4b. A SMALL HOUSEHOLD TAKES A BIG DOOR WHEN THE SMALL ONES RUN OUT.**
+- **L567 a single adult takes a four-person flat when that is all there is**
+  - L584 fixture: the city really does have households to place
+  - L586 every household is placed when only big doors exist
+  - L588 ...and each one bills its DOOR's size, not its own
+  - L590 ...and none of it is billed as studio
+  - L606 ...and the only crowding is households too big for the flat
+  - L627 fixture: some households really do have a child
+  - L628 a studio-only city turns away exactly the households with a child
+  - L630 ...and those are exactly the ones it could not place
+  - L632 nothing is billed as a family let when only studios exist
+- **L639 6. THE LANDLORDS BUILD BEFORE ANYONE CAN STAFF THEM (HD1, 2026-10-29)**
+- **L678 the landlords build before anyone can staff them**
+  - L701 fixture: the landlords own three homes, two of them over the NAA's 51 units
+  - L705 a House has no posts: a single house's repairs are the builders' order
+  - L706 a Studio and a Low-Rise each have one office and one maintenance post
+  - L708 ...every home's posts as the NAA rule has them, and all of them diploma posts
+  - L728 fixture: jobs for more people than there are beds
+  - L730 fixture: the city could not staff a Studio (it would fail the bar every other owner is held to)
+  - L732 fixture: ...nor a Low-Rise
+  - L733 fixture: the landlords have no posts of their own yet
+  - L738 the landlords are the one owner that does not hold an order to staffing; every other keeps the gate
+  - L746 the landlords still order a home the city could not staff
+  - L751 the investors' gate for a Studio is not STAFFING
+  - L754 ...nor does its appraisal ask staffing at all: no mark, where a shop's would pass or fail
+  - L756 ...and the card reads the city could staff all of it (1), so no \"could staff\" words
+  - L765 two Studios standing: their whole capacity counts in the city's housing, staffed or not
+  - L768 the posts are real: the landlords' posts rose by the blocks' own jobs
+  - L770 ...mostly empty, since no spare worker was there to take them (partly or wholly)
+  - L772 ...and the ones the city did have for them are paid: the landlords' payroll is above zero
+  - L774 the block bills rent with its posts empty: the landlords' rent billed rose
+  - L778 the rent floor carries the wages they pay
+  - L780 ...which the floor without them would not have
+- **L796 homes keep headroom over demand**
+  - L826 fixture: catalogue quantities make equal homes and demand
+  - L848 fixture: jobs' demand equals standing capacity
+  - L849 fixture: neither segment lacks a door
+  - L850 the credit check sees the margin still needed
+  - L855 equal homes and demand still plan the spare homes
+  - L856 fixture: the spare homes are Houses, with no added jobs
+  - L858 the order reaches the margin without going past it
+  - L863 the credit check counts the homes on site once
+  - L865 only the last House is ordered beside the existing sites
+  - L868 standing plus planned capacity is demand plus headroom
+  - L870 the credit check has no gap at the planned margin
+  - L871 nothing more is ordered at the planned margin
+  - L876 completed capacity is still exactly the target
+  - L877 nothing more is ordered at the completed margin
+  - L879 nothing is ordered above the margin
+- **L925 a city at a held 15% rents its glut at no lift**
+  - L980 held 15%, neither market in glut: the blended target is not under break-even
+  - L988 fixture: the held dial is the rate the landlords borrow against
+  - L991 fixture: the landlords ran into loss for the retirement's months with the homes over the people by its slack, which is what closes a home
+  - L999 closed-home debt is a share in [0, 1]
+  - L1003 saved
+  - L1006 a closed home's debt share comes back from a save
+- **L1017 a closed home's debt is the landlord's loss**
+  - L1024 fixture: nothing closed, nothing stranded
+  - L1025 ...and all the interest is carried
+  - L1027 1000 places down to 600: 400 of 1000 are closed, a share of .4
+  - L1028 ...and the interest carried is the .6 left
+  - L1030 600 up to 1200: the share is diluted by places, .4 x 600 / 1200
+  - L1032 the break-even over what it owns is maintenance, tax, the interest carried and payroll
+  - L1034 ...and it is under what it would be with all the interest counted
+  - L1037 the company still pays all its interest: the line is untouched
+  - L1042 a saved landlord, loaded: the share is back
+  - L1044 ...and the month's first count, from nothing, leaves it as saved
+  - L1048 1200 places down to none: the whole debt is a closed home's
+  - L1050 ...and a count from nothing leaves it
 
 ## HousingDoorCheck.java - 8 labelled assertions
 
@@ -19134,104 +19150,104 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L6915 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
 - **L8204 what the advisor tried, and what happened**
 - **L8210 findings**
-- **L8228 HA1 money audit fixtures**
-- **L8814 1. a city that prospers**
-  - L8836 a founding city conserves money to within 0.01% of what moved
-- **L8855 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L8878 an industrial city conserves money to within 0.01% of what moved
-  - L8880 ...and it really did carry passengers, so the fare was really charged
-  - L8897 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L8906 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L8916 land bought out of the vault: nothing moves the audit cannot see**
-  - L8926 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L8930 a city that paid for land out of the vault conserves money
-  - L8932 ...and nothing moved a pool after any month's audit
-- **L8935 2. a city under stress**
-  - L8962 a stressed city conserves money to within 0.01% of what moved
-  - L8993 fixture: retail went under whole, and was restructured
-  - L8995 a restructure moves no cash the audit cannot see
-- **L8998 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9016 a city paying over the world: the money that arrives is audited**
-  - L9037 fixture: the rate actually brought money in
-  - L9039 ...and the audit saw it cross the border
-  - L9042 a city conserves money with hot money flowing
-  - L9045 ...and nothing moved after the audit struck
-- **L9047 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9061 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9088 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9091 ...and bought consumables abroad, inside their imports
-  - L9093 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9095 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9099 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9111 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9149 fixture: the yard bought old steel from the households and from a sector
-  - L9151 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9153 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9157 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9168 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9170 the households' books close in every one of the yard's months (worst residual
-  - L9172 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9175 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9186 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9217 fixture: the refinery bought old copper from the households and from a sector
-  - L9219 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9221 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9231 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9233 the households' books close in every one of the refinery's months (worst residual
-  - L9235 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9238 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9267 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9293 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9339 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9340 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9342 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9344 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9346 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9348 ...and nothing moved a pool after any month's audit struck
-  - L9349 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9351 ...and it is the cash coupons the budget calls its cash interest
-- **L9353 12. the services' upkeep is bought of Business Services**
-  - L9374 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9377 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9379 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9390 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9402 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9404 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9407 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9410 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9415 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9418 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9423 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9436 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9440 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9445 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9447 13. the households' books close**
-  - L9456 fixture: the longest city this file plays gave at least 24 months to read
-  - L9458 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L9467 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L9471 14. a cent that vanishes from a household is seen**
-  - L9483 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L9488 the theft took what it was meant to: the savings fell by X, to the cent
-  - L9494 the game's own strike, whose opening figure was read after the theft, closes
-  - L9495 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L9498 15. a bond's face that no cell holds is named**
-  - L9522 fixture: the bond town's households hold a corporate bond
-  - L9542 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9550 the press that paid the coupon on D declares it orphaned:
-  - L9553 ...and the own line fired with that figure
-  - L9554 ...the households' books close
-  - L9557 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9580 the bond matured within its term (m
-  - L9582 ...every month on the way closed its households' books
-  - L9583 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9586 ...and the households' books close that month, the principal paid on a face no cell held
-- **L9590 16. what comes off the payslips is in transit a press**
-  - L9610 fixture: with the three levers shut nothing comes off the payslips but the wage tax
-  - L9635 fixture: the treasury banked all three that press
-  - L9638 ...by the lines the pools' identity reads
-  - L9649 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L9650 the households' books close in every one of the
-  - L9651 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L8230 HA1 money audit fixtures**
+- **L8816 1. a city that prospers**
+  - L8838 a founding city conserves money to within 0.01% of what moved
+- **L8857 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L8880 an industrial city conserves money to within 0.01% of what moved
+  - L8882 ...and it really did carry passengers, so the fare was really charged
+  - L8899 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L8908 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L8918 land bought out of the vault: nothing moves the audit cannot see**
+  - L8928 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L8932 a city that paid for land out of the vault conserves money
+  - L8934 ...and nothing moved a pool after any month's audit
+- **L8937 2. a city under stress**
+  - L8964 a stressed city conserves money to within 0.01% of what moved
+  - L8995 fixture: retail went under whole, and was restructured
+  - L8997 a restructure moves no cash the audit cannot see
+- **L9000 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9018 a city paying over the world: the money that arrives is audited**
+  - L9039 fixture: the rate actually brought money in
+  - L9041 ...and the audit saw it cross the border
+  - L9044 a city conserves money with hot money flowing
+  - L9047 ...and nothing moved after the audit struck
+- **L9049 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9063 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9090 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9093 ...and bought consumables abroad, inside their imports
+  - L9095 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9097 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9101 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9113 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9151 fixture: the yard bought old steel from the households and from a sector
+  - L9153 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9155 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9159 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9170 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9172 the households' books close in every one of the yard's months (worst residual
+  - L9174 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9177 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9188 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9219 fixture: the refinery bought old copper from the households and from a sector
+  - L9221 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9223 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9233 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9235 the households' books close in every one of the refinery's months (worst residual
+  - L9237 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9240 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9269 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9295 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9341 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9342 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9344 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9346 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9348 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9350 ...and nothing moved a pool after any month's audit struck
+  - L9351 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9353 ...and it is the cash coupons the budget calls its cash interest
+- **L9355 12. the services' upkeep is bought of Business Services**
+  - L9376 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9379 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9381 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9392 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9404 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9406 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9409 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9412 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9417 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9420 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9425 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9438 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L9442 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L9447 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L9449 13. the households' books close**
+  - L9458 fixture: the longest city this file plays gave at least 24 months to read
+  - L9460 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L9469 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L9473 14. a cent that vanishes from a household is seen**
+  - L9485 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L9490 the theft took what it was meant to: the savings fell by X, to the cent
+  - L9496 the game's own strike, whose opening figure was read after the theft, closes
+  - L9497 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L9500 15. a bond's face that no cell holds is named**
+  - L9524 fixture: the bond town's households hold a corporate bond
+  - L9544 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L9552 the press that paid the coupon on D declares it orphaned:
+  - L9555 ...and the own line fired with that figure
+  - L9556 ...the households' books close
+  - L9559 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L9582 the bond matured within its term (m
+  - L9584 ...every month on the way closed its households' books
+  - L9585 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L9588 ...and the households' books close that month, the principal paid on a face no cell held
+- **L9592 16. what comes off the payslips is in transit a press**
+  - L9612 fixture: with the three levers shut nothing comes off the payslips but the wage tax
+  - L9637 fixture: the treasury banked all three that press
+  - L9640 ...by the lines the pools' identity reads
+  - L9651 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L9652 the households' books close in every one of the
+  - L9653 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 

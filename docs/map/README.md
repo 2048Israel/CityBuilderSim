@@ -4,7 +4,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 598 files, 649,611 lines, 28,252 methods, 6,230 constants. `GameVersion.VERSION` is "0.9.156", `SAVE_FORMAT` 56.
+**The tree:** 598 files, 649,707 lines, 28,253 methods, 6,230 constants. `GameVersion.VERSION` is "0.9.157", `SAVE_FORMAT` 56.
 
 ## model (268 files)
 
@@ -307,7 +307,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PortDivision.java](PortDivision.md) | 363 | 27 | Freight's Ports division: the crews that work the city's berths, paid by the shippers who use them and paying the city for the quay (FR3, 2026-10-1... | 11 |
 | [ProcessingSector.java](ProcessingSector.md) | 582 | 45 | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends ... | 20 |
 | [Quarrying.java](Quarrying.md) | 417 | 22 | Quarries - Quarrying (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.4, 2.10 and 5's I7 row; the study's 6): the third materials chain's ... | 9 |
-| [RealEstate.java](RealEstate.md) | 1,034 | 97 | The landlords. | 22 |
+| [RealEstate.java](RealEstate.md) | 1,035 | 97 | The landlords. | 22 |
 | [RefineryFlow.java](RefineryFlow.md) | 431 | 38 | The refinery as a campus of units, and a month's flow through them (0.7.80, batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into ... | 23 |
 | [Refining.java](Refining.md) | 1,995 | 114 | The refinery. | 27 |
 | [Restaurants.java](Restaurants.md) | 528 | 25 | The kitchens. | 8 |
@@ -430,7 +430,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [DenominationCheck.java](DenominationCheck.md) | 1,214 | 38 | A currency reform is a change of units, and this is how we know. | 0 |
 | [DeskCheck.java](DeskCheck.md) | 1,274 | 31 | The debt desk's figures (CD6, spec-city-debt.md sections 7 and 8): the figures the debt screens used to work out for themselves, held to the model ... | 1 |
 | [DeterminismCheck.java](DeterminismCheck.md) | 447 | 19 | The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit. | 2 |
-| [DiscoveryCheck.java](DiscoveryCheck.md) | 1,423 | 44 | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in... | 4 |
+| [DiscoveryCheck.java](DiscoveryCheck.md) | 1,424 | 44 | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in... | 4 |
 | [DistressBleedCheck.java](DistressBleedCheck.md) | 492 | 12 | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.B... | 0 |
 | [DriverlessTruckCheck.java](DriverlessTruckCheck.md) | 419 | 23 | The driverless truck (R6b, FE1): the Truck Depot's second piece of equipment, the kit that ends the driver's cab, and what a depot fitted with it d... | 0 |
 | [ER1Check.java](ER1Check.md) | 112 | 4 | The growth hold when a full city's treasury cannot buy a whole land offer. | 0 |
@@ -480,7 +480,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HomeRailCheck.java](HomeRailCheck.md) | 924 | 28 | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's... | 2 |
 | [HouseholdCheck.java](HouseholdCheck.md) | 1,701 | 7 | Verifies the residents' books and the demolition log. | 0 |
 | [HouseholdMemoryCheck.java](HouseholdMemoryCheck.md) | 292 | 6 | The households remember: the builder keeps what still fits. | 0 |
-| [HousingCheck.java](HousingCheck.md) | 974 | 9 | Audits the three subsystems that describe the same housing, every month, and makes them agree. | 0 |
+| [HousingCheck.java](HousingCheck.md) | 1,066 | 10 | Audits the three subsystems that describe the same housing, every month, and makes them agree. | 0 |
 | [HousingDoorCheck.java](HousingDoorCheck.md) | 338 | 6 | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed tho... | 0 |
 | [HydroCheck.java](HydroCheck.md) | 613 | 17 | The Hydro Station and the river it needs (HY1, 2026-10-26; docs/queue/HY1-notes.md): the physics of a drop against its own constants, the sites on ... | 0 |
 | [HydrogenSteelCheck.java](HydrogenSteelCheck.md) | 509 | 22 | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from ... | 1 |
@@ -503,7 +503,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,363 | 95 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 6 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 530 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 9,658 | 179 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 71 |
+| [LongPlaytest.java](LongPlaytest.md) | 9,660 | 179 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 71 |
 | [LuxuryRetailCheck.java](LuxuryRetailCheck.md) | 249 | 10 | What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17). | 0 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
