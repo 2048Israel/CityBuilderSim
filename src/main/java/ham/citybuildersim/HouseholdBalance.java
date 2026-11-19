@@ -2226,18 +2226,6 @@ public class HouseholdBalance {
     }
 
     /**
-     * One stock through the pool: released by the cells that shrank at their
-     * own average, claimed by the cells that grew - within the row first, then
-     * across the city - and what nobody claimed returned.
-     *
-     * @param before  the households each cell's stock was carried by coming in:
-     *                the cell's count, except where some already left with it
-     *                (the graduates and their loans - see carryGraduatesLoans())
-     * @param arrival what a household nobody released brings of this stock,
-     *                per cell, or null for nothing
-     * @return the total of this stock that left the city
-     */
-    /**
      * What a household of a cell weighs in the pool: its grown-ups, and a
      * cell with none (the orphans) by its people (OH1). Weighed by grown-ups
      * alone, a shrinking orphan cell released into a pool nobody was handed -
@@ -2249,6 +2237,18 @@ public class HouseholdBalance {
         return c.grownUps() > 0 ? c.grownUps() : c.size();
     }
 
+    /**
+     * One stock through the pool: released by the cells that shrank at their
+     * own average, claimed by the cells that grew - within the row first, then
+     * across the city - and what nobody claimed returned.
+     *
+     * @param before  the households each cell's stock was carried by coming in:
+     *                the cell's count, except where some already left with it
+     *                (the graduates and their loans - see carryGraduatesLoans())
+     * @param arrival what a household nobody released brings of this stock,
+     *                per cell, or null for nothing
+     * @return the total of this stock that left the city
+     */
     private double moveStock(Stock stock, double[] fresh, double[] before, double[] arrival) {
         int n = cells.length;
         // A stock group a row, and the retired one a former tier (HS1): Household.STOCK_GROUPS.
@@ -4532,6 +4532,33 @@ public class HouseholdBalance {
 
     /** Everything the households owe the bank. */
     public double bookOwed() { return totalDebt(); }
+
+    /**
+     * The census alone (HS1): the month's flows used up, the pool, the fold -
+     * no month settled and nobody arriving with a buffer, so a harness reads
+     * what the people carried to the cent (HouseholdFlowCheck). The records
+     * followThePeople() adds to are cleared first, as advanceMonth() clears
+     * them; the rest of the month's are left as they stood.
+     */
+    void censusOnly(ToDoubleBiFunction<FamilyStructure, PayTier> census) {
+        if (census == null) return;
+        lastWrittenOff = 0;
+        lastTakenAway = 0;
+        lastArrivedWith = 0;
+        lastCensusStranded = 0;
+        lastCensusCreated = 0;
+        java.util.Arrays.fill(lastFlowHouseholds, 0);
+        java.util.Arrays.fill(lastFlowSavings, 0);
+        lastEstateRepaid = 0;
+        lastEstateWrittenOff = 0;
+        lastEstatePassed = 0;
+        lastPoolSavings = 0;
+        lastAbroadTakenAway = 0;
+        java.util.Arrays.fill(lastSharesTakenAway, 0);
+        Plan plan = planFlows(census, true);
+        double[] fresh = takeCensus(census, plan.after);
+        followThePeople(fresh, new double[cells.length], plan);
+    }
 
     /**
      * The plan alone, without settling a month.
