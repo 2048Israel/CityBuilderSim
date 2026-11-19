@@ -201,6 +201,7 @@ public final class Recipes {
      */
     public void apply(Game game) {
         if (!game.foundedUnfitted()) return;
+        dateHomes(game);
         BuildingManager buildings = game.getBuildingManager();
         for (BuildingsTemplate t : buildings.getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
@@ -233,7 +234,78 @@ public final class Recipes {
         RecipeChanges.declareGoods(game, t);
     }
 
-    /** Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. */
+    /* ===== THE 1900 HOME (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) =====
+
+       WHY. EP1 priced a home in founding money "so a house costs the same share of a wage that it did" (BuildingsTemplate.pricedAtFoundingLevel()),
+       the wage being today's ladder's. A city founded the 1900 way pays 1901's (WageLadder.Y1901), about a quarter of today's, and built
+       today's home at today's real cost: its households paid 0.61 of their take-home in rent at month 60 against TARGET_RENT_BURDEN's 0.30,
+       the affordability pull held the city under its people, and nobody came (R1g's Village1900Check, section 2). research-1900 5.3 gives
+       the 1900 family's rent as a quarter of its staple budget, in a home with no running water, bathroom, electricity or central heat.
+
+       WHAT. In a city founded the 1900 way, each home (a Real Estate template with households to house, as EconomyManager.repriceHousingCosts()
+       picks them) is built to 1900's standard once, where the city's templates are first set (apply()): its cash cost, upkeep, materials and
+       points times homeScale(), the 1901 household's wage over the same household's on today's ladder. Its land is not moved: the plot is the
+       plot. A price set this way is today's price to the month's re-strike (BuildingsTemplate.setCashCost()), so it holds; the templates of a
+       loaded city are read afresh and dated the same way in the load path's apply(). A city founded the default way never comes here.
+       ===================================================================== */
+
+    /**
+     * R1g's switch for the 1900 home, on unless -Dr1g.home=off: the controls' lever while the fix and its pace are Jerus's call (the notes, 2),
+     * and the one Village1900Check reads to show the home's effect, failing with it off.
+     */
+    public static boolean HOMES_1900 = !"off".equalsIgnoreCase(System.getProperty("r1g.home", "on").trim());
+
+    /** The homes this has dated, by identity: each once, a city's templates being its own (weak, so a finished city's templates go with it). */
+    private final java.util.Set<BuildingsTemplate> datedHomes = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+
+    /**
+     * What a 1900 home costs of today's: the 1901 household's monthly wage over the same household's on today's ladder (WageLadder.TODAY), the
+     * household being 1901's working arrivals by band (ArrivalMix's first knot) and each band paid the mean of its job types' rungs. About 0.29
+     * (no diploma 0.238 of today's, a trade 0.371).
+     */
+    public static double homeScale() {
+        ArrivalMix.Knot first = ArrivalMix.KNOTS.get(0);
+        double[] share = { first.none(), first.diploma(), first.college(), first.university() };
+        double then = 0, now = 0;
+        for (WageBand band : WageBand.values()) {
+            double y1901 = 0, today = 0;
+            int jobs = 0;
+            for (JobType job : JobType.values()) {
+                if (WageBand.of(job) != band) continue;
+                y1901 += WageLadder.Y1901.monthlyWage(PayTier.of(job));
+                today += WageLadder.TODAY.monthlyWage(PayTier.of(job));
+                jobs++;
+            }
+            if (jobs == 0) continue;
+            then += share[band.ordinal()] * y1901 / jobs;
+            now += share[band.ordinal()] * today / jobs;
+        }
+        return now > 0 ? Math.min(1, then / now) : 1;
+    }
+
+    /** Builds each of the city's homes to 1900's standard, once (THE 1900 HOME, above); nothing with the switch off. */
+    private void dateHomes(Game game) {
+        if (!HOMES_1900 || game.getSectors() == null) return;
+        String homes = game.getSectors().realEstate().key();
+        double scale = homeScale();
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0 || !datedHomes.add(t)) continue;
+            t.setCashCost(t.getCashCost() * scale);
+            t.setUpkeep(t.getUpkeep() * scale);
+            t.setConstructionMaterials((int) Math.max(1, Math.round(t.getConstructionMaterials() * scale)));
+            t.setConstructionPoints((int) Math.max(1, Math.round(t.getConstructionPoints() * scale)));
+        }
+    }
+
+    /** Whether this city's homes are built to 1900's standard: for the harnesses. */
+    public boolean datedHome(BuildingsTemplate t) {
+        return datedHomes.contains(t);
+    }
+
+    /**
+     * Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. The
+     * dated homes are kept: a new city's templates are new objects, and a template dated twice would be built to a 1900 standard of a 1900 home.
+     */
     public void clear() {
         chosen.clear();
     }
