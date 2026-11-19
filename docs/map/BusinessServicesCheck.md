@@ -1,4 +1,4 @@
-# BusinessServicesCheck.java - 398 lines · 5 methods · 3 constants · harnesses
+# BusinessServicesCheck.java - 523 lines · 6 methods · 3 constants · harnesses
 
 `ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -21,7 +21,7 @@
 > rather than waiting for a school; the currency test moves the rate rather
 > than hoping a run drifts.
 
-**Uses:** [Good](Good.md) (20), [JobType](JobType.md) (13), [Game](Game.md) (12), [Sectors](Sectors.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (6), [Equity](Equity.md) (5), [BuildingManager](BuildingManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [GameFiles](GameFiles.md) (2), [PriceLevel](PriceLevel.md) (2), [BusinessServices](BusinessServices.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [PolicyDates](PolicyDates.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1)
+**Uses:** [Good](Good.md) (25), [MoneyAudit](MoneyAudit.md) (20), [Game](Game.md) (15), [JobType](JobType.md) (13), [BusinessServices](BusinessServices.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [Sectors](Sectors.md) (7), [Equity](Equity.md) (5), [GameFiles](GameFiles.md) (4), [LongPlaytest](LongPlaytest.md) (4), [BuildingManager](BuildingManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (3), [GoodsMarket](GoodsMarket.md) (2), [PriceLevel](PriceLevel.md) (2), [Sector](Sector.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [PayTier](PayTier.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [PolicyDates](PolicyDates.md) (1), [SectorBooks](SectorBooks.md) (1), [Household](Household.md) (1), [Statement](Statement.md) (1)
 
 ## Sections
 
@@ -33,6 +33,7 @@
 | 172 | · 3. the licence gate |
 | 212 | · 4/5. the wage bill and the currency are the brake |
 | 295 | · 6. the books, and a reload |
+| 383 | · 7. the upkeep it keeps follows its seats (HL1-R), no cliff at the first one |
 
 ## Constants
 
@@ -54,10 +55,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 370 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
+| 29 | 495 | **type** `public class BusinessServicesCheck` | The sector whose customer is not in the city. |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 50 | 5 | `static void quietly(Runnable r)` |  |
-| 61 | 331 | `public static void main(String[] args) throws Exception` |  |
-| 393 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 61 | 450 | `public static void main(String[] args) throws Exception` |  |
+| 513 | 4 | `static double importedUpkeep(BusinessServices bs)` | What of the upkeep billed this month the sector imports: its two input lines (HL1-R). |
+| 518 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 

@@ -1,14 +1,11 @@
-# gate of Merge batch/SZ1: steps and lots that scale, 0.9.155
+# gate of Merge batch/HL1-R: Business Services' kept share without a cliff, 0.9.156
 # date: 2026-11-19
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 224 harnesses run in 2866s: 211 passed, 13 failed
+# suite: 211 harnesses run in 1876s: 201 passed, 10 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
-ShortSellingCheck | exit 1
-ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 141 months and bought from it in 0 FAIL
-ShortSellingCheck | 1 FAILED
 PriceLevelCheck | exit 1
 PriceLevelCheck | FAIL h.sharePrice.Luxury Retail (nominal) month 95: 0.2593550000 at the factor over the factor, 0.2593000000 at today's prices (0.000212 apart)
 PriceLevelCheck | FAIL h.sharePrice.Industry (nominal) month 93: 0.8894630000 at the factor over the factor, 1.094330000 at today's prices (0.187 apart)
@@ -43,9 +40,6 @@ PriceLevelCheck | 247 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
-EducationCheck | exit 1
-EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
-EducationCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
 HealthCheck | 1 FAILED
@@ -57,9 +51,6 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | the highways reaching a street: the fixture - the crossing is a cloverleaf site and its reserve is laid in a month (137), none the month before (120 plots), the highways among buildings that stand (105 of 2028 boxes lie across the reserve or beside the highways) FAIL
 MapCheck | the highways reaching a street: the reserve is journalled in the month it appears - every one of its 324 plots has a record from nothing to the reserve in month 137 (234) FAIL
 MapCheck | 3 FAILED
-KeptCheck | exit 1
-KeptCheck | fixture: the settled lot watched, B:2732, runs 0 months, past the 3 months its page is watched FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
@@ -67,12 +58,21 @@ DistressBleedCheck | exit 3
 DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
 DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
 DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 434) never stood above the six months of costs it keeps (at least 117), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 285
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED
+ShortSellingCheck | exit 1
+ShortSellingCheck | the cells traded shares with the world in the real run: they sold to it in 141 months and bought from it in 0 FAIL
+ShortSellingCheck | 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
+KeptCheck | exit 1
+KeptCheck | fixture: the settled lot watched, B:2732, runs 0 months, past the 3 months its page is watched FAIL
+KeptCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
