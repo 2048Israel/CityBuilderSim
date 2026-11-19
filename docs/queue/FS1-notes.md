@@ -203,4 +203,9 @@ that shares a harness with one runs apart from it.
 - `sh tools/batch-id.sh` for FS1-C and FS2-FS17: free.
 - `sh tools/known-reds.sh FS1 docs/queue/FS1-ship.md`: the ship file's 44
   rows read whole, none left with FS1's id.
-- `./batch-check.sh --fast`: see the ship file's commit.
+- `./batch-check.sh --fast` on the merge of main 6b0aa202e: exit 0; compile OK,
+  Stale 0 firm findings (none of its soft ones in FS1's files), the maps
+  regenerated with only their dates moved (600 files, one stamp line each),
+  so they are left as main has them.
+- The changelog heading takes the contract's form (5.2: two em-dash
+  separators), not the brief's comma.
