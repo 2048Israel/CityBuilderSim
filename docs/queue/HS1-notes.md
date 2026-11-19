@@ -148,7 +148,7 @@ the month is an estate. The ensemble runs on the final model.
 
 The trace moves beyond runtime. HS1's city grows faster to month 960. It then stalls for about
 700 months at 30,000-39,000 people with 10-16% unemployed, and takes off about 550 months after
-main's. What binds and why: the next section. The 80-run ensemble is owed.
+main's. What binds and why: the next section. The 80 runs: "The ensemble", below.
 
 **The households' identity (HL1's own lines) over the run:** every month's audit closed, as did
 every money fixture. CensusStranded and CensusCreated fired in 0 of 2,404 months (main: 4 and
@@ -260,10 +260,11 @@ The ensemble can tell. Against 0.9.154's AUTO2:
 - Final population 2,628,909 [1,115,743 to 6,587,878].
 - Every seed reaching 40,000 people, by m814 [506 to 1,501].
 
-HS1's T1 and T2 against those figures are the answer. If HS1's AUTO2 median falls far (T2 is
-info: at least 75% of the baseline), the lever is the city's borrowing at the top of a boom, or
-an investment rule that waits on an outside push. That is a study of its own, not a change to
-this batch's flows.
+The ensemble answered, against 0.9.157's own 80 (the model main runs now; "The ensemble", below).
+HS1's AUTO2 towns take off at main's pace: 16/16 reach 40,000 people, by m786 against m788, and
+the medians to 400,000 and 1M people are within 41 months of main's. Two seeds of sixteen stall
+the way this one does (0 and 2), against main's one (14). So the trap is the game's, and this
+seed's path is one of its two in HS1; nothing in the flows needs a mend for it.
 
 ## The stranger's review (2026-11-19, before the ensemble)
 
@@ -301,16 +302,121 @@ After the mends and SZ1's merge (4e45a8b08), `./batch-check.sh --fast` is green,
 a time, HouseholdFlowCheck, ShortSellingCheck, OutsideCheck and HouseholdCheck. SaveFileCheck is
 known red only: its one FAIL line is the FS17 fixture row this batch's ship file names.
 
+## The ensemble (2026-11-19, on ed9a1ad35)
+
+80 of 80 runs on the classes of ed9a1ad35 (main's 0.9.158 merged), scored against
+`docs/ensemble/0.9.157.md`. That is RN1-H's 80 on ecfdcfae8, the model main runs now (QN1 kept
+its traces byte-identical). The runs carried the three extras. The baseline is committed as
+`docs/ensemble/HS1.md`. The seed-paired figures below are read from the two sides' raw CSVs
+(`target/hs1-stall/ens_*.py`, not committed).
+
+**Hard: M1 passes in all five policies; F1 fails in one.**
+ZERO_HOT has 1/16 runs with "households with no home", against main's 0/16. It is seed 0 in
+months 205-207, with 1.3 to 1.6 households unplaced; the watch's line is one. I replayed it to
+month 230 with the homes and the land as extra columns (`target/hs1-nohome/`). The replay matches
+the ensemble's run, 1,290 and 1,747 people at months 120 and 240.
+- **The wall.** Homes stand at 227 from month 80 to 207 while the town grows from 1,101 to 1,424
+  people, all of them doubling up (163 to 216 households doubled).
+- **No land.** The city's free land is 2,683 sq ft from month 80 to 204, with all it owns
+  allocated. Its cash is below zero from month 60 to 160.
+- **The escape.** At month 205 the city's owned land rises by 136,000 sq ft. Homes follow at 208
+  (290) and 213 (353), and everybody is placed from 208.
+
+That is FB11's class (queued: held towns, why no works pays), as TQ1's seed 0 at month 182 was.
+The landlords are held for land while nothing buys ground, and the watch crosses its line in the
+months between the ground bought and the homes built. Main's seed 0 never reaches the wall: from
+month 80 it sits at 1,045-1,171 people with 34-37% unemployed. TQ1's precedent passes F1 by name
+with FB11; that is the orchestrator's call.
+
+**Information.**
+
+| | HS1 | main (0.9.157) |
+|---|---|---|
+| T1: AUTO2 seeds reaching 40,000 people | 16/16, m786 [495 to 1,729] | 16/16, m788 [402 to 1,500] |
+| AUTO2 to 100k / 400k / 1M people, median month | 1,206 / 1,250 / 1,549 | 1,105 / 1,291 / 1,526 |
+| ...seeds reaching 400k and 1M | 14/16 | 15/16 |
+| T2: AUTO2 final population | 2,012,020 [150,805 to 5,696,867]: FAIL, 65% | 3,101,332 [152,930 to 5,006,382] |
+| ZERO_SLACK / ZERO_HOT final population | 1,748,153 / 7,685 | 2,025,150 / 6,728 |
+| SHOCK / HIGH final population | 42,194 / 31,386 | 46,532 / 27,684 |
+
+Seed by seed, HS1's final population over main's has a median of 0.79, 0.77, 0.81, 0.89 and 1.10
+(AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK, HIGH). HS1's town is the larger in 6, 5, 7, 7 and 10 seeds
+of 16. AUTO2's T2 is the paths' spread, not a slower city: the milestones stand at main's months,
+and the gap is carried by seeds 0 and 2. Seed 0 holds under 100,000 people from m739 to m2295,
+and seed 2 reaches 40,000 only at m1729 (150,805 and 277,768 people at m2400). Main has one such
+stall, seed 14 (152,930). The final ratio is below 0.75 in 8 AUTO2 seeds and above 1 in 6.
+
+**Unemployment is higher, and that is the design.** The mean over m720-1800, median over seeds:
+- AUTO2 6.9% against 5.3%, SHOCK 7.4% against 5.4%, HIGH 14.2% against 7.6%.
+- ZERO_SLACK runs AUTO2's path to m1800. ZERO_HOT's runs end before m720.
+
+In HIGH and SHOCK the gap opens at m480-960, when HS1's towns are the larger. In HIGH they hold
+28,900 people against 26,800 at m480-720, and 8.4% are unemployed against 3.2%: more people, not
+fewer jobs. Why:
+- **The pull.** The senior care pull (`Migration.seniorCarePull`, `SENIOR_CARE_PULL` .30) reads
+  the senior care coverage times `Game.careAffordability`: the share of the seniors whose cell
+  paid (`carePaid()`).
+- **In main.** The pool drained the retired cells. In the default playtest 7-18% of what the
+  retired wanted went unfunded from m840 to m1440 (trace-hh, rUnfunded over rWant; 15-40% with
+  the flows off). The pull stood at 1.06-1.30 by 120-month window, at the cap only in m480-720
+  (1.09-1.23 with the flows off).
+- **In HS1.** The retired keep their money and pay, and nothing they want goes unfunded. The pull
+  stands at its cap, 1.30, from month 120 in both HS1 runs (HS1 and stay).
+- **The effect.** The pull lifts the homes' draw (`Migration.monthlyNet`, WG2), so a town draws
+  more people to its homes than its jobs hold.
+
+That is the batch's point, the retired paying from their own money, reaching migration through a
+rule that was already there. The ensemble's `served_senior_care` counts beds only (1 on both
+sides), so this mechanism is read from the probe pair. The ensemble's unemployment is what it
+predicts.
+
+**Debt and arrears.** The ensemble has no tax or arrears column. The city's debt over a month's
+GDP stands for debt over taxes. Its months on the central bank's advances, and with negative
+cash, stand for arrears. Medians:
+
+| | AUTO2 | SHOCK | HIGH | ZERO_HOT |
+|---|---|---|---|---|
+| debt's peak to m1440, months of GDP | 15.8 / 19.6 | 15.3 / 17.1 | 14.6 / 17.1 | 13.0 / 16.1 |
+| months on advances | 196 / 150.5 | 142.5 / 103.5 | 131 / 103.5 | 153.5 / 157 |
+| months with negative cash | 148.5 / 147 | 113 / 91.5 | 113 / 90 | 129 / 129 |
+
+(HS1 / main; ZERO_SLACK is AUTO2's to m1800.) HS1's city owes less and spends more months short
+of cash: the default playtest's stall in small, a city paying down rather than building, not one
+borrowing more.
+
+**The policy rate**, mean over m560-1440, median: 4.0% against 4.1% (AUTO2), 4.0% against 4.8%
+(SHOCK), 12.4% against 12.9% (HIGH). It is not what moves.
+
+**The three extras**, AUTO2 median at m120 / 600 / 1,200 / 2,400. Each is per household, savings
+less debt (`Household.netWorth()`), over a working household's:
+- **retired:** 0.11 / 0.21 / 0.67 / 0.61. The study's 2.6, main's default playtest on the same
+  measure: 0.13 / 0.36 / 0.94 / 2.48.
+- **seniors alone:** 0.11 / 0.18 / 0.62 / 0.48. Main's on the same measure: 0.02 at m1,200 (5.1
+  against 230.7, the study's 2.6).
+- **elder couples:** 0.05 / 0.18 / 0.62 / 0.89. The study gives main's on a wider net worth only:
+  0.38 / 0.88 / 2.27 / 12.5.
+
+A senior living alone now holds what a couple does, 0.62 of a working household each at m1,200,
+where main's held 2%. The survivor keeps the couple's money, and an estate goes to the
+established of the former tier, not to the pool. The toy's rule B (0.86-1.30) is per grown-up,
+and these readings are per household.
+
+**Verdict.**
+- M1 passes in every policy.
+- F1's one finding is FB11's class, for the orchestrator to pass by name.
+- The rest is information. The towns take off at main's pace. Unemployment runs 1.6-6.6 points
+  higher because the retired pay for their care, and the senior care pull draws people to the
+  homes. The final population is within the paths' spread, except AUTO2's T2 at 65%, which two
+  stalls of sixteen carry.
+- No fault was found in the flows, and nothing was mended.
+
 ## Open, for the orchestrator
 
-1. **The ensemble** is owed (the trace moves beyond runtime): asked as "HS1 ensemble?". Besides
-   its own scoring, read the extra columns `retired_nw=getHouseholdBalance.getRetiredToWorkingNetWorth`,
-   `alone_nw=getHouseholdBalance.getSeniorsAloneToWorkingNetWorth` and
-   `elder_nw=getHouseholdBalance.getElderCouplesToWorkingNetWorth` against the study's 2.6
-   (main, savings less debt: 0.13 / 0.36 / 0.94 / 2.48 at months 120 / 600 / 1,200 / 2,400) and
-   its toy's rule B (0.86-1.30 a grown-up).
+1. **The ensemble**: done, above. M1 passes. F1's one finding (ZERO_HOT seed 0, months 205-207)
+   is FB11's held land: pass it by name with FB11, as TQ1's? AUTO2's T2 (information) FAILS at
+   65%, carried by two stalls of sixteen.
 2. **LongPlaytest's finding**: done, b338ee4ba (FAIL lines; CL7's row matches it). **The
-   stall**: above. Read the ensemble's T1 and T2 for AUTO2 against 0.9.154's.
+   stall**: above, with the ensemble's answer.
 3. **SB1**, queued: `BuildingManager.retire()`'s first-stack return.
 
 Nothing is left for Jerus.
@@ -321,4 +427,6 @@ bff15aa14 the core; dfd8d4538 HouseholdFlowCheck and the census seam; 48e261d68 
 closing fixture; 6ddda1cff SaveFileCheck's flows round trip; 8a19d313d the cells' count in the
 prose; b6c4c1932 the three readings; c8da97ab3 main merged (FS1); 9fb10bf4d the maps;
 b338ee4ba LongPlaytest's FAIL lines; 1d2aaa100 the stall; 62e8221ea the review's mends; 4e45a8b08
-main merged (SZ1, 0.9.155); 425c69bc7 the maps.
+main merged (SZ1, 0.9.155); 425c69bc7 the maps; 116e6fc83 the review in the notes; 62972fd34
+main merged (HL1-R, 0.9.156); 2c0163238 the maps; acf3a0606 main merged (RN1-H and QN1,
+0.9.158); ed9a1ad35 the maps; then the ensemble's baseline and these notes.
