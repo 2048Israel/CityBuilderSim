@@ -4,15 +4,15 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
- * Why the 1900 city stalls (R1g's finding): the playtest's village founded the 1900 way, played the playtest's way for five years beside
- * its twin founded today's way. Not part of the game.
+ * Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
+ * playtest's way for five years beside its twin founded today's way. Not part of the game.
  *
- * WHAT THIS HAS TO PROVE (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause). R1d's 1900 playtest stalled: 472 people at month 60 and
- * 159 at month 900, against today's city's 1,674 and 23,180. It stalls on two things together, each of which the controls in the notes
- * show is not enough alone, and neither is the dated money:
+ * WHAT THIS HAS TO PROVE (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix). R1d's 1900 playtest stalled: 472 people at month
+ * 60 and 159 at month 900, against today's city's 1,674 and 23,180. It stalls on two things together, each of which the controls in the notes
+ * show is not enough alone, and neither is the dated money. Sections 1-4 are the village as R1g found it, both switches off:
  *
- *   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both played the way
- *      LongPlaytest.probeCity() and main() play it (the same village, the advisor and the automatic works every month)
+ *   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both founded and played the
+ *      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
  *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
  *      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
  *      twin pays no more than the target
@@ -24,9 +24,19 @@ import java.io.PrintStream;
  *      exporter stands there, its manufacturing held at the staffing gate; and the 1900 village's treasury holds its cash and owes
  *      nothing while today's twin has borrowed, so the dated money (no central bank until 1935) is not what holds it
  *
- * Every fixture CAUSES its condition: both cities are founded on scratch folders by the playtest's own founding and played by the
- * playtest's own advisor and automatic works; nothing in them is set by hand. Figures are asserted against the model's own constants
- * (RealEstate.TARGET_RENT_BURDEN, Sector.MIN_STAFFABLE_TO_ORDER) and the twin's figures, with the margins below stated once.
+ * ...and the fix, each half alone, at its switch (on unless -Dr1g.home=off or -Dr1g.apprentices=off; each section fails with its own off):
+ *
+ *   5. THE 1900 HOME (Recipes.HOMES_1900): each of the 1900 village's homes is built at Recipes.homeScale() of today's twin's (the cash cost
+ *      as the catalogue states it, the materials and the points; the land not moved), its households pay under the stalled village's
+ *      rent, at most DEAR_RENT times the target, and people still arrive at the end of the five years
+ *   6. THE APPRENTICES (PopulationManager.APPRENTICES_1900): the five years' apprentices are the teens who came of age times the year's
+ *      trade share (ArrivalMix.tradeShareAt()), there being no school, and the village holds more diploma workers than the stalled one
+ *   7. TODAY'S CITY DOES NOT MOVE: today's twin played with both switches on is today's twin played with both off, to the bit
+ *
+ * Every fixture CAUSES its condition: the cities are founded on scratch folders by the playtest's own founding and played by the
+ * playtest's own advisor and automatic works; nothing in them is set by hand but the two switches. Figures are asserted against the
+ * model's own constants and methods (RealEstate.TARGET_RENT_BURDEN, Sector.MIN_STAFFABLE_TO_ORDER, Recipes.homeScale(),
+ * ArrivalMix.tradeShareAt()) and the twins' figures, with the margins below stated once.
  */
 public class Village1900Check {
 
@@ -65,21 +75,30 @@ public class Village1900Check {
     /** The exporters' first plant. */
     static final String FIRST_PLANT = "Fabrication Shop";
 
+    /** The house the homes are weighed by: the village's own, 60 of them laid by hand at the founding. */
+    static final String HOUSE = "House";
+
+    /** The switches as this run was started: each fix section's city plays at its own, so -Dr1g.home=off or -Dr1g.apprentices=off takes it out. */
+    static final boolean HOME = Recipes.HOMES_1900, APPRENTICES = PopulationManager.APPRENTICES_1900;
+
     /** What one city shows at the gate month and at the end. */
     static final class Seen {
         final boolean the1900Way;
         double gateShare = Double.NaN, gateDiplomaWanted = Double.NaN;
         double arrivalsLate;
+        /** The apprentices of every month, and the coming-of-age teens times the year's trade share less the schools' diploma-holders. */
+        double apprentices, apprenticesExpected;
         Game g;
         Seen(boolean the1900Way) { this.the1900Way = the1900Way; }
     }
 
     public static void main(String[] args) {
         out = System.out;
-        out.println("Village1900Check - why the 1900 city stalls (R1g)");
+        out.println("Village1900Check - why the 1900 city stalls, and the two switches (R1g)");
+        out.printf("   the switches: the 1900 home %s, the apprentices %s%n", HOME ? "on" : "OFF", APPRENTICES ? "on" : "OFF");
 
-        Seen y1900 = play("village1900-1900", true);
-        Seen today = play("village1900-today", false);
+        Seen y1900 = play("village1900-1900", true, false, false);
+        Seen today = play("village1900-today", false, false, false);
 
         out.println("\n--- 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way ---");
         check("the 1900 village is founded the 1900 way", y1900.g.foundedUnfitted());
@@ -92,6 +111,13 @@ public class Village1900Check {
         rent(y1900, today);
         skills(y1900, today);
         stall(y1900, today);
+
+        Seen home = play("village1900-home", true, HOME, false);
+        home(home, y1900, today);
+        Seen taught = play("village1900-apprentices", true, false, APPRENTICES);
+        apprentices(taught, y1900);
+        Seen todayOn = play("village1900-today-on", false, true, true);
+        todayUnmoved(todayOn, today);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -170,6 +196,72 @@ public class Village1900Check {
         check("while today's twin, building, has spent its cash and borrowed", owedToday > 0, String.format("owed %.1f", owedToday));
     }
 
+    /* ---------------------------------------------------------------- 5 */
+
+    static void home(Seen home, Seen stalled, Seen today) {
+        out.println("\n--- 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays ---");
+        double scale = Recipes.homeScale();
+        BuildingsTemplate h = home.g.getBuildingManager().getTemplateByName(HOUSE), t = today.g.getBuildingManager().getTemplateByName(HOUSE);
+        out.printf("   the %s: cash %.4f of today's (the scale %.4f), materials %d for %d, points %d for %d, land %.0f for %.0f sq ft%n", HOUSE,
+                h.getFoundingCashCost() / t.getFoundingCashCost(), scale, h.getConstructionMaterials(), t.getConstructionMaterials(),
+                h.getConstructionPoints(), t.getConstructionPoints(), h.getLandSqFt(), t.getLandSqFt());
+        check("the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths", scale > .2 && scale < .4,
+                String.format("%.4f", scale));
+        check("the village's " + HOUSE + " is struck at homeScale() of today's twin's (the cash cost as the catalogue states it)",
+                Math.abs(h.getFoundingCashCost() / t.getFoundingCashCost() - scale) < 1e-9,
+                String.format("%.6f against %.6f", h.getFoundingCashCost() / t.getFoundingCashCost(), scale));
+        check("its materials and its points are today's times the scale, rounded",
+                h.getConstructionMaterials() == Math.max(1, Math.round(t.getConstructionMaterials() * scale))
+                        && h.getConstructionPoints() == Math.max(1, Math.round(t.getConstructionPoints() * scale)),
+                h.getConstructionMaterials() + " and " + h.getConstructionPoints());
+        check("and its plot is today's", h.getLandSqFt() == t.getLandSqFt(), h.getLandSqFt() + " for " + t.getLandSqFt());
+        check("the city knows the home is dated", home.g.getRecipes().datedHome(h) && !stalled.g.getRecipes().datedHome(
+                stalled.g.getBuildingManager().getTemplateByName(HOUSE)));
+        double target = ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN;
+        double bHome = home.g.getHouseholds().getRentBurden(), bStalled = stalled.g.getHouseholds().getRentBurden();
+        out.printf("   at month %d: rent as a share of take-home %.3f (stalled %.3f, today %.3f), pull %.3f, %d people (stalled %d), arrivals in the last %d months %.1f%n",
+                MONTHS, bHome, bStalled, today.g.getHouseholds().getRentBurden(), home.g.getMigration().getLastAffordabilityPull(),
+                home.g.getPopulationManager().getPopulation(), stalled.g.getPopulationManager().getPopulation(), QUIET_MONTHS, home.arrivalsLate);
+        check("the 1900 home's households pay at most " + DEAR_RENT + " times TARGET_RENT_BURDEN, under the stalled village's",
+                bHome <= DEAR_RENT * target && bHome < bStalled, String.format("%.3f against %.3f", bHome, bStalled));
+        check("and people still arrive at the end of the five years", home.arrivalsLate >= 1, String.format("%.1f", home.arrivalsLate));
+    }
+
+    /* ---------------------------------------------------------------- 6 */
+
+    static void apprentices(Seen taught, Seen stalled) {
+        out.println("\n--- 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work ---");
+        int diploma = WageBand.DIPLOMA.ordinal();
+        double wTaught = taught.g.getPopulationManager().workforceByBand()[diploma], wStalled = stalled.g.getPopulationManager().workforceByBand()[diploma];
+        out.printf("   five years' apprentices %.2f (the coming of age at the trade share %.2f, the share %.5f); diploma workers at month %d: %.1f (stalled %.1f)%n",
+                taught.apprentices, taught.apprenticesExpected, ArrivalMix.tradeShareAt(MONTHS), MONTHS, wTaught, wStalled);
+        check("the young learn trades in the 1900 village", taught.apprentices > 0, String.format("%.3f", taught.apprentices));
+        check("as many as came of age times the year's trade share, there being no school",
+                Math.abs(taught.apprentices - taught.apprenticesExpected) <= 1e-9 * Math.max(1, taught.apprenticesExpected),
+                String.format("%.9f against %.9f", taught.apprentices, taught.apprenticesExpected));
+        check("so the village holds more diploma workers than the stalled one", wTaught > wStalled,
+                String.format("%.2f against %.2f", wTaught, wStalled));
+        check("and the stalled village, the switch off, made none", stalled.apprentices == 0, String.format("%.3f", stalled.apprentices));
+    }
+
+    /* ---------------------------------------------------------------- 7 */
+
+    static void todayUnmoved(Seen on, Seen off) {
+        out.println("\n--- 7. today's city does not move: both switches on and both off, the same city to the bit ---");
+        Game a = on.g, b = off.g;
+        check("the same people", a.getPopulationManager().getPopulation() == b.getPopulationManager().getPopulation(),
+                a.getPopulationManager().getPopulation() + " and " + b.getPopulationManager().getPopulation());
+        check("the same cash and the same month's GDP", a.getCash() == b.getCash()
+                && a.getEconomyManager().getMonthGdp() == b.getEconomyManager().getMonthGdp(),
+                a.getCash() + " and " + b.getCash());
+        check("the same rent burden and the same workers by band", a.getHouseholds().getRentBurden() == b.getHouseholds().getRentBurden()
+                && java.util.Arrays.equals(a.getPopulationManager().workforceByBand(), b.getPopulationManager().workforceByBand()));
+        check("the same " + HOUSE + ", undated", a.getBuildingManager().getTemplateByName(HOUSE).getFoundingCashCost()
+                == b.getBuildingManager().getTemplateByName(HOUSE).getFoundingCashCost()
+                && !a.getRecipes().datedHome(a.getBuildingManager().getTemplateByName(HOUSE)));
+        check("and no apprentice", on.apprentices == 0, String.format("%.3f", on.apprentices));
+    }
+
     /* ---------------------------------------------------------------- the fixture */
 
     /**
@@ -177,13 +269,17 @@ public class Village1900Check {
      * same switches, the automatic works on before the village is laid, the founding's months by hand, then the run's rhythm (a skip, a look
      * with up to movesPerLook() moves of the advisor, two months), up to MONTHS. main() founds the run's own way only (LongPlaytest.played()),
      * so its sequence is followed here with the founding chosen; its audits (the layout's watch, the retirement watch) are left out, as they
-     * change nothing in the model (LongPlaytest, the layout's watch: "the eight CSVs are the proof it changed nothing").
+     * change nothing in the model (LongPlaytest, the layout's watch: "the eight CSVs are the proof it changed nothing"). R1g's two switches
+     * are set for the city's play and put back after it.
      */
-    static Seen play(String label, boolean the1900Way) {
+    static Seen play(String label, boolean the1900Way, boolean home, boolean apprentices) {
         Seen seen = new Seen(the1900Way);
         PrintStream real = System.out, report = LongPlaytest.out;
         System.setOut(QUIET);
         LongPlaytest.out = QUIET;
+        boolean wasHome = Recipes.HOMES_1900, wasApprentices = PopulationManager.APPRENTICES_1900;
+        Recipes.HOMES_1900 = home;
+        PopulationManager.APPRENTICES_1900 = apprentices;
         try {
             Founding founding = the1900Way ? LongPlaytest.founding().withUnfitted(true) : LongPlaytest.founding();
             LongPlaytest.resetTheFloat();
@@ -236,6 +332,8 @@ public class Village1900Check {
             return seen;
         } finally {
             LongPlaytest.out = report;
+            Recipes.HOMES_1900 = wasHome;
+            PopulationManager.APPRENTICES_1900 = wasApprentices;
             System.setOut(real);
         }
     }
@@ -245,6 +343,10 @@ public class Village1900Check {
         Game g = seen.g;
         for (int i = 0; i < n && g.getMonth() < MONTHS; i++) {
             LongPlaytest.runPlayer(g, 1);
+            seen.apprentices += g.getPopulationManager().getLastApprentices();
+            if (seen.the1900Way && PopulationManager.APPRENTICES_1900) seen.apprenticesExpected += Math.max(0,
+                    g.getCohorts().getPromoted(AgeBand.TEEN) * ArrivalMix.tradeShareAt(g.getMonth())
+                            - Math.max(0, g.getEducation().getGraduates()[WageBand.DIPLOMA.ordinal()]));
             if (g.getMonth() == GATE_MONTH) weigh(seen);
             if (g.getMonth() > MONTHS - QUIET_MONTHS) seen.arrivalsLate += g.getMigration().getLastArrivals();
         }
