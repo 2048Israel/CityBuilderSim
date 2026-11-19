@@ -528,6 +528,9 @@ public abstract class Household {
     /** Households of this cell discharged this month - a count, not money. */
     double bankrupt;
 
+    /** Savings the month's bankrupt share repaid the bank with, per household of the cell (HL1): part of `repaid`, nothing in a month nobody discharges. */
+    double seizedSavings;
+
     /** Shares sold this month to cover the shop, per household, in cash. */
     double sold;
 
@@ -784,6 +787,7 @@ public abstract class Household {
     /** Cars this cell sold second-hand this month, in total. */
     public double carsSold()    { return carsSold; }
     public double bankrupt()    { return bankrupt; }
+    public double seizedSavings() { return seizedSavings; }
 
     /** True when the bank has stopped lending to this cell - ceiling or lockout. */
     public boolean isCutOff()    { return unfunded > 0; }
@@ -1329,6 +1333,7 @@ public abstract class Household {
      */
     double discharge() {
         bankrupt = 0;
+        seizedSavings = 0;
         if (lockout > 0) lockout--;
         if (debtFrozen()) return 0;
 
@@ -1348,12 +1353,29 @@ public abstract class Household {
         double going = households * HouseholdBalance.BANKRUPT_RATE;
         bankrupt = going;
 
-        // The debt dies with the household's position, not with the
-        // household: the per-household figures are averages, so a share of
-        // them discharging is that share off the average.
-        double writtenOff = debt * going;
+        /*
+         * THE BANKRUPT'S SAVINGS REPAY THE BANK FIRST (HL1, 2026-11-11).
+         *
+         * This ended `debt *= (1 - RATE); savings *= (1 - RATE)`: the share's
+         * whole debt was written off, the bank's loss, and its savings simply
+         * went with it, to nobody - money destroyed in the households' books
+         * that no pool and no line knew of (30,218 over 900 months in one
+         * city, 117,105 in another, up to 3.5% of the period's GDP, the largest
+         * leak the households' identity found). A bankrupt's assets go to its
+         * creditor: per bankrupt household, its savings repay its debt as far as
+         * they reach, as one more repayment of the month (`repaid`, so the
+         * money reaches the bank by the channel there already is, Game.
+         * syncHouseholdAccounts()), and only what they did not cover is written
+         * off. What is left of the savings is still the household's. The
+         * per-household figures are averages, so a share discharging is that
+         * share off the average, and the debt dies with the share's position.
+         */
+        double seized = Math.min(Math.max(0, savings), debt);
+        double writtenOff = (debt - seized) * going;
         debt    *= (1 - HouseholdBalance.BANKRUPT_RATE);
-        savings *= (1 - HouseholdBalance.BANKRUPT_RATE);
+        seizedSavings = seized * HouseholdBalance.BANKRUPT_RATE;
+        savings -= seizedSavings;
+        repaid  += seizedSavings;
         lockout = HouseholdBalance.LOCKOUT_MONTHS;
         return writtenOff;
     }
@@ -1362,7 +1384,7 @@ public abstract class Household {
     void clearWorking() {
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
-        subsistence = 0; bankrupt = 0; dividends = 0; sold = 0; carsSold = 0;
+        subsistence = 0; bankrupt = 0; seizedSavings = 0; dividends = 0; sold = 0; carsSold = 0;
         luxuryWant = 0; mealWant = 0; spendable = 0; careSkipped = 0;
         paperSold = 0; paperIncome = 0;
         bondsSold = 0; bondIncome = 0;
@@ -1414,7 +1436,7 @@ public abstract class Household {
          */
         investmentIncome *= scale;  meansIncome *= scale;
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
-        drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;
+        drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;  seizedSavings *= scale;
         accountFee *= scale;  loanFee *= scale;
         banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
         // Money, so it belongs on this line the day it is written. See the

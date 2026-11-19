@@ -244,6 +244,11 @@ public final class PublicLicenceCheck {
                 near(paid, audit.figure("- city IP charges")) && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
                 && LicenceFeesCheck.near(g.getForeignAccounts().currentAccount(), audit.currentAccount()),
                 "audit " + audit.figure("- city IP charges") + " residual " + audit.residual);
+        // HL1: this caused treasury import must stay beside the household cash identity, never enter it as a household bill.
+        MoneyAudit.Households households = g.getLastHouseholdsAudit();
+        check("the households' identity closes in the month the treasury pays the public patent licence",
+                paid > MoneyAudit.CENT && LongPlaytest.MoneyFixtures.householdsClose(households),
+                "licence " + paid + " households residual " + households.residual);
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         check("the national accounts carry it as a budget line and the economy as the month's licence", paid > 0 && na.getPublicIpCharges() == paid
                 && g.getEconomyManager().getPublicIpCharges() == paid, na.getPublicIpCharges() + " vs " + paid);

@@ -59,7 +59,7 @@
 
 **Uses:** [Research](Research.md) (219), [Recipes](Recipes.md) (36), [JobType](JobType.md) (27), [Game](Game.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (25), [PolicyDates](PolicyDates.md) (21), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [TaxPolicy](TaxPolicy.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PolicyPreview](PolicyPreview.md) (6), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [EconomyManager](EconomyManager.md) (5), [MoneyAudit](MoneyAudit.md) (5), [GameFiles](GameFiles.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [BuildingType](BuildingType.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Good](Good.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)... and 4 more
 
-**Used by (3):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [PrizeCheck](PrizeCheck.md), [ResearchViewCheck](ResearchViewCheck.md)
+**Used by (4):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [PrizeCheck](PrizeCheck.md), [ResearchViewCheck](ResearchViewCheck.md)
 
 ## Sections
 

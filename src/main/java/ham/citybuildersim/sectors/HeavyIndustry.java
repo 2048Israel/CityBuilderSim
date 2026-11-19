@@ -1,7 +1,9 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.HydroSites;
 
 /**
  * The mills - Iron & Steel since 0.7.120, under the key it was saved by,
@@ -79,6 +81,11 @@ import ham.citybuildersim.Good;
  * Mini-Mill (estimates); where it pays is the grid's power, HYDROGEN_MWH_A_TONNE
  * of it a tonne (HydroSites.KWH_PER_UNIT the unit), and the pellets' price.
  *
+ * ELECTROLYSIS AT 46 kWh A KILOGRAM (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037; a
+ * city founded today's way never knows it): the works' piece "electrolyser" takes HYDROGEN_MWH_SAVED_A_TONNE (54 kg of hydrogen a tonne of iron at 9 kWh
+ * less each, 0.486 MWh) off each tonne of steel, and a works that has it draws that much less (setElectrolyserWorks(); EquipmentForms counts them).
+ * The piece is fitted works by works, as any other: where power is dear it pays, and where it is not it does not.
+ *
  * THE OLD STEEL (OldMetal): a yard takes old steel, which is not a good, so
  * its feed is not on a market. It is bought when the yards make their scrap
  * (produceFlow(SCRAP)), as much as they take at the rate they run and no more
@@ -123,6 +130,62 @@ public final class HeavyIndustry extends ProcessingSector {
 
     /** The grid's megawatt-hours a tonne of liquid steel the Hydrogen Steel Works draws, 3.48: the study's N9 and N10, the electrolysers' hydrogen, the shaft furnace and the arc furnace together (an estimate). */
     public static final double HYDROGEN_MWH_A_TONNE = 3.48;
+
+    /** The kilograms of hydrogen a tonne of iron takes by the chemistry, 54 (FE4's note, research-near-future 3). */
+    public static final double HYDROGEN_KG_A_TONNE = 54;
+
+    /** The kilowatt-hours an electrolysis system takes to make a kilogram of hydrogen today, 55 (61% of the fuel's energy): the US energy department's 2022 status for PEM electrolysis, its page of 29 May 2026 (research-speculative X8). HYDROGEN_MWH_A_TONNE holds it. */
+    public static final double ELECTROLYSIS_KWH_A_KG = 55;
+
+    /** The figure FE10's electrolysers reach, 46 (72%): the same page's ultimate target for the whole system. The page gives it no year, and the row's date is the study's own (R6d, research-speculative 3.2). */
+    public static final double ELECTROLYSIS_KWH_A_KG_FE10 = 46;
+
+    /** The megawatt-hours a tonne of steel FE10's electrolysers save: HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG less ELECTROLYSIS_KWH_A_KG_FE10 each, 0.486 (calc). */
+    public static final double HYDROGEN_MWH_SAVED_A_TONNE = HYDROGEN_KG_A_TONNE * (ELECTROLYSIS_KWH_A_KG - ELECTROLYSIS_KWH_A_KG_FE10) / 1000;
+
+    /**
+     * The Hydrogen Steel Works that carry FE10's electrolysers (R6d): EquipmentForms sets it from the stacks' counts, in a city founded the 1900 way only
+     * (a city founded today's way never knows FE10, and it is 0 there). Not saved: the counts are.
+     */
+    private long electrolyserWorks;
+
+    /** The draw the buildings' templates sum to, before FE10's saving: kept so that a count set after the month's sum can take its saving off the same figure. NaN until EconomyManager has set one. */
+    private double drawBeforeSaving = Double.NaN;
+
+    /** The grid units a month's draw one Hydrogen Steel Works saves at nameplate with FE10's electrolysers: its steel a month at HYDROGEN_MWH_SAVED_A_TONNE, in the units the sectors are billed (HydroSites.KWH_PER_UNIT). */
+    public static double unitsSavedAWorks(BuildingsTemplate t) {
+        return t == null ? 0 : t.makes(Good.STEEL) * HYDROGEN_MWH_SAVED_A_TONNE * 1000 / HydroSites.KWH_PER_UNIT;
+    }
+
+    /** Sets how many Hydrogen Steel Works carry FE10's electrolysers (never below 0) and takes their saving off the month's draw. */
+    public void setElectrolyserWorks(long n) {
+        long was = electrolyserWorks;
+        electrolyserWorks = Math.max(0, n);
+        if (was != electrolyserWorks && !Double.isNaN(drawBeforeSaving)) setElectricityConsumption(drawBeforeSaving);
+    }
+
+    public long getElectrolyserWorks() { return electrolyserWorks; }
+
+    /** The grid units the fitted works save at nameplate: 0 with none fitted. */
+    public double getElectrolyserUnitsSaved() {
+        return electrolyserWorks > 0 && buildings != null ? electrolyserWorks * unitsSavedAWorks(buildings.getTemplate(HYDROGEN_WORKS)) : 0;
+    }
+
+    /** What the works with FE10's electrolysers save the GRID at nameplate: getElectrolyserUnitsSaved() less the part of the sector's draw its steam form turns on site (1 - getSteamShare()), the draw the sector is billed on and the city's demand is struck on. */
+    public double getGridUnitsSaved() {
+        double saved = getElectrolyserUnitsSaved();
+        return getSteamShare() > 0 ? saved * (1 - getSteamShare()) : saved;
+    }
+
+    /**
+     * The sector's draw at nameplate: the buildings' (EconomyManager.setElectricityConsumption()) less what the works with FE10's electrolysers
+     * save, kept at 0 or more. With none fitted, every city founded today's way, the buildings' own figure, to the bit.
+     */
+    @Override
+    public void setElectricityConsumption(double kw) {
+        drawBeforeSaving = kw;
+        super.setElectricityConsumption(electrolyserWorks > 0 ? Math.max(0, kw - getElectrolyserUnitsSaved()) : kw);
+    }
 
     public HeavyIndustry() {
         super("Heavy Industry", "Iron & Steel", BuildingType.HEAVY_INDUSTRY);

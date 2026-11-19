@@ -1,4 +1,4 @@
-# Agriculture.java - 539 lines · 22 methods · 5 constants · sectors
+# Agriculture.java - 604 lines · 27 methods · 7 constants · sectors
 
 `ham/citybuildersim/sectors/Agriculture.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -52,81 +52,95 @@
 > 
 > See claude/farms.md.
 
-**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [Sector](Sector.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingType](BuildingType.md) (1), [EconomyManager](EconomyManager.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Sector](Sector.md) (2), [JobType](JobType.md) (2), [BuildingType](BuildingType.md) (1), [Equipment](Equipment.md) (1), [EconomyManager](EconomyManager.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (12):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentForms](EquipmentForms.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [RecipeChanges](RecipeChanges.md), [ScaleCheck](ScaleCheck.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
+**Used by (14):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [RecipeChanges](RecipeChanges.md), [ScaleCheck](ScaleCheck.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 98 | · reading |
-| 141 | THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, [P2.47]) |
-| 261 | · plan |
-| 301 | · NOBODY BREAKS GROUND ON A FIELD WHILE SOMEBODY IS SLEEPING OUTSIDE |
-| 429 | · the screen |
+| 100 | · reading |
+| 143 | THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, [P2.47]) |
+| 247 | THE OPERATORS (R6d, 2026-11-18; docs/studies/research-speculative.md 3.2, FE8) |
+| 326 | · plan |
+| 366 | · NOBODY BREAKS GROUND ON A FIELD WHILE SOMEBODY IS SLEEPING OUTSIDE |
+| 494 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 136 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
-| 139 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
-| 163 | `Agriculture.HORSE_FEED_SHARE` | `0.22` | The share of a horse farm's crop its horses eat: 22% of US cropland fed farm horses and mules (research-1900 section 4, [P2.47]); Canada's 1.58 million horses (1901) at about 3 acres each agree (est.). |
-| 166 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
-| 424 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 138 | `Agriculture.BAKED_KG_PER_TONNE` | `525` | Kilograms of bread and bakery goods a tonne of crops becomes. |
+| 141 | `Agriculture.BAKED_KG_A_HEAD` | `5.0` | What one person eats of the city's own baking a month: 3.5kg of bread, 1.5kg of the rest. |
+| 165 | `Agriculture.HORSE_FEED_SHARE` | `0.22` | The share of a horse farm's crop its horses eat: 22% of US cropland fed farm horses and mules (research-1900 section 4, [P2.47]); Canada's 1.58 million horses (1901) at about 3 acres each agree (est.). |
+| 168 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
+| 261 | `Agriculture.OPERATORS_A_MACHINE` | `1` | The posts a machine's operator holds, 1 NO_DIPLOMA post (an estimate: the Grain Farm's three such posts are its tractor, its combine and a hand, the Mixed Farm's two its tractor and a hand). |
+| 269 | `Agriculture.WATCH_A_MACHINE` | `0.1` | The remote watch an autonomous machine asks for, as a share of one DIPLOMA post: 0.1, an estimate and no builder's target. |
+| 489 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 169 | `private double horseShare` | The share of the farms that run on horses, 0 to 1: 0 until a harness or R1 sets it; not saved. |
+| 171 | `private double horseShare` | The share of the farms that run on horses, 0 to 1: 0 until a harness or R1 sets it; not saved. |
+| 272 | `private double operatedShare` | The share of the machines still operated, 0 to 1: 1 until EquipmentForms sets it (a city founded the 1900 way, from its farms lacking the kit); not saved, the counts are. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 474 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
-| 68 | 29 | `public Agriculture()` |  |
+| 68 | 537 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
+| 70 | 29 | `public Agriculture()` |  |
 
-### reading (lines 98-140)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 101 | 3 | `public double getHarvest()` | Tonnes the fields can bring in a month, at the rate they are running. |
-| 119 | 8 | `public double getSelfSufficiency(Game game)` | Months of the city's BAKED eating the fields cover. |
-
-### THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, [P2.47]) (lines 141-260)
+### reading (lines 100-142)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 172 | 4 | `public void setHorseShare(double h)` | Sets the horse share, clamped to [0, 1] (not a number reads 0); above 0 it registers CROPS as an input, once, so a city that never sets it has the farms as no buyer of crops at all. |
-| 177 | 1 | `public double getHorseShare()` |  |
-| 180 | 3 | `public double getHorseFeedAtCapacity()` | The tonnes of crop the horses eat a month at nameplate: the horse share of HORSE_FEED_SHARE of what the farms can make. |
-| 186 | 4 | `protected double formInput(Good g, boolean ordered)` | The horses' feed is a use of CROPS past the buildings' (Sector.formInput()), at the same figure whether or not the month's inputs are ordered for what it will make: the horses eat whatever the market does. |
-| 198 | 6 | `public double getCostPerUnit(Good g)` | A tonne of crop's cost, over the tonnes the farms SELL: the horses' feed is part of what the fields make and none of what is sold, so the joint bill is spread over the harvest less the feed, h x HORSE_FEED_SHARE of it... |
-| 207 | 3 | `public boolean captive(Good g)` | The farm feeds its horses from its own harvest first (Sector, CAPTIVE USE), while any run on horses. |
-| 212 | 3 | `private long horsePosts(long base)` | A tier's posts on a horse farm: the buildings' times 1 + h x (HORSE_POSTS_FACTOR - 1), rounded. |
-| 218 | 6 | `public long[] postsPerTier()` | The posts per tier: the buildings' own at a horse share of 0, untouched; more hands past it. |
-| 227 | 7 | `public long[] postsPastBuildings()` | ...and the posts past the buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on. |
-| 236 | 3 | `public double getLandSqFt()` | Ground the sector stands on, in square feet. |
-| 241 | 3 | `public double getLandValue(EconomyManager economy)` | ...and what the city would charge for it if it taxed it like anything else. |
-| 250 | 4 | `public double groundShare()` | The ground bill as a share of what the fields sell - the clock, in one number. |
-| 256 | 4 | `public double payrollShare()` | Wages as a share of the same, which is the number that should stay small. |
+| 103 | 3 | `public double getHarvest()` | Tonnes the fields can bring in a month, at the rate they are running. |
+| 121 | 8 | `public double getSelfSufficiency(Game game)` | Months of the city's BAKED eating the fields cover. |
 
-### plan (lines 261-428)
+### THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, [P2.47]) (lines 143-246)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 299 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
-| 393 | 20 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
-| 427 | 1 | `public double firstPlantUtilisation()` |  |
+| 174 | 4 | `public void setHorseShare(double h)` | Sets the horse share, clamped to [0, 1] (not a number reads 0); above 0 it registers CROPS as an input, once, so a city that never sets it has the farms as no buyer of crops at all. |
+| 179 | 1 | `public double getHorseShare()` |  |
+| 182 | 3 | `public double getHorseFeedAtCapacity()` | The tonnes of crop the horses eat a month at nameplate: the horse share of HORSE_FEED_SHARE of what the farms can make. |
+| 188 | 4 | `protected double formInput(Good g, boolean ordered)` | The horses' feed is a use of CROPS past the buildings' (Sector.formInput()), at the same figure whether or not the month's inputs are ordered for what it will make: the horses eat whatever the market does. |
+| 200 | 6 | `public double getCostPerUnit(Good g)` | A tonne of crop's cost, over the tonnes the farms SELL: the horses' feed is part of what the fields make and none of what is sold, so the joint bill is spread over the harvest less the feed, h x HORSE_FEED_SHARE of it... |
+| 209 | 3 | `public boolean captive(Good g)` | The farm feeds its horses from its own harvest first (Sector, CAPTIVE USE), while any run on horses. |
+| 214 | 3 | `private long horsePosts(long base)` | A tier's posts on a horse farm: the buildings' times 1 + h x (HORSE_POSTS_FACTOR - 1), rounded. |
+| 223 | 12 | `public long[] postsPerTier()` | The posts per tier: the buildings' own at a horse share of 0 and every machine operated, untouched; more hands past them on a horse farm, and (R6d, FE8) the operators of the machines that work by themselves struck, th... |
+| 238 | 8 | `public long[] postsPastBuildings()` | ...and the posts past the buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on: fewer, where the operators are struck. |
 
-### the screen (lines 429-539)
+### THE OPERATORS (R6d, 2026-11-18; docs/studies/research-speculative.md 3.2, FE8) (lines 247-325)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 432 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
-| 499 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
-| 529 | 10 | `public double unitsOf(BuildingsTemplate t)` | What one building contributes to the measure above: its harvest, each good valued at that good's export floor - one building's share of the capacity figure retirementDemandAndCapacity() adds up, in the same money. |
+| 275 | 3 | `public void setOperatedShare(double o)` | Sets the share of the machines still operated, clamped to [0, 1] (not a number reads 1, today's). |
+| 279 | 1 | `public double getOperatedShare()` |  |
+| 282 | 5 | `public static int machinesOf(BuildingsTemplate t)` | The machines a farm template runs with an operator in the cab, today: its tractor and its combine, as pieces of equipment it carries (the Mixed Farm's one, the Grain Farm's two); 0 for any other template. |
+| 289 | 3 | `public double machines()` | The machines the farms run, operated or not: machinesOf() summed over the buildings. |
+| 294 | 5 | `public double autonomousMachines()` | The machines that work by themselves: the farms' machines times (1 - the operated share), at most the share not on horses (a horse farm has no tractor to fit). |
+| 301 | 3 | `public double getLandSqFt()` | Ground the sector stands on, in square feet. |
+| 306 | 3 | `public double getLandValue(EconomyManager economy)` | ...and what the city would charge for it if it taxed it like anything else. |
+| 315 | 4 | `public double groundShare()` | The ground bill as a share of what the fields sell - the clock, in one number. |
+| 321 | 4 | `public double payrollShare()` | Wages as a share of the same, which is the number that should stay small. |
+
+### plan (lines 326-493)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 364 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
+| 458 | 20 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
+| 492 | 1 | `public double firstPlantUtilisation()` |  |
+
+### the screen (lines 494-604)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 497 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 564 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
+| 594 | 10 | `public double unitsOf(BuildingsTemplate t)` | What one building contributes to the measure above: its harvest, each good valued at that good's export floor - one building's share of the capacity figure retirementDemandAndCapacity() adds up, in the same money. |
 

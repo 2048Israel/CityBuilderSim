@@ -27,6 +27,8 @@ import java.util.Locale;
  * (the driver in tools/ensemble/, its foundAndPlay()) - through those months, its
  * player and its automatic works as they play, and watches the landlords'
  * every order there (Game.watchOrders()).
+ * HL1's merged path moves the first capital-refused trim from m495 to m502, just beyond that old cutoff; the watch now retains
+ * those months and continues to m900 (eight capital trims), with the households' cash identity checked every played month too.
  *
  * What this has to prove:
  *   1. the fixture: the plan passes the landlords orders the door does not
@@ -40,7 +42,8 @@ import java.util.Locale;
  *      capital is not left marked as held for it (REV-HN1-1: LongPlaytest
  *      counts the mark as a month held for the bank's leverage);
  *   4. LongPlaytest's watch holds - no month leaves more than one household
- *      with no door - and the homes that finish are counted by size.
+ *      with no door - and the homes that finish are counted by size;
+ *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
  */
 public final class HousingDoorCheck {
 
@@ -49,8 +52,8 @@ public final class HousingDoorCheck {
 
     /** The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. */
     static final int SEED = 12;
-    /** The months watched, months already run: the door's holds on today's main fall in m437-m496. */
-    static final int FROM = 430, TO = 500;
+    /** The months watched, months already run: HL1 retains m431-500 and continues to m900; its first capital trim is m502, eight fire by m900. */
+    static final int FROM = 430, TO = 900;
     /** The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). */
     static final double TARGET = .02;
     static final String RE = Sectors.REAL_ESTATE;
@@ -93,6 +96,9 @@ public final class HousingDoorCheck {
         double[] worstUnplaced = { 0 };
         int[] worstMonth = { -1 };
         long[] finished = new long[16];
+        // HL1: the same played path must close the households' cash books, including accepted trimmed orders.
+        int[] householdMonths = { 0, 0 };
+        MoneyAudit.Households[] worstHouseholds = { MoneyAudit.Households.NONE };
         try {
             g = new Game(files, LongPlaytest.played(null));
             g.run();
@@ -105,6 +111,10 @@ public final class HousingDoorCheck {
             });
             foundAndPlay(g, () -> {
                 int m = g.getMonth();
+                MoneyAudit.Households households = g.getLastHouseholdsAudit();
+                householdMonths[0]++;
+                if (!LongPlaytest.MoneyFixtures.householdsClose(households)) householdMonths[1]++;
+                if (households.relative() > worstHouseholds[0].relative()) worstHouseholds[0] = households;
                 long[] now = g.getBuildingManager().homesBySize();
                 if (sizes[0] != null && m > FROM) {
                     for (int s = 1; s < now.length && s < finished.length; s++) {
@@ -197,6 +207,11 @@ public final class HousingDoorCheck {
         out.printf(Locale.ROOT, "   the most households with no door: %.3f (month %d)%n", worstUnplaced[0], worstMonth[0]);
         check("no month of the window leaves more than one household with no door (LongPlaytest's watch)",
                 worstUnplaced[0] <= 1);
+
+        out.println("\n--- 5. the households' identity through the mortgage door (HL1) ---");
+        out.printf("   %d months, %d open; worst %s%n", householdMonths[0], householdMonths[1], worstHouseholds[0]);
+        check("the households' cash identity closes every played month, beside the landlords' trimmed mortgages",
+                householdMonths[0] > TO - FROM && householdMonths[1] == 0);
 
         out.println(fails == 0 ? "\nHousingDoorCheck: all passed" : "\nHousingDoorCheck: " + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

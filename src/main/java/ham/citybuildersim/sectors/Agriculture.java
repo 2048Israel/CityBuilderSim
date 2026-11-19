@@ -4,9 +4,11 @@ import ham.citybuildersim.BuildingType;
 import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.EconomyManager;
+import ham.citybuildersim.Equipment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.JobType;
 import ham.citybuildersim.LandManager;
 import ham.citybuildersim.Sector;
 
@@ -213,23 +215,86 @@ public final class Agriculture extends Sector {
         return Math.round(base * (1 + horseShare * (HORSE_POSTS_FACTOR - 1)));
     }
 
-    /** The posts per tier: the buildings' own at a horse share of 0, untouched; more hands past it. */
+    /**
+     * The posts per tier: the buildings' own at a horse share of 0 and every machine operated, untouched; more hands past them on a horse farm, and
+     * (R6d, FE8) the operators of the machines that work by themselves struck, the remote watch added.
+     */
     @Override
     public long[] postsPerTier() {
         long[] posts = super.postsPerTier();
-        if (!(horseShare > 0)) return posts;
-        for (int i = 0; i < posts.length; i++) posts[i] = horsePosts(posts[i]);
+        double autonomous = autonomousMachines();
+        if (!(horseShare > 0) && !(autonomous > 0)) return posts;
+        if (horseShare > 0) for (int i = 0; i < posts.length; i++) posts[i] = horsePosts(posts[i]);
+        if (autonomous > 0) {
+            int hands = JobType.NO_DIPLOMA.ordinal(), watch = JobType.DIPLOMA.ordinal();
+            if (hands < posts.length) posts[hands] = Math.max(0, posts[hands] - Math.round(autonomous * OPERATORS_A_MACHINE));
+            if (watch < posts.length) posts[watch] += Math.round(autonomous * WATCH_A_MACHINE);
+        }
         return posts;
     }
 
-    /** ...and the posts past the buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on. */
+    /** ...and the posts past the buildings' the city's own count must add (BuildingManager.setPostsPast()), so the labour market is offered the posts the payroll is struck on: fewer, where the operators are struck. */
     @Override
     public long[] postsPastBuildings() {
-        if (!(horseShare > 0) || buildings == null) return null;
+        if (!(horseShare > 0) && !(autonomousMachines() > 0) || buildings == null) return null;
         long[] base = buildings.getJobArrayBySector(key());
+        long[] posts = postsPerTier();
         long[] past = new long[base.length];
-        for (int i = 0; i < base.length; i++) past[i] = horsePosts(base[i]) - base[i];
+        for (int i = 0; i < base.length; i++) past[i] = posts[i] - base[i];
         return past;
+    }
+
+    /* ===== THE OPERATORS (R6d, 2026-11-18; docs/studies/research-speculative.md 3.2, FE8)
+     *
+     * Deere's goal, said in 2022 and again in 2024 and at CES 2025: by 2030 "a fully autonomous production system" for corn and soybeans, "spring
+     * tillage, planting, spraying, harvest and fall tillage all done autonomously". On the game's books it is posts: the operator of each tractor
+     * and each combine on the Grain Farm and the Mixed Farm, and the autonomy kit (their third piece of equipment, ending Equipment.Form
+     * FIELD_OPERATORS) strikes them. A share of the machines, 0..1, is still operated (setOperatedShare(); EquipmentForms sets it from the farms
+     * lacking the kit). At 1, the default and every city founded today's way, nothing in this block runs and the month is today's, to the bit.
+     *
+     * At share o: the machines that work by themselves are (1 - o) of the farms' machinesOf(), at most the share that are not on horses. Each
+     * strikes an operator (OPERATORS_A_MACHINE posts, NO_DIPLOMA) and asks for the remote watch (WATCH_A_MACHINE of a DIPLOMA post), rounded once
+     * on the sector's whole, as the horse form's posts are. Nothing is said of the fuel, the output or the hours: the machine is the same machine.
+     * =================================================================== */
+
+    /** The posts a machine's operator holds, 1 NO_DIPLOMA post (an estimate: the Grain Farm's three such posts are its tractor, its combine and a hand, the Mixed Farm's two its tractor and a hand). */
+    public static final double OPERATORS_A_MACHINE = 1;
+
+    /**
+     * The remote watch an autonomous machine asks for, as a share of one DIPLOMA post: 0.1, an estimate and no builder's target. Deere says only that a
+     * person stays engaged, watching "through an operation center through a mobile device" (its chief technology officer, CES 2025); a university's
+     * model assumes a person steps in six minutes an hour, 10% (a podcast of 2 February 2026), which is an assumption and not a figure. FE1's
+     * oversight, Haulage.OVERSIGHT_A_TRUCK, is the same tenth.
+     */
+    public static final double WATCH_A_MACHINE = 0.1;
+
+    /** The share of the machines still operated, 0 to 1: 1 until EquipmentForms sets it (a city founded the 1900 way, from its farms lacking the kit); not saved, the counts are. */
+    private double operatedShare = 1;
+
+    /** Sets the share of the machines still operated, clamped to [0, 1] (not a number reads 1, today's). */
+    public void setOperatedShare(double o) {
+        operatedShare = Double.isFinite(o) ? Math.min(1, Math.max(0, o)) : 1;
+    }
+
+    public double getOperatedShare() { return operatedShare; }
+
+    /** The machines a farm template runs with an operator in the cab, today: its tractor and its combine, as pieces of equipment it carries (the Mixed Farm's one, the Grain Farm's two); 0 for any other template. */
+    public static int machinesOf(BuildingsTemplate t) {
+        int n = 0;
+        for (Equipment piece : t.getEquipment()) if (piece.getId().equals("tractor") || piece.getId().equals("combine")) n++;
+        return n;
+    }
+
+    /** The machines the farms run, operated or not: machinesOf() summed over the buildings. */
+    public double machines() {
+        return buildings == null ? 0 : buildings.totalBySector(key(), t -> machinesOf(t));
+    }
+
+    /** The machines that work by themselves: the farms' machines times (1 - the operated share), at most the share not on horses (a horse farm has no tractor to fit). 0 at an operated share of 1. */
+    public double autonomousMachines() {
+        if (!(operatedShare < 1) || buildings == null) return 0;
+        double share = Math.min(1 - operatedShare, 1 - horseShare);
+        return share > 0 ? share * machines() : 0;
     }
 
     /** Ground the sector stands on, in square feet. */

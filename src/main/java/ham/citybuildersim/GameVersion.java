@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.151";
+    public static final String VERSION = "0.9.154";
 
     /**
      * The save shape.
@@ -8302,8 +8302,25 @@ public final class GameVersion {
      *     2030: twice the tonnes a truck, its drivers laid off, no kit bought
      *     and no fee paid. It is refused, naming the build that still opens
      *     it. No conversion is written.
+     *
+     * 56 - THE SPECULATIVE ROWS (batch R6d, FE8 and FE10): the Mixed Farm and
+     *     the Grain Farm hold an autonomy kit and the Hydrogen Steel Works an
+     *     electrolyser, equipment pieces whose unfitted counts a 1900 city
+     *     saves per stack; Agriculture's operated share and Heavy Industry's
+     *     count of works with the electrolyser (EquipmentForms.setOperated()
+     *     and setElectrolysers()) are read from them. No field is added; the
+     *     pieces are new.
+     *
+     *     THE FLOOR RISES TO 56 WITH IT (the rule): a save of format 55 or
+     *     older would load WRONGLY. It holds no unfitted count for either
+     *     piece, and the load path reads a missing count as fitted, so from
+     *     the month FE8 or FE10 is known (2033, 2034) every farm of a 1900
+     *     city would run its machines with no operator, and every works would
+     *     draw less power, with no kit or electrolyser bought and no fee paid.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 55;
+    public static final int SAVE_FORMAT = 56;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8313,7 +8330,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 55 since batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
+     * 56 since batch R6d (THE SPECULATIVE ROWS above: a save holds no count
+     * of the farms' kit or the works' electrolyser unfitted, which reads as
+     * fitted). 55 from batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
      * of the depots' kit unfitted, which reads as fitted). 54 from batch CU2
      * (WORLD PRICES CHAINED above: a save's world prices
      * and scales are the unchained solve's). 51 from batch BK2 (EACH HOLDER'S
@@ -8356,7 +8375,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 55;
+    public static final int OLDEST_LOADABLE_FORMAT = 56;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
