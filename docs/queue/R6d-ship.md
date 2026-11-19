@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-R6d-2Cxmq4kh -->
 ## changelog
 ### {next} — R6d, research: the speculative rows with something behind them — 2026-11-18, ready, see docs/queue/R6d-notes.md
