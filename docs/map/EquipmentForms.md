@@ -1,4 +1,4 @@
-# EquipmentForms.java - 150 lines · 6 methods · 0 constants · model
+# EquipmentForms.java - 217 lines · 10 methods · 0 constants · model
 
 `ham/citybuildersim/EquipmentForms.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
 
@@ -24,7 +24,7 @@
 > state. clear() forgets which shares were driven, where Game rebuilds its world (R1b), so a city founded or loaded into a Game that played
 > another starts as a fresh process does.
 
-**Uses:** [Equipment](Equipment.md) (10), [BuildingsStacks](BuildingsStacks.md) (6), [Game](Game.md) (2), [Sectors](Sectors.md) (2), [Agriculture](Agriculture.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Equipment](Equipment.md) (16), [BuildingsStacks](BuildingsStacks.md) (10), [Game](Game.md) (6), [Sectors](Sectors.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Agriculture](Agriculture.md) (3), [Sector](Sector.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -39,12 +39,16 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 117 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales, and (R6... |
+| 34 | 184 | **type** `public final class EquipmentForms` | Sets R0c's 1900 forms from the buildings still without the equipment that ends them: the steam share of each sector, the farms' horse share and the carts' horse share, each the unfitted part of what it scales, and (R6... |
 | 40 | 3 | **type** `private static final class Weight` | What a form scales over a set of stacks: the whole, and the part of it that lacks the equipment. |
-| 48 | 46 | `public void apply(Game game)` | Sets every form's share from the counts, and Freight's driven share of the depots (R6b) from them whatever they are. |
-| 101 | 15 | `private static void setDriven(Game game, List<BuildingsStacks> stacks)` | Sets the share of the depots' truck room still driven (R6b, call 1: the driverless kit's piece ends CAB_DRIVERS): in a city founded the 1900 way, the truck room of the buildings lacking the kit over all the truck room... |
-| 121 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
-| 132 | 8 | `private static long unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
-| 142 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
-| 147 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
+| 48 | 49 | `public void apply(Game game)` | Sets every form's share from the counts, and Freight's driven share of the depots (R6b) from them whatever they are. |
+| 103 | 4 | `private static void tellTheGrid(Game game)` | Hands the utility the power the works with FE10's electrolysers no longer draw (R6d, REV-R6d P1): ServicesManager sizes and rations the grid on the draw of the buildings, so a saving the sector's bill takes off has to... |
+| 114 | 15 | `private static void setDriven(Game game, List<BuildingsStacks> stacks)` | Sets the share of the depots' truck room still driven (R6b, call 1: the driverless kit's piece ends CAB_DRIVERS): in a city founded the 1900 way, the truck room of the buildings lacking the kit over all the truck room... |
+| 136 | 18 | `private static void setOperated(Game game, List<BuildingsStacks> stacks)` | THE OPERATORS (R6d, FE8: the autonomy kit's piece ends FIELD_OPERATORS). |
+| 160 | 13 | `private static void setElectrolysers(Game game, List<BuildingsStacks> stacks)` | THE ELECTROLYSERS (R6d, FE10: the Hydrogen Steel Works' piece ends ELECTROLYSERS). |
+| 179 | 4 | `private static boolean known(Game game, BuildingsTemplate t, Equipment.Form form)` | Whether a template carries a piece that ends this form and the city knows it this month (Equipment.knownAt(), by history's month or the city's own find): a works with no count of a piece nobody knows yet is not one th... |
+| 188 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
+| 199 | 8 | `private static long unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
+| 209 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
+| 214 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
 

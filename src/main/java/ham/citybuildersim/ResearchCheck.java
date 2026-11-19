@@ -26,15 +26,15 @@ import java.util.regex.Pattern;
  * The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
  * what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).
  *
- * WHY. research.json is 94 entries, 91 typed from two studies' tables and the near future's three (R6b), and a wrong figure in it is no error anywhere: a discovery a year late is an
+ * WHY. research.json is 96 entries, 91 typed from two studies' tables, the near future's three (R6b) and the speculative tier's two (R6d), and a wrong figure in it is no error anywhere: a discovery a year late is an
  * oxygen converter that arrives in 1953, and nobody sees it until the ensemble moves. So the dates, the needs, the work and the fees are held to
  * the studies' tables here, with spot values typed out below as the specification and not read back from the class under test; the law rows are
  * held to PolicyDates, whose dates the Policy gate already reads, so the catalogue and the gate cannot disagree about when a lever opens.
  *
  * What it has to prove:
  *
- *   1. THE FILE READS. The packaged file gives 94 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
- *      unique and in the studies' order, the near future's FE1, FE2 and FE4 after them; the counts by prefix and by field are the studies'; the
+ *   1. THE FILE READS. The packaged file gives 96 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+ *      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
  *      field follows the code (the second letter of an F code); every entry has a name, a world, a touches and an effect; the kinds, the kind
  *      notes and the names of a few are the tables'.
  *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
@@ -67,7 +67,7 @@ import java.util.regex.Pattern;
  *      or a local discovery. A paying spread-planner choice, a city's power shortage and funded direct city/private orders cause the refusals;
  *      every candidate and direct order remains available in a default founding but the near future's.
  *  11. THE MARK (R6b). A row is projected exactly when its world month is after HISTORY_ENDS, a projected row has a window of years that holds its
- *      year and a history row none; FE4 is projected (2027-2030), FE1 and FE2 are not; mark() and dateWords() say so, and nothing else.
+ *      year and a history row none; FE4 is projected (2027-2030), FE8 (2030-2036) and FE10 (2031-2037) too, FE1 and FE2 are not; mark() and dateWords() say so, and nothing else.
  *  12. THE NEAR FUTURE (R6b, call 1). nearFuture(code) is true exactly for the rows dated from NEAR_FUTURE on, and those are exactly the F codes.
  *  13. ITS BUILDINGS. A city founded the default way never knows a near-future building (a candidate nor an order) and knows the oxide leach plant; one
  *      founded the 1900 way knows the Sulphide Leach & SX-EW Plant from FE2's month and the Hydrogen Steel Works from FE4's, and not the month before.
@@ -146,12 +146,12 @@ public class ResearchCheck {
     static final int[] PREFIX_COUNTS = {20, 10, 8, 5, 27, 6, 3, 12};
     static final int HISTORY_ROWS = 91;
 
-    /** The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2 and FE4 (the study has no FE3). */
+    /** The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2, FE4, FE8 and FE10 (the near future's study has no FE3; FE8 and FE10 are the speculative tier's, R6d). */
     static final String[] NEAR_PREFIXES = {"FE", "FM", "FB", "FL"};
-    static final int[] NEAR_COUNTS = {3, 0, 0, 0};
+    static final int[] NEAR_COUNTS = {5, 0, 0, 0};
 
     /** The near future's rows, in the file's order, after the studies' 91. */
-    static final List<String> NEAR_CODES = List.of("FE1", "FE2", "FE4");
+    static final List<String> NEAR_CODES = List.of("FE1", "FE2", "FE4", "FE8", "FE10");
 
     /** Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. */
     static final Object[][] WORK = {
@@ -227,18 +227,18 @@ public class ResearchCheck {
         String real = text("/" + ResearchCatalog.FILE_NAME);
 
         /* ==================== 1. the file reads ==================== */
-        System.out.println("--- the packaged file gives 94 entries and reports nothing ---");
+        System.out.println("--- the packaged file gives 96 entries and reports nothing ---");
         Read fresh = read(real);
         int inFile = JsonParser.parseString(real).getAsJsonObject().getAsJsonArray("entries").size();
         int rows = HISTORY_ROWS + NEAR_CODES.size();
-        check("the file has " + rows + " entries (the studies' " + HISTORY_ROWS + " and the near future's " + NEAR_CODES.size() + ") and the catalogue read " + cat.entries().size() + " of them",
-                inFile == 94 && rows == 94 && cat.entries().size() == 94);
-        check("a fresh reading of the file's text reads all 94 and writes nothing to the log", fresh.catalogue().entries().size() == 94 && fresh.log().isEmpty());
+        check("the file has " + rows + " entries (the studies' " + HISTORY_ROWS + " and the near future's and the speculative tier's " + NEAR_CODES.size() + ") and the catalogue read " + cat.entries().size() + " of them",
+                inFile == 96 && rows == 96 && cat.entries().size() == 96);
+        check("a fresh reading of the file's text reads all 96 and writes nothing to the log", fresh.catalogue().entries().size() == 96 && fresh.log().isEmpty());
         check("nothing was skipped: the fresh reading has the same codes, in the same order, as the file",
                 codes(fresh.catalogue()).equals(codes(cat)));
         Set<String> unique = new HashSet<>(codes(cat));
-        check("the 94 codes are unique", unique.size() == 94);
-        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E20, then the near future's FE1, FE2, FE4",
+        check("the 96 codes are unique", unique.size() == 96);
+        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E20, then the near future's FE1, FE2, FE4 and the speculative tier's FE8, FE10",
                 codes(cat).equals(orderOf()));
         Map<String, Integer> byPrefix = new HashMap<>();
         for (Entry e : cat.entries()) byPrefix.merge(prefixOf(e.code()), 1, Integer::sum);
@@ -251,7 +251,7 @@ public class ResearchCheck {
         }
         Map<Field, Integer> byField = new HashMap<>();
         for (Entry e : cat.entries()) byField.merge(e.field(), 1, Integer::sum);
-        check("ENGINEERING has 50 (the studies' 47 and FE1, FE2, FE4), MEDICINE 16, BUSINESS 11 and LAW 17 (" + byField + ")", byField.get(Field.ENGINEERING) == 50
+        check("ENGINEERING has 52 (the studies' 47 and FE1, FE2, FE4, FE8, FE10), MEDICINE 16, BUSINESS 11 and LAW 17 (" + byField + ")", byField.get(Field.ENGINEERING) == 52
                 && byField.get(Field.MEDICINE) == 16 && byField.get(Field.BUSINESS) == 11 && byField.get(Field.LAW) == 17);
         boolean fieldOfPrefix = true;
         for (Entry e : cat.entries()) {
@@ -309,9 +309,10 @@ public class ResearchCheck {
         check("every need is a code in the catalogue", allCodes);
         check("no entry needs itself", noSelf);
         check("history dates every need no later than the entry that needs it", notLater);
-        check("the tables give 26 needs to 23 entries and the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4): 29 and 25 (" + links + " and " + withNeeds + ")",
-                links == 29 && withNeeds == 25 && of("FE1").needs().isEmpty() && of("FE2").needs().equals(List.of("E12"))
-                        && new HashSet<>(of("FE4").needs()).equals(Set.of("PE1", "E4")) && of("FE4").needs().size() == 2);
+        check("the tables give 26 needs to 23 entries, the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs PE14 and PE17, FE10 needs FE4): 32 and 27 (" + links + " and " + withNeeds + ")",
+                links == 32 && withNeeds == 27 && of("FE1").needs().isEmpty() && of("FE2").needs().equals(List.of("E12"))
+                        && new HashSet<>(of("FE4").needs()).equals(Set.of("PE1", "E4")) && of("FE4").needs().size() == 2
+                        && new HashSet<>(of("FE8").needs()).equals(Set.of("PE14", "PE17")) && of("FE8").needs().size() == 2 && of("FE10").needs().equals(List.of("FE4")));
         check("M1 needs PM6, streptomycin (research-1900 8.6)", of("M1").needs().equals(List.of("PM6")));
         check("E18 needs E13 and E9, and E13 needs E9", new HashSet<>(of("E18").needs()).equals(Set.of("E13", "E9")) && of("E18").needs().size() == 2
                 && of("E13").needs().equals(List.of("E9")));
@@ -930,9 +931,10 @@ public class ResearchCheck {
         check("every entry is projected exactly when its world month is after HISTORY_ENDS (" + CityCalendar.format(ResearchCatalog.HISTORY_ENDS) + "), " + projected + " of them now", rule);
         check("every projected entry has a window of the form YYYY-YYYY whose years contain the entry's year", projected > 0 && windows);
         check("no history entry has a window", noWindow);
-        check("FE4 is projected with the window 2027-2030; FE1 and FE2 are history (May 2025 and November 2025, before " + CityCalendar.format(ResearchCatalog.HISTORY_ENDS) + ")",
+        check("FE4 is projected with the window 2027-2030, FE8 with 2030-2036 and FE10 with 2031-2037; FE1 and FE2 are history (May 2025 and November 2025, before " + CityCalendar.format(ResearchCatalog.HISTORY_ENDS) + ")",
                 of("FE4").projected() && of("FE4").window().equals("2027-2030") && !of("FE1").projected() && !of("FE2").projected()
-                        && of("FE1").window().isBlank() && of("FE2").window().isBlank());
+                        && of("FE1").window().isBlank() && of("FE2").window().isBlank()
+                        && of("FE8").projected() && of("FE8").window().equals("2030-2036") && of("FE10").projected() && of("FE10").window().equals("2031-2037"));
         check("a history entry's dateWords() is its world column and its mark is empty", historyWords);
         check("a projected entry's mark is \"projected, \" and its window, and its dateWords() is its world column then the mark, naming projected and the window", projectedWords);
         check("FE4's date words as the screens print them: " + of("FE4").dateWords(), of("FE4").dateWords().equals("2028, Boden, Sweden; projected, 2027-2030"));
@@ -969,8 +971,9 @@ public class ResearchCheck {
                 && !ResearchCatalog.nearFuture("FE3"));
         check("...and for a history row's code: E1, PE1, PL12 and L5", !ResearchCatalog.nearFuture("E1") && !ResearchCatalog.nearFuture("PE1")
                 && !ResearchCatalog.nearFuture("PL12") && !ResearchCatalog.nearFuture("L5"));
-        check("FE1 and FE2 are near-future history (dated after NEAR_FUTURE, not after HISTORY_ENDS) and FE4 near-future and projected",
-                of("FE1").isNearFuture() && of("FE2").isNearFuture() && !of("FE1").projected() && !of("FE2").projected() && of("FE4").isNearFuture() && of("FE4").projected());
+        check("FE1 and FE2 are near-future history (dated after NEAR_FUTURE, not after HISTORY_ENDS) and FE4, FE8 and FE10 near-future and projected",
+                of("FE1").isNearFuture() && of("FE2").isNearFuture() && !of("FE1").projected() && !of("FE2").projected() && of("FE4").isNearFuture() && of("FE4").projected()
+                        && of("FE8").isNearFuture() && of("FE8").projected() && of("FE10").isNearFuture() && of("FE10").projected());
         check("the Research screens' count of what a city founded the default way never knows is the near future's rows (" + ResearchView.nearFutureCount() + ")",
                 ResearchView.nearFutureCount() == dated.size());
     }

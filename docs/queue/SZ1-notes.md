@@ -418,3 +418,17 @@ Only dayZeroQuotes changes production behavior; the recursive audit finds
 no current gameplay caller of it. P1 therefore adds no further default-trace
 move. SZ1's existing model funding changes still require the final ensemble
 after merging HL1, on the orchestrator's go. The provisional marker stays.
+
+## After HL1 shipped — ensemble go
+
+The orchestrator's 23:47 go gives SZ1 the exclusive heavy slot. Merged
+origin/main 6b0aa202e (HL1, 0.9.154), including R6d. All Java source merges
+cleanly: HL1's accounting and SZ1's exact funding lots, first offers and
+care-access save hooks are retained. Nine conflicts were generated indexes
+only; they were regenerated from the merged source. The first merged-model
+`--fast` passes with zero firm Stale findings (`target/SZ1-HL1-fast.txt`).
+The requested serial StepsCheck, AutoBuildCheck, PriceLevelCheck and default
+LongPlaytest precede the ensemble. Its comparison is explicitly
+`docs/ensemble/0.9.154.md`, HL1's committed 80-run baseline (23/26, hard
+10/10 PASS), with the same Earth/world files. No pick or dry run runs beside
+this ensemble.

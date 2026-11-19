@@ -1028,6 +1028,67 @@ public class BankCheck {
                 broke.getDebt(r) <= ceiling * 1.05);
 
         /*
+         * THE BANKRUPT'S SAVINGS REPAY THE BANK FIRST (HL1, 2026-11-11).
+         *
+         * The families above go broke with nothing saved: a family with an
+         * income meets its shortfall out of its savings first, and reaches its
+         * ceiling only once they are gone. The cell that holds BOTH on the day
+         * it discharges is the one whose income has stopped - with no income
+         * any debt is past the ceiling (Household.discharge(), 2026-09-11),
+         * whatever it has saved. Until HL1 that share's whole debt was written
+         * off and its savings went with it, to nobody (up to 3.5% of a city's
+         * GDP a year gone from the households' books). Caused: the same
+         * families, run to the month before their first discharge, then handed
+         * savings by the fixture - half their debt, and twice it - in the
+         * month their pay stops.
+         */
+        double[] noPay = new double[rows];
+        for (double savingsOverDebt : new double[] { .5, 2 }) {
+            HouseholdBalance owing = new HouseholdBalance();
+            for (int m = 1; m < firstBankruptMonth; m++) {
+                spent[r] = people * foodPerHead;
+                owing.advanceMonth(census, disposable, rent, fees, spent, foodPerHead, .05, 1);
+            }
+            double given = 0;
+            for (Household cell : owing.cellsForMarket()) {
+                if (cell.households <= 0 || cell.debt <= 0) continue;
+                cell.savings = cell.debt * savingsOverDebt;
+                given += cell.savings * cell.households;
+            }
+            // The month their pay stops: they still eat and pay the rent, out of the savings, and a debt with no income is past its ceiling.
+            spent[r] = people * foodPerHead;
+            owing.advanceMonth(census, noPay, rent, fees, spent, foodPerHead, .05, 1);
+            double gone = owing.getBankrupt(r);
+            double seized = owing.getSeizedAtBankruptcy(), wrote = owing.getWrittenOff(), ended = 0, kept = 0;
+            boolean within = true;
+            for (Household cell : owing.cellsForMarket()) {
+                if (cell.bankrupt() <= 0) continue;
+                // What the discharge ended, per household of the cell: read back from the debt it left (debt *= 1 - BANKRUPT_RATE).
+                double endedEach = cell.debt * HouseholdBalance.BANKRUPT_RATE / (1 - HouseholdBalance.BANKRUPT_RATE);
+                ended += endedEach * cell.households;
+                kept += cell.savings * cell.households;
+                within &= cell.seizedSavings() <= endedEach * (1 + 1e-9) && cell.savings >= 0;
+            }
+            out.printf("   savings of %.1f x the debt ($%,.0fk given), the pay stopped: %,.1f households discharged that month;%n"
+                            + "      the discharge ended $%,.2fk of debt: $%,.2fk repaid out of their savings, $%,.2fk written off; $%,.0fk of savings still theirs%n",
+                    savingsOverDebt, given, gone, ended, seized, wrote, kept);
+            assertTrue("fixture: a family whose pay stops, holding savings worth " + savingsOverDebt + " of its debt, discharges that month",
+                    given > 0 && gone > 0 && ended > 0);
+            assertTrue("...its savings repay the bank before anything is written off", seized > 0);
+            assertTrue("...the debt the discharge ended is what those savings repaid and what the bank wrote off, and nothing else",
+                    Math.abs(ended - seized - wrote) <= 1e-9 * ended);
+            assertTrue("...the repayment reaches the bank with the month's others (totalRepaid())",
+                    owing.totalRepaid() >= seized * (1 - 1e-12));
+            assertTrue("...no cell repaid more than its bankrupt share owed, and none is left overdrawn", within);
+            if (savingsOverDebt < 1) {
+                assertTrue("...savings short of the debt leave the bank a loss", wrote > 0);
+            } else {
+                assertTrue("...savings that cover the debt leave nothing to write off", wrote <= 1e-9 * ended);
+                assertTrue("......and what is left of them is still the family's", kept > 0);
+            }
+        }
+
+        /*
          * A LOCKED-OUT ROW CANNOT BORROW.
          *
          * The lockout is the whole consequence: wiping the debt and handing the

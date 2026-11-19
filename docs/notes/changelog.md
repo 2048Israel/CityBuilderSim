@@ -18,6 +18,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.154 — HL1, the households' books closed — 2026-11-18, ready, see docs/queue/HL1-notes.md
+Every dollar households gain or lose now has a line: their savings identity is struck beside the pools each month
+and asserted by LongPlaytest and the ensemble. Care, schools, research, safety and transit buy their upkeep from
+Business Services, three quarters imported with seats and all of it without; the bank buys its upkeep too, on a
+separate input excluded from GDP imports because its output is in no GDP term. A bankrupt's savings repay its debt
+before the rest is written off, and savings above the debt stay theirs. Migrants' money and household share trades
+with the world reach the balance of payments. Nine household faults are named and bounded for HL2. Current main's
+public patent imports, gold minting and noncash valuations are retained; LF1b's duplicate share pairs are kept once.
+New caused checks close the household identity through public licences, noncash short closures and HN1 mortgage trims.
+The final 80 score 23/26 beside main's 23/26, hard 10/10 PASS, no changed verdicts or findings; every month closes.
+All 2,404 default months close; the kept full suite is rejudged with named FS1 findings and the map discrepancy queued as HL1-M.
+
+### 0.9.153 — R6d, research: the speculative rows with something behind them — 2026-11-18, ready, see docs/queue/R6d-notes.md
+The speculative tier's first two rows, each projected in R6b's window and unknown to a city founded today's way (the
+default playtest is unchanged to the bit: all eight trace CSVs equal main's). **FE8**, driverless field work (projected
+2033, window 2030-2036; Deere's goal of an autonomous corn and soybean season): the Grain Farm and the Mixed Farm carry
+an autonomy kit, and a farm with it strikes the operator of each tractor and combine from its posts and asks for a
+tenth of a post's watch in his place (an estimate: no builder gives one); R2-R's gain in hands was in with R1d. **FE10**,
+electrolysis at 46 kWh a kilogram of hydrogen against 55 (projected 2034, window 2031-2037; the US energy department's
+target): FE4's Hydrogen Steel Works carries an electrolyser that takes 0.486 MWh off each tonne of steel, its bill and the grid's demand;
+it pays at about four times the model's tariff, not at its own. Each page was opened again and says as the study did. Saves go to
+format 56 and the floor with it: a format-55 save holds no count of either piece unfitted. New: `FieldOperatorsCheck`,
+`ElectrolyserCheck`.
+
 ### 0.9.152 — LM1-D, the founding's water widened to six blocks — 2026-11-18, ready, see docs/queue/LM1-notes.md
 A new city whose water within `CityLand.FRESH_PATCH` (3 blocks) of its first fresh block holds less than one plant's (A24)
 now widens the square a block at a time to `FRESH_PATCH_MOST` (6) and takes the first that holds it (`freshWater()`): a

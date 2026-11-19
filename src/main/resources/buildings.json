@@ -1996,6 +1996,17 @@
      },
      "work": 2,
      "lifeMonths": 300
+    },
+    {
+     "id": "autonomy-kit",
+     "name": "Autonomy kit",
+     "since": "FE8",
+     "ends": "FIELD_OPERATORS",
+     "buys": {
+      "MACHINERY": 0.1
+     },
+     "work": 0,
+     "lifeMonths": 120
     }
    ],
    "recipes": [
@@ -2098,6 +2109,17 @@
      },
      "work": 10,
      "lifeMonths": 300
+    },
+    {
+     "id": "autonomy-kit",
+     "name": "Autonomy kit",
+     "since": "FE8",
+     "ends": "FIELD_OPERATORS",
+     "buys": {
+      "MACHINERY": 6.022
+     },
+     "work": 0,
+     "lifeMonths": 120
     }
    ],
    "recipes": [
@@ -5831,7 +5853,20 @@
    "uses": {
     "PELLETS": 153846
    },
-   "since": "FE4"
+   "since": "FE4",
+   "equipment": [
+    {
+     "id": "electrolyser",
+     "name": "46 kWh electrolyser",
+     "since": "FE10",
+     "ends": "ELECTROLYSERS",
+     "buys": {
+      "MACHINERY": 26200
+     },
+     "work": 0,
+     "lifeMonths": 110
+    }
+   ]
   }
  ]
 }

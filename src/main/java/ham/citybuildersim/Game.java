@@ -13565,6 +13565,7 @@ public class Game {
         salvageBySector.clear();
         salvageUsedThisMonth = 0;
         double[] poolsBefore = MoneyAudit.pools(this);
+        double householdsBefore = MoneyAudit.householdsHeld(this);
         double pooledBefore = 0;
         for (double p : poolsBefore) pooledBefore += p;
         double interestDue = economyManager.getInterestAccrued();
@@ -13805,6 +13806,9 @@ public class Game {
         bank.payRunning(economyManager.getBankPayroll(), bankMaintenanceDue,
                 economyManager.bankOperatingCost(buildingManager.countByName("Commercial Bank")),
                 economyManager.bankOperatingCostPerLaterBranch());
+        // ...and its running cost is bought of Business Services, as the city's upkeep is (HL1; buyUpkeep()): the bank paid it out of its own cash above.
+        // On the bank's own input line (sellBankUpkeep()), not the services': the national accounts keep it out of their imports, the bank's output is in no term of GDP.
+        getSectors().businessServices().sellBankUpkeep(bank.getOperatingCost());
         bankMaintenanceDue = 0;
 
         /*
@@ -14105,6 +14109,7 @@ public class Game {
         worldPaperLeavesWithTheMoney(hotBefore);
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
+        lastHouseholdsAudit = MoneyAudit.households(this, householdsBefore, lastMoneyAudit);
         // Declared (0.7.14): the valuation a resolution wiped off the world's
         // shares is a month's, whether the month's or a press's before it.
         ownersWipedAbroadThisMonth = 0;
@@ -15082,6 +15087,7 @@ public class Game {
             treasuryPays(TreasuryLine.RESEARCH, researchOut);
             treasuryPays(TreasuryLine.SAFETY, safetyOut);
             treasuryPays(TreasuryLine.TRANSIT, transitOut);
+            buyUpkeep();
             treasuryPays(TreasuryLine.CITY_SERVICES, Math.max(0, -servicesNet));
             /*
              * ...AND THE LABS' SHARE OF THE MONTH'S PRIZES (R4), right after the research bill and the promises: what a find in a field with a prize owes
@@ -15125,6 +15131,19 @@ public class Game {
         double owed = 0;
         for (ResearchCatalog.Field f : ResearchCatalog.Field.values()) owed += research.toLabs(f);
         return owed;
+    }
+
+    /**
+     * THE CITY'S UPKEEP IS BOUGHT (HL1, 2026-11-11; finalUpdateEconomy()): what the treasury has just paid inside the care, schools, research,
+     * safety and transit bills that is not a wage - the hospitals', schools', laboratories', police stations' and infrastructure's upkeep and the
+     * ports' - is work billed to Business Services (BusinessServices.sellUpkeep()), which books it as other revenue and imports the share of it a
+     * sector of its kind imports. The same expressions the money audit reads for those lines (MoneyAudit.strike()); the five bills are promises, paid
+     * whole, so what the city paid and what the seller books are one figure. Nothing is paid here: the cash left the treasury a line above.
+     */
+    private void buyUpkeep() {
+        double upkeep = healthcare.getUpkeep() + education.getUpkeep() + economyManager.getResearchCosts()
+                + crime.getUpkeep() + economyManager.getTransitUpkeep();
+        getSectors().businessServices().sellUpkeep(upkeep);
     }
 
     /** The labs' share of the month's prizes, paid to Business Services' till (finalUpdateEconomy(); R4): the sum of Research.toLabs() over the fields, through the prizes' line. Sets prizePaid. */
@@ -15872,6 +15891,8 @@ public class Game {
                         + portsBill(),
                 getInfrastructureManager().getTransitRiders()
                         * economyManager.getTaxPolicy().monthlyFare());
+        // ...and the upkeep part of that bill, which the treasury pays Business Services (HL1; buyUpkeep()), the rest being the crews' wages.
+        economyManager.setTransitUpkeep(buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE) + portsBill());
 
         /*
          * 7. And who is too ill to work. Last, because the dead nobody buried
@@ -19150,6 +19171,9 @@ public class Game {
         return buybackToHouseholdsUnsettled + buybackAbroadUnsettled + centralBank.getRedemptionDue();
     }
 
+    /** ...and the households' part of it, which the press has already credited to their savings (MoneyAudit.householdsHeld(), HL1). */
+    public double getBuybackToHouseholdsUnsettled() { return buybackToHouseholdsUnsettled; }
+
     public double getBuybackToHouseholds() { return buybackToHouseholds; }
     public double getBuybackAbroad()       { return buybackAbroad; }
 
@@ -19474,6 +19498,9 @@ public class Game {
     /** Last month's money-conservation residual. See MoneyAudit. */
     private MoneyAudit.Result lastMoneyAudit = MoneyAudit.Result.NONE;
 
+    /** Last month's households' identity, struck beside the pools' (HL1, 2026-11-11). See MoneyAudit.Households. */
+    private MoneyAudit.Households lastHouseholdsAudit = MoneyAudit.Households.NONE;
+
     /**
      * How much moved after the audit struck, which must be nothing.
      *
@@ -19492,6 +19519,7 @@ public class Game {
 
     public double getPostAuditDriftWorst() { return postAuditDriftWorst; }
     public MoneyAudit.Result getLastMoneyAudit() { return lastMoneyAudit; }
+    public MoneyAudit.Households getLastHouseholdsAudit() { return lastHouseholdsAudit; }
     public void InterestExpense(double amount){
         economyManager.updateInterestExpense(amount);
         cityInterestPaid += amount;
@@ -20588,6 +20616,7 @@ public class Game {
                     + portsBill(),
             getInfrastructureManager().getTransitRiders()
                     * economyManager.getTaxPolicy().monthlyFare());
+    economyManager.setTransitUpkeep(buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE) + portsBill());
 
     /*
      * EVERY SECTOR'S WAGES, in one call - the same call the monthly path
