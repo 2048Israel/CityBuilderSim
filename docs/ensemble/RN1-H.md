@@ -2,7 +2,7 @@
 
 The ensemble on the model of **{next}**: classes snapshot of commit ecfdcfae8 (2026-11-19T08:05Z), label RN1-H, 80 of 80 runs.
 Data files named for this snapshot — `JAVA_OPTS=-Densemble.extra=homes=getSectors.realEstate.getHomes;occupied=getSectors.realEstate.getOccupiedHomes;rentF=getSectors.realEstate.getRentPrice;rentS=getSectors.realEstate.getStudioRentPrice;reDebt=getSectors.realEstate.getBondsPayable;mortgageCapitalRefused=getEconomyManager.getBusinessDebtManager.refusedMortgageForCapital.size;doubled=getFamilies.getDoubledUpHouseholds;unplaced=getFamilies.getStillUnplaced; JDK_JAVA_OPTIONS=-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin -Dcbs.world=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin -Dcbs.parallel=1`.
-Scored against `docs/ensemble/0.9.155.md` for T1, T2 and F1. 
+Scored against `docs/ensemble/0.9.155.md` for T1, T2 and F1.
 | policy | id | class | measure | median [min to max] | threshold | verdict | baseline value | baseline verdict |
 |---|---|---|---|---|---|---|---|---|
 | AUTO2 | A1 | info | inflation m240-end, a year | 2.98% [2.47% to 4.68%] | median 2.00%±1.00%, ≥12/16 in band* | FAIL (8/16 in band) | 3.14% [2.70% to 3.51%] | FAIL |
