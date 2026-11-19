@@ -1,13 +1,13 @@
 # HL1: the households' books closed (resumed 2026-11-18)
 
-**Where it stands (2026-11-18, ensemble go).** REV-HL1-2 said SHIP and the orchestrator
-reserved the heavy slot for HL1's final 80 after LM1-D's gate. Main 608bf7025 (including LM1-D,
-0.9.152) is merged, source clean, generated indexes regenerated, --fast exit 0. The combined
-LM1-D tree passes the 2,404-month default and all money fixtures: its eight CSVs and nine own-line
-rows are identical to the preserved HL1 run. The final 80 are next on the frozen merged model. The ship marker
-remains provisional. No ensemble or dry run has started in this phase yet; the dry run needs a
-separate go after the final baseline and score are committed. Current results and all changed
-figures are below; the 2026-11-11 measurements are historical.
+**Where it stands (2026-11-18, ensemble complete).** REV-HL1-2 said SHIP. Main
+608bf7025 (LM1-D, 0.9.152) is merged; --fast passes. The combined default closes all 2,404
+months, its eight CSVs and nine own-line rows unchanged by LM1-D. The final 80 on snapshot
+7bcbaba3a completed once: **exit 0, 23/26, hard 10/10 PASS**, beside main baseline 0.9.151's
+23/26 and hard 10/10. No changed verdict, missing run, short run, audit failure or finding.
+The baseline is replaced in docs/ensemble/HL1.md; the full comparison is at the end below.
+The ship marker remains provisional. The ALL dry run still needs its separate machine-slot go;
+none has started. The 2026-11-11 measurements remain historical.
 
 Brief: `docs/studies/spec-wealth.md` 2.4 and 3.4. Four slices (A the instrument, B the upkeep, C the
 books closed and asserted, D what the ensemble then found), each coded by a Sonnet slice and reviewed;
@@ -297,8 +297,9 @@ For Jerus (in `docs/queue/HL2.md`, both with a recommendation):
   kept share is a cliff at one seat, and `ScaleCheck`'s month 165 holds in 7 of 36 months. The young
   town's GDP of nothing ("What moves for the player") is the first one's matter: with no seat the
   whole upkeep is imported, with one a quarter is kept.
-- The write-up for the project (`claude/<title>.md`; the batch changes how the game plays and leaves
-  calls): this session has no way to write to the project; these notes are its matter.
+- At the 2026-11-11 stop, the project write-up was left in these notes. On resumption it is
+  supplied as `claude/households-books-closed.md`, the repository prose the contract asks for;
+  this records no external-project upload.
 
 ## One in, one out
 
@@ -564,15 +565,13 @@ HL2, NG1 and BI1 are absent as row IDs from current QUEUE.md and pass tools/batc
 held ship rows are retained once. HL1-R already has a row and is not queued twice; its obsolete
 month-165 ScaleCheck low has been superseded by main's QB1 fixture (now green at 225).
 
-Code is ready for the stranger's integration review, with named checks exit 0 or 3 and no new red.
-Only the orchestrator's machine steps remain: LM1-D must ship and be merged, then ask `HL1
-ensemble?` and wait for the quiet-slot go; run the 80 once on that final model and replace
-`docs/ensemble/HL1.md` with its baseline, current score and growth comparison in these notes.
-Fetch/merge again before the ALL dry run if main moved, ask `HL1 dry run?`, wait for go, run the
-launcher with at least 7,200 s allowed and wait for `gate exit`. After the dry run edit only notes
-and ship, gate-run comment first, validate known-reds, and on the final go drop the provisional
-marker last in its own commit, verify it gone on origin, mail `HL1 ready at COMMIT` and set bus
-state ready. No ensemble, full pick or dry run has been started in this resumed phase.
+At the provisional mends handoff, named checks exited 0 or 3 with no new red, and the code went
+for the stranger's integration review. REV-HL1-2 subsequently said SHIP. LM1-D is now merged,
+the default verified unchanged and the final 80 completed as recorded below. The remaining ALL
+dry run needs its own go. Fetch/merge again before it if main moved; allow at least 7,200 s and
+wait for `gate exit`. After it edit only notes and ship, put the gate-run comment first and
+validate known-reds. On the final go drop the marker last in its own commit, verify it gone on
+origin, mail `HL1 ready at COMMIT` and set bus state ready. No full pick or dry run has run here.
 
 Before the provisional handoff, origin/main 79e336def (Queue: SZ1) was merged too. This changes
 QUEUE.md only, no model, harness, save path or generated index; the measured source is still
@@ -622,3 +621,53 @@ the one reserved heavy slot, all five policies and seeds 0-15. Both data paths a
 baseline docs/ensemble/0.9.151.md scores 23/26, hard 10/10, 16/16 takeoffs (median m820), median
 final AUTO2 population 2,656,362. No pick or dry run runs beside the ensemble. The source is frozen
 for the run; its output and snapshot are target/ensemble/HL1-final-20261118.
+
+### The final 80: current baseline and result
+
+The immutable classes snapshot is 7bcbaba3a, source merge e96bd45b5, main 608bf7025; version
+0.9.152, recorded 2026-11-18T23:23Z. The fresh label `HL1-final-20261118` ran all policies with
+seeds 0-15 exactly once, five JVMs only within the reserved ensemble slot. The wrapper recorded
+`HL1 ensemble exit 0`. All 80 completed to their policy endpoints; none missing or short. Wall
+run 124.2 min, sum of run times 616.2 min. No pick, dry run or other own JVM ran beside it.
+
+The new `docs/ensemble/HL1.md` is the generated baseline: its heading and introductory model
+version use the publication token, and trailing whitespace is removed. It preserves the exact snapshot/data paths,
+score table and fenced summary. Its comparator is the newest published baseline,
+`docs/ensemble/0.9.151.md` (HN1; LM1-D's unchanged default needed no new baseline).
+
+| reading | main baseline 0.9.151 | HL1 final merged model |
+|---|---|---|
+| scored criteria | 23/26; 0 vacuous, 1 retired | 23/26; 0 vacuous, 1 retired |
+| hard M1/F1 | 10/10 PASS | 10/10 PASS |
+| money-audit failed / unread months | 0 / 0 in every policy | 0 / 0 in every policy |
+| runs with findings | 0/16 in every policy | 0/16 in every policy |
+| AUTO2 reaching 40,000 | 16/16; m820 [542 to 1,536] | 16/16; m814 [506 to 1,501] |
+| AUTO2 final population | 2,656,362 [1,392,715 to 5,882,191] | 2,628,909 [1,115,743 to 6,587,878] |
+| ZERO_SLACK final population | 1,735,856 [391,013 to 4,172,643] | 1,563,127 [430,325 to 4,312,878] |
+| ZERO_HOT final population | 7,859 [1,697 to 20,661] | 7,622 [1,645 to 19,547] |
+| SHOCK final population | 36,114 [32,420 to 318,562] | 40,896 [27,485 to 279,392] |
+| HIGH final population | 26,540 [16,912 to 80,231] | 29,620 [11,584 to 114,818] |
+| identical pre-switch twins | 64/64 | 64/64 |
+
+Every month executes LongPlaytest's household identity assertion through `runPlayer`; F1's zero
+findings therefore includes zero unexplained household residuals across all 80 runs. M1 separately
+reports the pools' money audit. The nine named own lines remain measured faults for HL2, rather
+than being silently treated as money flows that settled. The historical NG1 negative-GDP finding
+is not reproduced in this model's 80; its queued investigation stays as held, without a new row.
+
+The AUTO2 final-population median is 1.03% below this baseline; takeoff prevalence is unchanged
+at 16/16, and its median takeoff month is six earlier. These report the distributions; they do
+not establish a general growth speedup or slowdown. All five T2 readings pass. The full table
+preserves every other moved figure and its baseline value. There are **no changed verdicts**.
+The same three informational criteria fail as on main:
+
+| criterion | main baseline | HL1 final |
+|---|---|---|
+| A1 inflation m240-end | 3.10% [2.63% to 3.41%], 5/16 in band | 3.09% [2.66% to 3.75%], 6/16 in band |
+| A2 longest >10% spell | 24 [17 to 45] months | 23 [12 to 47] months |
+| H2 inflation after autopilot minus twin | -0.56% [-4.47% to 5.63%], fails | -0.19% [-3.66% to 3.13%], 11/16 below the earlier excess, fails |
+
+H1 remains retired; no new exemption or known-reds row is needed for this ensemble. Raw CSVs,
+logs, times, score, summary and snapshot remain at `target/ensemble/HL1-final-20261118`;
+launcher log `target/HL1-ensemble-final.txt`. The contract's repository project prose is now in
+`claude/households-books-closed.md`. Only the scheduled ALL dry run remains before final readiness.
