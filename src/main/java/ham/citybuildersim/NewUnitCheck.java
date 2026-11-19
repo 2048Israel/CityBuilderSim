@@ -611,13 +611,13 @@ public final class NewUnitCheck {
     /**
      * The landlords' head shortage with `coming` posts on site, from its parts (RealEstate.latentHeadShortfall()'s arithmetic,
      * no home on site): every post standing, the builders' laid-off crews included, and the coming ones, at 2.25 heads a post,
-     * less the homes with their headroom.
+     * with the headroom over them (RN1-H, 0.9.157: a margin over demand), less the homes.
      */
     static double latentWith(Game g, double coming) {
         BuildingManager bm = g.getBuildingManager();
         double standing = bm.getPostsWithheld();
         for (long n : g.getJobs()) standing += n;
-        return (standing + coming) * 2.25 - bm.getTotalHouseCapacity() * (1 + BusinessInvestment.TARGET_HEADROOM);
+        return (standing + coming) * 2.25 * (1 + BusinessInvestment.TARGET_HEADROOM) - bm.getTotalHouseCapacity();
     }
 
     /** The power ahead of a queue on a stack: the readings at half the first completion, just before it, at it and past the last. */
