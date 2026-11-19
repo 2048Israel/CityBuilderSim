@@ -539,3 +539,88 @@ KeptCheck's KFP1 class goes to **FS5**, PriceLevelCheck's HP1/HP2 classes to
 these exact prefixes and successor IDs. The ship file adds no red class;
 its PriceLevel explanation now names this model's 96-month town horizon.
 The provisional marker remains until the authorized dry run and ready go.
+
+## AUTO2 population reading — 2026-11-19
+
+For the orchestrator's report to Jerus: the **−9.41%** is the change in
+AUTO2's final-population median, not a measured loss from one identified
+event. The model path changed by SZ1 is financing granularity: rollover,
+automatic works and the playtest's construction funding now use the exact
+monthly-price lot, capped at the minimum issue, instead of fixed nominal
+granules. The caller audit above names these paths. Different rounded faces
+can leave different cash and securities after an auction, changing the
+subsequent construction and investment path. The changed default trace's
+pool/household totals establish that financing transactions differ.
+
+I have **not isolated the cause of the negative population-median change**
+between these paths; there is no counterfactual run attributing it to one
+kind of funding, and I did not rerun or tune the final ensemble. The screen
+step changes are not exercised by this headless ensemble. All sixteen AUTO2
+cities take off, with median takeoff earlier (m760 against m814), and T2
+passes. These readings describe the result; they do not establish a causal
+explanation for its sign. ★ Report the observed change and this uncertainty
+together, retaining the original informational verdict and thresholds.
+
+## Kept final dry run — 2026-11-19
+
+The authorized launcher completed at **03:07 local**, testing exactly:
+
+- branch **2821bc80211e848b6f8c9374386ae4254a6c8d84**;
+- main **1041df81bdc15e9406463294dcef9688e4343631**.
+
+Retained run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-SZ1-G5odicQh/`.
+Its `ship.log`, `checks/suite.txt`, `checks/*.log`, `checks.sha256` and
+`checks.complete` are intact. The local launcher transcript is
+`target/SZ1-dry.txt`. The launcher command had a **14,400-second timeout**;
+foreground nine-minute waits continued until the explicit `gate exit`.
+Nothing was pushed while it ran.
+
+The static pick was ALL, 225 harnesses. The full runner reports **224
+harnesses**, **211 passed, 13 with reds**, in **2,866 seconds**; the outer
+check took 2,959 seconds. Compile and index generation pass; **zero firm
+stale findings** (187 soft). The existing runner policy reports 11 soft
+timing assertions and eight observed path assertions. StepsCheck has zero
+failures; AutoBuildCheck, SaveFileCheck, WorksFinanceCheck, LandCheck,
+ReplayCheck, LongPlaytest, CentralBankCheck and PlanCheck pass.
+
+The initially registered red harnesses were BuildAdviceCheck,
+ShortSellingCheck, PriceLevelCheck, PopulationCheck, EducationCheck,
+HealthCheck, ScaleCheck, KeptCheck, DeathRecordCheck, DistressBleedCheck,
+CopperRefiningCheck and YoungBankCheck. MapCheck also has its existing
+HL1-M finding. KeptCheck's watched holding is now B:2732, with **zero months
+left**, against the required three; the existing FS5 row's explanation now
+records that actual condition rather than the earlier null holding.
+
+The raw dry run stopped with exit 1 (suite exit 4) on **two additional
+MapCheck assertions**, plus their exit/tally summaries. ★ Name these moved
+played-city fixtures under **FS6**, as the orchestrator's dry-run go
+instructed; the two assertion prefixes are recorded separately in the ship
+file. `MapCheck.reserveScenario`, lines 3208–3218, copies the played city's
+land for this scenario. Lines 3309–3312 demand a reserve absent the month
+before, and every final reserve plot first dated in the chosen month.
+SZ1 changes only this harness's later land-card quote checks; the reserve
+scenario and map/journal machinery are unchanged.
+
+Here the ground is handed in m133, the chosen reserve month is m137, and
+**120 reserve plots already exist before it**. The final reserve has 324
+plots, 234 dated at m137, so the fixture's none-before/all-new conditions
+are not met. Its operational checks all pass: exactly **105** obstructing
+boxes move (the undated control moves 197), zero later boxes stand on the
+reserve, zero move again, **zero replay differences and zero dropped
+records**, exact sidecar round-trip, and fresh/cached reserve equality.
+This is the played-land premise moving, with the journal replay preserving
+the actual history; FS6 must cause a wholly new reserve for that assertion.
+
+After naming the two conditions, copied only the retained `checks/suite.txt`
+into this worktree's `target/checks/` and ran the common saved-log judge
+with retagging. **Exit 3: known red only, 13 harnesses; `new-reds.txt` is
+empty.** Log: `target/SZ1-dry-rejudge.txt`. The kept run itself was never
+changed or executed in. All **840 SHA-256 records** in its manifest verify,
+and the local suite copy remains byte-identical. Its completed checks can
+be reused with these newly named rows, including the original exit-4
+suite, as `tools/gate-reuse.sh` specifies.
+
+Only these notes and the ship file change after the dry run. No model,
+harness or other source changed after ensemble snapshot **3586daad6**.
+The ship file's retained-run comment is its first line; the final ready
+commit removes only the provisional marker.
