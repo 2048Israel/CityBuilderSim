@@ -130,3 +130,10 @@ bounded by what the template charges and could price a shell below nothing.
   LandmassCheck, BridgeCheck, RecipeCheck: green (exit 0). AutoBuildCheck: exit 3, its one red main's (section 4's
   replay city above its debt limit, FS12, `docs/notes/gate.txt`), the line exactly main's.
 - `./batch-check.sh --fast`: green (exit 0); Stale 0 firm findings; the maps regenerated and committed.
+- The eight default traces (LongPlaytest, `-Dplaytest.trace`, 2,400 months) on main's ba734bf85 and on the final classes
+  (b67525431): all eight byte for byte (sha256: bank 3dde2f48, bonds 90de0ef2, borrow 45081590, build 14b74f91, house
+  763548ef, labour 69cae966, month 69d84440, pop 4056e91a). The two reports differ only in their clock times and one
+  object's identity hash in a printed works decision; both runs' one red is main's (`an old works moved`, RN1-H-M). No
+  ensemble: the default trace does not move.
+- `sh tools/pick.sh origin/main HEAD`: ALL (`AllChecks.java` registers FitoutCheck, so the suite reads the diff); review
+  needed (saves: `DataSave.java`). The whole suite is the dry run's.
