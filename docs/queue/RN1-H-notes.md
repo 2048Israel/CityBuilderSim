@@ -1,14 +1,16 @@
 # RN1-H — the homes' headroom a margin over demand
 
-**Current mends (2026-11-19).** Main `6b0aa202e` (HL1, 0.9.154) is merged
-at `e293af05d`. The fast check, all 18 prior picked names and additional
-HousingDoorCheck are green under the exit 0/3 rule. Both the merged and
-fresh-main LongPlaytests exit 0; the numerical housing split remains at
-m21. Their complete traces are preserved outside the worktrees, with the
-fresh main reference shared for HS1. The provisional marker remains:
-the 80-run ensemble and paired AUTO2 16 await the explicit go after SZ1.
-No pick or dry run was made under that hold. The latest comparison and
-all provenance are in the final section below.
+**Current final-model work (2026-11-19).** SZ1 main `3c4661a9d` is merged
+at `39acf3894`, then HL1-R main `ddcb3400e` (0.9.156) at `524a943b5`.
+Both merged fast checks pass; HousingCheck still orders exactly the
+margin. The latest default run has one real layout finding, the retained
+Industrial Bakery that moved at m2400. Its money/household assertions pass.
+On the orchestrator's go, that map fault is queued as RN1-H-M and named
+precisely, using HS1's report-only FAIL prefix byte for byte. No generic
+no-FAIL waiver is used. The provisional marker remains while the final
+80 and paired main AUTO2 16 are run on `ddcb3400e`, with the same extra
+housing diagnostics. Earlier HL1-only comparisons below are historical;
+the latest model and its finding are recorded at the end.
 
 ## What changed
 
@@ -286,3 +288,59 @@ ensemble, pick or dry run until the explicit go after SZ1's ensemble.
 The temporary main checkout was removed only after confirming its exact
 owned path, that its only changes were 600 generated date headers, and
 that the complete shared trace and report were preserved outside it.
+
+## SZ1, HL1-R and the map finding (2026-11-19)
+
+Merged SZ1 main `3c4661a9d` at `39acf3894`. No source conflicts; the two
+generated-index conflicts were regenerated. `--fast` exits 0 (compile
+57 s), then HousingCheck exits 0: equal demand/capacity 1,080 orders nine
+Houses, exactly 54 places. No housing fixture or model was changed.
+
+The one authorized traced LongPlaytest finishes all 2,404 rows through
+m2405. Its MoneyFixtures and household assertions pass, and there are
+zero unplaced households. It exits 1 (wrapper 4, 677 s) for one layout
+finding, `an old works moved`, at m2400: district (0,0), Industrial Bakery,
+one of the one boxes kept at m601 no longer stands there. The district
+now draws four, against one then; its model count was two then and no
+lower than one since. None moved off a run. This is not HL1-M's separate
+rail-geometry discrepancy and is not a flaky-suite exception.
+
+All eight CSVs, `report.txt`, original `suite.txt`, `snapshot.txt` and
+SHA-256 hashes are preserved at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-RN1-H-39acf389/`, prefix
+`trace`. The original red log is retained unmodified. Against the earlier
+RN1-H/HL1 trace, the first house-row numerical split is m59 in the rates:
+SZ1's funding lots move this path too. The new path ends at 951,153
+people; its median door vacancy is 3.41%, with at least 303 built months
+whose positive head gap is within the reserve, on the same conservative
+test above. This is not a comparison with current main.
+
+The orchestrator's 03:51 go classifies the bakery case as a real layout
+fault found in passing, authorizes the retained hard finding to be queued
+as its own row, and gives the heavy slot to RN1-H. `RN1-H-M` was verified
+unused by `sh tools/batch-id.sh`; its causal follow-up brief records the
+m601/m2400 counts and full trace path. CityMap, DistrictPlan and the watch
+are byte-unchanged from main in this batch.
+
+The common judge initially saw only `(no FAIL line)` because the finding
+section printed no FAIL token and the later money-fixture footer was
+green. A generic approval would hide unrelated findings. On the same
+explicit instruction, take only LongPlaytest's change from HS1 commit
+`b338ee4ba`, through `git show ... -- <LongPlaytest.java> | git apply`,
+byte for byte. It adds FAIL before each finding, with HS1's comments;
+CopperRefiningCheck's companion hunk remains HS1's. This changes only
+the report, not the model, finding, watch or CSVs. The ship file names
+the exact resulting one-bakery FAIL line to RN1-H-M. The old cached log
+has not been relabelled as a newly passed run; the gate runs its pick
+fresh with the precise name available.
+
+Before the final ensemble, merged main `ddcb3400e` (HL1-R) at `524a943b5`:
+Business Services' kept share is capped by seats, and the orchestrator
+reports main's default trace identical. That merged `--fast` exits 0
+(49 s); another `--fast` after the report change also exits 0 (49 s).
+The main trace supplied for SZ1 is preserved at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-kept-SZ1/SZ1-after-HL1-trace/`,
+prefix `run`, and applies after HL1-R too. The paired main AUTO2 subset
+will use `ddcb3400e`, never the older `6b0aa202e` reference. The model and
+driver stay frozen for the one final 80 and paired 16, run one ensemble
+at a time with identical `ensemble.extra` paths.

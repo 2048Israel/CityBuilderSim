@@ -29,3 +29,8 @@ whether those markets should also hold spare supply.
 
 The checks, reader audit and eventual ensemble comparisons are recorded
 in [RN1-H's notes](../docs/queue/RN1-H-notes.md).
+
+The larger played path also exposed an old Industrial Bakery moving on
+the map. Its hard finding remains, with the placement cause queued
+separately as [RN1-H-M](../docs/queue/RN1-H-M.md); it changes no economic
+rule in this batch.
