@@ -416,8 +416,9 @@ The first dry run (`sh tools/gate.sh HS1 --dry-run` on 26f3f8d31, kept folder
 `/tmp/cbs-gate-HS1-T3IhSIS5`) stopped on 37 unnamed lines in 11 harnesses. One is a money
 residual, traced to main's car draw and queued as CQ1. The other ten are played-city fixtures that
 HS1's moved path no longer causes. Each is in the class of a sweep queued in
-`docs/studies/flaky-suite.md` section 6, except BusinessServicesCheck, queued as BC1. Every line
-is a known-reds row in the ship file. The kept suite log, rejudged against them, gives exit 3:
+`docs/studies/flaky-suite.md` section 6; BusinessServicesCheck, which has no sweep of its own,
+joins FS15 (the orchestrator: no new row for a moved fixture). Every line is a known-reds row in
+the ship file. The kept suite log, rejudged against them, gives exit 3:
 known reds only, 18 harnesses.
 
 **The residual: SlopeCheck 9, CQ1.** The Medellin run's households' identity was out by +14.1176
@@ -452,10 +453,10 @@ reads no longer arises:
 | HoldersCheck 13 | the bank holds no paid paper with that discount at the cancelled sale | FS14 |
 | PriceLevelCheck 9 | the horizon ends at month 94 and the h.* series are compared a month past it (worst 0.89; main's own line is 0.25) | FS2 |
 | KeptCheck 40 | the construction page hands back 499 of its first draw's 559 nodes (89%) | FS4 |
-| BusinessServicesCheck | its 24 played months on two Contact Centres: the sector's own plan orders a third, 900 seats against 600 | BC1 |
+| BusinessServicesCheck | its 24 played months on two Contact Centres: the sector's own plan orders a third, 900 seats against 600 | FS15 |
 
-BC1, queued: the harness should assert the seats against the centres standing, or read them before
-the months play. Nothing in the source changed after the dry run.
+For FS15: BusinessServicesCheck should assert the seats against the centres standing, or read
+them before the months play. Nothing in the source changed after the dry run.
 
 ## Open, for the orchestrator
 
@@ -465,9 +466,9 @@ the months play. Nothing in the source changed after the dry run.
 2. **LongPlaytest's finding**: done, b338ee4ba (FAIL lines; CL7's row matches it). **The
    stall**: above, with the ensemble's answer.
 3. **SB1**, queued: `BuildingManager.retire()`'s first-stack return.
-4. **The dry run's reds**: above. CQ1 (the car draw) is queued as the orchestrator agreed. BC1
-   (BusinessServicesCheck's played seats) is queued with its own id: has the orchestrator a
-   sweep it should join instead?
+4. **The dry run's reds**: done, above. CQ1 (the car draw) is queued, as the orchestrator
+   agreed. BusinessServicesCheck's played seats join FS15, on the orchestrator's word. The gate
+   reuses the kept dry run.
 
 For Jerus: HS1-A (pending), the senior care pull at its cap.
 
