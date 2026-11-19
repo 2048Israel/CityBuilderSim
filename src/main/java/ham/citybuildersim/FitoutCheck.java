@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,15 +91,35 @@ public final class FitoutCheck {
         return value / t.getFoundingCashCost();
     }
 
-    /** One building's cash and points without these pieces: the template's less each built-in piece's share and work. */
-    static double[] shell(BuildingsTemplate t, Set<String> off) {
-        double s = 0, work = 0;
-        for (String id : off) {
-            Equipment e = t.getEquipment(id);
-            s += share(t, e);
-            if (e != null && e.getWork() > 0) work += e.getWork();
+    /** A built-in piece's goods at the import price, in founding money; 0 for one carried in. */
+    static double goodsAt(Equipment piece) {
+        if (piece == null || piece.getWork() <= 0) return 0;
+        double value = 0;
+        for (Map.Entry<Good, Double> b : piece.getBuys().entrySet()) {
+            double price = b.getKey().worldImportPrice();
+            if (Double.isFinite(price) && price > 0) value += b.getValue() * price;
         }
-        return new double[] { t.getCashCost() * (1 - s), t.getConstructionPoints() - work };
+        return value;
+    }
+
+    /**
+     * One building's cash and points without these pieces, from the catalogue in money (REV-R1e): the founding cash less every
+     * built-in piece's goods is the frame (its labour, its own goods, the rest), the same a point in every building of the
+     * template; a building without pieces does fewer points and pays the frame for those, plus the goods of the pieces it keeps.
+     * Struck as the template's cash is.
+     */
+    static double[] shell(BuildingsTemplate t, Set<String> off) {
+        double founding = t.getFoundingCashCost(), goodsAll = 0, goodsKept = 0, work = 0;
+        for (Equipment e : t.getEquipment()) {
+            if (e.getWork() <= 0) continue;
+            double v = goodsAt(e);
+            goodsAll += v;
+            if (off.contains(e.getId())) work += e.getWork();
+            else goodsKept += v;
+        }
+        double points = t.getConstructionPoints() - work;
+        double frame = Math.max(0, founding - goodsAll) * points / t.getConstructionPoints();
+        return new double[] { (frame + goodsKept) * t.getCashCost() / founding, points };
     }
 
     /** BuildingManager.nonMaterialCost()'s arithmetic written out: the cash, its founding labour (the points at the founding wage a point, never more than the cash over the expected level) taken out at the level and put back at today's wages. */
@@ -284,6 +305,27 @@ public final class FitoutCheck {
                 overWhole == 0, overWhole + " faults");
         check("the whole template is its own cash and points, to the bit, and chosen by no one", notWhole == 0, notWhole + " not");
 
+        // A point of work costs the same in a building with or without a piece, the pieces' goods apart (REV-R1e).
+        int perPoint = 0, tried = 0;
+        String firstPoint = "";
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            double k = t.getCashCost() / t.getFoundingCashCost(), goodsAll = 0;
+            for (Equipment e : t.getEquipment()) goodsAll += goodsAt(e) * k;
+            double wholeAPoint = (t.getCashCost() - goodsAll) / t.getConstructionPoints();
+            for (Equipment e : t.getEquipment()) {
+                if (e.getWork() <= 0) continue;
+                tried++;
+                Fitout without = Fitout.without(t, List.of(e.getId()));
+                double aPoint = (without.cashCost() - (goodsAll - goodsAt(e) * k)) / without.points();
+                if (!near(aPoint, wholeAPoint)) {
+                    perPoint++;
+                    if (firstPoint.isEmpty()) firstPoint = t.getName() + " without " + e.getId() + ": " + aPoint + " a point vs " + wholeAPoint;
+                }
+            }
+        }
+        check("a point of work costs the same with or without a piece: each built-in piece left off takes its goods and its work's cash, the shell's cash a point (its pieces' goods apart) the whole template's",
+                tried > 0 && perPoint == 0, perPoint + " of " + tried + (firstPoint.isEmpty() ? "" : ", first " + firstPoint));
+
         BuildingsTemplate cars = bm.getTemplateByName("Vehicle Works"), farm = bm.getTemplateByName("Grain Farm"),
                 depot = bm.getTemplateByName("Truck Depot");
         check("the 25% pieces read a quarter: the Vehicle Works's carbide tools and the Grain Farm's combine, at a tenth of the points' work",
@@ -291,6 +333,11 @@ public final class FitoutCheck {
                         && Math.abs(Fitout.cashShare(farm, farm.getEquipment(COMBINE)) - .25) < 1e-3
                         && cars.getEquipment("carbide-tools").getWork() == Math.round(cars.getConstructionPoints() * .1),
                 Fitout.cashShare(cars, cars.getEquipment("carbide-tools")) + ", " + Fitout.cashShare(farm, farm.getEquipment(COMBINE)));
+        Fitout farmNoCombine = Fitout.without(farm, List.of(COMBINE));
+        check("the Grain Farm without its combine (the catalogue's 1,200 of cash for 100 points, the combine 300 of goods and 10 points): 840 for 90, the 600 the whole farm pays beside its pieces' goods for 100 now 540 for 90, 0.70 of the cash",
+                Math.abs(farmNoCombine.cashCost() / farm.getCashCost() - .70) < 1e-3 && farmNoCombine.points() == 90
+                        && farm.getConstructionPoints() == 100,
+                farmNoCombine.cashCost() / farm.getCashCost() + " of the cash, " + farmNoCombine.points() + " points");
         Fitout noTrucks = Fitout.without(depot, List.of("motor-truck"));
         check("a carried-in piece is bought apart: a Truck Depot without its trucks costs what the depot does",
                 noTrucks.cashCost() == depot.getCashCost() && noTrucks.points() == depot.getConstructionPoints() && !noTrucks.isWhole(), noTrucks.toString());
@@ -380,6 +427,23 @@ public final class FitoutCheck {
                 near(costA - costB, qa.total - qb.total) && costB < costA, (costA - costB) + " vs " + (qa.total - qb.total));
         check("...and the money test's multiple reads each set's points", dearA == bm.orderPriceMultiplier(0, f.farm.getConstructionPoints(), 3)
                 && dearB == bm.orderPriceMultiplier(0, shell(f.farm, offDear)[1], 3), dearA + ", " + dearB);
+
+        // The twin (REV-R1e): a farm without the combine and the combine itself, at the split's prices, are a whole farm.
+        double whole = bm.nonMaterialCost(f.farm), without = bm.nonMaterialCost(Fitout.without(f.farm, offDear));
+        double k = f.farm.getCashCost() / f.farm.getFoundingCashCost(), goodsAll = 0, goodsOff = 0, workOff = 0;
+        for (Equipment e : f.farm.getEquipment()) {
+            goodsAll += goodsAt(e) * k;
+            if (offDear.contains(e.getId()) && e.getWork() > 0) {
+                goodsOff += goodsAt(e) * k;
+                workOff += e.getWork();
+            }
+        }
+        double aPoint = (whole - goodsAll) / f.farm.getConstructionPoints();
+        check("premise: the farm's labour is under its cash (nonMaterialCost() does not cap it)",
+                f.farm.getConstructionPoints() * bm.buildersWagePerPoint() / bm.buildersWageIndex() < f.farm.getCashCost() / bm.getExpectedLevel(), "");
+        check("the twin: a farm without the combine, and the combine's goods at the import price with its work at the whole farm's own price a point (its pieces' goods apart), cost a whole farm: the combine's work is no part of the shell, so a fitting later pays it once",
+                workOff > 0 && near(without + goodsOff + workOff * aPoint, whole),
+                without + " + " + goodsOff + " + " + workOff * aPoint + " vs " + whole + "; a refit quotes " + g.quoteFitting(f.farm.getEquipment(COMBINE)));
 
         Two two = placeBoth(f);
         BuildingsStacks s = f.stack;
@@ -628,6 +692,39 @@ public final class FitoutCheck {
                 g.getFittings().onSite(id, COMBINE) == 1 && g.getCash() == cash && builders.getFittingThisMonth() == earned, "");
     }
 
+    /* ---------------- 9 ---------------- */
+
+    static void runInvoice() throws Exception {
+        section("9. a run's invoice is its orders placed one by one: each queued on its set's points, as bill() is handed them");
+        Farms f = farmTown("R1e-run");
+        Game g = f.game;
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate depot = bm.getTemplateByName("Construction Depot");
+        dear(f);
+        // The builders short: farms on site, without their combines, until the queue is past the knee.
+        for (int i = 0; i < 400 && bm.monthsQueued() < BuildersShort.KNEE_MONTHS + 3; i++) if (!cityOrder(g, f.farm, 5)) break;
+        Game.BuildQuote first = g.quoteBuild(f.farm, 6);
+        double setPoints = first.fitout() == null ? Double.NaN : first.fitout().points();
+        check("fixture: the builders are short, the queue past the knee, and a new farm goes without its combine",
+                bm.monthsQueued() > BuildersShort.KNEE_MONTHS && first.fitout() != null && first.fitout().without().contains(COMBINE)
+                        && setPoints < f.farm.getConstructionPoints(), bm.monthsQueued() + " months queued, " + first.fitout());
+        check("premise: the depot's multiple moves with the farms' points ahead of it, their set's against the template's",
+                apart(bm.orderPriceMultiplier(6 * setPoints, depot.getConstructionPoints(), 1),
+                        bm.orderPriceMultiplier(6.0 * f.farm.getConstructionPoints(), depot.getConstructionPoints(), 1)), "");
+        Map<BuildingsTemplate, Long> run = new LinkedHashMap<>();
+        run.put(f.farm, 6L);
+        run.put(depot, 1L);
+        double invoice = g.buildRunInvoice(run), charged = 0;
+        boolean placed = true;
+        for (Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
+            placed &= cityOrder(g, e.getKey(), e.getValue());
+            charged += g.getTotalBuildingCost();
+        }
+        check("fixture: the run's two orders placed in turn", placed, "");
+        check("the run's invoice is what placing its orders in turn charged: the depot priced on the farms' sets' points ahead of it",
+                near(invoice, charged), invoice + " vs " + charged);
+    }
+
     public static void main(String[] args) throws Exception {
         quietRun = Arrays.asList(args).contains("-q");
         RecipeCheck.out = out; RecipeCheck.quiet = HistoricalRecipeCheck.quiet;
@@ -643,6 +740,7 @@ public final class FitoutCheck {
             receipts();
             shell();
             r1dKept();
+            runInvoice();
         } catch (Throwable t) {
             out.println("FAIL: " + t);
             t.printStackTrace();

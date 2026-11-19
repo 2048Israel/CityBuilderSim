@@ -11549,8 +11549,9 @@ public class Game {
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
                     new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead));
             total += q.total;
-            // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1).
-            queueAhead += e.getKey().getConstructionPoints() * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
+            // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1),
+            // its fitout's points a building (R1e, REV-R1e), as processBuildOrder() bills them.
+            queueAhead += pointsEach(e.getKey(), q) * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);

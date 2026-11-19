@@ -23,9 +23,12 @@ import java.util.TreeSet;
  * cutter) buys its machines and takes no work. So the split is read back off the catalogue and not off today's market: a piece
  * with work is in its template's price, its part of the cash its goods at the table's import price (Good.worldImportPrice(), the
  * price its quantity was sized at) over the template's catalogue cash, its part of the points its work (inThePrice(),
- * cashShare()); a piece with no work is bought apart and no part of the price, so a building without it costs what it did. The
- * shell is the template less every built-in piece, never less than nothing. Not Game.quoteFitting(), a refit's goods drawn from
- * the market today, which nothing bounds by what the template charges for the piece.
+ * cashShare()), and with that work the cash a point of the template holds beside its pieces' goods (shareAPoint(): the frame,
+ * its labour and the rest, over its points), so a building that does fewer points pays the same for each and none for the work
+ * left off (REV-R1e: the shell had kept the left-off work's cash, which a refit then charged again). A piece with no work is
+ * bought apart and no part of the price, so a building without it costs what it did. The shell is the template less every
+ * built-in piece, never less than nothing. Not Game.quoteFitting(), a refit's goods drawn from the market today and its work at
+ * the city's price a point, which nothing bounds by what the template charges for the piece.
  *
  * A city founded the default way fits every piece to every building, so there an order's fitout is whole() and chosen by no one
  * (isChosen() false): the template's own cash and points, the same numbers in the same arithmetic as before, no lot on site and
@@ -116,15 +119,28 @@ public final class Fitout {
         return Math.max(0, Math.min(1, value / cash));
     }
 
-    /** The share of the template's cash this fitout leaves off: its pieces' shares, never more than the whole. 0 for the whole template. */
+    /**
+     * The share of its template's cash one point of its work holds beside the built-in pieces' goods: the cash less every
+     * piece's cashShare(), the frame with all its labour and the rest, over the template's points. What a point left off takes
+     * out of the price with it, so the shell's cash a point, its pieces' goods apart, is the whole template's. 0 for a template
+     * with no points, and when the pieces' goods are the whole cash. A ratio of catalogue figures, as cashShare() is.
+     */
+    public static double shareAPoint(BuildingsTemplate t) {
+        if (t == null || t.getConstructionPoints() <= 0) return 0;
+        double goods = 0;
+        for (Equipment piece : t.getEquipment()) goods += cashShare(t, piece);
+        return Math.max(0, 1 - goods) / t.getConstructionPoints();
+    }
+
+    /** The share of the template's cash this fitout leaves off: its pieces' goods and their work's cash (shareAPoint()), never more than the whole. 0 for the whole template. */
     public double cashShareLeftOff() {
         if (without.isEmpty()) return 0;
-        double off = 0;
+        double off = pointsLeftOff() * shareAPoint(template);
         for (String id : without) off += cashShare(template, template.getEquipment(id));
         return Math.min(1, off);
     }
 
-    /** One building's cash cost (thousands, struck as the template's is): the template's, less the pieces left off; the template's own for the whole. */
+    /** One building's cash cost (thousands, struck as the template's is): the template's, less the pieces left off, their goods and their work; the template's own for the whole. */
     public double cashCost() {
         if (without.isEmpty()) return template.getCashCost();
         return template.getCashCost() * (1 - cashShareLeftOff());
