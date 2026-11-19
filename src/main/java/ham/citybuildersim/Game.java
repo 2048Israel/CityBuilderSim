@@ -6028,8 +6028,9 @@ public class Game {
      * founded as given and not yet played, by the model's own quote
      * functions: no revenue and no output, so DebtManager.spreadFor()
      * charges the full spread on both measures. The Found a city screen's
-     * "what it buys" for Insane read it until 0.7.20; nothing calls it since
-     * (the playtest and FundCheck quote their day-0 offers themselves). A
+     * "what it buys" for Insane read it until 0.7.20; no gameplay caller since
+     * (the playtest and FundCheck quote their day-0 offers themselves).
+     * PriceLevelCheck exercises its exact scaling with the price level. A
      * scratch city, founded in a temporary folder and thrown away; nothing is
      * written.
      *
@@ -6042,8 +6043,8 @@ public class Game {
             System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
             scratch.run();
             return new DebtQuote[] {
-                    scratch.quoteLongBondForCash(cashNeeded, BUILD_BOND_YEARS, scratch.issueLot("Term")),
-                    scratch.quoteTBill(cashNeeded, BUILD_NOTE_MONTHS, scratch.issueLot("Note")) };
+                    scratch.quoteLongBondForCash(cashNeeded, BUILD_BOND_YEARS, scratch.fundingLot("Term")),
+                    scratch.quoteTBill(cashNeeded, BUILD_NOTE_MONTHS, scratch.fundingLot("Note")) };
         } finally {
             System.setOut(out);
         }

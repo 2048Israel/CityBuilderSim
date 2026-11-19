@@ -2,7 +2,7 @@
 
 Generated 2026-11-18 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**223 harness files, 25,626 labelled assertions.** AllChecks runs 223 of them.
+**223 harness files, 25,629 labelled assertions.** AllChecks runs 223 of them.
 
 ## Which harnesses read which class
 
@@ -86,7 +86,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, MoneyDatesCheck, MoneySignCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MortgageCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
-| [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, StepsCheck, WorksFinanceCheck |
+| [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
@@ -24055,7 +24055,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L819 Steel Mini-Mill
   - L820 Commercial Bank
 
-## PriceLevelCheck.java - 78 labelled assertions
+## PriceLevelCheck.java - 81 labelled assertions
 
 > A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus
 > 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2).
@@ -24077,84 +24077,87 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L211 4. the rankings' bridge is the series' ratio**
   - L219 the twin runs:
 - **L223 5. the named literals and the cross-file ratios, against today's figures**
-- **L240 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
-  - L249 1900 partners receive the same lanes at both price levels in every month
-  - L267 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
-  - L268 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
-  - L269 ...so it spans 126 years
-  - L275 every year has a positive index
-  - L279 a year outside the series is refused
-  - L280 1913 is the BLS's first published year, and 1912 is Rees's
-  - L281 the factor is the first year's index over the last's (8.333 / 321.943)
-  - L283 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
-  - L284 atFounding(x) is x times the factor
-  - L298 no fixture:
-  - L303 the file -D
-  - L347 PayTier: each of the
-  - L348 ...and the ladder's shape (each rung over the unskilled) is today's
-  - L350 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
-  - L351 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
-  - L353 ...and its dial's bounds are the rung's x.25 and x5
-  - L355 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
-  - L374 Good: the
-  - L375 ...a good that cannot be imported or exported still cannot (
-  - L376 ...and the wedge (freight and export over import) is each good's today's
-  - L377 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
-  - L392 ui.Money.unitPrice shows every one of the
-  - L396 consumption.json loads
-  - L410 consumption.json: its
-  - L411 ...to the bit what Good prices them at (ConsumptionCheck's equality)
-  - L416 buildings.json loads
-  - L440 buildings.json: the
-  - L441 ...the
+- **L241 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
+  - L250 1900 partners receive the same lanes at both price levels in every month
+  - L268 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
+  - L269 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
+  - L270 ...so it spans 126 years
+  - L276 every year has a positive index
+  - L280 a year outside the series is refused
+  - L281 1913 is the BLS's first published year, and 1912 is Rees's
+  - L282 the factor is the first year's index over the last's (8.333 / 321.943)
+  - L284 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
+  - L285 atFounding(x) is x times the factor
+  - L299 no fixture:
+  - L304 the file -D
+  - L348 PayTier: each of the
+  - L349 ...and the ladder's shape (each rung over the unskilled) is today's
+  - L351 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
+  - L352 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
+  - L354 ...and its dial's bounds are the rung's x.25 and x5
+  - L356 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
+  - L375 Good: the
+  - L376 ...a good that cannot be imported or exported still cannot (
+  - L377 ...and the wedge (freight and export over import) is each good's today's
+  - L378 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
+  - L393 ui.Money.unitPrice shows every one of the
+  - L397 consumption.json loads
+  - L411 consumption.json: its
+  - L412 ...to the bit what Good prices them at (ConsumptionCheck's equality)
+  - L417 buildings.json loads
+  - L441 buildings.json: the
   - L442 ...the
-  - L443 ...and the
-  - L444 ...and the points, materials, land and capacity are the file's, untouched
-  - L450 the built-in definitions are priced at the founding's level too (the House, as the file's)
-  - L469 RealDollar.BRIDGE is the 2015 index over the founding year's (
-  - L471 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
-  - L472 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
-  - L473 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
-  - L474 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
-  - L556 r.
-  - L557 r.
-  - L576 a real difference above the current value's relative band is rejected after a peak
-  - L577 a real difference outside the unchanged band is rejected
-  - L578 a one-person difference is rejected even in a trillion-person city
-  - L583 ...and the city really lived (more people at the end than the start)
-  - L617 the nudge retains the founding month
-  - L622 the child at the factor ran with the factor (
-  - L623 the child at today's prices ran with 1
-  - L702 ...the
-  - L813 some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them):
-  - L817 the default founding shows lines at the factor that the old half-thousand would have hidden:
-  - L1196 wage1901.
-  - L1197 teamHire1900
-  - L1199 cash
-  - L1200 gdp.month
-  - L1201 bank.deposits
-  - L1202 retail.shelf
-  - L1203 rent
-  - L1204 wage.minimum
-  - L1205 rate
-  - L1206 world.level
-  - L1207 priceIndex
-  - L1208 pop
-  - L1209 workforce
-  - L1210 unemployed
-  - L1211 homes
-  - L1212 stores
-  - L1214 jobs.
-  - L1226 stock.
-  - L1228 sector.
-  - L1250 h.
-  - L1255 h.
-  - L1343 holdings.folded
-  - L1344 holdings.shown
-  - L1352 shown.
-  - L1355 band
-  - L1394 lanes
-  - L1395 arrows
+  - L443 ...the
+  - L444 ...and the
+  - L445 ...and the points, materials, land and capacity are the file's, untouched
+  - L451 the built-in definitions are priced at the founding's level too (the House, as the file's)
+  - L470 RealDollar.BRIDGE is the 2015 index over the founding year's (
+  - L472 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
+  - L473 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
+  - L474 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
+  - L475 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
+  - L533 fixture: day-zero minimum is its positive dial floor at factor
+  - L537 fixture: day-zero
+  - L545 day-zero
+  - L581 r.
+  - L582 r.
+  - L601 a real difference above the current value's relative band is rejected after a peak
+  - L602 a real difference outside the unchanged band is rejected
+  - L603 a one-person difference is rejected even in a trillion-person city
+  - L608 ...and the city really lived (more people at the end than the start)
+  - L642 the nudge retains the founding month
+  - L647 the child at the factor ran with the factor (
+  - L648 the child at today's prices ran with 1
+  - L727 ...the
+  - L838 some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them):
+  - L842 the default founding shows lines at the factor that the old half-thousand would have hidden:
+  - L1242 wage1901.
+  - L1243 teamHire1900
+  - L1245 cash
+  - L1246 gdp.month
+  - L1247 bank.deposits
+  - L1248 retail.shelf
+  - L1249 rent
+  - L1250 wage.minimum
+  - L1251 rate
+  - L1252 world.level
+  - L1253 priceIndex
+  - L1254 pop
+  - L1255 workforce
+  - L1256 unemployed
+  - L1257 homes
+  - L1258 stores
+  - L1260 jobs.
+  - L1272 stock.
+  - L1274 sector.
+  - L1296 h.
+  - L1301 h.
+  - L1389 holdings.folded
+  - L1390 holdings.shown
+  - L1398 shown.
+  - L1401 band
+  - L1440 lanes
+  - L1441 arrows
 
 ## PrizeCheck.java - 216 labelled assertions
 

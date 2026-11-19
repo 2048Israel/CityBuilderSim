@@ -60,7 +60,7 @@ change the unit once, not the CPI ratio as well.
 ★ The model and player share the instrument dials, price level and cap.
 After the EP1 finding below, model funding uses the exact priced-and-capped
 lot; the player's pages round it down to 1-2-5. Rollover and automatic
-construction use fundingLot; opening-city previews, Build, the land
+construction and day-zero model quotes use fundingLot; Build, the land
 office/map and the bank rescue offer use issueLot. Game's two old
 BUILD_*_GRANULE constants remain for explicit-granule quote fixtures; they
 no longer choose a live sale's lot. The quoting APIs still accept a caller's
@@ -262,8 +262,9 @@ model: BondMarket.fundingLot is the exact dial times the current price
 level, capped at the exact minimum issue. Rollover, the auto-builder and
 LongPlaytest's funding driver use it, including foreign funding. The
 player's BondMarket.issueLot rounds that same priced-and-capped amount down
-to 1-2-5; Game.issueLot and every actual UI funding page retain it. Game's
-opening-city scratch quotes are player previews and also stay rounded.
+to 1-2-5; Game.issueLot and every actual UI funding page retain it. REV-SZ1
+P1 below corrects my initial classification of the opening-city scratch
+quotes: their model API must also preserve exact scaling.
 CD2's generic cash solver continues to use whichever lot its caller passes.
 This keeps Jerus's visible round lots and ★1's cap while preserving the
 standing price-level law in model sales. The model still changes the trace
@@ -342,3 +343,78 @@ must be merged before SZ1's final-model ensemble; the 80-run ensemble and
 the ALL-pick dry run require the orchestrator's separate machine-slot go.
 Neither has been run by SZ1. The provisional ship marker stays until those
 steps and the stranger's money/save review are accepted.
+
+## REV-SZ1 P1 — day-zero quotes
+
+The review found one P1 at Game.java:6045 and 6046 on ac652ab5a:
+dayZeroQuotes passed the player's rounded issueLot to its two model offers.
+My earlier classification as a player preview was wrong: this API must
+preserve EP1 even though it has no current gameplay caller. ★ Both offers
+now pass scratch.fundingLot. No other production behavior changes in this
+mend. The method's comment now names its price-level regression.
+
+PriceLevelCheck's existing default factor/today children exercise the
+actual Game.dayZeroQuotes API at 3.4 times the minimum-issue floor dial.
+They carry the opening city's minimum and floor, and the two actual
+quotes' requested cash, face, cash received, monthly interest and total
+cost. The parent first asserts that the minimum is the positive floor in
+both cities and that both offers sell positive face and cash; then it
+compares all ten money readings with today's quote times FACTOR, at the
+existing CONSTANT_TOLERANCE, requiring finite values. The separate scratch
+quotes run after the child's monthly readings are recorded, so they cannot
+perturb the existing twin comparison. No old horizon, tolerance or premise
+changes. The method's own GameFiles.scratch fixtures write no city slot.
+
+The first exact-lot run passes all new assertions and finishes with only
+the same 245 known HP1/HP2 failures. For example, both exact faces are
+5.176692768595684 at the factor, against 200 today times FACTOR. Its log is
+`target/SZ1-P1-PriceLevelCheck-first.log` (wrapper:
+`target/SZ1-P1-PriceLevelCheck.txt`).
+
+The recursive source audit of every issueLot call and method reference is
+kept in `target/SZ1-P1-all-issueLot-calls.txt`. The model audit is:
+
+- Game.dayZeroQuotes: the two reviewed calls above, now fundingLot.
+- Game.rolloverQuote and issueForRollover: both already use
+  BondMarket.fundingLot, including foreign paper (13271 and 13366 on
+  ac652ab5a). Game.fundingLot delegates to that exact helper.
+- AutoBuilder: its quote at 738 and bookings at 1594, 1730 and 2329 already
+  use fundingLot. No issueLot call remains there.
+- LongPlaytest's funding driver: all twelve calls already use fundingLot,
+  local or foreign (3970, 5210, 5419, 5423, 5486, 6195, 6342, 6343, 6345,
+  6365, 6593 and 6597). No issueLot call remains there.
+- LandMap.card: its four calls at 2713, 2714, 2716 and 2717 are the player's
+  map/land-office card offers, not automatic model sales. LandScreen's
+  offers page consumes them (1983 and 2274); its actual button bookings use
+  the same rounded player lot. These stay issueLot.
+- Game.issueLot is the documented player facade and delegates to
+  BondMarket.issueLot. BondMarket's two issueLot overloads are the player's
+  rounding API definitions. Neither is an automatic sale caller.
+- The other occurrences are the Bank/Build/Finances/Land screens,
+  KeptBench's player presses and quotes, and LandCheck/MapCheck/StepsCheck
+  fixtures for those player paths. StepsCheck's issueLot method reference
+  tests the live player's price binding. They retain rounded lots.
+
+No additional model caller was found. REV-SZ1's 21:50 mail reports no other
+finding in money/EP1, screens, care-access saves or harness changes; no
+second review is needed for this isolated dayZeroQuotes mend.
+
+The P1 mutation put scratch.issueLot back in only those two offers. The new
+case fails seven quote-money assertions: Term face/cash/interest/cost and
+Note face/cash/cost. PriceLevelCheck rises from its 245 existing failures
+to 252; the judge reports nine NEW lines including exit and tally. This
+isolates the review finding, without changing the rest of model funding.
+Logs: `target/SZ1-P1-rounded.txt` and `.log`.
+
+The exact source was restored byte for byte and the backup removed. The
+final PriceLevelCheck run passes all 16 new floor, positive-sale and
+quote-money assertions and returns to the same 245 known HP1/HP2 failures,
+exit 3, with no NEW line (`target/SZ1-P1-restored.txt` and `.log`).
+The final explicit `--fast` passes with zero firm Stale findings
+(`target/SZ1-P1-fast.txt`). Source/prose whitespace checks pass. No new
+known-red waiver, saved state or SAVE_FORMAT change is part of P1.
+
+Only dayZeroQuotes changes production behavior; the recursive audit finds
+no current gameplay caller of it. P1 therefore adds no further default-trace
+move. SZ1's existing model funding changes still require the final ensemble
+after merging HL1, on the orchestrator's go. The provisional marker stays.
