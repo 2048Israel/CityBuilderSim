@@ -8213,7 +8213,9 @@ public class LongPlaytest {
         } else {
             for (Map.Entry<String, Finding> entry : findings.entrySet()) {
                 Finding f = entry.getValue();
-                out.printf("  %-46s %5d time(s), months %d-%d%n",
+                // A FAIL line each (HS1): the suite's judge names a finding by its text, so a known-reds
+                // row can pass one finding and no other; before, every finding read "(no FAIL line)".
+                out.printf("  FAIL %-46s %5d time(s), months %d-%d%n",
                         entry.getKey(), f.count, f.firstMonth, f.lastMonth);
                 if (f.worst != null) {
                     out.printf("        worst, month %d: %s%n", f.worstMonth, f.worst);

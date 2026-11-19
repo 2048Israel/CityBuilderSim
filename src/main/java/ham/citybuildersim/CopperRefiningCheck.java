@@ -1439,7 +1439,8 @@ public class CopperRefiningCheck {
             int shown = 0;
             for (int i = findings + 1; i < lines.size() && shown < 6; i++) {
                 if (lines.get(i).isBlank()) continue;
-                out.println("      the playtest's finding: " + lines.get(i).trim());
+                // The child's FAIL token (HS1) is its own; echoed here it would be a red line of this harness.
+                out.println("      the playtest's finding: " + lines.get(i).trim().replaceFirst("^FAIL ", ""));
                 shown++;
             }
         }

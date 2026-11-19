@@ -1,4 +1,4 @@
-# CopperRefiningCheck.java - 1,455 lines · 31 methods · 24 constants · harnesses
+# CopperRefiningCheck.java - 1,456 lines · 31 methods · 24 constants · harnesses
 
 `ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -125,7 +125,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 132 | 1324 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
+| 132 | 1325 | **type** `public class CopperRefiningCheck` | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-research.md - 1.2, 4, 7 and 10's Q11 and Q12): copper's processing indu... |
 | 140 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 145 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 150 | 5 | `static void quietly(Runnable r)` |  |
@@ -208,9 +208,9 @@
 | 1231 | 8 | `static double range(double[] a)` | The largest less the smallest of a series. |
 | 1244 | 135 | `static void mineOnTheWorld()` | 10. |
 
-### 11. seed 1's Rod Mills, played (CU2) (lines 1380-1455)
+### 11. seed 1's Rod Mills, played (CU2) (lines 1380-1456)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1398 | 57 | `static void rodMillsPlayed() throws Exception` | 11. |
+| 1398 | 58 | `static void rodMillsPlayed() throws Exception` | 11. |
 
