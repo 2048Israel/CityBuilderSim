@@ -1,16 +1,21 @@
 # RN1-H — the homes' headroom a margin over demand
 
-**Current final-model work (2026-11-19).** SZ1 main `3c4661a9d` is merged
-at `39acf3894`, then HL1-R main `ddcb3400e` (0.9.156) at `524a943b5`.
-Both merged fast checks pass; HousingCheck still orders exactly the
-margin. The latest default run has one real layout finding, the retained
-Industrial Bakery that moved at m2400. Its money/household assertions pass.
-On the orchestrator's go, that map fault is queued as RN1-H-M and named
-precisely, using HS1's report-only FAIL prefix byte for byte. No generic
-no-FAIL waiver is used. The provisional marker remains while the final
-80 and paired main AUTO2 16 are run on `ddcb3400e`, with the same extra
-housing diagnostics. Earlier HL1-only comparisons below are historical;
-the latest model and its finding are recorded at the end.
+**Final evidence (2026-11-19).** The frozen model `ecfdcfae8`, over
+HL1-R main `ddcb3400e` (0.9.156, including SZ1), completes all 80 ensemble
+runs: PASS, all ten M1/F1 hard criteria, 24/26 overall against 24/26 on
+0.9.155, no changed verdicts, missing runs or short runs. The paired main
+AUTO2 16 also completes all m2400 on exact clean `ddcb3400e`, with zero
+audit failures, unread audit months or findings. Economics are mixed:
+pooled median people rise, but eight seed pairs shrink and the median
+paired percentage change is −1.82%, including a −96.10% outlier. Run-median
+vacancy rises from 2.78% to 3.03%; endpoint median vacancy is nearly flat;
+landlords' relative debt and capital-refusal months rise. Full figures
+and both directions are recorded below and in the ensemble artifact.
+The orchestrator accepted the evidence and gave readiness go at 06:54;
+the marker removal follows the evidence commit, alone in its own commit.
+The default city's separate retained-bakery layout finding stays queued
+as RN1-H-M; the ensemble does not arm that visual watch. Earlier HL1-only
+comparisons below are historical.
 
 ## What changed
 
@@ -344,3 +349,164 @@ prefix `run`, and applies after HL1-R too. The paired main AUTO2 subset
 will use `ddcb3400e`, never the older `6b0aa202e` reference. The model and
 driver stay frozen for the one final 80 and paired 16, run one ensemble
 at a time with identical `ensemble.extra` paths.
+
+## Final 80-run ensemble (2026-11-19)
+
+On the orchestrator's explicit heavy-slot go, one final full ensemble ran
+on clean source `ecfdcfae8`, over main `ddcb3400e`, with five workers, seeds
+0 through 15 and all five policies. The primary baseline is the newest
+committed full ensemble, `docs/ensemble/0.9.155.md`; main's paired AUTO2
+subset is additional evidence, not a second full baseline. Both snapshots
+use earth-2.bin and world-1.bin from the main data directory, with identical
+`ensemble.extra` getters for homes, occupied homes, both rents, landlord
+principal, mortgage-capital-refusal markers, doubled and unplaced families.
+The exact flags and model snapshot are retained with the raw run.
+
+The ensemble exits 0: 80/80 complete, no missing or short runs; all ten
+M1/F1 hard criteria PASS, zero audit failures or unread audit months, zero
+ensemble findings in every policy. All 64 switched runs match their AUTO2
+twin before the switch. The total score is 24/26, the same as 0.9.155, with
+no changed verdict. A1 and A2 remain informational failures. H1 remains
+retired. The generated baseline is committed as `docs/ensemble/RN1-H.md`;
+only its publication version heading and introductory model version are
+replaced by `{next}`. Its summary JSON and numeric results are preserved.
+
+| Score | RN1-H | Baseline 0.9.155 |
+|---|---|---|
+| A1, annual inflation | 2.98%, 8/16 in band; FAIL | 3.14%; FAIL |
+| A2, longest high-inflation spell | median 28 months, range 12–53; FAIL | 26, range 14–47; FAIL |
+| A3, deflation spell; final/peak people | median 0 months; 100%; PASS | 0; 100%; PASS |
+| S1, ZERO_SLACK excess inflation | 3.01%; all 16 within currency-fall allowance; PASS | 3.16%; PASS |
+| H1, early/late excess; change | 8.90% / 3.17%; −8.15 points; RETIRED | 5.97% / 2.30%; −7.35 points; RETIRED |
+| H2, excess after autopilot returns | −0.87%, 15/16 below second-half excess; PASS | −0.63%; PASS |
+| K1, shock's peak index excess | 17.02%; PASS | 16.75%; PASS |
+| K2, inflation; excess over twin | 1.81%; −0.17 points; PASS | 1.97%; −0.27 points; PASS |
+| R1, high-rate inflation excess | −4.26 points; PASS | −4.04 points; PASS |
+| R2, unemployment excess | +0.77 points; PASS | +0.68 points; PASS |
+| R3, final high-rate inflation excess | −3.93 points, none above +1 point; PASS | −4.37 points; PASS |
+| T1, reach 40,000 people | 16/16, median m788; PASS | 16/16, m760; PASS |
+| T2, AUTO2 final people | 3,101,332; PASS | 2,381,553; PASS |
+| T2, ZERO_SLACK final people | 2,025,150; PASS | 1,621,756; PASS |
+| T2, ZERO_HOT final people | 6,728; PASS | 7,366; PASS |
+| T2, SHOCK final people | 46,532; PASS | 40,465; PASS |
+| T2, HIGH final people | 27,684; PASS | 27,653; PASS |
+| M1 and F1 | all ten hard criteria PASS | all ten PASS |
+| Before-switch pairing | 64/64 identical | 64/64 identical |
+
+★ Keep the numerical housing diagnostics additional to the standard
+score: rents are divided by the price index, landlord principal is shown
+against annualized endpoint GDP and against prices and population, and
+the door's capital refusals count marked months, not inferred loan flows.
+Those measures must be read beside people and vacancies. No monetary
+audit tolerance or finding was changed. The default visual map watch is
+not armed in the existing ensemble; its RN1-H-M finding remains a separate
+real fault, retained in the ship file and the default trace.
+
+## Paired main AUTO2 16 and the housing reading (2026-11-19)
+
+After the full 80 finished and its command exited 0, the one paired subset
+ran on a clean detached main checkout at full commit
+`ddcb3400e605899755f923c85fe8e332faf50398`. Its `--fast` exits 0 (47 s), with
+zero tree changes, then AUTO2 seeds 0–15 run once with five workers and
+the identical extra getters and data flags. The subset exits 0; all sixteen
+end at m2400, all money-audit rows are read and pass, and findings are zero.
+The subset scorer lists the 64 deliberately unrun policies as missing;
+it is additional paired evidence, not a second 80-run baseline. There are
+no missing or short runs in RN1-H's primary full ensemble.
+
+★ Report both pooled medians and the change within each seed. A higher
+pooled median alone would misstate these results: eight cities grow more
+and eight grow less, with median paired population change −1.82%, range
+−96.10% to +165.43%. The full sixteen-pair tables are appended after the
+standard score and its unchanged summary JSON in `docs/ensemble/RN1-H.md`.
+
+| AUTO2, 16 seeds, m2400 unless stated | Main ddcb3400e | RN1-H ecfdcfae8 |
+|---|---:|---:|
+| Pooled median population | 2,381,553 | 3,101,332 |
+| Population range | 1,383,251–5,395,142 | 152,930–5,006,382 |
+| Median endpoint door vacancy | 3.18% | 3.16% |
+| Median of each city's vacancy median, m240 onward | 2.78% | 3.03% |
+| Median family rent / price index | 0.006580 | 0.006681 |
+| Median studio rent / price index | 0.007140 | 0.007228 |
+| Median landlord principal / annualized endpoint GDP | 2.03% | 2.80% |
+| Median real landlord principal per person, trace units | 0.026912 | 0.035311 |
+| Median months marked refused for mortgage capital, whole run | 22 | 36 |
+| Range of those marked months | 0–108 | 12–110 |
+| Maximum unplaced households, whole run | 0 | 0 |
+| Maximum doubled households, whole run, not normalized for city size | 372,663 | 271,428 |
+
+Nominal landlord principal is higher in twelve pairs; the thirteen-pair
+count above refers to principal divided by annualized GDP.
+Endpoint vacancy is higher in nine pairs, family rent/index in eight,
+studio rent/index in ten, landlord debt/GDP in thirteen and capital-marked
+months in ten. All sixteen endpoint GDP denominators are positive on
+both sides. The reserve is a desired capacity margin, not a guarantee of
+vacant doors: growth, segment mix, granularity, land, rent and the bank's
+door still bind. Endpoint vacancy does not rise uniformly, and neither
+real rent falls uniformly. Capital-refusal counts are months with a
+positive end marker after any successful trim, not inferred loan flows;
+they do not include the default advisor's separate down-payment reason.
+
+The extreme is seed 14: main finishes with 3,917,855 people and 3.24% door
+vacancy; RN1-H with 152,930 and no vacant doors. It reaches 40,000 people
+at m1500 against main's m768 and records 46 capital-marked months against
+six. This is slow growth, not a final population collapse: RN1-H's AUTO2
+final/peak population is 100% in every seed. The paired table reports the
+outlier without attributing its whole path to any one credit refusal.
+Maximum unplaced households are zero in every one of the full 80 runs;
+doubled households remain present and are recorded in the raw diagnostics.
+
+The default SZ1 path is a different observation, before the final HL1-R
+merge: at m2400 RN1-H on `39acf3894` has 935,838 people against the supplied
+SZ1 main path's 1,650,471; door vacancy 3.93% against 2.71%, run vacancy
+medians 3.41% against 1.71%. Its m240-onward advisor counts include 74
+capital holds against zero, and five down-payment holds against 63.
+Main's trace was reported unchanged after HL1-R; RN1-H's own pre-HL1-R
+path is not relabelled as a fresh final-model default run. The frozen-model
+paired comparison above is direct. Both observations remain in the record.
+
+The report-only HS1 LongPlaytest hunk is three added lines and one removed
+line (`git diff --numstat origin/main -- <LongPlaytest.java>`): its exact
+authorized FAIL prefix and two comments, with no watch or model change.
+No scripts, runner or scoring criteria changed. The metadata pick after
+that hunk is 88 of 225, not ALL; no dry run is owed. The gate runs its pick
+fresh. No full `batch-check.sh --pick` was run beside either ensemble.
+
+Raw evidence is preserved at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-ensemble-RN1-H-ecfdcfae8/`:
+`RN1-H/` is the full 80, `RN1-H-main-ddcb3400/` the paired 16. Both include
+their clean model snapshot, compiled classes, logs, CSVs, times and scores.
+The archive also holds `paired-summary.json`, its tables, the analysis
+helper and command logs. `SHA256SUMS.txt` covers the preserved files.
+The artifact names the data paths explicitly. The model source remains
+`ecfdcfae8b93db0b4db3a970c7a8cf1021065287`; later commits record evidence
+and publication notes only. No kept dry run exists or is required.
+
+### Why the observed vacancy is below the margin
+
+The 5% dial is a margin of head capacity over latent jobs demand. Even a
+static, fully funded, divisible capacity target implies 5/105 = 4.76%
+vacant capacity, not 5% vacant doors. The ensemble diagnostic counts doors;
+different dwelling capacities, household sizes and studio/family demand
+make that a different basis. The planner counts on-site capacity, while
+jobs can keep growing during construction. It retains its segment choice,
+land check, rent hurdle and the lender's debt-service, down-payment and
+capital tests. It seeks a target; it does not enforce a vacancy floor.
+
+Those limits are observed in the default trace: the SZ1 RN1-H path has
+565 trimmed builds, 74 capital holds and five down-payment holds from
+m240 onward. At m600 a proposed block's rent covers only 0.82 times its
+real mortgage test against the lender's 1.20; at m1800 it needs 5,570 m²
+and has 5.62 m² free. These are the labelled pre-HL1-R default observations,
+not new final-model ensemble measurements. The final ensemble records
+capital marks but not every planner reason or head-capacity target.
+It does not isolate which constraint accounts for the exact 3.03%
+median. That attribution remains unmeasured; the corrected formula is
+proved directly by the equal-demand HousingCheck and its old-reading
+mutation, while the default trace counts actual reserve builds.
+
+At 06:54 the orchestrator accepted the full score and mixed paired
+economics and instructed: commit the tables, drop the marker in its own
+commit, check origin and report ready. He will gate at once on a fresh
+suite because the pick is not ALL. No model or driver change follows the
+final ensemble; only these evidence and publication records change.

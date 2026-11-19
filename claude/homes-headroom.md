@@ -27,10 +27,20 @@ leaves them alone. The recommended call is to name their hysteresis with
 a separate dial, retaining their tested behaviour until Jerus chooses
 whether those markets should also hold spare supply.
 
-The checks, reader audit and eventual ensemble comparisons are recorded
+The checks, reader audit and final ensemble comparisons are recorded
 in [RN1-H's notes](../docs/queue/RN1-H-notes.md).
 
-The larger played path also exposed an old Industrial Bakery moving on
+The default played path also exposed an old Industrial Bakery moving on
 the map. Its hard finding remains, with the placement cause queued
 separately as [RN1-H-M](../docs/queue/RN1-H-M.md); it changes no economic
 rule in this batch.
+
+The final 80 runs pass all ten money-audit and findings hard criteria;
+their overall 24/26 score has the same two informational failures as the
+baseline. The paired main AUTO2 16 show mixed growth: eight cities grow
+more and eight less, with median paired population change −1.82%.
+Run-median vacancy rises from 2.78% to 3.03%, while endpoint median vacancy
+stays near 3.2%; real rents are not uniformly lower, and landlords'
+relative debt and capital-refusal months rise. The full spread, including
+the small seed-14 city, is retained in the notes and ensemble tables.
+The bank's door and the other planning limits remain part of the result.
