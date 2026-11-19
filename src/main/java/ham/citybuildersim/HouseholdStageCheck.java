@@ -175,7 +175,7 @@ public class HouseholdStageCheck {
                 p.advanceMonth(nobodyDies(), 0);
                 months++;
             }
-            check("a " + s.getLabel().toLowerCase() + "'s mean months in the stage, nobody dying, is its span ("
+            check("the " + s.getLabel().toLowerCase() + "' mean months in the stage, nobody dying, is its span ("
                     + months + " months run)", personMonths / start, s.spanMonths());
         }
 
@@ -428,7 +428,7 @@ public class HouseholdStageCheck {
             double before = pool.bal.totalSavings();
             pool.run();
             String who = s.getLabel().toLowerCase();
-            check("the " + who + "'s singles' money goes to their own stage's couples of the tier",
+            check("the " + who + "' singles' money goes to their own stage's couples of the tier",
                     total(mine, c -> c.savings), 10 * 100 + 20 * each);
             check("...and none to the other stage's, growing as much in the same tier",
                     total(theirs, c -> c.savings), 10 * 100);

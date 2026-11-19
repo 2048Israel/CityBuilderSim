@@ -1575,8 +1575,9 @@ public class PopulationCheck {
          * lost, and the round-trip below would not match.
          *
          * TWO BLOCKS ARE BAND-INDEXED SINCE 2026-09-15, not one: the orphans,
-         * and the children who went out of work with their parent at the very
-         * end. So a band added is TWO slots, not one, and this fixture spliced
+         * and the children who went out of work with their parent, at the end
+         * until HS2 put the young's two matrices after them (2026-11-19). So a
+         * band added is TWO slots, not one, and this fixture spliced
          * one and was refused - correctly, and it is a better test for having
          * had to learn it. The tail is spliced from the BACK first so the
          * orphan block's offset is still the one measured on the original.

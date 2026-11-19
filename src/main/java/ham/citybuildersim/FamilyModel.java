@@ -2325,13 +2325,15 @@ public class FamilyModel implements HouseholdBalance.Census {
     /**
      * Puts the households back.
      *
-     * SIX LENGTHS ACCEPTED, deliberately. The array has grown five times, and
+     * SEVEN LENGTHS ACCEPTED, deliberately. The array has grown six times, and
      * refusing every older save whole would have thrown away the entire
      * household mix of every city written before each of those dates to gain
      * the counters those cities never had. A short array restores what it
      * carries and leaves the rest at zero, which is exactly the state those
-     * saves loaded in anyway. Anything that is none of the six is still
-     * refused whole.
+     * saves loaded in anyway. Anything that is none of the seven is still
+     * refused whole. (Since HS2 the save floor is format 58, so a save the
+     * game opens is always the longest; the shorter lengths stay for the
+     * tools that read an old file, and cost nothing.)
      *
      * Shortest first, each one the length before it plus a block, and every
      * width measured against the SAVE's own band and shape counts:
@@ -2351,6 +2353,9 @@ public class FamilyModel implements HouseholdBalance.Census {
      *   + kinSlots()              ...and the children who left work with their
      *                             parent: the at-home adults and the dependants
      *                             by band (2026-09-15)
+     *   + stageSlots()            ...and the young part of the matrix and of
+     *                             the formed memory, shapes by tiers each (HS2,
+     *                             2026-11-19)
      *
      * Families saved before the names travelled with them. Read as five bands, thirteen shapes.
      */
