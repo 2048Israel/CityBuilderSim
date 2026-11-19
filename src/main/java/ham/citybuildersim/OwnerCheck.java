@@ -599,8 +599,8 @@ public class OwnerCheck {
      * measurement, not an assertion: it prints and exits 0.
      */
     static void probe() {
-        System.out.println("--- the probe: the playtest city, the owner line on against off ---");
-        System.out.println("   line month   people  retired disp/hh  pension paid  careAff(SENIOR)  senior pull  owners' bank / all bank  owners abroad  owner fam");
+        System.out.println("--- the probe: section 9's city, the owner line on against off ---");
+        System.out.println(PROBE_HEADER);
         for (boolean on : new boolean[] {true, false}) probeRun(on);
         System.exit(0);
     }
@@ -650,17 +650,28 @@ public class OwnerCheck {
     }
 
     static void probeRow(Game g, boolean lineOn, java.util.List<String> rows) {
+        String line = probeLine(g, lineOn);
+        if (line == null || (!rows.isEmpty() && rows.get(rows.size() - 1).startsWith(line.substring(0, 14)))) return;
+        rows.add(line);
+    }
+
+    /** The probe's header, above its rows. */
+    static final String PROBE_HEADER =
+            "   line month   people  retired disp/hh  pension paid  careAff(SENIOR)  senior pull  owners' bank / all bank  owners abroad  owner fam";
+
+    /** The probe's row for this month, or null at a month it does not print; LongPlaytest prints it under -Dplaytest.owners. */
+    static String probeLine(Game g, boolean lineOn) {
         int m = g.getMonth();
         boolean wanted = false;
         for (int p : PROBE_MONTHS) wanted |= p == m;
-        if (!wanted || (!rows.isEmpty() && rows.get(rows.size() - 1).startsWith(String.format("   %-4s %5d ", lineOn ? "on" : "off", m)))) return;
+        if (!wanted) return null;
         HouseholdBalance hb = g.getHouseholdBalance();
         Household own = hb.owners();
-        rows.add(String.format("   %-4s %5d %,8d %16.2f %13.0f %16.2f %12.3f %,12.0f / %,-10.0f %,13.0f %10d",
+        return String.format("   %-4s %5d %,8d %16.2f %13.0f %16.2f %12.3f %,12.0f / %,-10.0f %,13.0f %10d",
                 lineOn ? "on" : "off", m, g.getPopulationManager().getPopulation(),
                 hb.getDisposable(Household.RETIRED_ROW), g.getEconomyManager().getPensionsPaid(),
                 g.careAffordability(CareType.SENIOR), g.getMigration().getLastSeniorPull(),
-                own.totalSavings(), hb.totalSavings(), own.totalAbroad(), hb.ownerFamilies()));
+                own.totalSavings(), hb.totalSavings(), own.totalAbroad(), hb.ownerFamilies());
     }
 
     /** What a real run counts, month by month. */

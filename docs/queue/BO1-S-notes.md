@@ -66,3 +66,30 @@ playtest city does not fall; only the probe's rhythm does (OwnerCheck
 section 9's: the auto-builder from month 1 with forty houses at once).
 (Run cut at month 130, so its exit 1 is the audit's lines at month 132, the
 short run's end.)
+
+## 4. The playtest's own city, line on against off (0.9.160)
+
+The orchestrator (11-19): the ensemble judges the playtest's city, so it
+comes first. `LongPlaytest -Dplaytest.owners=on|off` (new: unset, the
+city's dial; set, the line forced and OwnerCheck's probe row printed at its
+months as `OWNERS ...`), `-Dplaytest.months=130 -Dplaytest.trace`, about
+60 s each. The off run's `-pop.csv` is the default run's, column for column.
+
+| month | people on / off | retired disp/hh | pension paid | careAff(SENIOR) on / off | senior pull on / off | owners' bank / all bank (on) | all bank (off) | owners abroad (on) |
+|---|---|---|---|---|---|---|---|---|
+| 13 | 128 / 152 | 0 / 0 | 0 / 0 | 0.01 / 0.83 | 1.004 / 1.249 | 38 / 65 | 65 | 11 |
+| 37 | 563 / 635 | 0 / 0 | 0 / 0 | 0.06 / 1.00 | 1.019 / 1.300 | 1,092 / 1,235 | 405 | 578 |
+| 61 | 1,020 / 917 | 0 / 0 | 0 / 0 | 0.02 / 1.00 | 1.007 / 1.300 | 1,256 / 1,635 | 1,619 | 1,830 |
+| 121 | 1,567 / 1,172 | 0 / 0 | 0 / 0 | 0.08 / 1.00 | 1.025 / 1.300 | 1,572 / 3,464 | 2,516 | 2,672 |
+
+(Month 1 is not printed by the playtest: its first audited month is 2.)
+Both runs exit 1 on the audit's lines at month 132 or 133, the cut run's
+last months (the untraced default cut at 130 has the same four).
+
+- The retired are paid nothing, line on or off, and with the line on senior
+  care is beyond them (0.01 to 0.08) and its pull gone. Yet the playtest city
+  with the line on is a third larger at month 121 (1,567 against 1,172): on
+  today's model, the care pull is not what holds this city back.
+- The owners hold 45% of the bank's savings at month 121 (1,572 of 3,464) and
+  2,672 abroad; the city's bank savings are larger with the line on (3,464
+  against 2,516), so the banked dividends do not stall it.
