@@ -204,3 +204,14 @@ generated indexes took main's side in the conflict and were regenerated (`--fast
 36157fb19, before LM1-D, and compare this batch's change alone to main as it was; LM1-D's own is its notes'. After the merge,
 alone and green: `ElectrolyserCheck` 71, `FieldOperatorsCheck` 70, `HydrogenSteelCheck`, `DriverlessTruckCheck` 66, `ResearchCheck` 235,
 `EquipmentCheck`, `WaterCheck`, `Forms1900Check`, `HydroCheck`. The pick is still ALL 224, the review line the same: saves.
+
+## The dry run
+
+On the orchestrator's go, after HL1's ensemble: `sh tools/gate.sh R6d --dry-run` on c415ad9c3 (main 608bf7025, 0.9.152, merged in), run
+`/tmp/cbs-gate-R6d-2Cxmq4kh`. The suite ran in 3,123 s (compile OK in 56 s). **Gate exit 0**: the suite's exit 3, known red only, 13 harnesses, all main's
+own and named in `docs/notes/known-reds.txt` and `docs/notes/gate.txt` (DeathRecordCheck, DenominationCheck, DistressBleedCheck, EducationCheck,
+GoldStandardCheck, HealthCheck, KeptCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, RoadCheck, ScaleCheck, YoungBankCheck); `unnamed.txt` is empty, so no
+red is this batch's and no row is added to the ship file's known reds (and none under FS1: nothing here needed it). Neither of this batch's harnesses,
+nor `ResearchCheck`, `EquipmentCheck`, `HydrogenSteelCheck`, `DriverlessTruckCheck`, `SaveFileCheck` or `ReadPathCheck`, is among them. Stale 0 firm; the
+tree's 52 changes are the ship's own records and this batch's files, nothing kept. After the run only these notes and the ship file changed.
+<!-- gate-run: /tmp/cbs-gate-R6d-2Cxmq4kh -->
