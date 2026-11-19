@@ -199,3 +199,61 @@ dated lever, so OP1 does not change it.
   2,400-month 1900 playtest, beside "the rent relieved and today's mix"
   (812 / 20,701 / 51,530 / 1,157,156 at months 60, 900, 1200, 2400), once
   the gate is free.
+
+## 3. What was built (on the orchestrator's go, 13:24 and 13:33)
+
+Both halves behind their own switch, default on, each read only in a city
+founded the 1900 way (`Game.foundedUnfitted()`):
+
+- **(a) the 1900 home**, `Recipes.HOMES_1900` (`-Dr1g.home=off` takes it
+  out): `Recipes.apply()` calls `dateHomes(game)` after its
+  `foundedUnfitted()` return, which strikes every residential template once
+  (`datedHomes`, a weak identity set, kept by `clear()` so no template is
+  dated twice) at `homeScale()` of today's: cash cost and upkeep through
+  `setCashCost`/`setUpkeep` (so the monthly re-strike keeps them), materials
+  and points rounded, at least 1.
+- ★ **`homeScale()` = 0.2892**: the first knot's shares (.73066 / .23184 /
+  .03 / .0075) times each band's wage on `WageLadder.Y1901`, over the same on
+  `TODAY`, at most 1. A 1901 household's home costs the share of its wage
+  that today's home costs today's household (EP1's `pricedAtFoundingLevel`,
+  "a house costs the same share of a wage that it did"). Read against the
+  study: the rent at month 60 comes to 0.236 of take-home, beside
+  research-1900 5.3's 25% ($2.37 of $9.37), with no figure fitted to it.
+- ★ **The land is not scaled**: the lot is the city's land market's
+  (`LandMarket`), priced by what is built on it, not the home's recipe.
+- ★ **The scale is fixed at the founding**, not walked along the year as
+  proposed: the city's wages are laid once from `WageLadder.of(founding)`
+  (`Game.java:1300`) and move only by the market after, so there is no
+  dated wage for the scale to follow; the re-strike already re-prices the
+  home's labour part at the city's own wages. If a later batch dates the
+  wages along the year, the scale should follow them.
+- **(b) the apprentices**, `PopulationManager.APPRENTICES_1900`
+  (`-Dr1g.apprentices=off`): `apprentice(comingOfAge, tradeShare,
+  schooled)` adds `max(0, comingOfAge × tradeShare − schooled)` to the
+  diploma band's skilled heads. The one Game line, after
+  `applyBandFlow(education.getGraduates())`, passes the month's new adults
+  (`cohorts.getPromoted(TEEN)`), `ArrivalMix.tradeShareAt(month)` (new: the
+  knots' diploma share by `at()`'s look-up) and the month's diploma
+  graduates, so a school's graduates count instead of, not on top of, the
+  apprentices.
+- ★ **After 2021 the trade share stays the last knot's, 0.68** (1/1.47), not
+  zero: `at()` hands over to TODAY there, but TODAY has no school-less
+  trade figure, and a city founded in 1900 that reaches 2021 has schools
+  whose graduates net the apprentices out anyway.
+- ★ **R2d's cutting crews are left as they are**: measured first; built only
+  if the pace runs show the diploma posts still unfilled.
+- **`Village1900Check`** sections 5-7: (5) the House at the scale, its
+  materials and points, the land equal, the home dated, the rent at most
+  1.5 × TARGET_RENT_BURDEN and under the stalled village's, people still
+  arriving at the end of five years; (6) apprentices made, equal to the
+  coming-of-age × trade share less the graduates, more diploma workers than
+  the stalled village, none with the switch off; (7) today's city with both
+  switches on and both off: the same people, cash, GDP, rent burden,
+  workers by band and House, undated, and no apprentice.
+
+### Checks
+
+| check | result |
+|---|---|
+| `./batch-check.sh Village1900Check`, both on (52450660b + f57009450) | All checks passed; home village 973 people at m60 (stalled 471), rent 0.236 (stalled 0.612, today 0.231), 41.4 arrivals in the last 5 months; 4.31 apprentices in five years, as expected; 63.2 diploma workers (stalled 58.3) |
+| the same, `-Dr1g.home=off -Dr1g.apprentices=off` | 7 FAILED: section 5's five, section 6's two; section 7 passes (it sets both switches itself) |
