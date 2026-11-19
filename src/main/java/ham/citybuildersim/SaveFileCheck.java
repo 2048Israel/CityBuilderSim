@@ -2713,6 +2713,14 @@ public class SaveFileCheck {
                 Double.compare(collegeTwin.getSectors().retail().getEnergyRatio(), grocers.getEnergyRatio()) == 0
                         && Double.compare(collegeTwin.getHouseholdBalance().getGraduating(),
                                 college.getHouseholdBalance().getGraduating()) == 0);
+        // ...and the month's flows waiting for the next census (HS1), which only the month sets: unsaved, the first census back carried
+        // nobody's money with them and the pool reshuffled the retirees', the dead's and the leavers' instead.
+        double[] flowsLive = college.getHouseholdBalance().flowsToSave();
+        boolean anyFlow = false;
+        for (double share : flowsLive) anyFlow |= share > 0;
+        assertTrue("fixture: the town's month struck flows for the next census to carry (HS1)", anyFlow);
+        assertTrue("...and the reload holds them, slot by slot",
+                java.util.Arrays.equals(collegeTwin.getHouseholdBalance().flowsToSave(), flowsLive));
         college.simulateMonths(1);
         collegeTwin.simulateMonths(1);
         double[] collegePools = MoneyAudit.pools(college), twinPools = MoneyAudit.pools(collegeTwin);
@@ -2726,6 +2734,8 @@ public class SaveFileCheck {
         assertTrue("a month on, its twin is the town that never reloaded: every pool the money audit reads, and the people, to the bit",
                 poolsSame);
         same("...the student loans repaid", collegeTwin.getStudentLoansRepaid(), college.getStudentLoansRepaid());
+        same("...the households' savings, which the flows carried at the census (HS1)",
+                collegeTwin.getHouseholdBalance().totalSavings(), college.getHouseholdBalance().totalSavings());
 
         /*
          * ...AND A CITY WITH BUSES (0.7.49, D1). The month's transit bill is

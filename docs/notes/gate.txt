@@ -1,91 +1,98 @@
-# gate of Merge batch/QN1: new-building proposals beside canonical templates, 0.9.158
+# gate of Merge batch/HS1: money follows people, 0.9.159
 # date: 2026-11-19
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 220 harnesses run in 2884s: 206 passed, 14 failed
-BuildAdviceCheck | exit 1
-BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
-BuildAdviceCheck | 1 FAILED
-AutoBuildCheck | exit 1
-AutoBuildCheck | fixture: ...and it placed orders in those months (0)                                                           FAIL
-AutoBuildCheck | 1 FAILED
+# suite: 219 harnesses run in 3269s: 201 passed, 18 failed
+SlopeCheck | exit 1
+SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [the households' money was not conserved] FAIL
+SlopeCheck | 1 FAILED
+ChildcareCheck | exit 1
+ChildcareCheck | the centre's whole plan has the least net present value, including running, land and physical losses (short of hundreds) FAIL
+ChildcareCheck | 1 FAILED
+EssentialWorksCheck | exit 1
+EssentialWorksCheck | fixture: today's highway and six-month reserve are covered, but demand outgrows them before a new highway opens FAIL
+EssentialWorksCheck | fixture: streets lose more output although power has the greater missing share FAIL
+EssentialWorksCheck | 2 FAILED
 ExchangeRateCheck | exit 1
 ExchangeRateCheck | fixture: the dated gold peg survives to the eve of suspension            FAIL
 ExchangeRateCheck | fixture: the released hold is larger than the month's float news         FAIL
 ExchangeRateCheck | the model's return date restores Canada's gold peg                       FAIL
-ExchangeRateCheck | the return holds the model's par                                         FAIL  2.599604786428 != 1.000000000000
+ExchangeRateCheck | the return holds the model's par                                         FAIL  3.393522768720 != 1.000000000000
 ExchangeRateCheck | 4 FAILED
-PassThroughCheck | exit 1
-PassThroughCheck | the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (0.0% of the step) FAIL
-PassThroughCheck | ...while one for one the goods go as far as the D$ does, a month behind it (its widest 129.55% against the D$'s 131.32%) and never past it FAIL
-PassThroughCheck | 2 FAILED
-DenominationCheck | exit 1
-DenominationCheck | the same output                                                FAIL  60.7179813472 != 60.7178274576  (2.53e-06 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  896.6474541859 != 896.6463068862  (1.28e-06 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0006481795 != 0.0006481792  (4.71e-07 apart)
-DenominationCheck | the same price level                                           FAIL  13.4503788823 != 13.4503564320  (1.67e-06 apart)
-DenominationCheck | the same currency                                              FAIL  0.0741203771 != 0.0741194358  (1.27e-05 apart)
-DenominationCheck | the same treasury                                              FAIL  1,049.3725425121 != 1,049.3725505618  (7.67e-09 apart)
-DenominationCheck | the same shops' till                                           FAIL  16.8406035172 != 16.8404469790  (9.30e-06 apart)
-DenominationCheck | the same bank                                                  FAIL  984.6252634241 != 984.6226583602  (2.65e-06 apart)
-DenominationCheck | 8 FAILED
+GroceryCheck | exit 1
+GroceryCheck | the households who held a voucher were handed more of what they need than their twins without FAIL
+GroceryCheck | 1 FAILED
+FundCheck | exit 1
+FundCheck | ...and the desk's bid meets it at the step: some of it sold, into the fund's cash                FAIL
+FundCheck | 1 FAILED
+HoldersCheck | exit 8
+HoldersCheck | the households were paid their share of the coupon                       FAIL  0.565085 != 0.565091
+HoldersCheck | ...into their savings, as investment income                              FAIL  0.565085 != 0.565091
+HoldersCheck | the bank's share is on the month's interest bill, which it takes at the next settle FAIL  0.178924 != 0.178918
+HoldersCheck | while the bank has term paper to sell, it is all the central bank buys   FAIL
+HoldersCheck | ...onto its own book, at face                                            FAIL  320.307865 != 320.067850
+HoldersCheck | ...its gain against face in the month's profit                           FAIL  -34.398758 != -34.638773
+HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
+HoldersCheck | fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's FAIL
+HoldersCheck | 8 FAILED
 PriceLevelCheck | exit 1
-PriceLevelCheck | FAIL h.sharePrice.Luxury Retail (nominal) month 93: 0.2296000000 at the factor over the factor, 0.2587990000 at today's prices (0.113 apart)
-PriceLevelCheck | FAIL h.sharePrice.Restaurants (nominal) month 93: 0.1350490000 at the factor over the factor, 0.08894710000 at today's prices (0.341 apart)
-PriceLevelCheck | FAIL h.sharePrice.Industry (nominal) month 92: 0.9718150000 at the factor over the factor, 0.5049280000 at today's prices (0.480 apart)
-PriceLevelCheck | FAIL h.shareValue.Luxury Retail (nominal) month 93: 0.1913330000 at the factor over the factor, 0.2156650000 at today's prices (0.113 apart)
-PriceLevelCheck | FAIL h.shareValue.Restaurants (nominal) month 93: 0.1125410000 at the factor over the factor, 0.07412260000 at today's prices (0.341 apart)
-PriceLevelCheck | FAIL h.shareValue.Industry (nominal) month 92: 0.8098460000 at the factor over the factor, 0.4207740000 at today's prices (0.480 apart)
-PriceLevelCheck | FAIL reload.cash (nominal) month 0: 84435.86659 at the factor over the factor, 84523.18508 at today's prices (0.00103 apart)
-PriceLevelCheck | FAIL reload.gdp.month (nominal) month 0: 557.1876509 at the factor over the factor, 548.4514960 at today's prices (0.0157 apart)
-PriceLevelCheck | FAIL reload.bank.deposits (nominal) month 0: 13855.93321 at the factor over the factor, 13228.12483 at today's prices (0.0453 apart)
-PriceLevelCheck | FAIL reload.retail.shelf (nominal) month 0: 0.3815320101 at the factor over the factor, 0.3803653706 at today's prices (0.00306 apart)
-PriceLevelCheck | FAIL reload.rent (nominal) month 0: 0.2666257501 at the factor over the factor, 0.2735150936 at today's prices (0.0252 apart)
-PriceLevelCheck | FAIL reload.rate (real) month 0: 0.8121280885 at the factor , 0.8165846029 at today's prices (0.00546 apart)
-PriceLevelCheck | FAIL reload.priceIndex (real) month 0: 0.9261507526 at the factor , 0.9329223249 at today's prices (0.00726 apart)
-PriceLevelCheck | FAIL reload.pop (real) month 0: 465.0000000 at the factor , 451.0000000 at today's prices (0.0301 apart)
-PriceLevelCheck | FAIL reload.workforce (real) month 0: 242.0000000 at the factor , 235.0000000 at today's prices (0.0289 apart)
-PriceLevelCheck | FAIL reload.unemployed (real) month 0: 109.0000000 at the factor , 103.0000000 at today's prices (0.0550 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.supply (real) month 0: 37.42494057 at the factor , 37.87911590 at today's prices (0.0120 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.demand (real) month 0: 296.3094327 at the factor , 291.5662768 at today's prices (0.0160 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.imported (real) month 0: 265.8612214 at the factor , 258.8896136 at today's prices (0.0262 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.local (nominal) month 0: 0.4541919679 at the factor over the factor, 0.4537143455 at today's prices (0.00105 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.import (nominal) month 0: 0.4743878275 at the factor over the factor, 0.4744229457 at today's prices (7.40e-05 apart)
-PriceLevelCheck | FAIL reload.mkt.CROPS.export (nominal) month 0: 0.2942926171 at the factor over the factor, 0.2943143880 at today's prices (7.40e-05 apart)
-PriceLevelCheck | FAIL reload.stock.CROPS (real) month 0: 32.45843347 at the factor , 32.54147695 at today's prices (0.00255 apart)
-PriceLevelCheck | FAIL reload.mkt.GRAINS.demand (real) month 0: 361.9615101 at the factor , 344.0837936 at today's prices (0.0494 apart)
-PriceLevelCheck | every real series equal within 1.0E-9 (worst 0.25 in reload.mkt.DAIRY_EGGS.imported)   FAIL
+PriceLevelCheck | FAIL h.cash (nominal) month 94: 81912.14332 at the factor over the factor, 81347.35000 at today's prices (2.85e+03 apart)
+PriceLevelCheck | FAIL h.surplus (nominal) month 94: 202.8322033 at the factor over the factor, -362.2800000 at today's prices (2.85e+03 apart)
+PriceLevelCheck | FAIL h.roadRatio (real) month 94: 0.3937000000 at the factor , 0.4320000000 at today's prices (0.0887 apart)
+PriceLevelCheck | FAIL h.foodPrice (nominal) month 94: 0.2591540000 at the factor over the factor, 0.2587030000 at today's prices (0.00174 apart)
+PriceLevelCheck | FAIL h.currentAccount (nominal) month 94: 170.3790508 at the factor over the factor, 172.3000000 at today's prices (9.69 apart)
+PriceLevelCheck | FAIL h.priceIndex (real) month 94: 0.9229000000 at the factor , 0.9279000000 at today's prices (0.00539 apart)
+PriceLevelCheck | FAIL h.businessDebt (nominal) month 94: 21653.20698 at the factor over the factor, 20808.90000 at today's prices (4.26e+03 apart)
+PriceLevelCheck | FAIL h.bankDeposits (nominal) month 94: 12676.81953 at the factor over the factor, 12397.70000 at today's prices (1.41e+03 apart)
+PriceLevelCheck | FAIL h.bankLent (nominal) month 94: 25262.84751 at the factor over the factor, 24418.57000 at today's prices (4.26e+03 apart)
+PriceLevelCheck | FAIL h.bankEquity (nominal) month 94: 8574.200167 at the factor over the factor, 8575.690000 at today's prices (7.52 apart)
+PriceLevelCheck | FAIL h.bankCapacity (nominal) month 94: 76062.07623 at the factor over the factor, 74386.20000 at today's prices (8.45e+03 apart)
+PriceLevelCheck | FAIL h.bankStrain (real) month 94: 0.2451000000 at the factor , 0.2506000000 at today's prices (0.0219 apart)
+PriceLevelCheck | FAIL h.bankProfit (nominal) month 94: -62.20187568 at the factor over the factor, -60.56000000 at today's prices (8.29 apart)
+PriceLevelCheck | FAIL h.bankReturnOnEquity (real) month 94: -0.08630000000 at the factor , -0.08410000000 at today's prices (0.0255 apart)
+PriceLevelCheck | FAIL h.bankLeverageRatio (real) month 94: 0.2565000000 at the factor , 0.2632000000 at today's prices (0.0255 apart)
+PriceLevelCheck | FAIL h.rentPrice (nominal) month 94: 0.2384680000 at the factor over the factor, 0.2422540000 at today's prices (0.0156 apart)
+PriceLevelCheck | FAIL h.homes (real) month 94: 183.0000000 at the factor , 153.0000000 at today's prices (0.164 apart)
+PriceLevelCheck | FAIL h.households (real) month 94: 126.8600000 at the factor , 122.4800000 at today's prices (0.0345 apart)
+PriceLevelCheck | FAIL h.m0 (nominal) month 94: 12122.02516 at the factor over the factor, 11557.20000 at today's prices (2.85e+03 apart)
+PriceLevelCheck | FAIL h.m2 (nominal) month 94: 12745.58931 at the factor over the factor, 12468.59000 at today's prices (1.40e+03 apart)
+PriceLevelCheck | FAIL h.reserves (nominal) month 94: 12122.02516 at the factor over the factor, 11557.20000 at today's prices (2.85e+03 apart)
+PriceLevelCheck | FAIL h.householdsByShape.SINGLE_ADULT (real) month 94: 6.180000000 at the factor , 0.7100000000 at today's prices (0.885 apart)
+PriceLevelCheck | FAIL h.householdsByShape.SHARED_ADULTS (real) month 94: 3.410000000 at the factor , 4.500000000 at today's prices (0.242 apart)
+PriceLevelCheck | FAIL h.landUse (real) month 94: 0.6062000000 at the factor , 0.5276000000 at today's prices (0.130 apart)
+PriceLevelCheck | every real series equal within 1.0E-9 (worst 0.89 in h.householdsByShape.SINGLE_ADULT) FAIL
 PriceLevelCheck | the history's 70 money series equal over the factor to the rounding they were recorded at FAIL
-PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 1.0 in reload.sector.Construction.cash) FAIL
-PriceLevelCheck | the town: every live nominal line is shown or left out alike at both levels, 238 series over 121 months (17 of 28798 differ; 9386 shown) FAIL
+PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 0.44 in reload.sector.Restaurants.cash) FAIL
+PriceLevelCheck | the town: every live nominal line is shown or left out alike at both levels, 238 series over 121 months (5 of 28798 differ; 9396 shown) FAIL
 PriceLevelCheck | some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): 0 city-months, at most 0 partners FAIL
-PriceLevelCheck | 251 FAILED
+PriceLevelCheck | 276 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
-HealthCheck | exit 1
-HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
-HealthCheck | 1 FAILED
-KeptCheck | exit 1
-KeptCheck | fixture: a run of orders the market lends for, both offers covering 4 times its gap at the page's cap FAIL
-KeptCheck | 1 FAILED
-DeathRecordCheck | exit 1
-DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 1 FAILED
-DistressBleedCheck | exit 2
-DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
-DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
-LongPlaytest | exit 1
-LongPlaytest | FAIL an old works moved                                 1 time(s), months 2400-2400
-YoungBankCheck | exit 1
-YoungBankCheck | FAIL the bank is never in resolution
-YoungBankCheck | YoungBankCheck: 1 FAILED
-PrizeCheck | exit 1
-PrizeCheck | FAIL ...and its till (at most 408) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 1 FAILED of 285
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED
+SaveFileCheck | exit 1
+SaveFileCheck | fixture: over the default it owes what it sells for, and paid some late FAIL
+SaveFileCheck | 1 FAILED
+KeptCheck | exit 3
+KeptCheck | the construction page: each month hands back nine in ten of the nodes the first draw made, or more (499 of 559) FAIL
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | fixture: the settled lot watched, B:2675, runs 1 months, past the 3 months its page is watched FAIL
+KeptCheck | 3 FAILED
+DeathRecordCheck | exit 1
+DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
+DeathRecordCheck | 1 FAILED
+BusinessServicesCheck | exit 1
+BusinessServicesCheck | two centres is six hundred seats                               FAIL  900.000000 != 600.000000
+DistressBleedCheck | exit 2
+DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 FAIL
+DistressBleedCheck | a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold FAIL
+LongPlaytest | exit 1
+LongPlaytest | FAIL an old works moved                                 1 time(s), months 2400-2400
+PrizeCheck | exit 1
+PrizeCheck | FAIL ...and its till (at most 411) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 1 FAILED of 285
+YoungBankCheck | exit 1
+YoungBankCheck | FAIL the bank is never in resolution
+YoungBankCheck | YoungBankCheck: 1 FAILED

@@ -18,6 +18,21 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.159 — HS1, money follows people — 2026-11-19, ready, see docs/queue/HS1-notes.md
+The month's flows now carry their money. A household that retires, ages on, loses a partner, dies
+alone or leaves takes its cell's average of every stock with it before the census's pool nets the
+rest. A survivor keeps everything. An estate repays the bank from its savings and passes the rest
+to the working households of the dead's former tier. Leavers take theirs out through the balance of
+payments, so HL1's identity closes as before. The retired keep their former tier: 24 cells, 99 in
+all, shown on the People screen as "Senior couple, formerly Skilled". An orphan cell weighs by its
+people for what a child can hold, never a debt, a loan or a car (OH1: the register stays whole). HouseholdFlowCheck causes each flow. Save format 57,
+floor 57: an older save's retired money would load into no cell. Ensemble: M1 passes. F1's one
+finding (ZERO_HOT seed 0, 1.6 households with no home in months 205-207) is FB11's held land,
+passed by name. The towns take off at main's pace (T1 by m786, against m788). Unemployment runs
+1.6-6.6 points higher: the retired now pay for their care, so the senior care pull draws more
+people to the homes. AUTO2's final population (T2, information) is 65% of main's, two long stalls
+in sixteen against one.
+
 ### 0.9.158 — QN1, new-building proposals beside canonical templates — 2026-11-19, ready, see docs/queue/QN1-notes.md
 A new building is now valued as it would run, beside the template it is
 of: in a city founded the 1900 way, where a plant ordered now may lack a

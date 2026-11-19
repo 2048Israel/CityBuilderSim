@@ -17,8 +17,9 @@ package ham.citybuildersim;
  *
  * This is one CELL of the family matrix with its own books: how many households
  * it holds, what each of them has saved and owes, whether the bank has stopped
- * lending to them, and what last month did to them. Sixty-eight of them - eleven
- * working shapes across six tiers, and two retired shapes with no tier - and
+ * lending to them, and what last month did to them. Ninety-nine of them - eleven
+ * working shapes across six tiers, four retired shapes across the six tiers they
+ * retired from (HS1), and the nine outside the families with the owners - and
  * HouseholdBalance is the thing that holds them all, sums them, and strikes them
  * every month.
  *
@@ -90,6 +91,8 @@ public abstract class Household {
     public static final int OWNER_ROW = RETIRED_ROW + 5;
     /** Every row: the six tiers, the retired, and the five above. */
     public static final int ROWS = RETIRED_ROW + 6;
+    /** Every stock group (stockGroup()): the rows', then the retired by the tier they left, one a tier (HS1). */
+    public static final int STOCK_GROUPS = ROWS + PayTier.values().length;
     /** The rows a save from before the prisons carries (pinned: ROWS has moved on). */
     public static final int ROWS_BEFORE_PRISON = RETIRED_ROW + 4;
     /** The rows a save from before the owner families carries. */
