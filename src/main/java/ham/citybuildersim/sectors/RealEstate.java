@@ -652,8 +652,9 @@ public final class RealEstate extends Sector {
          * hog cycle BuildingManager.productionUnderConstruction() describes.
          */
         double comingCapacity = capacityOnSite();
-        double headShortfall = latentDemand
-                - (housingCapacity + comingCapacity) * (1 + BusinessInvestment.TARGET_HEADROOM);
+        // Spare homes are a margin over demand, including the homes already ordered (RN1-H).
+        double headShortfall = latentDemand * (1 + BusinessInvestment.TARGET_HEADROOM)
+                - housingCapacity - comingCapacity;
 
         // A shortage of family doors is its own reason to build, and one that
         // building more studios cannot answer.
@@ -706,7 +707,7 @@ public final class RealEstate extends Sector {
         }
 
         // Sized on whichever shortage is the bigger.
-        double byHeads = latentDemand - housingCapacity - comingCapacity;
+        double byHeads = headShortfall;
         double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
         double gap = Math.max(byHeads, byDoors);
         int wanted = best.getCapacity() > 0 ? Math.max(1, (int) Math.ceil(gap / best.getCapacity())) : 1;
@@ -719,7 +720,7 @@ public final class RealEstate extends Sector {
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0
                         ? String.format("%,.0f households need a door a child is allowed in", familyShortfall)
-                        : String.format("%,.0f unhoused demand against %,d units", byHeads, housingCapacity),
+                        : String.format("%,.0f capacity needed for demand plus headroom against %,d units", byHeads, housingCapacity),
                 true);
     }
 
@@ -782,8 +783,8 @@ public final class RealEstate extends Sector {
         long standing = buildings.getPostsWithheld();   // every post, as plan() reads them (0.7.17)
         for (long n : game == null ? buildings.getTotalJobs() : game.getJobs()) standing += n;
         double latent = (standing + buildings.getJobsUnderConstruction()) * 2.25;
-        return latent - (buildings.getTotalHouseCapacity() + capacityOnSite())
-                * (1 + BusinessInvestment.TARGET_HEADROOM);
+        return latent * (1 + BusinessInvestment.TARGET_HEADROOM)
+                - buildings.getTotalHouseCapacity() - capacityOnSite();
     }
 
     /**

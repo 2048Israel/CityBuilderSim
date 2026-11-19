@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.157 — RN1-H, the homes' headroom a margin over demand — 2026-11-19, ready, see docs/queue/RN1-H-notes.md
+Homes now plan capacity at demand plus `BusinessInvestment.TARGET_HEADROOM`, counting standing homes and those on site once. Previously the planner waited until demand exceeded capacity by that margin, then ordered only to bare demand. The planner's quantity and the credit check use the same target. HousingCheck causes equal demand and capacity, orders exactly the margin, and proves that planned and completed reserve homes stop further orders. DiscoveryCheck includes headroom in the capacity required by research jobs. The other planners' readings were audited and left unchanged.
+
 ### 0.9.156 — HL1-R, Business Services' kept share without a cliff — 2026-11-19, ready, see docs/queue/HL1-R-notes.md
 HL1 kept a quarter of the city's whole upkeep in Business Services from the first seat and none before: a margin with no
 capacity behind it. It now keeps the quarter (`UPKEEP_IMPORTED`'s dial) or what its seats can serve of the month, whichever is
