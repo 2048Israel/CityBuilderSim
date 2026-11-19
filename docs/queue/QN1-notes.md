@@ -162,6 +162,17 @@ R = reads the resolved new unit; S = keeps the figures the building stands with 
   hunk there the override's signature alone): RN1-H moved the homes' headroom onto demand, so NewUnitCheck's `latentWith`
   (the head shortage from its parts) is now `(posts + coming) × 2.25 × (1 + TARGET_HEADROOM) − homes`, as
   `latentHeadShortfall()` reads. `--fast` green; NewUnitCheck all 63.
+- The dry run (`sh tools/gate.sh QN1 --dry-run`, 9c8714d79 on main d05201e11; kept at `/tmp/cbs-gate-QN1-bckCEBFc`):
+  220 harnesses in 2,884 s, 206 passed, 14 red. Thirteen were main's known reds; ExchangeRateCheck stopped it on one line
+  not named: "the return holds the model's par FAIL 2.599604786428 != 1.000000000000", where main's registry (FS10) has
+  2.612783528664. Its other three lines are main's exactly. Section 8b's played 1900 city already floats on the eve of
+  the August 1914 suspension (2.6788 against parity 1.4621, the fixture's "dated gold peg survives" red as on main), and
+  the July 1926 return opens the peg onto an empty vault, which breaks it that month, so the return compares a float with
+  the stored par: FS10's cause. QN1 values that city's new buildings as they would run, which moves its path and so the
+  float the return lands on. Entered in the ship file's `## known-reds` against FS10 (on the queue), so it passes by name
+  (`docs/contract.md` 5, item 3). The kept suite judged again in `target/checks` with the ship file's rows
+  (`CBS_KNOWN_REDS=... ./batch-check.sh --judge`): known red only, 14 harnesses. When FS10 lands, main's 2.612783528664
+  row has no line left to match.
 
 ## Left for Jerus
 
