@@ -1,6 +1,6 @@
 # FoundingScreen.java - 1,543 lines · 68 methods · 20 constants · interface
 
-`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into.
 > 

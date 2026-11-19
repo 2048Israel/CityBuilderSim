@@ -1,6 +1,6 @@
 # Health.java - 450 lines · 27 methods · 14 constants · model
 
-`ham/citybuildersim/Health.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Health.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > How much of the workforce is off sick this month.
 > 
