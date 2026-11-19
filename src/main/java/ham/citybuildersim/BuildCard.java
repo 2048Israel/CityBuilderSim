@@ -1451,8 +1451,10 @@ public final class BuildCard {
         for (int i = 0; i < byType.length; i++) byType[i] = land.getSites(r, types.get(i));
         Sector owner = game.getSectors().ownerOf(t);
         String wanting = owner instanceof ham.citybuildersim.sectors.ExtractionSector e ? e.fieldWanting(t) : null;
-        Map<Good, Double> makes = owner instanceof ham.citybuildersim.sectors.Quarrying q ? q.madeBy(t)
-                : owner instanceof ham.citybuildersim.sectors.CoalMining c ? c.madeBy(t) : t.goodsMade();
+        // ...what one more would make: the new building's own recipe (QN1, NewUnit), on the ground the sector would put it.
+        NewUnit unit = NewUnit.of(game, t);
+        Map<Good, Double> makes = owner instanceof ham.citybuildersim.sectors.Quarrying q ? q.madeBy(unit)
+                : owner instanceof ham.citybuildersim.sectors.CoalMining c ? c.madeBy(unit) : unit.goodsMade();
         return new Stands(r, site.type(), site.sites(), game.sitesFor(t), game.committedFor(t), game.remainingFor(t),
                 byType, game.hasDepositFor(t, 1), wanting, makes);
     }
@@ -1670,7 +1672,7 @@ public final class BuildCard {
         if (!materials(game, t)) return out;
         Sector owner = game.getSectors().ownerOf(t);
         Stands at = stands(game, t);
-        Map<Good, Double> makes = at != null ? at.makes() : t.goodsMade();
+        Map<Good, Double> makes = at != null ? at.makes() : NewUnit.of(game, t).goodsMade();   // the new building's own output (QN1)
         for (Map.Entry<Good, Double> e : makes.entrySet()) {
             if (!(e.getValue() > 0)) continue;
             Good g = e.getKey();

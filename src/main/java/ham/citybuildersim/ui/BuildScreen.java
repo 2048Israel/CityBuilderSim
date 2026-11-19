@@ -1428,17 +1428,17 @@ final class BuildScreen {
                 List<String> parts = new ArrayList<>();
                 if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) {
                     // A conversion unit (0.7.80): the hero names its feed, and this what the feed becomes.
-                    parts.add("into " + goodsList(ham.citybuildersim.sectors.Refining.madeBy(t)) + " from the crude units' run"
+                    parts.add("into " + goodsList(ham.citybuildersim.sectors.Refining.madeBy(f.newUnit())) + " from the crude units' run"
                             + (t.refineryUnit() == ham.citybuildersim.sectors.RefineryFlow.Kind.HYDROCRACKER
                             ? " and a reformer's hydrogen" : ""));
                 } else if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) {
                     // A crude unit (0.7.76): the hero names its crude, and this what the crude becomes.
-                    parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(t)));
+                    parts.add(crudeUnitWords(ham.citybuildersim.sectors.Refining.madeBy(f.newUnit())));
                 } else {
-                    java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(t.goodsMade());
+                    java.util.Map<Good, Double> others = new java.util.LinkedHashMap<>(f.newUnit().goodsMade());
                     others.remove(f.good());
                     if (!others.isEmpty()) parts.add("and " + goodsList(others));
-                    if (!t.goodsUsed().isEmpty()) parts.add("from " + goodsList(t.goodsUsed()));
+                    if (!f.newUnit().goodsUsed().isEmpty()) parts.add("from " + goodsList(f.newUnit().goodsUsed()));
                 }
                 parts.add(f.addsNothing() ? "adds nothing at today's prices: its inputs cost more than it makes"
                         : "adds " + money(f.valueAdded()) + " a month at today's prices");
@@ -4606,8 +4606,8 @@ final class BuildScreen {
             default: {
                 java.util.Set<String> made = new java.util.LinkedHashSet<>(), used = new java.util.LinkedHashSet<>();
                 for (BuildCard.Figures f : group.cards()) {
-                    for (Good g : ham.citybuildersim.sectors.Refining.madeBy(f.template()).keySet()) made.add(g.label().toLowerCase());
-                    for (Good g : f.template().goodsUsed().keySet()) used.add(g.label().toLowerCase());
+                    for (Good g : ham.citybuildersim.sectors.Refining.madeBy(f.newUnit()).keySet()) made.add(g.label().toLowerCase());
+                    for (Good g : f.newUnit().goodsUsed().keySet()) used.add(g.label().toLowerCase());
                 }
                 used.removeAll(made);
                 String what = andList(new ArrayList<>(made));
@@ -4817,7 +4817,7 @@ final class BuildScreen {
             return out;
         }
         // ...what it makes: a crude unit's slate since 0.7.76 (Refining.madeBy()), a conversion unit's products of its feed since 0.7.80.
-        java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(t);
+        java.util.Map<Good, Double> makesNow = ham.citybuildersim.sectors.Refining.madeBy(u);
         if (t.isOwnedBySector() && !makesNow.isEmpty()) {
             if (ham.citybuildersim.sectors.Refining.isConversionUnit(t)) out.addAll(conversionUnitLines(t));
             for (java.util.Map.Entry<Good, Double> e : makesNow.entrySet()) {
