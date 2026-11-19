@@ -458,3 +458,67 @@ All nine bounds are unchanged. The comparison and all nine readings are in
 `target/SZ1-after-HL1-trace/run-*`. No main rerun was needed. The midnight
 date change regenerated 602 documentation headers; no source changed
 after the merge and these checks.
+
+## Final ensemble on HL1 main — 2026-11-19
+
+The authorized run completed **80/80**, no missing or short runs, in
+**110.2 minutes**, exit 0. Its fixed classes snapshot is **3586daad6**,
+compiled on merged main **6b0aa202e (0.9.154)**, label `SZ1`, five workers,
+all sixteen seeds under AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK and HIGH. The
+Earth/world paths are the same as HL1's, explicitly recorded in the snapshot.
+Only the ensemble ran after preflight; no pick or dry run overlapped it.
+The orchestrator separately authorized RN1-H's one fresh main trace beside
+it (00:52 mail), identified after a process-overlap check; no other process
+was stopped by SZ1.
+
+**SZ1: 24/26**, against **HL1: 23/26**. Both pass all **10/10 hard M1/F1
+criteria**. All 80 runs have zero failed/unread money-audit rows and zero
+runs with findings. H1 stays retired; zero vacuous, one retired criterion
+is excluded from each score. The only changed verdict is ZERO_HOT H2,
+**FAIL → PASS**, with 13/16 below. A1 and A2 remain informational failures.
+
+The scored readings are paired below; criterion definitions, full info
+rows, thresholds and the comparison summary are committed together in
+`docs/ensemble/SZ1.md`, against `docs/ensemble/0.9.154.md`.
+
+| policy / criterion | HL1 0.9.154 | SZ1 |
+|---|---|---|
+| AUTO2 A1 | FAIL — 3.09% [2.66% to 3.75%] | FAIL (4/16 in band) — 3.14% [2.70% to 3.51%] |
+| AUTO2 A2 | FAIL — 23 [12 to 47] | FAIL — 26 [14 to 47] |
+| AUTO2 A3 | PASS — 0 [0 to 3]; 100.00% [97.17% to 100.00%] | PASS — 0 [0 to 4]; 100.00% [98.09% to 100.00%] |
+| ZERO_SLACK S1 | PASS — 2.79% [1.52% to 6.28%] | PASS (16/16 seeds within) — 3.16% [1.89% to 5.14%] |
+| ZERO_HOT H2 | FAIL — -0.19% [-3.66% to 3.13%] | PASS (13/16 below) — -0.63% [-4.17% to 2.07%] |
+| SHOCK K1 | PASS — 16.69% [10.75% to 20.06%] | PASS — 16.75% [11.72% to 23.73%] |
+| SHOCK K2 | PASS — 1.97% [-0.45% to 4.24%]; 0.34% [-0.96% to 1.02%] | PASS — 1.97% [-1.35% to 3.49%]; -0.27% [-1.25% to 0.91%] |
+| HIGH R1 | PASS — -3.95% [-5.61% to -1.94%] | PASS — -4.04% [-5.65% to -0.47%] |
+| HIGH R2 | PASS — 1.52% [-1.00% to 6.54%] | PASS — 0.68% [-4.12% to 4.04%] |
+| HIGH R3 | PASS — -4.82% [-6.62% to -1.54%] | PASS (1 above +1 pt) — -4.37% [-6.40% to 1.00%] |
+| ALL T1 | PASS — 16/16 (m814 [506 to 1,501]) | PASS — 16/16 (m760 [490 to 1,233]) |
+| AUTO2 T2 | PASS — 2,628,909 [1,115,743 to 6,587,878] | PASS — 2,381,553 [1,383,699 to 5,395,142] |
+| AUTO2 M1 | PASS — 0 (0) | PASS — 0 (0) |
+| AUTO2 F1 | PASS — 0/16 [] | PASS — 0/16 [] |
+| ZERO_SLACK T2 | PASS — 1,563,127 [430,325 to 4,312,878] | PASS — 1,621,756 [1,011,424 to 3,539,292] |
+| ZERO_SLACK M1 | PASS — 0 (0) | PASS — 0 (0) |
+| ZERO_SLACK F1 | PASS — 0/16 [] | PASS — 0/16 [] |
+| ZERO_HOT T2 | PASS — 7,622 [1,645 to 19,547] | PASS — 7,366 [1,509 to 14,074] |
+| ZERO_HOT M1 | PASS — 0 (0) | PASS — 0 (0) |
+| ZERO_HOT F1 | PASS — 0/16 [] | PASS — 0/16 [] |
+| SHOCK T2 | PASS — 40,896 [27,485 to 279,392] | PASS — 40,465 [27,612 to 222,697] |
+| SHOCK M1 | PASS — 0 (0) | PASS — 0 (0) |
+| SHOCK F1 | PASS — 0/16 [] | PASS — 0/16 [] |
+| HIGH T2 | PASS — 29,620 [11,584 to 114,818] | PASS — 27,653 [21,862 to 79,166] |
+| HIGH M1 | PASS — 0 (0) | PASS — 0 (0) |
+| HIGH F1 | PASS — 0/16 [] | PASS — 0/16 [] |
+
+AUTO2's final population median is 9.41% below HL1's (2,381,553 against
+2,628,909); its T2 still passes. Takeoff occurs in all 16 seeds, median
+month 760 against 814. ★ Retain every informational result under the
+contract's M1/F1-only ship rule; no threshold, horizon, seed, policy or
+model parameter was changed to improve a score.
+
+The baseline has the required `{next}` in its heading and introductory
+version only; the paired score table, complete summary and data provenance
+are intact. All raw CSVs/logs/times, the unmodified score and summary,
+classes, dependency list and snapshot are retained under
+`target/ensemble/SZ1/`; launcher `target/SZ1-ensemble.txt`. No source changed
+after the snapshot. This completed ensemble stands for the dry run.
