@@ -1,5 +1,15 @@
 # RN1-H — the homes' headroom a margin over demand
 
+**Current mends (2026-11-19).** Main `6b0aa202e` (HL1, 0.9.154) is merged
+at `e293af05d`. The fast check, all 18 prior picked names and additional
+HousingDoorCheck are green under the exit 0/3 rule. Both the merged and
+fresh-main LongPlaytests exit 0; the numerical housing split remains at
+m21. Their complete traces are preserved outside the worktrees, with the
+fresh main reference shared for HS1. The provisional marker remains:
+the 80-run ensemble and paired AUTO2 16 await the explicit go after SZ1.
+No pick or dry run was made under that hold. The latest comparison and
+all provenance are in the final section below.
+
 ## What changed
 
 The housing planner read `TARGET_HEADROOM` backwards. At demand 100 and
@@ -144,7 +154,7 @@ building.
 No process file changed. No save slot was used. No calls remain beyond the
 other planners' shared-dial question recorded in the ship file.
 
-## The default played city
+## The default played city before HL1
 
 `LongPlaytest` on model `2947d74d3` passes: "Nothing. Every month passed
 the audit and every reload matched." Its 2,404 trace rows are kept at
@@ -194,3 +204,85 @@ gap `(1+h)*D-C-Q` is within the margin. Family-door needs may coexist;
 this counts orders whose head gap is in the buffer, not a claim that
 every such order has no other reason to build. The lower bound avoids
 mistaking current jobs alone for all the funded jobs the plan sees.
+
+## HL1 merged and checked again (2026-11-19)
+
+The orchestrator resumed RN1-H on main `6b0aa202e` (HL1, 0.9.154).
+Merged it at `e293af05d`. No source conflicts; the conflicts in the two
+generated indexes were resolved by taking main and regenerating from the
+merged source. `./batch-check.sh --fast` exits 0 (compile 69 s, no firm
+Stale finding). The 600 index changes after midnight are date headers
+only: all 1,200 added/removed lines contain the old or new generated date.
+No RN1-H model or harness code was changed to pass the merge.
+
+All 18 prior picked names and additional `HousingDoorCheck` were run
+again, one name per call and `-Dcbs.parallel=1`. Every name exits 0 except
+`PopulationCheck` and `PrizeCheck`, whose existing main-known assertions
+give exit 3. `RoadCheck` now exits 0 (including the additionally selected
+`InterestAbroadCheck`). Logs and each named call's suite verdict are in
+`target/rn1-h/hl1-merge/`. The pick script, a pick run, a dry run and the
+ensemble have not been run under the orchestrator's heavy-slot hold.
+
+The merged `LongPlaytest` exits 0, including HL1's household-book checks:
+"Nothing. Every month passed the audit and every reload matched." Its
+suite time is 1,217 s. Its 2,402 housing rows end at m2403, with zero
+unplaced households throughout.
+The eight closed CSVs, report, source/base provenance and SHA-256 manifest
+are preserved outside this worktree at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-RN1-H-e293af05/`, prefix
+`trace`, so removing the worktree will not remove the evidence.
+
+The orchestrator reported that HL1's earlier trace was lost when its
+worktree was removed. He authorized one fresh named `LongPlaytest` on a
+clean detached checkout of exact main `6b0aa202e`, with the same data,
+whose shared prefix is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-6b0aa202/trace`.
+This runs after the merged named driver exits; no two own harnesses run
+at once. The first completed rows already confirm the same numerical
+housing split at m21: RN1-H has 92 homes / 652 capacity, main 91 / 646.
+The fresh main call exits 0 too (suite 1,337 s): every month passed its
+audit and every reload matched. Its 2,404 housing rows end at m2405. All eight closed
+CSVs, `report.txt`, `suite.txt`, clean-source `snapshot.txt`, `exit.txt`
+and `sha256.txt` are preserved in that shared directory, and the completed
+path was mailed to the orchestrator for HS1. The detached checkout is
+only a build workspace; the shared evidence does not depend on it.
+
+This is now a comparison with exact current main, unlike the older FB4
+comparison above. Both use the same data and default playtest; only the
+homes' planner differs in the game code. Stock and price readings below
+use the common m2400; run medians and counts are labelled separately.
+
+| Default trace reading | RN1-H on HL1 | Main 6b0aa202e |
+|---|---:|---:|
+| Population | 2,969,817 | 2,453,909 |
+| Homes | 735,568 | 586,714 |
+| Median door vacancy, m240 onward | 2.63% | 2.61% |
+| Door vacancy at m2400 | 5.35% | 2.72% |
+| Family rent, nominal trace units | 74.732 | 40.511 |
+| Studio rent, nominal trace units | 63.623 | 43.798 |
+| Price index | 9,763.688 | 4,752.529 |
+| Family rent / price index | 0.007654 | 0.008524 |
+| Studio rent / price index | 0.006516 | 0.009216 |
+| Landlords' principal, nominal D$ billions | 1,145.983 | 305.480 |
+| Landlords' principal / assets | 3.40% | 2.16% |
+| Built months, m240 onward | 883 | 841 |
+| Trimmed orders, m240 onward | 762 | 586 |
+| Held for capital, m240 onward | 14 | 25 |
+| Held for down payment, m240 onward | 1 | 31 |
+| Unplaced households, maximum over the run | 0 | 0 |
+
+The vacancy medians and order/refusal counts cover each completed trace
+(RN1-H m240-2403, main m240-2405); the stock, price, debt and population
+readings are all at the same m2400. At that month, rents are lower relative
+to the price index, while nominal principal and the principal/assets ratio rise. The
+plan's buffer is used in at least 447 built months on the merged path,
+using the same conservative head-gap test above. This one city is larger;
+the paired AUTO2 16 and full 80 are still owed before judging the spread
+across cities. Neither test's finding or audit bound was changed.
+
+The comparison JSON is also preserved in the RN1-H trace archive as
+`comparison-main-6b0aa202.json`. The orchestrator's hold remains: no
+ensemble, pick or dry run until the explicit go after SZ1's ensemble.
+The temporary main checkout was removed only after confirming its exact
+owned path, that its only changes were 600 generated date headers, and
+that the complete shared trace and report were preserved outside it.
