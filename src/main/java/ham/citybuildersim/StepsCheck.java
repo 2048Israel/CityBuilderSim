@@ -52,6 +52,17 @@ public final class StepsCheck {
         return task.get(60, TimeUnit.SECONDS);
     }
 
+    /** Every component changes equally, so the model's actual basket has this price ratio regardless of its weights. */
+    static void uniformPrices(Game game, double level, int month) {
+        double[] prices = new double[PriceIndex.COMPONENTS], spends = new double[PriceIndex.COMPONENTS];
+        double[] fees = new double[PriceIndex.FEE_LINES], feeSpends = new double[PriceIndex.FEE_LINES];
+        Arrays.fill(prices, level);
+        Arrays.fill(fees, level);
+        Arrays.fill(spends, 1);
+        Arrays.fill(feeSpends, 1);
+        game.getPriceIndex().takeMonth(prices, spends, fees, feeSpends, month);
+    }
+
     public static void main(String[] args) throws Exception {
         out = System.out;
         out.println("--- 1. one magnitude rule, including the least step ---");
@@ -86,6 +97,22 @@ public final class StepsCheck {
         close("rounding just below a decade goes down", MagnitudeSteps.roundDown125(Math.nextDown(10.0)), 5);
 
         out.println("--- 3. the live city supplies its month's lot, with no saved lot ---");
+        Game priceCity = new Game(GameFiles.scratch("steps-price-binding"));
+        for (int month = 1; month <= PriceIndex.SETTLING_MONTHS; month++) uniformPrices(priceCity, 1, month);
+        check("fixture: real shopping bases the basket after its own settling dial", priceCity.getPriceIndex().isBased());
+        double largest = Arrays.stream(dials).max().orElseThrow();
+        double level = priceCity.minimumIssueSize() / (largest * PriceLevel.FACTOR) / 100;
+        uniformPrices(priceCity, level, PriceIndex.SETTLING_MONTHS + 1);
+        close("fixture: the actual price index, rather than just a lot argument, moves", priceCity.getPriceIndex().getIndex(), level);
+        double[] lowLots = Arrays.stream(kinds).mapToDouble(priceCity::issueLot).toArray();
+        check("fixture: even the largest dial stays strictly below the cap after a tenfold price rise",
+                largest * PriceLevel.FACTOR * level * 10 < priceCity.minimumIssueSize());
+        uniformPrices(priceCity, level * 10, PriceIndex.SETTLING_MONTHS + 2);
+        close("fixture: every price in the actual index rises tenfold", priceCity.getPriceIndex().getIndex(), level * 10);
+        for (int k = 0; k < kinds.length; k++) {
+            close(kinds[k] + " live lot follows the month's changed index", priceCity.issueLot(kinds[k]), lowLots[k] * 10);
+        }
+
         Game game = new Game(GameFiles.scratch("steps-check"));
         try (PrintStream quiet = new PrintStream(OutputStream.nullOutputStream())) {
             System.setOut(quiet);

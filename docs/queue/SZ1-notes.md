@@ -211,3 +211,20 @@ figures of all three kinds immediately after loading, before retaining its
 original 36-month city comparison. SaveFileCheck also compares those flows
 in its existing complete city's save/load case. This fix is SZ1's finding
 to mend, not an unrelated FS1 waiver.
+
+The orchestrator approved the two save/load hooks at 20:36. A save without
+healthcareAccess loads offered=0 and affordable=1, the current constructor
+defaults, exactly the incomplete readings it has today; no existing saved
+number is reinterpreted. This is the standing old-saves rule's missing-key
+case, so no SAVE_FORMAT change is warranted. Main's fixture did not reach
+this care-order path; the new lots exposed it. AutoBuildCheck is now green
+with no diagnostic flags: its access assertions and unchanged 36-month
+comparison pass, worst 0.0, and all later cases pass too
+(`target/SZ1-AutoBuildCheck.txt`, `target/SZ1-AutoBuildCheck.log`).
+
+A final source sweep found four remaining explicit fixture quotes in
+KeptBench's fundingRunShort/fundingRunCovered. These describe the production
+funding page's offers, so they now use the same live Term/Note lots as that
+page. Their shortBy/coverBy conditions and quantity search stay intact;
+KeptCheck will be rerun after this correction. The fixed population figures
+in PeopleScreen are milestone labels, not magnitude controls.

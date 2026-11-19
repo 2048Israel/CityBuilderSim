@@ -2259,8 +2259,8 @@ public final class KeptBench {
                 if (ahead <= 0) break;
                 double gap = g.buildFundingGap(BuildScreen.firstOf(run, ahead));
                 if (!(gap > 0)) continue;
-                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
-                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
                 if (bond.isShort() && note.isShort() && bond.cashReceived() * shortBy <= gap && note.cashReceived() * shortBy <= gap) {
                     return new Object[]{t, q, gap, bond.cashReceived(), note.cashReceived()};
                 }
@@ -2291,8 +2291,8 @@ public final class KeptBench {
                 if (ahead <= 0) break;
                 double gap = g.buildFundingGap(BuildScreen.firstOf(run, ahead));
                 if (!(gap > 0)) continue;
-                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap * coverBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
-                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap * coverBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap * coverBy, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap * coverBy, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
                 if (!bond.isShort() && !note.isShort()) return new Object[]{t, q, gap};
                 break;
             }

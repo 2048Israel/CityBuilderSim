@@ -5170,8 +5170,8 @@ final class FinancesScreen {
             + "button.";
 
     /** Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). */
-    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise, and its face is the lot that brings "
-            + "it, so the proceeds land on whichever side of the request the rounding puts them - and the smallest "
+    static final String PROCEEDS_INFO = "A bill's ask is the cash it should raise. Its face rounds up to lots large "
+            + "enough to cover that cash and the fixed cost; a short auction can raise less. The smallest "
             + "issue worth arranging can be more than a lot. Lots follow this month's prices and are rounded down "
             + "to 1, 2 or 5 times a power of ten, capped at the minimum issue. A bond's ask is its face; what it raises is the face at "
             + "the auction's price, less the fixed cost.";
