@@ -1,5 +1,4 @@
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-SZ1-G5odicQh -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — SZ1, steps and lots that scale — 2026-11-19, ready, see docs/queue/SZ1-notes.md
 Quantity and money buttons follow the figure's leading unit and its tenth,
