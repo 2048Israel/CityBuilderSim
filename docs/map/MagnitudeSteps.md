@@ -1,6 +1,6 @@
 # MagnitudeSteps.java - 39 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/MagnitudeSteps.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MagnitudeSteps.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > The steps of a count, an area or an amount, following its leading digit.
 > 

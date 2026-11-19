@@ -1,6 +1,6 @@
 # PublicLicenceCheck.java - 778 lines · 34 methods · 0 constants · harnesses
 
-`ham/citybuildersim/PublicLicenceCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PublicLicenceCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the
 > service it delivers with that upgrade over what it would deliver without it, in a city founded the 1900 way, while the patent runs.

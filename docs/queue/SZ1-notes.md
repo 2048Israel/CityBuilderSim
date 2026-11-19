@@ -432,3 +432,29 @@ LongPlaytest precede the ensemble. Its comparison is explicitly
 `docs/ensemble/0.9.154.md`, HL1's committed 80-run baseline (23/26, hard
 10/10 PASS), with the same Earth/world files. No pick or dry run runs beside
 this ensemble.
+
+The merged-model StepsCheck and AutoBuildCheck pass. The latter's unchanged
+36-month saved/live comparison agrees exactly, worst 0.0, with 42 orders.
+PriceLevelCheck has only its known HP1/HP2 classes (exit 3); all day-zero
+checks pass. Its built/played/town nudge horizons are 75/118/96 of 120 on
+this model. Logs: `target/SZ1-after-HL1-<Check>.txt` and `.log`.
+
+Default LongPlaytest passes, including HL1's household identities. The
+trace moves beyond runtime. Compared with HL1's kept gate output
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HL1-oTsia5uX/checks/LongPlaytest.log`,
+both strike 2,404 months, but the amount moved between pools and households
+is 829,431,562,211 against HL1's 956,934,678,600. Mean monthly own-line ppm:
+
+| reading | HL1 | SZ1 | unchanged bound |
+|---|---:|---:|---:|
+| Unfunded | 2,300 | 2,030 | 9,000 |
+| UnsettledIncome | 1,560 | 1,570 | 5,000 |
+| PublicWagesRestruck | 99.7 | 153 | 400 |
+
+All nine bounds are unchanged. The comparison and all nine readings are in
+`target/SZ1-HL1-default-comparison.json`; HL1's output is copied to
+`target/SZ1-HL1-main-LongPlaytest.log`. SZ1's log is
+`target/SZ1-after-HL1-LongPlaytest.log`, with eight CSV traces under
+`target/SZ1-after-HL1-trace/run-*`. No main rerun was needed. The midnight
+date change regenerated 602 documentation headers; no source changed
+after the merge and these checks.

@@ -1,6 +1,6 @@
 # GameVersion.java - 8,438 lines · 6 methods · 4 constants · model
 
-`ham/citybuildersim/GameVersion.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameVersion.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > What build this is, and what shape its saves are.
 > 

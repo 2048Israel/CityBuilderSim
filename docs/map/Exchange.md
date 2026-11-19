@@ -1,6 +1,6 @@
 # Exchange.java - 2,662 lines · 204 methods · 36 constants · model
 
-`ham/citybuildersim/Exchange.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Exchange.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > The stock exchange: one order book per company, where every share that
 > changes hands meets its buyer, and the price is the quote: the middle of the book (EM2).

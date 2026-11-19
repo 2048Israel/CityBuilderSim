@@ -1,6 +1,6 @@
 # KeptCheck.java - 10,078 lines · 232 methods · 48 constants · harnesses
 
-`ham/citybuildersim/KeptCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KeptCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs

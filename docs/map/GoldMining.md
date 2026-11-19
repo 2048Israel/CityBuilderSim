@@ -1,6 +1,6 @@
 # GoldMining.java - 158 lines · 15 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Gold mines and their mills recover fine ounces at a geology-dependent grade.
 > 
