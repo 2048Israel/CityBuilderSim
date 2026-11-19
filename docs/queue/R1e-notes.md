@@ -169,3 +169,6 @@ bounded by what the template charges and could price a shell below nothing.
 - The mends' readers, each alone on the final classes: FittingCheck, NewUnitCheck, DiscoveryCheck, HistoricalLicenceCheck,
   LicenceFeesCheck, FieldOperatorsCheck, DriverlessTruckCheck, BuildCardCheck green; BuildAdviceCheck exit 3, main's known
   red only. The whole suite is the dry run's (the pick is ALL).
+- REV-R1e on 139fdd823: SHIP (P1's call, the template's own cash a point, judged right; P2 mended; `shell()` independent).
+  Its one note for the queue, R1h in the ship file: `fittedForNew()` still chooses the set on R1b's C (city prices and
+  `nonMaterialPricePerPoint()`), not on what leaving the piece off saves the order (`Fitout.cashShareLeftOff()`).

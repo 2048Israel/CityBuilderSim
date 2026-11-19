@@ -14,4 +14,5 @@ restart read the same set. A city founded the default way is unchanged, its
 traces byte for byte.
 ## pending
 ## queued
+| R1h | A new building's set read on what leaving a piece off saves the order: EquipmentFit.fittedForNew() (EquipmentFit.java:281) still chooses on R1b's C (EquipmentFit.java:321: the piece's goods at city prices and its work at nonMaterialPricePerPoint()), not on what the order is discounted for it since R1e (Fitout.cashShareLeftOff(), Fitout.java:136), so the planners' choice reads a cost the invoice does not take off; REV-R1e's note, not a fault of R1e | docs/queue/R1e-notes.md, REV-R1e's mends |
 ## known-reds
