@@ -2093,6 +2093,46 @@ public final class KeptBench {
         return ui.buildScreen.barFills;
     }
 
+    /**
+     * A Build card's order as the last draw laid it (QN1, NewUnitCheck 7): the building it orders, its reprice and its Build
+     * button (BuildScreen.orderControls()), which a kept page hands back draw after draw, so a caller can hold them through a
+     * month and a changed fitting input and use them there.
+     */
+    public record BuildOrder(BuildingsTemplate template, Runnable reprice, Node button) { }
+
+    /** The order on the card of this building, as the last draw laid it; null when the page has no card of it. */
+    public BuildOrder buildOrder(String building) {
+        List<BuildScreen.PageCard> cards = ui.buildScreen.pageCards;
+        List<javafx.scene.layout.StackPane> nodes = cardNodes();
+        for (int i = 0; i < cards.size() && i < nodes.size(); i++) {
+            if (!cards.get(i).template().getName().equals(building)) continue;
+            Pieces.ActionButton button = find(nodes.get(i), Pieces.ActionButton.class,
+                    b -> b.press() != null && b.press().main() != null && b.press().main().startsWith("Build"));
+            return new BuildOrder(cards.get(i).template(), cards.get(i).reprice(), button);
+        }
+        return null;
+    }
+
+    /** A primary click on a node, as the pointer's: a Build button's press runs on the click (Pieces.ActionButton). */
+    public static void click(Node n) {
+        fireMouse(n, javafx.scene.input.MouseEvent.MOUSE_CLICKED, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1);
+    }
+
+    /** Whether the page shows a label whose words contain these (the order bar's posts, "600 unskilled workers"). */
+    public boolean buildBarSays(String part) {
+        return find(column, Label.class, x -> x.getText() != null && x.getText().contains(part)) != null;
+    }
+
+    /** What is dialled up on a building's card now (BuildScreen.orderQty). */
+    public long buildDialled(String building) {
+        return ui.buildScreen.orderQty.getOrDefault(building, 0L);
+    }
+
+    /** The words under a card's hero figure (BuildScreen.heroDetail()): a maker's other goods and what it is made from. */
+    public String buildHeroDetail(ham.citybuildersim.BuildCard.Figures f) {
+        return ui.buildScreen.heroDetail(f);
+    }
+
     /** Whether the stat card of a building is pinned open. */
     public boolean buildPinned(String building) {
         return ui.buildScreen.pinnedStats.contains(building);

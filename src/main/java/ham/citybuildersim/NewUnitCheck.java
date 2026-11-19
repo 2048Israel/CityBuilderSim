@@ -1,6 +1,7 @@
 package ham.citybuildersim;
 
 import com.google.gson.JsonElement;
+import ham.citybuildersim.ui.KeptBench;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.PrintStream;
@@ -33,11 +34,13 @@ import static ham.citybuildersim.HistoricalRecipeCheck.silent;
  * fee gate and the power ahead each quoted the fleet's 100. NewUnit.of() resolves one new building's figures where they are
  * read, and the template stays what is ordered, stacked and keyed.
  *
- * No oracle here calls NewUnit or anything QN1 added. Each expected value is taken from the ACTUAL state a new building runs:
- * the fleet's stack set unfitted for the pieces a new one would not get, the recipes applied, and the template's live figures
- * (or the investors' estimate) read there, then the fitting restored; or it is composed from the recipe data. The fleet's
- * own figures appear only as each section's PREMISE: that the expected value differs from what a reader of the fleet
- * would give, so a reader that kept reading the fleet fails.
+ * No oracle here resolves a proposal. Each expected value is taken from the ACTUAL state a new building runs: the fleet's
+ * stack set unfitted for the pieces a new one would not get, the recipes applied, and the template's live figures read
+ * there, or a door read through the standing routes (NewUnit.standing(), or the investors' door under
+ * NewUnit.standingWhile(): the template as it stands, as main read it), then the fitting restored; or it is composed from
+ * the recipe data. A wrong proposal therefore cannot reach both sides (REV-QN1, B). The fleet's own figures appear only as
+ * each section's PREMISE: that the expected value differs from what a reader of the fleet would give, so a reader that
+ * kept reading the fleet fails.
  *
  * WHAT THIS HAS TO PROVE:
  *
@@ -52,11 +55,21 @@ import static ham.citybuildersim.HistoricalRecipeCheck.silent;
  *      and the gate's boundary is told from the removed (N + 1) x (C + extra) one.
  *   6. With the robot accepted again the new unit's figures equal the template's, the template being the same object.
  *   7. Identities: the card, the appraisal and the investors keep the catalogue template through a month and a changed
- *      fitting input, and an order on site is not touched by reading them.
- *   8. What is on site counts the actual new plant's posts, and the power ahead adds its draw only from its completion (a
- *      guard on the real stack: the recipe data moves no draw).
- *   9. Power ahead: a queued Coal Power Plant whose new unit rejects the turbine and the pulverised coal generates less,
+ *      fitting input; the Build screen's own card, drawn kept, hands back the order it was drawn with a month on, whose
+ *      reprice then puts the actual new plants' posts in the order bar and whose Build button orders the catalogue
+ *      template; and the order on site is not touched by reading it.
+ *   8. What is on site counts the actual new plants' posts, and the landlords' head shortage counts them too.
+ *   9. The power ahead of a queued changed draw: two Cement Plants without their rotary kiln add the shaft kilns' draw,
+ *      not the fleet's, and only from their completion.
+ *  10. What a queued changed crew asks of the city: two Shared Services Centres without their computer add their own
+ *      college posts to the colleges' places (CityNeeds.hires()) and their own posts to the landlords' head shortage.
+ *  11. Power ahead: a queued Coal Power Plant whose new unit rejects the turbine and the pulverised coal generates less,
  *      and the power measure reads that generation.
+ *  12. The card's goods: a new Electric Arc Furnace without its continuous caster burns fuel oil, and the card's words say
+ *      it; a new Logging Camp without its chainsaw cuts less, and the card's outlets list that cut.
+ *
+ * Sections 7 and 12 draw on the JavaFX toolkit (ui.KeptBench, KeptCheck's way); where it cannot start, their card parts
+ * are said to be skipped and the rest runs.
  */
 public final class NewUnitCheck {
     static int fails, checks;
@@ -101,8 +114,10 @@ public final class NewUnitCheck {
         r.gen = t.getGen();
         r.production1 = t.getProduction1();
         if (priced) {
-            r.estimate = g.getBusinessInvestment().estimatedMonthlyProfit(t.getSector(), t);
-            r.running = BuildCard.runningCost(g, t);
+            // Through the standing routes (REV-QN1, B): every proposal the investors' door asks for is read as the template
+            // stands, so in the physically changed fleet the figure is that fleet's own, whatever a resolved proposal says.
+            r.estimate = NewUnit.standingWhile(() -> g.getBusinessInvestment().estimatedMonthlyProfit(t.getSector(), t));
+            r.running = BuildCard.runningCost(g, NewUnit.standing(t));
         }
         return r;
     }
@@ -172,6 +187,19 @@ public final class NewUnitCheck {
     }
 
     static final int NO = JobType.NO_DIPLOMA.ordinal();
+
+    /** Whether the toolkit has been tried, and why it is down (null: up); it starts once in a JVM, so sections 7 and 12 share it. */
+    static boolean toolkitTried;
+    static String toolkitDown;
+
+    /** The JavaFX toolkit, started at the first ask (KeptCheck.startJavaFx()): null when it is up, else why not. */
+    static String toolkit() {
+        if (!toolkitTried) {
+            toolkitTried = true;
+            toolkitDown = KeptCheck.startJavaFx();
+        }
+        return toolkitDown;
+    }
 
     /** The fitted fleet's quote: what the sector says of the fleet's figures, as a reader of the template would have quoted. */
     static double fleetQuote(Game g, BuildingsTemplate t, Sector owner) {
@@ -295,7 +323,7 @@ public final class NewUnitCheck {
         }
         check("fixture: a staffing pass for the fleet's 100 posts and a fail for the new plant's 300, arrivals closed",
                 boundary && w.getJobs(JobType.NO_DIPLOMA) == 100 && c.actual.jobs[NO] == 300, "workforce " + at);
-        double actualRunning = whereItRuns(g, w, () -> BuildCard.runningCost(g, w));
+        double actualRunning = whereItRuns(g, w, () -> BuildCard.runningCost(g, NewUnit.standing(w)));
         double fleetRunning = BuildCard.runningCost(g, NewUnit.standing(w));
         BuildCard.Figures card = BuildCard.of(g, w, null);
         check("the Build card is of the catalogue template and carries the 300-post unit",
@@ -449,7 +477,25 @@ public final class NewUnitCheck {
                 first.template() == w && first.newUnit().template() == w && appraisal.template() == w && summary.building().equals(w.getName())
                         && first.newUnit().getJobs(JobType.NO_DIPLOMA) == 100 && w.getJobs(JobType.NO_DIPLOMA) == 100,
                 "posts " + first.newUnit().getJobs(JobType.NO_DIPLOMA));
-        silent(() -> g.simulateMonths(1));
+        // The Build screen's own card (REV-QN1, D): the Vehicles page drawn kept with two dialled up, its order's reprice and
+        // Build button held from this draw and used after a month and a changed fitting input, as a kept page hands them back.
+        String down = toolkit();
+        final KeptBench bench = down == null ? KeptCheck.fx(() -> new KeptBench(g)) : null;
+        final KeptBench.Page page = bench == null ? null : KeptCheck.fx(() -> bench.build("Build, Vehicles, two Vehicle Works dialled",
+                BuildAdvice.VEHICLES, Map.of(w.getName(), 2L)));
+        final KeptBench.BuildOrder held = bench == null ? null : KeptCheck.fx(() -> {
+            bench.home(page);
+            bench.drawKept(page);
+            bench.passes();
+            return bench.buildOrder(w.getName());
+        });
+        if (bench == null) out.println("  (no held order: the JavaFX toolkit cannot start here - " + down + ")");
+        else check("fixture: the Vehicles page has the catalogue template's card, two dialled up, and the order bar at the fleet's 200 unskilled posts while machinery is cheap",
+                held != null && held.template() == w && held.button() != null && held.reprice() != null
+                        && KeptCheck.fx(() -> bench.buildBarSays(unskilled(200))), held == null ? "no card" : "");
+
+        if (bench != null) KeptCheck.fx(() -> { silent(() -> g.simulateMonths(1)); return null; });
+        else silent(() -> g.simulateMonths(1));
         HistoricalRecipeCheck.fitted(w, c.stack);
         priceForBothReaders(g, Good.MACHINERY, .01);
         run(g);
@@ -457,6 +503,19 @@ public final class NewUnitCheck {
         check("a month on, a fresh card is of the same template with the current unit",
                 later.template() == w && later.newUnit().template() == w && later.newUnit().getJobs(JobType.NO_DIPLOMA) == 100
                         && g.getBuildingManager().getStack(w) == c.stack, "posts " + later.newUnit().getJobs(JobType.NO_DIPLOMA));
+        if (bench != null) {
+            KeptBench.BuildOrder kept = KeptCheck.fx(() -> {
+                bench.drawKept(page);
+                bench.passes();
+                return bench.buildOrder(w.getName());
+            });
+            // The redraw makes the card's order afresh (orderControls() under Kept.scope("order")), so its reprice is a new one; the
+            // button is the kept node. The held reprice, from the first draw, is the retained callback used below.
+            check("a month on, the kept page keeps the Build button held from the first draw, on the catalogue template's card",
+                    kept != null && held != null && kept.button() == held.button() && kept.template() == w,
+                    kept == null ? "no card" : "button " + (kept.button() == held.button() ? "kept" : "redrawn")
+                            + ", reprice " + (kept.reprice() == held.reprice() ? "the same" : "made afresh"));
+        }
         boolean flips = rejectRobot(c);
         c.actual = whereItRuns(g, w, () -> ranOf(g, w, true));
         BuildCard.Figures dear = BuildCard.of(g, w, null);
@@ -472,12 +531,24 @@ public final class NewUnitCheck {
                 && WorksValue.pendingPowerLoad(g, 1000) == 0 && g.getBuildingOutputAtEveryPost() > 0,
                 "site output " + g.getBuildingOutputAtEveryPost());
         silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
-        Game.BuildResult[] queued = new Game.BuildResult[1];
-        silent(() -> queued[0] = g.buildStack(w, 2, false));
+        if (bench != null) {
+            // The held reprice, run between draws as a stepper's press runs it, then the held Build button pressed.
+            String actualBar = unskilled(2L * c.actual.jobs[NO]), fleetBar = unskilled(2L * w.getJobs(JobType.NO_DIPLOMA));
+            boolean[] bar = KeptCheck.fx(() -> {
+                held.reprice().run();
+                return new boolean[] {bench.buildBarSays(actualBar), bench.buildBarSays(fleetBar)};
+            });
+            check("the held reprice, run after the month and the fitting change, puts the actual new plants' 600 unskilled posts in the order bar, not the fleet's 200",
+                    bar[0] && !bar[1] && 2 * c.actual.jobs[NO] == 600, "shows \"" + actualBar + "\" " + bar[0] + ", \"" + fleetBar + "\" " + bar[1]);
+            KeptCheck.fx(() -> { silent(() -> KeptBench.click(held.button())); return null; });
+        } else {
+            silent(() -> g.buildStack(w, 2, false));
+        }
         BuildingsStacks site = bm.getStack(w);
-        check("ordering two through the queue keeps the stack on its catalogue template",
-                queued[0] == Game.BuildResult.SUCCESS && site == c.stack && site.getBuilding() == w && site.getUnderConstruction() == 2,
-                queued[0] + ", on site " + site.getUnderConstruction());
+        long dialled = bench == null ? 0 : KeptCheck.fx(() -> bench.buildDialled(w.getName()));
+        check("the held Build button, pressed then, orders the catalogue template: two on its own stack's site, and the card's dial back to none",
+                site == c.stack && site.getBuilding() == w && site.getUnderConstruction() == 2 && dialled == 0,
+                "on site " + site.getUnderConstruction() + ", dialled " + dialled);
         List<Object> before = siteSnapshot(g, w);
         BuildCard.of(g, w, null);
         BuildCard.investors(g, w);
@@ -506,33 +577,155 @@ public final class NewUnitCheck {
                 "total " + bm.getJobsUnderConstruction() + " (actual " + 2 * c.actual.total + ", fleet " + 2 * w.getTotalJobs() + "), unskilled "
                         + bm.postsOnSite(w.getSector(), JobType.NO_DIPLOMA));
 
+        // ...and the homes the posts on site ask for (REV-QN1, C): the landlords count every post on site at 2.25 heads.
+        boolean onlyThem = true;
+        for (BuildingsStacks s : bm.getStacksUnderConstruction()) onlyThem &= s.getBuilding() == w;
+        double latent = g.getSectors().realEstate().latentHeadShortfall();
+        double expectedLatent = latentWith(g, 2.0 * c.actual.total), fleetLatent = latentWith(g, 2.0 * w.getTotalJobs());
+        check("premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage",
+                onlyThem && apart(expectedLatent, fleetLatent), "actual " + expectedLatent + ", fleet " + fleetLatent);
+        check("the landlords' head shortage counts the actual new plants' posts on site, not the fleet's",
+                near(latent, expectedLatent) && apart(latent, fleetLatent), latent + " against " + expectedLatent + " (fleet's " + fleetLatent + ")");
+    }
+
+    /** The order bar's words for this many unskilled posts (BuildScreen.refreshOrderBar(), jobPlural()). */
+    static String unskilled(long posts) { return String.format("%,d unskilled workers", posts); }
+
+    /**
+     * The landlords' head shortage with `coming` posts on site, from its parts (RealEstate.latentHeadShortfall()'s arithmetic,
+     * no home on site): every post standing, the builders' laid-off crews included, and the coming ones, at 2.25 heads a post,
+     * less the homes with their headroom.
+     */
+    static double latentWith(Game g, double coming) {
+        BuildingManager bm = g.getBuildingManager();
+        double standing = bm.getPostsWithheld();
+        for (long n : g.getJobs()) standing += n;
+        return (standing + coming) * 2.25 - bm.getTotalHouseCapacity() * (1 + BusinessInvestment.TARGET_HEADROOM);
+    }
+
+    /** The power ahead of a queue on a stack: the readings at half the first completion, just before it, at it and past the last. */
+    static double[] loadsAhead(Game g, BuildingsTemplate t, StringBuilder said, int[] done) {
+        BuildingManager bm = g.getBuildingManager();
         int output = g.getBuildingOutputAtEveryPost();
-        double firstDone = bm.siteUnitMonths(w, 1, output), secondDone = bm.siteUnitMonths(w, 2, output);
-        double draw = c.actual.electricity;
-        check("guard: the recipe data moves no draw, so a new plant's draw is the fleet's (and the queue's quotes are finite)",
-                draw == w.getElectricityConsumption() && draw > 0 && Double.isFinite(firstDone) && Double.isFinite(secondDone) && secondDone >= firstDone,
-                "draw " + draw + ", first " + firstDone + ", second " + secondDone);
+        double firstDone = bm.siteUnitMonths(t, 1, output), secondDone = bm.siteUnitMonths(t, 2, output);
         double[] months = {firstDone / 2, Math.nextDown(firstDone), firstDone, Math.max(firstDone, secondDone) + 1};
-        boolean exact = true;
-        StringBuilder said = new StringBuilder();
-        double sawFirst = -1, sawEarly = -1, sawLast = -1;
+        double[] loads = new double[months.length];
         for (int i = 0; i < months.length; i++) {
-            int done = (bm.siteUnitMonths(w, 1, output) <= months[i] ? 1 : 0) + (bm.siteUnitMonths(w, 2, output) <= months[i] ? 1 : 0);
-            double load = WorksValue.pendingPowerLoad(g, months[i]);
-            exact &= load == done * draw;
-            said.append(" [").append(months[i]).append(": ").append(load).append(" for ").append(done).append("]");
-            if (i == 1) sawEarly = load;
-            if (i == 2) sawFirst = load;
-            if (i == 3) sawLast = load;
+            done[i] = (bm.siteUnitMonths(t, 1, output) <= months[i] ? 1 : 0) + (bm.siteUnitMonths(t, 2, output) <= months[i] ? 1 : 0);
+            loads[i] = WorksValue.pendingPowerLoad(g, months[i]);
+            said.append(" [").append(months[i]).append(": ").append(loads[i]).append(" for ").append(done[i]).append("]");
         }
-        check("the power ahead adds the queued plants' draw only from their completion: none below the first, one at it, both at the last (a guard on the real stack)",
-                exact && sawEarly == 0 && sawFirst == draw && sawLast == 2 * draw, said.toString());
+        return loads;
     }
 
     /* ---------------- 9 ---------------- */
 
+    static void changedDraw() throws Exception {
+        section("9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion");
+        Game g = HistoricalLicenceCheck.town("QN1-kilns", true);
+        allExcept(g, "");
+        at(g, ResearchCatalog.knownFrom("E2"));
+        HistoricalLicenceCheck.stand(g, "Construction Depot", 4);   // builders, so that the sites have a wait
+        BuildingsTemplate kiln = HistoricalLicenceCheck.stand(g, "Cement Plant", 1);
+        BuildingsStacks stack = g.getBuildingManager().getStack(kiln);
+        // New depots hire up over months (a month on they are a tenth staffed, short of their upkeep): four months, hands kept.
+        for (int m = 0; m < 4; m++) silent(() -> {
+            MaterialsCheck.handWorkers(g);
+            g.simulateMonths(1);
+        });
+        HistoricalRecipeCheck.fitted(kiln, stack);
+        priceForBothReaders(g, Good.MACHINERY, .01);
+        run(g);
+        Ran fleet = ranOf(g, kiln, false);
+        priceForBothReaders(g, Good.MACHINERY, 1e9);
+        run(g);
+        Set<String> lacking = rejected(g, kiln);
+        Ran actual = whereItRuns(g, kiln, () -> ranOf(g, kiln, false));
+        check("fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's",
+                lacking.contains("rotary-kiln") && stack.getUnfitted("rotary-kiln") == 0 && kiln.getCategory() != BuildingType.ELECTRICITY
+                        && fleet.electricity == kiln.getElectricityConsumption() && actual.electricity > 0 && apart(actual.electricity, fleet.electricity),
+                "fleet " + fleet.electricity + " kW, actual new " + actual.electricity + " kW, rejected " + lacking);
+        BuildingManager bm = g.getBuildingManager();
+        check("fixture: nothing on site and nothing pending", bm.getStacksUnderConstruction().isEmpty()
+                && WorksValue.pendingPowerLoad(g, 1000) == 0 && g.getBuildingOutputAtEveryPost() > 0,
+                "site output " + g.getBuildingOutputAtEveryPost() + ": builders " + g.getConstructionOutputAtEveryPost() + " (capacity "
+                        + bm.getTotalConstructionCapacity() + ", fill " + g.getSectors().construction().getAverageFill() + ", roads "
+                        + g.getRoadRatio() + ") less upkeep " + g.getMaintenancePoints());
+        silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+        Game.BuildResult[] queued = new Game.BuildResult[1];
+        silent(() -> queued[0] = g.buildStack(kiln, 2, false));
+        StringBuilder said = new StringBuilder();
+        int[] done = new int[4];
+        double[] loads = loadsAhead(g, kiln, said, done);
+        check("fixture: two queued on the plant's own stack, the first finishing before the last",
+                queued[0] == Game.BuildResult.SUCCESS && bm.getStack(kiln) == stack && stack.getBuilding() == kiln && stack.getUnderConstruction() == 2
+                        && done[0] == 0 && done[1] == 0 && done[2] >= 1 && done[3] == 2, queued[0] + said.toString());
+        boolean exact = true;
+        for (int i = 0; i < loads.length; i++) exact &= loads[i] == done[i] * (double) actual.electricity;
+        check("the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last",
+                exact && loads[1] == 0 && loads[3] == 2.0 * actual.electricity, said.toString());
+        check("...and not the fleet's draw", apart(loads[3], 2.0 * fleet.electricity) && apart(loads[2], done[2] * (double) fleet.electricity),
+                "fleet's " + 2.0 * fleet.electricity + " for two");
+    }
+
+    /* ---------------- 10 ---------------- */
+
+    static void crewDemand() throws Exception {
+        section("10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes");
+        Game g = HistoricalLicenceCheck.town("QN1-clerks", true);
+        allExcept(g, "");
+        at(g, Math.max(ResearchCatalog.knownFrom("B6"), ResearchCatalog.knownFrom("B1")));
+        HistoricalLicenceCheck.stand(g, "Construction Depot", 4);
+        BuildingsTemplate centre = HistoricalLicenceCheck.stand(g, "Shared Services Centre", 1);
+        BuildingsStacks stack = g.getBuildingManager().getStack(centre);
+        silent(() -> g.simulateMonths(1));
+        HistoricalRecipeCheck.fitted(centre, stack);
+        priceForBothReaders(g, Good.MACHINERY, .01);
+        run(g);
+        Ran fleet = ranOf(g, centre, false);
+        priceForBothReaders(g, Good.MACHINERY, 1e9);
+        run(g);
+        Set<String> lacking = rejected(g, centre);
+        Ran actual = whereItRuns(g, centre, () -> ranOf(g, centre, false));
+        double fleetCollege = college(fleet), actualCollege = college(actual);
+        check("fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet",
+                lacking.contains("business-computer") && fleetCollege > 0 && actualCollege > fleetCollege && actual.total > fleet.total,
+                "college posts: fleet " + fleetCollege + ", actual new " + actualCollege + "; rejected " + lacking);
+        // Nobody college-qualified: every college post, standing or on site, is a place the colleges would fill (CityNeeds.hires()).
+        PopulationManager people = g.getPopulationManager();
+        double[] heads = people.workforceByBand().clone();
+        heads[WageBand.COLLEGE.ordinal()] = 0;
+        people.restoreSkilledHeads(heads);
+        BuildingManager bm = g.getBuildingManager();
+        double before = CityNeeds.hires(g, EducationType.COLLEGE, 1);
+        check("fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts",
+                bm.getStacksUnderConstruction().isEmpty() && people.workforceByBand()[WageBand.COLLEGE.ordinal()] == 0 && before > 0,
+                "places " + before);
+        silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+        Game.BuildResult[] queued = new Game.BuildResult[1];
+        silent(() -> queued[0] = g.buildStack(centre, 2, false));
+        check("fixture: two queued on the centre's own stack", queued[0] == Game.BuildResult.SUCCESS && bm.getStack(centre) == stack
+                && stack.getBuilding() == centre && stack.getUnderConstruction() == 2, queued[0] + ", on site " + stack.getUnderConstruction());
+        double places = CityNeeds.hires(g, EducationType.COLLEGE, 1) - before;
+        check("the colleges' places grow by the queued centres' own college posts, not the fleet's",
+                near(places, 2 * actualCollege) && apart(places, 2 * fleetCollege), places + " against " + 2 * actualCollege + " (fleet's " + 2 * fleetCollege + ")");
+        double latent = g.getSectors().realEstate().latentHeadShortfall();
+        double expectedLatent = latentWith(g, 2.0 * actual.total), fleetLatent = latentWith(g, 2.0 * fleet.total);
+        check("the landlords' head shortage counts the queued centres' own posts, not the fleet's",
+                near(latent, expectedLatent) && apart(latent, fleetLatent), latent + " against " + expectedLatent + " (fleet's " + fleetLatent + ")");
+    }
+
+    /** A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. */
+    static double college(Ran r) {
+        double n = 0;
+        for (JobType j : JobType.values()) if (WageBand.of(j) == WageBand.COLLEGE) n += r.jobs[j.ordinal()];
+        return n;
+    }
+
+    /* ---------------- 11 ---------------- */
+
     static void powerAhead() throws Exception {
-        section("9. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less");
+        section("11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less");
         Game g = HistoricalLicenceCheck.town("QN1-power", true);
         allExcept(g, "");
         at(g, Math.max(ResearchCatalog.knownFrom("PE6"), ResearchCatalog.knownFrom("PE16")));
@@ -588,6 +781,61 @@ public final class NewUnitCheck {
                 near(f1, expected) && apart(f1, fleetReading), f1 + " against " + expected + " (fleet's reading " + fleetReading + ")");
     }
 
+    /* ---------------- 12 ---------------- */
+
+    static void cardGoods() throws Exception {
+        section("12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so");
+        Game g = HistoricalLicenceCheck.town("QN1-goods", true);
+        allExcept(g, "");
+        at(g, Math.max(ResearchCatalog.knownFrom("E9"), ResearchCatalog.knownFrom("PE26")));
+        BuildingsTemplate furnace = HistoricalLicenceCheck.stand(g, "Electric Arc Furnace", 1);
+        BuildingsTemplate camp = HistoricalLicenceCheck.stand(g, "Logging Camp", 1);
+        BuildingManager bm = g.getBuildingManager();
+        silent(() -> g.simulateMonths(1));
+        HistoricalRecipeCheck.fitted(furnace, bm.getStack(furnace));
+        HistoricalRecipeCheck.fitted(camp, bm.getStack(camp));
+        priceForBothReaders(g, Good.MACHINERY, .01);
+        run(g);
+        Map<Good, Double> fleetUses = new java.util.EnumMap<>(furnace.goodsUsed()), fleetCut = new java.util.EnumMap<>(camp.goodsMade());
+        priceForBothReaders(g, Good.MACHINERY, 1e9);
+        run(g);
+        Set<String> furnaceLacks = rejected(g, furnace), campLacks = rejected(g, camp);
+        Map<Good, Double> actualUses = whereItRuns(g, furnace, () -> new java.util.EnumMap<>(furnace.goodsUsed()));
+        Map<Good, Double> actualCut = whereItRuns(g, camp, () -> new java.util.EnumMap<>(camp.goodsMade()));
+        check("fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not",
+                furnaceLacks.contains("continuous-caster") && actualUses.getOrDefault(Good.FUEL_OIL, 0.0) > 0
+                        && fleetUses.getOrDefault(Good.FUEL_OIL, 0.0) == 0 && furnace.uses(Good.FUEL_OIL) == 0,
+                "fuel oil: actual new " + actualUses.get(Good.FUEL_OIL) + ", fleet " + fleetUses.get(Good.FUEL_OIL) + "; rejected " + furnaceLacks);
+        boolean cutApart = false;
+        for (Good c : actualCut.keySet()) cutApart |= apart(actualCut.get(c), fleetCut.getOrDefault(c, 0.0));
+        check("fixture: a new camp rejects the chainsaw and cuts other figures than the fleet",
+                campLacks.contains("chainsaw") && !actualCut.isEmpty() && cutApart, "actual new " + actualCut + ", fleet " + fleetCut);
+
+        List<BuildCard.Outlet> outlets = BuildCard.outlets(g, camp);
+        boolean asCut = !outlets.isEmpty(), notFleet = true;
+        StringBuilder said = new StringBuilder();
+        for (BuildCard.Outlet o : outlets) {
+            asCut &= near(o.made(), actualCut.getOrDefault(o.good(), 0.0));
+            notFleet &= apart(o.made(), fleetCut.getOrDefault(o.good(), 0.0));
+            said.append(o.good()).append(' ').append(o.made()).append("; ");
+        }
+        check("the camp's card lists its outlets at the actual new camp's cut, not the fleet's",
+                asCut && notFleet && outlets.size() == actualCut.values().stream().filter(v -> v > 0).count(), said + "actual " + actualCut);
+
+        String down = toolkit();
+        if (down != null) {
+            out.println("  (the furnace's card words are not read: the JavaFX toolkit cannot start here - " + down + ")");
+            return;
+        }
+        KeptBench bench = KeptCheck.fx(() -> new KeptBench(g));
+        BuildCard.Figures card = BuildCard.of(g, furnace, null);
+        String words = KeptCheck.fx(() -> bench.buildHeroDetail(card));
+        String fuel = BuildCard.goodWords(Good.FUEL_OIL);
+        check("the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them",
+                card.kind() == BuildCard.Kind.MAKER && words != null && words.contains("from ") && words.contains(fuel),
+                "\"" + words + "\"");
+    }
+
     public static void main(String[] args) throws Exception {
         quietRun = Arrays.asList(args).contains("-q");
         // The fixture towns are the sibling harnesses': their model chatter goes to the same quiet stream.
@@ -603,7 +851,10 @@ public final class NewUnitCheck {
         bankClerks();
         matching(cars);
         identitiesAndSite();
+        changedDraw();
+        crewDemand();
         powerAhead();
+        cardGoods();
         out.println(fails == 0 ? "All NewUnitCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }
