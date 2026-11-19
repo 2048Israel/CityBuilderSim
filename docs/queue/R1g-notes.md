@@ -257,3 +257,29 @@ founded the 1900 way (`Game.foundedUnfitted()`):
 |---|---|
 | `./batch-check.sh Village1900Check`, both on (52450660b + f57009450) | All checks passed; home village 973 people at m60 (stalled 471), rent 0.236 (stalled 0.612, today 0.231), 41.4 arrivals in the last 5 months; 4.31 apprentices in five years, as expected; 63.2 diploma workers (stalled 58.3) |
 | the same, `-Dr1g.home=off -Dr1g.apprentices=off` | 7 FAILED: section 5's five, section 6's two; section 7 passes (it sets both switches itself) |
+
+## 4. The pace (0.9.158, the 2,400-month playtest, R1d's table re-measured)
+
+Each run is one LongPlaytest with `-Dplaytest.trace`, one JVM at a time:
+`main` is origin/main's own four classes (`Game`, `Recipes`,
+`PopulationManager`, `ArrivalMix` at ba734bf85) compiled over the branch's,
+the rest being the same bytes. The rent at month 60 is `0.30 / affordPull`
+from the trace where the pull is under 1; where it is 1 the burden is at
+most 0.30, and the figure is `Village1900Check`'s, which follows the same
+founding and rhythm. The diploma fill is `filled1 / posts1` in the labour
+trace.
+
+| run | m60 | m900 | m1200 | m2400 | rent at m60 | diploma fill m60 / m900 / m1200 / m2400 |
+|---|---|---|---|---|---|---|
+| today (default, main and branch the same) | 908 | 34,160 | 29,829 | 935,838 | ≤ .30 (harness .231) | 1.00 / 1.00 / 1.00 / 1.00 |
+| 1900, 0.9.158 (main) | 471 | 486 | 476 | 4,507 | .612 | .41 / .04 / .01 / 1.00 |
+| (a) the 1900 home | 1,011 | 1,665 | 1,319 | 593,691 | ≤ .30 (harness .209) | .86 / .53 / .17 / 1.00 |
+
+**Today's city does not move, to the bit** (the orchestrator's 13:33
+condition): the default run on main and on the branch wrote the same eight
+trace files byte for byte (`cmp`: bank, bonds, borrow, build, house, labour,
+month and pop, 2,405 lines each but borrow's 52); their logs differ in one
+object hash (a `LandParcel@` in a works decision's toString) and the
+runtime. Both exit 1 on main's own red, "an old works moved" at month 2400;
+the 1900 run on main exits 1 on five households' unsettled-line bounds at
+month 2402. Neither is R1g's.
