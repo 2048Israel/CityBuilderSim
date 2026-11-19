@@ -27,7 +27,9 @@ the premises and the new harness 5. Built in one session from main 6b0aa202e (0.
   The census's retired count is split across the tiers by the cells' own households after the
   flows (`retiredMix`). 99 cells in all.
 - **OH1**: a cell's pool weight is its grown-ups, or its people when it has none (`poolWeight`): an
-  orphan cell's shares reach the pool and the register stays whole. ShortSellingCheck's two
+  orphan cell's shares reach the pool and the register stays whole. Since the stranger's review
+  the people weigh only for what a child can hold (savings, shares, money abroad, paper, bonds):
+  an orphan cell never claims a debt, a student loan or a car. ShortSellingCheck's two
   known-reds rows queued to HS1 are green and `ship.sh` retires them.
 - The screens: PeopleScreen's grid and mosaic show the retired by former tier ("Senior couple,
   formerly Skilled"); `Game.rowDoors` weighs a retired shape's doors by the tier's share.
@@ -127,8 +129,10 @@ per-month world bid in the fixture did not cause it and was taken out.
 Main's: `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-6b0aa202/` (clean 6b0aa202e, exit 0, made
 for HS1 by the orchestrator). HS1's: `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-HS1-6ddda1cf/`
 (6ddda1cff, `-Dcbs.parallel=1 -Dplaytest.trace`, 2,404 months; the log was
-`target/checks/LongPlaytest.log`). The model has not changed since; the commits after it are
-prose, three readings and a check's printout.
+`target/checks/LongPlaytest.log`). The commits after it to b338ee4ba are prose, three readings,
+a check's printout and the findings' FAIL lines. The stranger's review's mends (62e8221ea) do
+change the model, a little: orphans claim no debt, and a death with no working cell at the start of
+the month is an estate. The ensemble runs on the final model.
 
 | month | people, main / HS1 | GDP a month, main / HS1 | seniors, main / HS1 | unemployment |
 |---|---|---|---|---|
@@ -261,6 +265,42 @@ info: at least 75% of the baseline), the lever is the city's borrowing at the to
 an investment rule that waits on an outside push. That is a study of its own, not a change to
 this batch's flows.
 
+## The stranger's review (2026-11-19, before the ensemble)
+
+A fresh agent read the diff and the code around it: saves, flows, estates, the identity. It found
+no bug in any of the four areas.
+- **Saves:** the flows and the 24 retired cells round-trip by key, and the orphan weighting keeps
+  no state. A format-56 save is refused (floor 57).
+- **Flows:** no cell goes negative, nothing is counted twice, and every division is guarded.
+- **Estates:** the settlement, the write-offs and the heirs' shares are right. Written-off debt is
+  booked to the bank (`getWrittenOff`) and the dead's student loans to the treasury
+  (`getStudentDebtTakenAway`).
+- **The identity:** every carried stock is on one line, once, in its month.
+
+It raised three risks and two nits. Mended in 62e8221ea, each with its line in HouseholdFlowCheck
+where it is a behaviour:
+- **Risk: orphans claimed debt.** `poolWeight` weighed an orphan cell by its people for every
+  stock, so a growing orphan cell claimed the pool's debt, student loans and cars, which
+  OrphanHousehold's "no credit" says it cannot hold. Now `Stock.notAChildsToClaim()` keeps those
+  three with the grown-ups. HouseholdFlowCheck 7 asserts the orphans claim none, and that the
+  couples' cars are kept or left, none made: 30 against 30.
+- **Risk: a death with no estate.** With no working cell at the start of the month the dead made
+  no estate, and the pool handed their debt to the living. Every death is an estate now, and
+  passOn sends it out of the city when nobody is left to inherit, as the rule says.
+- **Nit:** `getEstatePassed()` counted estates that went out of the city. Now it counts only what
+  heirs were handed.
+- **Nit:** `restoreFlows` let a saved NaN through. It reads as none waiting.
+
+Left as it is: **the thin retired cells.** A retired cell of a small tier sits under half a
+household (`EMPTY_CELL`) for a while, and `foldEmptyCells` spreads what the flows carried into it,
+to its own former tier first. That is the fold's rule for every empty cell. It costs the first
+retirees of a thin tier their money only until the cell crosses half a household, and the identity
+sees every dollar of it.
+
+After the mends and SZ1's merge (4e45a8b08), `./batch-check.sh --fast` is green, and so are, one at
+a time, HouseholdFlowCheck, ShortSellingCheck, OutsideCheck and HouseholdCheck. SaveFileCheck is
+known red only: its one FAIL line is the FS17 fixture row this batch's ship file names.
+
 ## Open, for the orchestrator
 
 1. **The ensemble** is owed (the trace moves beyond runtime): asked as "HS1 ensemble?". Besides
@@ -280,4 +320,5 @@ Nothing is left for Jerus.
 bff15aa14 the core; dfd8d4538 HouseholdFlowCheck and the census seam; 48e261d68 OutsideCheck's
 closing fixture; 6ddda1cff SaveFileCheck's flows round trip; 8a19d313d the cells' count in the
 prose; b6c4c1932 the three readings; c8da97ab3 main merged (FS1); 9fb10bf4d the maps;
-b338ee4ba LongPlaytest's FAIL lines.
+b338ee4ba LongPlaytest's FAIL lines; 1d2aaa100 the stall; 62e8221ea the review's mends; 4e45a8b08
+main merged (SZ1, 0.9.155); 425c69bc7 the maps.

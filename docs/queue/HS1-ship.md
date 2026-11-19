@@ -6,8 +6,8 @@ alone or leaves takes its cell's average of every stock with it before the censu
 rest. A survivor keeps everything. An estate repays the bank from its savings and passes the rest
 to the working households of the dead's former tier. Leavers take theirs out through the balance of
 payments, so HL1's identity closes as before. The retired keep their former tier: 24 cells, 99 in
-all, shown on the People screen as "Senior couple, formerly Skilled". An orphan cell's shares weigh
-by its people (OH1: the register stays whole). HouseholdFlowCheck causes each flow. Save format 57,
+all, shown on the People screen as "Senior couple, formerly Skilled". An orphan cell weighs by its
+people for what a child can hold, never a debt, a loan or a car (OH1: the register stays whole). HouseholdFlowCheck causes each flow. Save format 57,
 floor 57: an older save's retired money would load into no cell.
 ## queued
 | SB1 | `BuildingManager.retire()` scraps from every stack of the template, not only the first: it returns after the first match, even an empty stack left in place, so a works or a plant shed twice keeps its other stacks (Game's shedding and closing paths; found by HS1's OutsideCheck fixture) (after SZ1) | [HS1 notes](docs/queue/HS1-notes.md#the-premises-restated-the-studys-5) |
