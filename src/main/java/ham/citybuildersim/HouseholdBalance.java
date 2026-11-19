@@ -1927,6 +1927,40 @@ public class HouseholdBalance {
     /** Savings the census's pool moved between cells at the last census: what no flow explained. */
     public double getPoolSavings()      { return lastPoolSavings; }
 
+    /* ----- the retired's money against the working's (HS1) -----
+       The study's measure (spec-households.md 2.6, "savings less debt"):
+       a retired household's net worth over a working one's, the working
+       being the six tiers' rows. No-argument, so the ensemble's
+       -Densemble.extra reads them by name; zero while the working hold
+       nothing. */
+
+    /** Every retired household's net worth, per household, over a working household's. */
+    public double getRetiredToWorkingNetWorth() { return netWorthOver(c -> c.row() == Household.RETIRED_ROW); }
+    /** The seniors living alone, the same way: the cell the study found poorest. */
+    public double getSeniorsAloneToWorkingNetWorth() {
+        return netWorthOver(c -> c.shape() == FamilyStructure.SENIOR_ALONE);
+    }
+    /** The elder couples, the same way. */
+    public double getElderCouplesToWorkingNetWorth() {
+        return netWorthOver(c -> c.shape() == FamilyStructure.ELDER_COUPLE);
+    }
+
+    private double netWorthOver(java.util.function.Predicate<Household> which) {
+        double working = 0, workingHomes = 0, these = 0, theseHomes = 0;
+        for (Household c : cells) {
+            if (c.row() < Household.RETIRED_ROW) {
+                working += c.netWorth() * c.households;
+                workingHomes += c.households;
+            }
+            if (which.test(c)) {
+                these += c.netWorth() * c.households;
+                theseHomes += c.households;
+            }
+        }
+        if (workingHomes <= 0 || theseHomes <= 0 || working <= 0) return 0;
+        return (these / theseHomes) / (working / workingHomes);
+    }
+
     /** One flow out of a cell: households out of `from`, into `to` (a cell), or out of the city, or an estate to `tier`. */
     private static final class Move {
         final int kind, from, to, tier;

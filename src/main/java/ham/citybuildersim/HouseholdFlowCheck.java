@@ -647,7 +647,7 @@ public class HouseholdFlowCheck {
         final int MONTHS = 60;
         double[] movedHouseholds = new double[HouseholdBalance.FLOW_KINDS];
         double[] movedSavings = new double[HouseholdBalance.FLOW_KINDS];
-        double pooled = 0;
+        double pooled = 0, heirsGot = 0, bankGot = 0, lost = 0;
         for (int m = 0; m < MONTHS; m++) {
             quietly(() -> game.simulateMonths(1));
             HouseholdBalance books = game.getHouseholdBalance();
@@ -656,6 +656,9 @@ public class HouseholdFlowCheck {
                 movedSavings[kind] += books.getFlowSavings(kind);
             }
             pooled += books.getPoolSavings();
+            heirsGot += books.getEstatePassed();
+            bankGot += books.getEstateRepaid();
+            lost += books.getEstateWrittenOff();
         }
         double byFlow = 0;
         for (double s : movedSavings) byFlow += s;
@@ -667,6 +670,12 @@ public class HouseholdFlowCheck {
         out.printf("   %-14s %16s %,20.2f%n", "the pool", "", pooled);
         out.printf("   the flows moved %.1f%% of the savings that changed cells, the pool the rest%n",
                 byFlow + pooled > 0 ? 100 * byFlow / (byFlow + pooled) : 0.0);
+        HouseholdBalance last = game.getHouseholdBalance();
+        out.printf("   estates: %,.2f of savings passed to heirs, %,.2f repaid the bank, %,.2f written off%n",
+                heirsGot, bankGot, lost);
+        out.printf("   net worth a household against a working one's: the retired %.2f, seniors alone %.2f,"
+                + " elder couples %.2f%n", last.getRetiredToWorkingNetWorth(),
+                last.getSeniorsAloneToWorkingNetWorth(), last.getElderCouplesToWorkingNetWorth());
 
         assertTrue("the retirements and the deaths moved households in the city's months",
                 movedHouseholds[HouseholdBalance.RETIRING] + movedHouseholds[HouseholdBalance.PARTNER_DIES]
