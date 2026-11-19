@@ -73,6 +73,21 @@ Corrections to the brief, each from the code:
   traces it first, model and clock held still.
 - The brief counted 221 harness files on 79e336def; 1f6a9da1a has 224.
 
+HL1 merged to main (0.9.154, 6b0aa202e) while the study was written, and
+batch/FS1 merged it. HL1 added assertions to eight harnesses but no printed
+section, so the classing stands. Its ship filed three known-reds rows with
+FS1 as their fix: BuildAdviceCheck 7's streets' card and DistressBleedCheck
+5's two lines. FS1 mends no code, and a batch's own rows are retired at its
+gate, so FS1's ship would have dropped three live exemptions from the
+registry; it re-files them instead, BuildAdvice's to FS12 and DistressBleed's
+to FS9 (HP2 item 4's class, as HL1's row says). BuildAdviceCheck 7 is a
+played section the slice missed: its harness recomputes the least over its
+life with a filter the card does not use (a road whose opening count is not
+1 is skipped), and HL1's short city parts the two at x1000. It is added to
+the tables as FS12's, an `order` section. HL1's queue rows BI1 (KeptCheck's
+Bank page cards) and HL1-M (MapCheck 1's track accounting, a real fault) sit
+beside FS5 and FS6: neither sweep runs beside them.
+
 Found on the way:
 
 - **LandNationsCheck 14's red is one wait, not eleven.** The hard red is the
@@ -121,7 +136,7 @@ Found on the way:
   identity is true of every state, so the played city is breadth, not
   premise, and a red is a real fault (PX2), which re-measuring would hide.
 - ★5 **The sweeps run in the order of today's reds**: FS2-FS6 carry 33 of the
-  41 re-filed rows and the harnesses most often red at others' gates; FS13 and
+  44 re-filed rows and the harnesses most often red at others' gates; FS13 and
   FS15-FS17 are preventive. Why: the reds cost gate time now; the preventive
   sweeps can wait for a quiet queue.
 - ★6 **The clocked call (FS1-C), recommended**: each plain wall-clock wait
@@ -139,7 +154,7 @@ Found on the way:
 - **The re-filed known-reds rows.** A ship file's `## known-reds` row with the
   same harness and fragment as a registry row replaces it
   (`tools/known-reds.sh`), so FS1's ship file re-files the folded rows' 41
-  reds to the sweep that takes each, their causes kept after a "Folded from
+  reds and HL1's three FS1 rows (44) to the sweep that takes each, their causes kept after a "Folded from
   ... by FS1" prefix. Why: a batch's own rows are vetoed at its gate, so a
   sweep then ships only green on the reds it took; left with the old ids, the
   rows would exempt the sweep's own harness at its own gate.
@@ -175,16 +190,17 @@ queue when FS1 ships (the ship file cannot).
 | LM1-R | FS6 |
 | KS1-rest | KeptCheck 49, KT1, KA1, KP2-N to KP4-N FS4; CD9-K, KP5-N to KP7-N FS5; the GT1-T map lines FS6 |
 | HL1-R | item 2 (ScaleCheck's month 165) FS2; the row stays for item 1 (Business Services) |
+| HL1's three FS1 rows | BuildAdviceCheck 7 FS12; DistressBleedCheck 5's two FS9 |
 | PX2 | not folded: a real fault; its row and its two reds stay |
 
 The re-filed reds by sweep: FS2 7, FS3 11, FS4 3, FS5 9, FS6 3, FS7 1, FS8 1,
-FS9 2, FS10 1, FS11 1, FS12 1, FS14 1 (41). The harnesses' other real reds
+FS9 4, FS10 1, FS11 1, FS12 2, FS14 1 (44). The harnesses' other real reds
 keep their rows (CL7, DK1, EDU1, HS1, MR1, OE1, OX2, PX2, R3b-R); the sweep
 that shares a harness with one runs apart from it.
 
 ## 6. Checks
 
 - `sh tools/batch-id.sh` for FS1-C and FS2-FS17: free.
-- `sh tools/known-reds.sh FS1 docs/queue/FS1-ship.md`: the ship file's 41
-  rows read whole.
+- `sh tools/known-reds.sh FS1 docs/queue/FS1-ship.md`: the ship file's 44
+  rows read whole, none left with FS1's id.
 - `./batch-check.sh --fast`: see the ship file's commit.

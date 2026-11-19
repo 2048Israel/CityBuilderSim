@@ -141,6 +141,16 @@ batch's code were KeptCheck (10 batches), PriceLevel, Map and LandNations (4
 each), ResearchView (4), Prize, LongPlaytest, Landmass and CopperRefining (3
 each).
 
+**Since the reading.** HL1 (0.9.154) merged on 2026-11-19 with no new
+section in any harness, and filed four rows: BuildAdviceCheck 7's streets'
+card (a played `order` section the slice had classed caused: the harness
+recomputes the least with a filter the card does not use, and HL1's short
+city parts them at x1000; a 544th played section, FS12's), DistressBleedCheck
+5's two lines (HP2 item 4's class, FS9's), both filed to FS1 and re-filed to
+their sweeps by FS1's ship (section 8), and MapCheck 1's track accounting
+(HL1-M's, an identity that found a real fault). The counts above are the
+reading's at 1f6a9da1a.
+
 Three of the brief's twelve rows class otherwise on reading the code:
 
 - **PX2 is a real fault**, not a moved path. PlanCheck 6's + floor is an
@@ -221,7 +231,7 @@ premise is not reached, and the 66 of them are 66 laws not run at most gates.
 
 All after HL1 (it moves the played city and edits six of the swept harnesses);
 each sized for one gate; ordered by today's reds (★5): FS2-FS6 take the
-harnesses most often red at others' gates and 33 of the 41 red rows the
+harnesses most often red at others' gates and 33 of the 44 red rows the
 sweeps carry, FS7-FS12 and FS14 one or two each, and FS13 and FS15-FS17 are
 preventive. "Not beside"
 names a batch that edits the same harness: the two do not run at once. Each
@@ -233,14 +243,14 @@ sweep's sections are its rows in [by-section.md](flaky-suite/by-section.md)
 | [FS2](#61-fs2) | the twins and the scale | 3 | 13 | 8 | SZ1 | DK1 |
 | [FS3](#62-fs3) | the clocked lines (FS1-C's way) | 5 | 2, and 18 clocked | 2 | FS1-C's answer | HA1-CLOCK |
 | [FS4](#63-fs4) | KeptCheck I: the city, the chrome, People, History, KP2-KP4 | 1 | 19 | 5 | SZ1 | |
-| [FS5](#64-fs5) | KeptCheck II: the money, Government, Trade, Policy, the households | 1 | 28 | 0 | FS4 | |
-| [FS6](#65-fs6) | the map and the district plans | 5 | 28 | 1 | SZ1 | PX2, PW1, SQ1b |
+| [FS5](#64-fs5) | KeptCheck II: the money, Government, Trade, Policy, the households | 1 | 28 | 0 | FS4 | BI1 |
+| [FS6](#65-fs6) | the map and the district plans | 5 | 28 | 1 | SZ1 | PX2, PW1, SQ1b, HL1-M |
 | [FS7](#66-fs7) | freight, ports and the island ground | 15 | 34 | 10 | | |
 | [FS8](#67-fs8) | industry, research and the views' models | 20 | 37 | 13 | RN1-H | CL7, R3b-R |
 | [FS9](#68-fs9) | the bank and its borrowers | 10 | 34 | 4 | | QR1, OE1 |
 | [FS10](#69-fs10) | the currency, the gold and the central bank | 10 | 31 | 6 | | |
 | [FS11](#610-fs11) | health, homes and the households' shops | 13 | 28 | 13 | RN1-H | MR1, OX2, HS1, LQ2 |
-| [FS12](#611-fs12) | building: the advice, the card, the auto-builder, the roads | 9 | 30 | 8 | SZ1 | |
+| [FS12](#611-fs12) | building: the advice, the card, the auto-builder, the roads | 9 | 31 | 8 | SZ1 | |
 | [FS13](#612-fs13) | the fund, the treasury and the trading city | 7 | 28 | 6 | SZ1 | |
 | [FS14](#613-fs14) | the Exchange and the bond desk | 8 | 27 | 6 | | HS1, PW1 |
 | [FS15](#614-fs15) | the works and the services' town | 4 | 19 | 2 | SZ1 | |
@@ -334,7 +344,8 @@ and the batch has a dry run. The sections: Kept 1-2, 6, 8, 11, 14, 21-23,
 ### 6.4 FS5
 
 **KeptCheck II: the money, Government, Trade, Policy and the households' pages**
-(sections 55 and up; after FS4, which splits the harness). Takes KFP1, KBP1,
+(sections 55 and up; after FS4, which splits the harness; not beside BI1,
+which tests the Bank page's integrity cards in KeptCheck's city). Takes KFP1, KBP1,
 KRW1, CD9-K, KP5-N, KP6-N, KP7-N and KRT1's slider (78) and property rate
 (77) lines.
 
@@ -356,7 +367,8 @@ minute a `Timing` line if kept at all; 92-93 likewise. The sections: Kept
 
 **The map and the district plans:** MapCheck, PlanCheck, OrderSearchCheck,
 BuildingStackCheck, GatewayCheck (after SZ1; not beside PX2 or PW1, which
-edit PlanCheck, or SQ1b, BuildingStackCheck). Takes BQ1, LM1-R and KS1-rest's
+edit PlanCheck, SQ1b, BuildingStackCheck, or HL1-M, MapCheck 1's track
+accounting, a real fault section 1's identity found on HL1's town). Takes BQ1, LM1-R and KS1-rest's
 three GT1-T map timing lines.
 
 MapCheck's section 1 plays a 120-month city on the `IRON_SEED` world with a
@@ -493,7 +505,11 @@ its life" is calibrated to today's traffic on its 36-month town; on OX1's
 town the advice chose gravel (-66,414 against -65,763), the advice right by
 its own figures: set the streets' load either side of the line
 (`InfrastructureManager.setLoad`, as sections 10-11 do), and for the bit
-compare `BuildAdviceCheck.lifeFigure` summed in BuildAdvice's order. AutoBuildCheck's
+compare `BuildAdviceCheck.lifeFigure` summed in BuildAdvice's order.
+BuildAdviceCheck 7 (filed to FS1 by HL1): the streets' card at three prices
+of ground against the harness's own recomputation, which skips a road whose
+opening count is not 1, a filter the card does not use; recompute by the
+card's rule and cause the winner at each price by the load. AutoBuildCheck's
 decades (600-month runs) cause each hold-back on a town built for it; the
 `ChildcareCheck.town` it borrows is left as it is (★1). The sections are the sweep's rows in the
 table.
@@ -614,12 +630,15 @@ Each row of the brief against the sweep that takes it; the orchestrator takes
 the row off the queue when FS1 ships. Its reds in
 `docs/notes/known-reds.txt` are re-filed to the sweep by FS1's ship file
 (`## known-reds`: the same harness and fragment, the sweep's id, so the
-sweep's own gate vetoes them and it ships only green on them): 41 rows.
+sweep's own gate vetoes them and it ships only green on them): 44 rows, the
+three HL1 filed to FS1 among them, which FS1's own gate would otherwise have
+retired with nothing mended.
 
 | row | taken by | red rows re-filed |
 |---|---|---|
 | HP1 | FS10 (GoldStandard 9), FS12 (Road), FS2 (PriceLevel) | 1, 1, 5 |
 | HP2 | FS2 (PriceLevel's lane, Scale's savings), FS11 (Health), FS9 (DistressBleed) | 2, 1, 2 |
+| HL1's FS1 rows | FS12 (BuildAdviceCheck 7), FS9 (DistressBleedCheck 5's two lines) | 1, 2 |
 | SX2 | FS14 | 1 |
 | KFP1 | FS5 | 4 |
 | FF1 | FS7 (Landmass 12), FS8 (CopperRefining 9f) | 1, 1 |
