@@ -17,8 +17,9 @@ package ham.citybuildersim;
  *
  * This is one CELL of the family matrix with its own books: how many households
  * it holds, what each of them has saved and owes, whether the bank has stopped
- * lending to them, and what last month did to them. Sixty-eight of them - eleven
- * working shapes across six tiers, and two retired shapes with no tier - and
+ * lending to them, and what last month did to them. Ninety-nine of them - eleven
+ * working shapes across six tiers, four retired shapes across the six tiers they
+ * retired from (HS1), and the nine outside the families with the owners - and
  * HouseholdBalance is the thing that holds them all, sums them, and strikes them
  * every month.
  *

@@ -61,9 +61,9 @@ import java.util.function.ToDoubleFunction;
  * when the monthly rebuild moves households between cells - a child ages into
  * a teen, five singles take a flatshare, a worker retires - their money moves
  * with them. See followThePeople(). What used to be seven rows of arrays is
- * sixty-eight objects this class holds, sums and strikes; the row getters the
- * screens read are sums of the cells, and the tier is a view rather than the
- * unit.
+ * sixty-eight objects (ninety-nine since HS1) this class holds, sums and
+ * strikes; the row getters the screens read are sums of the cells, and the
+ * tier is a view rather than the unit.
  *
  * ==================== PER HOUSEHOLD, NOT PER CELL ====================
  *
@@ -413,7 +413,9 @@ public class HouseholdBalance {
     /**
      * Every meaningful cell of the family matrix, in one fixed order: the
      * working shapes by declaration, each across the six tiers, then the two
-     * retired shapes. Sixty-eight. Looked up by shape and tier through
+     * retired shapes, each across the six tiers its households retired from
+     * (HS1), then the nine outside the families and the owners. Ninety-nine.
+     * Looked up by shape and tier through
      * `index`, and by name through key() on the save path.
      */
     private final Household[] cells;
