@@ -1,6 +1,6 @@
 # GdpCheck.java - 1,164 lines · 9 methods · 0 constants · harnesses
 
-`ham/citybuildersim/GdpCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GdpCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them).
 

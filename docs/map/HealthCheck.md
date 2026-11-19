@@ -1,6 +1,6 @@
 # HealthCheck.java - 1,860 lines · 8 methods · 4 constants · harnesses
 
-`ham/citybuildersim/HealthCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HealthCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Sickness: what it moves, and - much more importantly - what it does not.
 > 

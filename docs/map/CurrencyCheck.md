@@ -1,6 +1,6 @@
 # CurrencyCheck.java - 1,027 lines · 25 methods · 7 constants · harnesses
 
-`ham/citybuildersim/CurrencyCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurrencyCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Proves the currency under a central bank (0.7.2): the rate answers to the
 > real rate, the vault is spent defending it, and the dial and the carry

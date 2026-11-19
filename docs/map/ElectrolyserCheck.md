@@ -1,6 +1,6 @@
 # ElectrolyserCheck.java - 459 lines · 23 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ElectrolyserCheck.java` - generated 2026-11-18 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ElectrolyserCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
 > Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen
 > Steel Works' piece of equipment, the 46 kWh electrolyser, and what a works that has it draws from the grid.
