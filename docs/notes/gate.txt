@@ -1,8 +1,8 @@
-# gate of Merge batch/RN1-H: the homes' headroom a margin over demand, 0.9.157
+# gate of Merge batch/QN1: new-building proposals beside canonical templates, 0.9.158
 # date: 2026-11-19
 # earth-2.bin: named
 # nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 219 harnesses run in 4887s: 204 passed, 15 failed
+# suite: 220 harnesses run in 2884s: 206 passed, 14 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -13,7 +13,7 @@ ExchangeRateCheck | exit 1
 ExchangeRateCheck | fixture: the dated gold peg survives to the eve of suspension            FAIL
 ExchangeRateCheck | fixture: the released hold is larger than the month's float news         FAIL
 ExchangeRateCheck | the model's return date restores Canada's gold peg                       FAIL
-ExchangeRateCheck | the return holds the model's par                                         FAIL  2.612783528664 != 1.000000000000
+ExchangeRateCheck | the return holds the model's par                                         FAIL  2.599604786428 != 1.000000000000
 ExchangeRateCheck | 4 FAILED
 PassThroughCheck | exit 1
 PassThroughCheck | the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (0.0% of the step) FAIL
@@ -80,12 +80,12 @@ CopperRefiningCheck | ...with the world's file named, the rule cut an order in a
 CopperRefiningCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | FAIL an old works moved                                 1 time(s), months 2400-2400
-PrizeCheck | exit 1
-PrizeCheck | FAIL ...and its till (at most 408) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
-PrizeCheck | PrizeCheck: 1 FAILED of 285
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED
+PrizeCheck | exit 1
+PrizeCheck | FAIL ...and its till (at most 408) never stood above the six months of costs it keeps (at least 115), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 1 FAILED of 285
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED

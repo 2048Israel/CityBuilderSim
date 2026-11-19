@@ -6,6 +6,7 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.Markets;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Trade;
@@ -435,9 +436,12 @@ public class Restaurants extends Sector {
      *
      * THE MARGIN, NOT THE TICKET, and net of what it costs to run - which for
      * a kitchen is mostly the staff, and is most of the margin.
+     *
+     * ...for one new building already resolved (QN1; NewUnit): its own posts, draw and water in what it costs to run.
      */
     @Override
-    public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+    public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
+        BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || t.getCoverage() <= 0) return 0;
         double food = rFoodCost;
         if (!(food > 0)) return 0;
@@ -446,7 +450,7 @@ public class Restaurants extends Sector {
         // with a thousand empty seats serves nobody.
         double served = Math.min(t.getCoverage(), Math.max(0, rWanted - seats() - seatsOnSite()));
         if (served <= 0) served = t.getCoverage() * .5;
-        return served * (price - food) - plans.runningCostOf(t);
+        return served * (price - food) - plans.runningCostOf(u);
     }
 
     /* ===================================================================

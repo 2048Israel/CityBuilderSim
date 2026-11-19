@@ -1059,8 +1059,8 @@ public final class AutoBuilder {
             int id = t.getId();
             if (ownMeasure(m, t) && game.foundedUnfitted())
                 // R2c-P, REV-R2c-P-1: the spend holds the licence the city's utilities paid, not the one-more fee running() adds.
-                spend -= bm.getQuantity(id) * (running(game, t) - BuildAdvice.licenceOf(game, t)) + LicenceFees.publicBillOf(game, bm.getStack(t));
-            else if (ownMeasure(m, t)) spend -= bm.getQuantity(id) * running(game, t);
+                spend -= bm.getQuantity(id) * (standingRunning(game, t) - BuildAdvice.licenceOf(game, NewUnit.standing(t))) + LicenceFees.publicBillOf(game, bm.getStack(t));
+            else if (ownMeasure(m, t)) spend -= bm.getQuantity(id) * standingRunning(game, t);
             else if (id < site.length && site[id] > 0 && staffedBuilding(t)) spend += site[id] * running(game, t);
         }
         return spend / people;
@@ -1068,6 +1068,8 @@ public final class AutoBuilder {
 
     /** running() of each building this month, read once (costs() reads every one of the measure's own and every one on site, each weighing): not saved. */
     private final Map<BuildingsTemplate, Double> runningNow = new HashMap<>();
+    /** ...of each standing one, at the figures it stands with (QN1; running() reads one new building, NewUnit): not saved. */
+    private final Map<BuildingsTemplate, Double> standingNow = new HashMap<>();
     private Game runningGame;
     private int runningMonth = -1;
 
@@ -1078,12 +1080,24 @@ public final class AutoBuilder {
      * on - so it stands while the month does.
      */
     double running(Game game, BuildingsTemplate t) {
+        sameMonth(game);
+        return runningNow.computeIfAbsent(t, x -> Math.max(0, BuildAdvice.running(game, x, new LinkedHashMap<>())));
+    }
+
+    /** The month the running caches hold: emptied when the game or the month moves. */
+    private void sameMonth(Game game) {
         if (game != runningGame || game.getMonth() != runningMonth) {
             runningNow.clear();
+            standingNow.clear();
             runningGame = game;
             runningMonth = game.getMonth();
         }
-        return runningNow.computeIfAbsent(t, x -> Math.max(0, BuildAdvice.running(game, x, new LinkedHashMap<>())));
+    }
+
+    /** running() of one already standing (QN1): the figures it stands with, not a new one's (NewUnit.standing()); held with running()'s month. */
+    double standingRunning(Game game, BuildingsTemplate t) {
+        sameMonth(game);
+        return standingNow.computeIfAbsent(t, x -> Math.max(0, BuildAdvice.running(game, NewUnit.standing(x), new LinkedHashMap<>())));
     }
 
     /** Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Infrastructure category's roads and lines; otherwise those that serve it. */

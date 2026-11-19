@@ -10,7 +10,7 @@
 
 **Uses:** [Good](Good.md) (8), [JobType](JobType.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [PriceLevel](PriceLevel.md) (1), [Research](Research.md) (1)
 
-**Used by (6):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md)
+**Used by (7):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md)
 
 ## Methods, in file order
 

@@ -75,8 +75,16 @@ public final class LicenceFees {
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
+    /** Whether this thread is inside a licence's pricing: NewUnit.of() reads the templates as they stand there. */
+    static boolean pricing() { return pricing.get(); }
 
+
+    /** One building's fee as main read it: a new one on the template as it stands (PostwarRecipeCheck reads this one). */
     private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
+        return buildingFee(game, t, null, owner, standing, rate);
+    }
+
+    private static double buildingFee(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, boolean standing, double rate) {
         int accrualMonth = game.getMonth();
         if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
                 || (standing && !game.getResearch().known(t.getSinceText(), game.getMonth()))) return 0;
@@ -84,7 +92,7 @@ public final class LicenceFees {
         pricing.set(true);
         try {
             double gain = standing ? installedBuildingGain(game, t, owner, rate)
-                    : owner.estimatedMonthlyProfit(t, game.getBusinessInvestment());
+                    : owner.estimatedMonthlyProfit(unit != null ? unit : NewUnit.standing(t), game.getBusinessInvestment());   // a new building's gain on its own figures (QN1)
             return onGain(t.getSinceText(), accrualMonth, game.getResearch(), gain);
         } finally {
             pricing.set(nested);
@@ -156,8 +164,8 @@ public final class LicenceFees {
     }
 
     /** One building with this recipe and these pieces, at its owner's run rate. */
-    private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate) {
-        double bill = buildingFee(game, t, owner, standing, dispatchRate);
+    private static double one(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate) {
+        double bill = buildingFee(game, t, unit, owner, standing, dispatchRate);
         Set<String> charged = new HashSet<>();
         charged.add(t.getSinceText());
         Recipes.Prices prices = Recipes.pricesOf(game);
@@ -181,11 +189,21 @@ public final class LicenceFees {
     /** A new building's licence cost, included in every planner's running cost. */
     public static double forNew(Game game, BuildingsTemplate t) {
         if (!game.foundedUnfitted() || pricing.get() || t == null || !t.isOwnedBySector()) return 0;
+        return forNew(game, NewUnit.of(game, t));
+    }
+
+    /**
+     * ...for one new building already resolved (QN1): the pieces it is fitted with and the process it runs, and its
+     * building's rent struck on its own estimate. The planners' running cost reads this (BusinessInvestment.runningCostOf()).
+     */
+    public static double forNew(Game game, NewUnit unit) {
+        BuildingsTemplate t = unit == null ? null : unit.template();
+        if (!game.foundedUnfitted() || pricing.get() || t == null || !t.isOwnedBySector()) return 0;
         Sector owner = game.getSectors().byKey(t.getSector());
         if (owner == null) return 0;
-        Set<String> fitted = EquipmentFit.fittedForNew(game, t);
+        Set<String> fitted = unit.fitted() != null ? unit.fitted() : EquipmentFit.fittedForNew(game, t);
         Recipe recipe = RecipeChanges.recipeForNew(game, t, fitted);
-        return one(game, t, owner, recipe, fitted, false, 0);
+        return one(game, t, unit.proposed() ? unit : null, owner, recipe, fitted, false, 0);
     }
 
     /** The installed building's saved share of the last production's captured royalty. */
@@ -301,7 +319,7 @@ public final class LicenceFees {
             Recipe recipe = t.getRecipe(ids[part]);
             Set<String> fitted = new HashSet<>();
             if (part == 0 && t.recipePieceId() != null) fitted.add(t.recipePieceId());
-            double bill = one(game, t, owner, recipe, fitted, true, rate) * count;
+            double bill = one(game, t, null, owner, recipe, fitted, true, rate) * count;
             if (bill > 0) total += bill;
         }
         // Other pieces have independent fitted counts.

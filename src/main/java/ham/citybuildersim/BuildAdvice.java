@@ -374,9 +374,14 @@ public final class BuildAdvice {
 
     /** Σ posts x fill / Σ posts over a building's own posts; 1 with none - BuildingManager's per-building weighting. */
     public static double staffing(BuildingsTemplate t, double[] fill) {
+        return staffing(NewUnit.standing(t), fill);
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts. */
+    public static double staffing(NewUnit u, double[] fill) {
         double posts = 0, staffed = 0;
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            int n = u.getJobs(job);
             if (n == 0) continue;
             posts += n;
             staffed += n * (fill != null && job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
@@ -393,9 +398,14 @@ public final class BuildAdvice {
      * staffing().
      */
     public static double unfilledPosts(BuildingsTemplate t, double[] fill) {
+        return unfilledPosts(NewUnit.standing(t), fill);
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts. */
+    public static double unfilledPosts(NewUnit u, double[] fill) {
         double unfilled = 0;
         for (JobType job : JobType.values()) {
-            int n = t.getJobs(job);
+            int n = u.getJobs(job);
             if (n == 0) continue;
             double f = fill != null && job.ordinal() < fill.length ? fill[job.ordinal()] : 1;
             unfilled += n * Math.max(0, 1 - f);
@@ -405,7 +415,12 @@ public final class BuildAdvice {
 
     /** Whether a building has any posts at all - a road has none, and its card says so instead of drawing a staff bar. */
     public static boolean hasPosts(BuildingsTemplate t) {
-        for (JobType job : JobType.values()) if (t.getJobs(job) > 0) return true;
+        return hasPosts(NewUnit.standing(t));
+    }
+
+    /** ...for one new building already resolved (QN1): its own posts. */
+    public static boolean hasPosts(NewUnit u) {
+        for (JobType job : JobType.values()) if (u.getJobs(job) > 0) return true;
         return false;
     }
 
@@ -419,6 +434,12 @@ public final class BuildAdvice {
      * getCareCapacity() is the plots the model counts); a crematorium is.
      */
     public static double unit(Game game, Measure m, BuildingsTemplate t) {
+        return unit(game, m, NewUnit.of(game, t));
+    }
+
+    /** ...of one new building already resolved (QN1): its own output and posts; the template it is of is what the measure serves. */
+    public static double unit(Game game, Measure m, NewUnit u) {
+        BuildingsTemplate t = u.template();
         // The streets' candidates are every road and line but a highway, which gives no access (FR7).
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
@@ -426,7 +447,7 @@ public final class BuildAdvice {
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
-                return t.getProduction1() * staffing(t, fill);
+                return u.getProduction1() * staffing(u, fill);
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -435,7 +456,7 @@ public final class BuildAdvice {
                  * offered desalination; a desalination plant adds its own
                  * where the city owns sea, and nothing where it cannot stand.
                  */
-                double treats = t.getProduction1() * staffing(t, fill);
+                double treats = u.getProduction1() * staffing(u, fill);
                 if (t.isSeaWater()) return game.hasCoastFor(t, 1) ? treats : 0;
                 return Math.min(treats, game.getServicesManager().getUtilitiesHandler().getFreshHeadroom());
             }
@@ -451,19 +472,25 @@ public final class BuildAdvice {
             case TRANSIT:
                 return t.getTransitCapacity();
             case DEATH: case PLOTS:
-                return t.getCare() == CareType.BURIAL ? t.getCapacity() : t.getCapacity() * staffing(t, fill);
+                return t.getCare() == CareType.BURIAL ? t.getCapacity() : t.getCapacity() * staffing(u, fill);
             case PORT:
                 // A berth's crews are Freight's (FR3), not the city's staff: its tonnes a month, fully worked.
                 return Ports.berthMonth(t);
             default:
-                return t.getCapacity() * staffing(t, fill);
+                return t.getCapacity() * staffing(u, fill);
         }
     }
 
     /** The same, fully staffed: what the building is built for. */
     public static double built(Game game, Measure m, BuildingsTemplate t) {
+        return built(game, m, NewUnit.of(game, t));
+    }
+
+    /** ...of one new building already resolved (QN1): its own output. */
+    public static double built(Game game, Measure m, NewUnit u) {
+        BuildingsTemplate t = u.template();
         switch (m.kind()) {
-            case POWER: case WATER: return t.getProduction1();
+            case POWER: case WATER: return u.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
             case PORT:              return Ports.berthMonth(t);
@@ -545,6 +572,14 @@ public final class BuildAdvice {
         return out;
     }
 
+    /**
+     * One entry of an `added` map as the figures below read it (QN1): a building to add (n > 0) as one new building of its
+     * template would open now, a removal (n <= 0: the paving's gravel) as the template stands. The map keeps the template.
+     */
+    private static NewUnit adding(Game game, BuildingsTemplate t, long n) {
+        return n > 0 ? NewUnit.of(game, t) : NewUnit.standing(t);
+    }
+
     /** The measure's figure with these buildings standing as well. */
     public static double figure(Game game, Measure m, Map<BuildingsTemplate, Long> added) {
         return figure(game, m, added, NOW);
@@ -575,15 +610,16 @@ public final class BuildAdvice {
                 for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
                     BuildingsTemplate t = e.getKey();
                     long n = e.getValue();
+                    NewUnit nu = adding(game, t, n);
                     if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
-                        base += n * t.getProduction1();
+                        base += n * nu.getProduction1();
                     }
-                    if (t.isFreshWater()) fresh += n * t.getProduction1();
-                    if (t.isSeaWater()) desal += n * t.getProduction1();
-                    demand += n * (power ? t.getElectricityConsumption() : t.getWaterConsumption());
+                    if (t.isFreshWater()) fresh += n * nu.getProduction1();
+                    if (t.isSeaWater()) desal += n * nu.getProduction1();
+                    demand += n * (power ? nu.getElectricityConsumption() : nu.getWaterConsumption());
                     if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
                         for (JobType job : JobType.values()) {
-                            int posts = t.getJobs(job);
+                            int posts = nu.getJobs(job);
                             if (posts == 0) continue;
                             jobs += (double) n * posts;
                             filled += (double) n * posts * (job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
@@ -667,8 +703,9 @@ public final class BuildAdvice {
                 double demand = k * (m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption())
                         + (m.kind() == Kind.POWER ? WorksValue.pendingPowerLoad(game, p.months()) : 0);
                 for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+                    NewUnit nu = adding(game, e.getKey(), e.getValue());
                     demand += e.getValue() * (m.kind() == Kind.POWER
-                            ? e.getKey().getElectricityConsumption() : e.getKey().getWaterConsumption());
+                            ? nu.getElectricityConsumption() : nu.getWaterConsumption());
                 }
                 return new double[] {load > 0 ? demand / load : 0, demand};
             }
@@ -706,7 +743,7 @@ public final class BuildAdvice {
                 double[] places = bm.getStaffedEducationPlaces(fill);
                 double seats = places[m.school().ordinal()];
                 for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-                    if (e.getKey().getTeaches() == m.school()) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+                    if (e.getKey().getTeaches() == m.school()) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(adding(game, e.getKey(), e.getValue()), fill);
                 }
                 return new double[] {seats, schoolNeed(game, m.school(), p)};
             }
@@ -755,7 +792,7 @@ public final class BuildAdvice {
     static double carePlaces(Game game, CareType care, Map<BuildingsTemplate, Long> added, double[] fill) {
         double cap = game.getBuildingManager().getStaffedCareCapacity(care, fill);
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-            if (e.getKey().getCare() == care) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getCare() == care) cap += e.getValue() * (long) e.getKey().getCapacity() * staffing(adding(game, e.getKey(), e.getValue()), fill);
         }
         return Math.max(0, cap - game.getHealthcare().getPricedOut(care));
     }
@@ -923,7 +960,7 @@ public final class BuildAdvice {
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
             BuildingsTemplate t = e.getKey();
             if (t.getCare() == CareType.BURIAL) plots += e.getValue() * (double) t.getCapacity();
-            if (t.getCare() == CareType.CREMATION) ovens += e.getValue() * (long) t.getCapacity() * staffing(t, fill);
+            if (t.getCare() == CareType.CREMATION) ovens += e.getValue() * (long) t.getCapacity() * staffing(adding(game, t, e.getValue()), fill);
         }
         double free = Healthcare.plotsRemaining(plots, h.getPlotsUsed());
         double deaths = k * h.getDeaths();
@@ -942,7 +979,7 @@ public final class BuildAdvice {
         double[] places = game.getBuildingManager().getStaffedEducationPlaces(fill);
         double seats = places[type.ordinal()];
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-            if (e.getKey().getTeaches() == type) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getTeaches() == type) seats += e.getValue() * (long) e.getKey().getCapacity() * staffing(adding(game, e.getKey(), e.getValue()), fill);
         }
         double need = schoolNeed(game, type, p);
         if (type.isBasic()) {
@@ -956,7 +993,7 @@ public final class BuildAdvice {
         double[] fill = game.getPopulationManager().getJobFillRate();
         double n = game.getBuildingManager().getStaffedSafetyCapacity(SafetyType.POLICE, fill);
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-            if (e.getKey().getSafety() == SafetyType.POLICE) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getSafety() == SafetyType.POLICE) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(adding(game, e.getKey(), e.getValue()), fill);
         }
         return n;
     }
@@ -965,7 +1002,7 @@ public final class BuildAdvice {
         double[] fill = game.getPopulationManager().getJobFillRate();
         double n = game.getBuildingManager().getStaffedSafetyCapacity(SafetyType.PRISON, fill);
         for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-            if (e.getKey().getSafety() == SafetyType.PRISON) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(e.getKey(), fill);
+            if (e.getKey().getSafety() == SafetyType.PRISON) n += e.getValue() * (long) e.getKey().getCapacity() * staffing(adding(game, e.getKey(), e.getValue()), fill);
         }
         return n;
     }
@@ -1010,9 +1047,20 @@ public final class BuildAdvice {
 
     /** Posts and land an order needs: posts by job type (index JobType.ordinal()), then the land in the last slot. */
     public static double[] needs(Map<BuildingsTemplate, Long> order) {
+        return needs(order, (t, n) -> NewUnit.standing(t));
+    }
+
+    /** ...of an order as it would open now (QN1): each building to add (a count above nothing) as one new building of its template, a removal as it stands. */
+    public static double[] needs(Game game, Map<BuildingsTemplate, Long> order) {
+        return needs(order, (t, n) -> adding(game, t, n));
+    }
+
+    private static double[] needs(Map<BuildingsTemplate, Long> order,
+                                  java.util.function.BiFunction<BuildingsTemplate, Long, NewUnit> read) {
         double[] out = new double[JobType.values().length + 1];
         for (Map.Entry<BuildingsTemplate, Long> e : order.entrySet()) {
-            for (JobType job : JobType.values()) out[job.ordinal()] += (double) e.getValue() * e.getKey().getJobs(job);
+            NewUnit u = read.apply(e.getKey(), e.getValue());
+            for (JobType job : JobType.values()) out[job.ordinal()] += (double) e.getValue() * u.getJobs(job);
             out[out.length - 1] += e.getValue() * e.getKey().getLandSqFt();
         }
         return out;
@@ -1608,7 +1656,12 @@ public final class BuildAdvice {
      * a line's, and a road's only where the lines wait for road under them.
      */
     public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site) {
-        return running(game, t, site, true);
+        return running(game, NewUnit.of(game, t), site, true);
+    }
+
+    /** ...of one new building already resolved (QN1): its own posts, power and water. */
+    public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site) {
+        return running(game, u, site, true);
     }
 
     /**
@@ -1621,9 +1674,16 @@ public final class BuildAdvice {
      * on quiet streets a gravel road's are, to the bit.
      */
     public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site, boolean added) {
+        // ...a building already standing (`added` false: a paving's gravel road, pavingOrderLife()) keeps the figures it stands with (QN1).
+        return running(game, added ? NewUnit.of(game, t) : NewUnit.standing(t), site, added);
+    }
+
+    /** ...of one new building already resolved (QN1). */
+    public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site, boolean added) {
+        BuildingsTemplate t = u.template();
         double utilisation = roads(game, added ? plus(site, t, 1) : site).getUtilisation();
         double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
-        return runningCostAt(game, t, utilisation) - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
+        return runningCostAt(game, u, utilisation) - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
     }
 
     /**
@@ -1631,8 +1691,13 @@ public final class BuildAdvice {
      * LicenceFees.forNewWork()), so WorksValue and the auto-builder net the rent a new utility would pay.
      */
     private static double runningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
-        double raw = rawRunningCostAt(game, t, streetUtilisation);
-        return raw + LicenceFees.forNewWork(game, t, raw);
+        return runningCostAt(game, NewUnit.standing(t), streetUtilisation);
+    }
+
+    /** ...of one new building already resolved (QN1); the licence is the template's. */
+    private static double runningCostAt(Game game, NewUnit u, double streetUtilisation) {
+        double raw = rawRunningCostAt(game, u, streetUtilisation);
+        return raw + LicenceFees.forNewWork(game, u.template(), raw);
     }
 
     /**
@@ -1640,21 +1705,36 @@ public final class BuildAdvice {
      * life; 0 for any work that is not one of a 1900 city's own utilities, and in any other city.
      */
     static double licenceOf(Game game, BuildingsTemplate t) {
-        if (!game.foundedUnfitted() || !LicenceFees.citysWork(game, t)) return 0;
-        return LicenceFees.forNewWork(game, t, rawRunningCostAt(game, t, 0));
+        return licenceOf(game, NewUnit.of(game, t));
     }
 
-    /** The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation. */
+    /** ...of one new building already resolved (QN1): the licence on its own running cost, as running(game, u, ...) adds it. */
+    static double licenceOf(Game game, NewUnit u) {
+        BuildingsTemplate t = u.template();
+        if (!game.foundedUnfitted() || !LicenceFees.citysWork(game, t)) return 0;
+        return LicenceFees.forNewWork(game, t, rawRunningCostAt(game, u, 0));
+    }
+
+    /**
+     * The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation:
+     * the template as it stands (LicenceFees and RecipeChanges.feesAt() price the buildings they are given).
+     */
     static double rawRunningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
+        return rawRunningCostAt(game, NewUnit.standing(t), streetUtilisation);
+    }
+
+    /** ...of one new building already resolved (QN1): its own power, water, posts; its repairs and upkeep are the template's. */
+    static double rawRunningCostAt(Game game, NewUnit u, double streetUtilisation) {
+        BuildingsTemplate t = u.template();
         BuildingManager bm = game.getBuildingManager();
         EconomyManager econ = game.getEconomyManager();
         double materials = Math.max(0, bm.getConstructionMaterialPrice());
         double share = ConstructionControl.paves(t) ? t.gravelRepairsAt(streetUtilisation) : t.repairsPerYear();
         double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
                 * share / 12;
-        double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
-                + t.getWaterConsumption() * econ.getPricePerWaterUnit();
-        return repairs + utilities + BuildCard.runningCost(game, t);
+        double utilities = u.getElectricityConsumption() * econ.getPricePerWatt()
+                + u.getWaterConsumption() * econ.getPricePerWaterUnit();
+        return repairs + utilities + BuildCard.runningCost(game, u);
     }
 
     /** The complete stock change's bill, with its actual traffic wear and one shared pool of fare-paying riders. */
@@ -1669,9 +1749,9 @@ public final class BuildAdvice {
             long n = e.getValue();
             if (n > 0 && game.foundedUnfitted()) {
                 // R2c-P, REV-R2c-P-1: a city utility's licence is the bill of the whole order, at the month it opens, not one more's fee times n.
-                double raw = rawRunningCostAt(game, e.getKey(), r1.getUtilisation());
+                double raw = rawRunningCostAt(game, NewUnit.of(game, e.getKey()), r1.getUtilisation());
                 cost += n * raw + LicenceFees.forNewWork(game, e.getKey(), raw, n, (int) Math.round(at.months()));
-            } else if (n != 0) cost += n * runningCostAt(game, e.getKey(),
+            } else if (n != 0) cost += n * runningCostAt(game, adding(game, e.getKey(), n),
                     n > 0 ? r1.getUtilisation() : r0.getUtilisation());
         }
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
@@ -1708,8 +1788,14 @@ public final class BuildAdvice {
 
     /** A road's or a line's cost over its life (0.7.70): its quote for one, its ground at landValue() on the land left, and lifeFactor() months of running(). */
     public static double lifetime(Game game, BuildingsTemplate t, double landLeft, Map<BuildingsTemplate, Long> site) {
+        return lifetime(game, NewUnit.of(game, t), landLeft, site);
+    }
+
+    /** ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. */
+    public static double lifetime(Game game, NewUnit u, double landLeft, Map<BuildingsTemplate, Long> site) {
+        BuildingsTemplate t = u.template();
         return game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)
-                + running(game, t, site) * lifeFactor(game);
+                + running(game, u, site) * lifeFactor(game);
     }
 
     /** One paving (0.7.70): a Paved Road more and a Gravel Road less; empty with either missing from the catalogue. */
@@ -1896,8 +1982,15 @@ public final class BuildAdvice {
     /** An order of `count` of t over its life (0.7.101): its quote for the count, its ground at landValue() on the land left, and lifeFactor() months of running() for each. */
     public static double orderLife(Game game, BuildingsTemplate t, int count, double landLeft,
                                    Map<BuildingsTemplate, Long> site) {
+        return orderLife(game, NewUnit.of(game, t), count, landLeft, site);
+    }
+
+    /** ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. */
+    public static double orderLife(Game game, NewUnit u, int count, double landLeft,
+                                   Map<BuildingsTemplate, Long> site) {
+        BuildingsTemplate t = u.template();
         return game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)
-                + count * running(game, t, site) * lifeFactor(game);
+                + count * running(game, u, site) * lifeFactor(game);
     }
 
     /** ...`count` pavings' (0.7.101): their quote (Game.quotePave()), less the ground they free at landValue() on the land left, and lifeFactor() months of a paved road's running over a gravel road's for each; NaN with nothing to pave. */
