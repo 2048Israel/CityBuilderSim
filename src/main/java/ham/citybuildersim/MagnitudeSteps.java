@@ -13,7 +13,9 @@ public final class MagnitudeSteps {
     public static double[] of(double value, double least) {
         if (!(least > 0) || !Double.isFinite(least)) throw new IllegalArgumentException("least step must be positive and finite");
         if (!(value > 0) || !Double.isFinite(value)) return new double[] { least };
-        double big = Math.max(least, Math.pow(10, Math.floor(Math.log10(value))));
+        double unit = Math.pow(10, Math.floor(Math.log10(value)));
+        if (unit > value) unit /= 10; // log10 can round up just below a decade.
+        double big = Math.max(least, unit);
         double fine = Math.max(least, big / 10);
         return fine < big ? new double[] { big, fine } : new double[] { big };
     }
@@ -28,9 +30,10 @@ public final class MagnitudeSteps {
     public static double roundDown125(double value) {
         if (!(value > 0) || !Double.isFinite(value)) throw new IllegalArgumentException("rounding needs a positive finite value");
         double unit = Math.pow(10, Math.floor(Math.log10(value)));
-        double leading = value / unit;
-        double rounded = (leading >= 5 ? 5 : leading >= 2 ? 2 : 1) * unit;
-        // log10 can round a value just below a decade up to that decade.
-        return rounded > value ? 5 * (unit / 10) : rounded;
+        // Compare the candidates themselves: division can round a value just
+        // below 5 * unit up to 5 and wrongly skip the valid 2 * unit.
+        if (5 * unit <= value) return 5 * unit;
+        if (2 * unit <= value) return 2 * unit;
+        return unit <= value ? unit : 5 * (unit / 10);
     }
 }

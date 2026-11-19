@@ -285,3 +285,11 @@ town's nudge-derived horizon, 73/120 on this run (the main record names
 20/120 on its earlier town). The default horizon is 60/60 and the built
 city's 75/120. No new waiver is needed for SZ1's model fix. Log:
 `target/SZ1-PriceLevelCheck-exact.txt`.
+
+★ Guard floating-point boundaries in the shared rule. log10 can round a
+figure just below a decade up to that decade, so the leading step is checked
+against the figure. Likewise dividing a figure just below 5 * 1e-15 by its
+decade can round to 5 and skip the valid 2 * 1e-15 lot. The 1-2-5 rule now
+compares the actual candidate amounts. StepsCheck has both reproductions;
+the fractional one uses exact equality so a generic absolute tolerance
+cannot conceal it. These are arithmetic guards, not changed tolerances.

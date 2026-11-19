@@ -72,6 +72,7 @@ public final class StepsCheck {
         steps("3.4 billion steps by a billion and a tenth of one", 3.4e9, 1, 1e9, 1e8);
         steps("the least step replaces both small steps without a duplicate", 7, 50, 50);
         steps("the fine step respects a fractional least", 7, .25, 1, .25);
+        steps("just below a decade keeps the lower leading unit", Math.nextDown(1e15), 1, 1e14, 1e13);
         steps("an empty money field keeps its own least", 0, KeptBench.fundMoneyStep(), KeptBench.fundMoneyStep());
         close("a count cannot wrap negative when increased", MagnitudeSteps.count(Long.MAX_VALUE, 1e18), Long.MAX_VALUE);
         close("a count cannot step below zero", MagnitudeSteps.count(7, -10), 0);
@@ -103,6 +104,8 @@ public final class StepsCheck {
                     PriceLevel.FACTOR * BondMarket.fundingLot(kind, 1, minimumToday));
         }
         close("rounding just below a decade goes down", MagnitudeSteps.roundDown125(Math.nextDown(10.0)), 5);
+        check("rounding just below five at a fractional decade keeps the two",
+                MagnitudeSteps.roundDown125(Math.nextDown(5 * 1e-15)) == 2 * 1e-15);
 
         out.println("--- 3. the live city supplies its month's lot, with no saved lot ---");
         Game priceCity = new Game(GameFiles.scratch("steps-price-binding"));
