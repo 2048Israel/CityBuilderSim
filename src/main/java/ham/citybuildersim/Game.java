@@ -142,7 +142,7 @@ public class Game {
     
     private SimulationEngine simulationEngine;
     
-    int materialsConsumed =0;
+    long materialsConsumed = 0;
     
     //construction UI logic
     /** The last order's material, in units - drawn by the crews as they build. A receipt field. */
@@ -8527,8 +8527,8 @@ public class Game {
     /** The bank's repair bill for its branches this month, charged with its running costs. */
     private double bankMaintenanceDue;
 
-    public int getConstructionMaterials(){
-        int constructionMaterials = buildingManager.getConstructionMaterials();
+    public long getConstructionMaterials(){
+        long constructionMaterials = buildingManager.getConstructionMaterials();
         return constructionMaterials;
     }
     public double getInterestRate(){
@@ -9089,12 +9089,12 @@ public class Game {
     }
 
     /** ...against a yard holding `yardHolds` units (0.7.40): an order in a run, priced on the yard the orders before it leave (buildRunInvoice()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds) {
         return quoteBuild(selected, quantity, yardHolds, 0);
     }
 
     /** ...and with `bitumenAhead` tonnes of the refiners' bitumen taken by the orders before it in a run (0.7.83; drawBitumen()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
     }
 
@@ -9106,7 +9106,7 @@ public class Game {
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
 
     /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead,
                                   GroundAhead ahead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, ahead, Landmasses.CHOSEN);
     }
@@ -9121,7 +9121,7 @@ public class Game {
         return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials(), 0, NO_GROUND_AHEAD, asked);
     }
 
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead,
                                   GroundAhead ahead, int asked) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
@@ -9472,10 +9472,13 @@ public class Game {
      *                  a month against $266k of work.
      * @return what the part beyond the yard came to
      */
-    private Markets.Draw drawMaterials(double units, boolean yardFirst) {
-        int wanted = (int) Math.round(units);
+    // Package-private since SQ1b: BuildingStackCheck draws through it yard first, as the month's maintenance does, which nothing public reaches.
+    Markets.Draw drawMaterials(double units, boolean yardFirst) {
+        // A long, as the yard and the books it feeds are (SQ1b): a month's draw at ten-billion scale passes 2^31 units, where
+        // (int) Math.round(units) wrapped it, negative or short, and the whole month's draw went unbought and unbooked.
+        long wanted = Math.round(units);
         if (wanted <= 0) return new Markets.Draw(0, 0, 0, 0, 0);
-        int fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;
+        long fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;
         double beyondYard = wanted - fromYard;
         // ...then the builders' own stock of scrapped plant's material, which
         // they have paid for already (0.7.8), before the plant and the world.
@@ -9586,7 +9589,7 @@ public class Game {
      * off what the sites still owe so the monthly draws buy only the rest.
      */
     private double deliverYardToSites(BuildingsTemplate template, double needed) {
-        int fromYard = buildingManager.takeFromYard((int) Math.round(needed));
+        long fromYard = buildingManager.takeFromYard(Math.round(needed));
         if (fromYard <= 0) return 0;
         buildingManager.deliverToSites(template, fromYard);
         materialsConsumed += fromYard;
@@ -11511,7 +11514,7 @@ public class Game {
 
     /** What placing these orders in turn would charge altogether: each one's quote on the yard the ones before it leave. */
     public double buildRunInvoice(java.util.Map<BuildingsTemplate, Long> run) {
-        int yard = buildingManager.getConstructionMaterials();
+        long yard = buildingManager.getConstructionMaterials();
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
@@ -11531,7 +11534,7 @@ public class Game {
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);
             if (island != Landmasses.NO_LANDMASS) {
                 islandsAhead.merge(island, land, Double::sum);
-                yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+                yard -= Math.max(0L, Math.min(Math.round(q.materialsNeeded), yard));
                 bitumenAhead += q.bitumenFromRefiners;
                 continue;
             }
@@ -11542,7 +11545,7 @@ public class Game {
             if (use == LandManager.Use.RUN) runsAhead += land;
             preparedAhead += q.prepSqFt;
             // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
-            yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+            yard -= Math.max(0L, Math.min(Math.round(q.materialsNeeded), yard));
             // ...and the refiners' bitumen an order's paving draws as it is placed (0.7.83; drawBitumen()).
             bitumenAhead += q.bitumenFromRefiners;
         }

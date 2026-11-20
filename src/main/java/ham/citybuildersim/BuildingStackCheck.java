@@ -29,7 +29,20 @@ import java.util.Locale;
  *     stack, its homes, its posts and its places are K times the city's;
  *  5. ...and its on-site count too, from a save written with an order on site;
  *  6. an order placed on the loaded copy carries it past 2^31, and a save of it reads back whole;
- *  7. below the ceiling nothing reads differently (section 1).
+ *  7. below the ceiling nothing reads differently (section 1);
+ *  8. an order through Game.buildStack (not BuildingManager.addStack) on a copy whose House stack stands just under the
+ *     ceiling, its material past 2^31 units: its quote, the ground it takes, the cash it charges, the receipt, the yard's
+ *     share delivered to the sites, the material the sites owe, and the invoice of a run of two, whose second order is quoted
+ *     on the yard the first leaves;
+ *  9. a month's material draw past 2^31 units is drawn (the sites' and a repair's, yard first), booked in materialsConsumed,
+ *     and saved and loaded whole.
+ *
+ * WHY (SQ1b, the two notes of SQ1's review). Section 6 ordered through BuildingManager.addStack, so the quote, the ground and the
+ * charge of Game.buildStack had no harness past the ceiling; and Game.drawMaterials rounded a month's draw into an int, where a
+ * month's draw at ten-billion scale passes 2^31 units (this fixture's own month draws tens of millions, so section 9 drives the draw
+ * there): the whole draw wrapped to a negative count and went unbought and unbooked, and the yard, materialsConsumed and the run's
+ * invoice carried the same int. They are a long since SQ1b (an old save's int reads
+ * into one, so no format bump); the harness is red with any of them an int again.
  *
  * The orders here are int-sized, as the game's are; a stack passes the ceiling by two of them, or by the
  * scaler. Written so that it compiles against main's int stack, where it is red: the sums wrap.
@@ -274,6 +287,119 @@ public class BuildingStackCheck {
         quietly(() -> back.simulateMonths(1));
         assertTrue("a month at that size runs, and the stack still stands past 2^31 - 1",
                 back.getMonth() == gu.getMonth() + 1 && back.getBuildingManager().getQuantity(house.getId()) > Integer.MAX_VALUE);
+
+        /* ============== 7. Game.buildStack on a copy just under the ceiling: its quote, its ground and its invoice (SQ1b) ============== */
+        out.println("\n--- an order through Game.buildStack, its material past 2^31 units: the quote, the ground, the yard and the invoice ---");
+        GameFiles buy = new GameFiles(root.resolve("buy"), root.resolve("buy-no-legacy"));
+        ScaleCheck.scale(small.saveFile(10), buy.saveFile(10), k);
+        Files.copy(small.historyFile(10), buy.historyFile(10));
+        Game gb = new Game(buy);
+        quietly(() -> gb.loadGameSave(10));
+        assertTrue("fixture: the copy loads", gb.getLoadFailure() == null);
+        if (gb.getLoadFailure() != null) return;
+        BuildingManager bb = gb.getBuildingManager();
+        BuildingsTemplate bh = bb.getTemplateByName("House");
+        BuildingsTemplate bs = bb.getTemplateByName("Convenience Store");
+        long standingB = bb.getQuantity(bh.getId());
+        assertTrue("fixture: its House stack stands under the ceiling, as section 6's does", standingB <= ceiling && ceiling - standingB < houses1 + ROOM_BELOW);
+        // An order whose material alone is a unit and a half of what an int holds: the draw's int wrapped it negative.
+        long orderB = (long) Math.ceil(1.5 * ceiling / bh.getConstructionMaterials());
+        double needed = (double) bh.getConstructionMaterials() * orderB;
+        assertTrue("fixture: the order's material (" + orderB + " Houses at " + bh.getConstructionMaterials() + " units each) is past what an int holds, and the order itself fits one",
+                needed > Integer.MAX_VALUE && orderB < Integer.MAX_VALUE);
+        long yard0 = gb.getConstructionMaterials();
+        assertTrue("fixture: the yard holds its own small stock, which the order's material dwarfs", yard0 > 0 && yard0 < needed / 1_000_000);
+        long onBeforeB = bb.getStack(bh) == null ? 0 : bb.getStack(bh).getUnderConstruction();
+        double owed0 = bb.getStack(bh) == null ? 0 : bb.getStack(bh).getMaterialsOwed();
+
+        // The quote.
+        Game.BuildQuote q = gb.quoteBuildOn(bh, orderB, Landmasses.CHOSEN);
+        same("the quote is for the order's Houses", q.quantity, orderB);
+        assertTrue("...its material is the units each House takes times the order, not an int's wrap of them", q.materialsNeeded == needed);
+        assertTrue("...the yard covers its own stock and the plant and the world the rest, which is past what an int holds",
+                q.materialsInStock == yard0 && q.materialsFromPlant + q.materialsImported > Integer.MAX_VALUE
+                        && Math.abs(q.materialsInStock + q.materialsFromPlant + q.materialsImported - needed) <= 1e-9 * needed);
+        assertTrue("...its ground is the square feet each House takes times the order", q.landNeeded == bh.getLandSqFt() * orderB);
+        assertTrue("...and its price is a finite sum past 2^31 dollars", Double.isFinite(q.total) && q.total > Integer.MAX_VALUE);
+
+        // The invoice of a run: the second order is quoted on the yard the first leaves, which its material empties.
+        long storeOrder = (long) Math.ceil(100.0 * yard0 / bs.getConstructionMaterials()) + 1;   // its material is more than the yard's stock, so its price reads the yard
+        java.util.Map<BuildingsTemplate, Long> run = BuildCardCheck.run(bh, orderB, bs, storeOrder);
+        double firstOnYard = gb.quoteBuild(bh, orderB).total;
+        double invoiceOnYard = gb.buildRunInvoice(run);
+        gb.getBuildingManager().setConstructionMaterials(0);
+        double firstOnNone = gb.quoteBuild(bh, orderB).total;
+        double invoiceOnNone = gb.buildRunInvoice(run);
+        gb.getBuildingManager().setConstructionMaterials(yard0);
+        double yardPays = firstOnNone - firstOnYard;
+        assertTrue("fixture: the yard's stock changes the first order's price (" + yardPays + ")", yardPays > 0);
+        assertTrue("the run's invoice moves with the yard by exactly the first order's share: the second is quoted on the yard the first emptied, in both",
+                Math.abs((invoiceOnNone - invoiceOnYard) - yardPays) <= 1e-3 * yardPays);
+        assertTrue("...and a run's first order is quoted as it is alone", Math.abs(gb.buildRunInvoice(BuildCardCheck.run(bh, orderB)) - firstOnYard) <= 1e-9 * firstOnYard);
+
+        // The order.
+        double need = q.landNeeded;
+        double freeBefore = gb.getLandManager().freeFor(bh.getSector(), Game.groundUse(bh));
+        assertTrue("fixture: the ground is there for the order", freeBefore >= need);
+        gb.setCashForTest(2 * q.total);   // the money is the fixture's: the order is not a funding question
+        double cash0 = gb.getCash();
+        long consumed0 = gb.materialsConsumed;
+        Game.BuildResult result = null;
+        { Game.BuildResult[] r = new Game.BuildResult[1]; quietly(() -> r[0] = gb.buildStack(bh, orderB, false)); result = r[0]; }
+        assertTrue("buildStack takes the order (" + result + ")", result == Game.BuildResult.SUCCESS);
+        assertTrue("...and charges what the quote said, in full", Math.abs((cash0 - gb.getCash()) - q.total) <= 1e-9 * q.total);
+        assertTrue("...the receipt reads the quote's total and its material", gb.getTotalBuildingCost() == q.total && gb.getMaterialsUsed() == q.materialsNeeded);
+        same("...and the order's Houses", gb.getBuildQuantity(), orderB);
+        assertTrue("...the ground it took is the quote's: the free ground fell by the square feet of every House",
+                Math.abs((freeBefore - gb.getLandManager().freeFor(bh.getSector(), Game.groundUse(bh))) - need) <= 1e-9 * need);
+        BuildingsStacks onSiteB = bb.getStack(bh);
+        same("...the order stands on site beside the copy's own sites", onSiteB.getUnderConstruction(), onBeforeB + orderB);
+        assertTrue("...which with what stands is past 2^31 - 1", onSiteB.getUnderConstruction() + onSiteB.getQuantity() > Integer.MAX_VALUE);
+        same("...the yard's whole stock went to the sites the day it was placed", gb.getConstructionMaterials(), 0);
+        same("...and the books took it, as the yard's share of the units", gb.materialsConsumed - consumed0, yard0);
+        assertTrue("...the sites owe the rest of the order's material, past what an int holds",
+                Math.abs((onSiteB.getMaterialsOwed() - owed0) - (needed - yard0)) <= 1e-11 * needed && onSiteB.getMaterialsOwed() - owed0 > Integer.MAX_VALUE);
+
+        /* ============== 8. a month's draw past 2^31 units: the books it feeds read it whole ============== */
+        out.println("\n--- a month's material draw past 2^31 units is drawn, booked and saved whole ---");
+        // The month the order is placed in: the crews draw what they build, the copy's own sites and the order's (SimulationEngine -> drawSiteMaterials()).
+        // A copy K times a founded town draws K times its few hundred units a month, tens of millions here: a month of this fixture is not past
+        // the ceiling by itself (ten billion people's is), so the draws past it are driven below, through the same methods the month calls.
+        GoodsMarket materials = gb.getMarkets().get(Good.MATERIALS);
+        quietly(() -> gb.simulateMonths(1));
+        double[] takenHistory = materials.getTakenHistory();
+        double monthTaken = takenHistory[takenHistory.length - 1];
+        assertTrue("the month after the order runs, and the crews drew on the market for it (" + monthTaken + " units, K times the founded town's)", monthTaken > 0);
+        // The builders' stock of scrapped plant's material is drawn first, then the market: a draw of the stock and three int ranges and a bit more,
+        // so that what is bought is itself past what an int holds. Its int wrapped to a negative count, so the whole draw went unbought and unbooked.
+        double held = gb.getSectors().construction().getSalvage();
+        double bought = 3.0 * (ceiling + 1) + 12_345;
+        double units = held + bought;
+        long consumed1 = gb.materialsConsumed;
+        double drawn1 = materials.getDrawn(), salvage1 = gb.getSalvageUsedThisMonth();
+        quietly(() -> gb.drawSiteMaterials(units));
+        same("the sites' draw is booked whole: materialsConsumed rose by the units drawn", gb.materialsConsumed - consumed1, Math.round(units));
+        assertTrue("...the builders' own stock of scrapped plant's material went first, whole (" + held + " units)",
+                Math.abs((gb.getSalvageUsedThisMonth() - salvage1) - held) <= 1e-9 * units);
+        assertTrue("...and the materials market was drawn on for the rest, past what an int holds",
+                Math.abs((materials.getDrawn() - drawn1) - bought) <= 1e-9 * units && materials.getDrawn() - drawn1 > Integer.MAX_VALUE);
+        assertTrue("...and the books stand past what an int holds", gb.materialsConsumed > Integer.MAX_VALUE);
+        boolean[] savedB = new boolean[1];
+        quietly(() -> savedB[0] = gb.saveGame(10, "buildingstack drawn").ok);
+        assertTrue("the city with a draw past 2^31 booked saves", savedB[0]);
+        Game drawn = new Game(buy);
+        quietly(() -> drawn.loadGameSave(10));
+        assertTrue("...and the save loads", drawn.getLoadFailure() == null);
+        same("...materialsConsumed came back whole", drawn.materialsConsumed, gb.materialsConsumed);
+        // The month's maintenance draws the yard first (drawMaterials(units, true)): the yard's stock is taken whole and the rest is bought.
+        bb.setConstructionMaterials(yard0);
+        long consumed3 = gb.materialsConsumed;
+        Markets.Draw[] repaired = new Markets.Draw[1];
+        quietly(() -> repaired[0] = gb.drawMaterials(bought, true));
+        same("a repair draw past 2^31 units takes the yard first: the yard is emptied", gb.getConstructionMaterials(), 0);
+        same("...the books took the whole draw, the yard's share and the rest", gb.materialsConsumed - consumed3, Math.round(bought));
+        assertTrue("...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)",
+                Math.abs(repaired[0].units() - (bought - yard0)) <= 1e-9 * bought && repaired[0].units() > Integer.MAX_VALUE);
     }
 
     /** A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. */

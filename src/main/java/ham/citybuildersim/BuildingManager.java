@@ -35,7 +35,11 @@ public class BuildingManager {
      * holds one.
      */
     private long foundingEndowments = 1;
-    private int constructionMaterials;
+    /**
+     * The yard's stock, in units: a long since SQ1b, as every figure a draw reads or reduces is (takeFromYard()), so that a
+     * month's draw past 2^31 units takes its share of it without a narrowing on the way.
+     */
+    private long constructionMaterials;
     /**
      * What a unit of construction material costs, in the city's money.
      *
@@ -8239,7 +8243,7 @@ public class BuildingManager {
     /*
     ---------------------------------------------------------------------------
      */
-    public int getConstructionMaterials() {
+    public long getConstructionMaterials() {
         return constructionMaterials;
     }
 
@@ -8685,7 +8689,7 @@ public class BuildingManager {
         }
     }
 
-    public void setConstructionMaterials(int constructionMaterials) {
+    public void setConstructionMaterials(long constructionMaterials) {
         this.constructionMaterials = constructionMaterials;
     }
 
@@ -8718,7 +8722,7 @@ public class BuildingManager {
      * So the field is gone rather than patched. The yard is stock, the bill is
      * the caller's, and a quote is a quote.
      */
-    public void handleConstructionMaterials(int required) {
+    public void handleConstructionMaterials(long required) {
         takeFromYard(required);
     }
 
@@ -8729,8 +8733,8 @@ public class BuildingManager {
      *
      * @return units actually taken from the yard
      */
-    public int takeFromYard(int required) {
-        int taken = Math.max(0, Math.min(required, constructionMaterials));
+    public long takeFromYard(long required) {
+        long taken = Math.max(0L, Math.min(required, constructionMaterials));
         constructionMaterials -= taken;
         return taken;
     }
