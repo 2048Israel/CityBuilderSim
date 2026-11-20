@@ -1813,28 +1813,44 @@ public class HouseholdBalance {
      * @return false when the group has no cell that is not empty, and nothing moved
      */
     private boolean spread(Stock s, double amount, int group) {
+        /*
+         * Each cell's holding read ONCE (HS2, 2026-11-19): a bond's is a map
+         * lookup, read up to four times a cell, and the fold spreads every
+         * bond of every cell that empties over every cell of its group. HS2's
+         * young cells, smaller, empty more often: the books took 30 ms of a
+         * 66 ms month at m600. The same figures, to the bit.
+         */
+        double[] had = spreadHad.length == cells.length ? spreadHad : (spreadHad = new double[cells.length]);
         double base = 0, live = 0;
-        for (Household d : cells) {
+        for (int i = 0; i < cells.length; i++) {
+            Household d = cells[i];
             if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
+            double v = s.get(d);
+            had[i] = v;
             live += d.households;
-            if (s.get(d) > 0) base += s.get(d) * d.households;
+            if (v > 0) base += v * d.households;
         }
         if (!(live > 0)) return false;
         if (base > 0) {
             double scale = 1 + amount / base;
-            for (Household d : cells) {
+            for (int i = 0; i < cells.length; i++) {
+                Household d = cells[i];
                 if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
-                if (s.get(d) > 0) s.set(d, s.get(d) * scale);
+                if (had[i] > 0) s.set(d, had[i] * scale);
             }
         } else {
             double each = amount / live;
-            for (Household d : cells) {
+            for (int i = 0; i < cells.length; i++) {
+                Household d = cells[i];
                 if (d.isEmpty() || (group >= 0 && d.stockGroup() != group)) continue;
-                s.set(d, s.get(d) + each);
+                s.set(d, had[i] + each);
             }
         }
         return true;
     }
+
+    /** spread()'s reads of the cells' holdings, one array kept rather than one a call. */
+    private double[] spreadHad = new double[0];
 
     /** True when the cell holds any stock at all, which an empty cell must not. For the harnesses. */
     boolean holdsAnything(Household c) {
