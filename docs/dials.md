@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-19 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,257 constants in 604 files.**
+**6,258 constants in 604 files.**
 
-## model (2952 constants)
+## model (2953 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -3078,6 +3078,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 109 | `ResearchCatalog.NEAR_FUTURE` | `PolicyDates.monthOf(2025, 1)` | The first month of the near future, January 2025 (research-near-future 2 rule 6, "2025 and later only"): a row dated from it on is no part of today's figures, so a city founded the default way neve... |
 | 112 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
 | 169 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
+| 216 | `ResearchCatalog.KNOWN_FROM` | `new java.util.concurrent.ConcurrentHashMap<>()` | knownFrom()'s answer by the "since" it was given (R1g, 2026-11-19). |
 
 ### ResearchPreview.java ([map](map/ResearchPreview.md))
 
