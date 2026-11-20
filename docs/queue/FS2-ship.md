@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS2 (untagged) — the twins and the scale cause their conditions — 2026-11-20, ready, see docs/queue/FS2-notes.md
 ScaleCheck, PriceLevelCheck and DenominationCheck cause their conditions; harness-only, the model and the trace unmoved. All fifteen
