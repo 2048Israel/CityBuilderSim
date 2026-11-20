@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,275 constants in 607 files.**
+**6,285 constants in 607 files.**
 
 ## model (2963 constants)
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1818 constants)
+## harnesses (1828 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5911,10 +5911,11 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 138 | `AuctionCheck.FEE` | `12_000` | The fixed cost of a sale: the study's AUCTION_FEE, the one Game charges. |
-| 141 | `AuctionCheck.FAIR` | `.03602` | The 10-year's fair yield in the calm city (spec-city-debt.md, section 4.3's table: 3.602%). |
-| 144 | `AuctionCheck.FACE` | `3e8` | D$300M of face, the table's issue. |
-| 726 | `AuctionCheck.QUIET` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | A stream that prints nothing: System.out and LongPlaytest's out while a fixture city runs. |
+| 143 | `AuctionCheck.FEE` | `12_000` | The fixed cost of a sale: the study's AUCTION_FEE, the one Game charges. |
+| 146 | `AuctionCheck.FAIR` | `.03602` | The 10-year's fair yield in the calm city (spec-city-debt.md, section 4.3's table: 3.602%). |
+| 149 | `AuctionCheck.FACE` | `3e8` | D$300M of face, the table's issue. |
+| 731 | `AuctionCheck.QUIET` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | A stream that prints nothing: System.out and LongPlaytest's out while a fixture city runs. |
+| 787 | `AuctionCheck.HANDED_SPARE` | `32 * 100 * PriceLevel.FACTOR` | The savings past their cushion sections 7 and 8 hand the lineup city's households at least (FS15): thirty-two of the smallest asks, about what the city played sixty months held on 0.9.166's path (3... |
 
 ### AutoBuildCheck.java ([map](map/AutoBuildCheck.md))
 
@@ -6108,10 +6109,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 83 | `ChildcareCheck.ONTARIO_INFANTS_PER_ADULT` | `10.0 / 3` | Children to an adult in Ontario's infant groups, 3 adults to 10 (O. |
-| 86 | `ChildcareCheck.ONTARIO_PRESCHOOL_PER_ADULT` | `8` | ...and in its preschool groups, 1 to 8: the fewest. |
-| 89 | `ChildcareCheck.SMALL` | `15, CENTRE = 16, LARGE = 17` | The three centres' ids in buildings.json: the Small Childcare Centre, the Childcare Centre and the Large. |
-| 92 | `ChildcareCheck.CHILDCARE` | `BuildAdvice.Measure.care(CareType.CHILDCARE)` | The advice's measure for childcare, which the sections here read the need, the site and the card through. |
+| 89 | `ChildcareCheck.ONTARIO_INFANTS_PER_ADULT` | `10.0 / 3` | Children to an adult in Ontario's infant groups, 3 adults to 10 (O. |
+| 92 | `ChildcareCheck.ONTARIO_PRESCHOOL_PER_ADULT` | `8` | ...and in its preschool groups, 1 to 8: the fewest. |
+| 95 | `ChildcareCheck.SMALL` | `15, CENTRE = 16, LARGE = 17` | The three centres' ids in buildings.json: the Small Childcare Centre, the Childcare Centre and the Large. |
+| 98 | `ChildcareCheck.THOUSANDS_LARGES` | `8` | FS15: the places past the founding's a city short of thousands lacks, in Large Childcare Centres: eight, past the five the section asks. |
+| 101 | `ChildcareCheck.HUNDREDS_LARGES` | `2.5` | ...and one short of hundreds: two and a half, past the one it asks. |
+| 104 | `ChildcareCheck.GROWING` | `1.3` | ...whose population grew by this much over the year before (founding()'s history), so its projection grows. |
+| 107 | `ChildcareCheck.CHILDCARE` | `BuildAdvice.Measure.care(CareType.CHILDCARE)` | The advice's measure for childcare, which the sections here read the need, the site and the card through. |
 
 ### ClockCheck.java ([map](map/ClockCheck.md))
 
@@ -6541,9 +6545,10 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 18 | `EssentialWorksCheck.out` | `System.out` |  |
-| 19 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 20 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
+| 24 | `EssentialWorksCheck.out` | `System.out` |  |
+| 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
+| 508 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
 
 ### ExchangeCheck.java ([map](map/ExchangeCheck.md))
 
@@ -8444,7 +8449,12 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 18 | `WorksFinanceCheck.out` | `System.out` |  |
+| 23 | `WorksFinanceCheck.out` | `System.out` |  |
+| 36 | `WorksFinanceCheck.TOWN_WORKS` | `{ { "Industrial Bakery", "4" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant",...` | ChildcareCheck.town()'s works, the town once (k 1), which flat() and laterQuotes() stand on a founding (FS15). |
+| 45 | `WorksFinanceCheck.SERVED_WORKS` | `{ { "Industrial Bakery", "2" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant",...` | BuildAdviceCheck.servedCity()'s works, which reserveTown() and crewPromise() stand on a founding (FS15). |
+| 55 | `WorksFinanceCheck.STRUCK_MONTHS` | `2` | The months founded() strikes on the state it set: the founding's first, which barely trades, and the one after. |
+| 58 | `WorksFinanceCheck.GROWN_FROM` | `.75` | growingCalendarChoice()'s year: its people grew from this share of today's (FS15: .9 on the served city played two years, whose builders took longer: a founding's Paved Road opens in 7.5 months, so... |
+| 61 | `WorksFinanceCheck.PEOPLE_PER_PLACE` | `.75` | The share of its homes' places founded()'s people fill. |
 
 ### WorldCheck.java ([map](map/WorldCheck.md))
 
