@@ -118,7 +118,28 @@ new plant's piece, and it earned no royalty, until E2 a half-century later
   run time and one object hash in a works-decision line (`LandParcel@...`). The
   default city knows all three steps and is founded fitted, so nothing there
   reads the partial states: no ensemble is owed.
-- Named harnesses, one at a time on the merged tree: see below.
-- `./batch-check.sh --fast` green on the merged tree (0 firm Stale).
+- **Named harnesses**, one `./batch-check.sh` name at a time, on the tree with
+  FB13 and SQ1b merged (e6b37b348): PostwarRecipeCheck 228, HistoricalRecipeCheck
+  120, HistoricalLicenceCheck 80, RecipeCheck, EquipmentCheck, ResearchCheck,
+  DiscoveryCheck, BuildingDataCheck, LicenceFeesCheck 43, FittingCheck,
+  CementConcreteCheck, NewUnitCheck 63: all green. Forms1900Check exit 3: only
+  main's two known reds (section 12's lamp oil, FS8, `docs/notes/known-reds.txt`).
+  After FB14's merge (808b69b43), PostwarRecipeCheck 228/228 again.
+- **Village1900Check, for R1g**: R1g's branch (03a239410) in a temporary
+  worktree, run alone as it stands and then with this batch's `buildings.json`
+  diff applied: both exit 0, all 35 assertions, and the whole 65-line output
+  identical byte for byte. Nothing in its five years moved (its 1900 village's
+  Cement & Concrete is held for money at a Lime Kiln, R1g's notes; whatever
+  cement it makes, nothing the harness reads moved). For R1g's 1900 playtest when it is the
+  default: a Cement Plant before June 1902 now burns 7,500 t a month (was
+  6,160) and from PE4 a long kiln that saves 394 t a month is a refit it may
+  order (it was a loss before). Logs: `target/R2e-PE4-evidence/village-r1g*.log`.
+- `./batch-check.sh --fast` green on each merged tree (0 firm Stale).
 - `sh tools/pick.sh origin/main HEAD`: ALL (buildings.json's reader,
   BuildingManager, has 109 readers); review line: no money, saves or threading.
+
+## Left
+
+Nothing for Jerus: the row's one call was recommended and is taken (★1). No
+screen changed, so no eye check. The Pending row R2e-PE4 is this batch; no new
+Pending, queued or known-red row.
