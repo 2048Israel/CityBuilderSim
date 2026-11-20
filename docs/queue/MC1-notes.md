@@ -291,3 +291,13 @@ on the bank's capital rule.
 ## For Jerus
 
 Nothing beyond the queued row: MC2, BF1's band share for insured (and uninsured) growth.
+
+## The dry run
+
+`sh tools/gate.sh MC1 --dry-run` on 9b1eec08d, with main at da94b6973 (0.9.170, RN1-H-M), on the
+gate box: kept as `/home/jerus/cbs/runs/cbs-gate-MC1-p7WanJbs` (copied home to
+`%TEMP%/cbs-gate-MC1-p7WanJbs`). Gate exit 0. The pick was ALL. The suite finished in 657 s, exit 3:
+the reds were main's known reds only, in 11 harnesses (BankCheck BasketYearCheck BuildAdviceCheck
+CentralBankCheck ExchangeRateCheck Forms1900Check FundCheck HoldersCheck PassThroughCheck RoadCheck
+YoungBankCheck). CreditCrunchCheck and HousingDoorCheck passed. The dry run kept nothing and left
+the tree as it was. RN1-H-M, merged before it, is harness-only and leaves the ensemble standing.

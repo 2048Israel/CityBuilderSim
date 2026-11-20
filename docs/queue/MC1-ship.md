@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-MC1-p7WanJbs -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — MC1, a crunch no longer leaves households without a home — 2026-11-20, ready, see docs/queue/MC1-notes.md
