@@ -406,12 +406,13 @@ OP1 moves both cities (every lever open from founding): today's at m2400 is
 | (a) the 1900 home alone | 853 | 3,901 | 24,797 | 949,447 | ≤ .30 (.222) | .96 / 1.00 / 1.00 / 1.00 | 25 |
 | (b) the apprentices alone | 570 | 1,142 | 2,118 | 25,174 | .603 | .45 / .99 / 1.00 / 1.00 | 5 |
 | (a) + (b) | 944 | 30,117 | 110,986 | 983,979 | ≤ .30 | .86 / 1.00 / 1.00 / 1.00 | 24 |
+| (a) + (b) with the walk back (`-Dr1g.walk=on`, 5bb95f367) | 926 | 5,679 | 16,012 | 630,765 | ≤ .30 (the home alone .233) | .83 / 1.00 / 1.00 / 1.00 | 12 |
 
 Between, at m240 / m600 / m1500 / m1800 / m2100: today 2,668 / 7,905 /
 32,473 / 46,024 / 171,829; the 1900 city on main 737 / 575 / 1,451 / 1,011
 / 1,620; (a) 3,716 / 2,890 / 112,804 / 312,864 / 617,497; (b) 816 / 852 /
 6,287 / 9,843 / 12,906; (a)+(b) 1,656 / 6,805 / 267,106 / 647,332 /
-777,523.
+777,523; with the walk 1,775 / 2,388 / 32,830 / 203,825 / 514,349.
 
 - **Today's city does not move, to the bit, with both mends:** main and the
   branch wrote the same eight trace files (2,402 lines each but borrow's
@@ -435,3 +436,38 @@ Between, at m240 / m600 / m1500 / m1800 / m2100: today 2,668 / 7,905 /
   same, UnsettledFees at the last month (m2405, m2402). That is main's
   family (HS1's households' money in a 1900 city), not R1g's, and R1g's
   (a)+(b) does not meet it.
+
+### The walk back (the orchestrator's 05:49 mail; 5bb95f367)
+
+Built behind `Recipes.HOME_WALK` (`-Dr1g.walk=on`, off by default, so
+nothing above moves): each month's `apply()` sets every home to
+`homeScaleAt(month)`, which is `homeScale()` (0.289) to January 1901 (the
+first knot), 1 from January 2021 (the last), and linear by month between,
+because `WageLadder` has no ladder between 1901's and today's. The cash cost
+and upkeep move by the ratio of the new scale to the old one, through the
+same setters, so the re-strike holds them. Materials and points are set from
+the catalogue's own figures, and nothing else changes. The table's last row
+is (a)+(b) with the walk: one JVM, exit 1, 12 minutes.
+
+- **The walk brings the late city back toward today's** (630,765 against
+  556,655 at m2400, where the held home gives 983,979). The cost is the
+  century in between: 5,679 at m900 and 16,012 at m1200, against today's
+  28,369 and 32,330.
+- ★ **The walk outruns the city's wages.** The 1900 city's wages are laid
+  once from 1901's ladder and then move with its market, but the walked
+  home climbs to today's cost on a straight line by month. The
+  affordability pull stays under 1 from m240 to past m1800 (.61 to .93, its
+  lowest .606 at m686), so rent is about .30/.66 ≈ .45 of take-home in the
+  middle years. With the held home the pull sits at 1.00 from m960. The
+  harness shows the same at m60: rent .233 with the walk against .222 held
+  (the home alone; the house struck at 0.312 = `homeScaleAt(60)`).
+- **Diploma fill** is as with the held home: .83 at m60, then full.
+  Unemployment is 35% at m240 and 9% at m600, then none by m900.
+- **Exit 1 on one red:** the households' own line, UnsettledFees past its
+  bound at m2404. That is main's family, the same red (a) and (b) met at
+  their last month (§5, Exits), not the walk's.
+- **If the walk is kept:** Village1900Check section 5's "struck at
+  homeScale()" becomes `datedScale()` against `homeScaleAt(month)`. With the
+  walk on it fails as it stands, at 0.312386 against 0.289185, which is the
+  walk working. A section asserting the walk, and failing with it off, goes
+  in with that call.
