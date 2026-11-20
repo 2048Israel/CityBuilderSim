@@ -83,9 +83,11 @@ public class FamilyModel implements HouseholdBalance.Census {
        were taken from both alike); their children by the shares a young
        parent has, below. Each stage then keeps its own households, brings
        its own adults home with their children, builds out of what it has
-       left in its own order, and is refitted to the jobs on its own. What a
-       stage leaves over is the orphan section's and the unhoused's, as it
-       was the one builder's.
+       left in its own order, and is refitted to the jobs on its own. The
+       young build first, and the children their builder leaves are offered
+       to the established's before the orphan section (offerChildren(), and
+       its WHY); what the established's leaves of them is the orphans', and
+       the adults left over the unhoused, as they were the one builder's.
        ===================================================================== */
 
     /** Of the babies in the families, the share with a young parent (under 35): half. A first birth comes at 31 in Canada, and two in five mothers are under 30 at a birth (the study's [S1]); a baby is under six, so half its parents are under 35. */
@@ -716,6 +718,19 @@ public class FamilyModel implements HouseholdBalance.Census {
         double youngShare = allAdults > 0
                 ? Math.max(0, Math.min(1, cohorts.get(AdultStage.YOUNG) / allAdults)) : 0;
         double[][] rem = new double[stages.length][];
+        /*
+         * The children who may come home with their parents this month (2c),
+         * at most: bringHome() brings back no more adults than left the
+         * at-home count and joined the families. Kept out of what the
+         * established's kept households may draw of the young's (HS2).
+         */
+        double[] comingHome = new double[3];
+        if (keep && hadAtHome > 0) {
+            double back = Math.max(0, Math.min(hadAtHome - this.atHomeAdults, adults - hadInFamilies));
+            for (int b = 0; b < comingHome.length && b < hadWithThem.length; b++) {
+                comingHome[b] = Math.max(0, hadWithThem[b]) * Math.min(1, back / hadAtHome);
+            }
+        }
         double[][][] built = new double[stages.length][][];
         FamilyStructure[][] orders = new FamilyStructure[stages.length][];
         double[] keptBefore = new double[stages.length];
@@ -742,7 +757,11 @@ public class FamilyModel implements HouseholdBalance.Census {
              * young who turned 35 left the young's people, and the established's
              * kept households have them back only as the pool's.
              */
-            if (keep) keptBefore[k] = keepFormed(formedOf(g), orders[k], built[k], rem[k]);
+            if (keep) {
+                keptBefore[k] = g == AdultStage.YOUNG
+                        ? keepFormed(formedOf(g), orders[k], built[k], rem[k])
+                        : keepDrawing(formedOf(g), orders[k], built[k], rem[k], rem[AdultStage.YOUNG.ordinal()], comingHome);
+            }
         }
 
         // ---- 2c. the adults back in the families bring their children home (OX1; the banner below) ----
@@ -752,6 +771,8 @@ public class FamilyModel implements HouseholdBalance.Census {
         for (AdultStage g : stages) {
             int k = g.ordinal();
             build(orders[k], tierShare, rem[k], built[k]);
+            // ...and what the young's builder leaves of the children is the established's before the orphan section's (below).
+            if (g.next() != null) offerChildren(rem[k], rem[g.next().ordinal()]);
             if (keep) {
                 double working = 0;
                 for (FamilyStructure shape : orders[k]) for (double v : built[k][shape.ordinal()]) working += v;
@@ -783,7 +804,9 @@ public class FamilyModel implements HouseholdBalance.Census {
          *
          * Jerus: "they dont even get ei, and its named the orphan section,
          * yes they get sick and die for now." The builder is left as it is;
-         * what it leaves is who they are - each stage's builder's, together.
+         * what it leaves is who they are - the established's builder's, the
+         * young's leftovers offered to it first, and nothing the young's left
+         * (offerChildren()), with the unplaced of a stage with no adults.
          */
         for (double[] r : rem) {
             orphans[AgeBand.BABY.ordinal()]  += Math.max(0, r[AgeBand.BABY.ordinal()]);
@@ -792,6 +815,62 @@ public class FamilyModel implements HouseholdBalance.Census {
         }
 
         recordFormed();
+    }
+
+    /* ----- the children one stage cannot place (HS2, 2026-11-19) -----
+
+       WHY. Each stage's builder is the one builder's greedy pass - every
+       shape half of what it can take, the singles last - and a pass leaves
+       some children over, which are the orphan section. Two passes left two
+       remainders, and the young's, seven shapes with fewer to take a baby,
+       the larger: DeathRecordCheck's mill town had 7.79 orphans before its
+       closing against main's 2.61, children with adults in the city to take
+       them. So the young build first and the children their builder leaves
+       are offered to the established's, which forms every shape, before any
+       is an orphan; and next month the established keep the households they
+       formed with them out of what the young's kept households leave,
+       rather than dissolving them for the share the dial gives the
+       established. The dial's shares are where a child is placed first. */
+
+    /** The bands of the children in a stage's pool, in its order (babies, children, teens). */
+    private static final int CHILD_BANDS = 3;
+
+    /** Moves the children a stage's builder left (`from`) into the next stage's pool (`to`), before the orphan section. */
+    private static void offerChildren(double[] from, double[] to) {
+        for (int b = 0; b < CHILD_BANDS; b++) {
+            double left = Math.max(0, from[b]);
+            to[b] += left;
+            from[b] -= left;
+        }
+    }
+
+    /**
+     * The established's kept households (2b), out of their own people and, for
+     * the children, what the young's kept households left of theirs (`young`)
+     * beyond the children who may come home with young parents this month
+     * (2c; `comingHome`, every stage's, by band). Their own first, then the
+     * young's, and the established's own children coming home last, so they
+     * find room as before HS2's offer.
+     */
+    private double keepDrawing(double[][] had, FamilyStructure[] order, double[][] m, double[] own, double[] young,
+                               double[] comingHome) {
+        double[] spare = new double[CHILD_BANDS], pool = own.clone();
+        for (int b = 0; b < CHILD_BANDS; b++) {
+            double mayComeHome = comingHome[b] * shareOfStage(AgeBand.values()[b], AdultStage.YOUNG);
+            spare[b] = Math.max(0, young[b] - mayComeHome);
+            pool[b] = Math.max(0, own[b]) + spare[b];
+        }
+        double kept = keepFormed(had, order, m, pool);
+        for (int b = 0; b < own.length; b++) {
+            if (b >= CHILD_BANDS) { own[b] = pool[b]; continue; }
+            double o = Math.max(0, own[b]), used = Math.max(0, o + spare[b] - pool[b]);
+            double ownFree = Math.max(0, o - comingHome[b] * shareOfStage(AgeBand.values()[b], AdultStage.ESTABLISHED));
+            double fromOwn = Math.min(used, ownFree);
+            double fromSpare = Math.min(spare[b], used - fromOwn);
+            young[b] -= fromSpare;
+            own[b] = Math.max(0, o - (used - fromSpare));
+        }
+        return kept;
     }
 
     /** One stage's kept households (2b): last month's record of the stage less the share that re-forms, shrunk to the people the stage has; returns the households kept, and takes their people out of the stage's pool. */

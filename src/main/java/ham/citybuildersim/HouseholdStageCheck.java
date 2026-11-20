@@ -378,20 +378,37 @@ public class HouseholdStageCheck {
                 families.workingHouseholdsOf(young) > 0 && estTeenShapes > 0);
         AgeBand[] kids = { AgeBand.BABY, AgeBand.CHILD };
         double[] bandOf = { babies, children };
+        String[] plural = { "babies", "children" };
         for (int k = 0; k < kids.length; k++) {
             AgeBand band = kids[k];
             double share = FamilyModel.youngShareOf(band);
-            boolean allHoused = Math.abs(housedAll[band.ordinal()] - bandOf[k]) <= TOLERANCE * bandOf[k];
-            if (allHoused) {
-                check("every " + band.name().toLowerCase() + " housed: the young house the dial's share of them",
-                        housedYoung[band.ordinal()], share * bandOf[k]);
-            } else {
-                report("the young house no more than the dial's share of the " + band.name().toLowerCase(),
-                        housedYoung[band.ordinal()] <= share * bandOf[k] * (1 + TOLERANCE),
-                        String.format("%,.2f of %,.2f, the share %,.2f", housedYoung[band.ordinal()], bandOf[k], share * bandOf[k]));
-            }
+            // The dial's share is where a child is placed first: what the young's builder leaves is offered to the established's.
+            report("the young house no more than the dial's share of the " + plural[k],
+                    housedYoung[band.ordinal()] <= share * bandOf[k] * (1 + TOLERANCE),
+                    String.format("%,.2f of %,.2f, the share %,.2f", housedYoung[band.ordinal()], bandOf[k], share * bandOf[k]));
+            check("...and every one of the " + plural[k] + " is housed or an orphan",
+                    housedAll[band.ordinal()] + families.getOrphans(band), bandOf[k]);
         }
         check("the teens' dial is none", FamilyModel.youngShareOf(AgeBand.TEEN), 0);
+
+        /*
+         * THE CHILDREN THE YOUNG CANNOT PLACE ARE THE ESTABLISHED'S BEFORE THE
+         * ORPHANS'. A city with no young adults still gives the young the
+         * dial's share of its babies and children, and the young's builder
+         * places none of them; offered to the established's, they are housed
+         * as the one builder housed them. Without the offer every one of them
+         * would be an orphan.
+         */
+        FamilyModel noYoung = new FamilyModel();
+        noYoung.rebuild(HouseholdMemoryCheck.staged(babies, children, teens, 6000, 0), jobs);
+        check("a city with no young adults forms no young household", noYoung.workingHouseholdsOf(young), 0);
+        for (int k = 0; k < kids.length; k++) {
+            AgeBand band = kids[k];
+            double share = FamilyModel.youngShareOf(band) * bandOf[k];
+            report("...and the young's share of its " + plural[k] + " are not orphans: the established took them",
+                    noYoung.getOrphans(band) < share,
+                    String.format("%,.2f orphans against the young's share of %,.2f", noYoung.getOrphans(band), share));
+        }
 
         HouseholdBalance shapes = new HouseholdBalance();
         boolean cellsAsFormed = true;

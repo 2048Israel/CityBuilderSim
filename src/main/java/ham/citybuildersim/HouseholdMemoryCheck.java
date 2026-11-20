@@ -84,17 +84,34 @@ public class HouseholdMemoryCheck {
         return c;
     }
 
-    /** The bare builder's answer for one stage's own pool (babies, children, teens, adults): a pyramid whose adults are all that stage's and whose children are scaled so the stage's share of them is the pool; the other stage has no adults and forms nothing. */
+    /**
+     * The bare builder's answer for one stage's own pool (babies, children,
+     * teens, adults): a pyramid whose adults are all that stage's; the other
+     * stage has no adults and forms nothing. The young's children are scaled
+     * so the young's share of them is the pool, and what the young's builder
+     * leaves of them is offered to the established, who have no adults here,
+     * so it is the orphans' (youngLeftOf()). The established's are the pool
+     * itself: with no young adults the young's share of them is offered to
+     * the established whole (HS2's offer, FamilyModel.offerChildren()).
+     */
     static FamilyModel builtFor(AdultStage g, double[] pool, double[] jobs) {
         double[] kids = new double[3];
         AgeBand[] bands = { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN };
         for (int b = 0; b < 3; b++) {
-            double share = g == AdultStage.YOUNG ? FamilyModel.youngShareOf(bands[b]) : 1 - FamilyModel.youngShareOf(bands[b]);
-            kids[b] = share > 0 ? Math.max(0, pool[b]) / share : 0;
+            double share = FamilyModel.youngShareOf(bands[b]);
+            kids[b] = g == AdultStage.ESTABLISHED ? Math.max(0, pool[b])
+                    : share > 0 ? Math.max(0, pool[b]) / share : 0;
         }
         FamilyModel f = new FamilyModel();
         f.rebuild(staged(kids[0], kids[1], kids[2], Math.max(0, pool[3]), g == AdultStage.YOUNG ? Math.max(0, pool[3]) : 0), jobs);
         return f;
+    }
+
+    /** Of builtFor(YOUNG, pool)'s children of a band, what the young's builder left: its orphans less the established's share, who had no adults to go to. */
+    static double youngLeftOf(FamilyModel builtYoung, AgeBand band, double pool) {
+        double share = FamilyModel.youngShareOf(band);
+        if (!(share > 0)) return 0;
+        return Math.max(0, builtYoung.getOrphans(band) - Math.max(0, pool) / share * (1 - share));
     }
 
     public static void main(String[] args) throws Exception {
@@ -154,24 +171,49 @@ public class HouseholdMemoryCheck {
         /*
          * What each stage's kept households use, and what is left of the
          * stage's own people for the builder (HS2): the working shapes stage
-         * by stage, and the retired as before, out of the seniors.
+         * by stage, and the retired as before, out of the seniors. The
+         * established's kept households draw on what the young's left of the
+         * children where their own fall short (they formed with the young's
+         * leftovers); the young build out of what is left of theirs, and the
+         * children their builder leaves are offered to the established's
+         * before the orphans' (FamilyModel.offerChildren()).
          */
         double r = 1 - FamilyModel.REFORMING_EACH_MONTH;
         AgeBand[] familyBands = { AgeBand.BABY, AgeBand.CHILD, AgeBand.TEEN, AgeBand.ADULT };
-        double worstShape = 0;
+        int y = AdultStage.YOUNG.ordinal(), e = AdultStage.ESTABLISHED.ordinal();
+        double[][] pool = new double[AdultStage.values().length][familyBands.length];
         for (AdultStage g : AdultStage.values()) {
-            double[] pool = new double[familyBands.length];
-            for (int b = 0; b < familyBands.length; b++) pool[b] = grown.get(familyBands[b]) * shareOf(familyBands[b], g, grown);
+            for (int b = 0; b < familyBands.length; b++) pool[g.ordinal()][b] = grown.get(familyBands[b]) * shareOf(familyBands[b], g, grown);
             for (FamilyStructure s : WORKING) {
                 double k = monthOneBy[g.ordinal()][s.ordinal()] * r;
-                for (int b = 0; b < familyBands.length; b++) pool[b] -= k * s.membersOf(familyBands[b]);
-            }
-            FamilyModel builtFromLeftover = builtFor(g, pool, jobs);
-            for (FamilyStructure s : WORKING) {
-                double expected = monthOneBy[g.ordinal()][s.ordinal()] * r + totalOf(builtFromLeftover, s, g);
-                worstShape = Math.max(worstShape, Math.abs(totalOf(memory, s, g) - expected));
+                for (int b = 0; b < familyBands.length; b++) pool[g.ordinal()][b] -= k * s.membersOf(familyBands[b]);
             }
         }
+        double drawn = 0, offered = 0;
+        for (int b = 0; b < 3; b++) {
+            double draw = Math.min(Math.max(0, pool[y][b]), Math.max(0, -pool[e][b]));
+            pool[y][b] -= draw;
+            pool[e][b] += draw;
+            drawn += draw;
+        }
+        FamilyModel youngBuilt = builtFor(AdultStage.YOUNG, pool[y], jobs);
+        for (int b = 0; b < 3; b++) {
+            double left = youngLeftOf(youngBuilt, familyBands[b], pool[y][b]);
+            pool[e][b] += left;
+            offered += left;
+        }
+        FamilyModel establishedBuilt = builtFor(AdultStage.ESTABLISHED, pool[e], jobs);
+        double worstShape = 0;
+        for (FamilyStructure s : WORKING) {
+            worstShape = Math.max(worstShape, Math.abs(totalOf(memory, s, AdultStage.YOUNG)
+                    - (monthOneBy[y][s.ordinal()] * r + totalOf(youngBuilt, s, AdultStage.YOUNG))));
+            worstShape = Math.max(worstShape, Math.abs(totalOf(memory, s, AdultStage.ESTABLISHED)
+                    - (monthOneBy[e][s.ordinal()] * r + totalOf(establishedBuilt, s, AdultStage.ESTABLISHED))));
+        }
+        System.out.printf("   the established's kept households drew %,.2f children of the young's; the young's builder offered them %,.2f%n",
+                drawn, offered);
+        assertTrue("fixture: the young's builder left children over, offered to the established", offered > 0);
+        assertTrue("fixture: and the established's kept households drew on the young's children", drawn > 0);
         double usedSeniors = 0;
         for (FamilyStructure s : FamilyStructure.values()) {
             if (s.isRetired()) usedSeniors += monthOne[s.ordinal()] * r * s.membersOf(AgeBand.SENIOR);
@@ -184,7 +226,7 @@ public class HouseholdMemoryCheck {
             worstShape = Math.max(worstShape, Math.abs(memory.totalOf(s) - expected));
         }
         check("every shape is last month's, less 1%, plus the builder's answer for the people left over,"
-                + " each adult stage out of its own people", worstShape, 0, 1e-6);
+                + " each adult stage out of its own people and the established of the young's leftover children", worstShape, 0, 1e-6);
         /*
          * Not asserted: "fewer households change shape than a fresh build". It
          * was, and it failed with the mechanism working - a fifth more adults
