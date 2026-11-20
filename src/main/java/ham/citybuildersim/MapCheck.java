@@ -579,6 +579,7 @@ public class MapCheck {
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
         frontageDrawn(sq.types);
+        depotAloneRails();
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -679,9 +680,12 @@ public class MapCheck {
                     boolean exact = dr.sameAs(model, map.types());
                     drawnSamples++;
                     if (exact) drawnExact++;
+                    long trackNow = Drawn.trackOf(model, map.types());
                     drawnLines.append(String.format("      month %d: %,d buildings of %d kinds drawn (the model %,d; %d packed at the city's edge),"
-                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d)%n", g.getMonth(),
-                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types())));
+                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d),"
+                                    + " %,d plots of track (the model's %,d, %,d the runs could not lay, %,d the station's own line)%n", g.getMonth(),
+                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types()),
+                            dr.rail, trackNow, dr.trackSurplus, map.runs().stationLine(trackNow)));
                 }
             }
             bought = g.getCityLand().purchases().size() - purchases0;
@@ -791,13 +795,35 @@ public class MapCheck {
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay - since FR7 slice 3 the plots no train's way uses (CityRuns.trackSurplus()); buildings packed at the city's edge (R7); tiles painted; districts. */
         long rail, trackSurplus, packed, tiles, districts;
+        /** (HL1-M) The runs the map was drawn from: what they lay (rail().plots, less the quay's spurs, which no model track pays for), and whether a station stands (a yard laid, idle or not). */
+        CityRuns runs;
+        long laid;
+        boolean station;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
         double surfaced() { return surface[1] + surface[2] + surface[3]; }
         double left() { return leftover[1] + leftover[2] + leftover[3]; }
 
-        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72). */
+        /** The model's track plots: each track type's count x its own plots (BuildingVisual.cells()). */
+        static long trackOf(long[] model, BuildingVisual.Type[] types) {
+            long track = 0;
+            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
+            return track;
+        }
+
+        /**
+         * (HL1-M) Whether the railway drawn is the railway the city holds, exactly: the painter draws every plot the runs lay and no other (rail == laid), and what the runs
+         * lay is the model's track less what they could not lay, PLUS A STATION'S OWN LINE - the main line a Rail Depot or Rail Terminal has laid to the city's edge whatever
+         * track the model has (CityRuns.stationLine(); FX5). That line is the depot's, not the track budget's: it is nothing where the track is longer than the line, and
+         * it is nothing where no station stands, so track the model does not hold with no station standing is still a finding.
+         */
+        boolean trackAccounted(long track) {
+            long line = runs == null ? 0 : runs.stationLine(track);
+            return rail == laid && rail + trackSurplus == track + line && (line == 0 || station);
+        }
+
+        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72), the station's own line counted as the station's (HL1-M, trackAccounted()). */
         boolean sameAs(long[] model, BuildingVisual.Type[] types) {
             boolean same = true;
             for (int t = 0; t < types.length; t++) {
@@ -808,9 +834,7 @@ public class MapCheck {
             for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) {
                 same &= Math.abs(surface[kind] + leftover[kind] - roadPlotsOf(model, types, kind)) <= DistrictPlan.HALF * Math.max(1, districts);
             }
-            long track = 0;
-            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail + trackSurplus == track;
+            return same && trackAccounted(trackOf(model, types));
         }
     }
 
@@ -845,6 +869,8 @@ public class MapCheck {
                 d.surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
                 d.rail += p.railLaid;
                 for (int b = 0; b < p.buildings; b++) {
+                    // (HL1-M) A yard whose box spans tiles is one building, counted on the tile holding its first plot (TilePainter.Painted.bpart; the raster below counts so): its part on another tile is the same yard.
+                    if (p.bpart[b]) continue;
                     if (p.bsite[b] >= 0) {
                         if (sites.add(in.siteKey[p.bsite[b]])) d.siteCount[p.btype[b]]++;
                     } else d.buildings[p.btype[b]]++;
@@ -861,6 +887,9 @@ public class MapCheck {
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
         d.trackSurplus = m.runs().trackSurplus();
+        d.runs = m.runs();
+        d.laid = m.runs().rail().plots() - m.runs().quayPlots();
+        d.station = !m.runs().yards().isEmpty();
         return d;
     }
 
@@ -5064,7 +5093,8 @@ public class MapCheck {
         out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
                 what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
-        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay", net.rail + shortBy == model && plots == net.rail);
+        // (HL1-M) ...and a station's own line past the model's track is the station's (CityRuns.stationLine(); section 25): none here, where the track is longer than the line.
+        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay (a station's own line apart)", net.rail + shortBy == model + net.map.runs().stationLine(model) && plots == net.rail);
         check("...one railway network, no piece apart", pieces[0] == 1);
     }
 
@@ -16187,6 +16217,134 @@ public class MapCheck {
         check("both avenue strokes are continuous through every crossing, also on a tile corner (" + missing + " missing of " + samples + ")", samples > 0 && missing == 0);
         check("the crossing keeps each band wide to its street width less a pixel (" + sidesMissing + " missing side samples)", sidesMissing == 0);
         check("each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw", signals == 32 && disagreements == 0 && nondeterministic == 0);
+    }
+
+    /* =====================================================================
+       25. A RAIL DEPOT AND NO RAIL SPUR: THE STATION'S OWN LINE (HL1-M)
+       ===================================================================== */
+
+    /*
+     * WHY (HL1-M, found by HL1's dry run, 2026-11-19): section 1's hard assertion - the map draws what the city has, "every plot of its track" - failed on HL1's 120-month
+     * town at m121 although every building and road kind agreed: 83 railway plots drawn against no model track (one Rail Depot stood; trackSurplus() 0), and a map drawn
+     * afresh from the same counts drew the same 83. The law said "the plots drawn + what the runs could not lay = the model's track", and a city whose model holds a Rail
+     * Depot and no Rail Spur has no track to be drawn: yet CityRuns.layRail() lays the main line to the city's edge for any city with a station, whatever track the model
+     * has (FX5, Jerus 2026-10-20: "there is a railwawy depot but no rails" - a yard is no track, a depot alone is how the model rails freight). That line is the depot's,
+     * not the runs' track budget: the map was right and the law was short a term, CityRuns.stationLine(). Section 1's assertion stays as hard as it was (every count exact,
+     * Drawn.sameAs()); it now counts the station's line as the station's, and only there.
+     *
+     * The fixture causes the condition on one district owned whole on the default world's dry place, no Game: first nothing (no station, no line), then one Rail Depot and no
+     * track (the line, and nothing else: no siding, branch or quay spur), then the model's track meeting the line from below (the first plots of the line are the track's, the
+     * station's is what is past them) and from above (the track pays for the whole line, the rest is surplus, the station's own line nothing). Each time the law is asked
+     * of the painted map. (20's two-district city lays 4 plots of line, less than one Rail Spur's 72, so the track could not meet it from below there.)
+     */
+
+    /** 25's city: one district owned whole, CityMap.DISTRICT plots a side from its north-west corner, the founding site in its middle: the line the runs lay to its edge is some 130 plots, longer than a Rail Spur's 72. */
+    static final class DepotCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int depot = idNamed(catalog, "Rail Depot"), spur = idNamed(catalog, "Rail Spur");
+        final CityMap map;
+        final long[] model = new long[types.length];
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        DepotCity() {
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT;
+            long[] place = dryPlace(World.of(seed));
+            long x0 = Math.floorDiv(place[0], f) * f, y0 = Math.floorDiv(place[1], f) * f;
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = x0 + f / 2;
+            centre[CityLand.CENTRE_FIELDS - 1] = y0 + f / 2;
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x0, y0, x0 + f, y0 + f } }, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    static void depotAloneRails() {
+        out.println("\n--- 25. a Rail Depot and no Rail Spur: the line the runs lay for the station is the station's, counted as such in the law (HL1-M; FX5) ---");
+        DepotCity c = new DepotCity();
+        CityRuns runs = c.map.runs();
+        int spur = c.spur, each = BuildingVisual.cells(c.types[spur]);
+
+        // ----- nothing standing: no station, no line, and the law holds on nothing -----
+        c.run();
+        Drawn none = drawn(c.map);
+        check("fixture: before any depot the city holds no track and the runs lay none (" + none.rail + " plots drawn, " + none.laid + " laid, no yard standing)",
+                Drawn.trackOf(c.model, c.types) == 0 && none.rail == 0 && none.laid == 0 && !none.station && runs.stationLine(0) == 0 && c.reconciled);
+
+        // ----- one Rail Depot, no track: the case section 1 met -----
+        c.model[c.depot] = 1;
+        c.run();
+        Drawn one = drawn(c.map);
+        long line = one.laid, track = Drawn.trackOf(c.model, c.types);
+        boolean spines = true;
+        for (CityRuns.Arm a : runs.rail.arms) if (a.steps > 0 && !CityRuns.isSpine(runs.rail, a.corridor)) spines = false;
+        out.printf("      one Rail Depot, no Rail Spur (a spur is %d plots): the runs lay %,d plots and the painter draws %,d; the model's track %,d, what the runs could not lay %,d, the station's line past the track %,d%n",
+                each, line, one.rail, track, one.trackSurplus, runs.stationLine(track));
+        check("fixture: one Rail Depot and no model track lays a yard, a railway and no surplus (" + runs.yards().size() + " yard, " + one.rail + " plots drawn, track " + track + ", surplus " + one.trackSurplus + ")",
+                runs.yards().size() == 1 && c.model[c.depot] == 1 && track == 0 && one.rail > 0 && one.trackSurplus == 0 && c.reconciled);
+        check("...the case the old law had no place for: the plots drawn and the surplus (" + (one.rail + one.trackSurplus) + ") are not the model's track (" + track + ")", one.rail + one.trackSurplus != track);
+        check("the railway is the depot's main line and nothing else: every plot laid is on a spine, no siding, no branch, no quay spur - and the painter draws every plot of it (" + one.rail + " of " + line + ")",
+                spines && runs.sidings().isEmpty() && runs.branches().isEmpty() && runs.quayPlots() == 0 && one.rail == line);
+        check("the law counts that line as the station's: stationLine() is all of it (" + runs.stationLine(track) + " of " + line + ") and the map is exactly the city's, Drawn.sameAs()",
+                runs.stationLine(track) == line && one.station && one.sameAs(c.model, c.types));
+
+        // ----- the law is no slacker for it: no station to own the line, a plot short or a plot over, is not the model's railway -----
+        one.station = false;
+        boolean unowned = one.sameAs(c.model, c.types);
+        one.station = true;
+        one.rail--;
+        boolean fewer = one.sameAs(c.model, c.types);
+        one.rail += 2;
+        boolean more = one.sameAs(c.model, c.types);
+        one.rail--;
+        check("...and exactly that: the same line with no station standing (" + unowned + "), one plot short (" + fewer + ") or one plot over (" + more + ") is not the model's railway; as it is, it is (" + one.sameAs(c.model, c.types) + ")",
+                !unowned && !fewer && !more && one.sameAs(c.model, c.types));
+
+        // ----- the model's track meets the line from below: its plots are the line's first, the station's is what is past them -----
+        boolean room = line > each;
+        check("fixture: the line is longer than one Rail Spur (" + line + " plots, a spur " + each + "), so one spur is track the line can take", room);
+        if (room) {
+            c.model[spur] = 1;
+            c.run();
+            Drawn part = drawn(c.map);
+            long t1 = Drawn.trackOf(c.model, c.types);
+            out.printf("      one Rail Depot, one Rail Spur: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", part.laid, part.rail, t1, part.trackSurplus, runs.stationLine(t1));
+            check("the first plots of the line are the model's track, the station's own is what is past it (" + runs.stationLine(t1) + " = " + line + " - " + t1 + "), none of the track left over, the line unmoved, and the map exact",
+                    t1 == each && part.laid == line && runs.stationLine(t1) == line - t1 && part.trackSurplus == 0 && runs.sidings().isEmpty() && runs.branches().isEmpty() && part.sameAs(c.model, c.types) && c.reconciled);
+        }
+
+        // ----- ...and from above: the track pays for the whole line, the rest is surplus, and the station's own line is nothing -----
+        c.model[spur] = (int) ((line + 2L * each) / each + 1);
+        c.run();
+        Drawn full = drawn(c.map);
+        long t2 = Drawn.trackOf(c.model, c.types);
+        out.printf("      one Rail Depot, %d Rail Spurs: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", c.model[spur], full.laid, full.rail, t2, full.trackSurplus, runs.stationLine(t2));
+        check("with more track than the line holds the station's own line is nothing and the rest is the surplus (" + full.trackSurplus + " = " + t2 + " - " + full.laid + "), the old law's own count, the line unmoved and the map exact",
+                t2 > line && full.laid == line && runs.stationLine(t2) == 0 && full.trackSurplus == t2 - line && full.rail == line && full.sameAs(c.model, c.types) && c.reconciled);
+
+        // ----- the station gone: its yard stands idle and the line with it (MF1), the station's still; when its time is up the line goes, and the law holds on nothing -----
+        c.model[spur] = 0;
+        c.model[c.depot] = 0;
+        c.run();
+        Drawn idle = drawn(c.map);
+        check("the depot and the track gone, the yard stands idle, drawn still as the yard its building left (MF1), and holds the line, which is still the station's - the railway's own account exact (" + idle.rail + " plots, " + runs.yards().size() + " yard, " + runs.yardsActive() + " active)",
+                runs.yards().size() == 1 && runs.yardsActive() == 0 && idle.buildings[c.depot] == 1 && idle.laid == line && idle.rail == line && runs.stationLine(0) == line && idle.station
+                && idle.trackAccounted(Drawn.trackOf(c.model, c.types)) && c.reconciled);
+        c.month += CityRuns.YARD_IDLE_MONTHS;
+        c.run();
+        Drawn gone = drawn(c.map);
+        out.printf("      %d months on: %d yards, the runs lay %,d plots, the painter draws %,d%n", CityRuns.YARD_IDLE_MONTHS, runs.yards().size(), gone.laid, gone.rail);
+        check("...and once its time is up the yard is taken up and the line with it: no station, no plots of track the model does not hold, the law exact on nothing",
+                runs.yards().isEmpty() && gone.laid == 0 && gone.rail == 0 && runs.stationLine(0) == 0 && !gone.station && gone.sameAs(c.model, c.types) && c.reconciled);
     }
 
 }

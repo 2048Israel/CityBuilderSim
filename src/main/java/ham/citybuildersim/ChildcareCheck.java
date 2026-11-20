@@ -8,9 +8,11 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Childcare resized (0.7.71, batch N2): the three childcare centres, the
@@ -71,7 +73,11 @@ import java.util.Map;
  * and 18.2% of the 6-to-12s in a before- or after-school programme
  * (CareType.placesPerHead()).
  *
- * Every fixture causes its condition.
+ * Every fixture causes its condition. The fixtures (FS15): founding(), a founded city with its depots and homes stood and
+ * no month played, its lack placed by hand (the people's pyramid, their workforce and a year's history), for sections 2
+ * and 4, which until FS15 read the lack town() played into; town(), BuildAdviceCheck's short city played three years,
+ * for section 3 (saved equal to loaded, its breadth) and for the harnesses that borrow it; a founded city for sections 1
+ * and 6; the catalogue alone for section 5.
  */
 public class ChildcareCheck {
 
@@ -87,6 +93,15 @@ public class ChildcareCheck {
 
     /** The three centres' ids in buildings.json: the Small Childcare Centre, the Childcare Centre and the Large. */
     static final int SMALL = 15, CENTRE = 16, LARGE = 17;
+
+    /** FS15: the places past the founding's a city short of thousands lacks, in Large Childcare Centres: eight, past the five the section asks. */
+    static final double THOUSANDS_LARGES = 8;
+
+    /** ...and one short of hundreds: two and a half, past the one it asks. */
+    static final double HUNDREDS_LARGES = 2.5;
+
+    /** ...whose population grew by this much over the year before (founding()'s history), so its projection grows. */
+    static final double GROWING = 1.3;
 
     /** The advice's measure for childcare, which the sections here read the need, the site and the card through. */
     static final BuildAdvice.Measure CHILDCARE = BuildAdvice.Measure.care(CareType.CHILDCARE);
@@ -188,6 +203,58 @@ public class ChildcareCheck {
         return g;
     }
 
+    /**
+     * FS15: sections 2's and 4's city, its lack caused. A founded city with the town's five Construction Depots stood by
+     * buildStack on the founders' cash and ground, no month played; then the people placed by hand: a settled pyramid
+     * (PopulationCohorts.equilibriumShare()) of as many people as want the founding's places and `larges` Large Childcare
+     * Centres' more at CareType's weights, the population and its workforce theirs, homes for twice them (room for the
+     * projection to grow into: BusinessInvestment.growthFactor() is held to the homes there are), and a year of population
+     * history that grew by `growth` (1: flat). Until FS15 these sections read the lack a town played 36 months happened to
+     * find (town(), x4 and x16, kept for its borrowers: AutoBuildCheck, AuctionCheck, EssentialWorksCheck, HydroCheck,
+     * SaveFileCheck).
+     */
+    static Game founding(Path root, String name, double larges, double growth) {
+        GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
+        Game g = new Game(files);
+        quietly(() -> {
+            g.run();
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
+            g.buildStack(template(g, "Construction Depot"), 5, true);
+            long people = peopleWanting(Healthcare.foundingCapacity(CareType.CHILDCARE) + larges * byId(g, LARGE).getCapacity());
+            BuildingsTemplate house = template(g, "House");
+            g.buildStack(house, (int) Math.ceil(2.0 * people / house.getCapacity()), true);
+            double[] bands = new double[AgeBand.values().length + 2];   // the bands, then the month's births and deaths (none)
+            for (AgeBand b : AgeBand.values()) bands[b.ordinal()] = people * PopulationCohorts.equilibriumShare(b);
+            g.getCohorts().restore(PopulationCohorts.saveBands(), bands);
+            PopulationManager pm = g.getPopulationManager();
+            pm.setPopulation(people);
+            pm.recomputeWorkforce();
+            // The year before, in both the businesses' trend (growthFactor(), the order's projection) and the city's history
+            // (BuildAdvice.lifeTrend(), the places an order fills over its life): `growth` over twelve months, ending at them.
+            List<Long> history = new ArrayList<>();
+            for (int month = 0; month <= 12; month++) history.add(Math.round(people / growth * (1 + (growth - 1) * month / 12.0)));
+            g.getBusinessInvestment().restorePopulationHistory(history);
+            HistorySave h = g.getHistorySave();
+            h.getPopulation().clear();
+            h.getMonth().clear();
+            for (int month = 0; month <= 12; month++) {
+                h.getMonth().add(g.getMonth() - 12 + month);
+                h.getPopulation().add(history.get(month));
+            }
+            g.setCashForTest(Founding.WEALTHY_CASH);
+        });
+        return g;
+    }
+
+    /** The people of a settled pyramid (equilibriumShare()) who want `places` of childcare at CareType's weights. */
+    static long peopleWanting(double places) {
+        double perHead = 0;
+        for (AgeBand b : AgeBand.values()) perHead += PopulationCohorts.equilibriumShare(b) * CareType.CHILDCARE.placesPerHead(b);
+        return (long) Math.ceil(places / perHead);
+    }
+
     static CityNeeds.Need need(Game g) {
         return BuildAdvice.needFor(CityNeeds.measure(g, CityNeeds.PLAIN), CHILDCARE);
     }
@@ -204,17 +271,26 @@ public class ChildcareCheck {
         return sd[1] - sd[0];
     }
 
-    /** One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. */
-    record Weighed(BuildingsTemplate t, long count, BuildAdvice.Ahead p, double per, double net) { }
+    /**
+     * One centre weighed as suggestFor() weighs it: the advice's own card with the other two centres left out (its skip), so
+     * its count at the demand its own order opens to, whether it closes the need, and its plan's figure.
+     *
+     * WHY (FS15). Until FS15 this was a second copy of the count (0.7.101's): the count today at SLACK, the opening of that
+     * count's quote, and the count there, once. HW1 sized an essential measure's order (care is one, AutoBuilder.essential())
+     * to the demand its own whole order opens to, the count re-quoted until it stands, at the builder's slack: on a growing
+     * town the copy counted at the first lead alone, and on HS1's path the advice's card was Large x5 at 2.4404 a place where
+     * the copy weighed the Large at x4 and picked the Childcare Centre x7 (HS1-notes.md, the dry run's reds). The law is the
+     * same; the weighing is the model's, called, so no copy is left to part from it.
+     */
+    record Weighed(BuildingsTemplate t, long count, boolean closes, double per, double net) { }
 
     static Weighed weigh(Game g, BuildingsTemplate t) {
-        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, CHILDCARE);
-        double landLeft = g.getLandManager().getAvailableSqFt();
-        long[] today = BuildAdvice.count(g, CHILDCARE, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
-        BuildAdvice.Ahead p = BuildAdvice.opening(g, g.quoteBuild(t, Math.max(1, today[0])).months);
-        long n = BuildAdvice.count(g, CHILDCARE, site, t, p)[0];
-        WorksValue.Value value = WorksValue.of(g, CHILDCARE, site, t, n, landLeft);
-        return new Weighed(t, n, p, value.perUsed(), value.net());
+        Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+        skip.remove(t);
+        BuildAdvice.Suggestion alone = BuildAdvice.suggestFor(g, need(g), CHILDCARE, g.getCash(),
+                g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip);
+        return alone == null || alone.template() != t ? null
+                : new Weighed(t, alone.count(), alone.closes(), alone.pricePerUnit(), alone.value().net());
     }
 
     public static void main(String[] args) throws Exception {
@@ -289,15 +365,16 @@ public class ChildcareCheck {
         out.println("\n--- 2. the size that fits the need ---");
         BuildAdvice.Suggestion s;
 
-        // Short of thousands: the town sixteen times over (four times over until 0.7.139, when a child
-        // wanted a whole place: at real demand four times over is short of hundreds, below).
-        Game big = town(root, "town-x16", 16);
+        // Short of thousands (FS15: caused): a founding whose people want eight Large Childcare Centres' places more than
+        // the founding's nursery holds, on a flat year. The town sixteen times over, played three years, until FS15 (four
+        // times over until 0.7.139, when a child wanted a whole place).
+        Game big = founding(root, "short-of-thousands", THOUSANDS_LARGES, 1);
         BuildingsTemplate small = byId(big, SMALL), large = byId(big, LARGE);
         s = advice(big);
         double gap = s == null ? 0 : lacks(big, s.ahead());
-        out.printf("      the town x16: %,d people, %,.0f places wanted; lacks %,.0f at the card's projection%n",
+        out.printf("      short of thousands: %,d people, %,.0f places wanted; lacks %,.0f at the card's projection%n",
                 big.getPopulationManager().getPopulation(), CareType.CHILDCARE.populationServed(big.getCohorts()), gap);
-        assertTrue("fixture: the town sixteen times over lacks more places than five Large Childcare Centres hold",
+        assertTrue("fixture: the founding short of thousands lacks more places than five Large Childcare Centres hold",
                 s != null && gap > 5 * large.getCapacity());
         if (s != null) {
             theLeast(big, s, "short of thousands");
@@ -305,17 +382,20 @@ public class ChildcareCheck {
                     + s.template().getName() + ")", s.template() != small);
         }
 
-        // Short of hundreds: the town four times over (its own catalogue's templates; the town itself until 0.7.139).
-        Game g = town(root, "town-x4", 4);
+        // Short of hundreds (FS15: caused): a founding whose people want two and a half Large Childcare Centres' places
+        // more, on a year that grew by GROWING: the projection grows past today's lack, so the advice's count is the one
+        // that stands at its own order's opening (HW1). The town four times over, played three years, until FS15.
+        Game g = founding(root, "short-of-hundreds", HUNDREDS_LARGES, GROWING);
         small = byId(g, SMALL);
         large = byId(g, LARGE);
         s = advice(g);
         gap = s == null ? 0 : lacks(g, s.ahead());
-        out.printf("      the town x4: %,d people, %,.0f places wanted, %,.0f places staffed; lacks %,.0f at the card's projection%n",
-                g.getPopulationManager().getPopulation(), CareType.CHILDCARE.populationServed(g.getCohorts()),
-                g.getBuildingManager().getStaffedCareCapacity(CareType.CHILDCARE, g.getPopulationManager().getJobFillRate()), gap);
-        assertTrue("fixture: the town four times over lacks more places than one Large Childcare Centre holds",
-                s != null && gap > large.getCapacity());
+        out.printf("      short of hundreds: %,d people, %,.0f places wanted, %,.0f places staffed; lacks %,.0f at the card's projection"
+                        + " (x%.3f)%n", g.getPopulationManager().getPopulation(), CareType.CHILDCARE.populationServed(g.getCohorts()),
+                g.getBuildingManager().getStaffedCareCapacity(CareType.CHILDCARE, g.getPopulationManager().getJobFillRate()), gap,
+                s == null ? Double.NaN : s.ahead().k());
+        assertTrue("fixture: the founding short of hundreds lacks more places than one Large Childcare Centre holds, and its"
+                + " projection grows", s != null && gap > large.getCapacity() && s.ahead().k() > 1);
         if (s != null) theLeast(g, s, "short of hundreds");
 
         // Short of a few: standing centres added to the town - Large while what it lacks today
@@ -352,19 +432,31 @@ public class ChildcareCheck {
         }
     }
 
-    /** The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. */
+    /**
+     * The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order
+     * over the places lacking until then), one that closes the need before one that cannot (the advice's tier), each centre
+     * weighed alone; and the card's figure is its plan's, recomputed here through WorksValue at the card's count, to the bit.
+     */
     static void theLeast(Game g, BuildAdvice.Suggestion s, String when) {
         Weighed best = null;
         StringBuilder said = new StringBuilder();
+        boolean all = true;
         for (int id : new int[] { SMALL, CENTRE, LARGE }) {
             Weighed w = weigh(g, byId(g, id));
-            said.append(String.format(" [%s: %d, %,.4f a place filled over its life]", w.t().getName(), w.count(), w.per()));
-            if (best == null || w.net() < best.net()) best = w;
+            if (w == null) { all = false; said.append(" [" + byId(g, id).getName() + ": no card]"); continue; }
+            said.append(String.format(" [%s: %d%s, %,.4f a place filled over its life, net %,.4f]", w.t().getName(), w.count(),
+                    w.closes() ? "" : " (does not close)", w.per(), w.net()));
+            if (best == null || (w.closes() && !best.closes()) || (w.closes() == best.closes() && w.net() < best.net())) best = w;
         }
         out.printf("     %s:%s%n", when, said);
+        out.printf("     %s: the advice's card %d x %s, %,.4f a place, net %,.4f%n", when, s.count(), s.template().getName(),
+                s.pricePerUnit(), s.value().net());
+        assertTrue("fixture: each of the three centres alone has a card (" + when + ")", all);
         assertTrue("the centre's whole plan has the least net present value, including running, land and physical losses ("
                 + when + ")", best != null && s.template() == best.t() && s.count() == best.count());
-        if (best != null && s.template() == best.t()) bits("...its figure is that, recomputed here, to the bit", s.pricePerUnit(), best.per());
+        WorksValue.Value value = WorksValue.of(g, CHILDCARE, BuildAdvice.onSite(g, CHILDCARE), s.template(), s.count(),
+                g.getLandManager().getAvailableSqFt(), g.getCash());
+        bits("...its figure is that, recomputed here, to the bit", s.pricePerUnit(), value.perUsed());
     }
 
     /* ---------------------------------------------------------------- 3 */
@@ -422,7 +514,8 @@ public class ChildcareCheck {
 
     static void thePlayer(Path root) {
         out.println("\n--- 4. the test player's rule (-Dplaytest.childcare) ---");
-        Game g = town(root, "player");
+        // FS15: the lack placed by hand on a founding (founding()), where until FS15 the town played three years found it.
+        Game g = founding(root, "player", HUNDREDS_LARGES, 1);
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         CityNeeds.Need need = BuildAdvice.needFor(all, CHILDCARE);
         assertTrue("fixture: NEEDS YOU lists the town's childcare", need != null && CityNeeds.biting(all).contains(need));
@@ -444,9 +537,10 @@ public class ChildcareCheck {
             assertTrue("...and that is what went on site: " + placed[0].count() + " x " + placed[0].template().getName(),
                     st != null && st.getUnderConstruction() - before[i] == placed[0].count());
         }
-        Game full = town(root, "player-full");
+        // ...and its full twin: the same founding with twice the places it wants and two Large Childcare Centres more stood by buildStack.
+        Game full = founding(root, "player-full", HUNDREDS_LARGES, 1);
         int kids = (int) CareType.CHILDCARE.populationServed(full.getCohorts());
-        quietly(() -> full.buildStack(byId(full, LARGE), kids / 360 * 2 + 2, true));
+        quietly(() -> full.buildStack(byId(full, LARGE), kids / byId(full, LARGE).getCapacity() * 2 + 2, true));
         BuildAdvice.Suggestion[] none = new BuildAdvice.Suggestion[1];
         quietly(() -> none[0] = LongPlaytest.orderChildcare(full));
         LongPlaytest.out = was;
