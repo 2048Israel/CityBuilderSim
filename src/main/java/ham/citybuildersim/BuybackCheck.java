@@ -71,6 +71,13 @@ import java.util.List;
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
+ * THE FIXTURES (FS13, 2026-11-20): the played city is the stage and no more. Sections 3, 4, 5a, 7, 9 and 10 sell their line by cause
+ * (sellToAllHolders()): the savers' rate sets the households' part of it, the bank's weighted book its room, and the sale is sized from what the
+ * world and the businesses bid at the stop it is to clear at, so the households, the bank and the world each hold a real part of it (A_PART of the
+ * line). Section 4 sets the central bank's dial on a settled line and plays the one month that is its first step toward it. Section 6 is a founded
+ * city handed the exports the world prices the dollar ask on (ForeignDebtCheck.earnsAbroad()). Section 7 sets the treasury's cash for "cannot pay"
+ * and reads the highest price under every offer off the quote's own ladder. Section 8 (the year) is as it was.
+ *
  * @author Jerus
  */
 public class BuybackCheck {
@@ -445,8 +452,10 @@ public class BuybackCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
+            // FS13, 2026-11-20: the sixty months are the stage and no more. A play-until on the migration's declining share (up to 36 months more) stood
+            // here with no fixture on it; no section's premise reads the town's people or their leaving now - every one of them is caused by the sale
+            // (sellToAllHolders()) or by hand - and section 8 plays a year of its own.
             city.simulateMonths(60);
-            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
         return city;
     }
@@ -467,6 +476,74 @@ public class BuybackCheck {
         city.getBank().setForeignDeposits(hot.getStock());
     }
 
+    /*
+       A SALE THAT CAUSES ITS HOLDERS (FS13, 2026-11-20). The sections that buy a line back read a line the households, the bank and the world each
+       hold part of, and a played city sold one the bank held nearly whole: on main's path the bank's room (its equity over Bank.CAPITAL_RATIO, less
+       its weighted book) was thousands of times the world's whole appetite - a year of the city's output at CapitalFlows.APPETITE for the stop over
+       its rate, at ARRIVAL_SPEED a month - so the world held 0.09k of a line of 3,807k and passed "worldPrincipal() > 0" on a sliver of the figures
+       the path happened to give. The auction fills the households first, at HOUSEHOLD_PAPER_APPETITE of the issue for each unit of the stop over the
+       savers' rate, and the rest pro rata to what the bank, the businesses and the world bid at it (Auction.run()), so each holder's part is the
+       caller's to set by the three levers the model has: the savers' rate (Bank.setDepositRate()), the bank's room (its weighted book, as AuctionCheck's
+       roomTo() raises it) and the sale's size, read off the world's and the businesses' bids at the yield the sale is to clear at.
+     */
+
+    /** A part of a line is a real one when it is this share of it: a fiftieth, against the world's 0.09k of 3,807k on main's path. */
+    static final double A_PART = .02;
+
+    /** The share of the sale the households take: the savers' rate is set so their bid at the stop is this much of the issue (HOUSEHOLD_PAPER_APPETITE of it for each unit over the rate). */
+    static final double HOUSEHOLDS_SHARE = .25;
+
+    /** The share of the sale the bank takes: its room is set to this much of the issue, the largest part, as the half of a line is the bank's at fair. */
+    static final double BANK_SHARE = .55;
+
+    /** Leaves the bank room for this much face of the city's paper and no more: its weighted book raised until the room the auction reads is that. Returns the book it was raised to. */
+    static double roomTo(Game g, int months, double faceRoom) {
+        Bank bank = g.getBank();
+        double lo = 0, hi = 1e13;
+        for (int i = 0; i < 200; i++) {
+            double mid = (lo + hi) / 2;
+            bank.setWeightedBook(0, mid, 0);
+            if (g.auctionBidders(months, 0).bankRoomFace() > faceRoom) lo = mid; else hi = mid;
+        }
+        bank.setWeightedBook(0, hi, 0);
+        return hi;
+    }
+
+    /**
+     * A line of this many years sold so that the households, the bank and the world each take a real part, the treasury's cash as it stands. The stop
+     * is half the tail the sale may clear at over fair (Auction.MAX_TAIL), fair read off the curve the sale stands on; the savers' rate is set under it
+     * for the households' share; the sale's size is what the world and the businesses bid at the stop, over what is left of the issue when the
+     * households' and the bank's shares are taken off; the bank's room is its share of that. The savers' rate and the bank's weighted book are put back
+     * as they were as the sale is struck, so what follows reads the city as it stands. The piece the sale went into, unsettled until the month turns.
+     */
+    static Debt sellToAllHolders(Game city, int years, boolean callable) {
+        final double rounding = 100 * PriceLevel.FACTOR;
+        worldWantsPaper(city);
+        Bank bank = city.getBank();
+        double fair = city.quoteLongBond(rounding, years, rounding, Auction.Cap.DEFAULT, callable).auction().ask().fair();
+        double stop = fair + Auction.MAX_TAIL / 2;
+        double depositWas = bank.depositRate(), weightedWas = bank.getWeightedBook();
+        bank.setDepositRate(stop - HOUSEHOLDS_SHARE / HouseholdBalance.HOUSEHOLD_PAPER_APPETITE);
+        Auction.Bidders bids = city.auctionBidders(years * 12, 0);
+        double face = (Auction.worldAt(stop, bids) + Auction.firmsAt(stop, bids)) / (1 - HOUSEHOLDS_SHARE - BANK_SHARE);
+        double ballast = roomTo(city, years * 12, BANK_SHARE * face);
+        out.printf("   a %d-year line sold to every holder: D$%,.1fk asked, to clear at %.4f (fair %.4f), the savers' rate %.4f, the bank's room D$%,.1fk, the world bids D$%,.1fk%n",
+                years, face, stop, fair, bank.depositRate(), city.auctionBidders(years * 12, face).bankRoomFace(), Auction.worldAt(stop, bids));
+        quietly(() -> {
+            if (callable) city.handleLongBondLogic(face, years, rounding, Auction.Cap.DEFAULT, true);
+            else city.handleLongBondLogic(face, years, rounding);
+        });
+        bank.setDepositRate(depositWas);
+        bank.setWeightedBook(0, ballast - (bank.getWeightedBook() - weightedWas), 0);
+        return unsettledPiece(city.getDebtManager());
+    }
+
+    /** The households, the bank and the world each hold at least A_PART of the line. */
+    static boolean eachHoldsAPart(Debt bond) {
+        double part = A_PART * bond.getOustandingPrincipal();
+        return bond.householdPrincipal() >= part && bond.bankPrincipal() >= part && bond.worldPrincipal() >= part;
+    }
+
     /* ================= 3. a played city, half of a line ================= */
 
     static void halfOfALine(Game city) {
@@ -475,15 +552,16 @@ public class BuybackCheck {
         DebtManager ledger = city.getDebtManager();
         HouseholdBalance hb = city.getHouseholdBalance();
 
-        worldWantsPaper(city);
-        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
-        Debt bond = sell(city, ask, 10);
+        // FS13, 2026-11-20: the line is sold to every holder by cause (sellToAllHolders()): the savers' rate, the bank's room and the size of the sale
+        // set from the world's and the businesses' bids, so the world's part is a real share of it and not the sliver the played city's figures left.
+        Debt bond = sellToAllHolders(city, 10, false);
         check("fixture: the treasury sold a ten-year line", bond != null);
         check("fixture: ...which is unsettled until the month turns, and a part of it quotes nothing",
                 bond.unsettledFace() > 0 && city.quoteBuyback(bond, bond.getOustandingPrincipal() / 2, Double.NaN).takenFace() == 0);
         play(city);
         check("fixture: it is settled, and the households, the bank and the world each hold part of it",
                 bond.unsettledFace() == 0 && bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.worldPrincipal() > 0);
+        check("fixture: ...each a real part, at least A_PART of the line (" + A_PART + ")", eachHoldsAPart(bond));
         check("fixture: ...and the central bank none, so the whole principal can be offered", bond.centralBankPrincipal() == 0);
         out.printf("   the line: D$%,.0fk - the bank %,.0fk, the households %,.0fk, the businesses %,.0fk, the world %,.0fk%n",
                 bond.getOustandingPrincipal(), bond.bankPrincipal(), bond.householdPrincipal(), bond.firmPrincipal(), bond.worldPrincipal());
@@ -596,16 +674,18 @@ public class BuybackCheck {
         Game city = playedCity("buybackcheck-cb");
         DebtManager ledger = city.getDebtManager();
         CentralBank cb = city.getCentralBank();
-        HouseholdBalance hb = city.getHouseholdBalance();
 
-        worldWantsPaper(city);
-        Debt bond = sell(city, Math.max(100, hb.spareForPaper() * 3), 10);
+        Debt bond = sellToAllHolders(city, 10, false);
         check("fixture: the treasury sold another line", bond != null);
         play(city);
+        // FS13, 2026-11-20: the dial is set on a settled line and ONE month is played, the top of which is the central bank's first step toward it
+        // (Game.openMarketOperation(), at most CentralBank.QE_SPEED of the dial in the term paper, from the bank's settled paper first): the holding is
+        // caused at that month and read there, where a wait of up to 24 months for it to arrive stood.
         cb.setTargetShare(.3);
-        int guard = 0;
-        while (bond.centralBankPrincipal() <= 0 && guard++ < 24) play(city);
-        check("fixture: the central bank, on its dial, holds part of the line", bond.centralBankPrincipal() > 0 && guard < 24);
+        play(city);
+        check("fixture: the central bank, on its dial, holds part of the line", bond.centralBankPrincipal() > 0);
+        check("fixture: ...and no more than its dial of the term paper",
+                cb.getPaperHeld() <= cb.getTargetShare() * ledger.termPrincipal() + MoneyAudit.tolerance(ledger.termPrincipal()));
         check("fixture: ...and the bank, the households or the world hold the rest",
                 bond.bankPrincipal() + bond.householdPrincipal() + bond.firmPrincipal() + bond.worldPrincipal() > 0);
 
@@ -763,19 +843,21 @@ public class BuybackCheck {
     /** BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. */
     static void cancelReopening(Game city) {
         out.println("\n--- 5a. a reopened line closed before the settle ---");
-        HouseholdBalance hb = city.getHouseholdBalance();
         city.setCashForTest(Founding.WEALTHY_CASH);
-        worldWantsPaper(city);
-        Debt line = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2), 20);
+        // FS13, 2026-11-20: the first sale is to every holder by cause (sellToAllHolders()), so the line the buyback reads is paid to the bank and the
+        // households by the savers' rate and the bank's room the sale was struck on, and the reopening is a fifth of it.
+        Debt line = sellToAllHolders(city, 20, false);
         check("fixture: the first sale made a line", line != null);
         if (line == null) return;
         check("the first sale's audit closes", closes(play(city)));
         double bankPaidFace = line.bankPrincipalPaid();
         double householdsFace = line.householdPrincipal();
         check("fixture: the settled line has paid bank and household holdings", bankPaidFace > 0 && householdsFace > 0);
+        check("fixture: ...each a real part, at least A_PART of the line (" + A_PART + ")",
+                bankPaidFace >= A_PART * line.getOustandingPrincipal() && householdsFace >= A_PART * line.getOustandingPrincipal());
         double split = city.getBank().equitySplitResidual();
         double dueBefore = city.getCityPaperUnsettled();
-        Debt reopened = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * .2), 20);
+        Debt reopened = sell(city, Math.max(100 * PriceLevel.FACTOR, line.getOustandingPrincipal() * .2), 20);
         check("fixture: the second sale reopened the same line", reopened == line && line.unsettledFace() > 0);
         if (reopened != line) return;
         double unpaidFace = line.unsettledFace(), unpaidCash = line.getSettleDue();
@@ -804,12 +886,14 @@ public class BuybackCheck {
     static void dollars() throws Exception {
         out.println("\n--- 6. dollar paper is the world's alone, bought back at fair ---");
 
-        Path root = TempDirs.create("buyback-dollar");
-        Game g;
-        System.setOut(quiet);
-        try { g = ForeignDebtCheck.tradingCity(root.resolve("trading")); } finally { System.setOut(out); }
+        // FS13, 2026-11-20: a founded scratch city with no months played, handed the exports the world prices the ask on (ForeignDebtCheck.earnsAbroad(),
+        // sized as RestructureCheck's dollar pump sizes them) so the window is open by cause and not by what a trading city's depots earned by month 60.
+        Game g = new Game(GameFiles.scratch("buybackcheck-dollar"));
+        quietly(g::run);
         g.setCashForTest(Founding.WEALTHY_CASH);
         DebtManager ledger = g.getDebtManager();
+        ForeignDebtCheck.earnsAbroad(ledger, RestructureCheck.DOLLAR_ASK * ledger.rateOf("USD"), RestructureCheck.DOLLAR_STRESS_SHARE);
+        check("fixture: the world's window is open: the city earns abroad and has not defaulted", ledger.getMonthlyExports() > 0 && ledger.foreignWindowOpen());
         quietly(() -> g.handleForeignLogic("Term", RestructureCheck.DOLLAR_ASK, 30, 100 * PriceLevel.FACTOR, false));
         Debt usd = null;
         for (Debt d : ledger.getDebt()) if (d.isForeign()) usd = d;
@@ -854,12 +938,10 @@ public class BuybackCheck {
         out.println("\n--- 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing ---");
 
         DebtManager ledger = city.getDebtManager();
-        HouseholdBalance hb = city.getHouseholdBalance();
         Bank bank = city.getBank();
         city.setCashForTest(Founding.WEALTHY_CASH);
 
-        worldWantsPaper(city);
-        Debt bond = sell(city, Math.max(100, hb.spareForPaper() * 3), 5);
+        Debt bond = sellToAllHolders(city, 5, false);
         check("fixture: the treasury sold a five-year line", bond != null);
         check("fixture: ...unsettled", bond != null && bond.unsettledFace() > 0);
         double[] unsettled = snapshot(city, bond);
@@ -867,8 +949,13 @@ public class BuybackCheck {
         Buyback.Result part = city.buyBack(bond, unsettledPrincipal / 2, Double.NaN);
         check("a part of a sale not yet settled is refused: nothing is taken, nothing moves",
                 part.takenFace() == 0 && same(unsettled, snapshot(city, bond)));
+        // FS13, 2026-11-20: the highest price that leaves some behind is the double just under the one offer an unsettled sale has, the cancellation at its
+        // proceeds, read off the quote's own ladder: this sale clears over fair, so it is cancelled under fair, and a point under fair on a figure tried was over it.
+        Buyback.Result cancel = city.quoteBuyback(bond, unsettledPrincipal, Double.NaN);
+        check("fixture: the whole of an unsettled sale has one offer, its cancellation", cancel.ladder().size() == 1
+                && cancel.ladder().get(0).holder() == Buyback.Holder.UNSETTLED);
         check("...and so is the whole of it under a highest price that leaves some behind",
-                city.quoteBuyback(bond, unsettledPrincipal, city.fairValueOf(bond) / unsettledPrincipal * 100 - .5).takenFace() == 0);
+                city.quoteBuyback(bond, unsettledPrincipal, Math.nextDown(cancel.ladder().get(0).per100())).takenFace() == 0);
         check("...but the whole of it, at any price, is quoted: it costs what the thin quote says",
                 city.quoteBuyback(bond, unsettledPrincipal, Double.NaN).takenFace() > 0
                         && city.quoteRepurchase(bond) == city.quoteBuyback(bond, unsettledPrincipal, Double.NaN).paid());
@@ -884,6 +971,7 @@ public class BuybackCheck {
         check("...which is never under what the piece is worth to somebody who does not care to hold it",
                 quoted >= city.fairValueOf(bond) - 1e-6);
 
+        // FS13, 2026-11-20: the treasury is handed half what the whole piece costs (the quote's own figure), so it cannot pay by cause.
         city.setCashForTest(quoted / 2);
         double cash = city.getCash();
         double[] before = snapshot(city, bond);
@@ -896,7 +984,11 @@ public class BuybackCheck {
 
         city.setCashForTest(Founding.WEALTHY_CASH);
         double[] rich = snapshot(city, bond);
-        Buyback.Result cheap = city.buyBack(bond, principal, all.fairPer100() - .5);
+        // FS13, 2026-11-20: the highest price under every offer is read off the quote's own ladder (cheapest first): the double just under its first
+        // offer, with the same quote taking from it at that price (a threshold from both sides), not a point under fair on a figure tried.
+        double cheapest = all.ladder().get(0).per100();
+        check("fixture: at the cheapest offer's own price the quote takes from it", city.quoteBuyback(bond, principal, cheapest).takenFace() > 0);
+        Buyback.Result cheap = city.buyBack(bond, principal, Math.nextDown(cheapest));
         check("a highest price under every offer buys nothing", cheap.takenFace() == 0);
         check("...and moves nothing", same(rich, snapshot(city, bond)));
         Buyback.Result none = city.buyBack(null, principal, Double.NaN);
@@ -1106,14 +1198,12 @@ public class BuybackCheck {
     static void callableInPlay(Game city) {
         final double call = CallTree.CALL_PRICE;
         DebtManager ledger = city.getDebtManager();
-        HouseholdBalance hb = city.getHouseholdBalance();
 
-        worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
-        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
-        out.printf("   m%d: the callable sale: the households' spare for paper D$%,.1fk, the ask %,.1fk, the savers' rate %.4f%n",
-                city.getMonth(), hb.spareForPaper(), ask, city.getBank().depositRate());
-        quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR, Auction.Cap.DEFAULT, true));
+        // FS13, 2026-11-20: the callable sale is to every holder by cause (sellToAllHolders()): the households' share of it is the savers' rate set under
+        // the stop, so their holding is a quarter of the line and what they ask for it is over the call price by their rule (Buyback.offers()), at
+        // whatever month the city stands in. The premises below assert it against CallTree.CALL_PRICE.
+        sellToAllHolders(city, 10, true);
         LongTermBond found = null;
         for (Debt d : ledger.getDebt()) if (d instanceof LongTermBond l && l.isCallable() && !l.isForeign() && l.unsettledFace() > 0) found = l;
         check("fixture: the treasury sold a callable ten-year line", found != null);
@@ -1127,6 +1217,7 @@ public class BuybackCheck {
         check("fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none",
                 bond.unsettledFace() == 0 && bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0 && bond.worldPrincipal() > 0
                         && bond.centralBankPrincipal() == 0);
+        check("fixture: ...each a real part, at least A_PART of the line (" + A_PART + ")", eachHoldsAPart(bond));
         check("fixture: its first call month is still ahead, so it cannot be called",
                 bond.getFirstCallMonth() > city.getMonth() && !city.canCall(bond));
 
@@ -1271,16 +1362,16 @@ public class BuybackCheck {
 
         // A played city: a line sold and settled, all of it quoted, then half.
         DebtManager ledger = city.getDebtManager();
-        HouseholdBalance hb = city.getHouseholdBalance();
-        worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
-        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 3);
-        Debt bond = sell(city, ask, 10);
+        // FS13, 2026-11-20: the line is sold to every holder by cause (sellToAllHolders()), so what the holders ask over fair is by construction a sum of
+        // the households', the businesses' and the world's, and the identity below reads it.
+        Debt bond = sellToAllHolders(city, 10, false);
         check("fixture: the treasury sold a ten-year line", bond != null);
         if (bond == null) return;
         play(city);
         check("fixture: it is settled, and held by more than the bank", bond.unsettledFace() == 0 && ledger.getDebt().contains(bond)
                 && bond.householdPrincipal() + bond.firmPrincipal() + bond.worldPrincipal() > 0);
+        check("fixture: ...the households, the bank and the world each a real part, at least A_PART of the line (" + A_PART + ")", eachHoldsAPart(bond));
         double principal = bond.getOustandingPrincipal();
         Buyback.Result all = city.quoteBuyback(bond, principal, Double.NaN);
         check("fixture: the quote takes the line", all.takenFace() > 0);
