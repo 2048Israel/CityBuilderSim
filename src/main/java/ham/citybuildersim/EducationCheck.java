@@ -58,8 +58,11 @@ import java.nio.file.Path;
  *    totals it sits under.
  *
  * FS16: the first sections cause their premises. Their towns (townBuilt()) are six months old with their bands set (skillsSet()) and
- * their students seeded part way through a course (finishing()); the one section on a lived city, "a licence belongs to a person", is
- * an identity whose breadth is the played state.
+ * their students seeded part way through a course (finishing()); the sections on a lived city (a licence belongs to a person, through a save, the
+ * city's books) are identities whose breadth is the played state. The price, the wait, the report card, the grant, the loan and the price of a place do the same: one
+ * town fed the one lever (subsidy, a pool set wide, students seeded with seeded(), the basket based and the level set, a hand-fed poor town)
+ * and the month or the course stepped by hand, where they were cities played hundreds of months. The one section still reading a condition off a played city is
+ * "the queue for a job includes the overqualified", which builds the city it reads.
  */
 public class EducationCheck {
 
@@ -222,6 +225,79 @@ public class EducationCheck {
         state[at + monthsLeft - 1] += students;
         ed.restore(state);
         return Math.abs(ed.cohortsInFlight(type)[monthsLeft - 1] - before - students) < 1e-9;
+    }
+
+    /** The diploma band the price section's towns are set to, as a share of the first town's workforce (FS16): the same pool in all three, small enough that three universities never fill on it. */
+    static final double PRICE_POOL_SHARE = .15;
+
+    /** The students the grant's towns are put through a university with (FS16): enough that the bill is a sum of people and not a rounding. */
+    static final double GRANT_STUDENTS = 400;
+
+    /** The expected price level the grant's town is put at (FS16): off founding by a quarter, so the bill's level is a factor and not a one. */
+    static final double GRANT_EXPECTED_LEVEL = 1.25;
+
+    /** The university students put into the lender town with their whole course before them (FS16): the ones who stay in the students' cell and keep borrowing. */
+    static final double LOAN_STAYING_STUDENTS = 300;
+
+    /** The university students put into the lender town in their last month (FS16): the ones who graduate in its first month and carry their loans to the working families in its second. */
+    static final double LOAN_FINISHING_STUDENTS = 100;
+
+    /** The pension contribution rate the grant's town is put at to show a surplus (FS16): with the income tax at .5 and the property tax at its ceiling, enough that a town six months old closes its bridge. */
+    static final double SURPLUS_CONTRIBUTION_RATE = .3;
+
+    /** The health premium rate the grant's town is put at to show a surplus (FS16): with the contributions above, the last of what a town six months old needs to close its bridge. */
+    static final double SURPLUS_HEALTH_PREMIUM = .1;
+
+    /**
+     * Students put into a course and into the town's books (FS16): finishing()'s cohort, and then the population manager told who is out of
+     * the supply (Education.getStudying()) and the families who the students are (setSeekers()), as the month before would have left them.
+     * True if the cohort now holds the students.
+     */
+    static boolean seeded(Game g, EducationType type, double students, int monthsLeft) {
+        Education ed = g.getEducation();
+        boolean held = finishing(ed, type, students, monthsLeft);
+        g.getPopulationManager().setStudying(ed.getStudying());
+        g.getFamilies().setSeekers(g.getFamilies().getSeekers(FamilyModel.Seeker.UNEMPLOYED), g.getPopulationManager().getStudyingTotal());
+        return held;
+    }
+
+    /** The workforce of the hand-fed town whose labourers outnumber its labouring posts (FS16): over the 3,300 posts the section puts up, so the unskilled wage cannot rise over the going rate. */
+    static final long PLENTY_OF_LABOURERS = 6_000;
+
+    /** The workforce of the hand-fed town whose labouring posts outnumber its labourers (FS16): under the 3,300 posts less its skilled heads, so the unskilled wage climbs over the going rate. */
+    static final long SCARCE_OF_LABOURERS = 2_400;
+
+    /** The diploma band the wait's town is set to, as a share of its workforce (FS16): a university's pool wide enough that its first month's intake is well over the ten students the section asks for. */
+    static final double WAIT_POOL_SHARE = .5;
+
+    /* The hand-fed population, its market and a month of arrivals into it are LabourCheck.handFed(), pricedOn() and arrivalsOnce() (FS16). */
+
+    /** The workforce of the hand-fed poor town the price section reads (FS16): large enough that its pool of diploma-holders is hundreds. */
+    static final long PRICE_TOWN_WORKFORCE = 4_000;
+
+    /** The diploma-holders of the hand-fed poor town (FS16): three times its 500 diploma posts, so the diploma wage is a surplus's and sits near the table the fees were struck against. */
+    static final double PRICE_TOWN_DIPLOMAS = 1_500;
+
+    /** The skilled heads of the hand-fed poor town (FS16): PRICE_TOWN_DIPLOMAS diploma-holders and a few above them. */
+    static double[] priceTownHeads() {
+        double[] heads = new double[WageBand.values().length];
+        heads[WageBand.DIPLOMA.ordinal()] = PRICE_TOWN_DIPLOMAS;
+        heads[WageBand.COLLEGE.ordinal()] = 100;
+        heads[WageBand.UNIVERSITY.ordinal()] = 40;
+        return heads;
+    }
+
+    /** The posts of the hand-fed poor town (FS16): 500 for the diploma-holders, and a few labouring and graduate ones. */
+    static long[] priceTownPosts() {
+        long[] posts = new long[JobType.values().length];
+        posts[JobType.NO_DIPLOMA.ordinal()] = 1_500;
+        posts[JobType.DIPLOMA.ordinal()] = 500;
+        posts[JobType.COLLEGE_HEALTH.ordinal()] = 40;
+        posts[JobType.COLLEGE_BUSINESS.ordinal()] = 30;
+        posts[JobType.COLLEGE_ENGINEERING.ordinal()] = 30;
+        posts[JobType.UNIV_SCIENCE.ordinal()] = 20;
+        posts[JobType.UNIV_POLICY.ordinal()] = 20;
+        return posts;
     }
 
     public static void main(String[] args) throws Exception {
@@ -571,51 +647,48 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- and tuition decides who can actually go ---");
 
-        Game free = city(null);
-        Game paid = city(null);
         /*
-         * RE-CAUSED (revised 0.7.19, Jerus: "Both rebates"). The two cities
-         * are the same but for tuition, on 120 Low-Rise buildings the fixture
-         * puts up - more homes than either has households. With the rebate on
-         * a new rental home the landlords' rent falls back towards its
-         * untaxed level while their repairs still carry the builders' tax,
-         * and in the free city, whose students earn nothing, the landlords'
-         * month fell to $71k by month 49 and they sold 53 of the empty
-         * buildings (7,560 homes to 4,221 by month 61): a housing crash in one
-         * city and not the other, which left it with 4,623 graduates against
-         * the paid city's 5,166. That is the landlords' planner deciding the
-         * comparison, not tuition, so both are held (BusinessInvestment
-         * .holdSector(), as RailCheck holds its fixture's): the homes stay
-         * the ones the fixture built, in both.
+         * ONE TOWN, ONE MONTH, THE SUBSIDY THE ONE LEVER (FS16). It was two cities played 240 months, free and at full price, their
+         * graduates and their bills compared, on 120 buildings of homes the fixture put up and held (revised 0.7.19, Jerus: "Both
+         * rebates", so that a housing crash in one and not the other did not decide the comparison). The two differ by the one lever
+         * and so does this: a town of the schools sections (townBuilt()) with its diploma band set (skillsSet()), its own Education fed
+         * a month by hand with the town's children, people and wages and seats for its whole pool, once at a subsidy of 1.0 and once at
+         * 0.0, the state put back between (Education.getState(), restore()). What is read is the model's own willing share at the two
+         * prices, the month's intake, who it left out, and what the month cost the city.
          */
-        free.getBusinessInvestment().holdSector(free.getSectors().realEstate().key());
-        paid.getBusinessInvestment().holdSector(paid.getSectors().realEstate().key());
-        quietly(() -> {
-            schools(free);
-            free.getEducation().setTuitionSubsidy(1.0);
-            free.simulateMonths(240);
+        Game fee = townBuilt(true, false);
+        quietly(() -> skillsSet(fee));
+        Education fed = fee.getEducation();
+        PopulationManager feePeople = fee.getPopulationManager();
+        LabourMarket feeWages = fee.getLabourMarket();
+        EducationType degree = EducationType.UNIVERSITY;
+        double feePool = fed.eligibleFor(degree, feePeople);
+        double[] feeSeats = new double[EducationType.values().length];
+        feeSeats[degree.ordinal()] = fed.studentBody(degree) + feePool;
+        double[] feeOpening = fed.getState();
+        double[][] feeTwins = new double[2][];   // free, then paid: the willing share, who can afford, the intake, what the city forwent, what households paid
+        for (int t = 0; t < 2; t++) {
+            fed.restore(feeOpening);
+            fed.setTuitionSubsidy(t == 0 ? 1.0 : 0.0);
+            double willingNow = fed.willingShare(degree, feeWages);
+            double affordNow = fed.studyAffordability(degree, feeWages);
+            fed.advanceMonth(feeSeats, fee.getCohorts(), feePeople, feeWages, 0, 0);
+            feeTwins[t] = new double[] { willingNow, affordNow, fed.cohortsInFlight(degree)[degree.months() - 1], fed.getSubsidy(), fed.getFees() };
+        }
+        fed.restore(feeOpening);
 
-            schools(paid);
-            paid.getEducation().setTuitionSubsidy(0.0);
-            paid.simulateMonths(240);
-        });
+        System.out.printf("   free tuition: %,.1f enrol (willing %.2f)    full price: %,.1f (willing %.2f), of a pool of %,.0f%n",
+                feeTwins[0][2], feeTwins[0][0], feeTwins[1][2], feeTwins[1][0], feePool);
+        System.out.printf("   and the bill:  $%,.1fk forgone     $%,.1fk forgone, $%,.1fk paid at the door%n",
+                feeTwins[0][3], feeTwins[1][3], feeTwins[1][4]);
 
-        double freeGrads = free.getPopulationManager()
-                .workforceByBand()[WageBand.UNIVERSITY.ordinal()];
-        double paidGrads = paid.getPopulationManager()
-                .workforceByBand()[WageBand.UNIVERSITY.ordinal()];
-
-        System.out.printf("   free tuition: %,.0f graduates    full price: %,.0f%n",
-                freeGrads, paidGrads);
-        System.out.printf("   and the bill:  $%,.0f            $%,.0f%n",
-                free.getEducation().getGrossCost(), paid.getEducation().getGrossCost());
-
-        assertTrue("fixture: both cities kept the homes the fixture built",
-                free.getBuildingManager().getTotalHomes() == paid.getBuildingManager().getTotalHomes()
-                        && free.getBuildingManager().getTotalHomes() >= 7_560);
-        assertTrue("paying for it yourself keeps people out", freeGrads > paidGrads);
+        assertTrue("fixture: seats stand for the whole pool, so they cannot bind the intake, and the pool is there",
+                feePool > 0 && feeSeats[degree.ordinal()] - fed.studentBody(degree) >= feePool * Education.ENROLMENT_RATE);
+        assertTrue("fixture: the free place is worth going for and is affordable, and the paid one is dearer",
+                feeTwins[0][0] > 0 && feeTwins[0][1] == 1 && feeTwins[1][1] < feeTwins[0][1] && feeTwins[0][2] > 0);
+        assertTrue("paying for it yourself keeps people out", feeTwins[0][2] > feeTwins[1][2] && feeTwins[0][0] > feeTwins[1][0]);
         assertTrue("...and free education costs the city more",
-                free.getEducation().getSubsidy() > paid.getEducation().getSubsidy());
+                feeTwins[0][3] > feeTwins[1][3]);
 
         /* ============ 9. IT SURVIVES A SAVE ============
 
@@ -693,38 +766,45 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- the wait is real ---");
 
-        Game waits = city(null);
+        /*
+         * THE COURSE'S MONTHS, STEPPED (FS16). A town six months old with its diploma band set wide (WAIT_POOL_SHARE) and no school
+         * (townBuilt()), a university built, and ONE month lived: that month's intake is the only cohort in the building, at the back of
+         * the queue, and the wait is the course's own length (EducationType.months()) stepped by hand, the pipeline's own month
+         * (Education.advanceMonth() with no places moves the queue and graduates the front). It was a city played 120 months with
+         * schools for the diploma-holders it waited on, and then the course and twelve more months.
+         */
+        Game waits = townBuilt(false, false);
         quietly(() -> {
-            build(waits, "Elementary School", 4);
-            build(waits, "Middle School", 3);
-            build(waits, "High School", 3);
-            waits.simulateMonths(120);   // a city with diploma-holders and no university
+            double[] waitHeads = waits.getPopulationManager().getSkilledHeads().clone();
+            waitHeads[WageBand.DIPLOMA.ordinal()] = WAIT_POOL_SHARE * waits.getPopulationManager().getWorkforce();
+            waits.getPopulationManager().restoreSkilledHeads(waitHeads);
+            build(waits, "University", 1);
+            waits.simulateMonths(1);
         });
-        double universityBefore = waits.getPopulationManager().workforceByBand()[WageBand.UNIVERSITY.ordinal()]
-                + waits.getPopulationManager().getStudyingTotal() * 0;   // graduates, not students
-        double everBefore = waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()];
-        quietly(() -> build(waits, "University", 1));
-
+        Education we = waits.getEducation();
         int course = EducationType.UNIVERSITY.months();
+        double peakStudents = we.studentBody(EducationType.UNIVERSITY);
+        double[] taken = we.cohortsInFlight(EducationType.UNIVERSITY);
+        double supplyOut = waits.getPopulationManager().getStudyingTotal();
         int firstGraduation = -1;
-        double peakStudents = 0;
-        for (int m = 1; m <= course + 12; m++) {
-            quietly(() -> waits.simulateMonths(1));
-            peakStudents = Math.max(peakStudents, waits.getEducation().studentBody(EducationType.UNIVERSITY));
-            if (firstGraduation < 0
-                    && waits.getEducation().getEverGraduated()[WageBand.UNIVERSITY.ordinal()] > everBefore + .5) {
+        double graduated = 0;
+        for (int m = 1; m <= course; m++) {
+            we.advanceMonth(null, null, null, null, 0, 0);
+            double leaving = we.getGraduates()[WageBand.UNIVERSITY.ordinal()];
+            if (firstGraduation < 0 && leaving > 0) {
                 firstGraduation = m;
+                graduated = leaving;
             }
         }
         System.out.printf("   course %d months; first graduates in month %d; peak %,.0f students%n",
                 course, firstGraduation, peakStudents);
-        assertTrue("fixture: people enrolled", peakStudents > 10);
+        assertTrue("fixture: people enrolled", peakStudents > 10 && taken[course - 1] == peakStudents);
         assertTrue("nobody graduates before the course is over",
                 firstGraduation < 0 || firstGraduation >= course);
         assertTrue("...and somebody graduates once it is",
-                firstGraduation > 0 && firstGraduation <= course + 6);
+                firstGraduation == course && Math.abs(graduated - peakStudents) < 1e-9);
         assertTrue("...while the students were out of the supply",
-                waits.getPopulationManager().getStudyingTotal() > 10);
+                supplyOut > 10 && Math.abs(supplyOut - peakStudents) < 1e-9);
 
         /* ============ 10. AND THE TREASURY PAYS FOR IT ============ */
         System.out.println("\n--- and it is on the city's books ---");
@@ -805,102 +885,91 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- the unskilled band is a report card on the schools ---");
 
-        Game[] pair = new Game[2];
+        /*
+         * THE TWO TOWNS, ONE MONTH, AND THE FLOW (FS16). The report card was read off two cities played 300 months, as a stock: the
+         * unskilled band's share of the workforce and its headcount, which growth diluted (the history of this line is above). Nobody
+         * arrives without a diploma, so the only unskilled adults a city makes are the school leavers it did not teach; the stock was that
+         * flow's sum. Caused: two towns six months old, one with no school and one with the ladder (townBuilt()), the unskilled arrivals
+         * held in both (Migration.holdArrivals()), lived one more month, and the flow read off it: the month's school leavers (the teens
+         * over the months they stay, Education.diplomas() at a coverage and a share who can pay of one), the ones the high schools handed a
+         * diploma (getNewDiplomas()), and the rest, who enter the workforce unskilled.
+         */
+        Game bareTown = townBuilt(false, false);
+        Game taughtTown = townBuilt(true, false);
         quietly(() -> {
-            pair[0] = city(GameFiles.scratch("educheck-none-a"));
-            pair[0].getMigration().holdArrivals(WageBand.NONE);
-            pair[0].simulateMonths(300);
-            pair[1] = city(GameFiles.scratch("educheck-none-b"));
-            pair[1].getMigration().holdArrivals(WageBand.NONE);
-            schools(pair[1]);
-            pair[1].simulateMonths(300);
+            bareTown.getMigration().holdArrivals(WageBand.NONE);
+            taughtTown.getMigration().holdArrivals(WageBand.NONE);
+            bareTown.simulateMonths(1);
+            taughtTown.simulateMonths(1);
         });
-        Game unschooled = pair[0], schooled = pair[1];
 
-        double bareNone = share(unschooled, WageBand.NONE);
-        double taughtNone = share(schooled, WageBand.NONE);
-        double bareHeads = heads(unschooled, WageBand.NONE);
-        double taughtHeads = heads(schooled, WageBand.NONE);
-        System.out.printf("   no diploma: %.1f%% of the workforce with no schools, %.1f%% with them"
-                + "  (%,.0f people against %,.0f; basic coverage %.0f%% vs %.0f%%)%n",
-                bareNone * 100, taughtNone * 100, bareHeads, taughtHeads,
-                unschooled.getEducation().basicCoverage() * 100,
-                schooled.getEducation().basicCoverage() * 100);
+        double bareLeavers = Education.diplomas(bareTown.getCohorts().get(AgeBand.TEEN), 1, 1);
+        double taughtLeavers = Education.diplomas(taughtTown.getCohorts().get(AgeBand.TEEN), 1, 1);
+        double bareEntering = bareLeavers - bareTown.getEducation().getNewDiplomas();
+        double taughtEntering = taughtLeavers - taughtTown.getEducation().getNewDiplomas();
+        double bareNone = bareEntering / bareLeavers;
+        double taughtNone = taughtEntering / taughtLeavers;
+        System.out.printf("   no diploma: %.1f%% of the month's school leavers with no schools, %.1f%% with them"
+                + "  (%,.2f people a month against %,.2f of %,.1f and %,.1f; basic coverage %.0f%% vs %.0f%%)%n",
+                bareNone * 100, taughtNone * 100, bareEntering, taughtEntering, bareLeavers, taughtLeavers,
+                bareTown.getEducation().basicCoverage() * 100,
+                taughtTown.getEducation().basicCoverage() * 100);
 
         assertTrue("fixture: the unschooled city really has no basic coverage",
-                unschooled.getEducation().basicCoverage() < .05);
+                bareTown.getEducation().basicCoverage() < .05);
         assertTrue("fixture: the schooled one really has some",
-                schooled.getEducation().basicCoverage() > .5);
-        /*
-         * A SEVENTH AND NOT A QUARTER, AND THE OLD LEVEL WAS READING THE WRONG
-         * THING. 2026-09-17, found by the car-finance batch: this line asked
-         * for bareNone > .25, the unschooled city came in at 24.2%, and the
-         * harness went red on a change that has nothing whatever to do with
-         * schools. It was right to fire and wrong about why.
-         *
-         * THE SHARE IS DILUTED BY GROWTH. Nobody arrives unskilled, so every
-         * immigrant lands in some other band and pushes this one's SHARE down
-         * without touching its COUNT. The unchanged code walks this same city
-         * through 0.0% at month 12, 7.1% at 96, 14.7% at 150, 22.6% at 200,
-         * 28.8% at 250 and 34.7% at 300: it crosses .25 somewhere around month
-         * 220, and where it happens to sit at month 300 is a statement about
-         * how fast the city grew, not about whether it has schools. A change
-         * that let households finance a car made the city grow faster and put
-         * the reading back under the line, which is the threshold catching the
-         * growth rate rather than the thing this section is named for.
-         *
-         * SO THE TEETH MOVED TO SOMETHING GROWTH CANNOT MOVE: the headcount,
-         * against the schooled city's, twenty to one and usually nearer a
-         * hundred. That is the claim this section actually makes, an immigrant
-         * cannot dilute it, and it does not care how big either city got. The
-         * share stays on as a floor meaning "a large minority and not a
-         * rounding error", which is all it was ever load-bearing for - the
-         * comparison below divides by it.
-         */
+                taughtTown.getEducation().basicCoverage() > .5);
+        assertTrue("fixture: both towns have school leavers to teach or not", bareLeavers > 0 && taughtLeavers > 0);
         assertTrue("a city with no schools makes its own unskilled adults",
-                bareNone > .15);
+                bareNone > .15 && bareEntering == bareLeavers);
         assertTrue("...and against a city with them it is a factor, not a margin",
-                bareHeads > 20 * taughtHeads);
+                bareEntering > 20 * taughtEntering);
         assertTrue("...and schools are what stop it",
                 taughtNone < bareNone * .6);
         assertTrue("nobody arrived unskilled - not one, in either city",
-                unschooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0
-                        && schooled.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0);
+                bareTown.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0
+                        && taughtTown.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()] == 0);
 
         /*
-         * ...AND THE NEW RULE, WITH ARRIVALS OPEN (0.7.18). The same two cities
-         * played again a month at a time. Every month an unskilled wage at the
-         * going rate or under draws nobody without a diploma; months paying
-         * over it draw some.
+         * ...AND THE NEW RULE, WITH ARRIVALS OPEN (0.7.18), caused (FS16). Two populations fed by hand with the same posts and the same
+         * skilled heads, one month of arrivals drawn into each (arrivalsOnce(), as LabourCheck's "who moves in" does): the first has
+         * more labourers than labouring posts, the shape of the city the schools have not stopped, so the unskilled wage sits at the going
+         * rate; the second has fewer, the shape of the city they have, so its wage is over it. At the going rate nobody arrives without a
+         * diploma; over it, some do. It was the two cities of the pair played again for 300 months with arrivals open, read month by month.
          */
-        Game[] arrivalsOpen = new Game[2];
-        int[] goingRateMonths = new int[1], boughtAtGoingRate = new int[1];
-        int[] premiumMonths = new int[1], boughtAtPremium = new int[1];
-        quietly(() -> {
-            arrivalsOpen[0] = city(GameFiles.scratch("educheck-none-open-a"));
-            arrivalsOpen[1] = city(GameFiles.scratch("educheck-none-open-b"));
-            schools(arrivalsOpen[1]);
-            for (int m = 0; m < 300; m++) {
-                for (Game g : arrivalsOpen) {
-                    g.simulateMonths(1);
-                    double none = g.getMigration().getLastArrivalMix()[WageBand.NONE.ordinal()];
-                    if (g.getLabourMarket().bandPremium(WageBand.NONE) <= 1) {
-                        goingRateMonths[0]++;
-                        if (none > 0) boughtAtGoingRate[0]++;
-                    } else if (g.getMigration().getLastArrivals() > 0) {
-                        premiumMonths[0]++;
-                        if (none > 0) boughtAtPremium[0]++;
-                    }
-                }
-            }
-        });
-        System.out.printf("   arrivals open: %d city-months at the going rate, %d of them with unskilled arrivals;"
-                + " %d paying over it with somebody arriving, %d of them with unskilled arrivals%n",
-                goingRateMonths[0], boughtAtGoingRate[0], premiumMonths[0], boughtAtPremium[0]);
-        assertTrue("fixture: the open pair spent months at the going rate and months over it",
-                goingRateMonths[0] > 0 && premiumMonths[0] > 0);
-        assertTrue("nobody arrives unskilled into a city paying the going rate", boughtAtGoingRate[0] == 0);
-        assertTrue("...and a city paying over it for them buys some", boughtAtPremium[0] > 0);
+        long[] labouringPosts = new long[JobType.values().length];
+        labouringPosts[JobType.NO_DIPLOMA.ordinal()] = 3_300;
+        labouringPosts[JobType.DIPLOMA.ordinal()] = 500;
+        labouringPosts[JobType.COLLEGE_HEALTH.ordinal()] = 40;
+        labouringPosts[JobType.COLLEGE_BUSINESS.ordinal()] = 30;
+        labouringPosts[JobType.COLLEGE_ENGINEERING.ordinal()] = 30;
+        labouringPosts[JobType.UNIV_SCIENCE.ordinal()] = 20;
+        labouringPosts[JobType.UNIV_POLICY.ordinal()] = 20;
+        double[] skilledHeads = new double[WageBand.values().length];
+        skilledHeads[WageBand.DIPLOMA.ordinal()] = 600;
+        skilledHeads[WageBand.COLLEGE.ordinal()] = 100;
+        skilledHeads[WageBand.UNIVERSITY.ordinal()] = 40;
+        PopulationManager plentyPeople = LabourCheck.handFed(PLENTY_OF_LABOURERS, skilledHeads, labouringPosts, new double[JobType.values().length]);
+        PopulationManager scarcePeople = LabourCheck.handFed(SCARCE_OF_LABOURERS, skilledHeads, labouringPosts, new double[JobType.values().length]);
+        LabourMarket plentyWages = LabourCheck.pricedOn(plentyPeople);
+        LabourMarket scarceWages = LabourCheck.pricedOn(scarcePeople);
+        Migration plentyArrivals = LabourCheck.arrivalsOnce(plentyWages, plentyPeople);
+        Migration scarceArrivals = LabourCheck.arrivalsOnce(scarceWages, scarcePeople);
+        double plentyNone = plentyArrivals.getLastArrivalMix()[WageBand.NONE.ordinal()];
+        double scarceNone = scarceArrivals.getLastArrivalMix()[WageBand.NONE.ordinal()];
+        System.out.printf("   arrivals open: unskilled premium %.2f with %,.0f labourers for %,d posts, %.2f of %.1f arrivals without a diploma;"
+                + " premium %.2f with %,.0f labourers, %.2f of %.1f arrivals without one%n",
+                plentyWages.bandPremium(WageBand.NONE), plentyPeople.workforceByBand()[WageBand.NONE.ordinal()],
+                labouringPosts[JobType.NO_DIPLOMA.ordinal()], plentyNone, plentyArrivals.getLastArrivals(),
+                scarceWages.bandPremium(WageBand.NONE), scarcePeople.workforceByBand()[WageBand.NONE.ordinal()],
+                scarceNone, scarceArrivals.getLastArrivals());
+        assertTrue("fixture: the first town pays its labourers no more than the going rate, and the second over it",
+                plentyWages.bandPremium(WageBand.NONE) <= 1 && Migration.reach(plentyWages.bandPremium(WageBand.NONE)) == 0
+                        && scarceWages.bandPremium(WageBand.NONE) > 1 && Migration.reach(scarceWages.bandPremium(WageBand.NONE)) > 0);
+        assertTrue("fixture: the open pair spent months at the going rate and months over it, with somebody arriving in both",
+                plentyArrivals.getLastArrivals() > 0 && scarceArrivals.getLastArrivals() > 0);
+        assertTrue("nobody arrives unskilled into a city paying the going rate", plentyNone == 0);
+        assertTrue("...and a city paying over it for them buys some", scarceNone > 0);
 
         /* ============ 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED ============
 
@@ -933,6 +1002,18 @@ public class EducationCheck {
            Every assertion and every factor is the one it had.
            ==================================================================== */
         System.out.println("\n--- the queue for a job includes the overqualified ---");
+
+        /*
+         * THIS SECTION'S OWN CITY (FS16). The schooled city section 11 read until it was caused: the ladder, the unskilled arrivals held, played
+         * 300 months, so that the graduates have come down into the college work above them. This section is not caused yet (it reads a
+         * played city's queue and is not in the sweep's rows); the city it read is made here, as it was.
+         */
+        Game schooled = city(GameFiles.scratch("educheck-none-b"));
+        quietly(() -> {
+            schooled.getMigration().holdArrivals(WageBand.NONE);
+            schools(schooled);
+            schooled.simulateMonths(300);
+        });
 
         double[] queue = schooled.getPopulationManager().supplyByBand();
         double[] ownHeads = schooled.getPopulationManager().workforceByBand();
@@ -1019,8 +1100,25 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- the grant, on four bases ---");
 
-        Game menu = city(GameFiles.scratch("educheck-grant"));
-        quietly(() -> { schools(menu); menu.simulateMonths(149); });
+        /*
+         * THE TOWN, SIX MONTHS OLD WITH ITS STUDENTS PUT IN (FS16). Not a city played to month 150, whose students and whose price level were
+         * whatever it had grown to: a town of the schools sections (townBuilt()) into whose university GRANT_STUDENTS are put (seeded()),
+         * and the expected price level set to GRANT_EXPECTED_LEVEL (Expectations.restore() with the level's slot written, on a basket PriceIndex.restore() says is based), the two
+         * premises the bill below reads. The first month is the one the opening bill is struck on.
+         */
+        Game menu = townBuilt(true, false);
+        quietly(() -> {
+            seeded(menu, EducationType.UNIVERSITY, GRANT_STUDENTS, EducationType.UNIVERSITY.months());
+            double[] expectations = menu.getExpectations().toSaveArray();
+            expectations[3] = GRANT_EXPECTED_LEVEL;   // the level's slot: credibility, smoothed, expected, level, seeded, lean, struck, step
+            menu.getExpectations().restore(expectations);
+            double[] basket = menu.getPriceIndex().toSaveArray();
+            basket[0] = 1;   // the slot that says the basket is based: until it is, every month puts the level back to one (Expectations.takeMonth())
+            menu.getPriceIndex().restore(basket);
+        });
+        assertTrue("fixture: the students are in the books, the basket is based and the level is the one set",
+                menu.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) >= GRANT_STUDENTS && menu.getPriceIndex().isBased()
+                        && menu.getExpectations().getExpectedLevel() == GRANT_EXPECTED_LEVEL);
         // The bill the month will strike, on the students it opens with: it is
         // struck and paid at the top of the month since 0.7.1, where the
         // students are credited it, so it is read before the month runs.
@@ -1047,13 +1145,11 @@ public class EducationCheck {
         // ...and at founding prices it is the old default's bill at the
         // founding wage: a young city whose basket is not based yet (the
         // index is one) grants its first students what the wage share did of
-        // PayTier's unskilled wage. Played on a month at a time, bounded,
-        // until somebody is studying.
+        // PayTier's unskilled wage. (FS16: caused. The city is the founding's own, no month
+        // played, with its students put in (seeded()), where it was played a month at a time,
+        // bounded, until somebody was studying.)
         Game founded = city(GameFiles.scratch("educheck-grant-founded"));
-        quietly(() -> schools(founded));
-        for (int m = 0; m < 23 && founded.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) < 1; m++) {
-            quietly(() -> founded.simulateMonths(1));
-        }
+        quietly(() -> seeded(founded, EducationType.UNIVERSITY, GRANT_STUDENTS, EducationType.UNIVERSITY.months()));
         double foundedStudents = founded.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT);
         assertTrue("fixture: a young city with students, its prices still at founding (an index of one)",
                 foundedStudents >= 1 && founded.getPriceIndex().getIndex() == 1);
@@ -1114,6 +1210,11 @@ public class EducationCheck {
         // first month, $1.8k at the third, and by the third month of this run (after the grants above) a deficit. The condition is
         // caused by stepping to it, a month at a time and bounded, as the grant section's students are (above).
         dials.setIncomeTaxRate(.5);
+        // FS16: and the rest of the bridge's revenue at its ceiling or near it, because a town six months old runs a deficit of $0.3M to $0.5M a month that the income
+        // tax alone does not close: the property tax at its ceiling, the pension contributions and the health premium raised.
+        dials.setPropertyTaxRate(TaxPolicy.MAX_PROPERTY_TAX);
+        dials.setContributionRate(SURPLUS_CONTRIBUTION_RATE);
+        dials.setHealthPremiumRate(SURPLUS_HEALTH_PREMIUM);
         for (int m = 0; m < 3; m++) {
             quietly(() -> menu.simulateMonths(1));
             if (menu.getTreasurySurplus() > 0) break;
@@ -1282,15 +1383,22 @@ public class EducationCheck {
         GameFiles loanFiles = GameFiles.scratch("educheck-loan");
         Game lender = city(loanFiles);
         lender.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.FIXED, .05 * PriceLevel.FACTOR);
-        quietly(() -> { schools(lender); lender.simulateMonths(150); });
-        // ...AND PLAYED ON TO A MONTH IN WHICH STUDENTS BORROW (revised 0.7.19,
-        // re-caused). The lending read below is the month's, and month 150 of
-        // this city, since the charter branch is exempt from its operating
-        // cost (Bank, THE BRANCHES, BY THEIR CUSTOMERS), is a month in which
-        // nobody drew the loan though the graduates owe $28M. A history, not a
-        // cause: the city is played on, a month at a time and bounded at two
-        // years, to the next month that lends.
-        for (int more = 0; more < 24 && !(lender.getStudentLoansLent() > 0); more++) quietly(() -> lender.simulateMonths(1));
+        held(lender);
+        quietly(() -> { schools(lender); lender.simulateMonths(TOWN_MONTHS - 1); });
+        /*
+         * ...AND THE STUDENTS PUT IN, THREE MONTHS TO THE GRADUATES' LOANS (FS16, caused). Not a city played on to a month that happens to
+         * lend (revised 0.7.19, which played it on a month at a time, bounded at two years, because month 150 of the fixture lent nothing
+         * though its graduates owed $28M). The town is six months old, its schools staffed, and two cohorts are put into the university
+         * (seeded()): LOAN_STAYING_STUDENTS with the course before them and LOAN_FINISHING_STUDENTS in their last month. The first month
+         * the students borrow at the $50 grant and the finishers finish; the Game reads who finished at the top of the next month and the census
+         * carries their share of the students' loans to the working families (HouseholdBalance.setGraduates()) the month after, so in the third
+         * the graduates owe the treasury, and the students who stayed borrow again.
+         */
+        quietly(() -> {
+            seeded(lender, EducationType.UNIVERSITY, LOAN_STAYING_STUDENTS, EducationType.UNIVERSITY.months());
+            seeded(lender, EducationType.UNIVERSITY, LOAN_FINISHING_STUDENTS, 1);
+            lender.simulateMonths(3);
+        });
         assertTrue("fixture: at a $50 grant the students borrowed, and the graduates owe the treasury",
                 lender.getHouseholdBalance().totalGraduateDebt() > 0
                         && lender.getStudentLoansLent() > 0);
@@ -1361,7 +1469,7 @@ public class EducationCheck {
                 priced.getTuitionScale() == TaxPolicy.MAX_TUITION_SCALE);
 
         /*
-         * A POOR CITY WITH THREE UNIVERSITIES AND NO COLLEGE, at five years.
+         * A POOR CITY WITH THREE UNIVERSITIES AND NO COLLEGE, at five years (EDU1; FS16 causes it below, with the same reasoning).
          * The fixture the rest of this harness uses has six colleges and
          * three universities for a city of twenty thousand, so its seats
          * bind: the price moved the willing share from .76 to .29 and the
@@ -1383,58 +1491,105 @@ public class EducationCheck {
          * student body is what the willing make of the pool, and the price
          * reaches it.
          */
-        Game[] priceCities = new Game[3];
+        /*
+         * THE PRICE ON A POOR CITY, FED BY HAND AND LIVED A MONTH (FS16, after EDU1). Not three cities played sixty months to a pool and
+         * wages that growth set: the trap is the price over the wage of the people who would pay it (affordability()), and a young
+         * town's diploma wage is a scarce town's, a third dearer to the fee than the table was struck against, so a Game town six months
+         * old is not poor (its x3 keeps .73 of the willing share it has at x1, not under .6). So the poor city is caused. A population
+         * fed by hand with more diploma-holders than diploma posts (handFed(), PRICE_TOWN_DIPLOMAS of PRICE_TOWN_WORKFORCE), its
+         * market priced on it (pricedOn()), and three Educations at x1, x3 and x0 fed the same pool, the same seats for all of it and
+         * the same wages, each stepped ONE month (advanceMonth()): what is read is the model's own willing share at the three prices
+         * and the month's intake, which is the pool times the willing share times the rate, the price's whole work.
+         */
+        PopulationManager poorPeople = LabourCheck.handFed(PRICE_TOWN_WORKFORCE, priceTownHeads(), priceTownPosts(), new double[JobType.values().length]);
+        LabourMarket poorWages = LabourCheck.pricedOn(poorPeople);
+        PopulationCohorts poorPyramid = new PopulationCohorts();
+        poorPyramid.migrate(LabourCheck.ROOM_TOWN);
         double[] scales = { 1, 3, 0 };
-        double[] fullest = new double[3];
-        quietly(() -> {
-            for (int k = 0; k < 3; k++) {
-                priceCities[k] = city(GameFiles.scratch("educheck-price-" + k));
-                build(priceCities[k], "Elementary School", 14);
-                build(priceCities[k], "Middle School", 14);
-                build(priceCities[k], "High School", 10);
-                build(priceCities[k], "University", 3);
-                priceCities[k].getEconomyManager().getTaxPolicy().setTuitionScale(scales[k]);
-                for (int m = 0; m < 60; m++) {
-                    priceCities[k].simulateMonths(1);
-                    fullest[k] = Math.max(fullest[k], fullness(priceCities[k], EducationType.UNIVERSITY));
-                }
-            }
-        });
+        Education[] poor = { new Education(), new Education(), new Education() };
         double[] enrolled = new double[3];
         double[] willing = new double[3];
+        double[] poolHere = new double[3];
+        double[] fullest = new double[3];
         for (int k = 0; k < 3; k++) {
-            enrolled[k] = priceCities[k].getEducation().studentBody(EducationType.UNIVERSITY);
-            willing[k] = priceCities[k].getEducation().willingShare(EducationType.UNIVERSITY,
-                    priceCities[k].getLabourMarket());
+            poor[k].setTuitionScale(scales[k]);
+            poolHere[k] = poor[k].eligibleFor(EducationType.UNIVERSITY, poorPeople);
+            double[] poorSeats = new double[EducationType.values().length];
+            poorSeats[EducationType.UNIVERSITY.ordinal()] = poolHere[k];
+            willing[k] = poor[k].willingShare(EducationType.UNIVERSITY, poorWages);
+            poor[k].advanceMonth(poorSeats, poorPyramid, poorPeople, poorWages, 0, 0);
+            enrolled[k] = poor[k].studentBody(EducationType.UNIVERSITY);
+            fullest[k] = enrolled[k] / poorSeats[EducationType.UNIVERSITY.ordinal()];
         }
-        Education atOne = priceCities[0].getEducation(), atThree = priceCities[1].getEducation(),
-                atNone = priceCities[2].getEducation();
-        System.out.printf("   at university: %,.0f at x1, %,.0f at x3, %,.0f at x0 (willing %.2f / %.2f / %.2f);"
-                + " fees $%,.1fk / $%,.1fk / $%,.1fk, forgiven $%,.1fk / $%,.1fk / $%,.1fk;"
-                + " fullest %.2f / %.2f / %.2f of the staffed seats%n",
-                enrolled[0], enrolled[1], enrolled[2], willing[0], willing[1], willing[2],
-                atOne.getFees(), atThree.getFees(), atNone.getFees(),
-                atOne.getSubsidy(), atThree.getSubsidy(), atNone.getSubsidy(),
+        Education atOne = poor[0], atThree = poor[1], atNone = poor[2];
+        System.out.printf("   at university: %,.1f at x1, %,.1f at x3, %,.1f at x0 (willing %.2f / %.2f / %.2f) of a pool of %,.0f;"
+                + " fullest %.3f / %.3f / %.3f of the seats%n",
+                enrolled[0], enrolled[1], enrolled[2], willing[0], willing[1], willing[2], poolHere[0],
                 fullest[0], fullest[1], fullest[2]);
+        assertTrue("fixture: the same pool of diploma-holders stands in all three, and it is somebody",
+                poolHere[0] > 0 && poolHere[1] == poolHere[0] && poolHere[2] == poolHere[0]);
         assertTrue("the schools charge at the city's scale", atThree.getTuitionScale() == 3 && atNone.getTuitionScale() == 0);
         assertTrue("fixture: the price is what decides here - x3 cuts the willing share, not the seats",
                 willing[1] < willing[0] * .6);
-        assertTrue("fixture: at x1 and x3 no university filled in five years, so the willing, not the seats, set every intake",
+        assertTrue("fixture: at x1 and x3 no university filled in the month, so the willing, not the seats, set every intake",
                 fullest[0] < 1 && fullest[1] < 1);
+        assertTrue("fixture: the month's intake at x1 is somebody", enrolled[0] > 0);
         assertTrue("a poor city at x3 enrols fewer than at x1: the trap is back", enrolled[1] < enrolled[0] * .9);
         boolean everybodyCan = true;
         for (EducationType type : EducationType.values()) {
-            if (type.isAdult() && atNone.studyAffordability(type, priceCities[2].getLabourMarket()) != 1) everybodyCan = false;
+            if (type.isAdult() && atNone.studyAffordability(type, poorWages) != 1) everybodyCan = false;
         }
         assertTrue("at x0 everybody who would go can afford to", everybodyCan);
         assertTrue("...so everybody the cap lets go, goes",
                 willing[2] == Education.MAX_PARTICIPATION && willing[2] > willing[0]);
         assertTrue("...and more than at x3", enrolled[2] > enrolled[1]);
         assertTrue("a free place bills nothing and forgoes nothing", atNone.getFees() == 0 && atNone.getSubsidy() == 0);
+
+        /*
+         * ...AND THE WIRING, ON THREE TOWNS OF THE GAME (FS16). What the Game does with the price, read on three towns each six months old
+         * with the ladder and three universities built (townBuilt()), the same diploma pool set on each (PRICE_POOL_SHARE of the first
+         * town's workforce, restoreSkilledHeads()), the scale told to the city's policy and lived the one month: the schools charge at it,
+         * the treasury's fee revenue is the fees the households paid, and forgiven over billed is the subsidy share.
+         */
+        Game[] priceCities = new Game[3];
+        double[] priceCityPools = new double[3];
+        quietly(() -> {
+            for (int k = 0; k < 3; k++) {
+                priceCities[k] = townBuilt(false, false);
+                build(priceCities[k], "Elementary School", 14);
+                build(priceCities[k], "Middle School", 14);
+                build(priceCities[k], "High School", 10);
+                build(priceCities[k], "University", 3);
+                priceCities[k].getEconomyManager().getTaxPolicy().setTuitionScale(scales[k]);
+            }
+            double[] heads = priceCities[0].getPopulationManager().getSkilledHeads().clone();
+            heads[WageBand.DIPLOMA.ordinal()] = PRICE_POOL_SHARE * priceCities[0].getPopulationManager().getWorkforce();
+            for (int k = 0; k < 3; k++) {
+                priceCities[k].getPopulationManager().restoreSkilledHeads(heads);
+                priceCityPools[k] = priceCities[k].getEducation().eligibleFor(EducationType.UNIVERSITY, priceCities[k].getPopulationManager());
+                priceCities[k].simulateMonths(1);
+            }
+        });
+        double[] cityEnrolled = new double[3];
+        for (int k = 0; k < 3; k++) cityEnrolled[k] = priceCities[k].getEducation().studentBody(EducationType.UNIVERSITY);
+        Education cityOne = priceCities[0].getEducation(), cityThree = priceCities[1].getEducation(),
+                cityNone = priceCities[2].getEducation();
+        System.out.printf("   in the game: %,.1f at x1, %,.1f at x3, %,.1f at x0 of a pool of %,.0f;"
+                + " fees $%,.1fk / $%,.1fk / $%,.1fk, forgiven $%,.1fk / $%,.1fk / $%,.1fk%n",
+                cityEnrolled[0], cityEnrolled[1], cityEnrolled[2], priceCityPools[0],
+                cityOne.getFees(), cityThree.getFees(), cityNone.getFees(),
+                cityOne.getSubsidy(), cityThree.getSubsidy(), cityNone.getSubsidy());
+        assertTrue("fixture: the same pool stands in all three towns of the game, and the month enrolled somebody in each",
+                priceCityPools[0] > 0 && Math.abs(priceCityPools[1] - priceCityPools[0]) <= 1e-9 * priceCityPools[0]
+                        && Math.abs(priceCityPools[2] - priceCityPools[0]) <= 1e-9 * priceCityPools[0]
+                        && cityEnrolled[0] > 0 && cityEnrolled[1] > 0 && cityEnrolled[2] > 0);
+        assertTrue("...and the town's schools charge at its policy's scale",
+                cityThree.getTuitionScale() == 3 && cityNone.getTuitionScale() == 0);
+        assertTrue("...so a free place in the game bills nothing and forgoes nothing", cityNone.getFees() == 0 && cityNone.getSubsidy() == 0);
         assertTrue("the treasury's fee revenue is the scaled fees households paid",
-                atThree.getFees() > 0
-                        && priceCities[1].getEconomyManager().getEducationFees() == atThree.getFees()
-                        && priceCities[1].getEconomyManager().getNationalAccounts().getEducationFees() == atThree.getFees());
+                cityThree.getFees() > 0
+                        && priceCities[1].getEconomyManager().getEducationFees() == cityThree.getFees()
+                        && priceCities[1].getEconomyManager().getNationalAccounts().getEducationFees() == cityThree.getFees());
         for (int k = 0; k < 2; k++) {
             Education e = priceCities[k].getEducation();
             double billed = e.getSubsidy() + e.getFees();
@@ -1444,7 +1599,7 @@ public class EducationCheck {
                     Math.abs(e.getGrossCost() - (e.getPayroll() + e.getUpkeep())) < 1e-9);
         }
         assertTrue("...and it collects more at the door at x3, from the students it kept",
-                atThree.getFees() / Math.max(1e-9, enrolled[1]) > atOne.getFees() / Math.max(1e-9, enrolled[0]));
+                cityThree.getFees() / Math.max(1e-9, cityEnrolled[1]) > cityOne.getFees() / Math.max(1e-9, cityEnrolled[0]));
 
         /* ============ 16. ALL THREE SURVIVE A SAVE ============ */
         System.out.println("\n--- and the three dials survive a save ---");
@@ -1637,37 +1792,12 @@ public class EducationCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /**
-     * A band's headcount, which - unlike its share - no amount of immigration
-     * into the OTHER bands can move. See section 11.
-     */
-    static double heads(Game g, WageBand band) {
-        return g.getPopulationManager().workforceByBand()[band.ordinal()];
-    }
-
-    /**
-     * How full one kind's schools stand at the month's end: its student body over the seats its staff can teach, the
-     * places the month hands Education (BuildingManager.getStaffedEducationPlaces at the city's fill rate). See section 15.
-     */
-    static double fullness(Game g, EducationType type) {
-        double seats = g.getBuildingManager().getStaffedEducationPlaces(g.getPopulationManager().getJobFillRate())[type.ordinal()];
-        return g.getEducation().studentBody(type) / Math.max(1e-9, seats);
-    }
-
     /** Last month's journal line by its label, or NaN for none. See section 14. */
     static double journalLine(Game g, String label) {
         for (TreasuryJournal.Entry e : g.getTreasuryJournal()) {
             if (label.equals(e.label())) return e.amount();
         }
         return Double.NaN;
-    }
-
-    /** A band's share of the workforce. */
-    static double share(Game g, WageBand band) {
-        double[] heads = g.getPopulationManager().workforceByBand();
-        double total = 0;
-        for (double h : heads) total += h;
-        return total > 0 ? heads[band.ordinal()] / total : 0;
     }
 
     static void cleanUp(Path root) {
