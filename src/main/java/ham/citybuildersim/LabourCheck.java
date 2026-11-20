@@ -45,6 +45,10 @@ import java.nio.file.Path;
  * happened to be in, so they read it by hand: a population manager fed a workforce, skilled heads, posts and licences and a labour market
  * priced on it (handFed, pricedOn), one month of arrivals drawn into it (arrivalsOnce), a town one month old beside a control for the rent,
  * and a built town one month in for the arrivals' month. Each asserts its premise first, in a line that starts "fixture:".
+ * The sections that keep a played town for their breadth (the tie's average through a load and a reform, the wage chase against the index,
+ * the payroll by job type) cause the rest the same way: the tie's floor is struck on an average fed by hand (TIE_AVERAGE_OVER_GOING_RATE),
+ * the wage chase's basket is stepped to its base and its crawl is the lever whose inflation is asserted as a fixture, and the payroll's
+ * town has its heads put by hand (PAYROLL_GRADUATE_FILL) on the posts it lived to and its builders struck once with nothing on site.
  */
 public class LabourCheck {
 
@@ -1066,8 +1070,12 @@ public class LabourCheck {
             LabourMarket live = lived.getLabourMarket();
             live.setFloorTie(LabourMarket.FloorTie.AVERAGE_WAGE, tiedAt);
             quietly(() -> lived.simulateMonths(1));
+            assertTrue("the month struck the floor on an average of the played city's wages",
+                    lastAverageOf(live) > 0 && Double.isFinite(lastAverageOf(live)));
+            // FS16: the played month goes by under the tie, but the strike the identities read is on an average fed by hand, as Game feeds it each month.
+            live.followAverageWage(live.cashGoingRate() * TIE_AVERAGE_OVER_GOING_RATE);
             double lastAverage = lastAverageOf(live);
-            assertTrue("fixture: the month struck the floor on an average of the played city's wages", lastAverage > 0 && Double.isFinite(lastAverage));
+            assertTrue("fixture: the floor was struck on an average fed by hand", lastAverage > 0 && Double.isFinite(lastAverage));
             assertTrue("fixture: the floor was struck, not held at a bound of the dial",
                     live.getMinimumWage() > live.getMinSettable() && live.getMinimumWage() < live.getMaxSettable());
             close("the floor the month struck is the share of the average it read", live.cashMinimumWage(), tiedAt * lastAverage, 1e-9);
@@ -1090,8 +1098,13 @@ public class LabourCheck {
             close("...the same share the live city gets from the same move, not the share before it", loaded.getTieShare(), live.getTieShare(), 1e-9);
 
             quietly(() -> tiedBack2.simulateMonths(1));
-            double newAverage = lastAverageOf(loaded);
-            assertTrue("fixture: the month read an average of its own", newAverage > 0 && Double.isFinite(newAverage));
+            assertTrue("the month read an average of its own", lastAverageOf(loaded) > 0 && Double.isFinite(lastAverageOf(loaded)));
+            // The month the loaded city played strikes the floor, never rewrites the share the dial set; whatever average it read, the share is the dial's.
+            close("a played month leaves the loaded city's tie share at the dial's move, not the share before it", loaded.getTieShare(), movedTo, 1e-9);
+            // FS16: the next strike, on an average fed by hand a step off the last, so the floor lands inside the dial's bounds by the fixture.
+            double newAverage = lastAverage * TIE_NEXT_AVERAGE_OVER_LAST;
+            loaded.followAverageWage(newAverage);
+            assertTrue("fixture: the loaded city read an average fed by hand", lastAverageOf(loaded) == newAverage && newAverage != lastAverage);
             assertTrue("fixture: the floor was struck again, not held at a bound of the dial",
                     loaded.getMinimumWage() > loaded.getMinSettable() && loaded.getMinimumWage() < loaded.getMaxSettable());
             close("after a month the loaded city's floor is still the dial's share of the new average (not undone to the share before)",
@@ -1267,6 +1280,9 @@ public class LabourCheck {
     /** How fast the fixture's currency is walked weaker: half a percent a month. */
     static final double CRAWL = .005;
 
+    /** The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. */
+    static final int BASING_GRACE_MONTHS = 120;
+
     /** Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. */
     static final int INFLATION_MONTHS = 240;
 
@@ -1394,9 +1410,10 @@ public class LabourCheck {
             city.simulateMonths(PriceIndex.SETTLING_MONTHS + 12
                     + 2 * (int) Math.round(2 / LabourMarket.DRIFT_PER_MONTH));
         });
-        if (!Observation.reached("fixture: the basket is based, so there is an index to chase",
-                city.getPriceIndex().isBased(),
-                "indexed wage chase, lag and reform experiment")) return;
+        // FS16: the basket is based on the SETTLING_MONTHS-th month of real shopping (PriceIndex), which the settling above is longer than; a town whose
+        // shops opened late is stepped on to its base, bounded, and a miss is the fixture's own failure, not a premise the laws are skipped on.
+        for (int more = 0; more < BASING_GRACE_MONTHS && !city.getPriceIndex().isBased(); more++) quietly(() -> city.simulateMonths(1));
+        assertTrue("fixture: the basket is based, so there is an index to chase", city.getPriceIndex().isBased());
 
         /* ---- twenty years of a steady inflation ---- */
         LagWatch lived = new LagWatch();
@@ -1421,16 +1438,17 @@ public class LabourCheck {
                 wages.getCostOfLiving(), wages.getLivingTarget(), wages.getCostOfLiving() / index,
                 monthly * 100, settles);
 
-        boolean steadyInflation = Observation.reached("fixture: the crawl really did inflate the basket, steadily",
-                index / indexFrom > Math.pow(1 + CRAWL, INFLATION_MONTHS / 2.0),
-                "steady-inflation lag-window laws");
+        // FS16: the crawl is the lever this section pulls every month, and the goods are at a fixed world price, so the basket rises by the crawl's own
+        // arithmetic; the basket must rise by at least the crawl's compound over half the months, which a town the crawl left alone does not.
+        assertTrue("fixture: the crawl really did inflate the basket, steadily",
+                index / indexFrom > Math.pow(1 + CRAWL, INFLATION_MONTHS / 2.0));
         close("every month wages chased the index the city published",
                 lived.worstTarget, 0, 1e-12);
         close("...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two",
                 lived.worstStep, 0, 1e-12);
-        if (steadyInflation) assertTrue("so the wage index sits inside the lag's window, every month",
+        assertTrue("so the wage index sits inside the lag's window, every month",
                 lived.windowMonths > 0 && lived.outsideWindow == 0);
-        if (steadyInflation) assertTrue("...which under a rising index is BELOW it, not a third above",
+        assertTrue("...which under a rising index is BELOW it, not a third above",
                 wages.getCostOfLiving() < index);
 
         /* ---- a currency reform: a unit change, which a ratio must not see ---- */
@@ -1504,6 +1522,15 @@ public class LabourCheck {
          (c) the average-fill figure is not the payroll there, so the fixture
              causes what (a) is about.
        ============================================================ */
+    /** The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. */
+    static final double PAYROLL_GRADUATE_FILL = .5;
+
+    /** The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its breadth). */
+    static final int PAYROLL_TOWN_MONTHS = 120;
+
+    /** The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. */
+    static final double LAYOFF_TOWN_PEOPLE = 1_000;
+
     static void payrollByJobType() {
         System.out.println("\n--- every employer pays each job type's wage for the posts filled, the sick included ---");
 
@@ -1522,11 +1549,33 @@ public class LabourCheck {
             g.buildStack(t(g, "Paved Road"), 30, true);
             g.buildStack(t(g, "Bus Network"), 2, true);
             g.buildStack(t(g, "Police Station"), 2, true);
-            g.simulateMonths(120);
+            g.simulateMonths(PAYROLL_TOWN_MONTHS);
         });
         PopulationManager people = g.getPopulationManager();
         EconomyManager econ = g.getEconomyManager();
         BuildingManager b = g.getBuildingManager();
+        /*
+         * FS16: THE FILLS ARE SET BY HAND. The town has lived PAYROLL_TOWN_MONTHS for the posts and the sectors it has; the heads in it are put where the section
+         * needs them: the unskilled workforce is the unskilled posts and no more, and each graduate band holds PAYROLL_GRADUATE_FILL of its posts
+         * in heads. The unskilled posts fill whole, the graduate ones by that share and the licensed ones by the licences held (none), so job
+         * types fill unevenly by the fixture, and the sectors are told the fills and the wage bill on them as the month tells them (EconomyManager.updateJobFillRate(), updateWages(); the utilities' fill).
+         */
+        double[] postsInBand = people.postsByBand();
+        int unskilled = WageBand.NONE.ordinal();
+        double[] heads = new double[postsInBand.length];
+        double graduateHeads = 0;
+        for (int band = 0; band < heads.length; band++) {
+            if (band == unskilled) continue;
+            heads[band] = Math.floor(postsInBand[band] * PAYROLL_GRADUATE_FILL);
+            graduateHeads += heads[band];
+        }
+        people.restoreSkilledHeads(heads);
+        people.restoreWorkforce((long) Math.ceil(postsInBand[unskilled] + graduateHeads));
+        econ.updateJobFillRate(people.getJobFillRate());
+        econ.updateWages(people.getWagesPerType(), b.getJobArrayByName("Commercial Bank"));
+        g.getServicesManager().getUtilitiesHandler().updateJobFillRate(people.getJobFillRate());
+        // ...and the grid whole, whatever coal the town has bought, since the sickness below slows what a powered sector makes.
+        econ.setEnergyRatio(1);
         long[] posts = people.getJobs();
         double[] fill = people.getJobFillRate();
         double lo = 1, hi = 0;
@@ -1570,12 +1619,15 @@ public class LabourCheck {
         for (Sector s : econ.getSectors().all()) { before[k] = s.getPayroll(); rateBefore[k++] = s.getOperatingRate(); }
         econ.setHealthRatio(.5);
         boolean paid = true, slowed = true;
+        int working = 0;
         k = 0;
         for (Sector s : econ.getSectors().all()) {
             if (s.getPayroll() != before[k]) paid = false;
+            if (rateBefore[k] > 0) working++;
             if (rateBefore[k] > 0 && !(s.getOperatingRate() < rateBefore[k])) slowed = false;
             k++;
         }
+        assertTrue("fixture: some sector is working, so there is an output for the sickness to slow", working > 0);
         assertTrue("(b) half the city off sick, fill held: no sector's payroll moves", paid);
         assertTrue("...while every working sector's output falls with it", slowed);
         close("...and the households are paid what they were", people.getTotalWage(), households, 1e-9 * households);
@@ -1597,17 +1649,20 @@ public class LabourCheck {
             town.buildStack(t(town, "House"), 80, true);
             town.buildStack(t(town, "Small Grocery Store"), 3, true);
             town.buildStack(t(town, "Construction Depot"), 4, true);
-            town.simulateMonths(24);
-            // ...AND ON TO A MONTH THEY DO LAY CREWS OFF (0.7.18, re-caused).
-            for (int i = 0; i < 180 && town.getSectors().construction().getPostsOffered()
-                    >= town.getSectors().construction().getPostsStanding(); i++) {
-                town.simulateMonths(1);
-            }
+            // FS16: THE MONTH THEY LAY CREWS OFF IS CAUSED, not waited for. The builders strike once, on a town stood up free with nothing on site:
+            // the work ahead is the repairs alone, and the fill the share is struck on is the sector's founding one (1), so the share is the
+            // need over it, floored at the core crew, on any path the city might have played.
+            town.getCohorts().migrate(LAYOFF_TOWN_PEOPLE);
+            town.simulateMonths(1);
         });
         people = town.getPopulationManager();
         econ = town.getEconomyManager();
         b = town.getBuildingManager();
         ham.citybuildersim.sectors.Construction crews = econ.getSectors().construction();
+        assertTrue("fixture: nothing is on site, so the builders' work is the repairs of the standing city",
+                b.getRemainingConstructionPoints() == 0);
+        assertTrue("fixture: the repairs need less of the depots than the core crew",
+                crews.getCrewsNeeded() < ham.citybuildersim.sectors.Construction.IDLE_PAYROLL_FLOOR);
         long[] standingPosts = crews.postsPerTier(), kept = crews.postsOfferedPerTier();
         double share = crews.getPostsOfferedShare();
         long standing = crews.getPostsStanding(), offered = crews.getPostsOffered();
@@ -1756,6 +1811,11 @@ public class LabourCheck {
                 PopulationCohorts.equilibriumShare(AgeBand.ADULT), 0, market, pm);
         return mig;
     }
+
+    /** The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. */
+    static final double TIE_AVERAGE_OVER_GOING_RATE = 1.3;
+    /** The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. */
+    static final double TIE_NEXT_AVERAGE_OVER_LAST = 1.1;
 
     /** The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). */
     static double lastAverageOf(LabourMarket m) {

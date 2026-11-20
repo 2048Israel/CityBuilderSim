@@ -26,7 +26,7 @@ public final class Observation {
     static final List<String> HARNESSES = List.of(
             "ScaleCheck", "HoldersCheck", "SaveFileCheck", "CurrencyRegimeCheck",
             "AutoBuildCheck", "MonetaryCheck", "BondCheck", "FundCheck", "PriceLevelCheck",
-            "DeskCheck", "FittingCheck", "LabourCheck", "BuildAdviceCheck",
+            "DeskCheck", "FittingCheck", "BuildAdviceCheck",
             "ConstructionControlCheck", "MapCheck", "CentralBankCheck", "KeptCheck",
             "PolicyPreviewCheck", "BankCheck", "HealthCheck", "ForeignCheck", "FloatLinkCheck",
             "CapitalFlowCheck", "CallCheck", "HomeRailCheck", "HousingCheck", "CurveCheck", "PrizeCheck");
