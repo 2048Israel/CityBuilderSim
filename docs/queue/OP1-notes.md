@@ -157,6 +157,42 @@ Two players set policy; neither is new.
   would be in those lines.
 - The law finds' proposal above.
 
+## The ensemble
+
+`tools/ensemble/ensemble.sh OP1` ran on ee3924263, 22:05 to 00:28 (141.3 min, 5 at once, beside other sessions' runs). It
+is committed as `docs/ensemble/OP1.md`, scored against `docs/ensemble/0.9.159.md` (HS1's; main's code since is R1e's,
+which moved no trace). The data files are main's earth-2 and world-1. Extra columns (`-Densemble.extra`, information
+only) record the wage, sales, business and industrial taxes, the households' disposable, pensions, pension per senior,
+seniors, and the retired's net worth against the working. My background call's two-hour limit stopped its tracking at
+00:05; the run's own processes went on and ended by themselves, exit 0, 80 of 80.
+
+- **Verdict PASS**: hard criteria 10 of 10 (M1 and F1 in every policy); 23 of 26 passed.
+- **Not passed, information only:**
+  - AUTO2 A1, inflation m240 to the end: 3.05% a year, 7 of 16 in band. The baseline fails too (2.99%).
+  - AUTO2 A2, the longest spell above 10%: 22 months. The baseline fails too (21).
+  - **HIGH R2, newly failing**: unemployment minus the twin's is +0.24 points (median), where +0.50 is asked;
+    the baseline had +3.79.
+- **Changed to pass:**
+  - AUTO2 T2: the final population's median is 2,848,186 against 75% of 2,012,020.
+  - ZERO_HOT F1: HS1 had one run with "households with no home"; OP1 has none.
+- **AUTO2 beside T1 and T2** (medians of the 16 seeds, OP1 | HS1):
+
+  | when | population | unemployment | treasury's debt | policy rate |
+  |---|---|---|---|---|
+  | T1 (40,000 people: m769 \| m786) | 40,132 \| 40,088 | 6.93% \| 7.05% | 196,152 \| 185,919 | 1.30% \| 2.66% |
+  | T2 (m2400) | 2,848,186 \| 2,012,020 | 8.82% \| 8.59% | 229.4M \| 256.0M | 2.39% \| 1.81% |
+  | m120 | 1,632 \| 1,938 | 3.21% \| 2.07% | 0 \| 757 | 7.83% \| 9.25% |
+  | m600 | 24,590 \| 28,405 | 2.75% \| 5.13% | 36,182 \| 45,747 | 4.99% \| 4.96% |
+  | m1200 | 238,060 \| 112,897 | 6.83% \| 6.26% | 1.70M \| 1.60M | 9.26% \| 9.07% |
+  | m1800 | 1,529,967 \| 1,172,402 | 7.70% \| 7.95% | 23.5M \| 11.7M | 0.00% \| 0.24% |
+
+- **The extras** (AUTO2 medians):
+  - The income taxes collect from the first year: at m12, wage 1, sales 7, business 4. At m600, wage 889, sales 360,
+    business 535.
+  - GovernmentPlayer's pension starts at once: pension per senior 0.019 at m60, 0.143 at m600, 0.295 at m1200 and
+    6.70 at m2400. Pensions are 5% of the households' disposable at m60 (3 of 55) and 7% at m600 (364 of 5,239).
+  - The retired's net worth against the working's: 0.26 at m60, 0.51 at m600, 0.61 at m2400.
+
 ## The dry run
 
 (to come)
