@@ -2,12 +2,14 @@
 # Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL (the label) and ENS_A, ENS_B
 # (the run's folder as Git Bash and as Java write it) in the environment. A process is the run's when
 # its command line holds the run's folder (the JVMs, the runs' shells, xargs) or `ensemble.sh <label>`
-# (the script's own shell); nothing else on the machine, the suite and other runs included, matches.
+# (the script's own shell), or, for a run on the gate box, `--ensemble <label>` and `--serve ensemble <label>`
+# (its half here and the ssh, whose end stops the box's runs; GB3); nothing else on the machine, the suite and
+# other runs included, matches.
 # The shells and xargs go first so that no run starts after the JVMs are gone; twice, for the one
 # that was starting while the first pass looked.
 $label = $env:ENS_LABEL
 $pats = @($env:ENS_A, $env:ENS_B) | ForEach-Object { [regex]::Escape($_) + '(?=[/\\\s"]|$)' }
-$pats += 'ensemble\.sh ' + [regex]::Escape($label) + '(\s|$)'
+$pats += '(ensemble\.sh|--ensemble|--serve ensemble) ' + [regex]::Escape($label) + '(?=[\s"]|$)'
 $n = 0
 foreach ($pass in 1..2) {
     $hit = @(Get-CimInstance Win32_Process | Where-Object {
