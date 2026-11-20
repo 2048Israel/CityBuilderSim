@@ -302,3 +302,40 @@ branch's moved path and passing on main:
 CentralBank 10 is named, not played with the line off: its rerun is twenty
 minutes and its sections 1 to 9 and the rest of 10 pass with the line on.
 IslandLink 9 is OP1's FS7 row, unchanged.
+
+## 10. Re-measured on 0.9.161 with the cap (after section 9)
+
+The playtest's own city, `LongPlaytest -Dplaytest.owners=on|off
+-Dplaytest.months=130 -Dplaytest.trace=target/lp161on|off`:
+
+| month | people on / off | retired disp/hh on / off | pension paid on / off | careAff(SENIOR) on / off | senior pull on / off | owners' bank / all bank (on) | all bank (off) | owners abroad (on) |
+|---|---|---|---|---|---|---|---|---|
+| 13 | 136 / 148 | 0 / 0 | 0 / 0 | 0.02 / 0.83 | 1.005 / 1.249 | 35 / 60 | 55 | 9 |
+| 37 | 512 / 705 | 0.01 / 0.01 | 1 / 1 | 1.00 / 1.00 | 1.300 / 1.300 | 755 / 872 | 495 | 440 |
+| 61 | 879 / 1,242 | 0.02 / 0.01 | 3 / 3 | 0.44 / 1.00 | 1.133 / 1.300 | 565 / 753 | 1,233 | 1,260 |
+| 121 | 1,359 / 1,732 | 0.08 / 0.07 | 11 / 15 | 1.00 / 1.00 | 1.300 / 1.300 | 1,359 / 3,324 | 7,683 | 1,916 |
+
+Both exit 1 on the households' own line in the cut run's last month (on
+134, off 132), as on 0.9.160: the cut predates the line.
+
+OwnerCheck's probe (`-Downer.probe=true`, section 9's city):
+
+| month | people on / off | careAff(SENIOR) on / off | senior pull on / off | owners' bank / all bank (on) | all bank (off) | owners abroad (on) |
+|---|---|---|---|---|---|---|
+| 13 | 136 / 148 | 0.02 / 0.83 | 1.005 / 1.249 | 35 / 60 | 55 | 9 |
+| 37 | 385 / 479 | 0.05 / 1.00 | 1.014 / 1.300 | 470 / 538 | 489 | 390 |
+| 61 | 361 / 443 | 0.06 / 0.36 | 1.018 / 1.107 | 228 / 324 | 172 | 675 |
+| 121 | 646 / 363 | 0.04 / 0.84 | 1.013 / 1.253 | 404 / 571 | 145 | 925 |
+
+- **The playtest's city turned.** On 0.9.160 the line-on city was a third
+  larger at m121 (1,567 against 1,172); on 0.9.161 it is a fifth smaller
+  (1,359 against 1,732). OP1 (every policy open from the founding) lifted
+  the off city by half (1,172 to 1,732) and the on city not (1,567 to
+  1,359). With the line on the city's bank holds 3,324 at m121, 1,359 of it
+  the owners', against 7,683 with it off.
+- **The probe's city still gains** with the line (646 against 363 at m121;
+  0.9.160: 1,160 against 404), both smaller than on 0.9.160.
+- The retired are paid a little on both lines now (11 and 15 at m121), and
+  senior care is within reach with the line on from m37 on the playtest's
+  city.
+- The ensemble judges the whole spread (80 runs against OP1's baseline).
