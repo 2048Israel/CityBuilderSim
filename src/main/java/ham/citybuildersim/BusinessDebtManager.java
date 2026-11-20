@@ -2170,20 +2170,61 @@ public class BusinessDebtManager {
             return false;
         }
         double principal = loan * (1 + Mortgage.premiumRate());
-        double assetsAfter = Math.max(0, getAssets(sector)) + principal;
-        // ...as it stands, too (0.7.12, round 2): see canFundProject().
-        if (pastDefaultPoint(sector, getCash(sector))
-                || getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER) {
+        if (mortgagePastDefaultPoint(sector, principal)) {
             mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
             return false;
         }
-        if (insuredRationed && principal > Math.min(capitalRoom(sector), insuredProjectRoom())) {
+        if (capitalShortFor(sector, principal)) {
             mortgageRefusal = MORTGAGE_CAPITAL;
             refusedForCapital.add(sector);
             refusedMortgageForCapital.add(sector);
             return false;
         }
         return true;
+    }
+
+    /** canFundMortgage()'s default-point test on a mortgage of this principal: past it as the sector stands, or once lent (0.7.12, round 2; see canFundProject()). */
+    private boolean mortgagePastDefaultPoint(String sector, double principal) {
+        double assetsAfter = Math.max(0, getAssets(sector)) + principal;
+        return pastDefaultPoint(sector, getCash(sector))
+                || getPrincipal(sector) + principal > assetsAfter * INSOLVENCY_TRIGGER;
+    }
+
+    /** canFundMortgage()'s capital test on a mortgage of this principal: only while the leverage requirement binds (round 2). */
+    private boolean capitalShortFor(String sector, double principal) {
+        return insuredRationed && principal > Math.min(capitalRoom(sector), insuredProjectRoom());
+    }
+
+    /**
+     * ...the same door asked before the order goes to it, with nothing
+     * recorded: whether it would refuse the mortgage this shortfall takes for
+     * the bank's capital, and for nothing else (MC1). So it is no while the
+     * lender is shut, while the landlord is banned from borrowing, and while
+     * it is past its default point, as the door's own tests before the
+     * capital's are (REV-MC1: a banned landlord, or one past its default
+     * point, was asked for the whole order in a crunch).
+     */
+    public boolean mortgageShortOfCapital(String sector, double shortfall) {
+        if (!(shortfall > 0) || !lendingOpen || isBorrowingBlocked(sector)) return false;
+        double principal = Mortgage.loanFor(shortfall) * (1 + Mortgage.premiumRate());
+        return !mortgagePastDefaultPoint(sector, principal) && capitalShortFor(sector, principal);
+    }
+
+    /**
+     * What a landlord's owners are asked for on an order of this cost bought
+     * on a mortgage, the till and its money abroad holding `held`
+     * (Game.consider(), THE OWNERS FIRST): what the till lacks on the down
+     * payment - or, while the door would refuse the order's mortgage for the
+     * bank's capital (mortgageShortOfCapital()), what it lacks on the whole
+     * order (MC1). That mortgage is the one the door is asked for once the
+     * down payment is in: the cost less the larger of the till and the down
+     * payment (REV-MC1: on the till alone it priced a loan up to 1.18 times
+     * the door's, so a bank with room for the door's loan read short).
+     */
+    public double ownersAskOnMortgage(String sector, double cost, double held) {
+        double down = Mortgage.ownFundsFor(cost);
+        if (mortgageShortOfCapital(sector, cost - Math.max(held, down))) return cost - held;
+        return Math.min(down, down - held);
     }
 
     /** Why canFundMortgage() last said no, or null if it said yes. */

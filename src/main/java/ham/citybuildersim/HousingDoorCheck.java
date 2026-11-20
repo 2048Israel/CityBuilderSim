@@ -40,7 +40,10 @@ import java.util.Locale;
  *   3. an order the door cut is a halving of what the plan passed, and the
  *      advisor says it was trimmed; a month the door trimmed for the bank's
  *      capital is not left marked as held for it (REV-HN1-1: LongPlaytest
- *      counts the mark as a month held for the bank's leverage);
+ *      counts the mark as a month held for the bank's leverage); since MC1
+ *      an order the door would refuse for the bank's capital is put to the
+ *      owners first, and the door trims for the capital only what their
+ *      issue left uncovered (that trim caused in CreditCrunchCheck 3);
  *   4. LongPlaytest's watch holds - no month leaves more than one household
  *      with no door - and the homes that finish are counted by size;
  *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
@@ -75,6 +78,11 @@ public final class HousingDoorCheck {
         long built;
         /** The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). */
         boolean markedForCapital;
+        /** The order's cost, the till before the owners' issue, what consider() offered the owners this month and what they put in, and whether the door would have refused the order's mortgage for the bank's capital on that till (MC1). */
+        double cost, held, offered, raised;
+        boolean shortBeforeOwners;
+        /** The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). */
+        boolean quoteShut;
     }
 
     static Ask pending;
@@ -194,7 +202,32 @@ public final class HousingDoorCheck {
                 + " %d left marked as held for it%n", halved + notHalved, halved, forCapital, leftMarked);
         check("every order the door cut is the plan's order halved, down to one", notHalved == 0);
         check("...and the advisor's line says it was trimmed", unsaid == 0);
-        check("fixture: the door trimmed an order it first refused for the bank's capital", forCapital > 0);
+        /* MC1: while the door would refuse an order's mortgage for the bank's capital, the owners are offered what
+           the till lacks on the whole order first, so the door trims for the capital only what their issue left
+           uncovered. That trim is caused where the issue falls short, CreditCrunchCheck 3. Here the window must hold
+           such an order, and each must have been offered whole: what consider() offered (Equity's offered this
+           month, the ask itself) against what the till lacked - not the desk's test asked again here (REV-MC1-2). */
+        int crunched = 0, shut = 0, offeredWhole = 0, offeredShort = 0;
+        String firstWhole = null, firstShort = null;
+        for (Ask a : asks) {
+            if (!a.shortBeforeOwners) continue;
+            crunched++;
+            if (a.quoteShut) { shut++; continue; }
+            double lacking = a.cost - a.held;
+            boolean whole = a.offered >= lacking - 1e-6 * Math.max(1, Math.abs(lacking));
+            String said = String.format(Locale.ROOT, "m%d: order %.0f, the till %.0f, offered %.0f, put in %.0f - %s",
+                    a.month, a.cost, a.held, a.offered, a.raised, a.line);
+            if (whole) { offeredWhole++; if (firstWhole == null) firstWhole = said; }
+            else { offeredShort++; if (firstShort == null) firstShort = said; }
+        }
+        out.printf("   %d order(s) the door would have refused for the bank's capital: %d offered to the owners whole,"
+                + " %d offered less, %d behind a quote that supported no issue%n", crunched, offeredWhole, offeredShort, shut);
+        if (firstWhole != null) out.println("   first offered whole " + firstWhole);
+        if (firstShort != null) out.println("   first offered less " + firstShort);
+        check("fixture: the window holds an order the door would have refused for the bank's capital, put to the owners"
+                + " (MC1)", offeredWhole + offeredShort > 0);
+        check("...and each was offered to the owners whole: what the till lacked on the order, not only its down payment",
+                offeredShort == 0);
         check("...and no month the door trimmed is left marked as held for the bank's capital", leftMarked == 0);
 
         out.println("\n--- 4. LongPlaytest's watch, and the homes that finished by size ---");
@@ -223,6 +256,15 @@ public final class HousingDoorCheck {
         a.asked = asked;
         a.passed = found.quantity();
         a.till = cash;
+        // MC1: the till before the owners' issue, and the door's capital test on the order's mortgage there (ownersAskOnMortgage()).
+        a.cost = costOf.applyAsDouble(Math.max(1, asked));
+        a.raised = g.getEconomyManager().getEquityRaised(RE);
+        a.held = cash - a.raised;
+        a.shortBeforeOwners = g.getEconomyManager().getBusinessDebtManager()
+                .mortgageShortOfCapital(RE, a.cost - Math.max(a.held, Mortgage.ownFundsFor(a.cost)));
+        int company = Equity.indexOf(RE);
+        a.offered = company >= 0 ? g.getEquity().getOfferedThisMonth(company) : 0;
+        a.quoteShut = company >= 0 && !g.getExchange().quoteSupportsIssue(company);
         double one = costOf.applyAsDouble(1);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(RE)) {
             if (t.getCapacity() <= 0 || g.getBusinessInvestment().getCostOf(t, 1) != one) continue;
