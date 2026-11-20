@@ -38,8 +38,8 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
     GATE=$!
     tail --pid="$GATE" -n +1 -F "$CBS_GATE_RELAY" 2> /dev/null | sed -u '/^@@cbs-/!s/^/O /' &
     SED=$!
-    while kill -0 "$GATE" 2> /dev/null; do   # the beat goes out through sed; a sed that died means the caller is gone
-        echo @@cbs-beat >> "$CBS_GATE_RELAY"; sleep 5
+    N=0; while kill -0 "$GATE" 2> /dev/null; do   # a beat each 5 s goes out through sed; a dead sed means the caller is gone
+        [ $((N % 5)) != 0 ] || echo @@cbs-beat >> "$CBS_GATE_RELAY"; sleep 1; N=$((N + 1))
         kill -0 "$SED" 2> /dev/null || { kill -TERM "$GATE" 2> /dev/null; break; }
     done
     wait "$GATE"; CODE=$?; wait "$SED"
