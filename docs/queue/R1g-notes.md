@@ -512,3 +512,25 @@ Between, at m240 / m600 / m1500 / m1800 / m2100: 2,202 / 5,347 / 303,813 /
   is back at 1.00 by m2160.
 - **Exits:** none read; the run was stopped (143). Unemployment is 39% at
   m240 and none from m600.
+
+### The fifteen harnesses that read the mended code (0.9.161, both halves on)
+
+Run one at a time on `./batch-check.sh <name>`, with JVMs free between
+gates. NewUnitCheck, FitoutCheck, ResearchCheck, EquipmentCheck,
+RecipeCheck, HistoricalRecipeCheck, PostwarRecipeCheck,
+HistoricalLicenceCheck, LicenceFeesCheck (43/0), PublicLicenceCheck (68/0),
+ElectrolyserCheck, StaffingDrawCheck and ReplayCheck pass. EssentialWorksCheck
+has its two known reds and nothing new (exit 3).
+
+ResearchViewCheck had one new red: "the Bakery's electric drive (known from
+a year) is, with no discovery behind it". That is its research town's
+guarantee (b), the drive unfitted on the Bakery at month 14. With the 1900
+home on, the village fits it by then: a probe shows fitted 1, unfitted 0,
+cash 21,941 against 20,017, and an Industrial Bakery standing. With the home
+off it stays unfitted. The model is not at fault: a fitting that pays is a
+sector's order (`EquipmentFit.choose()`). The fixture relied on the order not
+coming. The town now holds the Bakery's sector, as it already held the
+farms' and the mills'. A held sector skips the whole round, building,
+fitting and retiring (`Game`'s investment loop). The harness passes with both
+halves on, and with both off. KeptCheck, the other borrower of
+`researchTown()`, shows only main's known reds (exit 3).
