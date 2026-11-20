@@ -56,6 +56,10 @@ import java.nio.file.Path;
  *    nine and not the one - the income rate did that to the three bases
  *    until 0.7.4. And the Schools page's row per kind has to add up to the
  *    totals it sits under.
+ *
+ * FS16: the first sections cause their premises. Their towns (townBuilt()) are six months old with their bands set (skillsSet()) and
+ * their students seeded part way through a course (finishing()); the one section on a lived city, "a licence belongs to a person", is
+ * an identity whose breadth is the played state.
  */
 public class EducationCheck {
 
@@ -153,6 +157,73 @@ public class EducationCheck {
         build(g, "University", 3);
     }
 
+    /** Months a school town is lived before its section reads it (FS16): the first has no workforce and the second no staffed school, so by the sixth the schools teach and every band has people. */
+    static final int TOWN_MONTHS = 6;
+
+    /** The diploma band a school town is set to, as a share of its workforce (FS16): the pool the colleges and the universities draw on, kept small enough that a drained band shows. */
+    static final double DIPLOMA_SHARE = .15;
+
+    /** The college band a school town is set to, as a share of its workforce (FS16): the people the universities' graduates join and the professional schools draw on. */
+    static final double COLLEGE_SHARE = .15;
+
+    /** The university band a school town is set to, as a share of its workforce (FS16): the pool the medical school draws its doctors from, wider than the doctor posts. */
+    static final double UNIVERSITY_SHARE = .20;
+
+    /** The medical students finishing in the town that has enough doctors, as a multiple of its doctor posts (FS16): just over what the hospitals can seat. */
+    static final double DOCTORS_OVER_POSTS = 1.1;
+
+    /** The medical students finishing in the town that is short of doctors, as a multiple of its doctor posts (FS16): just under what the hospitals can seat. */
+    static final double DOCTORS_UNDER_POSTS = .9;
+
+    /** The college and university students seeded to finish in each of the town's first two months, as a share of its workforce (FS16): enough to move the bands, few enough to leave the diploma band standing. */
+    static final double FINISHING_SHARE = .01;
+
+    /** The share of the children's need the primary seats must clear to be plenty (FS16): the pinched town's "plenty of primary places" law is coverage over this. */
+    static final double PLENTY_OF_PLACES = .9;
+
+    /** How far either side of PLENTY_OF_PLACES the seats of the coverage threshold are put, as a share of the need (FS16): just over and just under. */
+    static final double SEATS_MARGIN = .05;
+
+    /** A town of the schools sections (FS16): city(), held, optionally every school and a medical school, lived TOWN_MONTHS - 1 months so the schools are staffed and the arrivals are in. */
+    static Game townBuilt(boolean withSchools, boolean withMedical) {
+        Game g = city(null);
+        held(g);
+        quietly(() -> {
+            if (withSchools) schools(g);
+            if (withMedical) build(g, "Medical School", 1);
+            g.simulateMonths(TOWN_MONTHS - 1);
+        });
+        return g;
+    }
+
+    /** The town's skilled bands set to their shares of its workforce (FS16): the applicants each school draws on, caused and not grown. */
+    static void skillsSet(Game g) {
+        double w = g.getPopulationManager().getWorkforce();
+        double[] heads = new double[WageBand.values().length];
+        heads[WageBand.DIPLOMA.ordinal()] = DIPLOMA_SHARE * w;
+        heads[WageBand.COLLEGE.ordinal()] = COLLEGE_SHARE * w;
+        heads[WageBand.UNIVERSITY.ordinal()] = UNIVERSITY_SHARE * w;
+        g.getPopulationManager().restoreSkilledHeads(heads);
+    }
+
+    /**
+     * Students put part way through a course (FS16), who graduate in monthsLeft months: the course's queue in the education state
+     * (Education.getState(): the dial, the totals, then every course's queue in enum order), written back through restore().
+     * True if the cohort now holds what it held and the students.
+     */
+    static boolean finishing(Education ed, EducationType type, double students, int monthsLeft) {
+        double[] state = ed.getState();
+        int at = 1 + WageBand.values().length;
+        for (EducationType t : EducationType.values()) {
+            if (t == type) break;
+            at += t.isAdult() ? t.months() : 0;
+        }
+        double before = ed.cohortsInFlight(type)[monthsLeft - 1];
+        state[at + monthsLeft - 1] += students;
+        ed.restore(state);
+        return Math.abs(ed.cohortsInFlight(type)[monthsLeft - 1] - before - students) < 1e-9;
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* ============ 1. THE PROFESSION IS GATED ============
@@ -164,26 +235,13 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("--- without a medical school, a city cannot make a doctor ---");
 
-        Game bare = city(null);
-        held(bare);
         /*
-         * THIRTY YEARS, WATCHED. This city has no schools and shrinks for
-         * three decades, and the graduates it has are whoever moved in; by
-         * the end nearly every one of them is a doctor, because the doctors
-         * are the graduates with a job. The claim - that graduates who cannot
-         * practise medicine exist - is about the city as it grew, so it is
-         * asserted on the month the graduates were most plentiful, and the
-         * empty posts on the month it ended.
+         * SIX MONTHS, NOT THIRTY YEARS (FS16). This city has no schools, and the graduates it has are whoever moved in; at the sixth
+         * month some of the arrivals are doctors and its university band is many times them (whatever a lived city grows to become),
+         * and the posts the hospitals make stand empty.
          */
-        double mostGraduates = 0, licensedThen = 0;
-        for (int m = 0; m < 360; m++) {
-            quietly(() -> bare.simulateMonths(1));
-            double g = bare.getPopulationManager().workforceByBand()[WageBand.UNIVERSITY.ordinal()];
-            if (g > mostGraduates) {
-                mostGraduates = g;
-                licensedThen = bare.getPopulationManager().getLicensed(JobType.UNIV_DOCTOR);
-            }
-        }
+        Game bare = townBuilt(false, false);
+        quietly(() -> bare.simulateMonths(1));
 
         PopulationManager bp = bare.getPopulationManager();
         long doctorPosts = bp.getJobs()[JobType.UNIV_DOCTOR.ordinal()];
@@ -191,13 +249,12 @@ public class EducationCheck {
         long unfilled = bp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
         double graduates = bp.workforceByBand()[WageBand.UNIVERSITY.ordinal()];
 
-        System.out.printf("   %,d doctor posts, %,.0f licensed, %,d unfilled,"
-                + " %,.0f graduates in town (at most %,.0f, against %,.0f licensed then)%n",
-                doctorPosts, licensed, unfilled, graduates, mostGraduates, licensedThen);
+        System.out.printf("   %,d doctor posts, %,.0f licensed, %,d unfilled, %,.0f graduates in town%n",
+                doctorPosts, licensed, unfilled, graduates);
 
         assertTrue("the fixture built hospitals, or this proves nothing", doctorPosts > 0);
         assertTrue("there ARE graduates - they simply cannot practise medicine",
-                mostGraduates > licensedThen * 1.5 && graduates > licensed);
+                graduates > licensed * 1.5 && graduates > licensed);
         assertTrue("so doctor posts stand empty", unfilled > 0);
 
         /*
@@ -211,23 +268,50 @@ public class EducationCheck {
 
         /* ============ 2. AND WITH ONE, IT CAN ============ */
         System.out.println("\n--- build the school and it staffs itself ---");
-
-        Game taught = city(null);
-        held(taught);   // GW1: as the bare city of section 1 it is compared with is
+        /*
+         * CAUSED, NOT GROWN (FS16). Two towns of the same six months with every school and the medical school, their bands set (skillsSet())
+         * and the medical students of one finishing in the month just over its doctor posts, the other's just under; the college and
+         * university students of the first finish too, in its first month and its second, for the sections below. One month, and what
+         * the school made is what the hospitals' posts are staffed from, read on the model's own count (getJobVacancy()).
+         */
+        Game town = townBuilt(true, true);
+        Game shortTown = townBuilt(true, true);
+        skillsSet(town);
+        skillsSet(shortTown);
+        int doctor = JobType.UNIV_DOCTOR.ordinal();
+        double townWorkforce = town.getPopulationManager().getWorkforce();
+        boolean seeded = finishing(town.getEducation(), EducationType.MEDICAL,
+                DOCTORS_OVER_POSTS * town.getPopulationManager().getJobs()[doctor], 1);
+        seeded &= finishing(shortTown.getEducation(), EducationType.MEDICAL,
+                DOCTORS_UNDER_POSTS * shortTown.getPopulationManager().getJobs()[doctor], 1);
+        for (int left = 1; left <= 2; left++) {
+            seeded &= finishing(town.getEducation(), EducationType.COLLEGE, FINISHING_SHARE * townWorkforce, left);
+            seeded &= finishing(town.getEducation(), EducationType.UNIVERSITY, FINISHING_SHARE * townWorkforce, left);
+        }
+        assertTrue("fixture: the students are part way through their courses", seeded);
         quietly(() -> {
-            schools(taught);
-            build(taught, "Medical School", 1);
-            taught.simulateMonths(360);
+            town.simulateMonths(1);
+            shortTown.simulateMonths(1);
         });
 
-        PopulationManager tp = taught.getPopulationManager();
-        double taughtLicensed = tp.getLicensed(JobType.UNIV_DOCTOR);
-        long taughtUnfilled = tp.getJobVacancy()[JobType.UNIV_DOCTOR.ordinal()];
+        PopulationManager townPm = town.getPopulationManager();
+        PopulationManager shortPm = shortTown.getPopulationManager();
+        long townPosts = townPm.getJobs()[doctor];
+        long shortPosts = shortPm.getJobs()[doctor];
+        double taughtLicensed = townPm.getLicensed(JobType.UNIV_DOCTOR);
+        double shortLicensed = shortPm.getLicensed(JobType.UNIV_DOCTOR);
+        long taughtUnfilled = townPm.getJobVacancy()[doctor];
+        long shortUnfilled = shortPm.getJobVacancy()[doctor];
 
-        System.out.printf("   %,.0f licensed, %,d unfilled%n", taughtLicensed, taughtUnfilled);
+        System.out.printf("   %,.0f licensed for %,d posts, %,d unfilled; short: %,.0f licensed for %,d posts, %,d unfilled%n",
+                taughtLicensed, townPosts, taughtUnfilled, shortLicensed, shortPosts, shortUnfilled);
 
+        assertTrue("fixture: the school's graduates are over the hospitals' doctor posts", taughtLicensed > townPosts);
+        assertTrue("fixture: the short town's graduates are under its doctor posts", shortLicensed < shortPosts);
         assertTrue("the school produced doctors", taughtLicensed > licensed * 2);
         assertTrue("...enough to staff the hospitals", taughtUnfilled == 0);
+        assertTrue("...and short of the posts, the shortfall is what stands empty",
+                shortUnfilled > 0 && shortUnfilled == shortPosts - Math.round(shortLicensed));
 
         /* ============ 3. NO SCHOOL TEACHES NOBODY ============
 
@@ -237,7 +321,19 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- every school actually enrols somebody ---");
 
-        Education ed = taught.getEducation();
+        /*
+         * THE TOWN OF SECTION 2, one month on (FS16): each adult school has a pool set for it (the diploma band for the colleges and the
+         * universities, the university band for the medical school) and the basic schools have the town's children and teens.
+         */
+        Education ed = town.getEducation();
+        boolean pools = town.getCohorts().get(AgeBand.CHILD) > 0 && town.getCohorts().get(AgeBand.TEEN) > 0;
+        for (EducationType type : EducationType.values()) {
+            if (type.isAdult() && type != EducationType.NONE
+                    && (type == EducationType.MEDICAL || !type.isProfessional())) {
+                pools &= ed.eligibleFor(type, townPm) > 0;
+            }
+        }
+        assertTrue("fixture: every school has children, teens or adults to draw on", pools);
         for (EducationType type : EducationType.values()) {
             if (type == EducationType.NONE) continue;
             boolean built = type == EducationType.MEDICAL || !type.isProfessional();
@@ -246,6 +342,12 @@ public class EducationCheck {
                     type.getLabel(), ed.getEnrolled(type));
             assertTrue("  " + type.getLabel() + " has students in it",
                     ed.getEnrolled(type) > 0);
+            // FS16: the college and university students seeded to finish next month are in these bodies too, so an adult school is also asked
+            // for the newest cohort in its queue: the people it took on this month, which no seed is.
+            if (type.isAdult()) {
+                assertTrue("  " + type.getLabel() + " took somebody on this month",
+                        ed.cohortsInFlight(type)[type.months() - 1] > 0);
+            }
         }
 
         /* ============ 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM ============
@@ -257,16 +359,26 @@ public class EducationCheck {
            ================================================================= */
         System.out.println("\n--- and does not drain the band beneath it ---");
 
-        double[] bands = tp.workforceByBand();
+        /*
+         * THE SCHOOLLESS TWIN (FS16): the same six months, the same bands set, one month, and no school built, so what separates the two
+         * is the schooling and nothing else. The diploma band is a small share of the town (DIPLOMA_SHARE), so one drained to a tenth
+         * of it in the month would be under the .02 of the workforce the law asks for.
+         */
+        Game twin = townBuilt(false, false);
+        skillsSet(twin);
+        quietly(() -> twin.simulateMonths(1));
+        double[] twinBands = twin.getPopulationManager().workforceByBand();
+
+        double[] townBands = townPm.workforceByBand();
         for (WageBand band : WageBand.values()) {
-            System.out.printf("   %-12s %,9.0f%n", band.label(), bands[band.ordinal()]);
+            System.out.printf("   %-12s %,9.0f%n", band.label(), townBands[band.ordinal()]);
         }
         assertTrue("the diploma band survives having colleges above it",
-                bands[WageBand.DIPLOMA.ordinal()] > tp.getWorkforce() * .02);
+                townBands[WageBand.DIPLOMA.ordinal()] > townPm.getWorkforce() * .02);
         assertTrue("...and the city is genuinely better educated than the bare one",
-                bands[WageBand.COLLEGE.ordinal()] + bands[WageBand.UNIVERSITY.ordinal()]
-                        > bp.workforceByBand()[WageBand.COLLEGE.ordinal()]
-                        + bp.workforceByBand()[WageBand.UNIVERSITY.ordinal()]);
+                townBands[WageBand.COLLEGE.ordinal()] + townBands[WageBand.UNIVERSITY.ordinal()]
+                        > twinBands[WageBand.COLLEGE.ordinal()]
+                        + twinBands[WageBand.UNIVERSITY.ordinal()]);
 
         /* ============ 5. A DEGREE IS A MOVE, NOT AN APPEARANCE ============
 
@@ -279,24 +391,26 @@ public class EducationCheck {
 
         double[] flow = ed.getGraduates();
         double net = 0;
-        for (double f : flow) net += f;
+        double moved = 0;
+        for (double f : flow) { net += f; moved += Math.abs(f); }
+        assertTrue("fixture: the month moved people between the bands", moved > 1);
         System.out.printf("   this month's band flow sums to %+.4f%n", net);
         assertTrue("the month's schooling moves people rather than making them",
                 Math.abs(net) < 1e-6);
 
         double bandTotal = 0;
-        for (double b : bands) bandTotal += b;
+        for (double b : townBands) bandTotal += b;
         // Plus the students: since the pipeline exists (2026-09-06) the people
         // in a lecture theatre are out of the supply, and the supply plus the
         // students is the workforce. ...and the prisoners (2026-09-11) and the
         // owner families' adults (BO1, on in a city since BO1-S) are out of the
         // supply too (PopulationManager.workforceByBand), so they are added back.
-        double studying = tp.getStudyingTotal();
-        double outOfSupply = tp.getImprisoned() + tp.getOwners();
+        double studying = townPm.getStudyingTotal();
+        double outOfSupply = townPm.getImprisoned() + townPm.getOwners();
         System.out.printf("   supply %,.0f + studying %,.0f + in prison or owning %,.0f = workforce %,d%n",
-                bandTotal, studying, outOfSupply, tp.getWorkforce());
+                bandTotal, studying, outOfSupply, townPm.getWorkforce());
         assertTrue("the bands plus the students, the prisoners and the owner families still add up to the workforce",
-                Math.abs(bandTotal + studying + outOfSupply - tp.getWorkforce()) < 2);
+                Math.abs(bandTotal + studying + outOfSupply - townPm.getWorkforce()) < 2);
         assertTrue("fixture: somebody is actually studying", studying > 1);
 
         /* ============ 6. LICENCES CANNOT OUTNUMBER GRADUATES ============
@@ -307,6 +421,18 @@ public class EducationCheck {
            happily staff hospitals out of them.
            ================================================================= */
         System.out.println("\n--- and a licence belongs to a person ---");
+
+        // FS16: the one section left on a lived city, because an identity over a played state is its breadth (the city of section 2 as it
+        // was before: every school and the medical school, held, thirty years).
+        Game taught = city(null);
+        held(taught);
+        quietly(() -> {
+            schools(taught);
+            build(taught, "Medical School", 1);
+            taught.simulateMonths(360);
+        });
+        PopulationManager tp = taught.getPopulationManager();
+        double[] bands = tp.workforceByBand();
 
         for (WageBand band : WageBand.values()) {
             double held = 0;
@@ -326,15 +452,16 @@ public class EducationCheck {
            its sum - so the Graduates series read zero in every city, however
            many it taught. It records the gains now, the sum everGraduated
            accrues: the people who gained a qualification this month, at every
-           level. One more month of the taught city, after section 6 has read it.
+           level. One more month of section 2's town (FS16), whose college and
+           university students were seeded to finish in this one too.
            ================================================================= */
         System.out.println("\n--- the month's graduates, gross ---");
         double[] everAtTop = ed.getEverGraduated().clone();
-        quietly(() -> taught.simulateMonths(1));
+        quietly(() -> town.simulateMonths(1));
         double[] everAfter = ed.getEverGraduated();
         double accrued = 0;
         for (int b = 0; b < everAfter.length; b++) accrued += everAfter[b] - everAtTop[b];
-        double[] recorded = taught.getHistorySave().aligned("graduates");
+        double[] recorded = town.getHistorySave().aligned("graduates");
         System.out.printf("   gained %.4f, everGraduated gained %.4f, History recorded %.2f%n",
                 ed.gainedThisMonth(), accrued, recorded[recorded.length - 1]);
         assertTrue("fixture: somebody gained a qualification this month", accrued > 1);
@@ -359,7 +486,7 @@ public class EducationCheck {
              */
             build(pinched, "Elementary School", 20);
             build(pinched, "Middle School", 20);
-            pinched.simulateMonths(180);
+            pinched.simulateMonths(TOWN_MONTHS);   // FS16: the sixth month, the first with staffed schools to count, not the hundred and eightieth
         });
 
         Education pe = pinched.getEducation();
@@ -380,6 +507,26 @@ public class EducationCheck {
                 pe.basicCoverage() <= 0);
 
         /*
+         * THE .9, FROM BOTH SIDES (FS16). "Plenty" is a coverage over PLENTY_OF_PLACES, and coverage is the seats over the need
+         * (Education.advanceMonth()): this town's children handed to a fresh Education with exactly the seats for just over that share of
+         * the primary stage's need, and then for just under it. The first reads as plenty and the second does not.
+         */
+        double primaryNeed = pinched.getCohorts().get(AgeBand.CHILD) * Education.ELEMENTARY_SHARE;
+        double[] seatsOver = new double[EducationType.values().length];
+        double[] seatsUnder = new double[EducationType.values().length];
+        seatsOver[EducationType.ELEMENTARY.ordinal()] = primaryNeed * (PLENTY_OF_PLACES + SEATS_MARGIN);
+        seatsUnder[EducationType.ELEMENTARY.ordinal()] = primaryNeed * (PLENTY_OF_PLACES - SEATS_MARGIN);
+        Education seatedOver = new Education();
+        Education seatedUnder = new Education();
+        seatedOver.advanceMonth(seatsOver, pinched.getCohorts(), pinched.getPopulationManager(), pinched.getLabourMarket(), 0, 0);
+        seatedUnder.advanceMonth(seatsUnder, pinched.getCohorts(), pinched.getPopulationManager(), pinched.getLabourMarket(), 0, 0);
+        assertTrue("fixture: the town has children to seat", primaryNeed > 0);
+        assertTrue("seats for just over the plenty line of the children are plenty of primary places",
+                seatedOver.getCoverage(EducationType.ELEMENTARY) > PLENTY_OF_PLACES);
+        assertTrue("...and seats for just under it are not",
+                seatedUnder.getCoverage(EducationType.ELEMENTARY) <= PLENTY_OF_PLACES);
+
+        /*
          * ...AND THE DIPLOMAS THEMSELVES, GROSS (0.7.28). The DIPLOMA entry in
          * getGraduates() is a net movement - the school leavers in, the
          * diploma-holders who finished college or university out - so the
@@ -392,7 +539,7 @@ public class EducationCheck {
         assertTrue("no high school: no school leaver takes a diploma", pe.getNewDiplomas() == 0);
         quietly(() -> {
             build(pinched, "High School", 2);
-            pinched.simulateMonths(12);
+            pinched.simulateMonths(1);   // FS16: a school is staffed the month it stands, so its first leavers are this month's (not twelve on)
         });
         double leavers = pe.getNewDiplomas();
         System.out.printf("   with a high school: %.3f diplomas, the DIPLOMA movement %.3f%n",
