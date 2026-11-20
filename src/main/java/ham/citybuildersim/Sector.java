@@ -2714,14 +2714,32 @@ public abstract class Sector {
         // CPB1: an undemanded buffer must cover its feed at the price it can
         // sell for. Use the recipe's current input cost, including captive
         // inputs and co-products; actual home and captive demand keep running.
+        // CPB2: a NaN price never authorises the feed (bufferSalePrice()).
         if (!(demand > 0) && markets != null) {
             GoodsMarket market = markets.get(g);
-            if (market != null && market.netExportPrice() < flowCostPerUnit(g)) return 0;
+            if (market != null && !(bufferSalePrice(market) >= flowCostPerUnit(g))) return 0;
         }
         double target = demand > 0
                 ? demand * STOCK_MONTHS
                 : getStockCapacity(g) * DUMP_THRESHOLD;
         return Math.max(0, Math.min(nameplate, target - getStock(g)));
+    }
+
+    /**
+     * What a unit of an undemanded buffer can sell for, for the buffer gate in
+     * getPlannedOutput() (CPB2): its net export price where the world buys the
+     * good, and nothing where it does not. WHY: VANS, TRUCKS, ROLLING_STOCK and
+     * LUXURIES have no world buyer, so their net export price is NaN, and
+     * `NaN < cost` is false: the gate never refused, and a van plant nobody had
+     * asked for filled its shed toward the dump line on imported machinery, for
+     * a good whose only outlet is a home demand the market had not shown. A city
+     * that does ask for vans is served by the demand branch, at STOCK_MONTHS of
+     * cover, from the next strike (★ CPB2: nothing, not the local price, which
+     * with no demand is a price nobody paid).
+     */
+    static double bufferSalePrice(GoodsMarket market) {
+        double net = market.netExportPrice();
+        return Double.isFinite(net) ? net : 0;
     }
 
     /**
@@ -2748,7 +2766,22 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         double spare = Math.max(0, nameplate - getPlannedOutput(g));
         if (spare <= 0) return 0;
-        return markets.get(g).netExportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
+        double net = markets.get(g).netExportPrice();
+        /*
+         * CPB2: WHILE THE MONTH'S FEED IS ORDERED (planOrders()), the ship's
+         * line must also cover its recipe's inputs - flowCostPerUnit(), the
+         * cost the buffer gate in getPlannedOutput() reads - and not only its
+         * share of the joint bill by sales value (costShareOf()). That share
+         * charged cathode beside a rod mill less than its own anode, so the
+         * buffer the gate refused came back here as export spare, forecastOrder()
+         * saw a full run, and the anode was imported to ship cathode below its
+         * cost. Once the feed is in (committed, or bought for a forecast that
+         * ran high) it is sunk, and the line ships at the marginal cost as
+         * before; a sector that does not order for what it makes (the refiners'
+         * crude is the run's) never reaches this.
+         */
+        if (deciding && !(net >= flowCostPerUnit(g))) return 0;
+        return net >= getMarginalCostPerUnit(g) ? spare : 0;
     }
 
     /**
