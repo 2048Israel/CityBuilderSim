@@ -303,4 +303,56 @@ on 0.9.159, BO1-S's on 0.9.162, HS2's):
 
 ## The dry run
 
-(After the mends' go.)
+### Dry run 1: red, 59 unnamed lines in 11 harnesses
+
+On the gate box, `/home/jerus/cbs/runs/cbs-gate-HS2-tS4N6pAm` (branch ef38e05ed on main
+e2f399d7c, 0.9.162), exit 1. Every unnamed line is HS2's: each harness is green on main's classes
+(or red only by main's own rows) on the laptop, and red on HS2's. Each was played on both trees and
+read side by side (`target/dry1/`, the logs and the `.fails`).
+
+**Mended (the fixture assumed main's path, and HS2's city takes another; four harnesses, four
+commits, each green on HS2's classes and on main's):**
+
+- PolicyPreviewCheck: the zero-dial month's EI pool was rehired within the month on HS2's city, so
+  the dial paid nothing to nobody. The fixture closes half of the largest employer (by posts) until
+  someone is on EI, both in `aDialAtZero` and `anEiPool` (`closeTheLargest`): 2 claimants.
+- StaffingTieCheck: its two shops (Convenience Store and Small Grocery Store) tie at m328 on HS2's
+  city (m65 on TQ1's main, m37 on 0.9.162); `MONTHS_TO_A_TIE` = 360.
+- FundLedgerCheck: the rule's bid is capped by what the two asks took less what the hand took of
+  them; on HS2's city the hand filled 1,107 of 3,628 at the step, and the old bound counted those
+  twice. Main's hand takes nothing, so it reads the same there.
+- HealthCheck: the fees at full service are compared with the cost they were struck on, within 5%;
+  on HS2's city the cost falls 6% in the month ($13.2k to $12.4k; main's 0.6%).
+
+**Named in the ship file (`## known-reds`), the played-city class FS1 sweeps
+(docs/studies/flaky-suite.md):**
+
+- PassThroughCheck → FS10: section 3's groceries shelf at 12 months has passed 42.7% of the D$
+  step against the goods' own 28.7% (main 0.0% on the box, 8.4% on the laptop): the shelf's timing
+  in a played town, the class of main's FS10 rows for this harness.
+- BankCheck "it pays its savers something" → FS9: the played bank loses on its trading in m121-144
+  (equity -$4,340k at the read against main's $6,774k), so its deposit rate is 0.
+- CarCheck, five lines → FS7: the household rate is 16.58% against 6.52% (the town's policy rate
+  runs higher), a car $19.08 a month against $11.48, and the month read sells none ($NaNk a car
+  follows). The jam town's month's output is 516 against 445, so in the fixture's 12 months no Bus
+  Network's fares pay its crew, and the three bus lines follow.
+- ShortSellingCheck, two fixtures → FS14: Construction's short is 16,116 shares (21.95%) and is
+  covered in the month the fixture reads (main's 4,156 stands).
+- YoungBankCheck → FS9: BankCheck 19's young town never falls under Bank.CAPITAL_RATIO (lowest
+  0.1116 at m62), so no spell begins; its tally line follows, in the format main's OE1 row records.
+- PriceLevelCheck → FS2: section 8's played twin parts at m80-91 of 120 (HP1's class), so the
+  series past it differ at the factor (worst 0.47 in mkt.LUXURIES.local); main's FS2 rows already
+  name the rest of its 573.
+- CentralBankCheck, sections 7 and 22 → FS10: the same build (300 Houses queued, one standing to
+  m97, 16 people in 5.8 households). Under HS2's stages no cell of it is half a household
+  (`HouseholdBalance.EMPTY_CELL`; main's town has one), and an empty cell buys no groceries
+  (`groceryDemandOf`) and no paper. So retail first sells to households at m181 (main m91), the
+  price index bases at m197 (main m115), past the 60 months section 7 plays for it, and the rule's
+  line follows; in section 22 the households hold $0k of the $20,000k line (main's one settled
+  cell $4k). Probe: `target/probe8/IndexProbe`. A town this small is a fixture's, and a founded
+  city's cells hold many households; but the effect is HS2's: the split doubles the cells an adult
+  can be in, so a town must be about twice as large before its cells settle and shop.
+
+Re-judged with the rows (`KnownReds`, the kept `suite.txt` copied to `target/checks/rejudge`):
+only the four mended harnesses stay new. Main then moved to 0.9.165 (FB13, SQ1b, FB14), merged at
+dd255b3d9 (the maps the only conflicts); the code changed, so the next dry run is a new one.
