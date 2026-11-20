@@ -1,7 +1,7 @@
 # EDU1 - the poverty trap's gap in EducationCheck
 
 Builder: Claude (Opus), headless, 2026-11-20. Branch `batch/EDU1`, cut from origin/main 8ada323e3 (0.9.164), main
-merged at 5c8e6c937 (FB14, 0.9.165) and 4d3e18673 (SB1). Harness and records only: no model code, no tag.
+merged at 5c8e6c937 (FB14, 0.9.165), 4d3e18673 (SB1) and 0.9.166 (FS2, R2e-PE4). Harness and records only: no model code, no tag.
 
 ## What was found
 
@@ -96,6 +96,8 @@ Unchanged: no game class, resource or `pom.xml` changed, only a harness and reco
 - `./batch-check.sh --fast`: exit 0. Each picked harness alone (`./batch-check.sh <name>`, one at a time) at
   8234e66a7: exit 0, all six. After merging main (SB1: BuildingStackCheck and records only), `--fast` exit 0 and
   the maps regenerated; the merge touches nothing these harnesses read.
+- On the go, main 0.9.166 merged (FS2's ScaleCheck, R2e-PE4's research.json and buildings.json) at c23cae675: `--fast` exit 0, and the same six
+  picked harnesses alone, one at a time: exit 0, all six.
 - No dry run: the pick is not ALL and the branch does not edit the publisher (docs/contract.md 5.5).
 
 ## Calls
