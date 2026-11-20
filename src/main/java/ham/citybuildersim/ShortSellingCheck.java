@@ -1285,7 +1285,11 @@ public class ShortSellingCheck {
             if (h instanceof OwnerHousehold || h.households() <= 0) continue;
             if (h.shares[f] > 0 && (seller == null || h.shares[f] * h.households() > seller.shares[f] * seller.households())) seller = h;
         }
-        assertTrue("fixture: an ordinary cell holds " + Equity.COMPANIES[f], seller != null);
+        // ...or, where no ordinary cell holds any, the owner families (BO1-S: the line is on in a city, the founders' stakes are theirs and
+        // this town's others never bought): their trades with the world settle as any cell's and are the same pair (getHouseholdsSoldAbroad()).
+        if (seller == null && !hb.owners().isEmpty() && hb.owners().shares[f] > 0) seller = hb.owners();
+        assertTrue("fixture: an ordinary cell holds " + Equity.COMPANIES[f] + ", or the owner families do: " + (seller == null ? "nobody" : seller.key()),
+                seller != null);
         if (seller == null) { sectionEnd(); return; }
         final Household cell = seller;
         // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's
