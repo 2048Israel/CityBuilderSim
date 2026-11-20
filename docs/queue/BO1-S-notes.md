@@ -385,3 +385,11 @@ the columns are new):
 The owners hold more than half the bank's savings in the young city and a
 twentieth by the end; the cap binds only in the first months (10 adults
 for 5 families at m121 is the uncapped two each).
+
+**The worst seed, plainly (the orchestrator, 06:17):** AUTO2's lowest final
+population is 359,531, against OP1's lowest 1,346,579: a fall of about three
+quarters. It is one seed, AUTO2 seed 7, which stalls from m600 to m1800
+(24,617, 29,985, 45,009 people at m600, m1200, m1800) and grows to 359,531
+by m2400; the next lowest of the sixteen ends at 1,666,727, above OP1's
+lowest. The ensemble passes (M1 and F1 clean, T2 inside its floor), so the
+batch ships on the rule.
