@@ -78,8 +78,11 @@ Files: `target/rn1hm-trace/{main,mine}-*`.
 
 ## Checks
 
-- `./batch-check.sh --fast`: compile OK, maps regenerated, Stale 0 firm findings, exit 0.
-- `./batch-check.sh MapCheck` (it picks BridgeMapCheck): suite OK, 2 harnesses, exit 0. MapCheck has 966 OK lines;
+- `./batch-check.sh --fast`, before and after merging main c60165591 (BI2's 0.9.169 and FS7; its 26 commits touch none of
+  this batch's files, and the generated docs were taken from main and made again): compile OK, maps regenerated, Stale 0
+  firm findings, exit 0.
+- `./batch-check.sh MapCheck` (it picks BridgeMapCheck), on the code and again on the merged main: suite OK, 2 harnesses,
+  exit 0. MapCheck has 966 OK lines;
   section 26's 8 assertions are all OK (the numbers above); section 2d, the other caller of the watch, is OK. The
   one `OBSERVED - not reached` (section 4's second bought block) is main's, as HL1-M found it.
 - `LongPlaytest`: the branch's trace run above, exit 0, no finding.
