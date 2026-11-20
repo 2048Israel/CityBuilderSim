@@ -734,14 +734,15 @@ final class BankScreen {
                                 + "Trade tab is where that is priced.", m(bank.getForeignDeposits()), hot * 100), null);
             }));
         }
-        if (bank.knowsEquitySplit() && Math.abs(bank.equitySplitResidual()) > .005) {
+        // BI1: the model's verdict (MoneyAudit.tolerance of the book's size), not an absolute $5 that float dust passes on a big city's books.
+        if (!bank.equitySplitAddsUp()) {
             out.add(Kept.scope("split", () -> actionCard(Icons.ALERT, Palette.BAD, "Its two parts do not add up to its equity",
                     String.format("%s of its equity is neither paid in nor retained.", m(Math.abs(bank.equitySplitResidual()))),
                     String.format("%s of its equity is neither paid in nor retained. That should be impossible - worth "
                             + "reporting.", m(Math.abs(bank.equitySplitResidual()))), null)));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        if (Math.abs(off) > .005 || (bank.knowsYearAgo() && Math.abs(offThen) > .005)) {
+        if (!bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp()) {
             out.add(Kept.scope("residual", () -> actionCard(Icons.ALERT, Palette.BAD, "Its lines do not add up",
                     String.format("Not accounted for: %s now, %s a year ago.", mFull(off), mFull(offThen)),
                     "Something on its books is not on this page, or is on it twice. That should be impossible - worth "
@@ -2660,7 +2661,7 @@ final class BankScreen {
                     + "shown whole, what it owns less what it owes."));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        boolean unexplained = Math.abs(off) > .005 || (known && Math.abs(offThen) > .005);
+        boolean unexplained = !bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp();   // BI1: the model's verdict, as the card's
         if (unexplained) {
             column.getChildren().add(bookLine("Not accounted for", off, offThen, known, Palette.BAD));
         }

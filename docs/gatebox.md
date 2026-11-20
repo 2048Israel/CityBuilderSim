@@ -1,7 +1,7 @@
 # The gate box
 
 `gatebox` is the quiet Ryzen box beside the laptop. The gate runs on it (GB1), and so
-does the nightly (GB2). This note says what the box is and what its first night
+do the nightly (GB2) and, behind both, builders' ensembles (GB3). This note says what the box is and what its first night
 measured, and what that means for how many jobs to run on it at once. Measured
 2026-11-19/20. Jerus asked for it on record so a session can look it up instead of
 asking again (2026-11-20: "if other sessions ask its there").
@@ -86,9 +86,11 @@ less from the second thread. Real work measured so far:
   laptop gate, 54 m 28 s). BO1-S's gate on the box, with its 9 nightly picks, took
   12 m 25 s.
 - **An ensemble's 80 runs**, 8 at once: 17.5 min against 116 min on the laptop
-  (GB3, measured on its branch).
-- **Not yet measured:** whether the suite or an ensemble does better at 16 than at 8
-  on the box. Today the 80% guard and GB3's 8 at once decide it.
+  (GB3, measured on its branch). At 16 at once, 16 ZERO_SLACK seeds took 310 s a run
+  against 198 s at 8: 28% more runs an hour, but each run 57% longer, and a gate that
+  comes waits for the runs started, so GB3 plays 8.
+- **Not yet measured:** whether the suite does better at 16 than at 8 on the box.
+  Today the 80% guard decides it.
 
 ## Where the figures are
 
