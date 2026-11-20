@@ -1,4 +1,4 @@
-# CarCheck.java - 1,180 lines · 8 methods · 1 constants · harnesses
+# CarCheck.java - 1,196 lines · 8 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CarCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      petrol on the research's wholesale ladder - since 0.7.83 at the
 > ... (13 more lines in the source)
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (46), [InfrastructureManager](InfrastructureManager.md) (32), [Good](Good.md) (32), [Household](Household.md) (15), [Game](Game.md) (13), [FamilyStructure](FamilyStructure.md) (13), [PayTier](PayTier.md) (13), [Traffic](Traffic.md) (11), [PriceLevel](PriceLevel.md) (9), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [Sector](Sector.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [Retail](Retail.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (47), [InfrastructureManager](InfrastructureManager.md) (32), [Good](Good.md) (32), [Household](Household.md) (16), [Game](Game.md) (13), [FamilyStructure](FamilyStructure.md) (13), [PayTier](PayTier.md) (13), [Traffic](Traffic.md) (11), [PriceLevel](PriceLevel.md) (9), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [Sector](Sector.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [Retail](Retail.md) (1), [NationalAccounts](NationalAccounts.md) (1)
 
 **Used by (2):** [RailCheck](RailCheck.md), [VanCheck](VanCheck.md)
 
@@ -77,12 +77,12 @@
 | 197 | · 2. THE PENALTY |
 | 262 | · 3. THE LOOP |
 | 333 | · 4, 5, 6. IN A CITY |
-| 482 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
-| 527 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
-| 631 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
-| 844 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
-| 914 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
-| 1069 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
+| 498 | · WHY THE BAR IS 95% AND NOT 100%, and why it is not the plateau this |
+| 543 | · THE DEPOSIT AND THE LOAN (2026-09-17) |
+| 647 | · AND A FAMILY IN TROUBLE SELLS IT (2026-09-17) |
+| 860 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
+| 930 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
+| 1085 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
 
 ## Constants
 
@@ -100,18 +100,18 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1103 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 78 | 1119 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 82 | 7 | `static void quietly(Runnable r)` |  |
 | 90 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 95 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 101 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 105 | 8 | `static InfrastructureManager network()` |  |
 
-### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 114-1180)
+### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 114-1196)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 133 | 4 | `static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach)` | What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. |
 | 139 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
-| 159 | 1021 | `public static void main(String[] args)` |  |
+| 159 | 1037 | `public static void main(String[] args)` |  |
 
