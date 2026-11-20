@@ -348,3 +348,17 @@ R1g, so no harness or trace has met it. Not R1g's code: proposed for the
 queue (★ the orchestrator's call), and to be fixed before LongPlaytest's
 default becomes 1900 (step 4), whose 2,400 months would otherwise take
 hours. The dumps are `target/r1g/dump1-4.txt`.
+
+**The mend (the orchestrator's 23:27: "mend it in R1g ... as narrowly as
+you can, with no behaviour change").** `ResearchCatalog.knownFrom` keeps
+each "since" it has read in `KNOWN_FROM` (37308d679): the catalogue is the
+packaged file's, read once (`Holder.INSTANCE`) and never changed, so the
+month a given "since" is known from never changes, and a code that is not a
+year is read once instead of through a thrown exception every call. The
+answers are the same, so the city is: the proof is today's trace against
+main's, byte for byte, and the mended (a)+(b) trace against the stopped
+reference's (`target/r1g/ref/pboth-*`, months 1 to about 1830, ended at
+00:33 for OP1's dry run) over every complete line. ★ The fit memoised per
+month, the orchestrator's other way, was not built: a new unit's fit reads
+prices that can move within a month, so a memo is not plainly the same
+city, and the cache may be enough on its own (measured below).
