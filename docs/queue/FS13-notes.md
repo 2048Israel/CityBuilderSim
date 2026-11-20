@@ -249,3 +249,8 @@ FAIL line.
 so no dry run; RB3 is right as a design question for its builder, and the
 desk's bid caused by a buyer is the sweep's method. FS16 also edits
 `Observation.HARNESSES`: whoever gates second merges the one line by hand.
+
+**After FS16 shipped** (b7a9edfc9, merged): the one `Observation.HARNESSES`
+line mended by hand, LabourCheck (FS16's), CurveCheck and FundCheck all out;
+FS16 touched no FS13 file. `--fast` green (maps regenerated, committed),
+ObservationCheck alone exit 0.
