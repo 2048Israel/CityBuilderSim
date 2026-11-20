@@ -81,7 +81,7 @@ The month roughly doubles. Two causes, and they cannot be separated on one path:
   DenominationCheck green). The books went 30.3 -> 23.1 ms at m600 and 43.8 -> 37.7 ms at m2400.
 - **Left alone:** the order book's insertion and the settle's recount are main's market code, which other batches
   share. They are the next place to look if the month's cost matters (recommended: a batch of its own, measured on a
-  saved city at both cell counts), queued as BC1 in the ship file.
+  saved city at both cell counts), queued as OBK1 in the ship file.
 
 ## The checks
 
