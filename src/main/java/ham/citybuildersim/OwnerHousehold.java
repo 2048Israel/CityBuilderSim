@@ -26,7 +26,19 @@ package ham.citybuildersim;
  *
  * WHO IS IN IT is the line's: HouseholdBalance.ownerFamilies() companies, two
  * adults each, taken out of the adult pool with the outside adults
- * (FamilyModel.rebuild).
+ * (FamilyModel.rebuild) - at most OWNER_ADULT_SHARE of the city's adults
+ * (Game.ownerAdultsWanted()).
+ *
+ * WHY THE SHARE (BO1-S, 2026-11-20). Two adults a company, whatever the town's
+ * size, took a founding town's whole labour force: the supply takes the owners
+ * off every band (PopulationManager.workforceByBand), so a 1900 farm town had
+ * no builders at all, a held town's Home Care was unbuilt in 120 months (53
+ * with the line off), and a Medellin city owned a twelfth of its ground at
+ * month 2,000. BO1's "a family a company" holds now only in a city of
+ * 2 / OWNER_ADULT_SHARE adults a company (200 for five): under it the cell holds
+ * fewer families than companies, and under 1 / OWNER_ADULT_SHARE adults (20) it
+ * is empty, so the founders' grant waits, as it always did for an empty cell,
+ * and the company lists once the town has grown to its family.
  */
 public class OwnerHousehold extends Household {
 
@@ -52,6 +64,19 @@ public class OwnerHousehold extends Household {
      * Migration.DECLINE_MONTHS gives a tier.
      */
     public static final int OWNER_BROKE_MONTHS = 12;
+
+    /** The most of a city's adults the owner families may be: two adults a company took a founding town's whole labour force (BO1-S). */
+    public static final double OWNER_ADULT_SHARE = .05;
+
+    /**
+     * The owner families' adults in a city of these adults with this many
+     * companies' families (reserved ones counted): two a family, at most
+     * OWNER_ADULT_SHARE of the adults. Game.ownerAdultsWanted() is this, on the
+     * month's figures.
+     */
+    public static double adultsOf(int families, double adults) {
+        return Math.min(2.0 * Math.max(0, families), OWNER_ADULT_SHARE * Math.max(0, adults));
+    }
 
     /**
      * Whether a city runs the owner line: on since BO1-S. BO1 shipped it off

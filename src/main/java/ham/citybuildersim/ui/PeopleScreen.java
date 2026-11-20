@@ -1831,7 +1831,7 @@ final class PeopleScreen {
                 outside.add(new Piece("in prison", "In prison", prisoners, one(AgeBand.ADULT), null,
                         bal.prisoners() == null ? null : "OUT:" + bal.prisoners().key()));
             }
-            // The owner families (BO1-S): one per listed company, two adults living on its dividends; no job, no tier.
+            // The owner families (BO1-S): one per listed company, at most OWNER_ADULT_SHARE of the adults, two adults living on its dividends; no job, no tier.
             double owners = families.getOwnerFamilies();
             if (owners >= .5) {
                 int[] couple = one(AgeBand.ADULT);
@@ -2197,7 +2197,8 @@ final class PeopleScreen {
     static final String OUTSIDE_INFO = "Families are built from the adults who work, and their children. "
             + "Everybody else is here: the out of work and the students keep their own books, the unhoused "
             + "have no home, the orphans are the children no family took, and the owner families, one for each "
-            + "company listed on the exchange, live on its dividends and what they sell of its shares.";
+            + "company listed on the exchange (fewer in a small town: never more than one adult in "
+            + Math.round(1 / OwnerHousehold.OWNER_ADULT_SHARE) + "), live on its dividends and what they sell of its shares.";
 
     /** The five tiles, the pool's month and EI, the orphans' alert, and the table by age behind details. */
     List<javafx.scene.Node> outsideRow() {
@@ -3806,7 +3807,8 @@ final class PeopleScreen {
     static final String BELOW_THE_RULE = "Below the rule: the retired, on a pension and no wage; the out of work, "
             + "on EI for twelve months and then on what they saved and what the bank will lend; students, on a "
             + "grant, their savings and a student loan that never runs out; the orphans, who have nothing; "
-            + "the prison, which feeds its own; and the owner families, one for each listed company, on its "
+            + "the prison, which feeds its own; and the owner families, one for each listed company (never more than one adult in "
+            + Math.round(1 / OwnerHousehold.OWNER_ADULT_SHARE) + "), on its "
             + "dividends and what they sell of its shares. None of them has a pay tier, so none of them has a row of six. "
             + "The retired's one cell is what their pension leaves after the rent, the fees and the shop a head, "
             + "worked out as a family's cell is; everybody else's is what a month leaves them against a full "

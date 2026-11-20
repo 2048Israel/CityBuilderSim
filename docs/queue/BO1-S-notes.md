@@ -210,3 +210,43 @@ FS sweep, docs/studies/flaky-suite.md section 6):
   (HP2's, folded into FS2) moves from 2.83e-2 to 3.54e-2 against
   `TRACK_SAVINGS` .016, and section 10's six "savings obeys the existing
   TRACK law" lines are new; kept named under FS2, as the orchestrator said.
+
+## 8. The mend: the owners at most a share of the adults (★, the orchestrator's call, 11-20)
+
+The orchestrator (00:44): "A town with nobody working is a fault, not a
+moved fixture", taking the recommendation under Jerus's 20:01 "do
+recommended"; he hears of it in the ship report.
+
+- **A change to BO1's "a family a company"** for towns under about 200
+  adults. `OwnerHousehold.OWNER_ADULT_SHARE` = .05: the owner families'
+  adults are at most a twentieth of the city's adults
+  (`OwnerHousehold.adultsOf`, which `Game.ownerAdultsWanted()` is on the
+  month's figures). The same figure goes to the supply
+  (`PopulationManager.setOwners`) and to the census (`FamilyModel.rebuild`),
+  where before each took `2 x ownerFamilies()`, a family the grant had only
+  reserved counted. The load path already read the census's figure.
+- **What it leaves.** A family a company holds in a city of 40 adults a
+  company (200 for five). Under it the cell holds fewer families than
+  companies, the stakes shared equally as before. Under 20 adults it is
+  under half a household, empty (`EMPTY_CELL`), and the founders' grant
+  waits, as it always did for an empty cell (`grantFounders` false), so a
+  company lists once the town has grown to its family. ShortSellingCheck's
+  town of nine adults has no owner families until it grows.
+- **Proved in OwnerCheck 11**, bare fixtures caused on the census: three
+  families reserved in a town of nine adults give 0.45 owner adults, under
+  half a household, an empty cell and listings that still wait; a hundred
+  adults hold five, fewer families than companies; ten thousand adults hold
+  two a family, unchanged, and a waiting listing lists to them.
+- **The People screen's two texts** (`OUTSIDE_INFO`, `BELOW_THE_RULE`) say
+  the owners are never more than one adult in twenty, from the dial.
+
+**ScaleCheck plays every game with the line off** (`ScaleCheck.lineOff`, at
+each construction, before a founding or a load). The owner families are a
+fixed count by design, not K times the city's, so a copy K times over
+carries its city's five families where the law wants five K, and their
+savings cannot scale: with the line on the named savings line moved from
+2.83e-2 to 3.54e-2, and section 10's six "savings obeys the existing TRACK
+law" lines were new. Six new named lines for a count that does not scale by
+design was too many (the orchestrator). The check proves the rest of the
+model's scaling, which the line does not touch; HP2's line stays named
+under FS2 as main has it, at main's figure.

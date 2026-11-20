@@ -935,7 +935,12 @@ public class PolicyPreviewCheck {
         // above carry down to fall short of those posts too (the fill joins the lowest band to the one above only while it is still hiring and out-pays it).
         double workforce = 0;
         for (double w : ownWorkers) workforce += w;
-        double away = ownWorkers[lowest.ordinal()];
+        // The band sent away is the one before the owner families come off every band in proportion (BO1-S: the line is on in a city): the
+        // prisoners come off the bottom first, so the band after the owners would leave the owners' share of it working.
+        double ownersWas = pm.getOwners();
+        pm.setOwners(0);
+        double away = pm.workforceByBand()[lowest.ordinal()];
+        pm.setOwners(ownersWas);
         pm.setImprisoned(imprisonedWas + away);
         for (int step = 0; step < 45 && !pm.fillByBand().joinedAbove(lowest) && away + workforce * .02 < workforce * .95; step++) {
             away += workforce * .02;

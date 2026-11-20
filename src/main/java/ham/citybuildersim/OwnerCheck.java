@@ -40,6 +40,12 @@ import java.util.Locale;
  *  10. A SAVE FROM BEFORE THE OWNER FAMILIES LOADS ITS ROWS: main's statement
  *      and row array, one row short, fed to the readers; the marked figures
  *      come back where the save put them, the owners' row empty.
+ *  11. AT MOST A SHARE OF THE ADULTS (BO1-S): a town of nine adults with three
+ *      families reserved has no owner families - its census holds under half
+ *      a household, the cell is empty and the listings wait - where two a
+ *      family took six of its nine; a town far above the cap keeps one family
+ *      a company, as BO1 had it, and its listings list to them; between, the
+ *      share holds and there are fewer families than companies.
  */
 public class OwnerCheck {
 
@@ -270,6 +276,7 @@ public class OwnerCheck {
         takesMoneyNotShares(IND, RETAIL);
         realCity();
         oldSaves();
+        shareOfTheAdults(IND, RETAIL);
 
         System.out.println(fails == 0 ? "\nOwnerCheck: all OK" : "\nOwnerCheck: " + fails + " FAIL");
         System.exit(fails == 0 ? 0 : 1);
@@ -848,5 +855,73 @@ public class OwnerCheck {
         HouseholdBalance hb3 = new HouseholdBalance();
         hb3.restore(working, null);
         close("...the shape from before the hunger's halves, eleven rows, read the same way", hb3.prisoners().savings(), 2.5, 0);
+    }
+
+    /* ============ 11. at most a share of the adults (BO1-S) ============ */
+
+    /** A cohort of this many adults and nobody else: the town's adult pool, as section 5's pyramid is restored. */
+    static PopulationCohorts adultsOnly(double adults) {
+        PopulationCohorts c = new PopulationCohorts();
+        double[] pyr = new double[AgeBand.values().length + 3];
+        pyr[AgeBand.ADULT.ordinal()] = adults;
+        c.restore(PopulationCohorts.saveBands(), pyr);
+        return c;
+    }
+
+    /**
+     * Two adults a company, whatever the town, took a founding town's whole labour force (the OwnerHousehold javadoc):
+     * the cap, caused on the census by the adults, and what it leaves the cell and the listings. Each town is a bare
+     * balance whose outside census names the owner families the family model formed from the capped adults - the
+     * month's order (Game.ownerAdultsWanted(), then FamilyModel.rebuild(), then the cell's doors).
+     */
+    static void shareOfTheAdults(int IND, int RETAIL) {
+        System.out.println("\n--- at most a share of the adults: a town of nine has no owner families, a large one a family a company ---");
+        int CON = Equity.indexOf(Sectors.CONSTRUCTION);
+        double book = 20_000;
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = 5;
+
+        owners[0] = 0;
+        HouseholdBalance hb = town(true);
+        Equity e = register();
+        for (int k : new int[] {IND, RETAIL, CON}) e.listIfUnlisted(k, book, hb);
+        check("fixture: three companies wait for their families, each reserved, none in issue",
+                hb.ownerFamilies() == 3 && e.getShares(IND) == 0 && e.getShares(RETAIL) == 0 && e.getShares(CON) == 0);
+
+        // A town of nine adults: two a family would be six of them.
+        PopulationCohorts nine = adultsOnly(9);
+        check("fixture: the town's adults are nine", Math.abs(nine.get(AgeBand.ADULT) - 9) < 1e-9);
+        double wanted = OwnerHousehold.adultsOf(hb.ownerFamilies(), nine.get(AgeBand.ADULT));
+        close("a town of nine adults: the owners are OWNER_ADULT_SHARE of its adults, not two a family",
+                wanted, OwnerHousehold.OWNER_ADULT_SHARE * 9, 1e-12);
+        FamilyModel small = new FamilyModel();
+        small.rebuild(nine, jobs, 0, 0, wanted);
+        close("...which the family model holds out of the families", small.getOwnerAdults(), wanted, 1e-12);
+        check("...under half a household in the census", small.getOwnerFamilies() < HouseholdBalance.EMPTY_CELL);
+        owners[0] = small.getOwnerFamilies();
+        month(hb);
+        check("so the town has no owner families: the owner cell is empty", hb.owners().isEmpty());
+        check("...and its listings wait, the families still reserved: nothing in issue, no household holds any",
+                !e.listIfUnlisted(IND, book, hb) && e.getShares(IND) == 0 && hb.sharesHeld(IND) == 0 && hb.ownerFamilies() == 3);
+
+        // Between: a hundred adults hold five owner adults, two and a half families for three companies.
+        double between = OwnerHousehold.adultsOf(3, 100);
+        close("a town of a hundred adults: the share holds, fewer families than companies", between / 2,
+                OwnerHousehold.OWNER_ADULT_SHARE * 100 / 2, 1e-12);
+        check("...more than none and fewer than three", between / 2 >= HouseholdBalance.EMPTY_CELL && between / 2 < 3);
+
+        // Far above the cap: ten thousand adults, two a family as BO1 had it.
+        PopulationCohorts large = adultsOnly(10_000);
+        double full = OwnerHousehold.adultsOf(hb.ownerFamilies(), large.get(AgeBand.ADULT));
+        check("fixture: the cap is far above the families: ten thousand adults", OwnerHousehold.OWNER_ADULT_SHARE * large.get(AgeBand.ADULT) > 10 * 2 * 3);
+        close("a town far above the cap: two adults a family, unchanged", full, 2.0 * 3, 0);
+        FamilyModel big = new FamilyModel();
+        big.rebuild(large, jobs, 0, 0, full);
+        close("...one family a company in the census", big.getOwnerFamilies(), 3, 1e-12);
+        owners[0] = big.getOwnerFamilies();
+        month(hb);
+        double founders = book / e.foundingPrice();
+        check("...the cell holds them, and a waiting listing lists to them", !hb.owners().isEmpty() && e.listIfUnlisted(IND, book, hb));
+        close("...the founders' shares all the owner cell's", hb.owners().shares[IND] * hb.owners().households(), founders, 1e-9);
     }
 }

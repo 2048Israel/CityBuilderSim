@@ -15743,8 +15743,9 @@ public class Game {
         unemployment.imprison(crime.getPressure() > 0
                 ? crime.getAdmitted() * Math.min(1, causes.poolWeighted() / crime.getPressure()) : 0);
         populationManager.setImprisoned(crime.prisoners());
-        // The owner families take no job (BO1): two adults a company with a family.
-        populationManager.setOwners(2.0 * householdBalance.ownerFamilies());
+        // The owner families take no job (BO1): two adults a company with a family, at most a share of the adults (BO1-S).
+        double ownerAdults = ownerAdultsWanted();
+        populationManager.setOwners(ownerAdults);
         offending.steal(this, offenderWeight);
 
         double outOfWork = populationManager.getUnemployed();
@@ -15763,9 +15764,8 @@ public class Game {
          * their dependants with them, and before 2026-09-15 they did not, which
          * is why a city that built universities filled its orphan section.
          */
-        // ...and the owner families: two adults a company with a family, outside the families too (BO1).
-        families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying,
-                2.0 * householdBalance.ownerFamilies());
+        // ...and the owner families: two adults a company with a family, outside the families too (BO1), the same adults as above.
+        families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying, ownerAdults);
         families.setSeekers(unemployment.getHoused(), studying);
         // The student body above is last month's education step, and so are
         // the ones who finished: they leave it with their loans at this
@@ -16014,6 +16014,20 @@ public class Game {
          */
         sickness.advanceMonth(health.getSickRate(), health.getSickRateWithoutInfluenza(),
                 generalCoverage, childcareCoverage, seniorCoverage);
+    }
+
+    /**
+     * The owner families' adults this month: two a company with a family
+     * (HouseholdBalance.ownerFamilies(), a family reserved by the founders'
+     * grant counted), at most OwnerHousehold.OWNER_ADULT_SHARE of the city's
+     * adults (BO1-S, 2026-11-20). Out of the supply and out of the families
+     * alike, the same figure for both. WHY THE SHARE: two adults a company
+     * whatever the town took a founding town's whole labour force (the
+     * OwnerHousehold javadoc). Under it the owner cell holds fewer families
+     * than companies; under half a household it is empty and the grant waits.
+     */
+    double ownerAdultsWanted() {
+        return OwnerHousehold.adultsOf(householdBalance.ownerFamilies(), cohorts.get(AgeBand.ADULT));
     }
 
     /* =====================================================================
