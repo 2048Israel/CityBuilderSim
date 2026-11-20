@@ -1,6 +1,6 @@
 # StaffingTieCheck.java - 468 lines · 28 methods · 5 constants · harnesses
 
-`ham/citybuildersim/StaffingTieCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StaffingTieCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The harness for TQ1's tie rule at the staffing gate: a planner whose buildings the gate refused hands WantedPosts one hold
 > (LD1), and where two of its refusals stand at the same share the hold keeps both, Game.noteStaffingHold() notes each, and

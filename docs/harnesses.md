@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**228 harness files, 26,045 labelled assertions.** AllChecks runs 228 of them.
+**228 harness files, 26,044 labelled assertions.** AllChecks runs 228 of them.
 
 ## Which harnesses read which class
 
@@ -233,7 +233,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, DiscoveryCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, GoldMiningCheck, HealthCheck, HistoryCheck, HouseholdCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
 | [Nations](map/Nations.md) | BankFailureCheck, CopperRefiningCheck, CurrencyRegimeCheck, DenominationCheck, FittingCheck, GlobeCheck, GoldPriceCheck, GoldStandardCheck, InterestAbroadCheck, LandNationsCheck, LongPlaytest, NationsCheck, NewGameCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMoneysCheck |
 | [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
-| [NewUnit](map/NewUnit.md) | NewUnitCheck |
+| [NewUnit](map/NewUnit.md) | NewUnitCheck, StaffingDrawCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, CausesOfDeathCheck, ConstructionControlCheck, DiscoveryCheck, GoldStandardCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, PrizeCheck, SaveSlotCheck |
 | [Observation](map/Observation.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, CallCheck, CapitalFlowCheck, CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, CurveCheck, DeskCheck, FittingCheck, FloatLinkCheck, ForeignCheck, FundCheck, HealthCheck, HoldersCheck, HomeRailCheck, HousingCheck, KeptCheck, LabourCheck, MapCheck, MonetaryCheck, ObservationCheck, PolicyPreviewCheck, PriceLevelCheck, PrizeCheck, SaveFileCheck, ScaleCheck |
 | [Offending](map/Offending.md) | **none** |
@@ -2501,7 +2501,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1539 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
   - L1543 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
 
-## BuildCardCheck.java - 211 labelled assertions
+## BuildCardCheck.java - 210 labelled assertions
 
 > The build card (0.7.25): BuildCard's figures for every building in
 > buildings.json (143 since FR3, the Bulk Berth) held to
@@ -2737,11 +2737,10 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L2255 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
   - L2260 ...in the lender's words: what it wants of its own and what it would put in
   - L2265 ...and the order holds for it, in the same line: \"
-  - L2272 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
-  - L2274 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
-  - L2287 ...so the card fails it at the lender's gate, the cover now the rate's
-  - L2291 ...and the order is declined in the cover the card read, at the dearer rate: \"
-  - L2302 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
+  - L2281 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
+  - L2294 ...so the card fails it at the lender's gate, the cover now the rate's
+  - L2298 ...and the order is declined in the cover the card read, at the dearer rate: \"
+  - L2309 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -9066,60 +9065,60 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L871 the verdict is for this building and this piece, with the piece's life, and is priced (PAYS or NOT_YET)
   - L874 its gain is steamGain() at the city's coal price and the grid's price a unit, to the bit
   - L877 ...which is the coal its engine would burn at nameplate at the coal price less the power it would draw instead
-  - L882 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit
-  - L884 ...and the same written out here
-  - L885 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
-  - L892 fixture: the gate tests the whole cost, whatever the sector holds
-  - L893 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
-  - L895 the factor is the annuity of the life at that rate
-  - L896 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
-  - L899 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
-  - L902 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
-  - L904 ...and judge() on them says the same verdict
-  - L916 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
-  - L917 fixture: that share was put back, and the form buys some coal
-  - L921 fixture: the break-even price of coal is a price
-  - L924 in the pure core a coal price a thousandth above the break-even pays
-  - L925 ...and one a thousandth below does not
-  - L926 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
-  - L934 fixture: the city's price of coal moves to a hundredth above and then below the break-even
-  - L936 in the city, coal a hundredth above the break-even pays, and the gain is that price's
-  - L939 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
-- **L961 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
-  - L968 fixture: two depots stand, one lacks its trucks, a month is played
-  - L970 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
-  - L978 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
-  - L979 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
-  - L984 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
-  - L988 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
-  - L990 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
-  - L992 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
-  - L994 the motor truck buys the depot's truck room in TRUCKS and has no work
-  - L996 the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work
-  - L998 its life is the truck's and its rate is struck for Freight on the whole cost
-  - L1002 ...and the kind follows the four steps
-  - L1008 an unfitted Grain Farm's tractor is NOT_KNOWN in 1900: it is not known before PE14's June 1917, and nothing is priced
-  - L1012 a stack with none unfitted is FITTED, for a tractor and for a drive
-  - L1026 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
-  - L1032 fixture: the city's price of coal moves
-  - L1033 coal under both break-evens: both drives are NOT_YET and the rank is empty
-  - L1037 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
-  - L1043 coal over both: both are ranked, the same pieces as the verdicts that pay
-  - L1044 ...best earnings on cost first, as sorted here from the verdicts alone
-  - L1046 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
-  - L1048 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
-  - L1052 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
-  - L1054 ...and nothing else in the cart town is ranked
-  - L1056 with the depots' count at 0 the piece is FITTED and Freight ranks none
-  - L1070 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
-  - L1073 ...and an unbounded earning (a free piece) is first
-- **L1151 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
-  - L1158 fixture: the twins start equal, with the same counts and nothing asked
-  - L1168 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
-  - L1170 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first
-  - L1177 fixture: the cart twins start equal with a depot unfitted
-  - L1179 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
-  - L1180 ...with the carts' horse share up in both
+  - L885 its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, grossed up at the builders' sales tax, to the bit
+  - L887 ...and the same written out here
+  - L888 fixture: the fitting buys machinery and has work, so both halves of the cost are in it
+  - L895 fixture: the gate tests the whole cost, whatever the sector holds
+  - L896 the rate is the real rate of what a loan of the whole cost is written at for the sector, to the bit
+  - L898 the factor is the annuity of the life at that rate
+  - L899 the hurdle is the investment's on the whole cost at that loan rate, and PROFIT_OVER_INTEREST times a month's interest at the real rate
+  - L902 ...and the same hurdle SpreadPlanner strikes for an order of that cost by that sector
+  - L905 the kind follows the four steps from those figures (pays: g x factor >= C and g >= the hurdle)
+  - L907 ...and judge() on them says the same verdict
+  - L919 steamCoalTonnes() added over Industry's stacks is the coal Industry's own steam form buys at a share of 1
+  - L920 fixture: that share was put back, and the form buys some coal
+  - L924 fixture: the break-even price of coal is a price
+  - L927 in the pure core a coal price a thousandth above the break-even pays
+  - L928 ...and one a thousandth below does not
+  - L929 ...the gain crossing its line there: at the break-even the gain is the greater of cost / factor and the hurdle
+  - L937 fixture: the city's price of coal moves to a hundredth above and then below the break-even
+  - L939 in the city, coal a hundredth above the break-even pays, and the gain is that price's
+  - L942 ...and a hundredth below it does not, and its cost, rate and hurdle are the same as before (they do not read the coal)
+- **L964 10. the truck's, the tractor's and the rank: the carts' gain from the teams less the trucks, NOT_KNOWN for a tractor, FITTED for none unf...**
+  - L971 fixture: two depots stand, one lacks its trucks, a month is played
+  - L973 the depot's verdict is priced (PAYS or NOT_YET) with finite figures
+  - L981 a tonne's city leg by team costs the feed of the team's horses and its carter over the tonnes a team carries
+  - L982 ...by truck, to run: the diesel a tonne and a driver's month over the tonnes a truck carries
+  - L987 ...and with the horse form off, Haulage's whole estimate() is that plus the trucks' wear and return on their price over the tonnes a truck carries
+  - L991 fixture: the teams cost more a tonne than the trucks to run, so the gain is above nothing
+  - L993 the depot's gain is the truck room's tonnes a month at the teams' price less the trucks', to the bit
+  - L995 ...which is the room x the tonnes a truck carries x (teams - trucks) written out
+  - L997 the motor truck buys the depot's truck room in TRUCKS and has no work
+  - L1000 the depot's cost is its trucks at the city's price of TRUCKS grossed up at the builders' sales tax (OP1), to the bit, and nothing for work
+  - L1002 its life is the truck's and its rate is struck for Freight on the whole cost
+  - L1006 ...and the kind follows the four steps
+  - L1012 an unfitted Grain Farm's tractor is NOT_KNOWN in 1900: it is not known before PE14's June 1917, and nothing is priced
+  - L1016 a stack with none unfitted is FITTED, for a tractor and for a drive
+  - L1030 fixture: two drives are unfitted in Industry, and the two stacks need different coal prices to pay
+  - L1036 fixture: the city's price of coal moves
+  - L1037 coal under both break-evens: both drives are NOT_YET and the rank is empty
+  - L1041 coal between them: only the drive that pays is ranked, the other (NOT_YET) is left out
+  - L1047 coal over both: both are ranked, the same pieces as the verdicts that pay
+  - L1048 ...best earnings on cost first, as sorted here from the verdicts alone
+  - L1050 ...each entry is a PAYS verdict whose gain x factor covers its cost and whose gain clears its hurdle
+  - L1052 a sector with nothing unfitted ranks none, and so does one whose only unfitted piece is NOT_KNOWN (Agriculture's tractor)
+  - L1056 the depot's truck is ranked when it pays and not when it does not, alone in the cart town's Freight
+  - L1058 ...and nothing else in the cart town is ranked
+  - L1060 with the depots' count at 0 the piece is FITTED and Freight ranks none
+  - L1074 the ranking is best earnings on cost first, equal earnings by template id and then piece id, whatever order they come in (all 120 orders)
+  - L1077 ...and an unbounded earning (a free piece) is first
+- **L1155 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit**
+  - L1162 fixture: the twins start equal, with the same counts and nothing asked
+  - L1172 six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal
+  - L1174 ...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first
+  - L1181 fixture: the cart twins start equal with a depot unfitted
+  - L1183 ...and six months of the same, on the depot's truck: equal to the bit, the trucks, the quote and the carts' share included
+  - L1184 ...with the carts' horse share up in both
 
 ## EquityCheck.java - 65 labelled assertions
 
@@ -10195,184 +10194,184 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L547 the order costs what it costs: in each city the two Bakeries are charged exactly what the model quoted for them just before, in a city founded the 1900 way a...
   - L550 ...the template's whole cost at that city's builders: the sticker is the cash cost at the city's wages, times two, times the builders' multiple on the city's...
   - L553 ...and the template is the same in both: the Bakery's cash cost (the order's own part) is the same figure in the city founded the 1900 way and in the default...
-- **L631 5. the order ranked with the buildings: the fitting when the plan builds nothing or earns less on its cost, the plan's own decision other...**
-  - L640 fixture: one Bakery lacks its drive, Industry may order, nothing is on site, and the break-even price of coal is a price
-  - L644 fixture: neither decision of the plan carries a piece
-  - L647 fixture: the city's price of coal moves to half the break-even
-  - L649 ...where the drive does not pay
-  - L650 the plan's own decision comes back, the very object, when the drive does not pay: for a plan that builds nothing and for one that builds
-  - L654 fixture: the price of coal moves to three times the break-even
-  - L656 ...where the drive pays
-  - L658 the plan builds nothing: the month's decision is to fit the drive to a Bakery, one, and it builds (it spends)
-  - L661 ...its reason in the planner's words: the piece, the building, what it earns a month on what it costs at the city's prices, and the rate a month
-  - L677 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
-  - L678 fixture: the price of coal moves to one and a half times the break-even
-  - L687 ...where the drive still pays but earns less on its cost than a Bakery would
-  - L689 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
-  - L690 ...but the plan that builds nothing still gets the fitting that pays, however little
-  - L693 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
-  - L698 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
-  - L701 ...with none on site the drive is the choice again
-  - L703 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
-  - L707 no stack unfitted: the plan's own decision comes back
-  - L711 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
-  - L719 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
-  - L724 one month of the real round: Industry's line says it Fitted the drive
-  - L726 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
-  - L730 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
-- **L737 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
-  - L750 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
-  - L753 fixture: two Bakeries lack the drive, and what it should cost is a price
-  - L762 Industry orders the fitting: taken (no reason given)
-  - L763 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
-  - L764 ...and nothing is borrowed
-  - L765 the market's draw of machinery is the piece's units
-  - L767 ...the builders are the buyer in the market's own records, for the same units
-  - L768 ...local fills and imports together are those units (the makers' stock down, or the import up)
-  - L770 an electric drive delivers nothing into Freight's fleet: only the motor truck does
-  - L771 the builders' fitting revenue this month is the total
-  - L772 ...and the total is the draws' cost in the market's records plus the work at the price a point
-  - L774 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
-  - L783 with cash under the total the second order is taken too (the second Bakery lacks it)
-  - L784 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
-  - L786 ...and the builders were paid the whole total
-  - L792 a third order is refused: no Bakery lacking the drive is left that is not being fitted
-  - L793 ...with nothing drawn, nothing paid and no job added
-  - L796 a piece not known in the city's year is refused, with a reason in words (the tractor)
-  - L798 a piece not on the stack's template is refused
-  - L799 ...with nothing drawn, nothing paid and no job added
-  - L808 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
-  - L811 ...the builders' statement names the equipment fitted, at what they were paid for it
-  - L812 ...and the parts it names add up to its other revenue
-  - L813 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
-  - L815 ...and the ledger is banked: nothing is booked for the next strike
-- **L821 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
-  - L828 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
-  - L830 working 60 points finishes none: the first job is worked first
-  - L832 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
-  - L835 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
-  - L838 a job of no points finishes at the first call, whatever the points
-  - L842 the view is a copy: changing it moves nothing
-  - L845 restore() puts back what view() gave, and replaces what was there
-  - L848 restore(null) and clear() leave none
-  - L861 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
-  - L868 fixture: the city orders one drive in A
-  - L869 fitting work leaves steady site throughput unchanged
-  - L870 the planners add the fitting's work once as a priority delay
-  - L872 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
-  - L876 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
-  - L878 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
-  - L880 ...and with no job on site the output is the repairs' left, to the bit, as it always was
-  - L906 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
-  - L914 fixture: the city orders the Works' drive first and a Bakery's second
-  - L916 fixture: the Works' share of steam is up (a building in it lacks its drive)
-  - L918 a fitting of at least two full months leaves a finite longer quoted wait and the same steady throughput
-  - L921 the entire fittings queue delays this order once
-  - L938 each press worked exactly what the month left the crews after the repairs, or what was owed if less
-  - L939 the Works' drive took more than one press, as the work exceeds a month's output
-  - L940 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
-  - L941 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
-  - L943 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
-- **L950 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
-  - L958 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
-  - L961 with none on site the rank holds the drive
-  - L964 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
-  - L966 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
-  - L969 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
-  - L974 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
-  - L977 ...and ordering one is refused
-  - L979 ...two months of the real round on, still none ordered
-- **L985 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
-  - L994 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
-  - L1003 Freight orders the trucks: taken
-  - L1004 Freight's trucks held rose by the piece's TRUCKS, added to what it held
-  - L1005 the builders' draw of TRUCKS is the same units, in the market's own count
-  - L1006 ...and in the market's records: the builders are the buyer
-  - L1007 Freight paid the draws' cost, and the piece has no work
-  - L1008 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
-  - L1011 the next press works it (no points): the depot is fitted and the carts' horse share is 0
-- **L1018 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
-  - L1035 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
-  - L1041 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
-  - L1042 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
-  - L1043 ...a \"City\" job is on site, and the count has not moved
-  - L1045 ...the units drawn are the piece's
-  - L1046 ...and the builders earned the total
-  - L1048 it is not limited to one at a time: a second goes on site beside the first
-  - L1057 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
-  - L1058 ...nothing drawn, nothing paid, no job added
-  - L1068 the tractor is refused: it is not known in the city's year
-  - L1069 ...nothing drawn, nothing paid, no job added
-  - L1074 the third Bakery is taken, and then every one that lacks the drive is on site
-  - L1079 a fourth is refused: every unfitted building of the stack is on site
-  - L1080 ...nothing drawn, nothing paid, no job added
-  - L1081 a template with no stack, or a piece it does not carry, is refused
-  - L1086 the press after the city's three orders: the money audit closes
-  - L1087 ...the national accounts' construction investment carries the three, once
-- **L1104 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
-  - L1115 a city with no job on site saves no fittings key
-  - L1119 ...and loads with none on site
-  - L1122 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
-  - L1126 a city with jobs on site saves them (the key is in the file)
-  - L1132 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
-  - L1135 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
-  - L1137 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
-  - L1150 ...and equal to the bit after each press until the jobs are worked
-  - L1151 ...the jobs worked in both, the counts equal and down by one each
-  - L1156 ...and two presses beyond, equal still
-- **L1162 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
-  - L1177 fixture: nothing is unfitted in the town in any of the 24 months
-  - L1178 no job is on site in any of the 24 months, and the builders were paid no fitting
-  - L1179 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
-  - L1195 fixture: the city pays for a fitting on one of two unfitted bakeries
-  - L1199 fixture: its work has begun and is not done
-  - L1203 fixture: the scrap took an unfitted bakery (the unfitted first), one still without the drive
-  - L1205 an unfitted bakery is left for the job: it goes on, its points as they were
-  - L1207 ...and the scrap moved no money: the city's cash and the builders' fitting revenue as they were
-  - L1210 the job, worked out, fits the bakery left: none without the drive
-  - L1214 fixture: the city pays for fittings on both of two unfitted bakeries
-  - L1219 fixture: the older job is part worked, the newer not begun
-  - L1224 one unfitted bakery for two jobs: the newest is cancelled, the part-worked older one goes on
-  - L1227 the last unfitted bakery scrapped: its job, with no building left to fit, is cancelled
-  - L1229 ...and neither scrap refunded anything: the city's cash and the builders' fitting revenue as they were
-  - L1233 the cancelled work fits nothing: the bakeries standing keep the drive they had
-  - L1237 a bakery left without the drive needs a fresh paid order
-  - L1243 running an initialized city again keeps its purchased fitting and money
-- **L1249 14. the builders earn what the treasury actually paid, even inside SHORTFALL_DUST**
-  - L1260 fixture: the advance ceiling binds and cash is strictly below the quote within dust
-  - L1262 the dust-sized shortfall admits the fitting
-  - L1264 the builders' increment is the actual payment, strictly less than the quote
-  - L1266 the treasury pays exactly its available cash
-- **L1271 15. steam survives a grid brownout; a tractor earns back horse feed and hands**
-  - L1279 half steam and half electric: a total brownout leaves half of the otherwise available output
-  - L1281 all steam: output survives the same total grid brownout
-  - L1283 all electric: the same total brownout stops output
-  - L1289 fixture: the real tractor is known early, and the crop price can be moved
-  - L1294 a dearer harvest increases the tractor's gain: saved horse feed is valued
-  - L1296 fixture: the tractor's petrol price can be doubled
-  - L1298 dearer petrol reduces that same gain, so the fuel cost is charged too
-  - L1299 the real fitting verdict now has a finite gain and includes the form
-- **L1304 16. a fitting quotes sales tax and credits the owner's capital purchase**
-  - L1316 fixture: sales tax is open and the installation imports its machinery
-  - L1317 the quote grosses up the goods and work at the builders' own rate
-  - L1320 the business orders that taxed fitting
-  - L1322 its capital input credit is the tax on the fitting, at the supplier's rate
-  - L1323 the owner's capital credit is positive
-  - L1325 the month with that tax and capital credit closes its money audit
-- **L1342 17. one tractor in mixed farm stacks earns the actual sector savings; PE14 is free in the catalogue**
-  - L1355 fixture: distinct farm templates stand, with no tractor fitted, at history's PE14 month
-  - L1360 fixture: saved feed and hands exceed this tractor's fuel cost
-  - L1361 the catalogue marks this tractor free of patent rent
-  - L1362 the unpatented tractor's net gain is its whole physical contribution
-  - L1364 the city buys that real tractor fitting
-  - L1368 one tractor is fitted while other farms remain on horses
-  - L1370 the forecast equals the changed crop, input and rounded-job value of the whole mixed farm sector
-  - L1372 production charges no patent rent on that free world-supplied tractor
-- **L1378 18. foreign crews keep an order's wait finite while local crews cannot fit**
-  - L1391 fixture: real standing roads consume every local site point and the foreign contractor offers positive output
-  - L1393 fixture: the city orders a fitting that still owes local work
-  - L1396 the foreign-backed order retains the same finite wait
-  - L1399 the foreign offer does not work the local fitting
+- **L637 5. the order ranked with the buildings: the fitting when the plan builds nothing or earns less on its cost, the plan's own decision other...**
+  - L646 fixture: one Bakery lacks its drive, Industry may order, nothing is on site, and the break-even price of coal is a price
+  - L650 fixture: neither decision of the plan carries a piece
+  - L653 fixture: the city's price of coal moves to half the break-even
+  - L655 ...where the drive does not pay
+  - L656 the plan's own decision comes back, the very object, when the drive does not pay: for a plan that builds nothing and for one that builds
+  - L660 fixture: the price of coal moves to three times the break-even
+  - L662 ...where the drive pays
+  - L664 the plan builds nothing: the month's decision is to fit the drive to a Bakery, one, and it builds (it spends)
+  - L667 ...its reason in the planner's words: the piece, the building, what it earns a month on what it costs at the city's prices, and the rate a month
+  - L683 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
+  - L684 fixture: the price of coal moves to one and a half times the break-even
+  - L693 ...where the drive still pays but earns less on its cost than a Bakery would
+  - L695 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
+  - L696 ...but the plan that builds nothing still gets the fitting that pays, however little
+  - L699 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
+  - L704 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
+  - L707 ...with none on site the drive is the choice again
+  - L709 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
+  - L713 no stack unfitted: the plan's own decision comes back
+  - L717 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
+  - L725 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
+  - L730 one month of the real round: Industry's line says it Fitted the drive
+  - L732 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
+  - L736 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
+- **L743 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
+  - L756 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
+  - L759 fixture: two Bakeries lack the drive, and what it should cost is a price
+  - L768 Industry orders the fitting: taken (no reason given)
+  - L769 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
+  - L770 ...and nothing is borrowed
+  - L771 the market's draw of machinery is the piece's units
+  - L773 ...the builders are the buyer in the market's own records, for the same units
+  - L774 ...local fills and imports together are those units (the makers' stock down, or the import up)
+  - L776 an electric drive delivers nothing into Freight's fleet: only the motor truck does
+  - L777 the builders' fitting revenue this month is the total
+  - L778 ...and the total is the draws' cost in the market's records plus the work at the price a point, grossed up at the builders' sales tax
+  - L781 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
+  - L790 with cash under the total the second order is taken too (the second Bakery lacks it)
+  - L791 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
+  - L793 ...and the builders were paid the whole total
+  - L799 a third order is refused: no Bakery lacking the drive is left that is not being fitted
+  - L800 ...with nothing drawn, nothing paid and no job added
+  - L803 a piece not known in the city's year is refused, with a reason in words (the tractor)
+  - L805 a piece not on the stack's template is refused
+  - L806 ...with nothing drawn, nothing paid and no job added
+  - L815 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
+  - L818 ...the builders' statement names the equipment fitted, at what they were paid for it
+  - L819 ...and the parts it names add up to its other revenue
+  - L820 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
+  - L822 ...and the ledger is banked: nothing is booked for the next strike
+- **L828 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
+  - L835 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
+  - L837 working 60 points finishes none: the first job is worked first
+  - L839 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
+  - L842 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
+  - L845 a job of no points finishes at the first call, whatever the points
+  - L849 the view is a copy: changing it moves nothing
+  - L852 restore() puts back what view() gave, and replaces what was there
+  - L855 restore(null) and clear() leave none
+  - L868 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
+  - L875 fixture: the city orders one drive in A
+  - L876 fitting work leaves steady site throughput unchanged
+  - L877 the planners add the fitting's work once as a priority delay
+  - L879 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
+  - L883 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
+  - L885 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
+  - L887 ...and with no job on site the output is the repairs' left, to the bit, as it always was
+  - L913 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
+  - L921 fixture: the city orders the Works' drive first and a Bakery's second
+  - L923 fixture: the Works' share of steam is up (a building in it lacks its drive)
+  - L925 a fitting of at least two full months leaves a finite longer quoted wait and the same steady throughput
+  - L928 the entire fittings queue delays this order once
+  - L945 each press worked exactly what the month left the crews after the repairs, or what was owed if less
+  - L946 the Works' drive took more than one press, as the work exceeds a month's output
+  - L947 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
+  - L948 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
+  - L950 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
+- **L957 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
+  - L965 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
+  - L968 with none on site the rank holds the drive
+  - L971 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
+  - L973 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
+  - L976 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
+  - L981 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
+  - L984 ...and ordering one is refused
+  - L986 ...two months of the real round on, still none ordered
+- **L992 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
+  - L1001 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
+  - L1010 Freight orders the trucks: taken
+  - L1011 Freight's trucks held rose by the piece's TRUCKS, added to what it held
+  - L1012 the builders' draw of TRUCKS is the same units, in the market's own count
+  - L1013 ...and in the market's records: the builders are the buyer
+  - L1014 Freight paid the draws' cost, and the piece has no work
+  - L1015 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
+  - L1018 the next press works it (no points): the depot is fitted and the carts' horse share is 0
+- **L1025 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
+  - L1042 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
+  - L1048 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
+  - L1049 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
+  - L1050 ...a \"City\" job is on site, and the count has not moved
+  - L1052 ...the units drawn are the piece's
+  - L1053 ...and the builders earned the total
+  - L1055 it is not limited to one at a time: a second goes on site beside the first
+  - L1064 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
+  - L1065 ...nothing drawn, nothing paid, no job added
+  - L1075 the tractor is refused: it is not known in the city's year
+  - L1076 ...nothing drawn, nothing paid, no job added
+  - L1081 the third Bakery is taken, and then every one that lacks the drive is on site
+  - L1086 a fourth is refused: every unfitted building of the stack is on site
+  - L1087 ...nothing drawn, nothing paid, no job added
+  - L1088 a template with no stack, or a piece it does not carry, is refused
+  - L1093 the press after the city's three orders: the money audit closes
+  - L1094 ...the national accounts' construction investment carries the three, once
+- **L1111 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
+  - L1122 a city with no job on site saves no fittings key
+  - L1126 ...and loads with none on site
+  - L1129 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
+  - L1133 a city with jobs on site saves them (the key is in the file)
+  - L1139 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
+  - L1142 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
+  - L1144 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
+  - L1157 ...and equal to the bit after each press until the jobs are worked
+  - L1158 ...the jobs worked in both, the counts equal and down by one each
+  - L1163 ...and two presses beyond, equal still
+- **L1169 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
+  - L1184 fixture: nothing is unfitted in the town in any of the 24 months
+  - L1185 no job is on site in any of the 24 months, and the builders were paid no fitting
+  - L1186 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
+  - L1202 fixture: the city pays for a fitting on one of two unfitted bakeries
+  - L1206 fixture: its work has begun and is not done
+  - L1210 fixture: the scrap took an unfitted bakery (the unfitted first), one still without the drive
+  - L1212 an unfitted bakery is left for the job: it goes on, its points as they were
+  - L1214 ...and the scrap moved no money: the city's cash and the builders' fitting revenue as they were
+  - L1217 the job, worked out, fits the bakery left: none without the drive
+  - L1221 fixture: the city pays for fittings on both of two unfitted bakeries
+  - L1226 fixture: the older job is part worked, the newer not begun
+  - L1231 one unfitted bakery for two jobs: the newest is cancelled, the part-worked older one goes on
+  - L1234 the last unfitted bakery scrapped: its job, with no building left to fit, is cancelled
+  - L1236 ...and neither scrap refunded anything: the city's cash and the builders' fitting revenue as they were
+  - L1240 the cancelled work fits nothing: the bakeries standing keep the drive they had
+  - L1244 a bakery left without the drive needs a fresh paid order
+  - L1250 running an initialized city again keeps its purchased fitting and money
+- **L1256 14. the builders earn what the treasury actually paid, even inside SHORTFALL_DUST**
+  - L1267 fixture: the advance ceiling binds and cash is strictly below the quote within dust
+  - L1269 the dust-sized shortfall admits the fitting
+  - L1271 the builders' increment is the actual payment, strictly less than the quote
+  - L1273 the treasury pays exactly its available cash
+- **L1278 15. steam survives a grid brownout; a tractor earns back horse feed and hands**
+  - L1286 half steam and half electric: a total brownout leaves half of the otherwise available output
+  - L1288 all steam: output survives the same total grid brownout
+  - L1290 all electric: the same total brownout stops output
+  - L1296 fixture: the real tractor is known early, and the crop price can be moved
+  - L1301 a dearer harvest increases the tractor's gain: saved horse feed is valued
+  - L1303 fixture: the tractor's petrol price can be doubled
+  - L1305 dearer petrol reduces that same gain, so the fuel cost is charged too
+  - L1306 the real fitting verdict now has a finite gain and includes the form
+- **L1311 16. a fitting quotes sales tax and credits the owner's capital purchase**
+  - L1323 fixture: sales tax is open and the installation imports its machinery
+  - L1324 the quote grosses up the goods and work at the builders' own rate
+  - L1327 the business orders that taxed fitting
+  - L1329 its capital input credit is the tax on the fitting, at the supplier's rate
+  - L1330 the owner's capital credit is positive
+  - L1332 the month with that tax and capital credit closes its money audit
+- **L1349 17. one tractor in mixed farm stacks earns the actual sector savings; PE14 is free in the catalogue**
+  - L1362 fixture: distinct farm templates stand, with no tractor fitted, at history's PE14 month
+  - L1367 fixture: saved feed and hands exceed this tractor's fuel cost
+  - L1368 the catalogue marks this tractor free of patent rent
+  - L1369 the unpatented tractor's net gain is its whole physical contribution
+  - L1371 the city buys that real tractor fitting
+  - L1375 one tractor is fitted while other farms remain on horses
+  - L1377 the forecast equals the changed crop, input and rounded-job value of the whole mixed farm sector
+  - L1379 production charges no patent rent on that free world-supplied tractor
+- **L1385 18. foreign crews keep an order's wait finite while local crews cannot fit**
+  - L1398 fixture: real standing roads consume every local site point and the foreign contractor offers positive output
+  - L1400 fixture: the city orders a fitting that still owes local work
+  - L1403 the foreign-backed order retains the same finite wait
+  - L1406 the foreign offer does not work the local fitting
 
 ## FloatLinkCheck.java - 251 labelled assertions
 
@@ -29716,156 +29715,156 @@ _(this harness does not label its checks through a helper - it prints its findin
 > (max(0, gap + the order's addition to the target) - max(0, gap), the gap being the target less the population), closed over the
 > ...
 
-  - L312 fixture (
-- **L403 1. a village with room: the draw passes what the spare does not**
-  - L410 fixture: the sawmill's posts are mostly unskilled and diploma
-  - L415 fixture: a month with room was struck: crowding and the senior, rent and crime pulls all read 1
-  - L421 fixture: a workforce was found whose spare workers fill
-  - L427 fixture: the spare workers alone fall short of
-  - L428 fixture: there are spare workers, so the order is not the draw's alone
-  - L431 fixture: the gap is positive without the order: migration's target stands over the village's people
-  - L432 fixture: the room does not bind: the doors left after last month's arrivals take more than the order's draw
-  - L434 with the draw the share reaches
-  - L435 ...so the order passes
-  - L436 ...with no band nobody can fill
-  - L437 the draw brings workers
-  - L438 the drawn workers are the formula's from the getters: the order's addition (the gap is positive, so all of it), closed, in workers
-  - L440 ...and the same from the gap's positive part, within the room
-- **L448 2. a city with no room: the draw refuses what the spare refuses**
-  - L472 fixture: Migration's crowding reads 0, from the households and the doors
-  - L473 fixture: a workforce was found whose spare workers fill
-  - L474 fixture: the spare workers alone fall short of
-  - L475 fixture: the same works passed in the village with room
-  - L476 every band's drawn workers are 0
-  - L477 ...as the formula has it
-  - L478 the share is the spare's alone, exactly
-  - L479 a works the spare refuses is refused
-- **L492 3. the pulls turn the draw down**
-  - L505 fixture: a month with room and no pull: crowding 1 and the pulls' product 1
-  - L506 fixture: the order passes on the draw, as in section 1
-  - L507 fixture: the draw is the formula's
-  - L517 fixture: dear rent cut the affordability pull
-  - L518 fixture: nothing else moved: crowding, residents a job, the senior and crime pulls
-  - L520 the drawn total moved by exactly the ratio of the pull products (rent)
-  - L521 ...and is the formula's
-  - L522 ...and the share fell with it, or stayed
-  - L533 fixture: crime cut the crime pull and rent's is back to 1
-  - L534 fixture: nothing else moved: crowding and residents a job
-  - L536 the drawn total moved by exactly the ratio of the pull products (crime)
-  - L537 ...and is the formula's
-  - L547 fixture: the affordability pull is below the dear month's
-  - L548 the draw is the formula's at the ruinous rent
-  - L549 the spare is the same, so the order that passed on the draw is refused when the pull turns it down
-- **L556 4. the Shared Services Centre in a town without its bands is still refused**
-  - L573 fixture: the town has no college and no university workers
-  - L575 fixture: the graduate bands are at the going rate: the pull of neither is anything
-  - L577 fixture: nobody, or under one worker, is drawn to the college or university band
-  - L578 fixture: the draw is workers enough for the centre's diploma posts
-  - L579 the draw raises the centre's share above the spare's alone
-  - L580 the centre's share is under
-  - L581 ...no more than its diploma posts', for the graduate posts get nobody
-  - L582 ...so the centre is refused
-  - L583 ...by the share, not the band test: migrants are admitted to every band, so no band is one nobody can fill
-  - L613 fixture: the sawmill has university posts and nobody here holds a degree
-  - L615 fixture: a profession's licence has a premium to draw by
-  - L617 fixture: with university arrivals open the draw brings university workers, through the licences, and no band is one nobody can fill
-  - L623 held closed, the band draws nobody
-  - L624 ...and with no spare, nobody above and no migrants, the university band is the one nobody can fill
-  - L625 ...and the order is refused for it
-  - L638 fixture: the works has college posts
-  - L654 fixture: the college wage was at the going rate and is now over it
-  - L655 fixture: no other band's premium moved with it, and no profession's licence
-  - L658 fixture: the draw is workers, so the comparison is not of zeros
-  - L659 the college wage bid up draws the gate the same workers, band by band, to the bit: the gate does not read the premium
-  - L661 ...and none of them to the college band, whose posts the premium would have drawn graduates to
-  - L662 ...and the share is the same, to the bit
-- **L668 5. the hold's words name both counts**
-  - L679 fixture: a refused order whose two counts round apart
-  - L682 the words say what the city could staff now: \"could staff
-  - L684 ...and with the draw: \"and
-  - L686 ...and what the gate wants
-  - L691 fixture: the order the city with no room refused rounds to one count
-  - L692 where the draw is nothing the words say \"now or with
-  - L694 ...with the one count: \"could staff
-  - L695 ...and not the two
-- **L701 6. a loaded city's gate is its twin's**
-  - L705 fixture (
-  - L710 fixture (
-  - L715 fixture (
+  - L325 fixture (
+- **L416 1. a village with room: the draw passes what the spare does not**
+  - L423 fixture: the sawmill's posts are mostly unskilled and diploma
+  - L428 fixture: a month with room was struck: crowding and the senior, rent and crime pulls all read 1
+  - L434 fixture: a workforce was found whose spare workers fill
+  - L440 fixture: the spare workers alone fall short of
+  - L441 fixture: there are spare workers, so the order is not the draw's alone
+  - L444 fixture: the gap is positive without the order: migration's target stands over the village's people
+  - L445 fixture: the room does not bind: the doors left after last month's arrivals take more than the order's draw
+  - L447 with the draw the share reaches
+  - L448 ...so the order passes
+  - L449 ...with no band nobody can fill
+  - L450 the draw brings workers
+  - L451 the drawn workers are the formula's from the getters: the order's addition (the gap is positive, so all of it), closed, in workers
+  - L453 ...and the same from the gap's positive part, within the room
+- **L461 2. a city with no room: the draw refuses what the spare refuses**
+  - L485 fixture: Migration's crowding reads 0, from the households and the doors
+  - L486 fixture: a workforce was found whose spare workers fill
+  - L487 fixture: the spare workers alone fall short of
+  - L488 fixture: the same works passed in the village with room
+  - L489 every band's drawn workers are 0
+  - L490 ...as the formula has it
+  - L491 the share is the spare's alone, exactly
+  - L492 a works the spare refuses is refused
+- **L505 3. the pulls turn the draw down**
+  - L518 fixture: a month with room and no pull: crowding 1 and the pulls' product 1
+  - L519 fixture: the order passes on the draw, as in section 1
+  - L520 fixture: the draw is the formula's
+  - L530 fixture: dear rent cut the affordability pull
+  - L531 fixture: nothing else moved: crowding, residents a job, the senior and crime pulls
+  - L533 the drawn total moved by exactly the ratio of the pull products (rent)
+  - L534 ...and is the formula's
+  - L535 ...and the share fell with it, or stayed
+  - L546 fixture: crime cut the crime pull and rent's is back to 1
+  - L547 fixture: nothing else moved: crowding and residents a job
+  - L549 the drawn total moved by exactly the ratio of the pull products (crime)
+  - L550 ...and is the formula's
+  - L560 fixture: the affordability pull is below the dear month's
+  - L561 the draw is the formula's at the ruinous rent
+  - L562 the spare is the same, so the order that passed on the draw is refused when the pull turns it down
+- **L569 4. the Shared Services Centre in a town without its bands is still refused**
+  - L586 fixture: the town has no college and no university workers
+  - L588 fixture: the graduate bands are at the going rate: the pull of neither is anything
+  - L590 fixture: nobody, or under one worker, is drawn to the college or university band
+  - L591 fixture: the draw is workers enough for the centre's diploma posts
+  - L592 the draw raises the centre's share above the spare's alone
+  - L593 the centre's share is under
+  - L594 ...no more than its diploma posts', for the graduate posts get nobody
+  - L595 ...so the centre is refused
+  - L596 ...by the share, not the band test: migrants are admitted to every band, so no band is one nobody can fill
+  - L626 fixture: the sawmill has university posts and nobody here holds a degree
+  - L628 fixture: a profession's licence has a premium to draw by
+  - L630 fixture: with university arrivals open the draw brings university workers, through the licences, and no band is one nobody can fill
+  - L636 held closed, the band draws nobody
+  - L637 ...and with no spare, nobody above and no migrants, the university band is the one nobody can fill
+  - L638 ...and the order is refused for it
+  - L651 fixture: the works has college posts
+  - L667 fixture: the college wage was at the going rate and is now over it
+  - L668 fixture: no other band's premium moved with it, and no profession's licence
+  - L671 fixture: the draw is workers, so the comparison is not of zeros
+  - L672 the college wage bid up draws the gate the same workers, band by band, to the bit: the gate does not read the premium
+  - L674 ...and none of them to the college band, whose posts the premium would have drawn graduates to
+  - L675 ...and the share is the same, to the bit
+- **L681 5. the hold's words name both counts**
+  - L692 fixture: a refused order whose two counts round apart
+  - L695 the words say what the city could staff now: \"could staff
+  - L697 ...and with the draw: \"and
+  - L699 ...and what the gate wants
+  - L704 fixture: the order the city with no room refused rounds to one count
+  - L705 where the draw is nothing the words say \"now or with
+  - L707 ...with the one count: \"could staff
+  - L708 ...and not the two
+- **L714 6. a loaded city's gate is its twin's**
   - L718 fixture (
-  - L721 fixture (
+  - L723 fixture (
+  - L728 fixture (
+  - L731 fixture (
   - L734 fixture (
-  - L739 fixture (
-  - L740 ...and the gate draws on the year's
-  - L754 fixture (
-  - L756 the twin's last month's room is the original's, to the bit (
-  - L782 questions were asked (
-  - L783 fixture (
-  - L784 the twin's share, share now and drawn workers are the original's, to the bit, for every sector and template (
-  - L791 fixture: the reader that is to be given \"no census\" holds a room now
-  - L804 fixture: a month with room has a room that is a number over 0
-  - L805 the room a month struck rides the array and is read back to the bit
-  - L807 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
-  - L809 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
-  - L811 ...and read back by a Migration that held a room it is no census again
-- **L817 7. how often the draw opens an order in a played city**
-  - L840 fixture: the played city was asked questions
-  - L841 the draw opened at least one ask
-  - L842 none opened in a month of no room
-  - L857 fixture: the last month struck reads no room
-  - L858 fixture: there are asks the spare refuses in it
-  - L859 none of them is opened by the draw in a month of no room
-- **L868 8. the gap's positive part: only what the order makes positive is drawn**
-  - L892 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
-  - L894 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
-  - L911 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
-  - L913 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
-  - L914 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
-  - L915 the draw is nothing, to the bit, in every band, for every one of them
-  - L916 ...as the formula has it
-  - L917 ...so the share is the spare's alone, to the bit
-  - L926 fixture: the order's addition takes the gap from negative to positive
-  - L927 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
-  - L929 fixture: the crowding is over 0
-  - L930 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
-  - L932 ...the formula's
-  - L933 ...and it is less than the whole addition's, which the count before drew whatever the gap
-- **L940 9. within the room: no more than the doors last month left free**
-  - L958 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
-  - L963 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
-  - L965 fixture: the gap is positive, so it is the room and not the gap that is short
-  - L966 fixture: the city has a workforce, so people turn to workers
-  - L969 fixture: the order draws workers
-  - L970 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
-  - L972 ...the formula's, in workers
-  - L973 ...and less than the uncapped draw's
-  - L974 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
-  - L984 fixture: no month was struck, so last month's room is no number
-  - L985 fixture: the order's addition takes the gap from negative to positive
-  - L986 with no census the draw is uncut: the positive part's, closed, in workers
-- **L998 10. the brake and the pull rule turn the draw down as they turn arrivals**
-  - L1002 fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts
-  - L1022 fixture: the second month has all the senior care pull and the first none
-  - L1023 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
-  - L1024 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
-  - L1026 fixture: the draw is workers, so the comparison is not of zeros
-  - L1027 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
-  - L1054 fixture: the first village is out of work under the healthy rate (
-  - L1056 fixture: the second is between the healthy rate and the stop
-  - L1058 fixture: the third is past the stop (
-  - L1059 fixture: the same spare workers in each, so the spare share is the same
-  - L1061 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
-  - L1063 under the healthy rate the draw is the unbraked draw, whole
-  - L1064 between the dials the draw is the unbraked draw x the brake at the rate it reads
-  - L1065 ...which is less than the healthy village's, and more than nothing
-  - L1066 past the stop the draw is nothing, to the bit, in every band
-  - L1067 ...so the share is the spare's alone, to the bit
-  - L1068 the order the healthy village passed on the draw
-  - L1069 ...is refused past the stop, where the spare is what it was
-  - L1087 fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's
-  - L1089 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
-  - L1091 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
-  - L1092 ...and the order it passes on that draw is not refused for want of the brake
+  - L747 fixture (
+  - L752 fixture (
+  - L753 ...and the gate draws on the year's
+  - L767 fixture (
+  - L769 the twin's last month's room is the original's, to the bit (
+  - L795 questions were asked (
+  - L796 fixture (
+  - L797 the twin's share, share now and drawn workers are the original's, to the bit, for every sector and template (
+  - L804 fixture: the reader that is to be given \"no census\" holds a room now
+  - L817 fixture: a month with room has a room that is a number over 0
+  - L818 the room a month struck rides the array and is read back to the bit
+  - L820 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
+  - L822 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
+  - L824 ...and read back by a Migration that held a room it is no census again
+- **L830 7. how often the draw opens an order in a played city**
+  - L853 fixture: the played city was asked questions
+  - L854 the draw opened at least one ask
+  - L855 none opened in a month of no room
+  - L870 fixture: the last month struck reads no room
+  - L871 fixture: there are asks the spare refuses in it
+  - L872 none of them is opened by the draw in a month of no room
+- **L881 8. the gap's positive part: only what the order makes positive is drawn**
+  - L905 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
+  - L907 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
+  - L924 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
+  - L926 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
+  - L927 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
+  - L928 the draw is nothing, to the bit, in every band, for every one of them
+  - L929 ...as the formula has it
+  - L930 ...so the share is the spare's alone, to the bit
+  - L939 fixture: the order's addition takes the gap from negative to positive
+  - L940 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
+  - L942 fixture: the crowding is over 0
+  - L943 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
+  - L945 ...the formula's
+  - L946 ...and it is less than the whole addition's, which the count before drew whatever the gap
+- **L953 9. within the room: no more than the doors last month left free**
+  - L971 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
+  - L976 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
+  - L978 fixture: the gap is positive, so it is the room and not the gap that is short
+  - L979 fixture: the city has a workforce, so people turn to workers
+  - L982 fixture: the order draws workers
+  - L983 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
+  - L985 ...the formula's, in workers
+  - L986 ...and less than the uncapped draw's
+  - L987 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
+  - L997 fixture: no month was struck, so last month's room is no number
+  - L998 fixture: the order's addition takes the gap from negative to positive
+  - L999 with no census the draw is uncut: the positive part's, closed, in workers
+- **L1011 10. the brake and the pull rule turn the draw down as they turn arrivals**
+  - L1015 fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts
+  - L1035 fixture: the second month has all the senior care pull and the first none
+  - L1036 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
+  - L1037 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
+  - L1039 fixture: the draw is workers, so the comparison is not of zeros
+  - L1040 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
+  - L1067 fixture: the first village is out of work under the healthy rate (
+  - L1069 fixture: the second is between the healthy rate and the stop
+  - L1071 fixture: the third is past the stop (
+  - L1072 fixture: the same spare workers in each, so the spare share is the same
+  - L1074 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
+  - L1076 under the healthy rate the draw is the unbraked draw, whole
+  - L1077 between the dials the draw is the unbraked draw x the brake at the rate it reads
+  - L1078 ...which is less than the healthy village's, and more than nothing
+  - L1079 past the stop the draw is nothing, to the bit, in every band
+  - L1080 ...so the share is the spare's alone, to the bit
+  - L1081 the order the healthy village passed on the draw
+  - L1082 ...is refused past the stop, where the spare is what it was
+  - L1100 fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's
+  - L1102 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
+  - L1104 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
+  - L1105 ...and the order it passes on that draw is not refused for want of the brake
 
 ## StaffingTieCheck.java - 17 labelled assertions
 

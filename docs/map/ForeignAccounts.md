@@ -1,6 +1,6 @@
 # ForeignAccounts.java - 3,913 lines · 252 methods · 57 constants · model
 
-`ham/citybuildersim/ForeignAccounts.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignAccounts.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's dealings with the rest of the world: the balance of payments, the
 > reserve position, and the exchange rate.

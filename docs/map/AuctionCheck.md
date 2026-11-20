@@ -1,6 +1,6 @@
 # AuctionCheck.java - 1,779 lines · 44 methods · 4 constants · harnesses
 
-`ham/citybuildersim/AuctionCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AuctionCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 

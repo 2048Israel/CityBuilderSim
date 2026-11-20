@@ -1,6 +1,6 @@
 # ServicesManager.java - 418 lines · 31 methods · 0 constants · model
 
-`ham/citybuildersim/ServicesManager.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ServicesManager.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > (no class header - the file explains itself in its section banners)
 
