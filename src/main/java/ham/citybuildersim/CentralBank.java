@@ -71,8 +71,9 @@ package ham.citybuildersim;
  * what "money is issued and retired only here" requires.
  *
  * EQUITY is assets less liabilities. Without the vault, and with what this
- * bank paid in new money for the vault's dollars added back
- * (getDollarsBoughtLifetime()), it is always the remittance not yet paid less
+ * bank paid in new money for the vault's dollars added back, net of what the
+ * gold it paid out under Gold retired (vaultInNewMoney(); FB14, THE GOLD'S OWN
+ * DEFENCE), it is always the remittance not yet paid less
  * the loss carried (see lossCarried), which the harness asserts: a central
  * bank's profit is remitted, so it keeps none - between two presses, plus the
  * gain on a buyback that the top of the next month will take into profit (see
@@ -86,6 +87,9 @@ package ham.citybuildersim;
  * equity less the vault down by exactly what they cost: the term added back
  * (FX8, 2026-10-22; until then the sentence said the treasury bought all of
  * the vault, and the identity was false by that term under a peg or a band).
+ * The gold the mint pays out under Gold retires the D$ it takes back (FB14),
+ * so it too leaves equity where it was, M0 down with the vault: the term
+ * taken off.
  */
 public final class CentralBank {
 
@@ -218,6 +222,8 @@ public final class CentralBank {
     private double defendedThisMonth;
     /** The mirror of the defence (XR2): the local price of the dollars it bought for the vault this month at the strong edge of a band or a peg, in money made and paid abroad for them. */
     private double dollarsBought;
+    /** The gold's own defence (FB14): the local price of the gold the mint paid out at the last reprice under Gold, retired here this month - M0 falls with the gold (THE GOLD'S OWN DEFENCE). A month's, not saved. */
+    private double goldRedeemed;
 
     /** New D$ paid for domestically mined gold this month (GD4). */
     private double goldMinted;
@@ -240,6 +246,10 @@ public final class CentralBank {
     private double defendedLifetime;
     /** ...and what it paid, in money made, for the dollars it bought for the vault since founding (XR2). Appended to the save; zero on an old one. */
     private double dollarsBoughtLifetime;
+    /** ...and the gold the mint paid out under Gold since founding, the D$ it took back retired (FB14). Appended to the save; zero on an old one. */
+    private double goldRedeemedLifetime;
+    /** The local price of the gold the mint paid out at the last reprice, owed here and retired at the top of the next month (FB14; settleGoldRedeemed()). Saved, because a save falls between the two; none on an old one. */
+    private double goldRedeemDue;
 
     /** The treasury's revenue, the last REVENUE_MONTHS of it, for the ceiling. Empty on an old save, which has no ceiling until a month is struck. */
     private final double[] revenue = new double[REVENUE_MONTHS];
@@ -266,6 +276,7 @@ public final class CentralBank {
         boughtAtIssue = parAtIssue = 0;
         defendedThisMonth = 0;
         dollarsBought = 0;
+        goldRedeemed = 0;
         goldMinted = 0;
     }
 
@@ -707,6 +718,66 @@ public final class CentralBank {
         return local;
     }
 
+    /*
+     * ----- THE GOLD'S OWN DEFENCE (FB14; GD3's review, item 6) -----
+     *
+     * Under Gold the vault's gold sold at the weak point is the mint paying
+     * out gold for the D$ presented to it, and a gold standard destroys what
+     * it takes back: the notes come home and M0 falls with the gold. Until
+     * FB14 it was booked as a peg's defence (dollarsSold(): equity spent, M0
+     * where it was), so the cover - the gold at the mint price over M0 - fell
+     * by the whole sale over an M0 that did not move, faster than under any
+     * gold standard. Now the gold's local price is owed here at the reprice
+     * (goldPaidOut(), Game's reprice) and retired at the top of the next
+     * month (settleGoldRedeemed()), inside the audit's window, as the edge's
+     * dollars are paid for (buyDollarsForVault()): MoneyAudit declares it
+     * twice, retired (MONEY, "- centralbank RetiredForGold") and taken back
+     * from abroad (RESERVE, "+ centralbank TakenBackForGold"), so no pool
+     * moves and issued less retired is still M0's move. It retires no more
+     * than this bank has made (its reserves): what a sale fetched past that
+     * is spent from equity, as a peg's defence is. Equity is where it was
+     * (the vault and M0 down together), so vaultInNewMoney() takes it off.
+     * Only Gold's: a peg, Canada's gold among them, still spends equity.
+     */
+
+    /** The gold the mint paid out at this month's reprice under Gold fetched this much local money: owed here, and retired at the top of the next month. */
+    public void goldPaidOut(double local) {
+        if (!(local > 0) || !Double.isFinite(local)) return;
+        goldRedeemDue += local;
+    }
+
+    /**
+     * Retires what the gold paid out at the last reprice fetched (Game, at the top of the month, beside settleTheEdge()): M0 down by it,
+     * up to what this bank has made, and the rest booked as a defence's (dollarsSold()). Returns what was retired.
+     */
+    public double settleGoldRedeemed() {
+        double owed = goldRedeemDue;
+        goldRedeemDue = 0;
+        if (!(owed > 0)) return 0;
+        double retiring = Math.min(owed, Math.max(0, reserves));
+        if (retiring > 0) {
+            retire(retiring);
+            goldRedeemed += retiring;
+            goldRedeemedLifetime += retiring;
+        }
+        if (owed > retiring) dollarsSold(owed - retiring);
+        return retiring;
+    }
+
+    /** What the gold the mint paid out retired this month, M0 down by it (FB14). */
+    public double getGoldRedeemed()         { return goldRedeemed; }
+    /** ...and since founding. */
+    public double getGoldRedeemedLifetime() { return goldRedeemedLifetime; }
+    /** ...and what the last reprice's gold fetched, still to be retired at the top of the next month. */
+    public double getGoldRedeemDue()        { return goldRedeemDue; }
+
+    /**
+     * What the vault holds in money this bank made, net: the dollars it bought at the strong edge in new money less what the gold it paid out
+     * retired (FB14). The term that takes the vault out of equity's identity (the class's EQUITY paragraph): equity less the vault, plus this,
+     * is the remittance due less the loss carried, to the cent.
+     */
+    public double vaultInNewMoney() { return dollarsBoughtLifetime - goldRedeemedLifetime; }
+
     /** Issues the mint's payment to a domestic miner, thousands of D$ (GD4). */
     public void mintGold(double local) {
         if (!(local > 0) || !Double.isFinite(local)) return;
@@ -862,7 +933,7 @@ public final class CentralBank {
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 12];
+        double[] out = new double[13 + REVENUE_MONTHS + 14];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -890,6 +961,8 @@ public final class CentralBank {
         out[i++] = dollarsBoughtLifetime;
         out[i++] = goldMinted;
         out[i++] = goldMintedLifetime;
+        out[i++] = goldRedeemDue;
+        out[i++] = goldRedeemedLifetime;
         return out;
     }
 
@@ -928,6 +1001,9 @@ public final class CentralBank {
         if (i < saved.length) dollarsBoughtLifetime = Math.max(0, saved[i++]);
         if (i < saved.length) goldMinted = Math.max(0, saved[i++]);
         if (i < saved.length) goldMintedLifetime = Math.max(0, saved[i++]);
+        // ...and FB14's: an older save owes the mint nothing and has retired nothing for gold.
+        if (i < saved.length) goldRedeemDue = Math.max(0, saved[i++]);
+        if (i < saved.length) goldRedeemedLifetime = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -942,6 +1018,7 @@ public final class CentralBank {
         boughtAtIssueLifetime = parAtIssueLifetime = 0;
         defendedLifetime = 0;
         dollarsBoughtLifetime = goldMinted = goldMintedLifetime = 0;
+        goldRedeemDue = goldRedeemedLifetime = 0;
         targetShare = previousTarget = 0;
         advancesCeilingMonths = DEFAULT_ADVANCES_MONTHS;
         java.util.Arrays.fill(revenue, 0);
@@ -976,6 +1053,7 @@ public final class CentralBank {
         defendedThisMonth *= scale;  defendedLifetime *= scale;
         goldMinted *= scale; goldMintedLifetime *= scale;
         dollarsBought *= scale;  dollarsBoughtLifetime *= scale;
+        goldRedeemed *= scale;  goldRedeemedLifetime *= scale;  goldRedeemDue *= scale;
         for (int r = 0; r < REVENUE_MONTHS; r++) revenue[r] *= scale;
     }
 }

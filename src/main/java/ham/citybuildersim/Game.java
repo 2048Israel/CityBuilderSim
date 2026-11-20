@@ -763,6 +763,7 @@ public class Game {
         foundingBank();
         foundingYard();
         if (starting && founding.isUnfitted()) unfitTheFounding();
+        if (starting) foundOnGold();
     }
         
     private void initialize() {
@@ -849,6 +850,8 @@ public class Game {
         foundingYard();
         // ...and, when the city is founded the 1900 way (R1b), every building the founding stood up without the equipment its template offers.
         if (choices.isUnfitted()) unfitTheFounding();
+        // ...and, when the founding screen's "start on gold" box is ticked (FB14), on Gold with the founders' gold in the vault.
+        foundOnGold();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -1280,6 +1283,49 @@ public class Game {
         recipes.choose(this);
         recipes.apply(this);
         equipmentForms.apply(this);
+    }
+
+    /* ===== THE FOUNDERS' GOLD (FB14, 2026-11-20; GD3-F, spec-gold-money 4.3) ===================================================
+     * The founding screen's "start on gold" box beside the money (Founding.isOnGold()): the city opens on Gold, the mint struck at the
+     * founding's rate times gold's US$ price, Defend the gold the bank's aim, and Founding.goldUsd() of the founders' vault in gold - the law's
+     * 40% of the treasury it is founded with, never more than the vault (all of it in every preset; the ★ in FB14's notes says why not 40% of
+     * M0). Called at the founding only, by newGame(Founding) and run() for a city starting, after unfitTheFounding(), never by buildWorld()
+     * (the load path, where the save's own vault and regime come back). The founding's settings are the founding's, so nothing is put in the
+     * player's log. Refused, the city founding on its dollars and a line said, where the world cannot price gold (no world-1.bin, or a
+     * harness's literals: GOLD has no rate, and setRegime() refuses Gold without one) and where the vault is empty (Insane: no gold to hold).
+     *
+     * HOW IT MEETS OP1'S GOLD YEARS. A city founded the 1900 way is on Canada's peg at par from policyHearsTheMonth() in buildWorld();
+     * the box's Gold leaves that peg (setRegime() calls leaveCanadaGold()), so Canada's August 1914 floats nothing, its July 1926 passes a
+     * city still on Gold by (ForeignAccounts.hearMoneyMonth(): only a floating dollar is put back on par), and the city meets the US$'s own
+     * dates (GD3: April 1933, February 1934, August 1971) as any city on Gold does. One whose gold broke before July 1926 is floating then,
+     * and Canada's return puts it on the peg at the old par as it does every floating 1900 dollar.
+     * ===================================================================================================================================== */
+    void foundOnGold() {
+        if (!founding.isOnGold() || foreign.getRegime() == ForeignAccounts.Regime.GOLD) return;
+        ensureWorldMarket();
+        WorldMoneys moneys = worldMoneys;
+        double price = moneys == null ? Double.NaN : goldUsdPerOunce(moneys.month());
+        if (!(price > 0) || !Double.isFinite(price)) {
+            System.out.println("Founded on dollars, not gold: the world cannot price gold (no world-1.bin).");
+            return;
+        }
+        // Gold's price alone: the eight are handed at the top of the first month, as for every city (handTheMoneysToTheVault()).
+        double[] usdPerUnit = new double[ForeignAccounts.MONEYS];
+        java.util.Arrays.fill(usdPerUnit, Double.NaN);
+        usdPerUnit[ForeignAccounts.GOLD] = price;
+        foreign.setMoneyRates(usdPerUnit);
+        double gold = founding.goldUsd(foreign.getRate());
+        if (!(gold > 0)) {
+            System.out.println("Founded on dollars, not gold: the vault is empty, so there is no gold to found on.");
+            return;
+        }
+        decisions.hold();
+        try {
+            foreign.foundInGold(gold);
+            setCurrencyRegime(ForeignAccounts.Regime.GOLD);
+        } finally {
+            decisions.release();
+        }
     }
 
     /**
@@ -6164,6 +6210,9 @@ public class Game {
 
     /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()); 0 outside Gold. */
     public double getFreeGoldUsd() { return foreign.freeGoldUsd(centralBank.m0()); }
+
+    /** How many months the vault lasts at the last reprice's sales (ForeignAccounts.monthsToFloor()), under Gold over M0 as getFreeGoldUsd() reads it (FB14): Policy's pace. */
+    public double getMonthsToFloor() { return foreign.monthsToFloor(centralBank.m0()); }
 
     /** The US$ gold date open for the city to answer; NONE when none is. */
     public ForeignAccounts.GoldEvent getGoldEvent() { return foreign.getGoldEvent(); }
@@ -13659,6 +13708,8 @@ public class Game {
         // ...and the dollars the vault took at the strong edge of a band or a
         // peg at the last reprice are paid for here, by their payer (XR2).
         settleTheEdge();
+        // ...and the D$ the gold the mint paid out at the last reprice took back are retired, M0 down with the gold (FB14).
+        centralBank.settleGoldRedeemed();
 
         /*
          * THE AUTOPILOT (0.7.0), before anything is priced: with the rule's
@@ -14273,9 +14324,13 @@ public class Game {
          * currency: the central bank's equity line, booked here, after the
          * audit, because no pool moves on it - a capital transaction against
          * the world, the vault down and M0 where it was (CentralBank, THE
-         * DEFENCE).
+         * DEFENCE). Under Gold what the gold fetched is owed to the central
+         * bank instead, which retires it at the top of the next month, M0 down
+         * with the gold (FB14; CentralBank, THE GOLD'S OWN DEFENCE): a gold
+         * that broke this month sold nothing.
          */
-        centralBank.dollarsSold(foreign.getDefenceLocal());
+        if (foreign.getRegime() == ForeignAccounts.Regime.GOLD) centralBank.goldPaidOut(foreign.getDefenceLocal());
+        else centralBank.dollarsSold(foreign.getDefenceLocal());
 
         /*
          * ...AND THE CITY'S DOLLAR DEBT IS WORTH WHAT IT IS WORTH.
