@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R2e-PE4-mS6El1Me -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R2e-PE4, the Cement Plant calibrated rotary-first — 2026-11-20, ready, see docs/queue/R2e-PE4-notes.md
 The Cement Plant's PE4 (Edison's long kiln, 1902) is defined against its rotary kiln now, as R2e and R1d recommended: a
