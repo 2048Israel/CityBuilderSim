@@ -407,7 +407,7 @@ Its three minor findings ship as they are, queued as one row, BO1-R:
    town stays small. The changelog's "a town under 20 adults has none" was
    true of the families, not of those adults; it now says so. The mend:
    `Game.ownerAdultsWanted()` gives nothing while the figure is under
-   `Household.EMPTY_CELL`, so the supply, the census and the cell agree.
+   `HouseholdBalance.EMPTY_CELL`, so the supply, the census and the cell agree.
 2. **The owner cell's trades with the world, in OwnerCheck.** ShortSelling
    9's owner-cell line (the owner families' trades with the world settle)
    went with `lineOff` (`ShortSellingCheck.java:493`), and OwnerCheck has
