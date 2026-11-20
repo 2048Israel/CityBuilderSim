@@ -112,7 +112,16 @@ import java.nio.file.Files;
  *     share of the face moved, so the founding's scale is the same. RT1b also causes the rounding on the sectors' and cells' own
  *     books, for principal and buybacks, and runs the firm's desk: the bank's independently booked face must equal the pieces' transfer.
  *
- * Each fixture causes its condition rather than finding a city in it.
+ * Each fixture causes its condition rather than finding a city in it. How sections 1 to 9 get theirs (FS14):
+ *   1. the households' savings are set by hand (setSpare), so the purse and the split by the auction's rule are caused;
+ *   2. the shares the coupon is paid on are read at the coupon itself (Game.settleProbeForTest, after the settle), not before the month;
+ *   3, 4. a hand-built cell and the dial set by hand (as before); 5. the dial set to .30 and the sale's holders as 1 left them;
+ *   6. the households by their savings and a deposit rate of nothing, the central bank by its dial, the bank as the residual buyer;
+ *   7. written from 6's city, whose holders are caused; 8. a dollar piece the section sells itself;
+ *   9. the households' purse and the tills (emptied, so no business bids) are set by hand, the dial named, the central bank's
+ *      rule asserted month by month against the bank's holding before it; the households' savings are lifted again after the settle so
+ *      none sells the desk a sliver, and the one condition no setter pins - nobody leaving (a town with a tier in decline) - is played
+ *      to, bounded, and FAILS as a fixture if the bound passes.
  *
  * Every city here plays with the owner line off (BO1-S, ShortSellingCheck.lineOff): the households'
  * paper is bought from their savings, and in this harness's town of nine adults, under
@@ -161,6 +170,23 @@ public class HoldersCheck {
         double cells = g.getHouseholdBalance().totalPaper();
         double paper = g.getDebtManager().householdPrincipal();
         return Math.abs(cells - paper) <= 1e-9 * Math.max(1, paper);
+    }
+
+    /** How many months of its disposable income past its cushion every household is given to put into paper, so what they can spend on it is set, not found. */
+    static final double SPARE_MONTHS = 12;
+
+    /**
+     * The households' savings set by hand, between two months, and never lowered: every cell holds at least its cushion
+     * (HouseholdBalance.SHARE_CUSHION_MONTHS of its disposable income) and SPARE_MONTHS more, so the households can pay for paper, and
+     * at least its face of paper in cash (a cell with no income, an orphan's, has paper bought from its few dollars), so no household is
+     * short of money in the months after - the one thing that sends a sliver of their paper to the bank's desk.
+     */
+    static void setSpare(HouseholdBalance hb) {
+        for (Household c : hb.cells()) {
+            if (c.isEmpty()) continue;
+            c.savings = Math.max(c.savings, Math.max(
+                    (HouseholdBalance.SHARE_CUSHION_MONTHS + SPARE_MONTHS) * Math.max(0, c.disposable), c.paper));
+        }
     }
 
     static int closedMonths, brokenMonths;
@@ -243,6 +269,7 @@ public class HoldersCheck {
         /* ================= 1. at the settle ================= */
         out.println("--- 1. at the settle the households take their share, and the bank the rest ---");
 
+        setSpare(hb);   // the households' savings set by hand: the purse the split is struck against is caused, not whatever the 60 months left
         double spare = hb.spareForPaper();
         out.printf("   m%d: households hold $%,.0fk past their cushion; the bank pays savers %.3f%%%n",
                 city.getMonth(), spare, bank.depositRate() * 100);
@@ -302,10 +329,21 @@ public class HoldersCheck {
 
         /* ================= 2. the coupon ================= */
         out.println("\n--- 2. the coupon reaches each holder in its share ---");
-        double hhShare = bond.householdPrincipal() / face, bankShare = bond.bankPrincipal() / face;
+        // The shares the coupon is paid on are the ones standing when it is paid: between the settle and the coupon (Game.settleProbeForTest,
+        // true: after the households took theirs, before processAllDebts pays the coupon), not the ones read before the month, in which a
+        // household short of money may sell a sliver of its paper to the bank's desk before the coupon.
+        final double[] shareAtCoupon = new double[2];
+        final Debt bond0 = bond;
+        city.settleProbeForTest = after -> {
+            if (!after) return;
+            shareAtCoupon[0] = bond0.householdPrincipal() / bond0.getOustandingPrincipal();
+            shareAtCoupon[1] = bond0.bankPrincipal() / bond0.getOustandingPrincipal();
+        };
         double coupon = bond.getMonthlyInterestExpense();
         double incomeBefore = hb.totalPaperIncome();
         play(city);
+        city.settleProbeForTest = null;
+        double hhShare = shareAtCoupon[0], bankShare = shareAtCoupon[1];
         close("the households were paid their share of the coupon", city.getCouponsToHouseholds(),
                 coupon * hhShare, 1e-6);
         close("...into their savings, as investment income", hb.totalPaperIncome(), coupon * hhShare, 1e-6);
@@ -426,18 +464,20 @@ public class HoldersCheck {
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
         ledger.setPolicyRate(ledger.getPolicyRate() - .04);
+        // THE THREE HOLDERS CAUSED, each by the dial that places paper with it: the households by their savings set by hand (setSpare) and
+        // the deposit rate set to nothing, so the sale's yield is a spread over it and the auction allots them a share; the central bank by
+        // its dial held at the share section 5 gave it, so the top of the settle's next month buys that much of the bank's term paper; the
+        // bank by being the residual buyer of the sale and the seller of the central bank's step - the dial's .30 of the term paper is under
+        // what the bank holds of it.
+        setSpare(hb);
+        bank.setDepositRate(0);
+        cb.setTargetShare(.30);
         quietly(() -> city.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
         play(city);                                        // the settle: households take theirs
         play(city);                                        // and the central bank buys at the top of the next
-        boolean householdPaper = Observation.reached("fixture: the save city's households hold paper",
-                ledger.householdPrincipal() > 0,
-                "household paper ratio and next-month coupon comparisons");
-        boolean centralBankPaper = Observation.reached("fixture: the save city's central bank holds paper",
-                ledger.centralBankPrincipal() > 0,
-                "central-bank paper book round trip");
-        boolean bankPaper = Observation.reached("fixture: the save city's bank holds paper",
-                ledger.bankPrincipal() > 0,
-                "bank discount round trip");
+        assertTrue("fixture: the save city's households hold paper", ledger.householdPrincipal() > 0);
+        assertTrue("fixture: the save city's central bank holds paper", ledger.centralBankPrincipal() > 0);
+        assertTrue("fixture: the save city's bank holds paper", ledger.bankPrincipal() > 0);
         quietly(() -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));   // and one still owed for
         final Game[] back = new Game[1];
         quietly(() -> {
@@ -470,15 +510,15 @@ public class HoldersCheck {
         }
         assertTrue("every piece of paper's holders, what it is owed for and its discount came back",
                 paperSame);
-        if (householdPaper) close("...the households' paper ratio", twin.getHouseholdBalance().getPaperRatio(), hb.getPaperRatio(), 0);
-        if (centralBankPaper) close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cb.getPaperHeld(), 0);
-        if (bankPaper) close("...and the bank's unearned discount, re-derived from the paper",
+        close("...the households' paper ratio", twin.getHouseholdBalance().getPaperRatio(), hb.getPaperRatio(), 0);
+        close("...the central bank's book", twin.getCentralBank().getPaperHeld(), cb.getPaperHeld(), 0);
+        close("...and the bank's unearned discount, re-derived from the paper",
                 twin.getBank().getUnearnedDiscount(), bank.getUnearnedDiscount(), 1e-9);
         assertTrue("...and the two books agree in the reloaded city", booksAgree(twin));
         MoneyAudit.Result mine = play(city), theirs = play(twin);
-        if (householdPaper) close("a month on, both settle the paper still owed for the same way",
+        close("a month on, both settle the paper still owed for the same way",
                 twin.getHouseholdsBoughtPaper(), city.getHouseholdsBoughtPaper(), 1e-9);
-        if (householdPaper) close("...and pay the households the same coupons", twin.getCouponsToHouseholds(),
+        close("...and pay the households the same coupons", twin.getCouponsToHouseholds(),
                 city.getCouponsToHouseholds(), 1e-9);
         assertTrue("...and both months close", Math.abs(mine.residual) <= MoneyAudit.tolerance(mine.moved())
                 && Math.abs(theirs.residual) <= MoneyAudit.tolerance(theirs.moved()));
@@ -664,9 +704,11 @@ public class HoldersCheck {
              */
             for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
-        boolean noTierDeclining = Observation.reached("fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched",
-                city.getMigration().getLastDecliningShare() == 0,
-                "whole-book household-only QE step");
+        // Nobody leaves while the paper is watched: a leaver sells its paper to the bank's desk on the way out, and there is no setter that
+        // pins a town's departures, so the town is played on (up to the bound above) until no tier is in decline, and it FAILS as a fixture
+        // if the bound passes with a tier still in decline. The months watched below assert the effect itself, each one.
+        assertTrue("fixture: no pay tier in the town is in decline, so nobody leaves while the paper is watched",
+                city.getMigration().getLastDecliningShare() == 0);
         HouseholdBalance hb = city.getHouseholdBalance();
         DebtManager ledger = city.getDebtManager();
         Bank bank = city.getBank();
@@ -674,40 +716,55 @@ public class HoldersCheck {
         // One and seven tenths of what the households can pay (CD2, D32): they bid a fifth of the issue for
         // each point over the deposit rate and are limited by their purse, not by half the issue as they
         // were, so they take their whole purse - about 59% of this issue - and the bank the rest.
+        // The purse is set by hand (setSpare), the businesses' tills emptied so none of them bids, and the deposit rate named: what the
+        // households hold is the purse, not what the 60 months left them, and the bank holds the rest.
         final double savers = .005;
-        double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 1.7);
+        setSpare(hb);
+        for (String key : Sectors.KEYS) city.getEconomyManager().setSectorCash(key, 0);
+        double purse = hb.spareForPaper();
+        double ask = Math.max(100 * PriceLevel.FACTOR, purse * 1.7);
         quietly(() -> {
             bank.setDepositRate(savers);
             city.handleLongBondLogic(ask, 20, 100 * PriceLevel.FACTOR);
         });
         play(city);                                        // the settle: the households take their share
         Debt bond = termPiece(ledger);
+        assertTrue("fixture: the whole-book city issued its twenty-year bond", bond != null);
+        if (bond == null) return;   // the fixture failed (counted above): nothing below can be read
         cb.setTargetShare(1.0);
         close("the dial takes 100%, MAX_QE_SHARE", cb.getTargetShare(), CentralBank.MAX_QE_SHARE, 0);
-        if (!Observation.reached("fixture: the whole-book city issued its twenty-year bond",
-                bond != null && noTierDeclining,
-                "whole-book holder waterfall and mid-operation save")) return;
         assertTrue("the newly settled bond owes no settle and the central bank has bought none yet",
                 bond.getSettleDue() == 0 && bond.centralBankPrincipal() == 0);
         double face = bond.getOustandingPrincipal();
-        if (!Observation.reached("fixture: one twenty-year bond, the households holding part and the bank the rest",
-                bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0,
-                "whole-book household-only QE, books and save")) return;
-        if (!Observation.reached("fixture: ...the households the larger part, the bank under half the issue, so the bank's paper clears in two steps",
-                bond.householdPrincipal() > bond.bankPrincipal() && bond.bankPrincipal() < face / 2,
-                "whole-book household-only QE, books and save")) return;
+        assertTrue("fixture: one twenty-year bond, the households holding part and the bank the rest",
+                bond.householdPrincipal() > 0 && bond.bankPrincipal() > 0);
+        // The mix is the purse's and the dial's rule, each from both sides against the model's own constants: the households' bid at the
+        // issue's yield (HOUSEHOLD_PAPER_APPETITE per unit over the deposit rate) is wider than their purse, so the purse binds; the ask is
+        // 1.7 purses, so the households hold 1/1.7 of the cash raised, more than half; and the bank, under half, is cleared by two of the
+        // central bank's steps (QE_SPEED of the whole term paper each, the dial being the whole of it).
+        assertTrue("fixture: the households' bid at the issue's yield is wider than their purse, so the purse binds",
+                HouseholdBalance.HOUSEHOLD_PAPER_APPETITE * (bond.getIssueYield() - savers) * face > purse);
+        assertTrue("fixture: ...the households the larger part, the bank under half the issue, so the bank's paper clears in two steps",
+                bond.householdPrincipal() > bond.bankPrincipal() && bond.bankPrincipal() < face / 2
+                        && bond.bankPrincipal() < 2 * cb.stepFor(ledger.termPrincipal()));
+        // ...and nobody short of money in the months watched, which is what sends a sliver of the households' paper to the bank's desk.
+        setSpare(hb);
         out.printf("   the households hold $%,.2fk of $%,.2fk, the bank $%,.2fk%n",
                 bond.householdPrincipal(), face, bond.bankPrincipal());
 
-        boolean bankFirst = true;
+        boolean bankFirst = true, deskQuiet = true;
         int months = 0;
         while (bond.bankPrincipal() > 1e-9 * face && months < 8) {
+            double bankBefore = bond.bankPrincipal(), step = cb.stepFor(ledger.termPrincipal());
             play(city);
             months++;
-            if (bond.bankPrincipal() > 1e-9 * face) bankFirst &= cb.getBoughtFromHouseholds() == 0;
+            deskQuiet &= bank.getPaperBoughtFromHouseholds() == 0 && hb.getTakenAway() == 0;
+            // The dial's rule, month by month: the bank's paper is sold first, and the households' bought only once it has none left.
+            bankFirst &= bankBefore >= step ? cb.getBoughtFromHouseholds() == 0 : cb.getBoughtFromHouseholds() > 0;
         }
         out.printf("   the bank's paper gone in %d month(s); the central bank holds %.1f%% of the term paper%n",
                 months, ledger.centralBankShareOfTerm() * 100);
+        assertTrue("fixture: in those months no household left and none sold the bank's desk any paper", deskQuiet);
         assertTrue("while the bank has term paper to sell, it is all the central bank buys", bankFirst);
         assertTrue("...until it has none: the dial past the bank's holding took all of it",
                 bond.bankPrincipal() <= 1e-9 * face && ledger.centralBankShareOfTerm() < 1);
@@ -727,6 +784,8 @@ public class HoldersCheck {
         assertTrue("fixture: the desk bought none of the households' paper that month",
                 bank.getPaperBoughtFromHouseholds() == 0);
         assertTrue("fixture: ...and the step came from the households", fromHouseholds > 0);
+        assertTrue("fixture: ...the households' holding covering the step, so nothing was asked of the businesses or the world",
+                Math.abs(move - fromBank - fromHouseholds) <= 1e-9 * face);
         close("the central bank took the rest of its step off the households' face",
                 hhBefore - bond.householdPrincipal(), fromHouseholds, 1e-6);
         close("...the cells' paper by the same, pro rata", cellsBefore - hb.totalPaper(), fromHouseholds, 1e-6);
