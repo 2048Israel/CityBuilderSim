@@ -47,7 +47,10 @@ import java.util.Locale;
  *      a steep plot of it.
  *   9. HOW OFTEN IT FIRES IN A REAL RUN, where earth-2.bin is named: a Medellin city played on the real Earth, the
  *      orders charged a preparation, the foothill prepared and its points as a share of every point billed counted;
- *      it fires, and no building stands on steep ground.
+ *      no building stands on steep ground. Its fixture (FS7): a square of steep ground near the founding site,
+ *      STEEP_SQUARE plots a side, bought by hand at the founding (LandManager.buyRectForTest), so the city owns
+ *      steep ground whatever the run's land office offers; that the preparation fires is section 5's to cause,
+ *      and the run counts it.
  *
  * WHY. ET1 gave every plot a relief and drew it; ET2's slices A to C made the land model, the price, the map and the
  * founding read it. Each has its own arithmetic and none of it is the arithmetic of another, so a figure here is
