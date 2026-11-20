@@ -6,8 +6,8 @@
 > 
 > WHY (GV1/GV2, spec-wealth.md 3.2). Scripted income and property tax changes ignored the government's accumulating wealth and fought the
 > study's policy rule. This is a player's move, called by LongPlaytest after a successful January; Game never calls it for a live city.
-> January has finished before this runs, so this January's newly opened policy levers accept their setters. The prototype acted after
-> December instead, before those gates opened. The first eligible January is month 13, with a full year's revenue history.
+> Every lever it moves is open from the founding (OP1), so its first move can come in the first eligible January, month 13, with a full
+> year's revenue history.
 
 **Uses:** [TaxPolicy](TaxPolicy.md) (4), [TreasuryFund](TreasuryFund.md) (4), [GovernmentView](GovernmentView.md) (3), [Game](Game.md) (2), [Unemployment](Unemployment.md) (1), [CityCalendar](CityCalendar.md) (1)
 

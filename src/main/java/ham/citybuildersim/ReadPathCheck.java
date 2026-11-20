@@ -1609,12 +1609,11 @@ public class ReadPathCheck {
         System.setOut(quiet);
         try {
             g.run();
-            // THE TAXES OPENED IN THE FIXTURE (R0): this section was written for a city that taxes from its first month, and "doubling the
-            // rate" below is a question about the profit tax's mechanics. A 1900 city has no profit tax until 1916 (the lever is held at zero,
-            // its setter refuses), so doubling the rate would double nothing. Every lever is opened here and the defaults put back, before
-            // a month has run, so the city is the one the section meant.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): this section was written for a city that taxes from its first month, and "doubling
+            // the rate" below is a question about the profit tax's mechanics. Until OP1 a 1900 city had no profit tax until 1916 (the lever was
+            // held at zero, its setter refused), so doubling the rate would double nothing. Since OP1 every lever is open from the founding, and
+            // the defaults are put back before a month has run, so the city is the one the section meant.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
 
             BuildingManager b = g.getBuildingManager();
             LandManager land = g.getLandManager();

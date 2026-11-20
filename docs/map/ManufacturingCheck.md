@@ -27,7 +27,7 @@
 > rather than waiting for a mill; the wage test moves the floor rather than
 > hoping a run drifts.
 
-**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [Sectors](Sectors.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [PolicyDates](PolicyDates.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Good](Good.md) (70), [Game](Game.md) (11), [Sectors](Sectors.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [Manufacturing](Manufacturing.md) (6), [GoodsMarket](GoodsMarket.md) (5), [BuildingManager](BuildingManager.md) (5), [GameFiles](GameFiles.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [TempDirs](TempDirs.md) (1), [BuildingType](BuildingType.md) (1), [PopulationManager](PopulationManager.md) (1), [Founding](Founding.md) (1), [SectorBooks](SectorBooks.md) (1), [Equity](Equity.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 

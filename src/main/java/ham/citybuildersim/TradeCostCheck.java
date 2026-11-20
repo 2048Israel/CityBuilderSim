@@ -310,12 +310,12 @@ public class TradeCostCheck {
         System.out.println("\n--- and the network's total did not move ---");
         quietly(() -> {
             game.newGame();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): "a real city is mostly people, not ore" is measured on a
-            // city played ninety months, and the fixture needs the pre-R0 city, one that taxes, pays its wage floor and charges its sales tax from
-            // its first month; a 1900 city on history's dates has none of these to 1916-1920, so its investors keep their profit and raise more
-            // bulk (83% of the road load, commuters 17%, in the suite's first read). Every lever opened and the defaults put back, before a month.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, diagnostic - see the batch notes; OP1): "a real city is mostly people, not ore" is
+            // measured on a city played ninety months, and the fixture needs the pre-R0 city, one that taxes, pays its wage floor and charges its
+            // sales tax from its first month; until OP1 a 1900 city on history's dates had none of these to 1916-1920, so its investors kept
+            // their profit and raised more bulk (83% of the road load, commuters 17%, in the suite's first read). Since OP1 every lever is open
+            // from the founding, and the defaults are put back before a month.
             game.getEconomyManager().getTaxPolicy().reset();
-            game.getEconomyManager().getTaxPolicy().openAll();
             // WN3 (the world market): at the world's band for 2000 wood pellets fetch about twice their literal (.358 at the floor against
             // .150) and the town raises a Wood Pellet Mill inside the ninety months - 780 of the 1,088 road load, 755 of it bulk, in a town of
             // forty-five houses - so ore, not people, is most of it (commuters 31%, bulk 69%). One mill in a hamlet is not a real city, which

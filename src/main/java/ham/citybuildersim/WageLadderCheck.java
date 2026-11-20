@@ -166,8 +166,8 @@ public class WageLadderCheck {
         check("...and every job's wage in the market PayTier's (the base is the floor times a ratio: to a part in 10^12)", marketWages, "worst " + worst);
         check("...its rents the rent for PayTier's unskilled wage", Double.compare(homes.getRentPrice(), RealEstate.rentFor(PayTier.UNSKILLED.getMonthlyWage())) == 0
                 && Double.compare(homes.getStudioRentPrice(), RealEstate.rentFor(PayTier.UNSKILLED.getMonthlyWage())) == 0);
-        double grant = tax.isOpen(PolicyDates.Lever.STUDENT_AID) ? TaxPolicy.DEFAULT_FIXED_GRANT : 0;
-        check("...its grant the default fixed grant (held at zero while the student-aid lever is shut) and its pension's wage base PayTier's unskilled wage, to the bit",
+        double grant = 0;
+        check("...its grant zero (student aid opens at zero, as every promise does since OP1) and its pension's wage base PayTier's unskilled wage, to the bit",
                 tax.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && Double.compare(tax.getGrantAmount(), grant) == 0
                         && Double.compare(tax.foundingPensionWage(), PayTier.UNSKILLED.getMonthlyWage()) == 0,
                 tax.getGrantAmount() + " vs " + grant + ", " + tax.foundingPensionWage());
@@ -211,15 +211,16 @@ public class WageLadderCheck {
                         && market.getMinimumWage() >= market.getMinSettable() && market.getMinimumWage() <= market.getMaxSettable());
         check("the rents are the rent for the 1901 anchor", Double.compare(homes.getRentPrice(), RealEstate.rentFor(anchor)) == 0
                 && Double.compare(homes.getStudioRentPrice(), RealEstate.rentFor(anchor)) == 0, homes.getRentPrice() + " vs " + RealEstate.rentFor(anchor));
-        double grant = tax.isOpen(PolicyDates.Lever.STUDENT_AID) ? TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor : 0;
-        check("the grant is held at zero while the student-aid lever is shut, else the default share of the anchor; the pension's wage base is the anchor",
+        double grant = 0;
+        check("the grant opens at zero (student aid opens as every promise does since OP1); the pension's wage base is the anchor",
                 tax.getGrantBasis() == TaxPolicy.GrantBasis.FIXED && Double.compare(tax.getGrantAmount(), grant) == 0
                         && Double.compare(tax.foundingPensionWage(), anchor) == 0,
                 tax.getGrantAmount() + " vs " + grant + ", pension " + tax.foundingPensionWage());
         TaxPolicy open = new TaxPolicy();
         open.foundOn(WageLadder.Y1901);
-        check("...and a policy with the lever open founded on 1901's has the default share of the anchor for its grant",
-                open.isOpen(PolicyDates.Lever.STUDENT_AID) && Double.compare(open.getGrantAmount(), TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor) == 0
+        open.reset();
+        check("...and a policy founded on 1901's and put back to its defaults (reset()) has the default share of the anchor for its grant",
+                Double.compare(open.getGrantAmount(), TaxPolicy.DEFAULT_STUDENT_GRANT_SHARE * anchor) == 0
                         && Double.compare(open.foundingPensionWage(), anchor) == 0, open.getGrantAmount() + "");
         check("a pension is the replacement rate times the anchor", Double.compare(tax.pensionPerSenior(), tax.getPensionReplacement() * anchor) == 0,
                 tax.pensionPerSenior() + " vs " + tax.getPensionReplacement() * anchor);

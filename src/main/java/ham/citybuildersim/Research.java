@@ -87,7 +87,7 @@ public final class Research {
     /** How many years before history's date business science exists: 4 (est.; [MANS91] has none for it). */
     public static final int LAG_YEARS_BUSINESS = 4;
 
-    /** How many years before history's date legal science exists: 4, and so many months as a law lever may be brought forward (PolicyDates.MAX_EARLY_MONTHS), which DiscoveryCheck holds equal. */
+    /** How many years before history's date legal science exists: 4 (research-1900.md 7.2). A law find opens no lever since OP1: every lever is open from the founding. */
     public static final int LAG_YEARS_LAW = 4;
 
     /** The fewest years of work a building takes, however many work on it: 3 [DIMASI] (est.). */

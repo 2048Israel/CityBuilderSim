@@ -296,16 +296,19 @@ adds its line here, not in `CLAUDE.md`.
                                    strictness (CentralBankCheck 21); advice, not a model change -
                                    PolicyPreviewCheck holds it
         PolicyDates.java           when Canada first had each Policy lever, as pure data (R0, 2026-11-04;
-                                   research-1900.md 7.1): the Lever enum's opening month (a year-only date
-                                   opens in January; the levers the study does not date are open from
-                                   founding, each with its reason), the study's entry key, the act and its
-                                   first terms, openingMonth/isOpen/earliestOpening (MAX_EARLY_MONTHS, the
-                                   law field's four years) and the inbox notice; nothing reads it until R0's
-                                   second slice puts the gate in the model - PolicyDatesCheck holds it
-        PolicyDatesCheck.java      the table of 7.1 typed out as the specification: each lever's year and
-                                   month, shut the month before and open from its date, founding with the
-                                   open levers open, the early-opening bound and its floor, the notices
-                                   and keys, and history's order (R0)
+                                   research-1900.md 7.1): the Lever enum's year and month (canadaMonth(),
+                                   a year-only date in January; the levers a city had before 1900 at month
+                                   1, each with its reason), the study's entry key, the act and its first
+                                   terms; and the dollar's gold years (GOLD_SUSPENDED, GOLD_RETURN,
+                                   GOLD_END, goldPeriod(), R0f). From R0 to OP1 (2026-11-19) the levers
+                                   opened on those dates and a law find brought one forward; since OP1
+                                   every lever is open from the founding (TaxPolicy.openAtFounding()) and
+                                   the dates are history's record, which the law rows of research.json carry
+        PolicyOpenCheck.java       every lever open from month 1 (OP1, replacing R0's PolicyDatesCheck):
+                                   the table of 7.1 typed out as the record, the opening rates in a 1900
+                                   city and a default one, every setter taking in month 1 and standing a
+                                   month on, Money the player's from the founding, a law find opening
+                                   nothing, no screen or notice telling a date, no gate member declared
         HomeFuel.java              the homes' lamp oil and coal (R0c, 2026-11-05; research-1900.md 4): the
                                    shares of the homes lit by a lamp and heated by a stove, the litres and
                                    tonnes a home burns, and the month's sale Retail.sellHomeFuel() strikes;
@@ -1129,4 +1132,4 @@ BF1: BankFailureCheck causes the hands-off bank's mill-sales, closing-debt and
 new-credit failures, distinguishes consolidations from missing shares, and
 audits 24 default Random cities for 120 months apiece.
 
-`MoneyDatesCheck.java` (R0f): founded cities cross Canada's two gold episodes, the Advance Rate and Bank of Canada dates; exhausted reserves remain off gold after JSON and the next month.
+`MoneyDatesCheck.java` (R0f; OP1): founded cities cross Canada's two gold episodes with Money the player's from the first month, a player who leaves gold staying off it, and the Bank of Canada's date passing as data; exhausted reserves remain off gold after JSON and the next month.
