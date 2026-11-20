@@ -143,13 +143,10 @@ public final class Offending {
         EconomyManager economyManager = game.getEconomyManager();
 
         double wanted = crime.getTheftWanted();
-        double weight = 0;
-        java.util.List<Household> cells = householdBalance.cells();
-        if (offenderWeight.length == cells.size()) {
-            for (int i = 0; i < offenderWeight.length; i++) {
-                if (!cells.get(i).isEmpty()) weight += Math.max(0, offenderWeight[i]);
-            }
-        }
+        // The weight creditByWeight() pays (BO1-S and HS2 found the same
+        // theft paid to nobody, and this one sum is both their mends): the
+        // offenders' in the cells not under half a household.
+        double weight = householdBalance.creditableWeight(offenderWeight);
         if (!(wanted > 0) || !(weight > 0)) {
             crime.recordStolen(0, 0);
             return;

@@ -18,6 +18,76 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.167 — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
+The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
+1/420 (at 70, as before). The young form seven of the eleven household shapes and carry half the babies, a quarter of
+the children and no teens. The books keep the young in 42 working cells beside the established's 66, the pool's group
+is (tier, stage), and the young who turn 35 carry their money with them, HL1's identity closing every month. A theft
+no household could take home is no longer taken. Saves are format 58 (57 no longer loads). The 80 pass every hard
+criterion but end smaller, the final population 0.748 of BO1-S's in AUTO2 and 0.745 in ZERO_SLACK, so both T2 lines
+(soft) now FAIL. Why: a young city's adults are mostly young and the young do not retire, so it keeps fewer seniors
+(9% of the people against 11%) and more adults want the same jobs (unemployment 9.3% against 6.7% in m720-1440, where
+the size is lost). The retired are richer (0.74 of the workers' net worth against 0.56). Twice the cells need twice
+the households before each holds half of one and shops: the 1900 village keeps 13% of its households in such cells at
+m12 (main 9%), 3% at m60 (2%), and is no smaller (544 people at m120 against 504).
+
+### EDU1 — the poverty trap's gap in EducationCheck — 2026-11-20, ready, no tag (harness), see docs/queue/EDU1-notes.md
+EducationCheck's "a poor city at x3 enrols fewer than at x1: the trap is back" was red on main from CU2 (0.9.130), seen only at R6b's pick, the harness being nightly.
+Bisected on the kept gate runs and probes: green at SQ1's and DQ1's merges (x1 1,673, x3 1,438), red at CU2's (1,652 / 1,632). The model did not move: at x3 the
+willing share still falls from .72 to .35 and the month's intake to about half of x1's. The chained world prices make the fixture city a sixth larger at five years
+(23,011 people at x3 against 19,779), so x3's half-rate intake filled the one university that x1 and x0 already filled. Section 15's three cities now build three
+universities, as the rest of the harness does, stepped by the month, with a fixture line that none filled at x1 or x3 (at most .72 and .32 of the staffed seats).
+The trap line is unchanged: 3,307 at x1, 1,543 at x3, 3,867 at x0. It goes red with one university, where the fixture line names why, and with the fee kept out of
+affordability. EducationCheck's known red is retired.
+
+### 0.9.166 — R2e-PE4, the Cement Plant calibrated rotary-first — 2026-11-20, ready, see docs/queue/R2e-PE4-notes.md
+The Cement Plant's PE4 (Edison's long kiln, 1902) is defined against its rotary kiln now, as R2e and R1d recommended: a
+plant on the rotary kiln without PE4 burns the study's 30% of its cement in coal (7,500 t a month, was 6,160), the long
+kiln saves 394 t of it (to E2's exact 7.0/3.3 wet form, 7,106 t) and E2's preheater the rest, to today's 3,350 t. Every
+kiln step saves on the one before in either learning order, so a 1900 plant fits its long kiln from June 1902 and pays
+PE4's royalty on the saving, where the refit was a loss before and was refused. Today's figures, the Large Cement Plant
+and the Lime Kiln do not move; the shaft kilns keep R1c's 1,340 t over the rotary (8,840 t before PE4, was 7,500).
+PostwarRecipeCheck's kiln controls follow the new calibration, each red on the old one (15 of 228), and a new section
+fits a standing plant's long kiln through the crews' months and reads its royalty. The default playtest's trace is
+main's, byte for byte (eight files, 2,405 months).
+
+### FS2 (untagged) — the twins and the scale cause their conditions — 2026-11-20, ready, see docs/queue/FS2-notes.md
+ScaleCheck, PriceLevelCheck and DenominationCheck cause their conditions; harness-only, the model and the trace unmoved. All fifteen
+FS2 rows of known-reds.txt go green. PriceLevelCheck runs three nudges a level and compares each twin through the month before any two
+cities of one level part (a parting across the levels alone fails); its history is cut by what each list held, the town's reload is
+read by a rerun to that month, and the lanes are given (twice and half the floor), not found. DenominationCheck's card gives its
+partner twice the floor. ScaleCheck strikes its copy at the first month from 225 that has its premises (none in 60 fails as a
+fixture), reads section 9 at ten copies a side (the K = 1 city's whole units fall with them: savings 1.12e-2 to 9.05e-4) with a
+treasury left unscaled shown caught, and plays the 1900 town on the literals (the world's band is no K's: prices 1.09e-3 to 2e-5).
+
+### SB1 — a template has one stack, the premise closed — 2026-11-20, ready, see docs/queue/SB1-notes.md
+SB1 queued `BuildingManager.retire()` to scrap from every stack of a template, not only the first, after HS1's OutsideCheck fixture read its early return as a fault. It is not one: `addStack` is the only place a stack is made, and it merges an order into the stack of the template's name, so a second order, a building wave, an order on site and every load add to the one stack, and a save keys a stack by its id. No city has a template with two stacks, `retire()`'s return is exact, and the model and its default trace are unchanged. `BuildingStackCheck` section 10 is the finding and its tripwire: every template of the catalogue ordered three ways stands in one stack; a played city's stack count read at the end of each of 24 months, saved and loaded, never has two of a template; and the closing path (`Game.demolish`, the next month's close) and the shedding path (`Game.retire`) take the count asked, up to what stands, leave the emptied stack in place and book the count, the ground, the posts, the log line and the salvage at what was scrapped. Run with `addStack` not merging and `retire` returning the count asked, 18 lines go red. The day a second stack of one template can stand, it goes red there, and `retire()` is the first thing to mend.
+
+### 0.9.165 — FB14, gold: GD3's review and the start-on-gold box — 2026-11-20, ready, see docs/queue/FB14-notes.md
+The founding screen has a "Start on gold" box under the money: the city opens on Gold, Defend the gold its bank's aim, with
+the law's 40% of its treasury in gold and never more than the vault, so every preset's whole vault (Standard's covers 25%, and
+the box's line says so; a deeper custom vault keeps the rest in dollars). Selling gold now shrinks M0: the next month's top
+retires what the mint paid out, from the reserves, and the audit says it twice; until now the bank's equity paid it and the
+cover drained faster than a real gold standard's. Gold's cover test retires only what the reserves can, and the cover, the free
+gold and the pace read M0 after the last sale's retirement. A gold break reads "came off gold", not "the peg broke", and Gold
+has a thin-cover flag. Known, and opened by the box: a city founded on gold the default way can take M0 under zero from about
+month 161 (GM1). Saves: no format bump; older saves read nothing retired for gold and every break a peg's. The playtest does not
+move: its city is on Lean.
+
+### 0.9.164 — SQ1b, a month's material draw past 2^31 and buildStack's harness — 2026-11-20, ready, see docs/queue/SQ1b-notes.md
+`Game.drawMaterials` rounded a month's draw of material into an int, so a draw past 2^31 units wrapped (3 x 2^31 became
+a negative count): the whole draw went unbought and unbooked. The draw is a long end to end now: the yard
+(`BuildingManager.takeFromYard`), the yard's delivery to a new order's sites, the run invoice's reduction of the yard,
+the quote's yard, and the month's tally `materialsConsumed`, which is saved (the yard's stock and the tally are longs
+in `DataSave`; an old save's int reads into one, no format bump). `BuildingStackCheck` sections 7 and 8 order 3.2e8
+Houses through `Game.buildStack` on a copy whose stack stands just under the ceiling and read back its quote, its
+ground, the cash it charged, the receipt, the yard's share and the run's invoice, then draw 6.4e9 units twice (the sites'
+and a repair's, yard first); each old int put back turns its own assertions red. The default playtest's trace is main's,
+byte for byte (eight files, 2,405 months).
+
+### 0.9.163 — FB13, the island's words, the Government screen's coupons and the build card's licence line — 2026-11-20, ready, see docs/queue/FB13-notes.md
+Three screens that kept words from before the model changed under them now say what it says. Where AL1's rule would link an unlinked island by a bridge, the Land tab's "linked" cell and tooltip, the map's chip (a third line), the island's notice and its door ("Build a bridge there ›", "See the bridge ›" while one is built) and the not-enough-land page name the bridge and its crossing first and the port after it, and the Build tab's Overview gains AN ISLAND TO LINK, a card for the link the rule would order (the island and its ground, the bridge or the two terminals, the quote's price and wait, a door to the building's card with the island chosen); where the rule links by port, or cannot, every word is the old one. The screens read the rule through its own fresh memory of a refusal and a memory of their own keyed by ground, so they say what it will order and an open screen never moves when it surveys. The Government screen's "...of which paid abroad" row says "in D$, at the month's rates · paper held now in US dollars, euros and yen", not "in dollars". The build card gains the licence line of research-design mockup 5, drawn from the patents the planners' licence is made of (the building's, its recipe's, a fitted piece's; LicenceFees.rentOnNew()): a quarter of what it adds goes abroad until the month the patent ends, or on N patents with the first and last ending, with the monthly fee, or none (found here, found since, not patented, ended). The default trace is byte for byte main's. FB13Check holds all of it.
+
 ### GB2 — the nightly runs on the gate box — 2026-11-20, ready, see docs/queue/GB2-notes.md
 The nightly (`tools/nightly.sh`: the 4,000-month playtest, the nightly tier and the hard timing) runs on `gatebox`,
 the quiet box that judges speed best (Jerus, 2026-11-20: "the nightly timing run needs to also move to the gatebox").

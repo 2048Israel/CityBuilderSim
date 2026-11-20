@@ -1,4 +1,4 @@
-# HouseholdFlowCheck.java - 702 lines · 21 methods · 4 constants · harnesses
+# HouseholdFlowCheck.java - 718 lines · 22 methods · 4 constants · harnesses
 
 `ham/citybuildersim/HouseholdFlowCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -55,20 +55,22 @@
 >   8. COUNTED IN A REAL RUN: the flows move savings in a city's months, and
 >      the pool is left what no flow explains.
 
-**Uses:** [FamilyStructure](FamilyStructure.md) (75), [PayTier](PayTier.md) (61), [Household](Household.md) (48), [HouseholdBalance](HouseholdBalance.md) (32), [UnemployedHousehold](UnemployedHousehold.md) (6), [LongPlaytest](LongPlaytest.md) (6), [AgeBand](AgeBand.md) (4), [GameFiles](GameFiles.md) (2), [Game](Game.md) (2), [Equity](Equity.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevel](PriceLevel.md) (1)
+**Uses:** [FamilyStructure](FamilyStructure.md) (78), [PayTier](PayTier.md) (64), [Household](Household.md) (51), [HouseholdBalance](HouseholdBalance.md) (33), [UnemployedHousehold](UnemployedHousehold.md) (6), [LongPlaytest](LongPlaytest.md) (6), [AgeBand](AgeBand.md) (4), [AdultStage](AdultStage.md) (3), [GameFiles](GameFiles.md) (2), [Game](Game.md) (2), [Equity](Equity.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevel](PriceLevel.md) (1)
+
+**Used by (1):** [HouseholdStageCheck](HouseholdStageCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 241 | · 1. a quiet month moves nothing |
-| 293 | · 2. a retirement and an ageing on carry the average |
-| 377 | · 3. a partner's death leaves the survivor everything |
-| 424 | · 4. an estate reaches the tier's working households |
-| 484 | · 5. a leaver takes the average out |
-| 533 | · 6. every stock is conserved |
-| 583 | · 7. the orphans weigh by their people |
-| 633 | · 8. counted in a real run |
+| 255 | · 1. a quiet month moves nothing |
+| 307 | · 2. a retirement and an ageing on carry the average |
+| 391 | · 3. a partner's death leaves the survivor everything |
+| 438 | · 4. an estate reaches the tier's working households |
+| 498 | · 5. a leaver takes the average out |
+| 547 | · 6. every stock is conserved |
+| 599 | · 7. the orphans weigh by their people |
+| 649 | · 8. counted in a real run |
 
 ## Constants
 
@@ -77,7 +79,7 @@
 | 72 | `HouseholdFlowCheck.TOLERANCE` | `1e-9` | How close two figures must be, relative to the larger of the want and one: a stock is carried as an average times a count, so it is exact to the cent far inside this. |
 | 111 | `HouseholdFlowCheck.STOCK_NAMES` | `{ "savings", "debt", "shares, every company", "dollars abroad", "student loan...` | The stocks the conservation reads, named: the paper is left out (a bare fixture's leavers' paper has no record). |
 | 112 | `HouseholdFlowCheck.STOCKS` | `List.of(c -> c.savings, c -> c.debt, HouseholdFlowCheck : : sharesOf, c -> c....` |  |
-| 115 | `HouseholdFlowCheck.KINDS` | `{ "retiring", "ageing on", "partner dies", "dying alone", "leaving" }` |  |
+| 115 | `HouseholdFlowCheck.KINDS` | `{ "retiring", "ageing on", "partner dies", "dying alone", "leaving", "moving ...` |  |
 
 ## Fields (state)
 
@@ -88,13 +90,14 @@
 | 69 | `static PrintStream quiet` |  |
 | 178 | `final HouseholdBalance bal` |  |
 | 179 | `private final double[][] census` |  |
-| 180 | `private final Map<Household, Double> outside` |  |
+| 181 | `private final double[][] youngCensus` | The young's census, cell by cell (HS2): the census above is the established's and the retired's. |
+| 182 | `private final Map<Household, Double> outside` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 638 | **type** `public class HouseholdFlowCheck` | Money follows people: the households' balance carries each month's own flows - the retiring, the ageing on, the dead and the leavers - with the stocks they hold, before the census pool nets what is left (HS1). |
+| 65 | 654 | **type** `public class HouseholdFlowCheck` | Money follows people: the households' balance carries each month's own flows - the retiring, the ageing on, the dead and the leavers - with the stocks they hold, before the census pool nets what is left (HS1). |
 | 74 | 5 | `static void check(String label, double got, double want)` |  |
 | 80 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 5 | `static void quietly(Runnable r)` |  |
@@ -107,14 +110,15 @@
 | 142 | 5 | `static double sharesTakenAway(HouseholdBalance b)` |  |
 | 149 | 9 | `static double[] left(HouseholdBalance b)` | What left the city of each stock in STOCKS, the estates' repayments among the savings and the debt. |
 | 160 | 8 | `static boolean nothingElseIn(HouseholdBalance b, FamilyStructure shape, Household...except)` | True when no cell of the shape, but the ones named, holds a household or a stock. |
-| 177 | 53 | **type** `static final class Town` | A fixture: a balance, and the census the month ends on. |
-| 183 | 7 | `Household cell(FamilyStructure shape, PayTier tier, double households)` _(in HouseholdFlowCheck.Town)_ | A family cell of this many households, expected to be as many at the census. |
-| 192 | 4 | `Town expect(FamilyStructure shape, PayTier tier, double households)` _(in HouseholdFlowCheck.Town)_ | The census's count for a working cell. |
-| 198 | 4 | `Town expectRetired(FamilyStructure shape, double total)` _(in HouseholdFlowCheck.Town)_ | ...a retired shape's total, every former tier together. |
-| 204 | 4 | `Household outsideCell(Household c, double households)` _(in HouseholdFlowCheck.Town)_ | An outside cell of this many households, expected to be as many. |
-| 210 | 4 | `Town expectOutside(Household c, double households)` _(in HouseholdFlowCheck.Town)_ | The census's count for an outside cell. |
-| 216 | 7 | `Town drift(double factor)` _(in HouseholdFlowCheck.Town)_ | Every count the census holds, scaled: the reshuffles no flow explains. |
-| 225 | 4 | `void run()` _(in HouseholdFlowCheck.Town)_ | The month's census alone, as the balance reads it. |
-| 232 | 3 | `static boolean isZero(double x)` | True for a figure that is nought to the tolerance. |
-| 236 | 466 | `public static void main(String[] args) throws Exception` |  |
+| 177 | 67 | **type** `static final class Town` | A fixture: a balance, and the census the month ends on. |
+| 185 | 6 | `Household youngCell(FamilyStructure shape, PayTier tier, double households)` _(in HouseholdFlowCheck.Town)_ | A young working cell of this many households (HS2), expected to be as many at the census. |
+| 193 | 7 | `Household cell(FamilyStructure shape, PayTier tier, double households)` _(in HouseholdFlowCheck.Town)_ | A family cell of this many households, expected to be as many at the census. |
+| 202 | 4 | `Town expect(FamilyStructure shape, PayTier tier, double households)` _(in HouseholdFlowCheck.Town)_ | The census's count for a working cell. |
+| 208 | 4 | `Town expectRetired(FamilyStructure shape, double total)` _(in HouseholdFlowCheck.Town)_ | ...a retired shape's total, every former tier together. |
+| 214 | 4 | `Household outsideCell(Household c, double households)` _(in HouseholdFlowCheck.Town)_ | An outside cell of this many households, expected to be as many. |
+| 220 | 4 | `Town expectOutside(Household c, double households)` _(in HouseholdFlowCheck.Town)_ | The census's count for an outside cell. |
+| 226 | 8 | `Town drift(double factor)` _(in HouseholdFlowCheck.Town)_ | Every count the census holds, scaled: the reshuffles no flow explains. |
+| 236 | 7 | `void run()` _(in HouseholdFlowCheck.Town)_ | The month's census alone, as the balance reads it. |
+| 246 | 3 | `static boolean isZero(double x)` | True for a figure that is nought to the tolerance. |
+| 250 | 468 | `public static void main(String[] args) throws Exception` |  |
 

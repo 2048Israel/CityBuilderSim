@@ -1085,11 +1085,16 @@ public class HealthCheck {
         assertTrue("fixture: the city's break-even is inside the dial",
                 cityBreakEven > 1 && cityBreakEven <= TaxPolicy.MAX_HEALTH_FEE_SCALE);
         pt.setHealthFeeScale(cityBreakEven);
+        // The cost the break-even was struck on (HS2, 2026-11-20): the month played after it moves the cost as well as the
+        // people offered care, and on HS2's city the cost fell 6% in it ($13.2k to $12.4k, main's 0.6%) while the fees at full
+        // service stayed where the scale put them. The fees are what the policy sets, so they are read against the cost they
+        // were set to meet; the people offered care are the month's drift left.
+        double struckOn = pc.getGrossCost();
         System.setOut(quiet);
         try { paid.simulateMonths(1); } finally { System.setOut(out); }
         check("the policy's scale reached the service", pc.getFeeScale(), cityBreakEven, 0);
-        assertTrue("at the city's break-even the fees at full service are within a month's drift of the cost",
-                Math.abs(pc.fullTreatmentFees() - pc.getGrossCost()) < pc.getGrossCost() * .05);
+        assertTrue("at the city's break-even the fees at full service are within a month's drift of the cost they were struck on",
+                Math.abs(pc.fullTreatmentFees() - struckOn) < struckOn * .05);
         pt.setHealthFeeScale(cityBreakEven * .5);
         System.setOut(quiet);
         try { paid.simulateMonths(1); } finally { System.setOut(out); }

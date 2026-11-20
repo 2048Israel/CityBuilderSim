@@ -157,6 +157,11 @@ public final class LandmassView {
      * shows (LandManager.getAvailableSqFt()), the linked landmasses sharing that one figure.
      */
     public static List<Line> rows(LandManager land) {
+        return rows(land, id -> null);
+    }
+
+    /** ...with what links each island that is not linked (FB13): `links` is BuildAdvice.islandLink() by the landmass's id, and the "linked" cell and the tip say the bridge where it is allowed. */
+    public static List<Line> rows(LandManager land, java.util.function.IntFunction<BuildAdvice.Link> links) {
         Landmasses lms = land.getLandmasses();
         List<Line> out = new ArrayList<>();
         double linkedFree = land.getAvailableSqFt();
@@ -166,11 +171,14 @@ public final class LandmassView {
             String free = linked
                     ? LandManager.areaWords(linkedFree) + " free on linked ground"
                     : LandManager.areaWords(lms.unlinkedFreeSqFt(r.id())) + " free · only a port";
-            String linkedWords = linked ? (r.home() ? "home" : "yes") : needsWords(lms, r.id());
+            BuildAdvice.Link link = linked ? null : links.apply(r.id());
+            String linkedWords = linked ? (r.home() ? "home" : "yes") : needsWords(lms, r.id(), link);
+            // A bridge links it as a port does (FB13): the tip's "until a port links it" says "until it is linked" where one is allowed or on site.
+            String until = link != null && (link.bridge() != null || link.underWay()) ? "until it is linked" : "until a port links it";
             String tip = linked
                     ? r.name() + ": " + dry + " of dry ground owned, room for any building; its free ground is the linked ground's, one figure."
                     : r.name() + ": " + dry + " of dry ground owned that no port links. It is owned, counted and priced as ever, but no building"
-                            + " may stand on it except a sea terminal, and no works on its fields, until a port links it (" + linkedWords.substring("no: ".length()) + ").";
+                            + " may stand on it except a sea terminal, and no works on its fields, " + until + " (" + linkedWords.substring("no: ".length()) + ").";
             out.add(new Line(r.id(), r.name(), dry, free, linked ? Tone.PLAIN : Tone.WARN, portsWords(lms, r.id()), linkedWords,
                     linked ? Tone.GOOD : Tone.WARN, tip));
         }
@@ -197,10 +205,31 @@ public final class LandmassView {
      * some linked landmass has one standing too (Landmasses.closure()).
      */
     public static String needsWords(Landmasses lms, int id) {
+        return needsWords(lms, id, null);
+    }
+
+    /**
+     * ...and, where the rule would link the island by a bridge (FB13, AL1-W), the bridge first and the port after it: "no: needs a Road Bridge
+     * (420 m) or a port here (home has one)"; "no: a bridge is being built to it" where one is on site. `link` is BuildAdvice.islandLink()'s
+     * answer for the island, null for none - and for a link by port or none at all the words are the old ones.
+     */
+    public static String needsWords(Landmasses lms, int id, BuildAdvice.Link link) {
+        return "no: " + String.join(" ", needsParts(lms, id, link));
+    }
+
+    /** The words that say what links a landmass, without the "no: ", in the pieces the map's chip breaks them at: the bridge, then "or" the port; a lone piece for the rest. */
+    private static String[] needsParts(Landmasses lms, int id, BuildAdvice.Link link) {
+        if (hasPort(lms, id)) return new String[] { "it has a port, and needs one at home" };
+        if (link != null && link.underWay()) return new String[] { "a bridge is being built to it" };
         String linkedPort = linkedPortName(lms);
-        if (hasPort(lms, id)) return "no: it has a port, and needs one at home";
-        if (linkedPort != null) return "no: needs a port here (" + linkedPort + " has one)";
-        return "no: needs a port here and one at home";
+        String port = linkedPort != null ? "a port here (" + linkedPort + " has one)" : "a port here and one at home";
+        if (link != null && link.bridge() != null) return new String[] { "needs " + bridgeWords(link), "or " + port };
+        return new String[] { "needs " + port };
+    }
+
+    /** A bridge as the words that offer it name it: "a Road Bridge (420 m)", the template the rule would order and the length its survey found (BridgeView.lengthWords). */
+    public static String bridgeWords(BuildAdvice.Link link) {
+        return "a " + link.bridge().getName() + " (" + BridgeView.lengthWords(link.survey().lengthM()) + ")";
     }
 
     /* =====================================================================
@@ -296,8 +325,13 @@ public final class LandmassView {
 
     /** The map's chip on a landmass no port links: "Island 2 · 12.0 km² · not linked: needs a port here (home has one)". */
     public static String chipWords(Landmasses lms, LandMap.Chip chip) {
-        String[] lines = chipLines(lms, chip);
-        return lines[0] + " · " + lines[1];
+        return chipWords(lms, chip, null);
+    }
+
+    /** ...with what links the island (FB13): "Island 2 · 12.0 km² · not linked: needs a Road Bridge (420 m) or a port here (home has one)". */
+    public static String chipWords(Landmasses lms, LandMap.Chip chip, BuildAdvice.Link link) {
+        String[] lines = chipLines(lms, chip, link);
+        return lines[0] + " · " + String.join(" ", java.util.Arrays.copyOfRange(lines, 1, lines.length));
     }
 
     /**
@@ -307,8 +341,21 @@ public final class LandmassView {
      * with " · " between, as the chip read before.
      */
     public static String[] chipLines(Landmasses lms, LandMap.Chip chip) {
-        return new String[] { landmassName(lms, chip.id()) + " · " + LandMap.area(chip.plots() * World.KM2_PER_PLOT),
-                "not linked: " + needsWords(lms, chip.id()).substring("no: ".length()) };
+        return chipLines(lms, chip, null);
+    }
+
+    /**
+     * ...with what links the island (FB13, AL1-W): where the rule would link it by a bridge the chip has a third line, "not linked: needs a Road
+     * Bridge (420 m)" and "or a port here (home has one)" under it, each as short as the old second line was; the plate takes any number of lines
+     * (IslandChip.draw). A link by port, none and null read the old two lines.
+     */
+    public static String[] chipLines(Landmasses lms, LandMap.Chip chip, BuildAdvice.Link link) {
+        String[] needs = needsParts(lms, chip.id(), link);
+        String[] out = new String[1 + needs.length];
+        out[0] = landmassName(lms, chip.id()) + " · " + LandMap.area(chip.plots() * World.KM2_PER_PLOT);
+        out[1] = "not linked: " + needs[0];
+        for (int i = 1; i < needs.length; i++) out[i + 1] = needs[i];
+        return out;
     }
 
     /** The hover card's line for a plot of owned or offered ground on a landmass no port links: "On Island 2, which no port links: only a port can be built here". */
@@ -432,11 +479,19 @@ public final class LandmassView {
      * to go. Empty while the city owns none.
      */
     public static List<String> noLandLines(LandManager land) {
+        return noLandLines(land, null);
+    }
+
+    /** ...and, where the rule would link the island the Build tab's card names by a bridge (FB13, AL1-W), the line that says a bridge links it as well. */
+    public static List<String> noLandLines(LandManager land, BuildAdvice.Link advice) {
         List<String> out = new ArrayList<>();
         double free = land.getUnlinkedFreeSqFt();
         if (!(free > 0)) return out;
         out.add(unlinkedWords(free, land.getUnlinkedNames()) + ".");
         out.add("Only a sea terminal can be built there; two standing ports, one at home, link it.");
+        if (advice != null && advice.bridge() != null) {
+            out.add("A bridge links " + advice.name() + " as well: " + bridgeWords(advice) + " is allowed there.");
+        }
         return out;
     }
 
@@ -473,7 +528,31 @@ public final class LandmassView {
 
     /** The button on the notice for a landmass: the port card's door where the city owns shore on it, else the Land office's. */
     public static String noticeButton(Landmasses lms, int id) {
-        return lms.shorePlots(id) > 0 ? NOTICE_BUTTON : NOTICE_BUTTON_NO_SHORE;
+        return noticeButton(lms, id, null);
+    }
+
+    /** The label of the door to a bridge's card (FB13): the notice's button and the Build tab's card, where the rule would link the island by a bridge. */
+    public static final String BRIDGE_DOOR = "Build a bridge there ›";
+
+    /** ...and where a bridge is already being built to the island: the door to its card, to see it. */
+    public static final String BRIDGE_UNDER_WAY_DOOR = "See the bridge ›";
+
+    /** Where a notice's button, and the Build tab's card, take the player (FB13): a bridge's card, a sea terminal's card, or the Land office to buy the sea a terminal needs. */
+    public enum Door { BRIDGE, PORT, LAND_OFFICE }
+
+    /** The door of the notice for a landmass: the bridge's where `link` is a bridge to it (ordered or allowed), else the port card's where the city owns shore on it, else the Land office's. */
+    public static Door noticeDoor(Landmasses lms, int id, BuildAdvice.Link link) {
+        if (link != null && (link.bridge() != null || link.underWay())) return Door.BRIDGE;
+        return lms.shorePlots(id) > 0 ? Door.PORT : Door.LAND_OFFICE;
+    }
+
+    /** ...and the button on the notice for a landmass, with what links it (FB13, AL1-W): the old words for a port or none, "Build a bridge there ›" where the rule would link it by one. */
+    public static String noticeButton(Landmasses lms, int id, BuildAdvice.Link link) {
+        return switch (noticeDoor(lms, id, link)) {
+            case BRIDGE -> link.underWay() ? BRIDGE_UNDER_WAY_DOOR : BRIDGE_DOOR;
+            case PORT -> NOTICE_BUTTON;
+            case LAND_OFFICE -> NOTICE_BUTTON_NO_SHORE;
+        };
     }
 
     /** A notice's title: "Island 2: owned, but no port links it". */
@@ -483,6 +562,14 @@ public final class LandmassView {
 
     /** A notice's body, in lines of at most Inbox.BODY_COLUMNS characters: what the city owns there, what that means, what links it. */
     public static List<String> noticeBody(Landmasses lms, int id) {
+        return noticeBody(lms, id, null);
+    }
+
+    /**
+     * ...and, where the rule would link the island by a bridge (FB13, AL1-W), the sentence that says so before the port's: the bridge the rule would
+     * order and the crossing its survey found, or that one is being built. A link by port, none and null read the old paragraphs.
+     */
+    public static List<String> noticeBody(Landmasses lms, int id, BuildAdvice.Link link) {
         String name = landmassName(lms, id);
         List<String> out = new ArrayList<>();
         out.addAll(Inbox.wrapped("The city owns " + LandManager.areaWords(lms.dryPlots(id) * Landmasses.SQ_FT_PER_PLOT) + " of dry ground on " + name
@@ -491,6 +578,15 @@ public final class LandmassView {
         out.addAll(Inbox.wrapped("No port links " + name + ", so no home, shop or works may be built there, and nothing is dug from its fields:"
                 + " only a sea terminal may stand on it, until it has one.", Inbox.BODY_COLUMNS));
         out.add("");
+        if (link != null && link.underWay()) {
+            out.addAll(Inbox.wrapped("A bridge is being built to " + name + ", and links it when it opens.", Inbox.BODY_COLUMNS));
+            out.add("");
+        } else if (link != null && link.bridge() != null) {
+            String bridge = bridgeWords(link);
+            out.addAll(Inbox.wrapped("A bridge links " + name + " without a port: " + Character.toUpperCase(bridge.charAt(0)) + bridge.substring(1)
+                    + " is allowed there (" + BridgeView.crossingWords(link.survey(), lms) + ").", Inbox.BODY_COLUMNS));
+            out.add("");
+        }
         // A terminal needs shore the city owns on its own landmass: with none, the way to a port is the Land office's, first.
         if (lms.shorePlots(id) == 0) {
             out.addAll(Inbox.wrapped("The city owns no shore on " + name + ": own some sea in front of its dry shore, at the Land office,"
@@ -500,6 +596,65 @@ public final class LandmassView {
         out.addAll(Inbox.wrapped("A port on " + name + " links it once it stands and a port stands at a linked landmass too ("
                 + needsWords(lms, id).substring("no: ".length()) + ").", Inbox.BODY_COLUMNS));
         return out;
+    }
+
+    /* =====================================================================
+       THE BUILD TAB'S CARD FOR THE LINK (FB13, AL1-W)
+       ===================================================================== */
+
+    /** The head of the Overview's section for the link, drawn only while the rule has an island to link. */
+    public static final String LINK_HEAD = "AN ISLAND TO LINK";
+
+    /** The hint at the right of that head: whose rule the card is. */
+    public static final String LINK_HINT = "what automatic building orders when the city is short of ground";
+
+    /**
+     * The card for the link the rule would order (BuildAdvice.linkShown()), worded: `title` the island and the ground it would give, `does` what
+     * links it (the bridge and its crossing, the terminals, or why nothing can), `price` the orders' total in the thousands the game keeps and
+     * `months` the longest order's (NaN where a site has no output), for the screen to write in its money and its months; `door` where the card's
+     * button goes (null where nothing can link the island), `label` its words, and `template` and `asked` the building whose card it opens and the
+     * landmass its next order is for (a bridge's far landmass, or a terminal's: Landmasses.RULE for the rule's).
+     */
+    public record Card(int landmass, String title, String does, double price, double months, Door door, String label,
+                       BuildingsTemplate template, int asked) { }
+
+    /** The card for a link, or null for none and for one a bridge is already on site to (the island the rule has nothing to order for). */
+    public static Card linkCard(Landmasses lms, BuildAdvice.Link link) {
+        if (link == null || link.underWay()) return null;
+        String title = link.name() + " · " + LandManager.areaWords(link.sqFt()) + " of ground to link";
+        switch (link.kind()) {
+            case BRIDGE: {
+                String bridge = bridgeWords(link);
+                BuildAdvice.LinkOrder order = link.orders().get(0);
+                return new Card(link.landmass(), title, Character.toUpperCase(bridge.charAt(0)) + bridge.substring(1) + " links it: "
+                        + BridgeView.crossingWords(link.survey(), lms) + ".", link.price(), link.months(), Door.BRIDGE, BRIDGE_DOOR,
+                        order.template(), order.asked());
+            }
+            case PORT: {
+                List<String> parts = new ArrayList<>();
+                for (BuildAdvice.LinkOrder o : link.orders()) {
+                    parts.add(o.template().getName() + (o.asked() == Landmasses.RULE ? " on linked ground" : " on " + link.name()));
+                }
+                String does = link.orders().size() == 1 && link.orders().get(0).asked() == Landmasses.RULE
+                        ? "A terminal stands on " + link.name() + " and none on linked ground, so " + parts.get(0) + " links it."
+                        : "No bridge can be built there, so sea terminals link it: " + joined(parts) + ".";
+                BuildAdvice.LinkOrder first = link.orders().get(0);
+                return new Card(link.landmass(), title, does, link.price(), link.months(), Door.PORT, PORT_DOOR, first.template(), first.asked());
+            }
+            default:
+                return new Card(link.landmass(), title, link.why(), 0, Double.NaN, null, null, null, Landmasses.NO_LANDMASS);
+        }
+    }
+
+    /** The bridge a door opens the card of where no link names one (a bridge already on site): the first Road Bridge in the catalogue's order, else the first bridge of any kind; null for a catalogue with none. */
+    public static BuildingsTemplate bridgeFor(List<BuildingsTemplate> catalogue) {
+        BuildingsTemplate first = null;
+        for (BuildingsTemplate t : catalogue) {
+            if (!t.isBridge()) continue;
+            if (t.bridgeKind() == BridgeWorks.Kind.ROAD) return t;
+            if (first == null) first = t;
+        }
+        return first;
     }
 
     /* =====================================================================
