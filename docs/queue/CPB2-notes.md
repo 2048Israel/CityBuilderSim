@@ -192,3 +192,28 @@ on the final model, so it covers all three. Seed 1 on the final model (section
   buffer with no world outlet is worth nothing. The second means a city
   starts making vans, trucks or rolling stock for its shed only after demand
   shows at a strike: the one-month lag every plan has.
+
+## The ensemble
+
+The 80-run ensemble ran on the final model (76dc564f2, with 0.9.167 and GB3
+merged) on the gate box: label CPB2, against `docs/ensemble/0.9.167.md`, with
+the baseline's `-Densemble.extra` and the box's own data files. It is committed
+as `docs/ensemble/CPB2.md`. Batch verdict PASS: the hard criteria passed 10 of
+10. M1 (the money audit) failed in 0 months and F1 found 0 LongPlaytest
+findings in every policy. 25 of 26 criteria passed. The one red, AUTO2's A2
+(the longest spell of yearly inflation over 10% from month 240, info), is red
+on the baseline too: 17 months [7 to 33] here against 20 [7 to 33].
+
+| policy | final population, median [min to max] | baseline |
+|---|---|---|
+| AUTO2 | 2,109,814 [76,002 to 3,947,440] | 1,820,652 [76,002 to 4,402,721] |
+| ZERO_SLACK | 1,379,164 [35,917 to 2,626,820] | 1,308,226 [35,917 to 2,776,509] |
+| SHOCK | 40,233 [10,082 to 124,922] | 39,590 [10,082 to 124,922] |
+| ZERO_HOT | 6,532 [3,054 to 14,077] | the same |
+| HIGH | 30,433 [6,064 to 36,871] | the same |
+
+Two verdicts changed, both info and both toward green: the final population T2
+for AUTO2 and for ZERO_SLACK, FAIL to PASS. T1 is unchanged, with 16 of 16
+AUTO2 seeds reaching 40,000 people at month 919 [637 to 1,732]. ZERO_HOT and
+HIGH end exactly where the baseline does: their cities never build the works
+the three paths run through.
