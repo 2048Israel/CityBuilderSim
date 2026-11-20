@@ -45,12 +45,14 @@ import java.util.List;
  *      and since 0.7.55 a sector paid arrears shows them on its cash-flow
  *      statement, which still reconciles.
  *   7. The autopilot: the rule moves the dial, the player's hand stops it, and
- *      the toggle survives a save - as does a dial at 0%.
+ *      the toggle survives a save - as does a dial at 0%. (FS10: on a year of
+ *      prices restored to the index from a save array, not played for.)
  *   8. A reform scales the money figures and not the ratios.
  *   9. Everything above survives a save.
  *  10. A save from before the central bank founds one empty and runs, a save
  *      carrying a note runs it off, and a new game after a load founds a
- *      fresh bank.
+ *      fresh bank. (FS10: the note is sold to the households of a town whose
+ *      cells shop, standTheTown().)
  *
  * And since 0.7.1, the holdings dial - Jerus: "the central bank would buy
  * gbonds or sell gbonds from thin air ... like QE and QT" - on a city of its
@@ -119,6 +121,9 @@ import java.util.List;
  *      its dial, and the holdings step sells the excess to the bank. The
  *      one ledger carries what was netted once; every month closes the
  *      audit; a save and load keeps the paper, the book and the ledger.
+ *      (FS10: the serial is sized from the surplus the town ran, a tenth of
+ *      it, and the central bank's part is its dial's: each premise is a
+ *      fixture line, no Observation.)
  *
  * And since 0.7.52, how strict the rule holds the target - Jerus: "beside the
  * target inflation, how strict, very strict then it trys to have it below the
@@ -174,7 +179,9 @@ import java.util.List;
  *      paid) while the households', the bank's and the others' own do not
  *      move across the roll, and the bank's book and unearned discount do
  *      not either: the month re-strikes nothing, its equity movement and
- *      split close, and the audit closes.
+ *      split close, and the audit closes. (FS10: the households' part is
+ *      caused by a town whose cells shop, standTheTown(), asserted by
+ *      assertTheCellsShop().)
  *
  * The numbers are labels, not the running order. The run prints 2, 3 and 4
  * first, on bare objects; then it builds a city, where 1 is held on every
@@ -182,12 +189,20 @@ import java.util.List;
  * seen, every month closed - print after 5, which supplies the treasury's
  * kinds; then 6, 7, 9 and 8, because 8's reform scales the advances and
  * arrears 9's fixture leaves behind; then 10; and 11 to 22 last, in order.
+ * The city of 1 to 10 and section 22's town are built by standTheTown(): the
+ * shops, bakery and bank stand at once, as the roads do, so that their
+ * households' cells settle, shop and save (FS10; queued, they held 1.5 of 6.4
+ * households in such cells). Sections 11 to 20 build their own, as they did.
  *
  * @author Jerus
  */
 public class CentralBankCheck {
 
     static int fails = 0;
+
+    /** How far a year of prices has risen in section 7's fixture: well over the rule's own target, so the rule answers it with something other than the dial it is put at. */
+    static final double YEAR_RISE = .10;
+
     static PrintStream out;
     static PrintStream quiet;
 
@@ -216,6 +231,55 @@ public class CentralBankCheck {
     static void quietly(Runnable r) {
         System.setOut(quiet);
         try { r.run(); } finally { System.setOut(out); }
+    }
+
+    /**
+     * The town sections 1-10 and 22 stand on, built to have households in cells that shop: the roads, shops, bakery and bank all
+     * standing at once, as the roads always did (FS10). Queued, the town held 16 people in 5.8 households to month 97: under HS2's
+     * stages no cell of that holds half a household (HouseholdBalance.EMPTY_CELL), and an empty cell buys no groceries and holds no
+     * savings. The orders for the Houses, the depot and the plant are refused for land (BuildResult.NO_LAND) standing as they were
+     * queued; they stay as the build every town of this harness asks for. Call inside quietly().
+     */
+    static void standTheTown(Game city, int months) {
+        city.run();
+        city.getForeignAccounts().pinRate(1.0);
+        city.buildStack(template(city, "Gravel Road"), 6, true);
+        city.buildStack(template(city, "House"), 300, true);
+        city.buildStack(template(city, "Convenience Store"), 6, true);
+        city.buildStack(template(city, "Industrial Bakery"), 2, true);
+        city.buildStack(template(city, "Construction Depot"), 4, true);
+        city.buildStack(template(city, "Coal Power Plant"), 1, true);
+        city.buildStack(template(city, "Commercial Bank"), 1, true);
+        city.simulateMonths(months);
+    }
+
+    /** The households of the cells that settle (at or over HouseholdBalance.EMPTY_CELL) and of all of them. */
+    static double[] householdsInCells(Game city) {
+        double settled = 0, all = 0;
+        for (Household c : city.getHouseholdBalance().cells()) {
+            all += c.households;
+            if (!c.isEmpty()) settled += c.households;
+        }
+        return new double[] {settled, all};
+    }
+
+    /**
+     * The fixture line of a town: its cells shop. The price index struck its basket from the shelf (shopping through the settling
+     * months, then a year: PriceIndex.hasRate()), most of the households stand in cells that settle, and they hold savings past
+     * their cushion to put into paper. Queued, the town held 1.5 of 6.4 households in such cells and no year of prices.
+     */
+    static void assertTheCellsShop(String town, Game city) {
+        double[] hh = householdsInCells(city);
+        HouseholdBalance hb = city.getHouseholdBalance();
+        out.printf("   %s: %.1f of %.1f households in cells at or over %.1f; savings $%,.1fk, spare for paper $%,.1fk; the index %s%n",
+                town, hh[0], hh[1], HouseholdBalance.EMPTY_CELL, hb.totalSavings(), hb.spareForPaper(),
+                city.getPriceIndex().hasRate() ? "has a year" : "has no year yet");
+        assertTrue("fixture: " + town + "'s households shop - the index priced a year of baskets",
+                city.getPriceIndex().isBased() && city.getPriceIndex().hasRate());
+        assertTrue("fixture: " + town + "'s households are mostly in cells that settle (at or over HouseholdBalance.EMPTY_CELL)",
+                hh[0] > hh[1] / 2);
+        assertTrue("fixture: " + town + "'s households hold savings past their cushion",
+                hb.totalSavings() > 0 && hb.spareForPaper() > 0);
     }
 
     /* =====================================================================
@@ -390,21 +454,11 @@ public class CentralBankCheck {
 
         GameFiles files = GameFiles.scratch("centralbankcheck");
         Game city = new Game(files);
-        quietly(() -> {
-            city.run();
-            city.getForeignAccounts().pinRate(1.0);
-            // Roads first, and standing at once: nobody but the city owns
-            // them, so the treasury has repairs of its own to pay - or to be
-            // refused, in section 6.
-            city.buildStack(template(city, "Gravel Road"), 6, true);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(72);
-        });
+        // Roads first, and standing at once: nobody but the city owns
+        // them, so the treasury has repairs of its own to pay - or to be
+        // refused, in section 6. The shops, bakery and bank stand at once
+        // too, so that its households' cells settle and shop (FS10).
+        quietly(() -> standTheTown(city, 72));
         Bank bank = city.getBank();
         CentralBank cb = city.getCentralBank();
         DebtManager ledger = city.getDebtManager();
@@ -413,6 +467,7 @@ public class CentralBankCheck {
                 city.getCash());
         assertTrue("fixture: the city has a bank", bank.getBranches() >= 1 && !bank.isInsolvent());
         assertTrue("fixture: and a year of revenue for the ceiling", cb.trailingRevenue() > 0);
+        assertTheCellsShop("the city", city);
 
         /* ================= 1 and 5. every kind of flow ================= */
         out.println("\n--- 1. money made less money destroyed is the change in M0 ---");
@@ -673,17 +728,24 @@ public class CentralBankCheck {
         /* ================= 7. the autopilot ================= */
         out.println("\n--- 7. the rule moves the dial, and the player's hand stops it ---");
 
-        // WG2, 2026-11-10: A YEAR OF PRICES, PLAYED FOR.
-        int waited = 0;
-        while (!city.getPriceIndex().hasRate() && waited < 60) {
-            play(city);
-            waited++;
-        }
-        out.printf("   the price index has its year at m%d, %d months played for it%n", city.getMonth(), waited);
+        // FS10: A YEAR OF PRICES, CAUSED (it was played for, up to 60 months, from WG2): the index restored from a save array
+        // that carries a year of readings, the oldest YEAR_RISE under the newest, as CurrencyCheck puts the city on a year of
+        // inflation. No month count decides hasRate().
+        PriceIndex prices = city.getPriceIndex();
+        double[] pricesSaved = prices.toSaveArray();
+        int pricesSeen = Math.max((int) Math.round(pricesSaved[4]), PriceIndex.WINDOW + 1);
+        double pricesNow = prices.getIndex();
+        pricesSaved[4] = pricesSeen;
+        for (int k = 0; k < PriceIndex.WINDOW; k++) pricesSaved[5 + k] = pricesNow;
+        pricesSaved[5 + pricesSeen % PriceIndex.WINDOW] = pricesNow / (1 + YEAR_RISE);
+        prices.restore(pricesSaved);
+        out.printf("   the price index restored to a year of prices: %.1f%% on the year, read at the month's open%n",
+                prices.inflation() * 100);
 
         ledger.setPolicyRate(.20);
         ledger.setAutopilot(true);
         assertTrue("fixture: there is a year of prices to read", city.getPriceIndex().hasRate());
+        close("fixture: the year reads the rise it was given", city.getPriceIndex().inflation(), YEAR_RISE, 1e-9);
         double inflation = city.getPriceIndex().inflation();
         double advised = ledger.advisedPolicyRate(inflation);
         assertTrue("fixture: the rule wants something else", Math.abs(advised - .20) > 1e-6);
@@ -1218,6 +1280,9 @@ public class CentralBankCheck {
     /** The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. */
     static final int ROLL_SLOT = 10;
 
+    /** The face of section 20's serial against last year's unused surplus: a tenth of it, small against the surplus the town ran. */
+    static final double SERIAL_OF_SURPLUS = .10;
+
     /** The serial the fixture sold: the one piece of the city's paper that is a serial and started before the month the fixture saved in. */
     static Debt fixtureSerial(Game g, int soldIn) {
         for (Debt d : g.getDebtManager().getDebt()) {
@@ -1563,21 +1628,11 @@ public class CentralBankCheck {
         // R0b call 7: the causes of death held off, as HoldersCheck 12's reopening fixture holds them, so that no household sells its
         // part of the line back to the bank between the sale and the roll: the households' discount is read against itself.
         city.holdCausesOfDeathOff();
-        quietly(() -> {
-            city.run();
-            city.getForeignAccounts().pinRate(1.0);
-            city.buildStack(template(city, "Gravel Road"), 6, true);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(60);
-        });
+        quietly(() -> standTheTown(city, 60));
         city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         DebtManager ledger = city.getDebtManager();
         CentralBank cb = city.getCentralBank();
+        assertTheCellsShop("the town", city);
 
         /* ---- the fixture, built from the city's own sales: the first bond, all of it the central bank's ---- */
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
@@ -1765,15 +1820,26 @@ public class CentralBankCheck {
         });
         city.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         final int soldIn = city.getMonth();
-        quietly(() -> city.handleMediumBondLogic(400 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR));
+        // FS10: THE SERIAL SIZED FROM THE SURPLUS THE TOWN RAN, not a fixed 400 that the played surplus happened to cover: a slice is
+        // never more than the serial, so a serial of a tenth of last year's unused surplus has its slice well under it, and the
+        // fixture line below asserts it at the press.
+        final double unusedAtSale = city.surplusOverLastYear() - city.getRollover().usedInYear(city.getMonth())
+                - city.fundReservation();
+        assertTrue("fixture: the town ran a surplus over its last year to size the serial from", unusedAtSale > 0);
+        final double face = SERIAL_OF_SURPLUS * unusedAtSale, unit = 100 * PriceLevel.FACTOR;   // the sale rounds its face to the unit
+        quietly(() -> city.handleMediumBondLogic(face, 2, unit));
         Debt serial = fixtureSerial(city, soldIn);
-        if (!Observation.reached("fixture: the treasury sold a small two-year serial",
-                serial != null,
-                "section 20 surplus waterfall, roll and save laws")) return;
+        assertTrue("fixture: the treasury sold a small two-year serial",
+                serial != null && serial.getDuration() == 2 * 12 && serial.getOustandingPrincipal() > 0
+                        && serial.getOustandingPrincipal() <= face + unit);
+        if (serial == null) return;
         play(city);
+        // The central bank's part is its dial's: set before the months to the slice, and its holdings step buys the serial up to it.
         double dial = .5;
         city.getCentralBank().setTargetShare(dial);
-        while (!(serial.principalDueNextMonth() > 0)) play(city);
+        // The slice falls due a year on: played to it, at most the serial's own term, and a fixture that fails when it does not come.
+        for (int waited = 0; !(serial.principalDueNextMonth() > 0) && waited < serial.getDuration(); waited++) play(city);
+        assertTrue("fixture: the serial's first slice falls due next month", serial.principalDueNextMonth() > 0);
         double slice = serial.principalDueNextMonth();
         double itsPar = slice * serial.centralBankPrincipal() / serial.getOustandingPrincipal();
         double market = slice - itsPar;
@@ -1781,12 +1847,9 @@ public class CentralBankCheck {
                 - city.fundReservation();
         out.printf("   m%d: the slice $%,.1fk, the central bank's par in it $%,.1fk; last year's surplus unused $%,.1fk%n",
                 city.getMonth(), slice, itsPar, unused);
-        if (!Observation.reached("fixture: the central bank at its dial holds part of the slice",
-                itsPar > 0 && itsPar < slice && city.centralBankOverItsDial() == 0,
-                "section 20 surplus waterfall, roll and save laws")) return;
-        if (!Observation.reached("fixture: last year's surplus, unused, is more than all of the slice",
-                unused >= slice,
-                "section 20 surplus waterfall, roll and save laws")) return;
+        assertTrue("fixture: the central bank at its dial holds part of the slice",
+                itsPar > 0 && itsPar < slice && city.centralBankOverItsDial() == 0);
+        assertTrue("fixture: last year's surplus, unused, is more than all of the slice", unused >= slice);
         quietly(() -> city.saveGame(ROLL_SLOT, "at the press before the slice"));
 
         /* ---- a surplus the size of the slice pays it all ---- */
