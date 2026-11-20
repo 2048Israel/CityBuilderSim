@@ -307,3 +307,8 @@ regenerated.
   - `./batch-check.sh --fast` is green;
   - GoldStandardCheck is green, all 15 sections, in 37 s;
   - ExchangeRateCheck: exit 3, only section 8b's four known reds (FS10); its Gold city is on Gold in all 120 months, with 0 breaks.
+  - the dry run on the gate box, `/home/jerus/cbs/runs/cbs-gate-FB14-Ek7D2eKf`
+    (FB14 3f017e154 on main d5b1e9f0c, 0.9.163): exit 0, the suite in 861 s,
+    known reds only. 0.9.164 (SQ1b) came after it started; against it FB14
+    conflicts only in generated indexes (`git merge-tree`), and it is not
+    merged here: after a dry run, only the notes and the ship file change.

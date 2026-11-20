@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FB14-Ek7D2eKf -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FB14, gold: GD3's review and the start-on-gold box — 2026-11-20, ready, see docs/queue/FB14-notes.md
