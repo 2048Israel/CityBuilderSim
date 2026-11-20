@@ -6306,13 +6306,13 @@ public class Bank {
     /** ...and the same of the sheet a year ago; nothing when none is on file. */
     public double yearAgoResidual() { return knowsYearAgo() ? residual(this::yearAgo) : 0; }
 
-    /*
-     * WHEN THE LINES DO NOT ADD UP (BI1, 2026-11-20). The Bank page raised "Its lines do not add up" and "Its
-     * two parts do not add up to its equity" on an absolute $5 (.005 of a thousand), and a double's own step at
-     * 1e13 is .002: KeptCheck's city of 4,820 months lit both on float dust alone, a sum of a dozen figures
-     * each carrying its rounding in. The audit never judged a residual so (a cent, or a part in ten million of
-     * what moved: LongPlaytest.audit(), and the same line in a dozen harnesses); the page's test is the same,
-     * the size the figures it adds, and the model's own, so the screen reads one verdict and recomputes none.
+    /* ----- when the lines do not add up (BI1, 2026-11-20) -----
+     * The Bank page raised "Its lines do not add up" and "Its two parts do not add up to its equity" on an
+     * absolute $5 (.005 of a thousand), and a double's own step at 1e13 is .002 to .008: KeptCheck's city of
+     * 4,820 months lit both on float dust alone, each sum of a dozen figures carrying its rounding in. The
+     * audit never judged a residual so: a cent, or a part in ten million of the figures it is made of
+     * (LongPlaytest.audit(), and the same line in a dozen harnesses). The page's test is that one, here in the
+     * model, so the screen reads one verdict and recomputes none.
      */
 
     /** The share of a book's size its integrity tests let through as rounding: a part in ten million, the audit's own (LongPlaytest.audit()). */
@@ -6323,7 +6323,7 @@ public class Bank {
         return Math.max(MoneyAudit.CENT, INTEGRITY_RELATIVE * Math.abs(size));
     }
 
-    /** Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not (the page says so, as it said of nothing before). */
+    /** Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not, so the page says so rather than hiding it. */
     public static boolean addsUp(double residual, double size) {
         return Math.abs(residual) <= integrityTolerance(size);
     }

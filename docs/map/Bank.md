@@ -112,6 +112,7 @@
 | 5966 | · what moved it between two presses |
 | 6003 | · its year of statements |
 | 6218 | · its balance sheet (0.7.13) |
+| 6309 | · when the lines do not add up (BI1, 2026-11-20) |
 | 6440 | · its rates, in a ladder |
 | 6493 | · in words |
 | 6555 | · what its book weighs |
@@ -994,7 +995,7 @@
 | 6189 | 10 | `public double[] statementYearToSave()` | The year of statements, for the save: how many are filed, how many lines each, then the ring's months in slot order. |
 | 6206 | 11 | `public void restoreStatementYear(double[] in)` | ...and back. |
 
-### its balance sheet (0.7.13) (lines 6218-6439)
+### its balance sheet (0.7.13) (lines 6218-6308)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -1002,8 +1003,13 @@
 | 6270 | 27 | `public double sheet(Sheet line)` | A line of its balance sheet as it stands: its reserves at the central bank (the cash it is not borrowing; its placements abroad came home to the central bank in 0.7.0); what the businesses owe it outside the insured m... |
 | 6304 | 1 | `public double sheetResidual()` | What its lines leave unexplained: the asset lines, less the liability lines, less equity. |
 | 6307 | 1 | `public double yearAgoResidual()` | ...and the same of the sheet a year ago; nothing when none is on file. |
+
+### when the lines do not add up (BI1, 2026-11-20) (lines 6309-6439)
+
+| line | len | member | says |
+|---:|---:|---|---|
 | 6322 | 3 | `public static double integrityTolerance(double size)` | How far lines that add up to a book of this size may miss: MoneyAudit.CENT, or INTEGRITY_RELATIVE of the size, whichever is more. |
-| 6327 | 3 | `public static boolean addsUp(double residual, double size)` | Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not (the page says so, as it said of nothing before). |
+| 6327 | 3 | `public static boolean addsUp(double residual, double size)` | Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not, so the page says so rather than hiding it. |
 | 6332 | 1 | `public double sheetSize()` | The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). |
 | 6335 | 1 | `public double yearAgoSheetSize()` | ...the sheet a year ago; nothing when none is on file. |
 | 6338 | 1 | `public boolean sheetAddsUp()` | True when its lines add up, to a cent or a part in INTEGRITY_RELATIVE of the sheet's size: the page's "Its lines do not add up" is its opposite. |
