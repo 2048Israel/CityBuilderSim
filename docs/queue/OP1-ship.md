@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — OP1, every policy open from the first month — 2026-11-19, ready, see docs/queue/OP1-notes.md
 Every Policy lever is open from a city's founding, in every city. The profit, wage and sales taxes
