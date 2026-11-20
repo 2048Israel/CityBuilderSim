@@ -27,13 +27,91 @@ public final class WorksFinanceCheck {
         return Math.abs(a - b) <= 1e-10 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
     }
 
-    static Game flat(Path root, String name) {
-        Game g = EssentialWorksCheck.town(root, name);
-        g.getHistorySave().getPopulation().clear();
-        g.getHistorySave().getMonth().clear();
-        long people = g.getPopulationManager().getPopulation();
-        g.getBusinessInvestment().restorePopulationHistory(List.of(people, people));
+    /** ChildcareCheck.town()'s works, the town once (k 1), which flat() and laterQuotes() stand on a founding (FS15). */
+    static final String[][] TOWN_WORKS = {
+            { "Industrial Bakery", "4" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
+            { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
+            { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
+            { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
+            { "Construction Depot", "5" }, { "Paved Road", "1" }, { "Police Station", "2" },
+            { "Home Care Service", "2" } };
+
+    /** BuildAdviceCheck.servedCity()'s works, which reserveTown() and crewPromise() stand on a founding (FS15). */
+    static final String[][] SERVED_WORKS = {
+            { "Industrial Bakery", "2" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
+            { "Commercial Bank", "1" }, { "Convenience Store", "4" }, { "House", "300" },
+            { "Construction Depot", "2" }, { "Paved Road", "4" },
+            { "Community Health Centre", "1" }, { "Childcare Centre", "2" }, { "Home Care Service", "2" },
+            { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
+            { "Community College", "1" }, { "University", "1" }, { "Medical School", "1" },
+            { "Police Station", "1" } };
+
+    /** The months founded() strikes on the state it set: the founding's first, which barely trades, and the one after. */
+    static final int STRUCK_MONTHS = 2;
+
+    /** The share of its homes' places founded()'s people fill. */
+    static final double PEOPLE_PER_PLACE = .75;
+
+    /**
+     * FS15: the city a section's premise is set on, caused. A founded scratch city with `works` stood by buildStack on the
+     * founders' cash and ground, every sector held; its people placed by hand - PEOPLE_PER_PLACE of its
+     * homes' places, at a settled pyramid (PopulationCohorts.equilibriumShare()), their workforce, and a flat history in
+     * both the businesses' trend and the city's - STRUCK_MONTHS struck on that state for its books, put back after them,
+     * and the founders' cash. Until FS15 flat() and laterQuotes() read
+     * EssentialWorksCheck.town() (ChildcareCheck.town() played three years) and reserveTown() and crewPromise()
+     * BuildAdviceCheck.servedCity() (played two years): whatever those towns' months made of them.
+     */
+    static Game founded(Path root, String name, String[][] works) {
+        Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")));
+        EssentialWorksCheck.quietly(() -> {
+            g.run();
+            g.getEconomyManager().getTaxPolicy().reset();
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 80_000_000L);
+            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+            BuildingManager bm = g.getBuildingManager();
+            for (String[] w : works) g.buildStack(bm.getTemplateByName(w[0]), Integer.parseInt(w[1]), true);
+            long people = Math.round(PEOPLE_PER_PLACE * bm.getTotalHouseCapacity());
+            place(g, people);
+            // Two months struck on the state the fixture set, for what only a month writes: the sectors' books, the
+            // streets' load, the builders' output. A founding's first month barely trades (its shops have no stock: a GDP
+            // of 5.6 against the second's 129), so the second is the month read. Then the people put back, the history
+            // flat, and the national accounts' year that month twelve times over (NationalAccounts.seedHistory(), the
+            // load path's setter), so a debt is weighed against a year's output (AutoBuilder.annualGdp()).
+            g.simulateMonths(STRUCK_MONTHS);
+            place(g, people);
+            NationalAccounts accounts = g.getEconomyManager().getNationalAccounts();
+            double month = accounts.getHistory().get(accounts.getHistory().size() - 1);
+            accounts.seedHistory(java.util.Collections.nCopies(12, month));
+            g.getHistorySave().getPopulation().clear();
+            g.getHistorySave().getMonth().clear();
+            g.getBusinessInvestment().restorePopulationHistory(List.of(people, people));
+            g.setCashForTest(Founding.WEALTHY_CASH);
+        });
         return g;
+    }
+
+    /** `people` placed in the city: a settled pyramid (PopulationCohorts.equilibriumShare()), the population and its workforce. */
+    static void place(Game g, long people) {
+        double[] bands = new double[AgeBand.values().length + 2];   // the bands, then the month's births and deaths (none)
+        for (AgeBand b : AgeBand.values()) bands[b.ordinal()] = people * PopulationCohorts.equilibriumShare(b);
+        g.getCohorts().restore(PopulationCohorts.saveBands(), bands);
+        g.getPopulationManager().setPopulation(people);
+        g.getPopulationManager().recomputeWorkforce();
+    }
+
+    /** EssentialWorksCheck.town()'s terms on a caused founding: two years of GDP borrowed, the builder may not borrow more, and builds from cash anyway. */
+    static Game town(Path root, String name) {
+        Game g = founded(root, name, TOWN_WORKS);
+        EssentialWorksCheck.quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g),
+                Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
+        g.getAutoBuilder().setDebtLimit(0, null);
+        g.getAutoBuilder().setCashAnyway(true, null);
+        return g;
+    }
+
+    static Game flat(Path root, String name) {
+        return town(root, name);
     }
 
     static double financing(Game g, double amount, double horizon) {
@@ -106,7 +184,7 @@ public final class WorksFinanceCheck {
 
     static void laterQuotes(Path root) {
         out.println("--- cash-funded first work, capped borrowing for later additions ---");
-        Game g = EssentialWorksCheck.town(root, "finance-later");
+        Game g = town(root, "finance-later");
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
                 + 1_000 * LandManager.SQ_FT_PER_KM2);
         long people = g.getPopulationManager().getPopulation();
@@ -483,7 +561,7 @@ public final class WorksFinanceCheck {
     static void crewPromise(Path root, boolean partial) throws Exception {
         out.println("--- reserve expansion preserves an unserved work's promise, partial=" + partial + " ---");
         BuildAdviceCheck.quiet = EssentialWorksCheck.quiet;
-        Game g = BuildAdviceCheck.servedCity(root, partial ? "crew-partial" : "crew-held");
+        Game g = founded(root, partial ? "crew-partial" : "crew-held", SERVED_WORKS);
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
                 + 1_000 * LandManager.SQ_FT_PER_KM2);
@@ -580,7 +658,7 @@ public final class WorksFinanceCheck {
 
     static Game reserveTown(Path root, String name) {
         BuildAdviceCheck.quiet = EssentialWorksCheck.quiet;
-        Game g = BuildAdviceCheck.servedCity(root, name);
+        Game g = founded(root, name, SERVED_WORKS);
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
                 + 1_000 * LandManager.SQ_FT_PER_KM2);
