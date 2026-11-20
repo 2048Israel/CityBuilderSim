@@ -107,6 +107,10 @@ queued: no law failed on a caused fixture, so no model fault is filed.
   VanCheck, ObservationCheck, RailCheck, RailDepotCheck, HaulageCheck, TruckRouteCheck,
   PortCheck, LandlordPortCheck, TradeBandCheck, BridgeCheck, IslandRailCheck, SlopeCheck
   (308 s), HomeRailCheck, IslandLinkCheck, LandmassCheck (356 s).
+- Main moved again (FS15, HL1-M's CityRuns) and was merged at 5f472bf5: `--fast` again green
+  (maps regenerated), and the harnesses that read the map or Observation run again, all exit 0
+  and 0 FAIL: ObservationCheck, IslandRailCheck, BridgeCheck, TruckRouteCheck, HomeRailCheck,
+  SlopeCheck, LandmassCheck (546 s).
 - `sh tools/pick.sh origin/main HEAD`: 65 of 230 (Observation.java brings its users), not
   ALL, so no dry run is owed and no dry-run log is kept.
 
