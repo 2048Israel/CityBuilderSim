@@ -156,7 +156,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HarbourRenders](map/HarbourRenders.md) | **none** |
 | [HarbourYard](map/HarbourYard.md) | PortCheck, QuayRailCheck |
 | [HarnessMap](map/HarnessMap.md) | **none** |
-| [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, DriverlessTruckCheck, EquipmentCheck, Forms1900Check, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, MaterialsCheck, RailCheck, ScaleCheck, TradeBandCheck, TruckRouteCheck |
+| [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, DriverlessTruckCheck, EquipmentCheck, FoodProcessingCheck, Forms1900Check, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, MaterialsCheck, RailCheck, ScaleCheck, TradeBandCheck, TruckRouteCheck |
 | [Health](map/Health.md) | BuildAdviceCheck, CausesOfDeathCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, HealthCheck, LongPlaytest, OutsideCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, YearBookCheck |
 | [Healthcare](map/Healthcare.md) | AutoBuildCheck, BuildAdviceCheck, CausesOfDeathCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, ElectrolyserCheck, FreightViewCheck, GdpCheck, HaulageCheck, HydrogenSteelCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
@@ -173,7 +173,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [IndustryPicture](map/IndustryPicture.md) | IndustryViewCheck |
 | [IndustryView](map/IndustryView.md) | IndustryViewCheck, KeptCheck, OilCheck |
 | [InflationLinkedBond](map/InflationLinkedBond.md) | DeskCheck, FloatLinkCheck, GovernmentViewCheck |
-| [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, EssentialWorksCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, KeptCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, WorksFinanceCheck |
+| [InfrastructureManager](map/InfrastructureManager.md) | BuildCardCheck, CarCheck, EssentialWorksCheck, FoodProcessingCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, KeptCheck, LongPlaytest, PortCheck, RailCheck, ReadPathCheck, RoadCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, WorksFinanceCheck |
 | [InfrastructureScreen](map/InfrastructureScreen.md) | **none** |
 | [InputLog](map/InputLog.md) | ReplayCheck |
 | [InputRecorder](map/InputRecorder.md) | **none** |
@@ -10969,24 +10969,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L337 twenty points on the sales tax moves what a plant is thought to earn
   - L341 ...and putting the rate back puts the estimate back
 - **L345 5. the meat price is the bet, and it is real**
-  - L475 fixture: the goods' band is the world's literal, at par
-  - L478 fixture: the Works is paid the founding's ladder and runs at nameplate
-  - L481 fixture: the city takes none of what the plant makes
-  - L492 fixture: a Meat Works on a farm's floor is an ordinary business
-  - L495 meat at a farm's floor is worth more to a Meat Works than meat off a ship
-  - L511 ...and the difference is most of what a Meat Works is worth
-  - L525 nobody finances a Meat Works on meat nothing could pay for
-  - L535 and every decision comes with a reason
-- **L540 6. it survives a save, by name**
-  - L554 the save loaded at all
-  - L556 the sector's till survives the round trip
-  - L559 ...and it is still the eleventh name in the equity register
-- **L563 7. a plant is counted in the money the measure counts in (RT1)**
-  - L581 fixture: every good the plants make has an export floor above nothing, so each is in the measure
-  - L583 ...and the sector holds two kinds of plant, the Meat Works the more, so it is the one the rule would thin
-  - L594 a plant is counted in the measure's own unit: what the plants add up to is the capacity the measure reports
-  - L603 ...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant
-  - L607 ...at the founding's price level, where a money-per-kilogram quotient sold nothing (PriceLevel.FACTOR below 1)
+  - L494 fixture: the goods' band is the world's literal, at par
+  - L497 fixture: the Works is paid the founding's ladder and runs at nameplate
+  - L500 fixture: the city takes none of what the plant makes
+  - L511 fixture: a Meat Works on a farm's floor is an ordinary business
+  - L514 meat at a farm's floor is worth more to a Meat Works than meat off a ship
+  - L530 ...and the difference is most of what a Meat Works is worth
+  - L544 nobody finances a Meat Works on meat nothing could pay for
+  - L554 and every decision comes with a reason
+- **L559 6. it survives a save, by name**
+  - L573 the save loaded at all
+  - L575 the sector's till survives the round trip
+  - L578 ...and it is still the eleventh name in the equity register
+- **L582 7. a plant is counted in the money the measure counts in (RT1)**
+  - L600 fixture: every good the plants make has an export floor above nothing, so each is in the measure
+  - L602 ...and the sector holds two kinds of plant, the Meat Works the more, so it is the one the rule would thin
+  - L613 a plant is counted in the measure's own unit: what the plants add up to is the capacity the measure reports
+  - L622 ...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant
+  - L626 ...at the founding's price level, where a money-per-kilogram quotient sold nothing (PriceLevel.FACTOR below 1)
 
 ## ForeignCheck.java - 179 labelled assertions
 

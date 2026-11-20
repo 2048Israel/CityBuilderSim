@@ -402,8 +402,14 @@ public class FoodProcessingCheck {
          *     (exchange rate and freight factor of the five goods' markets);
          *   - the Works is paid the founding's ladder (PayTier), the price level
          *     the literals are struck at and section 3 measures payroll in;
-         *   - it runs at nameplate, as a plant that is not built does on paper
-         *     (the sector's four ratios, one);
+         *   - it runs at nameplate (the sector's four ratios, one), and since
+         *     OE1 weighs a first plant at the rate the city would run it at
+         *     (Sector.firstPlantRate()), with every post filled, the roads
+         *     clear and its legs carried whole (the fill rates all one, the
+         *     road load nil, every city leg on the hired teams, which carry
+         *     theirs whole): left as the city had them, the Works read 0.44
+         *     of nameplate here, its posts 0.84 filled, its roads 0.86 and
+         *     its vans 0.61, and $-207 a month on the herd;
          *   - the city takes none of what the plant makes, so all of it goes
          *     abroad at the world's floor and pays no sales tax at home, which is
          *     the "sells at the world's floor" of the header (the demand trend);
@@ -437,6 +443,15 @@ public class FoodProcessingCheck {
         fp.setWaterRatio(1);
         fp.setRoadRatio(1);
         fp.setHealthRatio(1);
+        double[] cityFill = fp.fill.clone(), allFilled = new double[cityFill.length];
+        java.util.Arrays.fill(allFilled, 1);
+        fp.updateJobFillRate(allFilled);
+        InfrastructureManager roads = game.getInfrastructureManager();
+        double cityLoad = roads.getLoad();
+        roads.setLoad(0);
+        ham.citybuildersim.sectors.Haulage haulage = game.getSectors().freight().haulage();
+        double cityTeams = haulage.getHorseShare();
+        haulage.setHorseShare(1);
         for (Good g : meat.goodsMade().keySet()) markets.get(g).restoreTakenHistory(new double[0]);
         for (Good g : meat.goodsUsed().keySet()) {
             if (g != Good.MEAT) markets.get(g).setLocalPrice(markets.get(g).ceiling());
@@ -451,7 +466,8 @@ public class FoodProcessingCheck {
             if (meat.getJobs(job) > 0) onTheLadder &= economy.getWageRates()[job.ordinal()] == PayTier.wageOf(job);
         }
         for (Good g : meat.goodsMade().keySet()) takesNone &= markets.get(g).getDemandTrend() == 0;
-        double nameplate = BusinessInvestment.operatingRateOf(fp.getOperatingRate());
+        // ...the rate the estimate weighs it at: with nothing running, its first plant's (OE1; Sector.plannedRate()).
+        double nameplate = fp.plannedRate(game.getBusinessInvestment().newUnit(meat));
 
         meatMarket.setLocalPrice(meatMarket.ceiling());
         double imported = fp.estimatedMonthlyProfit(meat, game.getBusinessInvestment());
@@ -463,6 +479,9 @@ public class FoodProcessingCheck {
         fp.setWaterRatio(cityRatios[1]);
         fp.setRoadRatio(cityRatios[2]);
         fp.setHealthRatio(cityRatios[3]);
+        fp.updateJobFillRate(cityFill);
+        roads.setLoad(cityLoad);
+        haulage.setHorseShare(cityTeams);
         for (Good g : inPlay) {
             GoodsMarket m = markets.get(g);
             double[] city = cityMarket.get(g);
