@@ -16330,6 +16330,21 @@ public class MapCheck {
         out.printf("      one Rail Depot, %d Rail Spurs: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", c.model[spur], full.laid, full.rail, t2, full.trackSurplus, runs.stationLine(t2));
         check("with more track than the line holds the station's own line is nothing and the rest is the surplus (" + full.trackSurplus + " = " + t2 + " - " + full.laid + "), the old law's own count, the line unmoved and the map exact",
                 t2 > line && full.laid == line && runs.stationLine(t2) == 0 && full.trackSurplus == t2 - line && full.rail == line && full.sameAs(c.model, c.types) && c.reconciled);
+
+        // ----- the station gone: its yard stands idle and the line with it (MF1), the station's still; when its time is up the line goes, and the law holds on nothing -----
+        c.model[spur] = 0;
+        c.model[c.depot] = 0;
+        c.run();
+        Drawn idle = drawn(c.map);
+        check("the depot and the track gone, the yard stands idle, drawn still as the yard its building left (MF1), and holds the line, which is still the station's - the railway's own account exact (" + idle.rail + " plots, " + runs.yards().size() + " yard, " + runs.yardsActive() + " active)",
+                runs.yards().size() == 1 && runs.yardsActive() == 0 && idle.buildings[c.depot] == 1 && idle.laid == line && idle.rail == line && runs.stationLine(0) == line && idle.station
+                && idle.trackAccounted(Drawn.trackOf(c.model, c.types)) && c.reconciled);
+        c.month += CityRuns.YARD_IDLE_MONTHS;
+        c.run();
+        Drawn gone = drawn(c.map);
+        out.printf("      %d months on: %d yards, the runs lay %,d plots, the painter draws %,d%n", CityRuns.YARD_IDLE_MONTHS, runs.yards().size(), gone.laid, gone.rail);
+        check("...and once its time is up the yard is taken up and the line with it: no station, no plots of track the model does not hold, the law exact on nothing",
+                runs.yards().isEmpty() && gone.laid == 0 && gone.rail == 0 && runs.stationLine(0) == 0 && !gone.station && gone.sameAs(c.model, c.types) && c.reconciled);
     }
 
 }
