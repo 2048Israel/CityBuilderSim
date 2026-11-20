@@ -21,7 +21,12 @@ of it tracked:
 - `~/cbs/tools/<commit>`, a worktree per caller's commit of `tools/`, pruned
   after three days; `~/cbs/runs`, the runs, on disk (the box's `/tmp` is tmpfs);
 - the laptop's `~/.cbs-gate-times.tsv` seeded there, so the first suite orders
-  longest first.
+  longest first;
+- Maven from Ubuntu, and Eclipse Temurin 21.0.13+9 in `~/cbs/jdk` (the game's
+  own runtime, `Build EXE.bat`'s; sha256 checked against Adoptium's release),
+  named by `~/cbs/gate.env`, which the box's half reads before each gate.
+  Ubuntu's OpenJDK ships no `legal/java.base/LICENSE`, and CreditsCheck asserts
+  this JVM's.
 
 ## What was found
 
@@ -87,11 +92,46 @@ of it tracked:
 
 ## Checks
 
-(filled in below as they ran)
+- `tools/ship-selftest.sh` on the box at 8ae9642e: 180 of 180, GB1's groups
+  with every earlier case, in 1 m 44 s. Its first run there failed GB1's ship
+  and stop cases only: the faked box's home had no git name for the merge, so
+  that home now has one.
+- On the laptop, the first 70 cases passed. Then it was stopped, since BO1-S's
+  real gate was in its suite there (the contract, 4).
+- A forwarded `--stop` of a run that does not exist, on the real box: the
+  box's message came back with exit 2, in 4.1 s. That covers the per-commit
+  tools worktree, the stream and the exit code.
+- The full suite on the box under gate conditions (data named from
+  `~/cbs/main`, Temurin): known red only, 12 harnesses, exit 3, 9 m 44 s.
+  BO1-S's laptop gate was at 48 harnesses after an hour.
+- On Ubuntu's OpenJDK, CreditsCheck alone is red ("java.base's LICENSE is
+  among them"); hence Temurin.
+- Two earlier probes misled and are not how a gate runs:
+  - a `data/` link in the working folder reds SaveFileCheck's "no world file"
+    fixtures;
+  - no data named at all reds GoldStandard, Credit, Mortgage, BuildCard,
+    Foreign, DebtMoneys, Curve, Fund and SaveFileCheck's IP charges.
+- GB1's dry run through the box (`--branch-gate --dry-run --no-tag`, run
+  `/home/jerus/cbs/runs/cbs-gate-GB1-FulzIwBm`): exit 0. It passed `--fast` in
+  18 s and the self-test 180 of 180. The run was copied home.
+- Its relayed bus calls (logged here, as BO1-S's real gate held
+  `state\gate.txt`): merge with `machine=gatebox` and the box's log, suite,
+  maps, suite (the self-test), done passed.
+- `tools/pick.sh`: NONE of 228 harnesses; review not needed (no money, saves or
+  threading).
 
 ## One in, one out
 
-(counted below)
+`git diff --numstat origin/main` (17f8a4c0) over the process files, the notes
+and ship file left out: +150 -13.
+
+- `tools/gate-box.sh` is 94 new lines, its self-test cases 35, and the docs net
+  +6.
+- It is a new mechanism, and nothing it replaces could go: the laptop keeps
+  its Windows guardian (`tools/gate-process.ps1` and `gate.sh`'s Windows
+  branches, about 130 lines) because Jerus chose the fallback, "then run on
+  laptop".
+- Over by 137. If he ever drops the fallback, those 130 lines go with it.
 
 ## Left for Jerus
 
@@ -102,3 +142,9 @@ of it tracked:
   a batch of its own.
 - **MemWatch** shows the box (its heat, load, memory and the gate running
   there) through its own repository's session, started beside this batch.
+- **The suite's CPU guard** holds harness starts above 80% CPU on the box as
+  on the laptop. A box that runs nothing else could run wider; tuning that is
+  a call of its own.
+- **The first gate of GB1** runs on the laptop with main's `gate.sh`. That
+  `gate.sh` cannot see the box's kept dry run, so it reruns the compile, maps,
+  Stale and self-test there. Every gate after it runs on the box.

@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-GB1-FulzIwBm -->
 <!-- readiness: provisional -->
 ## changelog
 ### GB1 — the gate runs on the gate box — 2026-11-20, ready, see docs/queue/GB1-notes.md
