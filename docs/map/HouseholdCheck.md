@@ -1,4 +1,4 @@
-# HouseholdCheck.java - 1,704 lines · 7 methods · 0 constants · harnesses
+# HouseholdCheck.java - 1,705 lines · 7 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HouseholdCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -28,11 +28,11 @@
 | 425 | · 10. pensions |
 | 600 | · THE BUDGET CONSTRAINT |
 | 747 | · SIXTY-EIGHT CELLS, AND THE MONEY FOLLOWS THE PEOPLE |
-| 1085 | · A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) |
-| 1199 | · AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE |
-| 1299 | · THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09). |
-| 1339 | · A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT |
-| 1456 | AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
+| 1086 | · A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) |
+| 1200 | · AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE |
+| 1300 | · THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09). |
+| 1340 | · A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT |
+| 1457 | AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
 
 ## Fields (state)
 
@@ -44,17 +44,17 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 1693 | **type** `public class HouseholdCheck` | Verifies the residents' books and the demolition log. |
+| 12 | 1694 | **type** `public class HouseholdCheck` | Verifies the residents' books and the demolition log. |
 | 16 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 23 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 29 | 5 | `static double across(HouseholdBalance b, java.util.function.ToDoubleFunction<Household> perHousehold)` | One stock across every cell: per household times households. |
 | 43 | 5 | `static double shop(HouseholdBalance b, double price, double delivered)` | The shops' month for a fixture (0.7.43): every basket the households ask for at this price, or this share of them, handed over at it (HouseholdBalance.allocateGroceries(), the call Retail makes) - and what they paid, ... |
-| 49 | 1406 | `public static void main(String[] args)` |  |
+| 49 | 1407 | `public static void main(String[] args)` |  |
 
-### AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) (lines 1456-1704)
+### AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) (lines 1457-1705)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1477 | 174 | `static void whatItSpendsAnswersTheRealRate()` |  |
-| 1660 | 44 | `static void theCommuteByRow()` | THE COMMUTE, BY ROW (0.7.49). |
+| 1478 | 174 | `static void whatItSpendsAnswersTheRealRate()` |  |
+| 1661 | 44 | `static void theCommuteByRow()` | THE COMMUTE, BY ROW (0.7.49). |
 

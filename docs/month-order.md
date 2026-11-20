@@ -13,7 +13,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 4. **L13525** `if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(true);`
 5. **L13534** `expectations.strikeLevel();` → [Expectations.strikeLevel](map/Expectations.md) (L141)  
    _THE MONTH'S MONEY CONSTANTS, struck before anything in it is priced (0.7.42, THE ANCHOR): at the expected price level the last month ended on, so the month lives at one level from here to the next ..._
-6. **L13535** `restrikeMoneyConstants();` → [Game.restrikeMoneyConstants](map/Game.md) (L16610)
+6. **L13535** `restrikeMoneyConstants();` → [Game.restrikeMoneyConstants](map/Game.md) (L16614)
 7. **L13547** `fundYearEnd();` → [Game.fundYearEnd](map/Game.md) (L5860)  
    _WHAT FALLS DUE IS ROLLED FIRST (0.7.13), before the calendar turns - in the gap between two presses, where a player's own issue lands, so it settles to its buyers and crosses the audit window exact..._
 8. **L13548** `rollMaturities();` → [Game.rollMaturities](map/Game.md) (L13291)
@@ -23,7 +23,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 11. **L13560** `monthsSinceAutosave++;`
 12. **L13567** `policyHearsTheMonth();` → [Game.policyHearsTheMonth](map/Game.md) (L1208)  
    _THE POLICY HEARS THE MONTH FIRST (R0): each lever opens on Canada's date, and a lever still shut is held at zero before anything in this month is taxed or paid._
-13. **L13569** `basketHearsTheYear();` → [Game.basketHearsTheYear](map/Game.md) (L16670)  
+13. **L13569** `basketHearsTheYear();` → [Game.basketHearsTheYear](map/Game.md) (L16674)  
    _...and the homes' lamp and stove shares of the year (R0e), in a city founded the 1900 way, before this month's fuel is struck (6d)._
 14. **L13575** `closeDemolished();` → [Game.closeDemolished](map/Game.md) (L9950)  
    _The buildings the player ordered demolished between the presses close now, as the month after the order starts - the first it is in force for - before anything in it reads the city (0.7.22; THE PLA..._
@@ -81,15 +81,15 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 56. **L13712** `if (!isLeverOpen(PolicyDates.Lever.POLICY_RATE) \|\| foreign.isCanadaGold()) {` → [Game.isLeverOpen](map/Game.md) (L1185), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1524), [DebtManager.setPolicyRate](map/DebtManager.md) (L96), [DebtManager.worldRate](map/DebtManager.md) (L901), [DebtManager.tiedRate](map/DebtManager.md) (L256), [ForeignAccounts.currencyGap](map/ForeignAccounts.md) (L1799), [DebtManager.isAutopilot](map/DebtManager.md) (L133), [DebtManager.getAim](map/DebtManager.md) (L214), [DebtManager.goldRate](map/DebtManager.md) (L272), [Game.getGoldCover](map/Game.md) (L6183), [DebtManager.currencyRate](map/DebtManager.md) (L245), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [DebtManager.mixRate](map/DebtManager.md) (L250), [PriceIndex.inflation](map/PriceIndex.md) (L549), [DebtManager.advisedPolicyRate](map/DebtManager.md) (L508)
 57. **L13730** `strikeTheCurve();` → [Game.strikeTheCurve](map/Game.md) (L15036)  
    _THE CURVE'S EXPECTATIONS, struck once a month after the dial is set (autopilot or not): see strikeTheCurve()._
-58. **L13737** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L19711)  
+58. **L13737** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L19716)  
    _The central bank settles with the treasury: last month's profit remitted, the advances' interest charged, repaid from cash above zero or advanced the shortfall._
-59. **L13745** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L19179)  
+59. **L13745** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L19184)  
    _The central bank's own maturing paper, replaced at issue by its add-on to what the city sold between the presses, par for par (0.7.15, round 2): after the settle, so its money waits for the maturit..._
-60. **L13750** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L18805)  
+60. **L13750** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L18810)  
    _The holdings dial (0.7.1): the central bank buys or sells the city's term paper toward its target, after the settle above and before the market is priced._
-61. **L13769** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L19843), [Game.studentGrantBill](map/Game.md) (L16361)  
+61. **L13769** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L19848), [Game.studentGrantBill](map/Game.md) (L16365)  
    _THE STUDENTS' GRANT, PAID IN THE MONTH IT IS CREDITED (0.7.1)._
-62. **L13783** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L19868)  
+62. **L13783** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L19873)  
    _...AND EI, THE SAME WAY (0.7.3)._
 63. **L13801** `economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));` → [EconomyManager.setBankTax](map/EconomyManager.md) (L1730), [Bank.chargeTax](map/Bank.md) (L4065), [Game.bankProfitTaxRate](map/Game.md) (L4839)  
    _THE BANK PAYS ITS PROFIT TAX, on the month that has just finished._
@@ -102,7 +102,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 69. **L13810** `priceTheDebtMarket();` → [Game.priceTheDebtMarket](map/Game.md) (L15018)
 70. **L13814** `if (settleProbeForTest != null) settleProbeForTest.accept(false);`  
    _The paper sold between the presses settles to its holders: the households first, before the month's coupon (0.7.1)._
-71. **L13815** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L18572)
+71. **L13815** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L18577)
 72. **L13816** `if (settleProbeForTest != null) settleProbeForTest.accept(true);`
 73. **L13817** `debtManager.processAllDebts(this);` → [DebtManager.processAllDebts](map/DebtManager.md) (L1587)
 74. **L13821** `strikeGovernmentBooks();` → [Game.strikeGovernmentBooks](map/Game.md) (L15056)  
@@ -163,7 +163,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 110. **L14031** `pushCostOfFundsToTheDebtMarket();` → [Game.pushCostOfFundsToTheDebtMarket](map/Game.md) (L15004)  
    _...AND THE PRICE OF MONEY IS FINAL WITH IT._
 111. **L14032** `debtManager.updateInterest();` → [DebtManager.updateInterest](map/DebtManager.md) (L3234)
-112. **L14042** `householdBalance.creditDepositInterest(bank.getDepositInterestToHouseholds());` → [HouseholdBalance.creditDepositInterest](map/HouseholdBalance.md) (L4749), [Bank.getDepositInterestToHouseholds](map/Bank.md) (L3347)  
+112. **L14042** `householdBalance.creditDepositInterest(bank.getDepositInterestToHouseholds());` → [HouseholdBalance.creditDepositInterest](map/HouseholdBalance.md) (L4903), [Bank.getDepositInterestToHouseholds](map/Bank.md) (L3347)  
    _...AND THE SAVERS ARE PAID._
 113. **L14043** `double sectorInterest = bank.getDepositInterestToSectors();` → [Bank.getDepositInterestToSectors](map/Bank.md) (L3348)
 114. **L14050** `economyManager.clearDepositInterest();` → [EconomyManager.clearDepositInterest](map/EconomyManager.md) (L1521)  
@@ -180,9 +180,9 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 121. **L14109** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2985), [DebtManager.firmBookYield](map/DebtManager.md) (L2991)  
    _The businesses' paper at today's curve, struck here as the households' book yield is a few lines below, so paper bought at this month's settle is read at its own yield and not at the short rate it ..._
 122. **L14110** `outward.takeMonth(bank.depositRate(), debtManager.worldRate(),` → [OutwardInvestment.takeMonth](map/OutwardInvestment.md) (L248), [Bank.depositRate](map/Bank.md) (L3340), [DebtManager.worldRate](map/DebtManager.md) (L901), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)
-123. **L14114** `householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());` → [HouseholdBalance.investAbroad](map/HouseholdBalance.md) (L3834), [Bank.depositRate](map/Bank.md) (L3340), [DebtManager.worldRate](map/DebtManager.md) (L901), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
+123. **L14114** `householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());` → [HouseholdBalance.investAbroad](map/HouseholdBalance.md) (L3988), [Bank.depositRate](map/Bank.md) (L3340), [DebtManager.worldRate](map/DebtManager.md) (L901), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _...and the households, by the same rule, with what the owners were just paid._
-124. **L14117** `householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());` → [HouseholdBalance.sellPaperForSpread](map/HouseholdBalance.md) (L4170), [DebtManager.householdBookYield](map/DebtManager.md) (L3014), [Bank.depositRate](map/Bank.md) (L3340)  
+124. **L14117** `householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());` → [HouseholdBalance.sellPaperForSpread](map/HouseholdBalance.md) (L4324), [DebtManager.householdBookYield](map/DebtManager.md) (L3014), [Bank.depositRate](map/Bank.md) (L3340)  
    _...and the city's paper, when the spread that brought them in has gone (0.7.1): home to the bank's desk, a little a month._
 125. **L14135** `bank.resolveIfFailed();` → [Bank.resolveIfFailed](map/Bank.md) (L1900)  
    _...AND IF WHAT LANDED AFTER THE CLOSE BROKE IT, IT HAS FAILED THIS MONTH (0.7.8)._
@@ -193,13 +193,13 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 129. **L14173** `hotMoney.setMonth(month);` → [CapitalFlows.setMonth](map/CapitalFlows.md) (L748)
 130. **L14176** `hotMoney.setDoubt(foreign.getDoubtShare());` → [CapitalFlows.setDoubt](map/CapitalFlows.md) (L651), [ForeignAccounts.getDoubtShare](map/ForeignAccounts.md) (L1811)  
    _The hot money takes the break chance of itself home under a peg (XR2): the share the last reprice left, 0 under every other regime._
-131. **L14177** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3340), [DebtManager.getRate](map/DebtManager.md) (L1448), [DebtManager.worldRate](map/DebtManager.md) (L901), [DebtManager.countryPremium](map/DebtManager.md) (L1227), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2523), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2735), [Game.yearlyDepreciation](map/Game.md) (L16736), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1386)
+131. **L14177** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3340), [DebtManager.getRate](map/DebtManager.md) (L1448), [DebtManager.worldRate](map/DebtManager.md) (L901), [DebtManager.countryPremium](map/DebtManager.md) (L1227), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2523), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2735), [Game.yearlyDepreciation](map/Game.md) (L16740), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1386)
 132. **L14199** `double hotMoved = hotMoney.getStock() - hotBefore;` → [CapitalFlows.getStock](map/CapitalFlows.md) (L634)  
    _THE MONEY MOVES FOR REAL, and now it moves where the audit can see it._
 133. **L14200** `if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);` → [Bank.receiveHotMoney](map/Bank.md) (L1684)
 134. **L14201** `else if (hotMoved < 0) bank.returnHotMoney(-hotMoved);` → [Bank.returnHotMoney](map/Bank.md) (L1698)
 135. **L14202** `bank.setForeignDeposits(hotMoney.getStock());` → [Bank.setForeignDeposits](map/Bank.md) (L1672), [CapitalFlows.getStock](map/CapitalFlows.md) (L634)
-136. **L14204** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L18545)  
+136. **L14204** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L18550)  
    _...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window._
 137. **L14206** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L796)
 138. **L14207** `lastHouseholdsAudit = MoneyAudit.households(this, householdsBefore, lastMoneyAudit);` → [MoneyAudit.households](map/MoneyAudit.md) (L453)
@@ -232,37 +232,37 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 154. **L14335** `debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());` → [DebtManager.setTrade](map/DebtManager.md) (L1135), [ForeignAccounts.monthlyExports](map/ForeignAccounts.md) (L2562), [ForeignAccounts.importCover](map/ForeignAccounts.md) (L2543)
 155. **L14336** `debtManager.ageForeignStanding();` → [DebtManager.ageForeignStanding](map/DebtManager.md) (L1379)
 156. **L14337** `checkForeignSolvency();` → [Game.checkForeignSolvency](map/Game.md) (L12586)
-157. **L14350** `priceIndex.takeMonth(indexPrices(), indexSpends(), indexFees(), indexFeeSpends(), month);` → [PriceIndex.takeMonth](map/PriceIndex.md) (L211), [Game.indexPrices](map/Game.md) (L16514), [Game.indexSpends](map/Game.md) (L16542), [Game.indexFees](map/Game.md) (L16557), [Game.indexFeeSpends](map/Game.md) (L16573)  
+157. **L14350** `priceIndex.takeMonth(indexPrices(), indexSpends(), indexFees(), indexFeeSpends(), month);` → [PriceIndex.takeMonth](map/PriceIndex.md) (L211), [Game.indexPrices](map/Game.md) (L16518), [Game.indexSpends](map/Game.md) (L16546), [Game.indexFees](map/Game.md) (L16561), [Game.indexFeeSpends](map/Game.md) (L16577)  
    _...AND WHAT THE MONTH COST A FAMILY._
 158. **L14362** `double target = debtManager.getInflationTarget();` → [DebtManager.getInflationTarget](map/DebtManager.md) (L326)  
    _The lean is measured against what holding the target takes - the Standard rule's advice and the neutral rate - at any strictness (0.7.52, DebtManager's HOW STRICT); at Standard they are the rule's ..._
 159. **L14363** `expectations.takeMonth(priceIndex, target, debtManager.getPolicyRate(),` → [Expectations.takeMonth](map/Expectations.md) (L163), [DebtManager.getPolicyRate](map/DebtManager.md) (L94), [DebtManager.neutralRate](map/DebtManager.md) (L583), [DebtManager.holdingRate](map/DebtManager.md) (L537), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [PriceIndex.inflation](map/PriceIndex.md) (L549)
-160. **L14366** `handOnExpectations();` → [Game.handOnExpectations](map/Game.md) (L16635)
+160. **L14366** `handOnExpectations();` → [Game.handOnExpectations](map/Game.md) (L16639)
 161. **L14369** `rateHistory[month % 12] = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _A year of the rate, so next year can tell a drift from a run._
 162. **L14370** `if (rateHistoryFilled < 12) rateHistoryFilled++;`
-163. **L14372** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L19379)
+163. **L14372** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L19384)
 164. **L14374** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L960)
 165. **L14408** `postAuditDrift = 0;`  
    _================================================================= NOTHING AFTER THE AUDIT MAY MOVE A POOL._
 166. **L14409** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L614)
-167. **L14428** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L19637)
+167. **L14428** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L19642)
 168. **L14430** `deferBorrowingCosts();` → [Game.deferBorrowingCosts](map/Game.md) (L3811)  
    _What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16)._
 169. **L14432** `tallyThePartners();` → [Game.tallyThePartners](map/Game.md) (L2006)  
    _The month's trade split to the world's nations (WN3; THE WORLD MARKET), after its last draw: before the history and the autosave._
-170. **L14433** `recordMonth();` → [Game.recordMonth](map/Game.md) (L17055)
+170. **L14433** `recordMonth();` → [Game.recordMonth](map/Game.md) (L17060)
 171. **L14435** `monthRun = true;`  
    _A month has run since the city was founded or loaded: its flows are this month's (0.7.102)._
 172. **L14437** `reconcileMap();` → [Game.reconcileMap](map/Game.md) (L2883)  
    _The city map takes the month's buildings (0.7.60): THE CITY MAP._
 173. **L14443** `getMarkets().closeMonth();` → [Game.getMarkets](map/Game.md) (L3166)  
    _The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25)._
-174. **L14464** `reportSaves();` → [Game.reportSaves](map/Game.md) (L17230)  
+174. **L14464** `reportSaves();` → [Game.reportSaves](map/Game.md) (L17235)  
    _THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52)._
 175. **L14465** `SaveWriter.Job autosaved = null;`
-176. **L14466** `if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {` → [Game.autosaveJob](map/Game.md) (L17152)
-177. **L14475** `recordForReplay(autosaved);` → [Game.recordForReplay](map/Game.md) (L17895)  
+176. **L14466** `if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {` → [Game.autosaveJob](map/Game.md) (L17157)
+177. **L14475** `recordForReplay(autosaved);` → [Game.recordForReplay](map/Game.md) (L17900)  
    _A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING), from the autosave's fill when it made one (TR2)._
 
 ## Game.startOfMonthUpdate() - Game.java lines 14478-14796 (319 lines)
@@ -295,7 +295,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 17. **L14621** `economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Bank.leverageBinds](map/Bank.md) (L4653)  
    _...the insured mortgages with the rest while the leverage ratio binds (0.7.11, round 2): then a mortgage uses the capital the bank is short of like any loan (BusinessDebtManager, THE LANDLORDS' MOR..._
 18. **L14622** `economyManager.getBusinessDebtManager().setProjectBudget(bank);` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53)
-19. **L14623** `householdBalance.setCapitalRule(growth, keepGoingOnly);` → [HouseholdBalance.setCapitalRule](map/HouseholdBalance.md) (L622)
+19. **L14623** `householdBalance.setCapitalRule(growth, keepGoingOnly);` → [HouseholdBalance.setCapitalRule](map/HouseholdBalance.md) (L628)
 20. **L14630** `economyManager.getBusinessDebtManager().setConcentrationCharges(concentrationCharges());` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Game.concentrationCharges](map/Game.md) (L5267)  
    _...and every business's spread sits on the bank's prime (0.7.7; the city's rate until then), on the dial as it stands this month - and the landlords' insured mortgages are written and renewed at th..._
 21. **L14631** `economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()),` → [EconomyManager.updateBusinessCredit](map/EconomyManager.md) (L643), [Bank.prime](map/Bank.md) (L1137), [DebtManager.getPolicyRate](map/DebtManager.md) (L94), [Bank.insuredMortgageRate](map/Bank.md) (L1158)
@@ -353,7 +353,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The foreign contractor's month beside the city's own (FC1): nothing unless the repairs took the builders' points and left the sites none - see Game, THE FOREIGN CREWS._
 4. **L73** `java.util.List<BuildingManager.Completion> opened = buildingManager.advanceConstruction(siteOutput + foreign.points()...` → [BuildingManager.advanceConstruction](map/BuildingManager.md) (L5558)  
    _His points are in the month the sites take, and not on a rushed site's overtime (FC1b): his crews are not the city's._
-5. **L74** `game.recordCompletions(opened);` → [Game.recordCompletions](map/Game.md) (L16155)
+5. **L74** `game.recordCompletions(opened);` → [Game.recordCompletions](map/Game.md) (L16157)
 6. **L77** `game.fitWhatFinished(opened);` → [Game.fitWhatFinished](map/Game.md) (L1341)  
    _...and what the buildings that opened come with (R1b): in a city founded the 1900 way, only the equipment that pays for a new building; nothing in a city founded the default way, where every buildi..._
 7. **L93** `game.getRecipes().apply(game);   // the ways the buildings run, at the counts the month leaves (R1c): first, the stea...` → [Game.getRecipes](map/Game.md) (L1258)  
@@ -387,11 +387,11 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The builders strike their crews before the posts are counted (0.7.17): the work ahead says how many of their posts they offer, and the labour market fills what is offered._
 2. **L165** `game.updatePopulation();` → [Game.updatePopulation](map/Game.md) (L15291)
 3. **L166** `populationManager.updateJobs(game.getJobs());` → [PopulationManager.updateJobs](map/PopulationManager.md) (L124), [Game.getJobs](map/Game.md) (L15304)
-4. **L169** `game.repriceLabour();` → [Game.repriceLabour](map/Game.md) (L16961)  
+4. **L169** `game.repriceLabour();` → [Game.repriceLabour](map/Game.md) (L16965)  
    _Between these two on purpose: the market prices against this month's posts, and the wage bill below multiplies by the price it sets._
 5. **L170** `populationManager.UpdateTotalWagePerType();` → [PopulationManager.UpdateTotalWagePerType](map/PopulationManager.md) (L370)
 
-## Game.advanceDemographics() - Game.java lines 15428-16017 (590 lines)
+## Game.advanceDemographics() - Game.java lines 15428-16019 (592 lines)
 
 > Ages the city, moves people in and out, and rebuilds the households.
 
@@ -399,15 +399,15 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _In REAL terms - see Migration.recordWages()._
 2. **L15447** `double[] fill = populationManager.getJobFillRate();` → [PopulationManager.getJobFillRate](map/PopulationManager.md) (L1133)  
    _WHAT THE HEALTH SERVICE COULD ACTUALLY DO THIS MONTH, measured before anybody ages, is born, dies or moves._
-3. **L15448** `double childcareCoverage = careCoverage(CareType.CHILDCARE, fill);` → [Game.careCoverage](map/Game.md) (L16048)
-4. **L15449** `double seniorCoverage    = careCoverage(CareType.SENIOR, fill);` → [Game.careCoverage](map/Game.md) (L16048)
-5. **L15450** `double generalCoverage   = careCoverage(CareType.GENERAL, fill);` → [Game.careCoverage](map/Game.md) (L16048)
+3. **L15448** `double childcareCoverage = careCoverage(CareType.CHILDCARE, fill);` → [Game.careCoverage](map/Game.md) (L16050)
+4. **L15449** `double seniorCoverage    = careCoverage(CareType.SENIOR, fill);` → [Game.careCoverage](map/Game.md) (L16050)
+5. **L15450** `double generalCoverage   = careCoverage(CareType.GENERAL, fill);` → [Game.careCoverage](map/Game.md) (L16050)
 6. **L15451** `double generalCapacity   =` → [BuildingManager.getStaffedCareCapacity](map/BuildingManager.md) (L7882)
-7. **L15453** `double servedThisMonth   = cohorts.total();` → [PopulationCohorts.total](map/PopulationCohorts.md) (L156)
+7. **L15453** `double servedThisMonth   = cohorts.total();` → [PopulationCohorts.total](map/PopulationCohorts.md) (L193)
 8. **L15467** `double[] affordable = new double[CareType.values().length];`  
    _...AND WHAT THE PRICE AT THE DOOR TAKES OFF IT (2026-09-19)._
 9. **L15468** `java.util.Arrays.fill(affordable, 1);`
-10. **L15469** `for (CareType care : CareType.values()) {` → [Game.careAffordability](map/Game.md) (L16067)
+10. **L15469** `for (CareType care : CareType.values()) {` → [Game.careAffordability](map/Game.md) (L16069)
 11. **L15472** `childcareCoverage *= affordable[CareType.CHILDCARE.ordinal()];`
 12. **L15473** `seniorCoverage    *= affordable[CareType.SENIOR.ordinal()];`
 13. **L15474** `generalCoverage   *= affordable[CareType.GENERAL.ordinal()];`
@@ -423,46 +423,46 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _...AND WHAT THE SICK RATE READS IS THE PEOPLE TREATED, not the beds built: the people the beds could take, less the ones the fee turned away, over the people._
 20. **L15521** `double[] mortalityFactors = Healthcare.mortalityFactors(` → [Healthcare.mortalityFactors](map/Healthcare.md) (L406)  
    _BOTH ENDS OF A LIFE, and now the beginning of one too._
-21. **L15532** `double[] unhousedByBand = families.unhousedPeopleByBand();` → [FamilyModel.unhousedPeopleByBand](map/FamilyModel.md) (L268)  
+21. **L15532** `double[] unhousedByBand = families.unhousedPeopleByBand();` → [FamilyModel.unhousedPeopleByBand](map/FamilyModel.md) (L345)  
    _THE UNHOUSED AND THE ORPHANS DIE SOONER (2026-09-11)._
-22. **L15533** `unhousedByBand[AgeBand.ADULT.ordinal()] += unemployment.getUnhoused();` → [Unemployment.getUnhoused](map/Unemployment.md) (L150)
+22. **L15533** `unhousedByBand[AgeBand.ADULT.ordinal()] += unemployment.getUnhoused();` → [Unemployment.getUnhoused](map/Unemployment.md) (L152)
 23. **L15534** `double[] orphansByBand = new double[AgeBand.values().length];`
 24. **L15535** `double[] inBand = new double[AgeBand.values().length];`
-25. **L15536** `for (AgeBand b : AgeBand.values()) {` → [FamilyModel.getOrphans](map/FamilyModel.md) (L185), [PopulationCohorts.get](map/PopulationCohorts.md) (L118)
+25. **L15536** `for (AgeBand b : AgeBand.values()) {` → [FamilyModel.getOrphans](map/FamilyModel.md) (L262), [PopulationCohorts.get](map/PopulationCohorts.md) (L133)
 26. **L15540** `double[] careFactors = mortalityFactors;`
-27. **L15541** `mortalityFactors = Unemployment.blendMortality(mortalityFactors,` → [Unemployment.blendMortality](map/Unemployment.md) (L466), [Healthcare.mortalityFactors](map/Healthcare.md) (L406)
+27. **L15541** `mortalityFactors = Unemployment.blendMortality(mortalityFactors,` → [Unemployment.blendMortality](map/Unemployment.md) (L473), [Healthcare.mortalityFactors](map/Healthcare.md) (L406)
 28. **L15551** `if (!sickness.isSeeded()) {` → [Sickness.isSeeded](map/Sickness.md) (L385), [Sickness.seed](map/Sickness.md) (L311), [Health.getSickRate](map/Health.md) (L334), [Health.getSickRateWithoutInfluenza](map/Health.md) (L337)  
    _...AND THE PEOPLE WHO STAYED SICK (2026-09-11)._
 29. **L15555** `double[] illness = sickness.deathRates();` → [Sickness.deathRates](map/Sickness.md) (L245)
 30. **L15562** `double[] violence = new double[AgeBand.values().length];`  
    _...AND THE PEOPLE VIOLENCE KILLED (2026-09-11)._
-31. **L15563** `double adultsBefore = cohorts.get(AgeBand.ADULT);` → [PopulationCohorts.get](map/PopulationCohorts.md) (L118)
+31. **L15563** `double adultsBefore = cohorts.get(AgeBand.ADULT);` → [PopulationCohorts.get](map/PopulationCohorts.md) (L133)
 32. **L15564** `violence[AgeBand.ADULT.ordinal()] = adultsBefore > 0` → [Crime.getKilled](map/Crime.md) (L413)
-33. **L15584** `double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,` → [CausesOfDeath.rates](map/CausesOfDeath.md) (L558), [Game.getWaterRatio](map/Game.md) (L3152), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L4696), [Health.getOutbreakSeverity](map/Health.md) (L364), [PopulationCohorts.getLastBirths](map/PopulationCohorts.md) (L119)  
+33. **L15584** `double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,` → [CausesOfDeath.rates](map/CausesOfDeath.md) (L558), [Game.getWaterRatio](map/Game.md) (L3152), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L4850), [Health.getOutbreakSeverity](map/Health.md) (L364), [PopulationCohorts.getLastBirths](map/PopulationCohorts.md) (L134)  
    _...AND WHAT THEY DIE OF (R0b)._
 34. **L15587** `double[] causeTotals = CausesOfDeath.bandTotals(causeRates);` → [CausesOfDeath.bandTotals](map/CausesOfDeath.md) (L492)
 35. **L15589** `for (AgeBand b : AgeBand.values()) {` → [CausesOfDeath.isHeldOff](map/CausesOfDeath.md) (L533), [CausesOfDeath.keptFactor](map/CausesOfDeath.md) (L469)  
    _...held off for a harness fixture (R0b call 7): no cause, and the swing whole._
-36. **L15594** `cohorts.advanceMonth(mortalityFactors, illness, violence, causeTotals,` → [PopulationCohorts.advanceMonth](map/PopulationCohorts.md) (L205), [Healthcare.birthFactor](map/Healthcare.md) (L425)
-37. **L15596** `causesOfDeath.book(month, causeRates, cohorts.getCauseDeaths());` → [CausesOfDeath.book](map/CausesOfDeath.md) (L635), [PopulationCohorts.getCauseDeaths](map/PopulationCohorts.md) (L139)
-38. **L15597** `sickness.setLastDeaths(cohorts.getIllnessDeaths());` → [Sickness.setLastDeaths](map/Sickness.md) (L417), [PopulationCohorts.getIllnessDeaths](map/PopulationCohorts.md) (L125)
+36. **L15594** `cohorts.advanceMonth(mortalityFactors, illness, violence, causeTotals,` → [PopulationCohorts.advanceMonth](map/PopulationCohorts.md) (L242), [Healthcare.birthFactor](map/Healthcare.md) (L425)
+37. **L15596** `causesOfDeath.book(month, causeRates, cohorts.getCauseDeaths());` → [CausesOfDeath.book](map/CausesOfDeath.md) (L635), [PopulationCohorts.getCauseDeaths](map/PopulationCohorts.md) (L154)
+38. **L15597** `sickness.setLastDeaths(cohorts.getIllnessDeaths());` → [Sickness.setLastDeaths](map/Sickness.md) (L417), [PopulationCohorts.getIllnessDeaths](map/PopulationCohorts.md) (L140)
 39. **L15601** `double[] dyingByBand = new double[AgeBand.values().length];`  
    _Who among them were orphans, and who had no home - for the running totals on the graphs._
-40. **L15602** `for (AgeBand b : AgeBand.values()) dyingByBand[b.ordinal()] = cohorts.getDying(b);` → [PopulationCohorts.getDying](map/PopulationCohorts.md) (L128)
-41. **L15603** `double[] spreadDead = cohorts.getIllnessDeaths();` → [PopulationCohorts.getIllnessDeaths](map/PopulationCohorts.md) (L125)
-42. **L15604** `double[] killedDead = cohorts.getKilled();` → [PopulationCohorts.getKilled](map/PopulationCohorts.md) (L130)
-43. **L15605** `double[] causedDead = cohorts.getCauseDeaths();` → [PopulationCohorts.getCauseDeaths](map/PopulationCohorts.md) (L139)
+40. **L15602** `for (AgeBand b : AgeBand.values()) dyingByBand[b.ordinal()] = cohorts.getDying(b);` → [PopulationCohorts.getDying](map/PopulationCohorts.md) (L143)
+41. **L15603** `double[] spreadDead = cohorts.getIllnessDeaths();` → [PopulationCohorts.getIllnessDeaths](map/PopulationCohorts.md) (L140)
+42. **L15604** `double[] killedDead = cohorts.getKilled();` → [PopulationCohorts.getKilled](map/PopulationCohorts.md) (L145)
+43. **L15605** `double[] causedDead = cohorts.getCauseDeaths();` → [PopulationCohorts.getCauseDeaths](map/PopulationCohorts.md) (L154)
 44. **L15606** `for (int b = 0; b < spreadDead.length; b++) spreadDead[b] += killedDead[b] + causedDead[b];`
-45. **L15607** `double[] outsideDead = Unemployment.attributeDeaths(careFactors,` → [Unemployment.attributeDeaths](map/Unemployment.md) (L502), [Healthcare.mortalityFactors](map/Healthcare.md) (L406)
+45. **L15607** `double[] outsideDead = Unemployment.attributeDeaths(careFactors,` → [Unemployment.attributeDeaths](map/Unemployment.md) (L509), [Healthcare.mortalityFactors](map/Healthcare.md) (L406)
 46. **L15610** `lastOrphanDeaths = outsideDead[0];`
 47. **L15611** `lastUnhousedDeaths = outsideDead[1];`
-48. **L15618** `cohorts.leave(AgeBand.ADULT, unemployment.takeEvicted());` → [PopulationCohorts.leave](map/PopulationCohorts.md) (L437), [Unemployment.takeEvicted](map/Unemployment.md) (L213)  
+48. **L15618** `cohorts.leave(AgeBand.ADULT, unemployment.takeEvicted());` → [PopulationCohorts.leave](map/PopulationCohorts.md) (L512), [Unemployment.takeEvicted](map/Unemployment.md) (L215)  
    _...AND THE EVICTED WHO GIVE UP ON THE CITY LEAVE._
 49. **L15621** `lastAdultMortality = AgeBand.monthlyFromAnnual(` → [AgeBand.monthlyFromAnnual](map/AgeBand.md) (L172)  
    _Kept for the skills step below: the graduates die at the rate the adults do, and that rate depends on the clinics._
-50. **L15635** `double adultsAlreadyHere = cohorts.get(AgeBand.ADULT);` → [PopulationCohorts.get](map/PopulationCohorts.md) (L118)  
+50. **L15635** `double adultsAlreadyHere = cohorts.get(AgeBand.ADULT);` → [PopulationCohorts.get](map/PopulationCohorts.md) (L133)  
    _Who works this month: the adults who were already living here, read off before migration moves anybody._
-51. **L15642** `migration.setBankruptcyDepartures(householdBalance.getLeavingCity()` → [Migration.setBankruptcyDepartures](map/Migration.md) (L1048), [HouseholdBalance.getLeavingCity](map/HouseholdBalance.md) (L4565), [FamilyModel.averageHouseholdSize](map/FamilyModel.md) (L359)  
+51. **L15642** `migration.setBankruptcyDepartures(householdBalance.getLeavingCity()` → [Migration.setBankruptcyDepartures](map/Migration.md) (L1048), [HouseholdBalance.getLeavingCity](map/HouseholdBalance.md) (L4719), [FamilyModel.averageHouseholdSize](map/FamilyModel.md) (L458)  
    _The families the bank discharged last month are leaving._
 52. **L15651** `migration.setRentBurden(households.getRentBurden());` → [Migration.setRentBurden](map/Migration.md) (L325), [HouseholdAccounts.getRentBurden](map/HouseholdAccounts.md) (L479)  
    _...and what a flat costs here, which is a PULL rather than a push and so is set in the same place for a different reason._
@@ -472,9 +472,9 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _...and the doors standing today, which the room the placement has left is asked against (0.7.17): arrivals are bounded by it._
 55. **L15664** `migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);` → [Migration.setYearMix](map/Migration.md) (L1273), [Game.foundedUnfitted](map/Game.md) (L1274), [ArrivalMix.at](map/ArrivalMix.md) (L145)  
    _...and, in a city founded the 1900 way, what the world's movers hold this year (R0d; ArrivalMix): the skills the month's arrivals are drawn from._
-56. **L15666** `cohorts.migrate(migration.monthlyNet(` → [PopulationCohorts.migrate](map/PopulationCohorts.md) (L408), [Migration.monthlyNet](map/Migration.md) (L941), [PopulationManager.getTotalJobs](map/PopulationManager.md) (L137), [Game.getHouseholdCapacity](map/Game.md) (L15295), [BuildingManager.getTotalHomes](map/BuildingManager.md) (L7339), [PopulationCohorts.share](map/PopulationCohorts.md) (L154)
-57. **L15681** `population = populationManager.applyPopulation(` → [PopulationManager.applyPopulation](map/PopulationManager.md) (L119), [PopulationCohorts.total](map/PopulationCohorts.md) (L156)
-58. **L15693** `applyMigrationSkills();` → [Game.applyMigrationSkills](map/Game.md) (L16995)  
+56. **L15666** `cohorts.migrate(migration.monthlyNet(` → [PopulationCohorts.migrate](map/PopulationCohorts.md) (L478), [Migration.monthlyNet](map/Migration.md) (L941), [PopulationManager.getTotalJobs](map/PopulationManager.md) (L137), [Game.getHouseholdCapacity](map/Game.md) (L15295), [BuildingManager.getTotalHomes](map/BuildingManager.md) (L7339), [PopulationCohorts.share](map/PopulationCohorts.md) (L169)
+57. **L15681** `population = populationManager.applyPopulation(` → [PopulationManager.applyPopulation](map/PopulationManager.md) (L119), [PopulationCohorts.total](map/PopulationCohorts.md) (L193)
+58. **L15693** `applyMigrationSkills();` → [Game.applyMigrationSkills](map/Game.md) (L16999)  
    _AND THE SKILLS MOVE WITH THE PEOPLE._
 59. **L15695** `double[] jobsByTier = new double[PayTier.values().length];`
 60. **L15696** `double[] fillRate = populationManager.getJobFillRate();` → [PopulationManager.getJobFillRate](map/PopulationManager.md) (L1133)
@@ -488,76 +488,78 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 67. **L15717** `for (int t = 0; t < wageByTier.length; t++) {`
 68. **L15733** `double officers = buildingManager.getStaffedSafetyCapacity(SafetyType.POLICE, fill);` → [BuildingManager.getStaffedSafetyCapacity](map/BuildingManager.md) (L7958)  
    _CRIME, AND WHO GOES TO PRISON FOR IT (2026-09-11)._
-69. **L15734** `double[] offenderWeight = new double[householdBalance.cellCount()];` → [HouseholdBalance.cellCount](map/HouseholdBalance.md) (L911)
-70. **L15735** `Crime.Causes causes = offending.causes(this, Crime.coverageOf(officers, cohorts.total()), offenderWeight);` → [Offending.causes](map/Offending.md) (L54), [Crime.coverageOf](map/Crime.md) (L245), [PopulationCohorts.total](map/PopulationCohorts.md) (L156)
-71. **L15736** `crime.advanceMonth(causes, cohorts.total(), officers,` → [Crime.advanceMonth](map/Crime.md) (L287), [PopulationCohorts.total](map/PopulationCohorts.md) (L156), [BuildingManager.getStaffedSafetyCapacity](map/BuildingManager.md) (L7958), [Game.unskilledWage](map/Game.md) (L16335)
-72. **L15743** `unemployment.imprison(crime.getPressure() > 0` → [Unemployment.imprison](map/Unemployment.md) (L239), [Crime.getPressure](map/Crime.md) (L385), [Crime.getAdmitted](map/Crime.md) (L425)  
+69. **L15734** `double[] offenderWeight = new double[householdBalance.cellCount()];` → [HouseholdBalance.cellCount](map/HouseholdBalance.md) (L943)
+70. **L15735** `Crime.Causes causes = offending.causes(this, Crime.coverageOf(officers, cohorts.total()), offenderWeight);` → [Offending.causes](map/Offending.md) (L54), [Crime.coverageOf](map/Crime.md) (L245), [PopulationCohorts.total](map/PopulationCohorts.md) (L193)
+71. **L15736** `crime.advanceMonth(causes, cohorts.total(), officers,` → [Crime.advanceMonth](map/Crime.md) (L287), [PopulationCohorts.total](map/PopulationCohorts.md) (L193), [BuildingManager.getStaffedSafetyCapacity](map/BuildingManager.md) (L7958), [PopulationCohorts.promotedShare](map/PopulationCohorts.md) (L161), [Game.unskilledWage](map/Game.md) (L16339)
+72. **L15744** `unemployment.imprison(crime.getPressure() > 0` → [Unemployment.imprison](map/Unemployment.md) (L241), [Crime.getPressure](map/Crime.md) (L385), [Crime.getAdmitted](map/Crime.md) (L425)  
    _Who went in: out of the pool by the pool's share of the pressure, group by group; the rest leave the families, by the labour market's own identity, when the supply shrinks by them below._
-73. **L15745** `populationManager.setImprisoned(crime.prisoners());` → [PopulationManager.setImprisoned](map/PopulationManager.md) (L857), [Crime.prisoners](map/Crime.md) (L370)
-74. **L15747** `populationManager.setOwners(2.0 * householdBalance.ownerFamilies());` → [PopulationManager.setOwners](map/PopulationManager.md) (L862), [HouseholdBalance.ownerFamilies](map/HouseholdBalance.md) (L825)  
+73. **L15746** `populationManager.setImprisoned(crime.prisoners());` → [PopulationManager.setImprisoned](map/PopulationManager.md) (L857), [Crime.prisoners](map/Crime.md) (L370)
+74. **L15748** `populationManager.setOwners(2.0 * householdBalance.ownerFamilies());` → [PopulationManager.setOwners](map/PopulationManager.md) (L862), [HouseholdBalance.ownerFamilies](map/HouseholdBalance.md) (L857)  
    _The owner families take no job (BO1): two adults a company with a family._
-75. **L15748** `offending.steal(this, offenderWeight);` → [Offending.steal](map/Offending.md) (L129)
-76. **L15750** `double outOfWork = populationManager.getUnemployed();` → [PopulationManager.getUnemployed](map/PopulationManager.md) (L1166)
-77. **L15751** `double studying = populationManager.getStudyingTotal();` → [PopulationManager.getStudyingTotal](map/PopulationManager.md) (L868)
-78. **L15752** `unemployment.advanceMonth(outOfWork, jobsByTier, postsByTier, wageByTier,` → [Unemployment.advanceMonth](map/Unemployment.md) (L296), [Game.unskilledWage](map/Game.md) (L16335), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)
-79. **L15756** `unemployment.noteArrivals(migration.getLastArrivals() * cohorts.share(AgeBand.ADULT));` → [Unemployment.noteArrivals](map/Unemployment.md) (L280), [Migration.getLastArrivals](map/Migration.md) (L590), [PopulationCohorts.share](map/PopulationCohorts.md) (L154)  
+75. **L15749** `offending.steal(this, offenderWeight);` → [Offending.steal](map/Offending.md) (L129)
+76. **L15751** `double outOfWork = populationManager.getUnemployed();` → [PopulationManager.getUnemployed](map/PopulationManager.md) (L1166)
+77. **L15752** `double studying = populationManager.getStudyingTotal();` → [PopulationManager.getStudyingTotal](map/PopulationManager.md) (L868)
+78. **L15753** `unemployment.setRetiringShare(cohorts.promotedShare(AgeBand.ADULT));   // HS2` → [Unemployment.setRetiringShare](map/Unemployment.md) (L287), [PopulationCohorts.promotedShare](map/PopulationCohorts.md) (L161)
+79. **L15754** `unemployment.advanceMonth(outOfWork, jobsByTier, postsByTier, wageByTier,` → [Unemployment.advanceMonth](map/Unemployment.md) (L303), [Game.unskilledWage](map/Game.md) (L16339), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
+   _HS2_
+80. **L15758** `unemployment.noteArrivals(migration.getLastArrivals() * cohorts.share(AgeBand.ADULT));` → [Unemployment.noteArrivals](map/Unemployment.md) (L282), [Migration.getLastArrivals](map/Migration.md) (L590), [PopulationCohorts.share](map/PopulationCohorts.md) (L169)  
    _The month's adult arrivals look for work next month._
-80. **L15767** `families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying,` → [FamilyModel.rebuild](map/FamilyModel.md) (L378), [Crime.prisoners](map/Crime.md) (L370), [HouseholdBalance.ownerFamilies](map/HouseholdBalance.md) (L825)  
+81. **L15769** `families.rebuild(cohorts, jobsByTier, crime.prisoners(), outOfWork + studying,` → [FamilyModel.rebuild](map/FamilyModel.md) (L477), [Crime.prisoners](map/Crime.md) (L370), [HouseholdBalance.ownerFamilies](map/HouseholdBalance.md) (L857)  
    _...and the owner families: two adults a company with a family, outside the families too (BO1)._
-81. **L15769** `families.setSeekers(unemployment.getHoused(), studying);` → [FamilyModel.setSeekers](map/FamilyModel.md) (L200), [Unemployment.getHoused](map/Unemployment.md) (L153)
-82. **L15773** `householdBalance.setGraduates(education.getFinished());` → [HouseholdBalance.setGraduates](map/HouseholdBalance.md) (L4502), [Education.getFinished](map/Education.md) (L903)  
+82. **L15771** `families.setSeekers(unemployment.getHoused(), studying);` → [FamilyModel.setSeekers](map/FamilyModel.md) (L277), [Unemployment.getHoused](map/Unemployment.md) (L155)
+83. **L15775** `householdBalance.setGraduates(education.getFinished());` → [HouseholdBalance.setGraduates](map/HouseholdBalance.md) (L4656), [Education.getFinished](map/Education.md) (L903)  
    _The student body above is last month's education step, and so are the ones who finished: they leave it with their loans at this month's census._
-83. **L15776** `householdBalance.setFlows(cohorts);` → [HouseholdBalance.setFlows](map/HouseholdBalance.md) (L1890)  
+84. **L15778** `householdBalance.setFlows(cohorts);` → [HouseholdBalance.setFlows](map/HouseholdBalance.md) (L1973)  
    _...and the month's flows, the pyramid's own (HS1): who retired, died and left carries their money at this month's census, before the pool._
-84. **L15788** `long[] stock = buildingManager.homesBySize();` → [BuildingManager.homesBySize](map/BuildingManager.md) (L7360)  
+85. **L15790** `long[] stock = buildingManager.homesBySize();` → [BuildingManager.homesBySize](map/BuildingManager.md) (L7360)  
    _HOMES HAVE SIZES NOW, so this is a match rather than a count._
-85. **L15789** `double unplaced = families.house(stock);` → [FamilyModel.house](map/FamilyModel.md) (L1284)
-86. **L15790** `families.squeezeUnplaced(unplaced);` → [FamilyModel.squeezeUnplaced](map/FamilyModel.md) (L1453)
-87. **L15791** `families.noteUnplaced(families.house(stock));` → [FamilyModel.noteUnplaced](map/FamilyModel.md) (L1540), [FamilyModel.house](map/FamilyModel.md) (L1284)
-88. **L15796** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3161), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1143), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1144)  
+86. **L15791** `double unplaced = families.house(stock);` → [FamilyModel.house](map/FamilyModel.md) (L1527)
+87. **L15792** `families.squeezeUnplaced(unplaced);` → [FamilyModel.squeezeUnplaced](map/FamilyModel.md) (L1696)
+88. **L15793** `families.noteUnplaced(families.house(stock));` → [FamilyModel.noteUnplaced](map/FamilyModel.md) (L1782), [FamilyModel.house](map/FamilyModel.md) (L1527)
+89. **L15798** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3161), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1386), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1387)  
    _What the landlords can bill, off the match rather than off an average, and split by which segment the door was in._
-89. **L15800** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1457)  
+90. **L15802** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1457)  
    _And the advisor prices a new home on who would move into it._
-90. **L15801** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1462)
-91. **L15817** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L1787), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
+91. **L15803** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1462)
+92. **L15819** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L2029), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
    _...and the ones who cannot afford one either._
-92. **L15819** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L1818), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L153), [FamilyModel.getSeekers](map/FamilyModel.md) (L209)  
+93. **L15821** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L2071), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L155), [FamilyModel.getSeekers](map/FamilyModel.md) (L286)  
    _...and the people outside the families, with their own kind._
-93. **L15858** `healthcare.setFeeScale(economyManager.getTaxPolicy().getHealthFeeScale());` → [Healthcare.setFeeScale](map/Healthcare.md) (L161), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
+94. **L15860** `healthcare.setFeeScale(economyManager.getTaxPolicy().getHealthFeeScale());` → [Healthcare.setFeeScale](map/Healthcare.md) (L161), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
    _At the player's fee scale (2026-09-19), and with the share of each kind of care's people who could pay - see Healthcare.advanceMonth()._
-94. **L15859** `healthcare.advanceMonth(` → [Healthcare.advanceMonth](map/Healthcare.md) (L483), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [PopulationCohorts.getLastDeaths](map/PopulationCohorts.md) (L120), [Game.burialShare](map/Game.md) (L16129), [BuildingManager.getCareCapacity](map/BuildingManager.md) (L7845), [BuildingManager.getStaffedCareCapacity](map/BuildingManager.md) (L7882)
-95. **L15869** `economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());` → [EconomyManager.setHealthcare](map/EconomyManager.md) (L2005), [Healthcare.getGrossCost](map/Healthcare.md) (L730), [Healthcare.getFees](map/Healthcare.md) (L732)
-96. **L15884** `tellTheSchoolsTheirPrices(economyManager.getTaxPolicy());` → [Game.tellTheSchoolsTheirPrices](map/Game.md) (L4213), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
+95. **L15861** `healthcare.advanceMonth(` → [Healthcare.advanceMonth](map/Healthcare.md) (L483), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [PopulationCohorts.getLastDeaths](map/PopulationCohorts.md) (L135), [Game.burialShare](map/Game.md) (L16131), [BuildingManager.getCareCapacity](map/BuildingManager.md) (L7845), [BuildingManager.getStaffedCareCapacity](map/BuildingManager.md) (L7882)
+96. **L15871** `economyManager.setHealthcare(healthcare.getGrossCost(), healthcare.getFees());` → [EconomyManager.setHealthcare](map/EconomyManager.md) (L2005), [Healthcare.getGrossCost](map/Healthcare.md) (L730), [Healthcare.getFees](map/Healthcare.md) (L732)
+97. **L15886** `tellTheSchoolsTheirPrices(economyManager.getTaxPolicy());` → [Game.tellTheSchoolsTheirPrices](map/Game.md) (L4213), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
    _At the player's tuition scale (2026-09-21), told here as the clinic's scale is above, so the fees this step charges are this month's - kind by kind since 0.7.6, each school at its own price._
-97. **L15885** `education.advanceMonth(` → [Education.advanceMonth](map/Education.md) (L403), [BuildingManager.getStaffedEducationPlaces](map/BuildingManager.md) (L7921), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [Migration.getLastDepartures](map/Migration.md) (L597)
-98. **L15904** `for (EducationType kind : EducationType.values()) {` → [Education.setCostOf](map/Education.md) (L878), [BuildingManager.getSchoolPayroll](map/BuildingManager.md) (L8085), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getSchoolUpkeep](map/BuildingManager.md) (L8098)  
+98. **L15887** `education.advanceMonth(` → [Education.advanceMonth](map/Education.md) (L403), [BuildingManager.getStaffedEducationPlaces](map/BuildingManager.md) (L7921), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [PopulationCohorts.promotedShare](map/PopulationCohorts.md) (L161), [Migration.getLastDepartures](map/Migration.md) (L597)
+99. **L15906** `for (EducationType kind : EducationType.values()) {` → [Education.setCostOf](map/Education.md) (L878), [BuildingManager.getSchoolPayroll](map/BuildingManager.md) (L8085), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getSchoolUpkeep](map/BuildingManager.md) (L8098)  
    _...AND WHAT EACH KIND OF SCHOOL COST (0.7.6), for the Schools page's row per kind: the same payroll and upkeep the total above was struck from, narrowed to the buildings teaching each course, at th..._
-99. **L15911** `populationManager.applyBandFlow(education.getGraduates());` → [PopulationManager.applyBandFlow](map/PopulationManager.md) (L1088), [Education.getGraduates](map/Education.md) (L781)
-100. **L15912** `populationManager.addLicences(education.getLicences());` → [PopulationManager.addLicences](map/PopulationManager.md) (L1014), [Education.getLicences](map/Education.md) (L797)
-101. **L15915** `populationManager.setStudying(education.getStudying());` → [PopulationManager.setStudying](map/PopulationManager.md) (L867), [Education.getStudying](map/Education.md) (L590)  
+100. **L15913** `populationManager.applyBandFlow(education.getGraduates());` → [PopulationManager.applyBandFlow](map/PopulationManager.md) (L1088), [Education.getGraduates](map/Education.md) (L781)
+101. **L15914** `populationManager.addLicences(education.getLicences());` → [PopulationManager.addLicences](map/PopulationManager.md) (L1014), [Education.getLicences](map/Education.md) (L797)
+102. **L15917** `populationManager.setStudying(education.getStudying());` → [PopulationManager.setStudying](map/PopulationManager.md) (L867), [Education.getStudying](map/Education.md) (L590)  
    _And whoever is in a lecture theatre is out of the labour supply until they come out of it - see PopulationManager.workforceByBand()._
-102. **L15918** `populationManager.trimLicencesToBand();` → [PopulationManager.trimLicencesToBand](map/PopulationManager.md) (L1056)  
+103. **L15920** `populationManager.trimLicencesToBand();` → [PopulationManager.trimLicencesToBand](map/PopulationManager.md) (L1056)  
    _A licence holder is a graduate first, and the graduate count has just moved._
-103. **L15920** `economyManager.setEducation(education.getGrossCost(), education.getFees());` → [EconomyManager.setEducation](map/EconomyManager.md) (L2014), [Education.getGrossCost](map/Education.md) (L844), [Education.getFees](map/Education.md) (L852)
-104. **L15929** `settleResearchBill(fill);` → [Game.settleResearchBill](map/Game.md) (L1480)  
+104. **L15922** `economyManager.setEducation(education.getGrossCost(), education.getFees());` → [EconomyManager.setEducation](map/EconomyManager.md) (L2014), [Education.getGrossCost](map/Education.md) (L844), [Education.getFees](map/Education.md) (L852)
+105. **L15931** `settleResearchBill(fill);` → [Game.settleResearchBill](map/Game.md) (L1480)  
    _...AND THE RESEARCH (R3): beside the schools because their staff are its faculty and its room, at the same wages and fill they were paid at._
-105. **L15930** `workTheResearch(fill);` → [Game.workTheResearch](map/Game.md) (L1502)
-106. **L15936** `crime.setCosts(` → [Crime.setCosts](map/Crime.md) (L362), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123)  
+106. **L15932** `workTheResearch(fill);` → [Game.workTheResearch](map/Game.md) (L1502)
+107. **L15938** `crime.setCosts(` → [Crime.setCosts](map/Crime.md) (L362), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123)  
    _6c._
-107. **L15940** `economyManager.setSafety(crime.getGrossCost());` → [EconomyManager.setSafety](map/EconomyManager.md) (L2027), [Crime.getGrossCost](map/Crime.md) (L452)
-108. **L15973** `getInfrastructureManager().setCommute(householdBalance.captiveShare(),` → [Game.getInfrastructureManager](map/Game.md) (L3171), [HouseholdBalance.captiveShare](map/HouseholdBalance.md) (L2714), [Motoring.journeyFuel](map/Motoring.md) (L175)  
+108. **L15942** `economyManager.setSafety(crime.getGrossCost());` → [EconomyManager.setSafety](map/EconomyManager.md) (L2027), [Crime.getGrossCost](map/Crime.md) (L452)
+109. **L15975** `getInfrastructureManager().setCommute(householdBalance.captiveShare(),` → [Game.getInfrastructureManager](map/Game.md) (L3171), [HouseholdBalance.captiveShare](map/HouseholdBalance.md) (L2868), [Motoring.journeyFuel](map/Motoring.md) (L175)  
    _...AT THE PUMP SINCE 0.7.83 (batch O6): the forecourts' price on the sign, and the drivers' litres bought from them (sectors.Retail, THE FORECOURTS)._
-109. **L15975** `servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());` → [ServicesManager.updateTransitFare](map/ServicesManager.md) (L260), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)
-110. **L15976** `motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);` → [Motoring.drawFuel](map/Motoring.md) (L200), [Game.getInfrastructureManager](map/Game.md) (L3171)
-111. **L15981** `if (homeFuel.isOn() \|\| homeFuel.hasSale()) homeFuel.strike(this, homeFuelHomes());` → [HomeFuel.isOn](map/HomeFuel.md) (L78), [HomeFuel.hasSale](map/HomeFuel.md) (L81), [HomeFuel.strike](map/HomeFuel.md) (L98), [Game.homeFuelHomes](map/Game.md) (L4717)  
+110. **L15977** `servicesManager.updateTransitFare(economyManager.getTaxPolicy().getTransitFare());` → [ServicesManager.updateTransitFare](map/ServicesManager.md) (L260), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)
+111. **L15978** `motoring.drawFuel(this, getInfrastructureManager().getDrivers() * TaxPolicy.JOURNEYS_A_MONTH);` → [Motoring.drawFuel](map/Motoring.md) (L200), [Game.getInfrastructureManager](map/Game.md) (L3171)
+112. **L15983** `if (homeFuel.isOn() \|\| homeFuel.hasSale()) homeFuel.strike(this, homeFuelHomes());` → [HomeFuel.isOn](map/HomeFuel.md) (L78), [HomeFuel.hasSale](map/HomeFuel.md) (L81), [HomeFuel.strike](map/HomeFuel.md) (L98), [Game.homeFuelHomes](map/Game.md) (L4717)  
    _...and the homes' lamp oil and coal (R0c, the home form; HomeFuel): the homes that light with a lamp and heat with a stove ask Retail for their month's JET and THERMAL_COAL, drawn and sold at the p..._
-112. **L15985** `economyManager.setTransit(` → [EconomyManager.setTransit](map/EconomyManager.md) (L2080), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [Game.portsBill](map/Game.md) (L8431), [Game.getInfrastructureManager](map/Game.md) (L3171), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
+113. **L15987** `economyManager.setTransit(` → [EconomyManager.setTransit](map/EconomyManager.md) (L2080), [BuildingManager.getCategoryPayroll](map/BuildingManager.md) (L8034), [PopulationManager.getWagesPerType](map/PopulationManager.md) (L232), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [Game.portsBill](map/Game.md) (L8431), [Game.getInfrastructureManager](map/Game.md) (L3171), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
    _...AND THE PORTS' REPAIRS (0.7.86, batch O9; the dockers left it in FR3 for Freight's payroll): a terminal's upkeep added to the bill, nothing with no terminal (star O9-2)._
-113. **L15993** `economyManager.setTransitUpkeep(buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE) + portsBill());` → [EconomyManager.setTransitUpkeep](map/EconomyManager.md) (L2090), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [Game.portsBill](map/Game.md) (L8431)  
+114. **L15995** `economyManager.setTransitUpkeep(buildingManager.getUpkeepByCategory(BuildingType.INFRASTRUCTURE) + portsBill());` → [EconomyManager.setTransitUpkeep](map/EconomyManager.md) (L2090), [BuildingManager.getUpkeepByCategory](map/BuildingManager.md) (L8123), [Game.portsBill](map/Game.md) (L8431)  
    _...and the upkeep part of that bill, which the treasury pays Business Services (HL1; buyUpkeep()), the rest being the crews' wages._
-114. **L15999** `health.advanceMonth(generalCapacity, servedThisMonth, month,` → [Health.advanceMonth](map/Health.md) (L181), [Healthcare.getUnburied](map/Healthcare.md) (L757), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L4696), [Game.unhousedShareOfCity](map/Game.md) (L16030), [Crime.getInjuredShare](map/Crime.md) (L416)  
+115. **L16001** `health.advanceMonth(generalCapacity, servedThisMonth, month,` → [Health.advanceMonth](map/Health.md) (L181), [Healthcare.getUnburied](map/Healthcare.md) (L757), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L4850), [Game.unhousedShareOfCity](map/Game.md) (L16032), [Crime.getInjuredShare](map/Crime.md) (L416)  
    _7._
-115. **L16015** `sickness.advanceMonth(health.getSickRate(), health.getSickRateWithoutInfluenza(),` → [Sickness.advanceMonth](map/Sickness.md) (L261), [Health.getSickRate](map/Health.md) (L334), [Health.getSickRateWithoutInfluenza](map/Health.md) (L337)  
+116. **L16017** `sickness.advanceMonth(health.getSickRate(), health.getSickRateWithoutInfluenza(),` → [Sickness.advanceMonth](map/Sickness.md) (L261), [Health.getSickRate](map/Health.md) (L334), [Health.getSickRateWithoutInfluenza](map/Health.md) (L337)  
    _8._
 
 ## SimulationEngine.updateEconomy() - SimulationEngine.java lines 173-235 (63 lines)
@@ -571,7 +573,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The two inputs to the rent price, which is a market now._
 6. **L188** `economyManager.setHousingSeekers(game.getFamilies().studioSeekers(),` → [EconomyManager.setHousingSeekers](map/EconomyManager.md) (L508), [Game.getFamilies](map/Game.md) (L15400)  
    _...and the same count split into the two segments the rent market now prices separately._
-7. **L192** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L505), [Game.marginalHousingCost](map/Game.md) (L20440)
+7. **L192** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L505), [Game.marginalHousingCost](map/Game.md) (L20445)
 8. **L194** `economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR)` → [EconomyManager.setSeniors](map/EconomyManager.md) (L2115), [Game.getCohorts](map/Game.md) (L15399)
 9. **L200** `economyManager.updateJobFillRate(populationManager.getJobFillRate());` → [EconomyManager.updateJobFillRate](map/EconomyManager.md) (L108), [PopulationManager.getJobFillRate](map/PopulationManager.md) (L1133)  
    _The fill first: every sector's payroll is discounted by it, so it has to be current before the wages are set._
@@ -598,7 +600,7 @@ Generated 2026-11-19 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 ## Game.run() - Game.java lines 755-765 (11 lines)
 
 1. **L756** `boolean starting = !initialized;`
-2. **L757** `if (starting) {` → [Game.layTheLadder](map/Game.md) (L1301), [Game.basketHearsTheYear](map/Game.md) (L16670)
+2. **L757** `if (starting) {` → [Game.layTheLadder](map/Game.md) (L1301), [Game.basketHearsTheYear](map/Game.md) (L16674)
 3. **L761** `initialize();` → [Game.initialize](map/Game.md) (L767)
 4. **L762** `foundingBank();` → [Game.foundingBank](map/Game.md) (L910)
 5. **L763** `foundingYard();` → [Game.foundingYard](map/Game.md) (L996)
