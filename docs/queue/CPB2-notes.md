@@ -3,7 +3,10 @@
 Base: origin/main 8ada323e3 (0.9.164); main's FB14, 5c8e6c937 (0.9.165), is
 merged in c5dc51182 (no conflict), and 0.9.166, 2677b1580 (SB1, FS2,
 R2e-PE4), in 2f7b25ca0 (only the generated indexes met; main's taken and
-regenerated), and 0.9.167, bf048eb69 (HS2), in 66e9dc33f (the same). None of
+regenerated), 0.9.167, bf048eb69 (HS2), in 66e9dc33f (the same), GB3 and GB4
+(64ec45fbe) in 76dc564f2, the ensemble's commit, and 0.9.168 to 0.9.169
+(c60165591) in d91592be8 after it: Bank's integrity getters, CityRuns and
+Observation, nothing the month runs, so the ensemble stands. None of
 the merges touched `Sector` or the order pass. Built by CPB2 (Claude, Opus) on
 `batch/CPB2`. Source changed: `Sector.java` (the model) and the new
 `UndemandedFeedCheck.java`, with its `AllChecks` line and `docs/tree.md`
@@ -156,9 +159,9 @@ on the final model, so it covers all three. Seed 1 on the final model (section
 ## The checks
 
 - `./batch-check.sh --fast` green on the merged branch (3312d2218, and again
-  after the HS2 merge, 66e9dc33f): compile,
+  after the HS2 merge, 66e9dc33f, and the 0.9.169 one, d91592be8): compile,
   maps regenerated, Stale 0 firm, tree clean.
-- `UndemandedFeedCheck` green on both merged models. The mutation table above
+- `UndemandedFeedCheck` green on each merged model. The mutation table above
   was run before the merges. Since then the only model change is the solve's
   early exit, which gives the same answer wherever it applies (with no
   committed feed every floor is 0, and the solve already returned the old
