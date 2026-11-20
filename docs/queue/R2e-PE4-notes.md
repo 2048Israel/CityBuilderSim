@@ -138,6 +138,18 @@ new plant's piece, and it earned no royalty, until E2 a half-century later
 - `sh tools/pick.sh origin/main HEAD`: ALL (buildings.json's reader,
   BuildingManager, has 109 readers); review line: no money, saves or threading.
 
+## The dry run
+
+`sh tools/gate.sh R2e-PE4 --dry-run` on the gate box, on the orchestrator's go:
+run `/home/jerus/cbs/runs/cbs-gate-R2e-PE4-mS6El1Me` (copied home to
+`C:\Users\Jerus\AppData\Local\Temp\cbs-gate-R2e-PE4-mS6El1Me`), of main
+01d93949b and the branch 2a65ad4f6. **Exit 0**: the whole suite in 738 s, exit
+3, known reds only (20 harnesses, every line in `docs/notes/gate.txt` or
+`docs/notes/known-reds.txt`), `unnamed.txt` empty; "dry run: the tree is as it
+was". Main moved to 4d3e18673 (SB1, `BuildingManager.retire()`) at 17:27 UTC,
+during the run; not merged, since after a dry run only the notes and the ship
+file change. Whether the gate reuses this run is the orchestrator's call.
+
 ## Left
 
 Nothing for Jerus: the row's one call was recommended and is taken (★1). No
