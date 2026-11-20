@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS15 (untagged) — the works and the services' town cause their conditions — 2026-11-20, ready, see docs/queue/FS15-notes.md
+The sweep for the works and the services' town (the FS1 study, 6.14): five harnesses now cause the premises they had read off played towns.
+ChildcareCheck's sections 2 and 4 stand on a founding built with no months, and its weighing asks the advice itself. The old copy predated HW1's fixed point (row 82).
+WorksFinanceCheck's sections stand on foundings: two months struck, then their people, trend and year of GDP set by hand.
+EssentialWorksCheck now sets five premises. The highway forecast's traffic is scaled between its two edges, found by bisection; the old calibration moved nothing in a town with modes.
+It also sets the streets' share, the spare care (people scaled, workforce held) and the staff-short plant's workforce.
+BusinessServicesCheck holds the sector whose two centres it places. AuctionCheck hands the households their spare and stands depots until the builders are not short.
+AuctionCheck's Observations are hard fixtures now, and it leaves Observation.HARNESSES. Section 11's 1,200 months stay played.
+The nine FS15 known reds are retired, none a model fault. The batch is harness-only: the model and the trace do not move.
+
 ### HL1-M — the railway the map draws is the railway the city holds — 2026-11-20, ready, see docs/queue/HL1-M-notes.md
 Untagged: the map's runs and a harness, no model file. MapCheck 1's hard assertion called a city with one Rail Depot and no Rail Spur wrong (HL1's 120-month town at m121: 83 railway plots drawn, no model track, `trackSurplus()` 0). The map was right and the law was short a term: `CityRuns.layRail()` lays the main line to the city's edge for any city with a station whatever track the model has (FX5, "there is a railwawy depot but no rails"), so the railway drawn is the model's track less what the runs could not lay plus that line, the station's own. `CityRuns.stationLine(track)` names it (the mirror of `trackSurplus()`, derived, nothing saved) and `MapCheck.Drawn` counts it as the station's, exactly and only where a station stands: the painter draws every plot the runs lay, `rail + trackSurplus == track + stationLine`, and a line past the track needs a yard laid; no tolerance, no observation. MapCheck's new section 25 causes the case (one district owned whole, one Rail Depot: 132 plots, no siding, branch or quay spur; one Rail Spur: the track is the line's first 72 plots; 4 spurs: the surplus 156 and no station's line; the depot gone: the idle yard holds the line, then both go) and finds `Drawn.drawn()` counting a Rail Depot's yard once a tile it spans (3 for one), as the painter's `bpart` and the raster already do not. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
 
