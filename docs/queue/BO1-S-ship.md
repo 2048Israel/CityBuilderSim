@@ -3,15 +3,16 @@
 The owner families are on in every city: one two-adult household for each listed company, holding
 its founders' shares alone, living on its dividends and selling a twentieth of each stake a year;
 everyone else buys at the offerings and on the exchange. They take no job, and in a small town
-they are fewer: never more than one adult in twenty, so a town under 20 adults has none and its
-companies list once it has grown to their families (two adults a company took a founding town's
-whole labour force). The People screen shows them outside the families: a piece of the mosaic,
-a column of the outside table, a row below the rule on Household money. A theft no offender could
-be handed is no longer taken (it unbalanced the households' books in a tiny town). Saves: no
-format bump; an older save's companies keep their founders' shares with the households.
+they are fewer: never more than one adult in twenty, so a town under 20 adults forms no family
+(under one adult is still kept for it, off work) and its companies list once it has grown to
+their families. The People screen shows them outside the families: a piece of the mosaic, a
+column of the outside table, a row below the rule on Household money. A theft no offender could
+be handed is no longer taken (it unbalanced a tiny town's books). Saves: no format bump; an older
+save's companies keep their founders' shares with the households.
 Ensemble (docs/ensemble/{next}.md): M1 and F1 pass in every policy; AUTO2 ends at 2.44 million
 people (OP1 2.85); the playtest city with the line on is a fifth smaller at month 121.
 ## queued
+| BO1-R | the owner line's three review minors (REV-BO1-S): no adults reserved where no family forms; the owner cell's trades with the world in OwnerCheck; OwnerCheck 11's middle case built through the census and the cell | docs/queue/BO1-S-notes.md, section 12 |
 | BO1-H | the owner families placed in the housing match after HS2, FamilyModel's third seeker group: today they pay a whole door's rent and count as housed without taking one | docs/queue/BO1-S-notes.md, section 5 |
 ## known-reds
 SlopeCheck | fixture: the city owns steep ground by the end | FS7 | 2026-11-20 | Section 9's Medellin city, 2,000 months, on BO1-S's moved path (the owner families take no job): it owns 11.920 km2 by the end, none of it steep, where main 0.9.161's owns 81.945 km2, 5.287 steep (BO1-S-notes.md, section 9)

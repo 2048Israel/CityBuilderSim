@@ -393,3 +393,30 @@ quarters. It is one seed, AUTO2 seed 7, which stalls from m600 to m1800
 by m2400; the next lowest of the sixteen ends at 1,666,727, above OP1's
 lowest. The ensemble passes (M1 and F1 clean, T2 inside its floor), so the
 batch ships on the rule.
+
+## 12. REV-BO1-S: SHIP, no P1; three minors queued as BO1-R
+
+The review (06:18, read-only) found nothing in money, saves or the screen.
+Its three minor findings ship as they are, queued as one row, BO1-R:
+
+1. **No adults reserved where no family forms.** Under 20 adults the
+   reserved families still take up to 0.95 adults (`OWNER_ADULT_SHARE` of
+   the adults, under half a household) off work and out of the families,
+   into an owner cell that is empty and never settles, its door's rent
+   going to UnsettledRent (`HouseholdBalance.java:1172`), for as long as the
+   town stays small. The changelog's "a town under 20 adults has none" was
+   true of the families, not of those adults; it now says so. The mend:
+   `Game.ownerAdultsWanted()` gives nothing while the figure is under
+   `Household.EMPTY_CELL`, so the supply, the census and the cell agree.
+2. **The owner cell's trades with the world, in OwnerCheck.** ShortSelling
+   9's owner-cell line (the owner families' trades with the world settle)
+   went with `lineOff` (`ShortSellingCheck.java:493`), and OwnerCheck has
+   no shorts, lending or fund section. The mend: an OwnerCheck section on a
+   town large enough to list, the owner cell's shares lent and sold to the
+   world, each a pair of lines in the audit.
+3. **OwnerCheck 11's middle case built through the census and the cell.**
+   Its hundred-adult case (`OwnerCheck.java:908`) checks only `adultsOf`'s
+   arithmetic (2.5 families of 3); it builds no census, no cell and no grant
+   split. The mend: the case through `FamilyModel.rebuild`, the owner cell's
+   households and a listing's grant shared among fewer families than
+   companies.
