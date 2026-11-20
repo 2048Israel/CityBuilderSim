@@ -4,7 +4,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 607 files, 657,638 lines, 28,693 methods, 6,275 constants. `GameVersion.VERSION` is "0.9.166", `SAVE_FORMAT` 58.
+**The tree:** 607 files, 657,668 lines, 28,694 methods, 6,275 constants. `GameVersion.VERSION` is "0.9.166", `SAVE_FORMAT` 58.
 
 ## model (272 files)
 
@@ -442,7 +442,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EarthDepositsCheck.java](EarthDepositsCheck.md) | 789 | 36 | Deposits where the geology says (0.8.12, batch EG1; docs/studies/spec-earth2-terrain.md 8.5): oil by a province's known petroleum, iron on shields ... | 0 |
 | [EarthFoundingCheck.java](EarthFoundingCheck.md) | 706 | 18 | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they a... | 0 |
 | [EarthTerrainCheck.java](EarthTerrainCheck.md) | 2,673 | 65 | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three... | 4 |
-| [EducationCheck.java](EducationCheck.md) | 1,503 | 12 | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. | 2 |
+| [EducationCheck.java](EducationCheck.md) | 1,533 | 13 | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. | 2 |
 | [ElectrolyserCheck.java](ElectrolyserCheck.md) | 459 | 23 | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the ... | 0 |
 | [EnsembleCheck.java](EnsembleCheck.md) | 470 | 25 | Checks the ensemble runner, driver compilation, policy names and stored baseline. | 0 |
 | [EquipmentCheck.java](EquipmentCheck.md) | 1,187 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 18 |
