@@ -225,6 +225,9 @@ public class BusinessServicesCheck {
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 2, true);
             b.addStack(b.getTemplateByName("Paved Road"), 30, true);
             b.addStack(b.getTemplateByName("Contact Centre"), 2, true);
+            // FS15: the two centres caused. The sector's own plan is held, so the 24 months trade on the two placed
+            // here: on HS1's path the plan ordered a third (900 seats) and the section read a city it did not build.
+            city.getBusinessInvestment().holdSector(Sectors.BUSINESS_SERVICES);
             for (int i = 0; i < 24; i++) city.simulateMonths(1);
         });
 
