@@ -853,8 +853,46 @@ public class SlopeCheck {
        9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth)
        ===================================================================== */
 
-    /** The months the Medellin run plays: enough for the land office's offers to have brought the city steep ground (at 1,000 it owns none; at 2,000, about a tenth of it) - the section about twenty seconds. */
+    /**
+     * The months the Medellin run plays, its audit and the off-the-steep law read on every one: 2,000 (about twenty seconds). It was the months the land
+     * office's offers took to bring the city steep ground (at 1,000 it owned none; at 2,000 about a tenth of its ground on main 0.9.161's path, none on
+     * BO1-S's); since FS7 the steep ground is bought at the founding (steepSquare()), and the months are the run's breadth.
+     */
     static final int RUN_MONTHS = 2000;
+
+    /** The side of the square of steep ground section 9's city is given at its founding, in plots: 32 (FS7). */
+    static final int STEEP_SQUARE = 32;
+
+    /** Squares searched out each way from the founding site for it: 40. */
+    static final int STEEP_RINGS = 40;
+
+    /**
+     * The nearest square to the founding site, STEEP_SQUARE plots a side on a grid of its own size, none of whose plots the city owns and at least half of
+     * whose dry plots are steep or very steep by the model's reader (World.reliefAt()): {x0, y0, steep plots}, or null within STEEP_RINGS.
+     */
+    static long[] steepSquare(Game g) {
+        World w = World.of(g.getCityLand().key());
+        long cx = Math.floorDiv(w.foundingX(), STEEP_SQUARE), cy = Math.floorDiv(w.foundingY(), STEEP_SQUARE);
+        for (int r = 1; r <= STEEP_RINGS; r++) {
+            for (long i = cx - r; i <= cx + r; i++) {
+                for (long j = cy - r; j <= cy + r; j++) {
+                    if (Math.max(Math.abs(i - cx), Math.abs(j - cy)) != r) continue;
+                    long x0 = i * STEEP_SQUARE, y0 = j * STEEP_SQUARE, dry = 0, steep = 0;
+                    boolean free = true;
+                    for (long x = x0; x < x0 + STEEP_SQUARE && free; x++) {
+                        for (long y = y0; y < y0 + STEEP_SQUARE; y++) {
+                            if (g.getCityLand().ownsPlot(x, y)) { free = false; break; }
+                            if (!World.dry(w.terrainAt(x, y))) continue;
+                            dry++;
+                            if (w.reliefAt(x, y) >= World.STEEP) steep++;
+                        }
+                    }
+                    if (free && steep > 0 && 2 * steep >= dry) return new long[] { x0, y0, steep };
+                }
+            }
+        }
+        return null;
+    }
 
     static void inARealRun(EarthData file) {
         out.println("\n--- 9. how often it fires in a real run: a Medellin city on the real Earth, " + RUN_MONTHS + " months, played as the playtest plays ---");
@@ -867,6 +905,7 @@ public class SlopeCheck {
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         Game g = new Game(GameFiles.scratch("slopecheck-medellin"), LongPlaytest.earthFounding("medellin"));
+        long[] steepBought = { 0 };
         try {
             quietly(() -> {
                 g.run();
@@ -878,6 +917,11 @@ public class SlopeCheck {
                 LongPlaytest.villageBuild(g, "House", 40);
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+                // FS7: the steep ground the run's law is about, bought at the founding (as an offer of it would be, at no price), so the city owns it
+                // in every month the run plays and not only once the land office's offers happen to carry some.
+                long[] sq = steepSquare(g);
+                if (sq != null) g.getLandManager().buyRectForTest(sq[0], sq[1], sq[0] + STEEP_SQUARE, sq[1] + STEEP_SQUARE, g.getMonth());
+                steepBought[0] = sq == null ? -1 : sq[2];
                 LongPlaytest.run(g, 3);
                 LongPlaytest.villageBuild(g, "House", 20);
                 LongPlaytest.run(g, 4);
@@ -925,12 +969,14 @@ public class SlopeCheck {
         }
         check("the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, "
                         + LongPlaytest.findings.keySet(), g.getMonth() >= RUN_MONTHS && LongPlaytest.findings.isEmpty());
-        check("the preparation fires: orders charged one, foothill prepared, its points billed", g.preparationOrders() > 0 && prepared > 0 && billed > 0);
-        check("...its points are a share of the points billed, more than nothing and less than the whole", all > billed && billed > 0);
+        // FS7: how often the preparation fires here is this run's path, printed above and not asserted; section 5's city of foothill causes it, and its
+        // price and its books are sections 4 to 6's. What holds of any run is asserted: its points are never more than the builders billed.
+        check("...the preparation's points are a share of the points billed, never more than the whole", all >= billed && billed >= 0);
         check("...the foothill buildings stand on never exceeds the foothill, and it is all prepared",
                 lm.getBuildingsOnFoothillSqFt() <= lm.getFoothillSqFt() + eps && lm.getPreparedSqFt() >= lm.getBuildingsOnFoothillSqFt() - eps);
-        report("fixture: the city owns steep ground by the end, which the land office's offers carry with the rest - more than the flat and foothill it can build on",
-                lm.getSlopeSqFt() > 0 && lm.getOwnedSqFt() > lm.getFlatSqFt() + lm.getFoothillSqFt(),
+        report("fixture: the city owns steep ground by the end, a square of it bought at the founding (" + STEEP_SQUARE + " plots a side, " + steepBought[0]
+                        + " of its plots steep) - more than the flat and foothill it can build on",
+                steepBought[0] > 0 && lm.getSlopeSqFt() > 0 && lm.getOwnedSqFt() > lm.getFlatSqFt() + lm.getFoothillSqFt(),
                 String.format("%.3f km2 steep of %.3f km2 owned", LandManager.km2(lm.getSlopeSqFt()), LandManager.km2(lm.getOwnedSqFt())));
         check("...and no building stands on it: buildings and the runs off the steep never exceed the flat and foothill, the works' and the runs' parts on the steep alone, and the steep not used is idle",
                 buildings <= lm.getFlatSqFt() + lm.getFoothillSqFt() + eps && lm.getWorksOnSlopeSqFt() <= lm.getSlopeSqFt() + eps

@@ -91,15 +91,22 @@ import java.util.function.Predicate;
  *      landmass does not print. The mode `--probe <folder>` (not a section) reads the newest save under a folder with no Game and
  *      prints what the city owns off its home landmass; it runs only when asked.
  *  12. GROWN ACROSS LANDMASSES. A city that owns the island for 24 months, then the two terminals by the card's path,
- *      then 480 months (96 until SL1, 2026-10-28: a terminal is 4.4 times the construction points): every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
+ *      then 480 months (96 until SL1, 2026-10-28: a terminal is 4.4 times the construction points), and on past them while the
+ *      terminals' wait is open (FS7: a site is given twice the builders' work owed on site at its order, Wait): every month the books are consistent (the linked free ground fits, the unlinked terminals' ground
  *      is the placements', the placements are the buildings' counts, and no works stands on a field across the water: getSites() is
  *      the pieces on linked ground, counted apart, and the works standing fit them) - the 24 months of a city that grows, and of a
  *      city on the island itself that owns the mainland's field of iron across the water. The map of each is asked every twelve months what it
  *      draws on ground no port links (nothing), and with home filled by a fixture (orders until the linked free ground is under half the
- *      island's buildable ground) the map's districts on the island hold buildings. The audit sees books gone stale: the books by
+ *      island's buildable ground, the ground read in the instant of the orders: FF1, FS7) the map's districts on the island hold buildings.
+ *      In AL1's twin the ground is cut before every month, the link ordered and both terminals built with it cut. The audit sees books gone stale: the books by
  *      landmass are a fresh recount's, and land bought with the books never told is named.
  *  13. THE FULL FILE. The delta's islands read Rotterdam's landmass in the model's reader, Goeree does not; PEI is apart,
- *      Halifax and Dartmouth one, Medellin on 2; Rotterdam played 1,200 months, the books audited at every look.
+ *      Halifax and Dartmouth one, Medellin on 2; Rotterdam played 1,200 months, the books audited at every look; whether the test
+ *      player placed a terminal off home is printed, the run's path (FS7: its buying is section 8's, its linking IslandLinkCheck 8's).
+ *
+ * The waits on the builders (sections 5, 6 and 12, and IslandLinkCheck's and BridgeCheck's that borrow it) are Wait: a site on site
+ * stands once the builders' work since its order covers twice what was owed on site then, the water fill's own bound with room for
+ * what is ordered after; never a count of months measured on a path.
  *
  * Every premise is asserted before what rests on it. The full-file section prints one line and skips without
  * -Dcbs.earth.
@@ -1511,10 +1518,59 @@ public class LandmassCheck {
     }
 
     /**
-     * Months a General Cargo Terminal is given to stand on a city's builders: 400. It was 80 for a terminal of 35,000 construction points;
-     * SL1 (2026-10-28) made it one of 155,556, 4.4 times as many, so the same fixture is given a longer run, not a looser assertion.
+     * The builders' work a wait on site is given, as many times the points owed on the city's sites when it began (FS7): 2. A site on site
+     * stands at the latest once the builders have done that work since: the month's output is shared among the sites that owe
+     * (BuildingManager.siteShares(), a water fill), so everything owed when the wait began is done once the work since covers it and what
+     * the city ordered after it - the second half is for those. It replaced TERMINAL_MONTHS, 400 months measured when SL1 made a terminal of
+     * 155,556 points; a ceiling in months at the builders' nameplate (getTotalConstructionCapacity()) failed in FS7's first try, the
+     * village's builders growing depots they cannot staff (1,280 points a month of nameplate, about 780 worked).
      */
-    static final int TERMINAL_MONTHS = 400;
+    static final double STAND_WORK = 2;
+
+    /** Months running in which the builders put nothing on site that end a wait as a fixture failure: 24. */
+    static final int STALL_MONTHS = 24;
+
+    /**
+     * A wait on the builders (FS7): the points owed on site when it began, and their work since - each month's output after the repairs
+     * (Game.getBuildingOutput()), read before the month: the sites' advance is the month's first act, on the output struck at the last
+     * month's end (SimulationEngine), so the figure read after a month is the next one's. Read after, FS7's second try closed a shell's
+     * demolition of 48 points in its first month on the 99 points of the month after it, the month it was done in.
+     */
+    static final class Wait {
+        final Game g;
+        final double owed;
+        double work, next;
+        int months, idle;
+
+        Wait(Game g) { this.g = g; this.owed = g.getBuildingManager().pointsOwedOnSite(); this.next = Math.max(0, g.getBuildingOutput()); }
+
+        /** Whether the wait may go on: the work since it began is short of STAND_WORK times what was owed, and the builders have not stood idle STALL_MONTHS running. */
+        boolean open() { return work < STAND_WORK * owed && idle < STALL_MONTHS; }
+
+        /** A month played: its work counted, the output read before it; and the next month's read. */
+        void month() {
+            double out = next;
+            work += out;
+            months++;
+            idle = out > 0 ? 0 : idle + 1;
+            next = Math.max(0, g.getBuildingOutput());
+        }
+
+        /** The wait as a line's detail says it. */
+        String says(boolean done) {
+            return String.format("%s %d months, the builders' work %,.0f points against %,.0f owed on site when it began", done ? "stood in" : "not done in", months, work, owed);
+        }
+    }
+
+    /** Months played quietly until `done` holds while the wait is open (FS7); the wait, whose open() says the ceiling passed first, which fails the reading as a fixture. */
+    static Wait untilStood(City c, java.util.function.BooleanSupplier done) {
+        Wait wait = new Wait(c.g);
+        while (!done.getAsBoolean() && wait.open()) {
+            quietly(() -> c.g.simulateMonths(1));
+            wait.month();
+        }
+        return wait;
+    }
 
     /**
      * Shore plots the square of home's open coast must hold in section 10: 90. It was 60 for terminals of 3 x 4 plots; SL1 (2026-10-28) made the
@@ -1522,7 +1578,7 @@ public class LandmassCheck {
      */
     static final long HOME_COAST_SHORE = 90;
 
-    /** Months section 12 runs after its two terminals are ordered: 480 (it was 96, for terminals of 35,000 points; see TERMINAL_MONTHS). */
+    /** Months section 12 runs after its two terminals are ordered, for its audit's breadth: 480 (it was 96, for terminals of 35,000 points; the link itself waits on the builders, Wait). */
     static final int GROWN_MONTHS = 480;
 
     /** Months played quietly until `done` holds, at most `most`; whether it does. */
@@ -1610,8 +1666,9 @@ public class LandmassCheck {
                 String.format("room %,.0f -> %,.0f; allocated %,.0f -> %,.0f; linked free %,.1f", room, lms.portRoomSqFt(648), alloc0, lm.getAllocatedSqFt(), lm.getAvailableSqFt()));
         check("it is on site, not standing, and a terminal on site links nothing: the island holds none of the city's standing terminals",
                 standing(c, gc) == 0 && onSite(c, gc) == 1 && !lms.linked(648) && lms.portsOn(648)[general] == 0 && lms.hasPlacements());
-        boolean built = until(c, () -> standing(c, gc) >= 1, TERMINAL_MONTHS);
-        report("the terminal stands after some months", built, "month " + g.getMonth());
+        Wait first = untilStood(c, () -> standing(c, gc) >= 1);
+        boolean built = standing(c, gc) >= 1;
+        report("the terminal stands within twice the builders' work owed on site when it was ordered", built, "month " + g.getMonth() + ": " + first.says(built));
         check("standing alone on the island it links nothing: one port makes no sea route, and it is counted on the island", built && !lms.linked(648) && lms.anyUnlinked()
                 && lms.portsOn(648)[general] == 1 && lms.portsOn(home)[general] == 0 && near(lms.unlinkedPortsSqFt(), land));
         // Home's coast, and a terminal for it on site.
@@ -1622,13 +1679,13 @@ public class LandmassCheck {
         check("a terminal for home is placed (SUCCESS) and is on site: the island is not linked while it is", order(c, gc, 1, false, Landmasses.RULE) == Game.BuildResult.SUCCESS
                 && onSite(c, gc) == 1 && standing(c, gc) == 1 && !lms.linked(648) && lms.portsOn(home)[general] == 0);
         boolean early = false;
-        int months = 0;
-        while (standing(c, gc) < 2 && months < TERMINAL_MONTHS) {
+        Wait homeWait = new Wait(g);
+        while (standing(c, gc) < 2 && homeWait.open()) {
             quietly(() -> g.simulateMonths(1));
-            months++;
+            homeWait.month();
             early |= lms.linked(648) && standing(c, gc) < 2;
         }
-        check("the island stayed unlinked every month the home terminal was on site", !early && standing(c, gc) == 2);
+        report("the island stayed unlinked every month the home terminal was on site", !early && standing(c, gc) == 2, homeWait.says(standing(c, gc) == 2));
         report("the month it stood the island was linked: the linked set moved once, nothing is unlinked, each landmass holds its terminal",
                 lms.linked(648) && !lms.anyUnlinked() && lms.version() == version + 1 && lms.portsOn(home)[general] == 1 && lms.portsOn(648)[general] == 1 && lm.getUnlinkedFreeSqFt() == 0
                         && lm.getLinkedOwnedSqFt() == lm.getOwnedSqFt(),
@@ -1667,8 +1724,8 @@ public class LandmassCheck {
                 stateOf(s));
         check("the shell restarted is on site for the island again, oldest first, and the island is still unlinked", s.g.restartShell(id) && onSite(s, gc) == 1 && !ls.linked(648)
                 && s.g.getBuildingManager().getControl().shellOf(id) == null);
-        boolean standsAgain = until(s, () -> standing(s, gc) >= 2, TERMINAL_MONTHS);
-        check("...and when it stands the island is linked", standsAgain && ls.linked(648) && ls.portsOn(648)[general] == 1);
+        Wait again = untilStood(s, () -> standing(s, gc) >= 2);
+        report("...and when it stands the island is linked", standing(s, gc) >= 2 && ls.linked(648) && ls.portsOn(648)[general] == 1, again.says(standing(s, gc) >= 2));
 
         // The third landmass.
         Square third = thirdLandmass(c.w, data);
@@ -1781,9 +1838,10 @@ public class LandmassCheck {
                 back.getLoadFailure() == null && stateOf(c).equals(GSON.toJson(back.getLandManager().landmassState())) && near(back.getLandManager().getLandmasses().portRoomSqFt(648), room0)
                         && back.getLandManager().getLandmasses().linked(648),
                 back.getLoadFailure() == null ? stateOf(c) : back.getLoadFailure());
-        boolean done = until(c, () -> g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
-        check("the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving", done
-                && near(lms.portRoomSqFt(648), room0 + land) && lm.landmassState() != null && lm.landmassState().leaving.isEmpty() && lms.portsOn(648)[general] == 1);
+        Wait down = untilStood(c, () -> g.getBuildingManager().getControl().demolitions().isEmpty());
+        boolean done = g.getBuildingManager().getControl().demolitions().isEmpty();
+        report("the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving", done
+                && near(lms.portRoomSqFt(648), room0 + land) && lm.landmassState() != null && lm.landmassState().leaving.isEmpty() && lms.portsOn(648)[general] == 1, down.says(done));
         // A lone terminal on an island no port links: demolished, it keeps the island's unlinked ground until the demolition is done.
         City u = portCity(f, "landmass-demolish-lone", false);
         Landmasses lu = u.books();
@@ -1793,12 +1851,13 @@ public class LandmassCheck {
         check("it may be demolished (it links nothing)", u.g.demolishable(gcU) == 1 && u.g.demolish(gcU, 1));
         check("...the ground it holds is the island's still while the demolition is on site: the unlinked sums, the linked allocated ground and the room are as they were",
                 near(lu.unlinkedPortsSqFt(), land) && near(u.lm.getLinkedAllocatedSqFt(), linkedAlloc) && near(lu.portRoomSqFt(648), roomU) && near(u.lm.getAllocatedSqFt(), alloc));
-        boolean doneU = until(u, () -> u.g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
+        Wait downU = untilStood(u, () -> u.g.getBuildingManager().getControl().demolitions().isEmpty());
+        boolean doneU = u.g.getBuildingManager().getControl().demolitions().isEmpty();
         report("...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, the room is whole again and"
                         + " the whole island is unbuilt (the investors built on at home meanwhile, so the allocated ground itself is not the terminal's to read)",
                 doneU && lu.unlinkedPortsSqFt() == 0 && near(u.lm.getAllocatedSqFt(), u.lm.getLinkedAllocatedSqFt()) && near(lu.portRoomSqFt(648), roomU + land)
                         && near(u.lm.getUnlinkedFreeSqFt(), lu.rows().get(1).dryPlots() * SQ_FT_PER_PLOT),
-                String.format("allocated %,.0f -> %,.0f", alloc, u.lm.getAllocatedSqFt()));
+                String.format("allocated %,.0f -> %,.0f; ", alloc, u.lm.getAllocatedSqFt()) + downU.says(doneU));
         // A shell demolished likewise.
         City h = portCity(f, "landmass-demolish-shell", false);
         Landmasses lh = h.books();
@@ -1813,8 +1872,9 @@ public class LandmassCheck {
         report("demolishing the shell keeps its units leaving by the demolition's id, holding the island's ground until it is done", shellDown && dh != null && sh != null && sh.leaving.size() == 1
                 && sh.leaving.get(0).demolition == dh.id && sh.leaving.get(0).landmasses.length == 1 && sh.leaving.get(0).landmasses[0] == 648 && near(lh.portRoomSqFt(648), roomH)
                 && h.g.getBuildingManager().getControl().shellOf(id) == null, stateOf(h));
-        boolean doneH = until(h, () -> h.g.getBuildingManager().getControl().demolitions().isEmpty(), TERMINAL_MONTHS);
-        check("...and when it is done the room is whole again and nothing is placed", doneH && near(lh.portRoomSqFt(648), roomH + land) && !lh.hasPlacements());
+        Wait downH = untilStood(h, () -> h.g.getBuildingManager().getControl().demolitions().isEmpty());
+        boolean doneH = h.g.getBuildingManager().getControl().demolitions().isEmpty();
+        report("...and when it is done the room is whole again and nothing is placed", doneH && near(lh.portRoomSqFt(648), roomH + land) && !lh.hasPlacements(), downH.says(doneH));
     }
 
     /* =====================================================================
@@ -3095,6 +3155,9 @@ public class LandmassCheck {
         boolean island = orderOn(c, gc, 1, false, 648) == Game.BuildResult.SUCCESS;
         boolean atHome = order(c, gc, 1, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         look.run();
+        // FS7: the two terminals are given twice the builders' work owed on site at the orders (Wait), not GROWN_MONTHS measured; the run plays GROWN_MONTHS
+        // whatever the month of the link, for the audit's breadth, and on past them only while the link's wait is open.
+        Wait linkWait = new Wait(g);
         // Home filled by a fixture: houses ordered until the linked free ground is below half the island's buildable ground. The island is linked, so the map's districts there are room, and the houses home has no room for are drawn on the island.
         // WN3 (after EM1): this ran after the 480 months, on a city the run had left with its linked ground free: until EM1 the grown city stood still
         // from month 312 (528 buildings, about 2,300 people, 43.8M sq ft of linked ground free at month 504; BK1's merge point gives the same figures
@@ -3106,9 +3169,10 @@ public class LandmassCheck {
         int filledWith = 0, onIsland = 0;
         int[] afterFilled = { -1 };
         boolean filledLinked = false, filledClean = false;
-        for (int m = 0; m < GROWN_MONTHS; m++) {
+        for (int m = 0; m < GROWN_MONTHS || (month648 < 0 && linkWait.open()); m++) {
             quietly(() -> g.simulateMonths(1));
             look.run();
+            if (month648 < 0) linkWait.month();
             if (month648 < 0 && lms.linked(648)) {
                 month648 = g.getMonth();
                 Landmasses.Row isl = lms.rows().get(1);
@@ -3120,20 +3184,24 @@ public class LandmassCheck {
                     if (order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
                     filledWith += n;
                 }
+                // FF1 item 1 (FS7): the linked free ground is read in the instant the houses are ordered, no month between - the auto-builder is on, and the
+                // month after the fill buys ground and frees it again (main 69a29638 read 12,178,110 sq ft there against the half's 12,094,868). The books are
+                // audited in the same instant; the map is read after the month that draws the houses, and audited there with every other month.
+                filledAvailable = c.lm.getAvailableSqFt();
+                filledLinked = lms.linked(648);
+                filledClean = audit(g) == null;
                 quietly(() -> g.simulateMonths(1));
                 look.run();
                 CityMap filledMap = g.getCityMap();
                 onIsland = boxesOnLandmass(filledMap, w, 648, mtx0, mty0, 4);
                 afterFilled = drawnOnUnlinked(filledMap, w, land, lms, mtx0, mty0, 4);
-                filledAvailable = c.lm.getAvailableSqFt();
-                filledLinked = lms.linked(648);
-                filledClean = audit(g) == null && g.getMapFailures() == 0;
+                filledClean &= g.getMapFailures() == 0;
             }
             if (lms.anyUnlinked()) unlinkedMonths++;
         }
         report("24 months with the island owned and no terminal: it stays unlinked, owned and counted, and no investor's refusal hides it", stillUnlinked && unlinkedFree > 0, clause);
         report("the two terminals by the card's path (the island's, then home's) are placed, and the island is linked once both stand", island && atHome && month648 > 0 && !lms.anyUnlinked(),
-                "linked in month " + month648);
+                "linked in month " + month648 + ", " + linkWait.says(month648 > 0));
         report(audits[0] + " looks, every month of the run (24 and then 480): the books are consistent - linked free ground fits, the unlinked terminals' ground is the placements', the placements are the buildings' counts, no works stands on an unlinked field",
                 audits[1] == 0 && audits[0] >= 24 + GROWN_MONTHS, first[0] == null ? unlinkedMonths + " months with ground unlinked" : first[0]);
         report(mapLooks[0] + " looks of the map, every twelve months of the run (24 and then 480): no building box, street, run or siding is drawn on the island while no port links it, and the map kept up every month",
@@ -3225,15 +3293,20 @@ public class LandmassCheck {
         report("...until a terminal stands the island stays unlinked, owned and counted: its ground is in the books, the free ground of it is no room, and nothing more is ordered for it",
                 lms.anyUnlinked() && !lms.linked(648) && c.lm.getUnlinkedFreeSqFt() > 0 && lms.rows().size() == 2 && lms.rows().get(1).buildableSqFt() > 0 && BuildAdvice.linkFor(g) == null,
                 String.format("the island's free ground %,.0f sq ft, owned %,.0f", c.lm.getUnlinkedFreeSqFt(), c.lm.getOwnedSqFt()));
+        // FS7: the two terminals the pass ordered are built together, the ground still cut before each month so that the town orders nothing beside
+        // them that needs ground, and they are given twice the builders' work owed on site now (Wait), not TERMINAL_MONTHS (400, measured at SL1).
         int month648 = -1;
-        for (int m = 0; m < TERMINAL_MONTHS && month648 < 0; m++) {
+        Wait wait = new Wait(g);
+        while (month648 < 0 && wait.open()) {
+            quietly(() -> c.lm.setAllocatedSqFt(c.lm.getLinkedOwnedSqFt() + lms.unlinkedPortsSqFt()));
             quietly(() -> g.simulateMonths(1));
+            wait.month();
             looks++;
             if (audit(g) != null) bad++;
             if (lms.linked(648)) month648 = g.getMonth();
         }
         report("...and once both terminals stand it is linked, nothing is unlinked, and the books were consistent at every one of the " + looks + " looks",
-                month648 > 0 && !lms.anyUnlinked() && bad == 0, "linked in month " + month648);
+                month648 > 0 && !lms.anyUnlinked() && bad == 0, "linked in month " + month648 + ", " + wait.says(month648 > 0));
     }
 
     /* =====================================================================
@@ -3327,9 +3400,11 @@ public class LandmassCheck {
         Landmasses lms = g.getLandManager().getLandmasses();
         check("the run played its months and found nothing: every month passed the playtest's audit, " + LongPlaytest.findings.keySet(), g.getMonth() >= RUN_MONTHS && LongPlaytest.findings.isEmpty());
         report(looks[0] + " looks, the books audited at each (section 12's audit): consistent", looks[0] > 0 && looks[1] == 0, first[0] == null ? "" : first[0]);
-        check("the test player never builds a terminal off its home landmass (it never links an island)", g.getLandManager().landmassState() == null);
-        out.printf("      %d months in %d s: %d looks owned ground off home, %d looks had an offer off home, %d looks had an ISLAND offer; the city ends owning %d landmass%s%n", g.getMonth(),
-                (System.currentTimeMillis() - started) / 1000, looks[2], looks[3], looks[4], lms.rows().size(), lms.rows().size() == 1 ? "" : "es");
+        // FS7: whether the test player ever placed a terminal off home is this run's path, counted and not asserted: what it buys from a shelf of nothing but
+        // ground across the water is section 8's (caused), and how it links an island it owns, IslandLinkCheck 8's.
+        out.printf("      %d months in %d s: %d looks owned ground off home, %d looks had an offer off home, %d looks had an ISLAND offer; the city ends owning %d landmass%s,"
+                        + " %s%n", g.getMonth(), (System.currentTimeMillis() - started) / 1000, looks[2], looks[3], looks[4], lms.rows().size(), lms.rows().size() == 1 ? "" : "es",
+                g.getLandManager().landmassState() == null ? "no terminal placed off home" : "terminals placed: " + GSON.toJson(g.getLandManager().landmassState()));
         out.println("      ITS LANDMASSES AT THE END: " + describe(lms.rows()));
     }
 
