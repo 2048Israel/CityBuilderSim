@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,219 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,220 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -8605,7 +8605,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2492 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
   - L2632 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
 
-## EducationCheck.java - 164 labelled assertions
+## EducationCheck.java - 165 labelled assertions
 
 > Verifies the schools: who gets taught, who is allowed to practise, and what
 > it costs. Not part of the game.
@@ -8769,58 +8769,59 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1209 ...and so is what a household pays out of pocket
   - L1210 at x1 the fee is the founding fee, bit for bit
   - L1213 the schools clamp the scale to the policy's ceiling
-  - L1253 the schools charge at the city's scale
-  - L1254 fixture: the price is what decides here - x3 cuts the willing share, not the seats
-  - L1256 a poor city at x3 enrols fewer than at x1: the trap is back
-  - L1261 at x0 everybody who would go can afford to
-  - L1262 ...so everybody the cap lets go, goes
-  - L1264 ...and more than at x3
-  - L1265 a free place bills nothing and forgoes nothing
-  - L1266 the treasury's fee revenue is the scaled fees households paid
-  - L1278 ...and it collects more at the door at x3, from the students it kept
-- **L1281 16. ALL THREE SURVIVE A SAVE**
-  - L1294 fixture: a tuition-share grant was struck and interest was charged
-  - L1296 the city saved
-  - L1299 ...and loaded
-  - L1301 the grant's basis and amount came back
-  - L1303 ...and the loan rate
-  - L1304 ...and the tuition scale
-  - L1305 ...and the schools charge at it from the first read
-  - L1307 ...and the ledger knows the rate
-  - L1308 fixture: the rule re-struck from the reloaded city would not reproduce it - the body moved on
-  - L1310 the bill the month struck came back as the save struck it, not re-derived
-  - L1312 ...and so did the interest line
-  - L1316 a policy array from before the dials is still read
-  - L1317 ...as the old founding basis at the share its own slot carried, no interest, the founding price
-  - L1327 ...and an old save's own wage share is the grant it had
-  - L1329 a wrong shape is still refused whole
-  - L1338 an array from before the real grant is still read
-  - L1340 ...and its fixed grant, nominal then, pays at the load month's index what it paid
-  - L1344 ...once
-  - L1348 ...while a save from 0.7.19 on carries a real amount, and it is left alone
-- **L1351 17. A PRICE PER SCHOOL (0.7.6)**
-- **L1360 a price per school**
-  - L1373 raising the university's price moves its fee and no other kind's
-  - L1374 ...so the nine have parted
-  - L1375 ...and the every-school reading is the first kind's, unmoved
-  - L1379 one kind is held to the policy's ceiling
-  - L1386 the every-school setter moves all nine
-  - L1394 the array carries the nine on the end
-  - L1400 ...and each kind's scale comes back as it went
-  - L1403 an array of the old length is still read
-  - L1409 ...as nine equal scales, the one its slot carried
-  - L1425 fixture: the schools cost something and collected something
-  - L1426 the kinds' costs add up to the staff and buildings the page shows, to the cent
-  - L1428 ...and their fees to the tuition households paid, to the cent
-  - L1430 a kind with no school costs nothing and collects nothing
-  - L1432 ...and the university, standing, costs something
-  - L1434 the month re-struck at today's scales is what was billed
-  - L1446 the month charges the university at its own price and the college at the city's
-  - L1450 the city saved again
-  - L1453 ...and loaded
-  - L1455 the nine came back parted
-  - L1458 ...and the load path told the schools the nine, not the one
-  - L1463 ...and the month by kind came back with the save, not zero
+  - L1272 the schools charge at the city's scale
+  - L1273 fixture: the price is what decides here - x3 cuts the willing share, not the seats
+  - L1275 fixture: at x1 and x3 no university filled in five years, so the willing, not the seats, set every intake
+  - L1277 a poor city at x3 enrols fewer than at x1: the trap is back
+  - L1282 at x0 everybody who would go can afford to
+  - L1283 ...so everybody the cap lets go, goes
+  - L1285 ...and more than at x3
+  - L1286 a free place bills nothing and forgoes nothing
+  - L1287 the treasury's fee revenue is the scaled fees households paid
+  - L1299 ...and it collects more at the door at x3, from the students it kept
+- **L1302 16. ALL THREE SURVIVE A SAVE**
+  - L1315 fixture: a tuition-share grant was struck and interest was charged
+  - L1317 the city saved
+  - L1320 ...and loaded
+  - L1322 the grant's basis and amount came back
+  - L1324 ...and the loan rate
+  - L1325 ...and the tuition scale
+  - L1326 ...and the schools charge at it from the first read
+  - L1328 ...and the ledger knows the rate
+  - L1329 fixture: the rule re-struck from the reloaded city would not reproduce it - the body moved on
+  - L1331 the bill the month struck came back as the save struck it, not re-derived
+  - L1333 ...and so did the interest line
+  - L1337 a policy array from before the dials is still read
+  - L1338 ...as the old founding basis at the share its own slot carried, no interest, the founding price
+  - L1348 ...and an old save's own wage share is the grant it had
+  - L1350 a wrong shape is still refused whole
+  - L1359 an array from before the real grant is still read
+  - L1361 ...and its fixed grant, nominal then, pays at the load month's index what it paid
+  - L1365 ...once
+  - L1369 ...while a save from 0.7.19 on carries a real amount, and it is left alone
+- **L1372 17. A PRICE PER SCHOOL (0.7.6)**
+- **L1381 a price per school**
+  - L1394 raising the university's price moves its fee and no other kind's
+  - L1395 ...so the nine have parted
+  - L1396 ...and the every-school reading is the first kind's, unmoved
+  - L1400 one kind is held to the policy's ceiling
+  - L1407 the every-school setter moves all nine
+  - L1415 the array carries the nine on the end
+  - L1421 ...and each kind's scale comes back as it went
+  - L1424 an array of the old length is still read
+  - L1430 ...as nine equal scales, the one its slot carried
+  - L1446 fixture: the schools cost something and collected something
+  - L1447 the kinds' costs add up to the staff and buildings the page shows, to the cent
+  - L1449 ...and their fees to the tuition households paid, to the cent
+  - L1451 a kind with no school costs nothing and collects nothing
+  - L1453 ...and the university, standing, costs something
+  - L1455 the month re-struck at today's scales is what was billed
+  - L1467 the month charges the university at its own price and the college at the city's
+  - L1471 the city saved again
+  - L1474 ...and loaded
+  - L1476 the nine came back parted
+  - L1479 ...and the load path told the schools the nine, not the one
+  - L1484 ...and the month by kind came back with the save, not zero
 
 ## ElectrolyserCheck.java - 71 labelled assertions
 
