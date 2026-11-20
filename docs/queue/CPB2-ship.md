@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CPB2-SdfZd3lQ -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — CPB2, no feed bought for undemanded output that cannot cover it — 2026-11-20, ready, see docs/queue/CPB2-notes.md
 After CPB1's buffer gate, three paths still let a works buy imported feed for output that no one at home wanted and that the world paid less for than it cost. Sector now closes all three.
