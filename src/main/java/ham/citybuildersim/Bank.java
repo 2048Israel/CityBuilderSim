@@ -6306,6 +6306,47 @@ public class Bank {
     /** ...and the same of the sheet a year ago; nothing when none is on file. */
     public double yearAgoResidual() { return knowsYearAgo() ? residual(this::yearAgo) : 0; }
 
+    /*
+     * WHEN THE LINES DO NOT ADD UP (BI1, 2026-11-20). The Bank page raised "Its lines do not add up" and "Its
+     * two parts do not add up to its equity" on an absolute $5 (.005 of a thousand), and a double's own step at
+     * 1e13 is .002: KeptCheck's city of 4,820 months lit both on float dust alone, a sum of a dozen figures
+     * each carrying its rounding in. The audit never judged a residual so (a cent, or a part in ten million of
+     * what moved: LongPlaytest.audit(), and the same line in a dozen harnesses); the page's test is the same,
+     * the size the figures it adds, and the model's own, so the screen reads one verdict and recomputes none.
+     */
+
+    /** The share of a book's size its integrity tests let through as rounding: a part in ten million, the audit's own (LongPlaytest.audit()). */
+    public static final double INTEGRITY_RELATIVE = 1e-7;
+
+    /** How far lines that add up to a book of this size may miss: MoneyAudit.CENT, or INTEGRITY_RELATIVE of the size, whichever is more. */
+    public static double integrityTolerance(double size) {
+        return Math.max(MoneyAudit.CENT, INTEGRITY_RELATIVE * Math.abs(size));
+    }
+
+    /** Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not (the page says so, as it said of nothing before). */
+    public static boolean addsUp(double residual, double size) {
+        return Math.abs(residual) <= integrityTolerance(size);
+    }
+
+    /** The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). */
+    public double sheetSize() { return sizeOf(this::sheet); }
+
+    /** ...the sheet a year ago; nothing when none is on file. */
+    public double yearAgoSheetSize() { return knowsYearAgo() ? sizeOf(this::yearAgo) : 0; }
+
+    /** True when its lines add up, to a cent or a part in INTEGRITY_RELATIVE of the sheet's size: the page's "Its lines do not add up" is its opposite. */
+    public boolean sheetAddsUp() { return addsUp(sheetResidual(), sheetSize()); }
+
+    /** ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. */
+    public boolean yearAgoSheetAddsUp() { return !knowsYearAgo() || addsUp(yearAgoResidual(), yearAgoSheetSize()); }
+
+    private static double sizeOf(java.util.function.ToDoubleFunction<Sheet> at) {
+        double size = Math.abs(at.applyAsDouble(Sheet.EQUITY));
+        for (Sheet s : SHEET_ASSETS) size += Math.abs(at.applyAsDouble(s));
+        for (Sheet s : SHEET_LIABILITIES) size += Math.abs(at.applyAsDouble(s));
+        return size;
+    }
+
     /** The other side of the sheet: its liabilities and its equity together. */
     public double liabilitiesAndEquity() { return sheet(Sheet.LIABILITIES) + sheet(Sheet.EQUITY); }
 
@@ -6749,6 +6790,14 @@ public class Bank {
     public double equitySplitResidual() {
         return splitKnown ? paidInCapital() + retainedEarnings() + preferredOutstanding() - equity() : 0;
     }
+
+    /** The size of what the split is read against: the magnitudes of its three parts and of equity, each carrying its own rounding into the sum; nothing when !knowsEquitySplit(). */
+    public double equitySplitSize() {
+        return splitKnown ? Math.abs(paidInCapital()) + Math.abs(retainedEarnings()) + Math.abs(preferredOutstanding()) + Math.abs(equity()) : 0;
+    }
+
+    /** True when the parts add up to equity, to a cent or a part in INTEGRITY_RELATIVE of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. */
+    public boolean equitySplitAddsUp() { return !splitKnown || addsUp(equitySplitResidual(), equitySplitSize()); }
 
     /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */
     public double paidInOpening()   { return splitKnown ? paidInOpening : 0; }
