@@ -127,4 +127,4 @@ the step stays grey and the alert absent while its movement foots.
 
 No dry run (the pick is not ALL). The two trace runs: main 865a7171c in `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-BI2-main-865a7171c/`
 (`main.log` and the eight `main-*.csv`), this branch in `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-BI2-mine/` (`mine.log`,
-`mine-*.csv`), commit dd75a68dd. Main's classes were built apart in a detached worktree at `C:/Users/Jerus/AppData/Local/Temp/cbs-bi2-main`.
+`mine-*.csv`), commit dd75a68dd. Main's classes were built apart in a detached worktree (`cbs-bi2-main` in the same folder), removed after the run.
