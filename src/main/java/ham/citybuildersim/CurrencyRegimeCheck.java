@@ -317,13 +317,14 @@ public class CurrencyRegimeCheck {
         if (causesHeldOff) city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the peg fixtures stand on a town that taxes from month 1, whose
-            // hot money, drawn by the dial, outruns its current account's deficit so that a month at the peg is a surplus (and, since XR5, strengthens the shadow under the peg: the vault buys the lift). A 1900 town has no income
-            // tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg is US$124k a month against a deficit on current account of
-            // US$212k (the vault sells, 0 bought), and with every lever open it is US$326k (the vault buys US$115k the month after the peg). Opened, and the defaults put
-            // back, before a month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the peg fixtures
+            // stand on a town that taxes from month 1, whose hot money, drawn by the dial, outruns its current account's deficit so that a month
+            // at the peg is a surplus (and, since XR5, strengthens the shadow under the peg: the vault buys the lift). Until OP1 a 1900 town had
+            // no income tax until 1916-17 and no sales tax until 1920: with the merge the town's financial inflow at the peg was US$124k a month
+            // against a deficit on current account of US$212k (the vault sells, 0 bought), and with every lever open it was US$326k (the vault
+            // buys US$115k the month after the peg). Since OP1 every lever is open from the founding, and the defaults are put back before a
+            // month has run, as MonetaryCheck 5 and the cities of RailDepotCheck do.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(30_000_000);
             if (depotsStanding > 0) city.buildStack(ForeignCheck.template(city, "Construction Depot"), depotsStanding, true);

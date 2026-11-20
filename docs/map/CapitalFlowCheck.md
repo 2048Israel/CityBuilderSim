@@ -1,4 +1,4 @@
-# CapitalFlowCheck.java - 781 lines · 9 methods · 0 constants · harnesses
+# CapitalFlowCheck.java - 780 lines · 9 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CapitalFlowCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -43,8 +43,8 @@
 | 188 | · 5. painful, never fatal |
 | 215 | · 6. it reaches the bank |
 | 276 | · 7. in a real city, and across a reload |
-| 396 | · 8. and the city's own money goes the other way |
-| 494 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
+| 395 | · 8. and the city's own money goes the other way |
+| 493 | · 9. the coupon abroad is profit, kept abroad (HD1, HD2) |
 
 ## Fields (state)
 
@@ -53,20 +53,20 @@
 | 38 | `static int fails` |  |
 | 39 | `static PrintStream out` |  |
 | 40 | `static PrintStream quiet` |  |
-| 765 | `static boolean fixtureListBuilt` | BA1, 2026-11-04: whether section 7's whole build list was taken (see the comment where it is ordered). |
+| 764 | `static boolean fixtureListBuilt` | BA1, 2026-11-04: whether section 7's whole build list was taken (see the comment where it is ordered). |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 36 | 746 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
+| 36 | 745 | **type** `public class CapitalFlowCheck` | Hot money: does it come for the right reason, and does it leave for one? |
 | 42 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 47 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 58 | 5 | `static void calm(CapitalFlows f, double cityRate, double reserves, int month)` | A quiet month with no shock in it. |
-| 64 | 663 | `public static void main(String[] args) throws Exception` |  |
-| 729 | 19 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
-| 750 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
-| 756 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
-| 768 | 6 | `static boolean order(Game game, String name, int quantity)` | An order paid out of cash: the treasury is raised to the order's quote if the queue's price outran it; true if the order was taken. |
-| 775 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 64 | 662 | `public static void main(String[] args) throws Exception` |  |
+| 728 | 19 | `static Game couponCity(String label)` | A plain founding city two years on: its builders have earned, so a sector is in profit and the profit tax has something to take (HD1). |
+| 749 | 4 | `static void quietMonth(Game g)` | One month of a city, its log kept quiet. |
+| 755 | 7 | `static MoneyAudit.Result bop(double exports, double imports, double investedAbroad)` | A month at the city's edge: goods in and out, and money the sectors sent abroad. |
+| 767 | 6 | `static boolean order(Game game, String name, int quantity)` | An order paid out of cash: the treasury is raised to the order's quote if the queue's price outran it; true if the order was taken. |
+| 774 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

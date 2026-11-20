@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.161 — OP1, every policy open from the first month — 2026-11-19, ready, see docs/queue/OP1-notes.md
+Every Policy lever is open from a city's founding, in every city. The profit, wage and sales taxes
+open at 15%; the pension, its contribution, EI, student aid and the health premium open at zero. The
+minimum wage binds and zoning is free. Money's dial, target, holdings and regime are the player's
+(or the rule's) from January 1900. The Policy, Zoning and Trade screens show no dates or shut cards,
+and the inbox's "a lever opens" notices are gone. A law find opens nothing now; its text says so.
+History's regimes stay history's: a 1900 city founds on gold at par, tied to the US rate; 1914 and
+1931 float a dollar still on it, 1926 puts a floating one back, and a player may leave it any month.
+PolicyOpenCheck replaces PolicyDatesCheck. No format bump: an old save's openings are ignored.
+
 ### 0.9.160 — R1e, a new building's equipment priced and saved at its order — 2026-11-19, ready, see docs/queue/R1e-notes.md
 A new building's equipment is now chosen when its order is quoted and
 accepted, not when it opens. In a city founded the 1900 way, where a plant

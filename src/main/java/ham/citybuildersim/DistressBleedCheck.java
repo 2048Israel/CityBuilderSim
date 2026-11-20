@@ -144,11 +144,10 @@ public class DistressBleedCheck {
             return read();
         }
 
-        /** The cause: the minimum wage law opened and the floor lifted. Opened by the lever's own date rule, as BusinessServicesCheck does. */
+        /** The cause: the floor lifted (the minimum wage law is open from the founding since OP1; the fixture opened it here before). */
         void raiseFloor() {
             if (foundingFloor == 0) foundingFloor = city.getLabourMarket().getMinimumWage();
             quietly(() -> {
-                city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
                 city.getLabourMarket().setFloorBinding(true);
                 city.getLabourMarket().setMinimumWage(foundingFloor * FLOOR_TIMES);
             });

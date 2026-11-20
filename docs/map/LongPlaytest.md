@@ -1,4 +1,4 @@
-# LongPlaytest.java - 9,660 lines · 179 methods · 143 constants · harnesses
+# LongPlaytest.java - 9,657 lines · 179 methods · 143 constants · harnesses
 
 `ham/citybuildersim/LongPlaytest.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -30,7 +30,7 @@
 > problem that starts at month 900 and a problem that starts at month 3 are
 > different problems.
 
-**Uses:** [Game](Game.md) (174), [MoneyAudit](MoneyAudit.md) (107), [Good](Good.md) (49), [BuildAdvice](BuildAdvice.md) (47), [Sector](Sector.md) (46), [BusinessDebtManager](BusinessDebtManager.md) (39), [Equity](Equity.md) (39), [Sectors](Sectors.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (34), [CityMap](CityMap.md) (34), [Ports](Ports.md) (30), [Exchange](Exchange.md) (28), [Founding](Founding.md) (24), [CareType](CareType.md) (23), [GameFiles](GameFiles.md) (21), [Bank](Bank.md) (20), [LandManager](LandManager.md) (19), [PriceLevel](PriceLevel.md) (18), [TreasuryFund](TreasuryFund.md) (15), [AgeBand](AgeBand.md) (14), [WageBand](WageBand.md) (14), [SpreadPlanner](SpreadPlanner.md) (14), [Crime](Crime.md) (13), [DebtManager](DebtManager.md) (13), [LandParcel](LandParcel.md) (13), [BuildingManager](BuildingManager.md) (12), [OldMetal](OldMetal.md) (12), [JobType](JobType.md) (11), [TaxPolicy](TaxPolicy.md) (11), [EconomyManager](EconomyManager.md) (10)... and 86 more
+**Uses:** [Game](Game.md) (174), [MoneyAudit](MoneyAudit.md) (107), [Good](Good.md) (49), [BuildAdvice](BuildAdvice.md) (47), [Sector](Sector.md) (46), [BusinessDebtManager](BusinessDebtManager.md) (39), [Equity](Equity.md) (39), [Sectors](Sectors.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (34), [CityMap](CityMap.md) (34), [Ports](Ports.md) (30), [Exchange](Exchange.md) (28), [Founding](Founding.md) (24), [CareType](CareType.md) (23), [GameFiles](GameFiles.md) (21), [Bank](Bank.md) (20), [LandManager](LandManager.md) (19), [PriceLevel](PriceLevel.md) (18), [TreasuryFund](TreasuryFund.md) (15), [AgeBand](AgeBand.md) (14), [WageBand](WageBand.md) (14), [SpreadPlanner](SpreadPlanner.md) (14), [Crime](Crime.md) (13), [DebtManager](DebtManager.md) (13), [LandParcel](LandParcel.md) (13), [BuildingManager](BuildingManager.md) (12), [OldMetal](OldMetal.md) (12), [JobType](JobType.md) (11), [TaxPolicy](TaxPolicy.md) (11), [EconomyManager](EconomyManager.md) (10)... and 85 more
 
 **Used by (73):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildingStackCheck](BuildingStackCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CarCheck](CarCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChildcareCheck](ChildcareCheck.md), [ClockCheck](ClockCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [DenominationCheck](DenominationCheck.md), [DeterminismCheck](DeterminismCheck.md), [ER1Check](ER1Check.md), [EarthFoundingCheck](EarthFoundingCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FollowBench](FollowBench.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [GdpCheck](GdpCheck.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [GroceryCheck](GroceryCheck.md), [HarbourRenders](HarbourRenders.md), [HomeRailCheck](HomeRailCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassRenders](LandClassRenders.md), [LandmassCheck](LandmassCheck.md), [LuxuryRetailCheck](LuxuryRetailCheck.md), [MapCheck](MapCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [MortgageCheck](MortgageCheck.md), [OilCheck](OilCheck.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OwnerCheck](OwnerCheck.md), [PlanCheck](PlanCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RankingsCheck](RankingsCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [ResearchCheck](ResearchCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RoadCheck](RoadCheck.md), [RunRenders](RunRenders.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [ShadowBasket](ShadowBasket.md), [ShortSellingCheck](ShortSellingCheck.md), [SicknessCheck](SicknessCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [UiProbe](UiProbe.md), [Village1900Check](Village1900Check.md), [WellCheck](WellCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -499,7 +499,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 9616 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
+| 45 | 9613 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
 
 ### FINDINGS (lines 53-71)
 
@@ -788,7 +788,7 @@
 | 8414 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
 | 8422 | 57 | `static String era(Game g, String label)` |  |
 
-### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8480-9660)
+### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8480-9657)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -798,7 +798,7 @@
 | 8585 | 8 | `private static void probeRun(Game g, int months)` |  |
 | 8594 | 7 | `static String money(double v)` |  |
 | 8602 | 7 | `static void cleanUp(Path root)` |  |
-| 8625 | 1035 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 8625 | 1032 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
 | 8629 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
 | 8634 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
 | 8640 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
@@ -813,5 +813,5 @@
 | 8751 | 27 | `static Game upkeepCity(GameFiles files, boolean office)` _(in LongPlaytest.MoneyFixtures)_ | HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. |
 | 8785 | 20 | `static Game foundingCity(GameFiles files)` _(in LongPlaytest.MoneyFixtures)_ | HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months, the town whose sectors have issued bonds the households hold, and whose household... |
 | 8807 | 4 | `static double upkeepBills(Game c)` _(in LongPlaytest.MoneyFixtures)_ | The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). |
-| 8812 | 847 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8812 | 844 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
 

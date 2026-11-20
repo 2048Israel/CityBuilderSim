@@ -2266,10 +2266,17 @@ public class BuildCardCheck {
                     said != null && said.equals(shortOf.decision().refusal("House", shortOf.tested(), shortOf.insured()))
                     && said.startsWith("Holding: needs "));
 
-            // 3. A till of nine tenths of the cost: the loan is small, the rent covers it - and a raised insured rate takes that away.
-            economy.setSectorCash(re, .9 * cost);
+            // 3. A till of nine tenths of the cost or more: the loan is small, the rent covers it - and a raised insured rate takes that away.
+            // OP1: from nine tenths up by hundredths until the rent covers the payment half again what the lender asks, short of the whole
+            // cost; with the builders' sales tax open from the founding a tenth of a House is a dearer loan than its rent covered at 1900.
+            double share = .9;
+            economy.setSectorCash(re, share * cost);
+            while (share < .99 && !(g.lenderTest(re, house).coverage() >= 1.5 * Mortgage.MORTGAGE_DEBT_COVERAGE)) {
+                share += .01;
+                economy.setSectorCash(re, share * cost);
+            }
             Game.LenderTest passes = g.lenderTest(re, house);
-            assertTrue("fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment",
+            assertTrue(String.format("fixture: with %.0f%% of a House in the till the lender is still asked, and the rent covers the payment", share * 100),
                     !passes.outright() && !passes.shortOfDown() && passes.passes() && passes.coverage() >= passes.asks());
             assertTrue("A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick",
                     BuildCard.investors(g, house).own() == null

@@ -1735,12 +1735,12 @@ public class CentralBankCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): this fixture's premise is a surplus over the last year
-            // to pay a slice with, and the town it was written against taxes from month 1. A 1900 town has no income tax to 1916-17 and no sales tax to 1920: its
-            // treasury ran D$135.7k under over months 61 to 72 (against the slice of D$5.2k), where main's path ran D$250.6k over. Every lever open and the defaults
-            // put back, before a month has run (MonetaryCheck 5).
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): this fixture's
+            // premise is a surplus over the last year to pay a slice with, and the town it was written against taxes from month 1. Until OP1 a
+            // 1900 town had no income tax to 1916-17 and no sales tax to 1920: its treasury ran D$135.7k under over months 61 to 72 (against the
+            // slice of D$5.2k), where main's path ran D$250.6k over. Since OP1 every lever is open from the founding, and the defaults are put
+            // back before a month has run (MonetaryCheck 5).
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.getForeignAccounts().pinRate(1.0);
             /* ...AND EVERY SECTOR HELD, SO THE TREASURY KEEPS ITS SURPLUS (GW1). The fixture's premise is last year's surplus, and its question is how that
                surplus pays a slice, not what the businesses build. On GW1's path (the staffing gate counts the workers an order's posts would draw,

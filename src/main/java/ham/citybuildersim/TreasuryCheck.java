@@ -747,13 +747,12 @@ public class TreasuryCheck {
     }
 
     /**
-     * THE LEVERS OPENED IN THE FIXTURE (R0): this harness audits the treasury's bridge with its taxes, premiums and grant flowing, and on
-     * history's dates they are shut until 1916-1966 (held at zero, their setters refusing). Every lever opened and the defaults put back,
-     * before a month has run.
+     * THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): this harness audits the treasury's bridge with its taxes, premiums and grant flowing, and
+     * until OP1 on history's dates they were shut until 1916-1966 (held at zero, their setters refusing). Since OP1 every lever is open from the
+     * founding, and the defaults are put back before a month has run.
      */
     static void openTheLevers(Game g) {
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
     }
 
     /** A city founded as a player founds one: newGame(), so it rolls in the same structure. */

@@ -553,15 +553,14 @@ public class FloatLinkCheck {
         city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): this town, and DeskCheck's through readyCity() (the only other
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, a fixture condition; OP1): this town, and DeskCheck's through readyCity() (the only other
             // caller), was written against a city that taxes from month 1: its households' spare for paper sizes every sale, and the near-par
-            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). A 1900 town has no
-            // income tax to 1916-17 and no sales tax to 1920, and plays another: the 2-year floater's effective rate stands 17 basis points
-            // off its coupon and the fee's share, a linker's quote for the cash it must bring does not cover it, and a five-point rise of
-            // the dial leaves a line worth more than the books carry it at (DeskCheck's fixture). Every lever opened and the defaults put
-            // back, before a month has run.
+            // assertions read the sale's fixed fee against that size ("the asks were too small for the fixed fee" below). Until OP1 a 1900 town
+            // had no income tax to 1916-17 and no sales tax to 1920, and played another: the 2-year floater's effective rate stood 17 basis
+            // points off its coupon and the fee's share, a linker's quote for the cash it must bring did not cover it, and a five-point rise of
+            // the dial left a line worth more than the books carry it at (DeskCheck's fixture). Since OP1 every lever is open from the founding,
+            // and the defaults are put back before a month has run.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);

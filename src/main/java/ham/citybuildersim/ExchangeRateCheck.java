@@ -1026,7 +1026,7 @@ public class ExchangeRateCheck {
     static void inThe1900City() {
         out.println("\n--- 8b. the 1900 city's D$: gold, the August 1914 suspension and the 1926 return ---");
         Tally t = new Tally();
-        int suspension = PolicyDates.openingMonth(PolicyDates.Lever.POLICY_RATE);
+        int suspension = PolicyDates.GOLD_SUSPENDED;
         Game g = playtestCity("exchange-rate-1900", suspension - 1, t,
                 LongPlaytest.founding().withUnfitted(true));
         ForeignAccounts fx = g.getForeignAccounts();

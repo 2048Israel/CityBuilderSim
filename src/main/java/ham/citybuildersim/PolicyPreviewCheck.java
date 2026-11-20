@@ -149,10 +149,10 @@ public class PolicyPreviewCheck {
         g.quietTheWorldForTheD();
         quietly(() -> {
             g.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0): the previews are of dials that exist, and on history's dates the taxes, the pension, EI
-            // and the rest are shut until 1916-1966. Every lever opened and the defaults put back, before a month has run.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the previews are of dials that exist, and until OP1 on history's dates the taxes,
+            // the pension, EI and the rest were shut until 1916-1966. Since OP1 every lever is open from the founding, and the defaults are put
+            // back before a month has run.
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
             // LD1 (2026-10-31): Freight builds no Rail Depot here. WN3 held Cement & Concrete too (its Lime Kiln, 45 months on site,
@@ -964,7 +964,6 @@ public class PolicyPreviewCheck {
         Game twin = new Game(new GameFiles(root.resolve("city"), root.resolve("city-no-legacy")));
         quietly(() -> twin.loadGameSave(11));
         LabourMarket twinLm = twin.getLabourMarket();
-        twin.getEconomyManager().getTaxPolicy().openAll();
         twinLm.setMinimumWage(stagedUp);
         quietly(() -> twin.simulateMonths(1));
         FloorView applied = FloorView.of(twin, twinLm.getMinimumWage());

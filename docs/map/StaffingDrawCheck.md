@@ -1,4 +1,4 @@
-# StaffingDrawCheck.java - 1,095 lines · 50 methods · 16 constants · harnesses
+# StaffingDrawCheck.java - 1,108 lines · 51 methods · 16 constants · harnesses
 
 `ham/citybuildersim/StaffingDrawCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -38,23 +38,23 @@
 >      Migration.BRAKE_FROM_MONTH (the villages are that old); and past Migration.ARRIVALS_STOP_OUT_OF_WORK it is nothing, and the
 >      order the village passed is refused. A village younger than BRAKE_FROM_MONTH draws the unbraked draw whole, past the stop too.
 
-**Uses:** [Sector](Sector.md) (71), [Migration](Migration.md) (61), [Game](Game.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (25), [WageBand](WageBand.md) (24), [PopulationManager](PopulationManager.md) (16), [JobType](JobType.md) (13), [BuildCard](BuildCard.md) (10), [Founding](Founding.md) (7), [GameFiles](GameFiles.md) (5), [PayTier](PayTier.md) (4), [FamilyModel](FamilyModel.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [RealEstate](RealEstate.md) (2), [EducationType](EducationType.md) (2), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [TempDirs](TempDirs.md) (1), [ArrivalMix](ArrivalMix.md) (1)
+**Uses:** [Sector](Sector.md) (71), [Migration](Migration.md) (61), [Game](Game.md) (36), [BuildingsTemplate](BuildingsTemplate.md) (26), [WageBand](WageBand.md) (24), [PopulationManager](PopulationManager.md) (16), [JobType](JobType.md) (15), [BuildCard](BuildCard.md) (10), [Founding](Founding.md) (7), [GameFiles](GameFiles.md) (5), [PayTier](PayTier.md) (4), [FamilyModel](FamilyModel.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [NewUnit](NewUnit.md) (2), [RealEstate](RealEstate.md) (2), [EducationType](EducationType.md) (2), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [TempDirs](TempDirs.md) (1), [ArrivalMix](ArrivalMix.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 98 | · the helpers |
-| 400 | 1. a village with room: the draw passes what the spare does not |
-| 445 | 2. a city with no room: the draw refuses what the spare refuses |
-| 484 | 3. the pulls turn the draw down |
-| 553 | 4. the Shared Services Centre in a town without its bands is still refused |
-| 665 | 5. the hold's words name both counts |
-| 698 | 6. a loaded city's gate is its twin's |
-| 814 | 7. how often the draw opens an order in a played city |
-| 862 | 8. the gap's positive part: only what the order makes positive is drawn |
-| 937 | 9. within the room: no more than the doors last month left free |
-| 990 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
+| 413 | 1. a village with room: the draw passes what the spare does not |
+| 458 | 2. a city with no room: the draw refuses what the spare refuses |
+| 497 | 3. the pulls turn the draw down |
+| 566 | 4. the Shared Services Centre in a town without its bands is still refused |
+| 678 | 5. the hold's words name both counts |
+| 711 | 6. a loaded city's gate is its twin's |
+| 827 | 7. how often the draw opens an order in a played city |
+| 875 | 8. the gap's positive part: only what the order makes positive is drawn |
+| 950 | 9. within the room: no more than the doors last month left free |
+| 1003 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
 
 ## Constants
 
@@ -75,7 +75,7 @@
 | 87 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
 | 88 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 89 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 865 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
+| 878 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
 
 ## Fields (state)
 
@@ -86,17 +86,17 @@
 | 92 | `static boolean villagePassed` | Carried from section 1 to section 2: whether the village's order passed. |
 | 95 | `static Sector.Staffing noRoomRefusal` | Carried from section 2 to section 5: the order the city with no room refused, and the works it was. |
 | 96 | `static String noRoomName` |  |
-| 325 | `final Sector sector` |  |
-| 326 | `final BuildingsTemplate template` |  |
-| 327 | `final double posts` |  |
+| 338 | `final Sector sector` |  |
+| 339 | `final BuildingsTemplate template` |  |
+| 340 | `final double posts` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1048 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
+| 48 | 1061 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
 
-### the helpers (lines 98-399)
+### the helpers (lines 98-412)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -108,97 +108,98 @@
 | 137 | 20 | `static Game town(Path root, String name, Founding founding)` | A village founded as given: roads, homes, shops, farms, bakeries, power and water (FittingCheck.village()), in a folder of the harness's own. |
 | 159 | 3 | `static void month(Game g)` | One month, quietly. |
 | 164 | 3 | `static void step(Game g)` | One press of the clock, as the player's button makes it, quietly. |
-| 169 | 5 | `static double posts(BuildingsTemplate t)` | The posts of a building, all bands. |
-| 176 | 5 | `static double posts(BuildingsTemplate t, WageBand band)` | The posts of a building in one wage band. |
-| 182 | 5 | `static double sum(double[] a)` |  |
-| 188 | 4 | `static boolean allZero(double[] a)` |  |
-| 193 | 3 | `static String pct(double share)` |  |
-| 197 | 3 | `static String bands(double[] a)` |  |
-| 207 | 3 | `static long employedBeside(long spare)` | The workers the village already employs, in unskilled posts, beside {@code spare} workers it has no post for: so few of its labour force are out of work that the share stays under Migration.HEALTHY_OUT_OF_WORK, where ... |
-| 212 | 3 | `static void seatOutOfWork(PopulationManager people, long workers, double share)` | The village as seat() has it, but employing as many beside its spare workers as leave this share of its labour force out of work (to a person). |
-| 222 | 3 | `static void seat(PopulationManager people, long workers)` | The village's people and its workforce: this many spare workers, half of them with a diploma, beside the workers it employs in posts of its own (employedBeside()), the labour force WORKFORCE_SHARE of the people. |
-| 227 | 8 | `static void seatWith(PopulationManager people, long workers, long employed)` | As seat(), employing this many beside the spare workers: the village's out-of-work share is the spare over the two. |
-| 237 | 7 | `static long seatFor(PopulationManager people, Sector owner, BuildingsTemplate t, Predicate<Sector.Staffing> wanted)` | The fewest workers, seated, at which the works' staffing is as wanted; -1 where none up to MOST_WORKERS is (the village is left at MOST_WORKERS). |
-| 246 | 4 | `static double addition(Game g, double posts)` | The order's addition to migration's target, in people: JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw. |
-| 252 | 3 | `static double gapNow(Game g)` | The gap migration's target stands over the population now, in people (below 0 where the population is the larger). |
-| 257 | 4 | `static double closed(Migration m)` | The share of a gap that GATE_DRAW_MONTHS months close, at last month's crowding. |
-| 263 | 5 | `static double uncappedPeople(Game g, double posts)` | The people an order of this many posts would draw over the window before the room: the part of the gap the order makes positive, closed. |
-| 270 | 3 | `static double roomLeft(Migration m)` | The people the doors last month left free after its own arrivals; unbounded where the city has no census to place them against (lastRoom NaN). |
-| 275 | 3 | `static double expectedPeople(Game g, double posts)` | The people Migration.drawFor() is to count for an order of this many posts: the uncapped draw, within the room, cut by the brake (WG2). |
-| 280 | 4 | `static double expectedDraw(Game g, BuildingsTemplate t)` | The workers Migration.drawFor() is to bring for one of this works: the formula in the model's own constants and last-month scalars. |
-| 286 | 3 | `static double workersOf(Game g, double people)` | The workers a number of drawn people come to in this city: the people over the population, times the workforce. |
-| 291 | 3 | `static double pulls(Migration m)` | The pulls on the jobs' draw: the rent's and the crime's, never above 1; senior care lifts the homes' draw only (WG2). |
-| 296 | 3 | `static double brake(Game g)` | The share of the arrivals migration's brake lets through in this city now: 1 at and under the healthy out-of-work rate, 0 at and past the stop (WG2). |
-| 301 | 5 | `static void makeOld(Migration mig)` | Makes this Migration an old city's: Migration.BRAKE_FROM_MONTH months of the same steady wage recorded, so its brake acts and no tier declines (WG2). |
-| 311 | 5 | `static void drawIsClear(String when, Game g, BuildingsTemplate t)` | A fixture of the sections that read the draw as the order's whole addition: the gap is positive without the order, the room does not bind, and the village is out of work under the healthy rate so the brake is whole (W... |
-| 318 | 4 | `static boolean zeroToTheBit(double[] a)` | Whether every drawn figure is positive zero, to the bit. |
-| 324 | 13 | **type** `static final class Ask` | One order a city could ask about: its sector, the building and its posts. |
-| 329 | 5 | `Ask(Sector sector, BuildingsTemplate template, double posts)` _(in StaffingDrawCheck.Ask)_ |  |
-| 335 | 1 | `Sector.Staffing staffing()` _(in StaffingDrawCheck.Ask)_ |  |
-| 339 | 10 | `static java.util.List<Ask> asksOf(Game g)` | Every building of the city that has posts, with its sector: the orders the gate is asked about. |
-| 355 | 3 | `static void roomMonth(Migration mig)` | Migration's month struck on households with doors enough: its crowding reads 1, and the pulls are the ones set. |
-| 360 | 10 | `static void roomMonth(Migration mig, double seniorCoverage)` | ...with this share of the seniors who need a place in senior care placed (1 is full coverage: the senior care pull at its most). |
-| 372 | 7 | `static void noRoomMonth(Migration mig)` | Migration's month struck on the same households and no door at all: the crowding floor, and its crowding reads 0. |
-| 380 | 19 | `public static void main(String[] args) throws Exception` |  |
+| 174 | 6 | `static double posts(Game g, BuildingsTemplate t)` | The posts of one new building of `t` in this city, all bands: what Sector.staffing() asks the draw for, NewUnit.of()'s jobs. |
+| 182 | 5 | `static double posts(BuildingsTemplate t)` | The posts of a building, all bands. |
+| 189 | 5 | `static double posts(BuildingsTemplate t, WageBand band)` | The posts of a building in one wage band. |
+| 195 | 5 | `static double sum(double[] a)` |  |
+| 201 | 4 | `static boolean allZero(double[] a)` |  |
+| 206 | 3 | `static String pct(double share)` |  |
+| 210 | 3 | `static String bands(double[] a)` |  |
+| 220 | 3 | `static long employedBeside(long spare)` | The workers the village already employs, in unskilled posts, beside {@code spare} workers it has no post for: so few of its labour force are out of work that the share stays under Migration.HEALTHY_OUT_OF_WORK, where ... |
+| 225 | 3 | `static void seatOutOfWork(PopulationManager people, long workers, double share)` | The village as seat() has it, but employing as many beside its spare workers as leave this share of its labour force out of work (to a person). |
+| 235 | 3 | `static void seat(PopulationManager people, long workers)` | The village's people and its workforce: this many spare workers, half of them with a diploma, beside the workers it employs in posts of its own (employedBeside()), the labour force WORKFORCE_SHARE of the people. |
+| 240 | 8 | `static void seatWith(PopulationManager people, long workers, long employed)` | As seat(), employing this many beside the spare workers: the village's out-of-work share is the spare over the two. |
+| 250 | 7 | `static long seatFor(PopulationManager people, Sector owner, BuildingsTemplate t, Predicate<Sector.Staffing> wanted)` | The fewest workers, seated, at which the works' staffing is as wanted; -1 where none up to MOST_WORKERS is (the village is left at MOST_WORKERS). |
+| 259 | 4 | `static double addition(Game g, double posts)` | The order's addition to migration's target, in people: JOB_WEIGHT x posts x last month's residents a job x the pulls on the jobs' draw. |
+| 265 | 3 | `static double gapNow(Game g)` | The gap migration's target stands over the population now, in people (below 0 where the population is the larger). |
+| 270 | 4 | `static double closed(Migration m)` | The share of a gap that GATE_DRAW_MONTHS months close, at last month's crowding. |
+| 276 | 5 | `static double uncappedPeople(Game g, double posts)` | The people an order of this many posts would draw over the window before the room: the part of the gap the order makes positive, closed. |
+| 283 | 3 | `static double roomLeft(Migration m)` | The people the doors last month left free after its own arrivals; unbounded where the city has no census to place them against (lastRoom NaN). |
+| 288 | 3 | `static double expectedPeople(Game g, double posts)` | The people Migration.drawFor() is to count for an order of this many posts: the uncapped draw, within the room, cut by the brake (WG2). |
+| 293 | 4 | `static double expectedDraw(Game g, BuildingsTemplate t)` | The workers Migration.drawFor() is to bring for one of this works: the formula in the model's own constants and last-month scalars. |
+| 299 | 3 | `static double workersOf(Game g, double people)` | The workers a number of drawn people come to in this city: the people over the population, times the workforce. |
+| 304 | 3 | `static double pulls(Migration m)` | The pulls on the jobs' draw: the rent's and the crime's, never above 1; senior care lifts the homes' draw only (WG2). |
+| 309 | 3 | `static double brake(Game g)` | The share of the arrivals migration's brake lets through in this city now: 1 at and under the healthy out-of-work rate, 0 at and past the stop (WG2). |
+| 314 | 5 | `static void makeOld(Migration mig)` | Makes this Migration an old city's: Migration.BRAKE_FROM_MONTH months of the same steady wage recorded, so its brake acts and no tier declines (WG2). |
+| 324 | 5 | `static void drawIsClear(String when, Game g, BuildingsTemplate t)` | A fixture of the sections that read the draw as the order's whole addition: the gap is positive without the order, the room does not bind, and the village is out of work under the healthy rate so the brake is whole (W... |
+| 331 | 4 | `static boolean zeroToTheBit(double[] a)` | Whether every drawn figure is positive zero, to the bit. |
+| 337 | 13 | **type** `static final class Ask` | One order a city could ask about: its sector, the building and its posts. |
+| 342 | 5 | `Ask(Sector sector, BuildingsTemplate template, double posts)` _(in StaffingDrawCheck.Ask)_ |  |
+| 348 | 1 | `Sector.Staffing staffing()` _(in StaffingDrawCheck.Ask)_ |  |
+| 352 | 10 | `static java.util.List<Ask> asksOf(Game g)` | Every building of the city that has posts, with its sector: the orders the gate is asked about. |
+| 368 | 3 | `static void roomMonth(Migration mig)` | Migration's month struck on households with doors enough: its crowding reads 1, and the pulls are the ones set. |
+| 373 | 10 | `static void roomMonth(Migration mig, double seniorCoverage)` | ...with this share of the seniors who need a place in senior care placed (1 is full coverage: the senior care pull at its most). |
+| 385 | 7 | `static void noRoomMonth(Migration mig)` | Migration's month struck on the same households and no door at all: the crowding floor, and its crowding reads 0. |
+| 393 | 19 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. a village with room: the draw passes what the spare does not (lines 400-444)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 402 | 42 | `static long sectionOne(Path root)` |  |
-
-### 2. a city with no room: the draw refuses what the spare refuses (lines 445-483)
+### 1. a village with room: the draw passes what the spare does not (lines 413-457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 447 | 36 | `static void sectionTwo(Path root)` |  |
+| 415 | 42 | `static long sectionOne(Path root)` |  |
 
-### 3. the pulls turn the draw down (lines 484-552)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 491 | 61 | `static void sectionThree(Path root, long workers)` | The pulls on the jobs' draw are the rent's and the crime's; senior care lifts the homes' draw only, since WG2 (section 10). |
-
-### 4. the Shared Services Centre in a town without its bands is still refused (lines 553-664)
+### 2. a city with no room: the draw refuses what the spare refuses (lines 458-496)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 555 | 109 | `static void sectionFour(Path root)` |  |
+| 460 | 36 | `static void sectionTwo(Path root)` |  |
 
-### 5. the hold's words name both counts (lines 665-697)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 667 | 30 | `static void sectionFive(Path root)` |  |
-
-### 6. a loaded city's gate is its twin's (lines 698-813)
+### 3. the pulls turn the draw down (lines 497-565)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 700 | 113 | `static void sectionSix(Path root)` |  |
+| 504 | 61 | `static void sectionThree(Path root, long workers)` | The pulls on the jobs' draw are the rent's and the crime's; senior care lifts the homes' draw only, since WG2 (section 10). |
 
-### 7. how often the draw opens an order in a played city (lines 814-861)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 816 | 45 | `static void sectionSeven(Path root)` |  |
-
-### 8. the gap's positive part: only what the order makes positive is drawn (lines 862-936)
+### 4. the Shared Services Centre in a town without its bands is still refused (lines 566-677)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 867 | 69 | `static void sectionEight(Path root)` |  |
+| 568 | 109 | `static void sectionFour(Path root)` |  |
 
-### 9. within the room: no more than the doors last month left free (lines 937-989)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 939 | 50 | `static void sectionNine(Path root)` |  |
-
-### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 990-1095)
+### 5. the hold's words name both counts (lines 678-710)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 993 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
-| 997 | 98 | `static void sectionTen(Path root, long workers)` |  |
+| 680 | 30 | `static void sectionFive(Path root)` |  |
+
+### 6. a loaded city's gate is its twin's (lines 711-826)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 713 | 113 | `static void sectionSix(Path root)` |  |
+
+### 7. how often the draw opens an order in a played city (lines 827-874)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 829 | 45 | `static void sectionSeven(Path root)` |  |
+
+### 8. the gap's positive part: only what the order makes positive is drawn (lines 875-949)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 880 | 69 | `static void sectionEight(Path root)` |  |
+
+### 9. within the room: no more than the doors last month left free (lines 950-1002)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 952 | 50 | `static void sectionNine(Path root)` |  |
+
+### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 1003-1108)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1006 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
+| 1010 | 98 | `static void sectionTen(Path root, long workers)` |  |
 

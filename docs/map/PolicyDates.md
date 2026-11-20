@@ -1,135 +1,114 @@
-# PolicyDates.java - 314 lines · 33 methods · 5 constants · model
+# PolicyDates.java - 188 lines · 17 methods · 5 constants · model
 
 `ham/citybuildersim/PolicyDates.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
-> When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the
-> study's entry for it, what Canada first did and on what terms, and how far a law discovery may bring it forward (R0, research-1900.md 7).
+> When Canada first had each of the Policy tab's levers, as history: the game month Canada first had each one in a city founded in January
+> 1900, the study's entry for it, and what Canada first did and on what terms (R0, research-1900.md 7); and the dollar's gold years, the one
+> dated regime the game still plays (R0f).
 > 
-> WHY. Until R0 every lever was open from month 1, so a city founded in January 1900 could tax incomes 17 years before Canada did, set a
-> minimum wage 18 years early and promise old-age pensions 27 years before the country had any: the Policy screen was open in full on the
-> first day, and there was nothing in it to learn. The game's institutions are Canada's (a law, unlike a technology, does not cross borders
-> under licence), so each lever now opens on the date Canada first had it, the inbox says when and on what terms, and the player decides:
-> history is the tutorial. The three income taxes open at the city's founding rate and the promises (the pensions, EI, the health premium,
-> student aid) at zero (opensAtFoundingRate(), call 16). This class is only the dates. Nothing reads it yet (R0's first slice): the gate that holds a lever shut
-> is the second slice's (TaxPolicy's effective rates and setters, the minimum wage, zoning, the save and the inbox) and the Policy screen's
-> drawing of a shut one the third's. Money's two dates are here as data; R0f gates them and the gold years between in a city founded the 1900 way.
+> WHY. R0 (0.9.10x, 2026-11-04) opened each lever on its date, the inbox saying when and on what terms, history as the tutorial; R3 let a
+> law discovery bring one forward by up to four years. Jerus, 2026-11-19 (OP1, which replaced PP1's political points): "everything policy
+> related is available right away, and later ill think of an actual tutorial". So since OP1 nothing in the game opens on these dates: every
+> lever is open from a city's founding, in every city, each as a lever opened under R0 (opensAtFoundingRate(), call 16: the three income
+> taxes at the city's founding rate, every promise at zero; TaxPolicy.openAtFounding()), and only the player moves them. The table stays as
+> the study's record: research.json's law rows carry its dates (ResearchCheck holds the two equal), and a tutorial may read it. The gold
+> years stay history's (OP1 call 2): a city founded the 1900 way is founded on gold at par, which August 1914 suspends, July 1926 restores
+> and September 1931 ends (goldPeriod(), ForeignAccounts.hearMoneyMonth()), unless the player has taken the dollar off it first.
 > 
-> Pure: no state, no instances, no randomness. A lever the study dates by the year alone opens in January of that year, because a month would
-> be a claim the study does not make; one it dates to a month opens in that month.
+> Pure: no state, no instances, no randomness. A lever the study dates by the year alone is Canada's in January of that year, because a
+> month would be a claim the study does not make; one it dates to a month is Canada's in that month.
 
-**Uses:** [CityCalendar](CityCalendar.md) (4), [DecisionLog](DecisionLog.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [CityCalendar](CityCalendar.md) (2)
 
-**Used by (36):** [BusinessServicesCheck](BusinessServicesCheck.md), [CentralBank](CentralBank.md), [DebtManager](DebtManager.md), [DiscoveryCheck](DiscoveryCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MedicineCheck](MedicineCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [NewGameCheck](NewGameCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [WageLadderCheck](WageLadderCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (19):** [DiscoveryCheck](DiscoveryCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ForeignAccounts](ForeignAccounts.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [MedicineCheck](MedicineCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 23 | THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) |
-| 157 | · the dates as game months |
-| 226 | · what the player is told |
+| 24 | THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) |
+| 152 | · the dates as game months |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 42 | `PolicyDates.Lever.POLICY_RATE` | Money, August 1914: the Finance Act let the government lend to the banks. |
-| 45 | `PolicyDates.Lever.PROFIT_TAX` | Taxes, 1916: the first of the game's three income taxes. |
-| 47 | `PolicyDates.Lever.WAGE_TAX` | Taxes, 1917: the game's wage tax, banded, is the personal income tax, so the Income War Tax Act is its date. |
-| 49 | `PolicyDates.Lever.MINIMUM_WAGE` | Wages, 1918: Manitoba and British Columbia, for women (1917 by one source); men mostly in the 1930s (unverified). |
-| 51 | `PolicyDates.Lever.SALES_TAX` | Taxes, 1920. |
-| 53 | `PolicyDates.Lever.ZONING` | Zoning, 1924 (unverified; New York had it in 1916): until then everything is free, the decided default. |
-| 55 | `PolicyDates.Lever.PENSION_REPLACEMENT` | Promises, 1927: the pension's replacement, the promise; its contribution is PENSION_CONTRIBUTION's. |
-| 58 | `PolicyDates.Lever.CENTRAL_BANK` | Money, 11 March 1935: the Bank of Canada opens the rest of Money (the policy rate having opened in 1914). |
-| 60 | `PolicyDates.Lever.STUDENT_AID` | Taxes and Promises, 1939: the grant and the loan rate together. |
-| 62 | `PolicyDates.Lever.EI` | Taxes and Promises, 7 August 1940: the premium and the benefit together; contributions began on 1 July 1941. |
-| 66 | `PolicyDates.Lever.HEALTH_PREMIUM` | Taxes, 1 January 1947: Saskatchewan's public hospital insurance (national cost-sharing followed in 1958). |
-| 68 | `PolicyDates.Lever.PENSION_CONTRIBUTION` | Taxes, 1 January 1966: the contribution, the half of the pension the worker and the employer pay. |
-| 71 | `PolicyDates.Lever.PROPERTY_TAX` | Open from founding: a council's mill rate, municipal before 1900. |
-| 74 | `PolicyDates.Lever.FARMLAND_RELIEF` | Open from founding: relief on the farmland the property tax assesses. |
-| 76 | `PolicyDates.Lever.FOOD_ASSISTANCE` | Open from founding: poor relief predates 1900. |
-| 78 | `PolicyDates.Lever.TRANSIT_FARE` | Open from founding: a fare is a service's own price, and a city set its services. |
-| 80 | `PolicyDates.Lever.TUITION_SCALES` | Open from founding: schools were the school boards', on a school rate. |
-| 82 | `PolicyDates.Lever.HEALTH_FEE_SCALE` | Open from founding: the fee scale on the three care types. |
-| 84 | `PolicyDates.Lever.FUEL_DUTY` | Open from founding: no source dates a fuel duty. |
-| 86 | `PolicyDates.Lever.PORT_DUES` | Open from founding: harbour dues. |
-| 88 | `PolicyDates.Lever.SECTOR_SUBSIDIES` | Open from founding: municipal "bonuses" to attract factories. |
+| 43 | `PolicyDates.Lever.POLICY_RATE` | Money, August 1914: the Finance Act let the government lend to the banks. |
+| 46 | `PolicyDates.Lever.PROFIT_TAX` | Taxes, 1916: the first of the game's three income taxes. |
+| 48 | `PolicyDates.Lever.WAGE_TAX` | Taxes, 1917: the game's wage tax, banded, is the personal income tax, so the Income War Tax Act is its date. |
+| 50 | `PolicyDates.Lever.MINIMUM_WAGE` | Wages, 1918: Manitoba and British Columbia, for women (1917 by one source); men mostly in the 1930s (unverified). |
+| 52 | `PolicyDates.Lever.SALES_TAX` | Taxes, 1920. |
+| 54 | `PolicyDates.Lever.ZONING` | Zoning, 1924 (unverified; New York had it in 1916): until then everything is free, the decided default. |
+| 56 | `PolicyDates.Lever.PENSION_REPLACEMENT` | Promises, 1927: the pension's replacement, the promise; its contribution is PENSION_CONTRIBUTION's. |
+| 59 | `PolicyDates.Lever.CENTRAL_BANK` | Money, 11 March 1935: the Bank of Canada opens the rest of Money (the policy rate having opened in 1914). |
+| 61 | `PolicyDates.Lever.STUDENT_AID` | Taxes and Promises, 1939: the grant and the loan rate together. |
+| 63 | `PolicyDates.Lever.EI` | Taxes and Promises, 7 August 1940: the premium and the benefit together; contributions began on 1 July 1941. |
+| 67 | `PolicyDates.Lever.HEALTH_PREMIUM` | Taxes, 1 January 1947: Saskatchewan's public hospital insurance (national cost-sharing followed in 1958). |
+| 69 | `PolicyDates.Lever.PENSION_CONTRIBUTION` | Taxes, 1 January 1966: the contribution, the half of the pension the worker and the employer pay. |
+| 72 | `PolicyDates.Lever.PROPERTY_TAX` | Open from founding: a council's mill rate, municipal before 1900. |
+| 75 | `PolicyDates.Lever.FARMLAND_RELIEF` | Open from founding: relief on the farmland the property tax assesses. |
+| 77 | `PolicyDates.Lever.FOOD_ASSISTANCE` | Open from founding: poor relief predates 1900. |
+| 79 | `PolicyDates.Lever.TRANSIT_FARE` | Open from founding: a fare is a service's own price, and a city set its services. |
+| 81 | `PolicyDates.Lever.TUITION_SCALES` | Open from founding: schools were the school boards', on a school rate. |
+| 83 | `PolicyDates.Lever.HEALTH_FEE_SCALE` | Open from founding: the fee scale on the three care types. |
+| 85 | `PolicyDates.Lever.FUEL_DUTY` | Open from founding: no source dates a fuel duty. |
+| 87 | `PolicyDates.Lever.PORT_DUES` | Open from founding: harbour dues. |
+| 89 | `PolicyDates.Lever.SECTOR_SUBSIDIES` | Open from founding: municipal "bonuses" to attract factories. |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 147 | `PolicyDates.MAX_EARLY_MONTHS` | `48` | The most months a law discovery may bring a lever forward: four years, the law field's reach (research-1900.md 7.2). |
-| 150 | `PolicyDates.SOURCES` | `"[P4] 3.1: [BURNS], [CYB25], [H1], [H113], [LOP], [SC-UI], [ILO63], [BOC-W], ...` | The sources the table's rows rest on, as the study lists them under it: P4 section 3.1 and the keys in its brackets. |
-| 154 | `PolicyDates.OPEN_SOURCES` | `"research-1900.md 7.1 and [P4] 3.2: in 1900 a Canadian city set only its prop...` | The source for the levers no table row dates: the study's rule for 1900, that a city set its property tax, schools, services and bylaws. |
-| 170 | `PolicyDates.GOLD_RETURN` | `monthOf(1926, 7)` | Canada's return to gold, July 1926 (research-1900.md 7.2). |
-| 173 | `PolicyDates.GOLD_END` | `monthOf(1931, 9)` | Canada's final departure, September 1931, following Britain; the study's 1929-31 interval ends here. |
+| 145 | `PolicyDates.SOURCES` | `"[P4] 3.1: [BURNS], [CYB25], [H1], [H113], [LOP], [SC-UI], [ILO63], [BOC-W], ...` | The sources the table's rows rest on, as the study lists them under it: P4 section 3.1 and the keys in its brackets. |
+| 149 | `PolicyDates.OPEN_SOURCES` | `"research-1900.md 7.1 and [P4] 3.2: in 1900 a Canadian city set only its prop...` | The source for the levers no table row dates: the study's rule for 1900, that a city set its property tax, schools, services and bylaws. |
+| 165 | `PolicyDates.GOLD_SUSPENDED` | `monthOf(1914, 8)` | Canada's suspension of gold, August 1914, when the Finance Act let the government lend to the banks (research-1900.md 7.2). |
+| 168 | `PolicyDates.GOLD_RETURN` | `monthOf(1926, 7)` | Canada's return to gold, July 1926 (research-1900.md 7.2). |
+| 171 | `PolicyDates.GOLD_END` | `monthOf(1931, 9)` | Canada's final departure, September 1931, following Britain; the study's 1929-31 interval ends here. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 90 | `private final String label` |  |
-| 91 | `private final int year` |  |
-| 92 | `private final int monthOfYear` |  |
-| 93 | `private final boolean monthKnown` |  |
-| 94 | `private final boolean open` |  |
-| 95 | `private final String entry` |  |
-| 96 | `private final String act` |  |
-| 97 | `private final String terms` |  |
+| 91 | `private final String label` |  |
+| 92 | `private final int year` |  |
+| 93 | `private final int monthOfYear` |  |
+| 94 | `private final boolean monthKnown` |  |
+| 95 | `private final boolean open` |  |
+| 96 | `private final String entry` |  |
+| 97 | `private final String act` |  |
+| 98 | `private final String terms` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 296 | **type** `public final class PolicyDates` | When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the study's entry for it, what Canada first did and on what terms, and how far a la... |
-| 21 | 1 | `private PolicyDates()` |  |
+| 20 | 169 | **type** `public final class PolicyDates` | When Canada first had each of the Policy tab's levers, as history: the game month Canada first had each one in a city founded in January 1900, the study's entry for it, and what Canada first did and on what terms (R0,... |
+| 22 | 1 | `private PolicyDates()` |  |
 
-### THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) (lines 23-156)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 39 | 103 | **type** `public enum Lever` | The Policy levers that history dates, in the order they open, then the ones open from founding. |
-| 100 | 3 | `Lever(String label, int year, int monthOfYear, String entry, String act, String terms)` _(in PolicyDates.Lever)_ | A lever the study dates to a month. |
-| 105 | 3 | `Lever(String label, int year, String entry, String act, String terms)` _(in PolicyDates.Lever)_ | A lever the study dates by the year alone: it opens in January. |
-| 110 | 3 | `Lever(String label, String reason)` _(in PolicyDates.Lever)_ | A lever open from founding, with the reason. |
-| 114 | 10 | `private Lever(String label, int year, int monthOfYear, boolean monthKnown, boolean open, String entry, String act, String terms)` _(in PolicyDates.Lever)_ |  |
-| 126 | 1 | `public String label()` _(in PolicyDates.Lever)_ | The lever as a player reads it: "income tax". |
-| 128 | 1 | `public int year()` _(in PolicyDates.Lever)_ | The calendar year it opens in. |
-| 130 | 1 | `public int monthOfYear()` _(in PolicyDates.Lever)_ | 1-12; 1 where the study dates it by the year alone. |
-| 132 | 1 | `public boolean monthKnown()` _(in PolicyDates.Lever)_ | Whether the study dates it to a month (else it opens in January of its year). |
-| 134 | 1 | `public String entry()` _(in PolicyDates.Lever)_ | The study's entry key ("PL3", "L5"), or "" for an open lever and for the policy rate. |
-| 136 | 1 | `public String act()` _(in PolicyDates.Lever)_ | The law or body that first had it ("the Income War Tax Act"), or "". |
-| 138 | 1 | `public String terms()` _(in PolicyDates.Lever)_ | Its first terms in a phrase with no full stop; for an open lever, the reason it is open. |
-| 140 | 1 | `public String sources()` _(in PolicyDates.Lever)_ | The sources the terms rest on: SOURCES for a dated lever, OPEN_SOURCES for an open one. |
-
-### the dates as game months (lines 157-225)
+### THE LEVERS AND THEIR DATES (R0, 2026-11-04; docs/studies/research-1900.md 7.1) (lines 24-151)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 160 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month: the epoch's January is month 1, and a date before the epoch is month 1 (open at founding). |
-| 165 | 3 | `public static int openingMonth(Lever lever)` | The game month a lever opens in on Canada's date; 1 for a lever open from founding. |
-| 176 | 3 | `public static boolean isMoney(Lever lever)` | Money follows dated institutions, never a law discovery. |
-| 181 | 4 | `public static int goldPeriod(int month)` | The dated gold episode (1 or 2), or 0 when the dollar floats. |
-| 187 | 3 | `public static boolean isOpen(Lever lever, int gameMonth)` | Whether a lever is open in a game month: from its opening month on. |
-| 192 | 3 | `public static boolean openAtFounding(Lever lever)` | Whether a lever is open in the founding month, the first month of the game. |
-| 201 | 3 | `public static boolean opensAtFoundingRate(Lever lever)` | Whether a lever opens at the city's founding rate (TaxPolicy.DEFAULT_INCOME_TAX) and not at zero: the three income taxes, which fund the city, where a promise (a pension, EI, the health premium, student aid) costs it ... |
-| 206 | 3 | `public static int earliestOpening(Lever lever)` | The earliest month a law discovery may bring a lever to: MAX_EARLY_MONTHS before its opening month, never before month 1. |
-| 211 | 3 | `static int earliestFor(int openingMonth)` | MAX_EARLY_MONTHS before an opening month, floored at month 1 (separate from the lever so the floor can be held on fixtures). |
-| 220 | 5 | `public static Lever leverOf(String code)` | The lever a discovery's code brings forward ("PL3" -> the income tax, "L5" -> the pension contribution), or null for a code that is no lever's key (a blank, a code the table does not date, and every lever that has no ... |
+| 40 | 103 | **type** `public enum Lever` | The Policy levers, the ones history dates in the order Canada had them, then the ones a city set before 1900. |
+| 101 | 3 | `Lever(String label, int year, int monthOfYear, String entry, String act, String terms)` _(in PolicyDates.Lever)_ | A lever the study dates to a month. |
+| 106 | 3 | `Lever(String label, int year, String entry, String act, String terms)` _(in PolicyDates.Lever)_ | A lever the study dates by the year alone: Canada's in January. |
+| 111 | 3 | `Lever(String label, String reason)` _(in PolicyDates.Lever)_ | A lever a city had before 1900, with the reason. |
+| 115 | 10 | `private Lever(String label, int year, int monthOfYear, boolean monthKnown, boolean open, String entry, String act, String terms)` _(in PolicyDates.Lever)_ |  |
+| 127 | 1 | `public String label()` _(in PolicyDates.Lever)_ | The lever as a player reads it: "income tax". |
+| 129 | 1 | `public int year()` _(in PolicyDates.Lever)_ | The calendar year Canada first had it in. |
+| 131 | 1 | `public int monthOfYear()` _(in PolicyDates.Lever)_ | 1-12; 1 where the study dates it by the year alone. |
+| 133 | 1 | `public boolean monthKnown()` _(in PolicyDates.Lever)_ | Whether the study dates it to a month (else January of its year). |
+| 135 | 1 | `public String entry()` _(in PolicyDates.Lever)_ | The study's entry key ("PL3", "L5"), or "" for an undated lever and for the policy rate. |
+| 137 | 1 | `public String act()` _(in PolicyDates.Lever)_ | The law or body that first had it ("the Income War Tax Act"), or "". |
+| 139 | 1 | `public String terms()` _(in PolicyDates.Lever)_ | Its first terms in a phrase with no full stop; for an undated lever, the reason a city had it in 1900. |
+| 141 | 1 | `public String sources()` _(in PolicyDates.Lever)_ | The sources the terms rest on: SOURCES for a dated lever, OPEN_SOURCES for an undated one. |
 
-### what the player is told (lines 226-314)
+### the dates as game months (lines 152-188)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 229 | 3 | `public static String openingDate(Lever lever)` | The date a lever opens as the Policy screen prints it: "1917", "August 1940", or "founding" for a lever open from the start. |
-| 234 | 4 | `private static String dateOf(Lever lever, int openingMonth)` | A lever's opening month as a date: "founding" for month 1 or earlier, the month and year where the study dates it to a month, else the year alone. |
-| 243 | 6 | `public static String named(Lever lever)` | The lever as a player reads it, with its article, lower case: "an income tax", "a profit tax", "student aid", "zoning" (the three that take none: EI, student aid and zoning). |
-| 254 | 3 | `public static String shutLine(Lever lever)` | What a shut lever's card says first, on Canada's date: "Opens 1917 - an income tax: 4% above $1,500 (single) or $3,000; a supertax of 2% to 25%": when it opens, what it is, and Canada's first terms for it. |
-| 259 | 3 | `public static String shutLine(Lever lever, int cityOpeningMonth)` | The same on the city's own opening month (R3's finds move it earlier): the month and year where the study dates it to a month, else the year. |
-| 264 | 3 | `public static String shutWhy(Lever lever)` | What a shut lever's card says second, on Canada's date: "Canada had none until then; the tax opens at the city's founding rate, 15%." |
-| 269 | 6 | `public static String shutWhy(Lever lever, int cityOpeningMonth)` | The same for a city whose opening month a find has moved earlier: then "then" would name the wrong date, so it says history's and the find. |
-| 282 | 6 | `public static String notice(Lever lever)` | The inbox sentence for the month a lever opens: when Canada first had it, under what, on what terms, where it opens (an income tax at the founding rate, the minimum wage's floor at the going unskilled wage, zoning wit... |
-| 294 | 8 | `public static String stillShut(java.util.List<Lever> shut, java.util.function.ToIntFunction<Lever> cityOpeningMonth)` | The one line under a dial that sets several levers at once ("every tax") naming the ones still shut, which it leaves alone: "Still shut, so this dial leaves them alone: profit tax (opens 1916) and sales tax (opens 192... |
-| 304 | 10 | `static String opensAt(Lever lever)` | Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. |
+| 155 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month: the epoch's January is month 1, and a date before the epoch is month 1. |
+| 160 | 3 | `public static int canadaMonth(Lever lever)` | The game month Canada first had a lever in; 1 for a lever a city had before 1900. |
+| 174 | 4 | `public static int goldPeriod(int month)` | The dated gold episode (1 from the epoch to GOLD_SUSPENDED, 2 from GOLD_RETURN to GOLD_END), or 0 between and after. |
+| 185 | 3 | `public static boolean opensAtFoundingRate(Lever lever)` | Whether a lever opens at the city's founding rate (TaxPolicy.DEFAULT_INCOME_TAX) and not at zero: the three income taxes, which fund the city, where a promise (a pension and its contribution, EI, the health premium, s... |
 

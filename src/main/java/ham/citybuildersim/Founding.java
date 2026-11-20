@@ -559,13 +559,13 @@ public final class Founding {
     }
 
     /**
-     * The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE).
-     * A bare policy hears no month and has every lever open, so it quoted the old 15% while a city on history's dates (R0) charges nothing
-     * until the sales tax opens in 1920: the policy is told it is month 1, the founding month, as a city's is (Game.policyHearsTheMonth()).
+     * The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE),
+     * opened as a city's is at its founding (TaxPolicy.openAtFounding(), OP1: the sales tax at the founding rate; from R0 to OP1 it was
+     * nothing until 1920).
      */
     public static double foundingBuildersRate() {
         TaxPolicy founding = new TaxPolicy();
-        founding.setMonth(1);
+        founding.openAtFounding();
         return founding.effectiveSalesRate("Construction");
     }
 

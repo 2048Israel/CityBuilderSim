@@ -6531,10 +6531,10 @@ public class KeptCheck {
             bench.speed(0);
             return null;
         });
-        boolean zoningOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.ZONING));
-        // Zones made through the model, so that the ground's page has zones to list and each zone's page is a zoned sector's.
-        boolean zoned = zoningOpen && fx(() -> bench.policyZone(Sectors.AGRICULTURE, .05) & bench.policyZone(Sectors.RETAIL, .02));
-        System.out.println("  zoning is " + (zoningOpen ? "open" : "shut") + "; zones made through the model: " + zoned + " (" + fx(bench::policyZoned) + ")");
+        // Zones made through the model, so that the ground's page has zones to list and each zone's page is a zoned sector's (zoning is open
+        // from the founding since OP1).
+        boolean zoned = fx(() -> bench.policyZone(Sectors.AGRICULTURE, .05) & bench.policyZone(Sectors.RETAIL, .02));
+        System.out.println("  zones made through the model: " + zoned + " (" + fx(bench::policyZoned) + ")");
 
         KeptBench.Page hub = fx(bench::policy);
         final String ground = "The ground";
@@ -7059,22 +7059,16 @@ public class KeptCheck {
                 new AtOnce(() -> (double) g.getDebtManager().getStrictness().ordinal(),
                         () -> g.getDebtManager().setStrictness(DebtManager.Strictness.at((int) was[1]))),
                 v -> KeptBench.strictLine(g, v));
-        boolean zoningOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.ZONING));
-        if (zoningOpen) {
-            policyDial(g, bench, "a zone's ground dial", "Zoning", KeptBench.policyZonePage(Sectors.AGRICULTURE), "zone:" + Sectors.AGRICULTURE + ":size", true);
-            // KP2b: a card of several dials, a dial that is not its first - ITS TAXES, whose second dial is the sales tax's while that lever is open
-            // (the property tax's, the third, when not), on the first sector whose card says something would move when it is dragged (a sector that
-            // pays no sales tax in this city moves nothing, and a held dial with nothing to show proves nothing about the card).
-            boolean salesOpen = fx(() -> g.isLeverOpen(PolicyDates.Lever.SALES_TAX));
-            Zoning.Tax tax = salesOpen ? Zoning.Tax.SALES : Zoning.Tax.PROPERTY;
-            String sector = taxDialMoving(bench, tax.ordinal());
-            check("a sector's ITS TAXES card has a " + tax.name().toLowerCase() + " dial that moves what it would do (" + sector + ")", sector != null);
-            if (sector != null) {
-                holdDial(g, bench, "a zone's ITS TAXES (" + sector + "), its " + (salesOpen ? "second dial (sales)" : "third dial (property; sales is shut)"), "Zoning",
-                        KeptBench.policyZonePage(sector), offsetDial(tax.ordinal()), KeptBench.policyZoneTaxKey(tax, sector), true, true, null, null);
-            }
-        } else {
-            System.out.println("  zoning is shut in this city: a zone's dial is greyed and stages nothing (not reached by a fixture)");
+        policyDial(g, bench, "a zone's ground dial", "Zoning", KeptBench.policyZonePage(Sectors.AGRICULTURE), "zone:" + Sectors.AGRICULTURE + ":size", true);
+        // KP2b: a card of several dials, a dial that is not its first - ITS TAXES, whose second dial is the sales tax's (open from the founding
+        // since OP1), on the first sector whose card says something would move when it is dragged (a sector that pays no sales tax in this city
+        // moves nothing, and a held dial with nothing to show proves nothing about the card).
+        Zoning.Tax tax = Zoning.Tax.SALES;
+        String sector = taxDialMoving(bench, tax.ordinal());
+        check("a sector's ITS TAXES card has a " + tax.name().toLowerCase() + " dial that moves what it would do (" + sector + ")", sector != null);
+        if (sector != null) {
+            holdDial(g, bench, "a zone's ITS TAXES (" + sector + "), its second dial (sales)", "Zoning",
+                    KeptBench.policyZonePage(sector), offsetDial(tax.ordinal()), KeptBench.policyZoneTaxKey(tax, sector), true, true, null, null);
         }
         policyDialsKeep(g, bench);
     }
