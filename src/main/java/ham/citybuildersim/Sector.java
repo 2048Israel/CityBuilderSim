@@ -975,7 +975,30 @@ public abstract class Sector {
         long[] posts = new long[jobs.length];
         JobType[] types = JobType.values();
         for (int i = 0; i < posts.length && i < types.length; i++) posts[i] = u.getJobs(types[i]);
-        return rateOf(fillOf(posts, posts.length), roadsFor(u.template()), firstPlantFreight(u));
+        return rateOf(weighStaffed ? 1 : fillOf(posts, posts.length), roadsFor(u.template()), firstPlantFreight(u));
+    }
+
+    /** Set only inside staffed(): a first plant's staffing read whole. */
+    private boolean weighStaffed;
+
+    /**
+     * `estimate` read with a first plant weighed staffed (OE1): its staffing
+     * read whole, the other five ratios as firstPlantRate() reads them. The
+     * staffing hold's margin (Game.noteStaffingHold()) is what a raise that
+     * staffs the building is worth, so the building it weighs has the hands
+     * the raise is for; read at the fill of the bands it is short in, a
+     * first plant short of a band never carried its interest and never
+     * asked (WantedPostsCheck 3). A sector that runs anything reads its own
+     * rate either way.
+     */
+    public double staffed(java.util.function.DoubleSupplier estimate) {
+        boolean was = weighStaffed;
+        weighStaffed = true;
+        try {
+            return estimate.getAsDouble();
+        } finally {
+            weighStaffed = was;
+        }
     }
 
     /** The roads' ratio for one building of `t`'s traffic: what EconomyManager.setRoadRatio() reads for a sector's own buildings, here for this one; the sector's ratio with no roads to ask. */
