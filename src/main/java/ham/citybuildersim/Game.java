@@ -16000,6 +16000,20 @@ public class Game {
         return OwnerHousehold.adultsOf(householdBalance.ownerFamilies(), cohorts.get(AgeBand.ADULT));
     }
 
+    /* ----- the owner line's ensemble columns (BO1-S): no argument, so -Densemble.extra reads them by name ----- */
+
+    /** The owner families' part of the households' savings at the bank: nothing while their cell holds none. */
+    public double getOwnersShareOfSavings() {
+        double all = householdBalance.totalSavings();
+        return all > 0 ? householdBalance.owners().totalSavings() / all : 0;
+    }
+
+    /** A retired household's disposable income this month: HouseholdBalance.getDisposable(Household.RETIRED_ROW). */
+    public double getRetiredDisposable() { return householdBalance.getDisposable(Household.RETIRED_ROW); }
+
+    /** Senior care's affordability this month: careAffordability(CareType.SENIOR). */
+    public double getSeniorCareAffordability() { return careAffordability(CareType.SENIOR); }
+
     /* =====================================================================
        WHO IS AT RISK OF OFFENDING (2026-09-11) - its own class since 2026-09-18: Offending.java.
        ===================================================================== */
