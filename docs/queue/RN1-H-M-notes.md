@@ -112,6 +112,26 @@ One nit, taken (one line): the control should assert s = 1 itself, not only thro
 does (`controlTerm == 1`, read from the kept state the watch judges by). The orchestrator's go followed, untagged,
 with the pick at 99 and so no dry run.
 
+## The gate's red: EarthFoundingCheck's clean-up
+
+- The first gate (run `C:\Users\Jerus\AppData\Local\Temp\cbs-gate-RN1-H-M-uKIOayel`, on the box
+  `/home/jerus/cbs/runs/cbs-gate-RN1-H-M-uKIOayel`) stopped on one NEW red, `EarthFoundingCheck | exit 1`.
+- `checks/EarthFoundingCheck.log:139-152`: every assertion of its section 6 passed, then came an
+  `UncheckedIOException` (`NoSuchFileException` on `.../earthfounding-city.../data/saves/autosave-history.json.tmp`).
+  It was thrown from `LongPlaytest.cleanUp` (LongPlaytest.java:8726), via `EarthFoundingCheck.aCity` :698.
+- Cause: a race already on main. `cleanUp` has been the same since 2026-09-03, and this batch does not touch it.
+  The autosave's history writer renamed its `.tmp` while `Files.walk` listed it. The walk's iterator wraps a file
+  that vanished mid-walk in an `UncheckedIOException`, and `cleanUp` caught only `IOException`. The box's load
+  reached it: the suite took 1,368 s against about 690.
+- Mended here, on the orchestrator's instruction (the batch is in LongPlaytest anyway). `cleanUp` catches
+  `UncheckedIOException` as well, and walks the tree again, up to `CLEAN_UP_WALKS` (3) times, until it is gone. A
+  file renamed or deleted under it never throws. A directory a writer filled after the listing is emptied by the
+  next walk.
+- This is harness-only: `cleanUp` deletes a harness's scratch city after its play, so the trace cannot move.
+- A race cannot be caused deterministically, so there is no harness section for it.
+- Checks: `./batch-check.sh --fast` (compile OK, Stale 0 firm findings, exit 0), and `./batch-check.sh
+  EarthFoundingCheck` alone: suite OK, 1 harness, exit 0, 109 OK lines, no FAIL and no exception.
+
 ## Calls
 
 - ★ The watch's term, not the placement. The cause was the watch's own accounting, so I mailed the evidence before

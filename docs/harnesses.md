@@ -19781,103 +19781,103 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8326 what the advisor tried, and what happened**
 - **L8332 findings**
 - **L8352 HA1 money audit fixtures**
-- **L8938 1. a city that prospers**
-  - L8960 a founding city conserves money to within 0.01% of what moved
-- **L8979 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L9002 an industrial city conserves money to within 0.01% of what moved
-  - L9004 ...and it really did carry passengers, so the fare was really charged
-  - L9021 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L9030 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L9040 land bought out of the vault: nothing moves the audit cannot see**
-  - L9050 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L9054 a city that paid for land out of the vault conserves money
-  - L9056 ...and nothing moved a pool after any month's audit
-- **L9059 2. a city under stress**
-  - L9086 a stressed city conserves money to within 0.01% of what moved
-  - L9117 fixture: retail went under whole, and was restructured
-  - L9119 a restructure moves no cash the audit cannot see
-- **L9122 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9140 a city paying over the world: the money that arrives is audited**
-  - L9161 fixture: the rate actually brought money in
-  - L9163 ...and the audit saw it cross the border
-  - L9166 a city conserves money with hot money flowing
-  - L9169 ...and nothing moved after the audit struck
-- **L9171 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9185 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9212 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9215 ...and bought consumables abroad, inside their imports
-  - L9217 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9219 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9223 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9235 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9273 fixture: the yard bought old steel from the households and from a sector
-  - L9275 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9277 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9281 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9292 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9294 the households' books close in every one of the yard's months (worst residual
-  - L9296 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9299 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9310 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9341 fixture: the refinery bought old copper from the households and from a sector
-  - L9343 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9345 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9355 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9357 the households' books close in every one of the refinery's months (worst residual
-  - L9359 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9362 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9391 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9417 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9463 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9464 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9466 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9468 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9470 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9472 ...and nothing moved a pool after any month's audit struck
-  - L9473 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9475 ...and it is the cash coupons the budget calls its cash interest
-- **L9477 12. the services' upkeep is bought of Business Services**
-  - L9498 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9501 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9503 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9514 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9526 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9528 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9531 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9534 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9539 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9542 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9547 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9560 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9564 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9569 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9571 13. the households' books close**
-  - L9580 fixture: the longest city this file plays gave at least 24 months to read
-  - L9582 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L9591 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L9595 14. a cent that vanishes from a household is seen**
-  - L9607 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L9612 the theft took what it was meant to: the savings fell by X, to the cent
-  - L9618 the game's own strike, whose opening figure was read after the theft, closes
-  - L9619 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L9622 15. a bond's face that no cell holds is named**
-  - L9646 fixture: the bond town's households hold a corporate bond
-  - L9666 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9674 the press that paid the coupon on D declares it orphaned:
-  - L9677 ...and the own line fired with that figure
-  - L9678 ...the households' books close
-  - L9681 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9704 the bond matured within its term (m
-  - L9706 ...every month on the way closed its households' books
-  - L9707 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9710 ...and the households' books close that month, the principal paid on a face no cell held
-- **L9714 16. what comes off the payslips is in transit a press**
-  - L9734 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L9756 fixture: the treasury banked all three that press
-  - L9759 ...by the lines the pools' identity reads
-  - L9770 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L9771 the households' books close in every one of the
-  - L9772 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L8949 1. a city that prospers**
+  - L8971 a founding city conserves money to within 0.01% of what moved
+- **L8990 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L9013 an industrial city conserves money to within 0.01% of what moved
+  - L9015 ...and it really did carry passengers, so the fare was really charged
+  - L9032 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L9041 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L9051 land bought out of the vault: nothing moves the audit cannot see**
+  - L9061 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L9065 a city that paid for land out of the vault conserves money
+  - L9067 ...and nothing moved a pool after any month's audit
+- **L9070 2. a city under stress**
+  - L9097 a stressed city conserves money to within 0.01% of what moved
+  - L9128 fixture: retail went under whole, and was restructured
+  - L9130 a restructure moves no cash the audit cannot see
+- **L9133 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9151 a city paying over the world: the money that arrives is audited**
+  - L9172 fixture: the rate actually brought money in
+  - L9174 ...and the audit saw it cross the border
+  - L9177 a city conserves money with hot money flowing
+  - L9180 ...and nothing moved after the audit struck
+- **L9182 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9196 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9223 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9226 ...and bought consumables abroad, inside their imports
+  - L9228 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9230 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9234 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9246 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9284 fixture: the yard bought old steel from the households and from a sector
+  - L9286 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9288 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9292 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9303 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9305 the households' books close in every one of the yard's months (worst residual
+  - L9307 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9310 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9321 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9352 fixture: the refinery bought old copper from the households and from a sector
+  - L9354 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9356 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9366 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9368 the households' books close in every one of the refinery's months (worst residual
+  - L9370 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9373 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9402 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9428 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9474 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9475 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9477 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9479 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9481 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9483 ...and nothing moved a pool after any month's audit struck
+  - L9484 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9486 ...and it is the cash coupons the budget calls its cash interest
+- **L9488 12. the services' upkeep is bought of Business Services**
+  - L9509 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9512 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9514 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9525 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9537 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9539 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9542 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9545 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9550 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9553 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9558 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9571 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L9575 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L9580 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L9582 13. the households' books close**
+  - L9591 fixture: the longest city this file plays gave at least 24 months to read
+  - L9593 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L9602 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L9606 14. a cent that vanishes from a household is seen**
+  - L9618 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L9623 the theft took what it was meant to: the savings fell by X, to the cent
+  - L9629 the game's own strike, whose opening figure was read after the theft, closes
+  - L9630 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L9633 15. a bond's face that no cell holds is named**
+  - L9657 fixture: the bond town's households hold a corporate bond
+  - L9677 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L9685 the press that paid the coupon on D declares it orphaned:
+  - L9688 ...and the own line fired with that figure
+  - L9689 ...the households' books close
+  - L9692 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L9715 the bond matured within its term (m
+  - L9717 ...every month on the way closed its households' books
+  - L9718 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L9721 ...and the households' books close that month, the principal paid on a face no cell held
+- **L9725 16. what comes off the payslips is in transit a press**
+  - L9745 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L9767 fixture: the treasury banked all three that press
+  - L9770 ...by the lines the pools' identity reads
+  - L9781 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L9782 the households' books close in every one of the
+  - L9783 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 

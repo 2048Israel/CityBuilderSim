@@ -8721,12 +8721,23 @@ public class LongPlaytest {
         return String.format("$%.0fk", v);
     }
 
+    /** The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). */
+    static final int CLEAN_UP_WALKS = 3;
+
+    /**
+     * Deletes a scratch tree, as far as it can, and never throws. WHY (RN1-H-M, the gate's EarthFoundingCheck, 2026-11-20): a file that vanished
+     * mid-walk - an autosave's history .tmp, renamed by its writer while the walk listed it - came out of the walk's iterator as an
+     * UncheckedIOException, which only IOException was caught against, and it ended the harness after every assertion had passed. Now that
+     * is caught too, and the tree is walked again, up to CLEAN_UP_WALKS times, until it is gone.
+     */
     static void cleanUp(Path root) {
-        try (var walk = Files.walk(root)) {
-            walk.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
-                try { Files.deleteIfExists(path); } catch (java.io.IOException ignored) { }
-            });
-        } catch (java.io.IOException ignored) { }
+        for (int walks = 0; walks < CLEAN_UP_WALKS && Files.exists(root); walks++) {
+            try (var walk = Files.walk(root)) {
+                walk.sorted(java.util.Comparator.reverseOrder()).forEach(path -> {
+                    try { Files.deleteIfExists(path); } catch (java.io.IOException ignored) { }
+                });
+            } catch (java.io.IOException | java.io.UncheckedIOException ignored) { }
+        }
     }
 
     /**

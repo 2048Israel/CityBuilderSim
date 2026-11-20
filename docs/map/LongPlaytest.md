@@ -1,4 +1,4 @@
-# LongPlaytest.java - 9,779 lines · 183 methods · 145 constants · harnesses
+# LongPlaytest.java - 9,790 lines · 183 methods · 146 constants · harnesses
 
 `ham/citybuildersim/LongPlaytest.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -76,20 +76,20 @@
 | 6917 | · · the report |
 | 7037 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
 | 8602 | THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) |
-| 8938 | · 1. a city that prospers |
-| 8979 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
-| 9030 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
-| 9059 | · 2. a city under stress |
-| 9122 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
-| 9171 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
-| 9223 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
-| 9299 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
-| 9362 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
-| 9477 | · 12. the services' upkeep is bought of Business Services |
-| 9571 | · 13. the households' books close |
-| 9595 | · 14. a cent that vanishes from a household is seen |
-| 9622 | · 15. a bond's face that no cell holds is named |
-| 9714 | · 16. what comes off the payslips is in transit a press |
+| 8949 | · 1. a city that prospers |
+| 8990 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
+| 9041 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
+| 9070 | · 2. a city under stress |
+| 9133 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
+| 9182 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
+| 9234 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
+| 9310 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
+| 9373 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
+| 9488 | · 12. the services' upkeep is bought of Business Services |
+| 9582 | · 13. the households' books close |
+| 9606 | · 14. a cent that vanishes from a household is seen |
+| 9633 | · 15. a bond's face that no cell holds is named |
+| 9725 | · 16. what comes off the payslips is in transit a press |
 
 ## Constants
 
@@ -239,7 +239,8 @@
 | 8465 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
 | 8614 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } ...` |  |
 | 8620 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
-| 8774 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
+| 8725 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
+| 8785 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
 
 ## Fields (state)
 
@@ -484,26 +485,26 @@
 | 6585 | `static double villageInvoice, firstYearBorrowed` |  |
 | 6586 | `static int insaneBorrowings` |  |
 | 8622 | `private static int probeStop` |  |
-| 8749 | `static int fails` |  |
-| 8770 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
-| 8771 | `static String worstDriftPool` |  |
-| 8778 | `int months` |  |
-| 8780 | `double seized` | What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). |
-| 8781 | `MoneyAudit.Households worst` |  |
-| 8782 | `final java.util.Map<String, Integer> fired` |  |
-| 8784 | `static HouseholdsRun lastRun` |  |
-| 8804 | `private final Game city` |  |
-| 8805 | `private double previous` |  |
-| 8806 | `int months` |  |
-| 8807 | `double worstResidual` |  |
-| 8809 | `double movedMostBy` | The press the amount in transit moved most in: by how much (signed) and the audit struck that month. |
-| 8810 | `MoneyAudit.Households movedMostIn` |  |
+| 8760 | `static int fails` |  |
+| 8781 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
+| 8782 | `static String worstDriftPool` |  |
+| 8789 | `int months` |  |
+| 8791 | `double seized` | What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). |
+| 8792 | `MoneyAudit.Households worst` |  |
+| 8793 | `final java.util.Map<String, Integer> fired` |  |
+| 8795 | `static HouseholdsRun lastRun` |  |
+| 8815 | `private final Game city` |  |
+| 8816 | `private double previous` |  |
+| 8817 | `int months` |  |
+| 8818 | `double worstResidual` |  |
+| 8820 | `double movedMostBy` | The press the amount in transit moved most in: by how much (signed) and the audit struck that month. |
+| 8821 | `MoneyAudit.Households movedMostIn` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 9735 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
+| 45 | 9746 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
 
 ### FINDINGS (lines 53-71)
 
@@ -796,7 +797,7 @@
 | 8536 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
 | 8544 | 57 | `static String era(Game g, String label)` |  |
 
-### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8602-9779)
+### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8602-9790)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -805,21 +806,21 @@
 | 8698 | 8 | `public static double probeMonthMs(int from, int to)` | For ui.UiProbe: the mean model month, in milliseconds, over the months from (inclusive) to (exclusive) that probePlay() has timed; NaN when none. |
 | 8707 | 8 | `private static void probeRun(Game g, int months)` |  |
 | 8716 | 7 | `static String money(double v)` |  |
-| 8724 | 7 | `static void cleanUp(Path root)` |  |
-| 8747 | 1032 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
-| 8751 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 8756 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 8762 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 8777 | 7 | **type** `static final class HouseholdsRun` _(in LongPlaytest.MoneyFixtures)_ | The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. |
-| 8787 | 3 | `static boolean householdsClose(MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. |
-| 8792 | 3 | `static boolean closes(double residual, MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. |
-| 8803 | 34 | **type** `static final class OldMetalTransit` _(in LongPlaytest.MoneyFixtures)_ | HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the hou... |
-| 8813 | 4 | `OldMetalTransit(Game city)` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. |
-| 8819 | 12 | `void pressed()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read at the end of every press. |
-| 8833 | 3 | `double residualWithoutCarrier()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | The residual of the press the amount moved most in, had the carrier not been counted. |
-| 8839 | 32 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` _(in LongPlaytest.MoneyFixtures)_ | Runs `months` and returns the worst relative residual seen, printing the worst month. |
-| 8873 | 27 | `static Game upkeepCity(GameFiles files, boolean office)` _(in LongPlaytest.MoneyFixtures)_ | HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. |
-| 8907 | 20 | `static Game foundingCity(GameFiles files)` _(in LongPlaytest.MoneyFixtures)_ | HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months, the town whose sectors have issued bonds the households hold, and whose household... |
-| 8929 | 4 | `static double upkeepBills(Game c)` _(in LongPlaytest.MoneyFixtures)_ | The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). |
-| 8934 | 844 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8733 | 9 | `static void cleanUp(Path root)` | Deletes a scratch tree, as far as it can, and never throws. |
+| 8758 | 1032 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 8762 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8767 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8773 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8788 | 7 | **type** `static final class HouseholdsRun` _(in LongPlaytest.MoneyFixtures)_ | The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. |
+| 8798 | 3 | `static boolean householdsClose(MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. |
+| 8803 | 3 | `static boolean closes(double residual, MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. |
+| 8814 | 34 | **type** `static final class OldMetalTransit` _(in LongPlaytest.MoneyFixtures)_ | HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the hou... |
+| 8824 | 4 | `OldMetalTransit(Game city)` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. |
+| 8830 | 12 | `void pressed()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read at the end of every press. |
+| 8844 | 3 | `double residualWithoutCarrier()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | The residual of the press the amount moved most in, had the carrier not been counted. |
+| 8850 | 32 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` _(in LongPlaytest.MoneyFixtures)_ | Runs `months` and returns the worst relative residual seen, printing the worst month. |
+| 8884 | 27 | `static Game upkeepCity(GameFiles files, boolean office)` _(in LongPlaytest.MoneyFixtures)_ | HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. |
+| 8918 | 20 | `static Game foundingCity(GameFiles files)` _(in LongPlaytest.MoneyFixtures)_ | HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months, the town whose sectors have issued bonds the households hold, and whose household... |
+| 8940 | 4 | `static double upkeepBills(Game c)` _(in LongPlaytest.MoneyFixtures)_ | The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). |
+| 8945 | 844 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
 
