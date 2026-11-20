@@ -1847,7 +1847,8 @@ public class OilCheck {
         // Its crude, imported: a dearer import costs the package every tonne of it, at the rate (spec-oil 2.4, K's prices).
         GoodsMarket crude = g.getMarkets().get(Good.CRUDE);
         Refining.Outlook o = refiners.outlook(plans);
-        double rate = BusinessInvestment.operatingRateOf(refiners.getOperatingRate()), dear = .01, tonnes = refinery.uses(Good.CRUDE);
+        // ...at the rate the planner weighs a refinery at (SpreadPlanner.City.rate(unit): with nothing running, its own first plant's, OE1).
+        double rate = refiners.plannedRate(plans.newUnit(refinery), refiners.plantRate()), dear = .01, tonnes = refinery.uses(Good.CRUDE);
         report("...its package charges every tonne of its crude at the net import price, not the band's middle: a dearer import"
                         + " costs it the tonnes at the rate", o.crudeImport() == crude.netImportPrice()
                         && crude.netImportPrice() > crude.getLocalPrice()
@@ -1879,7 +1880,7 @@ public class OilCheck {
         report("with FEED_GATE of a refinery's crude lifted that nobody takes, the gate opens: it passes its feed", opened, atGate);
         double spare = refiners.spareCrude(), local = .01;
         Refining.Outlook own = refiners.outlook(plans);
-        rate = BusinessInvestment.operatingRateOf(refiners.getOperatingRate());
+        rate = refiners.plannedRate(plans.newUnit(refinery), refiners.plantRate());
         report("...and with a whole refinery's worth spare its crude is the wells', at the local price: the import price moves its"
                         + " package nothing, the local price every tonne at the rate", spare >= tonnes
                         && packageEarns(refiners, plans, g, own, 0, dear) == packageEarns(refiners, plans, g, own, 0, 0)
