@@ -220,3 +220,13 @@ for AUTO2 and for ZERO_SLACK, FAIL to PASS. T1 is unchanged, with 16 of 16
 AUTO2 seeds reaching 40,000 people at month 919 [637 to 1,732]. ZERO_HOT and
 HIGH match the baseline's final population exactly in median, minimum and
 maximum.
+
+## The dry run
+
+`sh tools/gate.sh CPB2 --dry-run` on 05403b9c0, with main at c60165591
+(0.9.169), on the gate box: kept as `/home/jerus/cbs/runs/cbs-gate-CPB2-SdfZd3lQ`
+(copied home to `%TEMP%/cbs-gate-CPB2-SdfZd3lQ`). Gate exit 0. The pick was
+ALL, 231 harnesses. The suite finished in 631 s, exit 3: the reds were
+main's known reds only, in 11 harnesses (BankCheck BasketYearCheck BuildAdviceCheck CentralBankCheck ExchangeRateCheck Forms1900Check FundCheck HoldersCheck PassThroughCheck RoadCheck YoungBankCheck). `unnamed.txt` is empty.
+UndemandedFeedCheck passed. The dry run kept nothing and left the tree as it
+was.

@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CPB2-SdfZd3lQ -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CPB2, no feed bought for undemanded output that cannot cover it — 2026-11-20, ready, see docs/queue/CPB2-notes.md
