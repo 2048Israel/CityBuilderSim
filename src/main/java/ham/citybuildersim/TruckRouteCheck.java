@@ -80,7 +80,10 @@ import java.util.Map;
  *      on numbers by hand (two districts holding a sector's buildings 3 : 1
  *      take 3 : 1 of its tonnes; a district of no works takes 0; the shares
  *      together are the share of the city's tonnes whose sectors stand on the
- *      map, 1 when all do); on a played city truckedBy() over every sector
+ *      map, 1 when all do); on a city handed its legs (FS7: HaulageCheck.base's
+ *      plant given a month of landed ore and coal, ore bought at home and
+ *      pellets shipped by legs(), trucks and a share of 1, and hauled by hand;
+ *      no month played to get there) truckedBy() over every sector
  *      comes to Freight.truckedIn(), truckedOut() and truckedHome() to a
  *      billionth; a district's schedule draws its shares' loads and keeps the
  *      city's N; a home trip takes home loads alone; and the CATCHMENT
@@ -949,6 +952,30 @@ public class TruckRouteCheck {
         return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.max(Math.abs(a), Math.abs(b)));
     }
 
+    /**
+     * FS7: a city handed its month's legs, not played to them (sections 9, 1 and 2 played HaulageCheck.base until Haulage had a fleet and a bill,
+     * up to 16 months, and read whatever trade the planner and the markets left). HaulageCheck.base's Pelletising Plant is given, by its own rows
+     * (Sector.input() and output(), the rows a month leaves), `scale` of its nameplate month: its ore half landed and half bought at home, its coal
+     * landed, its pellets shipped, so imports, exports and the tonnes bought at home are all there. Freight is handed the trucks to carry it twice
+     * over (taken off the books, as HaulageCheck does a fleet it hands over) and Haulage a share of 1, so the haul bills what it hauls. Moves no
+     * month: the haul is the caller's (HaulageCheck.haul()). Returns the tonnes the rows come to.
+     */
+    static double legs(Game city, double scale) {
+        Sector heavy = city.getSectors().heavyIndustry();
+        Freight fr = city.getSectors().freight();
+        Haulage h = fr.haulage();
+        double ore = heavy.getInputAtCapacity(Good.IRON) * scale, coal = heavy.getInputAtCapacity(Good.THERMAL_COAL) * scale, pellets = heavy.getCapacity(Good.PELLETS) * scale;
+        heavy.input(Good.IRON).imported = ore / 2;
+        heavy.input(Good.IRON).boughtLocal = ore / 2;
+        heavy.input(Good.THERMAL_COAL).imported = coal;
+        heavy.output(Good.PELLETS).exported = pellets;
+        double tonnes = Good.IRON.tonnesPerUnit() * ore + Good.THERMAL_COAL.tonnesPerUnit() * coal + Good.PELLETS.tonnesPerUnit() * pellets;
+        fr.setPantry(Good.TRUCKS, 2 * tonnes / h.tonnesATruck());
+        HaulageCheck.offTheBooks(h);
+        HaulageCheck.setState(h, tonnes, 1);
+        return tonnes;
+    }
+
     static void shares(BuildingVisual.Type[] types, CityMap trips) {
         System.out.println("\n--- 9. a district's trips in its tonnes' share ---");
         // By hand: two sectors with buildings, a type of no sector.
@@ -995,20 +1022,20 @@ public class TruckRouteCheck {
         double[] small = TruckSchedule.sharesOf(per, d1, new double[] { 1, 1, 1 }), zero = TruckSchedule.sharesOf(per, d1, new double[3]);
         check("a share is at most 1 where the city's tonnes are fewer, and 0 where they are 0", small[0] == 1 && small[1] == 1 && small[2] == 1 && zero[0] == 0 && zero[1] == 0 && zero[2] == 0);
 
-        // On a played city, the model's own figure.
+        // On a hauled city, the model's own figure.
+        // FS7: this played HaulageCheck.base on the literals with pellets' world prices doubled, up to 16 months, until Haulage had a fleet and a bill
+        // and the city imported, exported and bought at home; it is CAUSED now: the base city (unplayed) is handed its legs by legs() - the plant's
+        // rows, a fleet, a share of 1 - and hauled by hand, the same legs again before each real month so the game's own haul has them too.
         Game city2 = HaulageCheck.base(GameFiles.scratch("truckroutecheck-shares"));
-        // ...on the literals, pellets' world prices doubled (FL1): the Pelletising Plant's pellets net under its ore and coal abroad, and THE ORDER
-        // no longer buys ore for an export at a loss; the premise is a city that ships, so its pellets pay.
-        city2.playOnLiterals();
-        city2.getMarkets().get(Good.PELLETS).setWorldPrices(Good.PELLETS.worldImportPrice() * 2, Good.PELLETS.worldExportPrice() * 2);
         Freight fr = city2.getSectors().freight();
         Haulage h = fr.haulage();
-        int guard = 0;
-        while (!(h.getBill() > 0) && guard++ < 16) TruckDrawing.quietly(city2::toggleNextMonth);
-        check("fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes", h.getBill() > 0 && h.getTonnes() > 0 && h.getCarried() > 0);
+        legs(city2, 1);
+        TruckDrawing.quietly(() -> HaulageCheck.haul(city2));
+        check("fixture: the city is handed its legs, a fleet and a share, so a haul carries tonnes and bills them", h.getBill() > 0 && h.getTonnes() > 0 && h.getCarried() > 0);
         boolean sums = true, played = true;
         double seen = 0;
         for (int month = 0; month < 3; month++) {
+            legs(city2, 0.5 + 0.25 * month);
             TruckDrawing.quietly(() -> HaulageCheck.haul(city2));
             double[] by = new double[3];
             for (Sector s : city2.getSectors().all()) {
@@ -1017,14 +1044,19 @@ public class TruckRouteCheck {
             }
             sums &= near(by[0], fr.truckedIn()) && near(by[1], fr.truckedOut()) && near(by[2], fr.truckedHome());
             seen += by[0] + by[1] + by[2];
+            // ...and the month played through, whose haul is the game's own, on the legs given again (the hand haul closed a month of its own).
+            legs(city2, 0.5 + 0.25 * month);
             TruckDrawing.quietly(city2::toggleNextMonth);
             by = new double[3];
             for (Sector s : city2.getSectors().all()) {
                 double[] one = TruckSchedule.truckedBy(fr, s.key());
                 for (int l = 0; l < 3; l++) by[l] += one[l];
             }
-            played &= near(by[0], fr.truckedIn()) && near(by[1], fr.truckedOut()) && near(by[2], fr.truckedHome());
+            played &= near(by[0], fr.truckedIn()) && near(by[1], fr.truckedOut()) && near(by[2], fr.truckedHome()) && by[0] + by[1] + by[2] > 0;
         }
+        // The rest reads the hand haul's state, on legs set by hand, and not what a played month left.
+        legs(city2, 1);
+        TruckDrawing.quietly(() -> HaulageCheck.haul(city2));
         check("truckedBy() over every sector comes to Freight.truckedIn(), truckedOut() and truckedHome() to a billionth, six hauls running", sums && seen > 0);
         check("...and so it does in the months the game played through itself", played);
         check("a sector that moved nothing, no freight and no sector carry nothing",
@@ -1052,7 +1084,7 @@ public class TruckRouteCheck {
         List<TruckSchedule.Route> routes = List.of(world, homeTrip);
         double[] share = { 0.5, 0.25, 0.125 };
         TruckSchedule whole = TruckSchedule.of(7, fr, routes, 1.0, 5), part = TruckSchedule.of(7, fr, routes, share, 5);
-        check("fixture: the played city imported, exported and bought at home, so no share is vacuous",
+        check("fixture: the city (handed its legs) imported, exported and bought at home, so no share is vacuous",
                 whole.loads(TruckSchedule.Load.IMPORT) > 0 && whole.loads(TruckSchedule.Load.EXPORT) > 0 && whole.loads(TruckSchedule.Load.HOME) > 0);
         boolean loadsOk = true;
         for (TruckSchedule.Load l : TruckSchedule.Load.values()) loadsOk &= near(part.loads(l), whole.loads(l) * share[l.ordinal()]);
@@ -1377,25 +1409,31 @@ public class TruckRouteCheck {
      *
      * What it has to prove, a section each:
      *
-     *   1. the tally: in a played city, truckedIn() + truckedOut() + truckedHome()
-     *      come to Haulage.getTonnes() every month, each is the sum of the
+     *   1. the tally: in a city handed its legs (FS7: legs() gives HaulageCheck.base's
+     *      plant a month of landed ore and coal, ore bought at home and pellets
+     *      shipped, a fleet and a share of 1; hauled by hand and in the game's own
+     *      month, none played to a condition), truckedIn() + truckedOut() +
+     *      truckedHome() come to Haulage.getTonnes() every month, each is the sum of the
      *      model's own getters at the railway's share in force, and a city with
      *      no bulk has all three 0;
-     *   2. the counts: the trucks drawn, times what each stands for, come to the
+     *   2. the counts (on the same handed legs, hauled by hand at the section's
+     *      start; FS7): the trucks drawn, times what each stands for, come to the
      *      month's loads within one truck a load group; a world route takes no
      *      home load; stands() is 1 up to MOST_A_MONTH loads and then the
      *      smallest 1-2-5 number that brings the trucks to MOST_A_MONTH or fewer,
      *      the city's N, which a district's part (a share under 1) keeps;
      *   3. a pure function: the same month, freight and routes give the same
-     *      calls and the same frames, a salt gives others, no visit crosses the
+     *      calls and the same frames (one of the six moments a call's own arrival,
+     *      so some frame has trucks by construction; FS7), a salt gives others, no visit crosses the
      *      month's turn, frame() is exactly the trucks position() says are in
      *      the box, and a truck runs its route and back, loaded as its load is;
      *   4. the near-zoom gate: trucks are drawn at MapFrame.L0 with the setting
      *      on, at no other level and never with it off;
      *   5. the setting: GamePrefs.isTrucksOnMap() is on by default, an old
      *      settings.json reads on, and off and on both survive a save and load;
-     *   6. never saved: the tallies ride in Freight's save and come back, and no
-     *      save class mentions a TruckSchedule.
+     *   6. never saved: the tallies ride in Freight's save and come back (the
+     *      twin kept as it was, on the city handed its legs, whose tallies are all
+     *      above 0 by construction; FS7), and no save class mentions a TruckSchedule.
      */
     static final class TruckDrawing {
 
@@ -1468,6 +1506,8 @@ public class TruckRouteCheck {
         }
 
         static void run(String[] args) {
+            // FS7: this played HaulageCheck.base until Haulage had a fleet and a bill (guard 16) and read the trade the planner left; it is CAUSED now: the
+            // base city, unplayed, is handed its legs (legs(): the plant's rows, a fleet, a share of 1) and hauled by hand, each month's legs set by hand.
             Game city = HaulageCheck.base(GameFiles.scratch("truckcheck-a"));
             Freight fr = city.getSectors().freight();
             Haulage h = fr.haulage();
@@ -1478,15 +1518,16 @@ public class TruckRouteCheck {
 
             System.out.println("--- 1. the tally: the three come to Haulage's tonnes, each from the model's own getters ---");
 
-            int guard = 0;
-            // The ramp first, as HaulageCheck waits: until the trucks are seeded and bought there is nothing carried.
-            while (!(h.getBill() > 0) && guard++ < 16) quietly(city::toggleNextMonth);
-            check("fixture: the city has played until Haulage has a fleet and a bill, so it carries tonnes", h.getBill() > 0 && h.getTonnes() > 0 && h.getCarried() > 0);
+            TruckRouteCheck.legs(city, 1);
+            quietly(() -> HaulageCheck.haul(city));
+            check("fixture: the city is handed its legs, a fleet and a share, so a haul carries tonnes and bills them", h.getBill() > 0 && h.getTonnes() > 0 && h.getCarried() > 0);
             boolean sums = true, nonNegative = true, split = true, sumsPlayed = true;
             double seenHome = 0, seenIn = 0, seenOut = 0;
             String detail = "";
             for (int m = 0; m < 6; m++) {
-                // What the haul will tally, worked out from the rows the month just run left and the railway's share in force, in the brief's own rule.
+                // The month's legs, a different month's each (half the plant's nameplate and up), set by hand: the haul is run on them, whatever the last month left.
+                TruckRouteCheck.legs(city, 0.5 + 0.1 * m);
+                // What the haul will tally, worked out from the rows now standing and the railway's share in force, in the brief's own rule.
                 double in = 0, out = 0, home = 0;
                 for (Sector s : city.getSectors().all()) {
                     if (s == fr) continue;
@@ -1510,16 +1551,17 @@ public class TruckRouteCheck {
                 split &= here;
                 if (!here || !near(sum, h.getTonnes(), 1e-9)) detail = "month " + m + ": " + fr.truckedIn() + " / " + fr.truckedOut() + " / " + fr.truckedHome() + " against " + in + " / " + out + " / " + home + " and tonnes " + h.getTonnes();
                 seenIn += fr.truckedIn(); seenOut += fr.truckedOut(); seenHome += fr.truckedHome();
-                // ...and the month played through, whose haul is the game's own.
+                // ...and the month played through, whose haul is the game's own, on the same legs given again (the hand haul closed a month of its own).
+                TruckRouteCheck.legs(city, 0.5 + 0.1 * m);
                 quietly(city::toggleNextMonth);
-                sumsPlayed &= near(fr.truckedIn() + fr.truckedOut() + fr.truckedHome(), h.getTonnes(), 1e-9);
+                sumsPlayed &= near(fr.truckedIn() + fr.truckedOut() + fr.truckedHome(), h.getTonnes(), 1e-9) && h.getTonnes() > 0;
                 nonNegative &= fr.truckedIn() >= 0 && fr.truckedOut() >= 0 && fr.truckedHome() >= 0;
             }
             check("the three tallies sum to Haulage.getTonnes() to a billionth, six hauls running", sums, detail);
             check("...and so they do in the six months the game played through itself", sumsPlayed);
             check("each tally is zero or more, every month", nonNegative);
             check("each is the sum of the sectors' own getters at the railway's share in force", split, detail);
-            check("fixture: the city landed, shipped and bought at home, so no split is vacuous", seenIn > 0 && seenOut > 0 && seenHome > 0,
+            check("fixture: the city (handed its legs) landed, shipped and bought at home, so no split is vacuous", seenIn > 0 && seenOut > 0 && seenHome > 0,
                     seenIn + " / " + seenOut + " / " + seenHome);
 
             Game bare = new Game(GameFiles.scratch("truckcheck-bare"));
@@ -1536,6 +1578,10 @@ public class TruckRouteCheck {
 
             System.out.println("\n--- 2. the counts: a truck for a load, N a round number past MOST_A_MONTH ---");
 
+            // FS7: the freight read here was the last of section 1's played months, which bought tonnes at home only if the city happened to; it is the hand haul's
+            // now, on a nameplate month of legs set by hand (legs()), whose three loads are there and whose tonnes pass MOST_A_MONTH loads (the fixture lines below say so).
+            TruckRouteCheck.legs(city, 1);
+            quietly(() -> HaulageCheck.haul(city));
             List<Route> routes = routes();
             List<Route> worldOnly = List.of(routes.get(0));
             List<Route> roadsOnly = List.of(routes.get(1), routes.get(2));
@@ -1549,7 +1595,11 @@ public class TruckRouteCheck {
                     Math.abs((double) played.callCount() * played.stands() - sumLoads) <= 3.0 * played.stands(),
                     played.callCount() + " x " + played.stands() + " against " + sumLoads);
             TruckSchedule playedWorld = TruckSchedule.of(7, fr, worldOnly, 1, 0);
-            check("fixture: the played city bought tonnes at home, so the next line is not vacuous", played.loads(Load.HOME) > 0);
+            check("fixture: the city (handed its legs) bought tonnes at home and landed and shipped, so the next line is not vacuous",
+                    played.loads(Load.HOME) > 0 && played.loads(Load.IMPORT) > 0 && played.loads(Load.EXPORT) > 0);
+            check("...its loads are past MOST_A_MONTH, so stands() is the smallest 1-2-5 step that fits them, a round N past 1",
+                    sumLoads > TruckSchedule.MOST_A_MONTH && played.stands() == walkedStands(sumLoads) && played.stands() > 1 && String.valueOf(played.stands()).matches("[125]0*"),
+                    "N " + played.stands() + " for " + sumLoads + " loads");
             check("on a world route alone no home load is drawn, and imports and exports are",
                     playedWorld.callsOf(Load.HOME) == 0 && playedWorld.callsOf(Load.IMPORT) + playedWorld.callsOf(Load.EXPORT) > 0);
             check("with no freight, or no routes, a schedule has no calls",
@@ -1628,13 +1678,17 @@ public class TruckRouteCheck {
             TruckSchedule played2 = TruckSchedule.of(7, fr, routes, 1, 0);
             check("...and so do two of the played city's freight", played.calls().equals(played2.calls()));
             boolean framesEqual = true, framesNonEmpty = false, again = true;
-            for (double t : new double[] { 0.03, 0.2, 0.41, 0.5, 0.77, 0.97 }) {
+            // FS7: that some frame has trucks was left to six moments picked by hand and the arrivals' hash. A truck stands at its gate at its call's arrival,
+            // so the sixth moment is the first call's own arrival, on the schedule of set loads and on the hauled city's freight: trucks are on the road by construction.
+            double firstArrival = a.calls().isEmpty() ? 0.97 : a.calls().get(0).arrives();
+            double playedArrival = played.calls().isEmpty() ? 0.97 : played.calls().get(0).arrives();
+            for (double t : new double[] { 0.03, 0.2, 0.41, 0.5, 0.77, firstArrival }) {
                 List<Truck> fa = a.frame(-200, -200, 400, 400, t), fb = b.frame(-200, -200, 400, 400, t);
                 framesEqual &= fa.equals(fb);
                 framesNonEmpty |= !fa.isEmpty();
                 again &= fa.equals(a.frame(-200, -200, 400, 400, t));
             }
-            check("fixture: some frame has trucks on the road", framesNonEmpty);
+            check("fixture: some frame has trucks on the road", framesNonEmpty && !played.calls().isEmpty() && !played.frame(-200, -200, 400, 400, playedArrival).isEmpty());
             check("two schedules give the same frame at each of six moments", framesEqual);
             check("frame() at t and at t again gives the same trucks", again);
             TruckSchedule salted = TruckSchedule.of(4, quiet, routes, 1, 12);
