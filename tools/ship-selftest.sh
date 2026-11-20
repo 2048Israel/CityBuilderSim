@@ -575,6 +575,7 @@ case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; esac
 exec env HOME="$GBOX_HOME" sh "$GBOX_SERVE" --serve
 STUB
 chmod +x "$TA/fake-ssh"; GBOX_HOME=$TA/boxhome; GBOX_SERVE=$SRC/tools/gate-box.sh; export GBOX_HOME GBOX_SERVE
+mkdir -p "$GBOX_HOME"; git config --file "$GBOX_HOME/.gitconfig" user.name selftest; git config --file "$GBOX_HOME/.gitconfig" user.email selftest@example.invalid   # the box's own git name
 boxlaunch() { HOSTS=$1; shift; rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"
     CBS_GATE_SSH="$TA/fake-ssh" CBS_GATE_HOST="$HOSTS" TMP="$TA/laptop" CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/bus-$1" \
         sh "$SRC/tools/gate.sh" "$@" > "$TA/box-$1.out" 2>&1; RC=$?
