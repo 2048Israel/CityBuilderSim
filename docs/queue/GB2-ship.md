@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-GB2-24Ro7Vbj -->
 <!-- readiness: provisional -->
 ## changelog
 ### GB2 — the nightly runs on the gate box — 2026-11-20, ready, see docs/queue/GB2-notes.md

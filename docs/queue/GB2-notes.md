@@ -98,8 +98,9 @@ him.
 
 ## Checks
 
-- **On the box** (at a1e91a15): `tools/nightly-selftest.sh`, 67 PASS, "nightly
-  selftest OK"; `tools/ship-selftest.sh`, 191 of 191 in 2 min 18 s, GB2's lock
+- **On the box**: `tools/nightly-selftest.sh` (at a1e91a15), 67 PASS,
+  "nightly selftest OK"; `tools/ship-selftest.sh`, 191 of 191 in 2 min 18 s
+  at a1e91a15 and 192 of 192 in 111 s at 83c2dc29 (the `z` word), GB2's lock
   cases among them.
 - **On the laptop** (at the merge with main, ad104e91, and the `z` word):
   `batch-check.sh --fast` exit 0; `tools/ship-selftest.sh` 188 of 188 in
@@ -125,6 +126,11 @@ him.
     sidecar, written and read back in 714.6 ms against `SIDECAR_MS` (500 ms).
     A second such night makes it a standing miss; its budget on this machine is
     the orchestrator's to take up.
+- **The dry run**, `sh tools/gate.sh GB2 --branch-gate --dry-run --no-tag` on
+  the box at 83c2dc29 against main 44e0aa66: exit 0. No harness reads what
+  changed; the fast check, the nightly self-test and the publisher's self-test
+  (192 of 192) ran. Its log is stamped in AST, the `z` word at work. Run
+  `/home/jerus/cbs/runs/cbs-gate-GB2-24Ro7Vbj`, copied to the laptop's temp.
 - **HA1-CLOCK**, not folded in: on the quiet box, SaveSlotCheck's median due
   month is 17.2 ms against `CLOCK_MS` (25 ms), where HA1 found about 29 ms on
   the laptop. The budget holds on the box with room, so nothing is changed.
