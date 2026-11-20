@@ -81,7 +81,7 @@ The month roughly doubles. Two causes, and they cannot be separated on one path:
   DenominationCheck green). The books went 30.3 -> 23.1 ms at m600 and 43.8 -> 37.7 ms at m2400.
 - **Left alone:** the order book's insertion and the settle's recount are main's market code, which other batches
   share. They are the next place to look if the month's cost matters (recommended: a batch of its own, measured on a
-  saved city at both cell counts).
+  saved city at both cell counts), queued as BC1 in the ship file.
 
 ## The checks
 
@@ -121,8 +121,8 @@ All with `-Dcbs.timing=soft`, one JVM at a time. The fixtures are GameFiles.scra
 
 ## The default trace against main's
 
-Main's, fresh: origin/main 24b7bfcbc (0.9.160), `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-24b7bfcb/`. HS2's:
-e131ea6cd, the final model, `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-HS2-e131ea6c/`. Both are LongPlaytest with
+Main's, fresh: origin/main 24b7bfcbc (0.9.160, the classes of a detached worktree there), `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-24b7bfcbc/`. HS2's:
+e131ea6cd, the final model, `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-HS2-e131ea6cd/`. Both are LongPlaytest with
 `-Dplaytest.trace`, timing soft. Main's exits 1 on its one known finding ("an old works moved", m2400, RN1-H-M's
 row). HS2's passes every check, "All checks passed".
 
