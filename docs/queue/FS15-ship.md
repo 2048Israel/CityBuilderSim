@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS15 (untagged) — the works and the services' town cause their conditions — 2026-11-20, ready, see docs/queue/FS15-notes.md
 The sweep for the works and the services' town (the FS1 study, 6.14): five harnesses now cause the premises they had read off played towns.
