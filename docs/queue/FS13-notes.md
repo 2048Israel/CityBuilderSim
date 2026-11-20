@@ -163,7 +163,7 @@ Both FS13 rows go green and leave the file. Neither is a model fault.
   first, and the holding reached 11.17% (m109; 11.14% at 84) against
   10.92%. The world now bids fair for those asks each month
   (`tradeForCheck`, as 9b already did), and the fixed-point law is asserted
-  on that premise. The model question goes to Jerus as RB3 (below). The cap
+  on that premise. The model question is queued as RB3 (below). The cap
   and idle counts stay hard checks, since they are caused by the placement
   at the limit and the pay-in past the rooms; the table's "wrap in
   Observation or drop" is not taken, per ★3.
@@ -178,13 +178,14 @@ Both FS13 rows go green and leave the file. Neither is a model fault.
   ObservationCheck requires the change (★3). FS10's HomeRailCheck removal
   merged beside them.
 
-## Left for Jerus
+## Left open
 
 - **RB3, queued:** the fund's over-limit ask at fair rests when the company
   trades under fair. `Exchange.postFundOverLimit()`'s comment (about
   L1605-1620) says that at fair value the fund's ask is under the desk's and
   the households'. That fails once the last trade is under fair, so a buyback
-  can outrun the tenth a month (the figures in ★g). His call: price the
+  can outrun the tenth a month (the figures in ★g). A design question for
+  its builder (the orchestrator, 2026-11-20): price the
   limit sale at the market's ask, or keep it at fair and let the fixed point
   bend.
 - **ForeignDebtCheck section 7** is not a row of this sweep. Its bound (5%
@@ -243,3 +244,8 @@ RestructureCheck 28 s (53), ForeignDebtCheck 45 s (110), CurveCheck 30 s
 (230), FundCheck 39 s (308; 9e's 240 months in 2.4 s, the cap sale in 239,
 the idle cash in 102) and FundLedgerCheck 27 s (137): every one exit 0, no
 FAIL line.
+
+**The go** (the orchestrator, 2026-11-20): harness-only, no review, pick 39,
+so no dry run; RB3 is right as a design question for its builder, and the
+desk's bid caused by a buyer is the sweep's method. FS16 also edits
+`Observation.HARNESSES`: whoever gates second merges the one line by hand.
