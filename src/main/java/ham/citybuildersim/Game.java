@@ -142,7 +142,7 @@ public class Game {
     
     private SimulationEngine simulationEngine;
     
-    int materialsConsumed =0;
+    long materialsConsumed = 0;
     
     //construction UI logic
     /** The last order's material, in units - drawn by the crews as they build. A receipt field. */
@@ -763,6 +763,7 @@ public class Game {
         foundingBank();
         foundingYard();
         if (starting && founding.isUnfitted()) unfitTheFounding();
+        if (starting) foundOnGold();
     }
         
     private void initialize() {
@@ -849,6 +850,8 @@ public class Game {
         foundingYard();
         // ...and, when the city is founded the 1900 way (R1b), every building the founding stood up without the equipment its template offers.
         if (choices.isUnfitted()) unfitTheFounding();
+        // ...and, when the founding screen's "start on gold" box is ticked (FB14), on Gold with the founders' gold in the vault.
+        foundOnGold();
 
         /*
          * A NEW GAME FOUNDS ON THE AUTOPILOT, AND ROLLS WHAT FALLS DUE (0.7.13).
@@ -1280,6 +1283,49 @@ public class Game {
         recipes.choose(this);
         recipes.apply(this);
         equipmentForms.apply(this);
+    }
+
+    /* ===== THE FOUNDERS' GOLD (FB14, 2026-11-20; GD3-F, spec-gold-money 4.3) ===================================================
+     * The founding screen's "start on gold" box beside the money (Founding.isOnGold()): the city opens on Gold, the mint struck at the
+     * founding's rate times gold's US$ price, Defend the gold the bank's aim, and Founding.goldUsd() of the founders' vault in gold - the law's
+     * 40% of the treasury it is founded with, never more than the vault (all of it in every preset; the ★ in FB14's notes says why not 40% of
+     * M0). Called at the founding only, by newGame(Founding) and run() for a city starting, after unfitTheFounding(), never by buildWorld()
+     * (the load path, where the save's own vault and regime come back). The founding's settings are the founding's, so nothing is put in the
+     * player's log. Refused, the city founding on its dollars and a line said, where the world cannot price gold (no world-1.bin, or a
+     * harness's literals: GOLD has no rate, and setRegime() refuses Gold without one) and where the vault is empty (Insane: no gold to hold).
+     *
+     * HOW IT MEETS OP1'S GOLD YEARS. A city founded the 1900 way is on Canada's peg at par from policyHearsTheMonth() in buildWorld();
+     * the box's Gold leaves that peg (setRegime() calls leaveCanadaGold()), so Canada's August 1914 floats nothing, its July 1926 passes a
+     * city still on Gold by (ForeignAccounts.hearMoneyMonth(): only a floating dollar is put back on par), and the city meets the US$'s own
+     * dates (GD3: April 1933, February 1934, August 1971) as any city on Gold does. One whose gold broke before July 1926 is floating then,
+     * and Canada's return puts it on the peg at the old par as it does every floating 1900 dollar.
+     * ===================================================================================================================================== */
+    void foundOnGold() {
+        if (!founding.isOnGold() || foreign.getRegime() == ForeignAccounts.Regime.GOLD) return;
+        ensureWorldMarket();
+        WorldMoneys moneys = worldMoneys;
+        double price = moneys == null ? Double.NaN : goldUsdPerOunce(moneys.month());
+        if (!(price > 0) || !Double.isFinite(price)) {
+            System.out.println("Founded on dollars, not gold: the world cannot price gold (no world-1.bin).");
+            return;
+        }
+        // Gold's price alone: the eight are handed at the top of the first month, as for every city (handTheMoneysToTheVault()).
+        double[] usdPerUnit = new double[ForeignAccounts.MONEYS];
+        java.util.Arrays.fill(usdPerUnit, Double.NaN);
+        usdPerUnit[ForeignAccounts.GOLD] = price;
+        foreign.setMoneyRates(usdPerUnit);
+        double gold = founding.goldUsd(foreign.getRate());
+        if (!(gold > 0)) {
+            System.out.println("Founded on dollars, not gold: the vault is empty, so there is no gold to found on.");
+            return;
+        }
+        decisions.hold();
+        try {
+            foreign.foundInGold(gold);
+            setCurrencyRegime(ForeignAccounts.Regime.GOLD);
+        } finally {
+            decisions.release();
+        }
     }
 
     /**
@@ -6156,14 +6202,26 @@ public class Game {
                 : "Moved the mint price with the dollar, to ") + hereK("%.4f", foreign.getMintPrice()) + " an ounce");
     }
 
-    /** The gold cover: the vault's gold at the mint price over M0 (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
-    public double getGoldCover() { return foreign.goldCover(centralBank.m0()); }
+    /**
+     * M0 as the gold's cover reads it (FB14; REV-FB14; CentralBank.m0AfterGoldDue()): less what the last reprice's sale of gold will retire at
+     * the next top, so the cover, the free gold and the pace shown between months are the ones the next reprice reads. m0() outside Gold.
+     */
+    public double getGoldBase() { return centralBank.m0AfterGoldDue(); }
+
+    /** The gold cover: the vault's gold at the mint price over M0 as getGoldBase() reads it (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
+    public double getGoldCover() { return foreign.goldCover(getGoldBase()); }
 
     /** The cover the vault's gold would make at this par, D$ an ounce, over M0 (ForeignAccounts.goldCoverAt()): what entering Gold at a staged par would give. */
-    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, centralBank.m0()); }
+    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, getGoldBase()); }
 
-    /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()); 0 outside Gold. */
-    public double getFreeGoldUsd() { return foreign.freeGoldUsd(centralBank.m0()); }
+    /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()), over getGoldBase(); 0 outside Gold. */
+    public double getFreeGoldUsd() { return foreign.freeGoldUsd(getGoldBase()); }
+
+    /**
+     * How many months the vault lasts at the last reprice's sales (ForeignAccounts.monthsToFloor()), under Gold over M0 as getFreeGoldUsd() reads
+     * it and retiring no more than the reserves can (CentralBank.goldRetirable(); FB14, REV-FB14): Policy's pace.
+     */
+    public double getMonthsToFloor() { return foreign.monthsToFloor(getGoldBase(), centralBank.goldRetirable()); }
 
     /** The US$ gold date open for the city to answer; NONE when none is. */
     public ForeignAccounts.GoldEvent getGoldEvent() { return foreign.getGoldEvent(); }
@@ -8527,8 +8585,8 @@ public class Game {
     /** The bank's repair bill for its branches this month, charged with its running costs. */
     private double bankMaintenanceDue;
 
-    public int getConstructionMaterials(){
-        int constructionMaterials = buildingManager.getConstructionMaterials();
+    public long getConstructionMaterials(){
+        long constructionMaterials = buildingManager.getConstructionMaterials();
         return constructionMaterials;
     }
     public double getInterestRate(){
@@ -9089,12 +9147,12 @@ public class Game {
     }
 
     /** ...against a yard holding `yardHolds` units (0.7.40): an order in a run, priced on the yard the orders before it leave (buildRunInvoice()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds) {
         return quoteBuild(selected, quantity, yardHolds, 0);
     }
 
     /** ...and with `bitumenAhead` tonnes of the refiners' bitumen taken by the orders before it in a run (0.7.83; drawBitumen()). */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead) {
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, NO_GROUND_AHEAD);
     }
 
@@ -9106,7 +9164,7 @@ public class Game {
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
 
     /** ...and with the ground the orders before it in a run take (ET2): the foothill it prepares is what placing it after them would ask. */
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead,
                                   GroundAhead ahead) {
         return quoteBuild(selected, quantity, yardHolds, bitumenAhead, ahead, Landmasses.CHOSEN);
     }
@@ -9121,7 +9179,7 @@ public class Game {
         return quoteBuild(selected, quantity, buildingManager.getConstructionMaterials(), 0, NO_GROUND_AHEAD, asked);
     }
 
-    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, int yardHolds, double bitumenAhead,
+    private BuildQuote quoteBuild(BuildingsTemplate selected, long quantity, long yardHolds, double bitumenAhead,
                                   GroundAhead ahead, int asked) {
         double needed = selected.constructionMaterials * (double) quantity;
         double yard = yardHolds;
@@ -9472,10 +9530,16 @@ public class Game {
      *                  a month against $266k of work.
      * @return what the part beyond the yard came to
      */
-    private Markets.Draw drawMaterials(double units, boolean yardFirst) {
-        int wanted = (int) Math.round(units);
+    // Package-private since SQ1b: BuildingStackCheck draws through it yard first, as the month's maintenance does, which nothing public reaches.
+    Markets.Draw drawMaterials(double units, boolean yardFirst) {
+        // A long, as the yard and the books it feeds are (SQ1b): a month's draw at ten-billion scale passes 2^31 units, where
+        // (int) Math.round(units) wrapped it, negative or short, and the whole month's draw went unbought and unbooked.
+        // ...and a draw that is not a number takes nothing, on purpose (REV-SQ1b): Math.round(+Infinity) is Long.MAX_VALUE, which the old int cast read
+        // as -1 and so drew nothing, and a long would draw the whole yard and book 9.2e18 units. NaN and -Infinity round to nothing already.
+        if (!Double.isFinite(units)) return new Markets.Draw(0, 0, 0, 0, 0);
+        long wanted = Math.round(units);
         if (wanted <= 0) return new Markets.Draw(0, 0, 0, 0, 0);
-        int fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;
+        long fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;
         double beyondYard = wanted - fromYard;
         // ...then the builders' own stock of scrapped plant's material, which
         // they have paid for already (0.7.8), before the plant and the world.
@@ -9586,7 +9650,7 @@ public class Game {
      * off what the sites still owe so the monthly draws buy only the rest.
      */
     private double deliverYardToSites(BuildingsTemplate template, double needed) {
-        int fromYard = buildingManager.takeFromYard((int) Math.round(needed));
+        long fromYard = buildingManager.takeFromYard(Math.round(needed));
         if (fromYard <= 0) return 0;
         buildingManager.deliverToSites(template, fromYard);
         materialsConsumed += fromYard;
@@ -11511,7 +11575,7 @@ public class Game {
 
     /** What placing these orders in turn would charge altogether: each one's quote on the yard the ones before it leave. */
     public double buildRunInvoice(java.util.Map<BuildingsTemplate, Long> run) {
-        int yard = buildingManager.getConstructionMaterials();
+        long yard = buildingManager.getConstructionMaterials();
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
@@ -11531,7 +11595,7 @@ public class Game {
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);
             if (island != Landmasses.NO_LANDMASS) {
                 islandsAhead.merge(island, land, Double::sum);
-                yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+                yard -= Math.max(0L, Math.min(Math.round(q.materialsNeeded), yard));
                 bitumenAhead += q.bitumenFromRefiners;
                 continue;
             }
@@ -11542,7 +11606,7 @@ public class Game {
             if (use == LandManager.Use.RUN) runsAhead += land;
             preparedAhead += q.prepSqFt;
             // What deliverYardToSites() will take: BuildingManager.takeFromYard()'s own rule.
-            yard -= Math.max(0, Math.min((int) Math.round(q.materialsNeeded), yard));
+            yard -= Math.max(0L, Math.min(Math.round(q.materialsNeeded), yard));
             // ...and the refiners' bitumen an order's paving draws as it is placed (0.7.83; drawBitumen()).
             bitumenAhead += q.bitumenFromRefiners;
         }
@@ -13659,6 +13723,8 @@ public class Game {
         // ...and the dollars the vault took at the strong edge of a band or a
         // peg at the last reprice are paid for here, by their payer (XR2).
         settleTheEdge();
+        // ...and the D$ the gold the mint paid out at the last reprice took back are retired, M0 down with the gold (FB14).
+        centralBank.settleGoldRedeemed();
 
         /*
          * THE AUTOPILOT (0.7.0), before anything is priced: with the rule's
@@ -14249,7 +14315,7 @@ public class Game {
         handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
         boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD || foreign.isCanadaGold();
-        foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)
+        foreign.setMoneyBase(centralBank.m0(), centralBank.goldRetirable());   // M0 is the gold cover's base, handed right before the reprice (GD3), and what a sale can retire of it (FB14)
         foreign.repriceCurrency();
         /*
          * ...AND A PEG THAT BROKE (XR2, star 4): credibility takes its dent, and
@@ -14273,9 +14339,13 @@ public class Game {
          * currency: the central bank's equity line, booked here, after the
          * audit, because no pool moves on it - a capital transaction against
          * the world, the vault down and M0 where it was (CentralBank, THE
-         * DEFENCE).
+         * DEFENCE). Under Gold what the gold fetched is owed to the central
+         * bank instead, which retires it at the top of the next month, M0 down
+         * with the gold (FB14; CentralBank, THE GOLD'S OWN DEFENCE): a gold
+         * that broke this month sold nothing.
          */
-        centralBank.dollarsSold(foreign.getDefenceLocal());
+        if (foreign.getRegime() == ForeignAccounts.Regime.GOLD) centralBank.goldPaidOut(foreign.getDefenceLocal());
+        else centralBank.dollarsSold(foreign.getDefenceLocal());
 
         /*
          * ...AND THE CITY'S DOLLAR DEBT IS WORTH WHAT IT IS WORTH.

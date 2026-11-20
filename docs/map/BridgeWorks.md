@@ -23,7 +23,7 @@
 
 **Uses:** [RunWorks](RunWorks.md) (2), [PriceLevel](PriceLevel.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (12):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [Game](Game.md), [PriceLevelCheck](PriceLevelCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (14):** [BridgeCheck](BridgeCheck.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [FB13Check](FB13Check.md), [Game](Game.md), [LandmassView](LandmassView.md), [PriceLevelCheck](PriceLevelCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Enum constants
 

@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 4,830 lines · 33 methods · 2 constants · harnesses
+# SaveFileCheck.java - 4,872 lines · 33 methods · 2 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -16,7 +16,7 @@
 > tested on the machine it is running on - which is precisely the machine where
 > a mistake in the other two branches would never show up.
 
-**Uses:** [Game](Game.md) (192), [GameFiles](GameFiles.md) (81), [Founding](Founding.md) (41), [CityLand](CityLand.md) (40), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (34), [Sectors](Sectors.md) (30), [LandParcel](LandParcel.md) (26), [ForeignAccounts](ForeignAccounts.md) (24), [Migration](Migration.md) (22), [Nations](Nations.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (17), [LandManager](LandManager.md) (14), [Equity](Equity.md) (14), [OrderBook](OrderBook.md) (14), [World](World.md) (14), [Bank](Bank.md) (13), [OldMetal](OldMetal.md) (12), [Household](Household.md) (12), [CareType](CareType.md) (12), [Good](Good.md) (11), [PriceLevel](PriceLevel.md) (11), [Ports](Ports.md) (11), [TreasuryFund](TreasuryFund.md) (11), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (10), [Oil](Oil.md) (10), [Exchange](Exchange.md) (10), [EarthSite](EarthSite.md) (10), [HistorySave](HistorySave.md) (9), [FundLedger](FundLedger.md) (9)... and 77 more
+**Uses:** [Game](Game.md) (192), [GameFiles](GameFiles.md) (81), [Founding](Founding.md) (41), [ForeignAccounts](ForeignAccounts.md) (41), [CityLand](CityLand.md) (40), [GameVersion](GameVersion.md) (36), [DataSave](DataSave.md) (34), [Sectors](Sectors.md) (30), [LandParcel](LandParcel.md) (26), [Migration](Migration.md) (22), [Nations](Nations.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (17), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (14), [LandManager](LandManager.md) (14), [Equity](Equity.md) (14), [OrderBook](OrderBook.md) (14), [World](World.md) (14), [Bank](Bank.md) (13), [OldMetal](OldMetal.md) (12), [Household](Household.md) (12), [CareType](CareType.md) (12), [Good](Good.md) (11), [PriceLevel](PriceLevel.md) (11), [Ports](Ports.md) (11), [TreasuryFund](TreasuryFund.md) (11), [Oil](Oil.md) (10), [Exchange](Exchange.md) (10), [EarthSite](EarthSite.md) (10), [GoldStandardCheck](GoldStandardCheck.md) (10), [HistorySave](HistorySave.md) (9)... and 78 more
 
 **Used by (9):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [OilCheck](OilCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 
@@ -45,8 +45,8 @@
 | 2806 | · a recording's switch and id cross a save (TR1, 2026-10-31) |
 | 2844 | · the city's fund, its rescue setting and the bank's preferred (0.7.14) |
 | 3162 | · the oldest format this build loads (0.7.108) |
-| 4653 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
-| 4722 | · 5. WHAT A RELOAD MUST NOT FORGET |
+| 4695 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
+| 4764 | · 5. WHAT A RELOAD MUST NOT FORGET |
 
 ## Constants
 
@@ -60,15 +60,15 @@
 | line | field | says |
 |---:|---|---|
 | 30 | `static int fails` |  |
-| 4584 | `static int fails` |  |
-| 4585 | `static PrintStream out` |  |
-| 4586 | `static PrintStream quiet` |  |
+| 4626 | `static int fails` |  |
+| 4627 | `static PrintStream out` |  |
+| 4628 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 4803 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 28 | 4845 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 52 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
@@ -92,15 +92,15 @@
 | 4138 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
 | 4158 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
 | 4170 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
-| 4187 | 281 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
-| 4470 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
-| 4478 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
-| 4487 | 46 | `static void landLoadFallbacks() throws Exception` | HA1: current-format land is repaired, or refused before a live city is rebuilt. |
-| 4582 | 248 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
-| 4591 | 6 | `static void check(String label, double actual, double expected, double tol)` _(in SaveFileCheck.LoadConservation)_ |  |
-| 4598 | 4 | `static void assertTrue(String label, boolean ok)` _(in SaveFileCheck.LoadConservation)_ |  |
-| 4604 | 43 | `static Game city(Path root, String name, int months) throws Exception` _(in SaveFileCheck.LoadConservation)_ | A city with something of everything in it, so every law has something to test. |
-| 4648 | 160 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
-| 4810 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
-| 4822 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4187 | 323 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
+| 4512 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
+| 4520 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
+| 4529 | 46 | `static void landLoadFallbacks() throws Exception` | HA1: current-format land is repaired, or refused before a live city is rebuilt. |
+| 4624 | 248 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
+| 4633 | 6 | `static void check(String label, double actual, double expected, double tol)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4640 | 4 | `static void assertTrue(String label, boolean ok)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4646 | 43 | `static Game city(Path root, String name, int months) throws Exception` _(in SaveFileCheck.LoadConservation)_ | A city with something of everything in it, so every law has something to test. |
+| 4690 | 160 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4852 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
+| 4864 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
 

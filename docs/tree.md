@@ -373,7 +373,8 @@ adds its line here, not in `CLAUDE.md`.
                                    recipes in use, the equipment rows with each verdict, a building's
                                    origin and NEW, City History's discovery flags; empty in a default city
                                    (R3b: also the Overview and Funding pages' reads - a field's reach,
-                                   its card, a staged grant - and the cached preview with its words)
+                                   its card, a staged grant - and the cached preview with its words; since FB13 the
+                                   licence line a building's card draws, from LicenceFees' own reads)
         ResearchViewCheck.java     R5's reads on a default city and a 1900 one, the series kept, and
                                    researchTown(), the 1900 city the research screens' KeptCheck shares
                                    (R3b: sections 11-19, the Overview, the Funding card, the preview, the dials, the schools, R5's
@@ -997,6 +998,11 @@ adds its line here, not in `CLAUDE.md`.
                                    on its money's curve (its bank's policy rate, the country premium, the term premium), kept in
                                    its own money and read in D$ at the month's rate, its coupons paid, revalued, bought back,
                                    rolled and held as reserves in it, over a save and a load; US$ paper as it was, to the bit
+        ForeignCouponView.java     what the Government screen says of the coupons the city pays abroad (batch FB13, CD9-G): the
+                                   note on its "...of which paid abroad" row, D$ and the moneys the foreign paper is written in
+        FB13Check.java             FB13's three texts asked of the model that says them: the island's words (table, chip, notice,
+                                   door, the Build tab's card) naming a bridge where the survey allows one, the coupons' note, and
+                                   the build card's licence line; a screen's read moves nothing of the rule's
         InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
                                    interventionMove() and its inverse equal the old linear expressions to the bit up to
                                    INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;

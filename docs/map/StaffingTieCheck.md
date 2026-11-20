@@ -1,4 +1,4 @@
-# StaffingTieCheck.java - 468 lines · 28 methods · 5 constants · harnesses
+# StaffingTieCheck.java - 470 lines · 28 methods · 5 constants · harnesses
 
 `ham/citybuildersim/StaffingTieCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -35,20 +35,20 @@
 
 | line | section |
 |---:|---|
-| 264 | 1. the fixture causes the tie |
-| 292 | 2. the one place keeps both, whichever is met first |
-| 357 | 3. WantedPosts prices the two alike, whichever is first |
-| 420 | 4. the month's own planning hands the tie in, and how often |
+| 266 | 1. the fixture causes the tie |
+| 294 | 2. the one place keeps both, whichever is met first |
+| 359 | 3. WantedPosts prices the two alike, whichever is first |
+| 422 | 4. the month's own planning hands the tie in, and how often |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 52 | `StaffingTieCheck.MONTHS_TO_A_TIE` | `120` | The most months a fresh city is played to find a tie a planner hands in (section 1): ten years, as section 4 plays. |
-| 55 | `StaffingTieCheck.PLAYED_MONTHS` | `120` | The months of the city section 4 plays, ten years as WantedPostsCheck's. |
-| 58 | `StaffingTieCheck.TIED_WAYS` | `2` | How many buildings share a tie that section 3 finds: the two of the fixture. |
-| 167 | `StaffingTieCheck.ANY_SHARE` | `share -> true` | The shares a tie may stand at: any (the founding's), or above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (a share the draw filled part of). |
-| 168 | `StaffingTieCheck.A_SHARE_THE_DRAW_FILLED_PART_OF` | `share -> share> 0 & & share<Sector.MIN_STAFFABLE_TO_ORDER` |  |
+| 54 | `StaffingTieCheck.MONTHS_TO_A_TIE` | `360` | The most months a fresh city is played to find a tie a planner hands in (section 1): thirty years. |
+| 57 | `StaffingTieCheck.PLAYED_MONTHS` | `120` | The months of the city section 4 plays, ten years as WantedPostsCheck's. |
+| 60 | `StaffingTieCheck.TIED_WAYS` | `2` | How many buildings share a tie that section 3 finds: the two of the fixture. |
+| 169 | `StaffingTieCheck.ANY_SHARE` | `share -> true` | The shares a tie may stand at: any (the founding's), or above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (a share the draw filled part of). |
+| 170 | `StaffingTieCheck.A_SHARE_THE_DRAW_FILLED_PART_OF` | `share -> share> 0 & & share<Sector.MIN_STAFFABLE_TO_ORDER` |  |
 
 ## Fields (state)
 
@@ -61,56 +61,56 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 426 | **type** `public class StaffingTieCheck` | The harness for TQ1's tie rule at the staffing gate: a planner whose buildings the gate refused hands WantedPosts one hold (LD1), and where two of its refusals stand at the same share the hold keeps both, Game.noteSta... |
-| 60 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 65 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 71 | 3 | `static GameFiles filesFor(Path root, String name)` |  |
-| 76 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat, no wait read for an order's interest (WantedPostsCheck's). |
-| 95 | 3 | `static void noWait(Game g)` | No wait read for an order's interest (BA1), as WantedPostsCheck's cities: a building nobody can build carries no interest at any wage, and what the posts are priced at is this harness's subject, not the wait. |
-| 100 | 4 | `static void month(Game g)` | One month, quietly. |
-| 106 | 5 | `static double total(Sector.Staffing s)` | A building's posts, all bands. |
-| 113 | 7 | **type** `record Tie(int month, Sector sector, Sector.Staffing first, Sector.Staffing second)` | Two refusals of one sector at the same share to the bit, in the order the sector lists them, and the month they were found in. |
-| 114 | 5 | `String describe()` _(in StaffingTieCheck.Tie)_ |  |
-| 122 | 1 | **type** `record Found(Game g, Tie tie)` | A city and the tie found in it. |
-| 132 | 22 | `static Tie tieIn(Game g, DoublePredicate shareTaken, int month)` | The first tie a planner of this city hands in, in the order the sectors are listed: its plan asked now as the month's planning asks it (Sector.plan()), a hold for staff whose refusals stand at the same share to the bi... |
-| 156 | 9 | `static Found play(Path root, String name, DoublePredicate shareTaken)` | A fresh city played, month by month, until it holds a tie this test takes: the tie, or null at the dial. |
-| 171 | 8 | `static Sector.Staffing otherRefusal(Game g, Tie tie, DoublePredicate taken)` | A refusal of this sector's at a share this test takes, other than the two tied, or null. |
-| 181 | 4 | `static Sector.Staffing refusalAt(double share)` | A refusal of no template and no owner at this share: held() reads nothing else of it. |
-| 186 | 5 | `static Set<Integer> idsOf(List<Sector.Staffing> alike)` |  |
-| 193 | 3 | `static Set<Integer> idsOf(Tie tie)` | The template ids of these two, as a set. |
-| 198 | 1 | **type** `record Noted(List<WantedPosts.Ask> asks, int holds, int crews, int unpaid, int asked, int tied, double[] la...` | What a hold noted alone, or tied, came to in WantedPosts, and the latent posts a fresh WantedPosts settles its asks to. |
-| 205 | 9 | `static Noted note(Game g, Sector.Staffing hold)` | Game.noteStaffingHold() of this hold, in a month begun, and what it came to: its asks, its counts, and the latent posts of a fresh WantedPosts given those asks and settled against the city's own posts, supply and prem... |
-| 216 | 10 | `static double[] settled(Game g, List<WantedPosts.Ask> asks)` | The latent posts a fresh WantedPosts settles to, given these asks and the city's posts, supply and premiums. |
-| 228 | 9 | `static boolean sameAsks(List<WantedPosts.Ask> x, List<WantedPosts.Ask> y)` | The asks alike: the same sector, building, posts per band and pay factor to the bit, in the same order. |
-| 238 | 3 | `static String outcome(Noted n)` |  |
-| 243 | 5 | `static double[] sumByBand(List<WantedPosts.Ask> asks)` | The posts these asks make in each band, summed. |
-| 249 | 14 | `public static void main(String[] args) throws Exception` |  |
+| 43 | 428 | **type** `public class StaffingTieCheck` | The harness for TQ1's tie rule at the staffing gate: a planner whose buildings the gate refused hands WantedPosts one hold (LD1), and where two of its refusals stand at the same share the hold keeps both, Game.noteSta... |
+| 62 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 67 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 73 | 3 | `static GameFiles filesFor(Path root, String name)` |  |
+| 78 | 14 | `static Game city(Path root, String name)` | A fresh city, currency and world pinned, land by fiat, no wait read for an order's interest (WantedPostsCheck's). |
+| 97 | 3 | `static void noWait(Game g)` | No wait read for an order's interest (BA1), as WantedPostsCheck's cities: a building nobody can build carries no interest at any wage, and what the posts are priced at is this harness's subject, not the wait. |
+| 102 | 4 | `static void month(Game g)` | One month, quietly. |
+| 108 | 5 | `static double total(Sector.Staffing s)` | A building's posts, all bands. |
+| 115 | 7 | **type** `record Tie(int month, Sector sector, Sector.Staffing first, Sector.Staffing second)` | Two refusals of one sector at the same share to the bit, in the order the sector lists them, and the month they were found in. |
+| 116 | 5 | `String describe()` _(in StaffingTieCheck.Tie)_ |  |
+| 124 | 1 | **type** `record Found(Game g, Tie tie)` | A city and the tie found in it. |
+| 134 | 22 | `static Tie tieIn(Game g, DoublePredicate shareTaken, int month)` | The first tie a planner of this city hands in, in the order the sectors are listed: its plan asked now as the month's planning asks it (Sector.plan()), a hold for staff whose refusals stand at the same share to the bi... |
+| 158 | 9 | `static Found play(Path root, String name, DoublePredicate shareTaken)` | A fresh city played, month by month, until it holds a tie this test takes: the tie, or null at the dial. |
+| 173 | 8 | `static Sector.Staffing otherRefusal(Game g, Tie tie, DoublePredicate taken)` | A refusal of this sector's at a share this test takes, other than the two tied, or null. |
+| 183 | 4 | `static Sector.Staffing refusalAt(double share)` | A refusal of no template and no owner at this share: held() reads nothing else of it. |
+| 188 | 5 | `static Set<Integer> idsOf(List<Sector.Staffing> alike)` |  |
+| 195 | 3 | `static Set<Integer> idsOf(Tie tie)` | The template ids of these two, as a set. |
+| 200 | 1 | **type** `record Noted(List<WantedPosts.Ask> asks, int holds, int crews, int unpaid, int asked, int tied, double[] la...` | What a hold noted alone, or tied, came to in WantedPosts, and the latent posts a fresh WantedPosts settles its asks to. |
+| 207 | 9 | `static Noted note(Game g, Sector.Staffing hold)` | Game.noteStaffingHold() of this hold, in a month begun, and what it came to: its asks, its counts, and the latent posts of a fresh WantedPosts given those asks and settled against the city's own posts, supply and prem... |
+| 218 | 10 | `static double[] settled(Game g, List<WantedPosts.Ask> asks)` | The latent posts a fresh WantedPosts settles to, given these asks and the city's posts, supply and premiums. |
+| 230 | 9 | `static boolean sameAsks(List<WantedPosts.Ask> x, List<WantedPosts.Ask> y)` | The asks alike: the same sector, building, posts per band and pay factor to the bit, in the same order. |
+| 240 | 3 | `static String outcome(Noted n)` |  |
+| 245 | 5 | `static double[] sumByBand(List<WantedPosts.Ask> asks)` | The posts these asks make in each band, summed. |
+| 251 | 14 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the fixture causes the tie (lines 264-291)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 269 | 22 | `static Found sectionOne(Path root, boolean first)` |  |
-
-### 2. the one place keeps both, whichever is met first (lines 292-356)
+### 1. the fixture causes the tie (lines 266-293)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 294 | 9 | `static void sectionTwo(Found founding, Found grown)` |  |
-| 304 | 44 | `static void keepsBoth(String label, Found f)` |  |
-| 349 | 3 | `static boolean alone(Sector.Staffing held, Sector.Staffing expected)` |  |
-| 353 | 3 | `static boolean sameTwo(Sector.Staffing held, Tie tie)` |  |
+| 271 | 22 | `static Found sectionOne(Path root, boolean first)` |  |
 
-### 3. WantedPosts prices the two alike, whichever is first (lines 357-419)
+### 2. the one place keeps both, whichever is met first (lines 294-358)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 359 | 9 | `static void sectionThree(Found founding, Found grown)` |  |
-| 369 | 50 | `static void priced(String label, Found f)` |  |
+| 296 | 9 | `static void sectionTwo(Found founding, Found grown)` |  |
+| 306 | 44 | `static void keepsBoth(String label, Found f)` |  |
+| 351 | 3 | `static boolean alone(Sector.Staffing held, Sector.Staffing expected)` |  |
+| 355 | 3 | `static boolean sameTwo(Sector.Staffing held, Tie tie)` |  |
 
-### 4. the month's own planning hands the tie in, and how often (lines 420-468)
+### 3. WantedPosts prices the two alike, whichever is first (lines 359-421)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 422 | 46 | `static void sectionFour(Path root)` |  |
+| 361 | 9 | `static void sectionThree(Found founding, Found grown)` |  |
+| 371 | 50 | `static void priced(String label, Found f)` |  |
+
+### 4. the month's own planning hands the tie in, and how often (lines 422-470)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 424 | 46 | `static void sectionFour(Path root)` |  |
 

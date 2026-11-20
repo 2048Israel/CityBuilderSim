@@ -1446,17 +1446,38 @@ public class ExchangeRateCheck {
         if (t % 12 == 1) fx.stepTermsOfTrade(.08 * Math.cos(t / 5.0));
     }
 
+    /**
+     * Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot
+     * money leaving) leave it over a full cover, where doubt asks nothing (ForeignAccounts.goldHazard()); at three times it the city came off gold by doubt in month 63.
+     */
+    static final double FOURTEEN_GOLD_COVER = 10 * ForeignAccounts.COVER_RATIO;
+
     static void theMovesAddUp() {
         out.println("\n--- 14. the moves add up: the lines and the hold sum to the month's move with the world on ---");
 
         for (ForeignAccounts.Regime regime : ForeignAccounts.Regime.values()) {
             ForeignAccounts fx = still(.9 * TRADE, TRADE, GDP, SEED);
+            boolean gold = regime == ForeignAccounts.Regime.GOLD;
+            if (gold) {
+                // FB14 (GD3's review, item 2): a Gold city with gold to hold, priced, deep and covered - until then setRegime(GOLD) was refused
+                // for want of a gold price, and the "under GOLD" lines below tested Lean.
+                fx.setMoneyRates(GoldStandardCheck.rates(GoldStandardCheck.PRICE));
+                fx.buyReserves(100 * TRADE, "XAU");
+                fx.forgetDealing();
+            }
             fx.setRegime(regime);
+            double base = gold ? fx.goldAtMint() / FOURTEEN_GOLD_COVER : 0;
+            if (gold) fx.setMoneyBase(base);
             double worst = 0, worstLast = 0, worstWorld = 0, contribBefore = 0;
-            int worldMonths = 0, heldMonths = 0, breaks = 0;
+            int worldMonths = 0, heldMonths = 0, breaks = 0, onRegime = 0;
             for (int t = 1; t <= 120; t++) {
                 double before = Math.log(fx.getRate());
                 fx.startMonth();
+                if (gold) {
+                    // ...the top of a Game month: the moneys and gold's price handed, then M0 (Game.handTheMoneysToTheVault(), setMoneyBase()).
+                    fx.setMoneyRates(GoldStandardCheck.rates(GoldStandardCheck.PRICE));
+                    fx.setMoneyBase(base);
+                }
                 fx.takeMonth(CurrencyCheck.month(.9 * TRADE, TRADE, 0, 0), GDP);
                 fx.setParity(1 + .004 * t, 1.0, .02, .02);
                 world(fx, t);
@@ -1472,9 +1493,12 @@ public class ExchangeRateCheck {
                 if (Math.abs(fx.getMoveWorld()) > 1e-6) worldMonths++;
                 if (Math.abs(fx.getMoveHeld()) > 1e-6) heldMonths++;
                 if (fx.brokeThisMonth()) breaks++;
+                if (fx.getRegime() == regime) onRegime++;
             }
-            out.printf("   %-5s 120 months with the world on: the worst gap between the lines' sum and the month's move %.2e (getLastMove(): %.2e); the world moved the rate in %d months, the hold in %d, a peg broke %d times%n",
-                    regime, worst, worstLast, worldMonths, heldMonths, breaks);
+            out.printf("   %-5s 120 months with the world on: the worst gap between the lines' sum and the month's move %.2e (getLastMove(): %.2e); the world moved the rate in %d months, the hold in %d, a peg broke %d times (the last by %s); on %s in %d%n",
+                    regime, worst, worstLast, worldMonths, heldMonths, breaks, fx.getLastBreakCause(), regime, onRegime);
+            if (gold) assertTrue("fixture: the Gold city is on Gold in every month of the 120, its gold priced and covered, and its gold never broke, the 120th reprice's included (" + onRegime + ", " + breaks + " breaks)",
+                    onRegime == 120 && breaks == 0 && fx.getRegime() == regime);
             assertTrue("fixture: under " + regime + " the world moved the rate in many of the months (" + worldMonths + ")", worldMonths > 60);
             assertTrue("under " + regime + " the seven lines and the hold sum to the month's move to 1e-12, every month of 120", worst < 1e-12);
             assertTrue("...getLastMove() is that move too", worstLast < 1e-12);

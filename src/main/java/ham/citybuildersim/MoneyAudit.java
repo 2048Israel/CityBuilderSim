@@ -1253,6 +1253,11 @@ public final class MoneyAudit {
         // in less out is still M0's move.
         in += credit.apply("+ centralbank IssuedForDollars", cb.getDollarsBought(), Scope.MONEY);
         in += credit.apply("+ centralbank GoldMinted", cb.getGoldMinted(), Scope.MONEY);
+        // ...and, the other way, the D$ the world presented for the gold the
+        // mint paid out under Gold at the last reprice, taken back from abroad
+        // here (FB14; Game: centralBank.settleGoldRedeemed()) and declared below
+        // as retired (- centralbank RetiredForGold, MONEY): no pool moves.
+        in += credit.apply("+ centralbank TakenBackForGold", cb.getGoldRedeemed(), Scope.RESERVE);
 
         double out = 0;
         // Payrolls, as each statement charged them.
@@ -1604,6 +1609,8 @@ public final class MoneyAudit {
         out += debit.apply("- centralbank PaperCoupons", cb.getPaperCoupons(), Scope.MONEY);
         out += debit.apply("- centralbank PaperRedeemed", cb.getPaperRedeemed(), Scope.MONEY);
         out += debit.apply("- centralbank BoughtBack", cb.getBoughtBack(), Scope.MONEY);
+        // ...and the D$ the gold the mint paid out took back, destroyed (FB14; "+ centralbank TakenBackForGold" is the other leg).
+        out += debit.apply("- centralbank RetiredForGold", cb.getGoldRedeemed(), Scope.MONEY);
 
         // Suspect internal pairs, for the detail only. A flow that should
         // cancel and does not is where a residual lives.

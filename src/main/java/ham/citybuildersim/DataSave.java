@@ -516,7 +516,7 @@ public class DataSave implements Cloneable {
     private double insurancePremiums;
 
     /** The city's own yard, in units. */
-    private int constructionMaterials;
+    private long constructionMaterials;
     private long population;
     
     /*
@@ -991,7 +991,7 @@ public class DataSave implements Cloneable {
         this.progress = progress;
     }
     
-    public void setConstructionMaterials(int constructionMaterials){
+    public void setConstructionMaterials(long constructionMaterials){
         this.constructionMaterials = constructionMaterials;
     }
     
@@ -2792,7 +2792,7 @@ public class DataSave implements Cloneable {
      * old unit for that one month. See Game.monthlyMaterialImportBill.
      */
     private double monthlyMaterialImportBill;
-    private int materialsConsumed;
+    private long materialsConsumed;
 
     public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
     public java.util.Map<String, Integer> getSectorLossMonths(){ return sectorLossMonths; }
@@ -2842,8 +2842,8 @@ public class DataSave implements Cloneable {
     public double getMonthlyMaterialImports(){ return monthlyMaterialImports; }
     public void setMonthlyMaterialImportBill(double v){ this.monthlyMaterialImportBill = v; }
     public double getMonthlyMaterialImportBill(){ return monthlyMaterialImportBill; }
-    public void setMaterialsConsumed(int v){ this.materialsConsumed = v; }
-    public int getMaterialsConsumed(){ return materialsConsumed; }
+    public void setMaterialsConsumed(long v){ this.materialsConsumed = v; }
+    public long getMaterialsConsumed(){ return materialsConsumed; }
 
     /**
      * What each protected sector was paid last month.
@@ -2958,7 +2958,7 @@ public class DataSave implements Cloneable {
         return progress[index];
     }
     
-    public int getConstructionMaterials(){
+    public long getConstructionMaterials(){
         return constructionMaterials;
     }
     
