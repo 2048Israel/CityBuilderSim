@@ -189,7 +189,15 @@ own words, and it is the requirement.
   naming its data files (EN2), is committed as `docs/ensemble/<id>.md` before
   any dry run. Only M1 (the money audit) and F1 (findings) stop a ship; the
   other scores go in the notes beside the baseline (EI1, HW1's T2 stop). An
-  unchanged trace is said in the notes.
+  unchanged trace is said in the notes. It runs on the gate box first
+  (Jerus, 2026-11-20, "Gatebox first": gates and the nightly always come
+  first on the box, and an ensemble never holds a ship up for long; it goes
+  to the box unless two or more heavy jobs, gate, nightly or ensemble, are
+  already running or waiting there; otherwise, and whenever the box is down,
+  it runs on the laptop). The box plays the branch's pushed commit, so commit
+  and push first; the runs come home to `target/ensemble/<label>/` and are
+  scored here, and a run sent to the laptop says why (GB3,
+  `tools/ensemble/README.md`).
 - **Records are the publisher's:** a branch never edits `GameVersion`'s
   `VERSION`, `QUEUE.md`, `docs/notes/changelog.md` or `docs/notes/gate.txt`
   (BP1: concurrent builders wrote the same records and version; `ship.sh`

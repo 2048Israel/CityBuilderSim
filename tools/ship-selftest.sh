@@ -4,7 +4,7 @@
 # CBS_SHIPTEST_SH chooses the shell. Exit status counts failed cases.
 # WHY (BP1, GF1): publication defects must be reproduced without publishing the repository.
 
-unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_GATE_NUMBER CBS_KNOWN_REDS CBS_REJUDGE BUS_EXIT CBS_GATE_ON_BOX CBS_GATE_RELAY
+unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_GATE_NUMBER CBS_KNOWN_REDS CBS_REJUDGE BUS_EXIT CBS_GATE_ON_BOX CBS_GATE_RELAY CBS_BOX_SERVE ENS_PART ENS_YIELD
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/ship.sh" ] || { echo "selftest: no ship.sh in $SRC"; exit 2; }
 TA=${CBS_SHIPTEST_DIR:-$(mktemp -d "${TEMP:-/tmp}/cbs-ship-selftest-XXXXXXXX")}
@@ -538,7 +538,7 @@ LABEL="GG1.7 a longer unused ID remains available"; ok test "$IRC" = 0
 # BW1: the gate says where it is through tools/bus.sh, and nothing depends on the bus.
 launch() { rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"; RUNDIR=$TA/bus-$1
     TIP=$(git -C "$TA/origin.git" rev-parse "batch/$1"); BASE0=$(git -C "$TA/origin.git" rev-parse main)
-    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$1" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
+    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$@" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
 shipped() { [ "$RC" = 0 ] && [ -n "$TAGV" ] && git -C "$TA/origin.git" rev-parse -q --verify "refs/tags/$TAGV" && git -C "$TA/origin.git" log -1 --format=%s main | grep -q "^Merge batch/$1:"; }
 every_line() { [ "$(grep -c 'bus line' "$RUNDIR/unnamed.txt")" = 14 ] && tr -d '\r' < "$RUNDIR/unnamed.txt" | while IFS= read -r l; do grep -q -x -F "| $l" "$BUS_LOG" || exit 1; done; }
 CBS_BUS="$TA/bus-stub" launch BT1
@@ -566,13 +566,24 @@ BUS_EXIT=2 CBS_BUS="$TA/bus-stub" launch BT4
 LABEL="BW1 a cbs-bus that exits 2 changes nothing: the gate ships"; ok shipped BT4
 LABEL="...each call still made, its failure in the log"
 ok sh -c "grep -q '^gate BT4 done ' '$BUS_LOG' && grep -q 'cbs-bus gate failed (exit 2)' '$RUNDIR/ship.log'"
+# BW2: main moved by another's push while a run checks; the run publishes nothing, so nothing says it shipped.
+git clone -q -b main "$TA/origin.git" "$TA/stranger" && git -C "$TA/stranger" config user.name stranger && git -C "$TA/stranger" config user.email stranger@example.invalid
+STUB_RACE="$TA/stranger" CBS_BUS="$TA/bus-stub" launch BV1 --dry-run
+LABEL="BW2 a dry run while another's commit lands on main ends done, passed and published=no"
+ok sh -c "test $RC = 0 && git -C '$TA/origin.git' log -1 --format=%s main | grep -q -x 'shipped meanwhile' && grep '^gate BV1 done ' '$BUS_LOG' | tail -1 | grep -q 'outcome=passed published=no'"
+LABEL="...and mails nothing, its state never shipped"; ok sh -c "! grep -q -e '^send ' -e '^state BV1 shipped' '$BUS_LOG'"
+STUB_RACE="$TA/stranger" CBS_BUS="$TA/bus-stub" launch BV2
+LABEL="BW2 a gate whose push another's commit refused ends stopped, push refused, published=no"
+ok last_gate BV2 '^gate BV2 stopped outcome=push refused published=no'
+LABEL="...its one message the stop, nothing of the batch's to mend, and never shipped"
+ok sh -c "grep -c '^send ' '$BUS_LOG' | grep -q -x 1 && grep -q -x -F 'send BV2 --kind instruction --urgent -' '$BUS_LOG' && grep -q -x -F \"| Nothing of the batch's to mend.\" '$BUS_LOG' && ! grep -q -e 'BV2 shipped' -e '^state BV2 shipped' '$BUS_LOG'"
 # GB1: the gate on a gate box, faked: "nobox" never answers; "box" runs gate-box.sh's serving half here, as the box would.
 cat > "$TA/fake-ssh" <<'STUB'
 #!/bin/sh
 while [ "$#" -gt 0 ]; do case "$1" in -o) shift 2 ;; -n) shift ;; *) break ;; esac; done
 [ "$1" = box ] || exit 255
 case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; "cd && "*) exec env HOME="$GBOX_HOME" sh -c "$2" ;; esac
-exec env HOME="$GBOX_HOME" TZ=UTC sh "$GBOX_SERVE" --serve
+S=${2##*--serve}; exec env HOME="$GBOX_HOME" TZ=UTC sh "$GBOX_SERVE" --serve $S   # GB3: the job named, as the box's ps shows it
 STUB
 chmod +x "$TA/fake-ssh"; GBOX_HOME=$TA/boxhome; GBOX_SERVE=$SRC/tools/gate-box.sh; export GBOX_HOME GBOX_SERVE
 mkdir -p "$GBOX_HOME"; git config --file "$GBOX_HOME/.gitconfig" user.name selftest; git config --file "$GBOX_HOME/.gitconfig" user.email selftest@example.invalid   # the box's own git name
@@ -634,8 +645,68 @@ if command -v flock > /dev/null; then   # the box's lock: flock is the box's, no
     ( export CBS_BUS="$TA/bus-stub"; boxlaunch box BX4; exit "$RC" ) & GP=$!; upto "grep -q 'this gate waits for it' '$TA/box-BX4.out' 2> /dev/null"
     LABEL="GB2 a gate waits while the nightly holds the gate box"; ok sh -c "test ! -f '$TA/boxhome/cbs/runs/bus-BX4/ship.log'"
     : > "$TA/night-go"; wait "$NP"; wait "$GP"; RC=$?; RUNDIR=$TA/laptop/bus-BX4; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null)
-    LABEL="...and ships once the night is done"; ok shipped BX4; ok boxsaid BX4 'gate: the gate box runs the nightly; this gate waits for it'
+    LABEL="...and ships once the night is done"; ok shipped BX4; ok boxsaid BX4 'gate: the gate box is held (nightly); this gate waits for it'
 else echo "SKIP  GB2 the gate box's lock: no flock on this machine"; fi
+# GB3: an ensemble through the gate box, faked: a checkout pushed to its own origin, the box its clone, a stub runner
+# (on the box it plays the runs, ENS_PART=runs; here it hands them over, plays them here, or scores the box's) and mvn.
+EO=$TA/ens-origin.git; EC=$TA/ens; GIT_ID='-c user.name=selftest -c user.email=selftest@example.invalid'
+git init -q --bare "$EO"; git init -q "$EC"; git -C "$EC" config core.autocrlf false; mkdir -p "$EC/tools/ensemble" "$EC/src" "$TA/ebin" "$TA/ehome"
+cp "$SRC/tools/gate-box.sh" "$SRC/tools/bus.sh" "$EC/tools/"; echo 'class A {}' > "$EC/src/A.java"
+cat > "$EC/tools/ensemble/ensemble.sh" <<'STUB'
+#!/bin/bash
+cd "$(dirname "$0")/../.." || exit 1
+O=${ENSEMBLE_OUT:-target/ensemble}/$1; mkdir -p "$O"
+case ${ENS_PART:-} in
+runs) echo "${RESUME:-} $JOBS ${SEEDS:-} ${JAVA_OPTS:-}" >> "$O/passes"; mkdir -p "$O/classes"; : > "$O/started"
+    [ -z "${ENS_HOLD:-}" ] || until [ -f "$ENS_HOLD" ]; do sleep 1; done   # a run that started, playing
+    [ ! -e "${ENS_YIELD:-}" ] || [ "$(wc -l < "$O/passes")" != 1 ] || exit 5
+    echo box > "$O/AUTO2-0.csv"; exit 0 ;;
+score) ls "$O" > "$O/seen.txt"; exit 4 ;;
+esac
+[ -z "${CBS_GATE_HOST-}" ] || exec sh tools/gate-box.sh --ensemble "$1"
+git rev-parse --short HEAD > "$O/here.txt"
+STUB
+printf '#!/bin/sh\necho "$PWD $*" >> "%s/mvn.log"\n' "$TA" > "$TA/ebin/mvn"; chmod +x "$TA/ebin/mvn"
+git -C "$EC" add -A && git -C "$EC" $GIT_ID commit -qm fixture && git -C "$EC" remote add origin "$EO" && git -C "$EC" push -q origin HEAD:refs/heads/batch/EN &&
+    git -C "$EC" fetch -q origin && git -c core.autocrlf=false clone -q -b batch/EN "$EO" "$TA/ens-box"
+BJ=$(sed -n 's/^BOX_JOBS=//p' "$SRC/tools/gate-box.sh")
+ensrun() { EN=$1; H=$2; shift 2; ( cd "$EC" && env -u JDK_JAVA_OPTIONS -u JAVA_OPTS -u SEEDS -u POLICIES -u RESUME -u JOBS "$@" \
+    PATH="$TA/ebin:$PATH" HOME="$TA/ehome" CBS_ME=builder GBOX_SERVE="$TA/ens-box/tools/gate-box.sh" CBS_GATE_SSH="$TA/fake-ssh" \
+    CBS_GATE_HOST="$H" CBS_BUS="$TA/bus-stub" ENSEMBLE_OUT="$TA/ens-out" bash tools/ensemble/ensemble.sh "$EN" ) > "$TA/ens-$EN.out" 2>&1; }
+echo '// not committed' >> "$EC/src/A.java"; ensrun EN1 box; RC=$?; git -C "$EC" checkout -q -- src
+LABEL="GB3 an ensemble with src changes not committed is refused: the box runs the pushed commit"
+ok sh -c "test $RC = 1 && grep -q 'holds changes not committed: commit and push them' '$TA/ens-EN1.out'"
+echo 'class B {}' > "$EC/src/B.java"; git -C "$EC" add src; git -C "$EC" $GIT_ID commit -qm unpushed; ensrun EN2 box; RC=$?; git -C "$EC" reset -q --hard HEAD~1
+LABEL="...as is a commit not on origin"; ok sh -c "test $RC = 1 && grep -q 'is not on origin, and the box runs the pushed commit: push it' '$TA/ens-EN2.out'"
+ensrun EN3 box JAVA_OPTS=-Dcbs.earth=other.bin; RC=$?
+LABEL="GB3 an ensemble naming its own data files runs here, built first, and says why"
+ok sh -c "test $RC = 0 && test -s '$TA/ens-out/EN3/here.txt' && grep -q -F '$EC -q -B compile' '$TA/mvn.log' && grep -q -F \"ensemble: JAVA_OPTS names data files, where the box has its own copies of main's; EN3 runs on this laptop\" '$TA/ens-EN3.out'"
+rm -f "$BUS_LOG"; ensrun EN4 nobox; RC=$?
+LABEL="GB3 with no gate box answering, an ensemble mails jerus and runs here"
+ok one_send "send jerus --kind info --urgent --body The gate box cannot be reached (nobox): the ensemble EN4 runs on the laptop."
+ok sh -c "test $RC = 0 && test -s '$TA/ens-out/EN4/here.txt' && grep -q -F 'ensemble: no gate box answers (nobox); EN4 runs on this laptop' '$TA/ens-EN4.out'"
+mkdir -p "$TA/ens-out/EN5"; : > "$TA/ens-out/EN5/stale.csv"; ensrun EN5 box SEEDS="0 1" JAVA_OPTS=-Dx=1 RESUME=1; RC=$?
+LABEL="GB3 an ensemble goes to the gate box: the pushed commit's runs there, with its settings and the box's runs at once"
+ok sh -c "grep -q -F 'ensemble: on the gate box box, tools at' '$TA/ens-EN5.out' && grep -q -x -F '1 $BJ 0 1 -Dx=1' '$TA/ens-box/target/ensemble/EN5/passes'"
+LABEL="...its runs come home but their classes, in place of what was there, scored here with the score's exit"
+ok sh -c "test $RC = 4 && grep -q -x AUTO2-0.csv '$TA/ens-out/EN5/seen.txt' && ! grep -q -x -e classes -e stale.csv '$TA/ens-out/EN5/seen.txt' && test -d '$TA/ens-box/target/ensemble/EN5/classes'"
+if command -v flock > /dev/null && [ -d /proc/self ]; then   # the box's queue: its flock, and its serves read from /proc
+    fake() { HOME="$GBOX_HOME" sh -c 'while [ ! -f "$0" ]; do sleep 1; done; :' "$TA/fakes.done" /fake/tools/gate-box.sh --serve "$@" & }
+    rm -f "$TA/fakes.done"; fake gate GA; F1=$!; fake nightly; F2=$!; ensrun EN6 box; RC=$?; : > "$TA/fakes.done"; wait "$F1" "$F2"
+    LABEL="GB3 with two heavy jobs on the gate box, an ensemble runs here and says why"
+    ok sh -c "test $RC = 0 && test -s '$TA/ens-out/EN6/here.txt' && grep -q 'ensemble: the gate box has .* running or waiting (Jerus, 2026-11-20: the laptop is the overflow when two are); EN6 runs on this laptop' '$TA/ens-EN6.out'"
+    ok sh -c "grep 'the gate box has' '$TA/ens-EN6.out' | grep 'gate GA' | grep -q nightly"
+    rm -f "$TA/ens-go"; ( ensrun EN7 box ENS_HOLD="$TA/ens-go" RESUME=0 ) & EP=$!; upto "test -f '$TA/ens-box/target/ensemble/EN7/started'"
+    ( export CBS_BUS="$TA/bus-stub"; boxlaunch box BX5; exit "$RC" ) & GP=$!; upto "grep -q 'this gate waits for it' '$TA/box-BX5.out' 2> /dev/null"
+    LABEL="GB3 a gate that comes while an ensemble plays waits for the runs started, never beside them"
+    ok sh -c "grep -q -F 'gate: the gate box is held (ensemble EN7); this gate waits for it' '$TA/box-BX5.out' && test ! -f '$TA/boxhome/cbs/runs/bus-BX5/ship.log'"
+    upto "grep -q 'gate BX5 came; the runs started finish, then EN7 waits' '$TA/ens-EN7.out'"; : > "$TA/ens-go"
+    wait "$GP"; RC=$?; RUNDIR=$TA/laptop/bus-BX5; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null)
+    LABEL="...and ships, the ensemble yielding the box to it"; ok shipped BX5; ok grep -q 'ensemble: gate BX5 came; the runs started finish, then EN7 waits' "$TA/ens-EN7.out"
+    wait "$EP"; RC=$?
+    LABEL="...which then plays the runs left, resumed, and they come home"
+    ok sh -c "test $RC = 4 && test \"\$(cut -d' ' -f1 '$TA/ens-box/target/ensemble/EN7/passes' | tr '\n' ' ')\" = '0 1 ' && grep -q -x AUTO2-0.csv '$TA/ens-out/EN7/seen.txt'"
+else echo "SKIP  GB3 the gate box's queue: no flock or /proc on this machine"; fi
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"
