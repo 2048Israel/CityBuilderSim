@@ -1594,7 +1594,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L4829 ...and the same miss the other way shows
   - L4830 ...half the bound adds up
   - L4832 ...and $6 out, past the old $5 as well, shows
-  - L4841 fixture: a movement of 1.5e13 whose own subtractions leave dust past the old $5 (found among 2,000 fractions)
+  - L4841 fixture: a movement of 3e13 whose own subtractions leave dust past the old $5 (found among 2,000 fractions)
   - L4847 fixture: it is a movement of 1e13 and more (its scale, its closing)
   - L4848 fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)
   - L4850 fixture: the old absolute $5 test would have lit the alert on it
@@ -1604,7 +1604,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L4857 ...out the other way as well
   - L4858 ...and half its bound adds up
   - L4863 fixture: $1 billion is past the bound and under a part in ten million of this movement (the flow rule would let it by)
-  - L4865 a movement of 2e13 out by $1 billion shows: a cause left out of it
+  - L4865 a movement of 4.5e13 out by $1 billion shows: a cause left out of it
   - L4866 ...and a cause counted twice
   - L4872 fixture: its residual is infinite, and so is its scale
   - L4873 an infinite residual shows the alert
