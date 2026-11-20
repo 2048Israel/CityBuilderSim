@@ -57,8 +57,9 @@ registry's row names RN1-H-M as its fix, and `ship.sh` takes out the batch's own
   homes; m11 a bakery finds no estate cell and is sent on; the next cell is bought; m12 a second bakery stands in
   it; kept at m13 (1 drawn, 2 counted, 1 sent on); m14 the count back to 1 while a works of the bakery's size takes
   its place; m15 a bakery again, elsewhere. The law as it stood flags it, as it stands not (1 of the oldest kept sent
-  on). The control keeps at m13 and moves the drawn bakery a plot while the count holds: both laws flag it; the boxes
-  as drawn are no finding by either. Three checks pin the term's arithmetic, ties included.
+  on). The control keeps at m13, asserts the term is 1 there (the older bakery sent on; REV-RN1-H-M's nit), and
+  moves the drawn bakery a plot while the count holds: both laws flag it; the boxes as drawn are no
+  finding by either. Three checks pin the term's arithmetic, ties included.
 
 ## The trace
 
@@ -74,15 +75,16 @@ byte identical** (`cmp`): month 924,572 bytes, borrow 2,811, house 855,560, pop 
 
 Both runs exit 0 with "Nothing. Every month passed the audit". On main's city of today the term takes nothing out:
 1 of 5 of m601's industry boxes stand, and 4 moved off a run. No ensemble is owed, since the trace did not move.
-Files: `target/rn1hm-trace/{main,mine}-*`.
+Files: `target/rn1hm-trace/{main,mine}-*`. BI2 (0.9.169) and CPB2 (0.9.170) merged after the trace; they are not this
+batch's, and its own delta (a harness and one accessor nothing in the model calls) is the same on them.
 
 ## Checks
 
-- `./batch-check.sh --fast`, before and after merging main c60165591 (BI2's 0.9.169 and FS7; its 26 commits touch none of
-  this batch's files, and the generated docs were taken from main and made again): compile OK, maps regenerated, Stale 0
-  firm findings, exit 0.
-- `./batch-check.sh MapCheck` (it picks BridgeMapCheck), on the code and again on the merged main: suite OK, 2 harnesses,
-  exit 0. MapCheck has 966 OK lines;
+- `./batch-check.sh --fast`: before merging main, after c60165591 (BI2's 0.9.169 and FS7), and after f4fb7dc65 (CPB2's
+  0.9.170). None of main's commits touch this batch's files; the generated docs were taken from main and made
+  again. Each time: compile OK, maps regenerated, Stale 0 firm findings, exit 0.
+- `./batch-check.sh MapCheck` (it picks BridgeMapCheck): suite OK, 2 harnesses, exit 0, on the code, on the code
+  merged with c60165591, and on the final code (with the nit) merged with f4fb7dc65. MapCheck has 967 OK lines, no FAIL;
   section 26's 8 assertions are all OK (the numbers above); section 2d, the other caller of the watch, is OK. The
   one `OBSERVED - not reached` (section 4's second bought block) is main's, as HL1-M found it.
 - `LongPlaytest`: the branch's trace run above, exit 0, no finding.
@@ -95,6 +97,20 @@ Files: `target/rn1hm-trace/{main,mine}-*`.
   - Left to the gate: the rest. They never turn the watch on, never call `carriedOnLog`, and never call
     MapCheck 26.
 - Not run: a dry run (the pick is not ALL) and an ensemble (the trace did not move).
+
+## Review
+
+The orchestrator sent the batch to a stranger, because it changes a hard watch's law and the term differs from the
+wording first cleared. REV-RN1-H-M on 77baa2b0a: **SHIP, no P1, no P2.**
+- s is exact and strict: the replay takes the newest first, ties count the drawn first, and a late or unmatched
+  pair only lowers s. Districts with a carry in are skipped before the term.
+- Section 26 causes the event through the map's own inputs. Its control is exactly the case of a drawn box that
+  moved, and both laws flag it.
+- `carriedOnLog` is read only by LongPlaytest and MapCheck.
+
+One nit, taken (one line): the control should assert s = 1 itself, not only through the event's `!newLaw`. It now
+does (`controlTerm == 1`, read from the kept state the watch judges by). The orchestrator's go followed, untagged,
+with the pick at 99 and so no dry run.
 
 ## Calls
 
