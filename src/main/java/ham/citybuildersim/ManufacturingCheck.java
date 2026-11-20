@@ -486,12 +486,12 @@ public class ManufacturingCheck {
         // built on; the machine works is the one that closes.
         double cheapMach = man.estimatedMonthlyProfit(mach, plans);
         double cheapShop = man.estimatedMonthlyProfit(shop, plans);
-        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. This 1900 town has no minimum wage until 1918 (R0),
-        // where until WG1 the dial was the ladder's anchor and moved every wage fourfold, law or none; so the fixture opens that one lever before
-        // the floor is raised. Four times the floor in force is 3.4 times the going rate, past the rungs nearly every post is paid (spec-wages 3.8).
+        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. From R0 to OP1 this 1900 town had no minimum wage
+        // until 1918, where until WG1 the dial was the ladder's anchor and moved every wage fourfold, law or none; the minimum wage is open from
+        // the founding since OP1, so the floor is law when it is raised. Four times the floor in force is 3.4 times the going rate, past the
+        // rungs nearly every post is paid (spec-wages 3.8).
         double floor = city.getLabourMarket().getMinimumWage();
         quietly(() -> {
-            city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
             city.getLabourMarket().setFloorBinding(true);
             city.getLabourMarket().setMinimumWage(floor * 4);
             for (int i = 0; i < 36; i++) city.simulateMonths(1);
@@ -518,11 +518,11 @@ public class ManufacturingCheck {
         Game booked = new Game(files);
         quietly(() -> {
             booked.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0): the capacity read below is what the makers' planner builds in this city, and it builds
-            // against the profit a city's taxes and wage floor leave. This section was written for a city that taxes from its first month and
-            // pays the floor; on history's dates it has neither until 1916-1918. Every lever opened and the defaults put back, before a month.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, OP1): the capacity read below is what the makers' planner builds in this city, and it
+            // builds against the profit a city's taxes and wage floor leave. This section was written for a city that taxes from its first month
+            // and pays the floor; until OP1 on history's dates it had neither until 1916-1918. Since OP1 every lever is open from the founding,
+            // and the defaults are put back before a month.
             booked.getEconomyManager().getTaxPolicy().reset();
-            booked.getEconomyManager().getTaxPolicy().openAll();
             BuildingManager b = booked.getBuildingManager();
             booked.getLandManager().setOwnedSqFt(booked.getLandManager().getOwnedSqFt() + 400_000_000L);
             b.addStack(b.getTemplateByName("House"), 2000, true);

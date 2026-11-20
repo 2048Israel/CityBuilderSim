@@ -1,6 +1,6 @@
 # ResearchCatalog.java - 389 lines · 26 methods · 12 constants · model
 
-`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it,
 > what it unlocks (a building, a piece of equipment, a recipe, a drug), history's date, the discoveries it needs first and the work it takes.
@@ -9,8 +9,8 @@
 > data that never came, and Recipe and Equipment treated every code as never known. The dates and the needs are data, not code, so that the
 > next entry is a line in the file and not a change to Java. The date is history's month and not the year, because R3's harness wants "every
 > discovery arrives on history's date" to be a statement about months. The date rule: a month only where the study names one, else the month
-> the study's model put it in (monthKnown false); and the law rows carry exactly PolicyDates' dates, so the Policy gate and the catalogue can
-> never disagree about when a lever opens.
+> the study's model put it in (monthKnown false); and the law rows carry exactly PolicyDates' dates, Canada's for each lever, so the
+> catalogue and the record never disagree (the Policy gate those dates were is gone since OP1: every lever is open from the founding).
 > 
 > Like BuildingCatalog, nothing here can stop the game starting: a missing file, bad JSON or a bad entry is reported with println and costs
 > that entry (or the file), never the game. This class is only the catalogue. Recipe, Equipment and BuildingsTemplate read their codes through
@@ -18,7 +18,7 @@
 
 **Uses:** [PolicyDates](PolicyDates.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (43):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [YearBook](YearBook.md)
+**Used by (44):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

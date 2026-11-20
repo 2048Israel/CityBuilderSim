@@ -45,8 +45,9 @@ public class StudentHousehold extends Household {
     @Override public String key()   { return "STUDENT"; }
 
     /**
-     * The student loan: whatever is still short, from the treasury, at no interest while they study. NONE before the treasury makes them
-     * (R0: student aid opens in 1939): what is refused is not funded, and the student went without.
+     * The student loan: whatever is still short, from the treasury, at no interest while they study. NONE where the treasury makes none
+     * (Household.studentLoansOpen; every city makes them from the founding since OP1, and from R0 to OP1 none did before student aid opened
+     * in 1939): what is refused is not funded, and the student went without.
      */
     @Override
     protected double fundShortfall(double still, double disposablePer) {

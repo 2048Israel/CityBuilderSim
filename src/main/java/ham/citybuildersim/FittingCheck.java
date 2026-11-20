@@ -605,11 +605,17 @@ public class FittingCheck {
         return (int) Math.max(0, Math.round(g.getConstructionOutput() - g.getMaintenancePoints()));
     }
 
-    /** What the quote of a piece's goods at the city's market comes to, plus its work at the builders' price a point: what ordering it should cost. */
+    /** What the quote of a piece's goods at the city's market comes to, plus its work at the builders' price a point, grossed up at the
+     *  builders' sales tax (open from the founding since OP1; section 16 proves the gross-up): what ordering it should cost. */
     static double expectedCost(Game g, Equipment piece) {
         double total = piece.getWork() * g.getBuildingManager().nonMaterialPricePerPoint();
         for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) total += g.getMarkets().quote(e.getKey(), e.getValue(), g.getSectors()).cost();
-        return total;
+        return total / buildersNet(g);
+    }
+
+    /** What the builders keep of a sale after their sales tax: the divisor of the gross-up. */
+    static double buildersNet(Game g) {
+        return 1 - g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction());
     }
 
     /** What the market recorded of the builders' draws of a good since `from` trades ago: {units, cost}. */
@@ -769,7 +775,8 @@ public class FittingCheck {
                 (machinery.getLocalFilled() - local0) + (machinery.getImported() - imported0), units, 1e-12);
         check("an electric drive delivers nothing into Freight's fleet: only the motor truck does", g.getSectors().freight().getPantry(Good.TRUCKS) == fleet0);
         near("the builders' fitting revenue this month is the total", builders.getFittingThisMonth() - revenue0, expected, 1e-9);
-        near("...and the total is the draws' cost in the market's records plus the work at the price a point", builders.getFittingThisMonth() - revenue0, drew[1] + drive.getWork() * point, 1e-9);
+        near("...and the total is the draws' cost in the market's records plus the work at the price a point, grossed up at the builders' sales tax",
+                builders.getFittingThisMonth() - revenue0, (drew[1] + drive.getWork() * point) / buildersNet(g), 1e-9);
         java.util.List<Fittings.Job> jobs = g.getFittings().view();
         check("a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved",
                 jobs.size() == 1 && jobs.get(0).templateId == t.getId() && jobs.get(0).pieceId.equals(DRIVE) && jobs.get(0).payer.equals(key)
@@ -1299,13 +1306,12 @@ public class FittingCheck {
         check("the real fitting verdict now has a finite gain and includes the form", Double.isFinite(EquipmentFit.verdictForNew(g, farm, tractor).gain()));
     }
 
-    /** An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). */
+    /** A sales tax in force (open from the founding since OP1) is a caused premise, and its capital credit must actually reach the owner (R1d). */
     static void taxedFitting() {
         out.println("\n--- 16. a fitting quotes sales tax and credits the owner's capital purchase ---");
         Game g = village("fitting-vat", Founding.defaults(), true, false);
         holdAll(g);
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
         BuildingsStacks bakery = stack(g, "Bakery");
         bakery.setUnfitted(DRIVE, 1);
         Equipment piece = bakery.getBuilding().getEquipment(DRIVE);

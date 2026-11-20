@@ -24,8 +24,8 @@ import java.util.Set;
  * data that never came, and Recipe and Equipment treated every code as never known. The dates and the needs are data, not code, so that the
  * next entry is a line in the file and not a change to Java. The date is history's month and not the year, because R3's harness wants "every
  * discovery arrives on history's date" to be a statement about months. The date rule: a month only where the study names one, else the month
- * the study's model put it in (monthKnown false); and the law rows carry exactly PolicyDates' dates, so the Policy gate and the catalogue can
- * never disagree about when a lever opens.
+ * the study's model put it in (monthKnown false); and the law rows carry exactly PolicyDates' dates, Canada's for each lever, so the
+ * catalogue and the record never disagree (the Policy gate those dates were is gone since OP1: every lever is open from the founding).
  *
  * Like BuildingCatalog, nothing here can stop the game starting: a missing file, bad JSON or a bad entry is reported with println and costs
  * that entry (or the file), never the game. This class is only the catalogue. Recipe, Equipment and BuildingsTemplate read their codes through

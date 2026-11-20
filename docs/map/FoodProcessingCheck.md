@@ -1,6 +1,6 @@
-# FoodProcessingCheck.java - 621 lines · 7 methods · 3 constants · harnesses
+# FoodProcessingCheck.java - 620 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FoodProcessingCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The third of the shelf that arrives already made.
 > 
@@ -45,12 +45,12 @@
 | line | section |
 |---:|---|
 | 100 | · 1. the five goods it exists for |
-| 140 | · 2. three plants, and all three reachable |
-| 168 | · 3. what a plant earns per person who runs it |
-| 218 | · 4. the estimate: the price it leaves behind, and the tax |
-| 346 | · 5. the meat price is the bet, and it is real |
-| 541 | · 6. it survives a save, by name |
-| 564 | · 7. a plant is counted in the money the measure counts in (RT1) |
+| 139 | · 2. three plants, and all three reachable |
+| 167 | · 3. what a plant earns per person who runs it |
+| 217 | · 4. the estimate: the price it leaves behind, and the tax |
+| 345 | · 5. the meat price is the bet, and it is real |
+| 540 | · 6. it survives a save, by name |
+| 563 | · 7. a plant is counted in the money the measure counts in (RT1) |
 
 ## Constants
 
@@ -72,12 +72,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 576 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
+| 46 | 575 | **type** `public class FoodProcessingCheck` | The third of the shelf that arrives already made. |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 57 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 | 72 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
 | 78 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 | 85 | 9 | `static double midBandRevenue(BuildingsTemplate t)` | A template's nameplate valued at the middle of each good's world band, in thousands. |
-| 95 | 526 | `public static void main(String[] args) throws Exception` |  |
+| 95 | 525 | `public static void main(String[] args) throws Exception` |  |
 

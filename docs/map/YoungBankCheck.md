@@ -1,6 +1,6 @@
 # YoungBankCheck.java - 161 lines · 3 methods · 2 constants · harnesses
 
-`ham/citybuildersim/YoungBankCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/YoungBankCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > A young town's bank through its first ten years with no sector held: the
 > harness of DQ1, "young towns borrow ahead of their people and default".

@@ -268,14 +268,13 @@ public class BusinessServicesCheck {
 
         // THE WAGE BILL. Same trick from the other side - move the floor every
         // wage is built on and the sector stops being worth expanding.
-        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. This 1900 town has no minimum wage until 1918
-        // (R0), where until WG1 the dial was the ladder's anchor and moved every wage threefold, law or none (on WG1's first run, unopened, the
-        // centre's $9k a month was $9k after it); so the fixture opens that one lever before the floor is raised. Three times the floor in force
-        // is 2.55 times the going rate, past the rungs most posts are paid (spec-wages 3.8).
+        // WG1 (2026-11-10): the floor lifts only the wages under it, and only where it is law. From R0 to OP1 this 1900 town had no minimum wage
+        // until 1918, where until WG1 the dial was the ladder's anchor and moved every wage threefold, law or none (on WG1's first run, unopened,
+        // the centre's $9k a month was $9k after it); the minimum wage is open from the founding since OP1, so the floor is law when it is
+        // raised. Three times the floor in force is 2.55 times the going rate, past the rungs most posts are paid (spec-wages 3.8).
         double profitCheap = bs.estimatedMonthlyProfit(contact, plans);
         double floor = city.getLabourMarket().getMinimumWage();
         quietly(() -> {
-            city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
             city.getLabourMarket().setFloorBinding(true);
             city.getLabourMarket().setMinimumWage(floor * 3);
             for (int i = 0; i < 36; i++) city.simulateMonths(1);

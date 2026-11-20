@@ -1,6 +1,6 @@
 # Notice.java - 119 lines · 17 methods · 0 constants · model
 
-`ham/citybuildersim/Notice.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Notice.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > One thing the city needs told about, and whether anybody has looked at it.
 > 
@@ -26,7 +26,7 @@
 > resolved - when the condition stopped being true. 0 while it still is. A
 >            resolved notice stays in the list, greyed, for two years.
 
-**Used by (18):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PrizeCheck](PrizeCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
+**Used by (17):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DataSave](DataSave.md), [DiscoveryCheck](DiscoveryCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PrizeCheck](PrizeCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 

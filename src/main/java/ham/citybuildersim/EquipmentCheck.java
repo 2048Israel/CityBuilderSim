@@ -879,8 +879,11 @@ public class EquipmentCheck {
         double expectedCost = 0;
         for (Map.Entry<Good, Double> e : drive.getBuys().entrySet()) expectedCost += e.getValue() * cityPrice(g, e.getKey());
         expectedCost += drive.getWork() * point;
-        check("its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, to the bit",
-                v.cost() == EquipmentFit.cost(drive, good -> cityPrice(g, good), point), v.cost() + " vs " + expectedCost);
+        // OP1: the builders' sales tax is open from the founding, and the fitting is the builders' sale, so the cost is grossed up at their rate.
+        double taxed = 1 - g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction());
+        expectedCost /= taxed;
+        check("its cost is step 2's: the goods it buys at the city's prices plus its work at the builders' price a point, grossed up at the builders' sales tax, to the bit",
+                v.cost() == EquipmentFit.cost(drive, good -> cityPrice(g, good), point) / taxed, v.cost() + " vs " + expectedCost);
         near("...and the same written out here", v.cost(), expectedCost, 1e-12);
         check("fixture: the fitting buys machinery and has work, so both halves of the cost are in it", drive.getBuys().containsKey(Good.MACHINERY) && drive.getWork() > 0
                 && v.cost() > drive.getWork() * point);
@@ -993,8 +996,9 @@ public class EquipmentCheck {
         double room = truck.getBuys().getOrDefault(Good.TRUCKS, -1.0);
         check("the motor truck buys the depot's truck room in TRUCKS and has no work", room == dt.getTruckRoom() && truck.getWork() == 0 && truck.getBuys().size() == 1);
         double truckPrice = cityPrice(c, Good.TRUCKS);
-        check("the depot's cost is its trucks at the city's price of TRUCKS, to the bit, and nothing for work", v.cost() == room * truckPrice && truckPrice > 0,
-                v.cost() + " vs " + room * truckPrice);
+        double taxed = 1 - c.getEconomyManager().getTaxPolicy().effectiveSalesRate(c.getSectors().construction());
+        check("the depot's cost is its trucks at the city's price of TRUCKS grossed up at the builders' sales tax (OP1), to the bit, and nothing for work",
+                v.cost() == room * truckPrice / taxed && truckPrice > 0, v.cost() + " vs " + room * truckPrice / taxed);
         check("its life is the truck's and its rate is struck for Freight on the whole cost",
                 v.lifeMonths() == truck.getLifeMonths() && v.realRate() == c.getBusinessInvestment().realTestRate(
                         c.getEconomyManager().getBusinessDebtManager().projectRate(c.getSectors().freight().key(), v.cost())),

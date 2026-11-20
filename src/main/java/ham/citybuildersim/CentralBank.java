@@ -583,17 +583,8 @@ public final class CentralBank {
     public double getTargetShare()   { return targetShare; }
     public double getPreviousTarget() { return previousTarget; }
 
-    /** Whether the Bank of Canada's dated policy controls are available; the book itself also represents the earlier government. */
-    private boolean moneyOpen = true;
-
-    /** Permissions are calendar data and are re-established after a load. */
-    public void hearMoneyMonth(int month) {
-        moneyOpen = PolicyDates.isOpen(PolicyDates.Lever.CENTRAL_BANK, month);
-    }
-
     /** The dial, held to 0..MAX_QE_SHARE. Moving it remembers where it was, for the pace. */
     public void setTargetShare(double share) {
-        if (!moneyOpen) return;
         double to = Double.isFinite(share) ? Math.max(0, Math.min(MAX_QE_SHARE, share)) : 0;
         if (to != targetShare) {
             previousTarget = targetShare;
@@ -767,7 +758,6 @@ public final class CentralBank {
 
     /** Sets the ceiling dial, held to 0..MAX_ADVANCES_CEILING; a number that is not one reads the default. */
     public void setAdvancesCeilingMonths(double months) {
-        if (!moneyOpen) return;
         double was = advancesCeilingMonths;
         advancesCeilingMonths = Double.isFinite(months)
                 ? Math.max(0, Math.min(MAX_ADVANCES_CEILING, months)) : DEFAULT_ADVANCES_MONTHS;

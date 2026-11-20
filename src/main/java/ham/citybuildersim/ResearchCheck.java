@@ -358,14 +358,15 @@ public class ResearchCheck {
             if (lever.entry().isBlank()) continue;
             levers++;
             Entry e = of(lever.entry());
-            boolean ok = e != null && e.field() == Field.LAW && e.worldMonth() == PolicyDates.openingMonth(lever)
+            boolean ok = e != null && e.field() == Field.LAW && e.worldMonth() == PolicyDates.canadaMonth(lever)
                     && e.year() == lever.year() && e.monthOfYear() == lever.monthOfYear() && e.monthKnown() == lever.monthKnown();
             check(lever + " (" + lever.entry() + ") is a LAW entry on the lever's own date: " + lever.year() + ", month " + lever.monthOfYear()
                     + (lever.monthKnown() ? "" : " (January, the year alone)"), ok);
             leversRead &= ok;
         }
-        check("PolicyDates has discoverable levers, each held to the catalogue, and Money has no discovery key (" + levers + ")", levers == java.util.Arrays.stream(PolicyDates.Lever.values())
-                .filter(l -> !PolicyDates.isMoney(l) && !PolicyDates.openAtFounding(l)).count() && leversRead && java.util.Arrays.stream(PolicyDates.Lever.values()).filter(PolicyDates::isMoney).allMatch(l -> l.entry().isEmpty()));
+        java.util.Set<Lever> money = java.util.EnumSet.of(Lever.POLICY_RATE, Lever.CENTRAL_BANK);
+        check("PolicyDates has law levers, each held to the catalogue, and Money has no discovery key (" + levers + ")", levers == java.util.Arrays.stream(PolicyDates.Lever.values())
+                .filter(l -> !money.contains(l) && PolicyDates.canadaMonth(l) > 1).count() && leversRead && money.stream().allMatch(l -> l.entry().isEmpty()));
         check("PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone",
                 of("PL1").year() == 1915 && of("PL1").monthOfYear() == 1 && !of("PL1").monthKnown() && of("PL1").worldMonth() == monthOf(1915, 1)
                         && of("PL11").year() == 1942 && of("PL11").monthOfYear() == 1 && !of("PL11").monthKnown() && of("PL11").worldMonth() == monthOf(1942, 1));

@@ -1,6 +1,6 @@
-# DeterminismCheck.java - 447 lines · 19 methods · 5 constants · harnesses
+# DeterminismCheck.java - 446 lines · 19 methods · 5 constants · harnesses
 
-`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DeterminismCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit.
 > 
@@ -70,7 +70,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 398 | **type** `public class DeterminismCheck` | The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit. |
+| 50 | 397 | **type** `public class DeterminismCheck` | The month reads nothing of the machine it runs on: the same city, played in JVMs set up as opposite machines, comes out the same to the bit. |
 | 55 | 4 | `static void check(String label, boolean ok)` |  |
 
 ### (untitled) (lines 76-110)
@@ -102,14 +102,14 @@
 | 276 | 15 | `static String firstDifference(List<String> head, List<String[]> x, List<String[]> y)` | The first month and field two runs' lines part at, with both values; null if they are the same lines. |
 | 293 | 4 | `static String show(String s)` | A hexadecimal double with its decimal beside it. |
 
-### THE CHILD: play the fixtures, write the fingerprints and the report (lines 298-447)
+### THE CHILD: play the fixtures, write the fingerprints and the report (lines 298-446)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 303 | 1 | **type** `record Town(List<String> head, List<String> lines, int autosaves, boolean worldMarket)` | What one town gave: the field names, a line a month, how many autosaves it printed, whether it had a world market. |
 | 305 | 37 | `static void child(String which, Path outFile) throws Exception` |  |
 | 344 | 36 | `static void fixtures(String which, List<String> file, Map<String, String> report) throws Exception` | The fixtures of one child: the town (twice in A), then the Earth city (A and B, where the Earth file is named). |
-| 382 | 42 | `static Town playTown(String label, LongSupplier clock)` | FloatLinkCheck's played town with the firms free to order (DT1's probe, shape freestep), played TOWN_MONTHS months one at a time. |
-| 430 | 15 | `static Map<String, String> fingerprint(Game c)` | What a city is, in one line a month, to the bit: the month, the people, the city's cash, the bank's cash and equity, what the households have banked, the price index, the city's debt outstanding, the stacks standing a... |
-| 446 | 1 | `static String hex(double x)` |  |
+| 382 | 41 | `static Town playTown(String label, LongSupplier clock)` | FloatLinkCheck's played town with the firms free to order (DT1's probe, shape freestep), played TOWN_MONTHS months one at a time. |
+| 429 | 15 | `static Map<String, String> fingerprint(Game c)` | What a city is, in one line a month, to the bit: the month, the people, the city's cash, the bank's cash and equity, what the households have banked, the price index, the city's debt outstanding, the stacks standing a... |
+| 445 | 1 | `static String hex(double x)` |  |
 
