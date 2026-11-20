@@ -162,6 +162,30 @@ It judged the harness's crunch, the control and the call sound.
   and the most households with no home was 0.00. The order watch's own count of short months now
   reads 56 of the 91 months with an ask, where the till-priced test read 120 of 120.
 
+## HousingDoorCheck: a fixture premise the mend makes rare, passed by name (FS11)
+
+After the review's mends, `HousingDoorCheck` (HN1's door, AUTO2 seed 12, months 431-900) fails one
+fixture line: "the door trimmed an order it first refused for the bank's capital". On this path it
+cut 9 orders, each trimmed to what its own funds put down, and none was refused first for the
+bank's capital. Its other lines are green: the halving, the advisor's line, nobody left without a
+door, the households' identity, and the line this fixture guards (no trimmed month left marked as
+held for the capital). It was green at 3251de681, before the mends, on a path that differs from the
+first changed equity ask on.
+
+- **Why it is rare now.** MC1 asks the owners for the whole order whenever the door would refuse its
+  mortgage for the bank's capital.
+  - A trim first refused for capital now needs an issue that falls short of the order: the
+    households' and the world's demand, or the `quoteSupportsIssue` gate.
+  - On this path none does.
+  - That is the mend working; the premise was a played path's, not a rule.
+- **The call.** It is a fixture premise a moved played city no longer reaches. Following the brief,
+  it passes by name in the ship file's `## known-reds`, with FS11 as the queued fix.
+  - FS11 is FS1's sweep of HousingDoorCheck (`docs/studies/flaky-suite.md`, 6.10). It already plans
+    the door "whose bank capital is below the order on a founding city" built by hand, with
+    `Game.considerOnMortgage` called once.
+  - That fixture needs an issue that falls short (or a quote under the gate) now, which FS11's
+    brief should say.
+
 ## Trace
 
 The trace moves: `Game.consider()` asks for more equity whenever the desk is short of capital for a
@@ -174,10 +198,10 @@ again on the mended commit.
 | check | result |
 |---|---|
 | `./batch-check.sh --fast` | compile, maps, Stale (0 firm) and tree green, before and after the merge of origin/main |
-| `CreditCrunchCheck` | green before and after the merge |
-| `MortgageCheck` | green |
-| `HousingDoorCheck` | green |
-| `BankFailureCheck` | green |
+| `CreditCrunchCheck` | green before and after the merge, and after the review's mends; 5 red on the desk before them |
+| `MortgageCheck` | green, before and after the review's mends |
+| `HousingDoorCheck` | green at 3251de681; after the review's mends one fixture line red, passed by name (FS11, above) |
+| `BankFailureCheck` | green, before and after the review's mends |
 | `sh tools/pick.sh origin/main HEAD` | ALL (231 harnesses), because `AllChecks.java` changed; it says "review not needed" |
 
 The mends mail says "review: needed - money" all the same, because the change sizes an equity issue
