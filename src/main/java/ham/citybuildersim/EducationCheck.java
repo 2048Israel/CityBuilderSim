@@ -1214,26 +1214,43 @@ public class EducationCheck {
                 priced.getTuitionScale() == TaxPolicy.MAX_TUITION_SCALE);
 
         /*
-         * A POOR CITY WITH ONE UNIVERSITY, at five years. The fixture the
-         * rest of this harness uses has six colleges and three universities
-         * for a city of twenty thousand, so its seats bind: the price moved
-         * the willing share from .76 to .29 and the student body by nobody,
-         * because a full school admits as many as graduate whatever the
-         * price. One university in the same city is willingness-bound, and
-         * five years in, the wages are still near the ones the table was
-         * struck against - which is what "poor" means here.
+         * A POOR CITY WITH THREE UNIVERSITIES AND NO COLLEGE, at five years.
+         * The fixture the rest of this harness uses has six colleges and
+         * three universities for a city of twenty thousand, so its seats
+         * bind: the price moved the willing share from .76 to .29 and the
+         * student body by nobody, because a full school admits as many as
+         * graduate whatever the price. Without the colleges the pool is the
+         * diploma band, and five years in, the wages are still near the ones
+         * the table was struck against - which is what "poor" means here.
+         *
+         * THREE, NOT ONE, since EDU1 (2026-11-20). One university was
+         * willingness-bound at x3 only while the city stayed small; at x1
+         * and x0 it was already full at five years. On the chained world
+         * prices (CU2, 0.9.130) the city is a sixth larger at month 60
+         * (23,011 people at x3, DQ1's merge 19,779) and the diploma band with
+         * it (10,482 eligible, 8,857), so x3's intake, still 55% of x1's
+         * a month, filled the same seats by month 60: 1,632 enrolled at x3
+         * to 1,652 at x1, though the willing share fell from .72 to .35. The
+         * trap was all there and the seats hid it. Three universities never
+         * fill (the fixture line below, which a single one fails), so the
+         * student body is what the willing make of the pool, and the price
+         * reaches it.
          */
         Game[] priceCities = new Game[3];
         double[] scales = { 1, 3, 0 };
+        double[] fullest = new double[3];
         quietly(() -> {
             for (int k = 0; k < 3; k++) {
                 priceCities[k] = city(GameFiles.scratch("educheck-price-" + k));
                 build(priceCities[k], "Elementary School", 14);
                 build(priceCities[k], "Middle School", 14);
                 build(priceCities[k], "High School", 10);
-                build(priceCities[k], "University", 1);
+                build(priceCities[k], "University", 3);
                 priceCities[k].getEconomyManager().getTaxPolicy().setTuitionScale(scales[k]);
-                priceCities[k].simulateMonths(60);
+                for (int m = 0; m < 60; m++) {
+                    priceCities[k].simulateMonths(1);
+                    fullest[k] = Math.max(fullest[k], fullness(priceCities[k], EducationType.UNIVERSITY));
+                }
             }
         });
         double[] enrolled = new double[3];
@@ -1246,13 +1263,17 @@ public class EducationCheck {
         Education atOne = priceCities[0].getEducation(), atThree = priceCities[1].getEducation(),
                 atNone = priceCities[2].getEducation();
         System.out.printf("   at university: %,.0f at x1, %,.0f at x3, %,.0f at x0 (willing %.2f / %.2f / %.2f);"
-                + " fees $%,.1fk / $%,.1fk / $%,.1fk, forgiven $%,.1fk / $%,.1fk / $%,.1fk%n",
+                + " fees $%,.1fk / $%,.1fk / $%,.1fk, forgiven $%,.1fk / $%,.1fk / $%,.1fk;"
+                + " fullest %.2f / %.2f / %.2f of the staffed seats%n",
                 enrolled[0], enrolled[1], enrolled[2], willing[0], willing[1], willing[2],
                 atOne.getFees(), atThree.getFees(), atNone.getFees(),
-                atOne.getSubsidy(), atThree.getSubsidy(), atNone.getSubsidy());
+                atOne.getSubsidy(), atThree.getSubsidy(), atNone.getSubsidy(),
+                fullest[0], fullest[1], fullest[2]);
         assertTrue("the schools charge at the city's scale", atThree.getTuitionScale() == 3 && atNone.getTuitionScale() == 0);
         assertTrue("fixture: the price is what decides here - x3 cuts the willing share, not the seats",
                 willing[1] < willing[0] * .6);
+        assertTrue("fixture: at x1 and x3 no university filled in five years, so the willing, not the seats, set every intake",
+                fullest[0] < 1 && fullest[1] < 1);
         assertTrue("a poor city at x3 enrols fewer than at x1: the trap is back", enrolled[1] < enrolled[0] * .9);
         boolean everybodyCan = true;
         for (EducationType type : EducationType.values()) {
@@ -1475,6 +1496,15 @@ public class EducationCheck {
      */
     static double heads(Game g, WageBand band) {
         return g.getPopulationManager().workforceByBand()[band.ordinal()];
+    }
+
+    /**
+     * How full one kind's schools stand at the month's end: its student body over the seats its staff can teach, the
+     * places the month hands Education (BuildingManager.getStaffedEducationPlaces at the city's fill rate). See section 15.
+     */
+    static double fullness(Game g, EducationType type) {
+        double seats = g.getBuildingManager().getStaffedEducationPlaces(g.getPopulationManager().getJobFillRate())[type.ordinal()];
+        return g.getEducation().studentBody(type) / Math.max(1e-9, seats);
     }
 
     /** Last month's journal line by its label, or NaN for none. See section 14. */

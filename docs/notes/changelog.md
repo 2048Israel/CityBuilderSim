@@ -18,6 +18,28 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.167 — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
+The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
+1/420 (at 70, as before). The young form seven of the eleven household shapes and carry half the babies, a quarter of
+the children and no teens. The books keep the young in 42 working cells beside the established's 66, the pool's group
+is (tier, stage), and the young who turn 35 carry their money with them, HL1's identity closing every month. A theft
+no household could take home is no longer taken. Saves are format 58 (57 no longer loads). The 80 pass every hard
+criterion but end smaller, the final population 0.748 of BO1-S's in AUTO2 and 0.745 in ZERO_SLACK, so both T2 lines
+(soft) now FAIL. Why: a young city's adults are mostly young and the young do not retire, so it keeps fewer seniors
+(9% of the people against 11%) and more adults want the same jobs (unemployment 9.3% against 6.7% in m720-1440, where
+the size is lost). The retired are richer (0.74 of the workers' net worth against 0.56). Twice the cells need twice
+the households before each holds half of one and shops: the 1900 village keeps 13% of its households in such cells at
+m12 (main 9%), 3% at m60 (2%), and is no smaller (544 people at m120 against 504).
+
+### EDU1 — the poverty trap's gap in EducationCheck — 2026-11-20, ready, no tag (harness), see docs/queue/EDU1-notes.md
+EducationCheck's "a poor city at x3 enrols fewer than at x1: the trap is back" was red on main from CU2 (0.9.130), seen only at R6b's pick, the harness being nightly.
+Bisected on the kept gate runs and probes: green at SQ1's and DQ1's merges (x1 1,673, x3 1,438), red at CU2's (1,652 / 1,632). The model did not move: at x3 the
+willing share still falls from .72 to .35 and the month's intake to about half of x1's. The chained world prices make the fixture city a sixth larger at five years
+(23,011 people at x3 against 19,779), so x3's half-rate intake filled the one university that x1 and x0 already filled. Section 15's three cities now build three
+universities, as the rest of the harness does, stepped by the month, with a fixture line that none filled at x1 or x3 (at most .72 and .32 of the staffed seats).
+The trap line is unchanged: 3,307 at x1, 1,543 at x3, 3,867 at x0. It goes red with one university, where the fixture line names why, and with the fee kept out of
+affordability. EducationCheck's known red is retired.
+
 ### 0.9.166 — R2e-PE4, the Cement Plant calibrated rotary-first — 2026-11-20, ready, see docs/queue/R2e-PE4-notes.md
 The Cement Plant's PE4 (Edison's long kiln, 1902) is defined against its rotary kiln now, as R2e and R1d recommended: a
 plant on the rotary kiln without PE4 burns the study's 30% of its cement in coal (7,500 t a month, was 6,160), the long

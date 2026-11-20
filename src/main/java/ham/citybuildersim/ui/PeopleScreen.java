@@ -1166,12 +1166,20 @@ final class PeopleScreen {
             row.setAlignment(Pos.CENTER_LEFT);
             row.setMinHeight(34);
             row.setPrefHeight(34);
+            // The adults' two stages (HS2): the young, who move up at 35, and the established, who retire at 70.
+            String stages = b != AgeBand.ADULT ? "" : String.format(
+                    "%n%s, %d-%d: %s (a settled city's %.0f%% of the adults)%n%s, %d-%d: %s",
+                    AdultStage.YOUNG.getLabel(), AdultStage.YOUNG.getFromAge(), AdultStage.YOUNG.getToAge() - 1,
+                    people(cohorts.get(AdultStage.YOUNG)),
+                    PopulationCohorts.settledYoungShareOfAdults() * 100,
+                    AdultStage.ESTABLISHED.getLabel(), AdultStage.ESTABLISHED.getFromAge(),
+                    AdultStage.ESTABLISHED.getToAge() - 1, people(cohorts.get(AdultStage.ESTABLISHED)));
             Kept.tip(row, String.format(
                     "%s, %s: %s people, %.1f%% of the city%nA settled city: %.1f%%%n%.0f%% of them off sick"
                     + "%nDied of illness this month: %s",
                     b.getLabel(), ages(b), people(cohorts.get(b)), cohorts.share(b) * 100,
                     PopulationCohorts.equilibriumShare(b) * 100, sickness.share(b) * 100,
-                    flowText(sickness.getLastDeaths(b))), 250);
+                    flowText(sickness.getLastDeaths(b))) + stages, 250);
             rows.getChildren().add(row);
         }
 
@@ -4565,11 +4573,32 @@ final class PeopleScreen {
         panel.setStyle("-fx-padding: 10 14 12 14;"
                 + Palette.block(Palette.PANEL, Palette.ACCENT));
 
-        Label who = Kept.label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex));
+        /*
+         * THE ESTABLISHED'S BOOKS WHERE THE YOUNG HOLD SOME OF THE CELL (HS2).
+         * The grid's cell is both adult stages; the ledger below is the
+         * established's own cell, and the young keep books of their own, so
+         * the panel says whose they are and how many young it leaves out.
+         */
+        Household youngCell = bal.cell(shape, tier, AdultStage.YOUNG);
+        double youngHomes = youngCell == null ? 0 : youngCell.households();
+        boolean both = youngCell != null && !youngCell.isEmpty();
+        Label who = Kept.label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex)
+                + (both ? "  ·  established, 35-69" : ""));
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
                 + " -fx-font-weight: bold;");
         panel.getChildren().add(who);
         panel.getChildren().add(panelWho(bal, own));
+        if (both) {
+            panel.getChildren().add(Kept.scope("youngToo", () -> {
+                Label young = Kept.label("...and " + people(youngHomes)
+                        + " young households, 18-34, on books of their own");
+                young.setWrapText(true);
+                young.setMaxWidth(STATEMENT - 28);
+                young.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
+                        + " -fx-padding: 0 0 6 0;");
+                return young;
+            }));
+        }
 
         /*
          * WHAT COMES IN, SPLIT IN TWO. statementFor() adds a wage per earner to
