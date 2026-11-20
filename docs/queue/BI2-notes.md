@@ -80,10 +80,13 @@ detached worktree, and on this branch at dd75a68dd (the same model code as the f
   identity hash (`LandParcel@30f842ca` against `@4d15107f`, month 1800's works decision) and two wall-clock stamps
   (`[16:19:07]` against `[16:19:17]`) on a currency-purchase line. Both runs ended `All checks passed.`, exit 0.
 - So the ensemble does not run (docs/contract.md, section 4: an unchanged trace is said in the notes).
+- Main then moved (HL1-M, `12a9e7f03`: `CityRuns`, `MapCheck`, the map; the model reads none of it) and was merged in at
+  `0f68a92d6`; the trace is not run again: HL1-M touches no `Bank*` file, and the getter stays screen-only (above), so what
+  BI2 does to the trace cannot depend on the path under it. `--fast` and `BankCheck` were rerun on the merge (below).
 
 ## The checks
 
-- `./batch-check.sh --fast`: green: compile, maps regenerated, Stale 0 firm, tree only the generated docs and the three sources.
+- `./batch-check.sh --fast`: green, on the final tree and again after the merge of main: compile, maps regenerated, Stale 0 firm, tree only the generated docs and the three sources.
 - `BankCheck` alone (`java -cp "target/classes;$(cat target/classpath.txt)" ham.citybuildersim.BankCheck`, one JVM, 58 s),
   final tree: the new section 27 lines OK, 0 FAIL, and the played-city line OK; the run's one FAIL is `it pays its savers
   something` (FS9, `docs/notes/known-reds.txt`: main's own).
