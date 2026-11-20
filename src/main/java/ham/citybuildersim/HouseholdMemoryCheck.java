@@ -70,15 +70,16 @@ public class HouseholdMemoryCheck {
         return g == AdultStage.YOUNG ? y : 1 - y;
     }
 
-    /** A pyramid with its adults' young named: the cohorts' own save, the young after its seven scalars. */
+    /** A pyramid with its adults' young named: the cohorts' own save, the two stages after its seven scalars. */
     static PopulationCohorts staged(double babies, double children, double teens, double adults, double young) {
         String[] names = PopulationCohorts.saveBands();
-        double[] a = new double[names.length + 8];
+        double[] a = new double[names.length + 9];
         a[AgeBand.BABY.ordinal()] = babies;
         a[AgeBand.CHILD.ordinal()] = children;
         a[AgeBand.TEEN.ordinal()] = teens;
         a[AgeBand.ADULT.ordinal()] = adults;
         a[names.length + 7] = young;
+        a[names.length + 8] = Math.max(0, adults - young);
         PopulationCohorts c = new PopulationCohorts();
         c.restore(names, a);
         return c;

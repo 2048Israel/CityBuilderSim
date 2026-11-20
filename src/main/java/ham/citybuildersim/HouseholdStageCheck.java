@@ -222,6 +222,23 @@ public class HouseholdStageCheck {
         back.restore(PopulationCohorts.saveBands(), dying.toSaveArray());
         check("...and the young come back from the save", back.get(young), dying.get(young));
         check("...the established with them", back.get(established), dying.get(established));
+        // To the bit, each stage its own figure: the established struck as the
+        // adults less the young came back a bit off, and CausesOfDeathCheck's
+        // reloads played on were no longer the unbroken city.
+        assertTrue("...both stages and the adults to the bit, so a reload played on is the unbroken city",
+                back.get(young) == dying.get(young) && back.get(established) == dying.get(established)
+                        && back.get(AgeBand.ADULT) == dying.get(AgeBand.ADULT));
+        double[] odd = dying.toSaveArray();
+        int stages = PopulationCohorts.saveBands().length + 7;
+        odd[AgeBand.ADULT.ordinal()] = 1000.1 + 2000.2;
+        odd[stages] = 1000.1;
+        odd[stages + 1] = 2000.2;
+        assertTrue("fixture: 1,000.1 young and 2,000.2 established, whose adults less the young are not the established in the last bit",
+                odd[AgeBand.ADULT.ordinal()] - odd[stages] != odd[stages + 1]);
+        PopulationCohorts oddBack = new PopulationCohorts();
+        oddBack.restore(PopulationCohorts.saveBands(), odd);
+        assertTrue("...and the save brings back its established to the bit, and its adults",
+                oddBack.get(established) == 2000.2 && oddBack.get(AgeBand.ADULT) == 1000.1 + 2000.2);
 
         double eqY = PopulationCohorts.equilibriumShare(young), eqE = PopulationCohorts.equilibriumShare(established);
         check("a settled city's two stages are its adults", eqY + eqE, PopulationCohorts.equilibriumShare(AgeBand.ADULT));

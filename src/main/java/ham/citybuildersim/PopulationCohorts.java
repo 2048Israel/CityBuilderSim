@@ -675,7 +675,7 @@ public class PopulationCohorts {
     }
 
     public double[] toSaveArray() {
-        double[] out = new double[band.length + 8];
+        double[] out = new double[band.length + 9];
         System.arraycopy(band, 0, out, 0, band.length);
         out[band.length]     = lastBirths;
         out[band.length + 1] = lastDeaths;
@@ -686,8 +686,11 @@ public class PopulationCohorts {
         out[band.length + 5] = lastAgedOut;
         // ...and the dead of the causes of 1900 (R0b).
         out[band.length + 6] = lastCauses;
-        // ...and the young adults (HS2, SAVE_FORMAT 58): the established are the adults less them.
+        // ...and the two adult stages (HS2, SAVE_FORMAT 58), each its own figure:
+        // the established struck as the adults less the young came back a bit
+        // off, and a reload played on was no longer the unbroken city.
         out[band.length + 7] = stage[AdultStage.YOUNG.ordinal()];
+        out[band.length + 8] = stage[AdultStage.ESTABLISHED.ordinal()];
         return out;
     }
 
@@ -703,7 +706,8 @@ public class PopulationCohorts {
      *              file from before they travelled, which is always LEGACY_BANDS
      * @param saved those bands in that order, then births, deaths and migration
      *              - and since 0.7.27 the killed, the dead of age and the aged out,
-     *              and since R0b the dead of the causes of 1900
+     *              and since R0b the dead of the causes of 1900, and since HS2
+     *              the young adults and the established
      *
      * Refused whole on a length mismatch rather than padded, which is this
      * codebase's standing rule for state arrays: a pyramid read at the wrong
@@ -735,13 +739,13 @@ public class PopulationCohorts {
          * what a city before them had: nobody died of them.
          */
         /*
-         * ...AND A FIFTH SINCE HS2: the young adults after those, the
-         * established being the band's adults less them. A save without it
-         * splits its adults at the settled city's shares (equilibriumShare):
-         * an honest guess for a pyramid that never knew its ages, and its
-         * adults are still its adults.
+         * ...AND A FIFTH SINCE HS2: the two adult stages after those, the
+         * young then the established, and the band's adults their sum. A save
+         * without them splits its adults at the settled city's shares
+         * (equilibriumShare): an honest guess for a pyramid that never knew
+         * its ages, and its adults are still its adults.
          */
-        boolean withStages = saved.length == names.length + 8;
+        boolean withStages = saved.length == names.length + 9;
         boolean withFourth = withStages || saved.length == names.length + 7;
         boolean withCauses = withFourth || saved.length == names.length + 6;
         boolean withMigration = withCauses || saved.length == names.length + 3;
@@ -779,11 +783,14 @@ public class PopulationCohorts {
         lastAgedOut     = withCauses ? saved[names.length + 5] : 0;
         lastCauses      = withFourth ? saved[names.length + 6] : 0;
         double adults = band[AgeBand.ADULT.ordinal()];
-        double young = withStages
-                ? Math.max(0, Math.min(adults, saved[names.length + 7]))
-                : adults * share(equilibriumShare(AdultStage.YOUNG), equilibriumShare(AgeBand.ADULT));
-        stage[AdultStage.YOUNG.ordinal()] = young;
-        stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, adults - young);
+        if (withStages) {
+            stage[AdultStage.YOUNG.ordinal()] = Math.max(0, saved[names.length + 7]);
+            stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, saved[names.length + 8]);
+        } else {
+            double young = adults * share(equilibriumShare(AdultStage.YOUNG), equilibriumShare(AgeBand.ADULT));
+            stage[AdultStage.YOUNG.ordinal()] = young;
+            stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, adults - young);
+        }
         syncAdults();
     }
 
