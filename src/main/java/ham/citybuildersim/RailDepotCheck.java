@@ -32,7 +32,11 @@ import java.util.TreeSet;
  *   4. THE STATIONS CAP WHAT IS RAILED: goods only through a station, bulk
  *      past the stations on the spurs' sidings, and nothing at all with
  *      neither - first as the dealing's arithmetic, then in a played city's
- *      months.
+ *      months (FS7: where the spurs laid are sized from the bulk the played
+ *      city offers while it rails nothing - floor(offered / P) - 1 of them, P
+ *      a spur's sidings - so the cap binds by construction, and the depot
+ *      comes with the spurs that put its stations' and the sidings' tonnes
+ *      past the offer, so the goods ride it by construction).
  *   5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING: the bulk-works predicate
  *      (counted and named), a spur ordered while a bulk works has none and
  *      the track and the sidings are short, none when every works has one or
@@ -343,26 +347,46 @@ public class RailDepotCheck {
          * month's shares, which can pass a capacity a rising trade has just outgrown. The shares in force are the dealing's own,
          * made of this month's offer, so offered x share is exactly what the capacity let through.
          */
-        quietly(() -> { HaulageCheck.lay(city, "Rail Spur", 2); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
+        // FS7: this laid two spurs and found, in the played months, that the bulk offered passed their sidings (a premise the play decided). The spurs
+        // are now sized from the bulk the played city offers while it rails nothing (the lines' month, read just above): floor(offered / P) - 1 of them,
+        // P a spur's sidings (the template's), so their sidings are short of the bulk offered by at least one spur's whole sidings - past any month's
+        // drift - and the cap binds by construction, whatever the played city offers. A city offering under two spurs' sidings has no fixture (the gate).
+        final double bulkPlayed = fr.getBulkOffered();
+        final int spursLaid = (int) Math.floor(bulkPlayed / P) - 1;
+        assertTrue("fixture: the played city offers more than two spurs' sidings of bulk, so there is a spur count that leaves the bulk past its sidings",
+                spursLaid >= 1);
+        quietly(() -> { HaulageCheck.lay(city, "Rail Spur", Math.max(spursLaid, 0)); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
         double goodsOffered = fr.getOfferedTonnes() - fr.getBulkOffered();
         double dealtSpurs = dealtNow(fr);
-        report("then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it",
-                fr.getCapacityTonnes() == fr.sidingTonnes() && fr.sidingTonnes() == 2 * P && fr.getHauledTonnes() > 0
+        report("then spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it",
+                fr.getCapacityTonnes() == fr.sidingTonnes() && fr.sidingTonnes() == spursLaid * P && fr.getHauledTonnes() > 0
                         && fr.getBulkOffered() > fr.sidingTonnes() && near(dealtSpurs, fr.sidingTonnes(), 1e-9)
                         && fr.getCarried()[Traffic.BULK.ordinal()] > 0,
-                String.format("%,.0f t offered (%,.0f of it bulk), %,.0f dealt of the sidings' %,.0f", fr.getOfferedTonnes(), fr.getBulkOffered(),
-                        dealtSpurs, fr.getCapacityTonnes()));
+                String.format("%d spur(s) for %,.0f t of bulk played; %,.0f t offered (%,.0f of it bulk), %,.0f dealt of the sidings' %,.0f", spursLaid, bulkPlayed,
+                        fr.getOfferedTonnes(), fr.getBulkOffered(), dealtSpurs, fr.getCapacityTonnes()));
+        // FS7: the goods offered are the shops' imports in the played city, a stream of the sectors' trade rows that no setter reaches: the premise stays the play's,
+        // and it fails here as the fixture it is when the played city offers none (the law below is vacuous without them).
         report("...and the goods, which go only through a station, are not railed at all (the fixture offers some)",
                 goodsOffered > 0 && fr.getCarried()[Traffic.GOODS.ordinal()] == 0,
                 String.format("%,.0f t of goods offered, goods share %s", goodsOffered, fr.getCarried()[Traffic.GOODS.ordinal()]));
 
-        quietly(() -> { HaulageCheck.lay(city, "Rail Depot", 1); for (int i = 0; i < 3; i++) city.toggleNextMonth(); });
+        // FS7: the depot step laid the depot beside the two spurs the city stood on and read that its stations and sidings passed the offered tonnes (the
+        // play's 112,925 t under 150,000): with fewer spurs, bulk takes the station first (deal()) and the goods ride nothing. So the depot comes with the spurs
+        // that put the stations' and the sidings' tonnes past what the spurs' month offered by at least one spur's sidings: ceil((offered - S) / P) in all, and one
+        // over; the goods ride the station by construction (the capacity is past the offer), whatever the played city offered.
+        final double offeredSpurs = fr.getOfferedTonnes();
+        final int moreSpurs = (int) Math.max(0, Math.ceil((offeredSpurs - S) / P) - spursLaid) + 1;
+        quietly(() -> {
+            HaulageCheck.lay(city, "Rail Depot", 1);
+            HaulageCheck.lay(city, "Rail Spur", moreSpurs);
+            for (int i = 0; i < 3; i++) city.toggleNextMonth();
+        });
         double wagons = fr.fleet() * Freight.TONNES_PER_SET;
         double dealtDepot = dealtNow(fr);
-        report("then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station",
+        report("then a depot (and the spurs that carry the offer past it): the capacity is the stations' and the sidings' together, and the goods ride the station",
                 wagons >= fr.stationTonnes() + fr.sidingTonnes() && fr.getCapacityTonnes() == fr.stationTonnes() + fr.sidingTonnes()
                         && fr.stationTonnes() == depot.getStationTonnes()
-                        && near(dealtDepot, Math.min(fr.getCapacityTonnes(), fr.getOfferedTonnes()), 1e-9)
+                        && fr.getCapacityTonnes() > fr.getOfferedTonnes() && near(dealtDepot, Math.min(fr.getCapacityTonnes(), fr.getOfferedTonnes()), 1e-9)
                         && fr.getCarried()[Traffic.GOODS.ordinal()] > 0,
                 String.format("%,.0f t dealt of %,.0f offered and %,.0f capacity (%,.0f stations + %,.0f sidings), goods share %.3f", dealtDepot,
                         fr.getOfferedTonnes(), fr.getCapacityTonnes(), fr.stationTonnes(), fr.sidingTonnes(), fr.getCarried()[Traffic.GOODS.ordinal()]));
