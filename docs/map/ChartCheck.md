@@ -1,6 +1,6 @@
-# ChartCheck.java - 963 lines · 28 methods · 0 constants · harnesses
+# ChartCheck.java - 962 lines · 28 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ChartCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChartCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The charts (0.7.23): the player's decisions as the model records them,
 > and the arithmetic City History's charts are drawn by - the window, the
@@ -71,14 +71,14 @@
 | line | section |
 |---:|---|
 | 164 | 1. THE DECISION LOG |
-| 318 | 2. A SAVE AND A LOAD |
-| 371 | 3. THE SPANS ARE THE YEAR BOOK'S |
-| 527 | 4. THE TICKS |
-| 609 | 5. PAN AND ZOOM CLAMP |
-| 658 | 6. THE FLAGS |
-| 709 | 7. A YOUNG CITY'S WINDOW |
-| 759 | 8. A CHART DRAWS FROM WHAT IT WAS HANDED |
-| 926 | 9. NO AXIS FLOOR UNDER A SERIES THAT STAYS OVER ZERO |
+| 317 | 2. A SAVE AND A LOAD |
+| 370 | 3. THE SPANS ARE THE YEAR BOOK'S |
+| 526 | 4. THE TICKS |
+| 608 | 5. PAN AND ZOOM CLAMP |
+| 657 | 6. THE FLAGS |
+| 708 | 7. A YOUNG CITY'S WINDOW |
+| 758 | 8. A CHART DRAWS FROM WHAT IT WAS HANDED |
+| 925 | 9. NO AXIS FLOOR UNDER A SERIES THAT STAYS OVER ZERO |
 
 ## Fields (state)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 883 | **type** `public class ChartCheck` | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the ticks, the scales, the bands, the lanes and the flags, and the years under... |
+| 81 | 882 | **type** `public class ChartCheck` | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the ticks, the scales, the bands, the lanes and the flags, and the years under... |
 | 87 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 92 | 5 | `static void same(String label, Object actual, Object expected)` |  |
 | 98 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -101,7 +101,7 @@
 | 122 | 21 | `static Game city(Path root, String name)` | A played city with a little of everything a decision touches: works, people, a bank, depots, every sector held so no planner orders anything, and on site a University and two Middle Schools of the city's own. |
 | 144 | 19 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE DECISION LOG (lines 164-317)
+### 1. THE DECISION LOG (lines 164-316)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -110,60 +110,60 @@
 | 179 | 12 | `static void decides(Game g, String what, String kind, java.util.function.Supplier<String> saying, Runnable hand)` | ...with what it should say worked out after the hand, from what the hand did: a face, a clamped floor. |
 | 193 | 6 | `static void changesNothing(Game g, String what, Runnable hand)` | ...and the same hand again, changing nothing, records nothing. |
 | 201 | 4 | `static double newestFace(Game g)` | The face of the paper the city issued last: the newest debt on its books. |
-| 206 | 111 | `static Game theLogRecordsEachKind(Path root)` |  |
+| 206 | 110 | `static Game theLogRecordsEachKind(Path root)` |  |
 
-### 2. A SAVE AND A LOAD (lines 318-370)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 320 | 50 | `static void theLogSurvivesASave(Path root, Game g) throws Exception` |  |
-
-### 3. THE SPANS ARE THE YEAR BOOK'S (lines 371-526)
+### 2. A SAVE AND A LOAD (lines 317-369)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 374 | 14 | `static HistorySave built(int months, String[] series, double[]...values)` | A history of `months` months with these series, each as long as the axis. |
-| 389 | 5 | `static double[] flat(int months, double v)` |  |
-| 395 | 87 | `static void theSpansAreTheYearBooks()` |  |
-| 491 | 35 | `static void whatIsRunning()` | What City History's RUNNING NOW reads (0.7.37): YearBook.running(). |
+| 319 | 50 | `static void theLogSurvivesASave(Path root, Game g) throws Exception` |  |
 
-### 4. THE TICKS (lines 527-608)
+### 3. THE SPANS ARE THE YEAR BOOK'S (lines 370-525)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 529 | 79 | `static void theTicks()` |  |
+| 373 | 14 | `static HistorySave built(int months, String[] series, double[]...values)` | A history of `months` months with these series, each as long as the axis. |
+| 388 | 5 | `static double[] flat(int months, double v)` |  |
+| 394 | 87 | `static void theSpansAreTheYearBooks()` |  |
+| 490 | 35 | `static void whatIsRunning()` | What City History's RUNNING NOW reads (0.7.37): YearBook.running(). |
 
-### 5. PAN AND ZOOM CLAMP (lines 609-657)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 611 | 46 | `static void panAndZoomClamp()` |  |
-
-### 6. THE FLAGS (lines 658-708)
+### 4. THE TICKS (lines 526-607)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 660 | 48 | `static void theFlags()` |  |
+| 528 | 79 | `static void theTicks()` |  |
 
-### 7. A YOUNG CITY'S WINDOW (lines 709-758)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 711 | 47 | `static void aYoungCitysWindow()` |  |
-
-### 8. A CHART DRAWS FROM WHAT IT WAS HANDED (lines 759-925)
+### 5. PAN AND ZOOM CLAMP (lines 608-656)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 768 | 22 | `static List<double[]> walk0749(List<Integer> months, double[][] layers, double lo, double hi)` | 0.7.49's TimeChart.drawStack(), its walk without the canvas: each layer's points {month, top, bottom} over the months it was handed, the way it read them - straight out of the arrays, by the list's index. |
-| 792 | 7 | `static List<double[]> runs0750(List<Integer> months, double[][] layers, double lo, double hi)` | The same points as ChartModel.stackRuns() gives them, every layer's runs in the order the chart fills them. |
-| 800 | 5 | `static boolean samePoints(List<double[]> a, List<double[]> b)` |  |
-| 813 | 11 | `static double[] frame(List<Integer> months, double[][] layers, double[][] lines, ChartModel w, double pointer)` | What the chart does on every frame, from what it holds: the stack's runs and reach, each line read at every month in the window, and the hover's readout at the month nearest `pointer` - every line's and layer's value ... |
-| 825 | 100 | `static void aChartDrawsFromItsSnapshot(Path root)` |  |
+| 610 | 46 | `static void panAndZoomClamp()` |  |
 
-### 9. NO AXIS FLOOR UNDER A SERIES THAT STAYS OVER ZERO (lines 926-963)
+### 6. THE FLAGS (lines 657-707)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 928 | 35 | `static void aSeriesThatCannotGoUnderZero()` |  |
+| 659 | 48 | `static void theFlags()` |  |
+
+### 7. A YOUNG CITY'S WINDOW (lines 708-757)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 710 | 47 | `static void aYoungCitysWindow()` |  |
+
+### 8. A CHART DRAWS FROM WHAT IT WAS HANDED (lines 758-924)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 767 | 22 | `static List<double[]> walk0749(List<Integer> months, double[][] layers, double lo, double hi)` | 0.7.49's TimeChart.drawStack(), its walk without the canvas: each layer's points {month, top, bottom} over the months it was handed, the way it read them - straight out of the arrays, by the list's index. |
+| 791 | 7 | `static List<double[]> runs0750(List<Integer> months, double[][] layers, double lo, double hi)` | The same points as ChartModel.stackRuns() gives them, every layer's runs in the order the chart fills them. |
+| 799 | 5 | `static boolean samePoints(List<double[]> a, List<double[]> b)` |  |
+| 812 | 11 | `static double[] frame(List<Integer> months, double[][] layers, double[][] lines, ChartModel w, double pointer)` | What the chart does on every frame, from what it holds: the stack's runs and reach, each line read at every month in the window, and the hover's readout at the month nearest `pointer` - every line's and layer's value ... |
+| 824 | 100 | `static void aChartDrawsFromItsSnapshot(Path root)` |  |
+
+### 9. NO AXIS FLOOR UNDER A SERIES THAT STAYS OVER ZERO (lines 925-962)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 927 | 35 | `static void aSeriesThatCannotGoUnderZero()` |  |
 

@@ -251,9 +251,9 @@ public class RailCheck {
 
         quietly(() -> {
             game.newGame();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the town below was written against one that taxes from month 1.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the town below was
+            // written against one that taxes from month 1; every lever is open from the founding since OP1.
             game.getEconomyManager().getTaxPolicy().reset();
-            game.getEconomyManager().getTaxPolicy().openAll();
             // ...and 1900's causes of death held off (R0b), as ScaleCheck's city is: the freight this town ships is its people's, and the railway's net is read against it.
             game.holdCausesOfDeathOff();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list

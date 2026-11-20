@@ -1,6 +1,6 @@
-# DistressBleedCheck.java - 492 lines · 12 methods · 8 constants · harnesses
+# DistressBleedCheck.java - 491 lines · 12 methods · 8 constants · harnesses
 
-`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
 > BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
@@ -41,19 +41,19 @@
 > Every fixture here CAUSES its condition. The counts are never set, nor the cash, nor a statement: the wage floor is
 > moved and the months are run.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (6), [Game](Game.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [OldMetal](OldMetal.md) (1), [PolicyDates](PolicyDates.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (6), [Game](Game.md) (4), [Sector](Sector.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [BuildingManager](BuildingManager.md) (2), [GameFiles](GameFiles.md) (2), [BusinessServices](BusinessServices.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [OldMetal](OldMetal.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 208 | · 1. the fixture: the sector loses money on its operations while it is lent |
-| 282 | · 2. nothing is sold below the dial |
-| 295 | · 3. plant goes while it is still lent |
-| 320 | · 4. never faster than the pace |
-| 357 | · 5. a net-loss count carried past the dial by interest sells nothing |
-| 429 | · 6. overdrawn with no lender, the quarter as before |
-| 446 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
+| 207 | · 1. the fixture: the sector loses money on its operations while it is lent |
+| 281 | · 2. nothing is sold below the dial |
+| 294 | · 3. plant goes while it is still lent |
+| 319 | · 4. never faster than the pace |
+| 356 | · 5. a net-loss count carried past the dial by interest sells nothing |
+| 428 | · 6. overdrawn with no lender, the quarter as before |
+| 445 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
 
 ## Constants
 
@@ -90,19 +90,19 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 442 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
+| 51 | 441 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
 | 57 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 | 96 | 7 | **type** `static final class Row` | One month of the sector, read at the month's end. |
-| 105 | 58 | **type** `static final class Town` | A scratch city with the sector's fixture in it, and what a month reads of it. |
+| 105 | 57 | **type** `static final class Town` | A scratch city with the sector's fixture in it, and what a month reads of it. |
 | 114 | 8 | `Town(Game city)` _(in DistressBleedCheck.Town)_ |  |
 | 123 | 18 | `Row read()` _(in DistressBleedCheck.Town)_ |  |
 | 142 | 4 | `Row month()` _(in DistressBleedCheck.Town)_ |  |
-| 148 | 8 | `void raiseFloor()` _(in DistressBleedCheck.Town)_ | The cause: the minimum wage law opened and the floor lifted. |
-| 158 | 4 | `void liftFloor()` _(in DistressBleedCheck.Town)_ | The cause taken away again: the floor back where it was, no longer binding. |
-| 165 | 18 | `static Town town(String prefix) throws Exception` | A town of houses, shops, power, water and road around CENTRES Contact Centres, a founding two years old. |
-| 185 | 3 | `static long stepFor(long held)` | The months the dial lets pass between two sales when this many are held: one building every so many months of the losses. |
-| 190 | 6 | `static boolean pastDialSolvent(Town t)` | Whether a sector that does not bleed has lost money DISTRESS_LOSS_MONTHS running and ends the month with cash at or above zero. |
-| 197 | 5 | `static String list(List<Long> xs)` |  |
-| 203 | 289 | `public static void main(String[] args) throws Exception` |  |
+| 148 | 7 | `void raiseFloor()` _(in DistressBleedCheck.Town)_ | The cause: the floor lifted (the minimum wage law is open from the founding since OP1; the fixture opened it here before). |
+| 157 | 4 | `void liftFloor()` _(in DistressBleedCheck.Town)_ | The cause taken away again: the floor back where it was, no longer binding. |
+| 164 | 18 | `static Town town(String prefix) throws Exception` | A town of houses, shops, power, water and road around CENTRES Contact Centres, a founding two years old. |
+| 184 | 3 | `static long stepFor(long held)` | The months the dial lets pass between two sales when this many are held: one building every so many months of the losses. |
+| 189 | 6 | `static boolean pastDialSolvent(Town t)` | Whether a sector that does not bleed has lost money DISTRESS_LOSS_MONTHS running and ends the month with cash at or above zero. |
+| 196 | 5 | `static String list(List<Long> xs)` |  |
+| 202 | 289 | `public static void main(String[] args) throws Exception` |  |
 

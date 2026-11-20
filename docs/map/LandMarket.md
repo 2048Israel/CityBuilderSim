@@ -1,6 +1,6 @@
 # LandMarket.java - 1,807 lines · 111 methods · 14 constants · model
 
-`ham/citybuildersim/LandMarket.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMarket.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs.
 > 

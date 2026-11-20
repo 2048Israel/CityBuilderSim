@@ -827,7 +827,6 @@ public final class WorksFinanceCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
         utility.setWattsConsumption(utility.getProduction() * 1.2);
-        g.getEconomyManager().getTaxPolicy().openAll();
         for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.8);
         double lead = g.quoteBuild(wind, 1).months;
         check("fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short",

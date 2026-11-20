@@ -222,19 +222,17 @@ public class LabourMarket {
     private double minimumWage = DEFAULT_MINIMUM_WAGE;
 
     /**
-     * Whether the minimum wage is law yet (R0): false in a city before the date Canada first had one (PolicyDates, MINIMUM_WAGE, 1918),
-     * and then the floor binds no wage - the max() in advanceMonth() and isPinned()'s floor are skipped. Only that. The floor is not the
-     * ladder's anchor (WG1, 2026-11-10: baseWage() is goingRate x ratio x costOfLiving; until then the dial WAS the anchor, so it could not
-     * be zeroed), so the base wages, the curve and everything else stand: before 1918 the wages find their own levels above and below the
-     * going rate. Game pushes it with the policy's month (the lever's opening month is the city's, and a law find may move it); true for a
-     * labour market no city holds, which behaves as it always did. Never saved: the city says.
+     * Whether the floor binds: true in every city, the minimum wage law from the founding (OP1; from R0 to OP1 it was false before 1918,
+     * Canada's date). False only on a fixture whose premise is a market with no floor: then the max() in advanceMonth() and isPinned()'s floor
+     * are skipped, and only that. The floor is not the ladder's anchor (WG1, 2026-11-10: baseWage() is goingRate x ratio x costOfLiving), so
+     * the base wages, the curve and everything else stand, and the wages find their own levels above and below the going rate. Never saved.
      */
     private boolean floorBinding = true;
 
     /** Whether the floor binds (see floorBinding). */
     public boolean isFloorBinding() { return floorBinding; }
 
-    /** Game's push, with the policy's month: whether the minimum wage is law in this city yet. */
+    /** A fixture's market with no floor (see floorBinding); no city calls it. */
     public void setFloorBinding(boolean binding) { floorBinding = binding; }
 
     /* ===================================================================
@@ -654,7 +652,7 @@ public class LabourMarket {
              * real everywhere else; a bare `minimumWage` here is a legislated
              * minimum that inflation quietly removes. See cashMinimumWage().
              */
-            // ...from the date the law exists (R0): before it nobody is bound to pay the floor.
+            // ...where the floor binds: in every city since OP1 (from R0 to OP1, from the date the law existed); a fixture's market may have none.
             if (floorBinding) wage[i] = Math.max(wage[i], cashMinimumWage());
         }
     }

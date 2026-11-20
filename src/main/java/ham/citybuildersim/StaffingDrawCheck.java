@@ -165,6 +165,19 @@ public class StaffingDrawCheck {
         quietly(g::toggleNextMonth);
     }
 
+    /**
+     * The posts of one new building of `t` in this city, all bands: what Sector.staffing() asks the draw for, NewUnit.of()'s jobs.
+     * The template's own posts in a city founded the default way; in one founded the 1900 way the pieces fittedForNew() keeps,
+     * whose verdicts read the builders' sales tax (open from the founding since OP1, when section 8's orders first parted from
+     * their templates' posts).
+     */
+    static double posts(Game g, BuildingsTemplate t) {
+        NewUnit u = NewUnit.of(g, t);
+        double p = 0;
+        for (JobType job : JobType.values()) p += u.getJobs(job);
+        return p;
+    }
+
     /** The posts of a building, all bands. */
     static double posts(BuildingsTemplate t) {
         double p = 0;
@@ -279,7 +292,7 @@ public class StaffingDrawCheck {
     /** The workers Migration.drawFor() is to bring for one of this works: the formula in the model's own constants and last-month scalars. */
     static double expectedDraw(Game g, BuildingsTemplate t) {
         PopulationManager people = g.getPopulationManager();
-        return expectedPeople(g, posts(t)) * people.getWorkforceForSave() / people.getPopulation();
+        return expectedPeople(g, posts(g, t)) * people.getWorkforceForSave() / people.getPopulation();
     }
 
     /** The workers a number of drawn people come to in this city: the people over the population, times the workforce. */
@@ -340,7 +353,7 @@ public class StaffingDrawCheck {
         java.util.List<Ask> asks = new java.util.ArrayList<>();
         for (Sector s : g.getSectors().all()) {
             for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(s.key())) {
-                double p = posts(t);
+                double p = posts(g, t);
                 if (p > 0) asks.add(new Ask(s, t, p));
             }
         }

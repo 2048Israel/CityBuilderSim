@@ -348,10 +348,10 @@ public class CallCheck {
         Game city = new Game(files);
         quietly(() -> {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): this town was written against one that taxes from month 1
-            // (a 1900 town has no income tax to 1916-17, no sales tax to 1920). Opened and the defaults put back before a month has run, as HoldersCheck does.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): this town was
+            // written against one that taxes from month 1 (until OP1 a 1900 town had no income tax to 1916-17, no sales tax to 1920). Every lever
+            // is open from the founding since OP1, and the defaults are put back before a month has run, as HoldersCheck does.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             city.setCashForTest(Founding.WEALTHY_CASH);
             city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 50_000_000L);
             city.getForeignAccounts().pinRate(1.0);

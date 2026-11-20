@@ -9598,9 +9598,9 @@ public class LongPlaytest {
              * stored figures at the NEXT press. So in a month the three move the pools are paid this month's and the savings lose last month's,
              * and the households' books missed by the change: 0.01 to 0.5 a month in that town, in 40 months of 40. householdsInTransit() carries
              * them now ("- contributions - EI premiums - health premiums"), as it does the wage tax.
-             * THE FIXTURE CAUSES IT on section 15's founding city, whose three levers are shut in 1900 (nothing comes off its payslips but the
-             * wage tax): the three levers opened (TaxPolicy.openNow(), the others as they were), the three rates set to half their caps a press
-             * later and to a quarter a year on, so the amount in transit moves from nothing, and twice more.
+             * THE FIXTURE CAUSES IT on section 15's founding city, whose three promises open at zero (OP1; nothing comes off its payslips but
+             * the wage tax): the three rates set to half their caps a press later and to a quarter a year on, so the amount in transit moves
+             * from nothing, and twice more.
              * householdsHeld() carries the three with a minus, so without the carrier it would be higher by the stored figure: at the close by
              * this press's, at the open by the last's, and the residual by (now - previous), as the old metal's is.
              */
@@ -9609,10 +9609,7 @@ public class LongPlaytest {
             TaxPolicy slipsTax = slipsBooks.getTaxPolicy();
             java.util.function.DoubleSupplier offThePayslips =
                     () -> slipsBooks.getContributions() + slipsBooks.getEiPremiums() + slipsBooks.getHealthPremiums();
-            assertTrue("fixture: with the three levers shut nothing comes off the payslips but the wage tax", offThePayslips.getAsDouble() == 0);
-            slipsTax.openNow(PolicyDates.Lever.PENSION_CONTRIBUTION);
-            slipsTax.openNow(PolicyDates.Lever.EI);
-            slipsTax.openNow(PolicyDates.Lever.HEALTH_PREMIUM);
+            assertTrue("fixture: with the three promises at zero nothing comes off the payslips but the wage tax", offThePayslips.getAsDouble() == 0);
             final int slipPresses = 24, ratesSetAt = 1, ratesMovedAt = 13;
             int slipBreaches = 0, slipMoved = 0;
             double slipWorst = 0, slipMovedMostBy = 0, slipPrevious = offThePayslips.getAsDouble();

@@ -677,9 +677,9 @@ public class LabourCheck {
         back.getLabourMarket().setFloorTie(LabourMarket.FloorTie.PRICES, LabourMarket.DEFAULT_TIE_SHARE);
         double floorBefore = back.getLabourMarket().getMinimumWage();
         double targetBefore = rents.getRentTarget();
-        // THE MINIMUM WAGE OPENED IN THE FIXTURE (R0): the question is whether rent follows a floor that moves wages, and a city on history's
-        // dates has no floor binding any wage until 1918. Opened here (the next month's top tells the labour market) so the floor is the law.
-        back.getEconomyManager().getTaxPolicy().openAll();
+        // THE MINIMUM WAGE IN THE FIXTURE (R0, OP1): the question is whether rent follows a floor that moves wages, and until OP1 a city on
+        // history's dates had no floor binding any wage until 1918, so the fixture opened the lever here (the next month's top tells the labour
+        // market). Since OP1 the lever is open from the founding and the floor is the law.
         back.getLabourMarket().setMinimumWage(floorBefore * 2);
         quietly(() -> back.simulateMonths(1));
         double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);

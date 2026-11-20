@@ -1,6 +1,6 @@
 # IslandRailCheck.java - 1,004 lines · 46 methods · 9 constants · harnesses
 
-`ham/citybuildersim/IslandRailCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/IslandRailCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the
 > islands (RI1).
