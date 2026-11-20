@@ -88,6 +88,10 @@ at Materials' second plant, ordered at month 60 while the sector ran nothing and
 0.85; on the mend its first plant is weighed at 0.739 (run 0.714), and the town's orders after it are its own (the
 Bottling Plant at month 60, main's at 102).
 
+On the 0.9.167 merge (HS2's two adult stages moved the town): lowest 0.1147 at month 62, 0 months under, 0 in
+resolution, 4,711 people at month 121; four first plants ran three months alone, missing their runs by 0.326 in
+all as weighed against 0.723 at their sectors' own rates; all passed.
+
 The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seeds, DQ1 §1's method) is §8's.
 
 ## 5. Harnesses the mend moved
@@ -129,11 +133,44 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
 - The old estimate: YoungBankCheck 3 FAILED (§4), the red the mend's harness must cause.
 - The pick, `sh tools/pick.sh origin/main HEAD`: ALL 228 harnesses (BusinessInvestment.java, 59 readers); review
   "not needed - no money, saves or threading in the diff". So a dry run, after the ensemble.
+- Merges: origin/main at 0.9.165 (bb1a1aa08), 0.9.167 (170372943, HS2) and 64ec45fbe (GB3, no game code);
+  only the generated maps conflicted each time (main's taken, then regenerated). `--fast` exit 0 on each.
+  On the 0.9.165 merge YoungBankCheck gave the same figures to the digit; on the 0.9.167 merge YoungBankCheck
+  and AutoBuildCheck passed alone (§4's line; the young city 1,236 people against the founding's 1,200).
 - The known-reds rows that name OE1 (YoungBankCheck's two) are vetoed at OE1's gate (`tools/known-reds.sh`): its
   section 2 has to pass, and passes.
 
 ## 8. The ensemble
 
-Owed: the trace moves (every city's first orders are weighed anew), so the ensemble runs on the orchestrator's
-go, against the newest baseline, as `docs/ensemble/OE1.md`, with the AUTO2 bank's months under `CAPITAL_RATIO` to
-m600 read from its `bank_capital_ratio` column (DQ1 §1: 2 [0 to 17] in 11 seeds of 16 on 0.9.128).
+`docs/ensemble/OE1.md`: 80 of 80 runs on the gate box (label OE1c, classes of d15352526, 0.9.167; the baseline's
+`JAVA_OPTS` extra columns, all 86 of its columns; the box's data files, md5-equal to the laptop's), against
+`docs/ensemble/0.9.167.md`: **25 of 26** criteria (main 23; H1 retired, not counted), hard 10 of 10 (M1 0 months
+and F1 0 runs in every policy), batch verdict PASS. Changed: AUTO2 T2 and ZERO_SLACK T2, FAIL to PASS (the final
+population's median 2,584,466 against main's 1,820,652, and 1,657,203 against 1,308,226). Still failing, as on
+main: AUTO2 A2, the longest spell of inflation over 10% from m240, 14 months [9 to 35] against 20 [7 to 33].
+Two earlier starts are not scored: label OE1 on 0.9.165, stopped at 13 of 80 when HS2 shipped 0.9.167 and moved
+the trace (contract 4: the second to ship redoes it), and OE1b on the laptop, stopped at the orchestrator's word
+when GB3 brought the box.
+
+**The AUTO2 bank, months under `CAPITAL_RATIO` to m600:**
+
+| | median [min to max] | seeds with any | months in all (spells) |
+|---|---|---|---|
+| main 0.9.167 (the baseline's own runs, HS2's kept CSVs) | 0.5 [0 to 9] | 8 of 16 | 35 (19) |
+| OE1 | 1.5 [0 to 15] | 11 of 16 | 52 (28) |
+| DQ1's, on 0.9.128 | 2 [0 to 17] | 11 of 16 | 65 (20) |
+
+The measure is worse than main's. Its spells, read DQ1 §1's way (each against the six months before it: the
+bank's write-offs against the trading desk's losses), from the sixteen AUTO2 seeds replayed to m600 with the two
+flows as columns (label OE1-bank, `bank_writeoffs` and `bank_trading`; on the laptop, the box holding two jobs;
+its capital ratio gives OE1c's months under seed for seed): **47 months in 24 desk spells** and 5 months in 4
+write-off spells. Of those four, two have write-offs of any size (seed 2 m491, $407k; seed 13 m361, $1,192k);
+the other two have the desk in profit and $6k and $1k written off (seed 1 m223, seed 11 m80). No spell falls in
+months 81-89, where DQ1 found six of its eight write-off spells (the young town's Fabrication Shop). OE1's desk
+spells cluster in months 177-245 (17 of 24).
+
+Main's 35 months are not classified, because its CSVs hold no bank flows. So what moved from main is told only
+in OE1's half: its write-offs, the mend's own field, are 2 spells of any size in 16 seeds; its desk spells are
+the rest. DQ1 §8 leaves the desk unqueued (the trading desk's marks on a young city's few listed companies;
+`RISK_EQUITY` light). Main's sixteen to m600 with the flows (about 25 minutes on the laptop) would split main's
+35 months the same way; that is the orchestrator's call.
