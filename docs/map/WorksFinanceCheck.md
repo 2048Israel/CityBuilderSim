@@ -1,4 +1,4 @@
-# WorksFinanceCheck.java - 965 lines · 25 methods · 1 constants · harnesses
+# WorksFinanceCheck.java - 964 lines · 25 methods · 1 constants · harnesses
 
 `ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 17 | 949 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
+| 17 | 948 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
 | 21 | 4 | `static void check(String words, boolean condition)` |  |
 | 26 | 3 | `static boolean close(double a, double b)` |  |
 | 30 | 8 | `static Game flat(Path root, String name)` |  |
@@ -48,7 +48,7 @@
 | 596 | 64 | `static void pavingHold(Path root)` |  |
 | 661 | 63 | `static void highwayPromise(Path root)` |  |
 | 725 | 87 | `static void promotedDepot(Path root)` |  |
-| 813 | 32 | `static void commonCalendar(Path root)` |  |
-| 846 | 77 | `static void growingCalendarChoice(Path root)` |  |
-| 924 | 41 | `public static void main(String[] args) throws Exception` |  |
+| 813 | 31 | `static void commonCalendar(Path root)` |  |
+| 845 | 77 | `static void growingCalendarChoice(Path root)` |  |
+| 923 | 41 | `public static void main(String[] args) throws Exception` |  |
 

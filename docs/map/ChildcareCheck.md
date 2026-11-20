@@ -1,4 +1,4 @@
-# ChildcareCheck.java - 548 lines · 20 methods · 4 constants · harnesses
+# ChildcareCheck.java - 547 lines · 20 methods · 4 constants · harnesses
 
 `ham/citybuildersim/ChildcareCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -70,12 +70,12 @@
 
 | line | section |
 |---:|---|
-| 238 | · 1 |
-| 287 | · 2 |
-| 371 | · 3 |
-| 422 | · 4 |
-| 462 | · 5 |
-| 479 | · 6 |
+| 237 | · 1 |
+| 286 | · 2 |
+| 370 | · 3 |
+| 421 | · 4 |
+| 461 | · 5 |
+| 478 | · 6 |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 473 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
+| 76 | 472 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
 | 94 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 99 | 5 | `static void bits(String label, double actual, double expected)` |  |
 | 105 | 5 | `static void quietly(Runnable r)` |  |
@@ -106,48 +106,48 @@
 | 116 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 122 | 5 | `static int staff(BuildingsTemplate t)` |  |
 | 137 | 3 | `static Game town(Path root, String name)` | The fixture: BuildAdviceCheck's short city with no daycare of its own - nine hundred houses, its schools, college, university and four medical schools for the posts that bring the people, every sector held - played th... |
-| 152 | 39 | `static Game town(Path root, String name, int k)` | ...with every building `k` times over: at k 4 a city of thousands of children (calibrated: scratch-n2/h/cc-3.txt). |
-| 192 | 3 | `static CityNeeds.Need need(Game g)` |  |
-| 196 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
-| 203 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
-| 209 | 1 | **type** `record Weighed(BuildingsTemplate t, long count, BuildAdvice.Ahead p, double per, double net)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
-| 211 | 9 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
-| 221 | 16 | `public static void main(String[] args) throws Exception` |  |
+| 152 | 38 | `static Game town(Path root, String name, int k)` | ...with every building `k` times over: at k 4 a city of thousands of children (calibrated: scratch-n2/h/cc-3.txt). |
+| 191 | 3 | `static CityNeeds.Need need(Game g)` |  |
+| 195 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
+| 202 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
+| 208 | 1 | **type** `record Weighed(BuildingsTemplate t, long count, BuildAdvice.Ahead p, double per, double net)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
+| 210 | 9 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
+| 220 | 16 | `public static void main(String[] args) throws Exception` |  |
 
-### 1 (lines 238-286)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 240 | 46 | `static void threeCentres(Path root)` |  |
-
-### 2 (lines 287-370)
+### 1 (lines 237-285)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 289 | 66 | `static void sizeThatFits(Path root)` |  |
-| 357 | 13 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. |
+| 239 | 46 | `static void threeCentres(Path root)` |  |
 
-### 3 (lines 371-421)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 373 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
-
-### 4 (lines 422-461)
+### 2 (lines 286-369)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 424 | 37 | `static void thePlayer(Path root)` |  |
+| 288 | 66 | `static void sizeThatFits(Path root)` |  |
+| 356 | 13 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. |
 
-### 5 (lines 462-478)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 464 | 14 | `static void theMap(Path root)` |  |
-
-### 6 (lines 479-548)
+### 3 (lines 370-420)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 481 | 67 | `static void realDemand(Path root)` |  |
+| 372 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
+
+### 4 (lines 421-460)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 423 | 37 | `static void thePlayer(Path root)` |  |
+
+### 5 (lines 461-477)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 463 | 14 | `static void theMap(Path root)` |  |
+
+### 6 (lines 478-547)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 480 | 67 | `static void realDemand(Path root)` |  |
 
