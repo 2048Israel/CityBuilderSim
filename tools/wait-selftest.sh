@@ -2,7 +2,7 @@
 # ---------------------------------------------------------------------------
 #  tools/wait.sh --ship tried against a throwaway local origin, with no JVM:
 #  a ship file pushed to a batch/ branch ends the wait, and nothing else does;
-#  --row ends when its ids leave the Queued table, and day.sh says ready.
+#  --row ends when its ids leave the Queued table, day.sh says ready, and when the nightly is due.
 #  For whoever changes tools/wait.sh or day.sh next. POSIX sh and git, about 30 seconds.
 #
 #      sh tools/wait-selftest.sh               test the tools/wait.sh of the current checkout
@@ -100,6 +100,19 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'done - P1 out of the Queued table' $TA/out.
 LABEL="P1 landed: day.sh no longer calls it ready"; ok sh -c "! grep -q '^ready     P1 ' $TA/day.txt"
 branch batch/P2 docs/queue/P2-ship.md
 LABEL="--row P2: P2 ready is not P2 landed"; row_wait P2; ok still P2
+
+echo "--- --due: the nightly once a night, 01:00 to 07:00, while the last night ran on another VERSION (GB2) ---"
+W fetch -q origin; W checkout -q -B main origin/main; mkdir -p "$TA/work/src/main/java/ham/citybuildersim" "$TA/home"
+echo '    public static final String VERSION = "1.2.3";' > "$TA/work/src/main/java/ham/citybuildersim/GameVersion.java"
+W add -A; W commit -q -m "selftest: VERSION 1.2.3"; W push -q origin HEAD:refs/heads/main
+night() {   # night DATE VERSION [HOUR]: the last verdict so, and day.sh --due at HOUR (03) says the nightly is due
+    [ "$1" = none ] && rm -f "$TA/home/.cbs-nightly.txt" || echo "$1 02:30 $2 abc1234 4,000 months: OK" > "$TA/home/.cbs-nightly.txt"
+    ( cd "$TA/orch" && HOME=$TA/home CBS_DAY_HOUR=${3:-03} sh "$SRC/tools/day.sh" --due ) 2>&1 | grep -q '^nightly   due'; }
+LABEL="no night yet: due at 03:00"; night none; ok test $? = 0
+LABEL="the last night on 1.2.2, main on 1.2.3: due"; night 2000-01-01 1.2.2; ok test $? = 0
+LABEL="...but not at 12:00"; night 2000-01-01 1.2.2 12; ok test $? = 1
+LABEL="...nor once tonight's has run"; night "$(date +%Y-%m-%d)" 1.2.2; ok test $? = 1
+LABEL="the last night on main's 1.2.3: skipped"; night 2000-01-01 1.2.3; ok test $? = 1
 
 echo "selftest: $((N - FAILS)) of $N passed"
 [ -n "$CBS_WAITTEST_KEEP" ] || { cd / && rm -rf "$TA"; }

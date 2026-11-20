@@ -35,7 +35,7 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
         m*) CBS_ME=$(dec "$w"); export CBS_ME ;;
         p*) P=$(dec "$w") ;;
         z*) Z=$(dec "$w"); H=${Z#?}; case $Z in -????) TZ=UTC+${H%??}:${H#??} ;; +????) TZ=UTC-${H%??}:${H#??} ;; esac; export TZ ;;
-    esac; done   # z: the caller's UTC offset, so dates here are its (the box keeps UTC; a night after 20:00 was dated tomorrow, GB2)
+    esac; done   # z: a night's caller's UTC offset, its verdict dated as day.sh asks (GB2: the box's UTC put a night after 20:00 tomorrow)
     case $P in gate.sh) ;; nightly.sh) cd "$HERE/.." || exit 1 ;; *) exit 2 ;; esac   # the nightly's checkout is its cwd
     # GB2: a gate holds the box shared and the nightly whole, each for its whole run; whichever is first runs and the
     # other waits, so the night never times beside a gate. A stop never waits. A flock dies with its holder, where a
@@ -78,15 +78,15 @@ if [ -z "$HOST" ]; then
     exec env CBS_GATE_HOST= sh "$HERE/$P" "$@"
 fi
 C=$(git -C "$HERE/.." rev-parse HEAD) || exit 1
-W="$(enc m "$BY") $(enc p "$P") $(enc z "$(date +%z)")"; [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
+W="$(enc m "$BY") $(enc p "$P")"; [ "$P" = gate.sh ] || W="$W $(enc z "$(date +%z)")"; [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
 FILE=0; END=0
 for a in "$@"; do   # -F BODY and --red-lines FILE send the file's text, not its path
     if [ "$FILE" = 1 ]; then [ -f "$a" ] || { echo "gate: no file $a"; exit 2; }; W="$W f$(base64 < "$a" | tr -d '\n')"; FILE=0; continue; fi
     W="$W $(enc a "$a")"
     case "$END:$a" in 0:--) END=1 ;; 0:-F|0:--red-lines) FILE=1 ;; esac
 done
-post() {   # a bus call the box's gate made, made here
-    WS=$1; set --; ME=gate; IN=
+post() {   # a bus call the box's gate made, made here; its words name the box's paths, so Git Bash converts none of them
+    WS=$1; set --; ME=gate; IN=; MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'; export MSYS_NO_PATHCONV MSYS2_ARG_CONV_EXCL
     for w in $WS; do case $w in m*) ME=$(dec "$w") ;; s*) IN=$w ;; a*) set -- "$@" "$(dec "$w")" ;; esac; done
     if [ -n "$IN" ]; then dec "$IN" | CBS_ME=$ME sh "$HERE/bus.sh" "$@"; else CBS_ME=$ME sh "$HERE/bus.sh" "$@" < /dev/null; fi > /dev/null 2>&1
 }

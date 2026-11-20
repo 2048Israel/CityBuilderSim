@@ -20,7 +20,7 @@ against the last version tag, main's recorded reds, the next queued ids, the
 Pending ids, and each unmerged `batch/` branch on origin as ready (a ship file
 pushed without its provisional marker; with the conflicts a merge would meet),
 working, stuck (no commit for a day) or off-queue. `--due` prints only the
-ready and the stuck, and `nightly due` once a day between 01:00 and 07:00.
+ready and the stuck, and `nightly due` (below).
 
 **Waking** (lesson b: batches sat unshipped 9 hours on 2026-10-24): mail
 resumes a headless orchestrator, and MemWatch draws the batches' and the gate's
@@ -30,10 +30,14 @@ when replaced: two may gate one branch), and `sh tools/wait.sh --ship [--skip
 HELD...]` running, which ends when a ship file lands without its marker.
 
 **The nightly**, `sh tools/nightly.sh` on main's tip (4,000 months, the nightly
-tier, hard timing; GT1, GR1), is due once a night: a laptop task at 02:30 once
-he registers it (2026-11-20, "B"; the line is in GB2's notes), else by hand on
-`nightly due`, a second start refused while one runs. It runs on the
-gate box and holds it whole, a gate there waiting for it and it for a gate
+tier, hard timing; GT1, GR1), starts by itself: the laptop's task "CBS nightly"
+at 02:30 (its line in GB2's notes) runs it on `nightly due`, once a night and
+only while the last night ran on another `VERSION` (Jerus, 2026-11-20, his
+answer to 11-17's question: "it should run every night IF the version number
+has changed"; WHY: an untagged process batch leaves the game and its `VERSION`
+alone, so its night would time the same game again). By hand on `nightly due`
+when the task missed it; a second start is refused while one runs. It runs on
+the gate box and holds it whole, a gate there waiting for it and it for a gate
 (GB2). Its verdict comes home: the next `day.sh`, `$HOME/.cbs-nightly.log`, and
 a red playtest or a slower line mailed to `jerus` and the gate's keeper, naming
 the batch (BW1).

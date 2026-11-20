@@ -25,8 +25,14 @@ him.
 - The box keeps UTC and the laptop AST (-0400); the real night's verdict said
   13:23 when it came home at 09:23. A night started after 20:00 here would be
   dated tomorrow, and `day.sh`, which asks whether a verdict of today's exists,
-  would then skip the next night. A gate there dates its record the same way
-  (`ship.sh`'s `# date:`). Setting the box's zone needs `sudo`.
+  would then skip the next night. Setting the box's zone needs `sudo`. A gate
+  there is dated in UTC too, but MemWatch reads a box gate's `ship.log` as UTC
+  and shifts it, so the gate keeps UTC.
+- GB1's relay garbled box paths (MemWatch's session found it): Git Bash
+  converts a native program's arguments, so a relayed `log=/home/jerus/...`
+  reached `cbs-bus.exe`, and `state\gate.txt`, as
+  `C:/Program Files/Git/home/jerus/...`. The self-test's bus is a sh stub, so
+  nothing caught it. The night's relayed mail goes through the same `post()`.
 
 ## What changed and why
 
@@ -34,10 +40,15 @@ him.
   (`CBS_GATE_HOST`, else `~/.cbs-gate-box`) and not already on the box execs
   `tools/gate-box.sh --nightly`. Its header says so in the same lines.
 - **`tools/gate-box.sh`**: the program is a word of the call (`p`), `gate.sh`
-  or `nightly.sh`; everything else is GB1's. A second new word (`z`) carries
-  the caller's UTC offset, and the box runs the call with `TZ` set from it, so
-  a night's and a gate's dates there are the laptop's. A caller at an older
-  commit sends none and runs on UTC, as before.
+  or `nightly.sh`; everything else is GB1's. A second new word (`z`), sent
+  for a night only, carries the caller's UTC offset, and the box runs the
+  night with `TZ` set from it, so its verdict is dated as `day.sh` asks.
+  - `post()` calls `bus.sh` with `MSYS_NO_PATHCONV=1` and
+    `MSYS2_ARG_CONV_EXCL='*'` (Git for Windows honours the first, MSYS2 the
+    second), so relayed paths arrive as the box wrote them. It is set there
+    only: a local `--file` still needs the conversion, and a relayed call
+    sends its body on stdin, never a local path. `bus.sh` passes its words
+    straight to the exe and writes no file of its own.
   - The laptop's half: `--nightly` sends no arguments; the sender is
     `CBS_ME`, else `nightly`. With no box answering it mails `jerus` "The gate
     box cannot be reached (...): the nightly runs on the laptop." and runs the
@@ -66,8 +77,17 @@ him.
   - where `flock` exists (the box, not Git Bash): a second nightly refused,
     and a gate waiting while the night holds the box, then shipping.
   The fake `ssh` runs a `cd && ...` command with the box's home.
-- **Docs**: `docs/orchestrator.md`'s nightly paragraph, the contract's gate-box
-  bullet (section 2), and `CLAUDE.md`'s and the README's lines on `--timing`.
+- **`tools/day.sh`**: `nightly due` also asks that the last night ran on
+  another `VERSION` than main's (Jerus's rule, below). Main's `VERSION` and
+  the last verdict's date and version are read before `--due`. The full
+  report says when the next night waits for a new `VERSION`. `CBS_DAY_HOUR`
+  sets the hour for the self-test.
+- **`tools/wait-selftest.sh`**, which covers `day.sh`: five cases. No night
+  yet; another version due at 03:00; not at 12:00; not twice a night; main's
+  own version skipped.
+- **Docs**: `docs/orchestrator.md`'s nightly paragraph (his decision, his
+  words and the WHY), the contract's gate-box bullet (section 2), and
+  `CLAUDE.md`'s and the README's lines on `--timing`.
 
 ## Calls taken
 
@@ -138,35 +158,53 @@ him.
 
 ## One in, one out
 
-`git diff --numstat origin/main` (42881af6) over the process files, the notes
-and ship file left out: +90 -28.
+`git diff --numstat` from the main the branch last took (42881af6; PZ1 since
+touches none of these files) over the process files, the notes and ship file
+left out: +118 -36.
 
-- `tools/gate-box.sh` +36 -13, `tools/nightly.sh` +6 -6, the self-test's cases
-  +37 -2, the docs +11 -7.
+- `tools/gate-box.sh` +38 -15, `tools/nightly.sh` +6 -6, `tools/day.sh` +7 -4;
+  the self-tests' cases +51 -3 (`ship-selftest.sh` +37 -2, `wait-selftest.sh`
+  +14 -1); the docs +16 -8.
 - It is a new mechanism: the box's lock, the program as a word, the records
   home. Nothing it replaces could go, as the laptop still runs the night when
   the box is down, so `nightly.sh`'s Windows branches stay.
 
-## The daily start (his call, asked 2026-11-17)
+## The daily start (his call, asked 2026-11-17, decided 2026-11-20)
 
-Mailed to him on 2026-11-20 with four options: A, the orchestrator on
-`nightly due` as now; B, a laptop scheduled task at 02:30 (recommended, with A
-kept as the backup); C, MemWatch at a set hour; D, a cron on the box. He
-answered **"B"** (by phone, 08:50). A scheduled task is a standing change to
-his PC, which a session makes only on his yes in its chat, not from a mail.
-So it is not registered. The line, for PowerShell on the laptop:
+Jerus, 2026-11-20, in the orchestrating session's chat: "yes i think it should
+run every night IF the version number has changed". Earlier that day he had
+answered "B" to the four options mailed to him: A, the orchestrator on
+`nightly due`; B, a laptop task at 02:30; C, MemWatch at a set hour; D, a cron
+on the box.
 
-    Register-ScheduledTask -TaskName 'CBS nightly' -Trigger (New-ScheduledTaskTrigger -Daily -At 2:30am) -Action (New-ScheduledTaskAction -Execute 'C:\Program Files\Git\bin\sh.exe' -Argument '-lc "cd ~/Documents/NetBeansProjects/CityBuilderSim && sh tools/day.sh --due | grep -q ^nightly && sh tools/nightly.sh"')
+**Chosen: B, the laptop's task, with the version test in `day.sh`.**
+- A cron on the box runs with the laptop asleep. But the laptop has no SSH
+  server, so the box cannot send its verdict or its red mail home. The laptop
+  would have to fetch both, a second copy of the night's mail and verdict
+  logic.
+- A night started on the laptop comes home through GB1's relay like any call:
+  the verdict copied, the mail posted, the laptop's own run when the box is
+  down. It needs the laptop awake at 02:30, as the orchestrator, MemWatch and
+  the builders already need it.
+- The test is in `day.sh`, so a start by hand on `nightly due` follows the
+  same rule.
 
-- The task starts a night only when `day.sh --due` says `nightly due`. That
-  is once a day, 01:00 to 07:00, when no verdict of today's exists, so a night
-  the orchestrator already ran is not repeated.
+**Registered** by the orchestrating session on his "yes do it now"
+(2026-11-20): daily at 02:30 from 2026-11-21. Its command, `sh.exe -lc`:
+
+    cd ~/Documents/NetBeansProjects/CityBuilderSim && sh tools/day.sh --due | grep -q ^nightly && V=$(grep -m1 String.VERSION.= src/main/java/ham/citybuildersim/GameVersion.java | tr -dc 0-9.) && { read d t L r < ~/.cbs-nightly.txt; } 2>/dev/null; [ x$V != x$L ] && sh tools/nightly.sh
+
+- `nightly due` comes once a day, 01:00 to 07:00, while no verdict of today's
+  exists and the last verdict's `VERSION`, its third field (kept so), is not
+  main's.
+- The task's own test, the checkout's `VERSION` against that third field, stays
+  as a guard. It reads the working tree, which the orchestrator pulls after
+  each ship; `day.sh` reads `origin/main` after its fetch.
 - A night still running when the other starter comes is refused: by the box's
   `nightly.lock`, or by the laptop's `.cbs-nightly.lock` when the box is down.
-- The orchestrator's start on `nightly due` stays as the backup, and nothing in
-  the repository changes when the task is added.
+- Until GB2 is on main, the task's guard alone applies the version rule, and a
+  night runs main's `nightly.sh`, on the laptop.
 
 ## Left for Jerus
 
-- **Registering the task above** (his "B"): run the line, or tell a Claude
-  session in the app to register it.
+Nothing: the task is registered.
