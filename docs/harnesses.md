@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,165 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,167 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -2969,7 +2969,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L924 lookup by id still works
   - L927 lookup by name still works
 
-## BuildingStackCheck.java - 81 labelled assertions
+## BuildingStackCheck.java - 83 labelled assertions
 
 > A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through
 > the save and the load, through ScaleCheck's scaler, and in the sums a city is read by.
@@ -3075,6 +3075,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L399 a repair draw past 2^31 units takes the yard first: the yard is emptied
   - L400 ...the books took the whole draw, the yard's share and the rest
   - L401 ...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)
+  - L412 a draw of infinitely many units takes nothing: the yard keeps its stock, nothing is booked and the market is not drawn on
+  - L415 ...and neither does one of not a number
 
 ## BusinessServicesCheck.java - 67 labelled assertions
 

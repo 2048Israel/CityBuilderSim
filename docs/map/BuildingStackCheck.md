@@ -1,4 +1,4 @@
-# BuildingStackCheck.java - 411 lines · 6 methods · 3 constants · harnesses
+# BuildingStackCheck.java - 424 lines · 6 methods · 3 constants · harnesses
 
 `ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 >     share delivered to the sites, the material the sites owe, and the invoice of a run of two, whose second order is quoted
 >     on the yard the first leaves;
 >  9. a month's material draw past 2^31 units is drawn (the sites' and a repair's, yard first), booked in materialsConsumed,
->     and saved and loaded whole.
+>     and saved and loaded whole, while a draw of infinite units (Math.round's Long.MAX_VALUE) takes nothing.
 > 
 > WHY (SQ1b, the two notes of SQ1's review). Section 6 ordered through BuildingManager.addStack, so the quote, the ground and the
 > charge of Game.buildStack had no harness past the ceiling; and Game.drawMaterials rounded a month's draw into an int, where a
@@ -41,7 +41,7 @@
 > The orders here are int-sized, as the game's are; a stack passes the ceiling by two of them, or by the
 > scaler. Written so that it compiles against main's int stack, where it is red: the sums wrap.
 
-**Uses:** [Game](Game.md) (26), [BuildingsStacks](BuildingsStacks.md) (14), [GameFiles](GameFiles.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [ScaleCheck](ScaleCheck.md) (7), [BuildingManager](BuildingManager.md) (6), [LongPlaytest](LongPlaytest.md) (5), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [BuildCardCheck](BuildCardCheck.md) (2), [Markets](Markets.md) (2), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1)
+**Uses:** [Game](Game.md) (26), [BuildingsStacks](BuildingsStacks.md) (14), [GameFiles](GameFiles.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [ScaleCheck](ScaleCheck.md) (7), [BuildingManager](BuildingManager.md) (6), [LongPlaytest](LongPlaytest.md) (5), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [Markets](Markets.md) (4), [BuildCardCheck](BuildCardCheck.md) (2), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1)
 
 ## Sections
 
@@ -77,11 +77,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 362 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
+| 50 | 375 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
 | 65 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 76 | 5 | `static void quietly(Runnable r)` |  |
 | 82 | 13 | `public static void main(String[] args) throws Exception` |  |
-| 96 | 308 | `static void run(Path root) throws Exception` |  |
-| 406 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
+| 96 | 321 | `static void run(Path root) throws Exception` |  |
+| 419 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
 

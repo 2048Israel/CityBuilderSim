@@ -9476,6 +9476,9 @@ public class Game {
     Markets.Draw drawMaterials(double units, boolean yardFirst) {
         // A long, as the yard and the books it feeds are (SQ1b): a month's draw at ten-billion scale passes 2^31 units, where
         // (int) Math.round(units) wrapped it, negative or short, and the whole month's draw went unbought and unbooked.
+        // ...and a draw that is not a number takes nothing, on purpose (REV-SQ1b): Math.round(+Infinity) is Long.MAX_VALUE, which the old int cast read
+        // as -1 and so drew nothing, and a long would draw the whole yard and book 9.2e18 units. NaN and -Infinity round to nothing already.
+        if (!Double.isFinite(units)) return new Markets.Draw(0, 0, 0, 0, 0);
         long wanted = Math.round(units);
         if (wanted <= 0) return new Markets.Draw(0, 0, 0, 0, 0);
         long fromYard = yardFirst ? buildingManager.takeFromYard(wanted) : 0;

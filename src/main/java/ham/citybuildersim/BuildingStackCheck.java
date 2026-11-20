@@ -35,7 +35,7 @@ import java.util.Locale;
  *     share delivered to the sites, the material the sites owe, and the invoice of a run of two, whose second order is quoted
  *     on the yard the first leaves;
  *  9. a month's material draw past 2^31 units is drawn (the sites' and a repair's, yard first), booked in materialsConsumed,
- *     and saved and loaded whole.
+ *     and saved and loaded whole, while a draw of infinite units (Math.round's Long.MAX_VALUE) takes nothing.
  *
  * WHY (SQ1b, the two notes of SQ1's review). Section 6 ordered through BuildingManager.addStack, so the quote, the ground and the
  * charge of Game.buildStack had no harness past the ceiling; and Game.drawMaterials rounded a month's draw into an int, where a
@@ -400,6 +400,19 @@ public class BuildingStackCheck {
         same("...the books took the whole draw, the yard's share and the rest", gb.materialsConsumed - consumed3, Math.round(bought));
         assertTrue("...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)",
                 Math.abs(repaired[0].units() - (bought - yard0)) <= 1e-9 * bought && repaired[0].units() > Integer.MAX_VALUE);
+        // A draw that is not a finite number takes nothing, on purpose (REV-SQ1b): Math.round(+Infinity) is Long.MAX_VALUE, which the old int cast read as -1.
+        bb.setConstructionMaterials(yard0);
+        long consumed4 = gb.materialsConsumed;
+        double drawn4 = materials.getDrawn();
+        Markets.Draw[] endless = new Markets.Draw[1];
+        quietly(() -> {
+            endless[0] = gb.drawMaterials(Double.POSITIVE_INFINITY, true);
+            gb.drawSiteMaterials(Double.POSITIVE_INFINITY);
+        });
+        assertTrue("a draw of infinitely many units takes nothing: the yard keeps its stock, nothing is booked and the market is not drawn on",
+                endless[0].units() == 0 && gb.getConstructionMaterials() == yard0 && gb.materialsConsumed == consumed4 && materials.getDrawn() == drawn4);
+        quietly(() -> gb.drawMaterials(Double.NaN, true));
+        assertTrue("...and neither does one of not a number", gb.getConstructionMaterials() == yard0 && gb.materialsConsumed == consumed4 && materials.getDrawn() == drawn4);
     }
 
     /** A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. */

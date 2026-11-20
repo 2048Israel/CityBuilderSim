@@ -147,3 +147,21 @@ main's first; the laptop was shared with other sessions). Both exit 0. The defau
 `origin/main` moved to `e2f399d7c` (GB2: `tools/`, docs and notes only, no game class) after the trace and the harness
 runs; merged at `8f4fee9c6`, `./batch-check.sh --fast` green again (compile, maps, Stale, tree 0 changed). The trace
 stands: the game's classes of main are the ones it was measured against. No dry run has run yet; none is kept.
+
+## 9. The stranger's review and the mend
+
+**REV-SQ1b (2026-11-20): SHIP**, no finding on the saves' int to long, the ints left on the path, the trace, the books or
+sections 7 and 8. One note, mended: `Math.round(+Infinity)` is `Long.MAX_VALUE`, which the old `(int)` cast read as -1
+(so `wanted <= 0` drew nothing), and the long would have taken the whole yard, drawn 9.2e18 units on the market and booked
+them. `Game.drawMaterials` now returns an empty draw for a non-finite `units` on purpose, before the rounding
+(Game.java:9481). NaN and -Infinity round to nothing already. `BuildingStackCheck` section 8 has two assertions for it
+(`drawMaterials` and `drawSiteMaterials` with +Infinity leave the yard's stock, the books and the market's drawn units
+as they were; NaN the same): with the guard taken out the first goes red (the yard drained to 0, the books at
+9.2e18). The island branch of `buildRunInvoice` (main 11537) is the same line as 11548 and needs nothing.
+
+**The first dry run** (before the review's note came in): `sh tools/gate.sh SQ1b --dry-run`, exit 0, "suite known red
+only" (every red a line of `docs/notes/gate.txt` or `known-reds.txt`; `unnamed.txt` empty). Run
+`cbs-gate-SQ1b-57Oy5b3N`, kept at `C:\Users\Jerus\AppData\Local\Temp\cbs-gate-SQ1b-57Oy5b3N` (`/home/jerus/cbs/runs/` on the
+box), of the branch at `8936d44a9` (the code before the mend, with main's `d5b1e9f0c`, 0.9.163, merged). The suite took
+623 s on the box. The mend changes `Game.java` and `BuildingStackCheck.java` by 18 lines, so a fresh dry run follows
+(section 10).
