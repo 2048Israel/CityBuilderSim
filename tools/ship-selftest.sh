@@ -4,7 +4,7 @@
 # CBS_SHIPTEST_SH chooses the shell. Exit status counts failed cases.
 # WHY (BP1, GF1): publication defects must be reproduced without publishing the repository.
 
-unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_GATE_NUMBER CBS_KNOWN_REDS CBS_REJUDGE BUS_EXIT
+unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_GATE_NUMBER CBS_KNOWN_REDS CBS_REJUDGE BUS_EXIT CBS_GATE_ON_BOX CBS_GATE_RELAY
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/ship.sh" ] || { echo "selftest: no ship.sh in $SRC"; exit 2; }
 TA=${CBS_SHIPTEST_DIR:-$(mktemp -d "${TEMP:-/tmp}/cbs-ship-selftest-XXXXXXXX")}
@@ -12,7 +12,7 @@ mkdir -p "$(dirname "$TA")" && TA=$(cd "$(dirname "$TA")" && pwd)/$(basename "$T
 if [ -e "$TA" ] && [ ! -d "$TA/origin.git" ] && [ -n "$(ls -A "$TA" 2>/dev/null)" ]; then
     echo "selftest: $TA exists and is not a selftest area: name another with CBS_SHIPTEST_DIR"; exit 2
 fi
-export CBS_SELFTEST=1 CBS_BUS="$TA/no-bus-here" BUS_LOG="$TA/bus.log"   # BW1: no case reaches MemWatch's real bus
+export CBS_SELFTEST=1 CBS_BUS="$TA/no-bus-here" BUS_LOG="$TA/bus.log" CBS_GATE_HOST=   # BW1: no case reaches MemWatch's real bus; GB1: nor the gate box
 FAILS=0; N=0
 ok() { N=$((N + 1)); if "$@" >/dev/null 2>&1; then echo "PASS  $LABEL"; else echo "FAIL  $LABEL"; FAILS=$((FAILS + 1)); [ ! -f "$TA/out.txt" ] || cp "$TA/out.txt" "$TA/fail-$N.txt"; fi; }
 clean() { [ -z "$(git -C "$TA/main" status --porcelain)" ] && [ ! -e "$TA/main/.git/MERGE_HEAD" ]; }
@@ -566,6 +566,41 @@ BUS_EXIT=2 CBS_BUS="$TA/bus-stub" launch BT4
 LABEL="BW1 a cbs-bus that exits 2 changes nothing: the gate ships"; ok shipped BT4
 LABEL="...each call still made, its failure in the log"
 ok sh -c "grep -q '^gate BT4 done ' '$BUS_LOG' && grep -q 'cbs-bus gate failed (exit 2)' '$RUNDIR/ship.log'"
+# GB1: the gate on a gate box, faked: "nobox" never answers; "box" runs gate-box.sh's serving half here, as the box would.
+cat > "$TA/fake-ssh" <<'STUB'
+#!/bin/sh
+while [ "$#" -gt 0 ]; do case "$1" in -o) shift 2 ;; -n) shift ;; *) break ;; esac; done
+[ "$1" = box ] || exit 255
+case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; esac
+exec env HOME="$GBOX_HOME" sh "$GBOX_SERVE" --serve
+STUB
+chmod +x "$TA/fake-ssh"; GBOX_HOME=$TA/boxhome; GBOX_SERVE=$SRC/tools/gate-box.sh; export GBOX_HOME GBOX_SERVE
+mkdir -p "$GBOX_HOME"; git config --file "$GBOX_HOME/.gitconfig" user.name selftest; git config --file "$GBOX_HOME/.gitconfig" user.email selftest@example.invalid   # the box's own git name
+boxlaunch() { HOSTS=$1; shift; rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"
+    CBS_GATE_SSH="$TA/fake-ssh" CBS_GATE_HOST="$HOSTS" TMP="$TA/laptop" CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/bus-$1" \
+        sh "$SRC/tools/gate.sh" "$@" > "$TA/box-$1.out" 2>&1; RC=$?
+    RUNDIR=$TA/laptop/bus-$1; [ -d "$RUNDIR" ] || RUNDIR=$TA/bus-$1; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
+boxsaid() { grep -q -F -- "$2" "$TA/box-$1.out"; }
+merged() { git -C "$TA/origin.git" log -1 --format="$1" main | grep -q -F -- "$2"; }
+printf 'The body line.\nSecond: it'"'"'s kept.\n' > "$TA/box-body.txt"
+CBS_BUS="$TA/bus-stub" boxlaunch "nobox box" BX1 -m "the box's \"title\"  kept" -F "$TA/box-body.txt"
+LABEL="GB1 a gate tries each gate box in order and runs on the first that answers"; ok boxsaid BX1 'gate: on the gate box box, tools at'
+LABEL="...ships as it does here"; ok shipped BX1
+LABEL="...with its title and its body file whole"; ok merged %s "Merge batch/BX1: the box's \"title\"  kept, "
+ok merged %B "Second: it's kept."
+LABEL="...its steps posted here in order, from the box's run"
+ok test "$(sed -n 's/^gate BX1 \([a-z]*\) .*/\1/p' "$BUS_LOG" | uniq | tr '\n' ' ')" = "merge suite maps tag push done "
+ok grep -q "^gate BX1 merge .* log=[^ ]*boxhome/cbs/runs/bus-BX1/ship.log " "$BUS_LOG"
+LABEL="...and the run's files copied home"; ok sh -c "test -f '$RUNDIR/ship.log' && grep -q -F 'is copied to $TA/laptop/bus-BX1' '$TA/box-BX1.out'"
+STUB_EXIT=4 STUB_REDS="$REDS;ZzCheck | 14 FAILED" CBS_BUS="$TA/bus-stub" boxlaunch box BX2
+LABEL="GB1 a box gate's stop exits as there, one urgent mail to the batch here"; ok test "$RC" = 1
+ok one_send 'send BX2 --kind instruction --urgent -'
+LABEL="...holding every unnamed line through the relay"; ok every_line
+LABEL="...its clone kept on the box and not copied"; ok sh -c "test -d '$TA/boxhome/cbs/runs/bus-BX2/clone' && test ! -e '$RUNDIR/clone'"
+CBS_BUS="$TA/bus-stub" boxlaunch nobox BX3
+LABEL="GB1 with no gate box answering, the gate mails jerus and runs here"
+ok grep -q -x -F "send jerus --kind info --urgent --body The gate box cannot be reached (nobox): BX3's gate runs on the laptop." "$BUS_LOG"
+LABEL="...and ships"; ok shipped BX3
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"
