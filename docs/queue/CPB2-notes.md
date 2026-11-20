@@ -215,5 +215,5 @@ on the baseline too: 17 months [7 to 33] here against 20 [7 to 33].
 Two verdicts changed, both info and both toward green: the final population T2
 for AUTO2 and for ZERO_SLACK, FAIL to PASS. T1 is unchanged, with 16 of 16
 AUTO2 seeds reaching 40,000 people at month 919 [637 to 1,732]. ZERO_HOT and
-HIGH end exactly where the baseline does, in every seed's median, minimum and
-maximum: there the mends changed no final population.
+HIGH match the baseline's final population exactly in median, minimum and
+maximum.
