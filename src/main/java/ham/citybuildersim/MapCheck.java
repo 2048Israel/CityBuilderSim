@@ -16511,9 +16511,14 @@ public class MapCheck {
         }
         boolean stillOld = oldWorksFlagged(m, keepMonth, kept, false), stillNew = oldWorksFlagged(m, keepMonth, kept, true);
         boolean movedOld = oldWorksFlagged(m, keepMonth, moved, false), movedNew = oldWorksFlagged(m, keepMonth, moved, true);
-        out.printf("      the control at m%d: as drawn, flagged %b by the law as it stood, %b as it stands; the bakery's box moved a plot, %b and %b%n", keepMonth, stillOld, stillNew, movedOld, movedNew);
-        check("the control: the boxes as drawn are no finding by either law, and the drawn old bakery moved a plot while the count holds is named by the law as it stood and by the law as it stands",
-                !stillOld && !stillNew && movedOld && movedNew);
+        // The term the watch takes for the bakery here (REV-RN1-H-M): the older one sent on, inside the lowest since (2), so 1 - and the drawn one is still kept.
+        long key = LongPlaytest.layoutKey(c.district());
+        int[][] liveKept = LongPlaytest.layoutOldLive.get(key), sentKept = LongPlaytest.layoutOldSent.get(key), countKept = LongPlaytest.layoutOldModel.get(key);
+        int controlTerm = liveKept == null || sentKept == null || countKept == null ? -1 : LongPlaytest.layoutSentAmongOldest(liveKept[b], sentKept[b], countKept[1][b]);
+        out.printf("      the control at m%d: the term %d (the older bakery sent on); as drawn, flagged %b by the law as it stood, %b as it stands; the bakery's box moved a plot, %b and %b%n",
+                keepMonth, controlTerm, stillOld, stillNew, movedOld, movedNew);
+        check("the control: the older bakery sent on is the term (1), and still the boxes as drawn are no finding by either law, and the drawn old bakery moved a plot while the count holds is named by both",
+                controlTerm == 1 && !stillOld && !stillNew && movedOld && movedNew);
 
         // ----- the event: the count falls back to one and comes again, another works in the place the bakery left -----
         LongPlaytest.layoutOldForget();
