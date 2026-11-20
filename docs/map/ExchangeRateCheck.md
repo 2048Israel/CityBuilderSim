@@ -1,4 +1,4 @@
-# ExchangeRateCheck.java - 1,484 lines · 50 methods · 6 constants · harnesses
+# ExchangeRateCheck.java - 1,507 lines · 50 methods · 7 constants · harnesses
 
 `ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >   6. ONE SEED, ONE PATH. The same seed and months are the same rates to the
 > ... (45 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (158), [LongPlaytest](LongPlaytest.md) (36), [CurrencyCheck](CurrencyCheck.md) (29), [PriceIndex](PriceIndex.md) (27), [Game](Game.md) (25), [PriceLevel](PriceLevel.md) (12), [WorldMoneys](WorldMoneys.md) (12), [ForeignCheck](ForeignCheck.md) (7), [Founding](Founding.md) (6), [PolicyDates](PolicyDates.md) (3), [GameFiles](GameFiles.md) (2), [TreasuryFund](TreasuryFund.md) (2), [MoneyAudit](MoneyAudit.md) (2)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (160), [LongPlaytest](LongPlaytest.md) (36), [CurrencyCheck](CurrencyCheck.md) (29), [PriceIndex](PriceIndex.md) (27), [Game](Game.md) (25), [PriceLevel](PriceLevel.md) (12), [WorldMoneys](WorldMoneys.md) (12), [ForeignCheck](ForeignCheck.md) (7), [Founding](Founding.md) (6), [GoldStandardCheck](GoldStandardCheck.md) (4), [PolicyDates](PolicyDates.md) (3), [GameFiles](GameFiles.md) (2), [TreasuryFund](TreasuryFund.md) (2), [MoneyAudit](MoneyAudit.md) (2)
 
 **Used by (2):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [InterventionCheck](InterventionCheck.md)
 
@@ -99,6 +99,7 @@
 | 199 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |
 | 201 | `ExchangeRateCheck.RENT_HEAVY` | `{.15,.60,.10,.05, 0 }, RENT_HEAVY_FEES = {.04,.03,.02,.01 }` | Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. |
 | 202 | `ExchangeRateCheck.RENT_LIGHT` | `{.30,.30,.20,.05, 0 }, RENT_LIGHT_FEES = {.06,.04,.03,.02 }` |  |
+| 1453 | `ExchangeRateCheck.FOURTEEN_GOLD_COVER` | `10 * ForeignAccounts.COVER_RATIO` | Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot money leaving) leave it over a full cover, where doubt asks nothing ... |
 
 ## Fields (state)
 
@@ -114,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 1370 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
+| 115 | 1393 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
 | 121 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 126 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 137 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
@@ -240,10 +241,10 @@
 |---:|---:|---|---|
 | 1386 | 52 | `static void theTermsOfTrade()` |  |
 
-### 14. the moves add up (lines 1439-1484)
+### 14. the moves add up (lines 1439-1507)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1442 | 6 | `static void world(ForeignAccounts fx, int t)` | The world a section plays month t: the cycle swinging, a risk-off in two spells, hot money coming and going, a January's terms of trade. |
-| 1449 | 35 | `static void theMovesAddUp()` |  |
+| 1455 | 52 | `static void theMovesAddUp()` |  |
 
