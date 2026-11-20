@@ -902,8 +902,14 @@ public class RefineryCheck {
 
     /** The town the planner sections stand: the section 7 town's houses and works, an Oil Refinery and `units`; Refining held or not. */
     static Game plannerTown(String label, boolean held, String... units) {
+        return plannerTown(label, held, true, units);
+    }
+
+    /** The same town with the owner line on or off (BO1-S): off only where a section's premise is a refinery's order, not the owners. */
+    static Game plannerTown(String label, boolean held, boolean ownerLine, String... units) {
         GameFiles files = GameFiles.scratch(label);
         Game g = new Game(files);
+        if (!ownerLine) ShortSellingCheck.lineOff(g);
         PLANNER_FILES.put(g, files);
         quietly(() -> {
             g.newGame();
@@ -979,7 +985,10 @@ public class RefineryCheck {
 
     static void theInvestorsOrderAUnit() throws Exception {
         out.println("\n--- 14. the investors order a unit, and Game.consider() tests the planner's estimate ---");
-        Game g = plannerTown("refinerycheck-plan", false);
+        // THE OWNER LINE OFF (BO1-S, 2026-11-20): the best unit pays here by a hair (on 0.9.161, $0.0k a month on $794k, 0.004% a month), and in
+        // the town with the owner families off its labour force it loses by one ("a Small Cracking Unit would lose $0.0k a month on it"), so
+        // nothing is ordered in the two years. The refiners' path to an order is under test, not the owners (OwnerCheck's).
+        Game g = plannerTown("refinerycheck-plan", false, false);
         // 1900's CAUSES OF DEATH HELD OFF (BA1, 2026-11-05; R0b): the fixture is today's town, whose wells' crude covers the refinery's run to the barrel. With 1900's deaths the
         // people differ, and the month's crude bought leaves 9.1e-13 barrels filled from the world, so the fixture's "imported == 0" is not met by a float's residue.
         g.holdCausesOfDeathOff();

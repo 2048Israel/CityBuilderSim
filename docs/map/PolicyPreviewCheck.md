@@ -1,4 +1,4 @@
-# PolicyPreviewCheck.java - 1,263 lines · 23 methods · 3 constants · harnesses
+# PolicyPreviewCheck.java - 1,268 lines · 23 methods · 3 constants · harnesses
 
 `ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -79,10 +79,10 @@
 | 491 | 3. THE BUDGET |
 | 550 | 4. THE OTHER READS |
 | 709 | 11. THE MINIMUM-WAGE PAGE (WS1) |
-| 1034 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
-| 1106 | 5. AFTER A LOAD |
-| 1126 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
-| 1182 | 10. THE PORT DUES (FR4) |
+| 1039 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
+| 1111 | 5. AFTER A LOAD |
+| 1131 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
+| 1187 | 10. THE PORT DUES (FR4) |
 
 ## Constants
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 1185 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
+| 79 | 1190 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
 | 85 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 93 | 1 | `static boolean near(double a, double b)` |  |
 | 95 | 5 | `static void quietly(Runnable r)` |  |
@@ -151,36 +151,36 @@
 | 552 | 36 | `static void theOtherReads(Game g)` |  |
 | 596 | 112 | `static void theFloorsMove(Game g)` | THE FLOOR LIFTS ONLY THE WAGES UNDER IT (WG1; it moved every wage by its own ratio until then): a job's target at a floor is its own, or the floor in today's money where that is more (LabourMarket.targetWageAt() has t... |
 
-### 11. THE MINIMUM-WAGE PAGE (WS1) (lines 709-1033)
+### 11. THE MINIMUM-WAGE PAGE (WS1) (lines 709-1038)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 712 | 3 | `static boolean same(double a, double b)` | Equal to a part in a billion, or to a billionth outright: the shares and sums of a played city. |
 | 717 | 9 | `static double filledWhere(Game g, java.util.function.Predicate<JobType> which)` | The posts filled in the jobs that pass `which`, as PopulationManager.getJobsFilled() counts them (posts x fill rate, unrounded): the hand sum. |
-| 734 | 299 | `static void theMinimumWagePage(Path root, Game g)` | THE MINIMUM-WAGE PAGE'S FIGURES (WS1): FloorView is what the page draws and the screen recomputes nothing, so every figure is held to a hand sum of the model's own getters in the played city, and each state the page's... |
+| 734 | 304 | `static void theMinimumWagePage(Path root, Game g)` | THE MINIMUM-WAGE PAGE'S FIGURES (WS1): FloorView is what the page draws and the screen recomputes nothing, so every figure is held to a hand sum of the model's own getters in the played city, and each state the page's... |
 
-### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 1034-1105)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1036 | 69 | `static void theWithdrawal(Game g)` |  |
-
-### 5. AFTER A LOAD (lines 1106-1125)
+### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 1039-1110)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1108 | 18 | `static void afterALoad(Path root, Game g)` |  |
+| 1041 | 69 | `static void theWithdrawal(Game g)` |  |
 
-### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 1126-1181)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1128 | 53 | `static void zoning(Game g)` |  |
-
-### 10. THE PORT DUES (FR4) (lines 1182-1263)
+### 5. AFTER A LOAD (lines 1111-1130)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1185 | 8 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). |
-| 1194 | 69 | `static void portDues()` |  |
+| 1113 | 18 | `static void afterALoad(Path root, Game g)` |  |
+
+### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 1131-1186)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1133 | 53 | `static void zoning(Game g)` |  |
+
+### 10. THE PORT DUES (FR4) (lines 1187-1268)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1190 | 8 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). |
+| 1199 | 69 | `static void portDues()` |  |
 

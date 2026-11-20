@@ -1191,6 +1191,9 @@ public class FittingCheck {
                 + " is cancelled, the newest first, with no refund and no transfer ---");
         Game g = fitTown("fitting-scrap", 4);
         BuildingsStacks bakery = stack(g, "Bakery");
+        // Four standing (BO1-S): (a) and (b) scrap three and the last asks for a fourth to fit, and the month fitTown
+        // plays can retire one (with the owner families off the labour force the village kept three).
+        if (bakery.getQuantity() < 4) quietly(() -> g.buildStack(bakery.getBuilding(), 4 - bakery.getQuantity(), true));
         int id = bakery.getBuilding().getId();
         Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
         ham.citybuildersim.sectors.Construction builders = g.getSectors().construction();

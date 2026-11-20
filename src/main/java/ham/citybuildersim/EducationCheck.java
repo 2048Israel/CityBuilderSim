@@ -288,12 +288,15 @@ public class EducationCheck {
         for (double b : bands) bandTotal += b;
         // Plus the students: since the pipeline exists (2026-09-06) the people
         // in a lecture theatre are out of the supply, and the supply plus the
-        // students is the workforce.
+        // students is the workforce. ...and the prisoners (2026-09-11) and the
+        // owner families' adults (BO1, on in a city since BO1-S) are out of the
+        // supply too (PopulationManager.workforceByBand), so they are added back.
         double studying = tp.getStudyingTotal();
-        System.out.printf("   supply %,.0f + studying %,.0f = workforce %,d%n",
-                bandTotal, studying, tp.getWorkforce());
-        assertTrue("the bands plus the students still add up to the workforce",
-                Math.abs(bandTotal + studying - tp.getWorkforce()) < 2);
+        double outOfSupply = tp.getImprisoned() + tp.getOwners();
+        System.out.printf("   supply %,.0f + studying %,.0f + in prison or owning %,.0f = workforce %,d%n",
+                bandTotal, studying, outOfSupply, tp.getWorkforce());
+        assertTrue("the bands plus the students, the prisoners and the owner families still add up to the workforce",
+                Math.abs(bandTotal + studying + outOfSupply - tp.getWorkforce()) < 2);
         assertTrue("fixture: somebody is actually studying", studying > 1);
 
         /* ============ 6. LICENCES CANNOT OUTNUMBER GRADUATES ============

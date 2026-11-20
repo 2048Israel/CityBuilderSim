@@ -114,6 +114,11 @@ import java.nio.file.Files;
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
+ * Every city here plays with the owner line off (BO1-S, ShortSellingCheck.lineOff): the households'
+ * paper is bought from their savings, and in this harness's town of nine adults, under
+ * OwnerHousehold.OWNER_ADULT_SHARE, no company lists, so no household is paid a dividend to save.
+ * The line's own claims are OwnerCheck's.
+ *
  * @author Jerus
  */
 public class HoldersCheck {
@@ -183,7 +188,7 @@ public class HoldersCheck {
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
 
         GameFiles files = GameFiles.scratch("holderscheck");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         // The constant world rate (XR4), as section 9 stands it (EP1): hot money bids for the city's paper over the world's rate (Auction.worldAt()), and the
         // file's rate stood at 2.25% on main's path and at 5.5% in the draws of 1900, where the bank's bid at fair took the whole issue and the world held
         // none (sections 6 to 8 read the world's holding). Its premise unmoved.
@@ -437,7 +442,7 @@ public class HoldersCheck {
         final Game[] back = new Game[1];
         quietly(() -> {
             city.saveGame(3, "the holders");
-            back[0] = new Game(files);
+            back[0] = ShortSellingCheck.lineOff(new Game(files));
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
             // ...AND THE LIVE CITY'S HELD SECTOR HELD IN IT TOO (GW1): a hold is the harness's, not the
@@ -524,7 +529,7 @@ public class HoldersCheck {
         json.add("centralBank", cbOld);
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
-            back[0] = new Game(files);
+            back[0] = ShortSellingCheck.lineOff(new Game(files));
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
@@ -595,7 +600,7 @@ public class HoldersCheck {
     static void theWholeBook() throws Exception {
         out.println("\n--- 9. the dial at the whole of the paper buys the households' once the bank's is gone ---");
         GameFiles files = GameFiles.scratch("holderscheck-whole");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         // The world this section is written against: the constant world rate (XR4). Its premise is the split of the issue between the households and
         // the bank - the households must hold more than the step that comes off them once the bank's paper is gone, which takes the bank's share to
         // under half, and under the old world the households took 51.5% of it. Under the Fed's rate (2.25% at month 60 on the default path) their bid
@@ -742,7 +747,7 @@ public class HoldersCheck {
         final Game[] back = new Game[1];
         quietly(() -> {
             city.saveGame(5, "the whole book");
-            back[0] = new Game(files);
+            back[0] = ShortSellingCheck.lineOff(new Game(files));
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(5);
         });
@@ -825,7 +830,7 @@ public class HoldersCheck {
     static void theBusinesses() throws Exception {
         out.println("\n--- 10. the businesses are a holder: they buy at the settle, are paid, sell, and the books agree ---");
         GameFiles files = GameFiles.scratch("holderscheck-firms");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         quietly(() -> {
             city.run();
@@ -1175,7 +1180,7 @@ public class HoldersCheck {
         final Game[] back = new Game[1];
         quietly(() -> {
             city.saveGame(3, "the businesses");
-            back[0] = new Game(files);
+            back[0] = ShortSellingCheck.lineOff(new Game(files));
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(3);
         });
@@ -1212,7 +1217,7 @@ public class HoldersCheck {
         for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) e.getAsJsonObject().remove("firmPrincipal");
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
-            back[0] = new Game(files);
+            back[0] = ShortSellingCheck.lineOff(new Game(files));
             back[0].quietTheWorldForTheD();   // EP1: the flag is the harness's, not the save's: the twin stands on the live city's world
             back[0].loadGameSave(4);
         });
@@ -1340,7 +1345,7 @@ public class HoldersCheck {
 
         /* ---- the city ---- */
         GameFiles files = GameFiles.scratch("holderscheck-world");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         // R0b call 7: the causes of 1900 held off, before a month, here and in the twins loaded from this city below. The reloaded twin
         // is read against the city a month on, sized on today's deaths; on 1900's causes the paper the world holds stood at 0.049481 in
@@ -1509,7 +1514,7 @@ public class HoldersCheck {
         final Game[] twinBox = new Game[1];
         quietly(() -> {
             city.saveGame(3, "the world");
-            twinBox[0] = new Game(files);
+            twinBox[0] = ShortSellingCheck.lineOff(new Game(files));
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(3);
@@ -1544,7 +1549,7 @@ public class HoldersCheck {
         for (com.google.gson.JsonElement e : json.getAsJsonArray("debts")) e.getAsJsonObject().remove("worldPrincipal");
         Files.writeString(files.saveFile(4), json.toString());
         quietly(() -> {
-            twinBox[0] = new Game(files);
+            twinBox[0] = ShortSellingCheck.lineOff(new Game(files));
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(4);
@@ -1702,7 +1707,7 @@ public class HoldersCheck {
     /** BK2b: a smaller first sale leaves less of the bank's own discount to cover the next sale's premium. */
     static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare) throws Exception {
         GameFiles files = GameFiles.scratch(label);
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
         city.restrikeOffForTest = restrikeOff;
         // R0b call 7: the causes of 1900 held off, before a month, in the city and its twin alike. Sections 13a to 13c reopen a line that
@@ -2450,7 +2455,7 @@ public class HoldersCheck {
     /** Full pro-rata takes that leave positive rounding on main, with partial takes as a control (RT1b). */
     static void theHolderLedgers(double scale) {
         out.printf("   -- the holders' own books, scale %.15g%n", scale);
-        Game city = new Game(GameFiles.scratch("holderscheck-floor-books"));
+        Game city = ShortSellingCheck.lineOff(new Game(GameFiles.scratch("holderscheck-floor-books")));
         EconomyManager economy = city.getEconomyManager();
         String[] sectors = {Sectors.KEYS[0], Sectors.KEYS[1]};
         double[] firmFace = {7.060103544449752 * scale, 6.77740972197304 * scale};
@@ -2514,7 +2519,7 @@ public class HoldersCheck {
 
     /** Run the actual desk through its wired recall, and compare two independently kept books, never a residual sum (RT1b). */
     static void theFirmDeskSplit(double scale, double share) {
-        Game city = new Game(GameFiles.scratch("holderscheck-floor-desk"));
+        Game city = ShortSellingCheck.lineOff(new Game(GameFiles.scratch("holderscheck-floor-desk")));
         DebtManager ledger = city.getDebtManager();
         OutwardInvestment outward = city.getOutwardInvestment();
         Bank bank = city.getBank();
