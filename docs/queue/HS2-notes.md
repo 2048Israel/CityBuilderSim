@@ -186,7 +186,71 @@ retires fewer than an exponential would make it, and a settled one the same. The
 
 ## The ensemble
 
-(Waiting for the go: "HS2 ensemble?")
+`docs/ensemble/HS2.md`: 80 of 80 runs on the classes of 9b1565fb9 (the merge of 0.9.162), on the laptop, scored
+against `docs/ensemble/0.9.162.md` (BO1-S's 80), with BO1-S's extra columns and HS2's four (`young`, `retiring`,
+`alone`, `elders`). The raw CSVs, logs and times are kept in
+`C:/Users/Jerus/AppData/Local/Temp/cbs-ensemble-HS2-9b1565fb9/`. The comparison scripts are target/ens/compare.py
+and periods.py (medians over seeds of each run's mean from m240). HS1's 80 are in `cbs-ensemble-HS1-ed9a1ad35/`.
+The run took 2 h 35 min (09:03-11:38) with another session's suite on the machine: AUTO2's runs averaged 1,246 s against BO1-S's
+1,039. The background call was stopped at its two hours, but the script, its xargs and the JVMs ran on and scored
+by themselves.
+
+**The verdict: PASS, hard criteria 10/10.** M1 (months the money audit failed) is 0 and F1 (runs with a
+LongPlaytest finding) is 0/16 in every policy. Three info verdicts changed:
+- **AUTO2 A1, FAIL to PASS:** inflation m240-end 2.87% [2.32% to 3.31%], 13/16 seeds in band (baseline 2.89%, 10/16).
+- **AUTO2 T2, PASS to FAIL:** the final population is 1,820,652 [76,002 to 4,402,721] against 2,435,388, 0.748 of it
+  (the line is 0.75).
+- **ZERO_SLACK T2, PASS to FAIL:** 1,308,226 against 1,755,042, 0.745.
+- **Unchanged but moved:** A2 (the longest spell of yoy > 10% from m240) is 20 months [7 to 33] against 14, FAIL in
+  both. T1 has 16/16 AUTO2 seeds reaching 40,000 people, at m919 [637 to 1,732] against m798. The short runs' sizes
+  (HIGH, SHOCK, ZERO_HOT) are within 7% of BO1-S's.
+
+**The population: fewer seniors, more adults out of work, a slower take-off.** Medians, HS2 against BO1-S:
+
+| AUTO2 | m240-720 | m720-1440 | m1440-2400 |
+|---|---|---|---|
+| seniors / people | 0.088 / 0.101 | 0.094 / 0.117 | 0.098 / 0.123 |
+| unemployment | 0.050 / 0.045 | 0.093 / 0.067 | 0.091 / 0.077 |
+| growth, end / start | 8.2 / 7.6 | 9.0 / 15.1 | 7.6 / 5.1 |
+
+- **The seniors' share falls in every policy:** from m240 it is 0.088-0.095 of the people against BO1-S's
+  0.099-0.116. This is the trace's reading at scale: a young city's adults are mostly young, and the young do not
+  retire (the Erlang note, above).
+- **The take-off is where the size is lost.** In m720-1440 HS2's unemployment is 9.3% against 6.7%, and its cities
+  grow 9.0-fold against 15.1-fold. After m1440 they grow faster than BO1-S's but do not close the gap.
+- **Likely cause:** about 2.3 points more of the people are working-age adults in place of seniors, so roughly 4%
+  more labour on the same jobs. The unemployment and the slower pull follow from that. The arithmetic fits in
+  direction and size, but no column isolates it.
+- **Unemployment from m240**, HS2 against BO1-S: AUTO2 8.0% against 6.4%, ZERO_SLACK 7.8% against 6.2%, ZERO_HOT
+  5.9% against 4.0%; HIGH and SHOCK within 0.2 points.
+
+**The retirement flow (the Erlang note).** The retiring share of adults averages 0.00124-0.00133 a month from m240.
+That is 0.77-0.83 of main's flat 1/624 (0.00160), with the young at 0.44-0.48 of the adults against the settled
+0.344. It is exactly the established's share times 1/420 (AUTO2: 0.522 / 420 = 0.00124). The city never settles,
+because the teens keep entering faster than the settled rate, so the flow stays under the exponential's for the
+whole run.
+
+**The households' identity.** audit_ok held in every month of every run, and the audit residual is 0 in all 80.
+
+**The retired's and the elderly's money, against the working households' net worth** (medians from m240; HS1's 80
+on 0.9.159, BO1-S's on 0.9.162, HS2's):
+
+| policy | retired, HS1 / BO1-S / HS2 | seniors alone, HS1 / HS2 | elder couples, HS1 / HS2 |
+|---|---|---|---|
+| AUTO2 | 0.657 / 0.559 / 0.736 | 0.614 / 0.642 | 0.686 / 0.835 |
+| ZERO_SLACK | 0.667 / 0.477 / 0.708 | 0.614 / 0.616 | 0.665 / 0.736 |
+| SHOCK | 0.240 / 0.198 / 0.260 | 0.209 / 0.199 | 0.220 / 0.279 |
+| HIGH | 0.177 / 0.179 / 0.222 | 0.152 / 0.151 | 0.168 / 0.230 |
+| ZERO_HOT | 0.125 / 0.162 / 0.190 | 0.104 / 0.077 | 0.135 / 0.116 |
+
+- **The retired are richer against the working**, by 0.18 over BO1-S in AUTO2 and 0.08 over HS1. This is what
+  "ageing carries the money" should do: a retiree now comes out of the established, whose cells hold years of
+  saving, while the working average is diluted by the young, who start with little.
+- **The elder couples gain the most** (AUTO2 0.835 against HS1's 0.686): a couple retires out of an established
+  couple's cell.
+- **The seniors alone move little**, from 0.614 to 0.642.
+- **ZERO_HOT is the exception:** its cities are 6,500 people at the end, and its seniors alone and elder couples
+  are below HS1's (0.077 against 0.104, 0.116 against 0.135).
 
 ## The calls
 
