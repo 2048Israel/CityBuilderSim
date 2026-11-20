@@ -40,6 +40,15 @@ Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.16
   363; SpreadPlanner's `City.rate(NewUnit)` (384, default `rate()`, the game frame's override at 581) read by
   `earns()` (407) and ProcessingSector's `estimate()` (222, 248) and `weigh()` (397). ProcessingSector's
   `lastEarns`/`lastOneEarns` keep `rate()`: they weigh a standing plant.
+- **The staffing hold weighs a first plant staffed** (5fbcc3468, after the first dry run, §9): `Sector.staffed()`
+  reads an estimate with `firstPlantRate()`'s staffing whole (the other five ratios as they are), and
+  `Game.noteStaffingHold()` takes the hold's margin through it, so a first plant short of a band asks for the wage
+  that would staff it.
+- **An exact packing leaves nobody** (f4bbb183e, the orchestrator's call, §9): `FamilyModel.packingRounding()`,
+  MoneyAudit's rule in households (`RELATIVE_TOLERANCE` of the size, never under `ULP_STEPS` of a double's steps),
+  and two snaps under it: a match pass whose need ends under it at the doors' size or the pass's places everyone,
+  and `noteUnplaced()`'s families' leftover (the seekers' part taken off the whole) is nobody under it. Every reader
+  of `getDoubledUpHouseholds()` and `getStillUnplaced()` reads 0 when the packing is exact.
 
 ## 3. The calls (★ = the recommended way, taken)
 
@@ -57,6 +66,11 @@ Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.16
   and none open still weighs its first plant (the probe's m15 Fabrication Shop, ordered while the m9 Works was still building).
 - ★ **A running sector is untouched.** `plannedRate()` returns the sector's own rate whenever it has posts: run on
   the old estimate (a probe switch, removed), the new YoungBankCheck gives main's figures to the digit.
+- ★ **The staffing hold weighs a first plant staffed** (the orchestrator: "stands"). The hold's margin is what a
+  raise that staffs the building is worth, and read at the fill of the bands it is short in, a first plant short
+  of a band never carried its interest and never asked (WantedPostsCheck, §9). Whole, not the fill of its other
+  bands: a band with spare hands fills its posts, so the two differ by little, and whole is main's own read for a
+  first plant there. A running sector's hold reads its own rate, as on main.
 - **ExtractionSector 314** is a local `rate` nothing reads; left as it is.
 
 ## 4. The measure: YoungBankCheck
@@ -92,6 +106,12 @@ On the 0.9.167 merge (HS2's two adult stages moved the town): lowest 0.1147 at m
 resolution, 4,711 people at month 121; four first plants ran three months alone, missing their runs by 0.326 in
 all as weighed against 0.723 at their sectors' own rates; all passed.
 
+On the final code (f4bbb183e: §9's two mends, on fa889c423's main): lowest 0.1224 at month 54, 0 months under, 0
+in resolution, 7,263 people at month 121; six first plants ran three months alone, missing their runs by 0.485 in
+all as weighed against 0.829 at their sectors' own rates (the Vehicle Works weighed 0.779 against its sector's
+0.902, run 0.609; the Construction Materials Plant 0.708 against 0.884, run 0.733; the Bottling Plant 0.668
+against 0.839, run 0.714); all passed.
+
 The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seeds, DQ1 §1's method) is §8's.
 
 ## 5. Harnesses the mend moved
@@ -111,12 +131,23 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
     fixture on both, the switch removed): a threshold crossed by chance, not a smaller city. The loop that plays
     on with the pass off now also plays until the city has outgrown the founding's care, within the same year:
     1,224 people at month 61. The section's assertions after it pass as before.
+- **WantedPostsCheck's `marginOf()`** and §5's `earns5` read the hold's earnings as the hold now does, through
+  `Sector.staffed()` (§2): the margin the harness works out is `Game.noteStaffingHold()`'s.
+- **HousingCheck, a new section, "an exact packing leaves nobody doubled up"**, causes the dust by hand: 301.6
+  adults and 0.8 out of work, whose households the model sums to 227.00000000000003, matched on the load path
+  (`house()` then `noteUnplaced()`, as Game's reload runs it) against 227 six-person doors. Its fixture line holds
+  the sum within `packingRounding()` of the doors; its law, nobody doubled up and nobody without a door, failed
+  without the two snaps (2.842e-14 doubled up; the snaps commented out, compiled, run, put back) and passes with
+  them. The month's path runs the sharing valve between its two passes, which absorbed this dust; the played
+  city's was the families' and the seekers' both (4.1e-15 and 1.0e-14 at DenominationCheck's m21).
 
 ## 6. Left
 
 - **OE1-A** (pending): `BuildAdvice.fieldEarnings()` (lines 2199 and 2247) weighs an offer's iron fields at the
   mines' own rate. A field offered to a city with no mine reads the empty sector. R1g and FB13 hold BuildAdvice;
   `plannedRate()` there is a one-word change once they have shipped.
+- **AS1** (queued, the orchestrator's): AuctionCheck §11 causes the auction sale it counts instead of reading one
+  off LongPlaytest's 1,200 months (§9).
 
 ## 7. Checks
 
@@ -139,8 +170,16 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
   and AutoBuildCheck passed alone (§4's line; the young city 1,236 people against the founding's 1,200).
 - The known-reds rows that name OE1 (YoungBankCheck's two) are vetoed at OE1's gate (`tools/known-reds.sh`): its
   section 2 has to pass, and passes.
+- The first dry run (8f1466249) was red in six harnesses (§9). On its two mends (f4bbb183e, the merge of
+  fa889c423 under them): `--fast` exit 0; the pick ALL 230 (BusinessInvestment.java, 61 readers), review not
+  needed; each alone, exit 0: WantedPostsCheck, DenominationCheck, EquityCheck, PassThroughCheck, AuctionCheck,
+  YoungBankCheck, AutoBuildCheck, CopperRefiningCheck and HousingCheck.
 
 ## 8. The ensemble
+
+**Due again**: §9's two mends move the trace (the staffing hold's asks set wages; the landlords may now sell where
+the match's rounding held them). The orchestrator's order: after CPB2 ships, merge main, the 80 on the box
+against `docs/ensemble/0.9.167.md`, then the dry run. The figures below are OE1c's, on the model before them.
 
 `docs/ensemble/OE1.md`: 80 of 80 runs on the gate box (label OE1c, classes of d15352526, 0.9.167; the baseline's
 `JAVA_OPTS` extra columns, all 86 of its columns; the box's data files, md5-equal to the laptop's), against
@@ -160,17 +199,68 @@ when GB3 brought the box.
 | OE1 | 1.5 [0 to 15] | 11 of 16 | 52 (28) |
 | DQ1's, on 0.9.128 | 2 [0 to 17] | 11 of 16 | 65 (20) |
 
-The measure is worse than main's. Its spells, read DQ1 §1's way (each against the six months before it: the
-bank's write-offs against the trading desk's losses), from the sixteen AUTO2 seeds replayed to m600 with the two
-flows as columns (label OE1-bank, `bank_writeoffs` and `bank_trading`; on the laptop, the box holding two jobs;
-its capital ratio gives OE1c's months under seed for seed): **47 months in 24 desk spells** and 5 months in 4
-write-off spells. Of those four, two have write-offs of any size (seed 2 m491, $407k; seed 13 m361, $1,192k);
-the other two have the desk in profit and $6k and $1k written off (seed 1 m223, seed 11 m80). No spell falls in
-months 81-89, where DQ1 found six of its eight write-off spells (the young town's Fabrication Shop). OE1's desk
-spells cluster in months 177-245 (17 of 24).
+The measure is worse than main's. Both halves were split DQ1 §1's way: each spell read against the six months
+before it, the bank's write-offs against the trading desk's losses, $100k the least either counts at. The
+sixteen AUTO2 seeds were replayed to m600 with the two flows as columns (`-Densemble.months=600`,
+`bank_writeoffs` and `bank_trading`, on the laptop): OE1's from aae63d76c's model (label OE1-bank), main's from
+64ec45fbe (label main-bank, a throwaway worktree, removed; no game code differs from bf048eb69, 0.9.167). Each
+replay gives its ensemble's months under seed for seed: OE1c's 52, and the 35 of HS2's kept CSVs.
 
-Main's 35 months are not classified, because its CSVs hold no bank flows. So what moved from main is told only
-in OE1's half: its write-offs, the mend's own field, are 2 spells of any size in 16 seeds; its desk spells are
-the rest. DQ1 §8 leaves the desk unqueued (the trading desk's marks on a young city's few listed companies;
-`RISK_EQUITY` light). Main's sixteen to m600 with the flows (about 25 minutes on the laptop) would split main's
-35 months the same way; that is the orchestrator's call.
+| spells to m600 | main 0.9.167 | OE1 |
+|---|---|---|
+| desk (the trading desk's losses) | 23 months in 12 | 47 months in 24 |
+| write-off (the bank's write-offs) | 5 months in 3 | 2 months in 2 |
+| neither, under $100k both | 7 months in 4 | 3 months in 2 |
+
+Main's months are mostly desk spells too, and the write-offs, the mend's own field, are fewer on OE1. Main's
+are seed 0 m400 ($283k), seed 14 m400 and m404 ($155k, $386k); OE1's are seed 2 m491 ($407k) and seed 13 m361
+($1,192k). None falls in months 81-89, where DQ1 found six of its eight (the young town's Fabrication Shop).
+The desk spells doubled, 17 of OE1's 24 in months 177-245.
+
+**The larger city does not explain them.** OE1's AUTO2 cities end larger (a median of 2,584,466 people at
+m2400 against 1,820,652), but over the spells they are smaller than main's: a median of 2,744 people against
+2,996 at m180, 3,412 against 4,162 at m240, and 20,498 against 27,274 at m600. The likely path, not traced: a first plant weighed
+at the rate it will run at is ordered later, or not at all, where the empty sector's rate passed it, and the
+young city grows slower until about m600. Whether its bank's smaller book or fewer listed companies is what turns the desk's marks
+into spells is not traced here. DQ1 §8 leaves the desk unqueued (`RISK_EQUITY` light against a trading book's
+weights for small listed shares); this is a second reading for whoever takes it. The orchestrator's rule for
+this split (main's mostly desk spells too) closes it: not a stop, and no row.
+
+## 9. The first dry run (8f1466249, main fa889c423)
+
+Red in six harnesses, 34 NEW lines (the kept run: `Temp/cbs-gate-OE1-eF1zgPLy`). Each ran alone on the mend and
+on the old estimate (the probe switch, removed): all passed on the old one, except PassThroughCheck's line main
+already carries (FS10). The causes:
+
+- **WantedPostsCheck, 6 lines: OE1's own.** `Game.noteStaffingHold()` reads the hold's margin through
+  `estimatedMonthlyProfit()`, so a first Machine Works in a city with no spare college or university hand was
+  weighed at the fill of the very bands it was held for, fell under its interest, and asked nothing ("fixture: the
+  Machine Works carries its interest at prime, so it asks" and the five after it). Mended: the hold weighs a first
+  plant staffed (§2, §3 ★).
+- **DenominationCheck, 11 lines: main's knife-edge, reached on OE1's path.** `RealEstate.mayRetire()` refuses while
+  `FamilyModel.getDoubledUpHouseholds() > 0`, and the match left a residue there. A probe of the TP1 twins (the
+  harness's own twelve-nation world fixture, reformed in July at m19): before m24 the plain twin read 0.0 doubled
+  up and the lopped one 7.1e-15, 120 Houses each, 7 months of losses, 305 people against 820 places; the plain
+  twin's landlords sold 30 Houses and paid off their loan, the lopped twin's did not, and from there the year's
+  trade tables parted by 0.11. Mended at the source, the orchestrator's call (§2), with HousingCheck's new
+  section (§5).
+- **EquityCheck, 1 line, FS14's harness.** "...and every share of it is held, at home or abroad" is domestic plus
+  abroad equal to in issue, which holds while the desk and the city hold none of Retail; its fixture's comment says
+  so. On OE1's path they held 0.000153 of Retail's 289.97 shares when Retail first had a book.
+- **PassThroughCheck, 3 lines, FS10's harness.** The fixture's twins are a played city; the shock twin's vault ended
+  12 months on US$56k over its twin's, against the US$51k it bought (the premise is extra at most bought).
+- **AuctionCheck §11, 1 line.** LongPlaytest's city on automatic building booked 0 auction sales in 1,200 months
+  on OE1's path, against 9 ($68.8M) on the old estimate; FS15 kept `sales > 0` as a certainty of 1,200 months.
+- **CopperRefiningCheck §11, 1 line, FS8's harness.** Seed 1 at m2400 stood 10 Rod Mills (with 4 Copper Smelters,
+  3 Electrolytic Refineries, 6 Scrap Copper Refineries and 5 Wire & Cable Works: a home chain main's seed 1 does
+  not have) against `ROD_MILLS_STANDING` 1. OE1's read reaches a sector only while it runs nothing, so the mills
+  after its first plant are main's planner on a moved path.
+
+The orchestrator's calls: mend the first two; pass Equity to FS14, PassThrough to FS10 and CopperRefining to FS8
+by name; AuctionCheck §11 to a new queued row. On the two mends (f4bbb183e), each alone, all six pass, so no
+known-reds row is needed: WantedPosts, Denomination, Equity, PassThrough (main's FS10 line too), Auction (§11:
+7 sales, $50.1M) and CopperRefining (10.4 minutes; seed 1 at m2400 stands 1 Rod Mill, no smelter or refinery,
+9 Scrap Copper Refineries and 2 Wire & Cable Works, and FS8's line, the rule cutting an order, passes too: 53
+months). Three of the six read played paths that moved between OE1's two models and back; the ensemble is
+due again on the mends (§8). AS1, the orchestrator's row for AuctionCheck §11, is queued in the ship file all
+the same: one city's 1,200 months booked 9, 0 and 7 sales on three models.
