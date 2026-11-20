@@ -34,7 +34,8 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
         d*) CBS_GATE_DIRECTORY=$RUNS/$(dec "$w"); export CBS_GATE_DIRECTORY ;;
         m*) CBS_ME=$(dec "$w"); export CBS_ME ;;
         p*) P=$(dec "$w") ;;
-    esac; done
+        z*) Z=$(dec "$w"); H=${Z#?}; case $Z in -????) TZ=UTC+${H%??}:${H#??} ;; +????) TZ=UTC-${H%??}:${H#??} ;; esac; export TZ ;;
+    esac; done   # z: the caller's UTC offset, so dates here are its (the box keeps UTC; a night after 20:00 was dated tomorrow, GB2)
     case $P in gate.sh) ;; nightly.sh) cd "$HERE/.." || exit 1 ;; *) exit 2 ;; esac   # the nightly's checkout is its cwd
     # GB2: a gate holds the box shared and the nightly whole, each for its whole run; whichever is first runs and the
     # other waits, so the night never times beside a gate. A stop never waits. A flock dies with its holder, where a
@@ -77,7 +78,7 @@ if [ -z "$HOST" ]; then
     exec env CBS_GATE_HOST= sh "$HERE/$P" "$@"
 fi
 C=$(git -C "$HERE/.." rev-parse HEAD) || exit 1
-W="$(enc m "$BY") $(enc p "$P")"; [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
+W="$(enc m "$BY") $(enc p "$P") $(enc z "$(date +%z)")"; [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
 FILE=0; END=0
 for a in "$@"; do   # -F BODY and --red-lines FILE send the file's text, not its path
     if [ "$FILE" = 1 ]; then [ -f "$a" ] || { echo "gate: no file $a"; exit 2; }; W="$W f$(base64 < "$a" | tr -d '\n')"; FILE=0; continue; fi

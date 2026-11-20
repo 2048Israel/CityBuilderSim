@@ -572,7 +572,7 @@ cat > "$TA/fake-ssh" <<'STUB'
 while [ "$#" -gt 0 ]; do case "$1" in -o) shift 2 ;; -n) shift ;; *) break ;; esac; done
 [ "$1" = box ] || exit 255
 case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; "cd && "*) exec env HOME="$GBOX_HOME" sh -c "$2" ;; esac
-exec env HOME="$GBOX_HOME" sh "$GBOX_SERVE" --serve
+exec env HOME="$GBOX_HOME" TZ=UTC sh "$GBOX_SERVE" --serve
 STUB
 chmod +x "$TA/fake-ssh"; GBOX_HOME=$TA/boxhome; GBOX_SERVE=$SRC/tools/gate-box.sh; export GBOX_HOME GBOX_SERVE
 mkdir -p "$GBOX_HOME"; git config --file "$GBOX_HOME/.gitconfig" user.name selftest; git config --file "$GBOX_HOME/.gitconfig" user.email selftest@example.invalid   # the box's own git name
@@ -607,7 +607,7 @@ cat > "$NB/nightly.sh" <<'STUB'
 #!/bin/sh
 [ -n "${CBS_GATE_ON_BOX:-}" ] || { echo here > "$TA/night-here"; exit 0; }
 [ "$(pwd)" = "$(cd "$(dirname "$0")/.." && pwd)" ] || exit 9
-mkdir -p "$HOME/.cbs-observations"; echo held > "$HOME/.cbs-observations/held.tsv"; echo green > "$HOME/.cbs-nightly-tier-green"
+date +%z > "$TA/night-zone"; mkdir -p "$HOME/.cbs-observations"; echo held > "$HOME/.cbs-observations/held.tsv"; echo green > "$HOME/.cbs-nightly-tier-green"
 echo 'the night in full' > "$HOME/.cbs-nightly.log"
 echo "2026-11-21 02:00 0.0.0 abc1234 4,000 months: RED; $HOME/.cbs-observations/misses.tsv; timing: loaded=0; $HOME/.cbs-timing/box/n1" | tee "$HOME/.cbs-nightly.txt"
 printf 'nightly RED: the playtest\n' | sh "$(dirname "$0")/bus.sh" send jerus --kind info -
@@ -616,8 +616,9 @@ exit 1
 STUB
 nightrun() { NT=$1; shift; ( cd "$SRC" && HOME=$TA/nhome CBS_ME= GBOX_SERVE=$NB/gate-box.sh CBS_GATE_SSH="$TA/fake-ssh" CBS_GATE_HOST="$1" \
     CBS_BUS="$TA/bus-stub" TA=$TA sh "${2:-tools/nightly.sh}" ${3:-} ) > "$TA/night-$NT.out" 2>&1; }
-rm -f "$BUS_LOG"; nightrun n1 box; RC=$?
+rm -f "$BUS_LOG"; ( TZ=UTC-09:00; export TZ; nightrun n1 box ); RC=$?
 LABEL="GB2 tools/nightly.sh hands its night to the gate box, its checkout the night's, and keeps the night's exit"; ok test "$RC" = 1
+LABEL="...its dates in the caller's zone, not the box's UTC"; ok grep -q -x -F '+0900' "$TA/night-zone"
 LABEL="...the verdict, log and records copied home, paths named from here"
 ok grep -q -x -F "2026-11-21 02:00 0.0.0 abc1234 4,000 months: RED; $TA/nhome/.cbs-observations/misses.tsv; timing: loaded=0; box:.cbs-timing/box/n1" "$TA/nhome/.cbs-nightly.txt"
 ok sh -c "grep -q -x 'the night in full' '$TA/nhome/.cbs-nightly.log' && test -s '$TA/nhome/.cbs-nightly-tier-green' && test -s '$TA/nhome/.cbs-observations/held.tsv'"

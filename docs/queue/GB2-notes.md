@@ -22,6 +22,11 @@ him.
 - A gate's `active` file (`~/cbs/runs/*/active`) stays behind when a gate is
   killed, and the nightly would then wait on it every night; a `flock` dies
   with its holder.
+- The box keeps UTC and the laptop AST (-0400); the real night's verdict said
+  13:23 when it came home at 09:23. A night started after 20:00 here would be
+  dated tomorrow, and `day.sh`, which asks whether a verdict of today's exists,
+  would then skip the next night. A gate there dates its record the same way
+  (`ship.sh`'s `# date:`). Setting the box's zone needs `sudo`.
 
 ## What changed and why
 
@@ -29,7 +34,10 @@ him.
   (`CBS_GATE_HOST`, else `~/.cbs-gate-box`) and not already on the box execs
   `tools/gate-box.sh --nightly`. Its header says so in the same lines.
 - **`tools/gate-box.sh`**: the program is a word of the call (`p`), `gate.sh`
-  or `nightly.sh`; everything else is GB1's.
+  or `nightly.sh`; everything else is GB1's. A second new word (`z`) carries
+  the caller's UTC offset, and the box runs the call with `TZ` set from it, so
+  a night's and a gate's dates there are the laptop's. A caller at an older
+  commit sends none and runs on UTC, as before.
   - The laptop's half: `--nightly` sends no arguments; the sender is
     `CBS_ME`, else `nightly`. With no box answering it mails `jerus` "The gate
     box cannot be reached (...): the nightly runs on the laptop." and runs the
@@ -51,6 +59,7 @@ him.
   are `gate-box.sh` and `bus.sh` beside a stub night, entered through the real
   `tools/nightly.sh`:
   - the hand-off, the night run from its own checkout, its exit kept;
+  - the night's dates in the caller's zone (+0900 there, the fake box on UTC);
   - the verdict, log and records home with their paths;
   - the red mail relayed;
   - no box: the mail to `jerus` and the night run here;
@@ -89,11 +98,48 @@ him.
 
 ## Checks
 
-(filled in below as they ran)
+- **On the box** (at a1e91a15): `tools/nightly-selftest.sh`, 67 PASS, "nightly
+  selftest OK"; `tools/ship-selftest.sh`, 191 of 191 in 2 min 18 s, GB2's lock
+  cases among them.
+- **On the laptop** (at the merge with main, ad104e91, and the `z` word):
+  `batch-check.sh --fast` exit 0; `tools/ship-selftest.sh` 188 of 188 in
+  37 min beside HS2's ensemble, its `flock` cases skipped, as Git Bash has no
+  `flock`.
+- **One real night**, main's tip 919c1fa41, 2026-11-20 08:56-09:23, started by
+  `sh tools/nightly.sh` here (the orchestrator held the box's gates):
+  "nightly: on the gate box jerus@192.168.0.16, tools at cbe266812", exit 1.
+  - The verdict, log, tier-green and observations arrived in `$HOME` here;
+    `day.sh` read the verdict. Its paths came out as meant:
+    `/c/Users/Jerus/.cbs-observations/misses.tsv` and
+    `jerus@192.168.0.16:.cbs-timing/gatebox/2026-11-20-919c1fa41-...`. Its
+    stamp, 13:23, was the box's UTC: the `z` word above came after this night.
+  - 4,000 months OK in 1,020 s. The laptop's last, on 11-18, took 699 s, on an
+    older main (HS1, OP1 and BO1-S's owners came since); not compared further.
+  - The nightly tier: 40 harnesses in 416 s, the known reds, and one NEW red,
+    PrizeCheck section 12 ("at most one lab a field a month"). It is **main's,
+    not the box's**: red the same way on the laptop at 919c1fa41. PrizeCheck
+    is in `AllChecks.NIGHTLY`, so no gate has run it since the last green tier
+    (873de9427). Told to the orchestrator; not bisected here.
+  - Observations: 7 misses. Timing: `loaded=0`, so the night is the box's
+    baseline. 168 lines OK, none SLOWER. One first-night miss: MapCheck's
+    sidecar, written and read back in 714.6 ms against `SIDECAR_MS` (500 ms).
+    A second such night makes it a standing miss; its budget on this machine is
+    the orchestrator's to take up.
+- **HA1-CLOCK**, not folded in: on the quiet box, SaveSlotCheck's median due
+  month is 17.2 ms against `CLOCK_MS` (25 ms), where HA1 found about 29 ms on
+  the laptop. The budget holds on the box with room, so nothing is changed.
+  Setting it from the box's figures is HA1's call, item 3.
 
 ## One in, one out
 
-(count below)
+`git diff --numstat origin/main` (42881af6) over the process files, the notes
+and ship file left out: +90 -28.
+
+- `tools/gate-box.sh` +36 -13, `tools/nightly.sh` +6 -6, the self-test's cases
+  +37 -2, the docs +11 -7.
+- It is a new mechanism: the box's lock, the program as a word, the records
+  home. Nothing it replaces could go, as the laptop still runs the night when
+  the box is down, so `nightly.sh`'s Windows branches stay.
 
 ## The daily start (his call, asked 2026-11-17)
 
