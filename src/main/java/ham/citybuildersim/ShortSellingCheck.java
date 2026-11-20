@@ -485,11 +485,18 @@ public class ShortSellingCheck {
         sectionEnd();
     }
 
+    /**
+     * The city with the owner line off (BO1-S): this harness's subject is the shorts, and its towns are young - under
+     * OwnerHousehold.OWNER_ADULT_SHARE a founding town of a few adults has an empty owner cell, so its companies would wait to
+     * list and no household would hold a share to lend. The line's own claims are OwnerCheck's.
+     */
+    static Game lineOff(Game g) { g.getHouseholdBalance().setOwnerLine(false); return g; }
+
     /** The playtest's town, as FundLedgerCheck builds it, `months` months old. */
     static Game town(String label, int months) {
         Path root;
         try { root = TempDirs.create(label); } catch (java.io.IOException e) { throw new IllegalStateException(e); }
-        Game g = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        Game g = lineOff(new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy"))));
         PrintStream real = System.out;
         System.setOut(quiet);
         try {
@@ -1009,7 +1016,7 @@ public class ShortSellingCheck {
         Game back;
         try {
             saved[0] = live.saveGame(10, "shortsellingcheck: a short open").ok;
-            back = new Game(live.getGameFiles());
+            back = lineOff(new Game(live.getGameFiles()));
             back.loadGameSave(10);
         } finally {
             System.setOut(real);
@@ -1063,7 +1070,7 @@ public class ShortSellingCheck {
     static Run play(boolean shorts, String label) {
         Path root;
         try { root = TempDirs.create(label); } catch (java.io.IOException e) { throw new IllegalStateException(e); }
-        Game g = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")), LongPlaytest.founding());
+        Game g = lineOff(new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")), LongPlaytest.founding()));
         g.getExchange().setShortSelling(shorts);
         Run r = new Run();
         long started = System.currentTimeMillis();
@@ -1285,11 +1292,7 @@ public class ShortSellingCheck {
             if (h instanceof OwnerHousehold || h.households() <= 0) continue;
             if (h.shares[f] > 0 && (seller == null || h.shares[f] * h.households() > seller.shares[f] * seller.households())) seller = h;
         }
-        // ...or, where no ordinary cell holds any, the owner families (BO1-S: the line is on in a city, the founders' stakes are theirs and
-        // this town's others never bought): their trades with the world settle as any cell's and are the same pair (getHouseholdsSoldAbroad()).
-        if (seller == null && !hb.owners().isEmpty() && hb.owners().shares[f] > 0) seller = hb.owners();
-        assertTrue("fixture: an ordinary cell holds " + Equity.COMPANIES[f] + ", or the owner families do: " + (seller == null ? "nobody" : seller.key()),
-                seller != null);
+        assertTrue("fixture: an ordinary cell holds " + Equity.COMPANIES[f], seller != null);
         if (seller == null) { sectionEnd(); return; }
         final Household cell = seller;
         // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's

@@ -90,6 +90,10 @@ import java.io.PrintStream;
  *      shortfall; nothing discretionary is spent past the room it had; and
  *      what it owes the central bank at the end is printed.
  *
+ * Every city here plays with the owner line off (BO1-S, ShortSellingCheck.lineOff): the fund buys
+ * the households' shares, and in this harness's town of nine adults, under OwnerHousehold.OWNER_ADULT_SHARE,
+ * no company lists and no household holds one. The line's own claims are OwnerCheck's.
+ *
  * @author Jerus
  */
 public class FundCheck {
@@ -136,7 +140,7 @@ public class FundCheck {
 
     /** A copy of the fixture city, loaded from its save: every scenario starts from the same city. */
     static Game copy() {
-        Game g = new Game(files);
+        Game g = ShortSellingCheck.lineOff(new Game(files));
         g.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> g.loadGameSave(1));
         return g;
@@ -180,7 +184,7 @@ public class FundCheck {
         /* ================= the city ================= */
         out.println("--- a city with a bank its households own ---");
         files = GameFiles.scratch("fundcheck");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         // R0b call 7: the causes of 1900 held off, before a month, here and in every city loaded from it (copy(), and the loads below). The
         // rule's bids of section 8 stand at the desk's ask on this town's 72 months, sized on today's deaths; on 1900's causes a bid of the
         // fund's rested at another price ("the rule's bid stands at the desk's ask").
@@ -647,7 +651,7 @@ public class FundCheck {
         }
         takeEquityToOwn(pb, own -> own.targetEquity());
         quietly(() -> p.saveGame(4));
-        Game q = new Game(files);
+        Game q = ShortSellingCheck.lineOff(new Game(files));
         q.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> q.loadGameSave(4));
         close("a save before the anniversary carries the block", q.getBank().preferredOutstanding(), big, 1e-9);
@@ -759,7 +763,7 @@ public class FundCheck {
         play(g);
         check("...and asks again a quarter after", g.isPreferredOfferPending() && g.getMonth() - declined == TreasuryFund.OFFER_AGAIN_MONTHS);
         quietly(() -> g.saveGame(2));
-        Game back = new Game(files);
+        Game back = ShortSellingCheck.lineOff(new Game(files));
         back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> back.loadGameSave(2));
         check("a pending offer survives a save, its month and the refusal before it",
@@ -1309,7 +1313,7 @@ public class FundCheck {
 
         // ...through a save.
         quietly(() -> g.saveGame(3));
-        Game back = new Game(files);
+        Game back = ShortSellingCheck.lineOff(new Game(files));
         back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> back.loadGameSave(3));
         check("the idle cash's part of the transfer, this month's and the life total, comes back from a save",
@@ -1548,7 +1552,7 @@ public class FundCheck {
         bank.payPreferredDividends();
         g.fundBuyShares(0, 500 * PriceLevel.FACTOR);
         quietly(() -> g.saveGame(3));
-        Game back = new Game(files);
+        Game back = ShortSellingCheck.lineOff(new Game(files));
         back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
         quietly(() -> back.loadGameSave(3));
         TreasuryFund f = g.getFund(), r = back.getFund();
@@ -1595,7 +1599,7 @@ public class FundCheck {
         check("D$0 and US$0 read back as Insane", Founding.Preset.of(0, 0) == Founding.Preset.INSANE
                 && insane.problem() == null);
         check("...and a custom founding still takes at least D$6M", Founding.cashProblem(Founding.MIN_CASH - 1) != null);
-        Game g = new Game(GameFiles.scratch("fundcheck-insane"), insane);
+        Game g = ShortSellingCheck.lineOff(new Game(GameFiles.scratch("fundcheck-insane"), insane));
         quietly(g::run);
         check("the treasury holds nothing and the vault nothing",
                 g.getCash() == 0 && g.getForeignAccounts().getReservesUsd() == 0);
@@ -1664,13 +1668,13 @@ public class FundCheck {
     static void insaneOnAdvances() {
         out.println("\n--- 13. Insane, never borrowing: play runs on the central bank's advances ---");
         Founding insane = Founding.named("Insane", Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION);
-        Game g = new Game(GameFiles.scratch("fundcheck-insane-advances"), insane);
+        Game g = ShortSellingCheck.lineOff(new Game(GameFiles.scratch("fundcheck-insane-advances"), insane));
         quietly(g::run);
         CentralBank cb = g.getCentralBank();
         check("day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing",
                 g.getCash() == 0 && cb.ceiling() == 0);
         check("...and nothing that is not a promise may be spent", g.discretionaryRoom() == 0);
-        Game twin = new Game(GameFiles.scratch("fundcheck-insane-twin"), insane);
+        Game twin = ShortSellingCheck.lineOff(new Game(GameFiles.scratch("fundcheck-insane-twin"), insane));
         quietly(twin::run);
         check("...a purchase asked of it is refused whole, and nothing is owed for it",
                 twin.treasuryPays(TreasuryLine.BUILDINGS, 1_000) == 0 && twin.getCash() == 0 && twin.getArrearsTotal() == 0);
