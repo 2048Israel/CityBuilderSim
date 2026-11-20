@@ -83,8 +83,10 @@ months as `OWNERS ...`), `-Dplaytest.months=130 -Dplaytest.trace`, about
 | 121 | 1,567 / 1,172 | 0 / 0 | 0 / 0 | 0.08 / 1.00 | 1.025 / 1.300 | 1,572 / 3,464 | 2,516 | 2,672 |
 
 (Month 1 is not printed by the playtest: its first audited month is 2.)
-Both runs exit 1 on the audit's lines at month 132 or 133, the cut run's
-last months (the untraced default cut at 130 has the same four).
+Both runs exit 1 on the households' own line in their last month, the
+cut run's (off at 132: UnsettledIncome, Rent, Fees and Shopping; on at 133:
+the same four and Unfunded). The default run (lp160, unset, traced the same
+way) has the off run's four at 132, so the cut predates the line.
 
 - The retired are paid nothing, line on or off, and with the line on senior
   care is beyond them (0.01 to 0.08) and its pull gone. Yet the playtest city
@@ -121,3 +123,90 @@ last months (the untraced default cut at 130 has the same four).
   before has no owner families (the line was off): its listed companies keep
   their founders' shares with the households, and a company that lists after
   the load gets a family. Incomplete, not wrong: no format bump.
+
+## 6. A theft nobody was handed (ShortSellingCheck 3, mended)
+
+With the line on, ShortSellingCheck's town of 16 broke the households'
+cash identity every month from the first theft: residual = -2 x
+`StolenFromBusinesses`, 3.3e-4 of the wage bill. Its three owner families
+took 6 of its 9 adults, so every working cell fell under half a household
+(`Household.isEmpty()`, `EMPTY_CELL`). The offenders were all in those
+cells. `Offending.steal()` weighed every cell's offenders, so the theft was
+taken, half from the savers and half from the tills, and
+`creditByWeight()`, which pays only cells not empty, paid nobody: the
+savers' half vanished from the households, and the tills' half was booked
+by the audit as handed to them.
+
+- **The mend** (31e13a429): the weight is the offenders' in the cells that
+  can be paid; with none, nothing is stolen. It is not the owners' fault:
+  any city whose offenders are all in empty cells did this, line on or off.
+  Measured on the leak's own town at 1e-14 to month 56. `HouseholdBalance`
+  is not touched (HS2's file).
+- **Restated for the owners** (the same commit): `CrimeCheck` (the labour
+  force is the workforce less the students, the prisoners and the owners),
+  `EducationCheck` (the bands, the students, the prisoners and the owners
+  are the workforce), `ShortSellingCheck` 9 (where no ordinary cell holds a
+  company, the owner families do: their trades with the world settle as any
+  cell's).
+
+## 7. The suite with the line on: each red read (0.9.160, after the mend)
+
+The suite's first pass (`AllChecks -f`, timing soft) and then the 18 red
+harnesses rerun one at a time after 31e13a429 (`target/rerun-1.txt`), each
+assertion read against main's R1e gate log. The timing reds (WorldMarket,
+EarthTerrain, SaveSlot, Map, Plan, Kept's clocked lines) were skipped, as
+the orchestrator said: the dry run's suite judges them.
+
+**A young town starved: one cause under most of them.** The supply takes
+the owners off every band by `max(0, 1 - owners/all)`
+(`PopulationManager.workforceByBand`), two adults a listed company from the
+month the founders' grant reserves the family (`ownerFamilies()` counts a
+reserved family before its cell is formed), whatever the town's size. A
+town with no more adults than that has nobody working, and a young one
+grows slower:
+
+| harness | line on | main (R1e's gate) |
+|---|---|---|
+| Fitout 3 (1900 farm town) | the wait NaN: no builders (`getAverageFill` 0) | 61.7 months |
+| Slope 5 (held scratch city) | Home Care unbuilt in 120 months | built in 53 |
+| IslandLink 9 (240 months, auto-built) | the island never linked | linked in m106 |
+| CentralBank 7 | no year of prices by m142 (60 months played) | at m99 (17) |
+| AutoBuild 7 | general-care demand 1,181 | 2,077 |
+| AutoBuild 10 (1900 town, m12) | the power order NOTHING | 4 Coal Power Plants, cut to ground |
+| Slope 9 (Medellin, 2000 months) | owns 5.3 km2 | owns 66 km2 |
+| the probe (section 2) | 440 people at m37 | 511 (line off) |
+
+**The other moved fixtures** (a played city the line moves; each with its
+FS sweep, docs/studies/flaky-suite.md section 6):
+
+- Road 9 (FS12): the gravel town carries 399 vehicles a day (main 457), so
+  the advice gives no card and the move has nothing to follow.
+- EssentialWorks, "an unfunded school keeps its funding before spare care"
+  (FS15): the played town's premise (a school warranted and unserved, a care
+  card cheaper than the school) fails; the five lines follow it.
+- Buyback 9 (FS13): the callable line at m104 is D$22,977k, the world 0k of
+  it (main at m97: 40,660k, the world 18k); the bank's equity -137.8.
+- Fund (FS13): (b) the offering raises 841.10 of the 1,028.41 owed, so the
+  preferred is not redeemed whole (five lines); 9e no company but the Bank
+  whose households hold what the limit takes; 10 a limit posts nothing.
+  FundLedger 8 (FS13): the fund holds none of the company.
+- Holders (FS14): 2's paper gain, 10's businesses' part of the line, 13's
+  premium reopening (its six closes follow the fixture). Its three [known]
+  lines are main's (gate.txt), at other figures.
+- Denomination (FS2): the plain city's month has no partner with a lane (0
+  lanes, 0 arrows), twice.
+- SaveFile (FS17): at m154 everybody can afford a basket at full shelves.
+- BasketYear 7 (FS17): the 1900 town with the cap lifted buys no cars (0.0).
+- Fitting 13 (FS1, the sweep that leaves Fitting played): the village has
+  two bakeries (main three), and the section scraps two before it asks for
+  a fresh order, so there is no bakery left to fit.
+- Slope 9 and Landmass 13, "households with no home" (FS7): not the owner
+  families, who are outside the housing match (`FamilyModel` leaves them
+  out of the squeeze, so they are never unplaced). Slope 9: 36.0 households
+  nowhere, m183 to m358, with 243 homes; HN1's class (homes not built in
+  time). Main's runs of both cities have none.
+- ScaleCheck (FS2): one owner family a company does not scale with K: the
+  copy has its city's five families, not five K. The named savings line
+  (HP2's, folded into FS2) moves from 2.83e-2 to 3.54e-2 against
+  `TRACK_SAVINGS` .016, and section 10's six "savings obeys the existing
+  TRACK law" lines are new; kept named under FS2, as the orchestrator said.
