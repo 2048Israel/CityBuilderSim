@@ -21,6 +21,7 @@ fi
 
 if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.sh's output, bus calls and beat streamed
     RUNS=$HOME/cbs/runs; mkdir -p "$RUNS" || exit 1
+    [ ! -f "$HOME/cbs/gate.env" ] || . "$HOME/cbs/gate.env"   # the box's own settings: its JDK, the game's Temurin
     [ ! -d "$HOME/cbs/tools" ] || ( flock 9; find "$HOME/cbs/tools" -mindepth 1 -maxdepth 1 -type d -mtime +3 |
         while IFS= read -r t; do git -C "$HOME/cbs/main" worktree remove --force "$t"; done ) 9> "$HOME/cbs/tools.lock" 2> /dev/null
     IFS= read -r WORDS || exit 2
