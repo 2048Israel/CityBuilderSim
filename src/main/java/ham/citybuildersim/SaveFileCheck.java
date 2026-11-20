@@ -4302,6 +4302,48 @@ public class SaveFileCheck {
                 sameRates &= Double.compare(goldLive.getRate(), goldBack.getRate()) == 0 && Double.compare(goldLive.getMintPrice(), goldBack.getMintPrice()) == 0;
             }
             assertTrue("...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit", sameRates);
+            // FB14 (GD3's review, item 5): an array as GD2 wrote it, 152 slots (to gold's chosen share, 151), read as a load reads it, into accounts just reset.
+            final int gdTwoSlots = 152;
+            ForeignAccounts fromGdTwo = new ForeignAccounts();
+            fromGdTwo.restore(java.util.Arrays.copyOf(savedFx, gdTwoSlots));
+            assertTrue("a GD2-length array (152 slots) restores GD3's defaults: no mint price, no mint rate, not following, no event; no Canada episode and no gold's last break (156-158)",
+                    fromGdTwo.getMintPrice() == 0 && fromGdTwo.getMintRate() == 0 && !fromGdTwo.isMintFollowing() && fromGdTwo.getGoldEvent() == ForeignAccounts.GoldEvent.NONE
+                            && !fromGdTwo.isCanadaGold() && !fromGdTwo.lastBreakWasGold());
+            assertTrue("...and its gold as GD2 saved it: the balance and the price (slots 149-150)",
+                    fromGdTwo.getHolding(ForeignAccounts.GOLD) == savedAccounts.getHolding(ForeignAccounts.GOLD) && fromGdTwo.getMoneyUsd(ForeignAccounts.GOLD) == savedAccounts.getMoneyUsd(ForeignAccounts.GOLD));
+            double[] gdTwoAgain = fromGdTwo.toSaveArray();
+            assertTrue("...and saved again it is a full array (" + gdTwoAgain.length + " slots), the mint's four and FB14's zero",
+                    gdTwoAgain.length == ForeignAccounts.SAVE_SLOTS && gdTwoAgain[152] == 0 && gdTwoAgain[153] == 0 && gdTwoAgain[154] == 0 && gdTwoAgain[155] == 0
+                            && gdTwoAgain[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 0);
+            // FB14 (GD3's review, item 4), slot 158: whether the last break was the gold's, so the screens say "came off gold" and not "the peg broke".
+            ForeignAccounts goldBreaks = GoldStandardCheck.onGold(.8 * CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE, 40_000, 1e-3, 0, 1.0);
+            GoldStandardCheck.month(goldBreaks, GoldStandardCheck.PRICE, .8 * CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+            double[] brokeSlots = goldBreaks.toSaveArray();
+            ForeignAccounts brokeBack = new ForeignAccounts();
+            brokeBack.restore(brokeSlots);
+            assertTrue("a currency whose gold broke (" + goldBreaks.getLastBreakCause() + ", now " + goldBreaks.getRegime() + ") saves it in slot 158, and a restore returns it",
+                    goldBreaks.brokeThisMonth() && goldBreaks.lastBreakWasGold() && brokeSlots[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 1 && brokeBack.lastBreakWasGold());
+            ForeignAccounts brokeOld = new ForeignAccounts();
+            brokeOld.restore(java.util.Arrays.copyOf(brokeSlots, ForeignAccounts.LAST_BREAK_GOLD_SLOT));
+            assertTrue("...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before", !brokeOld.lastBreakWasGold());
+            assertTrue("...and the city's own, which never broke off gold, saves 0", savedFx[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 0 && !savedAccounts.lastBreakWasGold());
+            // FB14 (GD3's review, item 6): the bank's two figures for the gold's sales, at the end of its array: what is due back at the next month's top, and what was
+            // retired for gold since the founding (vaultInNewMoney() is the dollars bought less it).
+            CentralBank bank = new CentralBank();
+            bank.goldPaidOut(7.25);
+            double[] bankSaved = bank.toSaveArray();
+            final int dueSlot = bankSaved.length - 2, retiredSlot = bankSaved.length - 1;
+            assertTrue("the central bank's array ends with the gold's two figures: due back at the next top (" + bankSaved[dueSlot] + ") and retired for gold since founding (" + bankSaved[retiredSlot] + ")",
+                    bankSaved[dueSlot] == bank.getGoldRedeemDue() && bankSaved[dueSlot] == 7.25 && bankSaved[retiredSlot] == bank.getGoldRedeemedLifetime());
+            bankSaved[retiredSlot] = 41.5;
+            CentralBank bankBack = new CentralBank();
+            bankBack.restore(bankSaved);
+            assertTrue("...a restore returns both to the bit, and what it saves is what it read",
+                    bankBack.getGoldRedeemDue() == 7.25 && bankBack.getGoldRedeemedLifetime() == 41.5 && java.util.Arrays.equals(bankBack.toSaveArray(), bankSaved));
+            CentralBank bankOld = new CentralBank();
+            bankOld.restore(java.util.Arrays.copyOf(bankSaved, dueSlot));
+            assertTrue("...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold",
+                    bankOld.getGoldRedeemDue() == 0 && bankOld.getGoldRedeemedLifetime() == 0 && bankOld.vaultInNewMoney() == bankOld.getDollarsBoughtLifetime());
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)
