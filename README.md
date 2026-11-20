@@ -142,7 +142,8 @@ before.** A batch has more than once landed in the Java and not in
 **The ensemble is not in the suite.** Sixteen seeds under five monetary
 policies, 80 runs of up to 2,400 months, scored against the inflation
 roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
-minutes five at a time (`tools/ensemble/README.md`). It runs only for a
+minutes on the gate box, eight at a time, and nearly two hours on the laptop
+(`tools/ensemble/README.md`). It runs only for a
 batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
 final model, against the newest stored score in `docs/ensemble/`, and that
 batch commits its own score there, under its id; `ship.sh` names it by the

@@ -789,8 +789,9 @@ public class HouseholdCheck {
         // senior shapes and the two elder ones, one cell each; six each since
         // HS1, one a tier the retired left.
         // And the owner families' ledger since BO1 (2026-11-10), one cell after the prisoners'.
-        assertTrue("ninety-nine cells: eleven working shapes by six tiers, four retired by six former tiers, nine outside the families",
-                cellsBal.cellCount() == 11 * 6 + 4 * 6 + 3 + 1 + 3 + 1 + 1);
+        // And the young's since HS2: seven working shapes by six tiers, after the established's eleven.
+        assertTrue("a hundred and forty-one cells: eleven established working shapes and seven young by six tiers, four retired by six former tiers, nine outside the families",
+                cellsBal.cellCount() == 11 * 6 + 7 * 6 + 4 * 6 + 3 + 1 + 3 + 1 + 1);
         Household one = cellsBal.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household two = cellsBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household six = cellsBal.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);

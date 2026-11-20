@@ -112,7 +112,7 @@ public class HouseholdFlowCheck {
     static final List<ToDoubleFunction<Household>> STOCKS = List.of(
             c -> c.savings, c -> c.debt, HouseholdFlowCheck::sharesOf, c -> c.abroad, c -> c.studentDebt, c -> c.cars);
 
-    static final String[] KINDS = {"retiring", "ageing on", "partner dies", "dying alone", "leaving"};
+    static final String[] KINDS = {"retiring", "ageing on", "partner dies", "dying alone", "leaving", "moving up"};
 
     /** What the cell holds, a household's of each stock. */
     static Household holds(Household c, double savings, double debt, double shares, double abroad,
@@ -177,7 +177,17 @@ public class HouseholdFlowCheck {
     static final class Town {
         final HouseholdBalance bal = new HouseholdBalance();
         private final double[][] census = new double[FamilyStructure.values().length][PayTier.values().length];
+        /** The young's census, cell by cell (HS2): the census above is the established's and the retired's. */
+        private final double[][] youngCensus = new double[FamilyStructure.values().length][PayTier.values().length];
         private final Map<Household, Double> outside = new IdentityHashMap<>();
+
+        /** A young working cell of this many households (HS2), expected to be as many at the census. */
+        Household youngCell(FamilyStructure shape, PayTier tier, double households) {
+            Household c = bal.cell(shape, tier, AdultStage.YOUNG);
+            c.households = households;
+            youngCensus[shape.ordinal()][tier.ordinal()] = households;
+            return c;
+        }
 
         /** A family cell of this many households, expected to be as many at the census. */
         Household cell(FamilyStructure shape, PayTier tier, double households) {
@@ -215,6 +225,7 @@ public class HouseholdFlowCheck {
         /** Every count the census holds, scaled: the reshuffles no flow explains. */
         Town drift(double factor) {
             for (double[] row : census) for (int t = 0; t < row.length; t++) row[t] *= factor;
+            for (double[] row : youngCensus) for (int t = 0; t < row.length; t++) row[t] *= factor;
             for (Household c : bal.cells()) {
                 if (c.shape() == null) outside.putIfAbsent(c, c.households() * factor);
             }
@@ -224,7 +235,10 @@ public class HouseholdFlowCheck {
         /** The month's census alone, as the balance reads it. */
         void run() {
             bal.setOutsideCensus(c -> outside.getOrDefault(c, c.households()));
-            bal.censusOnly((shape, tier) -> census[shape.ordinal()][tier.ordinal()]);
+            // By adult stage since HS2: the young's cells their own census, the rest the census above.
+            bal.censusOnly((HouseholdBalance.Census) (shape, tier, stage) -> stage == AdultStage.YOUNG && !shape.isRetired()
+                    ? youngCensus[shape.ordinal()][tier.ordinal()]
+                    : stage == AdultStage.YOUNG ? 0 : census[shape.ordinal()][tier.ordinal()]);
         }
     }
 
@@ -551,6 +565,8 @@ public class HouseholdFlowCheck {
         holds(mix.outsideCell(mix.bal.unemployed(UnemployedHousehold.Status.OFF_EI), 20), 30, 0, 0, 0, 0, 0, 0);
         holds(mix.outsideCell(mix.bal.students(), 12), 40, 0, 0, 0, 8, 0, 0);
         holds(mix.outsideCell(mix.bal.orphans(AgeBand.CHILD), 10), 5, 0, 3, 0, 0, 0, 0);
+        // ...and a young family, who move up at 35 (HS2).
+        holds(mix.youngCell(FamilyStructure.COUPLE_BABY, PayTier.SKILLED, 30), 150, 10, 1, 0, 0, 1, 0);
         // The census's own reshuffles, no flow explains them: everyone's count drifts, and a baby's couple grows a child.
         final double DRIFT = .98;
         mix.drift(DRIFT);
@@ -561,7 +577,7 @@ public class HouseholdFlowCheck {
                 .expect(FamilyStructure.COUPLE_CHILD, PayTier.SKILLED, 30);
 
         double[] heldBefore = held(mix.bal);
-        mix.bal.setFlows(.1, .1, .1, .1, .2, .05, 4);
+        mix.bal.setFlows(.1, .1, .1, .1, .2, .05, 4, .1, .1);
         mix.run();
         double[] heldAfter = held(mix.bal);
         double[] gone = left(mix.bal);

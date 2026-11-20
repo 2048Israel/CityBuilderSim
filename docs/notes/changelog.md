@@ -18,6 +18,42 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.168 — BI1, the Bank page's integrity cards relative to the book — 2026-11-20, ready, see docs/queue/BI1-notes.md
+The Bank page's two red cards, "Its lines do not add up" and "Its two parts do not add up to its equity", and the Balance sheet page's "Not accounted for" line tested the books' residual against an absolute $5, so float dust lit them on a big city: a double's own step is .002 to .008 at 1e13, and KeptCheck's city of 4,820 months holds books of 1e13 and more. The test is the suite's rule for comparing money now, `MoneyAudit.tolerance` (a cent, or a part in a trillion of the figures' size, never under 64 steps of a double there), and it lives in `Bank` behind public getters (`sheetAddsUp`, `yearAgoSheetAddsUp`, `equitySplitAddsUp`) that the screen reads and recomputes nothing. On a small bank the floor is a cent ($0.26) where it was $5, so a few dollars out of a book under $260 billion now shows. `BankCheck`'s new section builds a small bank $6 out (the cards show), a book of 1e13 and more with float dust only (they do not), the same book truly out (they do) and a $1 billion line left off a 5.8e13 sheet (they do: a part in ten million of it would not); with the old absolute test back, eight of its assertions fail. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
+### GB3 — ensembles run on the gate box first, and BW2 — 2026-11-20, ready, see docs/queue/GB3-notes.md
+A builder's 80-run ensemble (`tools/ensemble/ensemble.sh <label>`) runs on `gatebox` first, with the laptop as the overflow
+(Jerus, 2026-11-20, "Gatebox first"). It hands its runs to `tools/gate-box.sh --ensemble`, GB1's road: the box plays the
+branch's pushed commit eight runs at once (BO1-S's 80 in 17.5 min, against 116 on the laptop), and the runs come home to
+`target/ensemble/<label>/` to be scored here as before. Gates and the nightly come first: an ensemble waits for them and
+holds `~/cbs/box.lock` whole while it plays; when one comes, the runs started finish (277 s at the longest), the rest
+give way, and it resumes after. It runs on the laptop and says why when two heavy jobs already run or wait on the box,
+when the box is down (`jerus` mailed), or when it names its own data files. Measured first: the box's scores equal the
+laptop's in 47 of 50 rows, the other three one ZERO_SLACK seed's minimums, within the ensemble's noise. With it, BW2: a
+gate says "published" only when origin's main holds the batch's tip, and never on a dry run (HS2's dry run beside
+FB13's ship was told "HS2 shipped"). Scripts and docs only.
+
+### GB4 — the gate box's measurements on record — 2026-11-20, ready, see docs/queue/GB4-notes.md
+`docs/gatebox.md` holds what the gate box is and what its first night measured (Jerus, 2026-11-20: "put it on github
+so that if other sessions ask its there"). It covers the machine, its 7-hour soak (every test passed, 83.8 °C at
+most), one job alone (3% from best core to worst, +30% beside its own core's other thread) and many at once. 16 jobs
+at once run about 40% slower each, yet finish about 30% sooner than two rounds of 8. A gate someone waits on runs at
+most 8 at once, one per core; a pile of independent runs fills all 16 threads. The contract's gate box bullet points
+to it. Docs only.
+
+### 0.9.167 — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
+The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
+1/420 (at 70, as before). The young form seven of the eleven household shapes and carry half the babies, a quarter of
+the children and no teens. The books keep the young in 42 working cells beside the established's 66, the pool's group
+is (tier, stage), and the young who turn 35 carry their money with them, HL1's identity closing every month. A theft
+no household could take home is no longer taken. Saves are format 58 (57 no longer loads). The 80 pass every hard
+criterion but end smaller, the final population 0.748 of BO1-S's in AUTO2 and 0.745 in ZERO_SLACK, so both T2 lines
+(soft) now FAIL. Why: a young city's adults are mostly young and the young do not retire, so it keeps fewer seniors
+(9% of the people against 11%) and more adults want the same jobs (unemployment 9.3% against 6.7% in m720-1440, where
+the size is lost). The retired are richer (0.74 of the workers' net worth against 0.56). Twice the cells need twice
+the households before each holds half of one and shops: the 1900 village keeps 13% of its households in such cells at
+m12 (main 9%), 3% at m60 (2%), and is no smaller (544 people at m120 against 504).
+
 ### EDU1 — the poverty trap's gap in EducationCheck — 2026-11-20, ready, no tag (harness), see docs/queue/EDU1-notes.md
 EducationCheck's "a poor city at x3 enrols fewer than at x1: the trap is back" was red on main from CU2 (0.9.130), seen only at R6b's pick, the harness being nightly.
 Bisected on the kept gate runs and probes: green at SQ1's and DQ1's merges (x1 1,673, x3 1,438), red at CU2's (1,652 / 1,632). The model did not move: at x3 the
