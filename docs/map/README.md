@@ -4,7 +4,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 606 files, 655,770 lines, 28,623 methods, 6,264 constants. `GameVersion.VERSION` is "0.9.165", `SAVE_FORMAT` 57.
+**The tree:** 606 files, 655,856 lines, 28,626 methods, 6,264 constants. `GameVersion.VERSION` is "0.9.165", `SAVE_FORMAT` 57.
 
 ## model (271 files)
 
@@ -225,7 +225,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SavedCities.java](SavedCities.md) | 327 | 24 | The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read o... | 6 |
 | [SeaLanes.java](SeaLanes.md) | 210 | 15 | The sea lanes a map draws: every leg of every terminal's route once - a leg that many routes share, once - indexed by the district cells it reaches... | 4 |
 | [SeaRoutes.java](SeaRoutes.md) | 974 | 45 | Each sea terminal's route out to the world: found once on a grid of the sea at 480 m, pulled straight, sailed from the terminal's quay out to the o... | 6 |
-| [Sector.java](Sector.md) | 4,096 | 289 | One business in the city, and the template every sector extends. | 175 |
+| [Sector.java](Sector.md) | 4,141 | 291 | One business in the city, and the template every sector extends. | 175 |
 | [SectorBooks.java](SectorBooks.md) | 1,030 | 60 | A month of books for every business in the city, and last month's too. | 29 |
 | [SectorFlow.java](SectorFlow.md) | 261 | 17 | One business's month as a flow (0.7.30): what went in, what its plant made of it and what held the plant back, and what came out - each good's unit... | 5 |
 | [SectorState.java](SectorState.md) | 282 | 6 | One sector, as a save carries it. | 15 |
@@ -592,7 +592,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TradeCostCheck.java](TradeCostCheck.md) | 634 | 6 | The wedge between what the world charges and what it pays, and what it is made of. | 0 |
 | [TreasuryCheck.java](TreasuryCheck.md) | 1,743 | 38 | Plays a city and audits what the screens say the treasury did. | 2 |
 | [TruckRouteCheck.java](TruckRouteCheck.md) | 1,792 | 60 | Proves the trucks' routes (0.8.8, batch FR5, slice B; docs/studies/spec-freight-and-infrastructure.md 4.7, D21): the ways the map lets a truck driv... | 0 |
-| [UndemandedFeedCheck.java](UndemandedFeedCheck.md) | 342 | 14 | No feed is bought for undemanded output that cannot cover it (CPB2). | 0 |
+| [UndemandedFeedCheck.java](UndemandedFeedCheck.md) | 383 | 15 | No feed is bought for undemanded output that cannot cover it (CPB2). | 0 |
 | [VanCheck.java](VanCheck.md) | 476 | 5 | The vans: what a sector needs, what it costs it, and what happens while it waits for them. | 0 |
 | [VaultMoneysCheck.java](VaultMoneysCheck.md) | 1,080 | 26 | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, t... | 0 |
 | [WageLadderCheck.java](WageLadderCheck.md) | 458 | 14 | The wage ladder a city is founded on (R0d): today's PayTier ladder in every city but one founded the 1900 way, which pays 1901's, the census's. | 0 |

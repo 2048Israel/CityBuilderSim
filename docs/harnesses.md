@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**230 harness files, 26,247 labelled assertions.** AllChecks runs 230 of them.
+**230 harness files, 26,252 labelled assertions.** AllChecks runs 230 of them.
 
 ## Which harnesses read which class
 
@@ -31191,7 +31191,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1763 a save from before them restores with none
   - L1777 no save class (the *Save files, SectorState) mentions a TruckSchedule
 
-## UndemandedFeedCheck.java - 28 labelled assertions
+## UndemandedFeedCheck.java - 33 labelled assertions
 
 > No feed is bought for undemanded output that cannot cover it (CPB2).
 > 
@@ -31201,44 +31201,50 @@ _(this harness does not label its checks through a helper - it prints its findin
 > which charged cathode beside a rod mill less than its own anode; and for a
 > good the world will not buy the net export price is NaN, and `NaN < cost`
 > refused nothing, so a van plant nobody had asked for filled its shed on
-> imported machinery. Both are caused here in real sectors through
-> Markets.clearMonth and the strike and the accounts.
-> 
-> What this has to prove:
+> imported machinery. Building it found a third: committed recovered copper
+> runs its refinery whatever the order share, and the share was still spread
+> over the whole nameplate, so the anode refinery beside a rod mill was
+> ordered as if the scrap did not cover any of it. All three are caused here
 > ...
 
-- **L108 1. cathode beside a rod mill: the spare a refused buffer leaves is not ordered below its anode**
-  - L117 premise: rod demanded at home, cathode not, the joint bill's share under the export price and the anode over it
-  - L126 the refused buffer's spare is not ordered: the cathode's order is the rod mill's alone
-  - L128 the anode bid is the rod mill's cathode at the recipe ratio, none for an export below its cost
-  - L136 the real clearing makes the rod mill's cathode and ships none below its anode
-  - L138 the anode bought is exactly the cathode made, at the recipe ratio
-  - L140 the refinery's export takings are the rod's alone
-  - L145 the accounts keep GDP = C + I + G + NX
-- **L149 2. kept: a full shed's profitable spare is still ordered and made, recovered copper still runs at the marginal cost**
-  - L155 premise: a shed at the dump line, and cathode's net export price over its anode
-  - L161 a profitable spare is still ordered whole
-  - L168 the real clearing makes the whole profitable run to the bit
-  - L187 premise: no demand for cathode or rod, imported feed under water, the joint bill's share under the export price
-  - L195 the recovered copper paid for becomes cathode at the scrap recipe ratio, with no anode or scrap imported
-  - L199 its cathode, the feed already sunk, still ships at the marginal cost rather than filling the shed
-  - L201 the accounts keep GDP = C + I + G + NX
-- **L207 3. every plant of a stockable good the world will not buy, with no demand here: no buffer, no feed**
-  - L211 premise: vans, trucks, rolling stock and luxuries are among them
-  - L223 premise:
-  - L239 premise:
-  - L266 vans, trucks and rolling stock each had a real plant tried
-- **L278 4. kept: demanded vans, profitable cars and vans already in the shed**
-  - L288 demanded vans still plan their cover and order machinery, with no world price
-  - L291 the real clearing makes that cover and holds it
-  - L297 premise: cars undemanded but their net export price over their inputs, rolling stock undemanded with none
-  - L304 the profitable car buffer is ordered whole
-  - L305 beside it the undemanded locomotive works, with no world price, orders nothing
-  - L307 the real clearing makes the cars' whole buffer
-  - L310 and no rolling stock
-  - L327 premise: a real fleet bids for vans the month the shed holds them, with no demand at the last strike
-  - L329 vans already in the shed all sell to the fleets, that one among them
-  - L331 and with no demand at the last strike none are made or fed
+- **L114 1. cathode beside a rod mill: the spare a refused buffer leaves is not ordered below its anode**
+  - L123 premise: rod demanded at home, cathode not, the joint bill's share under the export price and the anode over it
+  - L132 the refused buffer's spare is not ordered: the cathode's order is the rod mill's alone
+  - L134 the anode bid is the rod mill's cathode at the recipe ratio, none for an export below its cost
+  - L142 the real clearing makes the rod mill's cathode and ships none below its anode
+  - L144 the anode bought is exactly the cathode made, at the recipe ratio
+  - L146 the refinery's export takings are the rod's alone
+  - L151 the accounts keep GDP = C + I + G + NX
+- **L155 2. kept: a full shed's profitable spare is still ordered and made, recovered copper still runs at the marginal cost**
+  - L161 premise: a shed at the dump line, and cathode's net export price over its anode
+  - L167 a profitable spare is still ordered whole
+  - L174 the real clearing makes the whole profitable run to the bit
+  - L193 premise: no demand for cathode or rod, imported feed under water, the joint bill's share under the export price
+  - L201 the recovered copper paid for becomes cathode at the scrap recipe ratio, with no anode or scrap imported
+  - L205 its cathode, the feed already sunk, still ships at the marginal cost rather than filling the shed
+  - L207 the accounts keep GDP = C + I + G + NX
+- **L211 3. recovered copper committed beside a demanded rod mill: anode only for what the scrap does not cover**
+  - L228 premise: rod demanded, cathode not, the committed scrap covering part of the rod mill and imported feed under water
+  - L236 all the recovered copper paid for is taken
+  - L237 the anode refinery is ordered only for the rod mill's cathode the scrap does not make
+  - L239 so the run makes the rod mill's cathode and none ships on imported anode below its cost
+  - L241 the accounts keep GDP = C + I + G + NX
+- **L247 4. every plant of a stockable good the world will not buy, with no demand here: no buffer, no feed**
+  - L251 premise: vans, trucks, rolling stock and luxuries are among them
+  - L263 premise:
+  - L279 premise:
+  - L306 vans, trucks and rolling stock each had a real plant tried
+- **L318 5. kept: demanded vans, profitable cars and vans already in the shed**
+  - L328 demanded vans still plan their cover and order machinery, with no world price
+  - L331 the real clearing makes that cover and holds it
+  - L337 premise: cars undemanded but their net export price over their inputs, rolling stock undemanded with none
+  - L344 the profitable car buffer is ordered whole
+  - L345 beside it the undemanded locomotive works, with no world price, orders nothing
+  - L347 the real clearing makes the cars' whole buffer
+  - L350 and no rolling stock
+  - L367 premise: a real fleet bids for vans the month the shed holds them, with no demand at the last strike
+  - L369 vans already in the shed all sell to the fleets, that one among them
+  - L371 and with no demand at the last strike none are made or fed
 
 ## VanCheck.java - 32 labelled assertions
 

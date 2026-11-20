@@ -3220,7 +3220,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2682 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
 | 2685 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
 | 3115 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not... |
-| 3368 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
+| 3413 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
 
 ### SectorBooks.java ([map](map/SectorBooks.md))
 
@@ -8351,8 +8351,8 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 36 | `UndemandedFeedCheck.out` | `System.out` |  |
-| 37 | `UndemandedFeedCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 42 | `UndemandedFeedCheck.out` | `System.out` |  |
+| 43 | `UndemandedFeedCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### VaultMoneysCheck.java ([map](map/VaultMoneysCheck.md))
 

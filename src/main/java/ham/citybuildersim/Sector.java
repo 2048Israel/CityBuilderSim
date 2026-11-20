@@ -3200,6 +3200,10 @@ public abstract class Sector {
      */
     private double shareAboveFloors(Good g, double fraction) {
         if (buildings == null) return fraction;
+        // ...and nothing to solve for a sector with no committed feed this month, which is every sector but Copper Refining with recovered copper.
+        boolean committed = false;
+        for (Good u : uses) committed |= committedInput(u) > 0;
+        if (!committed) return fraction;
         java.util.TreeSet<Double> floors = new java.util.TreeSet<>();
         double all = buildings.totalBySector(key, t -> {
             if (!(t.makes(g) > 0)) return 0;
