@@ -28,7 +28,7 @@ public final class Observation {
             "AutoBuildCheck", "MonetaryCheck", "BondCheck", "FundCheck", "PriceLevelCheck",
             "DeskCheck", "FittingCheck", "LabourCheck", "BuildAdviceCheck",
             "ConstructionControlCheck", "MapCheck", "CentralBankCheck", "KeptCheck",
-            "PolicyPreviewCheck", "BankCheck", "HealthCheck", "ForeignCheck", "FloatLinkCheck",
+            "BankCheck", "HealthCheck", "ForeignCheck", "FloatLinkCheck",
             "CapitalFlowCheck", "CallCheck", "HousingCheck", "CurveCheck", "PrizeCheck");
 
     /** A path reading with no dependent laws, such as a sample share. */
