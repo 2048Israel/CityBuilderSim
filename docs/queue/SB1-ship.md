@@ -1,0 +1,7 @@
+<!-- readiness: provisional -->
+## changelog
+### SB1 — a template has one stack, the premise closed — 2026-11-20, ready, see docs/queue/SB1-notes.md
+SB1 queued `BuildingManager.retire()` to scrap from every stack of a template, not only the first, after HS1's OutsideCheck fixture read its early return as a fault. It is not one: `addStack` is the only place a stack is made, and it merges an order into the stack of the template's name, so a second order, a building wave, an order on site and every load add to the one stack, and a save keys a stack by its id. No city has a template with two stacks, `retire()`'s return is exact, and the model and its default trace are unchanged. `BuildingStackCheck` section 10 is the finding and its tripwire: every template of the catalogue ordered three ways stands in one stack; a played city's stack count read at the end of each of 24 months, saved and loaded, never has two of a template; and the closing path (`Game.demolish`, the next month's close) and the shedding path (`Game.retire`) take the count asked, up to what stands, leave the emptied stack in place and book the count, the ground, the posts, the log line and the salvage at what was scrapped. Run with `addStack` not merging and `retire` returning the count asked, 18 lines go red. The day a second stack of one template can stand, it goes red there, and `retire()` is the first thing to mend.
+## pending
+## queued
+## known-reds
