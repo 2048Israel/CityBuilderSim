@@ -116,3 +116,15 @@ laptop beside another session's trace and HS2's ensemble, the branch's 1,554 s.)
 - Nothing is queued by this batch. The eye check (not pending work): the Land tab's table and the map's chip on Jerus's Bergen city once it
   loads (a bridge-allowed island reads "needs a Road Bridge (… m) or a port here (…)", three lines on the chip); the Build tab's Overview
   with an island to link; a 1900 city's card of a patented building (amber line) and of what the city found itself (violet).
+
+## 8. The dry run
+
+`sh tools/gate.sh FB13 --dry-run`, on the gate box: **exit 0**, run `/home/jerus/cbs/runs/cbs-gate-FB13-UVGg54DG` (copied home as
+`C:\Users\Jerus\AppData\Local\Temp\cbs-gate-FB13-UVGg54DG`; `ship.log`, `unnamed.txt` empty), of this branch at 40057bcc4 merged with main
+e2f399d7c. The suite ran 229 harnesses in 801 s and judged "known red only": BasketYearCheck, CarCheck, CentralBankCheck, ChildcareCheck,
+CreditCheck, CurveCheck, DeathRecordCheck, DenominationCheck, EssentialWorksCheck, ExchangeRateCheck, Forms1900Check, FundCheck, HoldersCheck,
+IslandLinkCheck (its FS7 row), LabourCheck, PriceLevelCheck, RoadCheck, SaveFileCheck, SlopeCheck, YoungBankCheck - each a line of
+`docs/notes/known-reds.txt`, none in a harness this batch touches but IslandLinkCheck's one named line. **KeptCheck passed whole** on the box
+(sections 75-100, the NEW card with the licence line among them, which the laptop could not reach), and FB13Check, LandmassCheck,
+ResearchViewCheck, BuildCardCheck, LicenceFeesCheck, PublicLicenceCheck and HistoricalLicenceCheck are green. After the dry run only these notes
+and the ship file changed.
