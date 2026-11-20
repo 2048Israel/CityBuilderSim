@@ -4579,8 +4579,9 @@ public class BankCheck {
        double's own step at 1e13 is .002 to .008: KeptCheck's city of 4,820
        months lit both on float dust alone. The page now reads the model's
        verdict (Bank.sheetAddsUp(), yearAgoSheetAddsUp(), equitySplitAddsUp()):
-       a cent, or a part in ten million of the book's size, the audit's own
-       test. Each case is built by hand (no city), at two sizes:
+       MoneyAudit.tolerance() of the book's size (a cent, or a part in a
+       trillion, never under 64 steps of a double), the rule every money
+       comparison in the suite makes. Each case is built by hand (no city), at two sizes:
          a small bank, $6 out: the card shows;
          a book of 1e13 and more with float dust only (a few steps of a
            double at that size, past the old $5): it does not;
@@ -4632,16 +4633,22 @@ public class BankCheck {
     static void theIntegrityCardsReadTheBooksSize() {
         out.println("\n--- (13) the integrity cards read the book's size: $6 out on a small bank shows, float dust on a 1e13 book does not, a big book truly out does (BI1) ---");
 
-        /* ---- the rule is the audit's, at every size: a cent, or a part in ten million of the figures it is made of ---- */
+        /* ---- the rule is the audit's own for money, at every size: MoneyAudit.tolerance() of the figures it is made of ---- */
         boolean sameAsAudit = true;
         for (double size : new double[] { 1, 1e3, 1e6, 1e9, 1e13, 1e15 }) {
-            for (double residual : new double[] { 0, MoneyAudit.CENT * .5, MoneyAudit.CENT * 2, 1e-7 * size * .5, 1e-7 * size * 2, 1e-4 * size }) {
-                boolean audit = Math.abs(residual) <= MoneyAudit.CENT || Math.abs(residual) / Math.max(1, size) <= 1e-7;
+            double tol = MoneyAudit.tolerance(size);
+            for (double residual : new double[] { 0, tol * .5, tol * 2, MoneyAudit.CENT * .5, MoneyAudit.CENT * 2, 1e-4 * size }) {
+                boolean audit = Math.abs(residual) <= tol;
                 sameAsAudit &= Bank.addsUp(residual, size) == audit && Bank.addsUp(-residual, size) == audit;
             }
         }
-        assertTrue("the page's test is the audit's (a cent, or a part in ten million) at every size from 1 to 1e15, either sign", sameAsAudit);
-        assertTrue("...and a residual or a size that is not a number is not adding up", !Bank.addsUp(Double.NaN, 1e9) && !Bank.addsUp(1, Double.NaN));
+        assertTrue("the page's test is MoneyAudit.tolerance() at every size from 1 to 1e15, either sign", sameAsAudit);
+        assertTrue("...a cent at a size where a part in a trillion is under one, and a part in a trillion past it",
+                MoneyAudit.tolerance(1e3) == MoneyAudit.CENT && MoneyAudit.tolerance(1e15) >= 1e-12 * 1e15 && Bank.addsUp(.5e-12 * 1e15, 1e15) && !Bank.addsUp(2e-12 * 1e15, 1e15));
+        assertTrue("...and a residual or a size that is not a finite number is not adding up, an infinite one not either",
+                !Bank.addsUp(Double.NaN, 1e9) && !Bank.addsUp(1, Double.NaN) && !Bank.addsUp(0, Double.NaN)
+                        && !Bank.addsUp(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY) && !Bank.addsUp(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+                        && !Bank.addsUp(Double.POSITIVE_INFINITY, 1e9) && !Bank.addsUp(0, Double.POSITIVE_INFINITY));
         assertTrue("a bank that has kept no split, or no year, has nothing to say of them: both read as adding up", aBankOfNoSplitOrYear());
 
         /* ---- a small bank, its lines $6 out ---- */
@@ -4651,13 +4658,13 @@ public class BankCheck {
                 small.sheetAddsUp() && small.sheetSize() < 1e4 && small.sheetSize() > 0);
         splitEquity(small, six);
         fileYearAgo(small, six);
-        double smallBound = Bank.integrityTolerance(small.equitySplitSize());
+        double smallBound = MoneyAudit.tolerance(small.equitySplitSize());
         out.printf("   small: sheet size %,.1f, its bound $%,.2f; $6 is %.1f times it%n",
                 small.sheetSize(), smallBound * 1000, six / smallBound);
         close("fixture: its equity's two parts are $6 out", small.equitySplitResidual(), six, 1e-9);
         close("fixture: the sheet a year ago is $6 out", small.yearAgoResidual(), six, 1e-9);
         assertTrue("fixture: $6 is past the old absolute $5 and past what a book this size allows",
-                six > .005 && six > smallBound && six > Bank.integrityTolerance(small.yearAgoSheetSize()));
+                six > .005 && six > smallBound && six > MoneyAudit.tolerance(small.yearAgoSheetSize()));
         assertTrue("so \"Its two parts do not add up to its equity\" shows", !small.equitySplitAddsUp());
         assertTrue("...and \"Its lines do not add up\" shows, on the sheet a year ago", !small.yearAgoSheetAddsUp());
         assertTrue("...while its sheet now, with nothing out, does not light it", small.sheetAddsUp());
@@ -4665,7 +4672,7 @@ public class BankCheck {
         // The bound is the book's: twice what a small book allows is under the old $5 and shows; half of it does not.
         Bank mid = bookOf(500, 0);
         splitEquity(mid, 0);
-        double midBound = Bank.integrityTolerance(mid.equitySplitSize());
+        double midBound = MoneyAudit.tolerance(mid.equitySplitSize());
         assertTrue("fixture: twice a small book's bound is under the old absolute $5", midBound * 2 < .005);
         splitEquity(mid, midBound * 2);
         assertTrue("twice what the small book allows shows, though the old absolute test let it by", !mid.equitySplitAddsUp());
@@ -4683,7 +4690,7 @@ public class BankCheck {
         if (dust == null) return;
         double sheetDust = dust.sheetResidual(), size = dust.sheetSize();
         out.printf("   big: %,.0f of assets, size %,.0f, one step of a double there %.4f; its sheet is %.4f out (fraction %d), the audit's bound $%,.0f%n",
-                dust.totalAssets(), size, Math.ulp(size), sheetDust, found, Bank.integrityTolerance(size) * 1000);
+                dust.totalAssets(), size, Math.ulp(size), sheetDust, found, MoneyAudit.tolerance(size) * 1000);
         assertTrue("fixture: it is a book of 1e13 and more", dust.totalAssets() > 1e13);
         assertTrue("fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)",
                 Math.abs(sheetDust) <= MoneyAudit.ULP_STEPS * Math.ulp(size));
@@ -4700,9 +4707,11 @@ public class BankCheck {
         assertTrue("...and \"Its two parts do not add up to its equity\" does not show on it", dust.equitySplitAddsUp());
 
         /* ---- the same book, truly out: by more than the bound ---- */
-        double bound = Bank.integrityTolerance(size);
+        double bound = MoneyAudit.tolerance(size);
         Bank wrong = bookOf(1.5e13, found);
-        assertTrue("fixture: the bound on a book this size is far past dust (a part in ten million is millions)", bound > 1e6);
+        out.printf("   its bound is %,.1f, %,.0f times the dust%n", bound, bound / Math.abs(sheetDust));
+        assertTrue("fixture: the bound on a book this size is thousands of times the dust, and far under a line left off",
+                bound > 1000 * Math.abs(sheetDust) && bound < 1e-3 * size);
         fileYearAgo(wrong, bound * 2);
         splitEquity(wrong, bound * 2);
         assertTrue("the same book with its equity's parts twice the bound out shows the card", !wrong.equitySplitAddsUp());
@@ -4714,5 +4723,18 @@ public class BankCheck {
         fileYearAgo(wrong, -bound * 2);
         splitEquity(wrong, -bound * 2);
         assertTrue("...and a book out the other way shows as well", !wrong.yearAgoSheetAddsUp() && !wrong.equitySplitAddsUp());
+
+        // A line of $1 billion (1e6 of a thousand) left off, or counted twice, on a sheet this size: a part in ten million of it
+        // (LongPlaytest.audit()'s rule for a month's flow) would be $5.8 billion and leave it dark; the money rule shows it.
+        double billion = 1e6;
+        assertTrue("fixture: $1 billion is past the bound and under a part in ten million of this sheet (the flow rule would let it by)",
+                billion > bound && billion < 1e-7 * size);
+        Bank leftOff = bookOf(1.5e13, found);
+        fileYearAgo(leftOff, billion);
+        splitEquity(leftOff, billion);
+        assertTrue("a book of 5.8e13 out by $1 billion shows both cards: a line left off the page", !leftOff.yearAgoSheetAddsUp() && !leftOff.equitySplitAddsUp());
+        fileYearAgo(leftOff, -billion);
+        splitEquity(leftOff, -billion);
+        assertTrue("...and counted twice", !leftOff.yearAgoSheetAddsUp() && !leftOff.equitySplitAddsUp());
     }
 }

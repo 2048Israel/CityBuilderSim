@@ -6310,22 +6310,16 @@ public class Bank {
      * The Bank page raised "Its lines do not add up" and "Its two parts do not add up to its equity" on an
      * absolute $5 (.005 of a thousand), and a double's own step at 1e13 is .002 to .008: KeptCheck's city of
      * 4,820 months lit both on float dust alone, each sum of a dozen figures carrying its rounding in. The
-     * audit never judged a residual so: a cent, or a part in ten million of the figures it is made of
-     * (LongPlaytest.audit(), and the same line in a dozen harnesses). The page's test is that one, here in the
-     * model, so the screen reads one verdict and recomputes none.
+     * audit's own rule for comparing money is MoneyAudit.tolerance(size): a cent, or a part in a trillion of
+     * the figures' size, and never under 64 steps of a double at that size. The page's test is that one, here
+     * in the model, so the screen reads one verdict and recomputes none (not LongPlaytest.audit()'s part in
+     * ten million of what moved, which is a flow's rule: on a 5.8e13 sheet it would leave a $5.8 billion line
+     * dark).
      */
 
-    /** The share of a book's size its integrity tests let through as rounding: a part in ten million, the audit's own (LongPlaytest.audit()). */
-    public static final double INTEGRITY_RELATIVE = 1e-7;
-
-    /** How far lines that add up to a book of this size may miss: MoneyAudit.CENT, or INTEGRITY_RELATIVE of the size, whichever is more. */
-    public static double integrityTolerance(double size) {
-        return Math.max(MoneyAudit.CENT, INTEGRITY_RELATIVE * Math.abs(size));
-    }
-
-    /** Whether a residual is within what a book of this size allows; a residual or a size that is not a number is not, so the page says so rather than hiding it. */
+    /** Whether a residual is within what MoneyAudit.tolerance() allows a book of this size; a residual or a size that is not a finite number is not, so the page says so rather than hiding it. */
     public static boolean addsUp(double residual, double size) {
-        return Math.abs(residual) <= integrityTolerance(size);
+        return Double.isFinite(residual) && Double.isFinite(size) && Math.abs(residual) <= MoneyAudit.tolerance(size);
     }
 
     /** The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). */
@@ -6334,7 +6328,7 @@ public class Bank {
     /** ...the sheet a year ago; nothing when none is on file. */
     public double yearAgoSheetSize() { return knowsYearAgo() ? sizeOf(this::yearAgo) : 0; }
 
-    /** True when its lines add up, to a cent or a part in INTEGRITY_RELATIVE of the sheet's size: the page's "Its lines do not add up" is its opposite. */
+    /** True when its lines add up within MoneyAudit.tolerance() of the sheet's size: the page's "Its lines do not add up" is its opposite. */
     public boolean sheetAddsUp() { return addsUp(sheetResidual(), sheetSize()); }
 
     /** ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. */
@@ -6796,7 +6790,7 @@ public class Bank {
         return splitKnown ? Math.abs(paidInCapital()) + Math.abs(retainedEarnings()) + Math.abs(preferredOutstanding()) + Math.abs(equity()) : 0;
     }
 
-    /** True when the parts add up to equity, to a cent or a part in INTEGRITY_RELATIVE of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. */
+    /** True when the parts add up to equity within MoneyAudit.tolerance() of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. */
     public boolean equitySplitAddsUp() { return !splitKnown || addsUp(equitySplitResidual(), equitySplitSize()); }
 
     /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */

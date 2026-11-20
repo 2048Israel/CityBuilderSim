@@ -1,4 +1,4 @@
-# BankCheck.java - 4,718 lines · 29 methods · 0 constants · harnesses
+# BankCheck.java - 4,740 lines · 29 methods · 0 constants · harnesses
 
 `ham/citybuildersim/BankCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      firm by firm; the backstop takes only a sector with nothing left; a
 > ... (11 more lines in the source)
 
-**Uses:** [Bank](Bank.md) (365), [BusinessDebtManager](BusinessDebtManager.md) (115), [HouseholdBalance](HouseholdBalance.md) (50), [Game](Game.md) (45), [Sectors](Sectors.md) (41), [MoneyAudit](MoneyAudit.md) (29), [Equity](Equity.md) (26), [ExchangeCheck](ExchangeCheck.md) (26), [PriceLevel](PriceLevel.md) (24), [FamilyStructure](FamilyStructure.md) (21), [Exchange](Exchange.md) (18), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (12), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Observation](Observation.md) (5), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3), [HouseholdAccounts](HouseholdAccounts.md) (2)... and 15 more
+**Uses:** [Bank](Bank.md) (368), [BusinessDebtManager](BusinessDebtManager.md) (115), [HouseholdBalance](HouseholdBalance.md) (50), [Game](Game.md) (45), [Sectors](Sectors.md) (41), [MoneyAudit](MoneyAudit.md) (37), [Equity](Equity.md) (26), [ExchangeCheck](ExchangeCheck.md) (26), [PriceLevel](PriceLevel.md) (24), [FamilyStructure](FamilyStructure.md) (21), [Exchange](Exchange.md) (18), [PayTier](PayTier.md) (16), [GameFiles](GameFiles.md) (16), [DebtManager](DebtManager.md) (12), [OrderBook](OrderBook.md) (12), [Founding](Founding.md) (10), [DecisionLog](DecisionLog.md) (10), [CentralBank](CentralBank.md) (9), [TempDirs](TempDirs.md) (8), [Household](Household.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Observation](Observation.md) (5), [WageBand](WageBand.md) (3), [SectorBooks](SectorBooks.md) (3), [JobType](JobType.md) (3), [Ladder](Ladder.md) (3), [Debt](Debt.md) (3), [ChartModel](ChartModel.md) (3), [HouseholdAccounts](HouseholdAccounts.md) (2)... and 15 more
 
 **Used by (2):** [BondCheck](BondCheck.md), [YoungBankCheck](YoungBankCheck.md)
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 4638 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
+| 81 | 4660 | **type** `public class BankCheck` | The commercial bank, and the families it discharges. |
 | 87 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 93 | 5 | `static double[] sheetOf(Bank bank)` | The bank's balance sheet as it stands, every line of it (0.7.13). |
 | 99 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -179,13 +179,13 @@
 |---:|---:|---|---|
 | 4416 | 157 | `static void theTabDrawsEachRateInItsParts() throws Exception` |  |
 
-### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4574-4718)
+### THE PAGE'S TWO INTEGRITY CARDS READ THE BOOK'S SIZE (BI1, 2026-11-20) (lines 4574-4740)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4593 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
-| 4607 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
-| 4618 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
-| 4624 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
-| 4632 | 86 | `static void theIntegrityCardsReadTheBooksSize()` |  |
+| 4594 | 12 | `static Bank bookOf(double scale, int k)` | A bank built by hand whose books are of this scale, k giving each figure its fraction so that their sums round (BI1): no city, no save. |
+| 4608 | 9 | `static void fileYearAgo(Bank bank, double off)` | Files the bank's own sheet as the one a year ago, its lines `off` more than its equity line (a residual of `off`): the save's own path (restoreSheetYear). |
+| 4619 | 4 | `static void splitEquity(Bank bank, double off)` | Splits the bank's equity into paid in and retained, `off` more than equity makes: what a save carries (restoreEquitySplit), the preferred being nothing here. |
+| 4625 | 7 | `static boolean aBankOfNoSplitOrYear()` | A bank that has kept no split (a save from before the bank kept it) and no year of sheets reads both as adding up. |
+| 4633 | 107 | `static void theIntegrityCardsReadTheBooksSize()` |  |
 

@@ -734,7 +734,7 @@ final class BankScreen {
                                 + "Trade tab is where that is priced.", m(bank.getForeignDeposits()), hot * 100), null);
             }));
         }
-        // BI1: the model's verdict (a cent or a part in ten million of the book's size), not an absolute $5 float dust passes on a big city's books.
+        // BI1: the model's verdict (MoneyAudit.tolerance of the book's size), not an absolute $5 that float dust passes on a big city's books.
         if (!bank.equitySplitAddsUp()) {
             out.add(Kept.scope("split", () -> actionCard(Icons.ALERT, Palette.BAD, "Its two parts do not add up to its equity",
                     String.format("%s of its equity is neither paid in nor retained.", m(Math.abs(bank.equitySplitResidual()))),

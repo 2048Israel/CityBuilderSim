@@ -2,9 +2,9 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,276 constants in 607 files.**
+**6,275 constants in 607 files.**
 
-## model (2964 constants)
+## model (2963 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -119,7 +119,6 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5337 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
 | 6246 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
 | 6250 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
-| 6319 | `Bank.INTEGRITY_RELATIVE` | `1e-7` | The share of a book's size its integrity tests let through as rounding: a part in ten million, the audit's own (LongPlaytest.audit()). |
 
 ### BoatSchedule.java ([map](map/BoatSchedule.md))
 

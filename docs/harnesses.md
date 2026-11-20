@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**230 harness files, 26,396 labelled assertions.** AllChecks runs 230 of them.
+**230 harness files, 26,400 labelled assertions.** AllChecks runs 230 of them.
 
 ## Which harnesses read which class
 
@@ -953,7 +953,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 - **L2042 8. care of every kind is essential, on a deficit (CC1-S)**
   - L2083 a school is essential too: the same deficit does not hold it for payback
 
-## BankCheck.java - 559 labelled assertions
+## BankCheck.java - 563 labelled assertions
 
 > The commercial bank, and the families it discharges.
 > 
@@ -1550,34 +1550,38 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L4552 asked twice, the planner answers the same and moves nothing - it is a read
   - L4569 the rates' flags carry the central bank's and the bank's decisions and nothing else
   - L4571 ...a month with both one flag holding both
-- **L4633 (13) the integrity cards read the book's size: $6 out on a small bank shows, float dust on a 1e13 book does not, a big book truly out doe...**
-  - L4643 the page's test is the audit's (a cent, or a part in ten million) at every size from 1 to 1e15, either sign
-  - L4644 ...and a residual or a size that is not a number is not adding up
-  - L4645 a bank that has kept no split, or no year, has nothing to say of them: both read as adding up
-  - L4650 fixture: the small bank's lines add up and it is small (a sheet under 1e4)
-  - L4657 fixture: its equity's two parts are $6 out
-  - L4658 fixture: the sheet a year ago is $6 out
-  - L4659 fixture: $6 is past the old absolute $5 and past what a book this size allows
-  - L4661 so \"Its two parts do not add up to its equity\" shows
-  - L4662 ...and \"Its lines do not add up\" shows, on the sheet a year ago
-  - L4663 ...while its sheet now, with nothing out, does not light it
-  - L4669 fixture: twice a small book's bound is under the old absolute $5
-  - L4671 twice what the small book allows shows, though the old absolute test let it by
-  - L4673 ...and half of it adds up
-  - L4682 fixture: a book of 1.5e13 whose own sums leave dust past the old $5 (found among 400 fractions)
-  - L4687 fixture: it is a book of 1e13 and more
-  - L4688 fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)
-  - L4690 fixture: the old absolute $5 test would have lit the card on it
-  - L4691 its lines add up: float dust on a book this size does not light \"Its lines do not add up\"
-  - L4693 ...nor does the same dust on the sheet a year ago
-  - L4698 fixture: its split is one step of a double at its size out, past the old $5
-  - L4700 ...and \"Its two parts do not add up to its equity\" does not show on it
-  - L4705 fixture: the bound on a book this size is far past dust (a part in ten million is millions)
-  - L4708 the same book with its equity's parts twice the bound out shows the card
-  - L4709 ...and with its sheet a year ago twice the bound out
-  - L4710 ...while its sheet now, which is nothing out, still adds up
-  - L4713 half the bound adds up, on the sheet a year ago and in the split
-  - L4716 ...and a book out the other way shows as well
+- **L4634 (13) the integrity cards read the book's size: $6 out on a small bank shows, float dust on a 1e13 book does not, a big book truly out doe...**
+  - L4645 the page's test is MoneyAudit.tolerance() at every size from 1 to 1e15, either sign
+  - L4646 ...a cent at a size where a part in a trillion is under one, and a part in a trillion past it
+  - L4648 ...and a residual or a size that is not a finite number is not adding up, an infinite one not either
+  - L4652 a bank that has kept no split, or no year, has nothing to say of them: both read as adding up
+  - L4657 fixture: the small bank's lines add up and it is small (a sheet under 1e4)
+  - L4664 fixture: its equity's two parts are $6 out
+  - L4665 fixture: the sheet a year ago is $6 out
+  - L4666 fixture: $6 is past the old absolute $5 and past what a book this size allows
+  - L4668 so \"Its two parts do not add up to its equity\" shows
+  - L4669 ...and \"Its lines do not add up\" shows, on the sheet a year ago
+  - L4670 ...while its sheet now, with nothing out, does not light it
+  - L4676 fixture: twice a small book's bound is under the old absolute $5
+  - L4678 twice what the small book allows shows, though the old absolute test let it by
+  - L4680 ...and half of it adds up
+  - L4689 fixture: a book of 1.5e13 whose own sums leave dust past the old $5 (found among 400 fractions)
+  - L4694 fixture: it is a book of 1e13 and more
+  - L4695 fixture: the dust is a few steps of a double and no more (the audit measured 58 at its worst)
+  - L4697 fixture: the old absolute $5 test would have lit the card on it
+  - L4698 its lines add up: float dust on a book this size does not light \"Its lines do not add up\"
+  - L4700 ...nor does the same dust on the sheet a year ago
+  - L4705 fixture: its split is one step of a double at its size out, past the old $5
+  - L4707 ...and \"Its two parts do not add up to its equity\" does not show on it
+  - L4713 fixture: the bound on a book this size is thousands of times the dust, and far under a line left off
+  - L4717 the same book with its equity's parts twice the bound out shows the card
+  - L4718 ...and with its sheet a year ago twice the bound out
+  - L4719 ...while its sheet now, which is nothing out, still adds up
+  - L4722 half the bound adds up, on the sheet a year ago and in the split
+  - L4725 ...and a book out the other way shows as well
+  - L4730 fixture: $1 billion is past the bound and under a part in ten million of this sheet (the flow rule would let it by)
+  - L4735 a book of 5.8e13 out by $1 billion shows both cards: a line left off the page
+  - L4738 ...and counted twice
 
 ## BankFailureCheck.java - 68 labelled assertions
 
