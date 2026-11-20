@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS16 (untagged) — schools, work and the households' books cause their conditions — 2026-11-20, ready, see docs/queue/FS16-notes.md
 The nine schools, work and household-books harnesses cause what they used to find by playing (the flaky-suite study's FS16
