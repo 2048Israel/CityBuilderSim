@@ -65,8 +65,18 @@ import java.util.concurrent.TimeUnit;
  *      terms of trade, and the D$, were another's by month 24.
  *  10. THE SCREENS' CUT-OFFS (EP2), at the factor and at today's prices, over the default founding's two children, the built city's and the town's: the partners given
  *      a lane (TradeLanes.of over the feed, at minLane()), the holdings folded and shown (FundView.FOLD_UNDER) and every live nominal line
- *      ui.Money.something() shows are the same every month, a lane is drawn somewhere, and the lines the old half-thousand would have hidden
- *      are there at the factor and none at today's prices. Section 8 is left out: its twin parts on series of its own (main's record).
+ *      ui.Money.something() shows are the same every month the twins are compared, a partner given twice the board's floor in real terms has a
+ *      lane and one given half has none at both levels in every month after the founding, and the lines the old half-thousand would have hidden are there at the
+ *      factor and none at today's prices. Section 8 is left out: its twin parts on series of its own (main's record).
+ *  11. The twin on the 1900 founding, TWIN_MONTHS months, compared as 6 to 9 are.
+ *
+ * THE FIXTURES (FS2, 2026-11-20). Each twin runs beside NUDGES.length same-level cities at each level, every dollar of each nudged by a part in
+ * a trillion or so: in exact arithmetic the same city, in floating point another rounding of it. The twins are compared through the month before
+ * any two of those cities part (onset()), and a parting in which no two cities of one level part is the factor's and fails. On OP1's path the
+ * town's landlords retired a block of 29 homes in month 79, 80, 81 or 83 by the rounding alone, the city at the factor the last of ten; with one
+ * nudge a level the comparison ran a month past the first parting (FS2-notes). The history is cut at the month by what it held then (the
+ * children's L lines), not by index: its lists start at month 2 and a company's at its listing. The town's reload is taken at the month
+ * compared to, the town run again to it when the cities part sooner. The lanes' law is caused, a partner given its trade, not found.
  *
  * The one oracle for "today's figure" is the child at today's prices: a constant that is read there is the figure as the class writes it, so
  * nothing in this file copies a literal from the model.
@@ -81,6 +91,16 @@ public class PriceLevelCheck {
 
     /** Town and played-city maximum horizons; their nudge twins derive the comparable prefix (PO1). */
     static final int TOWN_MONTHS = 120, PLAYED_MONTHS = 120;
+
+    /**
+     * The same-level nudges each twin runs beside, as a multiple of its level (FS2): three a level, so that a rounding parting shows two cities of
+     * one level apart at its month, and a parting by the factor alone (no two of one level apart) is told from it. With one a level the ten
+     * cities of OP1's town (FS2-notes) parted the twin a month before any pair the comparison read.
+     */
+    static final double[] NUDGES = { 1 + 1e-12, 1 - 1e-12, 1 + 1e-13 };
+
+    /** The child property that runs a twin fewer months than its scenario's (the town again to the month compared, for its reload). */
+    static final String MONTHS_DOOR = "cbs.priceLevel.months";
 
     /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
     static final int PLAYED_DEMOLITION = 60;
@@ -211,6 +231,7 @@ public class PriceLevelCheck {
         out.println("\n--- 4. the rankings' bridge is the series' ratio ---");
         theBridge();
         comparisonBands();
+        comparisonMachinery();
 
         // 5 and 6 need the children: the named literals and the ratios, then the twin's months.
         String why = null;
@@ -225,11 +246,11 @@ public class PriceLevelCheck {
             theRatios(plain, today);
             dayZeroQuotes(plain, today);
             out.println("\n--- 6. the twin: the default founding at the factor and at today's prices, " + TWIN_MONTHS + " months, month by month ---");
-            observedTwin(plain, today, TWIN_MONTHS, "--twin");
+            Child[] founded = observedTwin(plain, today, TWIN_MONTHS, "--twin");
             Child builtPlain = Child.run(false, true);
             Child builtToday = Child.run(true, true);
             out.println("\n--- 7. the twin again, on a built city (400 houses, schools, clinics, a bank, mines, furnaces, roads and a bus network), " + BUILT_MONTHS + " months ---");
-            observedTwin(builtPlain, builtToday, BUILT_MONTHS, "--twin-built");
+            Child[] built = observedTwin(builtPlain, builtToday, BUILT_MONTHS, "--twin-built");
             Child playedPlain = Child.run(false, "--twin-played");
             Child playedToday = Child.run(true, "--twin-played");
             out.println("\n--- 8. the twin on the played city (MapCheck's: houses, stores and farms, the advisor every six months, a demolition, an iron mine), " + PLAYED_MONTHS + " months ---");
@@ -237,21 +258,22 @@ public class PriceLevelCheck {
             Child townPlain = Child.run(false, "--twin-town");
             Child townToday = Child.run(true, "--twin-town");
             out.println("\n--- 9. the twin on ScaleCheck's town (the playtest's founding, forty houses, stores and farms, twenty houses more, a depot; saved and loaded as ScaleCheck loads it), " + TOWN_MONTHS + " months ---");
-            observedTwin(townPlain, townToday, TOWN_MONTHS, "--twin-town");
+            Child[] town = observedTwin(townPlain, townToday, TOWN_MONTHS, "--twin-town");
             out.println("\n--- 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown ---");
-            theCutOffs(plain, today, builtPlain, builtToday, townPlain, townToday);
+            // FS2: each city's counts over the months its twins are compared (observedTwin's), not past them.
+            theCutOffs(founded[0], founded[1], built[0], built[1], town[0], town[1]);
             out.println("\n--- 11. the 1900 founding: the same real city at both price levels ---");
             Child historicalPlain = Child.run(false, "--twin-1900");
             Child historicalToday = Child.run(true, "--twin-1900");
-            theTwin(historicalPlain, historicalToday, TWIN_MONTHS);
-            if (historicalPlain.ok && historicalToday.ok) {
-                double[] lanes = historicalPlain.counts.get("lanes");
+            Child[] historical = observedTwin(historicalPlain, historicalToday, TWIN_MONTHS, "--twin-1900");
+            if (historical[0].ok && historical[1].ok) {
+                double[] lanes = historical[0].counts.get("lanes");
                 List<String> first = new ArrayList<>();
                 assertTrue("1900 partners receive the same lanes at both price levels in every month",
-                        lanes != null && unequal(lanes, historicalToday.counts.get("lanes"), first) == 0);
+                        lanes != null && unequal(lanes, historical[1].counts.get("lanes"), first) == 0);
                 int active = 0;
                 if (lanes != null) for (double n : lanes) if (n > 0) active++;
-                out.printf("   1900 partner lanes active in %d of %d months (no modern lane is required)%n", active, TWIN_MONTHS + 1);
+                out.printf("   1900 partner lanes active in %d of %d months compared (no modern lane is required)%n", active, lanes == null ? 0 : lanes.length);
             }
         }
 
@@ -603,44 +625,143 @@ public class PriceLevelCheck {
         assertTrue("a one-person difference is rejected even in a trillion-person city", misses[2] == 1);
     }
 
-    /** Compare every law up to the first same-level nudge that changes the city's path. */
-    static void observedTwin(Child plain, Child today, int months, String flag) throws Exception {
-        assertTrue("...and the city really lived (more people at the end than the start)",
-                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
-        Child nudgedFactor = Child.run(false, flag, true), nudgedToday = Child.run(true, flag, true);
-        assertTrue(flag + ": both nudge children completed", nudgedFactor.ok && nudgedToday.ok);
-        if (!nudgedFactor.ok || !nudgedToday.ok) return;
-        int horizon = Math.min(stableMonths(plain, nudgedFactor, months), stableMonths(today, nudgedToday, months));
-        Observation.reached(flag + ": same-level nudge preserves the full comparison path",
-                horizon == months,
-                flag + " nominal, real and count equalities after month " + horizon);
-        out.println("   " + flag + ": nudge-derived comparison horizon " + horizon + " of " + months + " months");
-        theTwin(plain.prefix(horizon), today.prefix(horizon), horizon);
+    /**
+     * FS2: the comparison's own machinery on hand-made cities, each premise caused: the history cut at the month by what it held then, the reload
+     * dropped from a prefix short of the run, and a rounding parting (two cities of one level apart) told from the factor's (none).
+     */
+    static void comparisonMachinery() {
+        Child c = new Child();
+        c.ok = true;
+        c.factor = 1;
+        c.series.put("pop", new Series('R', new double[11]));
+        c.series.put("h.x", new Series('R', new double[] { 2, 3, 4, 5, 6, 7, 8, 9, 10 }));   // a list begun at month 2, to month 10
+        int[] held = new int[11];
+        for (int m = 0; m <= 10; m++) held[m] = Math.max(0, m - 1);
+        c.historyLengths.put("h.x", held);
+        c.series.put("reload.x", new Series('R', new double[] { 1 }));
+        Series cut = c.prefix(6).series.get("h.x");
+        assertTrue("the history is cut at the month by what it held then: a list begun at month 2, cut at 6, keeps months 2 to 6 (not 7 entries)",
+                cut != null && cut.v.length == 5 && cut.v[4] == 6);
+        assertTrue("...and the reload, the run's last month's, is dropped from a prefix short of the run and kept in one that is not",
+                !c.prefix(6).series.containsKey("reload.x") && c.prefix(10).series.containsKey("reload.x"));
+        // eight cities, four a level, whose homes fall from 179 to 150 in the month given: by rounding (one of each level apart) and by the factor
+        int[][] cases = { { 8, 5, 5, 5 }, { 5, 5, 6, 5 } }, byLevel = { { 5, 5, 5, 5 }, { 7, 7, 7, 7 } };
+        int[] rounding = onset(cities(cases), 10), factor = onset(cities(byLevel), 10);
+        assertTrue("a rounding parting shows two cities of one level apart in its month (month " + rounding[0] + ", " + rounding[1] + " same-level pairs)",
+                rounding[0] == 5 && rounding[1] > 0);
+        assertTrue("...and a parting by the factor alone shows none, every pair apart across the levels (month " + factor[0] + ", " + factor[1]
+                + " same-level, " + factor[2] + " across)", factor[0] == 5 && factor[1] == 0 && factor[2] == 16);
     }
 
-    /** The month before a nudge changes a live series beyond the existing comparison tolerance. */
-    static int stableMonths(Child base, Child nudged, int months) {
-        int horizon = months;
+    /** Hand-made cities for comparisonMachinery(): the first row at the factor, the second at today's prices, homes falling in each one's month. */
+    static List<Child> cities(int[][] falls) {
+        List<Child> list = new ArrayList<>();
+        for (int level = 0; level < 2; level++) for (int fall : falls[level]) {
+            Child c = new Child();
+            c.ok = true;
+            c.todays = level == 1;
+            c.factor = level == 1 ? 1 : PriceLevel.FACTOR;
+            double[] homes = new double[11];
+            for (int m = 0; m <= 10; m++) homes[m] = m < fall ? 179 : 150;
+            c.series.put("homes", new Series('R', homes));
+            list.add(c);
+        }
+        return list;
+    }
+
+    /**
+     * Compare every law through the month before the twins' cities part by rounding (FS2): the twin runs beside NUDGES.length same-level cities
+     * at each level, and the comparison runs through the month before any two of the eight part (onset()). A parting in which no two cities of
+     * one level part is the factor's, not the rounding's: it fails, and the twins are compared through it so its series show. Returns the two
+     * children cut to the months compared, the town's with its reload at that month.
+     */
+    static Child[] observedTwin(Child plain, Child today, int months, String flag) throws Exception {
+        assertTrue("...and the city really lived (more people at the end than the start)",
+                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
+        List<Child> cities = new ArrayList<>(List.of(plain, today));
+        for (double nudge : NUDGES) {
+            cities.add(Child.run(false, flag, nudge, 0));
+            cities.add(Child.run(true, flag, nudge, 0));
+        }
+        boolean ran = true;
+        for (Child c : cities) ran &= c.ok;
+        assertTrue(flag + ": every nudge child completed (" + NUDGES.length + " a level)", ran);
+        if (!ran) return new Child[] { plain.prefix(0), today.prefix(0) };
+        int[] onset = onset(cities, months);
+        int parted = onset[0];
+        boolean byLevel = parted <= months && onset[1] == 0;
+        assertTrue(flag + ": the city at the founding's level, nudged or not, shares the founding month with today's", parted >= 1);
+        Observation.reached(flag + ": no rounding parts the cities in the months run",
+                parted > months,
+                flag + " nominal, real and count equalities after month " + (parted - 1));
+        assertTrue(flag + ": the twins part only where rounding parts two cities of one level ("
+                + (parted > months ? "none part" : "month " + parted + ": " + onset[1] + " same-level pairs and " + onset[2] + " across") + ")", !byLevel);
+        int compared = Math.max(0, byLevel ? parted : Math.min(months, parted - 1));
+        out.println("   " + flag + ": compared through month " + compared + " of " + months + (parted > months ? ", no two cities parting"
+                : ", the month before " + onset[1] + " same-level pairs of the " + cities.size() + " cities part"));
+        Child a = plain.prefix(compared), b = today.prefix(compared);
+        if (flag.equals("--twin-town") && compared < months && compared >= 1) {
+            // the reload at the month compared: the town run again to it, at each level, and saved and loaded there
+            Child shortPlain = Child.run(false, flag, 1, compared), shortToday = Child.run(true, flag, 1, compared);
+            assertTrue(flag + ": the town run again to month " + compared + " is the town of the full run there, to the bit, at both levels",
+                    shortPlain.ok && shortToday.ok && sameLive(shortPlain, plain, compared) && sameLive(shortToday, today, compared));
+            for (Child[] pair : new Child[][] { { a, shortPlain }, { b, shortToday } })
+                pair[1].series.forEach((key, s) -> { if (key.startsWith("reload.")) pair[0].series.put(key, s); });
+        }
+        theTwin(a, b, compared);
+        return new Child[] { a, b };
+    }
+
+    /**
+     * The first month any two of the cities part, and how many pairs part in it of one level and across (FS2): {month, same-level pairs, pairs
+     * across}, the month months + 1 where none parts. Cities of one level are the same city to the rounding, so a rounding parting shows two of
+     * one level apart; a parting with none is the factor's.
+     */
+    static int[] onset(List<Child> cities, int months) {
+        int first = months + 1, same = 0, across = 0;
+        for (int i = 0; i < cities.size(); i++) for (int j = i + 1; j < cities.size(); j++) {
+            Child x = cities.get(i), y = cities.get(j);
+            int m = parting(x, y, months);
+            boolean level = x.todays == y.todays;
+            if (m < first) { first = m; same = across = 0; }
+            if (m == first && m <= months) { if (level) same++; else across++; }
+        }
+        return new int[] { first, same, across };
+    }
+
+    /** The first month two cities' live series part beyond the comparison tolerance, each nominal one over its own factor; months + 1 if none does. */
+    static int parting(Child base, Child other, int months) {
+        int first = months + 1;
         for (Map.Entry<String, Series> entry : base.series.entrySet()) {
             String key = entry.getKey();
             if (key.startsWith("h.") || key.startsWith("reload.")) continue;
-            Series a = entry.getValue(), b = nudged.series.get(key);
+            Series a = entry.getValue(), b = other.series.get(key);
             assertTrue(key + ": nudge digest has the same shape", b != null && a.kind == b.kind && a.v.length == b.v.length);
             if (b == null || a.v.length != b.v.length) continue;
             boolean nominal = a.kind == 'N';
             double scale = 0, tolerance = nominal ? TWIN_NOMINAL_TOLERANCE : TWIN_REAL_TOLERANCE;
             boolean exact = List.of("pop", "workforce", "homes", "stores").contains(key);
-            for (int m = 0; m <= horizon && m < a.v.length; m++) {
-                double x = nominal ? a.v[m] / base.factor : a.v[m], y = nominal ? b.v[m] / nudged.factor : b.v[m];
+            for (int m = 0; m < first && m < a.v.length; m++) {
+                double x = nominal ? a.v[m] / base.factor : a.v[m], y = nominal ? b.v[m] / other.factor : b.v[m];
                 scale = Math.max(scale, Math.max(Math.abs(x), Math.abs(y)));
                 double floor = nominal ? TWIN_MONEY_FLOOR : TWIN_QUANTITY_FLOOR;
                 boolean same = Double.doubleToLongBits(x) == Double.doubleToLongBits(y)
                         || !exact && (Math.abs(x) < floor && Math.abs(y) < floor || Math.abs(x - y) <= tolerance * scale);
-                if (!same) { horizon = m - 1; break; }
+                if (!same) { first = m; break; }
             }
         }
-        assertTrue("the nudge retains the founding month", horizon >= 0);
-        return Math.max(0, horizon);
+        return first;
+    }
+
+    /** Whether a child run to month `months` has every live series of the full run through it, to the bit. */
+    static boolean sameLive(Child shorter, Child full, int months) {
+        for (Map.Entry<String, Series> e : full.series.entrySet()) {
+            if (e.getKey().startsWith("h.") || e.getKey().startsWith("reload.")) continue;
+            Series s = shorter.series.get(e.getKey());
+            if (s == null || s.v.length != months + 1) return false;
+            for (int m = 0; m <= months; m++) if (Double.doubleToLongBits(s.v[m]) != Double.doubleToLongBits(e.getValue().v[m])) return false;
+        }
+        return true;
     }
 
     static void theTwin(Child plain, Child today, int monthsRun) {
@@ -764,15 +885,15 @@ public class PriceLevelCheck {
      * into "and N more", TradeLanes.minLane() gives a partner under it no lane) is the same at the factor as at today's prices: the children counted
      * each month, with the model's own code, the partners given a lane, the holdings folded and shown and, for every live nominal series the digest
      * sampled, whether ui.Money.something() shows it. Section 8 is left out on purpose: main records it red, its twin parting at months 91 to 103 on
-     * series of its own (the gate's PriceLevelCheck lines), and a count taken over those months would carry the parting and not the cut-off. 6 and 7
-     * are green, and 9 is red on main by one series nine billionths apart (sector.Retail.cash, month 29), far inside any cut-off, so a count that
-     * differs in any of the three is the cut-off's. None of the three trades much with any one partner: a lane is drawn in one month of their 216
-     * (the town's), at either level, so the lanes' count is mostly zeros, and the floor's own figure at the factor is DenominationCheck's to assert.
+     * series of its own (the gate's PriceLevelCheck lines), and a count taken over those months would carry the parting and not the cut-off. Each
+     * city's counts are read over the months its twins are compared (FS2: observedTwin()), so a count that differs is the cut-off's. None of the
+     * three trades much with any one partner (on BO1-S's path no lane in any month), so the lanes' law is caused: each child also counts the lanes
+     * of two partners given twice and half the board's floor in real terms (Counts.lanes), one lane at both levels in every month.
      */
     static void theCutOffs(Child plain, Child today, Child builtPlain, Child builtToday, Child townPlain, Child townToday) {
         String[] cities = { "the default founding", "the built city", "the town" };
         Child[][] pairs = { { plain, today }, { builtPlain, builtToday }, { townPlain, townToday } };
-        int lanesMonths = 0, lanesMost = 0, held = 0, heldMost = 0, foldedMost = 0, bandAtFactor = 0;
+        int lanesMonths = 0, lanesMost = 0, held = 0, heldMost = 0, foldedMost = 0, bandAtFactor = 0, givenMonths = 0;
         for (int c = 0; c < pairs.length; c++) {
             Child a = pairs[c][0], b = pairs[c][1];
             String city = cities[c];
@@ -805,6 +926,16 @@ public class PriceLevelCheck {
             foldedMost = Math.max(foldedMost, foldedAt);
             out.printf("   %s: a lane drawn in %d of %d months (at most %d partners); the fund held something in %d months (at most %d holdings, %d folded)%n",
                     city, drew, months, most, heldAt, heldHere, foldedAt);
+            // FS2: the lanes' law caused (Counts.lanes): a partner given twice the board's floor in real terms has a lane and one given half none
+            double[] gotA = a.counts.get("lanes.given"), gotB = b.counts.get("lanes.given"), feedA = a.counts.get("lanes.feed"), feedB = b.counts.get("lanes.feed");
+            boolean fed = feedA != null && feedB != null, given = gotA != null && gotB != null && gotA.length == months && gotB.length == months;
+            if (fed) for (int m = 1; m < months; m++) fed &= feedA[m] == 1 && feedB[m] == 1;
+            // ...from month 1: the market, and with it the feed, is built the first time the month asks for it (Game.ensureWorldMarket()), so the founding has none
+            assertTrue(city + ": fixture: both children trade by partner every month after the founding, so the lanes are held to the city's own floor", fed);
+            if (given) for (int m = 1; m < months; m++) given &= gotA[m] == 1 && gotB[m] == 1;
+            if (given) givenMonths += months - 1;
+            assertTrue(city + ": some partner is given a lane in every month after the founding at both levels: the one given twice the board's floor"
+                    + " in real terms, not the one given half (" + (months - 1) + " months)", given);
 
             // every line a screen gives a word or a line: shown at one level, shown at the other
             List<String> firstFlips = new ArrayList<>();
@@ -835,8 +966,16 @@ public class PriceLevelCheck {
             out.printf("   %s: lines shown that the old half-thousand would have hidden, %d series-months at the factor, %d at today's prices%n", city, bandHere, bandThere);
             assertTrue(city + ": at today's prices no line sits between ui.Money.NOTHING and the old half-thousand (it is the half-thousand)", bandThere == 0);
         }
-        assertTrue("some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): " + lanesMonths
-                + " city-months, at most " + lanesMost + " partners", lanesMonths > 0);
+        out.printf("   the lanes the cities' own trade drew: %d city-months, at most %d partners (found, so printed; the law is the given partners')%n",
+                lanesMonths, lanesMost);
+        // ...and the law would catch the fault it is for: the factor's given partner held to the board's floor as written, not priced, has none
+        double givenAtFactor = 2 * TradeLanes.MIN_LANE * PriceLevel.FACTOR;
+        assertTrue("the fault: a floor left at the board's figure as written (D$" + TradeLanes.MIN_LANE + " thousand) gives the factor's partner,"
+                + " given twice the floor priced at the founding's (D$" + String.format(Locale.ROOT, "%.3f", givenAtFactor) + "), no lane",
+                givenMonths > 0 && TradeLanes.of(45, -63, 0, new double[] { 5, 5 }, new double[] { 27, -153 }, new double[] { givenAtFactor, givenAtFactor / 4 },
+                        new double[2], TradeLanes.MIN_LANE).partners() == 0
+                    && TradeLanes.of(45, -63, 0, new double[] { 5, 5 }, new double[] { 27, -153 }, new double[] { givenAtFactor, givenAtFactor / 4 },
+                        new double[2], TradeLanes.minLane(1, 1)).partners() == 1);
         out.printf("   the fund: %s%n", held == 0 ? "held nothing in either city, so the fold is counted over no holding"
                 : "held something in " + held + " city-months, at most " + heldMost + " holdings and " + foldedMost + " folded");
         assertTrue("the default founding shows lines at the factor that the old half-thousand would have hidden: " + bandAtFactor + " series-months", bandAtFactor > 0);
@@ -879,16 +1018,31 @@ public class PriceLevelCheck {
         final Map<String, Series> series = new LinkedHashMap<>();
         /** What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. */
         final Map<String, double[]> counts = new LinkedHashMap<>();
+        /** How many entries each history list held at each month (FS2, the L lines): prefix() cuts the history as it stood at the month. */
+        final Map<String, int[]> historyLengths = new LinkedHashMap<>();
+        /** Whether the child ran at today's prices (a nudged one too): the level onset() tells same-level pairs by. */
+        boolean todays;
 
         /** A detached comparison prefix. Full-run series and cut-off counts stay on this child. */
         Child prefix(int months) {
             Child copy = new Child();
             copy.factor = factor;
             copy.ok = ok;
+            copy.todays = todays;
             copy.consts.putAll(consts);
             copy.ratios.putAll(ratios);
-            series.forEach((key, value) -> copy.series.put(key, key.startsWith("reload.") ? value
-                    : new Series(value.kind, java.util.Arrays.copyOf(value.v, Math.min(value.v.length, months + 1)))));
+            Series pop = series.get("pop");
+            int run = pop == null ? months : pop.v.length - 1;
+            series.forEach((key, value) -> {
+                int keep;
+                if (key.startsWith("reload.")) keep = months >= run ? value.v.length : -1;   // the reload is the run's last month's
+                else if (key.startsWith("h.")) {
+                    // the history as it stood at the month (FS2): its lists start at month 2 and a company's at its listing, so not by index
+                    int[] held = historyLengths.get(key);
+                    keep = held != null && months < held.length ? held[months] : value.v.length - Math.max(0, run - months);
+                } else keep = months + 1;
+                if (keep >= 0) copy.series.put(key, new Series(value.kind, java.util.Arrays.copyOf(value.v, Math.max(0, Math.min(value.v.length, keep)))));
+            });
             counts.forEach((key, value) -> copy.counts.put(key, java.util.Arrays.copyOf(value, Math.min(value.length, months + 1))));
             return copy;
         }
@@ -900,15 +1054,16 @@ public class PriceLevelCheck {
 
         /** ...of the scenario the flag names: --twin, --twin-built, --twin-played. */
         static Child run(boolean todaysPrices, String flag) throws Exception {
-            return run(todaysPrices, flag, false);
+            return run(todaysPrices, flag, 1, 0);
         }
 
-        static Child run(boolean todaysPrices, String flag, boolean nudge) throws Exception {
+        /** ...with its every dollar nudged by `nudge` (1 for none, NUDGES), and run `months` months where that is not 0 (MONTHS_DOOR). */
+        static Child run(boolean todaysPrices, String flag, double nudge, int months) throws Exception {
             String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
             List<String> cmd = new ArrayList<>(AllChecks.command(javaExe, System.getProperty("java.class.path"), "PriceLevelCheck", true));
             int at = cmd.indexOf("-cp");
-            if (todaysPrices || nudge) cmd.add(at, "-D" + DOOR + "="
-                    + ((todaysPrices ? 1 : PriceLevel.FACTOR) * (nudge ? 1 + 1e-12 : 1)));
+            if (todaysPrices || nudge != 1) cmd.add(at, "-D" + DOOR + "=" + (todaysPrices ? 1 : PriceLevel.FACTOR) * nudge);
+            if (months > 0) cmd.add(at, "-D" + MONTHS_DOOR + "=" + months);
             for (String key : new String[] { "cbs.earth", WorldData.PROPERTY }) {
                 String v = System.getProperty(key);
                 if (v != null) cmd.add(at, "-D" + key + "=" + v);
@@ -939,6 +1094,7 @@ public class PriceLevelCheck {
                     exit, c.consts.size(), c.ratios.size(), c.series.size(), (System.nanoTime() - t0) / 1e9, log);
             if (exit != 0) { out.println("   FAIL the child exited " + exit); fails++; }
             c.ok = exit == 0 && !Double.isNaN(c.factor) && !c.series.isEmpty();
+            c.todays = todaysPrices;
             return c;
         }
 
@@ -950,6 +1106,12 @@ public class PriceLevelCheck {
                 case "C" -> consts.put(f[1], Double.parseDouble(f[2]));
                 case "Q" -> ratios.put(f[1], Double.parseDouble(f[2]));
                 case "D" -> dayZero.put(f[1], Double.parseDouble(f[2]));
+                case "L" -> {
+                    String[] parts = f.length > 2 ? f[2].split(",") : new String[0];
+                    int[] v = new int[parts.length];
+                    for (int i = 0; i < v.length; i++) v[i] = Integer.parseInt(parts[i]);
+                    historyLengths.put(f[1], v);
+                }
                 case "S" -> {
                     String[] parts = f.length > 3 ? f[3].split(",") : new String[0];
                     double[] v = new double[parts.length];
@@ -985,6 +1147,7 @@ public class PriceLevelCheck {
                 constants(real);
                 ratios(real);
                 int months = town ? TOWN_MONTHS : played ? PLAYED_MONTHS : built ? BUILT_MONTHS : TWIN_MONTHS;
+                months = Integer.getInteger(MONTHS_DOOR, months);   // FS2: the town again to the month its twins are compared
                 Digest d = new Digest(months + 1);
                 Counts k = new Counts(months + 1);
                 GameFiles townFiles = town ? GameFiles.scratch("pricelevel-town") : null;
@@ -992,12 +1155,14 @@ public class PriceLevelCheck {
                 double openingMinimum = flag.equals("--twin") ? g.minimumIssueSize() : 0;
                 d.sample(g, 0);
                 k.sample(g, d, 0);
+                d.lengths(g, 0);
                 for (int m = 1; m <= months; m++) {
                     if (town) townMonth(g, m);
                     else if (played) playedMonth(g, m - 1);
                     else g.simulateMonths(1);
                     d.sample(g, m);
                     k.sample(g, d, m);
+                    d.lengths(g, m);
                 }
                 d.history(g);
                 // Record the played city first: these independent scratch
@@ -1304,6 +1469,23 @@ public class PriceLevelCheck {
             }
         }
 
+        /** How many entries each history list held at each month (FS2), named as history() names them: the L lines prefix() cuts the history by. */
+        final Map<String, int[]> lengths = new LinkedHashMap<>();
+
+        void lengths(Game g, int m) throws Exception {
+            HistorySave h = g.getHistorySave();
+            for (Field f : HistorySave.class.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                f.setAccessible(true);
+                Object now = f.get(h);
+                if (now instanceof List<?> l) length("h." + f.getName(), m, l.size());
+                else if (now instanceof Map<?, ?> map && isListMap(f))
+                    for (Map.Entry<?, ?> e : map.entrySet()) if (e.getValue() instanceof List<?> l) length("h." + f.getName() + "." + e.getKey(), m, l.size());
+            }
+        }
+
+        void length(String name, int m, int n) { lengths.computeIfAbsent(name, k -> new int[months])[m] = n; }
+
         static boolean hasNumber(List<?> l) { for (Object o : l) if (o instanceof Number) return true; return false; }
 
         static boolean isListMap(Field f) {
@@ -1341,6 +1523,14 @@ public class PriceLevelCheck {
                 b.setLength(0);
                 b.append("S\t").append(e.getKey()).append('\t').append(kinds.get(e.getKey())).append('\t');
                 double[] row = e.getValue();
+                for (int i = 0; i < row.length; i++) { if (i > 0) b.append(','); b.append(row[i]); }
+                o.println(b);
+            }
+            for (Map.Entry<String, int[]> e : lengths.entrySet()) {
+                if (!values.containsKey(e.getKey())) continue;
+                b.setLength(0);
+                b.append("L\t").append(e.getKey()).append('\t');
+                int[] row = e.getValue();
                 for (int i = 0; i < row.length; i++) { if (i > 0) b.append(','); b.append(row[i]); }
                 o.println(b);
             }
@@ -1439,6 +1629,15 @@ public class PriceLevelCheck {
             }
             put("lanes", m, lanes);
             put("arrows", m, arrows);
+            // FS2: the lanes' law caused, not found. Two partners are given a month's exports of twice and of half the board's floor in real terms
+            // (TradeLanes.MIN_LANE as the board wrote it, times this level's PriceLevel.FACTOR and the city's price index, in its money), at nodes a
+            // quarter of the globe from the city, and held to the feed's own floor: one lane at either level, where that floor is the board's in
+            // real terms. Twice and half, so the month's inflation between the feed's floor and this reading of the index moves neither.
+            double real = TradeLanes.MIN_LANE * PriceLevel.FACTOR * g.getPriceIndex().getIndex() / g.getDenomination().getUnit();
+            double[] givenLat = { lat > 0 ? lat - 40 : lat + 40, lat > 0 ? lat - 40 : lat + 40 };
+            double[] givenLon = { EarthProj.normaliseLon(lon + 90), EarthProj.normaliseLon(lon - 90) };
+            put("lanes.given", m, TradeLanes.of(lat, lon, f.month(), givenLat, givenLon, new double[] { 2 * real, real / 2 }, new double[2], f.minLane()).partners());
+            put("lanes.feed", m, f == TradeLanes.Feed.NONE ? 0 : 1);
         }
 
         void print(PrintStream o) {
