@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### PZ1 — PrizeCheck 12: one lab a field a month, caused again — 2026-11-20, ready, see docs/queue/PZ1-notes.md
 PrizeCheck section 12's medical village, which must want two labs and order one, ordered none in its month since
