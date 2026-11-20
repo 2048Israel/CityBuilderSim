@@ -361,3 +361,49 @@ after them: HouseholdStageCheck, SaveFileCheck, BuildingStackCheck, FB13Check, V
 PegAnchorCheck, GoldStandardCheck, PostwarRecipeCheck, DenominationCheck, ScaleCheck and
 PriceLevelCheck green; HoldersCheck and CentralBankCheck red only by the named rows (main's two
 BO1-S lines for section 10 among them). The code changed, so the next dry run is a new one.
+
+### Dry run 2: green
+
+On the gate box, `/home/jerus/cbs/runs/cbs-gate-HS2-zjpcb5ZT` (branch 83a76cd2c on main b537278de,
+EDU1 merged first; EducationCheck green on HS2's classes), gate exit 0: the suite's exit 3, known
+red only (BankCheck, BasketYearCheck, BuildAdviceCheck, CarCheck, CentralBankCheck, ChildcareCheck,
+ExchangeRateCheck, Forms1900Check, FundCheck, HoldersCheck, PassThroughCheck, RoadCheck: main's
+rows and the ship file's). After it only this file and the ship file moved.
+
+## The small town: the cells that do not shop
+
+The orchestrator's question after dry run 1: does a town now have to be about twice as large before
+its cells shop, and is the 1900 start hit? Probe `target/probe9/Town1900Probe` plays Village1900Check's
+village (R1g's branch; its two switches are not on HS2 or main, so it is the village as R1g found
+it): LongPlaytest's founding the 1900 way (`withUnfitted(true)`), its village by hand and its
+advisor's stops, month by month to m120, on HS2's classes and main's (b537278de).
+
+| month | HS2: people, households, cells live of held, households in empty cells | main |
+|---|---|---|
+| m6 | 64, 22.5, 14 of 45, 26% | 65, 22.5, 14 of 33, 15% |
+| m12 | 91, 42.8, 20 of 67, 13% | 92, 43.4, 16 of 46, 9% |
+| m24 | 227, 80.3, 27 of 64, 7% | 233, 82.5, 22 of 47, 4% |
+| m60 | 311, 127.3, 38 of 66, 3% | 322, 132.1, 27 of 47, 2% |
+| m120 | 544, 215.3, 42 of 71, 2% | 504, 197.5, 30 of 50, 2% |
+
+The first month each cell kind buys groceries: the working kinds that hold the village's households
+on both trees at m7, when the first shop sells (COUPLE, SINGLE_ADULT, SHARED_ADULTS, LARGE_FAMILY,
+COUPLE_TEEN, COUPLE_BABY_CHILD unskilled; OWNER m7). HS2's later ones are thin kinds of one stage:
+COUPLE_BABY:SKILLED m20 (main m6, its young half m8), SHARED_ADULTS:SKILLED m21 (main m20),
+COUPLE_CHILD:UNSKILLED m40 (main m25, its young half m18), SINGLE_PARENT:UNSKILLED m105 (main m82,
+its young half m25). The unemployed's first purchases (ON_EI m27, OFF_EI m54 against main's m9) are
+not the cells' size: at m9 both trees hold 3.4 households on EI and 0.6 off it, which in 1901 is no
+benefit; HS2's arrived with nothing (food money 0) and main's with $0.0253 each, and by m12 both hold
+nothing until the layoff at m27-30, when both buy. The city's paper: no cell holds any on either tree
+in the 120 months (no issue before the central bank).
+
+So the twice-as-large is real and small, and it is gone in the 1900 village by its second year: the
+share of households in cells under EMPTY_CELL is 13% against 9% at m12 and 3% against 2% at m60,
+and the village is no smaller (311 against 322 people at m60, 544 against 504 at m120; R1g's stall is
+its own, the rent and the skills). The town it hits is a fixture's: CentralBankCheck's 300-House
+build that never stands more than one House (16 people to m97), named under FS10. No mend
+recommended: lowering EMPTY_CELL for split cells would undo the ghost-cell guard its banner records
+(DenominationCheck's twins parting on a cell under the line), and the household who buys nothing in
+an empty cell is paid nothing either: its row's income goes to the settled cells
+(`HouseholdBalance`, the income handed to a cell too small to settle). It went in the ship file's
+changelog.
