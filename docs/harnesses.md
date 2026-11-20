@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**228 harness files, 26,059 labelled assertions.** AllChecks runs 228 of them.
+**228 harness files, 26,093 labelled assertions.** AllChecks runs 228 of them.
 
 ## Which harnesses read which class
 
@@ -145,8 +145,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
-| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperBufferCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperBufferCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GovernmentView](map/GovernmentView.md) | GovernmentPlayerCheck, GovernmentViewCheck, InboxCheck |
@@ -202,7 +202,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandSellersView](map/LandSellersView.md) | LandNationsCheck |
 | [LandTable](map/LandTable.md) | LandNationsCheck |
 | [LandmassView](map/LandmassView.md) | KeptCheck, LandmassCheck, LongPlaytest, ReadPathCheck |
-| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
+| [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, BuildingStackCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Levers](map/Levers.md) | **none** |
 | [LicenceFees](map/LicenceFees.md) | DriverlessTruckCheck, ElectrolyserCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HydrogenSteelCheck, LicenceFeesCheck, PostwarRecipeCheck, PublicLicenceCheck |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
@@ -216,7 +216,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReplayCheck |
 | [MapView](map/MapView.md) | **none** |
 | [Maps](map/Maps.md) | **none** |
-| [Markets](map/Markets.md) | BankFailureCheck, BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HomeRailCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
+| [Markets](map/Markets.md) | BankFailureCheck, BooksCheck, BuildMenuCheck, BuildingStackCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HomeRailCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MedicalRows](map/MedicalRows.md) | MedicineCheck |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CentralBankCheck, DeskCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
@@ -2968,7 +2968,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L924 lookup by id still works
   - L927 lookup by name still works
 
-## BuildingStackCheck.java - 47 labelled assertions
+## BuildingStackCheck.java - 81 labelled assertions
 
 > A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through
 > the save and the load, through ScaleCheck's scaler, and in the sums a city is read by.
@@ -2984,60 +2984,96 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What this has to prove:
 > ...
 
-- **L85 the fixture: a young town, saved with its houses on site and again once they stand**
-  - L112 fixture: the catalogue has a House, a Convenience Store and a Bakery, and the Bakery carries a piece of equipment
-- **L115 1. a stack takes orders past 2^31 - 1**
-  - L122 three short of the ceiling and an order of ten finished: the stack stands 7 past it
-  - L123 ...the ten were this month's finished
-  - L124 ...none is left on site
-  - L125 ...and it stands past what an int holds
-  - L130 two orders of 2^31 - 1 on one stack: the sites hold twice that
-  - L132 ...and owe the material of every one of them, not of a wrapped count
-  - L135 ...and when the crews finish them the stack stands twice 2^31 - 1
-  - L136 ...with all of them this month's finished
-  - L137 ...none left on site
-  - L140 a third order of 2^31 - 1 added at once: three times the ceiling
-  - L142 ...one scrapped: twice
-  - L145 ...two more scrapped: none, not a negative count
-  - L147 ...scrapping what is not there floors at none
-  - L151 below the ceiling nothing reads differently: five and three are eight
-  - L153 ...and scrapping a hundred of eight leaves none
-- **L155 2. the unfitted count rides with the stack**
-  - L161 two orders of 2^31 - 1 Bakeries, all without the piece: the count is the stack's
-  - L163 ...one order's worth scrapped: the count falls with it, never above what stands
-  - L165 ...and the Bakeries that stand are one order's
-- **L167 3. the sums: homes, posts and household places**
-  - L179 two orders of 2^31 - 1 Houses add their dwellings times 2 x (2^31 - 1) homes
-  - L181 ...and their capacity times that to the household places
-  - L190 two orders of 2^31 - 1 Convenience Stores add each kind of post times 2 x (2^31 - 1)
-  - L191 ...and that is past what an int holds in at least one kind of post: the fixture makes the condition
-  - L192 ...and the Houses' places passed the ceiling too
-- **L194 4. ScaleCheck.scale(): the copy's House stack past 2^31**
-  - L202 fixture: the founded town has Houses
-  - L211 the copy loads (an int stack could not read it)
-  - L213 its House stack is K times the founded town's
-  - L214 ...and stands past 2^31 - 1
-  - L215 every home is K times the founded town's
-  - L216 the household places are K times the founded town's
-  - L217 every post is K times the founded town's
-  - L218 ...the homes and the places past what an int holds
-- **L220 5. the same from a save written with an order on site**
-  - L227 fixture: the town's save has Houses on site
-  - L234 the copy with its order on site loads
-  - L236 its Houses on site are K times the town's
-  - L237 ...and past 2^31 - 1
-  - L238 the homes on site are K times the town's
-- **L240 6. an order carries the loaded copy past 2^31 - 1, and its save reads back whole**
-  - L249 fixture: the copy's House stack stands under the ceiling, by less than the town's own Houses and the room left
-  - L259 an order of the room left and
-  - L261 ...and all of it finished, the stack stands what stood, the sites and the order
-  - L262 ...which is past 2^31 - 1: an order carried it there
-  - L267 the city with a stack past the ceiling saves
-  - L270 ...and the save loads
-  - L271 the House stack came back whole
-  - L272 ...its homes
-  - L273 ...its household places
-  - L275 a month at that size runs, and the stack still stands past 2^31 - 1
+- **L98 the fixture: a young town, saved with its houses on site and again once they stand**
+  - L125 fixture: the catalogue has a House, a Convenience Store and a Bakery, and the Bakery carries a piece of equipment
+- **L128 1. a stack takes orders past 2^31 - 1**
+  - L135 three short of the ceiling and an order of ten finished: the stack stands 7 past it
+  - L136 ...the ten were this month's finished
+  - L137 ...none is left on site
+  - L138 ...and it stands past what an int holds
+  - L143 two orders of 2^31 - 1 on one stack: the sites hold twice that
+  - L145 ...and owe the material of every one of them, not of a wrapped count
+  - L148 ...and when the crews finish them the stack stands twice 2^31 - 1
+  - L149 ...with all of them this month's finished
+  - L150 ...none left on site
+  - L153 a third order of 2^31 - 1 added at once: three times the ceiling
+  - L155 ...one scrapped: twice
+  - L158 ...two more scrapped: none, not a negative count
+  - L160 ...scrapping what is not there floors at none
+  - L164 below the ceiling nothing reads differently: five and three are eight
+  - L166 ...and scrapping a hundred of eight leaves none
+- **L168 2. the unfitted count rides with the stack**
+  - L174 two orders of 2^31 - 1 Bakeries, all without the piece: the count is the stack's
+  - L176 ...one order's worth scrapped: the count falls with it, never above what stands
+  - L178 ...and the Bakeries that stand are one order's
+- **L180 3. the sums: homes, posts and household places**
+  - L192 two orders of 2^31 - 1 Houses add their dwellings times 2 x (2^31 - 1) homes
+  - L194 ...and their capacity times that to the household places
+  - L203 two orders of 2^31 - 1 Convenience Stores add each kind of post times 2 x (2^31 - 1)
+  - L204 ...and that is past what an int holds in at least one kind of post: the fixture makes the condition
+  - L205 ...and the Houses' places passed the ceiling too
+- **L207 4. ScaleCheck.scale(): the copy's House stack past 2^31**
+  - L215 fixture: the founded town has Houses
+  - L224 the copy loads (an int stack could not read it)
+  - L226 its House stack is K times the founded town's
+  - L227 ...and stands past 2^31 - 1
+  - L228 every home is K times the founded town's
+  - L229 the household places are K times the founded town's
+  - L230 every post is K times the founded town's
+  - L231 ...the homes and the places past what an int holds
+- **L233 5. the same from a save written with an order on site**
+  - L240 fixture: the town's save has Houses on site
+  - L247 the copy with its order on site loads
+  - L249 its Houses on site are K times the town's
+  - L250 ...and past 2^31 - 1
+  - L251 the homes on site are K times the town's
+- **L253 6. an order carries the loaded copy past 2^31 - 1, and its save reads back whole**
+  - L262 fixture: the copy's House stack stands under the ceiling, by less than the town's own Houses and the room left
+  - L272 an order of the room left and
+  - L274 ...and all of it finished, the stack stands what stood, the sites and the order
+  - L275 ...which is past 2^31 - 1: an order carried it there
+  - L280 the city with a stack past the ceiling saves
+  - L283 ...and the save loads
+  - L284 the House stack came back whole
+  - L285 ...its homes
+  - L286 ...its household places
+  - L288 a month at that size runs, and the stack still stands past 2^31 - 1
+- **L291 7. Game.buildStack on a copy just under the ceiling: its quote, its ground and its invoice (SQ1b)**
+  - L298 fixture: the copy loads
+  - L304 fixture: its House stack stands under the ceiling, as section 6's does
+  - L308 fixture: the order's material (
+  - L311 fixture: the yard holds its own small stock, which the order's material dwarfs
+  - L317 the quote is for the order's Houses
+  - L318 ...its material is the units each House takes times the order, not an int's wrap of them
+  - L319 ...the yard covers its own stock and the plant and the world the rest, which is past what an int holds
+  - L322 ...its ground is the square feet each House takes times the order
+  - L323 ...and its price is a finite sum past 2^31 dollars
+  - L335 fixture: the yard's stock changes the first order's price (
+  - L336 the run's invoice moves with the yard by exactly the first order's share: the second is quoted on the yard the first emptied, in both
+  - L338 ...and a run's first order is quoted as it is alone
+  - L343 fixture: the ground is there for the order
+  - L349 buildStack takes the order (
+  - L350 ...and charges what the quote said, in full
+  - L351 ...the receipt reads the quote's total and its material
+  - L352 ...and the order's Houses
+  - L353 ...the ground it took is the quote's: the free ground fell by the square feet of every House
+  - L356 ...the order stands on site beside the copy's own sites
+  - L357 ...which with what stands is past 2^31 - 1
+  - L358 ...the yard's whole stock went to the sites the day it was placed
+  - L359 ...and the books took it, as the yard's share of the units
+  - L360 ...the sites owe the rest of the order's material, past what an int holds
+- **L363 8. a month's draw past 2^31 units: the books it feeds read it whole**
+  - L372 the month after the order runs, and the crews drew on the market for it (
+  - L381 the sites' draw is booked whole: materialsConsumed rose by the units drawn
+  - L382 ...the builders' own stock of scrapped plant's material went first, whole (
+  - L384 ...and the materials market was drawn on for the rest, past what an int holds
+  - L386 ...and the books stand past what an int holds
+  - L389 the city with a draw past 2^31 booked saves
+  - L392 ...and the save loads
+  - L393 ...materialsConsumed came back whole
+  - L399 a repair draw past 2^31 units takes the yard first: the yard is emptied
+  - L400 ...the books took the whole draw, the yard's share and the rest
+  - L401 ...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)
 
 ## BusinessServicesCheck.java - 67 labelled assertions
 

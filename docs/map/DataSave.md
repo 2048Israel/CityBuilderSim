@@ -125,7 +125,7 @@
 | 514 | `private java.util.Map<String, Double> mortgageRepaid` | THE LANDLORDS' MORTGAGES (0.7.11): the principal their payments took in the month saved, by sector - a flow the Bank tab and the landlords' screen read the month after - and the city's insurance book: the premiums it ... |
 | 515 | `private java.util.Map<String, Double> insuranceClaims` |  |
 | 516 | `private double insurancePremiums` |  |
-| 519 | `private int constructionMaterials` | The city's own yard, in units. |
+| 519 | `private long constructionMaterials` | The city's own yard, in units. |
 | 520 | `private long population` |  |
 | 531 | `private java.util.List<SectorBooks.SectorMonth> sectorBooks` | THE SECTOR STATEMENTS, this month and last. |
 | 532 | `private java.util.List<SectorBooks.SectorMonth> sectorBooksBefore` |  |
@@ -292,7 +292,7 @@
 | 2786 | `private double cityCapitalSpending` |  |
 | 2787 | `private double monthlyMaterialImports` |  |
 | 2794 | `private double monthlyMaterialImportBill` | The same imports in money, at the price each was charged at - the builders' materials expense and the accounts' import line. |
-| 2795 | `private int materialsConsumed` |  |
+| 2795 | `private long materialsConsumed` |  |
 | 2820 | `private double cityMaintenancePaid` | What the treasury paid the builders to keep the city's own buildings up. |
 | 2837 | `private java.util.Map<String, String> lastInvestment` | THE INVESTORS' LAST WORD ON EACH SECTOR (0.7.102, Jerus's A22): what the month's investment pass decided for it and why - "Built 2 ...", "Holding: ...", a refusal - as Game.getLastInvestment() reads it, the Sectors sc... |
 | 2854 | `private java.util.Map<String, Double> subsidyPaid` | What each protected sector was paid last month. |
@@ -401,7 +401,7 @@
 | 972 | 6 | `public void setBuildingQuantity(int index, long quantity)` |  |
 | 986 | 3 | `public void setDebt(List<Debt> debts)` |  |
 | 990 | 3 | `public void setProgress(double[] progress)` |  |
-| 994 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
+| 994 | 3 | `public void setConstructionMaterials(long constructionMaterials)` |  |
 | 998 | 3 | `public void setPopulation(long population)` |  |
 | 1001 | 3 | `public void setReports(boolean reports)` |  |
 | 1014 | 4 | `public void setNotices(java.util.List<Notice> notices)` | The city's inbox. |
@@ -750,8 +750,8 @@
 | 2842 | 1 | `public double getMonthlyMaterialImports()` |  |
 | 2843 | 1 | `public void setMonthlyMaterialImportBill(double v)` |  |
 | 2844 | 1 | `public double getMonthlyMaterialImportBill()` |  |
-| 2845 | 1 | `public void setMaterialsConsumed(int v)` |  |
-| 2846 | 1 | `public int getMaterialsConsumed()` |  |
+| 2845 | 1 | `public void setMaterialsConsumed(long v)` |  |
+| 2846 | 1 | `public long getMaterialsConsumed()` |  |
 | 2855 | 1 | `public void setSubsidyPaid(java.util.Map<String, Double> v)` |  |
 | 2856 | 1 | `public java.util.Map<String, Double> getSubsidyPaid()` |  |
 | 2866 | 1 | `public void setHouseholdStatement(double[] v)` |  |
@@ -787,7 +787,7 @@
 | 2949 | 3 | `public JsonArray getBusinessDebt()` |  |
 | 2953 | 3 | `public int getProgressLength()` |  |
 | 2957 | 3 | `public double getProgress(int index)` |  |
-| 2961 | 3 | `public int getConstructionMaterials()` |  |
+| 2961 | 3 | `public long getConstructionMaterials()` |  |
 | 2965 | 3 | `public long getPopulation()` |  |
 | 2968 | 3 | `public boolean getReports()` |  |
 | 2971 | 3 | `public java.util.List<Notice> getNotices()` |  |
