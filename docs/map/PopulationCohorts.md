@@ -1,6 +1,6 @@
-# PopulationCohorts.java - 830 lines · 52 methods · 2 constants · model
+# PopulationCohorts.java - 835 lines · 53 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 
@@ -48,14 +48,14 @@
 |---:|---|
 | 131 | · reading |
 | 227 | · ageing |
-| 629 | · saving |
+| 634 | · saving |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 59 | `PopulationCohorts.BIRTHS_PER_1000_PER_YEAR` | `15.0` | Births per thousand residents per year. |
-| 671 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
+| 676 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
 
 ## Fields (state)
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 791 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
+| 40 | 796 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
 | 129 | 1 | `public PopulationCohorts()` |  |
 
 ### reading (lines 131-226)
@@ -120,7 +120,7 @@
 | 174 | 1 | `public double getPromoted(AdultStage s)` | Last month's adults who moved on out of a stage: the young who turned 35, the established who retired (the same as getPromoted(ADULT)). |
 | 176 | 1 | `public double getDeaths(AdultStage s)` | Last month's deaths in a stage: the two add to getDeaths(ADULT). |
 | 178 | 3 | `public double promotedShare(AdultStage s)` | Of what the stage opened the month with, the share that moved on: for the young, the month's turning 35; for the established, its retirements (HS2). |
-| 182 | 1 | `public double getYoungShareOfAdults()` | Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is equilibriumShare's). |
+| 182 | 1 | `public double getYoungShareOfAdults()` | Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is settledYoungShareOfAdults()). |
 | 184 | 1 | `public double getRetiringShareOfAdults()` | Last month's retirements over the adults who opened it: the ensemble's reading of the two stages' flow beside the one bucket's flat AgeBand.ADULT.monthlyOutflowRate() (HS2). |
 | 187 | 5 | `private void syncAdults()` | The band's figure struck again from its two stages, after anything moved them. |
 | 193 | 5 | `public double total()` |  |
@@ -128,7 +128,7 @@
 | 206 | 7 | `public double workingAge()` | Everyone of working age. |
 | 221 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
 
-### ageing (lines 227-628)
+### ageing (lines 227-633)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -142,17 +142,18 @@
 | 512 | 16 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
 | 557 | 11 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
 | 580 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
-| 588 | 6 | `public static double equilibriumShare(AdultStage of)` | ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. |
-| 602 | 26 | `private static double[] equilibriumWeights()` | The bands' weights, then the adult stages' (HS2). |
+| 588 | 3 | `public static double settledYoungShareOfAdults()` | Of a settled city's adults, the young's share (HS2): what the People screen sets beside the city's own, and how a save without the stages splits its adults. |
+| 593 | 6 | `public static double equilibriumShare(AdultStage of)` | ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. |
+| 607 | 26 | `private static double[] equilibriumWeights()` | The bands' weights, then the adult stages' (HS2). |
 
-### saving (lines 629-830)
+### saving (lines 634-835)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 674 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
-| 681 | 19 | `public double[] toSaveArray()` |  |
-| 702 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
-| 720 | 80 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
-| 802 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 808 | 22 | `public void reset()` |  |
+| 679 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
+| 686 | 19 | `public double[] toSaveArray()` |  |
+| 707 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
+| 725 | 80 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
+| 807 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 813 | 22 | `public void reset()` |  |
 

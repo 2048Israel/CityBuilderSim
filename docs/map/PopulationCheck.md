@@ -1,6 +1,6 @@
 # PopulationCheck.java - 1,672 lines · 13 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PopulationCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The demographics: do they hold together, and do they move the city the way
 > they were told to?

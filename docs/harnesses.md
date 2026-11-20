@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,223 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,225 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -15082,7 +15082,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L404 a played city's record survives a save
   - L410 ...and the month after, both cities hold the same households
 
-## HouseholdStageCheck.java - 68 labelled assertions
+## HouseholdStageCheck.java - 70 labelled assertions
 
 > The two adult stages: the young, 18-34, and the established, 35-69, each
 > with a pyramid compartment, households and books of its own (HS2).
@@ -15127,50 +15127,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L232 ...both stages and the adults to the bit, so a reload played on is the unbroken city
   - L240 fixture: 1,000.1 young and 2,000.2 established, whose adults less the young are not the established in the last bit
   - L244 ...and the save brings back its established to the bit, and its adults
-  - L248 a settled city's two stages are its adults
-  - L249 ...chained: the established to the young as the young's rate to the established's way out
-- **L252 2. ageing carries the money**
-  - L280 fixture: every cell the month ends with is above the empty cell's half household
-  - L292 the young moved up at their share, of each young cell: 10 of 2,040 and 2.5 of 510
-  - L294 ...carrying each cell's average savings
-  - L296 the established retired at their own share; the young retired none
-  - L300 the established's cell holds its own
-  - L303 ...the young's cell keeps its average of
-  - L306 ...the paper carried with them
-  - L307 the young claimant of the same tier was handed nothing: it keeps its own, less its own who moved up
-  - L309 ...whose savings the established couples now hold
-  - L310 ...and the pool had nothing to net
-  - L313 what is held of
-  - L351 the young moved up in the city's months, and carried savings
-  - L352 ...each month at the pyramid's share of the young's households
-  - L355 the households' identity (HL1) closed every month
-- **L358 3. no teen shape among the young**
-  - L370 the young form the seven shapes the study names and no other
-  - L371 ...the established every working shape
-  - L372 ...and no shape with a teen in it is young
-  - L396 the families' young hold no household of a shape they do not form
-  - L397 ...and house no teen
-  - L398 fixture: the young formed households and the established the teens' shapes
-  - L407 the young house no more than the dial's share of the
-  - L410 ...and every one of the
-  - L413 the teens' dial is none
-  - L425 a city with no young adults forms no young household
-  - L429 ...and the young's share of its
-  - L444 the books keep a young cell exactly where the young form the shape
-- **L446 4. the pool's group is (tier, stage)**
-  - L469 the
-  - L471 ...and none to the other stage's, growing as much in the same tier
-  - L473 ...nothing made or lost
-  - L481 with no claimant of its own stage the young's money reaches the city, and the established's couples
-- **L484 5. 108 working cells**
-  - L510 the working cells are the established's shapes and the young's, at every tier
-  - L512 ...a hundred and eight of them
-  - L513 ...forty-two young
-  - L514 every cell its own key
-  - L515 each young cell keyed as young and in its tier's young stock group
-  - L516 ...a young stock group a tier
-  - L518 ...shared with no established, retired or outside cell
-  - L519 the stock groups: the rows, the retired's tiers and the young's tiers
+  - L274 fixture: the remembering city holds young households and a record of what the young formed
+  - L276 ...and the families' save brings back both stages' households and last month's record of them to the bit,
+  - L281 a settled city's two stages are its adults
+  - L282 ...chained: the established to the young as the young's rate to the established's way out
+- **L285 2. ageing carries the money**
+  - L313 fixture: every cell the month ends with is above the empty cell's half household
+  - L325 the young moved up at their share, of each young cell: 10 of 2,040 and 2.5 of 510
+  - L327 ...carrying each cell's average savings
+  - L329 the established retired at their own share; the young retired none
+  - L333 the established's cell holds its own
+  - L336 ...the young's cell keeps its average of
+  - L339 ...the paper carried with them
+  - L340 the young claimant of the same tier was handed nothing: it keeps its own, less its own who moved up
+  - L342 ...whose savings the established couples now hold
+  - L343 ...and the pool had nothing to net
+  - L346 what is held of
+  - L384 the young moved up in the city's months, and carried savings
+  - L385 ...each month at the pyramid's share of the young's households
+  - L388 the households' identity (HL1) closed every month
+- **L391 3. no teen shape among the young**
+  - L403 the young form the seven shapes the study names and no other
+  - L404 ...the established every working shape
+  - L405 ...and no shape with a teen in it is young
+  - L429 the families' young hold no household of a shape they do not form
+  - L430 ...and house no teen
+  - L431 fixture: the young formed households and the established the teens' shapes
+  - L440 the young house no more than the dial's share of the
+  - L443 ...and every one of the
+  - L446 the teens' dial is none
+  - L458 a city with no young adults forms no young household
+  - L462 ...and the young's share of its
+  - L477 the books keep a young cell exactly where the young form the shape
+- **L479 4. the pool's group is (tier, stage)**
+  - L502 the
+  - L504 ...and none to the other stage's, growing as much in the same tier
+  - L506 ...nothing made or lost
+  - L514 with no claimant of its own stage the young's money reaches the city, and the established's couples
+- **L517 5. 108 working cells**
+  - L543 the working cells are the established's shapes and the young's, at every tier
+  - L545 ...a hundred and eight of them
+  - L546 ...forty-two young
+  - L547 every cell its own key
+  - L548 each young cell keyed as young and in its tier's young stock group
+  - L549 ...a young stock group a tier
+  - L551 ...shared with no established, retired or outside cell
+  - L552 the stock groups: the rows, the retired's tiers and the young's tiers
 
 ## HousingCheck.java - 94 labelled assertions
 

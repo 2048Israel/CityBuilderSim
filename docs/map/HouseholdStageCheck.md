@@ -1,6 +1,6 @@
-# HouseholdStageCheck.java - 530 lines · 11 methods · 1 constants · harnesses
+# HouseholdStageCheck.java - 563 lines · 11 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HouseholdStageCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdStageCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The two adult stages: the young, 18-34, and the established, 35-69, each
 > with a pyramid compartment, households and books of its own (HS2).
@@ -50,17 +50,17 @@
 >      six tiers, each young cell its own key and every tier's young their
 >      own stock group.
 
-**Uses:** [AgeBand](AgeBand.md) (37), [FamilyStructure](FamilyStructure.md) (30), [Household](Household.md) (21), [PayTier](PayTier.md) (18), [PopulationCohorts](PopulationCohorts.md) (14), [HouseholdBalance](HouseholdBalance.md) (13), [HouseholdFlowCheck](HouseholdFlowCheck.md) (11), [AdultStage](AdultStage.md) (10), [FamilyModel](FamilyModel.md) (7), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (6), [WorkingHousehold](WorkingHousehold.md) (4), [MoneyAudit](MoneyAudit.md) (2), [Game](Game.md) (1), [LongPlaytest](LongPlaytest.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [AgeBand](AgeBand.md) (37), [FamilyStructure](FamilyStructure.md) (32), [PayTier](PayTier.md) (23), [Household](Household.md) (21), [PopulationCohorts](PopulationCohorts.md) (15), [HouseholdBalance](HouseholdBalance.md) (13), [AdultStage](AdultStage.md) (12), [FamilyModel](FamilyModel.md) (12), [HouseholdFlowCheck](HouseholdFlowCheck.md) (11), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (8), [WorkingHousehold](WorkingHousehold.md) (4), [MoneyAudit](MoneyAudit.md) (2), [Game](Game.md) (1), [LongPlaytest](LongPlaytest.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 151 | · 1. residence of 204 and 420 months |
-| 252 | · 2. ageing carries the money |
-| 358 | · 3. no teen shape among the young |
-| 446 | · 4. the pool's group is (tier, stage) |
-| 484 | · 5. 108 working cells |
+| 285 | · 2. ageing carries the money |
+| 391 | · 3. no teen shape among the young |
+| 479 | · 4. the pool's group is (tier, stage) |
+| 517 | · 5. 108 working cells |
 
 ## Constants
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 471 | **type** `public class HouseholdStageCheck` | The two adult stages: the young, 18-34, and the established, 35-69, each with a pyramid compartment, households and books of its own (HS2). |
+| 60 | 504 | **type** `public class HouseholdStageCheck` | The two adult stages: the young, 18-34, and the established, 35-69, each with a pyramid compartment, households and books of its own (HS2). |
 | 69 | 5 | `static void check(String label, double got, double want)` |  |
 | 75 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 80 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -95,5 +95,5 @@
 | 117 | 6 | `Household cell(FamilyStructure shape, PayTier tier, AdultStage stage, double households, double expected)` _(in HouseholdStageCheck.Books)_ |  |
 | 124 | 4 | `Books expectRetired(FamilyStructure shape, double total)` _(in HouseholdStageCheck.Books)_ |  |
 | 130 | 11 | `void run()` _(in HouseholdStageCheck.Books)_ | The month's census alone, by stage, as the balance reads it. |
-| 143 | 387 | `public static void main(String[] args) throws Exception` |  |
+| 143 | 420 | `public static void main(String[] args) throws Exception` |  |
 
