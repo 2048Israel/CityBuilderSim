@@ -4662,10 +4662,10 @@
    "recipeChanges": [
     {
      "entry": "PE4",
-     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. R2e-PE4 defines it against the rotary kiln: each template without PE4 burns 30% of its cement or lime tonnes, so its undo is that less the modern coal (Cement Plant 7500 - 3350 = 4150); R1c row 5's shaft kilns keep their 1340 t over the rotary kiln in every state. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
      "without": {
       "uses": {
-       "THERMAL_COAL": 2810.0
+       "THERMAL_COAL": 4150.0
       }
      },
      "equipment": "long-kiln"
@@ -4737,7 +4737,7 @@
    "recipeChanges": [
     {
      "entry": "PE4",
-     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. R2e-PE4 defines it against the rotary kiln: each template without PE4 burns 30% of its cement or lime tonnes, so its undo is that less the modern coal (Cement Plant 7500 - 3350 = 4150); R1c row 5's shaft kilns keep their 1340 t over the rotary kiln in every state. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
      "without": {
       "uses": {
        "THERMAL_COAL": 20750.0
@@ -4800,7 +4800,7 @@
    "recipeChanges": [
     {
      "entry": "PE4",
-     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. R2e-PE4 defines it against the rotary kiln: each template without PE4 burns 30% of its cement or lime tonnes, so its undo is that less the modern coal (Cement Plant 7500 - 3350 = 4150); R1c row 5's shaft kilns keep their 1340 t over the rotary kiln in every state. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
      "without": {
       "uses": {
        "THERMAL_COAL": 1800.0

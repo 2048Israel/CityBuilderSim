@@ -131,6 +131,8 @@ public class Unemployment {
     private double jobsLost, openings, localHires, arrivalHires, arrivalsUnhired;
     private double entrants, otherExits, dropped, leftWhenBroke, evictedMoved;
     private double deaths, agedOut;
+    /** The share of the adults who retire this month, the pyramid's own (HS2: the established's retirements over all the adults); the band's flat 1/624 until the month sets it. */
+    private double retiringShare = AgeBand.ADULT.monthlyOutflowRate();
     private double benefitsPaid;
     private double insuredCap;
 
@@ -281,6 +283,11 @@ public class Unemployment {
         arrivalsLooking = Math.max(0, adults);
     }
 
+    /** The month's share of the adults retiring, as the pyramid retired them (HS2): set before advanceMonth; a negative or missing figure is read as none. */
+    public void setRetiringShare(double share) {
+        retiringShare = Math.max(0, share);
+    }
+
     /**
      * The month's flows, the ring, and the bill.
      *
@@ -348,7 +355,7 @@ public class Unemployment {
 
         /* ---- the exits the pyramid makes ---- */
         deaths = existing * Math.max(0, adultMortality);
-        agedOut = existing * AgeBand.ADULT.monthlyOutflowRate();
+        agedOut = existing * retiringShare;
 
         double implied = existing - localHires - deaths - agedOut + jobsLost + arrivalsUnhired;
         double residual = pool - implied;
