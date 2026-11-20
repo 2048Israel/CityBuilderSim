@@ -292,7 +292,7 @@ R1e 0.9.160); this is the last, and the earlier logs are kept in
 | 1900 on main | 482 | 592 | 574 | 559 | .623 | .41 / .06 / .03 / .00 |
 | (a) the 1900 home alone | 1,334 | 836 | 7,163 | 781,449 | .332 | 1.00 / .48 / 1.00 / 1.00 |
 | (b) the apprentices alone | 489 | 1,350 | 2,136 | 6,029 | .625 | .45 / 1.00 / 1.00 / 1.00 |
-| (a) + (b) | | | | | | |
+| (a) + (b), mended (f772ed866) | 1,334 | 5,608 | 22,336 | 902,664 | .335 | 1.00 / 1.00 / 1.00 / 1.00 |
 
 The months between, for the shape: today 1,298 at m240, 8,210 at m600,
 91,838 at m1500, 448,089 at m1800, 1,045,627 at m2100; the 1900 city on main
@@ -357,8 +357,35 @@ month a given "since" is known from never changes, and a code that is not a
 year is read once instead of through a thrown exception every call. The
 answers are the same, so the city is: the proof is today's trace against
 main's, byte for byte, and the mended (a)+(b) trace against the stopped
-reference's (`target/r1g/ref/pboth-*`, months 1 to about 1830, ended at
-00:33 for OP1's dry run) over every complete line. ★ The fit memoised per
-month, the orchestrator's other way, was not built: a new unit's fit reads
-prices that can move within a month, so a memo is not plainly the same
-city, and the cache may be enough on its own (measured below).
+reference's (`target/r1g/ref/pboth-*`, months 1 to about 1830, ended at 00:33 for OP1's dry run) over every complete line.
+
+The cache alone made the run 3.5 times faster (m1482 in 9 minutes against
+the reference's 27; still 58 months in 9 minutes at month 1757, so m2400
+some two hours off): not normal time. Six thread dumps of that run at month
+1757 stood five times inside `EquipmentFit.priced` under `NewUnit.of`, the
+cost now spread through the fit itself. So the second mend:
+
+- ★ **A new unit's fit held while one piece of advice reads the city**
+  (`NewUnit.heldWhile`, f772ed866), narrower than the orchestrator's "the
+  fit memoised per month": `BuildAdvice.suggestFor()` (pure by its own
+  javadoc: it reads the city and quotes) runs inside `heldWhile`, and in it
+  `NewUnit.of(game, t)` keeps each template's fitted unit from its first ask
+  to the reading's end, so `WorksValue.pendingLoads()` and
+  `pendingPowerLoad()` stop re-fitting every building under way at every
+  count `BuildAdvice.count()` tries. A month's prices can move between
+  readings (an order queues points, the scarcity premium rises), so the
+  hold ends with the reading, and outside one `of()` is fresh as before. A
+  unit is a value (final fields, unmodifiable maps). A city founded the
+  default way returns `standing(t)` before the hold and never reaches it.
+  `suggestionFor` is the old body, unchanged.
+- **The proof** (`target/r1g/proof.sh`, `proof-ref.txt`): the mended
+  (a)+(b) run on 0.9.160 + both mends against the reference, over every
+  complete line the reference wrote: bank to month 1852, bonds 1875, build
+  1841, house 1876, labour 1833, month 1850, pop 1828, all byte for byte
+  (borrow's buffer had not flushed). The cache-only run was the same over
+  every line it and the reference both held (to about month 1700) before
+  it was stopped for the memo. Today's city: below, on 0.9.161, main
+  against the branch with both mends.
+- **The time:** the mended (a)+(b) ran its 2,400 months in 25 minutes,
+  exit 0 (the reference: 144 minutes to month 1850, stopped; today's city:
+  16 minutes). That is the run in the 0.9.160 table above.
