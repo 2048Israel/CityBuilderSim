@@ -1180,11 +1180,11 @@ public class ForeignAccounts {
                 // (b) THE COVER: a sale, paid in gold first, that the gold cannot pay or that would leave the
                 // cover under COVER_RATIO. A purchase never breaks it, and the vault's floor is not asked. The cover
                 // after the sale is over M0 after it: what the gold fetched is retired (FB14; CentralBank, THE GOLD'S OWN
-                // DEFENCE), down to nothing at most.
+                // DEFENCE), no more than the bank's reserves can retire (setMoneyBase(m0, retirable); REV-FB14).
                 if (cause == BreakCause.NONE && usd < 0) {
                     double goldUsd = getHoldingUsd(GOLD);
                     double ouncesLeft = Math.max(0, goldUsd + usd) / usdPer[GOLD];
-                    double m0After = moneyBase - Math.min(moneyBase, -usd * rate);
+                    double m0After = moneyBase - Math.min(retirableBase, -usd * rate);
                     if (-usd > goldUsd || coverOf(ouncesLeft, m0After) < COVER_RATIO) cause = BreakCause.COVER;
                 }
                 lastHazard = h;
@@ -1510,6 +1510,8 @@ public class ForeignAccounts {
     private GoldEvent goldEvent = GoldEvent.NONE;
     /** M0, in the game's thousands of D$ (CentralBank.m0()): NOT saved. Game hands it every month right before the reprice (setMoneyBase()), and a fixture hands its own; 0 until it is. */
     private double moneyBase;
+    /** ...and how much of it a sale of gold can retire (CentralBank.goldRetirable(), the reserves past what is already due): NOT saved; M0 itself when a fixture hands M0 alone. */
+    private double retirableBase;
 
     /* ===== MONEY ON CANADA'S DATES (R0f) ===== */
 
@@ -1615,7 +1617,17 @@ public class ForeignAccounts {
      * without covers nothing). Not saved.
      */
     public void setMoneyBase(double m0) {
+        setMoneyBase(m0, m0);
+    }
+
+    /**
+     * ...with how much of it a sale of gold can retire (FB14; REV-FB14): CentralBank.goldRetirable(), the reserves past what is due, so the
+     * cover test retires what the bank's books will (settleGoldRedeemed() retires no more than its reserves), not all of M0. Clamped to
+     * [0, M0]; a NaN reads 0. Not saved.
+     */
+    public void setMoneyBase(double m0, double retirable) {
         moneyBase = Double.isFinite(m0) && m0 > 0 ? m0 : 0;
+        retirableBase = Double.isFinite(retirable) && retirable > 0 ? Math.min(retirable, moneyBase) : 0;
     }
 
     /**
@@ -1856,15 +1868,29 @@ public class ForeignAccounts {
      * review 3 - it read the M0 the last reprice was handed, which is not saved and was 0 after a load, so the pace counted all the gold
      * free), how many until the cover breaks: each sale takes its gold and retires as much of M0 with it (CentralBank, THE GOLD'S OWN
      * DEFENCE), so the gold above the law's cover falls by (1 - COVER_RATIO) of the sale; a gold that covers more than the whole of M0
-     * retires it to nothing first and never meets the law's floor, and lasts until the gold is gone. Pure.
+     * retires it to nothing first and never meets the law's floor, and lasts until the gold is gone. Pure. All of M0 retirable: a fixture's.
      */
     public double monthsToFloor(double m0) {
+        return monthsToFloor(m0, m0);
+    }
+
+    /**
+     * ...with only so much of M0 retirable (FB14; REV-FB14: CentralBank.goldRetirable(), the reserves past what is due, as the cover test
+     * reads it): the free gold falls by (1 - COVER_RATIO) of each sale while the sales retire, and by the whole sale once the retirable is
+     * spent. A gold covering all of M0, all of it retirable, lasts until it is gone, as before. Pure.
+     */
+    public double monthsToFloor(double m0, double retirable) {
         if ((regime == Regime.PEG || regime == Regime.BAND) && defenceUsd > 0) {
             return (getReservesUsd() - vaultFloorUsd()) / defenceUsd;
         }
         if (regime == Regime.GOLD && defenceUsd > 0) {
-            if (goldCover(m0) > 1) return getHoldingUsd(GOLD) / defenceUsd;
-            return Math.max(0, freeGoldUsd(m0)) / ((1 - COVER_RATIO) * defenceUsd);
+            double free = Math.max(0, freeGoldUsd(m0));
+            if (!(mintPrice > 0) || !(usdPer[GOLD] > 0)) return free / ((1 - COVER_RATIO) * defenceUsd);
+            // The retirable M0 at gold's price in US$, the units freeGoldUsd() reads M0 in.
+            double canRetire = Math.max(0, Math.min(retirable, Math.max(0, m0))) * usdPer[GOLD] / mintPrice;
+            double whileRetiring = (1 - COVER_RATIO) * canRetire;
+            if (free <= whileRetiring) return free / ((1 - COVER_RATIO) * defenceUsd);
+            return canRetire / defenceUsd + (free - whileRetiring) / defenceUsd;
         }
         return Double.POSITIVE_INFINITY;
     }
@@ -3857,7 +3883,7 @@ public class ForeignAccounts {
         lastBreakJump = lastBreakShadow = 0;
         brokeThisMonth = false;
         // ...and the mint (GD3): none struck, not following, no event open, no M0 handed.
-        mintPrice = mintRate = moneyBase = 0;
+        mintPrice = mintRate = moneyBase = retirableBase = 0;
         mintFollows = false;
         goldEvent = GoldEvent.NONE;
     }

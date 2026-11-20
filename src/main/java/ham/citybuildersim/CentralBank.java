@@ -862,6 +862,16 @@ public final class CentralBank {
     /** M0: everything this bank owes, which is every dollar it has made and not taken back. */
     public double m0() { return reserves + currency; }
 
+    /**
+     * M0 as the gold's cover reads it (FB14; REV-FB14): m0() less what the gold paid out at the last reprice will retire at the top of the next
+     * month (settleGoldRedeemed(), up to the reserves), so the cover shown between the reprice and that top is the one the next reprice reads.
+     * m0() itself once the due is settled, and always outside Gold.
+     */
+    public double m0AfterGoldDue() { return m0() - Math.min(Math.max(0, goldRedeemDue), Math.max(0, reserves)); }
+
+    /** ...and what a further sale of gold could still retire, M0 down by it: the reserves past the due, never under nothing (settleGoldRedeemed()'s cap). */
+    public double goldRetirable() { return Math.max(0, Math.max(0, reserves) - Math.max(0, goldRedeemDue)); }
+
     public double totalLiabilities() { return m0(); }
 
     public double equity() { return totalAssets() - totalLiabilities(); }

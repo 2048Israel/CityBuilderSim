@@ -1497,7 +1497,8 @@ public class ExchangeRateCheck {
             }
             out.printf("   %-5s 120 months with the world on: the worst gap between the lines' sum and the month's move %.2e (getLastMove(): %.2e); the world moved the rate in %d months, the hold in %d, a peg broke %d times (the last by %s); on %s in %d%n",
                     regime, worst, worstLast, worldMonths, heldMonths, breaks, fx.getLastBreakCause(), regime, onRegime);
-            if (gold) assertTrue("fixture: the Gold city is on Gold in every month of the 120, its gold priced and covered (" + onRegime + ")", onRegime == 120);
+            if (gold) assertTrue("fixture: the Gold city is on Gold in every month of the 120, its gold priced and covered, and its gold never broke, the 120th reprice's included (" + onRegime + ", " + breaks + " breaks)",
+                    onRegime == 120 && breaks == 0 && fx.getRegime() == regime);
             assertTrue("fixture: under " + regime + " the world moved the rate in many of the months (" + worldMonths + ")", worldMonths > 60);
             assertTrue("under " + regime + " the seven lines and the hold sum to the month's move to 1e-12, every month of 120", worst < 1e-12);
             assertTrue("...getLastMove() is that move too", worstLast < 1e-12);

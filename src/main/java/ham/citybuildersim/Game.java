@@ -6202,17 +6202,26 @@ public class Game {
                 : "Moved the mint price with the dollar, to ") + hereK("%.4f", foreign.getMintPrice()) + " an ounce");
     }
 
-    /** The gold cover: the vault's gold at the mint price over M0 (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
-    public double getGoldCover() { return foreign.goldCover(centralBank.m0()); }
+    /**
+     * M0 as the gold's cover reads it (FB14; REV-FB14; CentralBank.m0AfterGoldDue()): less what the last reprice's sale of gold will retire at
+     * the next top, so the cover, the free gold and the pace shown between months are the ones the next reprice reads. m0() outside Gold.
+     */
+    public double getGoldBase() { return centralBank.m0AfterGoldDue(); }
+
+    /** The gold cover: the vault's gold at the mint price over M0 as getGoldBase() reads it (ForeignAccounts.goldCover()); infinite with gold and no M0, 0 without gold. */
+    public double getGoldCover() { return foreign.goldCover(getGoldBase()); }
 
     /** The cover the vault's gold would make at this par, D$ an ounce, over M0 (ForeignAccounts.goldCoverAt()): what entering Gold at a staged par would give. */
-    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, centralBank.m0()); }
+    public double getGoldCoverAt(double price) { return foreign.goldCoverAt(price, getGoldBase()); }
 
-    /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()); 0 outside Gold. */
-    public double getFreeGoldUsd() { return foreign.freeGoldUsd(centralBank.m0()); }
+    /** The gold above the law's cover, in US$ at gold's price (ForeignAccounts.freeGoldUsd()), over getGoldBase(); 0 outside Gold. */
+    public double getFreeGoldUsd() { return foreign.freeGoldUsd(getGoldBase()); }
 
-    /** How many months the vault lasts at the last reprice's sales (ForeignAccounts.monthsToFloor()), under Gold over M0 as getFreeGoldUsd() reads it (FB14): Policy's pace. */
-    public double getMonthsToFloor() { return foreign.monthsToFloor(centralBank.m0()); }
+    /**
+     * How many months the vault lasts at the last reprice's sales (ForeignAccounts.monthsToFloor()), under Gold over M0 as getFreeGoldUsd() reads
+     * it and retiring no more than the reserves can (CentralBank.goldRetirable(); FB14, REV-FB14): Policy's pace.
+     */
+    public double getMonthsToFloor() { return foreign.monthsToFloor(getGoldBase(), centralBank.goldRetirable()); }
 
     /** The US$ gold date open for the city to answer; NONE when none is. */
     public ForeignAccounts.GoldEvent getGoldEvent() { return foreign.getGoldEvent(); }
@@ -14300,7 +14309,7 @@ public class Game {
         handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
         boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD || foreign.isCanadaGold();
-        foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)
+        foreign.setMoneyBase(centralBank.m0(), centralBank.goldRetirable());   // M0 is the gold cover's base, handed right before the reprice (GD3), and what a sale can retire of it (FB14)
         foreign.repriceCurrency();
         /*
          * ...AND A PEG THAT BROKE (XR2, star 4): credibility takes its dent, and

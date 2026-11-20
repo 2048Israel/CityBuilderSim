@@ -4807,7 +4807,7 @@ final class PolicyScreen {
     VBox goldCard(ForeignAccounts fx, ForeignAccounts.Regime now) {
         if (now != ForeignAccounts.Regime.GOLD) return goldNote(fx);
         double mint = fx.getMintPrice(), want = staged(XR_MINT, mint), step = mint * MINT_STEP;
-        double m0 = ui.game.getCentralBank().m0(), cover = ui.game.getGoldCover(), free = ui.game.getFreeGoldUsd();
+        double m0 = ui.game.getGoldBase(), cover = ui.game.getGoldCover(), free = ui.game.getFreeGoldUsd();   // M0 as the cover reads it (FB14: the last sale retired)
         boolean under = cover < ForeignAccounts.COVER_RATIO;
         VBox cMint = fxCell("THE MINT PRICE", mintWords(want), "an ounce" + (isStaged(XR_MINT) ? " · staged" : ""), null);
         cMint.getChildren().add(stepper(XR_MINT, mint, step, step, Double.MAX_VALUE, pct0(MINT_STEP) + " · revalue", pct0(MINT_STEP) + " · devalue"));

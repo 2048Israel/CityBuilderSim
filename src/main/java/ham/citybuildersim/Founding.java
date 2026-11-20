@@ -451,6 +451,28 @@ public final class Founding {
         return cover >= reserveUsd * (1 - 1e-9) ? reserveUsd : cover;   // ...a preset's exact 40% is all of it, not all but a rounding
     }
 
+    /** What of the vault stays in US dollars at this rate (FB14; REV-FB14): the vault less goldUsd(rate) - all of it without the box. */
+    public double dollarsUsd(double rate) { return reserveUsd - goldUsd(rate); }
+
+    /** ...for these figures, the box ticked: the vault less goldUsd(cash, reserveUsd, rate), nothing in every preset. */
+    public static double dollarsUsd(double cash, double reserveUsd, double rate) {
+        return Math.max(0, reserveUsd - goldUsd(cash, reserveUsd, rate));
+    }
+
+    /**
+     * ...and what that gold is worth against the treasury, at this rate (FB14; REV-FB14): COVER_RATIO when the vault is deep enough (Lean's,
+     * Wealthy's, a deeper custom vault's), less when the whole vault falls short of it (Standard's 25%, any shallower vault's), 0 with none.
+     */
+    public static double goldShareOfTreasury(double cash, double reserveUsd, double rate) {
+        double gold = goldUsd(cash, reserveUsd, rate);
+        return gold > 0 ? gold * rate / cash : 0;
+    }
+
+    /** ...whether the gold is the law's whole share of the treasury, not all a shallower vault has (a rounding short of it counts). */
+    public static boolean goldCoversTheLaw(double cash, double reserveUsd, double rate) {
+        return goldShareOfTreasury(cash, reserveUsd, rate) >= ForeignAccounts.COVER_RATIO * (1 - 1e-9);
+    }
+
     /** Whether the city founds on Gold, the founding screen's "start on gold" box (FB14; withGold()): false unless it says so. */
     public boolean isOnGold() { return onGold; }
 

@@ -923,18 +923,25 @@ public final class FoundingScreen {
 
     /**
      * The "start on gold" box's line (FB14): what the founding puts into gold, in the money being chosen - Founding.goldUsd() at the
-     * opening rate, the law's 40% of the treasury and never more than the vault, which is all of it in every preset.
+     * opening rate, the law's 40% of the treasury and never more than the vault, which is all of it in every preset. Its figures are
+     * Founding's (dollarsUsd(), goldShareOfTreasury(), goldCoversTheLaw()), so a vault short of the 40% says what it covers (REV-FB14).
      */
     private String goldWords() {
         if (!startOnGold) return "Off: the vault opens in US dollars, and the money is not tied to gold.";
         double cash = cash(), usd = reserveUsd();
         if (!Double.isFinite(cash) || !Double.isFinite(usd)) return "On: type the treasury and the vault to see how much goes into gold.";
-        double gold = Founding.goldUsd(cash, usd, ForeignAccounts.OPENING_RATE), rest = usd - gold;
+        double rate = ForeignAccounts.OPENING_RATE;
+        double gold = Founding.goldUsd(cash, usd, rate), rest = Founding.dollarsUsd(cash, usd, rate);
         if (!(gold > 0)) return "On, but the vault is empty: there is no gold to start on, and the city opens on dollars.";
-        return Currency.using(chosenMoney(), () -> "On: the money is tied to an ounce of gold from the first month, and "
-                + usd(gold) + " of the vault is held in gold, enough to cover " + PolicyScreen.pct0(ForeignAccounts.COVER_RATIO)
-                + " of the treasury" + (rest > 1e-6 ? ". The other " + usd(rest) + " stays in dollars." : ": the whole vault.")
-                + " Without the world's price of gold the city opens on dollars.");
+        return Currency.using(chosenMoney(), () -> {
+            String law = PolicyScreen.pct0(ForeignAccounts.COVER_RATIO);
+            String held = Founding.goldCoversTheLaw(cash, usd, rate)
+                ? (rest > 1e-6 ? usd(gold) + " of the vault is held in gold, enough to cover " + law + " of the treasury. The other " + usd(rest) + " stays in dollars."
+                               : "the whole vault, " + usd(gold) + ", is held in gold, enough to cover " + law + " of the treasury.")
+                : "the whole vault, " + usd(gold) + ", is held in gold, enough to cover " + PolicyScreen.pct0(Founding.goldShareOfTreasury(cash, usd, rate))
+                        + " of the treasury: short of the " + law + " a deeper vault would hold.";
+            return "On: the money is tied to an ounce of gold from the first month, and " + held + " Without the world's price of gold the city opens on dollars.";
+        });
     }
 
     /** The Custom fields' bounds, in the money being chosen. */
