@@ -2714,14 +2714,32 @@ public abstract class Sector {
         // CPB1: an undemanded buffer must cover its feed at the price it can
         // sell for. Use the recipe's current input cost, including captive
         // inputs and co-products; actual home and captive demand keep running.
+        // CPB2: a NaN price never authorises the feed (bufferSalePrice()).
         if (!(demand > 0) && markets != null) {
             GoodsMarket market = markets.get(g);
-            if (market != null && market.netExportPrice() < flowCostPerUnit(g)) return 0;
+            if (market != null && bufferSalePrice(market) < flowCostPerUnit(g)) return 0;
         }
         double target = demand > 0
                 ? demand * STOCK_MONTHS
                 : getStockCapacity(g) * DUMP_THRESHOLD;
         return Math.max(0, Math.min(nameplate, target - getStock(g)));
+    }
+
+    /**
+     * What a unit of an undemanded buffer can sell for, for the buffer gate in
+     * getPlannedOutput() (CPB2): its net export price where the world buys the
+     * good, and nothing where it does not. WHY: VANS, TRUCKS, ROLLING_STOCK and
+     * LUXURIES have no world buyer, so their net export price is NaN, and
+     * `NaN < cost` is false: the gate never refused, and a van plant nobody had
+     * asked for filled its shed toward the dump line on imported machinery, for
+     * a good whose only outlet is a home demand the market had not shown. A city
+     * that does ask for vans is served by the demand branch, at STOCK_MONTHS of
+     * cover, from the next strike (★ CPB2: nothing, not the local price, which
+     * with no demand is a price nobody paid).
+     */
+    static double bufferSalePrice(GoodsMarket market) {
+        double net = market.netExportPrice();
+        return Double.isFinite(net) ? net : 0;
     }
 
     /**
@@ -2748,7 +2766,22 @@ public abstract class Sector {
         if (captive(g)) nameplate = Math.max(0, nameplate - captiveUnits(g));
         double spare = Math.max(0, nameplate - getPlannedOutput(g));
         if (spare <= 0) return 0;
-        return markets.get(g).netExportPrice() >= getMarginalCostPerUnit(g) ? spare : 0;
+        double net = markets.get(g).netExportPrice();
+        /*
+         * CPB2: WHILE THE MONTH'S FEED IS ORDERED (planOrders()), the ship's
+         * line must also cover its recipe's inputs - flowCostPerUnit(), the
+         * cost the buffer gate in getPlannedOutput() reads - and not only its
+         * share of the joint bill by sales value (costShareOf()). That share
+         * charged cathode beside a rod mill less than its own anode, so the
+         * buffer the gate refused came back here as export spare, forecastOrder()
+         * saw a full run, and the anode was imported to ship cathode below its
+         * cost. Once the feed is in (committed, or bought for a forecast that
+         * ran high) it is sunk, and the line ships at the marginal cost as
+         * before; a sector that does not order for what it makes (the refiners'
+         * crude is the run's) never reaches this.
+         */
+        if (deciding && !(net >= flowCostPerUnit(g))) return 0;
+        return net >= getMarginalCostPerUnit(g) ? spare : 0;
     }
 
     /**
@@ -3155,7 +3188,49 @@ public abstract class Sector {
         double held = getStock(g);
         double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
         double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
-        return made >= 0 ? (made >= market ? 1 : (own + made) / nameplate) : 1;
+        return made >= 0 ? (made >= market ? 1 : shareAboveFloors(g, (own + made) / nameplate)) : 1;
+    }
+
+    /**
+     * The order share at which the buildings that make a stockable good, each at the greater of the share and its committed floor
+     * (buildingOrder(), committedFloor()), make `fraction` of the good's nameplate (CPB2): exactly `fraction` where no building of it has a floor.
+     * WHY: forecastOrder() divided what the month will make by the whole nameplate, as if every building ran at that share; but a scrap refinery
+     * whose recovered copper is committed runs at its floor whatever the share, so beside a rod mill the anode refinery was still ordered for its
+     * nameplate's part of the rod mill's cathode, and the cathode the committed scrap made past it shipped on imported anode below its cost.
+     */
+    private double shareAboveFloors(Good g, double fraction) {
+        if (buildings == null) return fraction;
+        // ...and nothing to solve for a sector with no committed feed this month, which is every sector but Copper Refining with recovered copper.
+        boolean committed = false;
+        for (Good u : uses) committed |= committedInput(u) > 0;
+        if (!committed) return fraction;
+        java.util.TreeSet<Double> floors = new java.util.TreeSet<>();
+        double all = buildings.totalBySector(key, t -> {
+            if (!(t.makes(g) > 0)) return 0;
+            floors.add(committedFloor(t));
+            return t.makes(g);
+        });
+        if (!(all > 0) || !(floors.last() > 0)) return fraction;
+        // The share's curve, Σ weight * max(share, floor), is flat to the lowest floor, then each group joins the share at its own floor.
+        double fixed = 0;
+        double[] f = new double[floors.size()], w = new double[floors.size()];
+        int i = 0;
+        for (double floor : floors) {
+            f[i] = floor;
+            w[i] = buildings.totalBySector(key, t -> t.makes(g) > 0 && committedFloor(t) == floor ? t.makes(g) : 0) / all;
+            fixed += w[i] * f[i];
+            i++;
+        }
+        if (fraction <= fixed) return 0;
+        double running = 0;
+        for (i = 0; i < f.length; i++) {
+            running += w[i];
+            fixed -= w[i] * f[i];
+            if (!(running > 0)) continue;
+            double share = (fraction - fixed) / running;
+            if (i + 1 == f.length || share <= f[i + 1]) return Math.max(f[i], Math.min(1, share));
+        }
+        return 1;
     }
 
     /**
@@ -3294,13 +3369,20 @@ public abstract class Sector {
         }
         // CPB1: a feed already committed outside the goods market must be
         // transformed too. Apply its floor only to buildings that use it.
+        most = Math.max(most, committedFloor(t));
+        return traded ? most : 1;
+    }
+
+    /** The least share of its nameplate a building runs at whatever is ordered (CPB1): what its part of a feed committed outside the goods market needs, to no more than 1; 0 for one that uses none. */
+    private double committedFloor(BuildingsTemplate t) {
+        double most = 0;
         for (Good g : t.goodsUsed().keySet()) {
             double committed = committedInput(g);
             if (!(committed > 0)) continue;
             double need = getInputAtCapacity(g) * getOperatingRate();
             if (need > 0) most = Math.max(most, Math.min(1, committed / need));
         }
-        return traded ? most : 1;
+        return most;
     }
 
     /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */
