@@ -17,16 +17,49 @@ package ham.citybuildersim;
 public class WorkingHousehold extends Household {
 
     private final PayTier tier;
+    /** Which adult stage its grown-ups are in (HS2): the young, 18-34, or the established, 35-69. */
+    private final AdultStage stage;
 
+    /** An established household: every working household before the stages was one. */
     public WorkingHousehold(FamilyStructure shape, PayTier tier) {
+        this(shape, tier, AdultStage.ESTABLISHED);
+    }
+
+    public WorkingHousehold(FamilyStructure shape, PayTier tier, AdultStage stage) {
         super(shape);
         if (shape.isRetired()) {
             throw new IllegalArgumentException(shape + " has no earner");
         }
+        if (!stage.forms(shape)) {
+            throw new IllegalArgumentException(stage + " forms no " + shape);
+        }
         this.tier = tier;
+        this.stage = stage;
     }
 
     @Override public PayTier tier()      { return tier; }
+    /** The adult stage of its grown-ups (HS2). */
+    public AdultStage stage()            { return stage; }
+
+    /**
+     * The young's money is a stock group of its own, one a tier after the
+     * retired's (HS2): what a young household leaves behind goes first to the
+     * young of its tier, so the established's savings are not spread over a
+     * twenty-five-year-old's. The established keep their row's.
+     */
+    @Override public int stockGroup() {
+        return stage == AdultStage.YOUNG ? youngGroup(tier) : row();
+    }
+
+    /** The stock group of the young at a tier: after the retired's, one a tier (Household.STOCK_GROUPS). */
+    public static int youngGroup(PayTier tier) { return ROWS + PayTier.values().length + tier.ordinal(); }
+
+    /** "COUPLE:SKILLED", and "COUPLE:SKILLED:YOUNG" for the young: the established keep the keys from before the stages. */
+    @Override public String key() { return super.key() + stage.keySuffix(); }
+
+    @Override public String label() {
+        return stage == AdultStage.YOUNG ? super.label() + ", young" : super.label();
+    }
     @Override public int row()           { return tier.ordinal(); }
     @Override public boolean isRetired() { return false; }
     @Override public int grownUps()      { return shape.earners(); }

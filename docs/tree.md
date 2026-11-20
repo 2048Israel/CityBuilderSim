@@ -969,8 +969,10 @@ adds its line here, not in `CLAUDE.md`.
                                    takes a bottom padding as tall as the toasts while one shows and gives
                                    it back, the scroller keeping its pixel offset; ToastCheck lays the
                                    same nodes out on a scene of its own). The model never imports it.
-        *Check.java                143 harnesses, each a main() with static helpers
+        *Check.java                144 harnesses, each a main() with static helpers
         HouseholdFlowCheck.java    HS1's money follows people: each flow's stocks to the cent, the estates, the leavers, a real run
+        HouseholdStageCheck.java   HS2's two adult stages: residence of 204 and 420 months, ageing carries the money, no teen shape
+                                   among the young, the pool's group (tier, stage), the 108 working cells
         Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
                                    fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
                                    screen (UserInterface.showCreditsMenu(), from the title screen and the Esc menu); no JavaFX

@@ -1,4 +1,4 @@
-# FundLedgerCheck.java - 1,011 lines · 27 methods · 1 constants · harnesses
+# FundLedgerCheck.java - 1,013 lines · 27 methods · 1 constants · harnesses
 
 `ham/citybuildersim/FundLedgerCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -86,7 +86,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 952 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
+| 60 | 954 | **type** `public class FundLedgerCheck` | Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's ... |
 | 66 | 4 | `static void check(String label, boolean ok)` |  |
 | 71 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 81 | 4 | `static void quietly(Runnable r)` |  |
@@ -139,7 +139,7 @@
 | 624 | 5 | `static double residual(Snap s0, Snap s)` | The identity's residual between two snapshots: realized + the change in unrealized, less the change in value + proceeds - purchases - rescues. |
 | 630 | 62 | `static void theIdentity()` |  |
 
-### 8. the hand (lines 693-1011)
+### 8. the hand (lines 693-1013)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -148,6 +148,6 @@
 | 766 | 13 | `static int companyAtTheCap(int c0)` | The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the fund's holding alone. |
 | 781 | 7 | `static double capsOf(Game g)` | The market caps of every company with shares and a fair value, on a city. |
 | 790 | 10 | `static double ruleAloneFor(int c)` | What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. |
-| 812 | 177 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
-| 991 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
+| 812 | 179 | `static void theCapCountsEveryBuy(int c0)` | THE CAP COUNTS EVERY BUY OF THE FUND'S ON THE COMPANY (0.7.39, closed after its docs pass): what it holds, its own bids on the book - the rule's and the hand's - and the hand's buys still waiting, as if every one fill... |
+| 993 | 20 | `static boolean fillTheFundsBids(Game g, int c)` | Every bid of the fund's on a company's book filled, at its price: the others' bids withdrawn, households selling into the fund's. |
 
