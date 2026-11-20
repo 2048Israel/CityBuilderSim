@@ -63,7 +63,7 @@ public class VaultMoneysCheck {
     /** The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. */
     static final double[] R = {1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12};
 
-    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the peg's anchor (148, WN4b; PegAnchorCheck 8), gold's balance, price and chosen share (149-151, GD2; section 11) the mint (152-155, GD3; GoldStandardCheck) and Canada's episode and exit (156-157, R0f). */
+    /** The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the peg's anchor (148, WN4b; PegAnchorCheck 8), gold's balance, price and chosen share (149-151, GD2; section 11) the mint (152-155, GD3; GoldStandardCheck) and Canada's episode and exit (156-157, R0f), and whether the last break was the gold's (158, FB14). */
     static final int SLOTS = ForeignAccounts.SAVE_SLOTS;
 
     /** The historical array length before GD2 added gold: slots 0 through 148, ending with the peg's anchor. */
@@ -657,7 +657,7 @@ public class VaultMoneysCheck {
         a.revalueVault();
 
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b), then gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f) (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b), then gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f) and the gold's last break (158, FB14) (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 22 is still the vault's dollars, the total", saved[22], a.getReservesUsd());
         same("...and slot 19 its worth at home", saved[19], a.getReserves());
         boolean eight = true;
@@ -1002,7 +1002,7 @@ public class VaultMoneysCheck {
         // The array with gold.
         a.setChosenShares(new double[] {.3, .2, 0, .2, 0, 0, 0, 0, .3});
         double[] saved = a.toSaveArray();
-        assertTrue("the array runs through Canada's dated gold state, gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f) after the peg's anchor in 148 (" + saved.length + " slots)", saved.length == SLOTS);
+        assertTrue("the array runs through Canada's dated gold state, gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f) and the gold's last break (158, FB14) after the peg's anchor in 148 (" + saved.length + " slots)", saved.length == SLOTS);
         same("slot 149 is gold's balance, in thousands of ounces", saved[149], a.getHolding(GOLD));
         same("slot 150 is gold's price, US$ an ounce", saved[150], NEW_PRICE);
         same("slot 151 is gold's chosen share", saved[151], a.getChosenShares()[GOLD]);

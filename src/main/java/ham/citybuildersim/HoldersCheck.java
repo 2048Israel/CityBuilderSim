@@ -421,7 +421,7 @@ public class HoldersCheck {
         assertTrue("...and M0 moved by exactly the money made, the redemption among it",
                 Math.abs((cb.m0() - m0) - (cb.getIssued() - cb.getRetired())) <= .005);
         close("the central bank kept nothing: its gain against face is in the month's profit",
-                cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime(), cb.getRemittanceDue() - cb.getLossCarried(), .01);
+                cb.equity() - cb.getVault() + cb.vaultInNewMoney(), cb.getRemittanceDue() - cb.getLossCarried(), .01);
 
         /* ================= 6. the save ================= */
         out.println("\n--- 6. save and reload, and every holding is where it was ---");
