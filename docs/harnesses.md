@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,219 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,234 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -7369,133 +7369,133 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-  - L83 the same people live there, to the person
-  - L86 the same output
-  - L88 ...and the same year of it
-  - L90 the same rent
-  - L91 the same price level
-  - L93 the same currency
-  - L95 the same treasury
-  - L96 the same shops' till
-  - L100 the same city debt
-  - L102 the same bank
-- **L211 1. THE UNIT**
-  - L215 a founding city is in founding money
-  - L216 ...and cannot reform, because nothing has inflated
-  - L218 ...nor at nine times
-  - L219 ...and can at ten
-  - L222 lopping two zeros makes a dollar a hundred old ones
-  - L223 ...so a founding price reads as a hundredth
-  - L226 ...and the money gets a new name
-  - L227 ...the city's own money's, renamed
-  - L229 ...and again
-  - L230 the unit compounds
-  - L234 it stops before a double runs out of digits
-- **L237 2. IT IS THE SAME CITY**
-- **L243 a reformed city is the same city**
-  - L248 fixture: the two cities really are identical to start with
-  - L264 the reform goes through
-  - L266 cash divided
-  - L267 the exchange rate divided
-  - L270 the shelf price divided
-  - L272 rent divided
-  - L273 the minimum wage divided
-  - L276 a House costs a hundredth as many dollars
-- **L279 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
-  - L311 the desk's room in
-  - L376 fixture: there was a per-good breakdown to divide (
-  - L394 the price index did not move
-  - L396 nor the rent burden
-  - L399 nor the cost of living
-  - L402 nor the population
-- **L405 3. AND IT STAYS THE SAME CITY**
-- **L463 ...and the month after the reform is the same month**
-- **L471 ...and the same city a year later**
-- **L475 ...and the same city a decade later**
-- **L517 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
-- **L530 ...and no cell under half a household holds anything, reformed or not**
-  - L531 right after the reform, in either city
-  - L534 fixture: the census left cells under half a household
-  - L535 ...and after no month did one hold anything
-- **L537 4. AND NO MONEY WAS MADE OR LOST**
-- **L542 and the books still balance**
-  - L550 a reformed city conserves money like any other
-- **L552 5. AND IT SURVIVES A SAVE**
-  - L575 the unit came back
-  - L576 ...and the money with it
-  - L577 ...and the rent it was charging
-  - L578 ...and a House still costs what it cost
-- **L581 6. AND THE TRAMS (B6, 0.7.47)**
-- **L593 a reform and the buses**
-  - L597 fixture: two bus towns, identical, with riders and a transit bill and fares
-  - L600 fixture: the bus towns' builders raised the list of 400 houses they were given
-  - L609 fixture: the bus town's drivers burn fuel, struck, billed and paid
-  - L611 fixture: the reform by a thousand goes through
-  - L612 a reform scales the month's transit bill and fares
-  - L615 a reform divides the fuel struck and the fuel paid
-  - L619 ...and the fare dial's cap is the founding cap in the new unit
-  - L627 after a reform the riders are what the same real fare drew
-  - L640 no working row's income after fixed bills goes negative across a reform
-- **L643 7. THE TRADE BY PARTNER (DZ1, 2026-11-02)**
-- **L740 the trade by partner: its history's grid follows the unit**
-  - L747 fixture: the twelve months tallied are one calendar year and the next month is another's
-  - L760 fixture: the turn sent a year of four cells (two goods, two nations) to the history, off the grid
-  - L762 fixture: the month and the year held had trade with no partner to divide
-  - L772 a reformed record's history is the plain record's, divided: every cell's value out and in
-  - L774 ...and its units are the plain record's, exactly
-  - L793 a reform in mid-year divides the month held, with its trade that had no partner
-  - L801 ...and the year held: its exports and imports to date are the plain record's, divided
-  - L806 ...and the year it sends to the history is the plain record's, divided
-  - L813 fixture: the year is in the history before the reform
-  - L815 a reform divides the years already finished: their cells are the plain record's, divided
-  - L817 ...with the same year and the same units
-  - L825 fixture: the save's copy holds the finished year
-  - L826 a reform divides the save's trade by partner: its cells are the plain record's, divided
-- **L837 the lanes' floor in real terms: the price index and the currency's unit (TP1)**
-  - L839 at the founding's prices and money the floor is the board's D$0.3M priced at the founding's
-  - L840 prices twice as high double it
-  - L841 a reform by a hundred divides it by a hundred
-  - L842 ...and a reform with prices doubled is both
-  - L843 an index or a unit that is not a positive number reads 1
-  - L845 the feed with no money to read it from holds partners to the board's figure as written
-  - L854 unit
+  - L85 the same people live there, to the person
+  - L88 the same output
+  - L90 ...and the same year of it
+  - L92 the same rent
+  - L93 the same price level
+  - L95 the same currency
+  - L97 the same treasury
+  - L98 the same shops' till
+  - L102 the same city debt
+  - L104 the same bank
+- **L213 1. THE UNIT**
+  - L217 a founding city is in founding money
+  - L218 ...and cannot reform, because nothing has inflated
+  - L220 ...nor at nine times
+  - L221 ...and can at ten
+  - L224 lopping two zeros makes a dollar a hundred old ones
+  - L225 ...so a founding price reads as a hundredth
+  - L228 ...and the money gets a new name
+  - L229 ...the city's own money's, renamed
+  - L231 ...and again
+  - L232 the unit compounds
+  - L236 it stops before a double runs out of digits
+- **L239 2. IT IS THE SAME CITY**
+- **L245 a reformed city is the same city**
+  - L250 fixture: the two cities really are identical to start with
+  - L266 the reform goes through
+  - L268 cash divided
+  - L269 the exchange rate divided
+  - L272 the shelf price divided
+  - L274 rent divided
+  - L275 the minimum wage divided
+  - L278 a House costs a hundredth as many dollars
+- **L281 ...AND THE SHARE DESK'S ROOM DOES NOT DIVIDE, WHICH IS THE POINT**
+  - L313 the desk's room in
+  - L378 fixture: there was a per-good breakdown to divide (
+  - L396 the price index did not move
+  - L398 nor the rent burden
+  - L401 nor the cost of living
+  - L404 nor the population
+- **L407 3. AND IT STAYS THE SAME CITY**
+- **L465 ...and the month after the reform is the same month**
+- **L473 ...and the same city a year later**
+- **L477 ...and the same city a decade later**
+- **L519 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING**
+- **L532 ...and no cell under half a household holds anything, reformed or not**
+  - L533 right after the reform, in either city
+  - L536 fixture: the census left cells under half a household
+  - L537 ...and after no month did one hold anything
+- **L539 4. AND NO MONEY WAS MADE OR LOST**
+- **L544 and the books still balance**
+  - L552 a reformed city conserves money like any other
+- **L554 5. AND IT SURVIVES A SAVE**
+  - L577 the unit came back
+  - L578 ...and the money with it
+  - L579 ...and the rent it was charging
+  - L580 ...and a House still costs what it cost
+- **L583 6. AND THE TRAMS (B6, 0.7.47)**
+- **L595 a reform and the buses**
+  - L599 fixture: two bus towns, identical, with riders and a transit bill and fares
+  - L602 fixture: the bus towns' builders raised the list of 400 houses they were given
+  - L611 fixture: the bus town's drivers burn fuel, struck, billed and paid
+  - L613 fixture: the reform by a thousand goes through
+  - L614 a reform scales the month's transit bill and fares
+  - L617 a reform divides the fuel struck and the fuel paid
+  - L621 ...and the fare dial's cap is the founding cap in the new unit
+  - L629 after a reform the riders are what the same real fare drew
+  - L642 no working row's income after fixed bills goes negative across a reform
+- **L645 7. THE TRADE BY PARTNER (DZ1, 2026-11-02)**
+- **L742 the trade by partner: its history's grid follows the unit**
+  - L749 fixture: the twelve months tallied are one calendar year and the next month is another's
+  - L762 fixture: the turn sent a year of four cells (two goods, two nations) to the history, off the grid
+  - L764 fixture: the month and the year held had trade with no partner to divide
+  - L774 a reformed record's history is the plain record's, divided: every cell's value out and in
+  - L776 ...and its units are the plain record's, exactly
+  - L795 a reform in mid-year divides the month held, with its trade that had no partner
+  - L803 ...and the year held: its exports and imports to date are the plain record's, divided
+  - L808 ...and the year it sends to the history is the plain record's, divided
+  - L815 fixture: the year is in the history before the reform
+  - L817 a reform divides the years already finished: their cells are the plain record's, divided
+  - L819 ...with the same year and the same units
+  - L827 fixture: the save's copy holds the finished year
+  - L828 a reform divides the save's trade by partner: its cells are the plain record's, divided
+- **L839 the lanes' floor in real terms: the price index and the currency's unit (TP1)**
+  - L841 at the founding's prices and money the floor is the board's D$0.3M priced at the founding's
+  - L842 prices twice as high double it
+  - L843 a reform by a hundred divides it by a hundred
+  - L844 ...and a reform with prices doubled is both
+  - L845 an index or a unit that is not a positive number reads 1
+  - L847 the feed with no money to read it from holds partners to the board's figure as written
   - L856 unit
-  - L857 unit
-  - L863 unit
-- **L879 the trade by partner: a city on the world fixture, reformed in mid-year**
-  - L881 fixture: the twelve-nation world file is beside the classes
-  - L1004 fixture: both cities have a world market and a trade by partner that has seen a year turn
-  - L1006 fixture: the two cities are the same city before the reform
-  - L1008 fixture: the year behind them has trade (
-  - L1015 fixture: the reform falls in mid-year, not in a January (
-  - L1019 fixture: the year held has trade by then, and so has the month
-  - L1022 fixture: the two cities are still the same city
-  - L1024 the reform took: a hundred old dollars to the new one
-  - L1031 a reform in mid-year divides the month and the year held, by nation and with no partner
-  - L1032 ...and leaves their tonnes and units as they were
-  - L1034 ...and divides the years already finished (
-  - L1035 ...and leaves their units as they were
-  - L1038 fixture: the save's copy holds the finished year in both cities
-  - L1039 ...and the save's copy of them is divided too
-  - L1046 both cities finished a second year, in
-  - L1050 fixture: the year just finished has trade (
-  - L1064 the year finished on the new grid is the plain one's, divided
-  - L1065 ...and its units are the plain one's
-  - L1066 ...and so is every year behind it, the save's copy too
-  - L1097 fixture: both cities are at the same month (
-  - L1107 fixture: the plain city has sold and bought this year (D$
-  - L1108 the nation card's year to date is the plain city's,
-  - L1109 ...and its tonnes are the plain city's
-  - L1110 the month's figures the lanes are made of are the plain city's,
-  - L1116 the plain city's floor is the board's in its prices (index
-  - L1117 the reformed city's is the same, in its money (unit
-  - L1118 ...and, the cities being the same, the plain city's times
-  - L1132 fixture: every partner with trade stands apart from the place the lanes are drawn from (Halifax)
-  - L1137 fixture: the plain city's month has a partner with a lane and an arrow (
-  - L1140 the
-  - L1143 ...and the same arrows, in the same order (
-  - L1146 the fault: the floor a reform left undivided (D$
-  - L1151 the price index has moved (
+  - L858 unit
+  - L859 unit
+  - L865 unit
+- **L881 the trade by partner: a city on the world fixture, reformed in mid-year**
+  - L883 fixture: the twelve-nation world file is beside the classes
+  - L1006 fixture: both cities have a world market and a trade by partner that has seen a year turn
+  - L1008 fixture: the two cities are the same city before the reform
+  - L1010 fixture: the year behind them has trade (
+  - L1017 fixture: the reform falls in mid-year, not in a January (
+  - L1023 fixture: the year held has trade by then, and so has the month
+  - L1026 fixture: the two cities are still the same city
+  - L1028 the reform took: a hundred old dollars to the new one
+  - L1035 a reform in mid-year divides the month and the year held, by nation and with no partner
+  - L1036 ...and leaves their tonnes and units as they were
+  - L1038 ...and divides the years already finished (
+  - L1039 ...and leaves their units as they were
+  - L1042 fixture: the save's copy holds the finished year in both cities
+  - L1043 ...and the save's copy of them is divided too
+  - L1050 both cities finished a second year, in
+  - L1054 fixture: the year just finished has trade (
+  - L1068 the year finished on the new grid is the plain one's, divided
+  - L1069 ...and its units are the plain one's
+  - L1070 ...and so is every year behind it, the save's copy too
+  - L1141 fixture: both cities are at the same month (
+  - L1151 fixture: the plain city has sold and bought this year (D$
+  - L1152 the nation card's year to date is the plain city's,
+  - L1153 ...and its tonnes are the plain city's
+  - L1154 the month's figures the lanes are made of are the plain city's,
+  - L1160 the plain city's floor is the board's in its prices (index
+  - L1161 the reformed city's is the same, in its money (unit
+  - L1162 ...and, the cities being the same, the plain city's times
+  - L1176 fixture: every partner with trade stands apart from the place the lanes are drawn from (Halifax)
+  - L1181 fixture: the plain city's month has a partner with a lane and an arrow (
+  - L1184 the
+  - L1187 ...and the same arrows, in the same order (
+  - L1190 the fault: the floor a reform left undivided (D$
+  - L1195 the price index has moved (
 
 ## DeskCheck.java - 231 labelled assertions
 
@@ -24778,7 +24778,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L819 Steel Mini-Mill
   - L820 Commercial Bank
 
-## PriceLevelCheck.java - 81 labelled assertions
+## PriceLevelCheck.java - 93 labelled assertions
 
 > A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus
 > 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2).
@@ -24794,93 +24794,106 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   B is founded at today's prices (-Dcbs.priceLevel=1, PriceLevel's one door).
 > ...
 
-- **L202 1. the series: 126 years of the US consumer price index**
-- **L205 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
-- **L208 3. each funnel carries the factor**
-- **L211 4. the rankings' bridge is the series' ratio**
-  - L219 the twin runs:
-- **L223 5. the named literals and the cross-file ratios, against today's figures**
-- **L241 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
-  - L250 1900 partners receive the same lanes at both price levels in every month
-  - L268 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
-  - L269 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
-  - L270 ...so it spans 126 years
-  - L276 every year has a positive index
-  - L280 a year outside the series is refused
-  - L281 1913 is the BLS's first published year, and 1912 is Rees's
-  - L282 the factor is the first year's index over the last's (8.333 / 321.943)
-  - L284 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
-  - L285 atFounding(x) is x times the factor
-  - L299 no fixture:
-  - L304 the file -D
-  - L348 PayTier: each of the
-  - L349 ...and the ladder's shape (each rung over the unskilled) is today's
-  - L351 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
-  - L352 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
-  - L354 ...and its dial's bounds are the rung's x.25 and x5
-  - L356 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
-  - L375 Good: the
-  - L376 ...a good that cannot be imported or exported still cannot (
-  - L377 ...and the wedge (freight and export over import) is each good's today's
-  - L378 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
-  - L393 ui.Money.unitPrice shows every one of the
-  - L397 consumption.json loads
-  - L411 consumption.json: its
-  - L412 ...to the bit what Good prices them at (ConsumptionCheck's equality)
-  - L417 buildings.json loads
-  - L441 buildings.json: the
-  - L442 ...the
-  - L443 ...the
-  - L444 ...and the
-  - L445 ...and the points, materials, land and capacity are the file's, untouched
-  - L451 the built-in definitions are priced at the founding's level too (the House, as the file's)
-  - L470 RealDollar.BRIDGE is the 2015 index over the founding year's (
-  - L472 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
-  - L473 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
-  - L474 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
-  - L475 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
-  - L533 fixture: day-zero minimum is its positive dial floor at factor
-  - L537 fixture: day-zero
-  - L545 day-zero
-  - L581 r.
-  - L582 r.
-  - L601 a real difference above the current value's relative band is rejected after a peak
-  - L602 a real difference outside the unchanged band is rejected
-  - L603 a one-person difference is rejected even in a trillion-person city
-  - L608 ...and the city really lived (more people at the end than the start)
-  - L642 the nudge retains the founding month
-  - L647 the child at the factor ran with the factor (
-  - L648 the child at today's prices ran with 1
-  - L727 ...the
-  - L838 some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them):
-  - L842 the default founding shows lines at the factor that the old half-thousand would have hidden:
-  - L1242 wage1901.
-  - L1243 teamHire1900
-  - L1245 cash
-  - L1246 gdp.month
-  - L1247 bank.deposits
-  - L1248 retail.shelf
-  - L1249 rent
-  - L1250 wage.minimum
-  - L1251 rate
-  - L1252 world.level
-  - L1253 priceIndex
-  - L1254 pop
-  - L1255 workforce
-  - L1256 unemployed
-  - L1257 homes
-  - L1258 stores
-  - L1260 jobs.
-  - L1272 stock.
-  - L1274 sector.
-  - L1296 h.
-  - L1301 h.
-  - L1389 holdings.folded
-  - L1390 holdings.shown
-  - L1398 shown.
-  - L1401 band
-  - L1440 lanes
-  - L1441 arrows
+- **L222 1. the series: 126 years of the US consumer price index**
+- **L225 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
+- **L228 3. each funnel carries the factor**
+- **L231 4. the rankings' bridge is the series' ratio**
+  - L240 the twin runs:
+- **L244 5. the named literals and the cross-file ratios, against today's figures**
+- **L262 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
+- **L265 11. the 1900 founding: the same real city at both price levels**
+  - L272 1900 partners receive the same lanes at both price levels in every month
+  - L290 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
+  - L291 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
+  - L292 ...so it spans 126 years
+  - L298 every year has a positive index
+  - L302 a year outside the series is refused
+  - L303 1913 is the BLS's first published year, and 1912 is Rees's
+  - L304 the factor is the first year's index over the last's (8.333 / 321.943)
+  - L306 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
+  - L307 atFounding(x) is x times the factor
+  - L321 no fixture:
+  - L326 the file -D
+  - L370 PayTier: each of the
+  - L371 ...and the ladder's shape (each rung over the unskilled) is today's
+  - L373 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
+  - L374 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
+  - L376 ...and its dial's bounds are the rung's x.25 and x5
+  - L378 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
+  - L397 Good: the
+  - L398 ...a good that cannot be imported or exported still cannot (
+  - L399 ...and the wedge (freight and export over import) is each good's today's
+  - L400 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
+  - L415 ui.Money.unitPrice shows every one of the
+  - L419 consumption.json loads
+  - L433 consumption.json: its
+  - L434 ...to the bit what Good prices them at (ConsumptionCheck's equality)
+  - L439 buildings.json loads
+  - L463 buildings.json: the
+  - L464 ...the
+  - L465 ...the
+  - L466 ...and the
+  - L467 ...and the points, materials, land and capacity are the file's, untouched
+  - L473 the built-in definitions are priced at the founding's level too (the House, as the file's)
+  - L492 RealDollar.BRIDGE is the 2015 index over the founding year's (
+  - L494 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
+  - L495 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
+  - L496 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
+  - L497 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
+  - L555 fixture: day-zero minimum is its positive dial floor at factor
+  - L559 fixture: day-zero
+  - L567 day-zero
+  - L603 r.
+  - L604 r.
+  - L623 a real difference above the current value's relative band is rejected after a peak
+  - L624 a real difference outside the unchanged band is rejected
+  - L625 a one-person difference is rejected even in a trillion-person city
+  - L636 pop
+  - L637 h.x
+  - L640 h.x
+  - L641 reload.x
+  - L643 the history is cut at the month by what it held then: a list begun at month 2, cut at 6, keeps months 2 to 6 (not 7 entries)
+  - L645 ...and the reload, the run's last month's, is dropped from a prefix short of the run and kept in one that is not
+  - L650 a rounding parting shows two cities of one level apart in its month (month
+  - L652 ...and a parting by the factor alone shows none, every pair apart across the levels (month
+  - L666 homes
+  - L679 ...and the city really lived (more people at the end than the start)
+  - L768 the child at the factor ran with the factor (
+  - L769 the child at today's prices ran with 1
+  - L848 ...the
+  - L973 the fault: a floor left at the board's figure as written (D$
+  - L981 the default founding shows lines at the factor that the old half-thousand would have hidden:
+  - L1407 wage1901.
+  - L1408 teamHire1900
+  - L1410 cash
+  - L1411 gdp.month
+  - L1412 bank.deposits
+  - L1413 retail.shelf
+  - L1414 rent
+  - L1415 wage.minimum
+  - L1416 rate
+  - L1417 world.level
+  - L1418 priceIndex
+  - L1419 pop
+  - L1420 workforce
+  - L1421 unemployed
+  - L1422 homes
+  - L1423 stores
+  - L1425 jobs.
+  - L1437 stock.
+  - L1439 sector.
+  - L1461 h.
+  - L1466 h.
+  - L1481 h.
+  - L1483 h.
+  - L1579 holdings.folded
+  - L1580 holdings.shown
+  - L1588 shown.
+  - L1591 band
+  - L1630 lanes
+  - L1631 arrows
+  - L1639 lanes.given
+  - L1640 lanes.feed
 
 ## PrizeCheck.java - 217 labelled assertions
 
@@ -29095,7 +29108,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1985 ...two months on, its history ends at the city's
   - L1986 ...with no month missing (
 
-## ScaleCheck.java - 103 labelled assertions
+## ScaleCheck.java - 106 labelled assertions
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them
@@ -29111,121 +29124,124 @@ _(this harness does not label its checks through a helper - it prints its findin
 > model, the save, the history and the screens.
 > ...
 
-- **L288 1. the fixture, and its copy K times over**
-  - L325 fixture: the founded city has people, posts and homes
-  - L327 fixture: K times its people passes 2^31
-- **L333 2. the counts read back whole**
-  - L337 the slot header of a save past 2^31 people reads (an int could not parse it)
-  - L338 ...and its population is K times the founded city's
-  - L344 the copy loads
-  - L345 its population is K times the founded city's, past 2^31
-  - L346 ...its workforce too, not stuck at 2,147,483,647
-  - L347 ...both past the int ceiling
-  - L360 its ground is K times the founded city's
-  - L361 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
-  - L372 ...its iron as the founded city's: sites and tonnes
-- **L376 3. posts, doors and household places**
-  - L378 every post is K times the founded city's
-  - L379 every home is K times the founded city's
-  - L380 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
-  - L382 ...because the copy holds K founding endowments where the founded city holds one
-- **L386 4. three months at that size**
-  - L395 the months ran
-  - L396 the population is still past 2^31
-  - L397 ...and is the pyramid's, rounded once
-  - L398 the workforce is still past 2^31
-  - L401 the history's last population is the city's
-  - L402 ...its workforce
-  - L403 ...its posts
-  - L404 ...the people out of work
-  - L405 ...and its homes
-- **L407 5. the save round-trips them**
-  - L409 the city past 2^31 saves
-  - L411 its header reads
-  - L412 ...with the population it was saved with
-  - L418 it loads at the month it was saved
-  - L419 the population came back
-  - L420 ...the workforce
-  - L421 ...the posts
-  - L422 ...the posts filled
-  - L423 ...the people out of work
-  - L424 ...the homes
-  - L425 ...the household places
-  - L426 ...the founding endowments it holds (FW9)
-  - L429 ...and the history, month for month
-  - L436 the loaded city plays its next month to the same population
-  - L438 ...the same workforce
-  - L439 ...and the same people out of work
-- **L441 6. the sectors free, at 5 and 10 billion**
-- **L481 7. money at that size reads**
-- **L484 8. the audit's floor at size**
-- **L487 9. a copy tracks its city month by month**
-- **L494 10. the 1900 city: unfitted plant scales; whole horse posts are bounded**
-  - L515 fixture: the city keeps its 1900 founding and 1901 ladder
-  - L517 fixture: horse hands put posts past the buildings
-  - L532 fixture: the 1900 save carries unfitted pieces
-  - L533 every unfitted piece count is K times the city's, as its buildings are
-  - L543 horse hands differ from the model's factor by at most half a post per tier
-  - L552 fixture: the historical city's live haulage demand needs carters in the horse form
-  - L553 carters round by at most half a post at the model's team capacity
-  - L560 fixture: a historical Bakery's drive has positive work
-  - L564 a partial fitting delivers no fraction of a building
-  - L566 the remaining work delivers exactly one whole fitting
-  - L568 fixture: no indivisible fitting is on site when the tracking save is taken
-  - L592 the historical copy at K =
-  - L609 1900 month
-  - L618 1900 month
-  - L622 1900 month
-  - L623 1900 month
-  - L625 1900 month
-  - L629 1900 month
-  - L633 fixture: whole horse posts actually break exact K scaling in the played twins
-- **L644 the audit's floor is never under the figures' own step (0.7.63)**
-  - L654 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
-  - L655 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
-  - L659 ...so the cash-flow statement K's copy missed on rounding alone is within it
-  - L665 a cent never moves: a cent or a part in a trillion, at every size, as before
-  - L666 ...and a size that is not a number keeps the floor alone
-- **L672 money at that size reads in its own unit**
-  - L674 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
-  - L675 ...a thousand quadrillion and more is grouped
-  - L676 ...a negative one keeps its sign
-  - L677 ...and a trillion still reads as one
-  - L679 cash() prints every whole dollar a double holds, as before
-  - L681 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
-  - L682 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
-  - L773 the copy loads
-  - L809 every month the population is past 2^31, whole, and the pyramid's rounded once
-  - L810 ...and the posts, the doors and the household places add up exactly, every month
-  - L820 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
-  - L823 ...and its businesses pay the city's price for it
-  - L939 the copy at K =
-  - L987 fixture: the grown city loads, to have its building sites emptied
-  - L1197 the month's money audit closes, to the cent (BankCheck and four more)
-  - L1206 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
-  - L1212 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
-  - L1217 the money the audit saw made is the central bank's (LongPlaytest)
-  - L1221 M0 moved by the money made (LongPlaytest, already relative)
-  - L1229 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
-  - L1234 the treasury's window opens where it closed (TreasuryCheck)
-  - L1238 the treasury's closing balance is its cash (TreasuryCheck)
-  - L1244 the treasury's bridge foots (TreasuryCheck)
-  - L1262 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
-  - L1265 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
-  - L1271 the history's net income is the sector books', to the cent (HistoryCheck)
-  - L1278 the history's bank figures are the bank's own, to the cent (HistoryCheck)
-  - L1291 ...
-  - L1350 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
-  - L1376 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
-  - L1378 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
-  - L1381 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
-  - L1403 every post,
-  - L1406 ...the posts on offer by job type add up to the total
-  - L1407 ...and the total is every post less those withheld plus the posts past the buildings
-  - L1412 every home is the stacks' quantity times their doors
-  - L1413 ...and the homes by size add up to it
-  - L1415 ...and the landlords' studio and family doors to it too
-  - L1417 the household places are the city's hundred for each founding endowment and the stacks' places
+- **L326 1. the fixture, and its copy K times over**
+  - L363 fixture: the founded city has people, posts and homes
+  - L365 fixture: K times its people passes 2^31
+- **L371 2. the counts read back whole**
+  - L375 the slot header of a save past 2^31 people reads (an int could not parse it)
+  - L376 ...and its population is K times the founded city's
+  - L382 the copy loads
+  - L383 its population is K times the founded city's, past 2^31
+  - L384 ...its workforce too, not stuck at 2,147,483,647
+  - L385 ...both past the int ceiling
+  - L398 its ground is K times the founded city's
+  - L399 ...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure
+  - L410 ...its iron as the founded city's: sites and tonnes
+- **L414 3. posts, doors and household places**
+  - L416 every post is K times the founded city's
+  - L417 every home is K times the founded city's
+  - L418 the household places are K times the founded city's, its own hundred included (K endowments, FW9)
+  - L420 ...because the copy holds K founding endowments where the founded city holds one
+- **L424 4. three months at that size**
+  - L433 the months ran
+  - L434 the population is still past 2^31
+  - L435 ...and is the pyramid's, rounded once
+  - L436 the workforce is still past 2^31
+  - L439 the history's last population is the city's
+  - L440 ...its workforce
+  - L441 ...its posts
+  - L442 ...the people out of work
+  - L443 ...and its homes
+- **L445 5. the save round-trips them**
+  - L447 the city past 2^31 saves
+  - L449 its header reads
+  - L450 ...with the population it was saved with
+  - L456 it loads at the month it was saved
+  - L457 the population came back
+  - L458 ...the workforce
+  - L459 ...the posts
+  - L460 ...the posts filled
+  - L461 ...the people out of work
+  - L462 ...the homes
+  - L463 ...the household places
+  - L464 ...the founding endowments it holds (FW9)
+  - L467 ...and the history, month for month
+  - L474 the loaded city plays its next month to the same population
+  - L476 ...the same workforce
+  - L477 ...and the same people out of work
+- **L479 6. the sectors free, at 5 and 10 billion**
+  - L535 fixture: the town has, within
+- **L540 7. money at that size reads**
+- **L543 8. the audit's floor at size**
+- **L546 9. a copy tracks its city month by month**
+- **L553 10. the 1900 city: unfitted plant scales; whole horse posts are bounded**
+  - L579 fixture: the city keeps its 1900 founding and 1901 ladder
+  - L581 fixture: horse hands put posts past the buildings
+  - L596 fixture: the 1900 save carries unfitted pieces
+  - L597 every unfitted piece count is K times the city's, as its buildings are
+  - L607 horse hands differ from the model's factor by at most half a post per tier
+  - L616 fixture: the historical city's live haulage demand needs carters in the horse form
+  - L617 carters round by at most half a post at the model's team capacity
+  - L624 fixture: a historical Bakery's drive has positive work
+  - L628 a partial fitting delivers no fraction of a building
+  - L630 the remaining work delivers exactly one whole fitting
+  - L632 fixture: no indivisible fitting is on site when the tracking save is taken
+  - L657 the historical copy at K =
+  - L674 1900 month
+  - L683 1900 month
+  - L687 1900 month
+  - L688 1900 month
+  - L690 1900 month
+  - L694 1900 month
+  - L698 fixture: whole horse posts actually break exact K scaling in the played twins
+- **L709 the audit's floor is never under the figures' own step (0.7.63)**
+  - L719 a floor of its own is never under ULP_STEPS of a double's steps at the size, at any size
+  - L720 ...and is the floor exactly below 2^27 units, past every size the other harnesses read it at
+  - L724 ...so the cash-flow statement K's copy missed on rounding alone is within it
+  - L730 a cent never moves: a cent or a part in a trillion, at every size, as before
+  - L731 ...and a size that is not a number keeps the floor alone
+- **L737 money at that size reads in its own unit**
+  - L739 a 10 billion city's treasury, 2.6e13 units (the study's), reads in quadrillions
+  - L740 ...a thousand quadrillion and more is grouped
+  - L741 ...a negative one keeps its sign
+  - L742 ...and a trillion still reads as one
+  - L744 cash() prints every whole dollar a double holds, as before
+  - L746 ...and past Formats.WHOLE_DOLLARS_MOST it is amount()'s
+  - L747 ...so a sum past a long's reach is not the saturated $9,223,372,036,854,775,807
+  - L838 the copy loads
+  - L874 every month the population is past 2^31, whole, and the pyramid's rounded once
+  - L875 ...and the posts, the doors and the household places add up exactly, every month
+  - L885 the copy's ground is the city's in its first month: as crowded, the same premium and dollars
+  - L888 ...and its businesses pay the city's price for it
+  - L1002 the copy at K =
+  - L1080 fixture: the grown city loads, to have its building sites emptied
+  - L1091 fixture: ...and nothing is under construction when the copies are taken (within
+  - L1288 the month's money audit closes, to the cent (BankCheck and four more)
+  - L1297 a sector's cash-flow statement closes (MortgageCheck, BankCheck)
+  - L1303 the bank's equity moved by its income and named causes (MortgageCheck, BankCheck)
+  - L1308 the money the audit saw made is the central bank's (LongPlaytest)
+  - L1312 M0 moved by the money made (LongPlaytest, already relative)
+  - L1320 nothing moved after the audit struck (LongPlaytest, MoneyCheck)
+  - L1325 the treasury's window opens where it closed (TreasuryCheck)
+  - L1329 the treasury's closing balance is its cash (TreasuryCheck)
+  - L1335 the treasury's bridge foots (TreasuryCheck)
+  - L1353 the history's GDP parts are the accounts' own, to the cent (HistoryCheck)
+  - L1356 the history's GDP parts add up to its GDP, to the cent (HistoryCheck)
+  - L1362 the history's net income is the sector books', to the cent (HistoryCheck)
+  - L1369 the history's bank figures are the bank's own, to the cent (HistoryCheck)
+  - L1382 ...
+  - L1441 no order judged on its interest asked the bond desk more than Game.deskCallsMost() times
+  - L1462 fixture: the free copy has ground for some building
+  - L1466 orderSize() (BA1) of a gap past the int range is the plots, never a wrapped negative:
+  - L1468 ...a gap of a million buildings is a million where the ground holds them, and the plots where it does not
+  - L1471 ...and the same gap in a building holding more is fewer: ceil(gap / capacity)
+  - L1493 every post,
+  - L1496 ...the posts on offer by job type add up to the total
+  - L1497 ...and the total is every post less those withheld plus the posts past the buildings
+  - L1502 every home is the stacks' quantity times their doors
+  - L1503 ...and the homes by size add up to it
+  - L1505 ...and the landlords' studio and family doors to it too
+  - L1507 the household places are the city's hundred for each founding endowment and the stacks' places
 
 ## SectorFlowCheck.java - 20 labelled assertions
 
