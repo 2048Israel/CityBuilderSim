@@ -130,11 +130,46 @@ noise: one seed of 16 moved within the spread. The switch went ahead.
 
 ## Checks
 
-(filled in below as run)
+- **On the laptop**, at afdb29258: `batch-check.sh --fast` exit 0;
+  `batch-check.sh EnsembleCheck`, the pick's one harness, exit 0;
+  `tools/ensemble/ensemble-selftest.sh` 6 of 6 (again after the score line's
+  mend); `tools/ship-selftest.sh` 195 of 195 beside HS2's ensemble, the
+  `flock` and `/proc` cases skipped (Git Bash has neither).
+- **On the box**, the same tree on e2f399d7c in a test copy:
+  `tools/ship-selftest.sh` 205 of 205 in 2 min 21 s. That includes GB3's 13
+  cases, among them the queue's: two heavy jobs send an ensemble home, and a
+  real gate meets a playing ensemble, waits "held (ensemble EN7)", ships after
+  the runs started, and the ensemble resumes. `ensemble-selftest.sh` there ran
+  3 of 6, with the three that score skipped (no pandas).
+- **Real ensembles through the box** from this worktree, at afdb29258 pushed:
+  - `SEEDS="0 1" POLICIES="ZERO_HOT AUTO2"`: compiled on the box, 4 runs at 8
+    at once, copied home and scored here in 3 min 19 s, batch verdict PASS.
+    `baseline.md` says "Run on gatebox", and `snapshot.txt` names the box's
+    data and Java.
+  - A first try without AUTO2 played and came home, but score.py refused it
+    for want of the AUTO2 twins. That is its own rule, unchanged.
+  - `ensemble.sh --stop GB3-stop` here, with four AUTO2 runs playing on the
+    box, stopped the laptop half and its ssh. The box's serve then ended its
+    runs: no java and no serve were left there, and the locks were free.
+    HS2's ensemble on the laptop was untouched.
+- The box's probe and test files were removed afterwards (`~/cbs/ens*`, the
+  test copy, the live runs' folders).
 
 ## One in, one out
 
-(counted at ready)
+`git diff --numstat origin/main` over the process files, the notes and ship
+file left out: +315 -82.
+
+- The scripts, +105 -23: `tools/gate-box.sh` +80 -12,
+  `tools/ensemble/ensemble.sh` +21 -9, `stop.ps1` +4 -2.
+- The self-tests, +170 -50: `score-selftest.py` +107 -47, `ship-selftest.sh`
+  +63 -3.
+- The docs, +40 -9: the contract +9 -1, the orchestrator +7 -3, the
+  ensemble's README +20 -3, README +2 -1, the tree +2 -1.
+- It is a new mechanism: the box's queue and the ensemble's road there. Three
+  things went: EN2's special case (dead since 0.9.113), GB2's two fixed
+  waiter lines, and the "five at a time" text. The laptop route stays, as the
+  overflow and for when the box is down.
 
 ## Left for Jerus
 

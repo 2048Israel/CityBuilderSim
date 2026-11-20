@@ -207,7 +207,8 @@ if [ "$KEPT" = 1 ] && [ "$TODO" -gt 0 ] && [ "$SNAPDATA" != "$DATA_SHOWN" ]; the
 fi
 SNAPNOTE=""; [ "$KEPT" = 1 ] && SNAPNOTE=", snapshot kept from the first start"
 [ "${ENS_PART:-}" != score ] || SNAPNOTE=", run on $(snap host), scored here"
-echo "ensemble $LABEL: classes of $COMMIT (v$VERSION)$SNAPNOTE; $JOBS at once, $TODO of $TOTAL runs to do"
+AT="$JOBS at once, "; [ "${ENS_PART:-}" != score ] || AT=   # the home half plays nothing
+echo "ensemble $LABEL: classes of $COMMIT (v$VERSION)$SNAPNOTE; $AT$TODO of $TOTAL runs to do"
 
 START=$(date +%s)
 if [ "$TODO" -gt 0 ]; then
