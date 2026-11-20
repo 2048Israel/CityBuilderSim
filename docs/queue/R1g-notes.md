@@ -271,28 +271,62 @@ months, not none, so "nobody arrives" is no longer the finding; it is
 2.6 ≥ 1). The premise, that the stalled village has all but stopped drawing
 anyone while today's twin still draws, is what it was.
 
-## 4. The pace (0.9.158, the 2,400-month playtest, R1d's table re-measured)
+## 4. The pace (0.9.160, the 2,400-month playtest, R1d's table re-measured)
 
-Each run is one LongPlaytest with `-Dplaytest.trace`, one JVM at a time:
-`main` is origin/main's own four classes (`Game`, `Recipes`,
-`PopulationManager`, `ArrivalMix` at ba734bf85) compiled over the branch's,
-the rest being the same bytes. The rent at month 60 is `0.30 / affordPull`
-from the trace where the pull is under 1; where it is 1 the burden is at
-most 0.30, and the figure is `Village1900Check`'s, which follows the same
-founding and rhythm. The diploma fill is `filled1 / posts1` in the labour
-trace.
+Each run is one LongPlaytest with `-Dplaytest.trace`, one JVM at a time,
+never beside a gate's suite (`target/r1g/pacechain.sh`, which ended and
+re-ran any run a gate began beside). `main` is origin/main's own four
+classes (`Game`, `Recipes`, `PopulationManager`, `ArrivalMix`) compiled over
+the branch's, the rest being the same bytes. The rent at month 60 is
+`0.30 / affordPull` from the trace where the pull is under 1; where it is 1
+the burden is at most 0.30 and the figure in brackets is
+`Village1900Check`'s, which follows the same founding and rhythm. The
+diploma fill is `filled1 / posts1` in the labour trace. The runs were
+measured three times as main moved under them (QN1 0.9.158, HS1 0.9.159,
+R1e 0.9.160); this is the last, and the earlier logs are kept in
+`target/r1g/v158`, `v159`.
 
 | run | m60 | m900 | m1200 | m2400 | rent at m60 | diploma fill m60 / m900 / m1200 / m2400 |
 |---|---|---|---|---|---|---|
-| today (default, main and branch the same) | 908 | 34,160 | 29,829 | 935,838 | ≤ .30 (harness .231) | 1.00 / 1.00 / 1.00 / 1.00 |
-| 1900, 0.9.158 (main) | 471 | 486 | 476 | 4,507 | .612 | .41 / .04 / .01 / 1.00 |
-| (a) the 1900 home | 1,011 | 1,665 | 1,319 | 593,691 | ≤ .30 (harness .209) | .86 / .53 / .17 / 1.00 |
+| today (default; main and branch the same) | 909 | 32,154 | 40,217 | 1,658,853 | ≤ .30 (.232) | 1.00 / 1.00 / 1.00 / 1.00 |
+| 1900 on main | 482 | 592 | 574 | 559 | .623 | .41 / .06 / .03 / .00 |
+| (a) the 1900 home alone | 1,334 | 836 | 7,163 | 781,449 | .332 | 1.00 / .48 / 1.00 / 1.00 |
+| (b) the apprentices alone | 489 | 1,350 | 2,136 | 6,029 | .625 | .45 / 1.00 / 1.00 / 1.00 |
+| (a) + (b) | | | | | | |
+
+The months between, for the shape: today 1,298 at m240, 8,210 at m600,
+91,838 at m1500, 448,089 at m1800, 1,045,627 at m2100; the 1900 city on main
+564, 611, 562, 561, 561; (a) 1,702, 730, 20,755, 96,109, 439,075; (b) 578,
+818, 4,806, 5,770, 5,513.
+
+- **Each half lifts the other's limit.** (a) alone clears the rent (the pull
+  1 from m600) but meets the skills: at m600 its diploma posts are 54 filled
+  of 153 and the city falls from 1,702 to 730; it grows again from m1200.
+  (b) alone fills the diploma posts from m900 (263 of 263) but the rent
+  holds it: the pull stays .34 to .42 (a burden of about .75) through m1200.
+- **(a) at m240** has 52% unemployment and a pull of .72 (burden .42): the
+  first arrivals outrun the jobs before the rent settles.
+- **Runtime:** the 1900 run on main took 5 minutes, (b) 11, (a) 126, and
+  today's 16, all beside other sessions' harnesses. A growing 1900 city runs
+  far slower per person than today's (781,449 people in 126 minutes against
+  1,658,853 in 16); that matters if LongPlaytest's default becomes 1900
+  (step 4), and is to be measured before it does.
 
 **Today's city does not move, to the bit** (the orchestrator's 13:33
-condition): the default run on main and on the branch wrote the same eight
-trace files byte for byte (`cmp`: bank, bonds, borrow, build, house, labour,
-month and pop, 2,405 lines each but borrow's 52); their logs differ in one
-object hash (a `LandParcel@` in a works decision's toString) and the
-runtime. Both exit 1 on main's own red, "an old works moved" at month 2400;
-the 1900 run on main exits 1 on five households' unsettled-line bounds at
-month 2402. Neither is R1g's.
+condition), measured twice: on 0.9.158 and on 0.9.160 (main at 0.9.159,
+which R1e's changelog states is the default city's 0.9.160 byte for byte)
+the default run on main and on the branch wrote the same eight trace files
+(`cmp`: bank, bonds, borrow, build, house, labour, month and pop, 2,405
+lines each but borrow's); the logs differ in one object hash (a
+`LandParcel@` in a works decision's toString) and the runtimes. Every run
+exits 1 on main's own reds: the default city's "an old works moved" at
+month 2400, the 1900 city on main's five households' unsettled-line bounds
+at month 2402. Neither is R1g's.
+
+**A home is dated once, through loads.** `datedHomes` is a weak identity
+set on the Game's own `Recipes` (final, one per Game). A load or a new game
+rebuilds the BuildingManager (`buildWorld()`, "made a new BuildingManager"),
+so the loaded city's templates are new objects at today's costs: a 1900
+save's are dated once by the load path's `recipes.apply`, a default save's
+not at all. No template is copied (`NewUnit`, QN1, holds the template
+itself), and no template cost is saved.
