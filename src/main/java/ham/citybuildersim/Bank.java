@@ -6677,6 +6677,17 @@ public class Bank {
             for (double t : terms) size += Math.abs(t);
             return size;
         }
+
+        /**
+         * True when the causes explain the month's change in equity within MoneyAudit.tolerance() of scale() - the
+         * rule of the sheet and its split (addsUp(), BI1) - and the page's "Something moved its equity without
+         * telling it", its waterfall's red "Not accounted for" and the statement's are this one's opposite (BI2,
+         * 2026-11-20). WHY: they were an absolute $5 against a residual that is a signed sum of seventeen figures,
+         * whose rounding is a few steps of a double at their size: float dust past $5 on a bank of 1e13 and more,
+         * and the same $5 let a small bank's miss of a few dollars by. A residual or a scale that is not a finite
+         * number does not add up: that is the screen's red line, not its silence.
+         */
+        public boolean addsUp() { return Bank.addsUp(residual(), scale()); }
     }
 
     /**
