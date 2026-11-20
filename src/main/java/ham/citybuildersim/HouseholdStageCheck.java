@@ -209,6 +209,10 @@ public class HouseholdStageCheck {
                 dying.getDeaths(AgeBand.ADULT));
         check("the adults are the two stages after the month", dying.get(AgeBand.ADULT),
                 dying.get(young) + dying.get(established));
+        check("the ensemble's reading of the young's share is the young over the adults", dying.getYoungShareOfAdults(),
+                dying.get(young) / dying.get(AgeBand.ADULT));
+        check("...and of the retiring share, the established's retirements over the adults who opened the month",
+                dying.getRetiringShareOfAdults(), dying.getPromoted(established) / 1000);
         double youngShareBefore = dying.get(young) / dying.get(AgeBand.ADULT);
         dying.migrate(700);
         check("...after the arrivals", dying.get(AgeBand.ADULT), dying.get(young) + dying.get(established));

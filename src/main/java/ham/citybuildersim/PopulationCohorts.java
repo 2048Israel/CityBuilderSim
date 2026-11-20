@@ -178,6 +178,10 @@ public class PopulationCohorts {
     public double promotedShare(AdultStage s) {
         return share(lastStagePromoted[s.ordinal()], lastStageOpening[s.ordinal()]);
     }
+    /** Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is equilibriumShare's). */
+    public double getYoungShareOfAdults() { return share(stage[AdultStage.YOUNG.ordinal()], band[AgeBand.ADULT.ordinal()]); }
+    /** Last month's retirements over the adults who opened it: the ensemble's reading of the two stages' flow beside the one bucket's flat AgeBand.ADULT.monthlyOutflowRate() (HS2). */
+    public double getRetiringShareOfAdults() { return promotedShare(AgeBand.ADULT); }
 
     /** The band's figure struck again from its two stages, after anything moved them. */
     private void syncAdults() {
