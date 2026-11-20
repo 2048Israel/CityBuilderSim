@@ -108,6 +108,16 @@ Two players set policy; neither is new.
   today's way (`LongPlaytest.FOUNDED_1900` unset), where the Bank was always open, so that branch never drew there. Each is a known-reds row naming **FS5** (FS1's sweep
   for KeptCheck from section 55, which takes KFP1 and KP5-N), not FS1 itself, which has shipped. The Policy and Zoning
   sections OP1 restated pass.
+- **Section 60's empty fund is the path** (the orchestrator asked this be proved before the dry run). A probe (`target/op1probe/Kp5Probe.java` in the worktree, not committed)
+  builds KeptCheck's city as KeptCheck does (`probeCity`, the floor at the going rate, one `probePlay` to 600), prints the
+  fund, then runs KP5's own fixture. On main (24b7bfcbc, a detached worktree, since removed) the city reaches month 605
+  with 5,591 people. Its fund holds 52 positions: 1 rescue, 14 shares and 37 bonds, bought from the rescue's income with
+  nothing paid in. So `held` is not empty and KP5's fixture never runs on main. On OP1 the city reaches month 603 with
+  6,876 people (KeptCheck's figure). There was no rescue, and in 603 months the fund was never paid in and never bought,
+  so its positions are 0 and the fixture runs. Bought there at once, the fixture's orders fill: 6 positions three months
+  on. In KeptCheck they settle nothing by section 60, after sections 1-59's months and choices. That is main's own KFP1
+  class: on main, section 63's hand buys "settle no new holding" (known-reds, FS5). OP1 changes nothing in the fund or
+  its orders: no line of `TreasuryFund`, `FundView` or `Game`'s fund methods is in the diff.
 - SaveFileCheck: exit 3, main's known red only ("over the default it owes what it sells for, and paid some late", FS17,
   in `docs/notes/known-reds.txt` since HS1).
 - `sh tools/pick.sh origin/main HEAD`: ALL 228 harnesses (AllChecks changed); review needed - money: CentralBank.java,
