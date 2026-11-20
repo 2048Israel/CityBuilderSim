@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### GB4 — the gate box's measurements on record — 2026-11-20, ready, see docs/queue/GB4-notes.md
 `docs/gatebox.md` holds what the gate box is and what its first night measured (Jerus, 2026-11-20: "put it on github
