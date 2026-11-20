@@ -141,3 +141,9 @@ main's first; the laptop was shared with other sessions). Both exit 0. The defau
 - No ensemble (the trace is main's). A dry run is owed (pick ALL); no known-reds row is needed by anything run here.
 - `docs/map/*`, `docs/dials.md` and `docs/harnesses.md` are regenerated and committed with the batch.
 
+
+## 8. After the last check
+
+`origin/main` moved to `e2f399d7c` (GB2: `tools/`, docs and notes only, no game class) after the trace and the harness
+runs; merged at `8f4fee9c6`, `./batch-check.sh --fast` green again (compile, maps, Stale, tree 0 changed). The trace
+stands: the game's classes of main are the ones it was measured against. No dry run has run yet; none is kept.
