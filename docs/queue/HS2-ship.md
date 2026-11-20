@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-HS2-zjpcb5ZT -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
 The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
