@@ -189,6 +189,11 @@ with its 59 unnamed lines (LM1-D's dry run met the same, 2026-11-18).
   there failed one: my assertion that no mail said "shipped" caught the stop
   mail quoting the stranger's commit, "shipped meanwhile". The assertion now
   looks for "BV2 shipped" and a shipped state.
+- **The branch-gate dry run** of 0bdccf406 on 0.9.167, on the box
+  (`/home/jerus/cbs/runs/cbs-gate-GB3-yTd4otxs`, 19:08-19:11 UTC): exit 0,
+  "no game code: 1 harnesses; green", `ship-selftest.sh` 209 of 209,
+  `ensemble-selftest.sh` 3 of 6 with the three that score skipped, and the
+  tree as it was.
 - The box's probe and test files were removed afterwards (`~/cbs/ens*`, the
   test copies, the live runs' folders).
 
