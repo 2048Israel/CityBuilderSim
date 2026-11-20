@@ -90,7 +90,14 @@ touched by reads that place nothing, so **the default trace does not move and no
 
 ## 5. The trace: byte for byte
 
-(filled in below once both runs are done)
+The orchestrator asked the claim proved (BuildAdvice, LicenceFees and Inbox are model code): the default playtest, `LongPlaytest` with
+`-Dplaytest.trace`, one JVM at a time, 2,400 months audited (2,405 played), the same data files named, on main 44e0aa664 (checked out beside
+and compiled alone) and on this branch's final classes (32606d8a6, after the review's mends; GB2's merge since touches `tools/` only).
+**All eight trace files are byte-identical** (`-month` 965,996 bytes, `-borrow` 2,205, `-house` 897,482, `-pop` 444,487, `-bank` 899,230,
+`-bonds` 5,275,413, `-build` 698,136, `-labour` 781,494; `cmp`). The two reports differ in 4 lines only: the run's seconds (1528 against
+1516), two log timestamps, and an object's identity hash in a printed `LandParcel@...`. No ensemble: the trace did not move. (A first branch
+run on the classes before the mends was stopped for the mends; the figures above are of the final classes. Main's run took 1,582 s on this
+laptop beside another session's trace and HS2's ensemble, the branch's 1,554 s.)
 
 ## 6. The checks
 
