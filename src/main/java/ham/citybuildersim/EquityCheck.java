@@ -13,6 +13,12 @@ import java.nio.file.Path;
  * given a month's income and its owners are paid. The one live city at the
  * end is there to show the mechanism runs inside the audited month, not to
  * hope that somebody happens to buy something.
+ *
+ * The live city (FS14): the default founding in a TempDirs folder, played
+ * until Retail has a book (bounded, 36 months) and 240 months more. It
+ * asserts only what holds on any path - every share held by somebody, the
+ * audit every month, the register agreeing with the cells - and counts the
+ * offerings and the months a dividend was paid, which are its path's.
  */
 public class EquityCheck {
 
@@ -347,9 +353,14 @@ public class EquityCheck {
             System.setOut(out);
             assertTrue("retail is listed once it has a book",
                     register.getShares(RETAIL) > 0);
-            close("...and every share of it is held, at home or abroad",
-                    register.getDomesticShares(RETAIL) + register.getForeignShares(RETAIL),
-                    register.getShares(RETAIL), 1e-6);
+            // FS14: every holder counted, the cells by their own books (HouseholdBalance.sharesHeld), the world, the bank's desk and the
+            // fund (Equity's own dealer and city shares), against the shares in issue plus what the world is short (Exchange.shortShares(),
+            // EM2). It read domestic + abroad = in issue, which is register.getDomesticShares()'s own definition and true only while the desk
+            // and the fund hold none of Retail: a path premise (OE1's path left the desk 0.000153 of a share when Retail first had a book).
+            double retailHeld = city.getHouseholdBalance().sharesHeld(RETAIL) + register.getForeignShares(RETAIL)
+                    + register.getDealerShares(RETAIL) + register.getCityShares(RETAIL);
+            close("...and every share of it is held, at home or abroad", retailHeld,
+                    register.getShares(RETAIL) + city.getExchange().shortShares(RETAIL), 1e-9 * Math.max(1, register.getShares(RETAIL)));
             System.setOut(quiet);
             for (int m = 0; m < 240; m++) {
                 city.simulateMonths(1);
@@ -366,8 +377,9 @@ public class EquityCheck {
                 + " dividends $%,.0fk to households, $%,.0fk abroad, in %d months%n",
                 city.getEquity().getOfferings(), city.getEquity().getLifetimeRaisedHome(),
                 city.getEquity().getLifetimeRaisedAbroad(), paidHome, paidAbroad, monthsWithDividends);
-        assertTrue("the city's companies went to the market on their own", city.getEquity().getOfferings() > 1);
-        assertTrue("...and paid their owners", monthsWithDividends > 0 && paidHome + paidAbroad > 0);
+        // FS14: the offerings and the dividend months are counted above, not asserted: how often a played city goes to the market and pays
+        // its owners is its path's (found), and both rules are caused in sections 1-7 (the offering's split, the founding offering, equity
+        // before debt, the dividend of a positive month and none of a loss). The identities below hold on any path, and stay hard.
         assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
         boolean agree = true;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
