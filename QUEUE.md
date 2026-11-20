@@ -80,7 +80,6 @@ stuff".
 | FS4 | Sweep: KeptCheck below section 55 causes what its pages read, KRT1 traced first, its timed sections a harness of their own; takes KS1-rest's KeptCheck parts and KRT1's 49 and 50 (after SZ1; a dry run) | [FS1 study 6.3](docs/studies/flaky-suite.md#63-fs4) |
 | FS5 | Sweep: KeptCheck from section 55; takes KFP1, KBP1, KRW1, CD9-K, KP5-N to KP7-N, KRT1's 77 and 78 (after FS4; not beside BI1) | [FS1 study 6.4](docs/studies/flaky-suite.md#64-fs5) |
 | FS6 | Sweep: the map and the district plans (MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck); takes BQ1, LM1-R, KS1-rest's map lines (after SZ1; not beside PX2, PW1, SQ1b, HL1-M) | [FS1 study 6.5](docs/studies/flaky-suite.md#65-fs6) |
-| FS7 | Sweep: freight, ports and the island ground (15 harnesses); takes FF1 item 1 | [FS1 study 6.6](docs/studies/flaky-suite.md#66-fs7) |
 | FS8 | Sweep: industry, research and the views' models (20 harnesses); takes FF1 item 2 (after RN1-H; not beside CL7, R3b-R) | [FS1 study 6.7](docs/studies/flaky-suite.md#67-fs8) |
 | FS9 | Sweep: the bank and its borrowers (10 harnesses); takes HP2 item 4 and HL1's DistressBleedCheck 5 rows (not beside QR1, OE1) | [FS1 study 6.8](docs/studies/flaky-suite.md#68-fs9) |
 | FS10 | Sweep: the currency, the gold and the central bank (10 harnesses); takes HP1 item 1 and MQ1 | [FS1 study 6.9](docs/studies/flaky-suite.md#69-fs10) |
