@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS7 (untagged) — freight, ports and the island ground cause their conditions — 2026-11-20, ready, see docs/queue/FS7-notes.md
+The fifteen freight, port and island harnesses cause what they used to find by playing (the flaky-suite study's FS7 rows),
+harness-only: no model class moves. A terminal, a bridge or a demolition is waited for in the builders' own work, twice the
+points owed on site when the wait began (LandmassCheck.Wait), not 400, 600, 800 or 1,200 months measured once; the home fill
+is read in the instant it is ordered (FF1's red, LandmassCheck 12 and IslandRail 8); Slope 9 buys its steep ground; the
+railway's spurs are sized from the bulk the city offers, the sized railway's bill read off its quote's own step, the ports'
+month handed to Ports, the trucks' legs to Haulage, the vans' and cars' buyers given their money. HomeRailCheck leaves
+Observation (its run's railway counted, its identity asserted every month). Every FS7 known red goes green, CarCheck's five
+from HS2's households among them.
+
+### 0.9.169 — BI2, the Bank page's equity-movement alert relative to the movement — 2026-11-20, ready, see docs/queue/BI2-notes.md
+The Bank page's third absolute $5 (BI1 took it off the two cards): "Something moved its equity without telling it", the waterfall's red "Not accounted for" step and the Statement page's line and alert tested the month's equity-movement residual against `.005`, so float dust lit them on a city of 1e13 and more (a double's step is .002 to .008 there, and the residual is a signed sum of seventeen figures), and the same $5 let a small bank's miss of a few dollars by. The verdict is now the model's, `Bank.EquityMovement.addsUp()`: `MoneyAudit.tolerance` of the movement's `scale()` (a cent, or a part in a trillion of the figures' size, never under 64 steps of a double there), BI1's rule with its finite guard, so a residual that is infinite or not a number shows. The screen reads it at its three sites and recomputes nothing; the figures it prints are unchanged. BankCheck causes it at both sizes with hand-built movements (a small one out by twice its bound shows; 4.5e13 with float dust only does not; the same truly out, and out by $1 billion, shows; an infinite and a missing residual show) and holds the played bank's 72 months to never showing it. The default playtest's trace is byte for byte main's, so no ensemble. A cent now bounds a small bank (about $0.26).
+
 ### FS15 (untagged) — the works and the services' town cause their conditions — 2026-11-20, ready, see docs/queue/FS15-notes.md
 The sweep for the works and the services' town (the FS1 study, 6.14): five harnesses now cause the premises they had read off played towns.
 ChildcareCheck's sections 2 and 4 stand on a founding built with no months, and its weighing asks the advice itself. The old copy predated HW1's fixed point (row 82).
