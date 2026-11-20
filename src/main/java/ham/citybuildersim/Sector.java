@@ -2717,7 +2717,7 @@ public abstract class Sector {
         // CPB2: a NaN price never authorises the feed (bufferSalePrice()).
         if (!(demand > 0) && markets != null) {
             GoodsMarket market = markets.get(g);
-            if (market != null && !(bufferSalePrice(market) >= flowCostPerUnit(g))) return 0;
+            if (market != null && bufferSalePrice(market) < flowCostPerUnit(g)) return 0;
         }
         double target = demand > 0
                 ? demand * STOCK_MONTHS

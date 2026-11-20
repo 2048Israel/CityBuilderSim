@@ -301,13 +301,13 @@ public class UndemandedFeedCheck {
         double carShare = cars.orderShare(Good.CARS), locoShare = cars.orderShare(Good.ROLLING_STOCK);
         cars.endOrders();
         out.printf("order shares: cars %.9f, rolling stock %.9f%n", carShare, locoShare);
-        check("the profitable car buffer is ordered whole beside a locomotive works that orders nothing",
-                carShare == 1 && locoShare == 0);
+        check("the profitable car buffer is ordered whole", carShare == 1);
+        check("beside it the undemanded locomotive works, with no world price, orders nothing", locoShare == 0);
         clear(c);
-        check("the real clearing makes the cars' buffer and no rolling stock",
+        check("the real clearing makes the cars' whole buffer",
                 cars.outputRow(Good.CARS).produced == Math.min(cars.madeAtRate(Good.CARS),
-                        cars.getStockCapacity(Good.CARS) * Sector.DUMP_THRESHOLD)
-                && cars.outputRow(Good.ROLLING_STOCK).produced == 0);
+                        cars.getStockCapacity(Good.CARS) * Sector.DUMP_THRESHOLD));
+        check("and no rolling stock", cars.outputRow(Good.ROLLING_STOCK).produced == 0);
 
         // Vans already in the shed, and a fleet that wants more: the first
         // clearing hands every sector its opening fleet, then a works opens.
@@ -326,9 +326,9 @@ public class UndemandedFeedCheck {
                 held, fleet.inputRow(Good.VANS).bid, fleet.inputRow(Good.VANS).boughtLocal, sold, maker.outputRow(Good.VANS).produced);
         check("premise: a real fleet bids for vans the month the shed holds them, with no demand at the last strike",
                 fleet.inputRow(Good.VANS).bid > 0 && held > 0);
-        check("vans already in the shed all sell to the fleets, that one among them, and none are made or fed",
-                near(sold, held) && fleet.inputRow(Good.VANS).boughtLocal > 0
-                && maker.outputRow(Good.VANS).produced == 0 && maker.inputRow(Good.MACHINERY).bid == 0);
+        check("vans already in the shed all sell to the fleets, that one among them",
+                near(sold, held) && fleet.inputRow(Good.VANS).boughtLocal > 0);
+        check("and with no demand at the last strike none are made or fed", maker.outputRow(Good.VANS).produced == 0 && maker.inputRow(Good.MACHINERY).bid == 0);
     }
 
     public static void main(String[] args) {

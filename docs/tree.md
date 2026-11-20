@@ -30,6 +30,9 @@ adds its line here, not in `CLAUDE.md`.
         CopperBufferCheck.java     CPB1's empty-yard refinery regression: no feed for an undemanded
                                    loss-making buffer, with domestic/captive demand, stock sales,
                                    recipe identity and the national accounts kept intact
+        UndemandedFeedCheck.java   CPB2: no feed for undemanded output that cannot cover it - the
+                                   allocated-cost export spare beside a rod mill and the plants of
+                                   goods with no world buyer, with demand, stock sales and sunk feed kept
         HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
                                    played to m500, no landlord whose till buys one of the homes the
                                    plan passed held with none, and LongPlaytest's homeless watch
