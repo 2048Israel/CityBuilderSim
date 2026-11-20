@@ -24,6 +24,8 @@ if [ -z "$CBS_DAY_NOFETCH" ]; then
 fi
 M=origin/main
 git rev-parse --verify -q "$M" >/dev/null || { echo "day       no $M here" >&2; exit 2; }
+V=$(git show "$M:src/main/java/ham/citybuildersim/GameVersion.java" 2>/dev/null | sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' | head -n 1)
+ND=; NV=; [ ! -f "$NIGHTLY" ] || read -r ND _ NV _ < "$NIGHTLY"   # the last night's date and VERSION
 NOW=$(date +%s)
 NL='
 '
@@ -77,8 +79,10 @@ done
 if [ "$DUE" = 1 ]; then
     [ -z "$FETCHMSG" ] || echo "$FETCHMSG"
     OUT="$READY$STUCK"
-    case "$(date +%H)" in   # GT1: the nightly playtest is due once a day, 01:00 to 07:00
-        0[1-6]) [ "$(cut -d ' ' -f1 "$NIGHTLY" 2>/dev/null)" = "$(date +%Y-%m-%d)" ] ||
+    # GT1: the nightly is due once a day, 01:00 to 07:00 (CBS_DAY_HOUR in its self-test), and (GB2, Jerus, 2026-11-20:
+    # "it should run every night IF the version number has changed") only while the last ran on another VERSION
+    case "${CBS_DAY_HOUR:-$(date +%H)}" in
+        0[1-6]) [ "$ND" = "$(date +%Y-%m-%d)" ] || { [ -n "$V" ] && [ "$NV" = "$V" ]; } ||
                     OUT="${OUT}nightly   due - sh tools/nightly.sh, in the background$NL" ;;
     esac
     [ -n "$OUT" ] || exit 1
@@ -88,7 +92,6 @@ fi
 
 # --- main, the record, the queue -------------------------------------------
 [ -z "$FETCHMSG" ] || echo "$FETCHMSG"
-V=$(git show "$M:src/main/java/ham/citybuildersim/GameVersion.java" | sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' | head -n 1)
 LAST=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)
 if [ "$V" = "$LAST" ]; then VS="$V = the last version tag"; else VS="$V BUT the last version tag is ${LAST:-none} (tag or mend main)"; fi
 echo "main      $VS; merged $(ago "$(git log -1 --format=%ct "$M")") ago: $(git log -1 --format=%s "$M" | cut -c1-70)"
@@ -107,7 +110,7 @@ if G=$(git show "$M:docs/notes/gate.txt" 2>/dev/null); then
 else
     echo "reds      no gate record yet (docs/notes/gate.txt is not on $M)"
 fi
-if [ -f "$NIGHTLY" ]; then echo "nightly   $(head -n 1 "$NIGHTLY" | tr -d '\r'); log ${NIGHTLY%.txt}.log"
+if [ -f "$NIGHTLY" ]; then echo "nightly   $(head -n 1 "$NIGHTLY" | tr -d '\r'); log ${NIGHTLY%.txt}.log${V:+$([ "$NV" != "$V" ] || echo "; the next night waits for a VERSION after $V")}"
 else echo "nightly   none yet: sh tools/nightly.sh"; fi
 echo "queue     $(printf '%s\n' "$QUEUED" | grep -c .) queued, next: $(printf '%s\n' "$QUEUED" | head -n 4 | tr '\n' ' ' | sed 's/ $//')"
 PEND=$(printf '%s\n' "$Q" | rows Pending)
