@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.168 — BI1, the Bank page's integrity cards relative to the book — 2026-11-20, ready, see docs/queue/BI1-notes.md
+The Bank page's two red cards, "Its lines do not add up" and "Its two parts do not add up to its equity", and the Balance sheet page's "Not accounted for" line tested the books' residual against an absolute $5, so float dust lit them on a big city: a double's own step is .002 to .008 at 1e13, and KeptCheck's city of 4,820 months holds books of 1e13 and more. The test is the suite's rule for comparing money now, `MoneyAudit.tolerance` (a cent, or a part in a trillion of the figures' size, never under 64 steps of a double there), and it lives in `Bank` behind public getters (`sheetAddsUp`, `yearAgoSheetAddsUp`, `equitySplitAddsUp`) that the screen reads and recomputes nothing. On a small bank the floor is a cent ($0.26) where it was $5, so a few dollars out of a book under $260 billion now shows. `BankCheck`'s new section builds a small bank $6 out (the cards show), a book of 1e13 and more with float dust only (they do not), the same book truly out (they do) and a $1 billion line left off a 5.8e13 sheet (they do: a part in ten million of it would not); with the old absolute test back, eight of its assertions fail. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
 ### GB3 — ensembles run on the gate box first, and BW2 — 2026-11-20, ready, see docs/queue/GB3-notes.md
 A builder's 80-run ensemble (`tools/ensemble/ensemble.sh <label>`) runs on `gatebox` first, with the laptop as the overflow
 (Jerus, 2026-11-20, "Gatebox first"). It hands its runs to `tools/gate-box.sh --ensemble`, GB1's road: the box plays the
