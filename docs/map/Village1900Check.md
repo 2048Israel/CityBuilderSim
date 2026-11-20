@@ -1,4 +1,4 @@
-# Village1900Check.java - 389 lines · 15 methods · 12 constants · harnesses
+# Village1900Check.java - 392 lines · 15 methods · 12 constants · harnesses
 
 `ham/citybuildersim/Village1900Check.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -20,7 +20,7 @@
 >      Sector.MIN_STAFFABLE_TO_ORDER, which today's twin's passes
 >   4. THE STALL: the 1900 village draws under STALLED of today's twin's arrivals at the end of the five years, and no
 >      exporter stands there, its manufacturing held at the staffing gate; and the 1900 village's treasury holds its cash and owes
->      nothing while today's twin has borrowed, so the dated money (no central bank until 1935) is not what holds it
+>      nothing, more cash a head than today's growing twin holds, so the dated money (no central bank until 1935) is not what holds it
 > 
 > ...and the fix, each half alone, at its switch (on unless -Dr1g.home=off or -Dr1g.apprentices=off; each section fails with its own off):
 > 
@@ -45,10 +45,10 @@
 | 129 | · 2 |
 | 154 | · 3 |
 | 179 | · 4 |
-| 203 | · 5 |
-| 235 | · 6 |
-| 252 | · 7 |
-| 270 | · the fixture |
+| 206 | · 5 |
+| 238 | · 6 |
+| 255 | · 7 |
+| 273 | · the fixture |
 
 ## Constants
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 349 | **type** `public class Village1900Check` | Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the playtest's way for five years beside its twin founded today's way. |
+| 41 | 352 | **type** `public class Village1900Check` | Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the playtest's way for five years beside its twin founded today's way. |
 | 47 | 1 | `static void check(String label, boolean ok)` |  |
 | 49 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 88 | 9 | **type** `static final class Seen` | What one city shows at the gate month and at the end. |
@@ -102,37 +102,37 @@
 |---:|---:|---|---|
 | 156 | 22 | `static void skills(Seen y1900, Seen today)` |  |
 
-### 4 (lines 179-202)
+### 4 (lines 179-205)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 181 | 21 | `static void stall(Seen y1900, Seen today)` |  |
+| 181 | 24 | `static void stall(Seen y1900, Seen today)` |  |
 
-### 5 (lines 203-234)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 205 | 29 | `static void home(Seen home, Seen stalled, Seen today)` |  |
-
-### 6 (lines 235-251)
+### 5 (lines 206-237)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 237 | 14 | `static void apprentices(Seen taught, Seen stalled)` |  |
+| 208 | 29 | `static void home(Seen home, Seen stalled, Seen today)` |  |
 
-### 7 (lines 252-269)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 254 | 15 | `static void todayUnmoved(Seen on, Seen off)` |  |
-
-### the fixture (lines 270-389)
+### 6 (lines 238-254)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 280 | 65 | `static Seen play(String label, boolean the1900Way, boolean home, boolean apprentices)` | A city founded on the playtest's founding, the 1900 way or today's, founded and played as LongPlaytest.main() founds and plays it: the same switches, the automatic works on before the village is laid, the founding's m... |
-| 347 | 12 | `static void months(Seen seen, int n)` | Up to n of the player's months (LongPlaytest.runPlayer()), never past MONTHS: the gate weighed at the end of GATE_MONTH, the last arrivals summed. |
-| 361 | 10 | `static void weigh(Seen seen)` | The staffing gate on the exporters' first plant, and the diploma posts it wants. |
-| 373 | 6 | `static double[] postsByBand(Game g)` | The city's posts by wage band, as the playtest's labour trace adds them. |
-| 381 | 8 | `static long standing(Game g, String sector)` | How many buildings of a sector stand. |
+| 240 | 14 | `static void apprentices(Seen taught, Seen stalled)` |  |
+
+### 7 (lines 255-272)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 257 | 15 | `static void todayUnmoved(Seen on, Seen off)` |  |
+
+### the fixture (lines 273-392)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 283 | 65 | `static Seen play(String label, boolean the1900Way, boolean home, boolean apprentices)` | A city founded on the playtest's founding, the 1900 way or today's, founded and played as LongPlaytest.main() founds and plays it: the same switches, the automatic works on before the village is laid, the founding's m... |
+| 350 | 12 | `static void months(Seen seen, int n)` | Up to n of the player's months (LongPlaytest.runPlayer()), never past MONTHS: the gate weighed at the end of GATE_MONTH, the last arrivals summed. |
+| 364 | 10 | `static void weigh(Seen seen)` | The staffing gate on the exporters' first plant, and the diploma posts it wants. |
+| 376 | 6 | `static double[] postsByBand(Game g)` | The city's posts by wage band, as the playtest's labour trace adds them. |
+| 384 | 8 | `static long standing(Game g, String sector)` | How many buildings of a sector stand. |
 
