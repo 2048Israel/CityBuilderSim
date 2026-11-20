@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,503 lines · 12 methods · 2 constants · harnesses
+# EducationCheck.java - 1,533 lines · 13 methods · 2 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -53,7 +53,7 @@
 >    until 0.7.4. And the Schools page's row per kind has to add up to the
 >    totals it sits under.
 
-**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (68), [Game](Game.md) (37), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [PriceLevel](PriceLevel.md) (15), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (70), [Game](Game.md) (38), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [PriceLevel](PriceLevel.md) (15), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
 **Used by (2):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md)
 
@@ -79,8 +79,8 @@
 | 849 | · 13. THE GRANT IS A MENU |
 | 1033 | · 14. THE LOAN'S RATE |
 | 1187 | · 15. THE PRICE OF A PLACE |
-| 1281 | · 16. ALL THREE SURVIVE A SAVE |
-| 1351 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 1302 | · 16. ALL THREE SURVIVE A SAVE |
+| 1372 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1444 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 60 | 1474 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 68 | 4 | `static void quietly(Runnable work)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
@@ -107,9 +107,10 @@
 | 88 | 45 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
 | 144 | 3 | `static void held(Game g)` | GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the businesses build. |
 | 148 | 7 | `static void schools(Game g)` |  |
-| 156 | 1315 | `public static void main(String[] args) throws Exception` |  |
-| 1476 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1481 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1489 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1496 | 7 | `static void cleanUp(Path root)` |  |
+| 156 | 1336 | `public static void main(String[] args) throws Exception` |  |
+| 1497 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
+| 1505 | 4 | `static double fullness(Game g, EducationType type)` | How full one kind's schools stand at the month's end: its student body over the seats its staff can teach, the places the month hands Education (BuildingManager.getStaffedEducationPlaces at the city's fill rate). |
+| 1511 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1519 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
+| 1526 | 7 | `static void cleanUp(Path root)` |  |
 
