@@ -6,6 +6,7 @@ import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -155,6 +156,8 @@ public final class FoundingScreen {
     private Nations.Path path = Nations.DEFAULT_PATH;
     /** The equipment chosen (R1d): the "1900" chip or "All fitted", which the page opens on until the 1900 city grows (R1g; R1d call 2). */
     private boolean historicalEquipment = false;
+    /** The "start on gold" box beside the money (FB14; GD3-F, spec-gold-money 4.3): off until ticked, kept in the founding (Founding.withGold()). */
+    private boolean startOnGold = false;
     /** The path's seed, as typed or rolled: not the ground's (WN1). */
     private String pathSeed = String.valueOf(Nations.DEFAULT_SEED);
 
@@ -174,7 +177,7 @@ public final class FoundingScreen {
 
     /* ------------------------------------------------ what a keystroke refreshes */
 
-    private Label currencyLine, whyNot, boundsLine;
+    private Label currencyLine, whyNot, boundsLine, goldLine;
     private Button found, beforeChip, afterChip;
     /** The preset cards' figures and tips, written in the money being chosen: refresh() rewrites them on a keystroke, which redraws nothing. */
     private final java.util.Map<Founding.Preset, Label> cardFigures = new java.util.EnumMap<>(Founding.Preset.class);
@@ -275,6 +278,7 @@ public final class FoundingScreen {
         cardFigures.clear();
         cardTips.clear();
         boundsLine = null;
+        goldLine = null;
         beforeChip = afterChip = null;
         boolean two = earth;
         double wide = two ? LEFT : PANEL - 2 * PANEL_PAD;
@@ -389,6 +393,17 @@ public final class FoundingScreen {
             bounds.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
             startBlock.getChildren().addAll(fields, bounds);
         }
+        // ...and the "start on gold" box beside the money (FB14), its line the founding's own figure (Founding.goldUsd()).
+        CheckBox onGold = new CheckBox("Start on gold");
+        onGold.setSelected(startOnGold);
+        onGold.setStyle(Palette.words(Palette.SIZE_SECTION - 1, Palette.TEXT));
+        onGold.setOnAction(e -> { startOnGold = onGold.isSelected(); refresh(); });
+        Label goldWords = new Label(goldWords());
+        goldLine = goldWords;
+        goldWords.setWrapText(true);
+        goldWords.setMaxWidth(wide);
+        goldWords.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+        startBlock.getChildren().addAll(onGold, goldWords);
 
         /* --------------------------- the ground ---------------------------- */
         VBox groundBlock = earth ? earthBlock() : generatedBlock();
@@ -906,6 +921,22 @@ public final class FoundingScreen {
         return Currency.using(c, () -> "In the treasury " + c.qualify(money(p.cash())) + ", in the vault " + usd(p.reserveUsd()) + ".");
     }
 
+    /**
+     * The "start on gold" box's line (FB14): what the founding puts into gold, in the money being chosen - Founding.goldUsd() at the
+     * opening rate, the law's 40% of the treasury and never more than the vault, which is all of it in every preset.
+     */
+    private String goldWords() {
+        if (!startOnGold) return "Off: the vault opens in US dollars, and the money is not tied to gold.";
+        double cash = cash(), usd = reserveUsd();
+        if (!Double.isFinite(cash) || !Double.isFinite(usd)) return "On: type the treasury and the vault to see how much goes into gold.";
+        double gold = Founding.goldUsd(cash, usd, ForeignAccounts.OPENING_RATE), rest = usd - gold;
+        if (!(gold > 0)) return "On, but the vault is empty: there is no gold to start on, and the city opens on dollars.";
+        return Currency.using(chosenMoney(), () -> "On: the money is tied to an ounce of gold from the first month, and "
+                + usd(gold) + " of the vault is held in gold, enough to cover " + PolicyScreen.pct0(ForeignAccounts.COVER_RATIO)
+                + " of the treasury" + (rest > 1e-6 ? ". The other " + usd(rest) + " stays in dollars." : ": the whole vault.")
+                + " Without the world's price of gold the city opens on dollars.");
+    }
+
     /** The Custom fields' bounds, in the money being chosen. */
     private String boundsWords() {
         return Currency.using(chosenMoney(), () -> String.format(
@@ -1011,6 +1042,7 @@ public final class FoundingScreen {
         for (java.util.Map.Entry<Founding.Preset, Label> e : cardFigures.entrySet()) e.getValue().setText(cardWords(e.getKey()));
         for (java.util.Map.Entry<Founding.Preset, Tooltip> e : cardTips.entrySet()) e.getValue().setText(tipWords(e.getKey()));
         if (boundsLine != null) boundsLine.setText(boundsWords());
+        if (goldLine != null) goldLine.setText(goldWords());
         if (beforeChip != null && afterChip != null) {
             beforeChip.setText("before: " + signedAs(false).write(SIGN_EXAMPLE));
             afterChip.setText("after: " + signedAs(true).write(SIGN_EXAMPLE));
@@ -1100,7 +1132,8 @@ public final class FoundingScreen {
         Founding f = Founding.custom(cityName, cash(), reserveUsd(), WorldEconomy.DEFAULT_MEAN_INFLATION)
                 .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED)
                 .withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED)
-                .withUnfitted(historicalEquipment);
+                .withUnfitted(historicalEquipment)
+                .withGold(startOnGold);
         return ownCurrency ? f.withCurrency(currency()) : f;
     }
 

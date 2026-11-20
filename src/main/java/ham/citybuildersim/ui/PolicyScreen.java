@@ -1494,19 +1494,31 @@ final class PolicyScreen {
         /* ------------------------- the peg (XR2, the study's alerts) -------------------------
          * A peg whose vault is under THIN_COVER months of imports, and the month
          * a peg broke: the two moments the board's alerts name for the regime.
+         * The gold's the same (FB14; GD3's review, 4): the month it gave way,
+         * named as the gold's and not a peg's, and a cover under the one the
+         * defence starts at (DebtManager.GOLD_DEFENCE_FROM, twice the law's).
          */
         ForeignAccounts fx = ui.game.getForeignAccounts();
         if (fx.brokeThisMonth()) {
-            out.add(new Flag(Palette.BAD, "The peg broke",
-                    "It broke by " + fx.getLastBreakCause().words + ": the " + sym() + " fell "
-                    + share1(Math.abs(Math.expm1(fx.getLastBreakJump()))) + " in the month and floats now. The bank is"
+            boolean gold = fx.lastBreakWasGold();
+            double jump = Math.expm1(fx.getLastBreakJump());
+            out.add(new Flag(Palette.BAD, gold ? "The " + sym() + " came off gold" : "The peg broke",
+                    (gold ? "The gold gave way, by " : "It broke by ") + fx.getLastBreakCause().words + ": the " + sym()
+                    + (gold ? (jump >= 0 ? " fell " : " rose ") : " fell ")
+                    + share1(Math.abs(jump)) + " in the month and floats now. The bank is"
                     + " believed less for it.", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
+        } else if (fx.getRegime() == ForeignAccounts.Regime.GOLD && ui.game.getGoldCover() < DebtManager.GOLD_DEFENCE_FROM) {
+            double cover = ui.game.getGoldCover();
+            out.add(new Flag(cover < ForeignAccounts.COVER_RATIO ? Palette.BAD : Palette.WARN, "The gold's cover is thin",
+                    "The gold covers " + share1(cover) + " of M0; the law asks " + pct0(ForeignAccounts.COVER_RATIO)
+                    + ", and the first sale that would leave it under that takes the " + sym() + " off gold. At this pace: "
+                    + coverPace(ui.game.getMonthsToFloor()) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
         } else if (fx.getRegime() == ForeignAccounts.Regime.PEG && fx.monthlyImports() > 0
                 && fx.importCover() < ForeignAccounts.THIN_COVER) {
             out.add(new Flag(Palette.WARN, "The peg's vault is thin",
                     String.format("The vault covers %.1f months of imports; the peg breaks under %s. %s", fx.importCover(),
                             plain(ForeignAccounts.VAULT_FLOOR) + (ForeignAccounts.VAULT_FLOOR == 1 ? " month" : " months"),
-                            floorWords(fx.monthsToFloor())) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
+                            floorWords(ui.game.getMonthsToFloor())) + ".", MONEY, CURRENCY_PAGE, CURRENCY_PAGE));
         }
 
         /* ---------------------------- the money itself ---------------------------- */
@@ -4424,8 +4436,8 @@ final class PolicyScreen {
             dealt = Kept.scope("dealt", () -> fxCell("THIS MONTH THE VAULT DEALT", "nothing", "the float's rule and the peg were in step", null));
         }
         VBox vault = fxCell("THE VAULT", coverMonths(fx.importCover()), "of imports (" + usd(fx.getReservesUsd()) + ")", null);
-        VBox pace = fxCell("AT THIS PACE", floorWords(fx.monthsToFloor()),
-                Double.isInfinite(fx.monthsToFloor()) ? "the vault is not falling: it sold nothing at the last reprice"
+        VBox pace = fxCell("AT THIS PACE", floorWords(ui.game.getMonthsToFloor()),
+                Double.isInfinite(ui.game.getMonthsToFloor()) ? "the vault is not falling: it sold nothing at the last reprice"
                         : "the floor is " + usd(fx.vaultFloorUsd()) + ", " + curMonths(ForeignAccounts.VAULT_FLOOR) + " of imports",
                 null);
         return new Node[] {shadow, dealt, vault, pace};
@@ -4809,11 +4821,11 @@ final class PolicyScreen {
                 "worth " + usd(fx.getHoldingUsd(ForeignAccounts.GOLD)) + " at gold's price", null);
         VBox cFree = fxCell("FREE GOLD", signedUsd(free), curLocal(fx.toLocal(free)) + (free >= 0 ? ", free to leave the vault" : ", short of the law's cover"),
                 null, free < 0 ? Palette.BAD : Palette.TEXT_HEAD);
-        double months = fx.monthsToFloor();
+        double months = ui.game.getMonthsToFloor();   // over M0 as FREE GOLD reads it (FB14: the M0 the reprice was handed is not saved)
         VBox cPace = fxCell("AT THIS PACE", coverPace(months), Double.isInfinite(months)
                 ? "the gold is not falling: the vault sold none at the last reprice"
                 : months <= 0 ? "last month's sale of " + usd(fx.getDefenceUsd()) + " leaves it there"
-                : "to the law's cover, at last month's sale of " + usd(fx.getDefenceUsd()), null);
+                : (cover > 1 ? "until the gold is gone (the sales retire M0 first, and the cover only rises), at last month's sale of " : "to the law's cover, at last month's sale of ") + usd(fx.getDefenceUsd()), null);
         VBox c = card(cardHead(Icons.EXCHANGE, Palette.MONEY, "THE GOLD STANDARD", goldInfo(), quiet("a higher mint price is a weaker " + sym())));
         if (fx.getGoldEvent() != ForeignAccounts.GoldEvent.NONE) c.getChildren().add(Kept.scope("decision", () -> goldDecision(fx)));
         c.getChildren().add(row(cMint, cCentre, cWeak, cStrong, cPrice));
