@@ -153,7 +153,12 @@ import java.util.List;
  *      (STRICT_SHAPES), each played the same way, at the median and in
  *      STRICT_SHARE of them, for a city's path and not the rule reversed it
  *      in the probe city six times (the list above), and one city reversed
- *      by hand leaves the line green while the share holds; the very loose
+ *      by hand leaves the line green while the share holds - and since FS10
+ *      that sign over twenty years, the D$'s answer to the dearer money, is a
+ *      finding printed (with the D$ held it is 11 of 24), the line asserted
+ *      being the rule's half on a bare rule: very strict's money dearer than
+ *      Standard's over the reading where the two cross, cheaper under it, the
+ *      same on it; the very loose
  *      twin, reading inflation under its target in some months and over it
  *      in others (a fourth game, the same twin met by a fall in the world's
  *      prices, causes both - the city's path alone gave it only one side
@@ -162,9 +167,12 @@ import java.util.List;
  *      over it (0.7.81; until then very loose was held to lie on the side of
  *      Standard its band put it - over the target dearer prices, under it
  *      lower, where it held the neutral rate and Standard eased);
- *      neither end's rate reaches the dial's stop or leaves
- *      its last year more than a full miss off the target; and the very
- *      loose city trusts the bank less. The dial is a decision, survives a
+ *      neither end's rate reaches the dial's stop, and no spiral inside a
+ *      full miss off the target (since FS10 the rule's half on a bare rule:
+ *      weight over one at a full miss, the stop far past it; the last year is
+ *      a finding); and very loose costs trust through the lean (since FS10
+ *      caused on a bare Expectations fed a basket inside its band, the cost
+ *      none on the target; the twins' trust is printed). The dial is a decision, survives a
  *      save, and a save without it, or with a name this build does not
  *      know, reads Standard.
  *
@@ -2279,16 +2287,12 @@ public class CentralBankCheck {
         }
         LongPlaytest.cleanUp(cityFiles.getDirectory().getParent());
         assertTrue("fixture: each city of the set is at its branch, on the rule, at Standard and the default target", eachAtBranch);
-        Observation.reached("strict policy median across cities",
-                String.format("very strict holds prices lower than Standard over the horizon, at the median of the %d cities (%+.3f points a year)",
-                    shapes, median(gaps) * 100),
-                median(gaps) < 0,
-                "");
-        Observation.reached("strict policy share across cities",
-                String.format("...and in at least STRICT_SHARE of them, %d of %d (%d hold)",
-                    strictNeed(shapes), shapes, held),
-                held >= strictNeed(shapes),
-                "");
+        // FS10 (CB2's median and share): whether very strict's dearer money held a city's prices lower over twenty years is the D$'s
+        // answer to it, a path's - with the D$ held at the branch's rate the 24 twins' sign was 11 of 24, the median over zero (the pin takes the
+        // rate's channel away) - so the 24 gaps are a finding, and the rule's half of the claim is asserted on a bare rule.
+        out.printf("   finding (read, not asserted): very strict held prices lower than Standard over the horizon in %d of %d cities, the median %+.3f points a year"
+                + " (STRICT_SHARE wants %d)%n", held, shapes, median(gaps) * 100, strictNeed(shapes));
+        strictRuleHalf();
         assertTrue("STRICT_SHARE is over a half, so a set that holds the share holds the median too", STRICT_SHARE > .5);
         // The line itself, from both sides: the measured gaps each made very strict's cheaper, then reversed by hand one at a
         // time in the list's order (very strict dearer there by what it was cheaper - the city's two inflations swapped).
@@ -2337,11 +2341,13 @@ public class CentralBankCheck {
         double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
         for (int i : new int[] { 0, 2 }) {
             assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);
-            Observation.reached("...and its last year is within a full miss of the target, no spiral",
-                    Math.abs(lastYear[i] - target) <= fullMiss);
+            // FS10: the last year is the path's, read here and not asserted; "no spiral" is the rule's half, on a bare rule.
+            out.printf("   finding (read, not asserted): %s's last year was %.2f%%, %s a full miss (%.1f points) of the %.1f%% target%n", ends[i].words,
+                    lastYear[i] * 100, Math.abs(lastYear[i] - target) <= fullMiss ? "within" : "past", fullMiss * 100, target * 100);
+            noSpiralHalf(ends[i]);
         }
-        Observation.reached("very loose costs trust, through the lean measured against holding the target",
-                trust[2] < trust[1]);
+        // FS10: the twins' trust (printed above) is the path's; the cost is caused on a bare Expectations fed one basket.
+        looseCostsTrust();
 
         /* ---- the dial is a decision, and the save carries it ---- */
         Game strict = twins[0];
@@ -2478,8 +2484,9 @@ public class CentralBankCheck {
      * other way by 0.43 and 0.53 - the draw the line now reads past, while
      * this city's own twins hold it by 0.43. This city keeps
      * what is about its own twins - the very loose twin's months by its
-     * target, the fourth game, the dial's stop, the last year and trust - and
-     * a batch that moves its path may still re-pick it for those.
+     * target, the fourth game, the dial's stop (and, since FS10, only prints
+     * its last year and trust: the rule's halves of those are on bare rules) -
+     * and a batch that moves its path may still re-pick it for those.
      */
     static Game probeCity(GameFiles files) {
         // R0b call 7: the probe city's causes of 1900 held off, before a month, as are its twins and the fourth game (loaded from its save:
@@ -2610,5 +2617,118 @@ public class CentralBankCheck {
         int under = 0;
         for (double gap : gaps) if (gap < 0) under++;
         return median(gaps) < 0 && under >= strictNeed(gaps.length);
+    }
+
+    /**
+     * Very strict's half of "it holds prices lower than Standard" (CB2's median and share over STRICT_SHAPES, FS10): the rule's own, on
+     * ruleRate() at every target, from both sides of the reading where very strict's line and Standard's cross - very strict's money dearer
+     * over it, cheaper under it, the same on it. The two lines are aim + weight x (reading - aim) and target + weight' x (reading - target)
+     * (the neutral rate and the target's distance from the default are in both), so the constants put the crossing at
+     * STRICTEST_AIM x (STRICTEST_WEIGHT - 1) / (STRICTEST_WEIGHT - TAYLOR_WEIGHT) under the target: a city on its target or over it is
+     * on the dearer side. What the dearer money does to the prices over twenty years is the D$'s answer, which a pin removes (the section's finding).
+     */
+    static void strictRuleHalf() {
+        DebtManager.Strictness strictest = DebtManager.Strictness.VERY_STRICT, standard = DebtManager.Strictness.STANDARD;
+        double[] away = { 1e-6, 1e-4, .005, .01, .03, .10 };
+        int dearerPoints = 0, dearer = 0, cheaperPoints = 0, cheaper = 0, crossings = 0, same = 0;
+        for (int t = 0; t <= Math.round(DebtManager.MAX_INFLATION_TARGET / .005); t++) {
+            double target = t * .005;
+            double cross = crossing(target);
+            crossings++;
+            if (Math.abs(DebtManager.ruleRate(cross, target, strictest) - DebtManager.ruleRate(cross, target, standard)) <= 1e-12) same++;
+            for (double d : away) {
+                dearerPoints++;
+                if (DebtManager.ruleRate(cross + d, target, strictest) > DebtManager.ruleRate(cross + d, target, standard)) dearer++;
+                cheaperPoints++;
+                if (DebtManager.ruleRate(cross - d, target, strictest) < DebtManager.ruleRate(cross - d, target, standard)) cheaper++;
+            }
+        }
+        double target = DebtManager.DEFAULT_INFLATION_TARGET;
+        double cross = target - DebtManager.STRICTEST_AIM * (DebtManager.STRICTEST_WEIGHT - 1)
+                / (DebtManager.STRICTEST_WEIGHT - DebtManager.TAYLOR_WEIGHT);
+        assertTrue(String.format("fixture: at the default target the two rules cross at %.1f%%, under the target by STRICTEST_AIM x (STRICTEST_WEIGHT - 1)"
+                + " / (STRICTEST_WEIGHT - TAYLOR_WEIGHT): a city on its target or over it is on very strict's dearer side", cross * 100),
+                Math.abs(crossing(target) - cross) <= 1e-12 && cross < target
+                        && DebtManager.ruleRate(target, target, strictest) > DebtManager.ruleRate(target, target, standard));
+        assertTrue(String.format("very strict holds prices lower than Standard, the rule's half: its money is dearer than Standard's over the reading where"
+                + " they cross, at every target (%d of %d points, six distances)", dearer, dearerPoints), dearer == dearerPoints);
+        assertTrue(String.format("...cheaper under it (%d of %d)", cheaper, cheaperPoints), cheaper == cheaperPoints);
+        assertTrue(String.format("...and the same on it (%d of %d targets, to 1e-12)", same, crossings), same == crossings);
+    }
+
+    /** The reading at which very strict's rule and Standard's set the same rate at `target`, from the constants (strictRuleHalf()). */
+    static double crossing(double target) {
+        DebtManager.Strictness strictest = DebtManager.Strictness.VERY_STRICT, standard = DebtManager.Strictness.STANDARD;
+        double aim = strictest.aim(target);
+        return (target * (1 - standard.weight) + aim * (strictest.weight - 1)) / (strictest.weight - standard.weight);
+    }
+
+    /**
+     * "No spiral" at an end of the dial (FS10): the rule's half of "its last year is within a full miss of the target". At a full miss over
+     * the target - past the band of the loose end - each point of inflation sets weight points of rate, over one, so the real rate rises
+     * as inflation does, and the rule calls for the dial's stop only at a reading far past the full miss: just under it the rule is short
+     * of the stop, just over it past. The last year itself is the path's and is read in the section.
+     */
+    static void noSpiralHalf(DebtManager.Strictness s) {
+        double target = DebtManager.DEFAULT_INFLATION_TARGET, fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
+        double aim = s.aim(target), band = s.band(), over = target + fullMiss;
+        double slope = (DebtManager.ruleRate(over + .01, target, s) - DebtManager.ruleRate(over, target, s)) / .01;
+        double stop = aim + band + (DebtManager.MAX_POLICY_RATE - DebtManager.NEUTRAL_RATE - (aim - DebtManager.DEFAULT_INFLATION_TARGET)) / s.weight;
+        boolean bothSides = DebtManager.ruleRate(stop - 1e-6, target, s) < DebtManager.MAX_POLICY_RATE
+                && DebtManager.ruleRate(stop + 1e-6, target, s) > DebtManager.MAX_POLICY_RATE;
+        assertTrue(String.format("fixture: %s's full miss over the target (%.1f%%) is past what it lets be, its aim and band (to %.1f%%)", s.words, over * 100,
+                (aim + band) * 100), over > aim + band);
+        assertTrue(String.format("...and its last year is within a full miss of the target, no spiral - the rule's half: at a full miss over it each point of"
+                + " inflation sets %.2f points of rate, and the rule calls for the dial's stop only at %.0f%%, far past the full miss", slope, stop * 100),
+                Math.abs(slope - s.weight) <= 1e-9 && slope > 1 && bothSides && stop > over);
+    }
+
+    /**
+     * A bank at `s` over STRICT_HORIZON months of a basket rising `annual` a year (FS10): a bare PriceIndex, Expectations and DebtManager, the
+     * bank setting its rule's advice each month as the autopilot does (Game.nextMonth()) and Expectations read as the city reads it. Returns
+     * the credibility on average, the last month's lean, and what the basket's year read at the end.
+     */
+    static double[] trustOnAPath(DebtManager.Strictness s, double annual) {
+        PriceIndex index = new PriceIndex();
+        int m = 0;
+        while (!index.isBased()) index.takeMonth(.3, .4, 100, 100, ++m);
+        Expectations x = new Expectations();
+        x.reset();
+        DebtManager bank = new DebtManager();
+        bank.setStrictness(s);
+        double target = bank.getInflationTarget();
+        double level = 1, monthly = Math.pow(1 + annual, 1.0 / 12), trust = 0;
+        for (int k = 0; k < STRICT_HORIZON; k++) {
+            if (k > 0) {
+                level *= monthly;
+                index.takeMonth(.3 * level, .4 * level, 100, 100, ++m);
+            }
+            double read = index.hasRate() ? index.inflation() : target;
+            x.takeMonth(index, target, bank.advisedPolicyRate(read), bank.neutralRate(), bank.holdingRate(read));
+            trust += x.getCredibility() / STRICT_HORIZON;
+        }
+        return new double[] { trust, x.getLean(), index.inflation() };
+    }
+
+    /**
+     * "Very loose costs trust, through the lean measured against holding the target" (FS10): on a basket rising inside very loose's band and
+     * over the tolerance, Standard's rate is what holding the target takes (lean all the way, no trust lost) and very loose's is the neutral rate
+     * (no lean, trust lost at the miss's share); on the target neither costs any. Caused on a bare Expectations; the twins' own trust is the path's.
+     */
+    static void looseCostsTrust() {
+        DebtManager.Strictness standard = DebtManager.Strictness.STANDARD, loosest = DebtManager.Strictness.VERY_LOOSE;
+        double target = DebtManager.DEFAULT_INFLATION_TARGET;
+        double annual = target + (Expectations.TOLERANCE + DebtManager.LOOSEST_BAND) / 2;
+        double[] held = trustOnAPath(standard, annual), leaned = trustOnAPath(loosest, annual);
+        assertTrue(String.format("fixture: a basket rising %.1f%% a year reads over the %.1f%% target by more than the tolerance and inside very loose's band"
+                + " (the year reads %.3f%% at the end)", annual * 100, target * 100, leaned[2] * 100),
+                annual - target > Expectations.TOLERANCE && annual - target <= loosest.band() && Math.abs(leaned[2] - annual) <= 1e-9);
+        assertTrue(String.format("...Standard's rate is what holding the target takes, so it leans all the way (%.3f), very loose's is the neutral rate inside its"
+                + " band, so it does not (%.3f)", held[1], leaned[1]), Math.abs(held[1] - 1) <= 1e-12 && leaned[1] == 0);
+        assertTrue(String.format("very loose costs trust, through the lean measured against holding the target (trust %.3f on average against Standard's %.3f)",
+                leaned[0], held[0]), leaned[0] < held[0]);
+        double[] steady = trustOnAPath(standard, target), steadyLoose = trustOnAPath(loosest, target);
+        assertTrue(String.format("...and on the target it costs none: the two banks trust alike to the bit (%.6f)", steady[0]),
+                bits(steady[0], steadyLoose[0]));
     }
 }
