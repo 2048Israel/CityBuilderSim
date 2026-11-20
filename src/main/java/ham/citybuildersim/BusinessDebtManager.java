@@ -2177,13 +2177,31 @@ public class BusinessDebtManager {
             mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
             return false;
         }
-        if (insuredRationed && principal > Math.min(capitalRoom(sector), insuredProjectRoom())) {
+        if (capitalShortFor(sector, principal)) {
             mortgageRefusal = MORTGAGE_CAPITAL;
             refusedForCapital.add(sector);
             refusedMortgageForCapital.add(sector);
             return false;
         }
         return true;
+    }
+
+    /** canFundMortgage()'s capital test on a mortgage of this principal: only while the leverage requirement binds (round 2). */
+    private boolean capitalShortFor(String sector, double principal) {
+        return insuredRationed && principal > Math.min(capitalRoom(sector), insuredProjectRoom());
+    }
+
+    /**
+     * ...the same capital test asked before the order goes to the door, with
+     * nothing recorded: whether the bank's capital rule has no room this
+     * month for the mortgage this shortfall would take, the lender open
+     * (MC1). Game.consider() then asks the landlord's owners for what its
+     * till lacks on the order, not only its down payment - see Game, THE
+     * OWNERS FIRST, ...AND THE WHOLE ORDER WHILE THE BANK IS SHORT.
+     */
+    public boolean mortgageShortOfCapital(String sector, double shortfall) {
+        if (!(shortfall > 0) || !lendingOpen) return false;
+        return capitalShortFor(sector, Mortgage.loanFor(shortfall) * (1 + Mortgage.premiumRate()));
     }
 
     /** Why canFundMortgage() last said no, or null if it said yes. */
