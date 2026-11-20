@@ -157,8 +157,15 @@ git -C "$CLONE" ls-remote origin refs/heads/main "refs/heads/batch/$ID" 'refs/ta
 echo "$CODE" > "$RUN/exit"
 # BW1: the outcome, to the gate's file, the batch's own and, on a publication or a stop, one message to the batch.
 CHECKS=$CLONE/target/checks; TAG=$(cat "$RUN/tag" 2>/dev/null); KNOWN=$(grep -c . "$RUN/stages/used-parts" 2>/dev/null) || :
-AFTER=$(grep 'refs/heads/main$' "$RUN/refs.after"); PUBLISHED=no; STEP=stopped; OURS=1
-[ -z "$AFTER" ] || [ "$AFTER" = "$(grep 'refs/heads/main$' "$RUN/refs.before")" ] || PUBLISHED=yes
+# BW2: published only when origin's main after the run holds the batch's tip, which the main it began on did not; a dry run
+# never. Main moves under any run when another gate pushes (HS2's dry run beside FB13's ship was told "HS2 shipped",
+# 2026-11-20; LM1-D's beside a queue commit, 2026-11-18), and a refused push leaves the clone on that stranger's main.
+ref() { sed -n "s|[[:space:]]$1\$||p" "$RUN/refs.after" | head -1; }
+holds() { [ -n "$1" ] || return 1; git -C "$CLONE" cat-file -e "$1^{commit}" 2> /dev/null || git -C "$CLONE" fetch -q origin refs/heads/main 2> /dev/null
+    git -C "$CLONE" merge-base --is-ancestor "$2" "$1" 2> /dev/null; }   # commit $1 has $2 in its history
+AFTER=$(ref refs/heads/main); TIP=$(cat "$RUN/branch.commit"); PUBLISHED=no; STEP=stopped; OURS=1
+[ "$DRY" = yes ] || [ -z "$AFTER" ] || ! holds "$AFTER" "$TIP" || holds "$(cat "$RUN/main.commit")" "$TIP" || PUBLISHED=yes
+[ "$PUBLISHED" = yes ] && [ -n "$TAG" ] && holds "$(ref "refs/tags/$TAG")" "$TIP" || TAG=   # a tag counts only as pushed with it
 ! grep -q 'kept run refused' "$LOG" || REUSED=""
 REASON=$(sed -n 's/.*ship      STOPPED - //p; s/^gate: \(stopped by .*\)/\1/p' "$LOG" | tail -1)
 case "$CODE:$REASON" in
