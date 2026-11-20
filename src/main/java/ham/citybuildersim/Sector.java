@@ -3188,7 +3188,45 @@ public abstract class Sector {
         double held = getStock(g);
         double offered = m.getLocalPrice() >= getMarginalCostPerUnit(g) ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
         double made = whenHolding(g, held - Math.min(offered, plannedDemand(g)), () -> getPlannedOutput(g) + getExportBoundOutput(g));
-        return made >= 0 ? (made >= market ? 1 : (own + made) / nameplate) : 1;
+        return made >= 0 ? (made >= market ? 1 : shareAboveFloors(g, (own + made) / nameplate)) : 1;
+    }
+
+    /**
+     * The order share at which the buildings that make a stockable good, each at the greater of the share and its committed floor
+     * (buildingOrder(), committedFloor()), make `fraction` of the good's nameplate (CPB2): exactly `fraction` where no building of it has a floor.
+     * WHY: forecastOrder() divided what the month will make by the whole nameplate, as if every building ran at that share; but a scrap refinery
+     * whose recovered copper is committed runs at its floor whatever the share, so beside a rod mill the anode refinery was still ordered for its
+     * nameplate's part of the rod mill's cathode, and the cathode the committed scrap made past it shipped on imported anode below its cost.
+     */
+    private double shareAboveFloors(Good g, double fraction) {
+        if (buildings == null) return fraction;
+        java.util.TreeSet<Double> floors = new java.util.TreeSet<>();
+        double all = buildings.totalBySector(key, t -> {
+            if (!(t.makes(g) > 0)) return 0;
+            floors.add(committedFloor(t));
+            return t.makes(g);
+        });
+        if (!(all > 0) || !(floors.last() > 0)) return fraction;
+        // The share's curve, Σ weight * max(share, floor), is flat to the lowest floor, then each group joins the share at its own floor.
+        double fixed = 0;
+        double[] f = new double[floors.size()], w = new double[floors.size()];
+        int i = 0;
+        for (double floor : floors) {
+            f[i] = floor;
+            w[i] = buildings.totalBySector(key, t -> t.makes(g) > 0 && committedFloor(t) == floor ? t.makes(g) : 0) / all;
+            fixed += w[i] * f[i];
+            i++;
+        }
+        if (fraction <= fixed) return 0;
+        double running = 0;
+        for (i = 0; i < f.length; i++) {
+            running += w[i];
+            fixed -= w[i] * f[i];
+            if (!(running > 0)) continue;
+            double share = (fraction - fixed) / running;
+            if (i + 1 == f.length || share <= f[i + 1]) return Math.max(f[i], Math.min(1, share));
+        }
+        return 1;
     }
 
     /**
@@ -3327,13 +3365,20 @@ public abstract class Sector {
         }
         // CPB1: a feed already committed outside the goods market must be
         // transformed too. Apply its floor only to buildings that use it.
+        most = Math.max(most, committedFloor(t));
+        return traded ? most : 1;
+    }
+
+    /** The least share of its nameplate a building runs at whatever is ordered (CPB1): what its part of a feed committed outside the goods market needs, to no more than 1; 0 for one that uses none. */
+    private double committedFloor(BuildingsTemplate t) {
+        double most = 0;
         for (Good g : t.goodsUsed().keySet()) {
             double committed = committedInput(g);
             if (!(committed > 0)) continue;
             double need = getInputAtCapacity(g) * getOperatingRate();
             if (need > 0) most = Math.max(most, Math.min(1, committed / need));
         }
-        return traded ? most : 1;
+        return most;
     }
 
     /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */

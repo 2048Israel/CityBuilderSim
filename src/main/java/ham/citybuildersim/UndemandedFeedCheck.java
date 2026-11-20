@@ -15,8 +15,11 @@ import java.util.List;
  * which charged cathode beside a rod mill less than its own anode; and for a
  * good the world will not buy the net export price is NaN, and `NaN < cost`
  * refused nothing, so a van plant nobody had asked for filled its shed on
- * imported machinery. Both are caused here in real sectors through
- * Markets.clearMonth and the strike and the accounts.
+ * imported machinery. Building it found a third: committed recovered copper
+ * runs its refinery whatever the order share, and the share was still spread
+ * over the whole nameplate, so the anode refinery beside a rod mill was
+ * ordered as if the scrap did not cover any of it. All three are caused here
+ * in real sectors through Markets.clearMonth and the strike and the accounts.
  *
  * What this has to prove:
  *   1. cathode beside a rod mill, undemanded, its net export price over its
@@ -25,9 +28,12 @@ import java.util.List;
  *   2. kept beside it: a full shed's profitable spare is still ordered whole and
  *      made, and recovered copper already paid for still runs and ships at the
  *      marginal cost, its feed sunk;
- *   3. every real plant of a stockable good the world will not buy, with no
+ *   3. recovered copper committed beside a demanded rod mill: the anode
+ *      refinery is ordered only for the rod mill's cathode the scrap does not
+ *      make, so none ships on imported anode below its cost;
+ *   4. every real plant of a stockable good the world will not buy, with no
  *      demand here: no buffer, no feed, nothing made, the accounts add up;
- *   4. kept beside it: demanded vans make their cover and buy their feed,
+ *   5. kept beside it: demanded vans make their cover and buy their feed,
  *      profitable cars run beside an idle locomotive works, and vans already
  *      in the shed sell to a real fleet with no new feed.
  */
@@ -81,7 +87,7 @@ public class UndemandedFeedCheck {
         return near(na.getGdp(), na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getNetExports());
     }
 
-    /* ----- 1 and 2: a refinery beside a rod mill ----- */
+    /* ----- 1 to 3: a refinery beside a rod mill ----- */
 
     /**
      * A refinery and a rod mill, anode at 11/10, cathode at (sale + 1)/sale
@@ -201,10 +207,44 @@ public class UndemandedFeedCheck {
         check("the accounts keep GDP = C + I + G + NX", identity(accounts(r)));
     }
 
-    /* ----- 3 and 4: the goods the world will not buy ----- */
+    static void committedBesideTheRodMill() {
+        out.println("--- 3. recovered copper committed beside a demanded rod mill: anode only for what the scrap does not cover ---");
+        Game r = copperPair("committed-rod", 9, 10.75, 10.25, true);
+        BuildingsTemplate scrap = r.getBuildingManager().getTemplate(CopperRefining.SCRAP_REFINERY);
+        build(r, scrap);
+        GoodsMarket feed = r.getMarkets().get(Good.COPPER_SCRAP);
+        feed.setWorldPrices(11, 10);
+        feed.strike(0, 0, 0);
+        CopperRefining rr = r.getSectors().copperRefining();
+        double recovered = scrap.uses(Good.COPPER_SCRAP) * rr.getOperatingRate();
+        r.getOldMetal().carsScrapped(recovered / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
+        BuildingsTemplate works = r.getBuildingManager().getTemplate(CopperRefining.ELECTROLYTIC_REFINERY);
+        double ratio = works.uses(Good.ANODE) / works.makes(Good.COPPER);
+        double fromScrap = recovered * scrap.makes(Good.COPPER) / scrap.uses(Good.COPPER_SCRAP);
+        double own = rr.captiveUnits(Good.COPPER);
+        GoodsMarket cathode = r.getMarkets().get(Good.COPPER);
+        out.printf("rod mill's cathode %.6f; the committed scrap makes %.6f; anode a cathode %.9f against a net export price of %.9f%n",
+                own, fromScrap, rr.flowCostPerUnit(Good.COPPER), cathode.netExportPrice());
+        check("premise: rod demanded, cathode not, the committed scrap covering part of the rod mill and imported feed under water",
+                cathode.getDemand() == 0 && fromScrap > 0 && fromScrap < own && cathode.netExportPrice() < rr.flowCostPerUnit(Good.COPPER));
+        clear(r);
+        Sector.Output cu = rr.outputRow(Good.COPPER);
+        Sector.Input anode = rr.inputRow(Good.ANODE);
+        double made = cu.captive + cu.produced + cu.exportBound;
+        out.printf("cleared: taken %.6f; captive %.6f, produced %.6f, export-bound %.6f; anode bid %.6f, bought %.6f%n",
+                rr.oldCopperTaken(), cu.captive, cu.produced, cu.exportBound, anode.bid, anode.boughtLocal + anode.imported);
+        check("all the recovered copper paid for is taken", near(rr.oldCopperTaken(), recovered));
+        check("the anode refinery is ordered only for the rod mill's cathode the scrap does not make",
+                near(anode.bid, (own - fromScrap) * ratio) && near(anode.boughtLocal + anode.imported, (own - fromScrap) * ratio));
+        check("so the run makes the rod mill's cathode and none ships on imported anode below its cost",
+                near(made, own) && near(cu.captive, own) && cu.exportBound < 1e-6 && cu.exported < 1e-6);
+        check("the accounts keep GDP = C + I + G + NX", identity(accounts(r)));
+    }
+
+    /* ----- 4 and 5: the goods the world will not buy ----- */
 
     static void noWorldOutlet() {
-        out.println("--- 3. every plant of a stockable good the world will not buy, with no demand here: no buffer, no feed ---");
+        out.println("--- 4. every plant of a stockable good the world will not buy, with no demand here: no buffer, no feed ---");
         List<Good> goods = new ArrayList<>();
         for (Good g : Good.values()) if (g.stockable() && g.traded() && !g.exportable()) goods.add(g);
         out.println("stockable traded goods the world will not buy: " + goods);
@@ -275,7 +315,7 @@ public class UndemandedFeedCheck {
     }
 
     static void keptBesideTheIdlePlants() {
-        out.println("--- 4. kept: demanded vans, profitable cars and vans already in the shed ---");
+        out.println("--- 5. kept: demanded vans, profitable cars and vans already in the shed ---");
         Game g = motorTown("vans-wanted", "Commercial Vehicle Plant");
         Sector au = g.getSectors().byKey(Sectors.AUTOMOTIVE);
         GoodsMarket vans = g.getMarkets().get(Good.VANS);
@@ -334,6 +374,7 @@ public class UndemandedFeedCheck {
     public static void main(String[] args) {
         allocatedSpare();
         keptBesideTheRodMill();
+        committedBesideTheRodMill();
         noWorldOutlet();
         keptBesideTheIdlePlants();
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
