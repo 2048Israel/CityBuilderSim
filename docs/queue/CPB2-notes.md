@@ -129,3 +129,64 @@ the strike as supply, the price falls under the maker's marginal cost and
 the shed withholds; that assertion therefore fails on main and on no-nan.
 The other kept assertions (2's profitable spare, 5's demand and cars) pass
 on every variant.
+
+## The default trace
+
+The trace moves beyond runtime, so the ensemble is owed (`docs/ensemble/CPB2.md`,
+against `docs/ensemble/0.9.162.md`, the newest). I measured it by counting, not
+by diffing. Main's retained trace, `cbs-trace-main-24b7bfcbc`, is 101 commits
+old and differs from month 2 on, so a line-by-line comparison with it says
+nothing. Instead I played the default playtest (2,400 months) on a shadow
+`Sector` (`target/cpb2-mut/count`) that runs main's rule and counts every call
+where the mended rule would have answered differently. It exited 0 in 1,543 s
+and its trace is under `target/cpb2-trace/`.
+
+| path | sector, good | calls changed | months |
+|---|---|---:|---|
+| 1, the ordered spare refused | Copper Refining, cathode | 23 | 3-25 |
+| 2, no world outlet, order pass | Automotive, trucks | 87 | 1,139-2,118 |
+| 2, no world outlet, production | Automotive, trucks | 174 | 1,139-2,118 |
+
+The count was taken before mend 3, so mend 3 has no figure here. It can only
+move where a Scrap Refinery holds committed recovered copper. The ensemble runs
+on the final model, so it covers all three. Seed 1 on the final model (section
+11 of CopperRefiningCheck, below) plays its 2,400 months with no new finding.
+
+## The checks
+
+- `./batch-check.sh --fast` green on the merged branch (3312d2218): compile,
+  maps regenerated, Stale 0 firm, tree clean.
+- `UndemandedFeedCheck` green on the merged model. The mutation table above
+  was run before the merges. Since then the only model change is the solve's
+  early exit, which gives the same answer wherever it applies (with no
+  committed feed every floor is 0, and the solve already returned the old
+  share).
+- The named run before the 0.9.166 merge (`-Dcbs.parallel=1`, 2,285 s on the
+  shared laptop) was green apart from two reds. These harnesses passed:
+  CopperBufferCheck, BooksCheck, CementConcreteCheck, FreightViewCheck,
+  GdpCheck, GoldMiningCheck, ManufacturingCheck, MaterialsCheck, RailCheck,
+  RefineryCheck, SectorFlowCheck, SectorStatementCheck, TradeBandCheck,
+  VanCheck and UndemandedFeedCheck. The two reds:
+  - CarCheck: the ten-year town at 0.210 against 0.215 cars a household. This
+    is main's known red, FS7's row, from BO1-S's moved path. Rerun alone on
+    the merged branch it exits 3, main's known red only (76 s).
+  - CopperRefiningCheck: "timed out after 1740 s" in section 11. The child
+    playing seed 1 was still running when AllChecks' `HARNESS_SECONDS` (4 x
+    435) ended it, with sections 1-10 already passed. Run again alone on the
+    final model (`target/cpb2-crc.log`), every section passed and it exited 0
+    in 1,807 s; the child alone took about 27 minutes on the shared laptop. So
+    the cause is load, not a hang. It is in `AllChecks.NIGHTLY`, and
+    `sh tools/pick.sh --nightly origin/main HEAD` picks nothing, so the gate
+    does not run it; speed is judged nightly on the gate box.
+- `sh tools/pick.sh origin/main HEAD`: ALL (230 harnesses), since `Sector` is
+  in the month's flow, so a dry run is owed. Review: not needed, because the
+  diff has no money, saves or threading.
+- `sh tools/known-reds.sh CPB2 docs/queue/CPB2-ship.md`: exit 0. The ship
+  file adds no known-reds row.
+
+## Left for Jerus
+
+- ★ The two calls above: the ordered spare must also cover its recipe, and a
+  buffer with no world outlet is worth nothing. The second means a city
+  starts making vans, trucks or rolling stock for its shed only after demand
+  shows at a strike: the one-month lag every plan has.
