@@ -247,6 +247,13 @@ public final class Recipes {
        points times homeScale(), the 1901 household's wage over the same household's on today's ladder. Its land is not moved: the plot is the
        plot. A price set this way is today's price to the month's re-strike (BuildingsTemplate.setCashCost()), so it holds; the templates of a
        loaded city are read afresh and dated the same way in the load path's apply(). A city founded the default way never comes here.
+
+       THE WALK BACK (R1g, 2026-11-20; HOME_WALK, off unless -Dr1g.walk=on, Jerus's call: the notes, 5). Held at homeScale() for the city's
+       life, the home stays 1900's while the city's wages climb to today's, and a grown 1900 city outbuilt today's twin (the notes, 5). With
+       the walk, each month's apply() sets every home again to homeScaleAt() the month: homeScale() to the first knot's January, 1 (today's
+       home) from the last knot's, linear by month between, WageLadder having no ladder between 1901's and today's. The cash cost and upkeep go
+       by the ratio of the new scale to the one the home stands at, through the same setters, and the materials and points from the
+       catalogue's own figures; a loaded city's fresh templates are dated at the loaded month's scale.
        ===================================================================== */
 
     /**
@@ -255,8 +262,17 @@ public final class Recipes {
      */
     public static boolean HOMES_1900 = !"off".equalsIgnoreCase(System.getProperty("r1g.home", "on").trim());
 
-    /** The homes this has dated, by identity: each once, a city's templates being its own (weak, so a finished city's templates go with it). */
-    private final java.util.Set<BuildingsTemplate> datedHomes = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
+    /**
+     * R1g's switch for the walk back (THE WALK BACK, above), off unless -Dr1g.walk=on: each month's apply() sets the homes to homeScaleAt() the
+     * month rather than holding them at homeScale().
+     */
+    public static boolean HOME_WALK = "on".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+
+    /** A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). */
+    private record Dated(double scale, int materials, int points) { }
+
+    /** The homes this has dated, by identity, a city's templates being its own (weak, so a finished city's templates go with it). */
+    private final java.util.Map<BuildingsTemplate, Dated> datedHomes = new java.util.WeakHashMap<>();
 
     /**
      * What a 1900 home costs of today's: the 1901 household's monthly wage over the same household's on today's ladder (WageLadder.TODAY), the
@@ -283,23 +299,51 @@ public final class Recipes {
         return now > 0 ? Math.min(1, then / now) : 1;
     }
 
-    /** Builds each of the city's homes to 1900's standard, once (THE 1900 HOME, above); nothing with the switch off. */
+    /**
+     * What a 1900 home costs of today's in a game month, walked (THE WALK BACK, above): homeScale() to the first knot's January
+     * (ArrivalMix.KNOTS), 1 from the last knot's on, linear by month between.
+     */
+    public static double homeScaleAt(int month) {
+        int start = ArrivalMix.januaryOf(ArrivalMix.KNOTS.get(0).year());
+        int end = ArrivalMix.januaryOf(ArrivalMix.KNOTS.get(ArrivalMix.KNOTS.size() - 1).year());
+        double from = homeScale();
+        if (month <= start) return from;
+        if (month >= end) return 1;
+        return from + (1 - from) * (month - start) / (double) (end - start);
+    }
+
+    /**
+     * Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): once at homeScale(), or with the walk at homeScaleAt() the
+     * month, set again whenever that differs from the scale the home stands at. Nothing with the switch off.
+     */
     private void dateHomes(Game game) {
         if (!HOMES_1900 || game.getSectors() == null) return;
         String homes = game.getSectors().realEstate().key();
-        double scale = homeScale();
+        double scale = HOME_WALK ? homeScaleAt(game.getMonth()) : homeScale();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
-            if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0 || !datedHomes.add(t)) continue;
-            t.setCashCost(t.getCashCost() * scale);
-            t.setUpkeep(t.getUpkeep() * scale);
-            t.setConstructionMaterials((int) Math.max(1, Math.round(t.getConstructionMaterials() * scale)));
-            t.setConstructionPoints((int) Math.max(1, Math.round(t.getConstructionPoints() * scale)));
+            if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0) continue;
+            Dated was = datedHomes.get(t);
+            if (was != null && was.scale() == scale) continue;
+            double by = was == null ? scale : scale / was.scale();
+            int materials = was == null ? t.getConstructionMaterials() : was.materials();
+            int points = was == null ? t.getConstructionPoints() : was.points();
+            t.setCashCost(t.getCashCost() * by);
+            t.setUpkeep(t.getUpkeep() * by);
+            t.setConstructionMaterials((int) Math.max(1, Math.round(materials * scale)));
+            t.setConstructionPoints((int) Math.max(1, Math.round(points * scale)));
+            datedHomes.put(t, new Dated(scale, materials, points));
         }
     }
 
     /** Whether this city's homes are built to 1900's standard: for the harnesses. */
     public boolean datedHome(BuildingsTemplate t) {
-        return datedHomes.contains(t);
+        return datedHomes.containsKey(t);
+    }
+
+    /** The scale a dated home stands at (homeScale(), or the walk's month's); 1 for a home this has not dated: for the harnesses. */
+    public double datedScale(BuildingsTemplate t) {
+        Dated d = datedHomes.get(t);
+        return d == null ? 1 : d.scale();
     }
 
     /**

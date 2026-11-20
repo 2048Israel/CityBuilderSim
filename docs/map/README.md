@@ -4,7 +4,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 604 files, 653,770 lines, 28,543 methods, 6,260 constants. `GameVersion.VERSION` is "0.9.161", `SAVE_FORMAT` 57.
+**The tree:** 604 files, 653,814 lines, 28,545 methods, 6,260 constants. `GameVersion.VERSION` is "0.9.161", `SAVE_FORMAT` 57.
 
 ## model (270 files)
 
@@ -203,7 +203,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Recipe.java](Recipe.md) | 198 | 24 | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. | 18 |
 | [RecipeChange.java](RecipeChange.md) | 68 | 5 | One discovery's signed undo, relative to a template's immutable modern figures. | 7 |
 | [RecipeChanges.java](RecipeChanges.md) | 614 | 46 | Composes independent discovery changes on the selected process recipe. | 12 |
-| [Recipes.java](Recipes.md) | 343 | 22 | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1... | 16 |
+| [Recipes.java](Recipes.md) | 387 | 24 | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1... | 16 |
 | [Recording.java](Recording.md) | 402 | 23 | One recorded city on disk (TR1, 2026-10-31): the folder {@code recordings/<id>/} that "Record this city" keeps, and the one place that knows its fi... | 10 |
 | [RefineryView.java](RefineryView.md) | 1,618 | 82 | The refinery's month as a picture (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): the crude it ran and where that came from, the column's cuts,... | 10 |
 | [ReplayCity.java](ReplayCity.md) | 192 | 20 | The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads any recorded month an... | 6 |
