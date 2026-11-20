@@ -6306,6 +6306,41 @@ public class Bank {
     /** ...and the same of the sheet a year ago; nothing when none is on file. */
     public double yearAgoResidual() { return knowsYearAgo() ? residual(this::yearAgo) : 0; }
 
+    /* ----- when the lines do not add up (BI1, 2026-11-20) -----
+     * The Bank page raised "Its lines do not add up" and "Its two parts do not add up to its equity" on an
+     * absolute $5 (.005 of a thousand), and a double's own step at 1e13 is .002 to .008: KeptCheck's city of
+     * 4,820 months lit both on float dust alone, each sum of a dozen figures carrying its rounding in. The
+     * audit's own rule for comparing money is MoneyAudit.tolerance(size): a cent, or a part in a trillion of
+     * the figures' size, and never under 64 steps of a double at that size. The page's test is that one, here
+     * in the model, so the screen reads one verdict and recomputes none (not LongPlaytest.audit()'s part in
+     * ten million of what moved, which is a flow's rule: on a 5.8e13 sheet it would leave a $5.8 billion line
+     * dark).
+     */
+
+    /** Whether a residual is within what MoneyAudit.tolerance() allows a book of this size; a residual or a size that is not a finite number is not, so the page says so rather than hiding it. */
+    public static boolean addsUp(double residual, double size) {
+        return Double.isFinite(residual) && Double.isFinite(size) && Math.abs(residual) <= MoneyAudit.tolerance(size);
+    }
+
+    /** The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). */
+    public double sheetSize() { return sizeOf(this::sheet); }
+
+    /** ...the sheet a year ago; nothing when none is on file. */
+    public double yearAgoSheetSize() { return knowsYearAgo() ? sizeOf(this::yearAgo) : 0; }
+
+    /** True when its lines add up within MoneyAudit.tolerance() of the sheet's size: the page's "Its lines do not add up" is its opposite. */
+    public boolean sheetAddsUp() { return addsUp(sheetResidual(), sheetSize()); }
+
+    /** ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. */
+    public boolean yearAgoSheetAddsUp() { return !knowsYearAgo() || addsUp(yearAgoResidual(), yearAgoSheetSize()); }
+
+    private static double sizeOf(java.util.function.ToDoubleFunction<Sheet> at) {
+        double size = Math.abs(at.applyAsDouble(Sheet.EQUITY));
+        for (Sheet s : SHEET_ASSETS) size += Math.abs(at.applyAsDouble(s));
+        for (Sheet s : SHEET_LIABILITIES) size += Math.abs(at.applyAsDouble(s));
+        return size;
+    }
+
     /** The other side of the sheet: its liabilities and its equity together. */
     public double liabilitiesAndEquity() { return sheet(Sheet.LIABILITIES) + sheet(Sheet.EQUITY); }
 
@@ -6642,6 +6677,17 @@ public class Bank {
             for (double t : terms) size += Math.abs(t);
             return size;
         }
+
+        /**
+         * True when the causes explain the month's change in equity within MoneyAudit.tolerance() of scale() - the
+         * rule of the sheet and its split (addsUp(), BI1) - and the page's "Something moved its equity without
+         * telling it", its waterfall's red "Not accounted for" and the statement's are this one's opposite (BI2,
+         * 2026-11-20). WHY: they were an absolute $5 against a residual that is a signed sum of seventeen figures,
+         * whose rounding is a few steps of a double at their size: float dust past $5 on a bank of 1e13 and more,
+         * and the same $5 let a small bank's miss of a few dollars by. A residual or a scale that is not a finite
+         * number does not add up: that is the screen's red line, not its silence.
+         */
+        public boolean addsUp() { return Bank.addsUp(residual(), scale()); }
     }
 
     /**
@@ -6749,6 +6795,14 @@ public class Bank {
     public double equitySplitResidual() {
         return splitKnown ? paidInCapital() + retainedEarnings() + preferredOutstanding() - equity() : 0;
     }
+
+    /** The size of what the split is read against: the magnitudes of its three parts and of equity, each carrying its own rounding into the sum; nothing when !knowsEquitySplit(). */
+    public double equitySplitSize() {
+        return splitKnown ? Math.abs(paidInCapital()) + Math.abs(retainedEarnings()) + Math.abs(preferredOutstanding()) + Math.abs(equity()) : 0;
+    }
+
+    /** True when the parts add up to equity within MoneyAudit.tolerance() of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. */
+    public boolean equitySplitAddsUp() { return !splitKnown || addsUp(equitySplitResidual(), equitySplitSize()); }
 
     /** Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). */
     public double paidInOpening()   { return splitKnown ? paidInOpening : 0; }
