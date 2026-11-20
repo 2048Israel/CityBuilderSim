@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,500 lines · 12 methods · 2 constants · harnesses
+# EducationCheck.java - 1,503 lines · 12 methods · 2 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -66,21 +66,21 @@
 | 232 | · 3. NO SCHOOL TEACHES NOBODY |
 | 251 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
 | 271 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
-| 299 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
-| 320 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
-| 342 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
-| 415 | · 8. THE SUBSIDY IS A REAL DIAL |
-| 470 | · 9. IT SURVIVES A SAVE |
-| 537 | · 9b. THE WAIT IS REAL |
-| 579 | · 10. AND THE TREASURY PAYS FOR IT |
-| 632 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
-| 755 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
-| 800 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
-| 846 | · 13. THE GRANT IS A MENU |
-| 1030 | · 14. THE LOAN'S RATE |
-| 1184 | · 15. THE PRICE OF A PLACE |
-| 1278 | · 16. ALL THREE SURVIVE A SAVE |
-| 1348 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 302 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
+| 323 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
+| 345 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
+| 418 | · 8. THE SUBSIDY IS A REAL DIAL |
+| 473 | · 9. IT SURVIVES A SAVE |
+| 540 | · 9b. THE WAIT IS REAL |
+| 582 | · 10. AND THE TREASURY PAYS FOR IT |
+| 635 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
+| 758 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
+| 803 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
+| 849 | · 13. THE GRANT IS A MENU |
+| 1033 | · 14. THE LOAN'S RATE |
+| 1187 | · 15. THE PRICE OF A PLACE |
+| 1281 | · 16. ALL THREE SURVIVE A SAVE |
+| 1351 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1441 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 60 | 1444 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 68 | 4 | `static void quietly(Runnable work)` |  |
 | 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
@@ -107,9 +107,9 @@
 | 88 | 45 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
 | 144 | 3 | `static void held(Game g)` | GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the businesses build. |
 | 148 | 7 | `static void schools(Game g)` |  |
-| 156 | 1312 | `public static void main(String[] args) throws Exception` |  |
-| 1473 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1478 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1486 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1493 | 7 | `static void cleanUp(Path root)` |  |
+| 156 | 1315 | `public static void main(String[] args) throws Exception` |  |
+| 1476 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
+| 1481 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1489 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
+| 1496 | 7 | `static void cleanUp(Path root)` |  |
 

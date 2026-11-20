@@ -1933,6 +1933,11 @@ public class LongPlaytest {
                 }
             }
         }
+        // -Dplaytest.owners=on|off (BO1-S): OwnerCheck's probe row, the owner line measured on this city.
+        if (OWNERS != null) {
+            String row = OwnerCheck.probeLine(g, OWNERS);
+            if (row != null) out.println("OWNERS " + row.substring(3));
+        }
         /*
          * -Dplaytest.cells=true: the households going short, cell by cell,
          * yearly. The instrument that says WHICH families the budget
@@ -2502,6 +2507,13 @@ public class LongPlaytest {
        there, the demand channel in: inflation falls with the rate. Here it is
        still a measurement, over a whole run.
        ===================================================================== */
+
+    /**
+     * The owner line under -Dplaytest.owners=on|off (BO1-S), or null for the city's own dial (OwnerHousehold.IN_CITIES); set, the
+     * report prints OwnerCheck's probe row at its months (OWNERS m...), so the line is measured on the playtest's own city.
+     */
+    static final Boolean OWNERS = System.getProperty("playtest.owners") == null
+            ? null : "on".equals(System.getProperty("playtest.owners").trim());
 
     /** The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. */
     static final Double POLICY_RATE = System.getProperty("playtest.policyRate") == null
@@ -6525,6 +6537,7 @@ public class LongPlaytest {
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
         Game g = new Game(files, played(EARTH));
+        if (OWNERS != null) g.getHouseholdBalance().setOwnerLine(OWNERS);
         retirementWatch = new RetirementWatch();
         landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
         landLedgerWorstSqFt = 0;

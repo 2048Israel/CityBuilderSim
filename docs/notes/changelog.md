@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.162 — BO1-S, the owner line switched on — 2026-11-20, ready, see docs/queue/BO1-S-notes.md
+The owner families are on in every city: one two-adult household for each listed company, holding
+its founders' shares alone, living on its dividends and selling a twentieth of each stake a year;
+everyone else buys at the offerings and on the exchange. They take no job, and in a small town
+they are fewer: never more than one adult in twenty, so a town under 20 adults forms no family
+(under one adult is still kept for it, off work) and its companies list once it has grown to
+their families. The People screen shows them outside the families: a piece of the mosaic, a
+column of the outside table, a row below the rule on Household money. A theft no offender could
+be handed is no longer taken (it unbalanced a tiny town's books). Saves: no format bump; an older
+save's companies keep their founders' shares with the households; the year book takes the owners off
+its labour force, as the model does (a new history series, the owners' adults).
+Ensemble (docs/ensemble/0.9.162.md): M1 and F1 pass in every policy; AUTO2 ends at 2.44 million
+people (OP1 2.85); the playtest city with the line on is a fifth smaller at month 121.
+
+### GB1 — the gate runs on the gate box — 2026-11-20, ready, see docs/queue/GB1-notes.md
+The gate and its dry runs run on `gatebox`, the quiet Ryzen box beside the laptop (Jerus, 2026-11-20). `tools/gate.sh`
+hands its whole call to the new `tools/gate-box.sh`, which runs this checkout's commit of `tools/` there over SSH, its
+runs in `~/cbs/runs`, started headless exactly as before. Its output comes back as written and its bus calls are posted
+here, so MemWatch's gate and batch state read as before, with `machine=gatebox`. The run's files, but not its clone, are
+copied home at the end. A dropped connection stops the gate there, as its caller's exit does. When no box answers,
+`jerus` is mailed and the gate runs on the laptop ("notify me then run on laptop"). The box pushes with its own write
+deploy key. The heavy slot is per machine. Scripts and docs only.
+
 ### 0.9.161 — OP1, every policy open from the first month — 2026-11-19, ready, see docs/queue/OP1-notes.md
 Every Policy lever is open from a city's founding, in every city. The profit, wage and sales taxes
 open at 15%; the pension, its contribution, EI, student aid and the health premium open at zero. The

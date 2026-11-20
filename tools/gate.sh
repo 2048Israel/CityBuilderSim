@@ -6,6 +6,8 @@
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 WINDOWS=0; case "$(uname -s)" in MINGW*|MSYS*) WINDOWS=1 ;; esac
+# GB1: a gate box (CBS_GATE_HOST, else ~/.cbs-gate-box) runs the whole call, through tools/gate-box.sh; CBS_GATE_HOST= runs it here.
+[ -n "${CBS_GATE_ON_BOX:-}" ] || [ -z "${CBS_GATE_HOST-$(cat "$HOME/.cbs-gate-box" 2>/dev/null)}" ] || exec sh "$HERE/gate-box.sh" "$@"
 tree_stop() {
     kill -STOP "$1" 2>/dev/null || return 0
     for child in $(pgrep -P "$1"); do tree_stop "$child"; done

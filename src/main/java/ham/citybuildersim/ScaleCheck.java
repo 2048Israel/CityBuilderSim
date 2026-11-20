@@ -204,6 +204,19 @@ public class ScaleCheck {
         try { r.run(); } finally { System.setOut(real); }
     }
 
+    /**
+     * Every game here plays with the owner line off (BO1-S), set at its construction, before a founding is played or a
+     * save loaded. WHY: the owner families are a fixed count by design - two adults a company, at most a share of the
+     * adults (OwnerHousehold) - not K times the city's, so a copy K times over carries its city's five families where
+     * the law wants five K, and their dividends and savings cannot scale. With the line on, the copy's savings missed by
+     * 3.54e-2 against TRACK_SAVINGS and section 10's 1900 town broke the savings law in all six months (BO1-S's notes,
+     * section 8). What this check proves is the rest of the model's scaling, which the line does not touch.
+     */
+    static Game lineOff(Game g) {
+        g.getHouseholdBalance().setOwnerLine(false);
+        return g;
+    }
+
     /** The property tax rate, a year, that section 6's town sets in place of the founding's .015 (ST3). */
     static final double OWN_PROPERTY_TAX = .04;
 
@@ -276,7 +289,7 @@ public class ScaleCheck {
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
 
         GameFiles small = new GameFiles(root.resolve("small"), root.resolve("small-no-legacy"));
-        Game founded = new Game(small, LongPlaytest.founding());
+        Game founded = lineOff(new Game(small, LongPlaytest.founding()));
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {
@@ -299,7 +312,7 @@ public class ScaleCheck {
 
         // The founded city as its own save loads it, so both sides of every
         // comparison below come through the same load.
-        Game one = new Game(small);
+        Game one = lineOff(new Game(small));
         quietly(() -> one.loadGameSave(10));
         long pop1 = one.getPopulationManager().getPopulation();
         long workforce1 = one.getPopulationManager().getWorkforce();
@@ -324,7 +337,7 @@ public class ScaleCheck {
         assertTrue("the slot header of a save past 2^31 people reads (an int could not parse it)", header != null);
         if (header != null) same("...and its population is K times the founded city's", header.getPopulation(), k * pop1);
 
-        Game g = new Game(big);
+        Game g = lineOff(new Game(big));
         quietly(() -> g.loadGameSave(10));
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
         PopulationManager people = g.getPopulationManager();
@@ -398,7 +411,7 @@ public class ScaleCheck {
         assertTrue("its header reads", again != null);
         if (again != null) same("...with the population it was saved with", again.getPopulation(), people.getPopulation());
 
-        Game back = new Game(big);
+        Game back = lineOff(new Game(big));
         quietly(() -> back.loadGameSave(10));
         for (Sector s : back.getSectors().all()) back.getBusinessInvestment().holdSector(s.key());
         PopulationManager backPeople = back.getPopulationManager();
@@ -429,7 +442,7 @@ public class ScaleCheck {
         out.println("\n--- a growing city to copy with its sectors free: this check's own town, at month " + FREE_FIXTURE_MONTHS
                 + " ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
-        Game city = new Game(grown, LongPlaytest.founding());
+        Game city = lineOff(new Game(grown, LongPlaytest.founding()));
         // R0b call 7: the causes of 1900 held off, before a month, in this city and in every copy loaded from its save (free(), tracks()).
         // The section reads a city that builds and tracks its K-times copy, sized on today's deaths; on 1900's causes the 5-billion copy's
         // fixture "the free copy ordered - an order sized from more than a million needed, and one judged on its interest" failed, and the
@@ -481,7 +494,7 @@ public class ScaleCheck {
         out.println("\n--- 10. the 1900 city: unfitted plant scales; whole horse posts are bounded ---");
         Path historical = root.resolve("1900");
         GameFiles files = new GameFiles(historical.resolve("town"), historical.resolve("no-legacy"));
-        Game g = new Game(files, LongPlaytest.founding().withUnfitted(true));
+        Game g = lineOff(new Game(files, LongPlaytest.founding().withUnfitted(true)));
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {
@@ -574,7 +587,7 @@ public class ScaleCheck {
             GameFiles files = new GameFiles(root.resolve("bounded" + k), root.resolve("bounded-no-legacy" + k));
             scale(saved.saveFile(10), files.saveFile(10), k);
             Files.copy(saved.historyFile(10), files.historyFile(10));
-            Game g = cities[c] = new Game(files);
+            Game g = cities[c] = lineOff(new Game(files));
             quietly(() -> g.loadGameSave(10));
             assertTrue("the historical copy at K = " + k + " loads", g.getLoadFailure() == null);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
@@ -753,7 +766,7 @@ public class ScaleCheck {
         GameFiles files = new GameFiles(root.resolve("free" + k), root.resolve("free" + k + "-no-legacy"));
         scale(small.saveFile(10), files.saveFile(10), k);
         Files.copy(small.historyFile(10), files.historyFile(10));
-        Game g = new Game(files);
+        Game g = lineOff(new Game(files));
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
         g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
@@ -919,7 +932,7 @@ public class ScaleCheck {
             GameFiles files = new GameFiles(root.resolve("track" + times[c]), root.resolve("track" + times[c] + "-no-legacy"));
             scale(sites.saveFile(10), files.saveFile(10), times[c]);
             Files.copy(sites.historyFile(10), files.historyFile(10));
-            Game g = new Game(files);
+            Game g = lineOff(new Game(files));
             g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
             g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
             quietly(() -> g.loadGameSave(10));
@@ -967,7 +980,7 @@ public class ScaleCheck {
         Files.createDirectories(files.saveFile(10).getParent());
         Files.copy(grown.saveFile(10), files.saveFile(10));
         Files.copy(grown.historyFile(10), files.historyFile(10));
-        Game g = new Game(files);
+        Game g = lineOff(new Game(files));
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
         g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));

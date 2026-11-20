@@ -327,8 +327,9 @@ public class CrimeCheck {
         /* ---- the prisons ---- */
         PopulationManager pm = policed.getPopulationManager();
         assertTrue("fixture: somebody is in prison", cp.prisoners() > 0);
+        // ...beside the owner families' adults (BO1), out of it too since the line is on in a city (BO1-S).
         check("the prisoners are out of the labour force",
-                pm.getLabourForce(), pm.getWorkforce() - pm.getStudyingTotal() - cp.prisoners(), 1e-9);
+                pm.getLabourForce(), pm.getWorkforce() - pm.getStudyingTotal() - cp.prisoners() - pm.getOwners(), 1e-9);
         check("...the whole of them", pm.getImprisoned(), cp.prisoners(), 1e-12);
         check("the pool is still the labour market's", policed.getUnemployment().getPool(), pm.getUnemployed(), 1e-6);
         FamilyModel f = policed.getFamilies();

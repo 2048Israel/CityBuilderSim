@@ -1839,6 +1839,13 @@ final class PeopleScreen {
                 outside.add(new Piece("in prison", "In prison", prisoners, one(AgeBand.ADULT), null,
                         bal.prisoners() == null ? null : "OUT:" + bal.prisoners().key()));
             }
+            // The owner families (BO1-S): one per listed company, at most OWNER_ADULT_SHARE of the adults, two adults living on its dividends; no job, no tier.
+            double owners = families.getOwnerFamilies();
+            if (owners >= .5) {
+                int[] couple = one(AgeBand.ADULT);
+                couple[AgeBand.ADULT.ordinal()] = 2;
+                outside.add(new Piece("owner families", "Owner families", owners, couple, null, "OUT:" + bal.owners().key()));
+            }
         }
         outside.sort((a, b) -> Double.compare(b.count(), a.count()));
         return List.of(retired, working, outside);
@@ -2197,7 +2204,9 @@ final class PeopleScreen {
     /** OUTSIDE THE FAMILIES' (i): who they are, the old page's words. */
     static final String OUTSIDE_INFO = "Families are built from the adults who work, and their children. "
             + "Everybody else is here: the out of work and the students keep their own books, the unhoused "
-            + "have no home, and the orphans are the children no family took.";
+            + "have no home, the orphans are the children no family took, and the owner families, one for each "
+            + "company listed on the exchange (fewer in a small town: never more than one adult in "
+            + Math.round(1 / OwnerHousehold.OWNER_ADULT_SHARE) + "), live on its dividends and what they sell of its shares.";
 
     /** The five tiles, the pool's month and EI, the orphans' alert, and the table by age behind details. */
     List<javafx.scene.Node> outsideRow() {
@@ -2586,12 +2595,14 @@ final class PeopleScreen {
     javafx.scene.layout.GridPane outsideTable(Unemployment u, FamilyModel families,
                                                      double[] noDoor) {
         javafx.scene.layout.GridPane table = grid(
-                new double[] {SHAPE_COL, 76, 70, 70, 70, 70, 70}, rightAfterFirst(7));
-        gridHead(table, "age", "out of work", "students", "no home", "orphans", "in prison", "total");
+                new double[] {SHAPE_COL, 76, 70, 70, 70, 70, 70, 70}, rightAfterFirst(8));
+        gridHead(table, "age", "out of work", "students", "no home", "orphans", "in prison", "owners", "total");
 
         double students = families.getSeekers(FamilyModel.Seeker.STUDENT);
         double prisoners = ui.game.getCrime().prisoners();
-        double[] sum = new double[6];
+        // The owner families' adults (BO1-S), out of the families as the census counts them.
+        double ownerAdults = families.getOwnerAdults();
+        double[] sum = new double[7];
         int line = 1;
         for (AgeBand band : AgeBand.values()) {
             int b = band.ordinal();
@@ -2600,10 +2611,11 @@ final class PeopleScreen {
             double home = noDoor[b];
             double orphan = families.getOrphans(band);
             double inside = band == AgeBand.ADULT ? prisoners : 0;
+            double owning = band == AgeBand.ADULT ? ownerAdults : 0;
             // The out of work who lost their home are in both columns; the total counts them once.
-            double total = out + study + orphan + inside
+            double total = out + study + orphan + inside + owning
                     + home - (band == AgeBand.ADULT ? Math.min(home, u.getUnhoused()) : 0);
-            double[] row = { out, study, home, orphan, inside, total };
+            double[] row = { out, study, home, orphan, inside, owning, total };
             table.add(gridCell(band.getLabel().toLowerCase(), Palette.TEXT_BODY,
                     Palette.SIZE_CAPTION, false), 0, line);
             for (int c = 0; c < row.length; c++) {
@@ -2999,7 +3011,7 @@ final class PeopleScreen {
      * The verdict over the grid (0.7.27), counting every row drawn: the
      * working households' cells by what their month leaves; the rows below
      * the rule - the retired, the out of work, the students, the orphans,
-     * the prison - by whether they could plan a basket at all (red, going
+     * the prison, the owner families - by whether they could plan a basket at all (red, going
      * hungry) or cover it only out of what they had put by or borrowed
      * (amber, living on savings).
      */
@@ -3103,6 +3115,7 @@ final class PeopleScreen {
             if (o != null && o.households() >= .5) out.add(o);
         }
         if (bal.prisoners() != null && bal.prisoners().households() >= .5) out.add(bal.prisoners());
+        if (bal.owners().households() >= .5) out.add(bal.owners());
         return out;
     }
 
@@ -3801,16 +3814,18 @@ final class PeopleScreen {
     /** The section captions' (i): who is below the rule, and what their one cell says. */
     static final String BELOW_THE_RULE = "Below the rule: the retired, on a pension and no wage; the out of work, "
             + "on EI for twelve months and then on what they saved and what the bank will lend; students, on a "
-            + "grant, their savings and a student loan that never runs out; the orphans, who have nothing; and "
-            + "the prison, which feeds its own. None of them has a pay tier, so none of them has a row of six. "
+            + "grant, their savings and a student loan that never runs out; the orphans, who have nothing; "
+            + "the prison, which feeds its own; and the owner families, one for each listed company (never more than one adult in "
+            + Math.round(1 / OwnerHousehold.OWNER_ADULT_SHARE) + "), on its "
+            + "dividends and what they sell of its shares. None of them has a pay tier, so none of them has a row of six. "
             + "The retired's one cell is what their pension leaves after the rent, the fees and the shop a head, "
             + "worked out as a family's cell is; everybody else's is what a month leaves them against a full "
             + "basket. Green when something is left, grey when exactly nothing is, amber when only their savings "
             + "or a loan cover the gap, red when they could not buy a basket at all.";
 
     /**
-     * The retired, the out of work, the students, the orphans and the prison,
-     * as rows of the same matrix.
+     * The retired, the out of work, the students, the orphans, the prison and
+     * the owner families, as rows of the same matrix.
      *
      * Both kinds are drawn from the same two things - a Household ledger and
      * what a month leaves it - so neither can drift from the other. The retired
@@ -3853,6 +3868,8 @@ final class PeopleScreen {
         // The prisoners kept their own books from the day they were built and
         // no grid ever listed them. Out of the labour force, debts frozen.
         if (bal.prisoners() != null) rest.add(bal.prisoners());
+        // The owner families (BO1-S): no wage and no tier, their month the dividends; measured against a basket as the rest are.
+        rest.add(bal.owners());
 
         headed = false;
         for (Household own : rest) {

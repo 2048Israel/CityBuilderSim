@@ -36,7 +36,7 @@ every call after it.
   poll it, and never rerun a red harness in full to find its assertion.
 - **Ship:** `sh tools/gate.sh <id>` is the orchestrator's merge, checks, tag
   and push: `ship.sh` in a fresh clone with its logs kept (`--dry-run` gates
-  alone). It writes the batch's records and sets the version, both from the
+  alone), on the gate box (`tools/gate-box.sh`; here when it is down). It writes the batch's records and sets the version, both from the
   branch's ship file, `docs/queue/<id>-ship.md`.
 - **Source:** `Where Name -print` prints one method. Never open `Game.java`
   or a large screen whole.

@@ -47,7 +47,8 @@ line is mailed to `jerus` and the gate's keeper, naming the batch (BW1).
   is behind pace: the week's % used plus the last six hours' rate times the
   hours to the reset under 95 (2026-11-07: "Yes, standing rule").
 - **The heavy slot:** never two dry runs or two ensembles at once, and no
-  ensemble beside a dry run or a gate (2026-11-18: R2c-P's dry run went red
+  ensemble beside a dry run or a gate on one machine (GB1: the gate box's
+  leave the laptop's free; 2026-11-18: R2c-P's dry run went red
   when KeptCheck timed out at 1740 s beside HN1's 80-run ensemble; DQ1's died
   on a fork failure, 2026-11-17 20:05, with 1.4 GB free); no builder's full
   pick beside either.
@@ -115,7 +116,8 @@ text uses that the tree does not declare (`tools.Names`) are a warning only.
 `Batch check.bat` is Jerus's double-click (`--maps` regenerates the maps;
 without it it writes nothing git tracks, as the PC's copy pulls `main` and must
 stay clean); it times soft while another JVM or the game runs, decided once at
-its start (lesson d). Each gate run is a `cbs-gate-ID-*` folder under the temp
-directory (or `CBS_GATE_DIRECTORY`); a green run's clone is removed, its log,
-refs and checks kept, a stopped one kept whole (GF1, LM1: deleting gate clones
-erased the evidence of stops).
+its start (lesson d). Each gate run is a `cbs-gate-ID-*` folder (or
+`CBS_GATE_DIRECTORY`'s name) in `~/cbs/runs` on the gate box, its files but the
+clone copied to the temp directory here at the end (GB1; here alone when the box
+is down); a green run's clone is removed, its log, refs and checks kept, a
+stopped one kept whole (GF1, LM1: deleting gate clones erased the evidence of stops).

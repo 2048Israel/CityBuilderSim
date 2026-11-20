@@ -143,7 +143,7 @@ public final class CityMeasures {
     public static final Set<String> SERIES = Set.of("arrivals", "bankLent", "bankLeverageRatio", "bankPrime", "births", "careCoverage", "consumption",
             "crimeRate", "currentAccount", "deathsAdults", "deathsBabies", "deathsChildren", "deathsElders", "deathsKilled", "deathsSeniors", "deathsTeens",
             "debt", "departures", "exportsAbroad", "fundValue", "fxParity", "fxRate", "gdp", "government", "healthBill", "homes", "households", "hunger",
-            "importsAbroad", "investment", "jobs", "m2", "minimumWage", "netExports", "orphans", "outOfWork", "pensionBill", "policeCoverage", "policyRate",
+            "importsAbroad", "investment", "jobs", "m2", "minimumWage", "netExports", "orphans", "outOfWork", "owners", "pensionBill", "policeCoverage", "policyRate",
             "population", "priceIndex", "prisoners", "rentPrice", "reservesUsd", "sickRate", "students", "surplus", "taxBusiness", "taxIndustrial",
             "taxProperty", "taxSales", "taxWage", "totalWage", "unhoused", "workforce");
 
@@ -207,11 +207,11 @@ public final class CityMeasures {
         put(out, "current_account", share(r.flow("currentAccount"), gdp), Double.NaN, "exports less imports less interest paid abroad, over output" + per);
 
         // ---- work and pay ----
-        double[] force = YearBook.labourForce(r.tail("workforce", 1), r.tail("students", 1), r.tail("prisoners", 1));
+        double[] force = YearBook.labourForce(r.tail("workforce", 1), r.tail("students", 1), r.tail("prisoners", 1), r.tail("owners", 1));
         double[] posts = r.tail("jobs", 1), pool = r.tail("outOfWork", 1);
         double[] unemployed = YearBook.unemployment(force, posts, pool);
         put(out, "unemployment", 100 * unemployed[0], Double.NaN,
-                "people out of work over the labour force: the workforce less the students and the prisoners");
+                "people out of work over the labour force: the workforce less the students, the prisoners and the owner families");
         double[] wages = YearBook.averageWage(r.tail("totalWage", 1), YearBook.filledPosts(force, posts, pool));
         double avgWage = wages[0] * YEAR * THOUSANDS;
         put(out, "avg_wage", avgWage, Double.NaN, "the month's wage bill over the posts filled, times 12");

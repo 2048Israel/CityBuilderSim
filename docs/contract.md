@@ -96,11 +96,15 @@ own words, and it is the requirement.
   never `main`; the `assistant-review` agent reviews such a branch and the
   orchestrator ships it `--no-tag`. What they report as run is checked, not
   taken.
+- **The gate box** (GB1, 2026-11-20): `tools/gate.sh` runs on `gatebox`
+  (`~/.cbs-gate-box`), started headless as before; when no box answers it
+  mails `jerus` and runs here ("notify me then run on laptop"). Its runs are in
+  `~/cbs/runs` there, copied home at the end; `--reuse` and a ship file's
+  gate-run name the box's run, as `gate: run` prints it.
 - **Still his to decide** (`docs/queue/WC1.md`), unanswered: what the
-  orchestrator becomes once MemWatch dispatches; who keeps the gate day to day,
-  and the gate box's part when it arrives; which of the standing rules stay as
-  they are (he said in the MemWatch session that save slots 1-9 "are NOT
-  important"; the rule stands until he drops it).
+  orchestrator becomes once MemWatch dispatches; who keeps the gate day to day;
+  which of the standing rules stay as they are (he said in the MemWatch session
+  that save slots 1-9 "are NOT important"; the rule stands until he drops it).
 
 ## 3. Starting a batch
 
