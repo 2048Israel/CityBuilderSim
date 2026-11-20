@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — BO1-S, the owner line switched on — 2026-11-20, ready, see docs/queue/BO1-S-notes.md
 The owner families are on in every city: one two-adult household for each listed company, holding
