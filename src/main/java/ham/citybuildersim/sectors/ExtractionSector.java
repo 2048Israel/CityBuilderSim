@@ -13,6 +13,7 @@ import ham.citybuildersim.Resource;
 import ham.citybuildersim.Sector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,9 +136,45 @@ public abstract class ExtractionSector extends Sector {
                 came += part;
                 continue;
             }
-            came += dig(land, d.type, part * d.dig, i > 0) / d.dig;
+            double field = part * d.dig, got = dig(land, d.type, field, i > 0);
+            came += got / d.dig;
+            // ...and what of its ask each kind's ground gave, for the inputs it orders after the dig (NG1, groundShare()):
+            // exactly 1 where the ground held the whole ask, as extract() then returns it whole.
+            if (field > 0) dugShares.put(kind(d.type, d.dig), got / field);
         }
         return came;
+    }
+
+    /** What of its ask each kind of dig (kind()) got from its ground in this month's market pass (NG1): put by groundLimit(), emptied as the pass's orders are planned, never saved. */
+    private final Map<String, Double> dugShares = new HashMap<>();
+
+    /** A month's dig shares are the month's: none until groundLimit() digs, so every building reads 1 before it (THE ORDER, NG1). */
+    @Override
+    public void planOrders() {
+        dugShares.clear();
+        super.planOrders();
+    }
+
+    /**
+     * The share of a building's ask its ground gave this month (Sector.groundShare(), NG1): its kind of dig's (kind()), once
+     * groundLimit() has dug the month's flow good; 1 before the dig, for a kind not dug, and for a building that makes no ground good.
+     */
+    @Override
+    protected double groundShare(BuildingsTemplate t) {
+        if (dugShares.isEmpty() || !(t.makes(groundGood()) > 0)) return 1;
+        return dugShares.getOrDefault(kindOf(t), 1.0);
+    }
+
+    /** A building's kind of dig, as digs() merges them: the type of field it stands on and its dig (ANY at a tonne a tonne off its resource). */
+    final String kindOf(BuildingsTemplate t) {
+        BuildingsTemplate.Site site = t.site();
+        boolean on = site != null && site.resource() == resource;
+        return kind(on ? site.type() : null, on ? site.dig() : 1);
+    }
+
+    /** The key a kind of dig is merged and its share kept by. */
+    static String kind(Deposit.FieldType type, double dig) {
+        return type + "/" + dig;
     }
 
     /** What the ground gives of `asked` this month: its resource's remainder taken out (LandManager.extract()). Mining keeps the iron's own tally. */
@@ -173,7 +210,7 @@ public abstract class ExtractionSector extends Sector {
             boolean on = site != null && site.resource() == resource;
             Deposit.FieldType type = on ? site.type() : null;
             double dig = on ? site.dig() : 1;
-            kinds.merge(type + "/" + dig, new Dig(type, dig, units), (a, b) -> new Dig(a.type, a.dig, a.capacity + b.capacity));
+            kinds.merge(kind(type, dig), new Dig(type, dig, units), (a, b) -> new Dig(a.type, a.dig, a.capacity + b.capacity));
         }
         return new ArrayList<>(kinds.values());
     }

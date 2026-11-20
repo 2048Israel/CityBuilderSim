@@ -1275,6 +1275,23 @@ public class LandManager {
      */
     public double goldOutput(double referenceOunces) {
         if (!(referenceOunces > 0)) return 0;
+        return Math.min(goldWalk(referenceOunces)[0], getRemaining(Resource.GOLD));
+    }
+
+    /**
+     * The share of a mill's ore throughput, `referenceOunces` as goldOutput() reads it, that the city's gold ground still gives it
+     * this month (NG1; GoldMining.groundShare()): the ore goldOutput()'s walk mills over the throughput - exactly 1 while the
+     * pieces hold the whole budget (the walk spends it to nought), less on the last of a field, 0 once every piece is worked out.
+     * 1 for no throughput. Pure, from the same walk, so goldOutput() is what it was to the bit.
+     */
+    public double goldOreShare(double referenceOunces) {
+        if (!(referenceOunces > 0)) return 1;
+        double left = goldWalk(referenceOunces)[1];
+        return left > 0 ? (referenceOunces - left) / referenceOunces : 1;
+    }
+
+    /** goldOutput()'s walk over the gold pieces: the ounces made and the ore budget left unmilled, in that order (NG1). */
+    private double[] goldWalk(double referenceOunces) {
         double skip = getExtracted(Resource.GOLD), made = 0, budget = referenceOunces;
         double decline = 1 - Deposit.GOLD_LAST_GRADE_SHARE;
         for (CityLand.Piece piece : land().typedPieces(Resource.GOLD)) {
@@ -1295,7 +1312,7 @@ public class LandManager {
             budget -= ore;
             if (!(budget > 0)) break;
         }
-        return Math.min(made, getRemaining(Resource.GOLD));
+        return new double[] { made, budget };
     }
 
     /** What the world holds of it, as stored when the city was founded or converted: W. */
