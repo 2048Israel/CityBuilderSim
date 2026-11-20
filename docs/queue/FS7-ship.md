@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS7 (untagged) — freight, ports and the island ground cause their conditions — 2026-11-20, ready, see docs/queue/FS7-notes.md
 The fifteen freight, port and island harnesses cause what they used to find by playing (the flaky-suite study's FS7 rows),
