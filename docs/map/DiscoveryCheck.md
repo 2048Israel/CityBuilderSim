@@ -58,7 +58,7 @@
 >  20. THE CITY'S OWN PAYROLL at a new floor counts the research posts (PolicyPreview.cityPayrollAt()), and the landlords' credit check counts every
 >      post the city offers, the research posts' jobs included (RealEstate.latentHeadShortfall()), as plan() does.
 
-**Uses:** [Research](Research.md) (218), [Recipes](Recipes.md) (36), [JobType](JobType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (25), [Game](Game.md) (23), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PolicyDates](PolicyDates.md) (6), [PolicyPreview](PolicyPreview.md) (6), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [EconomyManager](EconomyManager.md) (5), [MoneyAudit](MoneyAudit.md) (5), [BuildingType](BuildingType.md) (4), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 4 more
+**Uses:** [Research](Research.md) (218), [Recipes](Recipes.md) (36), [JobType](JobType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (25), [Game](Game.md) (23), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PolicyPreview](PolicyPreview.md) (6), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [EconomyManager](EconomyManager.md) (5), [MoneyAudit](MoneyAudit.md) (5), [PolicyDates](PolicyDates.md) (5), [BuildingType](BuildingType.md) (4), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 4 more
 
 **Used by (5):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PrizeCheck](PrizeCheck.md), [ResearchViewCheck](ResearchViewCheck.md)
 
@@ -83,10 +83,10 @@
 | 1059 | 14. a city founded the default way |
 | 1110 | 15. the inbox |
 | 1162 | 16. a law find opens no lever |
-| 1184 | 17. the save |
-| 1247 | 18. a reform of the money |
-| 1277 | 19. a school ordered demolished (R3b) |
-| 1308 | 20. the city's own payroll and the heads it houses (R3b) |
+| 1181 | 17. the save |
+| 1244 | 18. a reform of the money |
+| 1274 | 19. a school ordered demolished (R3b) |
+| 1305 | 20. the city's own payroll and the heads it houses (R3b) |
 
 ## Constants
 
@@ -231,33 +231,33 @@
 |---:|---:|---|---|
 | 1112 | 49 | `static void sectionFifteen()` |  |
 
-### 16. a law find opens no lever (lines 1162-1183)
+### 16. a law find opens no lever (lines 1162-1180)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1164 | 19 | `static void sectionSixteen()` |  |
+| 1164 | 16 | `static void sectionSixteen()` |  |
 
-### 17. the save (lines 1184-1246)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1186 | 60 | `static void sectionSeventeen() throws Exception` |  |
-
-### 18. a reform of the money (lines 1247-1276)
+### 17. the save (lines 1181-1243)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1249 | 27 | `static void sectionEighteen()` |  |
+| 1183 | 60 | `static void sectionSeventeen() throws Exception` |  |
 
-### 19. a school ordered demolished (R3b) (lines 1277-1307)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1279 | 28 | `static void sectionNineteen()` |  |
-
-### 20. the city's own payroll and the heads it houses (R3b) (lines 1308-1380)
+### 18. a reform of the money (lines 1244-1273)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1310 | 70 | `static void sectionTwenty()` |  |
+| 1246 | 27 | `static void sectionEighteen()` |  |
+
+### 19. a school ordered demolished (R3b) (lines 1274-1304)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1276 | 28 | `static void sectionNineteen()` |  |
+
+### 20. the city's own payroll and the heads it houses (R3b) (lines 1305-1380)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1307 | 73 | `static void sectionTwenty()` |  |
 

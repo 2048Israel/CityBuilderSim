@@ -2,7 +2,7 @@
 
 Generated 2026-11-19 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**228 harness files, 26,046 labelled assertions.** AllChecks runs 228 of them.
+**228 harness files, 26,045 labelled assertions.** AllChecks runs 228 of them.
 
 ## Which harnesses read which class
 
@@ -7761,7 +7761,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L270 C's log has the line that begins \"world-1.bin not named\" (stderr)
   - L272 C's town differs from A's: the world file is an input to the month
 
-## DiscoveryCheck.java - 222 labelled assertions
+## DiscoveryCheck.java - 221 labelled assertions
 
 > The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the
 > seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/studies/research-design.md 1.8, 5.1, 5.2, 6.3).
@@ -7971,46 +7971,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L1165 16. a law find opens no lever: every lever's key is a law row that says so**
   - L1176 every lever's entry key is a law row of the catalogue, on Canada's month, that says its find opens nothing
   - L1177 ...and the policy rate and the Bank of Canada carry no key, so no find is theirs
-  - L1181 ...and the catalogue has no lever row that no lever keys (
-- **L1187 17. the save: a city with research writes it, a load restores it whole and plays on as the city saved; a city with none writes no key**
-  - L1192 a city founded the default way, with a University and no grant, writes no research key: its researchers are idle and pile nothing
-  - L1196 ...a save with no key restores an empty research, even in a Game that held another city's
-  - L1202 ...and a Game that held a city's research and loads that save keeps none of it: no grant, no post, no pile, no find and no bill
-  - L1216 fixture: the city has grants, posts, work piled and a find, and a bill
-  - L1220 the city is saved
-  - L1222 ...with a research key, keyed by field name and by code
-  - L1226 loaded without a failure
-  - L1227 the grants, the posts, the piles and the finds (in their order) come back equal
-  - L1230 ...the loaded city's jobs include its posts, and equal the saved city's
-  - L1232 ...and the month's bill comes back: payroll and costs
-  - L1233 ...the costs too
-  - L1234 ...and the national accounts' spending on it
-  - L1235 a find known before the save is known after it: the discovery's code is among the finds and is known from its month
-  - L1238 one month played on the saved city and on the loaded one gives the same piles and the same finds
-  - L1242 ...to the piles' last digits, and the same posts
-  - L1243 ...and the same research bill
-  - L1244 ...and the same jobs
-- **L1250 18. a reform of the money scales the grants and the bill, and nothing else of the research**
-  - L1264 fixture: grants in two fields, posts, work piled, a find and a bill
-  - L1268 fixture: the reform went through and moved the money: the research bill is
-  - L1269 the grants are scaled as the bill is: the engineering grant
-  - L1270 ...and the medical grant
-  - L1271 ...the pay of the posts too
-  - L1272 ...and the national accounts' spending on them
-  - L1273 the posts, the piles and the finds are not money and are as they were
-  - L1274 a grant of 0 stays 0 and the other fields stay without one
-- **L1280 19. a school ordered demolished gives no posts the next month: the strike follows the demolitions that close**
-  - L1292 fixture: both villages, founded the 1900 way with one University, struck the engineering posts the grant buys (
-  - L1296 the University is ordered demolished, between the presses: the city's own to pull down, and the quote paid
-  - L1297 it still stands until the month starts, and so does its room and the grant's posts
-  - L1301 the month it closes the University is gone: no school stands, and its room with it
-  - L1302 ...so the grant buys no post that month, from a room that is not there: the strike followed the demolition (before it, a school ordered pulled down still gav...
-  - L1304 ...and the city's jobs are the buildings' alone, the posts' gone with the school
-  - L1305 the twin, with no order, struck its five posts again: the order moved nothing but the school's
-- **L1311 20. the city's own payroll at a new floor counts the research posts, and the landlords' credit check counts every post the city offers**
-  - L1321 fixture: a grant has bought posts that are filled and paid (
-  - L1331 fixture: the village has no minimum wage law yet, so the floor binds nobody
-  - L1332 ...and a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it
+- **L1184 17. the save: a city with research writes it, a load restores it whole and plays on as the city saved; a city with none writes no key**
+  - L1189 a city founded the default way, with a University and no grant, writes no research key: its researchers are idle and pile nothing
+  - L1193 ...a save with no key restores an empty research, even in a Game that held another city's
+  - L1199 ...and a Game that held a city's research and loads that save keeps none of it: no grant, no post, no pile, no find and no bill
+  - L1213 fixture: the city has grants, posts, work piled and a find, and a bill
+  - L1217 the city is saved
+  - L1219 ...with a research key, keyed by field name and by code
+  - L1223 loaded without a failure
+  - L1224 the grants, the posts, the piles and the finds (in their order) come back equal
+  - L1227 ...the loaded city's jobs include its posts, and equal the saved city's
+  - L1229 ...and the month's bill comes back: payroll and costs
+  - L1230 ...the costs too
+  - L1231 ...and the national accounts' spending on it
+  - L1232 a find known before the save is known after it: the discovery's code is among the finds and is known from its month
+  - L1235 one month played on the saved city and on the loaded one gives the same piles and the same finds
+  - L1239 ...to the piles' last digits, and the same posts
+  - L1240 ...and the same research bill
+  - L1241 ...and the same jobs
+- **L1247 18. a reform of the money scales the grants and the bill, and nothing else of the research**
+  - L1261 fixture: grants in two fields, posts, work piled, a find and a bill
+  - L1265 fixture: the reform went through and moved the money: the research bill is
+  - L1266 the grants are scaled as the bill is: the engineering grant
+  - L1267 ...and the medical grant
+  - L1268 ...the pay of the posts too
+  - L1269 ...and the national accounts' spending on them
+  - L1270 the posts, the piles and the finds are not money and are as they were
+  - L1271 a grant of 0 stays 0 and the other fields stay without one
+- **L1277 19. a school ordered demolished gives no posts the next month: the strike follows the demolitions that close**
+  - L1289 fixture: both villages, founded the 1900 way with one University, struck the engineering posts the grant buys (
+  - L1293 the University is ordered demolished, between the presses: the city's own to pull down, and the quote paid
+  - L1294 it still stands until the month starts, and so does its room and the grant's posts
+  - L1298 the month it closes the University is gone: no school stands, and its room with it
+  - L1299 ...so the grant buys no post that month, from a room that is not there: the strike followed the demolition (before it, a school ordered pulled down still gav...
+  - L1301 ...and the city's jobs are the buildings' alone, the posts' gone with the school
+  - L1302 the twin, with no order, struck its five posts again: the order moved nothing but the school's
+- **L1308 20. the city's own payroll at a new floor counts the research posts, and the landlords' credit check counts every post the city offers**
+  - L1318 fixture: a grant has bought posts that are filled and paid (
+  - L1329 fixture: the 1900 village's floor binds from the founding (OP1)
+  - L1331 ...and in a market with no floor, a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it
   - L1351 fixture: the floor raised is past the target of every job the research posts hold, so the posts' pay moves (by
   - L1352 the city's own payroll at that floor is what it is today plus the move of its teachers', its doctors' and nurses' and its research posts' pay, job by job
   - L1354 ...so it is that much above what it was when it left the posts out: the posts' share is their jobs times what the floor lifts each to
