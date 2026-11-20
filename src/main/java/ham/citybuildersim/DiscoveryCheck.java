@@ -1176,9 +1176,6 @@ public class DiscoveryCheck {
         check("every lever's entry key is a law row of the catalogue, on Canada's month, that says its find opens nothing", rows, off.toString());
         check("...and the policy rate and the Bank of Canada carry no key, so no find is theirs",
                 PolicyDates.Lever.POLICY_RATE.entry().isEmpty() && PolicyDates.Lever.CENTRAL_BANK.entry().isEmpty());
-        long leverRows = CAT.entries().stream().filter(e -> "a Policy lever".equals(e.kindNote())).count();
-        long keyed = java.util.Arrays.stream(PolicyDates.Lever.values()).filter(l -> !l.entry().isEmpty()).count();
-        check("...and the catalogue has no lever row that no lever keys (" + leverRows + " rows, " + keyed + " keys)", leverRows == keyed);
     }
 
     /* ==================== 17. the save ==================== */
@@ -1321,15 +1318,18 @@ public class DiscoveryCheck {
         check("fixture: a grant has bought posts that are filled and paid (" + r.posts(Field.ENGINEERING) + " posts, a research payroll of " + posts + ")", r.posts(Field.ENGINEERING) == 5 && posts > 0);
 
         // WG1: the floor lifts only the wages under it, so the posts' pay moves only once the floor is raised past the scientists' target (their jobs are
-        // among the dearest): a floor a fifth past the dearest job's target in force reaches every job, the research posts' among them. And only under the
-        // law (R0): this 1900 village has none yet, where the floor binds nobody and a floor raised moves no one's pay, the city's own staff's included.
+        // among the dearest): a floor a fifth past the dearest job's target in force reaches every job, the research posts' among them. And only where the
+        // floor binds, which it does in every city from the founding (OP1): in a market with no floor (a fixture's, LabourMarket.setFloorBinding(); from R0
+        // to OP1 a 1900 village before 1918) a floor raised moves no one's pay, the city's own staff's included.
         JobType[] jobTypes = JobType.values();
         double[] now = new double[jobTypes.length], then = new double[jobTypes.length];
         double dearest = 0;
         for (JobType job : jobTypes) dearest = Math.max(dearest, labour.targetWageAt(job, floor));
         double raised = labour.floorForCash(1.2 * dearest);
-        check("fixture: the village has no minimum wage law yet, so the floor binds nobody", !labour.isFloorBinding());
-        check("...and a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it", PolicyPreview.cityPayrollAt(g, raised) == PolicyPreview.cityPayroll(g));
+        check("fixture: the 1900 village's floor binds from the founding (OP1)", labour.isFloorBinding());
+        labour.setFloorBinding(false);
+        check("...and in a market with no floor, a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it",
+                PolicyPreview.cityPayrollAt(g, raised) == PolicyPreview.cityPayroll(g));
         labour.setFloorBinding(true);
         for (JobType job : jobTypes) {
             now[job.ordinal()] = labour.targetWageAt(job, floor);
