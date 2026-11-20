@@ -200,6 +200,7 @@ public final class YearBook {
         level(m, "studentLoansOwed", "student debt outstanding, in thousands");
         level(m, "sickPastTwoMonths", "people sick longer than two months - the ring that kills");
         level(m, "prisoners", "people in a cell");
+        level(m, "owners", "the owner families' adults, who take no job (recorded since BO1-S)");
         level(m, "constructionCapacity", "construction points the city can put out in a month");
         level(m, "fundValue", "the city's fund, everything it holds at the marks and its cash, in thousands (recorded since 0.7.39)");
         level(m, "fundPutIn", "what the city has put into its fund since it began - pay-ins, rescues, the bank's preferred - in thousands (recorded since 0.7.39)");
@@ -384,28 +385,30 @@ public final class YearBook {
      * are not looking.
      *
      * `workforce` is NOT the labour force and never was - it still counts
-     * every full-time student and every prisoner. PopulationManager takes
-     * both off in getLabourForce(), and its comment records that counting
+     * every full-time student, every prisoner and (BO1-S) every owner-family
+     * adult, who takes no job. PopulationManager takes
+     * all three off in getLabourForce(), and its comment records that counting
      * students as job-seekers was already found and fixed once, on the People
      * screen, in September. This is that same subtraction, done off a saved
      * history instead of a live city.
      *
-     * A history from before students or prisoners were recorded contributes
+     * A history from before students, prisoners or owners were recorded contributes
      * nothing rather than a zero, which leaves the labour force reading as
      * the old `workforce` for those months - wrong in the same direction as
      * before, but only where the file has nothing better to offer.
      */
     public static double[] labourForce(HistorySave h) {
-        return labourForce(h.aligned("workforce"), h.aligned("students"), h.aligned("prisoners"));
+        return labourForce(h.aligned("workforce"), h.aligned("students"), h.aligned("prisoners"), h.aligned("owners"));
     }
 
-    /** labourForce() off the three series, whole or a tail of them alike (UP2): one definition. */
-    static double[] labourForce(double[] workforce, double[] students, double[] prisoners) {
+    /** labourForce() off the four series, whole or a tail of them alike (UP2): one definition. */
+    static double[] labourForce(double[] workforce, double[] students, double[] prisoners, double[] owners) {
         double[] out = new double[workforce.length];
         for (int i = 0; i < out.length; i++) {
             out[i] = workforce[i]
                     - (Double.isNaN(students[i])  ? 0 : students[i])
-                    - (Double.isNaN(prisoners[i]) ? 0 : prisoners[i]);
+                    - (Double.isNaN(prisoners[i]) ? 0 : prisoners[i])
+                    - (Double.isNaN(owners[i])    ? 0 : owners[i]);
         }
         return out;
     }
@@ -447,7 +450,7 @@ public final class YearBook {
      */
     public static double[] unemploymentTail(HistorySave h, int n) {
         return unemployment(labourForce(h.alignedTail("workforce", n), h.alignedTail("students", n),
-                h.alignedTail("prisoners", n)), h.alignedTail("jobs", n), h.alignedTail("outOfWork", n));
+                h.alignedTail("prisoners", n), h.alignedTail("owners", n)), h.alignedTail("jobs", n), h.alignedTail("outOfWork", n));
     }
 
     /** unemployment() off the labour force, the posts and the pool, whole or a tail of them alike (UP2): one definition. */
