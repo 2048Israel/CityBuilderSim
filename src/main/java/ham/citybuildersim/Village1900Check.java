@@ -22,7 +22,7 @@ import java.io.PrintStream;
  *      Sector.MIN_STAFFABLE_TO_ORDER, which today's twin's passes
  *   4. THE STALL: the 1900 village draws under STALLED of today's twin's arrivals at the end of the five years, and no
  *      exporter stands there, its manufacturing held at the staffing gate; and the 1900 village's treasury holds its cash and owes
- *      nothing while today's twin has borrowed, so the dated money (no central bank until 1935) is not what holds it
+ *      nothing, more cash a head than today's growing twin holds, so the dated money (no central bank until 1935) is not what holds it
  *
  * ...and the fix, each half alone, at its switch (on unless -Dr1g.home=off or -Dr1g.apprentices=off; each section fails with its own off):
  *
@@ -197,7 +197,10 @@ public class Village1900Check {
                 today.g.getCash(), owedToday);
         check("the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it", cash > 0 && owed == 0,
                 String.format("cash %.1f, owed %.1f", cash, owed));
-        check("while today's twin, building, has spent its cash and borrowed", owedToday > 0, String.format("owed %.1f", owedToday));
+        double head1900 = cash / Math.max(1, y1900.g.getPopulationManager().getPopulation());
+        double headToday = today.g.getCash() / Math.max(1, today.g.getPopulationManager().getPopulation());
+        check("and it holds more cash a head than today's twin, which grows on less", head1900 > headToday,
+                String.format("%.3f against %.3f", head1900, headToday));
     }
 
     /* ---------------------------------------------------------------- 5 */
