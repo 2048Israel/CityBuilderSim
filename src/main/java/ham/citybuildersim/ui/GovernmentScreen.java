@@ -2150,7 +2150,7 @@ final class GovernmentScreen {
                 payerRow("Principal repaid — not an expense", repaid, 0, "left the treasury")));
         double foreignInterest = ui.game.getForeignInterestPaidThisMonth();
         if (foreignInterest > 0) box.getChildren().add(Kept.scope("abroad", () ->
-                payerRow("...of which paid abroad", foreignInterest, total, "in dollars")));
+                payerRow("...of which paid abroad", foreignInterest, total, ForeignCouponView.note(ui.game.getDebtManager()))));
         return box;
     }
 

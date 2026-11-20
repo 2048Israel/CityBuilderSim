@@ -421,6 +421,58 @@ public final class ResearchView {
         return t != null && t.getResearches() != null;
     }
 
+    /* ----- the licence line (FB13, R5-L; research-design 2.4, mockup 5) ----- */
+
+    /** What a building's licence is, from the model's own reading of its discovery: found here, found here since, not patented, under patent, or its patent has ended. */
+    public enum LicenceKind { HERE, OWN, FREE, UNDER, ENDED }
+
+    /**
+     * What a building the city came to know after the founding owes for its patent (R2c): its kind, the month the patent ends (history's date and
+     * LicenceFees.TERM_MONTHS; 0 for a discovery with none to end), and what the licence costs a month on one more of it (LicenceFees.forNew(); 0
+     * for a work that is no sector's, which the licence is struck on in its own way, and for one that adds nothing now).
+     */
+    public record Licence(LicenceKind kind, int endsMonth, double perMonth, Entry entry) { }
+
+    /**
+     * The licence of a template in a city founded the 1900 way, or null where its card has no line: no origin, and one known by a year, which
+     * has no discovery to carry a patent. HERE where the city found it before history's date, OWN where it has found it since, FREE where the
+     * entry is not patented, UNDER while LicenceFees.payable() says the world's share is due (a quarter of what it adds, until the patent ends),
+     * ENDED once it has.
+     */
+    public static Licence licence(Game game, BuildingsTemplate t) {
+        Origin o = origin(game, t);
+        if (o == null || o.entry() == null) return null;
+        Entry e = o.entry();
+        int ends = e.fee() ? e.worldMonth() + LicenceFees.TERM_MONTHS : 0;
+        if (o.source() == Source.HERE) return new Licence(LicenceKind.HERE, ends, 0, e);
+        if (!e.fee()) return new Licence(LicenceKind.FREE, 0, 0, e);
+        if (LicenceFees.payable(e.code(), game.getMonth(), game.getResearch())) {
+            return new Licence(LicenceKind.UNDER, ends, LicenceFees.forNew(game, t), e);
+        }
+        return new Licence(game.getMonth() >= ends ? LicenceKind.ENDED : LicenceKind.OWN, ends, 0, e);
+    }
+
+    /** The world's share as the line says it: "a quarter" for LicenceFees.SHARE's .25, else a percentage. */
+    public static String shareWords() {
+        return LicenceFees.SHARE == .25 ? "a quarter" : Math.round(LicenceFees.SHARE * 100) + "%";
+    }
+
+    /**
+     * The card's line on its licence (mockup 5): "Licence: a quarter of what it adds goes abroad until June 1975, about D$1.17M a month." while the
+     * patent runs, "Licence: none. Found by the Institute of technology; your builders pay no fee, ever." for what the city found first, and the
+     * rest in the same shape. `money` writes the month's fee in the screen's money (thousands in); the fee is left out where it is nothing.
+     */
+    public static String licenceWords(Licence l, java.util.function.DoubleFunction<String> money) {
+        return switch (l.kind()) {
+            case HERE -> "Licence: none. Found by " + l.entry().field().school() + "; your builders pay no fee, ever.";
+            case OWN -> "Licence: none now. Your researchers have found it themselves, so your builders pay no fee.";
+            case FREE -> "Licence: none. It is not patented.";
+            case ENDED -> "Licence: none now. The patent ended " + CityCalendar.format(l.endsMonth()) + ".";
+            case UNDER -> "Licence: " + shareWords() + " of what it adds goes abroad until " + CityCalendar.format(l.endsMonth())
+                    + (l.perMonth() > 0 ? ", about " + money.apply(l.perMonth()) + " a month" : "") + ".";
+        };
+    }
+
     /* =====================================================================
        THE LAID-ON AXIS AND WHAT IS STILL TO COME (R3b, from R5's gate review: the Found page worked these out itself)
        ===================================================================== */
