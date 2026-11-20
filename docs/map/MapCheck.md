@@ -1,4 +1,4 @@
-# MapCheck.java - 16,335 lines · 433 methods · 155 constants · harnesses
+# MapCheck.java - 16,350 lines · 433 methods · 155 constants · harnesses
 
 `ham/citybuildersim/MapCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      a street laid only where none is near (LAID_MOST plots at the most, a T
 > ... (357 more lines in the source)
 
-**Uses:** [CityMap](CityMap.md) (824), [World](World.md) (594), [LandMap](LandMap.md) (407), [DistrictPlan](DistrictPlan.md) (277), [TilePainter](TilePainter.md) (267), [MapFrame](MapFrame.md) (251), [BuildingVisual](BuildingVisual.md) (233), [TrainSchedule](TrainSchedule.md) (209), [TileRaster](TileRaster.md) (177), [MapTiles](MapTiles.md) (158), [LandParcel](LandParcel.md) (125), [CityLand](CityLand.md) (124), [GlobeFrame](GlobeFrame.md) (117), [CityRuns](CityRuns.md) (113), [CityShore](CityShore.md) (101), [MiniMapFrame](MiniMapFrame.md) (93), [SeaRoutes](SeaRoutes.md) (83), [Game](Game.md) (82), [JunctionCheck](JunctionCheck.md) (73), [DepositMarks](DepositMarks.md) (70), [BoatSchedule](BoatSchedule.md) (58), [DistrictPicture](DistrictPicture.md) (58), [LongPlaytest](LongPlaytest.md) (56), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [Deposit](Deposit.md) (41), [Ports](Ports.md) (41), [Resource](Resource.md) (38), [Timing](Timing.md) (35), [EarthTerrain](EarthTerrain.md) (31), [LandGrid](LandGrid.md) (30)... and 42 more
+**Uses:** [CityMap](CityMap.md) (824), [World](World.md) (594), [LandMap](LandMap.md) (407), [DistrictPlan](DistrictPlan.md) (277), [TilePainter](TilePainter.md) (267), [MapFrame](MapFrame.md) (251), [BuildingVisual](BuildingVisual.md) (233), [TrainSchedule](TrainSchedule.md) (209), [TileRaster](TileRaster.md) (177), [MapTiles](MapTiles.md) (158), [LandParcel](LandParcel.md) (125), [CityLand](CityLand.md) (124), [GlobeFrame](GlobeFrame.md) (117), [CityRuns](CityRuns.md) (115), [CityShore](CityShore.md) (101), [MiniMapFrame](MiniMapFrame.md) (93), [SeaRoutes](SeaRoutes.md) (83), [Game](Game.md) (82), [JunctionCheck](JunctionCheck.md) (73), [DepositMarks](DepositMarks.md) (70), [BoatSchedule](BoatSchedule.md) (58), [DistrictPicture](DistrictPicture.md) (58), [LongPlaytest](LongPlaytest.md) (56), [EarthTerrainCheck](EarthTerrainCheck.md) (46), [Deposit](Deposit.md) (41), [Ports](Ports.md) (41), [Resource](Resource.md) (38), [Timing](Timing.md) (35), [EarthTerrain](EarthTerrain.md) (31), [LandGrid](LandGrid.md) (30)... and 42 more
 
 **Used by (13):** [BridgeMapCheck](BridgeMapCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [GlobeCheck](GlobeCheck.md), [IslandNetCheck](IslandNetCheck.md), [JunctionCheck](JunctionCheck.md), [MainLineCheck](MainLineCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PlanCheck](PlanCheck.md), [PortCheck](PortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [RailDrawCheck](RailDrawCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -458,7 +458,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 436 | 15900 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
+| 436 | 15915 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
 | 441 | 4 | `static void check(String label, boolean ok)` |  |
 | 485 | 7 | `static double groundKm2(BuildingVisual.Type[] types)` | The dry ground the copies' x 1 stands on (0.7.71): his, scaled by his buildings' land on this catalogue over theirs then, so the copies keep his density (JERUS_FILL) whatever the catalogue: with his childcare restated... |
 | 523 | 66 | `public static void main(String[] args) throws Exception` |  |
@@ -1139,12 +1139,12 @@
 |---:|---:|---|---|
 | 16150 | 71 | `static void frontageDrawn(BuildingVisual.Type[] types)` | Actual plan marks, with only their avenue streets, cause the newly possible diagonal crossing in the raster. |
 
-### 25. A RAIL DEPOT AND NO RAIL SPUR: THE STATION'S OWN LINE (HL1-M) (lines 16222-16335)
+### 25. A RAIL DEPOT AND NO RAIL SPUR: THE STATION'S OWN LINE (HL1-M) (lines 16222-16350)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 16242 | 28 | **type** `static final class DepotCity` | 25's city: one district owned whole, CityMap.DISTRICT plots a side from its north-west corner, the founding site in its middle: the line the runs lay to its edge is some 130 plots, longer than a Rail Spur's 72. |
 | 16252 | 12 | `DepotCity()` _(in MapCheck.DepotCity)_ |  |
 | 16266 | 3 | `void run()` _(in MapCheck.DepotCity)_ | One month, the map reconciled to the model's counts as they stand. |
-| 16271 | 63 | `static void depotAloneRails()` |  |
+| 16271 | 78 | `static void depotAloneRails()` |  |
 
