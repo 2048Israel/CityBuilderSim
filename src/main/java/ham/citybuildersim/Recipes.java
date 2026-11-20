@@ -268,6 +268,12 @@ public final class Recipes {
      */
     public static boolean HOME_WALK = "on".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
 
+    /**
+     * R1g's switch for the walk paced by the city's own wages (the orchestrator's (c)), off unless -Dr1g.walk=wage: each month's apply() sets
+     * the homes to homeScaleOfWages() rather than the calendar's homeScaleAt().
+     */
+    public static boolean HOME_WAGE_WALK = "wage".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+
     /** A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). */
     private record Dated(double scale, int materials, int points) { }
 
@@ -313,13 +319,43 @@ public final class Recipes {
     }
 
     /**
+     * What a 1900 home costs of today's at the city's own wages ((c)): homeScale()'s household, 1901's working arrivals by band, paid the
+     * market's wages this month in founding money (each job's wage over the cost of living, at the ladder's anchor over the going rate, which a
+     * reform moves together), over the same household on today's ladder, capped at 1. At the founding it is homeScale() to the market's
+     * multiples; it rises only as the city's real wages do.
+     */
+    public static double homeScaleOfWages(Game game) {
+        LabourMarket market = game.getLabourMarket();
+        double living = market.getCostOfLiving(), going = market.getGoingRate();
+        if (!(living > 0) || !(going > 0)) return homeScale();
+        double unit = market.getLadder().anchor() / going;
+        ArrivalMix.Knot first = ArrivalMix.KNOTS.get(0);
+        double[] share = { first.none(), first.diploma(), first.college(), first.university() };
+        double then = 0, now = 0;
+        for (WageBand band : WageBand.values()) {
+            double city = 0, today = 0;
+            int jobs = 0;
+            for (JobType job : JobType.values()) {
+                if (WageBand.of(job) != band) continue;
+                city += market.getWage(job) / living * unit;
+                today += WageLadder.TODAY.monthlyWage(PayTier.of(job));
+                jobs++;
+            }
+            if (jobs == 0) continue;
+            then += share[band.ordinal()] * city / jobs;
+            now += share[band.ordinal()] * today / jobs;
+        }
+        return now > 0 && then > 0 ? Math.min(1, then / now) : homeScale();
+    }
+
+    /**
      * Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): once at homeScale(), or with the walk at homeScaleAt() the
      * month, set again whenever that differs from the scale the home stands at. Nothing with the switch off.
      */
     private void dateHomes(Game game) {
         if (!HOMES_1900 || game.getSectors() == null) return;
         String homes = game.getSectors().realEstate().key();
-        double scale = HOME_WALK ? homeScaleAt(game.getMonth()) : homeScale();
+        double scale = HOME_WAGE_WALK ? homeScaleOfWages(game) : HOME_WALK ? homeScaleAt(game.getMonth()) : homeScale();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0) continue;
             Dated was = datedHomes.get(t);
