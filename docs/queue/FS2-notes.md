@@ -135,7 +135,20 @@ Rows 55, 56 and 64-66 (OX1's path), 104 (HS1's), 107-110 (R1e's dry run) and
 The mechanisms are shown on today's classes and, for the parting, the reload
 and the cut-offs, on OP1's dry-run classes.
 
-## The pick and the review
+## The pick, the review and the checks
 
-`sh tools/pick.sh origin/main HEAD`: 26 of 228. Review: not needed (no money,
-saves or threading in the diff). No dry run (the pick is not ALL).
+`sh tools/pick.sh origin/main HEAD`: 26 of 229 (ObservationCheck, which
+builds a `PriceLevelCheck.Child`, and the harnesses that borrow
+`PriceLevelCheck.atFounding`/`sameMoney` and `ScaleCheck.scale`/`everyPost`,
+none of which changed). Review: not needed (no money, saves or threading in the
+diff). No dry run (the pick is not ALL).
+
+- `./batch-check.sh --fast`: exit 0, before and after the merge.
+- The pick, one name a call, on 22bf0e830 plus the notes: 24 exit 0; CreditCheck
+  and EducationCheck exit 3 (main's known reds only). ObservationCheck 33 s,
+  LongPlaytest 1,157 s, CopperRefiningCheck 1,337 s (the laptop shared with
+  other sessions' checks).
+- Main merged at 2c3f07670 (SQ1b 0.9.164, FB14 0.9.165; only the generated
+  indexes conflicted, taken from main and regenerated). On the merged tree
+  ScaleCheck and DenominationCheck exit 0 and PriceLevelCheck exit 0; ScaleCheck
+  is struck at 225 again with the same misses to the digit.
