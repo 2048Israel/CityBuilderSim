@@ -55,7 +55,9 @@ import java.nio.file.Path;
  * MIN_LANE in the price index and the currency's unit). A bare part holds the
  * floor's arithmetic; the same two cities, on both sides of the reform and
  * again with prices moved, show that the reformed city's card is the plain
- * one's divided and that it draws the same partners.
+ * one's divided and that it draws the same partners. The partner it draws is
+ * given its month's trade (FS2, givePartner()): twice the plain city's floor,
+ * the reformed city's divided, so a lane is there to draw on any path.
  */
 public class DenominationCheck {
 
@@ -1014,6 +1016,8 @@ public class DenominationCheck {
         int reformMonth = tradeOf(lopped).month();
         assertTrue("fixture: the reform falls in mid-year, not in a January (" + CityCalendar.shortMonthName(reformMonth) + ")",
                 CityCalendar.monthOfYear(reformMonth) == REFORM_MONTH_OF_YEAR && tradeOf(plain).month() == reformMonth);
+        // ...the month's partner given its trade first (FS2, givePartner()), so the state the reform is judged against holds it; the card's own call then skips
+        givePartner(plain, lopped, 1);
         PartnerTrade.State plainBefore = tradeOf(plain).toState();
         java.util.List<PartnerTrade.Table> plainHistory = tradeOf(plain).history();
         assertTrue("fixture: the year held has trade by then, and so has the month",
@@ -1082,6 +1086,45 @@ public class DenominationCheck {
     /** Where the lanes of cardAndLanes() are drawn from: Halifax, as GlobeCheck's city. */
     static final double LANES_FROM_LAT = 44.65, LANES_FROM_LON = -63.57;
 
+    /** How many times the plain city's floor a partner is given in the month the card and the lanes read (FS2, givePartner()). */
+    static final double GIVEN_FLOORS = 2;
+
+    /** The month givePartner() last gave the partner its trade in; a reform in that month has already divided it in the reformed city. */
+    static int givenMonth = Integer.MIN_VALUE;
+
+    /**
+     * The lanes' fixture caused, not found (FS2): in the month the card and the lanes read, the partner with the most trade this year that stands
+     * apart from Halifax (else the first that does) is given exports of GIVEN_FLOORS times the plain city's floor, tallied into both cities' live
+     * record (the reformed one's times `scale`) and the month closed again, so the snapshot the screens read has it. No units are tallied, so the
+     * month's units the world market strikes its next band from are as they were; the partner's cells take one unit in each city, the same.
+     * WHY: on BO1-S's path the plain city's January had no partner over the floor (0 lanes, 0 arrows), and the lanes' law read nothing.
+     */
+    static void givePartner(Game plain, Game lopped, double scale) {
+        PartnerTrade p = tradeOf(plain), l = tradeOf(lopped);
+        if (p == null || l == null || p.month() == givenMonth) return;
+        givenMonth = p.month();
+        PartnerTrade.Snapshot s = p.snapshot();
+        int n = s.nations(), partner = -1;
+        double most = -1;
+        for (int i = 0; i < n; i++) {
+            double lat = plain.getWorldMarket().nodeLat(i + 1), lon = plain.getWorldMarket().nodeLon(i + 1);
+            if (!(Math.abs(lat - LANES_FROM_LAT) > 1 || Math.abs(lon - LANES_FROM_LON) > 1)) continue;
+            double year = s.yearToDate(i + 1).exports() + s.yearToDate(i + 1).imports();
+            if (year > most) { most = year; partner = i; }
+        }
+        if (partner < 0) return;
+        double[] to = new double[n];
+        to[partner] = 1;
+        WorldMarket.Allocation split = new WorldMarket.Allocation(to, new double[n]);
+        double given = GIVEN_FLOORS * s.minLane();
+        p.tally(p.month(), Good.CROPS, split, 0, given, 0, 0, 0);
+        p.close(p.month());
+        l.tally(l.month(), Good.CROPS, split, 0, given * scale, 0, 0, 0);
+        l.close(l.month());
+        out.printf("   %s is given D$%.4f thousand of exports this month, %.0f times the plain city's floor (FS2)%n",
+                s.nameOf(partner + 1), given, GIVEN_FLOORS);
+    }
+
     /**
      * What the screens read of two cities' trade by partner, the second the first reformed by 1 / scale (scale 1: the same city, before the reform):
      * the nation card's year to date, the month's figures the lanes are made of, the floor under which a partner has no lane, and the lanes and the
@@ -1092,6 +1135,7 @@ public class DenominationCheck {
      */
     static void cardAndLanes(String when, Game plain, Game lopped, double scale, boolean reformed) {
         out.println("--- the card and the lanes, " + when + " (TP1) ---");
+        givePartner(plain, lopped, scale);
         PartnerTrade.Snapshot p = tradeOf(plain).snapshot(), l = tradeOf(lopped).snapshot();
         double band = 1e-12;
         assertTrue("fixture: both cities are at the same month (" + CityCalendar.shortMonthName(p.month()) + ") with a trade by partner", p.month() == l.month() && p.nations() == l.nations() && p.nations() >= 1);

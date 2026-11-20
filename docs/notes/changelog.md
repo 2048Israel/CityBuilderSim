@@ -18,6 +18,26 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.166 — R2e-PE4, the Cement Plant calibrated rotary-first — 2026-11-20, ready, see docs/queue/R2e-PE4-notes.md
+The Cement Plant's PE4 (Edison's long kiln, 1902) is defined against its rotary kiln now, as R2e and R1d recommended: a
+plant on the rotary kiln without PE4 burns the study's 30% of its cement in coal (7,500 t a month, was 6,160), the long
+kiln saves 394 t of it (to E2's exact 7.0/3.3 wet form, 7,106 t) and E2's preheater the rest, to today's 3,350 t. Every
+kiln step saves on the one before in either learning order, so a 1900 plant fits its long kiln from June 1902 and pays
+PE4's royalty on the saving, where the refit was a loss before and was refused. Today's figures, the Large Cement Plant
+and the Lime Kiln do not move; the shaft kilns keep R1c's 1,340 t over the rotary (8,840 t before PE4, was 7,500).
+PostwarRecipeCheck's kiln controls follow the new calibration, each red on the old one (15 of 228), and a new section
+fits a standing plant's long kiln through the crews' months and reads its royalty. The default playtest's trace is
+main's, byte for byte (eight files, 2,405 months).
+
+### FS2 (untagged) — the twins and the scale cause their conditions — 2026-11-20, ready, see docs/queue/FS2-notes.md
+ScaleCheck, PriceLevelCheck and DenominationCheck cause their conditions; harness-only, the model and the trace unmoved. All fifteen
+FS2 rows of known-reds.txt go green. PriceLevelCheck runs three nudges a level and compares each twin through the month before any two
+cities of one level part (a parting across the levels alone fails); its history is cut by what each list held, the town's reload is
+read by a rerun to that month, and the lanes are given (twice and half the floor), not found. DenominationCheck's card gives its
+partner twice the floor. ScaleCheck strikes its copy at the first month from 225 that has its premises (none in 60 fails as a
+fixture), reads section 9 at ten copies a side (the K = 1 city's whole units fall with them: savings 1.12e-2 to 9.05e-4) with a
+treasury left unscaled shown caught, and plays the 1900 town on the literals (the world's band is no K's: prices 1.09e-3 to 2e-5).
+
 ### SB1 — a template has one stack, the premise closed — 2026-11-20, ready, see docs/queue/SB1-notes.md
 SB1 queued `BuildingManager.retire()` to scrap from every stack of a template, not only the first, after HS1's OutsideCheck fixture read its early return as a fault. It is not one: `addStack` is the only place a stack is made, and it merges an order into the stack of the template's name, so a second order, a building wave, an order on site and every load add to the one stack, and a save keys a stack by its id. No city has a template with two stacks, `retire()`'s return is exact, and the model and its default trace are unchanged. `BuildingStackCheck` section 10 is the finding and its tripwire: every template of the catalogue ordered three ways stands in one stack; a played city's stack count read at the end of each of 24 months, saved and loaded, never has two of a template; and the closing path (`Game.demolish`, the next month's close) and the shedding path (`Game.retire`) take the count asked, up to what stands, leave the emptied stack in place and book the count, the ground, the posts, the log line and the salvage at what was scrapped. Run with `addStack` not merging and `retire` returning the count asked, 18 lines go red. The day a second stack of one template can stand, it goes red there, and `retire()` is the first thing to mend.
 
