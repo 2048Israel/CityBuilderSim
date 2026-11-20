@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**231 harness files, 26,473 labelled assertions.** AllChecks runs 231 of them.
+**231 harness files, 26,476 labelled assertions.** AllChecks runs 231 of them.
 
 ## Which harnesses read which class
 
@@ -6100,7 +6100,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2011 the issue and the fair buyback value read the same curve
   - L2015 ...and the buyback takes it off the books at that price
 
-## CreditCrunchCheck.java - 26 labelled assertions
+## CreditCrunchCheck.java - 28 labelled assertions
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
@@ -6116,36 +6116,38 @@ _(this harness does not label its checks through a helper - it prints its findin
 > for the down payment, which buys nothing when the bank lends nothing; HN1's
 > ...
 
-- **L117 1. the door's capital test asked first says what the door says, and records nothing**
-  - L123 fixture: the bank's leverage requirement is the larger and it stands in its band
-  - L127 in the band the test asked first says the bank has no capital for the mortgage
-  - L128 ...and records no refusal
-  - L129 ...where the door refuses the same mortgage for the bank's capital
-  - L135 fixture: over its target the bank has finite room for insured growth (BF1)
-  - L137 over the target a mortgage within the room: the test says no shortage, and the door writes it
-  - L139 ...one past the room: the test says short, and the door refuses it for the bank's capital
-  - L145 while the risk weights bind, the insured mortgage is not rationed: no shortage
-  - L149 ...and with the lender shut the door's no is not the capital's: no shortage
-  - L152 ...and nothing to borrow is no shortage
-  - L156 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
-  - L162 ...nor one past its default point: no shortage
-- **L166 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
-  - L168 in the band the owners are asked for what the till lacks on the whole order
-  - L170 ...and a banned landlord's owners for what it lacks on the down payment, as before
-  - L172 ...as are the owners of a landlord the risk weights leave unrationed
-  - L185 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
-  - L188 ...so the owners are asked for the down payment only
-  - L190 ...and the door writes the mortgage on the rest
-- **L305 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
-  - L316 fixture: the city played every month of the crunch
-  - L317 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
-  - L319 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
-  - L321 fixture: the landlords asked for homes the bank had no capital to lend on
-  - L323 fixture: the homes cut left the placement room for MARGIN households and less than one house more
-- **L326 3. the owners put in what the till lacked, homes are built, nobody is left with no home**
-  - L337 the landlords' owners were asked, and put money in, while the bank was short
-  - L338 ...and homes were built in the crunch
-  - L339 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
+- **L120 1. the door's capital test asked first says what the door says, and records nothing**
+  - L126 fixture: the bank's leverage requirement is the larger and it stands in its band
+  - L130 in the band the test asked first says the bank has no capital for the mortgage
+  - L131 ...and records no refusal
+  - L132 ...where the door refuses the same mortgage for the bank's capital
+  - L138 fixture: over its target the bank has finite room for insured growth (BF1)
+  - L140 over the target a mortgage within the room: the test says no shortage, and the door writes it
+  - L142 ...one past the room: the test says short, and the door refuses it for the bank's capital
+  - L148 while the risk weights bind, the insured mortgage is not rationed: no shortage
+  - L152 ...and with the lender shut the door's no is not the capital's: no shortage
+  - L155 ...and nothing to borrow is no shortage
+  - L159 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
+  - L165 ...nor one past its default point: no shortage
+- **L169 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
+  - L171 in the band the owners are asked for what the till lacks on the whole order
+  - L173 ...and a banned landlord's owners for what it lacks on the down payment, as before
+  - L175 ...as are the owners of a landlord the risk weights leave unrationed
+  - L188 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
+  - L191 ...so the owners are asked for the down payment only
+  - L193 ...and the door writes the mortgage on the rest
+- **L308 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
+  - L319 fixture: the city played every month of the crunch
+  - L320 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
+  - L322 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+  - L324 fixture: the landlords asked for homes the bank had no capital to lend on
+  - L326 fixture: the homes cut left the placement room for MARGIN households and less than one house more
+- **L329 3. the owners put in what the till lacked, homes are built, nobody is left with no home**
+  - L340 the landlords' owners were asked, and put money in, while the bank was short
+  - L341 ...and homes were built in the crunch
+  - L342 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
+  - L354 the door trimmed an order the owners' issue did not cover, first refused for the bank's capital
+  - L355 ...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
@@ -15639,7 +15641,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1048 1200 places down to none: the whole debt is a closed home's
   - L1050 ...and a count from nothing leaves it
 
-## HousingDoorCheck.java - 8 labelled assertions
+## HousingDoorCheck.java - 9 labelled assertions
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed
@@ -15655,19 +15657,20 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the till: five blocks bought outright. Nothing was built for four years;
 > ...
 
-- **L148 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
-  - L162 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
-- **L165 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
-  - L178 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
-- **L181 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
-  - L195 every order the door cut is the plan's order halved, down to one
-  - L196 ...and the advisor's line says it was trimmed
-  - L197 fixture: the door trimmed an order it first refused for the bank's capital
-  - L198 ...and no month the door trimmed is left marked as held for the bank's capital
-- **L200 4. LongPlaytest's watch, and the homes that finished by size**
-  - L208 no month of the window leaves more than one household with no door (LongPlaytest's watch)
-- **L211 5. the households' identity through the mortgage door (HL1)**
-  - L213 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
+- **L154 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
+  - L168 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
+- **L171 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
+  - L184 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
+- **L187 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
+  - L201 every order the door cut is the plan's order halved, down to one
+  - L202 ...and the advisor's line says it was trimmed
+  - L221 fixture: the window holds an order the door would have refused for the bank's capital, put to the owners
+  - L223 ...and the door trimmed for the bank's capital no order the owners were not asked for first
+  - L225 ...and no month the door trimmed is left marked as held for the bank's capital
+- **L227 4. LongPlaytest's watch, and the homes that finished by size**
+  - L235 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+- **L238 5. the households' identity through the mortgage door (HL1)**
+  - L240 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
 ## HydroCheck.java - 101 labelled assertions
 

@@ -111,6 +111,9 @@ It also asked for a harness whose own crunch does not depend on a played path.
     and less than one house more.
   - With the mend, the owners put money in, homes rise, and no month has more than one household
     with no home (LongPlaytest's watch).
+  - Where the owners' issue fell short of the order, the door trimmed for the bank's capital what
+    equity did not cover (7 trims), and left no such month marked as held for capital (see
+    "HousingDoorCheck's capital trim" below).
 
 ## The harness, mend and control
 
@@ -162,29 +165,47 @@ It judged the harness's crunch, the control and the call sound.
   and the most households with no home was 0.00. The order watch's own count of short months now
   reads 56 of the 91 months with an ask, where the till-priced test read 120 of 120.
 
-## HousingDoorCheck: a fixture premise the mend makes rare, passed by name (FS11)
+## HousingDoorCheck's capital trim: caused in CreditCrunchCheck, its own line restated to MC1's law
 
-After the review's mends, `HousingDoorCheck` (HN1's door, AUTO2 seed 12, months 431-900) fails one
-fixture line: "the door trimmed an order it first refused for the bank's capital". On this path it
-cut 9 orders, each trimmed to what its own funds put down, and none was refused first for the
-bank's capital. Its other lines are green: the halving, the advisor's line, nobody left without a
-door, the households' identity, and the line this fixture guards (no trimmed month left marked as
-held for the capital). It was green at 3251de681, before the mends, on a path that differs from the
-first changed equity ask on.
+After the review's mends, `HousingDoorCheck` (HN1's door, AUTO2 seed 12, months 431-900) failed one
+fixture line: "the door trimmed an order it first refused for the bank's capital". It cut 9 orders,
+each trimmed to what its own funds put down, and none was refused first for capital. It was green
+at 3251de681, on a path that differs from the first changed equity ask on.
 
-- **Why it is rare now.** MC1 asks the owners for the whole order whenever the door would refuse its
-  mortgage for the bank's capital.
+- **Why the trim is rare now.** MC1 asks the owners for the whole order whenever the door would
+  refuse its mortgage for the bank's capital.
   - A trim first refused for capital now needs an issue that falls short of the order: the
-    households' and the world's demand, or the `quoteSupportsIssue` gate.
-  - On this path none does.
-  - That is the mend working; the premise was a played path's, not a rule.
-- **The call.** It is a fixture premise a moved played city no longer reaches. Following the brief,
-  it passes by name in the ship file's `## known-reds`, with FS11 as the queued fix.
-  - FS11 is FS1's sweep of HousingDoorCheck (`docs/studies/flaky-suite.md`, 6.10). It already plans
-    the door "whose bank capital is below the order on a founding city" built by hand, with
-    `Game.considerOnMortgage` called once.
-  - That fixture needs an issue that falls short (or a quote under the gate) now, which FS11's
-    brief should say.
+    households' savings past their cushion, the world's dividend test, or the `quoteSupportsIssue`
+    gate.
+  - The path is live, but on seed 12's path every such issue raised enough for the bank's room.
+- **First passed by name, then mended (the orchestrator, 17:15):** "A red the batch's own code
+  causes is mended" (contract 2.3). The known-reds row is gone from the ship file.
+- **No lever in HousingDoorCheck's own city.** Its fixture has no hand that holds the owners' issue
+  short:
+  - `Equity` and `Exchange` have no setters;
+  - `tradeShares()` (month step 118, line 14141) strikes fair value again before
+    `runPrivateInvestment()` (line 14853), so a quote set between months never reaches the order;
+  - moving the households' savings would break its section 5 cash identity;
+  - holding its bank in its band would replace HN1's natural path.
+- ★ **The trim is caused where the issue falls short by construction: `CreditCrunchCheck` 3.** Its
+  bank is held in its band (no insured room at all) and its city is small, so the owners raise only
+  part of each order. The door then trims for capital what equity did not cover.
+  - It made 7 such trims, for example m181: "raised 243; Built 1 Low-Rise Apartments (trimmed from
+    2 - the bank is short of capital for a mortgage, so what its own funds buy outright)".
+  - None was left marked as held for capital.
+  - Both are asserted there: the trim (fixture), and REV-HN1-1's mark.
+- ★ **HousingDoorCheck's line is restated to MC1's law, on its own path.** Its order watch now reads
+  the till before the owners' issue (the till at the door less the month's equity raised). On it,
+  the watch asks the desk's capital pre-test on the door's loan, which is `ownersAskOnMortgage`'s
+  test. Section 3 asserts:
+  - **(fixture)** the window holds an order the door would have refused for the bank's capital,
+    put to the owners first. There are 9. The first is m465: an order of 2,850, of which the owners
+    put in 1,987, and the mortgage on the rest fit the room ("Built 2 Low-Rise Apartments on an
+    insured mortgage").
+  - **(the law)** the door trimmed for the bank's capital no order the owners were not asked for
+    first;
+  - **(REV-HN1-1, kept)** no month the door trimmed is left marked as held for capital.
+- **HousingDoorCheck green, exit 0.**
 
 ## Trace
 
@@ -198,9 +219,9 @@ again on the mended commit.
 | check | result |
 |---|---|
 | `./batch-check.sh --fast` | compile, maps, Stale (0 firm) and tree green, before and after the merge of origin/main |
-| `CreditCrunchCheck` | green before and after the merge, and after the review's mends; 5 red on the desk before them |
+| `CreditCrunchCheck` | green before and after each merge and the review's mends (with the capital trim's two lines); 5 red on the desk before the mends |
 | `MortgageCheck` | green, before and after the review's mends |
-| `HousingDoorCheck` | green at 3251de681; after the review's mends one fixture line red, passed by name (FS11, above) |
+| `HousingDoorCheck` | green at 3251de681; after the review's mends one fixture line red, then restated to MC1's law (above): green |
 | `BankFailureCheck` | green, before and after the review's mends |
 | `sh tools/pick.sh origin/main HEAD` | ALL (231 harnesses), because `AllChecks.java` changed; it says "review not needed" |
 
