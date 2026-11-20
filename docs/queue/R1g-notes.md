@@ -494,8 +494,9 @@ Between, at m240 / m600 / m1500 / m1800 / m2100: 2,202 / 5,347 / 303,813 /
 786,032 / 1,163,383.
 
 - ★ **The index runs ahead of the households' pay.** It prices the
-  market's posted wages, premia included on thin bands, so the home is
-  dear for what the households take home. The required rent is .16–.19 of
+  market's posted wages (their tightness multiples and premia, the likely
+  cause, not separated here), so the home is
+  dear for what the households take home. The required rent is .15–.19 of
   the unskilled wage from m240 to m1440, against .11–.15 held. The pull is
   under 1 in 916 of the months from m960 to m2292, at its lowest .62 at
   m701, so rent does not hold near .30. In the village's first year the
