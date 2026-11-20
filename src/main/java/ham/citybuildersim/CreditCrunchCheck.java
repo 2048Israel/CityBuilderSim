@@ -32,7 +32,11 @@ import java.util.Locale;
  * What this has to prove:
  *   1. the door's capital test asked first (mortgageShortOfCapital()) says
  *      what the door says, records nothing, and is no while the risk weights
- *      bind or the lender is shut;
+ *      bind, the lender is shut, the landlord is banned or past its default
+ *      point; the owners are asked for the whole order (ownersAskOnMortgage())
+ *      only while it says short, on the loan the door is asked for once the
+ *      down payment is in, never on the cost less a till under the down
+ *      payment (REV-MC1);
  *   2. the fixture: a played city whose bank's leverage ratio binds, held in
  *      its band every month of the crunch, its landlords asking for homes the
  *      bank has no capital to lend on, its households doubled up to within a
@@ -146,6 +150,45 @@ public final class CreditCrunchCheck {
                 !shut.mortgageShortOfCapital(RE, shortfallFor(ask)) && !door(shut, ask)
                         && BusinessDebtManager.MORTGAGE_BANK_SHUT.equals(shut.getMortgageRefusal()));
         check("...and nothing to borrow is no shortage", !desk.mortgageShortOfCapital(RE, 0));
+
+        BusinessDebtManager banned = deskUnder(half);
+        banned.restoreCreditRecord(java.util.Map.of(), java.util.Map.of(RE, 12));
+        check("a landlord banned from borrowing is refused for the ban, not the capital: no shortage",
+                banned.isBorrowingBlocked(RE) && !banned.mortgageShortOfCapital(RE, shortfallFor(ask))
+                        && !door(banned, ask) && BusinessDebtManager.MORTGAGE_BANNED.equals(banned.getMortgageRefusal()));
+        BusinessDebtManager broke = deskUnder(half);
+        broke.setAssets(RE, OWED / 2);
+        broke.setCash(RE, 0);
+        check("...nor one past its default point: no shortage",
+                !broke.mortgageShortOfCapital(RE, shortfallFor(ask)) && !door(broke, ask)
+                        && BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT.equals(broke.getMortgageRefusal()));
+
+        out.println("\n--- 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital ---");
+        double cost = OWED * .2, down = Mortgage.ownFundsFor(cost), held = down / 2;
+        check("in the band the owners are asked for what the till lacks on the whole order",
+                Math.abs(desk.ownersAskOnMortgage(RE, cost, held) - (cost - held)) < 1e-6);
+        check("...and a banned landlord's owners for what it lacks on the down payment, as before",
+                Math.abs(banned.ownersAskOnMortgage(RE, cost, held) - (down - held)) < 1e-6);
+        check("...as are the owners of a landlord the risk weights leave unrationed",
+                Math.abs(risk.ownersAskOnMortgage(RE, cost, held) - (down - held)) < 1e-6);
+        /* The door is asked for the loan on the cost less the down payment the owners put in first: a
+           till under the down payment must not price the loan on the cost less the till (REV-MC1). */
+        BusinessDebtManager fresh = deskUnder(over);
+        // An order whose two loans, each a constant times its cost, stand the same ratio either side of the room.
+        double prem = 1 + Mortgage.premiumRate();
+        double between = room / (prem * Math.sqrt(Mortgage.loanFor(1) * Mortgage.loanFor(1 - Mortgage.ownFundsFor(1))));
+        double doorPrincipal = Mortgage.loanFor(between - Mortgage.ownFundsFor(between)) * prem;
+        double tillPrincipal = Mortgage.loanFor(between) * prem;
+        out.printf(Locale.ROOT, "   over the target, room %.0f: an order of %.0f, its down payment %.0f, the till empty;"
+                + " the door's loan %.0f, the loan on the cost less the till %.0f%n",
+                room, between, Mortgage.ownFundsFor(between), doorPrincipal, tillPrincipal);
+        check("fixture: the bank's room lies between the door's loan and the loan on the cost less the till",
+                doorPrincipal < room && room < tillPrincipal);
+        double owners = fresh.ownersAskOnMortgage(RE, between, 0);
+        check("...so the owners are asked for the down payment only",
+                Math.abs(owners - Mortgage.ownFundsFor(between)) < 1e-6);
+        check("...and the door writes the mortgage on the rest",
+                fresh.canFundMortgage(RE, between - owners, between));
     }
 
     /* =====================================================================
@@ -219,8 +262,8 @@ public final class CreditCrunchCheck {
                                                 double noiPerUnit, double annualRate, Mortgage.Decision found) {
                     askedThisMonth += Math.max(0, asked);
                     BusinessDebtManager desk = g.getEconomyManager().getBusinessDebtManager();
-                    double shortfall = costOf.applyAsDouble(Math.max(1, asked)) - cash;
-                    if (desk.mortgageShortOfCapital(RE, shortfall)) shortThisMonth = true;
+                    double cost = costOf.applyAsDouble(Math.max(1, asked));
+                    if (desk.mortgageShortOfCapital(RE, cost - Math.max(cash, Mortgage.ownFundsFor(cost)))) shortThisMonth = true;
                 }
             });
             foundAndPlay(g, () -> {
