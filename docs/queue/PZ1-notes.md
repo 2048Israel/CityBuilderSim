@@ -65,8 +65,8 @@ $962,726 raised, the order held.
   it, unchanged in effect.
 - The failing line's detail names the month's word under `LABS_SLOT`, as the
   section's first order line does, so a hold says why.
-- Not changed, for the record: whether the owner families should take up a
-  lab's raise is BO1's design ("its stakes dilute"), left as it is; no row.
+- Not changed here: whether the owner families should take up a
+  lab's raise is BO1's design ("its stakes dilute"); queued as BO1-O, section 6.
 
 ## 4. The checks
 
@@ -88,3 +88,16 @@ $962,726 raised, the order held.
   `### PZ1 — title — date, ...`, with no `{next}`.
 - The bisect's logs are in this worktree's `target/` only
   (`prize-17f8a4c05.log`, `prize-main.txt`); no dry run, so no kept gate log.
+
+## 6. Queued: BO1-O, the owner families take share offerings (★ for Jerus)
+
+The orchestrator (11-20, at PZ1's mends): the cause is a finding of its own.
+The owner cell takes no offering (`HouseholdBalance.subscribe`,
+HouseholdBalance.java:4849-4850), while the owner families hold 55% of the
+bank's savings at m121 (BO1-S's trace, its notes section 10). A young city's
+raises then fall short: here 962.7 of the 3,276.9 a lab needed at m174, all
+4,482.8 with the line off. That may be part of why the line-on young city is
+a fifth smaller (1,359 against 1,732 people at m121). Queued in the ship file
+as BO1-O (`tools/batch-id.sh`: free). ★ For Jerus, recommended: the owner
+cell subscribes like any other cell, measured line on against off at m121
+and m600, and the ensemble if it moves the trace.
