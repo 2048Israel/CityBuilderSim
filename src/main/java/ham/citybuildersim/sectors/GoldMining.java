@@ -84,7 +84,7 @@ public final class GoldMining extends ExtractionSector {
         BuildingsTemplate t = u == null ? null : u.template();
         double profit = super.estimatedMonthlyProfit(u, plans);
         if (t == null || game == null || markets == null) return profit;
-        double reference = u.makes(Good.GOLD) * BusinessInvestment.operatingRateOf(getOperatingRate());
+        double reference = u.makes(Good.GOLD) * plannedRate(u);
         double abroad = markets.get(Good.GOLD).netExportPrice();
         double price = game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD
                 ? game.getForeignAccounts().getMintPrice() / 1000 : abroad;

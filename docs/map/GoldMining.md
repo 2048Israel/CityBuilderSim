@@ -8,7 +8,7 @@
 > ore throughput costs the same as its grade falls. Under Gold the mint
 > buys the output with new money and keeps the metal in the vault.
 
-**Uses:** [Good](Good.md) (17), [ForeignAccounts](ForeignAccounts.md) (5), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [NewUnit](NewUnit.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [Good](Good.md) (17), [ForeignAccounts](ForeignAccounts.md) (5), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [NewUnit](NewUnit.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (3):** [BuildingDataCheck](BuildingDataCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [Sectors](Sectors.md)
 

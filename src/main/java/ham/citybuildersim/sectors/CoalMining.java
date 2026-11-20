@@ -343,7 +343,7 @@ public final class CoalMining extends ExtractionSector {
         BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || plans == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(u, plans);
         Map<Good, Double> made = madeBy(u), gains = new EnumMap<>(Good.class);
-        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        double rate = plannedRate(u);
         double lost = 0;
         for (Map.Entry<Good, Double> e : made.entrySet()) {
             if (e.getValue() > 0) gains.put(e.getKey(), e.getValue());
