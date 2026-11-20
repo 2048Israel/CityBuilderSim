@@ -250,3 +250,55 @@ law" lines were new. Six new named lines for a count that does not scale by
 design was too many (the orchestrator). The check proves the rest of the
 model's scaling, which the line does not touch; HP2's line stays named
 under FS2 as main has it, at main's figure.
+
+## 9. After the merge of OP1 (0.9.161, 17f8a4c05), with the cap: each red again
+
+Main merged at b3f36be07, every harness of section 7 rerun one at a time
+(`target/rerun-2.txt` to `rerun-7.txt`), against OP1's gate logs.
+
+**Green now:** OwnerCheck (11 included), ScaleCheck (with the line off, as
+on main, so no FS2 line of its own), PolicyPreview, AutoBuild, Buyback,
+Landmass, ShortSelling, FundLedger. Fund and Holders show only main's
+`[known]` lines. Slope 9's CQ1 line, "households' money was not conserved",
+known on main, passes on the branch (section 6's theft mend).
+
+**The town of nine adults plays with the line off** (★ mine, under the
+orchestrator's "restatements fine"): ShortSelling, Fund, FundLedger and
+Holders build `run()`'s town, which stays at nine adults for 169 months.
+Under `OWNER_ADULT_SHARE` its owner cell is empty, so the founders' grant
+waits, no company lists, and no household holds a share or is paid a
+dividend: the households' savings at m72 are 4 with the line on, 205 off
+(a trace). Every premise those harnesses have (a company the households
+hold, the fund buying it, the households' paper) cannot hold there, so each
+plays every city with the line off (`ShortSellingCheck.lineOff`, in each
+class javadoc), and section 6's owner-cell fallback in ShortSelling 9 is
+back to main's. The line's own claims for a small town are OwnerCheck 11's.
+
+**Two fixtures restated to cause their premise:**
+
+- Fitout's 1900 farm town stood one Construction Depot: 560 points at a fill
+  of .350 and a work ratio of .885 make 173 a month against 174 of repairs,
+  so nothing for the sites and every wait NaN (the owners' 12 adults of 334
+  at work tip it; on main the same depot leaves a few points, a wait of
+  61.67 months). Two depots: the wait 6.02 months, all 66 green.
+- Fitting 13 needs four bakeries standing (its scraps take three, the last
+  line asks for a fourth to fit); the month `fitTown` plays retired one on
+  the branch. It tops them up to four: green, 0 of its 3 still without, as
+  on main.
+
+**Named under their sweeps** (the ship file's `## known-reds`), each on the
+branch's moved path and passing on main:
+
+| harness, line | sweep | the branch | main 0.9.161 |
+|---|---|---|---|
+| Slope 9, steep ground owned | FS7 | 0 of 11.920 km2 | 5.287 of 81.945 |
+| CentralBank 10, a note and its run-off (2) | FS10 | no note: the nine-adult town's households unpaid (savings 4 at m72, 205 off) | sells |
+| Road 9, the move and its count (2) | FS12 | 399 vehicles a day, no card | 457 |
+| EssentialWorks, the protected school (5) | FS15 | the premise fails (no figure printed) | passes |
+| Denomination, a partner with a lane | FS2 | 0 lanes, 0 arrows | has one |
+| SaveFile, somebody short of a basket | FS17 | everybody can afford one | somebody cannot |
+| BasketYear 7, the lifted town's cars (2) | FS17 | 0.0485 a household default, 0 lifted | 0.1631, 0.0133 |
+
+CentralBank 10 is named, not played with the line off: its rerun is twenty
+minutes and its sections 1 to 9 and the rest of 10 pass with the line on.
+IslandLink 9 is OP1's FS7 row, unchanged.
