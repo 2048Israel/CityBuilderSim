@@ -1,11 +1,10 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  Nightly on origin/main's tip: 4,000 months, the nightly tier, hard timing.
-#  One verdict in $HOME/.cbs-nightly.txt (mailed when red or slower, BW1), detail in .cbs-nightly.log; figures
-#  and commit per machine/night in $HOME/.cbs-timing (GR1). No commits or saves.
-#  WHY (HA1, GR1): heavy checks belong nightly; gate timing named no faulty batch.
-#  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
-#  WHY (GT1, 2026-11-01, Jerus: "do we need 4k months?"): the gate plays 2,400.
+#  Nightly on origin/main's tip: 4,000 months, the nightly tier, hard timing; on the gate box when one is named
+#  (CBS_GATE_HOST, else ~/.cbs-gate-box; tools/gate-box.sh), here when none answers. One verdict in
+#  $HOME/.cbs-nightly.txt (mailed when red or slower, BW1), detail in .cbs-nightly.log; figures per machine/night
+#  in $HOME/.cbs-timing (GR1); no commits or saves. Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
+#  WHY (HA1, GR1; GT1, Jerus: "do we need 4k months?"): heavy checks belong nightly; the gate plays 2,400.
 # ---------------------------------------------------------------------------
 
 MONTHS=4000
@@ -14,6 +13,7 @@ case "$1" in "") ;; -h|--help) usage; exit 0 ;; *) usage; exit 2 ;; esac
 [ $# -le 1 ] || { usage; exit 2; }
 git rev-parse --git-dir >/dev/null 2>&1 || { echo "nightly   not in a git checkout" >&2; exit 2; }
 ORIG=$(git rev-parse --show-toplevel); cd "$ORIG" || exit 2
+[ -n "${CBS_GATE_ON_BOX:-}" ] || [ -z "${CBS_GATE_HOST-$(cat "$HOME/.cbs-gate-box" 2>/dev/null)}" ] || exec sh "$ORIG/tools/gate-box.sh" --nightly
 COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd); TXT=$HOME/.cbs-nightly.txt; LOG=$HOME/.cbs-nightly.log
 MAIN=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
 BASE=${TEMP:-${TMPDIR:-/tmp}}; command -v cygpath >/dev/null 2>&1 && BASE=$(cygpath -u "$BASE")

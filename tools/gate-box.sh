@@ -5,7 +5,9 @@
 # Output and bus calls come back on the one connection, the calls posted here through bus.sh; the run's files but its
 # clone are copied home at the end. A dropped connection stops the gate, as its caller's exit does (SR1c).
 # WHY (GB1, 2026-11-20): gates held the laptop's heavy slot; Jerus: gates run on the box, started headless as before,
-# and when it cannot be reached, "notify me then run on laptop".
+# and when it cannot be reached, "notify me then run on laptop". tools/nightly.sh hands its night here (--nightly) the
+# same way; its verdict, log and records come home, its timing figures stay the box's (GB2, Jerus: "the nightly timing
+# run needs to also move to the gatebox").
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 enc() { printf '%s%s' "$1" "$(printf '%s' "$2" | base64 | tr -d '\n')"; }   # one word: a kind letter, then base64
@@ -25,17 +27,30 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
     [ ! -d "$HOME/cbs/tools" ] || ( flock 9; find "$HOME/cbs/tools" -mindepth 1 -maxdepth 1 -type d -mtime +3 |
         while IFS= read -r t; do git -C "$HOME/cbs/main" worktree remove --force "$t"; done ) 9> "$HOME/cbs/tools.lock" 2> /dev/null
     IFS= read -r WORDS || exit 2
-    unset CBS_GATE_DIRECTORY TMP; set --; MINE=
+    unset CBS_GATE_DIRECTORY TMP; set --; MINE=; P=gate.sh
     for w in $WORDS; do case $w in
         a*) set -- "$@" "$(dec "$w")" ;;
         f*) F=$(mktemp "$RUNS/file.XXXXXX") && dec "$w" > "$F" && MINE="$MINE $F" && set -- "$@" "$F" ;;
         d*) CBS_GATE_DIRECTORY=$RUNS/$(dec "$w"); export CBS_GATE_DIRECTORY ;;
         m*) CBS_ME=$(dec "$w"); export CBS_ME ;;
+        p*) P=$(dec "$w") ;;
     esac; done
+    case $P in gate.sh) ;; nightly.sh) cd "$HERE/.." || exit 1 ;; *) exit 2 ;; esac   # the nightly's checkout is its cwd
+    # GB2: a gate holds the box shared and the nightly whole, each for its whole run; whichever is first runs and the
+    # other waits, so the night never times beside a gate. A stop never waits. A flock dies with its holder, where a
+    # killed gate's `active` file stays. A second nightly is refused, not queued behind the first.
+    L=-s; [ "$P" = gate.sh ] || L=-x; [ "$P:${1:-}" != gate.sh:--stop ] || L=
+    if [ -n "$L" ] && command -v flock > /dev/null; then
+        if [ "$L" = -x ]; then exec 7>> "$HOME/cbs/nightly.lock"
+            flock -n 7 || { echo 'O nightly: already running on the gate box'; echo '@@cbs-exit 3'; exit 0; }; fi
+        WHO='the gate box runs the nightly; this gate waits for it'; [ "$L" = -s ] || WHO='a gate runs on the gate box; the night waits for it'
+        exec 8>> "$HOME/cbs/box.lock"
+        flock -n $L 8 || { echo "O ${P%.sh}: $WHO"; until flock $L -w 60 8; do echo "O ${P%.sh}: still waiting for the box"; done; }
+    fi
     CBS_GATE_RELAY=$(mktemp "$RUNS/stream.XXXXXX") || exit 1
     [ -x "$HERE/gate-box.sh" ] || chmod +x "$HERE/gate-box.sh"
     TMPDIR=$RUNS CBS_GATE_ON_BOX=1 CBS_BUS=$HERE/gate-box.sh; export TMPDIR CBS_GATE_ON_BOX CBS_GATE_RELAY CBS_BUS
-    sh "$HERE/gate.sh" "$@" >> "$CBS_GATE_RELAY" 2>&1 < /dev/null &
+    sh "$HERE/$P" "$@" >> "$CBS_GATE_RELAY" 2>&1 < /dev/null &
     GATE=$!
     tail --pid="$GATE" -n +1 -F "$CBS_GATE_RELAY" 2> /dev/null | sed -u '/^@@cbs-/!s/^/O /' &
     SED=$!
@@ -47,20 +62,22 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
     printf '@@cbs-exit %s\n' "$CODE"; rm -f "$CBS_GATE_RELAY" $MINE; exit 0
 fi
 
-[ "$#" -gt 0 ] || exec env CBS_GATE_HOST= sh "$HERE/gate.sh"
-[ "$1" != --stop ] || [ ! -d "${2:-}" ] || exec env CBS_GATE_HOST= sh "$HERE/gate.sh" "$@"   # a run here stops here
+P=gate.sh; [ "${1:-}" != --nightly ] || { P=nightly.sh; shift; }; BY=${CBS_ME:-${P%.sh}}
+[ "$#" -gt 0 ] || [ "$P" = nightly.sh ] || exec env CBS_GATE_HOST= sh "$HERE/gate.sh"
+[ "${1:-}" != --stop ] || [ ! -d "${2:-}" ] || exec env CBS_GATE_HOST= sh "$HERE/gate.sh" "$@"   # a run here stops here
 SSH=${CBS_GATE_SSH:-ssh}; OPTS='-o BatchMode=yes -o ConnectTimeout=8 -o ServerAliveInterval=30 -o ServerAliveCountMax=6'
 BOXES=$(echo ${CBS_GATE_HOST-$(cat "$HOME/.cbs-gate-box" 2> /dev/null)}); HOST=
 for b in $BOXES; do $SSH $OPTS -n "$b" true > /dev/null 2>&1 && { HOST=$b; break; }; done
 if [ -z "$HOST" ]; then
-    WHAT="$1's gate"; case " $* " in *" --dry-run "*) WHAT="$1's dry run" ;; esac; [ "$1" != --stop ] || WHAT="a stop"
-    echo "gate: no gate box answers ($BOXES); $WHAT runs on this machine"
-    CBS_ME=${CBS_ME:-gate} sh "$HERE/bus.sh" send jerus --kind info --urgent \
+    WHAT='the nightly'; [ "$P" = nightly.sh ] || { WHAT="$1's gate"; case " $* " in *" --dry-run "*) WHAT="$1's dry run" ;; esac; }
+    [ "${1:-}" != --stop ] || WHAT="a stop"
+    echo "${P%.sh}: no gate box answers ($BOXES); $WHAT runs on this machine"
+    CBS_ME=$BY sh "$HERE/bus.sh" send jerus --kind info --urgent \
         --body "The gate box cannot be reached ($BOXES): $WHAT runs on the laptop." < /dev/null > /dev/null 2>&1
-    exec env CBS_GATE_HOST= sh "$HERE/gate.sh" "$@"
+    exec env CBS_GATE_HOST= sh "$HERE/$P" "$@"
 fi
 C=$(git -C "$HERE/.." rev-parse HEAD) || exit 1
-W=$(enc m "${CBS_ME:-gate}"); [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
+W="$(enc m "$BY") $(enc p "$P")"; [ -z "${CBS_GATE_DIRECTORY:-}" ] || W="$W $(enc d "$(basename "$CBS_GATE_DIRECTORY")")"
 FILE=0; END=0
 for a in "$@"; do   # -F BODY and --red-lines FILE send the file's text, not its path
     if [ "$FILE" = 1 ]; then [ -f "$a" ] || { echo "gate: no file $a"; exit 2; }; W="$W f$(base64 < "$a" | tr -d '\n')"; FILE=0; continue; fi
@@ -75,7 +92,7 @@ post() {   # a bus call the box's gate made, made here
 R="set -e; mkdir -p ~/cbs/tools; cd ~/cbs/main; exec 9> ../tools.lock; flock 9; git fetch -q origin; T=\$HOME/cbs/tools/$C"
 R="$R; git worktree prune; [ -d \$T ] || git worktree add -q --detach \$T $C; touch \$T; exec 9>&-; exec sh \$T/tools/gate-box.sh --serve"
 ST=$(mktemp "${TMPDIR:-/tmp}/gate-box.XXXXXX") || exit 1
-echo "gate: on the gate box $HOST, tools at $(git -C "$HERE/.." rev-parse --short HEAD)"
+echo "${P%.sh}: on the gate box $HOST, tools at $(git -C "$HERE/.." rev-parse --short HEAD)"
 printf '%s\n' "$W" | $SSH $OPTS "$HOST" "$R" 2>&1 | while IFS= read -r line; do case "$line" in
     "O gate: run "*) printf '%s\n' "${line#O }"; printf '%s\n' "${line#O gate: run }" > "$ST.run" ;;
     "O "*) printf '%s\n' "${line#O }" ;;
@@ -90,5 +107,10 @@ if [ -n "$RUN" ]; then
     mkdir -p "$L" && $SSH $OPTS -n "$HOST" "tar -C '$RUN' --exclude=./clone -cf - ." | tar -C "$L" -xf - &&
         echo "gate: the box's run $RUN is copied to $L"
 fi
-[ -n "$CODE" ] || { echo "gate: $HOST gave no exit (why is above; a commit not on origin cannot run there, a dropped connection stops the gate)"; exit 1; }
+if [ "$P" = nightly.sh ] && [ -n "$CODE" ]; then   # GB2: the night's verdict, log and records home for day.sh; its paths read from here
+    $SSH $OPTS -n "$HOST" 'cd && tar -cf - .cbs-nightly.txt .cbs-nightly.log .cbs-nightly-tier-green .cbs-observations 2> /dev/null' |
+        tar -C "$HOME" -xf - && sed -i "s#[^ ;]*/\.cbs-timing/#$HOST:.cbs-timing/#g; s#[^ ;]*/\.cbs-observations/#$HOME/.cbs-observations/#g" \
+        "$HOME/.cbs-nightly.txt" && echo "nightly: the box's verdict, log and records are copied to $HOME"
+fi
+[ -n "$CODE" ] || { echo "${P%.sh}: $HOST gave no exit (why is above; a commit not on origin cannot run there, a dropped connection stops the run)"; exit 1; }
 exit "$CODE"
