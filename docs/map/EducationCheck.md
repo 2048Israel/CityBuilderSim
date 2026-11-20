@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,533 lines · 13 methods · 2 constants · harnesses
+# EducationCheck.java - 1,810 lines · 16 methods · 23 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -52,65 +52,96 @@
 >    nine and not the one - the income rate did that to the three bases
 >    until 0.7.4. And the Schools page's row per kind has to add up to the
 >    totals it sits under.
+> 
+> FS16: the first sections cause their premises. Their towns (townBuilt()) are six months old with their bands set (skillsSet()) and
+> their students seeded part way through a course (finishing()); the sections on a lived city (a licence belongs to a person, through a save, the
+> city's books) are identities whose breadth is the played state. The price, the wait, the report card, the grant, the loan and the price of a place do the same: one
+> town fed the one lever (subsidy, a pool set wide, students seeded with seeded(), the basket based and the level set, a hand-fed poor town)
+> and the month or the course stepped by hand, where they were cities played hundreds of months. The one section still reading a condition off a played city is
+> "the queue for a job includes the overqualified", which builds the city it reads.
 
-**Uses:** [TaxPolicy](TaxPolicy.md) (73), [EducationType](EducationType.md) (70), [Game](Game.md) (38), [WageBand](WageBand.md) (32), [Education](Education.md) (23), [PriceLevel](PriceLevel.md) (15), [GameFiles](GameFiles.md) (13), [JobType](JobType.md) (11), [Migration](Migration.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (5), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [PopulationManager](PopulationManager.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [EducationType](EducationType.md) (103), [TaxPolicy](TaxPolicy.md) (74), [WageBand](WageBand.md) (45), [Education](Education.md) (40), [Game](Game.md) (38), [JobType](JobType.md) (31), [PriceLevel](PriceLevel.md) (15), [Migration](Migration.md) (11), [LabourCheck](LabourCheck.md) (9), [GameFiles](GameFiles.md) (8), [PopulationManager](PopulationManager.md) (8), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (6), [AgeBand](AgeBand.md) (5), [LabourMarket](LabourMarket.md) (4), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
-**Used by (2):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md)
+**Used by (3):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md), [OutsideCheck](OutsideCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 158 | · 1. THE PROFESSION IS GATED |
-| 212 | · 2. AND WITH ONE, IT CAN |
-| 232 | · 3. NO SCHOOL TEACHES NOBODY |
-| 251 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
-| 271 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
-| 302 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
-| 323 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
-| 345 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
-| 418 | · 8. THE SUBSIDY IS A REAL DIAL |
-| 473 | · 9. IT SURVIVES A SAVE |
-| 540 | · 9b. THE WAIT IS REAL |
-| 582 | · 10. AND THE TREASURY PAYS FOR IT |
-| 635 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
-| 758 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
-| 803 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
-| 849 | · 13. THE GRANT IS A MENU |
-| 1033 | · 14. THE LOAN'S RATE |
-| 1187 | · 15. THE PRICE OF A PLACE |
-| 1302 | · 16. ALL THREE SURVIVE A SAVE |
-| 1372 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 305 | · 1. THE PROFESSION IS GATED |
+| 345 | · 2. AND WITH ONE, IT CAN |
+| 392 | · 3. NO SCHOOL TEACHES NOBODY |
+| 429 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
+| 459 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
+| 492 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
+| 525 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
+| 548 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
+| 641 | · 8. THE SUBSIDY IS A REAL DIAL |
+| 693 | · 9. IT SURVIVES A SAVE |
+| 760 | · 9b. THE WAIT IS REAL |
+| 809 | · 10. AND THE TREASURY PAYS FOR IT |
+| 862 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
+| 974 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
+| 1031 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
+| 1077 | · 13. THE GRANT IS A MENU |
+| 1281 | · 14. THE LOAN'S RATE |
+| 1442 | · 15. THE PRICE OF A PLACE |
+| 1604 | · 16. ALL THREE SURVIVE A SAVE |
+| 1674 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 63 | `EducationCheck.OUT` | `System.out` |  |
-| 64 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 70 | `EducationCheck.OUT` | `System.out` |  |
+| 71 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 164 | `EducationCheck.TOWN_MONTHS` | `6` | Months a school town is lived before its section reads it (FS16): the first has no workforce and the second no staffed school, so by the sixth the schools teach and every band has people. |
+| 167 | `EducationCheck.DIPLOMA_SHARE` | `.15` | The diploma band a school town is set to, as a share of its workforce (FS16): the pool the colleges and the universities draw on, kept small enough that a drained band shows. |
+| 170 | `EducationCheck.COLLEGE_SHARE` | `.15` | The college band a school town is set to, as a share of its workforce (FS16): the people the universities' graduates join and the professional schools draw on. |
+| 173 | `EducationCheck.UNIVERSITY_SHARE` | `.20` | The university band a school town is set to, as a share of its workforce (FS16): the pool the medical school draws its doctors from, wider than the doctor posts. |
+| 176 | `EducationCheck.DOCTORS_OVER_POSTS` | `1.1` | The medical students finishing in the town that has enough doctors, as a multiple of its doctor posts (FS16): just over what the hospitals can seat. |
+| 179 | `EducationCheck.DOCTORS_UNDER_POSTS` | `.9` | The medical students finishing in the town that is short of doctors, as a multiple of its doctor posts (FS16): just under what the hospitals can seat. |
+| 182 | `EducationCheck.FINISHING_SHARE` | `.01` | The college and university students seeded to finish in each of the town's first two months, as a share of its workforce (FS16): enough to move the bands, few enough to leave the diploma band standing. |
+| 185 | `EducationCheck.PLENTY_OF_PLACES` | `.9` | The share of the children's need the primary seats must clear to be plenty (FS16): the pinched town's "plenty of primary places" law is coverage over this. |
+| 188 | `EducationCheck.SEATS_MARGIN` | `.05` | How far either side of PLENTY_OF_PLACES the seats of the coverage threshold are put, as a share of the need (FS16): just over and just under. |
+| 231 | `EducationCheck.PRICE_POOL_SHARE` | `.15` | The diploma band the price section's towns are set to, as a share of the first town's workforce (FS16): the same pool in all three, small enough that three universities never fill on it. |
+| 234 | `EducationCheck.GRANT_STUDENTS` | `400` | The students the grant's towns are put through a university with (FS16): enough that the bill is a sum of people and not a rounding. |
+| 237 | `EducationCheck.GRANT_EXPECTED_LEVEL` | `1.25` | The expected price level the grant's town is put at (FS16): off founding by a quarter, so the bill's level is a factor and not a one. |
+| 240 | `EducationCheck.LOAN_STAYING_STUDENTS` | `300` | The university students put into the lender town with their whole course before them (FS16): the ones who stay in the students' cell and keep borrowing. |
+| 243 | `EducationCheck.LOAN_FINISHING_STUDENTS` | `100` | The university students put into the lender town in their last month (FS16): the ones who graduate in its first month and carry their loans to the working families in its second. |
+| 246 | `EducationCheck.SURPLUS_CONTRIBUTION_RATE` | `.3` | The pension contribution rate the grant's town is put at to show a surplus (FS16): with the income tax at .5 and the property tax at its ceiling, enough that a town six months old closes its bridge. |
+| 249 | `EducationCheck.SURPLUS_HEALTH_PREMIUM` | `.1` | The health premium rate the grant's town is put at to show a surplus (FS16): with the contributions above, the last of what a town six months old needs to close its bridge. |
+| 265 | `EducationCheck.PLENTY_OF_LABOURERS` | `6_000` | The workforce of the hand-fed town whose labourers outnumber its labouring posts (FS16): over the 3,300 posts the section puts up, so the unskilled wage cannot rise over the going rate. |
+| 268 | `EducationCheck.SCARCE_OF_LABOURERS` | `2_400` | The workforce of the hand-fed town whose labouring posts outnumber its labourers (FS16): under the 3,300 posts less its skilled heads, so the unskilled wage climbs over the going rate. |
+| 271 | `EducationCheck.WAIT_POOL_SHARE` | `.5` | The diploma band the wait's town is set to, as a share of its workforce (FS16): a university's pool wide enough that its first month's intake is well over the ten students the section asks for. |
+| 276 | `EducationCheck.PRICE_TOWN_WORKFORCE` | `4_000` | The workforce of the hand-fed poor town the price section reads (FS16): large enough that its pool of diploma-holders is hundreds. |
+| 279 | `EducationCheck.PRICE_TOWN_DIPLOMAS` | `1_500` | The diploma-holders of the hand-fed poor town (FS16): three times its 500 diploma posts, so the diploma wage is a surplus's and sits near the table the fees were struck against. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 62 | `static int fails` |  |
+| 69 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1474 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
-| 68 | 4 | `static void quietly(Runnable work)` |  |
-| 73 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 78 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 85 | 1 | `static void build(Game g, String name, int n)` |  |
-| 88 | 45 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
-| 144 | 3 | `static void held(Game g)` | GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the businesses build. |
-| 148 | 7 | `static void schools(Game g)` |  |
-| 156 | 1336 | `public static void main(String[] args) throws Exception` |  |
-| 1497 | 3 | `static double heads(Game g, WageBand band)` | A band's headcount, which - unlike its share - no amount of immigration into the OTHER bands can move. |
-| 1505 | 4 | `static double fullness(Game g, EducationType type)` | How full one kind's schools stand at the month's end: its student body over the seats its staff can teach, the places the month hands Education (BuildingManager.getStaffedEducationPlaces at the city's fill rate). |
-| 1511 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1519 | 6 | `static double share(Game g, WageBand band)` | A band's share of the workforce. |
-| 1526 | 7 | `static void cleanUp(Path root)` |  |
+| 67 | 1744 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 75 | 4 | `static void quietly(Runnable work)` |  |
+| 80 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 85 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
+| 92 | 1 | `static void build(Game g, String name, int n)` |  |
+| 95 | 45 | `static Game city(GameFiles files)` | A funded city with room, so the thing under test is never money or land. |
+| 151 | 3 | `static void held(Game g)` | GW1: the businesses hold, in sections 1 and 2's cities, whose subject is who can practise medicine and not what the businesses build. |
+| 155 | 7 | `static void schools(Game g)` |  |
+| 191 | 10 | `static Game townBuilt(boolean withSchools, boolean withMedical)` | A town of the schools sections (FS16): city(), held, optionally every school and a medical school, lived TOWN_MONTHS - 1 months so the schools are staffed and the arrivals are in. |
+| 203 | 8 | `static void skillsSet(Game g)` | The town's skilled bands set to their shares of its workforce (FS16): the applicants each school draws on, caused and not grown. |
+| 217 | 12 | `static boolean finishing(Education ed, EducationType type, double students, int monthsLeft)` | Students put part way through a course (FS16), who graduate in monthsLeft months: the course's queue in the education state (Education.getState(): the dial, the totals, then every course's queue in enum order), writte... |
+| 256 | 7 | `static boolean seeded(Game g, EducationType type, double students, int monthsLeft)` | Students put into a course and into the town's books (FS16): finishing()'s cohort, and then the population manager told who is out of the supply (Education.getStudying()) and the families who the students are (setSeek... |
+| 282 | 7 | `static double[] priceTownHeads()` | The skilled heads of the hand-fed poor town (FS16): PRICE_TOWN_DIPLOMAS diploma-holders and a few above them. |
+| 291 | 11 | `static long[] priceTownPosts()` | The posts of the hand-fed poor town (FS16): 500 for the diploma-holders, and a few labouring and graduate ones. |
+| 303 | 1491 | `public static void main(String[] args) throws Exception` |  |
+| 1796 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1803 | 7 | `static void cleanUp(Path root)` |  |
 
