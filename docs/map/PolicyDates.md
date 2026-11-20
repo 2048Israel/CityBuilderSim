@@ -20,7 +20,7 @@
 
 **Uses:** [CityCalendar](CityCalendar.md) (2)
 
-**Used by (20):** [DiscoveryCheck](DiscoveryCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FB13Check](FB13Check.md), [ForeignAccounts](ForeignAccounts.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [MedicineCheck](MedicineCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md)
+**Used by (21):** [DiscoveryCheck](DiscoveryCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FB13Check](FB13Check.md), [ForeignAccounts](ForeignAccounts.md), [GoldStandardCheck](GoldStandardCheck.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [MedicineCheck](MedicineCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 
