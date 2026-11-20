@@ -471,3 +471,43 @@ is (a)+(b) with the walk: one JVM, exit 1, 12 minutes.
   walk on it fails as it stands, at 0.312386 against 0.289185, which is the
   walk working. A section asserting the walk, and failing with it off, goes
   in with that call.
+
+### (c) The walk paced by the city's wages (the orchestrator's 06:12 mail; 36dc96a82)
+
+Built behind `Recipes.HOME_WAGE_WALK` (`-Dr1g.walk=wage`, off by default).
+Each month's `apply()` sets every home to `homeScaleOfWages(game)`. That is
+`homeScale()`'s own sum, 1901's arrivals by band, with the market's wages
+this month in place of 1901's ladder, in founding money: each job's wage
+over the cost of living, times the ladder's anchor over the going rate,
+which a reform moves together. It is divided by the same household on
+today's ladder and capped at 1. The run was stopped at m2292 for BO1-S's
+gate (35 minutes); the full run waits for it.
+
+| run | m60 | m900 | m1200 | m2280 | rent at m60 | diploma fill m60 / m900 / m1200 / m2268 |
+|---|---|---|---|---|---|---|
+| today | 1,234 | 28,369 | 32,330 | 329,495 | ≤ .30 (.232) | 1.00 throughout |
+| (a)+(b) held | 944 | 30,117 | 110,986 | 888,960 | ≤ .30 | .86 / 1.00 / 1.00 / 1.00 |
+| (a)+(b) calendar walk | 926 | 5,679 | 16,012 | 556,732 | ≤ .30 | .83 / 1.00 / 1.00 / 1.00 |
+| (a)+(b) wage walk (c) | 618 | 9,097 | 44,259 | 1,593,103 | ≈ .32 (pull .93) | .95 / 1.00 / 1.00 / 1.00 |
+
+Between, at m240 / m600 / m1500 / m1800 / m2100: 2,202 / 5,347 / 303,813 /
+786,032 / 1,163,383.
+
+- ★ **The index runs ahead of the households' pay.** It prices the
+  market's posted wages, premia included on thin bands, so the home is
+  dear for what the households take home. The required rent is .16–.19 of
+  the unskilled wage from m240 to m1440, against .11–.15 held. The pull is
+  under 1 in 916 of the months from m960 to m2292, at its lowest .62 at
+  m701, so rent does not hold near .30. In the village's first year the
+  tight market lifts it most: the required rent at m13 is 0.00425 against
+  0.00252 held.
+- My heads-up (06:16) expected (c) to sit near the held row, because the
+  real wages over the price index stay at .22–.24 of today's. That was
+  wrong: by the market's wages over its cost of living the index rises well
+  above 0.29. The index a .30 rent wants is the households' take-home, not
+  the posts' wage.
+- **Late, it is the largest city of all:** 1,593,103 at m2280 against
+  888,960 held, 556,732 with the calendar walk and 329,495 today. Its pull
+  is back at 1.00 by m2160.
+- **Exits:** none read; the run was stopped (143). Unemployment is 39% at
+  m240 and none from m600.
