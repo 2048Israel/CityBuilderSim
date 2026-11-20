@@ -107,6 +107,7 @@ stuff".
 | OP2 | `Household.studentLoansOpen` and its javadoc ("opens 1939") retire: nothing sets it false since OP1 (HouseholdBalance's setter went), so `StudentHousehold.fundShortfall()` and `planningRoom()` read a constant; Household is HS2's and BO1-S's file, so after them (OP1-notes.md, Left for Jerus) | docs/queue/OP1-notes.md |
 | BO1-R | the owner line's three review minors (REV-BO1-S): no adults reserved where no family forms; the owner cell's trades with the world in OwnerCheck; OwnerCheck 11's middle case built through the census and the cell | docs/queue/BO1-S-notes.md, section 12 |
 | BO1-H | the owner families placed in the housing match after HS2, FamilyModel's third seeker group: today they pay a whole door's rent and count as housed without taking one | docs/queue/BO1-S-notes.md, section 5 |
+| PZ1 | PrizeCheck 12 red on main since the nightly tier last ran (GB2, 2026-11-20): the investors order two labs of a field in one month where one is the rule; bisect from OP1/BO1-S, mend the model or restate the fixture | [PZ1](docs/queue/PZ1.md) |
 
 ## Pending
 
