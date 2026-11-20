@@ -53,9 +53,13 @@ the batch (BW1).
   three builders, and a fourth on study, docs or process rows while the plan
   is behind pace: the week's % used plus the last six hours' rate times the
   hours to the reset under 95 (2026-11-07: "Yes, standing rule").
-- **The heavy slot:** never two dry runs or two ensembles at once, and no
-  ensemble beside a dry run or a gate on one machine (GB1: the gate box's
-  leave the laptop's free; 2026-11-18: R2c-P's dry run went red
+- **The heavy slot:** the gate box keeps its own (GB3; Jerus, 2026-11-20,
+  "Gatebox first"): gates and the nightly first, an ensemble behind them and
+  giving way to one that comes while it plays, the runs it started finishing
+  first; with two heavy jobs running or waiting there, or the box down, an
+  ensemble runs on the laptop and says why. The laptop's is the
+  orchestrator's: never two dry runs or two ensembles at once there, and no
+  ensemble beside a dry run or a gate (2026-11-18: R2c-P's dry run went red
   when KeptCheck timed out at 1740 s beside HN1's 80-run ensemble; DQ1's died
   on a fork failure, 2026-11-17 20:05, with 1.4 GB free); no builder's full
   pick beside either.

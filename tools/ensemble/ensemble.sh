@@ -3,8 +3,10 @@
 # tools/ensemble/ensemble.sh <label> runs or resumes; --stop <label> ends that run.
 # Do not edit while running. Needs compiled classes and pandas. README.md holds
 # settings, outputs and cost. Logs and CSVs stay under $ENSEMBLE_OUT/<label>/.
-# Exit 0 hard criteria pass, 1 build/compile failure, 2 scoring/dependency error,
-# 3 missing runs, 4 hard criteria failed (EI1). Scores are kept for exits 0/3/4.
+# A named gate box runs the pushed commit instead (tools/gate-box.sh --ensemble: ENS_PART=runs there, no pandas,
+# ENS_PART=score here on its copied runs; GB3). Exit 0 hard criteria pass, 1 build/compile failure, 2 scoring/
+# dependency error, 3 missing runs, 4 hard criteria failed (EI1), 5 the box's runs yielded to a gate or the nightly
+# (GB3). Scores are kept for exits 0/3/4.
 # WHY (EN1): a runner outside the tree left scores later versions could not compare.
 set -u
 
@@ -46,6 +48,7 @@ fi
 # --- one run: what xargs calls (the script itself, hidden mode) --------------
 if [ "${1:-}" = "--one" ]; then
     RUN=$2; P=$3; S=$4
+    [ -z "${ENS_YIELD:-}" ] || [ ! -e "$ENS_YIELD" ] || exit 0   # GB3: a gate or the nightly came; this run waits for the next pass
     DATA_ARGS=()
     [ -z "${ENS_EARTH:-}" ] || DATA_ARGS+=("-Dcbs.earth=$ENS_EARTH")
     [ -z "${ENS_WORLD:-}" ] || DATA_ARGS+=("-Dcbs.world=$ENS_WORLD")
@@ -115,7 +118,7 @@ RUN=$(cd "$RUN" && pwd)
 RUNW=$(native "$RUN")
 
 # pandas now, not after twenty minutes of runs
-if ! ENSEMBLE_PYLIB="$PYLIB" "$PYTHON" -I -c "import os, sys; p = os.environ['ENSEMBLE_PYLIB']; os.path.isdir(p) and sys.path.insert(0, p); import pandas" > "$RUN/logs/pandas.txt" 2>&1; then
+if [ "${ENS_PART:-}" != runs ] && ! ENSEMBLE_PYLIB="$PYLIB" "$PYTHON" -I -c "import os, sys; p = os.environ['ENSEMBLE_PYLIB']; os.path.isdir(p) and sys.path.insert(0, p); import pandas" > "$RUN/logs/pandas.txt" 2>&1; then
     echo "python ($PYTHON) cannot import pandas - $PIPLINE" >&2
     exit 2
 fi
@@ -124,9 +127,6 @@ fi
 BASELINE=${BASELINE-}
 if [ -z "$BASELINE" ]; then
     NEWEST=$(ls docs/ensemble 2>/dev/null | grep -E '^[0-9][0-9.]*\.md$' | sort -V | tail -1)
-    # EN2 ships untagged, retaining its id until a later version has a new data-backed score.
-    EN2_VERSION=$(sed -n 's/^# Ensemble baseline: \([0-9][0-9.]*\)$/\1/p' docs/ensemble/EN2.md 2>/dev/null | head -1)
-    if [ -n "$EN2_VERSION" ] && [ "$(printf '%s\n' "${NEWEST%.md}" "$EN2_VERSION" | sort -V | tail -1)" = "$EN2_VERSION" ]; then NEWEST=EN2.md; fi
     [ -n "$NEWEST" ] && BASELINE="docs/ensemble/$NEWEST" || BASELINE=none
 fi
 if [ "$BASELINE" != none ]; then
@@ -142,9 +142,10 @@ else
     BASELINE_SHOWN=""
     BASELINEW=""
 fi
+[ -n "${CBS_GATE_ON_BOX:-}${ENS_PART:-}" ] || [ -z "${CBS_GATE_HOST-$(cat "$HOME/.cbs-gate-box" 2>/dev/null)}" ] || exec sh tools/gate-box.sh --ensemble "$LABEL"
 
 # --- the snapshot: the classes the runs use, copied once ------------------------------
-if [ -d "$RUN/classes" ]; then
+if [ -d "$RUN/classes" ] || [ "${ENS_PART:-}" = score ]; then   # score: the box's runs, copied here without their classes
     KEPT=1
 else
     KEPT=0
@@ -171,6 +172,8 @@ else
         echo "date: $(date -u +%Y-%m-%dT%H:%MZ)"
         echo "label: $LABEL"
         echo "data: $DATA_SHOWN"
+        echo "host: $(hostname)"
+        echo "java: $(java -version 2>&1 | head -1 | tr -d '\r')"
     } > "$RUN/snapshot.txt"
 fi
 snap() { sed -n "s/^$1: //p" "$RUN/snapshot.txt" 2>/dev/null | head -1 | tr -d '\r'; }
@@ -180,7 +183,7 @@ DEPS=$(tr -d '\r\n' < "$RUN/deps.txt")
 
 # --- the driver, compiled against the snapshot ----------------------------------------------
 mkdir -p "$RUN/driver"
-if ! javac -nowarn -d "$RUNW/driver" -cp "$RUNW/classes$SEP$DEPS" tools/ensemble/Ensemble.java > "$RUN/logs/javac.txt" 2>&1; then
+if [ "${ENS_PART:-}" != score ] && ! javac -nowarn -d "$RUNW/driver" -cp "$RUNW/classes$SEP$DEPS" tools/ensemble/Ensemble.java > "$RUN/logs/javac.txt" 2>&1; then
     echo "driver compile FAILED - $RUNW/logs/javac.txt" >&2
     exit 1
 fi
@@ -195,6 +198,7 @@ for P in $POLICIES; do
         echo "$P $S" >> "$RUN/jobs.txt"
     done
 done
+[ "${ENS_PART:-}" != score ] || : > "$RUN/jobs.txt"
 TODO=$(wc -l < "$RUN/jobs.txt" | tr -d ' ')
 SNAPDATA=$(snap data)
 if [ "$KEPT" = 1 ] && [ "$TODO" -gt 0 ] && [ "$SNAPDATA" != "$DATA_SHOWN" ]; then
@@ -202,6 +206,7 @@ if [ "$KEPT" = 1 ] && [ "$TODO" -gt 0 ] && [ "$SNAPDATA" != "$DATA_SHOWN" ]; the
     exit 1
 fi
 SNAPNOTE=""; [ "$KEPT" = 1 ] && SNAPNOTE=", snapshot kept from the first start"
+[ "${ENS_PART:-}" != score ] || SNAPNOTE=", run on $(snap host), scored here"
 echo "ensemble $LABEL: classes of $COMMIT (v$VERSION)$SNAPNOTE; $JOBS at once, $TODO of $TOTAL runs to do"
 
 START=$(date +%s)
@@ -223,6 +228,11 @@ if [ "$MISSING" -gt 0 ]; then
     echo "runs: $DONE of $TOTAL done, $MISSING missing (progress.txt and logs/ beside score.md say why); $WALLMIN min"
 else
     echo "runs: $DONE of $TOTAL done, none missing; $WALLMIN min"
+fi
+if [ "${ENS_PART:-}" = runs ]; then   # GB3, the box: the runs alone, 5 when a gate or the nightly came before they were done
+    [ "$MISSING" -gt 0 ] || exit 0
+    [ -z "${ENS_YIELD:-}" ] || [ ! -e "$ENS_YIELD" ] || exit 5
+    exit 3
 fi
 
 # --- the score -----------------------------------------------------------------------------------------------
@@ -250,6 +260,7 @@ FENCE='```'
     printf 'The ensemble on the model of **%s**: classes snapshot of commit %s (%s), label %s, %s of %s runs.\n' \
         "$VERSION" "$COMMIT" "$SNAPDATE" "$LABEL" "$DONE" "$TOTAL"
     printf 'Data files named for this snapshot — `%s`.\n' "${SNAPDATA:-not recorded (legacy snapshot)}"
+    [ -z "$(snap host)" ] || printf 'Run on %s, %s.\n' "$(snap host)" "$(snap java)"
     if [ -n "$BASELINE_SHOWN" ]; then
         printf 'Scored against `%s` for T1, T2 and F1. ' "$BASELINE_SHOWN"
     else
