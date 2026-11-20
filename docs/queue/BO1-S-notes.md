@@ -3,6 +3,12 @@
 The brief is `docs/queue/BO1-S.md`; BO1's measurement it re-takes is
 `docs/queue/BO1-notes.md`, section 1.
 
+**The young city, plainly (the orchestrator, 11-20):** the playtest's own city with the
+line on is a fifth smaller at month 121 on 0.9.161, after OP1 (1,359 people
+against 1,732 with it off), where on 0.9.160 it was a third larger (1,567
+against 1,172). Section 10 has the tables; Jerus hears it from the
+orchestrator.
+
 ## 1. The probe
 
 `OwnerCheck` with `-Downer.probe=true` (never the default run): the playtest
@@ -263,7 +269,8 @@ Landmass, ShortSelling, FundLedger. Fund and Holders show only main's
 known on main, passes on the branch (section 6's theft mend).
 
 **The town of nine adults plays with the line off** (★ mine, under the
-orchestrator's "restatements fine"): ShortSelling, Fund, FundLedger and
+orchestrator's "restatements fine"; agreed at 04:11: "those harnesses are
+about markets, and OwnerCheck covers the owners"): ShortSelling, Fund, FundLedger and
 Holders build `run()`'s town, which stays at nine adults for 169 months.
 Under `OWNER_ADULT_SHARE` its owner cell is empty, so the founders' grant
 waits, no company lists, and no household holds a share or is paid a

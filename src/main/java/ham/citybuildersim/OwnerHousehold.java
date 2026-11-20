@@ -82,7 +82,9 @@ public class OwnerHousehold extends Household {
      * Whether a city runs the owner line: on since BO1-S. BO1 shipped it off
      * because, on 0.9.90, the playtest city with it on had about a third of its
      * people at month 120 (BO1's notes, section 1); on 0.9.160 the same city
-     * with it on is a third larger at month 121 (BO1-S's notes). A bare balance
+     * with it on was a third larger at month 121, and on 0.9.161, after OP1
+     * opened every policy at the founding, it is a fifth smaller (1,359
+     * against 1,732; BO1-S's notes, section 10). A bare balance
      * never switches it and keeps the grant by grown-ups; a harness that
      * measures the line against today's rule switches a city's line itself.
      */
