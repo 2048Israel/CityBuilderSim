@@ -4053,7 +4053,7 @@ final class BankScreen {
             steps.add(Step.of((String) c[0], a, a < 0 ? Palette.MONEY_DARK : Palette.MONEY));
         }
         double residual = mv.residual();
-        steps.add(Step.of("Not accounted for", residual, Math.abs(residual) > .005 ? Palette.BAD : Palette.TEXT_SPENT)
+        steps.add(Step.of("Not accounted for", residual, mv.addsUp() ? Palette.TEXT_SPENT : Palette.BAD)
                 .tip("Not accounted for\n" + mv(residual) + "\n\n" + MOVED_INFO));
         return steps;
     }
@@ -4068,7 +4068,7 @@ final class BankScreen {
         Bank.EquityMovement mv = bank.equityMovement();
         c.getChildren().add(Kept.scope("opened", () -> line("opened the month at " + m(mv.opening()) + " · closed it at " + m(mv.closing()))));
         c.getChildren().add(Kept.scope("fall", () -> waterfall(equitySteps(), v -> (v < 0 ? "−" : "") + money(Math.abs(v)), 0, 170)));
-        if (Math.abs(mv.residual()) > .005) {
+        if (!mv.addsUp()) {
             c.getChildren().add(Kept.scope("residual", () -> noteLine("Something moved its equity without telling it",
                     String.format("%s of the month's change in its equity is none of the causes above. That should be "
                             + "impossible - worth reporting.", m(Math.abs(mv.residual()))), 560)));
@@ -4222,7 +4222,7 @@ final class BankScreen {
             moved(column, "A reopened line's discount, re-struck", m.discountRestruck());
             moved(column, "Set aside when this older save was opened", -m.allowanceOpened());
             double residual = m.residual();
-            boolean off = Math.abs(residual) > .005;
+            boolean off = !m.addsUp();
             column.getChildren().add(statementLine("Not accounted for", signed(residual, false),
                     off ? Palette.BAD : Palette.TEXT_SPENT));
             column.getChildren().add(statementTotal("At the end of it", moneyFull(m.closing()),
