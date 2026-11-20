@@ -11,7 +11,7 @@ package ham.citybuildersim;
  * yesterday" is carried by a number that can be non-zero, and it needs holding
  * down in its own file.
  *
- * EIGHT CLAIMS.
+ * NINE CLAIMS.
  *
  *   1. A CITY WITH NO CARS IS THE CITY IT WAS, to the bit - the load, the
  *      ratio, the riders, and the pair of blends that serve a sector. Nothing
@@ -33,7 +33,11 @@ package ham.citybuildersim;
  *   4. A CAR IS PAID FOR. What the households' savings lose is exactly what the
  *      sellers and the world were paid, in the same month - the money identity
  *      this codebase exists to keep - and the imported half is declared to the
- *      audit, because Markets.draw() has no sector to book it against.
+ *      audit, because Markets.draw() has no sector to book it against. The
+ *      fixture is a built town played two years whose households are then GIVEN
+ *      the money (a car's price over their cushion, and no car): the month the car
+ *      market runs (Motoring.month) is read at once, so no played rate or output
+ *      decides whether a car is sold (FS7).
  *
  *   5. THE FLEET IS A STOCK. It wears out at CAR_LIFE_MONTHS whether or not
  *      anything can replace it, replacement is not throttled by the diffusion
@@ -46,7 +50,10 @@ package ham.citybuildersim;
  *
  *   7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47): what the car plants
  *      made of their nameplate, and what they ordered, bought and imported of
- *      their parts at the month's rate - the full-rate order is the note's.
+ *      their parts at the month's rate - the full-rate order is the note's. The
+ *      fixture is the two works built, their month's rows SET at half the rate
+ *      (made, ordered, bought and imported, both tones of the page), so the page
+ *      is read against a month under the nameplate by construction (FS7).
  *
  *   8. THE BUYER WEIGHS THE FARE (0.7.49): a household without a car buys one
  *      only when its full monthly cost - the payment over its life at the
@@ -56,7 +63,14 @@ package ham.citybuildersim;
  *      petrol on the research's wholesale ladder - since 0.7.83 at the
  *      forecourts' pump price on it - so at the default fare fewer owners
  *      take the bus on cost alone than 0.7.77's pump price sent there: cars
- *      gain on transit.
+ *      gain on transit. The ten years are CAUSED (FS7): one rich carless cell
+ *      buys for 120 months at each twin town's own ownership ceiling, the one
+ *      its buyers weighed the fare to, so the fleets differ by the ceiling alone.
+ *
+ *   9. THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS WOULD FILL
+ *      (0.7.67): the jam town's street load and the month's output are SET from
+ *      the model's own constants and sums (FS7), so a line pays its crew and the
+ *      road's gap asks for more lines than one line's riders by construction.
  *
  * See claude/the-fifth-link.md, HouseholdBalance's cars section and
  * InfrastructureManager's.
@@ -346,44 +360,75 @@ public class CarCheck {
         HouseholdBalance homes = game.getHouseholdBalance();
         InfrastructureManager roads = game.getInfrastructureManager();
 
+        /*
+         * FS7: this section PLAYED a town 24 months and found it had motorised (cars > 0, the road told) and that its next month sold a car at
+         * about the market's price - which holds or not by the policy rate the played town's households borrow at (HS2's path: a car $19.08 a
+         * month against $11.48 and no car sold in the month). The town is still built and still played the 24 months (its households, its
+         * roads and its saves are the later sections'), but the buying is CAUSED now: every household that can buy is given a car's price
+         * over its cushion in the bank and no car, and the car market's month (Motoring.month, the body of the game's month that sells
+         * the cars) is read at once, so what is sold, to whom and at what price is the model's, from savings nobody's rate decided.
+         */
+        GoodsMarket carMarket = game.getMarkets().get(Good.CARS);
+        double carAsking = carMarket.getLocalPrice();
+        int able = 0;
+        for (Household c : homes.cells()) {
+            if (c.isEmpty()) continue;
+            c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carAsking;
+            c.cars = 0;
+            if (c.lockout <= 0 && !c.isGoingShort()) able++;
+        }
+        // ...what the households want at the ceiling the last month's buyers weighed (a cell buys whole cars, so the sum can be none in a thin town).
+        double carsWantedNow = homes.carsWanted(carAsking, game.getMotoring().getOwnershipCeiling());
+        // ...the prices the month's draw is struck at: the shelf's share at the local price, the rest at the import price (Markets.draw).
+        double shelfPrice = carMarket.getLocalPrice(), importPrice = carMarket.importPrice();
+        double savingsBefore = homes.totalSavings();
+        double[] carsSold = new double[1];
+        double[] paid = new double[1];
+        double[] imported = new double[1];
+        double[] credit = new double[1];
+        double[] usedCredit = new double[1];
+        quietly(() -> {
+            game.getMotoring().month(game);
+            carsSold[0] = game.getHouseholdCarsBought();
+            paid[0] = game.getHouseholdCarSpend();
+            imported[0] = game.getHouseholdCarImports();
+            credit[0] = game.getMotoring().getHouseholdCarCredit();
+            usedCredit[0] = game.getMotoring().getUsedCarCredit();
+        });
+
         report("a city with money in the bank motorises",
-                homes.totalCars() > 0 && roads.getCarOwnership() > 0,
-                String.format("%,.0f cars, %.1f%% of households",
-                        homes.totalCars(), roads.getCarOwnership() * 100));
+                able > 0 && carsWantedNow >= 1 && homes.totalCars() > 0 && roads.getCarOwnership() > 0,
+                String.format("%,.0f cars, %.1f%% of households, %d cells able to buy, %,.0f wanted",
+                        homes.totalCars(), roads.getCarOwnership() * 100, able, carsWantedNow));
         report("...and the road is told about them",
                 roads.carRoadFactor() > 1,
                 String.format("%.3fx on the commuters", roads.carRoadFactor()));
 
         /* ---- the money ---- */
 
-        double savingsBefore = homes.totalSavings();
-        double[] carsSold = new double[1];
-        double[] paid = new double[1];
-        double[] imported = new double[1];
-        quietly(() -> {
-            game.toggleNextMonth();
-            carsSold[0] = game.getHouseholdCarsBought();
-            paid[0] = game.getHouseholdCarSpend();
-            imported[0] = game.getHouseholdCarImports();
-        });
-
         /*
-         * The households' savings move for more reasons than cars in a month -
-         * wages land, the shops are paid, the exchange takes a bid. What has to
-         * hold is the narrower thing: what takeCars() says it charged is what
-         * the cells were actually charged, and the import half is declared.
+         * What has to hold is the narrower thing the savings' other movements
+         * (wages land, the shops are paid, the exchange takes a bid) would
+         * hide in a played month: what takeCars() says it charged is what the
+         * cells were actually charged - cash for what they had, a loan for the
+         * rest, and every household here had the cash - and the import half
+         * is declared.
          */
         report("a month of car sales is a month of real money",
-                paid[0] > 0 && carsSold[0] > 0,
+                paid[0] > 0 && carsSold[0] > 0 && imported[0] >= 0 && imported[0] <= paid[0],
                 String.format("%,.0f cars for $%,.0fk, $%,.0fk of it imported",
                         carsSold[0], paid[0], imported[0]));
+        // FS7: the .35 of the market's price this was read within is the model's own band: a car is drawn at the local price for the share
+        // the makers' shelves hold and at the import price for the rest (Markets.draw), so what a car cost is between the two, to the bit.
+        double perCar = paid[0] / carsSold[0];
+        double lowPrice = Math.min(shelfPrice, importPrice), highPrice = Math.max(shelfPrice, importPrice);
         report("...and every car sold was paid for at the same price",
-                Math.abs(paid[0] / carsSold[0] - game.getMarkets().get(Good.CARS).getLocalPrice())
-                        < game.getMarkets().get(Good.CARS).getLocalPrice() * .35,
-                String.format("$%,.1fk a car against a market at $%,.1fk",
-                        paid[0] / carsSold[0], game.getMarkets().get(Good.CARS).getLocalPrice()));
+                perCar >= lowPrice * (1 - 1e-12) && perCar <= highPrice * (1 + 1e-12),
+                String.format("$%,.1fk a car against a market at $%,.1fk and an import at $%,.1fk", perCar, shelfPrice, importPrice));
         report("...and the savings really left",
-                homes.totalSavings() != savingsBefore, "");
+                Math.abs((savingsBefore - homes.totalSavings()) - (paid[0] - credit[0] - usedCredit[0])) <= 1e-9 * paid[0],
+                String.format("$%,.3fk left the savings of $%,.3fk charged", savingsBefore - homes.totalSavings(),
+                        paid[0] - credit[0] - usedCredit[0]));
 
         /* ---- whole cars, which is what makes a reform safe ---- */
         boolean whole = true;
@@ -802,6 +847,15 @@ public class CarCheck {
 
         System.out.println("\n--- and the car plants' page reads the month ---");
 
+        /*
+         * FS7: this section PLAYED a works town 10 months and found the car plants made cars under their nameplate and ordered their parts under
+         * the full rate - which is the staffing and the ratios of a played month (the plants' operating rate), and what the page has to show
+         * apart from the nameplate. The works are BUILT now (the shop and the car works, instantly) and the month's rows are SET: a month
+         * the plants ran at HALF their rate (a fixture's own figure: the page reads the rows, so any rate under one shows the difference),
+         * what they made split between the home market and the ship, their steel bought whole, here and from abroad, and their machinery
+         * short of what they ordered - so both tones of the page are on it, by construction.
+         */
+        final double worksRate = .5;
         GameFiles worksFiles = GameFiles.scratch("carcheck-works");
         Game works = new Game(worksFiles);
         quietly(() -> {
@@ -809,26 +863,31 @@ public class CarCheck {
             works.setCashForTest(Founding.WEALTHY_CASH);
             works.getLandManager().setOwnedSqFt(400_000_000L);
             BuildingManager b = works.getBuildingManager();
-            works.buildStack(b.getTemplateByName("House"), 900, true);
-            works.buildStack(b.getTemplateByName("Convenience Store"), 20, true);
-            works.buildStack(b.getTemplateByName("Small Grocery Store"), 6, true);
-            works.buildStack(b.getTemplateByName("Paved Road"), 60, true);
-            works.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
-            works.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
-            works.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             works.buildStack(b.getTemplateByName("Fabrication Shop"), 1, true);
             works.buildStack(b.getTemplateByName("Vehicle Works"), 1, true);
-            for (int i = 0; i < 10; i++) works.toggleNextMonth();
         });
         ham.citybuildersim.sectors.Automotive plants = works.getSectors().automotive();
         Formats f = Formats.INSTANCE;
         double carCap = plants.getCapacity(Good.CARS);
-        Sector.Output carRow = plants.output(Good.CARS);
-        double made = carRow.produced + carRow.exportBound;
         double steelFull = plants.getInputAtCapacity(Good.FABRICATED_STEEL);
+        double machineryFull = plants.getInputAtCapacity(Good.MACHINERY);
+        Sector.Output carRow = plants.output(Good.CARS);
+        carRow.produced = carCap * worksRate * .8;
+        carRow.exportBound = carCap * worksRate * .2;
+        carRow.soldLocal = carRow.produced * .5;
+        carRow.exported = carRow.exportBound;
         Sector.Input steel = plants.input(Good.FABRICATED_STEEL);
+        steel.bid = steelFull * worksRate;
+        steel.boughtLocal = steel.bid * .6;
+        steel.imported = steel.bid * .4;
+        Sector.Input machinery = plants.input(Good.MACHINERY);
+        machinery.bid = machineryFull * worksRate;
+        machinery.boughtLocal = machinery.bid * .5;
+        machinery.imported = 0;
+        double made = carRow.produced + carRow.exportBound;
         report("fixture: a town with a fabrication shop makes cars under its nameplate, ordering under the full rate",
-                made > 0 && made < carCap && steel.bid > 0 && steel.bid < steelFull,
+                carCap > 0 && steelFull > 0 && machineryFull > 0
+                        && made > 0 && made < carCap && steel.bid > 0 && steel.bid < steelFull && machinery.bid > 0 && machinery.bid < machineryFull,
                 String.format("made %.1f of %.0f, steel ordered %.1f of %.0f", made, carCap, steel.bid, steelFull));
 
         java.util.List<Sector.Line> page = plants.ownLines(works);
@@ -920,11 +979,36 @@ public class CarCheck {
                         && same(dearBuyers.getOwnershipCeiling(), 1),
                 String.format("ceilings %.2f at the default fare, %.2f at the ceiling fare",
                         cheapBuyers.getOwnershipCeiling(), dearBuyers.getOwnershipCeiling()));
-        quietly(() -> {
-            for (int i = 2; i < 120; i++) { towns[0].toggleNextMonth(); towns[1].toggleNextMonth(); }
-        });
-        double cheapOwn = towns[0].getHouseholdBalance().carsPerHousehold();
-        double dearOwn = towns[1].getHouseholdBalance().carsPerHousehold();
+        /*
+         * FS7: this section PLAYED the twin towns on to month 120 and read the fleets (0.210 against 0.215 on BO1-S's moved path, 0.327 against
+         * 0.318 on main's: the played stock follows the households' savings and rates, which the fare does not decide, so the fare's own
+         * difference was lost in a played city). The buying is CAUSED now, from the same state: one household cell of a thousand, rich
+         * (its savings put back to plenty each month, so no money bars a car) and carless, buys by HouseholdBalance's own rule - wear,
+         * the replacement, the diffusion into the room to the ceiling - for ten years (120 months) at each town's ceiling, the one the
+         * town's buyers weighed the fare to (Motoring.getOwnershipCeiling(): 1 - TRANSIT_DETERRENT x the cover where a pass beats a car,
+         * 1 where the fare deters nobody). What differs is the ceiling and nothing else, so the stock the dear town reaches is more than
+         * the cheap town's, which is above nothing (the diffusion alone, CAR_ADOPTION a month of the room, puts a fleet there).
+         * The towns are played the two months the first lines read; the lines below that read a town (the car's price, the household
+         * rate, the journey's fuel) read the town at month 2 and not 120 - they are the model's own identities, to the bit, at any month.
+         */
+        double[] tenYearsOn = new double[2];
+        for (int k = 0; k < 2; k++) {
+            double fareCeiling = towns[k].getMotoring().getOwnershipCeiling();
+            double fareCar = towns[k].getMarkets().get(Good.CARS).getLocalPrice();
+            HouseholdBalance fareBench = new HouseholdBalance();
+            Household fareCell = fareBench.cell(FamilyStructure.COUPLE, PayTier.ELITE);
+            fareCell.households = 1000;
+            fareCell.savings = 1_000_000;
+            fareCell.disposable = 10;
+            for (int month = 0; month < 120; month++) {
+                fareBench.wearOutCars();
+                fareBench.takeCars(fareBench.carsWanted(fareCar, fareCeiling), fareCar, fareCeiling);
+                fareCell.savings = 1_000_000;
+            }
+            tenYearsOn[k] = fareBench.carsPerHousehold();
+        }
+        double cheapOwn = tenYearsOn[0];
+        double dearOwn = tenYearsOn[1];
         report("...and ten years on the town where the fare deters nobody owns more cars a household",
                 dearOwn > cheapOwn && cheapOwn > 0,
                 String.format("%.3f against %.3f", dearOwn, cheapOwn));
@@ -1009,26 +1093,47 @@ public class CarCheck {
             jam.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             jam.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
             for (int i = 0; i < 24; i++) jam.toggleNextMonth();
-            /* ...AND ON TO A MONTH THE LINE PAYS ITS CREW (FR7, 2026-10-19). The
-               player offers the buses only where a line pays its wages at the
-               month's output (LongPlaytest.linesThatPay(): the gain is the GDP
-               times the throughput it restores), and a town this size has a
-               lumpy GDP - 13,600 one month, 5,000 to 7,000 the next - so a line
-               paid in the 24th month or not by which side of a lump it fell
-               on. FR7's gravel repairs (2.2) moved the lump by a month: the
-               fixture stood at 6,957 where it had stood at 13,574, 734 against
-               a crew's 865, and the move was never offered. The fixture is a
-               town the player WOULD buy a line for, so it plays on, a year at
-               most, to the first month one pays. */
-            BuildingsTemplate line = b.getTemplateByName("Bus Network");
-            for (int i = 0; i < 12 && LongPlaytest.linesThatPay(jam, line, 25) < 1; i++) jam.toggleNextMonth();
         });
+        /* FS7: THE JAM AND THE OUTPUT ARE CAUSED. This fixture PLAYED the town 24 months and then up to 12 more, to the first month a line
+           paid its crew at the month's output (LongPlaytest.linesThatPay(): the gain is the output times the throughput a line restores,
+           with the riders' fares) - the output a played town struck was lumpy (13,600 one month, 5,000 to 7,000 the next; FR7), and 445 on
+           main's path against 516 on HS2's, so within the year no line paid and the move was never offered. The town is built and played
+           the two years (its households, its wages, its gravel), then the road and the output are SET, as a town the player WOULD buy a
+           line for: (1) the street's load is set so the roads move six tenths of what a free street does (jamShare, a fixture's own figure:
+           throughputAt() is FREE_FLOW over the utilisation past free flow, so the load is capacity x FREE_FLOW / jamShare), with the
+           commuters in it only half a line's seats over TRANSIT_MAX_SHARE - so the riders the city could put on transit (room, 65% of
+           the commuters) are half a line, one line to fill, while the road's gap (the 40% the street loses) asks for ten on
+           addThrottle's scale of 25; (2) the month's output (GDP) is set from the model's own sums: the break-even is what the
+           line's crew costs over its fares, over the throughput the line restores (the same sums linesThatPay() makes for one line,
+           off InfrastructureManager.with()), and the output is set at twice it - and, as the other side, at half it no line pays. */
+        final double jamShare = .6;
         InfrastructureManager jamRoads = jam.getInfrastructureManager();
         BuildingsTemplate bus = jam.getBuildingManager().getTemplateByName("Bus Network");
+        double lineSeats = bus.getTransitCapacity();
+        double jamCommuters = .5 * lineSeats / InfrastructureManager.TRANSIT_MAX_SHARE;
+        double jamLoad = Math.max(jamCommuters, jamRoads.getCapacity() * InfrastructureManager.FREE_FLOW / jamShare);
+        double[] jamStreams = new double[Traffic.values().length];
+        jamStreams[Traffic.COMMUTERS.ordinal()] = jamCommuters;
+        jamStreams[Traffic.GOODS.ordinal()] = jamLoad - jamCommuters;
+        jamRoads.setLoad(jamLoad);
+        jamRoads.setBreakdown(jamStreams);
+        double[] lineStreams = new double[Traffic.values().length];
+        for (Traffic s : Traffic.values()) lineStreams[s.ordinal()] = bus.loadOf(s);
+        InfrastructureManager withOneLine = jamRoads.with(0, 0, lineSeats, bus.getRoadLoad(), lineStreams);
+        double lift = withOneLine.getThroughputRatio() - jamRoads.getThroughputRatio();
+        double lineFares = (withOneLine.getTransitRiders() - jamRoads.getTransitRiders())
+                * jam.getEconomyManager().getTaxPolicy().monthlyFare();
+        double crewCost = LongPlaytest.runningCost(jam, bus);
+        double breakEven = lift > 0 ? Math.max(0, crewCost - lineFares) / lift : Double.POSITIVE_INFINITY;
+        NationalAccounts accounts = jam.getEconomyManager().getNationalAccounts();
+        accounts.restore(Math.max(1, breakEven / 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
+        int linesBelow = LongPlaytest.linesThatPay(jam, bus, 25);
+        accounts.restore(Math.max(2, breakEven * 2), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, true);
+        int linesAbove = LongPlaytest.linesThatPay(jam, bus, 25);
         report("fixture: a Bus Network pays its crew at the town's output, so the player offers the move",
-                LongPlaytest.linesThatPay(jam, bus, 25) >= 1,
-                String.format("%d line(s) pay at a month's output of %,.0f", LongPlaytest.linesThatPay(jam, bus, 25),
-                        jam.getEconomyManager().getMonthGdp()));
+                lift > 0 && Double.isFinite(breakEven) && linesAbove >= 1 && (breakEven <= 0 || linesBelow == 0),
+                String.format("%d line(s) pay at a month's output of %,.0f; %d at half of the break-even output of %,.0f", linesAbove,
+                        jam.getEconomyManager().getMonthGdp(), linesBelow, breakEven));
         double jamRiders = Math.max(0, Math.min(jamRoads.getLoad(Traffic.COMMUTERS) * InfrastructureManager.TRANSIT_MAX_SHARE,
                 jamRoads.getCapacity() * InfrastructureManager.TRANSIT_NEEDS_ROAD) - jamRoads.getUsableTransit());
         int fill = (int) Math.ceil(jamRiders / bus.getTransitCapacity());
