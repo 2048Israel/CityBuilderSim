@@ -93,3 +93,31 @@ last months (the untraced default cut at 130 has the same four).
 - The owners hold 45% of the bank's savings at month 121 (1,572 of 3,464) and
   2,672 abroad; the city's bank savings are larger with the line on (3,464
   against 2,516), so the banked dividends do not stall it.
+
+## 5. The switch, prepared (in its own commit, to drop if Jerus says no)
+
+- `OwnerHousehold.IN_CITIES = true`; the comments that said it was off
+  restated (`OwnerHousehold`, Game's initializer, OwnerCheck 9).
+- **The People screen** (BO1's section 2 named the places): the owner
+  families are a piece of the mosaic's outside strip (two adults a
+  household, a click opens their books), a column of the outside table by
+  age (`families.getOwnerAdults()`, in the total), a row below the rule on
+  Household money (`belowTheRule`, `otherRows`: their books against a
+  basket, as the prison's), and the texts that list the groups
+  (`OUTSIDE_INFO`, `BELOW_THE_RULE`, the verdict's and `otherRows`'
+  javadocs). The outside panel (`outsideStatement`) finds any cell by key,
+  so their books open with no new code.
+- ★ **No "Owner families" tile** in the outside row: a tile draws a
+  sparkline from a history series, and an owners' series is a saved field
+  (`HistorySave`, YearBook). Kept out so the batch changes no save; the
+  mosaic piece opens the same books. Recommended later, with the wealth study.
+- ★ **The owners stay out of the housing match**, as BO1 shipped them: they
+  pay a whole door's rent (`Game.rentShareOf` 1) and count as housed
+  (`housedShareOf` 1) without taking a door. Placing them is a third seeker
+  group in `FamilyModel` (HS2's file, in flight; its seeker arrays are
+  saved), the change that broke HousingCheck and ReadPathCheck in BO1. Five
+  families of two in a city of 1,500 people; recommended: queued, not here.
+- **Saves:** switching on changes nothing an old save reads. A save from
+  before has no owner families (the line was off): its listed companies keep
+  their founders' shares with the households, and a company that lists after
+  the load gets a family. Incomplete, not wrong: no format bump.

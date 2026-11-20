@@ -16236,7 +16236,7 @@ public class Game {
         householdBalance.setRentShares(this::rentShareOf);
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
-        // The owner line (BO1) runs in a city by its dial; off, and in a bare fixture, the founders' grant is by grown-ups.
+        // The owner line (BO1) runs in a city by its dial, on since BO1-S; a bare fixture, which never switches it, grants the founders' shares by grown-ups.
         householdBalance.setOwnerLine(OwnerHousehold.IN_CITIES);
     }
 

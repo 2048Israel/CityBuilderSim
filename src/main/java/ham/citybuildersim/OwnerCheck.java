@@ -527,7 +527,7 @@ public class OwnerCheck {
         boolean flag = LongPlaytest.AUTOBUILD;
         Game g = new Game(GameFiles.scratch("ownercheck-run"), LongPlaytest.founding());
         HouseholdBalance hb = g.getHouseholdBalance();
-        hb.setOwnerLine(true);                    // the city's own dial is off (OwnerHousehold.IN_CITIES)
+        hb.setOwnerLine(true);                    // the city's own dial (OwnerHousehold.IN_CITIES), said here so the section holds whatever it reads
         LongPlaytest.AUTOBUILD = true;
         LongPlaytest.out = capture;
         System.setOut(capture);
