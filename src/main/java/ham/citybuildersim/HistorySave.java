@@ -486,6 +486,8 @@ public class HistorySave {
     private List<Double> crimeRate = new ArrayList<>();
     private List<Double> policeCoverage = new ArrayList<>();
     private List<Double> prisoners = new ArrayList<>();
+    /** The owner families' adults, off the labour force (PopulationManager.getOwners()): YearBook.labourForce() takes them off as the model does (BO1-S). */
+    private List<Double> owners = new ArrayList<>();
     private List<Double> caughtNotHeld = new ArrayList<>();
     private List<Double> stolen = new ArrayList<>();
     private List<Double> deathsKilled = new ArrayList<>();
@@ -923,6 +925,7 @@ public class HistorySave {
         crimeRate.add(round2(crime.getRatePer100k()));
         policeCoverage.add(round4(crime.getCoverage()));
         prisoners.add(round2(crime.prisoners()));
+        owners.add(round2(people.getOwners()));
         caughtNotHeld.add(round2(crime.getNotHeld()));
         stolen.add(round2(crime.getStolen()));
         deathsKilled.add(round2(pyramid.getKilled(AgeBand.ADULT)));
@@ -1344,6 +1347,7 @@ public class HistorySave {
         crimeRate = copy(loaded.crimeRate);
         policeCoverage = copy(loaded.policeCoverage);
         prisoners = copy(loaded.prisoners);
+        owners = copy(loaded.owners);
         caughtNotHeld = copy(loaded.caughtNotHeld);
         stolen = copy(loaded.stolen);
         deathsKilled = copy(loaded.deathsKilled);
@@ -1970,6 +1974,7 @@ public class HistorySave {
         map.put("crimeRate", crimeRate);
         map.put("policeCoverage", policeCoverage);
         map.put("prisoners", prisoners);
+        map.put("owners", owners);
         map.put("caughtNotHeld", caughtNotHeld);
         map.put("stolen", stolen);
         map.put("deathsKilled", deathsKilled);

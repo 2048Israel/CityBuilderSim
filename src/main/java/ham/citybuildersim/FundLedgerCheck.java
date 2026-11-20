@@ -51,6 +51,10 @@ import java.util.List;
  *      from the rule; its order a row from the step that posts it to the step
  *      that withdraws it, with what lapsed.
  *
+ * Every city here plays with the owner line off (BO1-S, ShortSellingCheck.lineOff): the fund buys
+ * the households' shares, and in this harness's town of nine adults, under OwnerHousehold.OWNER_ADULT_SHARE,
+ * no company lists and no household holds one. The line's own claims are OwnerCheck's.
+ *
  * @author Jerus
  */
 public class FundLedgerCheck {
@@ -92,7 +96,7 @@ public class FundLedgerCheck {
 
     /** A copy of the fixture city, loaded from its save: every section starts from the same city. */
     static Game copy() {
-        Game g = new Game(files);
+        Game g = ShortSellingCheck.lineOff(new Game(files));
         quietly(() -> g.loadGameSave(1));
         return g;
     }
@@ -120,7 +124,7 @@ public class FundLedgerCheck {
         /* ================= the city ================= */
         out.println("--- a city whose households own its companies and its bank (FundCheck's) ---");
         files = GameFiles.scratch("fundledgercheck");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
         quietly(() -> {
             city.run();
             city.getForeignAccounts().pinRate(1.0);
@@ -454,7 +458,7 @@ public class FundLedgerCheck {
         g.fundBuyShares(c, 100);
         play(g);
         quietly(() -> g.saveGame(2));
-        Game back = new Game(files);
+        Game back = ShortSellingCheck.lineOff(new Game(files));
         quietly(() -> back.loadGameSave(2));
         FundLedger a = f.getLedger(), b = back.getFund().getLedger();
         boolean lots = a.getLots().size() == b.getLots().size();
@@ -552,7 +556,7 @@ public class FundLedgerCheck {
                         && g.getEquity().getCityMarketShares(b) > 0 && g.getEquity().getCityMarketShares(c) > 0);
         if (was == null) return;
         quietly(() -> g.saveGame(3));
-        Game seeded = new Game(files);
+        Game seeded = ShortSellingCheck.lineOff(new Game(files));
         try {
             com.google.gson.JsonObject json = com.google.gson.JsonParser
                     .parseString(java.nio.file.Files.readString(files.saveFile(3))).getAsJsonObject();

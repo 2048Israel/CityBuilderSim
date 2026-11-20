@@ -1,18 +1,43 @@
-# gate of Merge batch/OP1: every policy open from the first month (Jerus, 2026-11-19: PP1 removed, "instead everything policy related is available right away, and later ill think of an actual tutorial"): every dated lever, Money's two included, open at founding at today's opening rates; no dates or shut levers on Policy; law finds lose the opening (★1); history's regimes stay (★2); the tutorial is his, later, 0.9.161
+# gate of Merge batch/BO1-S: the owner line switched on (Jerus, 2026-11-19: "bring op1 and bo1-s to next ... try them tonight"), after OP1: first measure that the founding's retired are paid from month 1 with every lever open; if so `OwnerHousehold.IN_CITIES` on (owners in the housing match and on the People screen, BO1's build) and the ensemble; if not, the figures to Jerus before switching on into BO1's collapse, 0.9.162
 # date: 2026-11-20
 # earth-2.bin: named
-# nightly: 2026-11-18 02:01 0.9.143 873de9427 4,000 months: OK in 699 s; nightly tier OK; observations: 8 miss(es); /c/Users/Jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 4 first-night miss(es), 0 incomplete; loaded=0; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-18-873de9427-5Xq10Wbo; no figure of last night's here
-# suite: 226 harnesses run in 3572s: 210 passed, 16 failed
+# suite: 222 harnesses run in 727s: 201 passed, 21 failed
+SlopeCheck | exit 1
+SlopeCheck | fixture: the city owns steep ground by the end, which the land office's offers carry with the rest - more than the flat and foothill it can build on FAIL  0.000 km2 steep of 11.920 km2 owned
+SlopeCheck | 1 FAILED
+CreditCheck | exit 1
+CreditCheck | ...and nothing was built on credit it did not have FAIL
+CreditCheck | 1 FAILED
+RoadCheck | exit 1
+RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
+RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
+RoadCheck | 2 FAILED
 ChildcareCheck | exit 1
 ChildcareCheck | the centre's whole plan has the least net present value, including running, land and physical losses (short of hundreds) FAIL
 ChildcareCheck | 1 FAILED
 EssentialWorksCheck | exit 1
-EssentialWorksCheck | fixture: today's highway and six-month reserve are covered, but demand outgrows them before a new highway opens FAIL
-EssentialWorksCheck | fixture: streets lose more output although power has the greater missing share FAIL
-EssentialWorksCheck | 2 FAILED
+EssentialWorksCheck | fixture: the school is useful and entirely unserved, and the care plan is cheaper FAIL
+EssentialWorksCheck | fixture: the available cash funds care, with the intended school funding gap FAIL
+EssentialWorksCheck | the school remains a hard cash or debt hold and the spare-care order preserves its funds FAIL
+EssentialWorksCheck | the same care card labels the automatic funding hold FAIL
+EssentialWorksCheck | a real scratch save and load keeps the same funding reason on the care card FAIL
+EssentialWorksCheck | 5 FAILED
 IslandLinkCheck | exit 1
 IslandLinkCheck | ...the island is linked by the end (the terminals stand on both sides), and nothing is unlinked                  FAIL
 IslandLinkCheck | 1 FAILED
+ExchangeRateCheck | exit 1
+ExchangeRateCheck | fixture: the dated gold peg survives to the eve of suspension            FAIL
+ExchangeRateCheck | fixture: the released hold is larger than the month's float news         FAIL
+ExchangeRateCheck | the model's return date restores Canada's gold peg                       FAIL
+ExchangeRateCheck | the return holds the model's par                                         FAIL  2.769174772767 != 1.000000000000
+ExchangeRateCheck | 4 FAILED
+CurveCheck | exit 1
+CurveCheck | the steep Note bought straight back leaves the city no richer (raised 530.80, net 0.00)                        FAIL
+CurveCheck | 1 FAILED
+CentralBankCheck | exit 2
+CentralBankCheck | fixture: the city carries a note                                   FAIL
+CentralBankCheck | ...and runs its note off                                           FAIL
+CentralBankCheck | 2 FAILED
 FundCheck | exit 1
 FundCheck | ...and the desk's bid meets it at the step: some of it sold, into the fund's cash                FAIL
 FundCheck | 1 FAILED
@@ -26,75 +51,35 @@ HoldersCheck | ...its gain against face in the month's profit                   
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's FAIL
 HoldersCheck | 8 FAILED
+DenominationCheck | exit 1
+DenominationCheck | fixture: the plain city's month has a partner with a lane and an arrow (0 lanes, 0 arrows) FAIL
+DenominationCheck | 1 FAILED
 PriceLevelCheck | exit 1
-PriceLevelCheck | FAIL cash (nominal) month 79: 109105.0874 at the factor over the factor, 108361.3756 at today's prices (0.00682 apart)
-PriceLevelCheck | FAIL bank.deposits (nominal) month 79: 17804.46707 at the factor over the factor, 17696.53294 at today's prices (0.00218 apart)
-PriceLevelCheck | FAIL retail.shelf (nominal) month 79: 0.3995487874 at the factor over the factor, 0.3994438872 at today's prices (0.000263 apart)
-PriceLevelCheck | FAIL rent (nominal) month 79: 0.2432116369 at the factor over the factor, 0.2469793255 at today's prices (0.00726 apart)
-PriceLevelCheck | FAIL rate (real) month 79: 0.8126741322 at the factor , 0.8126511609 at today's prices (2.83e-05 apart)
-PriceLevelCheck | FAIL priceIndex (real) month 79: 0.9260617920 at the factor , 0.9309900650 at today's prices (0.00529 apart)
-PriceLevelCheck | FAIL homes (real) month 79: 179.0000000 at the factor , 150.0000000 at today's prices (0.162 apart)
-PriceLevelCheck | FAIL mkt.CROPS.supply (real) month 79: 67.69503615 at the factor , 73.46917884 at today's prices (0.0786 apart)
-PriceLevelCheck | FAIL mkt.CROPS.demand (real) month 79: 265.2450522 at the factor , 291.6889521 at today's prices (0.0907 apart)
-PriceLevelCheck | FAIL mkt.CROPS.imported (real) month 79: 206.5794290 at the factor , 233.0233289 at today's prices (0.113 apart)
-PriceLevelCheck | FAIL mkt.CROPS.local (nominal) month 79: 0.8364385423 at the factor over the factor, 0.8368368557 at today's prices (0.000476 apart)
-PriceLevelCheck | FAIL stock.CROPS (real) month 79: 58.11113607 at the factor , 63.90459027 at today's prices (0.0907 apart)
-PriceLevelCheck | FAIL mkt.BREAD.exported (real) month 79: 96865.94183 at the factor , 106605.6619 at today's prices (0.0914 apart)
-PriceLevelCheck | FAIL mkt.DAIRY_EGGS.exported (real) month 79: 127.4250226 at the factor , 547.2405446 at today's prices (0.767 apart)
-PriceLevelCheck | FAIL mkt.MEAT.supply (real) month 79: 1373.522473 at the factor , 1490.678991 at today's prices (0.0786 apart)
-PriceLevelCheck | FAIL mkt.MEAT.local (nominal) month 79: 0.004696445447 at the factor over the factor, 0.004640600282 at today's prices (0.00980 apart)
-PriceLevelCheck | FAIL stock.MEAT (real) month 79: 1179.066529 at the factor , 1296.614875 at today's prices (0.0907 apart)
-PriceLevelCheck | FAIL mkt.BAKERY.exported (real) month 79: 40964.27421 at the factor , 45162.42943 at today's prices (0.0930 apart)
-PriceLevelCheck | FAIL mkt.PETROL.demand (real) month 79: 813.8479324 at the factor , 785.8447587 at today's prices (0.0344 apart)
-PriceLevelCheck | FAIL mkt.PETROL.imported (real) month 79: 252.6571134 at the factor , 277.8460447 at today's prices (0.0907 apart)
-PriceLevelCheck | FAIL mkt.DIESEL.demand (real) month 79: 2029.078755 at the factor , 2213.722502 at today's prices (0.0834 apart)
-PriceLevelCheck | FAIL mkt.DIESEL.imported (real) month 79: 1490.676969 at the factor , 1639.291664 at today's prices (0.0907 apart)
-PriceLevelCheck | FAIL sector.Retail.cash (nominal) month 79: 82.42877291 at the factor over the factor, 82.42850403 at today's prices (6.73e-07 apart)
-PriceLevelCheck | FAIL sector.Real Estate.cash (nominal) month 79: 755.3401591 at the factor over the factor, 755.3376952 at today's prices (1.21e-06 apart)
-PriceLevelCheck | every real series equal within 1.0E-9 (worst 1.0 in h.householdsByShape.SINGLE_ADULT)  FAIL
-PriceLevelCheck | the history's 74 money series equal over the factor to the rounding they were recorded at FAIL
-PriceLevelCheck | every live nominal series equal over the factor within 1.0E-9 (worst 1.0 in reload.sector.Freight.cash) FAIL
-PriceLevelCheck | ...the homes is the same to the person in every month                                  FAIL
-PriceLevelCheck | the town: every live nominal line is shown or left out alike at both levels, 238 series over 121 months (21 of 28798 differ; 9214 shown) FAIL
 PriceLevelCheck | some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them): 0 city-months, at most 0 partners FAIL
-PriceLevelCheck | 339 FAILED
-PopulationCheck | exit 1
-PopulationCheck | ...but it does fill, given a decade                        FAIL
-PopulationCheck | 1 FAILED
+PriceLevelCheck | 1 FAILED
+LabourCheck | exit 1
+LabourCheck | ...and not the whole mix                                       FAIL
+LabourCheck | 1 FAILED
 EducationCheck | exit 1
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
 EducationCheck | 1 FAILED
 SaveFileCheck | exit 1
-SaveFileCheck | fixture: over the default it owes what it sells for, and paid some late FAIL
+SaveFileCheck | fixture: somebody could not afford a basket even at full shelves FAIL
 SaveFileCheck | 1 FAILED
-MapCheck | exit 1
-MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
-MapCheck | ...and every building drawn, one for one                                       FAIL
-MapCheck | 2 FAILED
-PlanCheck | exit 1
-PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
-PlanCheck | 1 FAILED
-KeptCheck | exit 11
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the fund holds something to draw (0 lots)                                FAIL
-KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
-KeptCheck | every row that folds opened on Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | every row that folds opened on Portfolio adds to the page (252 lines, then 0) FAIL
-KeptCheck | ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new FAIL
-KeptCheck | the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (0 settled) FAIL
-KeptCheck | fixture: the settled lot watched, null, runs 0 months, past the 3 months its page is watched FAIL
-KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 39 of 373; 9 of 25 months made none) FAIL
-KeptCheck | most months make no node at all (11 of 25)                               FAIL
-KeptCheck | 11 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
-BusinessServicesCheck | exit 1
-BusinessServicesCheck | two centres is six hundred seats                               FAIL  900.000000 != 600.000000
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
+CarCheck | exit 1
+CarCheck | ...and ten years on the town where the fare deters nobody owns more cars a household FAIL  0.210 against 0.215
+CarCheck | 1 FAILED
+Forms1900Check | exit 1
+Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 381.9, litres 7523.4, petrol duty 0.000000
+Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  406.000000 != 381.903206
+Forms1900Check | 2 FAILED
+BasketYearCheck | exit 2
+BasketYearCheck | fixture: the 1900 town with the cap lifted (the same file, every knot's cap 1) buys them too: only the cap holds the other back FAIL  0.0
+BasketYearCheck | ...and is smaller than the same town's with the cap lifted, and than the default town's              FAIL
+BasketYearCheck | 2 FAILED
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL the bank is never in resolution
 YoungBankCheck | YoungBankCheck: 1 FAILED

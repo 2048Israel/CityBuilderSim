@@ -40,6 +40,12 @@ import java.util.Locale;
  *  10. A SAVE FROM BEFORE THE OWNER FAMILIES LOADS ITS ROWS: main's statement
  *      and row array, one row short, fed to the readers; the marked figures
  *      come back where the save put them, the owners' row empty.
+ *  11. AT MOST A SHARE OF THE ADULTS (BO1-S): a town of nine adults with three
+ *      families reserved has no owner families - its census holds under half
+ *      a household, the cell is empty and the listings wait - where two a
+ *      family took six of its nine; a town far above the cap keeps one family
+ *      a company, as BO1 had it, and its listings list to them; between, the
+ *      share holds and there are fewer families than companies.
  */
 public class OwnerCheck {
 
@@ -96,6 +102,7 @@ public class OwnerCheck {
 
     public static void main(String[] args) {
         Locale.setDefault(Locale.CANADA);
+        if (Boolean.getBoolean("owner.probe")) { probe(); return; }
         int IND = Equity.indexOf(Sectors.INDUSTRY);
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         double W = DebtManager.WORLD_BASE_RATE;
@@ -269,6 +276,7 @@ public class OwnerCheck {
         takesMoneyNotShares(IND, RETAIL);
         realCity();
         oldSaves();
+        shareOfTheAdults(IND, RETAIL);
 
         System.out.println(fails == 0 ? "\nOwnerCheck: all OK" : "\nOwnerCheck: " + fails + " FAIL");
         System.exit(fails == 0 ? 0 : 1);
@@ -526,7 +534,7 @@ public class OwnerCheck {
         boolean flag = LongPlaytest.AUTOBUILD;
         Game g = new Game(GameFiles.scratch("ownercheck-run"), LongPlaytest.founding());
         HouseholdBalance hb = g.getHouseholdBalance();
-        hb.setOwnerLine(true);                    // the city's own dial is off (OwnerHousehold.IN_CITIES)
+        hb.setOwnerLine(true);                    // the city's own dial (OwnerHousehold.IN_CITIES), said here so the section holds whatever it reads
         LongPlaytest.AUTOBUILD = true;
         LongPlaytest.out = capture;
         System.setOut(capture);
@@ -584,6 +592,93 @@ public class OwnerCheck {
                 ex.getLifePostedSellBy(Exchange.BY_OWNERS) > 0
                 && ex.getLifeFilledSellBy(Exchange.BY_OWNERS) <= ex.getLifePostedSellBy(Exchange.BY_OWNERS) * (1 + 1e-9));
         check("every family that left said why, once, in the game's log", t.logged == t.dropped);
+    }
+
+    /* ----- the probe (BO1-S): the playtest city, line on against line off; -Downer.probe=true runs it alone, never the default ----- */
+
+    /** The months the probe prints: BO1's table's, with the founding month. */
+    static final int[] PROBE_MONTHS = {1, 13, 37, 61, 121};
+
+    /**
+     * BO1's section 1 re-measured on today's model: the playtest city (the rhythm of section 9) played to month 121 twice,
+     * the owner line on and off, printing at each of PROBE_MONTHS the people, the retired's disposable income a household
+     * and the pension paid, careAffordability(SENIOR), the senior-care pull and the owners' bank and abroad holdings. A
+     * measurement, not an assertion: it prints and exits 0.
+     */
+    static void probe() {
+        System.out.println("--- the probe: section 9's city, the owner line on against off ---");
+        System.out.println(PROBE_HEADER);
+        for (boolean on : new boolean[] {true, false}) probeRun(on);
+        System.exit(0);
+    }
+
+    static void probeRun(boolean lineOn) {
+        java.io.PrintStream real = System.out, was = LongPlaytest.out;
+        java.io.PrintStream capture = new java.io.PrintStream(java.io.OutputStream.nullOutputStream(), true);
+        boolean flag = LongPlaytest.AUTOBUILD;
+        Game g = new Game(GameFiles.scratch("ownercheck-probe-" + (lineOn ? "on" : "off")), LongPlaytest.founding());
+        g.getHouseholdBalance().setOwnerLine(lineOn);
+        LongPlaytest.AUTOBUILD = true;
+        LongPlaytest.out = capture;
+        System.setOut(capture);
+        java.util.List<String> rows = new java.util.ArrayList<>();
+        try {
+            g.run();
+            g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
+            g.setRolloverMode(LongPlaytest.ROLLOVER);
+            g.setRescueMode(TreasuryFund.RescueMode.AUTOMATIC);
+            g.getAutoBuilder().setOn(true, g.getDecisions());
+            probeRow(g, lineOn, rows);
+            LongPlaytest.villageBuild(g, "House", 40);
+            LongPlaytest.villageBuild(g, "Convenience Store", 3);
+            LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+            probePlay(g, 3, lineOn, rows);
+            LongPlaytest.villageBuild(g, "House", 20);
+            probePlay(g, 4, lineOn, rows);
+            LongPlaytest.villageBuild(g, "Convenience Store", 2);
+            LongPlaytest.villageBuild(g, "Construction Depot", 1);
+            probePlay(g, 5, lineOn, rows);
+            LongPlaytest.advise(g);
+            probePlay(g, 6, lineOn, rows);
+            probePlay(g, PROBE_MONTHS[PROBE_MONTHS.length - 1] - g.getMonth(), lineOn, rows);
+        } finally {
+            LongPlaytest.AUTOBUILD = flag;
+            LongPlaytest.out = was;
+            System.setOut(real);
+        }
+        for (String r : rows) System.out.println(r);
+    }
+
+    static void probePlay(Game g, int months, boolean lineOn, java.util.List<String> rows) {
+        for (int i = 0; i < months; i++) {
+            LongPlaytest.run(g, 1);
+            probeRow(g, lineOn, rows);
+        }
+    }
+
+    static void probeRow(Game g, boolean lineOn, java.util.List<String> rows) {
+        String line = probeLine(g, lineOn);
+        if (line == null || (!rows.isEmpty() && rows.get(rows.size() - 1).startsWith(line.substring(0, 14)))) return;
+        rows.add(line);
+    }
+
+    /** The probe's header, above its rows. */
+    static final String PROBE_HEADER =
+            "   line month   people  retired disp/hh  pension paid  careAff(SENIOR)  senior pull  owners' bank / all bank  owners abroad  owner fam";
+
+    /** The probe's row for this month, or null at a month it does not print; LongPlaytest prints it under -Dplaytest.owners. */
+    static String probeLine(Game g, boolean lineOn) {
+        int m = g.getMonth();
+        boolean wanted = false;
+        for (int p : PROBE_MONTHS) wanted |= p == m;
+        if (!wanted) return null;
+        HouseholdBalance hb = g.getHouseholdBalance();
+        Household own = hb.owners();
+        return String.format("   %-4s %5d %,8d %16.2f %13.0f %16.2f %12.3f %,12.0f / %,-10.0f %,13.0f %10d",
+                lineOn ? "on" : "off", m, g.getPopulationManager().getPopulation(),
+                hb.getDisposable(Household.RETIRED_ROW), g.getEconomyManager().getPensionsPaid(),
+                g.careAffordability(CareType.SENIOR), g.getMigration().getLastSeniorPull(),
+                own.totalSavings(), hb.totalSavings(), own.totalAbroad(), hb.ownerFamilies());
     }
 
     /** What a real run counts, month by month. */
@@ -760,5 +855,73 @@ public class OwnerCheck {
         HouseholdBalance hb3 = new HouseholdBalance();
         hb3.restore(working, null);
         close("...the shape from before the hunger's halves, eleven rows, read the same way", hb3.prisoners().savings(), 2.5, 0);
+    }
+
+    /* ============ 11. at most a share of the adults (BO1-S) ============ */
+
+    /** A cohort of this many adults and nobody else: the town's adult pool, as section 5's pyramid is restored. */
+    static PopulationCohorts adultsOnly(double adults) {
+        PopulationCohorts c = new PopulationCohorts();
+        double[] pyr = new double[AgeBand.values().length + 3];
+        pyr[AgeBand.ADULT.ordinal()] = adults;
+        c.restore(PopulationCohorts.saveBands(), pyr);
+        return c;
+    }
+
+    /**
+     * Two adults a company, whatever the town, took a founding town's whole labour force (the OwnerHousehold javadoc):
+     * the cap, caused on the census by the adults, and what it leaves the cell and the listings. Each town is a bare
+     * balance whose outside census names the owner families the family model formed from the capped adults - the
+     * month's order (Game.ownerAdultsWanted(), then FamilyModel.rebuild(), then the cell's doors).
+     */
+    static void shareOfTheAdults(int IND, int RETAIL) {
+        System.out.println("\n--- at most a share of the adults: a town of nine has no owner families, a large one a family a company ---");
+        int CON = Equity.indexOf(Sectors.CONSTRUCTION);
+        double book = 20_000;
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = 5;
+
+        owners[0] = 0;
+        HouseholdBalance hb = town(true);
+        Equity e = register();
+        for (int k : new int[] {IND, RETAIL, CON}) e.listIfUnlisted(k, book, hb);
+        check("fixture: three companies wait for their families, each reserved, none in issue",
+                hb.ownerFamilies() == 3 && e.getShares(IND) == 0 && e.getShares(RETAIL) == 0 && e.getShares(CON) == 0);
+
+        // A town of nine adults: two a family would be six of them.
+        PopulationCohorts nine = adultsOnly(9);
+        check("fixture: the town's adults are nine", Math.abs(nine.get(AgeBand.ADULT) - 9) < 1e-9);
+        double wanted = OwnerHousehold.adultsOf(hb.ownerFamilies(), nine.get(AgeBand.ADULT));
+        close("a town of nine adults: the owners are OWNER_ADULT_SHARE of its adults, not two a family",
+                wanted, OwnerHousehold.OWNER_ADULT_SHARE * 9, 1e-12);
+        FamilyModel small = new FamilyModel();
+        small.rebuild(nine, jobs, 0, 0, wanted);
+        close("...which the family model holds out of the families", small.getOwnerAdults(), wanted, 1e-12);
+        check("...under half a household in the census", small.getOwnerFamilies() < HouseholdBalance.EMPTY_CELL);
+        owners[0] = small.getOwnerFamilies();
+        month(hb);
+        check("so the town has no owner families: the owner cell is empty", hb.owners().isEmpty());
+        check("...and its listings wait, the families still reserved: nothing in issue, no household holds any",
+                !e.listIfUnlisted(IND, book, hb) && e.getShares(IND) == 0 && hb.sharesHeld(IND) == 0 && hb.ownerFamilies() == 3);
+
+        // Between: a hundred adults hold five owner adults, two and a half families for three companies.
+        double between = OwnerHousehold.adultsOf(3, 100);
+        close("a town of a hundred adults: the share holds, fewer families than companies", between / 2,
+                OwnerHousehold.OWNER_ADULT_SHARE * 100 / 2, 1e-12);
+        check("...more than none and fewer than three", between / 2 >= HouseholdBalance.EMPTY_CELL && between / 2 < 3);
+
+        // Far above the cap: ten thousand adults, two a family as BO1 had it.
+        PopulationCohorts large = adultsOnly(10_000);
+        double full = OwnerHousehold.adultsOf(hb.ownerFamilies(), large.get(AgeBand.ADULT));
+        check("fixture: the cap is far above the families: ten thousand adults", OwnerHousehold.OWNER_ADULT_SHARE * large.get(AgeBand.ADULT) > 10 * 2 * 3);
+        close("a town far above the cap: two adults a family, unchanged", full, 2.0 * 3, 0);
+        FamilyModel big = new FamilyModel();
+        big.rebuild(large, jobs, 0, 0, full);
+        close("...one family a company in the census", big.getOwnerFamilies(), 3, 1e-12);
+        owners[0] = big.getOwnerFamilies();
+        month(hb);
+        double founders = book / e.foundingPrice();
+        check("...the cell holds them, and a waiting listing lists to them", !hb.owners().isEmpty() && e.listIfUnlisted(IND, book, hb));
+        close("...the founders' shares all the owner cell's", hb.owners().shares[IND] * hb.owners().households(), founders, 1e-9);
     }
 }

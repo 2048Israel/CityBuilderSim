@@ -1,4 +1,4 @@
-# Offending.java - 169 lines · 5 methods · 0 constants · model
+# Offending.java - 185 lines · 5 methods · 0 constants · model
 
 `ham/citybuildersim/Offending.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -44,7 +44,7 @@
 > month. The interface went the same way the same day. See the project's
 > splitting-game.md.
 
-**Uses:** [Crime](Crime.md) (19), [FamilyModel](FamilyModel.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [Game](Game.md) (3), [Household](Household.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Sectors](Sectors.md) (2), [StudentHousehold](StudentHousehold.md) (1), [AgeBand](AgeBand.md) (1), [FamilyStructure](FamilyStructure.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [Crime](Crime.md) (19), [FamilyModel](FamilyModel.md) (5), [UnemployedHousehold](UnemployedHousehold.md) (5), [Household](Household.md) (4), [Game](Game.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Sectors](Sectors.md) (2), [StudentHousehold](StudentHousehold.md) (1), [AgeBand](AgeBand.md) (1), [FamilyStructure](FamilyStructure.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (1):** [Game](Game.md)
 
@@ -52,10 +52,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 124 | **type** `public final class Offending` | Who is at risk of offending, sorted by reason, and the thefts handed to them. |
+| 46 | 140 | **type** `public final class Offending` | Who is at risk of offending, sorted by reason, and the thefts handed to them. |
 | 54 | 46 | `Crime.Causes causes(Game game, double coverage, double[] cellWeight)` | Was Game.crimeCauses(); the body is that one, through Game's getters. |
 | 102 | 10 | `private static void sortHoused(Crime.Causes into, double adults, double noDoor, double shortShare, double crowded)` | A cell's adults with a door or without: no home, then short of money, then crowded, then no reason. |
 | 114 | 4 | `private static double shortOfMoney(Household c)` | How far one of a cell's households is from a basket it can afford, 0-1: last month's plan against subsistence. |
-| 129 | 29 | `void steal(Game game, double[] offenderWeight)` | THE THEFTS: taken half from the households by what they have saved and half from the businesses by what is in their tills, and handed to the offenders' households by how much of the crime is theirs. |
-| 160 | 9 | `public double unhousedShareOfCity(Game game)` | The share of the city with no home: the unhoused, and the orphans. |
+| 140 | 34 | `void steal(Game game, double[] offenderWeight)` | THE THEFTS: taken half from the households by what they have saved and half from the businesses by what is in their tills, and handed to the offenders' households by how much of the crime is theirs. |
+| 176 | 9 | `public double unhousedShareOfCity(Game game)` | The share of the city with no home: the unhoused, and the orphans. |
 
