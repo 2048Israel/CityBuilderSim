@@ -21,7 +21,7 @@
 > sector, with what the city paid for a bought building's ground as the
 > proceeds.
 
-**Used by (7):** [BuildLog](BuildLog.md), [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [MortgageCheck](MortgageCheck.md), [UserInterface](UserInterface.md)
+**Used by (8):** [BuildLog](BuildLog.md), [BuildingStackCheck](BuildingStackCheck.md), [CalendarCheck](CalendarCheck.md), [DataSave](DataSave.md), [Game](Game.md), [HouseholdCheck](HouseholdCheck.md), [MortgageCheck](MortgageCheck.md), [UserInterface](UserInterface.md)
 
 ## Constants
 
