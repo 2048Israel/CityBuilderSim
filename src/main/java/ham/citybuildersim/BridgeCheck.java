@@ -38,7 +38,8 @@ import java.util.Map;
  *      the crossing is handed to the survey through Game.setBridgeGroundForTest(), because the strait the fixture holds
  *      between the two squares is not a crossing the harness can cause): with no path the order is NO_BRIDGE before land and
  *      money, no bond offered, nothing moved; the quote's span points are BridgeWorks' arithmetic at the template's founding
- *      price; ordered, the island stays unlinked every month the bridge is on site, which takes the builders months; stood,
+ *      price; ordered, the island stays unlinked every month the bridge is on site, which takes the builders months (given twice
+ *      their work owed on site at the order, LandmassCheck.Wait, FS7); stood,
  *      the island is linked, its free ground counts as room and the linked set's version moved; an order of two is two spans
  *      on one survey.
  *   4. NO DEMOLITION. A bridge that stands cannot be demolished (demolishable() 0, the words), and the island is still linked.
@@ -668,15 +669,18 @@ public class BridgeCheck {
                 row.template == id && row.kind() == BridgeWorks.Kind.ROAD && row.state == Bridges.ON_SITE && row.nearLandmass == home && row.farLandmass == island
                         && row.nearX == ok.nearX() && row.nearY == ok.nearY() && row.farX == ok.farX() && row.farY == ok.farY() && same(row.lengthM, ok.lengthM())
                         && same(row.deepestM, ok.deepestM()) && same(row.meanM, ok.meanM()) && Arrays.equals(row.path, ok.corners()));
+        // FS7: the builders are given twice their work owed on site at the order (LandmassCheck.Wait), not 600 months measured.
         boolean early = false;
         int months = 0;
-        while (LandmassCheck.standing(c, road) < 1 && months < 600) {
+        LandmassCheck.Wait wait = new LandmassCheck.Wait(g);
+        while (LandmassCheck.standing(c, road) < 1 && wait.open()) {
             LandmassCheck.quietly(() -> g.simulateMonths(1));
+            wait.month();
             months++;
             early |= lms.linked(island) && LandmassCheck.standing(c, road) < 1;
         }
         report("the builders take months, and the island stayed unlinked every month the bridge was on site", LandmassCheck.standing(c, road) == 1 && months >= 2 && !early,
-                "stood after " + months + " months (" + String.format("%,.0f points", q1.bridgePoints + road.getConstructionPoints()) + ")");
+                wait.says(LandmassCheck.standing(c, road) == 1) + " (" + String.format("%,.0f points", q1.bridgePoints + road.getConstructionPoints()) + ")");
         report("the month it stood the island was linked: the linked set moved once, nothing is unlinked, the record is standing, and the island's ground is room",
                 lms.linked(island) && !lms.anyUnlinked() && lms.version() == v0 + 1 && lm.getUnlinkedFreeSqFt() == 0 && g.getBridges().count(Bridges.STANDING) == 1
                         && g.getBridges().count(Bridges.ON_SITE) == 0 && lm.getLinkedOwnedSqFt() == lm.getOwnedSqFt() && g.getBridges().joins(island) && g.getBridges().joins(home),
@@ -697,9 +701,10 @@ public class BridgeCheck {
                         && Arrays.equals(rows.get(1).path, rows.get(2).path) && rows.get(1).lengthM == rows.get(2).lengthM && rows.get(1).nearLandmass == rows.get(2).nearLandmass
                         && rows.get(1).state == Bridges.ON_SITE && rows.get(2).state == Bridges.ON_SITE && LandmassCheck.onSite(c, road) == 2);
         check("...billed twice: the quote it was placed at had twice a bridge's points", same(two.bridgePoints, 2 * q1.bridgePoints));
-        boolean allStand = LandmassCheck.until(c, () -> LandmassCheck.standing(c, road) >= 3, 1200);
-        check("...and the builders finish them one after another: three stand, all three records standing, the island still linked",
-                allStand && g.getBridges().count(Bridges.STANDING) == 3 && g.getBridges().count(Bridges.ON_SITE) == 0 && lms.linked(island));
+        LandmassCheck.Wait both2 = LandmassCheck.untilStood(c, () -> LandmassCheck.standing(c, road) >= 3);
+        boolean allStand = LandmassCheck.standing(c, road) >= 3;
+        report("...and the builders finish them one after another: three stand, all three records standing, the island still linked",
+                allStand && g.getBridges().count(Bridges.STANDING) == 3 && g.getBridges().count(Bridges.ON_SITE) == 0 && lms.linked(island), both2.says(allStand));
 
         // The exact arithmetic of the link: built at once, so that nothing else moves between the two readings.
         LandmassCheck.City d = bridgeCity(f, "bridge-order-exact");
@@ -729,8 +734,9 @@ public class BridgeCheck {
         check("...restarted, its stack is on site again and the island is still unlinked", restarted && LandmassCheck.onSite(s, rs) == 1 && !s.books().linked(f.id()));
         LandmassCheck.quietly(() -> s.g.simulateMonths(1));
         check("...after a month the record is on site, none a shell", s.g.getBridges().count(Bridges.ON_SITE) == 1 && s.g.getBridges().count(Bridges.SHELL) == 0 && !s.books().linked(f.id()));
-        boolean stands = LandmassCheck.until(s, () -> LandmassCheck.standing(s, rs) >= 1, 800);
-        check("...and when it stands the island is linked", stands && s.books().linked(f.id()) && s.g.getBridges().count(Bridges.STANDING) == 1);
+        LandmassCheck.Wait again = LandmassCheck.untilStood(s, () -> LandmassCheck.standing(s, rs) >= 1);
+        boolean stands = LandmassCheck.standing(s, rs) >= 1;
+        report("...and when it stands the island is linked", stands && s.books().linked(f.id()) && s.g.getBridges().count(Bridges.STANDING) == 1, again.says(stands));
         bridgeCityForSection4 = c;
     }
 

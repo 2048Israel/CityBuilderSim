@@ -50,7 +50,11 @@ import java.util.Random;
  *   8. THE SAVE. The shares in force cross a save, and the reload bills the
  *      next month to the bit.
  *   9. A REAL RUN. LongPlaytest's city, played with its advisor: the months the
- *      home share is above zero and the months a port yard stands, counted.
+ *      home share is above zero and the months a port yard stands, counted;
+ *      never a home share without a station or a spur, nor a quay share
+ *      without a yard, over every month. Whether the advisor lays a railway
+ *      is the run's path, counted, not asserted: sections 2 and 3 cause it
+ *      (FS7).
  *
  * It tests the model through its public getters and constants and changes
  * nothing in it; where the code and the brief disagree it says FAIL and the
@@ -96,7 +100,7 @@ public class HomeRailCheck {
     /** Months a fixture city is played before a railway is handed to it: HaulageCheck's, long enough for the trucks to be seeded and the books settled. */
     static final int BASE_MONTHS = 14;
 
-    /** Months of a real run section 9 plays: the advisor lays its first station at about month 990 in this city (the run's own count prints it) and the run takes about half a minute. */
+    /** Months of a real run section 9 plays, for the breadth of its identity: about half a minute; the advisor lays its first station at about month 990 in this city on one trace (the run's own count prints it), and nothing waits on it (FS7). */
     static final int REAL_RUN_MONTHS = 1250;
 
     /* ================================================================
@@ -310,7 +314,7 @@ public class HomeRailCheck {
         diesel(plain, months);
         weighing(rail, yard);
         save(yard, yardFiles);
-        realRun(rail);
+        realRun();
 
         System.out.println();
         if (fails == 0) {
@@ -816,7 +820,7 @@ public class HomeRailCheck {
        9. A REAL RUN
        ================================================================ */
 
-    static void realRun(Game rail) {
+    static void realRun() {
         System.out.println("\n--- 9. a real run: LongPlaytest's city, played with its advisor, counted month by month ---");
 
         PrintStream was = LongPlaytest.out, real = System.out;
@@ -906,18 +910,16 @@ public class HomeRailCheck {
                         + " (from m%d, last m%d at %.1f%%) and the quay share %d; %,.0f t railed at home and %,.0f t on the quay, billed %,.0fk, %,.0f L%n",
                 g.getMonth(), seconds, stationMonths, firstStation, roomMonths, yardMonths, firstYard, homeMonths, firstHome, lastHomeMonth, lastShare * 100,
                 quayMonths, homeTonnes, quayTonnes, billed, litres);
-        if (roomMonths > 0) {
-            Observation.reached("the railway took some of the city's own bulk in at least one month of the run",
-                    homeMonths > 0 && homeTonnes > 0 && billed > 0 && litres > 0);
-            report("...and never without a station or a spur to take it, and the quay share was never above zero without a yard (at the haul that struck it or at the month's end)",
-                    homeWithoutRoom == 0 && quayWithoutYard == 0, homeWithoutRoom + " month(s) of a home share with no room, " + quayWithoutYard + " of a quay share with no yard");
-        } else {
-            // The run is too short for the advisor to have laid any railway: say why, and hold the mechanic to the dealt case in a played fixture instead.
-            System.out.printf("  the advisor laid no station and no spur in %d months (the 4,000-month trace lays its first Rail Depot at about month 860):"
-                    + " the mechanic is held to the played fixture instead%n", g.getMonth());
-            Freight fr = rail.getSectors().freight();
-            Observation.reached("the home share was above zero in the played fixture the run was too short to reach",
-                    fr.getHomeShare() > 0 && fr.getHomeRailed() > 0 && fr.getHomeBill() > 0);
-        }
+        /*
+         * FS7 (the flaky-suite study's row): whether the advisor lays a railway in the run, and when, is the run's path (its first Rail Depot came
+         * about month 860 on one trace, 990 on another), so it is counted above and asserted nowhere here: that the railway takes some of the city's
+         * own bulk is caused in sections 2 and 3, a depot and spurs laid by hand in the built city (railed()), and asserted there. What the run holds
+         * is the identity, over every month of it: a home share is never above zero without a station or a spur, nor a quay share without a yard.
+         * The two Observation lines went (study rule 3): one on the advisor's railway, one the same mechanic on section 2's fixture again.
+         */
+        if (roomMonths == 0) System.out.printf("  the advisor laid no station and no spur in %d months: the identity below held over months with no room%n", g.getMonth());
+        report("a home share is never above zero without a station or a spur to take it, and the quay share never above zero without a yard (at the haul that struck it or at the month's end)",
+                homeWithoutRoom == 0 && quayWithoutYard == 0, homeWithoutRoom + " month(s) of a home share with no room, " + quayWithoutYard + " of a quay share with no yard, over "
+                        + g.getMonth() + " months, " + roomMonths + " with room");
     }
 }
