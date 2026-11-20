@@ -33,6 +33,9 @@ adds its line here, not in `CLAUDE.md`.
         UndemandedFeedCheck.java   CPB2: no feed for undemanded output that cannot cover it - the
                                    allocated-cost export spare beside a rod mill and the plants of
                                    goods with no world buyer, with demand, stock sales and sunk feed kept
+        GroundInputCheck.java      NG1: a works the ground limits buys the inputs of what its ground
+                                   gives - iron diesel, coal diesel, leach acid, a gold mill's acid and
+                                   diesel - none on worked-out ground, ample ground kept to the bit, held vans in HELD
         HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
                                    played to m500, no landlord whose till buys one of the homes the
                                    plan passed held with none, and LongPlaytest's homeless watch
