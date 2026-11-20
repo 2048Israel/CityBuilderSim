@@ -3748,7 +3748,9 @@ final class BuildScreen {
         HBox.setHgrow(name, Priority.ALWAYS);
         HBox row = Kept.row(16, name);
         if (card.door() != null) {
-            HBox figures = Kept.row(18, askFigure("Price", money(card.price()), Palette.TEXT_BODY), askFigure("Opens in", monthsWait(card.months()), Palette.TEXT_BODY));
+            // ...the wait only where the quote has one (NaN: a site with no output to build from, which monthsWait() would call stalled).
+            HBox figures = Kept.row(18, askFigure("Price", money(card.price()), Palette.TEXT_BODY));
+            if (!Double.isNaN(card.months())) figures.getChildren().add(askFigure("Opens in", monthsWait(card.months()), Palette.TEXT_BODY));
             figures.setAlignment(Pos.CENTER_LEFT);
             HBox door = doorPill(card.label(), Icons.BUILD, Palette.BUILDING, () -> openLinkDoor(card));
             row.getChildren().addAll(figures, door);
