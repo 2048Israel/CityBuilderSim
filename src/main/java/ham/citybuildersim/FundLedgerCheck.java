@@ -865,8 +865,10 @@ public class FundLedgerCheck {
                 (mkt + ruleAlone + asked1 + asked2) / rk.getShares(c) * 100, ruleBid);
         check("fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%",
                 asked1 <= cap - mkt && asked2 <= cap - mkt && mkt + ruleAlone + asked1 + asked2 > cap + 1);
+        // What of the orders filled at the step is in the market book already (HS2, 2026-11-20: on HS2's city the cells sell at
+        // the step, and the first order took 1,107 of its 3,628 there; on main neither fills, handTook 0, and this reads as before).
         check("the rule's bid makes way for the orders waiting: it rests on no more than the room they leave",
-                ruleBid < ruleAlone - 1 && ruleBid <= cap - mkt - asked1 - asked2 + 1e-9 * cap);
+                ruleBid < ruleAlone - 1 && ruleBid <= cap - mkt - (asked1 + asked2 - handTook) + 1e-9 * cap);
         check("...and both orders are posted whole", Math.abs(posted.get(0).units() - asked1) < 1e-9 * cap
                 && Math.abs(posted.get(1).units() - asked2) < 1e-9 * cap);
         check("...so the fund's market book and every bid of its on the book come to no more than the cap",

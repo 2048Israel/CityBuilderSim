@@ -46,10 +46,12 @@ public class StaffingTieCheck {
     static PrintStream out, quiet;
 
     /**
-     * The most months a fresh city is played to find a tie a planner hands in (section 1): ten years, as section 4 plays. The
-     * first at a share the draw filled part of comes at month 65, Retail's shops (TQ1's review: a pair a planner forms).
+     * The most months a fresh city is played to find a tie a planner hands in (section 1): thirty years. The first at a share
+     * the draw filled part of came at month 65 on TQ1's main and comes at 37 on 0.9.162, Retail's shops (TQ1's review: a pair a
+     * planner forms); on HS2's city (2026-11-20), whose young adults leave more workers spare, so the gate refuses less, it
+     * comes at month 328, the same two shops.
      */
-    static final int MONTHS_TO_A_TIE = 120;
+    static final int MONTHS_TO_A_TIE = 360;
 
     /** The months of the city section 4 plays, ten years as WantedPostsCheck's. */
     static final int PLAYED_MONTHS = 120;
