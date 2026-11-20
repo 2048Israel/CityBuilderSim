@@ -264,3 +264,30 @@ known-reds row is needed: WantedPosts, Denomination, Equity, PassThrough (main's
 months). Three of the six read played paths that moved between OE1's two models and back; the ensemble is
 due again on the mends (§8). AS1, the orchestrator's row for AuctionCheck §11, is queued in the ship file all
 the same: one city's 1,200 months booked 9, 0 and 7 sales on three models.
+
+## 10. The second dry run (97759c438, main f4fb7dc65)
+
+The gate box ran the mends merged with CPB2 (run `cbs-gate-OE1-gPH3XytA`): exit 1, eight lines in three
+harnesses. Each reproduces here on the merge and passes in CPB2's kept run of main.
+
+- **FoodProcessingCheck, OE1's own, mended (5dde0bf02).** "fixture: a Meat Works on a farm's floor is an ordinary
+  business" read -$207.29 a month; main reads +$265.59. FPK1's fixture fixes every term but the meat price, and
+  it set the rate through the sector's four ratios: "runs at nameplate, as a plant that is not built does on
+  paper". That is the old estimate, the one OE1 replaces. With nothing running, the estimate now weighs the first
+  plant's rate, which takes the lived-in city's fill rates (0.84 of the Works' posts), its roads (0.86) and its
+  vans (0.61): 0.44 of nameplate. The fixture now also fills every post, sets the road load to nil and puts every
+  city leg on the hired teams, which carry theirs whole. It puts all three back afterwards. Its nameplate line
+  reads the rate the estimate weighs (`plannedRate`). The result is 1.00, $275.63 on the herd against -$128.16
+  off a ship, and the whole harness passes.
+- **CarCheck, 1 line, Motoring's arithmetic.** "a month of car sales is a month of real money" is
+  `imported <= paid` taken exactly. Every one of the 11 cars came off a ship. `paid` is takeCars' sum of the
+  cells' cars at `cost / units`, and `imported` is the draw's `importCost()`; the two differ by 1.78e-15 on
+  13.0788 (13.07876547080566 against 13.078765470805662). Main's city has the same 11 cars and $13k with the
+  dust the other way. It is not OE1's code; OE1 only moved the path to it.
+- **OutsideCheck, 1 line, its fixture's pool.** "fixture: the city has more workers than posts" needs a pool of
+  out-of-work adults; the fixture adds half the adults again, up to four times, two months each. On OE1's path
+  each wave's arrivals are gone in the two months (1,901 adults to 1,307, 1,960 to 1,345, and so on). The labour
+  force stays at exactly the posts filled (1,417 of 1,768: the posts left are tiers nobody holds), so no pool
+  forms. Main's city made its pool by one worker (1,440 of 1,621 filled, 1 out of work), which is the "barely
+  enough" the fixture's 0.7.7 comment already met. It is not OE1's code: the path moved (a Fabrication Works of
+  828 posts where main has a Fabrication Shop of 405).
