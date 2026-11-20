@@ -2133,7 +2133,7 @@ final class MapView {
             gc.setFill(pattern);
             gc.fill();
         }
-        islandChips(gc, f, lms);
+        islandChips(gc, f, g, lms);
     }
 
     /** The chip lines' widths kept by string, as nameW keeps the names' (the plate is IslandChip's). */
@@ -2145,7 +2145,7 @@ final class MapView {
      * chip was one line of some 70 characters whose only ground was a 3 px dark stroke, drawn over the landmass's own amber
      * hatch and tint, so over busy ground it was hard to read.
      */
-    private void islandChips(GraphicsContext gc, MapFrame f, Landmasses lms) {
+    private void islandChips(GraphicsContext gc, MapFrame f, Game g, Landmasses lms) {
         javafx.scene.text.Font font = Palette.Fonts.monoFont(Palette.SIZE_CAPTION);
         gc.setFont(font);
         gc.setTextAlign(TextAlignment.CENTER);
@@ -2154,7 +2154,7 @@ final class MapView {
         for (LandMap.Chip chip : islandChips) {
             double x = f.screenX(chip.x()), y = f.screenY(chip.y());
             if (x < 0 || y < 0 || x > f.width() || y > f.height()) continue;
-            IslandChip.draw(gc, font, LandmassView.chipLines(lms, chip), x, y, f.width(), s -> widthOf(s, font, chipWidths));
+            IslandChip.draw(gc, font, LandmassView.chipLines(lms, chip, BuildAdvice.islandLink(g, chip.id())), x, y, f.width(), s -> widthOf(s, font, chipWidths));
         }
         gc.setTextAlign(TextAlignment.LEFT);
         gc.setTextBaseline(VPos.BASELINE);
