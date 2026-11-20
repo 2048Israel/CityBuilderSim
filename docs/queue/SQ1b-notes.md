@@ -165,3 +165,12 @@ only" (every red a line of `docs/notes/gate.txt` or `known-reds.txt`; `unnamed.t
 box), of the branch at `8936d44a9` (the code before the mend, with main's `d5b1e9f0c`, 0.9.163, merged). The suite took
 623 s on the box. The mend changes `Game.java` and `BuildingStackCheck.java` by 18 lines, so a fresh dry run follows
 (section 10).
+
+## 10. The fresh dry run, the kept logs
+
+`sh tools/gate.sh SQ1b --dry-run`, exit 0, "suite known red only", `unnamed.txt` empty (0 bytes); the suite took 676 s on
+the box. Run **`cbs-gate-SQ1b-lSlwdgfr`** (`/home/jerus/cbs/runs/cbs-gate-SQ1b-lSlwdgfr` on the gate box, copied to
+`C:\Users\Jerus\AppData\Local\Temp\cbs-gate-SQ1b-lSlwdgfr`), of the branch at `d5779888e` (the mend and its notes; the
+code is final) with main's `d5b1e9f0c` (0.9.163) already merged in it. Named in the ship file's first line. The earlier run,
+`cbs-gate-SQ1b-57Oy5b3N` (section 9), is of `8936d44a9`, before the mend. After this run only this file and the ship
+file changed (the gate-run line, then the marker dropped in a commit of its own).

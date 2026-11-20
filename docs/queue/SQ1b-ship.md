@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-SQ1b-lSlwdgfr -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — SQ1b, a month's material draw past 2^31 and buildStack's harness — 2026-11-20, ready, see docs/queue/SQ1b-notes.md
