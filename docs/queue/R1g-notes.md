@@ -330,3 +330,21 @@ so the loaded city's templates are new objects at today's costs: a 1900
 save's are dated once by the load path's `recipes.apply`, a default save's
 not at all. No template is copied (`NewUnit`, QN1, holds the template
 itself), and no template cost is saved.
+
+**Why the grown 1900 city is slow (main's, found by R1g's runs).** Four
+thread dumps of the (a)+(b) run at month 1679 (330,249 people, 19 months in
+9 minutes) all stand in the same frames: `LongPlaytest.runPlayer` →
+`Game.nextMonth` → `AutoBuilder.step` → `BuildAdvice.suggestFor` → `count` →
+`supplyDemand` → `figure` → `WorksValue.pendingPowerLoad` → `pendingLoads` →
+`NewUnit.of` (QN1, 0.9.158) → `EquipmentFit.fittedForNew` → `chosenForNew` →
+`priced` → `pricedAsStanding` → `gainOf` → `RecipeChanges.netGainForSet` →
+`gainForSet` → `netDifferenceAt` → `feesAt` / `valueAt` → `absencesAt` →
+`RecipeChange.knownAt` → `Research.knownFrom` → `ResearchCatalog.knownFrom`.
+Every advice count re-fits every pending site, piece by piece, against every
+recipe change's research date; and `ResearchCatalog.knownFrom` reads a code
+that is not a year through a thrown `NumberFormatException`. Only a city
+founded the 1900 way carries recipe changes and fits, and none grew before
+R1g, so no harness or trace has met it. Not R1g's code: proposed for the
+queue (★ the orchestrator's call), and to be fixed before LongPlaytest's
+default becomes 1900 (step 4), whose 2,400 months would otherwise take
+hours. The dumps are `target/r1g/dump1-4.txt`.
