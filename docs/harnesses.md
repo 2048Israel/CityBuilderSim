@@ -4833,12 +4833,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L476 older city
   - L489 the grown history has folded years
   - L490 folded history
-- **L508 6: the stall and the equal pair**
-  - L553 ...the same city read against other words is short, and says \"2×\" (it is the words that are equal)
-  - L597 every text the pace reached in this run is in reachedTexts() (
-  - L599 ...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung
-- **L629 7: a stall the clock makes itself, again and again**
-  - L687 50×, a redraw begun while the clock stood still, then a stall of twice its cost: the reading stays the rung
+- **L509 6: the stall and the equal pair**
+  - L554 ...the same city read against other words is short, and says \"2×\" (it is the words that are equal)
+  - L598 every text the pace reached in this run is in reachedTexts() (
+  - L600 ...the list holds a text once, the tenths from 0.0× to 0.9× (no 1.0×) and the wholes up to a tenth under the top rung
+- **L630 7: a stall the clock makes itself, again and again**
+  - L688 50×, a redraw begun while the clock stood still, then a stall of twice its cost: the reading stays the rung
 
 ## CoalMiningCheck.java - 54 labelled assertions
 
@@ -26338,61 +26338,61 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L883 ...on its own heavy crude: nothing
   - L893 deciding as the game does, on the month's state after its opening: the 10x city 1 Crude Unit, 1 Cracking Unit, 1
   - L897 ...and on its own light crude 1 Oil Refinery and 1 Small Lube Plant; on imported or its own heavy crude still nothing
-- **L937 13. only a kind idle for six months is shed**
-  - L951 fixture: medium crude has no heavy residue, so the Small Asphalt Unit takes none, and the Small Lube Plant runs
-  - L954 each month it stands idle the asphalt unit's kind counts one more, and the working lube plant's none
-  - L955 ...under IDLE_MONTHS the refiners may sell neither unit (the crude unit, the distress rule's, they may), and the
-  - L958 at IDLE_MONTHS the asphalt unit may be sold and the lube plant may not, nor the crude unit while a kind idles
-  - L960 ...the spare-capacity rule's measure is nothing used against the idle kind's feed
-  - L966 ...so, losing money six months, the rule sells the asphalt unit and nothing else
-  - L976 the idle months cross a save, every kind (extras idleMonths.<KIND>)
-- **L981 14. the investors order a unit, and Game.consider() tests the planner's estimate**
-  - L1092 fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until
-  - L1097 the planner's values are each product at the city's own price at the margin, petrol and diesel at the net import
-  - L1100 the order is the planner's best, a conversion unit, one of it
-  - L1104 ...what Game.consider() tested it on is the planner's earnings for it (estimatedMonthlyProfit())
-  - L1107 ...with no ground free the same month it is refused at the ground and the land office hears of it (landBlocked)
-  - L1110 ...and with ground the order went on site
-  - L1115 a crude unit's estimate is its share of its package's earnings, by cost
-- **L1122 15. the world takes a city's lubricants up to LUBRICANTS_WORLD_SHARE of its crude, and no more (0.7.103)**
-  - L1128 the world takes LUBRICANTS_WORLD_SHARE of a crude run's litres - 1%, the real share [R37] - and nothing of none
-  - L1132 ...the room past a flow's own lubricants: the world's share of its crude and the city's own, less what it makes;
-  - L1139 fixture: an Oil Refinery's gas oil would feed a Small Lube Plant in the prototype's frame, and the world's share of its
-  - L1144 with no lubricants bought in the city the Small Lube Plant is refused at its feed, in the lubricants' words
-  - L1148 ...and with a plant's worth bought in the city it is weighed as in the prototype's frame: the same earnings
-  - L1160 an Oil Refinery's package takes a lube plant in the prototype's frame and none where the world and the city take
-  - L1181 fixture: the Small Lube Plant runs, its lubricants past what the world takes
-  - L1185 the ship's line takes no more lubricants than the world's share of the month's crude, every month; the rest idles
-  - L1188 ...and the audit closes every month
-- **L1251 16. the run: a crude unit runs a barrel only while it pays, at what its products fetch (0.7.105)**
-  - L1263 THE STUDY'S MARGINS, from the model's own prices and freight: a topping barrel of medium crude on imported crude,
-  - L1272 ...a barrel's margin is its products a tonne at what they fetch less its crude, to the bit
-  - L1274 THE RUN: none of it by lorry or by rail at either quote - the first barrel loses - and the whole of it by
-  - L1292 ...through conversion units (two Cracking Units, two Alkylation Units, two Reformers, a Hydrocracker) by tanker,
-  - L1304 THE HOME MARKET AT THE FLOOR: the barrels whose petrol and diesel the city takes, at the net import price, pay
-  - L1314 ...at .60 even the barrels that replace the city's imports lose (-1.7%, the study's): it runs none
-  - L1322 THE WELLS' CRUDE: at its export price the barrel pays where an imported one does not; the run stops where the
-  - L1334 THE WORLD'S LUBRICANTS: past what the world and the city take a lube plant's lubricants fetch nothing, and the run
-  - L1340 THE PACE: the run moves at most RUN_PACE of nameplate a month - MAX_RETIREMENT_FRACTION, a quarter - and
-  - L1346 ...and with no crude unit there is no run, and no barrel to weigh
-  - L1391 fixture: an Oil Refinery on imported crude by lorry, the refiners not held: every month's verdict is that no
-  - L1393 the month's end moves the run toward it RUN_PACE of nameplate a month, and the month ran at the share it was
-  - L1395 ...the operating rate is the plant's times the run, to the bit
-  - L1396 ...the crude units buy nameplate at that rate, and make each product's nameplate at it
-  - L1397 ...and the audit closes every month
-  - L1398 A HELD REFINERS' RUN STAYS WHERE THE FIXTURE LEFT IT (BusinessInvestment.holdSector())
-  - L1411 the run crosses a save, its share and its months (extras run.share, run.history.<n>)
-  - L1419 THE WORDS: Refining's page says the run and why; the refinery's picture, of a month that ran nothing, why
-  - L1434 THE SPARE: once the run has stood under nameplate IDLE_MONTHS months the spare-capacity rule's measure is the most
-  - L1438 ...and the rule sells it, losing money, the month after six at nothing - where what is spare is a whole unit - and
-  - L1466 fixture: a Small Cracking Unit's spread is above nothing at the export prices, on an Oil Refinery's gas oil
-  - L1469 AN ORDER IS WEIGHED AT THE RUN IT WOULD TAKE: behind an Oil Refinery on imported crude by lorry - no barrel pays,
-  - L1474 ...by tanker, every barrel paying, it is weighed as in the prototype's frame, its spread on its feed, to the bit
-  - L1491 PETROL PAST THE CITY'S IMPORTS AT THE EXPORT PRICE: a Small Reformer's petrol, the city importing half of it,
-  - L1514 fixture: the city's own Crude Unit on site beside the town's Oil Refinery, nothing else of the refiners'
-  - L1518 THE PLANNER WEIGHS ITS UNITS: not \"already building\" (MAX_CONCURRENT_ORDERS counted it until 0.7.105), and no
-  - L1528 ...and with a conversion unit on site as well it is not held to one order either (BA1): it weighs its units, the one on site counted,
-  - L1533 ...while the spare-capacity rule still reads a refiners' site as building, not shrinking
+- **L943 13. only a kind idle for six months is shed**
+  - L957 fixture: medium crude has no heavy residue, so the Small Asphalt Unit takes none, and the Small Lube Plant runs
+  - L960 each month it stands idle the asphalt unit's kind counts one more, and the working lube plant's none
+  - L961 ...under IDLE_MONTHS the refiners may sell neither unit (the crude unit, the distress rule's, they may), and the
+  - L964 at IDLE_MONTHS the asphalt unit may be sold and the lube plant may not, nor the crude unit while a kind idles
+  - L966 ...the spare-capacity rule's measure is nothing used against the idle kind's feed
+  - L972 ...so, losing money six months, the rule sells the asphalt unit and nothing else
+  - L982 the idle months cross a save, every kind (extras idleMonths.<KIND>)
+- **L987 14. the investors order a unit, and Game.consider() tests the planner's estimate**
+  - L1101 fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until
+  - L1106 the planner's values are each product at the city's own price at the margin, petrol and diesel at the net import
+  - L1109 the order is the planner's best, a conversion unit, one of it
+  - L1113 ...what Game.consider() tested it on is the planner's earnings for it (estimatedMonthlyProfit())
+  - L1116 ...with no ground free the same month it is refused at the ground and the land office hears of it (landBlocked)
+  - L1119 ...and with ground the order went on site
+  - L1124 a crude unit's estimate is its share of its package's earnings, by cost
+- **L1131 15. the world takes a city's lubricants up to LUBRICANTS_WORLD_SHARE of its crude, and no more (0.7.103)**
+  - L1137 the world takes LUBRICANTS_WORLD_SHARE of a crude run's litres - 1%, the real share [R37] - and nothing of none
+  - L1141 ...the room past a flow's own lubricants: the world's share of its crude and the city's own, less what it makes;
+  - L1148 fixture: an Oil Refinery's gas oil would feed a Small Lube Plant in the prototype's frame, and the world's share of its
+  - L1153 with no lubricants bought in the city the Small Lube Plant is refused at its feed, in the lubricants' words
+  - L1157 ...and with a plant's worth bought in the city it is weighed as in the prototype's frame: the same earnings
+  - L1169 an Oil Refinery's package takes a lube plant in the prototype's frame and none where the world and the city take
+  - L1190 fixture: the Small Lube Plant runs, its lubricants past what the world takes
+  - L1194 the ship's line takes no more lubricants than the world's share of the month's crude, every month; the rest idles
+  - L1197 ...and the audit closes every month
+- **L1260 16. the run: a crude unit runs a barrel only while it pays, at what its products fetch (0.7.105)**
+  - L1272 THE STUDY'S MARGINS, from the model's own prices and freight: a topping barrel of medium crude on imported crude,
+  - L1281 ...a barrel's margin is its products a tonne at what they fetch less its crude, to the bit
+  - L1283 THE RUN: none of it by lorry or by rail at either quote - the first barrel loses - and the whole of it by
+  - L1301 ...through conversion units (two Cracking Units, two Alkylation Units, two Reformers, a Hydrocracker) by tanker,
+  - L1313 THE HOME MARKET AT THE FLOOR: the barrels whose petrol and diesel the city takes, at the net import price, pay
+  - L1323 ...at .60 even the barrels that replace the city's imports lose (-1.7%, the study's): it runs none
+  - L1331 THE WELLS' CRUDE: at its export price the barrel pays where an imported one does not; the run stops where the
+  - L1343 THE WORLD'S LUBRICANTS: past what the world and the city take a lube plant's lubricants fetch nothing, and the run
+  - L1349 THE PACE: the run moves at most RUN_PACE of nameplate a month - MAX_RETIREMENT_FRACTION, a quarter - and
+  - L1355 ...and with no crude unit there is no run, and no barrel to weigh
+  - L1400 fixture: an Oil Refinery on imported crude by lorry, the refiners not held: every month's verdict is that no
+  - L1402 the month's end moves the run toward it RUN_PACE of nameplate a month, and the month ran at the share it was
+  - L1404 ...the operating rate is the plant's times the run, to the bit
+  - L1405 ...the crude units buy nameplate at that rate, and make each product's nameplate at it
+  - L1406 ...and the audit closes every month
+  - L1407 A HELD REFINERS' RUN STAYS WHERE THE FIXTURE LEFT IT (BusinessInvestment.holdSector())
+  - L1420 the run crosses a save, its share and its months (extras run.share, run.history.<n>)
+  - L1428 THE WORDS: Refining's page says the run and why; the refinery's picture, of a month that ran nothing, why
+  - L1443 THE SPARE: once the run has stood under nameplate IDLE_MONTHS months the spare-capacity rule's measure is the most
+  - L1447 ...and the rule sells it, losing money, the month after six at nothing - where what is spare is a whole unit - and
+  - L1475 fixture: a Small Cracking Unit's spread is above nothing at the export prices, on an Oil Refinery's gas oil
+  - L1478 AN ORDER IS WEIGHED AT THE RUN IT WOULD TAKE: behind an Oil Refinery on imported crude by lorry - no barrel pays,
+  - L1483 ...by tanker, every barrel paying, it is weighed as in the prototype's frame, its spread on its feed, to the bit
+  - L1500 PETROL PAST THE CITY'S IMPORTS AT THE EXPORT PRICE: a Small Reformer's petrol, the city importing half of it,
+  - L1523 fixture: the city's own Crude Unit on site beside the town's Oil Refinery, nothing else of the refiners'
+  - L1527 THE PLANNER WEIGHS ITS UNITS: not \"already building\" (MAX_CONCURRENT_ORDERS counted it until 0.7.105), and no
+  - L1537 ...and with a conversion unit on site as well it is not held to one order either (BA1): it weighs its units, the one on site counted,
+  - L1542 ...while the spare-capacity rule still reads a refiners' site as building, not shrinking
 
 ## RefineryViewCheck.java - 36 labelled assertions
 

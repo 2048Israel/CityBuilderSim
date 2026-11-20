@@ -49,7 +49,7 @@
 
 **Uses:** [Exchange](Exchange.md) (105), [Equity](Equity.md) (36), [OrderBook](OrderBook.md) (36), [MarketCheck](MarketCheck.md) (23), [KeptBench](KeptBench.md) (21), [Game](Game.md) (20), [MoneyAudit](MoneyAudit.md) (19), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Household](Household.md) (15), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (10), [HouseholdBalance](HouseholdBalance.md) (7), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OwnerHousehold](OwnerHousehold.md) (1)
 
-**Used by (3):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [HoldersCheck](HoldersCheck.md)
+**Used by (4):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [HoldersCheck](HoldersCheck.md), [RefineryCheck](RefineryCheck.md)
 
 ## Sections
 
