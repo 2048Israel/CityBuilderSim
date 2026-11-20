@@ -196,14 +196,18 @@ No format bump.
 
 ## 5. Findings left for the next gold batch
 
-- **M0 can go below zero in a city on Gold.** In the probe, Lean's city stood
-  at D$-4.07k at month 175, and Wealthy's at D$-12.1k by month 438. Item 6's
-  retirement stops at the reserves. The bank's other contractions do not:
-  `takeCoupon`, `takePrincipal`, `chargeWindow`, `chargeAdvances`,
-  `sellPaper` and `settleRedemptions` retire uncapped. In a city whose
-  sales have already retired much of M0, they take it under nothing. The
-  cover reads an M0 at or under 0 as fully covered. Before FB14 nothing
-  retired for gold, so this was not reached.
+- **M0 can go below zero in a city on Gold, and the box opens it** (GM1;
+  REV-FB14's (1), section 8). Founded the default way with the box, M0 first
+  goes under zero in month 161 (Lean) or 163 (Standard, Wealthy), lowest
+  D$-4.07k, D$-4.25k and D$-12,086k in 480 months. Off the box the same
+  presets never do (lowest D$2.07k in 240 months), and founded the 1900 way
+  with the box they never do (D$3.80k). Item 6's retirement stops at the
+  reserves. The bank's other contractions do not: `takeCoupon`,
+  `takePrincipal`, `chargeWindow`, `chargeAdvances`, `sellPaper` and
+  `settleRedemptions` retire uncapped, so in a city whose sales have retired
+  much of M0 they take it under nothing. The cover reads an M0 at or under 0
+  as fully covered. Before FB14 nothing retired for gold, and no preset
+  founded on Gold, so this was not reached.
 - **GD4's mint is not in the equity identity.** `CentralBank.mintGold` puts
   gold into the vault for new money, but `goldMintedLifetime` is not a term
   of `vaultInNewMoney()`. It is reached only under Gold with a gold mine; no
@@ -249,3 +253,57 @@ on FB14's model (4430e11b5).
   audit's two new lines are 0.
 
 No ensemble (contract, section 4: the trace has not moved beyond runtime).
+
+## 8. REV-FB14 and the mends (after main's 0.9.163)
+
+REV-FB14 read a370cf4a3: ship after one P1. Main (FB13, 0.9.163) is merged
+at dbee1594e; only generated indexes conflicted, taken from main and
+regenerated.
+
+- **P1, the box's line.** It said "enough to cover 40% of the treasury: the
+  whole vault" for every preset, false for Standard (its whole vault is 25% of
+  its treasury) and any shallow vault. The line now reads Founding's figures:
+  - `dollarsUsd()`, in both forms, is what stays in dollars;
+  - `goldShareOfTreasury()` and `goldCoversTheLaw()` say what the gold covers.
+
+  A vault short of 40% says "enough to cover 25% of the treasury: short of
+  the 40% a deeper vault would hold". GoldStandardCheck 14 asserts the figures
+  for each preset and for the deep vault.
+- **(2), the law reads the books.** The cover test now retires only what the
+  bank will.
+  - Game hands `setMoneyBase(m0, CentralBank.goldRetirable())`: the reserves
+    past what is due, which is `settleGoldRedeemed()`'s cap. Before, the test
+    took all of M0 to be retirable.
+  - The cover, the free gold, the thin-cover flag and the pace read
+    `Game.getGoldBase()` (`CentralBank.m0AfterGoldDue()`): M0 less the last
+    sale's due. Between the reprice and the next top they show what the next
+    reprice reads.
+  - `monthsToFloor(m0, retirable)` counts the sales past the retirable part
+    at their whole.
+  - The dial at the top reads after the settle, where the due is 0, so it
+    reads as before.
+
+  The probe's breaks did not move: 175, 195 and 438 months, and the 1900 way
+  163, 410 and none.
+- **(4), the fixtures ask for the whole run.**
+  - ExchangeRateCheck 14's Gold city must not break at all (`breaks == 0`,
+    and still on Gold after the 120th reprice).
+  - GoldStandardCheck 13 asks for all 120 months on Gold (78 of them with
+    sales).
+  - The new GoldStandardCheck 15 plays a Standard 1900 box city 318 months to
+    July 1926. It is on Gold every month, through August 1914 and July 1926,
+    and on Canada's peg in none. Every month, the cover it shows is over the
+    next reprice's base.
+- **(1), M0 under zero: not mended here** (section 5, GM1). It is not
+  contained: each of the six uncapped retirements is a real payment out of a
+  pool. Holding M0 at its floor would need a third audit pair and the gold's
+  retirement re-booked as equity spent, and the equity identity,
+  `MoneyAudit`, CentralBankCheck and LongPlaytest would follow. The ship file
+  says the box opens it.
+- **The trace stands.** (2) acts only under Gold: the due is 0 off it, and the
+  cap is read only in a Gold sale's cover test. The P1 changes only the
+  founding screen's words.
+- **Checks after the mends:**
+  - `./batch-check.sh --fast` is green;
+  - GoldStandardCheck is green, all 15 sections, in 37 s;
+  - ExchangeRateCheck: exit 3, only section 8b's four known reds (FS10); its Gold city is on Gold in all 120 months, with 0 breaks.
