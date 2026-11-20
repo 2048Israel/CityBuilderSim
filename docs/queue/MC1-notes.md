@@ -130,7 +130,7 @@ waiting for the orchestrator's go.
 | `CreditCrunchCheck` | green before and after the merge |
 | `MortgageCheck` | green |
 | `HousingDoorCheck` | green |
-| `BankFailureCheck` | see below |
+| `BankFailureCheck` | green |
 | `sh tools/pick.sh origin/main HEAD` | ALL (231 harnesses), because `AllChecks.java` changed; it says "review not needed" |
 
 The mends mail says "review: needed - money" all the same, because the change sizes an equity issue
