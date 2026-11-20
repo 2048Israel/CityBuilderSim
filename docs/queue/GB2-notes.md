@@ -124,8 +124,8 @@ him.
   cases among them.
 - **On the laptop** (at the merge with main, ad104e91, and the `z` word):
   `batch-check.sh --fast` exit 0; `tools/ship-selftest.sh` 188 of 188 in
-  37 min beside HS2's ensemble, its `flock` cases skipped, as Git Bash has no
-  `flock`.
+  37 min beside HS2's ensemble, and 188 of 188 again at e001d0f9, its `flock`
+  cases skipped, as Git Bash has no `flock`.
 - **One real night**, main's tip 919c1fa41, 2026-11-20 08:56-09:23, started by
   `sh tools/nightly.sh` here (the orchestrator held the box's gates):
   "nightly: on the gate box jerus@192.168.0.16, tools at cbe266812", exit 1.
@@ -147,10 +147,21 @@ him.
     A second such night makes it a standing miss; its budget on this machine is
     the orchestrator's to take up.
 - **The dry run**, `sh tools/gate.sh GB2 --branch-gate --dry-run --no-tag` on
-  the box at 83c2dc29 against main 44e0aa66: exit 0. No harness reads what
-  changed; the fast check, the nightly self-test and the publisher's self-test
-  (192 of 192) ran. Its log is stamped in AST, the `z` word at work. Run
-  `/home/jerus/cbs/runs/cbs-gate-GB2-24Ro7Vbj`, copied to the laptop's temp.
+  the box at e001d0f9 against main 44e0aa66: exit 0, run
+  `/home/jerus/cbs/runs/cbs-gate-GB2-YTx8IWE8`. No harness reads what changed;
+  the fast check, the nightly self-test, the publisher's (192 of 192) and the
+  wait self-test (25 of 25) ran. A first one, at 83c2dc29 before Jerus's
+  schedule and the relay fix, was green too (`cbs-gate-GB2-24Ro7Vbj`).
+- **The relay's paths, for real:** that dry run's relayed state put
+  `log: /home/jerus/cbs/runs/cbs-gate-GB2-YTx8IWE8/ship.log` in
+  `state\gate.txt`, where the gate before it had
+  `C:/Program Files/Git/home/jerus/...`. Still converted, and not GB2's to
+  change: a box path a session names in its own `bus.sh` call on the laptop,
+  such as the ready line's `run=` (contract 6). `bus.sh` cannot turn the
+  conversion off for every call, as a laptop gate's `log=` is a local path
+  MemWatch needs converted. GB2's own ready line set `MSYS_NO_PATHCONV=1`.
+- **`tools/wait-selftest.sh`** on the laptop: 25 of 25, the five new cases
+  among them; on main's `day.sh` the "skipped" case would fail.
 - **HA1-CLOCK**, not folded in: on the quiet box, SaveSlotCheck's median due
   month is 17.2 ms against `CLOCK_MS` (25 ms), where HA1 found about 29 ms on
   the laptop. The budget holds on the box with room, so nothing is changed.
