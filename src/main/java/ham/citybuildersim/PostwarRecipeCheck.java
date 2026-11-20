@@ -22,6 +22,10 @@ import java.util.Set;
  * from an unfitted city. Every transition stands the affected template and
  * crosses the real entry month. The identical fixture also runs on main's
  * compiled model and data, using this branch's source JSON as its oracle.
+ * R2e-PE4: the Cement Plant's PE4 is defined against its rotary kiln, so a
+ * plant with the rotary kiln and without PE4 burns the study's 30% and every
+ * kiln step saves on the one before; sections 7-10 and 13 hold it, and each
+ * fails on the earlier calibration (rotary without PE4 at 6,160 t, PE4 a loss).
  */
 public final class PostwarRecipeCheck {
     private PostwarRecipeCheck() { }
@@ -297,9 +301,18 @@ public final class PostwarRecipeCheck {
         knownExcept(game, Set.of("PE4", "E2"));
         for (Equipment piece : kiln.getEquipment()) stack.setUnfitted(piece.getId(), stack.getQuantity());
         run(game);
+        double shaftOld = kiln.uses(Good.THERMAL_COAL);
+        boolean onShafts = kiln.runningRecipeIds()[1].startsWith("shaft-kiln");
+        stack.setUnfitted("rotary-kiln", 0);
+        run(game);
         double old = kiln.uses(Good.THERMAL_COAL);
-        check("all-missing Cement Plant keeps main's exact 1900 coal figure, 30% of cement tonnes",
-                old == kiln.makes(Good.CEMENT) * .3 && kiln.runningRecipeIds()[1].startsWith("shaft-kiln"), "coal " + old);
+        double modernCoal = kiln.defaultRecipe().uses().get(Good.THERMAL_COAL);
+        double shaftPenalty = kiln.getRecipe("shaft-kiln").uses().get(Good.THERMAL_COAL) - modernCoal;
+        // R2e-PE4: the study's 30% is the rotary kiln's state before PE4, not the all-missing shaft kilns' (R2d's).
+        check("a Cement Plant on its rotary kiln without PE4 burns the study's 30% of its cement tonnes (R2e-PE4)",
+                old == kiln.makes(Good.CEMENT) * .3 && kiln.runningRecipeIds()[0].startsWith("rotary"), "coal " + old);
+        check("...and without the rotary kiln too, R1c's shaft kilns keep their own penalty over that rotary state",
+                onShafts && shaftPenalty > 0 && Math.abs(shaftOld - (old + shaftPenalty)) < 1e-9, "shaft coal " + shaftOld + ", penalty " + shaftPenalty);
         knownExcept(game, Set.of("PE4"));
         stack.setUnfitted("preheater", 0);
         run(game);
@@ -318,6 +331,8 @@ public final class PostwarRecipeCheck {
         double modern = kiln.defaultRecipe().uses().get(Good.THERMAL_COAL);
         check("PE4 present with only E2 missing runs exactly the sourced 7.0/3.3 wet-kiln form",
                 Math.abs(kiln.uses(Good.THERMAL_COAL) - modern * 7 / 3.3) < 1e-9, "coal " + kiln.uses(Good.THERMAL_COAL));
+        check("...which burns less than the rotary state's 30% it follows: the long kiln saves on it (R2e-PE4)",
+                kiln.uses(Good.THERMAL_COAL) < old, "coal " + kiln.uses(Good.THERMAL_COAL) + " after " + old);
         allExcept(game, "");
         fitted(kiln, stack);
         run(game);
@@ -417,6 +432,11 @@ public final class PostwarRecipeCheck {
                         double quoted = entryGain(game, template, learned);
                         check(name + "/" + learned.code() + " gain equals its actual before/after including scoped dependents, order " + childFirst,
                                 HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
+                        // R2e-PE4: the cement kilns are calibrated so that no learned step is a loss; the long kiln's always saves coal.
+                        if (name.contains("Cement Plant")) check(name + "/" + learned.code()
+                                        + " the learned kiln step is no loss, and the long kiln's a real coal saving, order " + childFirst,
+                                prices.good().applyAsDouble(Good.THERMAL_COAL) > 0 && actual >= 0
+                                        && (!learned.code().equals(priorCode) || actual > 0), "actual " + actual);
                     }
                 }
                 pairs++;
@@ -426,7 +446,7 @@ public final class PostwarRecipeCheck {
     }
 
     static void kilnAccounting() throws Exception {
-        out.println("--- 9. lime uses its own sourced figures and a rotary-first cement loss earns no royalty ---");
+        out.println("--- 9. lime uses its own sourced figures and the rotary-first cement long kiln saves and earns its royalty ---");
         Game game = HistoricalLicenceCheck.town("R2e-kiln-accounting", true);
         knownExcept(game, Set.of("PE4", "E2"));
         at(game, ResearchCatalog.knownFrom("PE4"));
@@ -460,31 +480,40 @@ public final class PostwarRecipeCheck {
         run(game);
         actual = actualValue(cement, prices) - before;
         quoted = EquipmentFit.grossGainOf(game, cement, cement.getEquipment("long-kiln"));
-        check("fixture: the shipped rotary-first calibration rises from6160 to the exact7106.06 wet form",
-                oldCoal == 6160 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9
-                        && actual < 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch()), "coal " + cement.uses(Good.THERMAL_COAL));
-        check("PE4's fitting gain is that real negative difference, including the activated E2 undo",
-                quoted < 0 && HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
+        check("fixture: the rotary-first calibration falls from the study's 30% to the exact 7106.06 wet form (R2e-PE4)",
+                oldCoal == cement.makes(Good.CEMENT) * .3 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9
+                        && actual > 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch()), "coal " + oldCoal + " -> " + cement.uses(Good.THERMAL_COAL));
+        check("PE4's fitting gain is that real positive difference, including the activated E2 undo",
+                quoted > 0 && HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
         cementStack.setUnfitted("long-kiln", cementStack.getQuantity());
+        priceForBothReaders(game, Good.MACHINERY, .000001);
         run(game);
-        check("the losing rotary-first refit is refused and the new plant appraises the same loss",
-                EquipmentFit.verdict(game, cementStack, cement.getEquipment("long-kiln")).kind() == EquipmentFit.Kind.NOT_YET
-                        && EquipmentFit.verdictForNew(game, cement, cement.getEquipment("long-kiln")).kind() == EquipmentFit.Kind.NOT_YET
-                        && LicenceFees.forNew(game, cement) == 0, "");
+        Equipment cementKiln = cement.getEquipment("long-kiln");
+        EquipmentFit.Verdict refit = EquipmentFit.verdict(game, cementStack, cementKiln);
+        EquipmentFit.Verdict fresh = EquipmentFit.verdictForNew(game, cement, cementKiln);
+        var firm = game.getSectors().cementConcrete();
+        double rate = Math.max(0, Math.min(1, firm.getOperatingRate()));
+        double appraised = LicenceFees.forNew(game, cement);
+        check("with the long kiln's cost nearly nothing, the rotary-first refit and the new plant's long kiln both pay on that gain",
+                refit.kind() == EquipmentFit.Kind.PAYS && fresh.kind() == EquipmentFit.Kind.PAYS
+                        && HistoricalLicenceCheck.near(refit.gain(), actual - LicenceFees.onGain("PE4", game.getMonth(), game.getResearch(), actual)),
+                refit + " / " + fresh + " vs " + actual);
+        check("...and the new plant's appraisal carries PE4's royalty on it, a share of that real gain at the works' rate",
+                rate > 0 && appraised > 0 && HistoricalLicenceCheck.near(appraised, LicenceFees.onGain("PE4", game.getMonth(), game.getResearch(), actual) * rate),
+                appraised + " vs " + LicenceFees.SHARE * actual * rate);
         cementStack.setUnfitted("long-kiln", 0);
         limeStack.setUnfitted("long-kiln", limeStack.getQuantity());
         run(game);
-        var firm = game.getSectors().cementConcrete();
         for (Good good : cement.goodsUsed().keySet()) firm.setPantry(good, 1e12);
         silent(() -> game.simulateMonths(2));
         double paid = firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
-        check("positive real cement production in PE4's patent period pays no rent on the losing refit",
+        check("positive real cement production in PE4's patent period pays the fitted long kiln's royalty, E2 unknown and lime's kiln unfitted",
                 firm.output(Good.CEMENT).produced > 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch())
-                        && paid == 0, "made " + firm.output(Good.CEMENT).produced + ", fee " + paid);
+                        && !game.getResearch().known("E2", game.getMonth()) && paid > 0, "made " + firm.output(Good.CEMENT).produced + ", fee " + paid);
     }
 
     static void newCementPlant() throws Exception {
-        out.println("--- 10. an actually completed new plant leaves the losing long kiln unfitted ---");
+        out.println("--- 10. an actually completed new plant in the rotary-first window fits the saving long kiln ---");
         Game game = town("R2e-new-cement", true);
         knownExcept(game, Set.of("PE4", "E2"));
         at(game, ResearchCatalog.knownFrom("PE4"));
@@ -504,12 +533,13 @@ public final class PostwarRecipeCheck {
                 ordered[0] == Game.BuildResult.SUCCESS && stack != null && stack.getUnderConstruction() == 1, String.valueOf(ordered[0]));
         if (stack == null) return;
         long opened = FittingCheck.pressUntilOpen(game, stack, 120);
-        check("the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off",
+        check("the completed plant takes the paying rotary kiln and the paying long kiln, and leaves unknown E2 off",
                 opened == 1 && stack.getQuantity() >= 1 && stack.getUnfitted("rotary-kiln") == 0
-                        && stack.getUnfitted("long-kiln") == stack.getQuantity()
+                        && stack.getUnfitted("long-kiln") == 0
                         && stack.getUnfitted("preheater") == stack.getQuantity(), "opened " + opened + ", long kilns unfitted " + stack.getUnfitted("long-kiln"));
-        check("that new plant runs6160 coal tonnes, avoiding the946.06-tonne increase",
-                opened == 1 && cement.uses(Good.THERMAL_COAL) == 6160, "coal " + cement.uses(Good.THERMAL_COAL));
+        check("that new plant runs the exact 7106.06 wet form, below the study's 30% it would burn without the long kiln (R2e-PE4)",
+                opened == 1 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9
+                        && cement.uses(Good.THERMAL_COAL) < cement.makes(Good.CEMENT) * .3, "coal " + cement.uses(Good.THERMAL_COAL));
     }
 
     @SuppressWarnings("unchecked")
@@ -802,6 +832,74 @@ public final class PostwarRecipeCheck {
 
     }
 
+    static void oldPlantRefits() throws Exception {
+        out.println("--- 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty ---");
+        Game game = HistoricalLicenceCheck.town("R2e-PE4-old-plant-refit", true);
+        knownExcept(game, Set.of("PE4", "E2"));
+        int found = ResearchCatalog.knownFrom("PE4");
+        at(game, found - 1);
+        BuildingsTemplate cement = HistoricalLicenceCheck.stand(game, "Cement Plant", 1);
+        silent(() -> {
+            game.buildStack(game.getBuildingManager().getTemplateByName("Construction Depot"), 4, true);
+            MaterialsCheck.handWorkers(game);
+        });
+        BuildingsStacks stack = game.getBuildingManager().getStack(cement);
+        Equipment longKiln = cement.getEquipment("long-kiln");
+        // A plant finished before June 1902 has its rotary kiln and neither later piece.
+        stack.setUnfitted("long-kiln", stack.getQuantity());
+        stack.setUnfitted("preheater", stack.getQuantity());
+        priceForBothReaders(game, Good.THERMAL_COAL, 100);
+        priceForBothReaders(game, Good.CEMENT, 10000);
+        priceForBothReaders(game, Good.MACHINERY, .000001);
+        run(game);
+        double thirty = cement.makes(Good.CEMENT) * .3;
+        check("fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known",
+                cement.uses(Good.THERMAL_COAL) == thirty && cement.runningRecipeIds()[0].startsWith("rotary")
+                        && stack.getUnfitted("rotary-kiln") == 0 && stack.getUnfitted("long-kiln") == stack.getQuantity()
+                        && EquipmentFit.verdict(game, stack, longKiln).kind() == EquipmentFit.Kind.NOT_KNOWN, "coal " + cement.uses(Good.THERMAL_COAL));
+        at(game, found);
+        run(game);
+        EquipmentFit.Verdict refit = EquipmentFit.verdict(game, stack, longKiln);
+        check("in PE4's month the plant's long kiln is a paying refit on a positive coal saving",
+                refit.kind() == EquipmentFit.Kind.PAYS && refit.gain() > 0, refit.toString());
+        var works = game.getSectors().cementConcrete();
+        BusinessInvestment.Decision idle = BusinessInvestment.Decision.no(works.key(), "nothing it wants");
+        BusinessInvestment.Decision order = EquipmentFit.choose(game, works, idle);
+        check("the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant",
+                order != idle && order.piece == longKiln && order.template == cement && order.build, String.valueOf(order.reason));
+        // Cash above the quote, so the order tests the refit and not the works' credit.
+        game.getEconomyManager().setSectorCash(works.key(), refit.cost() * 4);
+        String refused = game.fit(game.getSectorInvestor(works.key()), stack, longKiln);
+        check("...the order is taken, and one long kiln is on site for the plant",
+                refused == null && game.getFittings().onSite(cement.getId(), "long-kiln") == 1, refused + " " + game.getFittings().view());
+        int pressed = 0;
+        for (; pressed < 120 && stack.getUnfitted("long-kiln") > 0; pressed++) FittingCheck.step(game, 1);
+        run(game);
+        check("the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form",
+                stack.getUnfitted("long-kiln") == 0 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9,
+                "unfitted " + stack.getUnfitted("long-kiln") + " after " + pressed + " months, coal " + cement.uses(Good.THERMAL_COAL) + ", on site " + game.getFittings().view());
+        for (Good good : cement.goodsUsed().keySet()) works.setPantry(good, 1e12);
+        silent(() -> game.simulateMonths(2));
+        double paid = works.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("its positive production in PE4's patent pays a royalty, E2 still unknown",
+                works.output(Good.CEMENT).produced > 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch())
+                        && !game.getResearch().known("E2", game.getMonth()) && paid > 0, "made " + works.output(Good.CEMENT).produced + ", fee " + paid);
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        double withKiln = actualValue(cement, prices);
+        stack.setUnfitted("long-kiln", stack.getQuantity());
+        run(game);
+        double gain = (withKiln - actualValue(cement, prices)) * stack.getQuantity();
+        stack.setUnfitted("long-kiln", 0);
+        run(game);
+        var bill = LicenceFees.class.getDeclaredMethod("stackBill", Game.class, BuildingsStacks.class, Sector.class, double.class);
+        bill.setAccessible(true);
+        double rate = Math.max(0, Math.min(1, works.getOperatingRate()));
+        double real = (double) bill.invoke(null, game, stack, works, rate);
+        check("...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate",
+                gain > 0 && rate > 0 && HistoricalLicenceCheck.near(real, LicenceFees.onGain("PE4", game.getMonth(), game.getResearch(), gain) * rate),
+                real + " vs " + LicenceFees.SHARE * gain * rate);
+    }
+
     public static void main(String[] args) throws Exception {
         fails = checks = 0;
         RecipeCheck.out = out;
@@ -829,6 +927,7 @@ public final class PostwarRecipeCheck {
         newCementPlant();
         chosenSetAndRefit(data);
         wholeNetAndSavedProcess();
+        oldPlantRefits();
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

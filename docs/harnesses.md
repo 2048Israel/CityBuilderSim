@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**228 harness files, 26,059 labelled assertions.** AllChecks runs 228 of them.
+**228 harness files, 26,069 labelled assertions.** AllChecks runs 228 of them.
 
 ## Which harnesses read which class
 
@@ -44,7 +44,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, DistressBleedCheck, FittingCheck, FundLedgerCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -24520,7 +24520,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2328 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2344 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 53 labelled assertions
+## PostwarRecipeCheck.java - 63 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -24529,72 +24529,87 @@ _(this harness does not label its checks through a helper - it prints its findin
 > from an unfitted city. Every transition stands the affected template and
 > crosses the real entry month. The identical fixture also runs on main's
 > compiled model and data, using this branch's source JSON as its oracle.
+> R2e-PE4: the Cement Plant's PE4 is defined against its rotary kiln, so a
+> plant with the rotary kiln and without PE4 burns the study's 30% and every
+> kiln step saves on the one before; sections 7-10 and 13 hold it, and each
+> fails on the earlier calibration (rotary without PE4 at 6,160 t, PE4 a loss).
 
-- **L39 1. every postwar undo on its standing template crosses its own month**
-  - L81 all 27 postwar template changes were exercised
-- **L117 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
-  - L130 thermal before both discoveries stays at 0.24, order
-  - L134 first discovery has only its process-scoped yield, order
-  - L145 saved missing-stage flags replay the same process, order
-  - L148 both catalyst discovery orders restore modern 0.55 exactly, order
-  - L161 an absent catalytic process pays neither catalytic nor zeolite rent
-- **L165 4. wood entries carry their date evidence and default founding keeps modern figures**
-  - L191 default founding keeps every template figure and saves no recipe flags
-- **L196 5. the normal clock and real refinery flows run the postwar figures**
-  - L207 the actual next month moves the standing works from old lean staffing to modern staffing
-  - L229 fixture: both catalyst flows really process identical positive feed
-  - L233 zeolite changes the actual petrol stream by the normalized sourced yield and closes fuel oil
-- **L239 6. the postwar catalyst pays on actual production, frozen before the clock changes**
-  - L274 fixture:
-  - L278 the captured
-  - L286 a later local find and expiry leave the earned production liability intact
-- **L291 7. later improvements preserve the calibrated earlier process**
-  - L301 all-missing Cement Plant keeps main's exact 1900 coal figure, 30% of cement tonnes
-  - L307 finding and fitting E2 first leaves the absent long kiln's old coal and zero preheater gain
-  - L319 PE4 present with only E2 missing runs exactly the sourced 7.0/3.3 wet-kiln form
-  - L324 both kiln discovery orders reach today's exact coal use
-  - L332 fixture: the new plant's own long kiln pays at the positive coal price
-  - L334 the absent old fleet does not suppress a new plant's paying prerequisite and preheater
-  - L339 a half-fitted long-kiln fleet gives the preheater only its available prerequisite share
-- **L378 8. every scoped pair prices its actual transition in both learning orders**
-  - L425 all ten scoped template pairs ran in both learning orders
-- **L429 9. lime uses its own sourced figures and a rotary-first cement loss earns no royalty**
-  - L443 E2's cement-only source adds no lime preheater or lime recipe change
-  - L445 Lime Kiln PE4 credits exactly its real positive transition, 5400 to3600 coal tonnes
-  - L463 fixture: the shipped rotary-first calibration rises from6160 to the exact7106.06 wet form
-  - L466 PE4's fitting gain is that real negative difference, including the activated E2 undo
-  - L470 the losing rotary-first refit is refused and the new plant appraises the same loss
-  - L481 positive real cement production in PE4's patent period pays no rent on the losing refit
-- **L487 10. an actually completed new plant leaves the losing long kiln unfitted**
-  - L503 fixture: a real new Cement Plant was ordered onto a site in the partial calibration window
-  - L507 the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off
-  - L511 that new plant runs6160 coal tonnes, avoiding the946.06-tonne increase
-- **L534 11. new-plant selection, patent appraisal and the next actual refit share their physical sets**
-  - L561 fixture: full PE4 passes but rejected E2 leaves a real marginal gain below the same life/money gates
-  - L566 the set selector re-evaluates PE4 after E2 goes and leaves both out
-  - L569 the rejected new-plant set accrues no equipment patent appraisal
-  - L572 a later read at changed inputs chooses the paying set afresh, without carrying a plan
-  - L600 fixture: real PE13 is known with B7, the robot is known and rejected, and the no-robot gain saves506 paid posts
-  - L607 real PE13's new-building royalty follows its catalogue's unpatented flag
-  - L637 synthetic patented PE13-shaped control has an active fee code and a rejected known dependent
-  - L640 synthetic patented recipe pays on the chosen no-robot set's real gain
-  - L657 fixture: two stores stand with PB2 known, one scanner fitted and positive crew wages
-  - L664 the next one-store scanner refit credits the fleet's real zero rounded-payroll change and is refused
-  - L684 fixture: one robot among three vehicles plants saves201 rounded posts in an active imported patent
-  - L688 the installed robot's royalty uses the actual rounded fleet saving
-- **L693 12. every fee, the saved production process and a new plant's own recipe**
-  - L717 fixture: a local long kiln activates positive imported preheater rent on the same saved rotary process
-  - L721 both the refit and the proposed long kiln lose the dependent preheater's extra royalty
-  - L747 fixture: the month's saved open hearth crosses to fresh oxygen prices before completion, with positive wages
-  - L752 new equipment prices the saved process the production apply will run
-  - L759 the completion boundary fits against that saved process and production retains the same choice
-  - L784 fixture: the Large Cement Plant and its kiln share imported PE4, with local E2 fitted and positive real production
-  - L790 the shared PE4 code loses one entry fee in both fitting increments
-  - L800 the positive real bill charges the shared PE4 code once
-- **L817 2. two entries compose in either fitting or discovery order**
-  - L818 Vehicle Works
-  - L819 Steel Mini-Mill
-  - L820 Commercial Bank
+- **L43 1. every postwar undo on its standing template crosses its own month**
+  - L85 all 27 postwar template changes were exercised
+- **L121 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
+  - L134 thermal before both discoveries stays at 0.24, order
+  - L138 first discovery has only its process-scoped yield, order
+  - L149 saved missing-stage flags replay the same process, order
+  - L152 both catalyst discovery orders restore modern 0.55 exactly, order
+  - L165 an absent catalytic process pays neither catalytic nor zeolite rent
+- **L169 4. wood entries carry their date evidence and default founding keeps modern figures**
+  - L195 default founding keeps every template figure and saves no recipe flags
+- **L200 5. the normal clock and real refinery flows run the postwar figures**
+  - L211 the actual next month moves the standing works from old lean staffing to modern staffing
+  - L233 fixture: both catalyst flows really process identical positive feed
+  - L237 zeolite changes the actual petrol stream by the normalized sourced yield and closes fuel oil
+- **L243 6. the postwar catalyst pays on actual production, frozen before the clock changes**
+  - L278 fixture:
+  - L282 the captured
+  - L290 a later local find and expiry leave the earned production liability intact
+- **L295 7. later improvements preserve the calibrated earlier process**
+  - L312 a Cement Plant on its rotary kiln without PE4 burns the study's 30% of its cement tonnes (R2e-PE4)
+  - L314 ...and without the rotary kiln too, R1c's shaft kilns keep their own penalty over that rotary state
+  - L320 finding and fitting E2 first leaves the absent long kiln's old coal and zero preheater gain
+  - L332 PE4 present with only E2 missing runs exactly the sourced 7.0/3.3 wet-kiln form
+  - L334 ...which burns less than the rotary state's 30% it follows: the long kiln saves on it (R2e-PE4)
+  - L339 both kiln discovery orders reach today's exact coal use
+  - L347 fixture: the new plant's own long kiln pays at the positive coal price
+  - L349 the absent old fleet does not suppress a new plant's paying prerequisite and preheater
+  - L354 a half-fitted long-kiln fleet gives the preheater only its available prerequisite share
+- **L393 8. every scoped pair prices its actual transition in both learning orders**
+  - L445 all ten scoped template pairs ran in both learning orders
+- **L449 9. lime uses its own sourced figures and the rotary-first cement long kiln saves and earns its royalty**
+  - L463 E2's cement-only source adds no lime preheater or lime recipe change
+  - L465 Lime Kiln PE4 credits exactly its real positive transition, 5400 to3600 coal tonnes
+  - L483 fixture: the rotary-first calibration falls from the study's 30% to the exact 7106.06 wet form (R2e-PE4)
+  - L486 PE4's fitting gain is that real positive difference, including the activated E2 undo
+  - L497 with the long kiln's cost nearly nothing, the rotary-first refit and the new plant's long kiln both pay on that gain
+  - L501 ...and the new plant's appraisal carries PE4's royalty on it, a share of that real gain at the works' rate
+  - L510 positive real cement production in PE4's patent period pays the fitted long kiln's royalty, E2 unknown and lime's kiln unfitted
+- **L516 10. an actually completed new plant in the rotary-first window fits the saving long kiln**
+  - L532 fixture: a real new Cement Plant was ordered onto a site in the partial calibration window
+  - L536 the completed plant takes the paying rotary kiln and the paying long kiln, and leaves unknown E2 off
+  - L540 that new plant runs the exact 7106.06 wet form, below the study's 30% it would burn without the long kiln (R2e-PE4)
+- **L564 11. new-plant selection, patent appraisal and the next actual refit share their physical sets**
+  - L591 fixture: full PE4 passes but rejected E2 leaves a real marginal gain below the same life/money gates
+  - L596 the set selector re-evaluates PE4 after E2 goes and leaves both out
+  - L599 the rejected new-plant set accrues no equipment patent appraisal
+  - L602 a later read at changed inputs chooses the paying set afresh, without carrying a plan
+  - L630 fixture: real PE13 is known with B7, the robot is known and rejected, and the no-robot gain saves506 paid posts
+  - L637 real PE13's new-building royalty follows its catalogue's unpatented flag
+  - L667 synthetic patented PE13-shaped control has an active fee code and a rejected known dependent
+  - L670 synthetic patented recipe pays on the chosen no-robot set's real gain
+  - L687 fixture: two stores stand with PB2 known, one scanner fitted and positive crew wages
+  - L694 the next one-store scanner refit credits the fleet's real zero rounded-payroll change and is refused
+  - L714 fixture: one robot among three vehicles plants saves201 rounded posts in an active imported patent
+  - L718 the installed robot's royalty uses the actual rounded fleet saving
+- **L723 12. every fee, the saved production process and a new plant's own recipe**
+  - L747 fixture: a local long kiln activates positive imported preheater rent on the same saved rotary process
+  - L751 both the refit and the proposed long kiln lose the dependent preheater's extra royalty
+  - L777 fixture: the month's saved open hearth crosses to fresh oxygen prices before completion, with positive wages
+  - L782 new equipment prices the saved process the production apply will run
+  - L789 the completion boundary fits against that saved process and production retains the same choice
+  - L814 fixture: the Large Cement Plant and its kiln share imported PE4, with local E2 fitted and positive real production
+  - L820 the shared PE4 code loses one entry fee in both fitting increments
+  - L830 the positive real bill charges the shared PE4 code once
+- **L836 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty**
+  - L856 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
+  - L863 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
+  - L868 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
+  - L873 ...the order is taken, and one long kiln is on site for the plant
+  - L878 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
+  - L884 its positive production in PE4's patent pays a royalty, E2 still unknown
+  - L898 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
+- **L915 2. two entries compose in either fitting or discovery order**
+  - L916 Vehicle Works
+  - L917 Steel Mini-Mill
+  - L918 Commercial Bank
 
 ## PriceLevelCheck.java - 81 labelled assertions
 
