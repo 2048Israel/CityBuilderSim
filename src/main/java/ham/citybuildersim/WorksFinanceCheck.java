@@ -13,6 +13,11 @@ import java.util.Set;
  * WHY. A plan could count available cash twice, finance fractional parcels,
  * charge a reopened bond past maturity, or reuse an unrelated borrowing rate.
  * Each fixture causes that side of the rule and checks the real advice/pass.
+ * Since FS15 every city is a founding, founded(): its works stood by buildStack,
+ * its people placed at the cohorts' equilibrium, two months struck for books and
+ * loads, then its people, trend and year of GDP set again by hand. Until then the
+ * sections read towns played 24 and 36 months, whose builders, growth and GDP moved
+ * with every change to the month.
  */
 public final class WorksFinanceCheck {
     static final PrintStream out = System.out;
@@ -48,6 +53,9 @@ public final class WorksFinanceCheck {
 
     /** The months founded() strikes on the state it set: the founding's first, which barely trades, and the one after. */
     static final int STRUCK_MONTHS = 2;
+
+    /** growingCalendarChoice()'s year: its people grew from this share of today's (FS15: .9 on the served city played two years, whose builders took longer: a founding's Paved Road opens in 7.5 months, so the city grows faster for the road to have a plan). */
+    static final double GROWN_FROM = .75;
 
     /** The share of its homes' places founded()'s people fill. */
     static final double PEOPLE_PER_PLACE = .75;
@@ -811,6 +819,11 @@ public final class WorksFinanceCheck {
         BuildingsTemplate road = bm.getTemplateByName("Paved Road");
         for (BuildingsTemplate t : bm.getTemplates()) if (care.serves(t) && bm.getQuantity(t.getId()) > 0)
             EssentialWorksCheck.quietly(() -> bm.retire(t, bm.getQuantity(t.getId())));
+        // FS15: builders short of the depot, caused: the town keeps one standing depot of its founding's two, whose month
+        // less the repairs is under the reserve's builders-first threshold (the next fixture). The served city played two
+        // years had such builders; the founding's two build 535 a month and owe the depot under half a month.
+        EssentialWorksCheck.quietly(() -> bm.retire(depot, bm.getQuantity(depot.getId()) - 1));
+        check("fixture: the town keeps one standing depot", bm.getQuantity(depot.getId()) == 1);
         long required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1L),
                 g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
         EssentialWorksCheck.quietly(() -> {
@@ -938,7 +951,7 @@ public final class WorksFinanceCheck {
             population.clear();
             months.clear();
             for (int i = 0; i <= 12; i++) {
-                population.add(Math.round(people * (.9 + .1 * i / 12)));
+                population.add(Math.round(people * (GROWN_FROM + (1 - GROWN_FROM) * i / 12)));
                 months.add(g.getMonth() - 12 + i);
             }
             g.getBusinessInvestment().restorePopulationHistory(population);
@@ -959,6 +972,9 @@ public final class WorksFinanceCheck {
             }
             AutoBuilder auto = g.getAutoBuilder();
             auto.setCap(Auction.Cap.FILL, null);
+            // FS15: the player's limit set to its most, so rail's credit is inside it: the founding's year of GDP is the
+            // seeded month's twelve, under the served city's after two played years.
+            auto.setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
             g.setCashForTest(AutoBuilder.reserve(g) + 1);
             Set<BuildingsTemplate> skip = new HashSet<>(bm.getTemplates());
             skip.remove(paved);
