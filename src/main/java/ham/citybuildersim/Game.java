@@ -17492,7 +17492,7 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
-        dataSave.setPolicyAutopilot(debtManager.isAutopilot());   // the saved key carries a rule still waiting for its bank (R1d), which the load's setAutopilot() and moneyHearsTheMonth() put back to waiting
+        dataSave.setPolicyAutopilot(debtManager.isAutopilot());   // the rule's hand on the dial (from R1d to OP1 a 1900 city's rule could be saved still waiting for its bank)
         // ...and what the autopilot aims at and the spread the dial stands at under a peg (XR2).
         dataSave.setPolicyAim(debtManager.getAim().name());
         dataSave.setPegSpread(debtManager.getPegSpread());
