@@ -538,7 +538,7 @@ LABEL="GG1.7 a longer unused ID remains available"; ok test "$IRC" = 0
 # BW1: the gate says where it is through tools/bus.sh, and nothing depends on the bus.
 launch() { rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "$1" KnownRedsCheck; fin "$1" "batch/$1"; RUNDIR=$TA/bus-$1
     TIP=$(git -C "$TA/origin.git" rev-parse "batch/$1"); BASE0=$(git -C "$TA/origin.git" rev-parse main)
-    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$1" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
+    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$RUNDIR" sh "$SRC/tools/gate.sh" "$@" > "$RUNDIR.out" 2>&1; RC=$?; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null); }
 shipped() { [ "$RC" = 0 ] && [ -n "$TAGV" ] && git -C "$TA/origin.git" rev-parse -q --verify "refs/tags/$TAGV" && git -C "$TA/origin.git" log -1 --format=%s main | grep -q "^Merge batch/$1:"; }
 every_line() { [ "$(grep -c 'bus line' "$RUNDIR/unnamed.txt")" = 14 ] && tr -d '\r' < "$RUNDIR/unnamed.txt" | while IFS= read -r l; do grep -q -x -F "| $l" "$BUS_LOG" || exit 1; done; }
 CBS_BUS="$TA/bus-stub" launch BT1
@@ -566,6 +566,17 @@ BUS_EXIT=2 CBS_BUS="$TA/bus-stub" launch BT4
 LABEL="BW1 a cbs-bus that exits 2 changes nothing: the gate ships"; ok shipped BT4
 LABEL="...each call still made, its failure in the log"
 ok sh -c "grep -q '^gate BT4 done ' '$BUS_LOG' && grep -q 'cbs-bus gate failed (exit 2)' '$RUNDIR/ship.log'"
+# BW2: main moved by another's push while a run checks; the run publishes nothing, so nothing says it shipped.
+git clone -q -b main "$TA/origin.git" "$TA/stranger" && git -C "$TA/stranger" config user.name stranger && git -C "$TA/stranger" config user.email stranger@example.invalid
+STUB_RACE="$TA/stranger" CBS_BUS="$TA/bus-stub" launch BV1 --dry-run
+LABEL="BW2 a dry run while another's commit lands on main ends done, passed and published=no"
+ok sh -c "test $RC = 0 && git -C '$TA/origin.git' log -1 --format=%s main | grep -q -x 'shipped meanwhile' && grep '^gate BV1 done ' '$BUS_LOG' | tail -1 | grep -q 'outcome=passed published=no'"
+LABEL="...and mails nothing, its state never shipped"; ok sh -c "! grep -q -e '^send ' -e '^state BV1 shipped' '$BUS_LOG'"
+STUB_RACE="$TA/stranger" CBS_BUS="$TA/bus-stub" launch BV2
+LABEL="BW2 a gate whose push another's commit refused ends stopped, push refused, published=no"
+ok last_gate BV2 '^gate BV2 stopped outcome=push refused published=no'
+LABEL="...its one message the stop, nothing of the batch's to mend, and never shipped"
+ok sh -c "grep -c '^send ' '$BUS_LOG' | grep -q -x 1 && grep -q -x -F 'send BV2 --kind instruction --urgent -' '$BUS_LOG' && grep -q -x -F \"| Nothing of the batch's to mend.\" '$BUS_LOG' && ! grep -q -e 'BV2 shipped' -e '^state BV2 shipped' '$BUS_LOG'"
 # GB1: the gate on a gate box, faked: "nobox" never answers; "box" runs gate-box.sh's serving half here, as the box would.
 cat > "$TA/fake-ssh" <<'STUB'
 #!/bin/sh

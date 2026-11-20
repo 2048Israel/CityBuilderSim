@@ -1,4 +1,4 @@
-# GB3 notes - ensembles run on the gate box first
+# GB3 notes - ensembles run on the gate box first, and BW2
 
 Jerus, 2026-11-20, "Gatebox first":
 
@@ -111,6 +111,37 @@ noise: one seed of 16 moved within the spread. The switch went ahead.
   laptop half and its ssh (`--ensemble <label>`, `--serve ensemble <label>`).
   The box then stops its runs on the dropped connection.
 
+## BW2, folded in (the orchestrator, 2026-11-20)
+
+`tools/gate.sh` said "published" whenever origin's main moved during the run.
+With runs queued on the box another gate lands in between: HS2's dry run
+ended while FB13's gate pushed 0.9.163, so the gate mailed HS2 "HS2 shipped
+untagged on 0.9.162", set its state to shipped, and skipped the stop mail
+with its 59 unnamed lines (LM1-D's dry run met the same, 2026-11-18).
+
+- **Published** now means: not a dry run, and origin's main after the run
+  holds the batch's tip (`branch.commit`), which the main the run began on
+  (`main.commit`) did not. A tag counts only when `refs.after` holds it with
+  that tip in its history.
+- **Not the clone's HEAD**, which BW2's brief named: a dry run takes its
+  merge back, and a push that main's moving refused resets the clone to the
+  stranger's main, which then equals main after. History also covers two
+  real gates on the box pushing one after the other: when main after is not
+  in the clone, it fetches main first.
+- **The push refused** now ends `published=no` and mails the stop ("Nothing
+  of the batch's to mend"), where it had also mailed "shipped".
+- **`tools/gate-report.sh`**, the other reader of `refs.before`, lists the
+  refs a stopped gate saw move, without saying who moved them, so it stays.
+  `ship.sh` reads neither file.
+- **Two self-test cases** in BW1's set, with a stranger's clone pushing to
+  the scratch origin mid-suite (`STUB_RACE`):
+  - a dry run ends `done outcome=passed published=no` and mails nothing;
+  - a real gate ends `stopped outcome=push refused published=no`, its one
+    mail the stop.
+- **BW2's queue row:** `ship.sh` takes out only the shipping batch's own row,
+  and a branch leaves `QUEUE.md` alone. So BW2's row is the orchestrator's to
+  delete, as a row the batch it names settled in its notes (QUEUE.md's rule).
+
 ## Calls taken (each the recommended one)
 
 1. **The scoring stays on the laptop.** The box has no pandas and no pip, and
@@ -152,20 +183,28 @@ noise: one seed of 16 moved within the spread. The switch went ahead.
     box, stopped the laptop half and its ssh. The box's serve then ended its
     runs: no java and no serve were left there, and the locks were free.
     HS2's ensemble on the laptop was untouched.
+- **After main's 0.9.167 and GB4** (merged, with BW2): `batch-check.sh
+  --fast` exit 0 and `ensemble-selftest.sh` 6 of 6 here; on the box,
+  `tools/ship-selftest.sh` 209 of 209, BW2's four among them. Its first run
+  there failed one: my assertion that no mail said "shipped" caught the stop
+  mail quoting the stranger's commit, "shipped meanwhile". The assertion now
+  looks for "BV2 shipped" and a shipped state.
 - The box's probe and test files were removed afterwards (`~/cbs/ens*`, the
-  test copy, the live runs' folders).
+  test copies, the live runs' folders).
 
 ## One in, one out
 
 `git diff --numstat origin/main` over the process files, the notes and ship
-file left out: +315 -82.
+file left out: +342 -89.
 
-- The scripts, +105 -23: `tools/gate-box.sh` +80 -12,
-  `tools/ensemble/ensemble.sh` +21 -9, `stop.ps1` +4 -2.
-- The self-tests, +170 -50: `score-selftest.py` +107 -47, `ship-selftest.sh`
-  +63 -3.
-- The docs, +40 -9: the contract +9 -1, the orchestrator +7 -3, the
-  ensemble's README +20 -3, README +2 -1, the tree +2 -1.
+- The scripts, +114 -25: `tools/gate-box.sh` +80 -12,
+  `tools/ensemble/ensemble.sh` +21 -9, `tools/gate.sh` +9 -2 (BW2),
+  `stop.ps1` +4 -2.
+- The self-tests, +182 -51: `score-selftest.py` +107 -47, `ship-selftest.sh`
+  +75 -4.
+- The docs, +46 -13: the contract +9 -1, the orchestrator +7 -3, the
+  ensemble's README +20 -3, `docs/gatebox.md` +6 -4 (GB4 had 16 at once for an
+  ensemble as not yet measured), README +2 -1, the tree +2 -1.
 - It is a new mechanism: the box's queue and the ensemble's road there. Three
   things went: EN2's special case (dead since 0.9.113), GB2's two fixed
   waiter lines, and the "five at a time" text. The laptop route stays, as the
