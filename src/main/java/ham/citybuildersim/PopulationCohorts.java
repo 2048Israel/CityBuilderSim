@@ -178,7 +178,7 @@ public class PopulationCohorts {
     public double promotedShare(AdultStage s) {
         return share(lastStagePromoted[s.ordinal()], lastStageOpening[s.ordinal()]);
     }
-    /** Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is equilibriumShare's). */
+    /** Of the adults, the young's share: a no-argument reading for the ensemble's extra columns (HS2; the settled city's is settledYoungShareOfAdults()). */
     public double getYoungShareOfAdults() { return share(stage[AdultStage.YOUNG.ordinal()], band[AgeBand.ADULT.ordinal()]); }
     /** Last month's retirements over the adults who opened it: the ensemble's reading of the two stages' flow beside the one bucket's flat AgeBand.ADULT.monthlyOutflowRate() (HS2). */
     public double getRetiringShareOfAdults() { return promotedShare(AgeBand.ADULT); }
@@ -584,6 +584,11 @@ public class PopulationCohorts {
         return sum > 0 ? weight[of.ordinal()] / sum : 0;
     }
 
+    /** Of a settled city's adults, the young's share (HS2): what the People screen sets beside the city's own, and how a save without the stages splits its adults. */
+    public static double settledYoungShareOfAdults() {
+        return share(equilibriumShare(AdultStage.YOUNG), equilibriumShare(AgeBand.ADULT));
+    }
+
     /** ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. */
     public static double equilibriumShare(AdultStage of) {
         double[] weight = equilibriumWeights();
@@ -791,7 +796,7 @@ public class PopulationCohorts {
             stage[AdultStage.YOUNG.ordinal()] = Math.max(0, saved[names.length + 7]);
             stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, saved[names.length + 8]);
         } else {
-            double young = adults * share(equilibriumShare(AdultStage.YOUNG), equilibriumShare(AgeBand.ADULT));
+            double young = adults * settledYoungShareOfAdults();
             stage[AdultStage.YOUNG.ordinal()] = young;
             stage[AdultStage.ESTABLISHED.ordinal()] = Math.max(0, adults - young);
         }

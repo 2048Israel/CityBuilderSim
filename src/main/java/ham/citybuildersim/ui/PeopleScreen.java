@@ -1171,8 +1171,7 @@ final class PeopleScreen {
                     "%n%s, %d-%d: %s (a settled city's %.0f%% of the adults)%n%s, %d-%d: %s",
                     AdultStage.YOUNG.getLabel(), AdultStage.YOUNG.getFromAge(), AdultStage.YOUNG.getToAge() - 1,
                     people(cohorts.get(AdultStage.YOUNG)),
-                    PopulationCohorts.equilibriumShare(AdultStage.YOUNG)
-                            / Math.max(1e-9, PopulationCohorts.equilibriumShare(AgeBand.ADULT)) * 100,
+                    PopulationCohorts.settledYoungShareOfAdults() * 100,
                     AdultStage.ESTABLISHED.getLabel(), AdultStage.ESTABLISHED.getFromAge(),
                     AdultStage.ESTABLISHED.getToAge() - 1, people(cohorts.get(AdultStage.ESTABLISHED)));
             Kept.tip(row, String.format(
@@ -4565,7 +4564,7 @@ final class PeopleScreen {
          */
         Household youngCell = bal.cell(shape, tier, AdultStage.YOUNG);
         double youngHomes = youngCell == null ? 0 : youngCell.households();
-        boolean both = youngHomes >= .5;
+        boolean both = youngCell != null && !youngCell.isEmpty();
         Label who = Kept.label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex)
                 + (both ? "  ·  established, 35-69" : ""));
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)

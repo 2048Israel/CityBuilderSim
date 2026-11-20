@@ -243,6 +243,39 @@ public class HouseholdStageCheck {
         oddBack.restore(PopulationCohorts.saveBands(), odd);
         assertTrue("...and the save brings back its established to the bit, and its adults",
                 oddBack.get(established) == 2000.2 && oddBack.get(AgeBand.ADULT) == 1000.1 + 2000.2);
+        /*
+         * ...AND THE FAMILIES' YOUNG MATRICES (the review, 2026-11-20): the
+         * young households and last month's record of them, which the
+         * established's are the whole matrices less. A remembering city
+         * rebuilt twice, so both carry figures, saved and read back.
+         */
+        double[] roundJobs = new double[PayTier.values().length];
+        roundJobs[PayTier.UNSKILLED.ordinal()] = 600;
+        roundJobs[PayTier.SKILLED.ordinal()] = 300;
+        FamilyModel kept = new FamilyModel();
+        kept.rememberHouseholds(true);
+        kept.rebuild(HouseholdMemoryCheck.staged(800, 900, 650, 6000, 2400), roundJobs);
+        kept.rebuild(HouseholdMemoryCheck.staged(780, 910, 640, 6100, 2300), roundJobs);
+        FamilyModel keptBack = new FamilyModel();
+        double[] keptSave = kept.toSaveArray();
+        keptBack.restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), keptSave);
+        boolean matrices = true;
+        double youngHeld = 0, youngFormed = 0;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            for (PayTier t : PayTier.values()) {
+                youngHeld += kept.get(s, t, young);
+                youngFormed += kept.getFormed(s, t, young);
+                for (AdultStage g : AdultStage.values()) {
+                    matrices &= keptBack.get(s, t, g) == kept.get(s, t, g)
+                            && keptBack.getFormed(s, t, g) == kept.getFormed(s, t, g);
+                }
+            }
+        }
+        assertTrue("fixture: the remembering city holds young households and a record of what the young formed",
+                youngHeld > 0 && youngFormed > 0);
+        assertTrue("...and the families' save brings back both stages' households and last month's record of them to the bit,"
+                + " every shape and tier, and saves again to the same array", matrices
+                && java.util.Arrays.equals(keptBack.toSaveArray(), keptSave));
 
         double eqY = PopulationCohorts.equilibriumShare(young), eqE = PopulationCohorts.equilibriumShare(established);
         check("a settled city's two stages are its adults", eqY + eqE, PopulationCohorts.equilibriumShare(AgeBand.ADULT));
