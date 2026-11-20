@@ -86,7 +86,6 @@ stuff".
 | FS12 | Sweep: building, the advice, the card, the auto-builder and the roads (9 harnesses); takes HP1 item 2 and HL1's BuildAdviceCheck 7 row (after SZ1) | [FS1 study 6.11](docs/studies/flaky-suite.md#611-fs12) |
 | FS13 | Sweep: the fund, the treasury and the trading city (7 harnesses); takes PK1's FundCheck half (after SZ1) | [FS1 study 6.12](docs/studies/flaky-suite.md#612-fs13) |
 | FS14 | Sweep: the Exchange and the bond desk (8 harnesses); takes SX2 (not beside HS1, PW1) | [FS1 study 6.13](docs/studies/flaky-suite.md#613-fs14) |
-| FS15 | Sweep: the works and the services' town (ChildcareCheck, EssentialWorksCheck, WorksFinanceCheck, AuctionCheck) (after SZ1) | [FS1 study 6.14](docs/studies/flaky-suite.md#614-fs15) |
 | FS16 | Sweep: schools, work and the households' books (9 harnesses) (not beside EDU1, CU2-W) | [FS1 study 6.15](docs/studies/flaky-suite.md#615-fs16) |
 | FS17 | Sweep: the saves, the history and the previews (11 harnesses) (after SZ1; not beside PW1-R, FB14) | [FS1 study 6.16](docs/studies/flaky-suite.md#616-fs17) |
 | RN1-H-M | The default city's retained Industrial Bakery in district (0,0) moved between m601 and m2400 despite its model count never falling below the one kept box, with no displacement by a run. Reproduce the dated district history, fix the placement cause and keep the hard oldest-works watch. | docs/queue/RN1-H-M.md |

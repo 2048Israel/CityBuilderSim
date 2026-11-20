@@ -95,7 +95,12 @@ import java.util.Set;
  *      asserts no rate: the count is what the cap's default is a judgement about.
  *
  * Every fixture CAUSES its condition, and from both sides: the bank's room is
- * made ample or nearly gone, the issue small or too big for every rule.
+ * made ample or nearly gone, the issue small or too big for every rule. The
+ * cities: sections 9 and 10 stand on ChildcareCheck's town, 10 with depots stood
+ * until its builders are not short; 7 and 8 on the lineup city (lineupCity(),
+ * sixty months played), its households handed HANDED_SPARE past their cushion
+ * (handSpare()); 12 on the 1900 city twelve months on, handed twice the bill's
+ * face; 11 is the long run, kept played as the auction's audit (FS15).
  */
 public class AuctionCheck {
 
@@ -777,15 +782,42 @@ public class AuctionCheck {
         return ledger.getDebt().stream().filter(kind::isInstance).count();
     }
 
+    /** The savings past their cushion sections 7 and 8 hand the lineup city's households at least (FS15): thirty-two of
+     *  the smallest asks, about what the city played sixty months held on 0.9.166's path (3,178k at month 61). */
+    static final double HANDED_SPARE = 32 * 100 * PriceLevel.FACTOR;
+
+    /**
+     * The households' savings past their cushion, handed (FS15): every household of the market's cells given the same
+     * savings more until their spare for paper is at least `spare`. A cell that may not buy paper (in debt, locked
+     * out, going short) takes its share and adds nothing, so each round after the first is sized by what the one
+     * before added. Outside the audited pools, as FundCheck hands its households theirs, so the month's audit is
+     * untouched. Until FS15 the sections read what the played city's households happened to hold, and an
+     * Observation stood where it held none.
+     */
+    static void handSpare(Game g, double spare) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        double households = 0;
+        for (Household c : hb.cellsForMarket()) if (!c.isEmpty()) households += c.households;
+        if (!(households > 0)) return;
+        double each = (spare - hb.spareForPaper()) / households;
+        for (int round = 0; round < 64 && hb.spareForPaper() < spare; round++) {
+            double before = hb.spareForPaper();
+            for (Household c : hb.cellsForMarket()) if (!c.isEmpty()) c.savings += each;
+            double added = hb.spareForPaper() - before;
+            each = added > 0 ? each * (spare - hb.spareForPaper()) / added * (1 + 1e-9) : each * 2;
+        }
+    }
+
     /* ============== 7. the lineup in a city ============== */
     static void section7(Game city) {
         out.println("--- 7. the lineup in a city: a line opens, reopens while it is the benchmark, and is not reopened past that ---");
         DebtManager ledger = city.getDebtManager();
+        handSpare(city, HANDED_SPARE);
         double spare = city.getHouseholdBalance().spareForPaper();
         double ask = Math.max(100 * PriceLevel.FACTOR, spare * .05);
         out.printf("   m%d: households hold $%,.0fk past their cushion; each sale below asks $%,.0fk of face%n",
                 city.getMonth(), spare, ask);
-        Observation.reached("fixture: households with savings past the cushion", spare > 0);
+        assertTrue("fixture: households with savings past the cushion", spare >= HANDED_SPARE);
         assertTrue("fixture: no ten-year or two-year line stands yet", ledger.benchmarkLine(10) == null && ledger.benchmarkLine(2) == null);
 
         int need2 = (int) Math.ceil(Auction.BENCHMARK_LIFE * 24 - 1e-9);
@@ -809,9 +841,9 @@ public class AuctionCheck {
         double spare = city.getHouseholdBalance().spareForPaper();
         /* A NEW LINE: the stop, rounded down to an eighth. */
         DebtQuote q1 = city.quoteLongBond(ask, 10, 100 * PriceLevel.FACTOR);
-        if (!Observation.reached("fixture: the played market covers the ten-year lineup sale",
-                !q1.isEmpty() && !q1.isShort(),
-                "lineup opening, coupon, reopening and benchmark-edge laws")) return;
+        boolean covered = !q1.isEmpty() && !q1.isShort();
+        assertTrue("fixture: the played market covers the ten-year lineup sale", covered);
+        if (!covered) return;
         Result r1 = q1.auction();
         assertTrue("a ten-year sale with no line to reopen offers a new one, and sells it in full",
                 r1 != null && r1.ask().isNewLine() && !q1.isEmpty() && !r1.shortSale() && r1.sold() == r1.ask().face());
@@ -833,15 +865,15 @@ public class AuctionCheck {
         /* A BILL AND AN AMORTIZING SALE open pieces of their own, and open another each time. */
         long bills = pieces(ledger, ShortTermTBill.class), serials = pieces(ledger, MediumTermBond.class);
         DebtQuote billQuote = city.quoteTBill(ask, 6, 100 * PriceLevel.FACTOR);
-        if (!Observation.reached("fixture: the played market covers the lineup bill",
-                !billQuote.isEmpty() && !billQuote.isShort(),
-                "mixed-book lineup and reopening laws")) return;
+        covered = !billQuote.isEmpty() && !billQuote.isShort();
+        assertTrue("fixture: the played market covers the lineup bill", covered);
+        if (!covered) return;
         quietly(() -> city.handleTBillLogic(ask, 6, 100 * PriceLevel.FACTOR));
         // Quoted after the bill is booked: its issue is on the books the amortizing sale is struck on.
         DebtQuote serialQuote = city.quoteMediumBond(ask, 10, 100 * PriceLevel.FACTOR);
-        if (!Observation.reached("fixture: the played market covers the lineup serial",
-                !serialQuote.isEmpty() && !serialQuote.isShort(),
-                "mixed-book lineup and reopening laws")) return;
+        covered = !serialQuote.isEmpty() && !serialQuote.isShort();
+        assertTrue("fixture: the played market covers the lineup serial", covered);
+        if (!covered) return;
         quietly(() -> city.handleMediumBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         assertTrue("a six-month bill and a ten-year amortizing bond each open a piece of their own",
                 pieces(ledger, ShortTermTBill.class) == bills + 1 && pieces(ledger, MediumTermBond.class) == serials + 1
@@ -934,6 +966,7 @@ public class AuctionCheck {
         BusinessDebtManager.BondDesk desk = lender.getBondDesk();
         lender.setBondMarket(city.getBondMarket(), null);
         play(city);                                    // section 7's last sales settle here, not in the month under test
+        handSpare(city, HANDED_SPARE);                 // FS15: section 7's sales took what was handed there
         double spare = hb.spareForPaper();
         double askFace = Math.max(100 * PriceLevel.FACTOR, spare * .2);
         assertTrue("fixture: households with savings past the cushion", spare > 0);
@@ -1038,6 +1071,11 @@ public class AuctionCheck {
         quietly(() -> { g.run(); g.simulateMonths(12); });
         double granule = Game.BUILD_NOTE_GRANULE;
         double ask = 10 * granule;
+        // FS15: the bill's buyers caused: the households handed twice its face past their cushion. Twelve months on, the
+        // city's bank has the room to buy it too (52,355 of face on 0.9.167's path), but that is the played months'.
+        handSpare(g, 2 * ask);
+        assertTrue("fixture: the 1900 households hold twice the bill's face past their cushion",
+                g.getHouseholdBalance().spareForPaper() >= 2 * ask);
         DebtQuote q = g.quoteTBill(ask, 6, granule);
         assertTrue("fixture: the 1900 bill has a nonempty auction", !q.isEmpty() && q.auction() != null && q.auction().sold() > 0);
         AuctionTally tally = g.getDebtManager().getAuctionTally();
@@ -1455,9 +1493,15 @@ public class AuctionCheck {
         ab.setSlack(.30, null);
         assertTrue("automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point",
                 CapSetting.same(ab.getCap(), Cap.tail(0)) && CapSetting.same(a.getRolloverCap(), Cap.DEFAULT));
-        if (!Observation.reached("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
-                !a.getBuildingManager().foreignCrewsTakeOrders() && a.getBuildingManager().orderPriceMultiplier() == 1.0,
-                "section 10 multi-pass auto-builder quotes and filled asks")) return;
+        // FS15: and more, one at a time, while the town's builders are still short (a town moved by a change to the month
+        // may need more than FC1's eight); until FS15 an Observation stood here.
+        BuildingManager builders = a.getBuildingManager();
+        for (int more = 0; more < 64 && (builders.foreignCrewsTakeOrders() || builders.orderPriceMultiplier() != 1.0); more++)
+            a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 1, true);
+        boolean notShort = !builders.foreignCrewsTakeOrders() && builders.orderPriceMultiplier() == 1.0;
+        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
+                notShort);
+        if (!notShort) return;
 
 
         /*

@@ -12,6 +12,12 @@ import java.util.Set;
  * and police waited for a payback that the service itself must never face.
  * Fixtures cause short highways with and without ground, a street on site,
  * a partial power order from scarce cash, and schools that cannot pay their upkeep.
+ * The town is ChildcareCheck.town() at x1 (played 36 months) with a bond and no debt
+ * room, town() here; what a section reads off it is set there by hand. Since FS15
+ * the premises that sat on the played town's own figures are caused: the highway
+ * forecast's traffic scaled between its two edges (mostCovered()), the streets'
+ * share set (SERVED_STREETS), spare care by the people scaled to it (scalePeople()),
+ * and the staff-short plant by the workforce set to half the posts.
  */
 public final class EssentialWorksCheck {
     static int fails;
@@ -93,6 +99,33 @@ public final class EssentialWorksCheck {
                 .allMatch(m -> BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW));
     }
 
+    /** The town carrying its traffic as it stood times `f`, every stream alike, and streets built past it: the
+     *  forecast order has no unrelated unserved street whose construction promise would take precedence. A town with
+     *  modes reads its streams, not its total (InfrastructureManager.getEffectiveLoad), so both are scaled. */
+    static void carry(Game g, BuildingsTemplate highway, double load, double[] streams, double f) {
+        InfrastructureManager roads = g.getInfrastructureManager();
+        double[] scaled = streams.clone();
+        for (int i = 0; i < scaled.length; i++) scaled[i] *= f;
+        roads.setLoad(load * f);
+        roads.setBreakdown(scaled);
+        roads.setBuiltCapacity(roads.getStreetLoad() * 1.05
+                + highway.getCapacity() * 2 - InfrastructureManager.BASE_CAPACITY);
+    }
+
+    /** The most of its traffic, as a multiple, at which the town's highways are maintained under `p`, by bisection
+     *  (FS15). */
+    static double mostCovered(Game g, BuildingsTemplate highway, double load, double[] streams, BuildAdvice.Ahead p) {
+        double lo = 0, hi = 1;
+        for (carry(g, highway, load, streams, hi); BuildAdvice.maintained(g, HIGHWAYS, Map.of(), p) && hi < 1e12;
+                carry(g, highway, load, streams, hi)) hi *= 2;
+        for (int i = 0; i < 60; i++) {
+            double mid = (lo + hi) / 2;
+            carry(g, highway, load, streams, mid);
+            if (BuildAdvice.maintained(g, HIGHWAYS, Map.of(), p)) lo = mid; else hi = mid;
+        }
+        return lo;
+    }
+
     static void anticipateHighway(Path root) {
         out.println("--- a growing highway is ordered before its construction lead consumes the reserve ---");
         Game g = town(root, "highway-ahead");
@@ -115,13 +148,17 @@ public final class EssentialWorksCheck {
         double shortGrowth = BuildAdvice.opening(g, 0, ab.getSlack()).scale();
         double longGrowth = BuildAdvice.opening(g, lead, ab.getSlack()).scale();
         // Find traffic whose six-month reserve is covered, but its construction-lead reserve is short.
-        roads.setLoad(1000);
-        double loadForOne = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[1];
-        double capacity = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[0];
-        roads.setLoad(1000 * capacity / loadForOne / ((shortGrowth + longGrowth) / 2));
-        // The forecast order has no unrelated unserved street whose construction promise would take precedence.
-        roads.setBuiltCapacity(roads.getStreetLoad() * 1.05
-                + highway.getCapacity() * 2 - InfrastructureManager.BASE_CAPACITY);
+        // FS15: the traffic caused from both sides. Until FS15 a load of today's capacity over the two growths' mean was
+        // set, but the town has modes and reads its streams, so the load moved nothing and the premise was the played
+        // town's own traffic; on HS1's path it no longer fell between. Now the town's traffic, every stream alike, is
+        // scaled to the midpoint of the most covered today and the most covered at the opening, each by bisection.
+        double load = roads.getLoad();
+        double[] streams = new double[Traffic.values().length];
+        for (Traffic t : Traffic.values()) streams[t.ordinal()] = roads.getLoad(t);
+        double coveredNow = mostCovered(g, highway, load, streams, BuildAdvice.opening(g, 0, ab.getSlack()));
+        double coveredAtOpening = mostCovered(g, highway, load, streams, BuildAdvice.opening(g, lead, ab.getSlack()));
+        carry(g, highway, load, streams, (coveredNow + coveredAtOpening) / 2);
+        out.printf("      the town's traffic covered today to x%.4f, at the opening to x%.4f%n", coveredNow, coveredAtOpening);
         check("fixture: operating streets carry the calibrated highway forecast's traffic",
                 BuildAdvice.maintained(g, BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS), Map.of(), BuildAdvice.NOW));
         out.printf("lead %.2f short growth %.3f long growth %.3f sd %s%n", lead, shortGrowth, longGrowth, java.util.Arrays.toString(BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())));
@@ -467,6 +504,9 @@ public final class EssentialWorksCheck {
                 * (gravel.gravelRepairsAt(after) - gravel.gravelRepairsAt(before));
     }
 
+    /** The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). */
+    static final double SERVED_STREETS = .5;
+
     static void currentLossPriority(Path root) {
         out.println("--- the higher monetary service loss gets the scarce cash first ---");
         Game g = town(root, "current-loss-priority");
@@ -476,11 +516,23 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 4);
+        // FS15: the streets' share caused. The town played 36 months served .274 of its street traffic against power's
+        // .25 by this fixture's hand, a hair the right side of it; on HS1's path it fell under. Its traffic is now
+        // scaled, every stream alike, until the streets serve SERVED_STREETS of it.
+        InfrastructureManager roads = g.getInfrastructureManager();
+        double[] played = BuildAdvice.supplyDemand(g, streets, Map.of());
+        double scale = played[0] / SERVED_STREETS / played[1];
+        double[] streams = new double[Traffic.values().length];
+        for (Traffic t : Traffic.values()) streams[t.ordinal()] = roads.getLoad(t) * scale;
+        roads.setLoad(roads.getLoad() * scale);
+        roads.setBreakdown(streams);
         double roadLoss = WorksValue.shortageLoss(g, streets), powerLoss = WorksValue.shortageLoss(g, power);
         double[] road = BuildAdvice.supplyDemand(g, streets, Map.of());
         double[] watts = BuildAdvice.supplyDemand(g, power, Map.of());
         BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
         g.setCashForTest(AutoBuilder.reserve(g) + g.quoteBuild(wind, 1).total * 1.01);
+        out.printf("      streets serve %.3f and lose %.3f; power serves %.3f and loses %.3f%n",
+                road[0] / road[1], roadLoss, watts[0] / watts[1], powerLoss);
         check("fixture: streets lose more output although power has the greater missing share",
                 roadLoss > powerLoss && powerLoss > 0 && road[0] / road[1] > watts[0] / watts[1]
                         && !g.getAutoBuilder().within(g));
@@ -493,6 +545,22 @@ public final class EssentialWorksCheck {
         check("the higher-loss street work uses the cash first and power waits for funding",
                 roadOrder != null && roadOrder.ordered() > 0 && powerOrder != null
                         && powerOrder.ordered() == 0 && powerOrder.cut() == AutoBuilder.Cut.CASH);
+    }
+
+    /** Every band of the town's people, and its two adult stages, times `f`, its workforce held (FS15): a demand moved
+     *  without moving the staffing of the works that serve it. */
+    static void scalePeople(Game g, double f) {
+        PopulationCohorts cohorts = g.getCohorts();
+        double[] saved = cohorts.toSaveArray();
+        int bands = AgeBand.values().length;
+        double people = 0;
+        for (int i = 0; i < bands; i++) people += saved[i] *= f;
+        for (int i = bands + 7; i < saved.length; i++) saved[i] *= f;
+        cohorts.restore(PopulationCohorts.saveBands(), saved);
+        PopulationManager pm = g.getPopulationManager();
+        long workforce = pm.getWorkforce();
+        pm.setPopulation(Math.round(people));
+        pm.restoreWorkforce(workforce);
     }
 
     static void fundingPriority(Path root, boolean spareCare) throws Exception {
@@ -520,6 +588,18 @@ public final class EssentialWorksCheck {
                     g.getPopulationManager().getJobFillRate());
             int n = Math.max(0, (int) Math.ceil((base[1] - base[0]) / unit));
             if (n > 0) quietly(() -> g.buildStack(clinic, n, true));
+            // FS15: spare care caused. Whole clinics overshoot the lack by up to one clinic, which on BO1-S's path put
+            // supply past demand and its slack (5,471 places for a demand of 4,052, its slack's 4,660), and the card was gone. The
+            // town's people are scaled, its workforce and so the clinics' staffing held, until care's demand is its supply
+            // over half the slack: served now, and short of the reserve the card is for.
+            double[] built = BuildAdvice.supplyDemand(g, care, Map.of());
+            scalePeople(g, built[0] / (built[1] * (1 + g.getAutoBuilder().getSlack() / 2)));
+            long scaled = g.getPopulationManager().getPopulation();
+            g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(scaled, scaled));
+            double[] spare = BuildAdvice.supplyDemand(g, care, Map.of());
+            check(String.format("fixture: care's places are inside its reserve: %.0f for a demand of %.0f, under %.0f",
+                    spare[0], spare[1], spare[1] * (1 + g.getAutoBuilder().getSlack())),
+                    spare[0] >= spare[1] && spare[0] < spare[1] * (1 + g.getAutoBuilder().getSlack()));
         } else {
             double share = BuildAdvice.cover(g, care, Map.of());
             g.getHealth().advanceMonth(share, 1, 0, 1, 1, 1, 1);
@@ -589,6 +669,8 @@ public final class EssentialWorksCheck {
         Game g = town(root, "filled-post-costs");
         BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
         PopulationManager pm = g.getPopulationManager();
+        // FS15: the short staff caused: the workforce set to half the town's posts, where it was the 36-month play's.
+        pm.restoreWorkforce(pm.getTotalJobs() / 2);
         double[] wages = pm.getWagesPerType(), fill = pm.getJobFillRate();
         double paid = 0, full = 0;
         for (JobType j : JobType.values()) {
