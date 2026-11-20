@@ -420,3 +420,73 @@ Its three minor findings ship as they are, queued as one row, BO1-R:
    split. The mend: the case through `FamilyModel.rebuild`, the owner cell's
    households and a listing's grant shared among fewer families than
    companies.
+
+## 13. The gate's reds (07:47): 33 lines in 8 harnesses, two mended, six named
+
+The fresh gate on 0.9.161 stopped on 33 lines the branch had not named,
+in harnesses the batch had not run. Each read against main's log of the
+same gate (OP1's, 0.9.161); probes were temporary prints, put back.
+
+**Mended (code):**
+
+- **YearBookCheck, 4 lines: a real fault.** `YearBook.labourForce` rebuilt
+  `PopulationManager.getLabourForce()` from the workforce, students and
+  prisoners series, and no series held the owner families' adults, so with
+  the line on its labour force read 5,212.84 against the model's 5,204.84
+  (8 adults, four families), and the filled posts, the unemployment rate
+  and the average wage with it. `HistorySave` records `owners` (the owners'
+  adults, `PopulationManager.getOwners()`) each month; the year book's
+  labour force and unemployment tail and the saved cities' cache
+  (`CityMeasures`) take it off; `YearBook.level` registers it. An old save
+  has no such series and reads it as none (NaN, taken as 0), as before.
+  ClockCheck's hand-grown history keeps `owners` small beside the
+  workforce, as it keeps the students and prisoners. YearBook, Clock,
+  History, SaveSlot, Rankings, Replay and ReadPath pass; SaveFile reads
+  only its row from section 9.
+- **RefineryCheck 14, 6 lines.** The best unit pays here by a hair: on
+  0.9.161 a Small Cracking Unit earns $0.0k a month on $794k, 0.004% a
+  month. In the town with the owner families off its labour force it loses
+  by one ("would lose $0.0k a month on it"), so nothing is ordered in the
+  two years. The section's town now plays with the line off
+  (`plannerTown(label, held, false)`, `ShortSellingCheck.lineOff`), as XR1
+  pinned the rate for the same hair; it orders the Small Cracking Unit at
+  0.004% a month again, and the harness passes. The study lists Refinery
+  as caused throughout, so no sweep would have taken it.
+
+**Named, each the moved city (rows in the ship file):**
+
+- **Forms1900Check 12 and 14 (FS8): not a door counted on one side.** The
+  strike's homes (`Game.homeFuelHomes()`) and the books' doors
+  (`households.updateByTier(..., rowDoors())`) are one function,
+  `Game.rowDoors()`, and the owner row is in both (6.0 doors in the books,
+  `families.getOwnerFamilies()` at a full rent share). The books split by
+  the doors the strike counted a month back (books at month m = strike at
+  m-1, in every month probed), and the line-on town grew 6.3% in that
+  month (381.9 to 406) where the check allows 5% (line off from the
+  founding: 399.04 to 390.63, 2.1%). Section 12's fixture wants petrol duty
+  in the first month, and the line-on town has no driver yet (0.0 against
+  6.0 with the line off; 2.8 the next month).
+- **CreditCheck (FS9): not a money fault.** The banned retailer built one
+  Convenience Store in the second of its three passes, from its own
+  month's takings: its cash is set to 10 at each pass's start and ended
+  that pass at 1.81 (the first pass's month took it from 10 to 130.31).
+  The loan count and principal past the interim did not rise, it was lent
+  $0.0k in the interim and raised $0k from its owners. The fixture's "what
+  it wants is credit for the rest" is not caused: in the moved town a
+  month's takings buy a shop.
+- **CurveCheck 8 (FS13): one ulp, not a pump.** The steep Note's first
+  round trip nets +4.547e-13, exactly one ulp of the cash it started from
+  (3,580.9756852208020), the float residue of 530.80099 added and taken
+  back. Its second round nets 0, and the Serial's first round nets minus
+  one ulp; every home round trip nets 0.00 on main too. The sweep's mend:
+  "no richer" within a few ulps of the cash.
+- **LabourCheck (FS16).** Month 14 of the moved city has 1.8 skilled
+  arrivals against 14.5 departures (main: 92.9 against 15.0), so the
+  counts fell (-10.5, expected -7.6) and there is no arrival to tell the
+  ADULT share from the whole mix by.
+- **KeptCheck 51 (FS4).** "No month in twelve moved the figures" of the
+  plain business's Operations ring in the moved city, so no count was
+  running to stop. KeptCheck's other four reds are main's (gate.txt).
+- **CarCheck (FS7).** The two ten-year towns own 0.210 and 0.215 cars a
+  household (main 0.327 and 0.318), at a household rate of 6.52% (main
+  2.04%): the moved towns, ten years played.

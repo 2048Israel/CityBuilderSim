@@ -498,7 +498,8 @@ public class ClockCheck {
             if (month >= 6000 && month <= 6003) return Double.NaN;
             return 1 + month / 400.0;
         }
-        if (name.equals("students") || name.equals("prisoners")) return 10 + code % 7;
+        // ...and the owner families (BO1-S): the year book takes all three off the workforce, so they stay small beside it.
+        if (name.equals("students") || name.equals("prisoners") || name.equals("owners")) return 10 + code % 7;
         return 100 + Math.floorMod(month * 13 + code, 71) + code;
     }
 
