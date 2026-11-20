@@ -907,6 +907,19 @@ public final class CityRuns {
     public long highwayUndrawn() { return highwayShort + (highways.started && !highwaysReach() ? highways.plots : 0); }
     /** The track plots the model has that the railway's ways do not use and the map does not draw (FR7): the model's less the main line's, the sidings' and the branches' - the legend's "plots of track more than the line uses". */
     public long trackSurplus() { return trackSurplus; }
+
+    /**
+     * (HL1-M) The railway's plots past the model's `track` plots (the Rail Spurs', Freight Lines' and so on, BuildingVisual.cells()): a STATION'S OWN main line, laid
+     * to the city's edge whatever track the model has (layRail(); FX5, Jerus 2026-10-20: "there is a railwawy depot but no rails" - a yard is no track, and a depot
+     * alone is how the model rails freight). It is the other half of trackSurplus() - the model's track the railway cannot hold, which is 0 whenever the line is
+     * longer - so a drawn railway is the model's track less the one plus the other: laid = track - trackSurplus() + stationLine(track). The quay's spurs are neither
+     * (quayPlots()). With the yards gone and the idle yards taken up the line is trimmed to the track and this is 0; the sidings and the branches are laid out of what
+     * the track leaves past the line, so with the line longer than the track there are none (MapCheck's section 25 asserts both).
+     * WHY: MapCheck's section 1 held "the plots the map draws as track + what the runs could not lay = the model's track" and so called a city with one Rail Depot and
+     * no Rail Spur wrong (HL1's 120-month town, m121: 83 plots drawn, no model track, trackSurplus() 0). The map was right: it drew the line the runs lay for the depot.
+     */
+    public long stationLine(long track) { return Math.max(0, rail.plots - quayPlots() - track); }
+
     public int yardsShort() { return yardsShort; }
     public long version() { return version; }
 

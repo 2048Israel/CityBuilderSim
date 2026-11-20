@@ -48,6 +48,14 @@ import java.util.List;
  *      the leg prices are saved, so a loaded city's pieces are the live city's,
  *      and a month on, with the books struck again, so is the whole.
  *
+ * FS7: the fixtures. 1 is a founded city. 2, 3, 4 and 5 read a city BUILT for the band, nothing played (built()): the
+ * Haulage fixture's mines and plant with two Rail Depots, two Rail Spurs, a Truck Depot, a General Cargo Terminal, two
+ * Tanker Terminals and two Bulk Terminals laid on it, the railway's carried shares, the home and quay shares, the city
+ * leg's import and export shares and the quay's quotes set on Freight's state (restored), the month's tonnes handed to
+ * Ports so the berths of each kind take a set half (PortCheck.handMonth), and the month's books - what each good sold and
+ * bought abroad - set on a sector's statement; TradeBand.of() is pure, so the band follows. 6 stays the played full city
+ * (full()), saved and loaded.
+ *
  * It tests the model through its public getters and constants and changes
  * nothing in it; where the code and the brief disagree it says FAIL and the
  * line says where. Every fixture is a city of its own in GameFiles.scratch().
@@ -138,6 +146,84 @@ public class TradeBandCheck {
         return g;
     }
 
+    /** FS7: the quay's handling quote a tonne, as set on a built city: any figure, the band reads it back. */
+    static final double QUOTE = .0006;
+
+    /**
+     * FS7: a city BUILT for the band (see the class header), nothing played: HaulageCheck.base()'s mines and plant, the railway and the
+     * berths laid on it (HaulageCheck.lay: instant), then the states the band reads set directly - the railway's carried shares, the home
+     * and quay shares, each traded good's import and export share, the quay's quote for every kind with a berth (all on Freight's state,
+     * restored), the month's boundary tonnes handed to Ports (each kind with a berth a month of twice its berths, so a set half goes by
+     * sea, none of a kind with no berth) and the books' month on a sector's statement: every fourth good sold abroad only, every fourth sold
+     * and bought, every fourth bought only and every fourth quiet, crossing in units that differ by good.
+     */
+    static Game built(GameFiles files) {
+        Game g = HaulageCheck.base(files);
+        quietly(() -> {
+            HaulageCheck.lay(g, "Rail Depot", 2);
+            HaulageCheck.lay(g, "Rail Spur", 2);
+            HaulageCheck.lay(g, "Truck Depot", 1);
+            HaulageCheck.lay(g, "General Cargo Terminal", 1);
+            HaulageCheck.lay(g, "Tanker Terminal", 2);
+            HaulageCheck.lay(g, "Bulk Terminal", 2);
+        });
+        Freight fr = g.getSectors().freight();
+        double[] berths = Ports.berths(g.getBuildingManager());
+        SectorState st = fr.toState();
+        for (Traffic s : Traffic.values()) {
+            if (s.isFreight()) st.extras.put("carried." + s.name(), s == Traffic.BULK ? .35 : .2);
+        }
+        st.extras.put("homeShare", .25);
+        st.extras.put("quayShare", .5);
+        for (Good good : Good.values()) {
+            if (!good.traded()) continue;
+            st.extras.put("haul.exportShare." + good.name(), .5);
+            st.extras.put("haul.importShare." + good.name(), .5);
+        }
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            if (!(berths[kind.ordinal()] > 0)) continue;
+            st.extras.put("port." + kind.name() + ".quote", QUOTE);
+            st.extras.put("port." + kind.name() + ".known", 1.0);
+        }
+        fr.restore(st);
+        int[] goodsOf = new int[Ports.Cargo.values().length];
+        for (Good good : Good.values()) {
+            if (good != Good.CRUDE && good.traded() && good.cargo() != null && good.traffic() != null && good.traffic().isFreight()) goodsOf[good.cargo().ordinal()]++;
+        }
+        double[] in = new double[Good.values().length], leaving = new double[Good.values().length];
+        for (Good good : Good.values()) {
+            if (good == Good.CRUDE || !good.traded() || good.cargo() == null || good.traffic() == null || !good.traffic().isFreight()) continue;
+            int k = good.cargo().ordinal();
+            if (berths[k] > 0) in[good.ordinal()] = leaving[good.ordinal()] = berths[k] / goodsOf[k];
+        }
+        PortCheck.handMonth(g, in, leaving);
+        Sector.Statement books = g.getSectors().heavyIndustry().statement();
+        int turn = 0;
+        double soldAbroad = 0, boughtAbroad = 0;
+        for (Good good : Good.values()) {
+            if (!measured(g, good)) continue;
+            GoodsMarket m = g.getMarkets().get(good);
+            int quarter = turn++ % 4;
+            double units = 1_000 * (1 + turn % 7);
+            if (quarter == 0 || quarter == 1) {
+                Sector.Split sold = new Sector.Split();
+                sold.abroad = units * m.exportPrice();
+                books.sold.put(good, sold);
+                soldAbroad += sold.abroad;
+            }
+            if (quarter == 1 || quarter == 2) {
+                Sector.Split bought = new Sector.Split();
+                bought.abroad = units * m.importPrice();
+                books.bought.put(good, bought);
+                boughtAbroad += bought.abroad;
+            }
+        }
+        // ...and the statement's own lines the by-good books are read against (an import that is no good is its import line less its goods).
+        books.exports = soldAbroad;
+        books.imports = boughtAbroad;
+        return g;
+    }
+
     /** A row by good. */
     static Row row(Band b, Good g) {
         for (Row r : b.rows()) if (r.good() == g) return r;
@@ -214,7 +300,9 @@ public class TradeBandCheck {
             double seaShare = fr.seaShareInForce(good);
             double wantHandling = good.cargo() == null ? 0 : 2 * fr.portDivision().getQuote(good.cargo()) * tonnes * seaShare;
             handling &= same(r.amount(Part.PORT), wantHandling);
-            city2 &= same(r.amount(Part.CITY_LEG), (leg.in(good) + leg.out(good)) * tonnes);
+            // ...the received and the made tonne's legs each on its weight and then summed, as the band adds them (FS7: with an import and an export share
+            // set both are not nought, and (in + out) x tonnes is another rounding).
+            city2 &= same(r.amount(Part.CITY_LEG), leg.in(good) * tonnes + leg.out(good) * tonnes);
             door &= near(r.toTheDoor(), r.delivered() + r.amount(Part.PORT) + r.amount(Part.CITY_LEG));
             if (!thisBand) wrong.append(good.name()).append(' ');
             if (r.amount(Part.RAIL) > 0) rail++;
@@ -223,8 +311,10 @@ public class TradeBandCheck {
             if (r.amount(Part.CITY_LEG) > 0) city++;
             pure &= r.pieces().size() == Part.values().length;
         }
-        report("fixture: a played city with a railway, ships, a quay and a siding - goods on rail, at sea, handled and hauled",
-                rows > 0 && rail > 0 && sea > 0 && port > 0 && city > 0,
+        // FS7: this found it in a city played 21 months. built() causes it: the carried shares, the berths' shares and the quay's quotes set.
+        report("fixture: a built city with a railway, ships, a quay and a siding - goods on rail, at sea, handled and hauled",
+                rows > 0 && rail > 0 && sea > 0 && port > 0 && city > 0
+                        && fr.getCarried()[Traffic.BULK.ordinal()] == .35 && fr.portDivision().isQuoteKnown(Ports.Cargo.DRY_BULK),
                 String.format("%d goods: %d on rail, %d at sea, %d handled, %d with a city leg", rows, rail, sea, port, city));
         report("every good's margin is the market's worldMargin() (never below nothing)", margin, "");
         report("...its rail piece is the railway's charge both ways, railInWedge()", rails, "");
@@ -235,7 +325,7 @@ public class TradeBandCheck {
         report("...its city leg is Haulage's leg price received and made, a tonne's, on its weight", city2, "");
         report("...and the gap to the door is the delivered gap, the handling and the city leg", door && pure, "");
         String bad = nonFinite(b, "band");
-        report("no figure of any record is NaN or infinite in the played city", bad == null, bad == null ? "" : bad);
+        report("no figure of any record is NaN or infinite in the built city", bad == null, bad == null ? "" : bad);
     }
 
     /* ================================================================
@@ -264,6 +354,7 @@ public class TradeBandCheck {
                 noBerth &= r.amount(Part.SEA) == 0 && same(r.amount(Part.WORLD_LORRY), m.freightInBand());
             }
         }
+        // FS7: found in a played city; caused by built(): the kinds with a berth take a set half by sea, the kind with none (boxes) none.
         report("fixture: some goods go by ship and some do not", shipped > 0 && landed > 0, shipped + " by ship, " + landed + " not");
         assertTrue("the lorries' piece and the ships' sum to the freight still in the band, freightInBand()", sums);
         assertTrue("...the ships' piece is the good's two-way freight at its kind's sea freight on the berths' share in force", ships);
@@ -317,6 +408,7 @@ public class TradeBandCheck {
                     : half * 2 * fr.portDivision().getQuote(good.cargo()) * tonnes * seaShare;
             want[Part.CITY_LEG.ordinal()] += (boughtUnits * leg.in(good) + soldUnits * leg.out(good)) * tonnes;
         }
+        // FS7: found in the month a played city last struck; caused by built(): the month's books set on a sector's statement, goods sold, bought and quiet.
         report("fixture: the city sold and bought goods abroad in the month the books last struck", goods > 0 && crossed > 0,
                 String.format("%d goods crossed, %s of trade", goods, ham.citybuildersim.ui.Money.money(crossed)));
         report("the money that crossed is the books' by good, in the goods the band measures", near(w.crossed(), crossed),
@@ -352,6 +444,7 @@ public class TradeBandCheck {
 
     static void order(Game g, Band b) {
         System.out.println("\n--- 5. the order: the goods that crossed first, the largest first - and the same band when asked twice ---");
+        // FS7: read on built()'s city: crossings set by good (units that differ by good; goods sold only, sold and bought, bought only, and quiet).
         boolean sorted = true, crossedFirst = true;
         boolean seenQuiet = false;
         for (int i = 0; i < b.rows().size(); i++) {
@@ -421,14 +514,15 @@ public class TradeBandCheck {
 
     public static void main(String[] args) throws Exception {
         noTrade();
-        GameFiles files = GameFiles.scratch("tradeband-full");
-        Game g = full(files);
+        Game g = built(GameFiles.scratch("tradeband-built"));
         Band b = TradeBand.of(g);
         legs(g, b);
         lorriesAndShips(g, b);
         whole(g, b);
         order(g, b);
-        reload(g, files);
+        // 6 stays the played city: a save and a load of what a played city holds.
+        GameFiles files = GameFiles.scratch("tradeband-full");
+        reload(full(files), files);
         System.out.println();
         if (fails == 0) {
             System.out.println("TradeBandCheck: the Trade tab's band in legs - the world's margin, the lorries, the railway, the ships, the quay and the city leg are the model's own, sum to the band the prices show, and a city that never traded reads zeros: all passed");

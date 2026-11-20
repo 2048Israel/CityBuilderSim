@@ -22,7 +22,11 @@ import ham.citybuildersim.sectors.HeavyIndustry;
  *      arithmetic, because have/need is 1 to within an ulp and not 1, and an
  *      ulp in an operating rate is a different city.
  *
- *   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - the GOODS it makes and the
+ *   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES (FS7: the works are BUILT
+ *      and each sector's fleet seeded by Sector.runFleet(), as the top of a
+ *      month seeds one never asked - no month is played to get a town whose
+ *      tonnes happen to be there, and the counts are the formulas, asserted
+ *      against Sector's constants) - the GOODS it makes and the
  *      GOODS it buys, by weight, at NAMEPLATE rather than at this month's
  *      rate, which would be a circle. Since FR2 (2026-10-18) the vans carry the
  *      goods stream only: a bulk works keeps no vans, its tonnes go by
@@ -43,6 +47,10 @@ import ham.citybuildersim.sectors.HeavyIndustry;
  *   5. AND IT NEVER STOPS A BUSINESS DEAD. A firm short of its own lorries
  *      hires haulage and sends fuller loads. The same shape as the road's own
  *      floor, and for the same reason.
+ *
+ * And the city BUYS them (FS7): a sector's pantry set short of vans, one
+ * month's order read - the market's bid, the vans delivered, the cost line,
+ * the price inside the market's own band - not a town played twelve months.
  *
  * See claude/the-sixth-link.md and Sector's THE FLEET.
  */
@@ -69,6 +77,24 @@ public class VanCheck {
     /** Bitwise. Same family as CarCheck and RailCheck, same reason. */
     static boolean same(double a, double b) {
         return Double.compare(a, b) == 0 || (Double.isNaN(a) && Double.isNaN(b));
+    }
+
+    /**
+     * FS7: what a sector's standing plant moves by lorry at nameplate, worked by hand from its goods: {goods it makes, goods it buys, bulk it leaves to
+     * the trucks} in tonnes - the vans and the trucks left out of what it buys, as the fleet does not haul itself.
+     */
+    static double[] nameplate(Sector s) {
+        double out = 0, in = 0, bulk = 0;
+        for (Good g : s.goodsMade()) {
+            double t = s.getCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) out += t; else bulk += t;
+        }
+        for (Good g : s.goodsUsed()) {
+            if (g == Good.VANS || g == Good.TRUCKS) continue;
+            double t = s.getInputAtCapacity(g) * g.tonnesPerUnit();
+            if (g.traffic() == Traffic.GOODS) in += t; else bulk += t;
+        }
+        return new double[] { out, in, bulk };
     }
 
     public static void main(String[] args) {
@@ -128,7 +154,13 @@ public class VanCheck {
             // ...and the two stood up for their goods are held for the same reason: their tonnage is the subject.
             game.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
             game.getBusinessInvestment().holdSector(Sectors.FOOD_PROCESSING);
-            for (int i = 0; i < 24; i++) game.toggleNextMonth();
+            /*
+             * FS7: this played 24 months so that shops, works and mills still moved goods "after play", and only then read what they move. What a plant
+             * moves is read off the buildings standing at nameplate (Sector.tonnesMoved()), and the stack stands as built (noConstruction), so nothing
+             * is played to it. Each sector's fleet is seeded the way the top of a month seeds one that was never asked (Sector.runFleet(): the
+             * fleet is its need, the sector now known to the fleet rule) - the sections below drive that stock by the sector's own setters.
+             */
+            for (Sector s : game.getSectors().all()) s.runFleet();
         });
 
         /* ================================================================
@@ -142,6 +174,13 @@ public class VanCheck {
         Sector luxury = game.getSectors().luxuryRetail();
         Sector works = game.getSectors().foodProcessing();
         Sector mills = game.getSectors().heavyIndustry();
+
+        // FS7: the premise is built, not played to: every plant the sections below read stands as buildStack left it, and the shops' tonnes are the nameplate of those buildings.
+        report("fixture: the shops, the stores, the meat works and the furnaces stand as built, each moving what its buildings' nameplate says",
+                shops.buildingsStanding() > 0 && luxury.buildingsStanding() > 0 && works.buildingsStanding() > 0 && mills.buildingsStanding() > 0
+                        && Math.abs(shops.tonnesMoved() - (nameplate(shops)[0] + nameplate(shops)[1])) <= 1e-9 * (nameplate(shops)[0] + nameplate(shops)[1]),
+                String.format("%d, %d, %d and %d buildings standing", shops.buildingsStanding(), luxury.buildingsStanding(),
+                        works.buildingsStanding(), mills.buildingsStanding()));
 
         report("a sector that moves nothing needs no vehicles, and its ratio is one exactly",
                 same(services.tonnesMoved(), 0) && same(services.vansNeeded(), 0)
@@ -365,26 +404,48 @@ public class VanCheck {
 
         System.out.println("\n--- and the city really buys them ---");
 
-        double[] spent = new double[1];
-        double[] fleet = new double[1];
+        /*
+         * FS7: this played twelve months and read what the sectors happened to have bought by then (a $0k line, a bid of a fraction of a vehicle).
+         * It is CAUSED now: the shops, the biggest mover in the town, are set short of vans - none at all (Sector.setPantry()) - so the sector
+         * must order, its order is read before the month (bid()), and the month is run: month one places and fills it, month two strikes month
+         * one's books into the statement, which is the cost line this section reads.
+         */
+        Sector buyer = shops;
+        buyer.setPantry(Good.VANS, 0);
+        GoodsMarket van = game.getMarkets().get(Good.VANS);
+        double asked = buyer.bid(Good.VANS);
+        double[] fleet = new double[2];
+        double[] band = new double[3];
         quietly(() -> {
-            for (int i = 0; i < 12; i++) game.toggleNextMonth();
+            game.toggleNextMonth();
+            for (Sector s : game.getSectors().all()) fleet[0] += s.vanFleet();
+            fleet[1] = buyer.vanFleet();
+            band[0] = van.floor();
+            band[1] = van.ceiling();
+            band[2] = van.getBid();
+        });
+        report("a city with industry in it runs a fleet",
+                fleet[0] > 0 && asked > 0 && Math.abs(fleet[1] - asked) <= 1e-9 * asked,
+                String.format("%,.2f vehicles across every sector, the shops' %,.2f of the %,.2f they ordered", fleet[0], fleet[1], asked));
+
+        double[] spent = new double[2];
+        quietly(() -> {
+            game.toggleNextMonth();
             for (Sector s : game.getSectors().all()) {
                 spent[0] += s.statement().bought
                         .getOrDefault(Good.VANS, new Sector.Split()).total();
-                fleet[0] += s.vanFleet();
             }
+            spent[1] = buyer.statement().bought.getOrDefault(Good.VANS, new Sector.Split()).total();
         });
-        report("a city with industry in it runs a fleet",
-                fleet[0] > 0, String.format("%,.0f vehicles across every sector", fleet[0]));
         report("...and pays for it, every month, on somebody's cost line",
-                spent[0] > 0, String.format("$%,.0fk this month", spent[0]));
+                spent[0] > 0 && spent[1] > 0,
+                String.format("$%,.3fk across the statements, the shops' $%,.3fk", spent[0], spent[1]));
 
-        GoodsMarket van = game.getMarkets().get(Good.VANS);
         report("...at a price the market struck, inside its band",
-                van.getLocalPrice() > 0 && van.getLocalPrice() <= van.ceiling() + 1e-9,
-                String.format("$%,.1fk a vehicle, band $%,.1fk-$%,.1fk",
-                        van.getLocalPrice(), van.floor(), van.ceiling()));
+                van.getLocalPrice() > 0 && van.getLocalPrice() >= band[0] - 1e-9 && van.getLocalPrice() <= van.ceiling() + 1e-9
+                        && spent[1] / asked >= band[0] * (1 - 1e-9) && spent[1] / asked <= band[1] * (1 + 1e-9),
+                String.format("$%,.4fk a vehicle (the shops paid $%,.4fk), band $%,.4fk-$%,.4fk",
+                        van.getLocalPrice(), spent[1] / asked, band[0], band[1]));
 
         /*
          * AND THE PLANT HAS A CUSTOMER, which is the other half of why this
@@ -395,8 +456,8 @@ public class VanCheck {
          * all. The city's own industry is the market.
          */
         report("the city's own industry is the market for a van plant",
-                van.getBid() > 0,
-                String.format("%,.0f vehicles wanted this month", van.getBid()));
+                band[2] > 0 && band[2] >= asked - 1e-9,
+                String.format("%,.2f vehicles wanted in the month, the shops' %,.2f among them", band[2], asked));
 
         /* ================================================================
            7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5)

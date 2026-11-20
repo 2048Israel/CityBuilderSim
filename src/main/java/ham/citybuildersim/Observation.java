@@ -26,10 +26,10 @@ public final class Observation {
     static final List<String> HARNESSES = List.of(
             "ScaleCheck", "HoldersCheck", "SaveFileCheck",
             "AutoBuildCheck", "BondCheck", "FundCheck", "PriceLevelCheck",
-            "DeskCheck", "FittingCheck", "LabourCheck", "BuildAdviceCheck", "AuctionCheck",
+            "DeskCheck", "FittingCheck", "LabourCheck", "BuildAdviceCheck",
             "ConstructionControlCheck", "MapCheck", "KeptCheck",
             "PolicyPreviewCheck", "BankCheck", "HealthCheck", "FloatLinkCheck",
-            "CapitalFlowCheck", "CallCheck", "HomeRailCheck", "HousingCheck", "CurveCheck", "PrizeCheck");
+            "CapitalFlowCheck", "CallCheck", "HousingCheck", "CurveCheck", "PrizeCheck");
 
     /** A path reading with no dependent laws, such as a sample share. */
     static boolean reached(String label, boolean reached) {

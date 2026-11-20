@@ -7074,9 +7074,29 @@ public class Game {
              * months and ended at 1,987 people.
              */
             if (buysOnMortgage(decision)) {
-                double down = Mortgage.ownFundsFor(planCost);
-                double lacking = Math.min(down, down - payer.getCash()
-                        - economyManager.getForeignAssets(decision.sector));
+                double held = payer.getCash() + economyManager.getForeignAssets(decision.sector);
+                /*
+                 * ...AND THE WHOLE ORDER WHILE THE BANK IS SHORT (MC1,
+                 * 2026-11-20). While the bank's leverage ratio binds, its
+                 * capital rule may have no room for the mortgage at all
+                 * (BusinessDebtManager.mortgageShortOfCapital(), the door's
+                 * own test asked first, on the loan the door is asked for
+                 * once the down payment is in). The down payment alone then
+                 * buys nothing, so the owners are asked for what the till
+                 * lacks on the order (BusinessDebtManager.ownersAskOnMortgage()).
+                 * What they put in, the door's halving buys outright
+                 * (considerOnMortgage(), THE DOOR'S NO IS TO THE ORDER). It is still a building, not an overdraft. CU2's
+                 * ensemble, SHOCK seed 13: the plan asked for 20-33 Low-Rise
+                 * Apartments a month from m705 to m772, the door refused
+                 * every order for the bank's capital, one block was built,
+                 * and up to 174 households had no home and no home to double
+                 * up in (m738-776). A listed landlord sells new units when
+                 * the lender is short, as it does for the equity part of any
+                 * deal (above). See docs/queue/MC1-notes.md for the two
+                 * rules not taken: the bank's capital rebuilt, and the
+                 * insured mortgage freed under the leverage rule.
+                 */
+                double lacking = credit.ownersAskOnMortgage(decision.sector, planCost, held);
                 if (lacking > ask) ask = lacking;
             }
             // ...and not at a quote under what the shares are worth: then it borrows.
