@@ -3,7 +3,8 @@
 Base: origin/main 8ada323e3 (0.9.164); main's FB14, 5c8e6c937 (0.9.165), is
 merged in c5dc51182 (no conflict), and 0.9.166, 2677b1580 (SB1, FS2,
 R2e-PE4), in 2f7b25ca0 (only the generated indexes met; main's taken and
-regenerated). Neither merge touched `Sector` or the order pass. Built by CPB2 (Claude, Opus) on
+regenerated), and 0.9.167, bf048eb69 (HS2), in 66e9dc33f (the same). None of
+the merges touched `Sector` or the order pass. Built by CPB2 (Claude, Opus) on
 `batch/CPB2`. Source changed: `Sector.java` (the model) and the new
 `UndemandedFeedCheck.java`, with its `AllChecks` line and `docs/tree.md`
 entry. No save field, balance figure, dial or `SAVE_FORMAT` change.
@@ -133,7 +134,7 @@ on every variant.
 ## The default trace
 
 The trace moves beyond runtime, so the ensemble is owed (`docs/ensemble/CPB2.md`,
-against `docs/ensemble/0.9.162.md`, the newest). I measured it by counting, not
+against `docs/ensemble/0.9.167.md`, the newest, on the model with HS2 merged). I measured it by counting, not
 by diffing. Main's retained trace, `cbs-trace-main-24b7bfcbc`, is 101 commits
 old and differs from month 2 on, so a line-by-line comparison with it says
 nothing. Instead I played the default playtest (2,400 months) on a shadow
@@ -154,9 +155,10 @@ on the final model, so it covers all three. Seed 1 on the final model (section
 
 ## The checks
 
-- `./batch-check.sh --fast` green on the merged branch (3312d2218): compile,
+- `./batch-check.sh --fast` green on the merged branch (3312d2218, and again
+  after the HS2 merge, 66e9dc33f): compile,
   maps regenerated, Stale 0 firm, tree clean.
-- `UndemandedFeedCheck` green on the merged model. The mutation table above
+- `UndemandedFeedCheck` green on both merged models. The mutation table above
   was run before the merges. Since then the only model change is the solve's
   early exit, which gives the same answer wherever it applies (with no
   committed feed every floor is 0, and the solve already returned the old
