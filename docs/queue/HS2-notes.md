@@ -342,7 +342,8 @@ commits, each green on HS2's classes and on main's):**
   0.1116 at m62), so no spell begins; its tally line follows, in the format main's OE1 row records.
 - PriceLevelCheck → FS2: section 8's played twin parts at m80-91 of 120 (HP1's class), so the
   series past it differ at the factor (worst 0.47 in mkt.LUXURIES.local); main's FS2 rows already
-  name the rest of its 573.
+  name the rest of its 573. FS2 (0.9.166) made the section cause its twin, and on its merge
+  PriceLevelCheck is green on HS2's classes (0 FAIL): the rows are gone.
 - CentralBankCheck, sections 7 and 22 → FS10: the same build (300 Houses queued, one standing to
   m97, 16 people in 5.8 households). Under HS2's stages no cell of it is half a household
   (`HouseholdBalance.EMPTY_CELL`; main's town has one), and an empty cell buys no groceries
@@ -355,4 +356,8 @@ commits, each green on HS2's classes and on main's):**
 
 Re-judged with the rows (`KnownReds`, the kept `suite.txt` copied to `target/checks/rejudge`):
 only the four mended harnesses stay new. Main then moved to 0.9.165 (FB13, SQ1b, FB14), merged at
-dd255b3d9 (the maps the only conflicts); the code changed, so the next dry run is a new one.
+dd255b3d9 (the maps the only conflicts), then 0.9.166 (SB1, FS2, R2e-PE4) at 2fe3306c8. Singly
+after them: HouseholdStageCheck, SaveFileCheck, BuildingStackCheck, FB13Check, VaultMoneysCheck,
+PegAnchorCheck, GoldStandardCheck, PostwarRecipeCheck, DenominationCheck, ScaleCheck and
+PriceLevelCheck green; HoldersCheck and CentralBankCheck red only by the named rows (main's two
+BO1-S lines for section 10 among them). The code changed, so the next dry run is a new one.
