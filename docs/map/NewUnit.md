@@ -1,4 +1,4 @@
-# NewUnit.java - 185 lines · 29 methods · 1 constants · model
+# NewUnit.java - 227 lines · 31 methods · 2 constants · model
 
 `ham/citybuildersim/NewUnit.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -20,15 +20,22 @@
 > A city founded the default way fits every piece to every building and runs no recipe choice, so there the unit is the
 > template's own figures, read live (standing()): the same numbers, in the same arithmetic, as before.
 
-**Uses:** [Good](Good.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Recipe](Recipe.md) (5), [JobType](JobType.md) (4), [Game](Game.md) (1), [LicenceFees](LicenceFees.md) (1), [RecipeChanges](RecipeChanges.md) (1), [EquipmentFit](EquipmentFit.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (9), [Good](Good.md) (8), [Recipe](Recipe.md) (5), [Game](Game.md) (4), [JobType](JobType.md) (4), [LicenceFees](LicenceFees.md) (1), [RecipeChanges](RecipeChanges.md) (1), [EquipmentFit](EquipmentFit.md) (1)
 
 **Used by (34):** [Agriculture](Agriculture.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [BusinessInvestment](BusinessInvestment.md), [CityNeeds](CityNeeds.md), [CoalMining](CoalMining.md), [Construction](Construction.md), [EquipmentFit](EquipmentFit.md), [ExtractionSector](ExtractionSector.md), [Fitout](Fitout.md), [FoodProcessing](FoodProcessing.md), [Forestry](Forestry.md), [Freight](Freight.md), [Game](Game.md), [GoldMining](GoldMining.md), [LicenceFees](LicenceFees.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [RealEstate](RealEstate.md), [RecipeChanges](RecipeChanges.md), [Refining](Refining.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md), [WorksValue](WorksValue.md)
+
+## Sections
+
+| line | section |
+|---:|---|
+| 106 | · held while one piece of advice reads the city (R1g) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 78 | `NewUnit.RESOLVING` | `ThreadLocal.withInitial(() -> false)` | Set while a proposal is being resolved: the pricing inside fittedForNew() reads the templates as they stand. |
+| 119 | `NewUnit.HELD` | `new ThreadLocal<>()` | The new units of() has fitted in the reading under way on this thread (heldWhile()); null outside one. |
 
 ## Fields (state)
 
@@ -41,38 +48,46 @@
 | 36 | `private final boolean extras` | RecipeChanges' extras (apply()'s runRecipeExtras()), only for a template whose changes carry them. |
 | 37 | `private final double production, steamRail, petrol, dig` |  |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 159 | **type** `public final class NewUnit` | One new building of a template, as it would run (QN1): the recipe, posts, utility draw, output and input of a building ordered now - the pieces it would be fitted with (EquipmentFit.fittedForNew()) on the process the ... |
+| 27 | 201 | **type** `public final class NewUnit` | One new building of a template, as it would run (QN1): the recipe, posts, utility draw, output and input of a building ordered now - the pieces it would be fitted with (EquipmentFit.fittedForNew()) on the process the ... |
 | 39 | 21 | `private NewUnit(BuildingsTemplate template, Recipe recipe, Set<String> fitted, boolean extras, double production, double steamR...` |  |
 | 62 | 3 | `public static NewUnit standing(BuildingsTemplate t)` | The template's own figures, read live: an installed building's, and every new one's where nothing is chosen. |
 | 67 | 3 | `static NewUnit proposed(BuildingsTemplate t, Recipe recipe, Set<String> fitted)` | A proposal on a recipe list with no changes of its own: the chosen recipe's figures, the template's extras. |
 | 72 | 4 | `static NewUnit proposed(BuildingsTemplate t, Recipe recipe, Set<String> fitted, double production, double steamRail, double pet...` | A proposal composed from RecipeChanges, with the extras its changes move. |
-| 86 | 6 | `public static NewUnit of(Game game, BuildingsTemplate t)` | One new building of `t` in this city now, evaluated afresh from this call's inputs: the template as it stands in a city founded the default way, for a building with one way to run, for no game, and inside another pric... |
-| 97 | 9 | `static<T> T standingWhile(java.util.function.Supplier<T> pricing)` | Runs a pricing with every proposal it asks for read as the template stands: fittedForNew()'s verdicts and the process choice price the states they are given, exactly as before QN1, wherever they are asked from. |
-| 108 | 1 | `static boolean resolving()` | Whether a proposal is being resolved on this thread (inside fittedForNew()'s pricing): Fitout.of() reads the whole template there, as of() reads it standing (R1e). |
-| 111 | 1 | `public BuildingsTemplate template()` | The template it is of: what is ordered, stacked and looked up. |
-| 114 | 1 | `public boolean proposed()` | Whether it carries a chosen recipe of its own (a city founded the 1900 way), rather than the template as it stands. |
-| 117 | 1 | `public Recipe recipe()` | Its recipe; null for the template as it stands. |
-| 120 | 1 | `public Set<String> fitted()` | The pieces it would be fitted with; null for the template as it stands (every piece, in a city founded the default way). |
-| 122 | 1 | `public int getJobs(JobType type)` |  |
-| 125 | 6 | `public int getTotalJobs()` | The sum of its posts, as BuildingsTemplate.getTotalJobs() sums them. |
-| 133 | 4 | `public int getLicensedPosts()` | Its posts that need the template's licence (BuildingsTemplate.getLicensedPosts()). |
-| 138 | 1 | `public int getElectricityConsumption()` |  |
-| 140 | 1 | `public double getWaterConsumption()` |  |
-| 142 | 1 | `public double getGen()` |  |
-| 144 | 1 | `public double getConsumables()` |  |
-| 147 | 6 | `public double powerBought()` | kW it buys from the grid, as BuildingsTemplate.powerBought() reads it. |
-| 155 | 5 | `public double powerSold()` | kW it sells the grid, as BuildingsTemplate.powerSold() reads it. |
-| 161 | 1 | `public Map<Good, Double> goodsMade()` |  |
-| 163 | 1 | `public Map<Good, Double> goodsUsed()` |  |
-| 165 | 1 | `public double makes(Good good)` |  |
-| 167 | 1 | `public double uses(Good good)` |  |
-| 169 | 1 | `public double getProduction1()` |  |
-| 171 | 1 | `public double steamRailShare()` |  |
-| 173 | 1 | `public double crackerPetrol()` |  |
-| 176 | 4 | `public double dig()` | The dig of the site it stands on (BuildingsTemplate.Site.dig()); 0 for a building on no resource's sites. |
-| 182 | 3 | `public String toString()` |  |
+| 87 | 13 | `public static NewUnit of(Game game, BuildingsTemplate t)` | One new building of `t` in this city now, evaluated afresh from this call's inputs: the template as it stands in a city founded the default way, for a building with one way to run, for no game, and inside another pric... |
+| 102 | 3 | `private static NewUnit fitted(Game game, BuildingsTemplate t)` | The fit itself: the pieces fittedForNew() keeps, on newChoices()' process, summed by RecipeChanges.newUnit(). |
+
+### held while one piece of advice reads the city (R1g) (lines 106-227)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 109 | 1 | **type** `private record Held(Game game, Map<BuildingsTemplate, NewUnit> units)` | One reading's fitted units, by template, for the one game it reads. |
+| 125 | 9 | `static<T> T heldWhile(Game game, java.util.function.Supplier<T> reading)` | Runs a reading of the city that changes nothing in it (BuildAdvice.suggestFor()) with each template's fitted unit held after of() first builds it, and lets them go at its end. |
+| 139 | 9 | `static<T> T standingWhile(java.util.function.Supplier<T> pricing)` | Runs a pricing with every proposal it asks for read as the template stands: fittedForNew()'s verdicts and the process choice price the states they are given, exactly as before QN1, wherever they are asked from. |
+| 150 | 1 | `static boolean resolving()` | Whether a proposal is being resolved on this thread (inside fittedForNew()'s pricing): Fitout.of() reads the whole template there, as of() reads it standing (R1e). |
+| 153 | 1 | `public BuildingsTemplate template()` | The template it is of: what is ordered, stacked and looked up. |
+| 156 | 1 | `public boolean proposed()` | Whether it carries a chosen recipe of its own (a city founded the 1900 way), rather than the template as it stands. |
+| 159 | 1 | `public Recipe recipe()` | Its recipe; null for the template as it stands. |
+| 162 | 1 | `public Set<String> fitted()` | The pieces it would be fitted with; null for the template as it stands (every piece, in a city founded the default way). |
+| 164 | 1 | `public int getJobs(JobType type)` |  |
+| 167 | 6 | `public int getTotalJobs()` | The sum of its posts, as BuildingsTemplate.getTotalJobs() sums them. |
+| 175 | 4 | `public int getLicensedPosts()` | Its posts that need the template's licence (BuildingsTemplate.getLicensedPosts()). |
+| 180 | 1 | `public int getElectricityConsumption()` |  |
+| 182 | 1 | `public double getWaterConsumption()` |  |
+| 184 | 1 | `public double getGen()` |  |
+| 186 | 1 | `public double getConsumables()` |  |
+| 189 | 6 | `public double powerBought()` | kW it buys from the grid, as BuildingsTemplate.powerBought() reads it. |
+| 197 | 5 | `public double powerSold()` | kW it sells the grid, as BuildingsTemplate.powerSold() reads it. |
+| 203 | 1 | `public Map<Good, Double> goodsMade()` |  |
+| 205 | 1 | `public Map<Good, Double> goodsUsed()` |  |
+| 207 | 1 | `public double makes(Good good)` |  |
+| 209 | 1 | `public double uses(Good good)` |  |
+| 211 | 1 | `public double getProduction1()` |  |
+| 213 | 1 | `public double steamRailShare()` |  |
+| 215 | 1 | `public double crackerPetrol()` |  |
+| 218 | 4 | `public double dig()` | The dig of the site it stands on (BuildingsTemplate.Site.dig()); 0 for a building on no resource's sites. |
+| 224 | 3 | `public String toString()` |  |
 
