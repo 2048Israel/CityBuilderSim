@@ -194,25 +194,41 @@ at 3251de681, on a path that differs from the first changed equity ask on.
     2 - the bank is short of capital for a mortgage, so what its own funds buy outright)".
   - None was left marked as held for capital.
   - Both are asserted there: the trim (fixture), and REV-HN1-1's mark.
-- ★ **HousingDoorCheck's line is restated to MC1's law, on its own path.** Its order watch now reads
-  the till before the owners' issue (the till at the door less the month's equity raised). On it,
-  the watch asks the desk's capital pre-test on the door's loan, which is `ownersAskOnMortgage`'s
-  test. Section 3 asserts:
-  - **(fixture)** the window holds an order the door would have refused for the bank's capital,
-    put to the owners first. There are 9. The first is m465: an order of 2,850, of which the owners
-    put in 1,987, and the mortgage on the rest fit the room ("Built 2 Low-Rise Apartments on an
-    insured mortgage").
-  - **(the law)** the door trimmed for the bank's capital no order the owners were not asked for
-    first;
+- ★ **HousingDoorCheck's line is restated to MC1's law, on its own path, reading the ask actually made.**
+  - Its order watch reads the till before the owners' issue: the till at the door less the month's
+    equity raised.
+  - On that till, the desk's capital pre-test on the door's loan says which orders the door would have
+    refused for capital.
+  - For each of those, it reads what `consider()` offered the owners: `Equity.getOfferedThisMonth`,
+    which adds the ask itself (Equity.java line 512).
+
+  Section 3 asserts:
+  - **(fixture)** the window holds such an order put to the owners;
+  - **(the law)** each was offered whole: what the till lacked on the order, not only its down
+    payment. An order behind a quote that supported no issue is counted apart.
   - **(REV-HN1-1, kept)** no month the door trimmed is left marked as held for capital.
-- **HousingDoorCheck green, exit 0.**
+- **REV-MC1-2's P1.** The first restatement (on f6e7c4750) asked the desk's own pre-test again at
+  the door's hook, so it could not fail with `consider()` back to asking only the down payment. The
+  line now reads the offer, and it fails there:
+  - with `ownersAskOnMortgage` returning only the down-payment ask (`target/probe/hd-downonly.txt`),
+    27 orders the door would have refused for capital were offered less than the till lacked, and
+    none whole;
+  - the first is m431: an order of 1,386, the till 419, offered 0;
+  - 4 capital trims came back, and the line goes red: "...and each was offered to the owners whole".
+- **REV-MC1-2's P3.** `CreditCrunchCheck` 3 counts a capital trim as one the owners' issue fell
+  short of only when they put money in that month. A trim with nothing put in (a shut quote, or an
+  issue nobody took) is counted apart: 7 of the first kind and 0 of the second.
+- **HousingDoorCheck green, exit 0, at the mend.** 9 orders the door would have refused for capital,
+  all 9 offered whole and none behind a shut quote. The first is m465: an order of 2,850, the till
+  78, offered 2,773, put in 1,987; "Built 2 Low-Rise Apartments on an insured mortgage".
 
 ## Trace
 
 The trace moves: `Game.consider()` asks for more equity whenever the desk is short of capital for a
 landlord's mortgage. The ensemble against `docs/ensemble/0.9.167.md` was handed to the gate box at
 3251de681 and cancelled before its runs started, when the review's mends moved the model. It runs
-again on the mended commit.
+again at be09ec6ee, the mended model merged with CPB2 (0.9.170); REV-MC1-2's mends since touch only
+the two harnesses, so they leave the trace where it is.
 
 ## Checks
 
@@ -221,7 +237,7 @@ again on the mended commit.
 | `./batch-check.sh --fast` | compile, maps, Stale (0 firm) and tree green, before and after the merge of origin/main |
 | `CreditCrunchCheck` | green before and after each merge and the review's mends (with the capital trim's two lines); 5 red on the desk before the mends |
 | `MortgageCheck` | green, before and after the review's mends |
-| `HousingDoorCheck` | green at 3251de681; after the review's mends one fixture line red, then restated to MC1's law (above): green |
+| `HousingDoorCheck` | green at 3251de681; after the review's mends one fixture line red, then restated to MC1's law (above): green; REV-MC1-2's line red on the down-payment-only control, green at the mend |
 | `BankFailureCheck` | green, before and after the review's mends |
 | `sh tools/pick.sh origin/main HEAD` | ALL (231 harnesses), because `AllChecks.java` changed; it says "review not needed" |
 

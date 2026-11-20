@@ -106,7 +106,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck, RecipeCheck |
@@ -6146,8 +6146,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L340 the landlords' owners were asked, and put money in, while the bank was short
   - L341 ...and homes were built in the crunch
   - L342 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
-  - L354 the door trimmed an order the owners' issue did not cover, first refused for the bank's capital
-  - L355 ...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
+  - L356 the door trimmed an order the owners' issue did not cover, first refused for the bank's capital
+  - L357 ...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
@@ -15658,20 +15658,20 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the till: five blocks bought outright. Nothing was built for four years;
 > ...
 
-- **L154 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
-  - L168 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
-- **L171 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
-  - L184 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
-- **L187 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
-  - L201 every order the door cut is the plan's order halved, down to one
-  - L202 ...and the advisor's line says it was trimmed
-  - L221 fixture: the window holds an order the door would have refused for the bank's capital, put to the owners
-  - L223 ...and the door trimmed for the bank's capital no order the owners were not asked for first
-  - L225 ...and no month the door trimmed is left marked as held for the bank's capital
-- **L227 4. LongPlaytest's watch, and the homes that finished by size**
-  - L235 no month of the window leaves more than one household with no door (LongPlaytest's watch)
-- **L238 5. the households' identity through the mortgage door (HL1)**
-  - L240 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
+- **L156 1. the fixture: orders the plan passed that the door did not write whole, the segment short**
+  - L170 fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors
+- **L173 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
+  - L186 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
+- **L189 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
+  - L203 every order the door cut is the plan's order halved, down to one
+  - L204 ...and the advisor's line says it was trimmed
+  - L227 fixture: the window holds an order the door would have refused for the bank's capital, put to the owners
+  - L229 ...and each was offered to the owners whole: what the till lacked on the order, not only its down payment
+  - L231 ...and no month the door trimmed is left marked as held for the bank's capital
+- **L233 4. LongPlaytest's watch, and the homes that finished by size**
+  - L241 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+- **L244 5. the households' identity through the mortgage door (HL1)**
+  - L246 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
 ## HydroCheck.java - 101 labelled assertions
 

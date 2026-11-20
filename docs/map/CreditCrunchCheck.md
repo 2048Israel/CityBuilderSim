@@ -1,4 +1,4 @@
-# CreditCrunchCheck.java - 448 lines · 13 methods · 8 constants · harnesses
+# CreditCrunchCheck.java - 450 lines · 13 methods · 8 constants · harnesses
 
 `ham/citybuildersim/CreditCrunchCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,7 @@
 |---:|---|
 | 72 | 1. THE DOOR'S CAPITAL TEST, ASKED FIRST - a desk and a bank by hand |
 | 197 | 2-3. A PLAYED CITY, ITS BANK HELD IN ITS BAND |
-| 358 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as |
+| 360 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as |
 
 ## Constants
 
@@ -75,13 +75,13 @@
 | 219 | `static boolean shortThisMonth` |  |
 | 220 | `static double roomAtStart` |  |
 | 221 | `static long cutHomes` |  |
-| 364 | `static boolean stuck` |  |
+| 366 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 398 | **type** `public final class CreditCrunchCheck` | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and its target, the landlords' insured mortgages refused at its door for its... |
+| 51 | 400 | **type** `public final class CreditCrunchCheck` | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and its target, the landlords' insured mortgages refused at its door for its... |
 | 58 | 4 | `static void check(String label, boolean ok)` |  |
 | 63 | 8 | `public static void main(String[] args) throws Exception` |  |
 
@@ -95,7 +95,7 @@
 | 114 | 4 | `static boolean door(BusinessDebtManager desk, double principal)` | The door's answer on a mortgage of this principal, on a building costing plenty more. |
 | 119 | 77 | `static void theTestAskedFirst()` |  |
 
-### 2-3. A PLAYED CITY, ITS BANK HELD IN ITS BAND (lines 197-357)
+### 2-3. A PLAYED CITY, ITS BANK HELD IN ITS BAND (lines 197-359)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -103,12 +103,12 @@
 | 224 | 6 | `static void holdInBand(Bank bank)` | The restore setters: the bank's cash moved so its leverage ratio stands HOLD of its band up, its book as it is. |
 | 232 | 4 | `static double room(Game g)` | The households the placement could still take against the homes standing. |
 | 238 | 13 | `static void cutToTheValve(Game g)` | The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. |
-| 252 | 105 | `static void thePlayedCrunch() throws Exception` |  |
+| 252 | 107 | `static void thePlayedCrunch() throws Exception` |  |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as (lines 358-448)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), as (lines 360-450)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 366 | 12 | `static void run(Game g, int months, Runnable after, Runnable before)` |  |
-| 379 | 69 | `static void foundAndPlay(Game g, Runnable after, Runnable before)` |  |
+| 368 | 12 | `static void run(Game g, int months, Runnable after, Runnable before)` |  |
+| 381 | 69 | `static void foundAndPlay(Game g, Runnable after, Runnable before)` |  |
 
