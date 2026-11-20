@@ -39,6 +39,12 @@ import java.nio.file.Path;
  * an older array reading prices at the default share. And (WS1, 2026-11-10) the average the tie last read is saved and scaled by a reform, so a
  * dial move after a load or in a reform month reads its share against the right average, and the tie's share stops short of the ratchet: the range
  * is the world file's ratios, never 1, and a floor tied at its top settles under the mean of the wages it does not hold.
+ *
+ * AND THE CONDITIONS ARE CAUSED, NOT PLAYED (FS16, 2026-11-20). The staffing law (who a city can staff), the rent that is not a wage
+ * formula, the arrivals' adult share, the doctor shortage and who moves in at and over the going rate read a condition a played town
+ * happened to be in, so they read it by hand: a population manager fed a workforce, skilled heads, posts and licences and a labour market
+ * priced on it (handFed, pricedOn), one month of arrivals drawn into it (arrivalsOnce), a town one month old beside a control for the rent,
+ * and a built town one month in for the arrivals' month. Each asserts its premise first, in a line that starts "fixture:".
  */
 public class LabourCheck {
 
@@ -466,41 +472,47 @@ public class LabourCheck {
 
         /* ============ 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR ============
 
-           The headline bug, nailed down. Played rather than driven, because the
-           claim is about a whole city.
+           The headline bug, nailed down. Caused, not played (FS16): it was a town played 240 months, so the law was asserted on whatever
+           the town had become and its two cases - a band short of people, graduates with no graduate work - were whatever it happened to
+           hold. The workforce, the skilled heads and the posts of a population manager are set by hand, and what staffs what is read off
+           them on demand: the college band has posts for more than it has people, and the university band more graduates than graduate
+           posts, 300 of whose posts only a licence holder could fill and nobody holds a licence.
            ============================================================== */
         System.out.println("\n--- and a city cannot staff what it has not attracted ---");
 
-        Game city = new Game(GameFiles.scratch("labourcheck"));
-        quietly(() -> {
-            city.newGame();
-            city.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
-            city.getLandManager().setOwnedSqFt(
-                    city.getLandManager().getOwnedSqFt() + 400_000_000);
-            city.buildStack(t(city, "Low-Rise Apartments"), 60, true);
-            city.buildStack(t(city, "General Hospital"), 2, true);
-            city.buildStack(t(city, "Regional Medical Centre"), 1, true);
-            city.buildStack(city.getBuildingManager().getTemplate(HeavyIndustry.MINI_MILL), 4, true);
-            city.buildStack(t(city, "Small Grocery Store"), 8, true);
-            city.buildStack(t(city, "Coal Power Plant"), 2, true);
-            city.buildStack(t(city, "Water Treatment Plant"), 2, true);
-            city.buildStack(t(city, "Paved Road"), 30, true);
-            city.simulateMonths(240);
-        });
+        // 10,000 adults: 3,000 with a diploma, 1,500 a college degree and 800 a university one (5,300 skilled), so 4,700 with no diploma.
+        long[] fedPosts = new long[JobType.values().length];
+        fedPosts[JobType.NO_DIPLOMA.ordinal()] = 4_000;
+        fedPosts[JobType.DIPLOMA.ordinal()] = 2_500;
+        fedPosts[JobType.COLLEGE_HEALTH.ordinal()] = 1_000;
+        fedPosts[JobType.COLLEGE_BUSINESS.ordinal()] = 1_000;
+        fedPosts[JobType.COLLEGE_ENGINEERING.ordinal()] = 1_000;
+        fedPosts[JobType.UNIV_DOCTOR.ordinal()] = 300;
+        fedPosts[JobType.UNIV_SCIENCE.ordinal()] = 100;
+        fedPosts[JobType.UNIV_POLICY.ordinal()] = 100;
+        double[] fedHeads = new double[WageBand.values().length];
+        fedHeads[WageBand.DIPLOMA.ordinal()] = 3_000;
+        fedHeads[WageBand.COLLEGE.ordinal()] = 1_500;
+        fedHeads[WageBand.UNIVERSITY.ordinal()] = 800;
+        PopulationManager people = handFed(10_000, fedHeads, fedPosts, new double[JobType.values().length]);
 
-        PopulationManager people = city.getPopulationManager();
         double[] own = people.workforceByBand();
         double[] band = people.postsByBand();
         long[] jobs = people.getJobs();
         long[] vacancy = people.getJobVacancy();
+        double[] supply = people.supplyByBand();
 
-        System.out.printf("   population %,d  workforce %,d  posts %,d%n",
-                people.getPopulation(), people.getWorkforce(), people.getTotalJobs());
+        System.out.printf("   workforce %,d  posts %,d%n", people.getWorkforceForSave(), people.getTotalJobs());
         for (WageBand b : WageBand.values()) {
-            System.out.printf("   %-12s workers %,8.0f   posts %,8.0f   staffed %,8.0f%n",
-                    b.label(), own[b.ordinal()], band[b.ordinal()],
+            System.out.printf("   %-12s workers %,8.0f   posts %,8.0f   supply %,8.0f   staffed %,8.0f%n",
+                    b.label(), own[b.ordinal()], band[b.ordinal()], supply[b.ordinal()],
                     staffed(jobs, vacancy, b));
         }
+        int college = WageBand.COLLEGE.ordinal(), university = WageBand.UNIVERSITY.ordinal();
+        assertTrue("fixture: the college band has more posts than people to put in them",
+                band[college] > supply[college]);
+        assertTrue("fixture: the university band has more graduates than graduate posts",
+                own[university] > band[university]);
 
         /*
          * THE ASSERTION THE WHOLE FEATURE EXISTS FOR.
@@ -511,7 +523,6 @@ public class LabourCheck {
          * this, the number on the left was 220 and the number on the right was
          * zero.
          */
-        double[] supply = people.supplyByBand();
         for (WageBand b : WageBand.values()) {
             assertTrue("  no more " + b.label() + " posts staffed than there are people for",
                     staffed(jobs, vacancy, b) <= supply[b.ordinal()] + 1);
@@ -521,25 +532,32 @@ public class LabourCheck {
          * AND SUBSTITUTION RUNS DOWNWARD ONLY.
          *
          * A graduate can labour. The reverse is what the old allocator did, and
-         * it is the only direction that can invent a skill out of nothing.
+         * it is the only direction that can invent a skill out of nothing. The
+         * graduates are in surplus here (the fixture line above), so the
+         * downward branch always runs.
          */
-        double topSurplus = own[WageBand.UNIVERSITY.ordinal()] - band[WageBand.UNIVERSITY.ordinal()];
-        if (topSurplus > 0) {
-            assertTrue("  graduates with no graduate work cascade downward",
-                    supply[WageBand.COLLEGE.ordinal()] > own[WageBand.COLLEGE.ordinal()]);
-        }
+        assertTrue("  graduates with no graduate work cascade downward",
+                supply[college] > own[college]);
         assertTrue("  ...and nothing cascades up",
-                supply[WageBand.UNIVERSITY.ordinal()]
-                        <= own[WageBand.UNIVERSITY.ordinal()] + 1e-9);
+                supply[university] <= own[university] + 1e-9);
 
         /*
          * NO SKILL WITHOUT A MIGRANT. Until schools exist, every graduate in
-         * this city arrived here. The count is bounded by the arrivals, and it
+         * a city arrived there. The count is bounded by the arrivals, and it
          * is emphatically not bounded by the number of posts - which is what it
-         * was before, because the posts were creating the people.
+         * was before, because the posts were creating the people. A city
+         * nobody has moved into has no graduates; one the migrants' skills
+         * were told to (the same call the month makes, with a month's
+         * arrivals) has them.
          */
+        PopulationManager unvisited = handFed(10_000, new double[WageBand.values().length], fedPosts, new double[JobType.values().length]);
+        assertTrue("fixture: a city nobody has moved into has no university workers",
+                unvisited.workforceByBand()[university] == 0);
+        double[] movedIn = new double[WageBand.values().length];
+        movedIn[university] = 25;
+        unvisited.applySkilledFlows(movedIn, null);
         assertTrue("  skilled workers exist at all - migration supplied them",
-                own[WageBand.UNIVERSITY.ordinal()] > 0);
+                unvisited.workforceByBand()[university] == movedIn[university]);
 
         /* ============ 6. AND IT SURVIVES A SAVE ============
 
@@ -654,10 +672,21 @@ public class LabourCheck {
          *      identity the price is actually built from.
          * ------------------------------------------------------------------ */
         System.out.println("\n--- rent is a market, not a wage formula ---");
-        ham.citybuildersim.sectors.RealEstate rents = back.getSectors().realEstate();
-        double rentBefore = rents.getRentPrice();
+        // Claim 1 is a save's: the town above, played and reloaded, charges what it charged.
         close("a reloaded city charges the rent it was charging",
-                rentBefore, lived.getSectors().realEstate().getRentPrice(), 1e-9);
+                back.getSectors().realEstate().getRentPrice(), lived.getSectors().realEstate().getRentPrice(), 1e-9);
+
+        // Claims 2 and 3 are caused on a town of their own (FS16): built, one month behind it so the landlords have struck a rent and
+        // priced what a home costs, then the floor doubled and ONE month stepped. It was the reloaded 90-month town, whose rent and
+        // wages were whatever 90 months had made them. A town one month old is still filling, so its rent target moves with its housing
+        // pressure whatever the floor does: the same town beside it with the floor left alone is the month's control, and the target is
+        // read against it (the played town's target was at rest, so it was read against its own month before).
+        Game rentTown = rentTownBuilt(), rentControl = rentTownBuilt();
+        ham.citybuildersim.sectors.RealEstate rents = rentTown.getSectors().realEstate();
+        ham.citybuildersim.sectors.RealEstate controlRents = rentControl.getSectors().realEstate();
+        double rentBefore = rents.getRentPrice();
+        assertTrue("fixture: the control is the same town: it struck the same rent target",
+                Math.abs(controlRents.getRentTarget() - rents.getRentTarget()) <= 1e-12 * rents.getRentTarget());
 
         assertTrue("fixture: the city has a housing cost to price against",
                 rents.getMarginalHousingCost() > 0);
@@ -672,21 +701,30 @@ public class LabourCheck {
          * MonetaryCheck, on a handler with numbers put into it by hand.
          */
 
-        // The tie the save above carried is put back to prices: this section asks what a floor that moves wages does to rent, and a floor tied
+        // The floor is tied to prices, as a founded city's is: this section asks what a floor that moves wages does to rent, and a floor tied
         // to nothing would be restruck by the cost of living this month too.
-        back.getLabourMarket().setFloorTie(LabourMarket.FloorTie.PRICES, LabourMarket.DEFAULT_TIE_SHARE);
-        double floorBefore = back.getLabourMarket().getMinimumWage();
+        rentTown.getLabourMarket().setFloorTie(LabourMarket.FloorTie.PRICES, LabourMarket.DEFAULT_TIE_SHARE);
+        rentControl.getLabourMarket().setFloorTie(LabourMarket.FloorTie.PRICES, LabourMarket.DEFAULT_TIE_SHARE);
+        double floorBefore = rentTown.getLabourMarket().getMinimumWage();
         double targetBefore = rents.getRentTarget();
         // THE MINIMUM WAGE IN THE FIXTURE (R0, OP1): the question is whether rent follows a floor that moves wages, and until OP1 a city on
         // history's dates had no floor binding any wage until 1918, so the fixture opened the lever here (the next month's top tells the labour
         // market). Since OP1 the lever is open from the founding and the floor is the law.
-        back.getLabourMarket().setMinimumWage(floorBefore * 2);
-        quietly(() -> back.simulateMonths(1));
-        double unskilledNow = back.getLabourMarket().getWage(JobType.NO_DIPLOMA);
+        rentTown.getLabourMarket().setMinimumWage(floorBefore * 2);
+        quietly(() -> {
+            rentTown.simulateMonths(1);
+            rentControl.simulateMonths(1);
+        });
+        double unskilledNow = rentTown.getLabourMarket().getWage(JobType.NO_DIPLOMA);
         // (WG1, 2026-11-10) The floor is a real minimum now: doubling it lifts the wages under it, not the whole ladder. The unskilled wage is
         // one of them - the default floor is .85 of the going rate, the doubled one 1.7 of it, over what the unskilled are paid unless they
         // are very scarce - and the unskilled wage is the one the old rent formula read, so the fixture still causes what the section asks.
         assertTrue("fixture: doubling the floor moved the unskilled wage", unskilledNow > floorBefore * 1.5);
+        // ...and it was the doubling that did: the unskilled are paid the floor, and the same month in the control pays them less.
+        double controlWage = rentControl.getLabourMarket().getWage(JobType.NO_DIPLOMA);
+        System.out.printf("   unskilled wage %.5f on the doubled floor, %.5f without it; the floor was %.5f%n", unskilledNow, controlWage, floorBefore);
+        assertTrue("fixture: ...and the floor is what they are paid, the same month without it pays them less",
+                rentTown.getLabourMarket().isPaidTheFloor(JobType.NO_DIPLOMA) && controlWage < unskilledNow);
 
         /*
          * The old formula would have put rent at rentFor(unskilledNow) THIS
@@ -706,10 +744,10 @@ public class LabourCheck {
          * there is no wage effect to hide. What little there is arrives through
          * construction costs, which is the long way round and is meant to be.
          */
-        System.out.printf("   rent target %.6f -> %.6f on a doubled wage floor%n",
-                targetBefore, rents.getRentTarget());
+        System.out.printf("   rent target %.6f -> %.6f on a doubled wage floor, %.6f on the same month without it%n",
+                targetBefore, rents.getRentTarget(), controlRents.getRentTarget());
         assertTrue("the rent TARGET is not a wage formula either",
-                rents.getRentTarget() < targetBefore * 1.5);
+                rents.getRentTarget() < controlRents.getRentTarget() * 1.5);
 
         /* ------------------------------------------------------------------
          * ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).
@@ -735,60 +773,45 @@ public class LabourCheck {
             growing.buildStack(t(growing, "Coal Power Plant"), 1, true);
             growing.buildStack(t(growing, "Water Treatment Plant"), 1, true);
             growing.buildStack(t(growing, "Paved Road"), 12, true);
-            growing.simulateMonths(12);
+            growing.simulateMonths(1);
         });
 
         /* -------------------------------------------------------------------
-         * HUNTED FOR, NOT ASSUMED.
+         * CAUSED, NOT HUNTED FOR (FS16).
          *
-         * This used to roll 24 months and read whatever the 25th happened to
-         * be, which worked only while that particular month happened to be a
-         * month with arrivals in it. The fixture's jobs are fixed, so the city
-         * converges on a target and then stops moving - and anything that
-         * shifts where that target sits shifts which months have arrivals.
-         * Housing maintenance shifted it by about 400 residents and the 25th
-         * month became a month with no arrivals at all, so a test about
-         * GRADUATES failed for reasons that had nothing to do with graduates.
+         * This used to roll 12 months and then up to 60 more, one at a time,
+         * until a month had skilled arrivals in it and two explanations that
+         * could be told apart, and read the first that did: a month the town
+         * happened to have, which is whatever the rest of the model made it.
+         * On a month the departures outweighed the arrivals the law was not
+         * even about arrivals any more - the retirements of a month are as
+         * large as the adult share of a few departures, and the skilled
+         * counts are clipped at nought - and the harness could not say so.
          *
-         * So the month is now searched for. Both preconditions the assertions
-         * below need - somebody arrived, and the two candidate explanations
-         * are far enough apart to tell apart - are checked before the month is
-         * accepted, which is the same fix the "far enough apart" assertion got
-         * on 2026-09-07 for the same reason. A fixture has to CAUSE the
-         * condition under test, not stand next to it and hope.
+         * The town is built with nobody in it, so its first month is nothing
+         * but arrivals: one month puts the first people in (the pyramid has
+         * no adult share to read until it does), and the next month is the
+         * one read - a town with its homes and its posts well over its people,
+         * to which migration brings everybody and from which nobody leaves.
+         * A fixture has to CAUSE the condition under test, so the month's
+         * arrivals, their dominance over the departures, the adult share and
+         * the gap between the two explanations are asserted before the laws.
          * ------------------------------------------------------------------- */
-        double adultShare = 0, skilledArrivals = 0, skilledDepartures = 0;
-        double gained = 0, held = 0;
-        int found = -1;
+        double[] before = growing.getPopulationManager().getSkilledHeads().clone();
+        double adultShare = growing.getCohorts().share(AgeBand.ADULT);
+        quietly(() -> growing.simulateMonths(1));
+        double[] now = growing.getPopulationManager().getSkilledHeads();
+        double[] arrived = growing.getMigration().getLastArrivalMix();
+        double[] left = growing.getMigration().getLastDepartureMix();
 
-        for (int attempt = 0; attempt < 60 && found < 0; attempt++) {
-            double[] before = growing.getPopulationManager().getSkilledHeads().clone();
-            double share = growing.getCohorts().share(AgeBand.ADULT);
-            quietly(() -> growing.simulateMonths(1));
-            double[] now = growing.getPopulationManager().getSkilledHeads();
-            double[] arrived = growing.getMigration().getLastArrivalMix();
-            double[] left = growing.getMigration().getLastDepartureMix();
-
-            double in = 0, out = 0, moved = 0, stock = 0;
-            for (int b = 1; b < before.length; b++) {
-                in += arrived[b];
-                out += left[b];
-                moved += now[b] - before[b];
-                stock += before[b];
-            }
-            double n = in - out;
-            if (in > 1 && Math.abs(n - n * share) > 1) {
-                adultShare = share;
-                skilledArrivals = in; skilledDepartures = out;
-                gained = moved; held = stock;
-                found = growing.getMonth();
-            }
+        double skilledArrivals = 0, skilledDepartures = 0, gained = 0, held = 0;
+        for (int b = 1; b < before.length; b++) {
+            skilledArrivals += arrived[b];
+            skilledDepartures += left[b];
+            gained += now[b] - before[b];
+            held += before[b];
         }
-
-        boolean hasSkilledArrivals = Observation.reached("fixture: found a month with skilled arrivals in it",
-                found > 0,
-                "arriving skill mix");
-        if (hasSkilledArrivals) assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
+        int found = growing.getMonth();
         double net = skilledArrivals - skilledDepartures;
         double expected = net * adultShare;
         double retirements = held * .01;   // a generous bound on a month of deaths and ageing out
@@ -796,7 +819,12 @@ public class LabourCheck {
                 + " counts moved %.1f, expected %.1f (unscaled %.1f)%n",
                 found, skilledArrivals, skilledDepartures, adultShare, gained, expected, net);
 
-        if (hasSkilledArrivals) assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
+        assertTrue("fixture: found a month with skilled arrivals in it", skilledArrivals > 1);
+        assertTrue("fixture: the skilled arrivals outnumber the departures " + ARRIVALS_OVER_DEPARTURES + " to one",
+                skilledArrivals > ARRIVALS_OVER_DEPARTURES * skilledDepartures);
+        assertTrue("fixture: the city is not all adults", adultShare < .9 && adultShare > .3);
+
+        assertTrue("the skilled counts gained the ADULT share of the skilled arrivals",
                 Math.abs(gained - expected) <= retirements + .5);
 
         /*
@@ -810,10 +838,9 @@ public class LabourCheck {
          * CAUSE the condition it tests, so the gap between the candidates is
          * asserted first and the comparison is relative after it.
          */
-        boolean distinctSkillMix = Observation.reached("fixture: the two explanations are far enough apart to tell apart",
-                Math.abs(net - expected) > 1,
-                "arrival mix compared with the whole mix");
-        if (hasSkilledArrivals && distinctSkillMix) assertTrue("...and not the whole mix",
+        assertTrue("fixture: the two explanations are far enough apart to tell apart",
+                Math.abs(net - expected) > 1);
+        assertTrue("...and not the whole mix",
                 Math.abs(gained - expected) < Math.abs(gained - net));
 
         /* ------------------------------------------------------------------
@@ -826,54 +853,39 @@ public class LabourCheck {
          * licence shortage rather than a graduate one.
          * ------------------------------------------------------------------ */
         System.out.println("\n--- a doctor shortage is priced on doctors ---");
-        Game short_ = new Game(GameFiles.scratch("labourcheck"));
-        quietly(() -> {
-            short_.newGame();
-            short_.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
-            short_.getLandManager().setOwnedSqFt(
-                    short_.getLandManager().getOwnedSqFt() + 100_000_000);
-            short_.buildStack(t(short_, "Low-Rise Apartments"), 40, true);
-            short_.buildStack(t(short_, "General Hospital"), 2, true);
-            short_.buildStack(t(short_, "Small Grocery Store"), 6, true);
-            short_.buildStack(t(short_, "Coal Power Plant"), 1, true);
-            short_.buildStack(t(short_, "Water Treatment Plant"), 1, true);
-            short_.buildStack(t(short_, "Paved Road"), 12, true);
-            short_.simulateMonths(60);
 
-            /*
-             * ...AND THEN UNTIL SOMEBODY ACTUALLY MOVES IN.
-             *
-             * Everything below this reads ONE MONTH - the arrival mix, the
-             * licences that came with it, the bands they came from - and month
-             * 60 is not chosen, it is just where simulateMonths stopped. This
-             * city settles into a churn equilibrium in the forties (arrivals
-             * and departures both around 33 a month against a target of 4,980)
-             * and month 60 happened to land on a month with no arrivals at all,
-             * so three assertions about WHO ARRIVES were being asked of a month
-             * in which nobody did.
-             *
-             * That is the same fault this harness was already caught by once,
-             * on the 25th month, and SaveFileCheck twice - eleven sightings now
-             * across the suite. The rule is in claude/todo.md: a fixture has to
-             * CAUSE the condition under test, not stand next to it. Bounded, so
-             * a city that genuinely never attracts anybody fails loudly instead
-             * of hanging.
-             */
-            for (int extra = 0; extra < 120
-                    && short_.getMigration().getLastArrivals() <= 1; extra++) {
-                short_.simulateMonths(1);
-            }
-            // ...AND UNTIL ITS LABOURERS ARE PAID NO MORE THAN THE GOING RATE (GW1).
-            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so this city's works come earlier and its unskilled posts outrun its labourers for ten years; the fixture now runs on to a month somebody moves in and the labourers are paid no more than the going rate.
-            for (int extra = 0; extra < 180
-                    && (short_.getMigration().getLastArrivals() <= 1
-                            || short_.getLabourMarket().bandPremium(WageBand.NONE) > 1); extra++) {
-                short_.simulateMonths(1);
-            }
-        });
-        LabourMarket m2 = short_.getLabourMarket();
-        long doctorPosts = short_.getPopulationManager().getJobs()[JobType.UNIV_DOCTOR.ordinal()];
-        double doctorsHeld = short_.getPopulationManager().getLicensedHeads()[JobType.UNIV_DOCTOR.ordinal()];
+        /*
+         * CAUSED, NOT PLAYED (FS16). This was a town played 60 months and then
+         * on, one month at a time, until somebody moved in and its labourers
+         * were paid no more than the going rate - a month the town happened to
+         * have, which is whatever the rest of the model made it, and the three
+         * sections after this one read the same month. The town is a
+         * population manager fed by hand (2,400 adults, posts for most of every
+         * band under its workers) whose 60 doctor posts have 4 licence holders;
+         * its market is priced against it the way a city's is; and one month
+         * of arrivals is drawn into a town with room for them, placed against
+         * those people, so the chance of work in every band is the people's own.
+         */
+        long[] shortPosts = new long[JobType.values().length];
+        shortPosts[JobType.NO_DIPLOMA.ordinal()] = 1_200;
+        shortPosts[JobType.DIPLOMA.ordinal()] = 500;
+        shortPosts[JobType.COLLEGE_HEALTH.ordinal()] = 80;
+        shortPosts[JobType.COLLEGE_BUSINESS.ordinal()] = 60;
+        shortPosts[JobType.COLLEGE_ENGINEERING.ordinal()] = 40;
+        shortPosts[JobType.UNIV_DOCTOR.ordinal()] = 60;
+        shortPosts[JobType.UNIV_SCIENCE.ordinal()] = 40;
+        shortPosts[JobType.UNIV_POLICY.ordinal()] = 20;
+        double[] shortHeads = new double[WageBand.values().length];
+        shortHeads[WageBand.DIPLOMA.ordinal()] = 600;
+        shortHeads[WageBand.COLLEGE.ordinal()] = 200;
+        shortHeads[WageBand.UNIVERSITY.ordinal()] = 80;
+        double[] shortLicences = new double[JobType.values().length];
+        shortLicences[JobType.UNIV_DOCTOR.ordinal()] = 4;
+        PopulationManager shortPeople = handFed(2_400, shortHeads, shortPosts, shortLicences);
+        LabourMarket m2 = pricedOn(shortPeople);
+        Migration shortArrivals = arrivalsOnce(m2, shortPeople);
+        long doctorPosts = shortPeople.getJobs()[JobType.UNIV_DOCTOR.ordinal()];
+        double doctorsHeld = shortPeople.getLicensedHeads()[JobType.UNIV_DOCTOR.ordinal()];
         System.out.printf("   doctor posts %d, licensed %.1f, licence tightness %.2f, doctor premium %.2f, band premium %.2f%n",
                 doctorPosts, doctorsHeld, m2.getLicenceTightness(JobType.UNIV_DOCTOR),
                 m2.premium(JobType.UNIV_DOCTOR), m2.bandPremium(WageBand.UNIVERSITY));
@@ -888,7 +900,7 @@ public class LabourCheck {
         assertTrue("an ungated graduate job carries no licence premium",
                 m2.getLicenceMultiple(JobType.UNIV_SCIENCE) == 1);
         assertTrue("licence holders arrive in response to the price",
-                short_.getMigration().getLastArrivalLicences()[JobType.UNIV_DOCTOR.ordinal()] > 0);
+                shortArrivals.getLastArrivalLicences()[JobType.UNIV_DOCTOR.ordinal()] > 0);
 
         /* ------------------------------------------------------------------
          * WHO MOVES IN, AND WHY (2026-09-07).
@@ -910,8 +922,8 @@ public class LabourCheck {
          * ------------------------------------------------------------------ */
         System.out.println("\n--- who moves in, and why ---");
 
-        double[] mixShort = short_.getMigration().getLastArrivalMix();
-        double[] licShort = short_.getMigration().getLastArrivalLicences();
+        double[] mixShort = shortArrivals.getLastArrivalMix();
+        double[] licShort = shortArrivals.getLastArrivalLicences();
         double arrivalsTotal = 0;
         for (double v : mixShort) arrivalsTotal += v;
         System.out.printf("   arrivals %,.0f - none %.1f%%  diploma %.1f%%  college %.1f%%  university %.1f%%%n",
@@ -921,13 +933,12 @@ public class LabourCheck {
                 pct(mixShort, WageBand.COLLEGE, arrivalsTotal),
                 pct(mixShort, WageBand.UNIVERSITY, arrivalsTotal));
 
-        boolean arrivalsPresent = Observation.reached("fixture: somebody moved in at all",
-                arrivalsTotal > 1,
-                "migration at no wage premium");
-        boolean noWagePremium = Observation.reached("fixture: this city pays its labourers no more than the going rate",
-                m2.bandPremium(WageBand.NONE) <= 1,
-                "migration at no wage premium");
-        if (arrivalsPresent && noWagePremium) assertTrue("NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them",
+        // The threshold, from its under side: the labourers are paid no more than the going rate, so reach() of it, the pull the model
+        // buys a band at, is nothing. The next section is the over side.
+        assertTrue("fixture: somebody moved in at all", arrivalsTotal > 1);
+        assertTrue("fixture: this city pays its labourers no more than the going rate",
+                m2.bandPremium(WageBand.NONE) <= 1 && Migration.reach(m2.bandPremium(WageBand.NONE)) == 0);
+        assertTrue("NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them",
                 mixShort[WageBand.NONE.ordinal()] == 0);
         double ceilings = 0;
         for (WageBand b : WageBand.values()) ceilings += b.arrivalCeiling();
@@ -944,40 +955,42 @@ public class LabourCheck {
          * past the going rate, and the labourers it buys come through the
          * same two terms every graduate band's do - reach() of the premium
          * and the chance of work at their own level - against the diploma
-         * band's unconditional 1.00. Not a multiplier of their own.
+         * band's unconditional 1.00. Not a multiplier of their own. (FS16: the
+         * town is a population manager fed by hand with 3,300 labouring posts
+         * for 1,660 labourers, priced and drawn into as the doctor town above
+         * is, so the threshold the section before this one holds from under is
+         * held from over. It was a bus town played 36 months and then on until
+         * somebody moved in.)
          * ------------------------------------------------------------------ */
         System.out.println("\n--- some arrive without a diploma, for the wage ---");
-        Game buses = new Game(GameFiles.scratch("labourcheck-buses"));
-        quietly(() -> {
-            buses.newGame();
-            buses.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
-            buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000);
-            buses.buildStack(t(buses, "Low-Rise Apartments"), 10, true);
-            buses.buildStack(t(buses, "Bus Network"), 8, true);
-            buses.buildStack(t(buses, "Coal Power Plant"), 1, true);
-            buses.buildStack(t(buses, "Water Treatment Plant"), 1, true);
-            buses.buildStack(t(buses, "Paved Road"), 12, true);
-            buses.simulateMonths(36);
-            // ...and on to a month somebody moved in, bounded, as the city above is.
-            for (int i = 0; i < 120 && buses.getMigration().getLastArrivals() <= 0; i++) buses.simulateMonths(1);
-        });
-        LabourMarket busWages = buses.getLabourMarket();
-        double[] busMix = buses.getMigration().getLastArrivalMix();
-        double[] busChance = buses.getMigration().getLastOpportunity();
+        long[] busPosts = new long[JobType.values().length];
+        busPosts[JobType.NO_DIPLOMA.ordinal()] = 3_300;
+        busPosts[JobType.DIPLOMA.ordinal()] = 500;
+        busPosts[JobType.COLLEGE_HEALTH.ordinal()] = 40;
+        busPosts[JobType.COLLEGE_BUSINESS.ordinal()] = 30;
+        busPosts[JobType.COLLEGE_ENGINEERING.ordinal()] = 30;
+        busPosts[JobType.UNIV_SCIENCE.ordinal()] = 20;
+        busPosts[JobType.UNIV_POLICY.ordinal()] = 20;
+        double[] busHeads = new double[WageBand.values().length];
+        busHeads[WageBand.DIPLOMA.ordinal()] = 600;
+        busHeads[WageBand.COLLEGE.ordinal()] = 100;
+        busHeads[WageBand.UNIVERSITY.ordinal()] = 40;
+        PopulationManager busPeople = handFed(2_400, busHeads, busPosts, new double[JobType.values().length]);
+        LabourMarket busWages = pricedOn(busPeople);
+        Migration busArrivals = arrivalsOnce(busWages, busPeople);
+        double[] busMix = busArrivals.getLastArrivalMix();
+        double[] busChance = busArrivals.getLastOpportunity();
         double nonePremium = busWages.bandPremium(WageBand.NONE);
         System.out.printf("   unskilled premium %.2f, chance of unskilled work %.2f; arrivals %.1f of whom %.2f with no diploma, %.2f with one%n",
-                nonePremium, busChance[WageBand.NONE.ordinal()], buses.getMigration().getLastArrivals(),
+                nonePremium, busChance[WageBand.NONE.ordinal()], busArrivals.getLastArrivals(),
                 busMix[WageBand.NONE.ordinal()], busMix[WageBand.DIPLOMA.ordinal()]);
-        boolean wagePremium = Observation.reached("fixture: the town pays its labourers over the going rate",
-                nonePremium > 1,
-                "migration at a wage premium");
-        boolean premiumArrivals = Observation.reached("fixture: somebody moved in",
-                buses.getMigration().getLastArrivals() > 0,
-                "migration at a wage premium");
-        if (wagePremium && premiumArrivals) assertTrue("a dear unskilled wage brings arrivals without a diploma", busMix[WageBand.NONE.ordinal()] > 0);
+        assertTrue("fixture: the town pays its labourers over the going rate",
+                nonePremium > 1 && Migration.reach(nonePremium) > 0);
+        assertTrue("fixture: somebody moved in", busArrivals.getLastArrivals() > 0);
+        assertTrue("a dear unskilled wage brings arrivals without a diploma", busMix[WageBand.NONE.ordinal()] > 0);
         double noneOverDiploma = WageBand.NONE.arrivalCeiling() * Migration.reach(nonePremium)
                 * busChance[WageBand.NONE.ordinal()] / busChance[WageBand.DIPLOMA.ordinal()];
-        if (wagePremium && premiumArrivals) assertTrue("...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms",
+        assertTrue("...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms",
                 busMix[WageBand.DIPLOMA.ordinal()] > 0
                         && Math.abs(busMix[WageBand.NONE.ordinal()] / busMix[WageBand.DIPLOMA.ordinal()] - noneOverDiploma)
                                 < 1e-9 * Math.max(1, noneOverDiploma));
@@ -1672,6 +1685,76 @@ public class LabourCheck {
             filled += jobs[job.ordinal()] - vacancy[job.ordinal()];
         }
         return filled;
+    }
+
+    /**
+     * A population manager fed by hand (FS16): this workforce, these skilled heads by band (the unskilled are what is left), these posts by
+     * job type and these licence holders by job type. What a month of a city hands it, without the month: every fill and every vacancy is read
+     * off these four on demand.
+     */
+    static PopulationManager handFed(long workforce, double[] skilledHeads, long[] posts, double[] licensed) {
+        PopulationManager pm = new PopulationManager();
+        pm.setWagesPerType();
+        pm.updateJobs(posts);
+        pm.restoreWorkforce(workforce);
+        pm.restoreSkilledHeads(skilledHeads);
+        pm.restoreLicensed(licensed);
+        return pm;
+    }
+
+    /** People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). */
+    static final double RENT_TOWN_PEOPLE = 4_000;
+
+    /** The town "rent is a market" is read on (FS16): flats, a hospital, shops, power, water and roads and RENT_TOWN_PEOPLE in them, one month old, so the landlords have struck a rent and priced a home. */
+    static Game rentTownBuilt() {
+        Game town = new Game(GameFiles.scratch("labourcheck-rent"));
+        quietly(() -> {
+            town.newGame();
+            town.getGovernmentInvestor().spend(-20_000_000 * PriceLevel.FACTOR);
+            town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 100_000_000);
+            town.buildStack(t(town, "Low-Rise Apartments"), 30, true);
+            town.buildStack(t(town, "General Hospital"), 1, true);
+            town.buildStack(t(town, "Small Grocery Store"), 4, true);
+            town.buildStack(t(town, "Coal Power Plant"), 1, true);
+            town.buildStack(t(town, "Water Treatment Plant"), 1, true);
+            town.buildStack(t(town, "Paved Road"), 12, true);
+            town.getCohorts().migrate(RENT_TOWN_PEOPLE);
+            town.simulateMonths(1);
+        });
+        return town;
+    }
+
+    /** How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). */
+    static final double ARRIVALS_OVER_DEPARTURES = 10;
+
+    /** Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. */
+    static final int PRICED_MONTHS = 60;
+
+    /** A labour market priced on a hand-fed population manager the way Game.repriceLabour() prices a city's: staffable posts, supply, posts by job and licence holders. */
+    static LabourMarket pricedOn(PopulationManager pm) {
+        LabourMarket market = new LabourMarket();
+        for (int month = 0; month < PRICED_MONTHS; month++) {
+            market.advanceMonth(pm.staffablePostsByBand(), pm.supplyByBand(), pm.getJobs(), pm.getLicensedHeads());
+        }
+        return market;
+    }
+
+    /** The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). */
+    static final long ROOM_TOWN = 4000;
+
+    /**
+     * One month's draw by a fresh Migration into a town of ROOM_TOWN people with room, jobs and homes for more, priced by this market and
+     * placed against these people (so each band's chance of work is the people's own, not one): the arrivals and who they are.
+     */
+    static Migration arrivalsOnce(LabourMarket market, PopulationManager pm) {
+        Migration mig = new Migration();
+        FamilyModel homes = new FamilyModel();
+        PopulationCohorts some = new PopulationCohorts();
+        some.migrate(ROOM_TOWN);
+        homes.rebuild(some, new double[PayTier.values().length]);
+        mig.monthlyNet(ROOM_TOWN, pm.getTotalJobs(), 3 * ROOM_TOWN, 9 * ROOM_TOWN / 4, homes,
+                PopulationCohorts.equilibriumShare(AgeBand.ADULT), 0, market, pm);
+        return mig;
     }
 
     /** The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). */
