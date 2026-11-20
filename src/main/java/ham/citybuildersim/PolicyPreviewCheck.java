@@ -222,21 +222,27 @@ public class PolicyPreviewCheck {
          * (766 out of work), so it is the only one.
          */
         for (int round = 0; round < EI_POOL_ROUNDS; round++) {
-            BuildingsTemplate biggest = null;
-            long biggestJobs = 0;
-            for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
-                if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
-                long jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
-                if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
-            }
-            final BuildingsTemplate closing = biggest;
-            if (closing == null) return;
-            quietly(() -> {
-                g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
-                g.simulateMonths(1);
-            });
+            if (!closeTheLargest(g)) return;
             if (g.getUnemployment().onEi() > 0) return;
         }
+    }
+
+    /** Closes half of the city's largest employer (by its posts) and plays a month; false when there is none. */
+    static boolean closeTheLargest(Game g) {
+        BuildingsTemplate biggest = null;
+        long biggestJobs = 0;
+        for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
+            if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
+            long jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+            if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
+        }
+        final BuildingsTemplate closing = biggest;
+        if (closing == null) return false;
+        quietly(() -> {
+            g.getBuildingManager().retire(closing, Math.max(1, g.getBuildingManager().getQuantity(closing.getId()) / 2));
+            g.simulateMonths(1);
+        });
+        return true;
     }
 
     /** The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. */
@@ -392,13 +398,23 @@ public class PolicyPreviewCheck {
         TaxPolicy live = em.getTaxPolicy();
         double contribution = live.getContributionRate(), pension = live.getPensionReplacement(),
                 premium = live.getEiPremiumRate(), benefit = live.getEiBenefitRate();
-        quietly(() -> {
-            live.setContributionRate(0);
-            live.setPensionReplacement(0);
-            live.setEiPremiumRate(0);
-            live.setEiBenefitRate(0);
-            g.simulateMonths(1);
-        });
+        /*
+         * ...WITH A POOL TO PAY NOTHING TO (HS2, 2026-11-20). Section 6's closings leave a pool, but on HS2's city (its adults
+         * young, so more of them work and fewer retire: 6,643 people at month 61 against main's 5,718) the first closing puts 45
+         * on EI, not main's 766, and the vacancies hire them back within the month: 0 on EI after this section's month, where
+         * main kept 53. So the month at zero is played again after the next largest employer is closed, as section 6 closes them,
+         * until the pool outlasts it; on main the first month does it, as before.
+         */
+        for (int round = 0; ; round++) {
+            quietly(() -> {
+                live.setContributionRate(0);
+                live.setPensionReplacement(0);
+                live.setEiPremiumRate(0);
+                live.setEiBenefitRate(0);
+                g.simulateMonths(1);
+            });
+            if (g.getUnemployment().onEi() > 0 || round >= EI_POOL_ROUNDS || !closeTheLargest(g)) break;
+        }
         Unemployment u = g.getUnemployment();
         assertTrue("fixture: the four dials at zero, and the month collected and paid nothing on them ("
                 + String.format("%,.0f", u.onEi()) + " claimants)",

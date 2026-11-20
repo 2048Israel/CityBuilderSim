@@ -301,6 +301,29 @@ public class CrimeCheck {
         hb.creditByWeight(taken, weight);
         check("...and handing it to the offenders puts every dollar back", hb.totalSavings(), saved, 1e-6);
 
+        /*
+         * HS2, 2026-11-19: a theft whose offenders' households are all empty
+         * steals nothing. It took first and credited after, and the credit
+         * pays nobody when every weighted cell is empty - so a small city
+         * whose only live cells were the retired lost the month's proceeds
+         * out of HL1's identity.
+         */
+        int empty = -1;
+        for (int i = 0; i < hb.cellCount() && empty < 0; i++) if (hb.cells().get(i).isEmpty()) empty = i;
+        assertTrue("fixture: a cell with nobody in it", empty >= 0);
+        assertTrue("fixture: the month wants a theft", cb.getTheftWanted() > 0);
+        double[] onlyEmpty = new double[hb.cellCount()];
+        if (empty >= 0) onlyEmpty[empty] = 5;
+        check("an offender's weight on an empty cell is none of it creditable", hb.creditableWeight(onlyEmpty), 0, 0);
+        double homesBefore = hb.totalSavings(), tillsBefore = 0;
+        for (String k : Sectors.KEYS) tillsBefore += bare.getEconomyManager().getSectorCash(k);
+        bare.getOffending().steal(bare, onlyEmpty);
+        double tillsAfter = 0;
+        for (String k : Sectors.KEYS) tillsAfter += bare.getEconomyManager().getSectorCash(k);
+        check("...so a theft with no offender's household to take it home takes nothing from the homes", hb.totalSavings(), homesBefore, 1e-9);
+        check("...nor from the tills", tillsAfter, tillsBefore, 1e-9);
+        check("...and records nothing stolen", cb.getStolen(), 0, 0);
+
         /* ---- the prisons ---- */
         PopulationManager pm = policed.getPopulationManager();
         assertTrue("fixture: somebody is in prison", cp.prisoners() > 0);
