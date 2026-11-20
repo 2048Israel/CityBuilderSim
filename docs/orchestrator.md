@@ -30,8 +30,9 @@ when replaced: two may gate one branch), and `sh tools/wait.sh --ship [--skip
 HELD...]` running, which ends when a ship file lands without its marker.
 
 **The nightly**, `sh tools/nightly.sh` on main's tip (4,000 months, the nightly
-tier, hard timing; GT1, GR1), is due once a night, started by hand or a
-scheduled task (a daily one is Jerus's call, asked 2026-11-17). It runs on the
+tier, hard timing; GT1, GR1), is due once a night: a laptop task at 02:30 once
+he registers it (2026-11-20, "B"; the line is in GB2's notes), else by hand on
+`nightly due`, a second start refused while one runs. It runs on the
 gate box and holds it whole, a gate there waiting for it and it for a gate
 (GB2). Its verdict comes home: the next `day.sh`, `$HOME/.cbs-nightly.log`, and
 a red playtest or a slower line mailed to `jerus` and the gate's keeper, naming

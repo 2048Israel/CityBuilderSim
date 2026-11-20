@@ -95,7 +95,26 @@ him.
 
 (count below)
 
+## The daily start (his call, asked 2026-11-17)
+
+Mailed to him on 2026-11-20 with four options: A, the orchestrator on
+`nightly due` as now; B, a laptop scheduled task at 02:30 (recommended, with A
+kept as the backup); C, MemWatch at a set hour; D, a cron on the box. He
+answered **"B"** (by phone, 08:50). A scheduled task is a standing change to
+his PC, which a session makes only on his yes in its chat, not from a mail.
+So it is not registered. The line, for PowerShell on the laptop:
+
+    Register-ScheduledTask -TaskName 'CBS nightly' -Trigger (New-ScheduledTaskTrigger -Daily -At 2:30am) -Action (New-ScheduledTaskAction -Execute 'C:\Program Files\Git\bin\sh.exe' -Argument '-lc "cd ~/Documents/NetBeansProjects/CityBuilderSim && sh tools/day.sh --due | grep -q ^nightly && sh tools/nightly.sh"')
+
+- The task starts a night only when `day.sh --due` says `nightly due`. That
+  is once a day, 01:00 to 07:00, when no verdict of today's exists, so a night
+  the orchestrator already ran is not repeated.
+- A night still running when the other starter comes is refused: by the box's
+  `nightly.lock`, or by the laptop's `.cbs-nightly.lock` when the box is down.
+- The orchestrator's start on `nightly due` stays as the backup, and nothing in
+  the repository changes when the task is added.
+
 ## Left for Jerus
 
-- **A daily start** (asked 2026-11-17) is still his: mailed today with the
-  options and a recommendation; nothing was added.
+- **Registering the task above** (his "B"): run the line, or tell a Claude
+  session in the app to register it.
