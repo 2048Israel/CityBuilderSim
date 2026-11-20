@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.164 — SQ1b, a month's material draw past 2^31 and buildStack's harness — 2026-11-20, ready, see docs/queue/SQ1b-notes.md
+`Game.drawMaterials` rounded a month's draw of material into an int, so a draw past 2^31 units wrapped (3 x 2^31 became
+a negative count): the whole draw went unbought and unbooked. The draw is a long end to end now: the yard
+(`BuildingManager.takeFromYard`), the yard's delivery to a new order's sites, the run invoice's reduction of the yard,
+the quote's yard, and the month's tally `materialsConsumed`, which is saved (the yard's stock and the tally are longs
+in `DataSave`; an old save's int reads into one, no format bump). `BuildingStackCheck` sections 7 and 8 order 3.2e8
+Houses through `Game.buildStack` on a copy whose stack stands just under the ceiling and read back its quote, its
+ground, the cash it charged, the receipt, the yard's share and the run's invoice, then draw 6.4e9 units twice (the sites'
+and a repair's, yard first); each old int put back turns its own assertions red. The default playtest's trace is main's,
+byte for byte (eight files, 2,405 months).
+
 ### 0.9.163 — FB13, the island's words, the Government screen's coupons and the build card's licence line — 2026-11-20, ready, see docs/queue/FB13-notes.md
 Three screens that kept words from before the model changed under them now say what it says. Where AL1's rule would link an unlinked island by a bridge, the Land tab's "linked" cell and tooltip, the map's chip (a third line), the island's notice and its door ("Build a bridge there ›", "See the bridge ›" while one is built) and the not-enough-land page name the bridge and its crossing first and the port after it, and the Build tab's Overview gains AN ISLAND TO LINK, a card for the link the rule would order (the island and its ground, the bridge or the two terminals, the quote's price and wait, a door to the building's card with the island chosen); where the rule links by port, or cannot, every word is the old one. The screens read the rule through its own fresh memory of a refusal and a memory of their own keyed by ground, so they say what it will order and an open screen never moves when it surveys. The Government screen's "...of which paid abroad" row says "in D$, at the month's rates · paper held now in US dollars, euros and yen", not "in dollars". The build card gains the licence line of research-design mockup 5, drawn from the patents the planners' licence is made of (the building's, its recipe's, a fitted piece's; LicenceFees.rentOnNew()): a quarter of what it adds goes abroad until the month the patent ends, or on N patents with the first and last ending, with the monthly fee, or none (found here, found since, not patented, ended). The default trace is byte for byte main's. FB13Check holds all of it.
 
