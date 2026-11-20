@@ -4,7 +4,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 603 files, 653,486 lines, 28,532 methods, 6,250 constants. `GameVersion.VERSION` is "0.9.161", `SAVE_FORMAT` 57.
+**The tree:** 603 files, 653,488 lines, 28,532 methods, 6,250 constants. `GameVersion.VERSION` is "0.9.161", `SAVE_FORMAT` 57.
 
 ## model (270 files)
 
@@ -183,7 +183,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OreView.java](OreView.md) | 71 | 4 | The land office's Ore card as the model reads it (batch I13-L): for each ore the city's ground holds, its deposits, the tonnes still in the ground,... | 2 |
 | [OrphanHousehold.java](OrphanHousehold.md) | 42 | 10 | Children no family holds, by age band. | 3 |
 | [OutwardInvestment.java](OutwardInvestment.md) | 753 | 47 | Outward investment: what the city's businesses do with money the bank will not pay for. | 16 |
-| [OwnerHousehold.java](OwnerHousehold.md) | 115 | 12 | The owner families, as one ledger: one two-adult household per company that has listed and not gone broke. | 6 |
+| [OwnerHousehold.java](OwnerHousehold.md) | 117 | 12 | The owner families, as one ledger: one two-adult household per company that has listed and not gone broke. | 6 |
 | [PartnerTrade.java](PartnerTrade.md) | 573 | 42 | The city's trade by partner: what it sold to each nation and bought of each this month and so far this year, by good, and every finished year's tab... | 16 |
 | [PartnersView.java](PartnersView.md) | 315 | 16 | The Partners board's and a nation's page's figures (WN6; docs/studies/spec-nations.md 8, boards 2 and 3, D29): the table of who the city trades wit... | 3 |
 | [PayTier.java](PayTier.md) | 135 | 6 | The six pay levels a household can be in. | 73 |

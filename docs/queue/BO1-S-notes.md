@@ -346,3 +346,42 @@ OwnerCheck's probe (`-Downer.probe=true`, section 9's city):
   senior care is within reach with the line on from m37 on the playtest's
   city.
 - The ensemble judges the whole spread (80 runs against OP1's baseline).
+
+## 11. The ensemble (80 runs, against OP1's `docs/ensemble/0.9.161.md`)
+
+`tools/ensemble/ensemble.sh BO1-S` on the classes of cbac2d8dc, OP1's extra
+columns and five of the line's own (`owners_bank_share`, `retired_disp`,
+`senior_care_aff`, `owner_families`, `owner_adults`; the three no-argument
+getters on Game are new for them). 115.9 minutes, exit 0, committed as
+`docs/ensemble/BO1-S.md`.
+
+**Verdicts:** batch PASS, hard criteria 10/10 (M1 and F1 in every
+policy), 24 of 26 criteria. The two that fail are AUTO2's A1 and A2, which
+fail on OP1 too. One verdict changed: HIGH R2 (info), FAIL to PASS.
+
+| AUTO2 | BO1-S | OP1 (0.9.161) |
+|---|---|---|
+| A1 inflation m240-end | 2.89% [2.56 to 3.21], 10/16 in band | 3.05% [2.46 to 3.56], 7/16 |
+| A2 longest yoy > 10% spell from m240 | 14 [10 to 36] | 22 [9 to 40] |
+| young city inflation m240-600 | 4.18% [1.86 to 6.59] | 4.18% [2.77 to 6.67] |
+| policy rate mean from m240; months at 0% | 4.84%; 19.1% | 5.17%; 17.7% |
+| mean yoy from m240 | 2.95% | 3.12% |
+| T1 seeds reaching 40,000 (month) | 16/16 (m798 [655 to 1,166]) | 16/16 (m769 [527 to 1,231]) |
+| T2 final population | 2,435,388 [359,531 to 4,630,876] | 2,848,186 [1,346,579 to 4,340,954] |
+
+T2 is 85.5% of OP1's, inside its 75% floor; the lowest seed is about a
+quarter of OP1's lowest.
+
+**The line's own columns,** AUTO2's median of 16 seeds (no OP1 figure:
+the columns are new):
+
+| month | people | owners' share of the bank's savings | retired disposable | careAff(SENIOR) | owner families | owner adults |
+|---|---|---|---|---|---|---|
+| 121 | 1,304 | 55% | 0.062 | 0.64 | 5 | 10 |
+| 600 | 27,760 | 27% | 0.125 | 1.00 | 6 | 12 |
+| 1,200 | 149,100 | 28% | 0.315 | 1 | 7 | 14 |
+| 2,400 | 2,435,000 | 4.5% | 7.90 | 1 | 7 | 14 |
+
+The owners hold more than half the bank's savings in the young city and a
+twentieth by the end; the cap binds only in the first months (10 adults
+for 5 families at m121 is the uncapped two each).

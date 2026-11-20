@@ -2793,7 +2793,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 59 | `OwnerHousehold.KEY` | `"OWNER"` | The line's key: the cell's name on the books, the save and the exchange's orders. |
 | 66 | `OwnerHousehold.OWNER_BROKE_MONTHS` | `12` | Months a company's fair value sits at the exchange's floor before its family gives up and joins the regular pool: the window Migration.DECLINE_MONTHS gives a tier. |
 | 69 | `OwnerHousehold.OWNER_ADULT_SHARE` | `.05` | The most of a city's adults the owner families may be: two adults a company took a founding town's whole labour force (BO1-S). |
-| 89 | `OwnerHousehold.IN_CITIES` | `true` | Whether a city runs the owner line: on since BO1-S. |
+| 91 | `OwnerHousehold.IN_CITIES` | `true` | Whether a city runs the owner line: on since BO1-S. |
 
 ### PartnerTrade.java ([map](map/PartnerTrade.md))
 

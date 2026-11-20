@@ -1,4 +1,4 @@
-# OwnerHousehold.java - 115 lines · 12 methods · 6 constants · model
+# OwnerHousehold.java - 117 lines · 12 methods · 6 constants · model
 
 `ham/citybuildersim/OwnerHousehold.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -54,23 +54,23 @@
 | 59 | `OwnerHousehold.KEY` | `"OWNER"` | The line's key: the cell's name on the books, the save and the exchange's orders. |
 | 66 | `OwnerHousehold.OWNER_BROKE_MONTHS` | `12` | Months a company's fair value sits at the exchange's floor before its family gives up and joins the regular pool: the window Migration.DECLINE_MONTHS gives a tier. |
 | 69 | `OwnerHousehold.OWNER_ADULT_SHARE` | `.05` | The most of a city's adults the owner families may be: two adults a company took a founding town's whole labour force (BO1-S). |
-| 89 | `OwnerHousehold.IN_CITIES` | `true` | Whether a city runs the owner line: on since BO1-S. |
+| 91 | `OwnerHousehold.IN_CITIES` | `true` | Whether a city runs the owner line: on since BO1-S. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 73 | **type** `public class OwnerHousehold extends Household` | The owner families, as one ledger: one two-adult household per company that has listed and not gone broke. |
+| 43 | 75 | **type** `public class OwnerHousehold extends Household` | The owner families, as one ledger: one two-adult household per company that has listed and not gone broke. |
 | 77 | 3 | `public static double adultsOf(int families, double adults)` | The owner families' adults in a city of these adults with this many companies' families (reserved ones counted): two a family, at most OWNER_ADULT_SHARE of the adults. |
-| 91 | 3 | `public OwnerHousehold()` |  |
-| 95 | 1 | `public PayTier tier()` |  |
-| 96 | 1 | `public int row()` |  |
-| 97 | 1 | `public boolean isRetired()` |  |
-| 98 | 1 | `public int grownUps()` |  |
-| 99 | 1 | `public int size()` |  |
-| 101 | 1 | `public String label()` |  |
-| 102 | 1 | `public String key()` |  |
-| 105 | 1 | `public double earningWeight()` | No wage: "No job." Nobody's income is split to an owner family. |
-| 111 | 1 | `public boolean tradesShares()` | Not by the households' rules: the founding stakes are sold down by the line's own (OWNER_SELL_A_YEAR), and the line takes no offering. |
-| 114 | 1 | `public boolean canInvest()` | They hold bonds, money abroad and the city's paper by the ordinary rules. |
+| 93 | 3 | `public OwnerHousehold()` |  |
+| 97 | 1 | `public PayTier tier()` |  |
+| 98 | 1 | `public int row()` |  |
+| 99 | 1 | `public boolean isRetired()` |  |
+| 100 | 1 | `public int grownUps()` |  |
+| 101 | 1 | `public int size()` |  |
+| 103 | 1 | `public String label()` |  |
+| 104 | 1 | `public String key()` |  |
+| 107 | 1 | `public double earningWeight()` | No wage: "No job." Nobody's income is split to an owner family. |
+| 113 | 1 | `public boolean tradesShares()` | Not by the households' rules: the founding stakes are sold down by the line's own (OWNER_SELL_A_YEAR), and the line takes no offering. |
+| 116 | 1 | `public boolean canInvest()` | They hold bonds, money abroad and the city's paper by the ordinary rules. |
 
