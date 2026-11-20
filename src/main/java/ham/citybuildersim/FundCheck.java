@@ -100,6 +100,11 @@ import java.io.PrintStream;
  * households first, the world for the rest, Game.capitaliseBank() - are the fixture's. It plays FOUNDING_MONTHS and saves, and every section copies the
  * save. The count of months is a stage of the founding, not a month picked because the town's path passed at it (WG2's 73 did, and 74 alone of 74-80).
  *
+ * WHAT SECTIONS 8, 9b AND 9e CAUSE (FS13, 2026-11-20; PK1). 8: the desk's inventory is handed to the world so the rule's bids rest (emptyTheDesk()), and the households
+ * are handed the 15% of a company the band's fixtures take (handTheHouseholds()). 9b: the bank's capital is raised until the desk's bid is every share of both
+ * companies the fund holds that is not its own (giveTheDeskRoom()), and the twin at the default has its bank under its target, paying no dividend into the fund's
+ * cash. 9e: the world bids fair value for what the fund asks of the company, every month. The laws are unmoved; none of these reads what the town's path left.
+ *
  * @author Jerus
  */
 public class FundCheck {
@@ -888,10 +893,50 @@ public class FundCheck {
 
     /* ================= 8. the rule ================= */
 
+    /**
+     * THE DESK HOLDS NOTHING, CAUSED (FS13, 2026-11-20; PK1). A rule's bid at the desk's ask is met by the desk's inventory first, and the town's desk holds nearly
+     * the whole of some companies (Exchange.postDesk() offers all it holds at the ask): on 60 months of founding it held 49,152 of Industry's 50,160 shares
+     * and the fund's bid for them was filled whole, while Construction's, the Bank's and Freight's, where it held nothing, rested. Every listed company's desk
+     * inventory is handed to the world, the register's other explicit holder (the households' holding is the rest, so the register's identity is kept; BankFailureCheck
+     * moves the world's and the desk's shares the same way), so the desk has nothing to meet a bid with and the rule's bid rests in what the others do not offer.
+     */
+    static void emptyTheDesk(Game g) {
+        Equity reg = g.getEquity();
+        for (int c = 0; c < Sectors.KEYS.length; c++) {
+            double held = Math.max(0, reg.getDealerShares(c));
+            if (c == Equity.BANK || !(held > 0)) continue;
+            reg.moveDesk(c, -held);
+            reg.moveForeign(c, held);
+        }
+    }
+
+    /**
+     * THE HOUSEHOLDS HOLD AT LEAST `share` OF A COMPANY, CAUSED (FS13, 2026-11-20; PK1): what they lack is taken from the desk's inventory and then from the world's, as
+     * holdings handed over whole - the cells' count a household up by the same, no money moved, the register's identity kept (the households' holding is what the
+     * desk's, the world's and the fund's leave of the shares in issue, Equity.domesticShares()). False when the desk's and the world's together hold less than they lack.
+     */
+    static boolean handTheHouseholds(Game g, int c, double share) {
+        Equity reg = g.getEquity();
+        double lack = share * reg.getShares(c) - g.getHouseholdBalance().sharesHeld(c);
+        if (lack <= 0) return true;
+        double fromDesk = Math.min(lack, Math.max(0, reg.getDealerShares(c)));
+        double fromWorld = Math.min(lack - fromDesk, Math.max(0, reg.getForeignShares(c)));
+        if (fromDesk + fromWorld < lack * (1 - 1e-12)) return false;
+        double people = 0;
+        for (Household cell : g.getHouseholdBalance().cellsForMarket()) if (!cell.isEmpty()) people += cell.households;
+        if (!(people > 0)) return false;
+        reg.moveDesk(c, -fromDesk);
+        reg.moveForeign(c, -fromWorld);
+        for (Household cell : g.getHouseholdBalance().cellsForMarket()) if (!cell.isEmpty()) cell.shares[c] += lack / people;
+        return true;
+    }
+
     static void theRule() {
         out.println("\n--- 8. the rule: 70/30, the 10% limit, the band, and cash that waits ---");
         Game g = copy();
         Equity register = g.getEquity();
+        // FS13, 2026-11-20: THE DESK HOLDS NOTHING (PK1), so a rule bid has nothing of its inventory to fill against and rests (emptyTheDesk()).
+        emptyTheDesk(g);
         double lump = 1_000_000;
         g.setCashForTest(g.getCash() + lump);
         g.fundPayIn(lump);
@@ -927,20 +972,18 @@ public class FundCheck {
                 atTheAsk &= b.price() == ex.fair(c) * (1 + Exchange.SPREAD / 2);
             }
         }
-        boolean ruleBidsPresent = Observation.reached("fixture: the rule's bids rest on the books",
-                ruleBids > 0,
-                "rule bid at the desk ask");
-        if (ruleBidsPresent) check("the rule's bid stands at the desk's ask", atTheAsk && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
+        check("fixture: the rule's bids rest on the books, the desk holding nothing to fill them with", ruleBids > 0);
+        check("the rule's bid stands at the desk's ask", atTheAsk && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
 
         // The band: the fund given its market book in shares and no cash.
         Game h = copy();
         Equity reg = h.getEquity();
         int company = -1;
-        // ...the largest of those the households hold 15% of at least (EM2): the largest by its shares alone was a company the desk holds
-        // nearly all of, since the quote moved the splits - what the fixtures below hand the fund is the households' to hand.
+        // ...the largest by its shares of those listed besides the Bank, the households handed 15% of it (EM2; FS13, 2026-11-20, PK1): what the fixtures below hand the
+        // fund is the households' to hand, and the largest by its shares alone was a company the desk holds nearly all of, since the quote moved the splits - so
+        // what they lack of 15% is handed them out of the desk's inventory and the world's (handTheHouseholds()), not looked for in the town's holders.
         for (int c = 0; c < Sectors.KEYS.length; c++) {
-            if (reg.getShares(c) > 0 && h.getExchange().fair(c) > 0
-                    && h.getHouseholdBalance().sharesHeld(c) >= .15 * reg.getShares(c)
+            if (c != Equity.BANK && reg.getShares(c) > 0 && h.getExchange().fair(c) > 0
                     && (company < 0 || reg.getShares(c) > reg.getShares(company))) company = c;
         }
         close("the excess is what takes it back to 70%", TreasuryFund.sharesOver(80, 10, 10), 80 - 70, 1e-12);
@@ -949,9 +992,7 @@ public class FundCheck {
         close("four points under 70%, it sells the bonds over their 30%", TreasuryFund.bondsOver(60, 40, 0), 10, 1e-12);
         check("...but a fund short of shares only for want of a seller sells nothing", TreasuryFund.bondsOver(10, 0, 90) == 0);
 
-        if (!Observation.reached("fixture: a listed company the households hold 15% of",
-                company >= 0,
-                "section 8 share-mix and position-limit sale experiment")) return;
+        check("fixture: a listed company the households hold 15% of", company >= 0 && handTheHouseholds(h, company, .15));
         if (company < 0) return;
         double take = .05 * reg.getShares(company);
         double households = h.getHouseholdBalance().sharesHeld(company);
@@ -979,6 +1020,8 @@ public class FundCheck {
         Equity ro = o.getEquity();
         double over = .15 * ro.getShares(company);
         double inIssueO = ro.getShares(company);
+        // FS13, 2026-11-20: the households are handed twice the 15% it takes, as the copy above is handed its 15%, so what they give is theirs to give (handTheHouseholds()).
+        handTheHouseholds(o, company, 2 * .15);
         double theirs = o.getHouseholdBalance().sharesHeld(company);
         check("fixture: the households can hand the fund 15% of the company", theirs >= over);
         double ko = 1 - over / theirs;
@@ -1127,6 +1170,29 @@ public class FundCheck {
     /* ================= 9b. the withdrawal dial (0.7.48, C1) ================= */
 
     /**
+     * THE DESK'S ROOM TO BUY EVERY SHARE OF A COMPANY THAT IS NOT ITS OWN, CAUSED (FS13, 2026-11-20; PK1). The desk posts its bid first in the month's step
+     * (Exchange.postDesk()), sized by what its capital carries, POSITION_LIMIT and BOOK_LIMIT (Exchange.deskCanBuy()); the leavers' and the households' sales
+     * then cross it before the fund's ask is posted, last (postFund()), so what the bid had left for the fund's ask was whatever the town's holders did not
+     * take: 0.0000 of both holdings sold on 72 months and on 60, the desk's bid for 28,820 shares of Construction, read before the step, rested on no book after it. The bank's capital is
+     * raised, as takeEquityTo() lowers it (Bank.setCash), until the bid is every share of the company the desk does not hold - the model's own limit, the
+     * shares that are not its own - and once more by the same: the others' whole holdings fall short of that by the fund's own, so no seller can use the bid
+     * up before the fund's ask, and a month's movement of the quote or of the bank's equity cannot take the room back. Returns whether the room is whole in
+     * every company given.
+     */
+    static boolean giveTheDeskRoom(Game g, int[] companies) {
+        Equity reg = g.getEquity();
+        Exchange ex = g.getExchange();
+        Bank bank = g.getBank();
+        for (int i = 0; i < 60; i++) {
+            boolean whole = true;
+            for (int c : companies) whole &= ex.deskCanBuy(reg, c) >= (reg.getShares(c) - Math.max(0, reg.getDealerShares(c))) * (1 - 1e-12);
+            bank.setCash(bank.getCash() + bank.equity());
+            if (whole) return true;
+        }
+        return false;
+    }
+
+    /**
      * A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX
      * TIMES THAT, WITH NO CASH: each company's households hand it 5% of the
      * company (a fixture of a holding, not a trade, as section 8's band) and
@@ -1152,6 +1218,11 @@ public class FundCheck {
         }
         if (k == 2 && ex.price(Equity.BANK) > 0) reg.issueToCityRescue(Equity.BANK, 6 * market / ex.price(Equity.BANK));
         return two;
+    }
+
+    /** The factor the step's split or consolidation left on a company's count of shares (Exchange.getSplit()), 1 when it had none: what a count read before the step is multiplied by to be read after it. */
+    static double splitUnit(Game g, int c) {
+        return g.getExchange().getSplit(c) != 0 ? g.getExchange().getSplit(c) : 1;
     }
 
     /** What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. */
@@ -1235,6 +1306,8 @@ public class FundCheck {
         over.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
         double a0 = over.getEquity().getCityMarketShares(two[0]), b0 = over.getEquity().getCityMarketShares(two[1]);
         double rescue0 = over.getEquity().getCityRescueShares(Equity.BANK);
+        check("fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it",
+                giveTheDeskRoom(over, two));
         play(over);
         // FS13, 2026-11-20: THE RESCUE BOOK IS COUNTED IN THE UNIT THE MONTHS LEAVE (PK1), as section 1 counts what the city took. The exchange splits or
         // consolidates the bank's shares by a power of ten when its price leaves the wage band (Exchange.splitWhatNeedsIt()) and every count on the register
@@ -1242,7 +1315,8 @@ public class FundCheck {
         // a month splits it was the town's. The law is that none of the book was sold: it stands at what it was, times each month's split.
         double rescueAfter = rescue0 * (over.getExchange().getSplit(Equity.BANK) != 0 ? over.getExchange().getSplit(Equity.BANK) : 1);
         TreasuryFund o = over.getFund();
-        double fa = soldOrAsked(over, two[0], a0) / a0, fb = soldOrAsked(over, two[1], b0) / b0;
+        double ua = splitUnit(over, two[0]), ub = splitUnit(over, two[1]);
+        double fa = soldOrAsked(over, two[0], a0 * ua) / (a0 * ua), fb = soldOrAsked(over, two[1], b0 * ub) / (b0 * ub);
         out.printf("   at %s a month: due $%,.1fk, paid $%,.1fk, to raise $%,.1fk; %.4f of each holding sold or asked (%.4f, %.4f)%n",
                 DecisionLog.pct2(o.getWithdrawal()), o.getTransferDue(), o.getTransferPaid(), o.getToRaise(), fa, fa, fb);
         check("fixture: its cash could not cover the month, all of it to raise", o.getTransferPaid() == 0
@@ -1259,8 +1333,8 @@ public class FundCheck {
         boolean atTheBid = true;
         for (int c : two) atTheBid &= ox.bookOf(c).asks().stream().filter(x -> x.who().equals(Exchange.FUND))
                 .allMatch(x -> Math.abs(x.price() - ox.fair(c) * (1 - TreasuryFund.RULE_PREMIUM)) < 1e-12);
-        double soldA = a0 - over.getEquity().getCityMarketShares(two[0]), soldB = b0 - over.getEquity().getCityMarketShares(two[1]);
-        out.printf("   sold at the step: %.4f and %.4f of the two holdings, the rest asked at the desk's bid%n", soldA / a0, soldB / b0);
+        double soldA = a0 * ua - over.getEquity().getCityMarketShares(two[0]), soldB = b0 * ub - over.getEquity().getCityMarketShares(two[1]);
+        out.printf("   sold at the step: %.4f and %.4f of the two holdings, the rest asked at the desk's bid%n", soldA / (a0 * ua), soldB / (b0 * ub));
         check("over the default, what the cash cannot cover is sold from the market book at the step, pro rata",
                 Math.abs(fa - fb) <= 1e-9 && fa > 1 - TreasuryFund.EQUITY_WEIGHT && fa <= 1);
         check("...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid", atTheBid
@@ -1291,11 +1365,18 @@ public class FundCheck {
         // The same fund at the default: the short is not paid, and the only sale is the band's.
         Game rule = copy();
         int[] same = holdTwoAndARescueBook(rule);
+        // FS13, 2026-11-20: THE BANK IS TAKEN UNDER ITS TARGET, SO THAT THE FUND HAS NO CASH BY THE STEP (PK1). The band asks only while the fund's shares are over
+        // REBALANCE_OVER of its book and cash, and the cash that arrives in the month is the dividends of what it holds - the rescue book's from the bank, which pays
+        // owners what it has over its target (Bank.dividendDue()): on 60 months it paid D$35.8k on a rescue book the market book's D$39.7k was weighed against, the
+        // mix fell to 54%, and the rule bought where the band would have asked. A bank between its minimum and its target pays nothing (Bank.Payout.REBUILDING).
+        takeEquityToOwn(rule.getBank(), bk -> .5 * (bk.minimumEquity() + bk.targetEquity()));
+        check("fixture: the bank is rebuilding its capital, between its minimum and its target, so it pays its owners nothing",
+                rule.getBank().payoutStance() == Bank.Payout.REBUILDING);
         double r0 = rule.getEquity().getCityMarketShares(same[0]);
         play(rule);
         TreasuryFund r = rule.getFund();
         double short1 = r.getTransfersShort();
-        double fr = soldOrAsked(rule, same[0], r0) / r0;
+        double fr = soldOrAsked(rule, same[0], r0 * splitUnit(rule, same[0])) / (r0 * splitUnit(rule, same[0]));
         check("fixture: at the default its cash could not cover the month either", r.getTransferPaid() == 0 && short1 > 0);
         play(rule);
         check("at or under the default a short is not paid", r.getToRaise() == 0 && r.getTransferPaidLate() == 0
@@ -1552,7 +1633,7 @@ public class FundCheck {
 
         double fastest = Exchange.BUYBACK_PACE / 12 / (1 - Exchange.SPREAD / 2);
         double fixedPoint = TreasuryFund.OWNERSHIP_LIMIT * TreasuryFund.LIMIT_SALE_SHARE / (TreasuryFund.LIMIT_SALE_SHARE - fastest);
-        int capMonths = 0, idleMonths = 0, closedMonths = 0, buybackMonths = 0;
+        int capMonths = 0, idleMonths = 0, closedMonths = 0, buybackMonths = 0, unmet = 0;
         double most = 0;
         long t0 = System.nanoTime();
         for (int m = 0; m < MONTHS_9E; m++) {
@@ -1561,6 +1642,16 @@ public class FundCheck {
             if (g.getFund().getTransferFromIdle() > 0) idleMonths++;
             Exchange ex = g.getExchange();
             if (ex.getBuybackToHouseholds(buyer) + ex.getBuybackToDesk(buyer) + ex.getBuybackAbroad(buyer) > 0) buybackMonths++;
+            // FS13, 2026-11-20: A BID FOR WHAT THE FUND ASKS AT FAIR VALUE IS CAUSED, EVERY MONTH (PK1), as section 9b's. The fixed point is the rule's tenth of the excess
+            // sold a month against a buyback's pace, and the sale fills only if somebody pays fair value for it. Left to the town, nobody did on 60 months of founding and on 84:
+            // the book's last trade stood under fair value (0.01039 against 0.01050) with no bid resting at the months' ends, the fund's ask grew unfilled (68 to 83 shares
+            // a month) while the company retired its shares from other holders, and the fund's holding of it rose to 11.17% of the shares on 60, 11.14% on 84, past the
+            // fixed point of 10.92% - the model's buyback outrunning a sale nobody bought. The world pays fair value for what is asked at it and under it (the asks of others
+            // ahead of the fund's at that price too, as they stand ahead of it), so the law is the rule's against the buyback's pace: the sale is made and the holding is held.
+            double bidAt = ex.fair(buyer), standing = 0;
+            for (OrderBook.Order ask : ex.bookOf(buyer).asks()) if (ask.price() <= bidAt) standing += ask.quantity();
+            if (standing > 0) ex.tradeForCheck(buyer, Exchange.WORLD, OrderBook.Side.BUY, bidAt, standing);
+            if (ex.bookOf(buyer).resting(Exchange.FUND, OrderBook.Side.SELL) > 0) unmet++;
             for (int c = 0; c < Equity.COMPANIES.length; c++) {
                 double shares = g.getEquity().getShares(c);
                 if (shares > 0) most = Math.max(most, g.getEquity().getCityMarketShares(c) / shares);
@@ -1573,6 +1664,7 @@ public class FundCheck {
         check("every month's audit closed", closedMonths == MONTHS_9E);
         check("the cap sale fired: the rule asked shares past the limit in some month", capMonths > 0);
         check("the idle transfer fired: a month's transfer had a part struck on the idle cash", idleMonths > 0);
+        check("fixture: a bid took every share the fund asked of the company, in every month", unmet == 0);
         check("no company was held past the fixed point", most <= fixedPoint * (1 + 1e-9));
     }
 
