@@ -69,11 +69,49 @@ bumped `CityMap.FORMAT` for a number the law can ask for); the quay's spurs stay
 
 ## The trace
 
-TRACE_PLACEHOLDER
+The default playtest (`LongPlaytest`, seed 0, 2,400 months, `-Dplaytest.trace=<prefix>`, one JVM each, run one after
+the other) on `origin/main` 2677b1580 built in its own folder, and on this branch's classes (the same commit plus
+the batch, snapshotted before the harness was last touched; the model files are the same either way). All eight
+trace files are **byte for byte identical** (`cmp`): month 965,996 bytes, borrow 2,205, house 897,482, pop 444,487,
+bank 899,230, bonds 5,275,413, build 698,136, labour 781,494; 2,405 rows in the month file, one SHA-256 for both
+(`b32736658001175ed240...`). The reports differ in 18 lines, all of them runtime or identity: the wall clock stamps
+of two log lines (14:29:31 against 14:57:21), "2405 months (200 years) in 1594s" against 1601s, the CL3 line's
+"the windows took 25.3 s" against 26.5 s, and one `LandParcel@28dcca0c` object hash inside a Step's `toString`.
+(HS2's 0.9.167 merged after the trace; it is not this batch's, and the batch's own delta, one accessor and a
+harness, is the same on it.) The ensemble is not owed: the trace did not move. As expected, since nothing in the model reads the map and the one
+added main-line method, `CityRuns.stationLine()`, has no caller outside MapCheck. Files: `target/hl1-trace/{main,mine}-*`.
 
 ## Checks
 
-CHECKS_PLACEHOLDER
+- `./batch-check.sh --fast` (after both merges of main, 0.9.166 and 0.9.167): compile OK, maps regenerated, Stale 0
+  firm findings, exit 0.
+- `./batch-check.sh MapCheck` (it picks BridgeMapCheck, which borrows its fixtures; run again on the final code and
+  the merged main): suite OK, 2 harnesses, "All checks passed", exit 0. MapCheck's section 1 prints the track
+  account every 30th month (all four samples: 0 plots of track, the model's 0, the station's line 0: that city has no
+  station); its hard assertion line "the map draws exactly what the city has ... every plot of its track" is OK;
+  section 8's two raster checks (with the `stationLine` term) OK; section 25: 11 assertions, all OK (the numbers
+  above). The one `OBSERVED - not reached` (section 4's second bought block) is main's, in a section this batch did
+  not touch. Its 13 timing assertions are soft (builders' runs time soft).
+- `./batch-check.sh MainLineCheck` (the harness that asserts the station's line, whose accounting this law now
+  agrees with): suite OK, exit 0.
+- The pick (`sh tools/pick.sh origin/main HEAD`): 26 of 230, not ALL, so no dry run is owed. Review line: "not
+  needed - no money, saves or threading in the diff". Picked: BondCheck BridgeMapCheck CapitalFlowCheck
+  CrossingCheck EarthTerrainCheck GatewayCheck GlobeCheck HealthCheck IslandNetCheck IslandRailCheck JunctionCheck
+  LandCheck MainLineCheck MapCheck MiningCheck PartnerCallsCheck PlanCheck PolicyPreviewCheck PriceLevelCheck
+  PortCheck QuayCraneCheck QuayRailCheck RailDrawCheck RunWorksCheck TimingCheck TruckRouteCheck. Those I ran: the
+  three above; the rest read `CityRuns` or MapCheck's fixtures without calling `stationLine()` or `Drawn`, and the
+  gate runs them.
+- The fixture causes the condition: section 25's premise check shows the old count (plots drawn + surplus = 132)
+  is not the model's track (0), so the old law is red on it, and the three negative variants (no station, a plot
+  short, a plot over) show the new law is exact, not slack. No relaxed tolerance, no path observation.
+- Not run: a dry run (the pick is not ALL), an ensemble (the trace did not move), HL1's own 120-month town (it
+  lives on HL1's held branch; the fixture is its case on a city of the same kind, and its numbers - 83 against 132 -
+  are the line's length on that ground).
+- Not proved here, and not changed: a harbour city. A quay spur is an arm of the rail net (`QUAY`), counted by
+  neither `trackSurplus()` nor `stationLine()`; whether the painter counts its plots in `railLaid` on a painted
+  `CityMap` is asserted by no harness (`QuayRailCheck` lays on `CityRuns` alone), and MapCheck's cities have no
+  harbour. The old law had the same gap. It is named, not mended: it needs a fixture of its own, and a finding
+  that is not yet one.
 
 ## Calls
 
