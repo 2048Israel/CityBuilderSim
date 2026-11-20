@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.165 — FB14, gold: GD3's review and the start-on-gold box — 2026-11-20, ready, see docs/queue/FB14-notes.md
+The founding screen has a "Start on gold" box under the money: the city opens on Gold, Defend the gold its bank's aim, with
+the law's 40% of its treasury in gold and never more than the vault, so every preset's whole vault (Standard's covers 25%, and
+the box's line says so; a deeper custom vault keeps the rest in dollars). Selling gold now shrinks M0: the next month's top
+retires what the mint paid out, from the reserves, and the audit says it twice; until now the bank's equity paid it and the
+cover drained faster than a real gold standard's. Gold's cover test retires only what the reserves can, and the cover, the free
+gold and the pace read M0 after the last sale's retirement. A gold break reads "came off gold", not "the peg broke", and Gold
+has a thin-cover flag. Known, and opened by the box: a city founded on gold the default way can take M0 under zero from about
+month 161 (GM1). Saves: no format bump; older saves read nothing retired for gold and every break a peg's. The playtest does not
+move: its city is on Lean.
+
 ### 0.9.164 — SQ1b, a month's material draw past 2^31 and buildStack's harness — 2026-11-20, ready, see docs/queue/SQ1b-notes.md
 `Game.drawMaterials` rounded a month's draw of material into an int, so a draw past 2^31 units wrapped (3 x 2^31 became
 a negative count): the whole draw went unbought and unbooked. The draw is a long end to end now: the yard

@@ -1657,7 +1657,7 @@ public class CurrencyRegimeCheck {
 
     /** The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. 0 when it keeps nothing. */
     static double kept(CentralBank cb) {
-        return cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried());
+        return cb.equity() - cb.getVault() + cb.vaultInNewMoney() - (cb.getRemittanceDue() - cb.getLossCarried());
     }
 
     /** A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. */

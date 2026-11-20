@@ -2985,8 +2985,8 @@ final class TradeScreen {
         String d = sym();
         if (fx.brokeThisMonth()) {
             double jump = Math.expm1(fx.getLastBreakJump());
-            // The gold's own break, by its cover (GD3): the gold standard giving way, not a peg.
-            boolean gold = fx.getLastBreakCause() == ForeignAccounts.BreakCause.COVER;
+            // The gold's own break, by its cover or by doubt (GD3; FB14: lastBreakWasGold(), since a doubt under Gold read as a peg's): the gold standard giving way, not a peg.
+            boolean gold = fx.lastBreakWasGold();
             return (gold ? "The gold gave way, because " : "The peg gave way, because ") + fx.getLastBreakCause().words + ": the " + d + " landed at "
                     + symFig(fxRate(fx.getRate())) + ", " + share1(Math.abs(jump)) + (jump >= 0 ? " weaker" : " stronger")
                     + " in the month, where the float's rule had it at " + symFig(fxRate(fx.getLastBreakShadow()))
