@@ -389,3 +389,49 @@ cost now spread through the fit itself. So the second mend:
 - **The time:** the mended (a)+(b) ran its 2,400 months in 25 minutes,
   exit 0 (the reference: 144 minutes to month 1850, stopped; today's city:
   16 minutes). That is the run in the 0.9.160 table above.
+
+## 5. The pace on 0.9.161 (OP1), with both mends: the table for the call
+
+The same six runs, one JVM at a time, on the merge of 0.9.161 (26d9ae502)
+with both mends and the harness (ed05e89f0); `main` is origin/main's seven
+differing classes (`ArrivalMix`, `BuildAdvice`, `Game`, `NewUnit`,
+`PopulationManager`, `Recipes`, `ResearchCatalog`) over the branch's.
+OP1 moves both cities (every lever open from founding): today's at m2400 is
+556,655, not 1,658,853.
+
+| run | m60 | m900 | m1200 | m2400 | rent at m60 | diploma fill m60 / m900 / m1200 / m2400 | minutes |
+|---|---|---|---|---|---|---|---|
+| today (default; main and branch the same) | 1,234 | 28,369 | 32,330 | 556,655 | ≤ .30 (.232) | 1.00 / 1.00 / 1.00 / 1.00 | 10 |
+| 1900 on main | 566 | 643 | 646 | 2,764 | .607 | .42 / .14 / .19 / 1.00 | 11 |
+| (a) the 1900 home alone | 853 | 3,901 | 24,797 | 949,447 | ≤ .30 (.222) | .96 / 1.00 / 1.00 / 1.00 | 25 |
+| (b) the apprentices alone | 570 | 1,142 | 2,118 | 25,174 | .603 | .45 / .99 / 1.00 / 1.00 | 5 |
+| (a) + (b) | 944 | 30,117 | 110,986 | 983,979 | ≤ .30 | .86 / 1.00 / 1.00 / 1.00 | 24 |
+
+Between, at m240 / m600 / m1500 / m1800 / m2100: today 2,668 / 7,905 /
+32,473 / 46,024 / 171,829; the 1900 city on main 737 / 575 / 1,451 / 1,011
+/ 1,620; (a) 3,716 / 2,890 / 112,804 / 312,864 / 617,497; (b) 816 / 852 /
+6,287 / 9,843 / 12,906; (a)+(b) 1,656 / 6,805 / 267,106 / 647,332 /
+777,523.
+
+- **Today's city does not move, to the bit, with both mends:** main and the
+  branch wrote the same eight trace files (2,402 lines each but borrow's
+  62) and the same log but its runtimes and object hashes; both exit 0.
+- **The 1900 city with both halves outgrows today's from m900** (30,117
+  against 28,369; 983,979 against 556,655 at m2400). ★ One cause to weigh:
+  the home's scale is fixed at the founding (§3), so a 1900 city's homes
+  stay 0.29 of today's cost while its wages move with its market; the
+  proposal's other form, the scale walked back to 1 along the years (by
+  the knots, to 2021), would bring the late city toward today's. Jerus's
+  call, with the pace.
+- (b) alone still stalls on the rent (the pull .50 at m60), (a) alone on
+  nothing that holds it long: on 0.9.161 its diploma posts are filled by
+  m900 (on 0.9.160 they fell to .48 there). Together they are fastest
+  early (6,805 at m600 against (a)'s 2,890), with 26% unemployment at m240
+  and the pull .72 at m600 as the arrivals run ahead.
+- **Exits:** today's and (a)+(b) exit 0. The 1900 city on main exits 1 on
+  four reds at its last months (industry farther out than the homes at
+  m2400; the households' own line, UnsettledIncome, UnsettledRent and
+  UnsettledFees past their bounds at m2402); (a) and (b) on one of the
+  same, UnsettledFees at the last month (m2405, m2402). That is main's
+  family (HS1's households' money in a 1900 city), not R1g's, and R1g's
+  (a)+(b) does not meet it.
