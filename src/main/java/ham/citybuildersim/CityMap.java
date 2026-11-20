@@ -4275,6 +4275,18 @@ public final class CityMap {
         return l == null || l.in == null ? null : l.in.clone();   // a copy: the watch keeps it a month
     }
 
+    /**
+     * ...and what district d carried on as {month, code} pairs (Link.out: its plan's overflow log, DistrictPlan's OVERFLOW LOG - an
+     * arrival that found no place at {its month, its type}, the departure of one at {the month, ~pair}), null for none - its link's,
+     * once planned; the band's last district's goes to the packing at the city's edge. The playtest's layout watch reads it (RN1-H-M,
+     * THE WORKS SENT ON): an old works the district sent on is not one of its boxes to stand. Nothing in the model reads it.
+     */
+    public int[] carriedOnLog(District d) {
+        drawnOf(d);
+        Link l = links.get(d);
+        return l == null || l.out == null ? null : l.out.clone();
+    }
+
     /** The links kept (0.7.89: a band's let go past BANDS_KEPT): a harness's. */
     int linksKept() { return links.size(); }
 
