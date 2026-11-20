@@ -899,6 +899,9 @@ final class BuildScreen {
         face.setStyle("-fx-padding: 10 12 10 12;");
         face.getChildren().add(Kept.scope("head", () -> cardHead(f, Icons.ofCategory(c.name()), f.market() ? INVESTOR_DOT : CITY_DOT, afford, showNew)));
         if (origin != null) face.getChildren().add(Kept.scope("origin", () -> originLine(origin)));
+        // ...and (FB13, R5-L) what its patent costs: the licence line of mockup 5, from the model's own reading of the discovery.
+        ResearchView.Licence licence = ResearchView.licence(ui.game, template);
+        if (licence != null) face.getChildren().add(Kept.scope("licence", () -> licenceLine(licence)));
         if (ResearchView.isLab(template)) face.getChildren().add(Kept.scope("lab", this::labLine));
         javafx.scene.layout.FlowPane tags = Kept.scope("tags", () -> cardTags(f, group));
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
@@ -1043,6 +1046,16 @@ final class BuildScreen {
         line.setWrapText(true);
         line.setMinHeight(Region.USE_PREF_SIZE);
         line.setStyle(Palette.words(Palette.SIZE_LABEL, o.source() == ResearchView.Source.HERE ? Palette.DISCOVERY : Palette.TEXT_MUTED));
+        return line;
+    }
+
+    /** A card's line on its licence (ResearchView.licenceWords()): in amber while a patent is being paid, in the discovery's violet for what the city found first, muted for the rest. */
+    private Label licenceLine(ResearchView.Licence l) {
+        Label line = Kept.label(ResearchView.licenceWords(l, v -> money(v)));
+        line.setWrapText(true);
+        line.setMinHeight(Region.USE_PREF_SIZE);
+        line.setStyle(Palette.words(Palette.SIZE_LABEL, l.kind() == ResearchView.LicenceKind.UNDER ? Palette.WARN
+                : l.kind() == ResearchView.LicenceKind.HERE ? Palette.DISCOVERY : Palette.TEXT_MUTED));
         return line;
     }
 
@@ -2803,7 +2816,10 @@ final class BuildScreen {
                     Kept.scope("job", () -> cityJob(all)),
                     Kept.scope("advice head", () -> sectionHead("WHAT WOULD HELP MOST",
                             Kept.scope("total", () -> adviceTotal(advice)))),
-                    Kept.scope("advice", () -> adviceRow(advice)),
+                    Kept.scope("advice", () -> adviceRow(advice)));
+            // AN ISLAND TO LINK (FB13, AL1-W): the card for the link the rule would order, only while it has an island to link - with none, nothing.
+            page.getChildren().addAll(Kept.scope("link", this::linkSection));
+            page.getChildren().addAll(
                     Kept.scope("auto head", () -> sectionHead("AUTOMATIC BUILDING", AUTO_INFO, hint(autoHint(ui.game.getAutoBuilder())))),
                     Kept.scope("auto", this::autoRow));
             // THE OPEN ASKS (CD2, D30): only while some order waits for its money - with none, nothing, not an empty card.
@@ -3698,6 +3714,77 @@ final class BuildScreen {
         }
         out.add(rows);
         return out;
+    }
+
+    /* ----- AN ISLAND TO LINK (FB13, AL1-W) ----- */
+
+    /*
+     * AL1 made the automatic builders link the island the city most needs (BuildAdvice.linkFor(): a bridge where one is allowed, else sea
+     * terminals) and left the Build tab without a card for it. The card is that rule's answer as the screens read it (BuildAdvice.linkShown()),
+     * worded by LandmassView.linkCard(): the island and its ground, what links it, its price and its wait, and a door to the card of the
+     * building that would. Nothing is drawn while no island is waiting to be linked, so a played city's Overview is as it was.
+     */
+
+    /** The section: its head and its card, or nothing while the rule has no island to link. */
+    List<javafx.scene.Node> linkSection() {
+        List<javafx.scene.Node> out = new ArrayList<>();
+        Landmasses lms = ui.game.getLandManager().getLandmasses();
+        LandmassView.Card card = LandmassView.linkCard(lms, BuildAdvice.linkShown(ui.game));
+        if (card == null) return out;
+        out.add(Kept.scope("head", () -> sectionHead(LandmassView.LINK_HEAD, hint(LandmassView.LINK_HINT))));
+        out.add(Kept.scope("card", () -> linkCard(card)));
+        return out;
+    }
+
+    /** The card itself, in the open ask's shape: the island and what links it at the left, the price and the wait, and the door to the building's card. */
+    HBox linkCard(LandmassView.Card card) {
+        Label title = Kept.label(card.title());
+        title.setStyle(Palette.strong(Palette.SIZE_HEADING, Palette.TEXT_HEAD));
+        Label does = Kept.label(card.does());
+        does.setWrapText(true);
+        does.setStyle(wordsAt(10.5, card.door() == null ? Palette.WARN : Palette.TEXT_MUTED));
+        VBox name = Kept.column(2, title, does);
+        name.setMinWidth(180);
+        HBox.setHgrow(name, Priority.ALWAYS);
+        HBox row = Kept.row(16, name);
+        if (card.door() != null) {
+            // ...the wait only where the quote has one (NaN: a site with no output to build from, which monthsWait() would call stalled).
+            HBox figures = Kept.row(18, askFigure("Price", money(card.price()), Palette.TEXT_BODY));
+            if (!Double.isNaN(card.months())) figures.getChildren().add(askFigure("Opens in", monthsWait(card.months()), Palette.TEXT_BODY));
+            figures.setAlignment(Pos.CENTER_LEFT);
+            HBox door = doorPill(card.label(), Icons.BUILD, Palette.BUILDING, () -> openLinkDoor(card));
+            row.getChildren().addAll(figures, door);
+        }
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
+                + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: " + Palette.EDGE + ";");
+        return row;
+    }
+
+    /** The card's door: the card of the building the link orders, with the landmass its next order is for chosen (a bridge's far landmass, or a terminal's island; the rule's, home, needs none). */
+    void openLinkDoor(LandmassView.Card card) {
+        BuildingsTemplate t = card.template();
+        if (t == null) return;
+        if (card.door() == LandmassView.Door.BRIDGE) ui.game.chooseBridgeLandmass(t, card.landmass());
+        else if (card.asked() >= 0) ui.game.choosePortLandmass(t, card.asked());
+        BuildAdvice.Category c = BuildAdvice.categoryOf(t);
+        openOnBuilding(c == null ? BuildAdvice.ROADS : c.name(), t.getName());
+    }
+
+    /**
+     * "Build a bridge there" (FB13): the bridge's card, with the island chosen for its next order (Game.chooseBridgeLandmass()), as a notice's
+     * button lands on it - the one the rule would order where `link` names it, else the catalogue's first Road Bridge (one is already on site).
+     * The Infrastructure page alone where the catalogue has no bridge.
+     */
+    void openBridgeCardFor(int landmass, BuildAdvice.Link link) {
+        BuildingsTemplate bridge = link != null && link.bridge() != null ? link.bridge() : LandmassView.bridgeFor(ui.game.getBuildingManager().getTemplates());
+        if (bridge == null) {
+            openCategory(BuildAdvice.ROADS);
+            return;
+        }
+        ui.game.chooseBridgeLandmass(bridge, landmass);
+        BuildAdvice.Category c = BuildAdvice.categoryOf(bridge);
+        openOnBuilding(c == null ? BuildAdvice.ROADS : c.name(), bridge.getName());
     }
 
     /** One figure of an open ask's row: its small label over its value. */
@@ -5906,7 +5993,9 @@ final class BuildScreen {
 
             List<javafx.scene.Node> shown = new ArrayList<>(List.of(warning, details));
             // The ground the city owns that no port links (ET5): free, and no room for this, with the door to the port that would link it.
-            List<String> islands = islandPort ? List.of() : LandmassView.noLandLines(land);
+            // ...and (FB13, AL1-W) where the rule would link the island the Build tab's card names by a bridge, the line that says so and its door.
+            BuildAdvice.Link advice = islandPort ? null : BuildAdvice.linkShown(ui.game);
+            List<String> islands = islandPort ? List.of() : LandmassView.noLandLines(land, advice);
             for (int i = 0; i < islands.size(); i++) {
                 String line = islands.get(i);
                 shown.add(Kept.scope("island " + i, () -> {
@@ -5928,6 +6017,9 @@ final class BuildScreen {
                 }
                 int at = first;
                 if (at >= 0) shown.add(Kept.scope("port door", () -> doorPill(LandmassView.PORT_DOOR, Icons.BUILD, Palette.BUILDING, () -> openPortCardFor(at))));
+                if (advice != null && advice.bridge() != null) {
+                    shown.add(Kept.scope("bridge door", () -> doorPill(LandmassView.BRIDGE_DOOR, Icons.BUILD, Palette.BUILDING, () -> openBridgeCardFor(advice.landmass(), advice))));
+                }
             }
             // The Build shortcut (0.7.61, star 14): the cheapest bare ground that covers the shortfall - back to the
             // order once it is covered, this page again (its next best) while it is not. Not for a terminal on an unlinked island (ET5):

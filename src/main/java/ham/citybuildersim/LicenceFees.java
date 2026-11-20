@@ -165,8 +165,12 @@ public final class LicenceFees {
 
     /** One building with this recipe and these pieces, at its owner's run rate. */
     private static double one(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate) {
+        return one(game, t, unit, owner, recipe, fitted, standing, dispatchRate, new HashSet<>());
+    }
+
+    /** ...with the codes it struck a licence on, or looked at to (FB13: the card names the patents the bill is made of): `charged` takes the building's own, the recipe's, the recipe changes' and each fitted piece's, in that order. */
+    private static double one(Game game, BuildingsTemplate t, NewUnit unit, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate, Set<String> charged) {
         double bill = buildingFee(game, t, unit, owner, standing, dispatchRate);
-        Set<String> charged = new HashSet<>();
         charged.add(t.getSinceText());
         Recipes.Prices prices = Recipes.pricesOf(game);
         int accrualMonth = game.getMonth();
@@ -454,11 +458,15 @@ public final class LicenceFees {
      * verdict and the planners' licence all read it, so they bill what the month would.
      */
     static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife) {
+        return billOf(game, t, f, running, atMonth, overLife, new HashSet<>());
+    }
+
+    /** ...with the codes it struck a licence on, or looked at to (FB13): `charged` takes the building's own and each piece's. */
+    static double billOf(Game game, BuildingsTemplate t, Fitting f, double running, int atMonth, boolean overLife, Set<String> charged) {
         if (f.n() <= 0 || !utilityWork(game, t)) return 0;
         Research found = game.getResearch();
         long per = f.standing() ? f.n() : 1;
         double[] rate = { Double.NaN };
-        Set<String> charged = new HashSet<>();
         double bill = 0;
         String code = t.getSinceText();
         if (charged.add(code) && payable(code, atMonth, found))
@@ -537,5 +545,48 @@ public final class LicenceFees {
                 RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
         double bill = billOf(game, t, order, running, game.getMonth() + monthsAhead, false);
         return Double.isFinite(bill) ? bill : 0;
+    }
+
+    /* ===== WHAT A BUILD CARD SAYS OF ITS LICENCE (FB13, R5-L) ===== */
+
+    /** A patent a licence is struck on: its catalogue code and the month it ends (history's date and TERM_MONTHS). */
+    public record Patent(String code, int endsMonth) { }
+
+    /**
+     * What one more of a building pays for its patents each month, and the patents that are running among those the bill is made of (FB13).
+     * `perMonth` is what forNew() charges a sector's building and forNewWork(.., 1, 0) a city utility, today, to the cent; `patents` are the codes
+     * the same reckoning looks at (the building's own, its recipe's, the recipe changes', each fitted piece's) that payable() says are due now, the
+     * soonest to end first - the card's line reads them, so that it says what the bill is made of and not the building's entry alone.
+     */
+    public record Rent(double perMonth, List<Patent> patents) {
+        static final Rent NONE = new Rent(0, List.of());
+    }
+
+    /**
+     * The rent on one more of a building (FB13): none in a city not founded the 1900 way, inside another licence pricing, and for a work that is
+     * neither a sector's building nor a city utility.
+     */
+    public static Rent rentOnNew(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted() || pricing.get() || t == null) return Rent.NONE;
+        Set<String> charged = new java.util.LinkedHashSet<>();
+        double bill;
+        if (t.isOwnedBySector()) {
+            NewUnit unit = NewUnit.of(game, t);
+            Sector owner = game.getSectors().byKey(t.getSector());
+            if (owner == null) return Rent.NONE;
+            Set<String> fitted = unit.fitted() != null ? unit.fitted() : EquipmentFit.fittedForNew(game, t);
+            Recipe recipe = RecipeChanges.recipeForNew(game, t, fitted);
+            bill = one(game, t, unit.proposed() ? unit : null, owner, recipe, fitted, false, 0, charged);
+        } else if (utilityWork(game, t)) {
+            Fitting one = Fitting.added(RecipeChanges.counts(t, EquipmentFit.fittedForNew(game, t)), 1, RecipeChanges.newChoices(game, t, Recipes.pricesOf(game)));
+            bill = billOf(game, t, one, BuildAdvice.rawRunningCostAt(game, t, 0), game.getMonth(), false, charged);
+        } else return Rent.NONE;
+        List<Patent> due = new ArrayList<>();
+        for (String code : charged) {
+            if (!payable(code, game.getMonth(), game.getResearch())) continue;
+            due.add(new Patent(code, ResearchCatalog.get().entry(code).worldMonth() + TERM_MONTHS));
+        }
+        due.sort(java.util.Comparator.comparingInt(Patent::endsMonth));
+        return new Rent(Double.isFinite(bill) ? bill : 0, List.copyOf(due));
     }
 }

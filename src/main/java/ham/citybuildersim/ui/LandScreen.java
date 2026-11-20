@@ -1244,7 +1244,7 @@ final class LandScreen {
         if (!LandmassView.shown(land.getLandmasses())) return null;
         javafx.scene.layout.GridPane t = SectorScreen.oilTable(LandmassView.WIDTHS, LandmassView.HEADS, LandmassView.RIGHT);
         int row = 1;
-        for (LandmassView.Line l : LandmassView.rows(land)) {
+        for (LandmassView.Line l : LandmassView.rows(land, id -> BuildAdvice.islandLink(ui.game, id))) {
             // Kept (KP2): a scope a landmass, by its id. SectorScreen's oil helpers (the table, rule, cell, words, figure and tip)
             // make their nodes through Kept since KP4, each in a scope of its own, so the row's cells and its rule are this
             // landmass's nodes, handed back to it; and the name's label here, in the row's scope, the same.
