@@ -103,7 +103,7 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   main; BP1, 2026-10-24); `Batch check.bat` is the same on Windows without
   `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
-  run nightly on main, alone and hard, by `tools/nightly.sh`.
+  run nightly on main, alone and hard, by `tools/nightly.sh` on the gate box.
 - `-Dcbs.timing=soft` skips sections whose only verdict is a clock (HA1).
   Mixed correctness sections keep their work and make timing soft: a timing figure over its budget says
   `SOFT`, with the figure and the budget, and is not counted; every other

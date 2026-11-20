@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GB2 — the nightly runs on the gate box — 2026-11-20, ready, see docs/queue/GB2-notes.md
+The nightly (`tools/nightly.sh`: the 4,000-month playtest, the nightly tier and the hard timing) runs on `gatebox`,
+the quiet box that judges speed best (Jerus, 2026-11-20: "the nightly timing run needs to also move to the gatebox").
+It hands its night to `tools/gate-box.sh --nightly`, GB1's way to the box: this checkout's commit of `tools/` runs
+there, and its red mail comes home through GB1's relay. The box is held whole: a gate holds `~/cbs/box.lock` shared
+and the night exclusive, so whichever comes first runs and the other waits. A second night is refused. The verdict,
+log, tier and observation records come home, where `day.sh` reads them, and the timing figures stay per machine. The
+box's first night is its baseline. The box, on UTC, runs a night in the caller's time zone, so it is dated as `day.sh`
+asks. When no box answers, `jerus` is mailed and the night runs on the laptop. It starts by itself, a laptop task at
+02:30 on `day.sh`'s `nightly due`, now only while the last night ran on another `VERSION` (Jerus, 2026-11-20: "it
+should run every night IF the version number has changed"). GB1's relay passes the box's paths to MemWatch unconverted
+(Git Bash had made `/home/jerus/...` `C:/Program Files/Git/home/jerus/...`). Scripts and docs only.
+
+### PZ1 — PrizeCheck 12: one lab a field a month, caused again — 2026-11-20, ready, see docs/queue/PZ1-notes.md
+PrizeCheck section 12's medical village, which must want two labs and order one, ordered none in its month since
+BO1-S: with the owner line on the founders' shares and dividends are the owner cell's, which takes no offering, so the
+trading households put up $962,726 of the $3.3M the lab needed and the order held, as the model's "owners first, never
+a loan" says. The model never orders two (one order a field a month); the fixture no longer caused a purse that could
+pay. The village now gets the liquidity buffer the section's other villages already had, for each lab it wants: one
+the first month, the second the next. Harness only.
+
 ### 0.9.162 — BO1-S, the owner line switched on — 2026-11-20, ready, see docs/queue/BO1-S-notes.md
 The owner families are on in every city: one two-adult household for each listed company, holding
 its founders' shares alone, living on its dividends and selling a twentieth of each stake a year;
