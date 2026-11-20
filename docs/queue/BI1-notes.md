@@ -57,15 +57,31 @@ bound-sized cases that follow from them. With the new rule: 0 FAIL.
 ## The trace
 
 The cards are read only by the screen: no model number moves. The default playtest, traced (`-Dplaytest.trace`,
-both data files named, one JVM each) on main 2677b1580 built apart and on this branch: TRACE_RESULT
+both data files named, one JVM each) on main 2677b1580 (0.9.166) built apart and on this branch merged with it:
+
+- All eight CSVs are byte-identical (`month`, `borrow`, `house`, `pop`, `bank`, `bonds`, `build`, `labour`:
+  2,405 lines each, 34 for `borrow`; 965,996 bytes `month`, 5,275,413 `bonds`).
+- The log differs in ten lines and nothing else: the run time (1,643 s against 1,645 s, in two lines), one
+  object's identity hash (`LandParcel@792b749c` against `@57bc27f5`, month 1320's works decision) and two
+  wall-clock stamps (`[14:22:10]`) on a currency-purchase line. Both runs ended `All checks passed.`, exit 0.
+- So the ensemble does not run (docs/contract.md, section 4: an unchanged trace is said in the notes).
+- Main then moved twice more: 0.9.167 is HS2, which moves the playtest. It was merged without a third trace:
+  HS2 touches no `Bank*` file (`git diff --name-only HEAD...origin/main`), and BI1's diff adds getters only the
+  screen calls, so what BI1 does to the trace cannot depend on the path under it. The logs and CSVs are kept
+  (where, below).
 
 ## The checks
 
-- `./batch-check.sh --fast`: green (compile, maps, Stale 0 firm, tree).
-- `./batch-check.sh BankCheck` (the name selects three: `BankCheck`, `CentralBankCheck`, `YoungBankCheck`):
-  `BankCheck` passed, 0 FAIL (the new section included); `CentralBankCheck` and `YoungBankCheck` known red only, as
-  main's (`docs/notes/known-reds.txt`: FS10's note, OE1's resolution line). The suite call ran 1,455 s, almost all
-  `CentralBankCheck`, its start held by the memory gate under the other sessions' load.
+- `./batch-check.sh --fast`: green on the final tree (main 0.9.167 merged): compile, maps regenerated, Stale 0
+  firm, tree only the generated docs.
+- `./batch-check.sh BankCheck` on 0.9.166's merge (the name selects three: `BankCheck`, `CentralBankCheck`,
+  `YoungBankCheck`): `BankCheck` passed, 0 FAIL, the new section included; the other two known red only, as main's
+  (`docs/notes/known-reds.txt`). The call ran 1,455 s, almost all `CentralBankCheck`, its start held by the memory
+  gate under the other sessions' load.
+- `BankCheck` alone, on the final tree (0.9.167 merged; one JVM, 34 s): the new section 0 FAIL, its 27 lines OK; the run's one
+  FAIL is `it pays its savers something` (the played bank's savers' rate), a row of main's own, FS9 (`known-reds.txt`:
+  "The played bank's own book: on HS2's path it loses on its trading in m121-144"). Not BI1's: the line is HS2's path.
+- The new section against the old test: `Bank.integrityTolerance` put back to `.005` for one run, 8 FAIL (above).
 - The pick (`sh tools/pick.sh origin/main HEAD`): 40 of 229 harnesses, not ALL, so no dry run. Review line: money
   (`Bank.java`, `ui/BankScreen.java`). No saves, no threading.
 
@@ -103,4 +119,6 @@ small young city the cards stay absent while its figures foot.
 ## Where the kept runs are
 
 No dry run (the pick is not ALL). The trace logs and CSVs of both builds are in
-`C:\Users\Jerus\AppData\Local\Temp\bi1-main\trace\` (main's) and `target/trace/` of this worktree (mine).
+`target/trace-main/` (main 2677b1580) and `target/trace/` (this branch) of this worktree, untracked: `main.log`,
+`mine.log` and the eight CSVs each. The two commits compared: main 2677b1580 (0.9.166) and this branch at f7d52f503 (its code, merged with
+0.9.166 at d90e6cef4). No dry run was kept.
