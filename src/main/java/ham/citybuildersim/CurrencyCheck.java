@@ -724,7 +724,7 @@ public class CurrencyCheck {
                 Math.abs((cb.getRemittanceDue() - remittance) - (cb.getLossCarried() - loss)
                         + cb.getRemitted() - cb.monthProfit()) <= tol,
                 // ...with what it paid in new money for the vault's dollars added back (FX8; none under Lean).
-                Math.abs(cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried())) <= .01,
+                Math.abs(cb.equity() - cb.getVault() + cb.vaultInNewMoney() - (cb.getRemittanceDue() - cb.getLossCarried())) <= .01,
             };
             for (int k = 0; k < held.length; k++) if (!held[k]) broken[k]++;
             if (named == null) return;

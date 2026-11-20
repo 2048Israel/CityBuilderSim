@@ -27,7 +27,7 @@ import java.util.List;
  *      past the strong edge it is goldStrongEdge() and the purchase goes into the ounces; inside the points nothing is dealt; a band of GOLD_POINTS deals the same dollars.
  *   3. THE CENTRE MOVES WITH GOLD, FOLLOWING HOLDS IT: the centre each month is the mint price over that month's price, by February 1934 the March 1933 centre times
  *      PAR_1900 / PAR_1934; following keeps it at the mint rate; staying leaves the mint price where it was.
- *   4. THE COVER BREAKS IT: a sale that would leave the cover under COVER_RATIO breaks the month (BreakCause.COVER, Float, where breakLanding() says, nothing sold) and one
+ *   4. THE COVER BREAKS IT: a sale that would leave the cover under COVER_RATIO (over M0 less the sale retired, since FB14) breaks the month (BreakCause.COVER, Float, where breakLanding() says, nothing sold) and one
  *      that leaves it just over holds; a purchase under the floor holds; the vault's VAULT_FLOOR does not break Gold.
  *   5. DOUBT IS SCALED BY THE COVER: goldHazard() is hazard() at the legal cover, none at a full cover, half way between at the midpoint; counted over seeded twins.
  *   6. DEFEND THE GOLD SETS THE DIAL (a bare DebtManager): goldSpread(), goldRate() under each aim and the autopilot off, dropGoldAim() writing nothing, tiedRate().
@@ -38,6 +38,12 @@ import java.util.List;
  *  10. SAVED MID-GOLD: an event open and following the dollar, slots 152-155, the regime and the aim as they were, and the next twelve months to the bit.
  *  11. GD2'S TWO FINDINGS: a price that is NaN is no throw in Game.priceOrNaN(); a money that is gold's code is none of the eight's, and gold gets no share of the trade.
  *  12. LEAN IS THE DEFAULT: a new town has no mint, no event, no gold, and deals none.
+ *  13. THE GOLD'S SALES RETIRE M0 (FB14; GD3's review, item 6): in a town founded on gold, what a reprice sold of gold is due back (CentralBank.getGoldRedeemDue()), the
+ *      next month's top retires it from the reserves (getGoldRedeemed(), the audit's two lines), none of it is the bank's equity spent (getDefendedLifetime() 0, where
+ *      GD3 spent it all), the bank keeps nothing every month; and booked by hand, a sale lowers M0 by itself, and one past the reserves retires them and spends the rest.
+ *  14. THE START-ON-GOLD BOX (FB14; GD3-F): through the founding model, not the screen - Standard, Lean and Wealthy put the whole vault into gold and found on Gold,
+ *      the cover held at month 1; a custom vault deeper than 40% of the treasury keeps the rest in dollars; the box off holds no gold; both doors (newGame() and a
+ *      new Game's run()); a 1900 founding leaves Canada's peg for it; and Insane, with no vault, founds on dollars.
  *
  * Money is in thousands, as everywhere; gold is in thousands of ounces, as the vault keeps it.
  */
@@ -99,6 +105,8 @@ public class GoldStandardCheck {
         savedMidGold();
         gdTwosTwoFindings();
         leanIsTheDefault();
+        theGoldsSalesRetireMZero();
+        theStartOnGoldBox();
 
         out.printf("%nGoldStandardCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -407,7 +415,9 @@ public class GoldStandardCheck {
         ForeignAccounts shape = onGold(deficit, TRADE, 40_000, goldK, 0, 1.0);
         double ounces = shape.getHolding(GOLD), mintPrice = shape.getMintPrice();
         double left = ounces - sale / PRICE;
-        double under = left * mintPrice / (ForeignAccounts.COVER_RATIO * .99), over = left * mintPrice / (ForeignAccounts.COVER_RATIO * 1.01);
+        // ...the cover after the sale read over M0 after it, the sale's D$ at the month's rate retired (FB14; GD3's review, item 6): the base is that much deeper.
+        double saleLocal = sale * shape.getRate();
+        double under = left * mintPrice / (ForeignAccounts.COVER_RATIO * .99) + saleLocal, over = left * mintPrice / (ForeignAccounts.COVER_RATIO * 1.01) + saleLocal;
 
         ForeignAccounts breaks = onGold(deficit, TRADE, 40_000, goldK, 0, 1.0), holds = onGold(deficit, TRADE, 40_000, goldK, 0, 1.0);
         breaks.setMoneyBase(under);
@@ -417,8 +427,8 @@ public class GoldStandardCheck {
         assertTrue("fixture: before the month both covers stand over the law's (" + String.format("%.4f", breaks.goldCover(under)) + " and " + String.format("%.4f", holds.goldCover(over))
                 + " against " + ForeignAccounts.COVER_RATIO + "), and the sale would leave one 1% under it and the other 1% over", breaks.goldCover(under) > ForeignAccounts.COVER_RATIO
                 && holds.goldCover(over) > ForeignAccounts.COVER_RATIO && breaks.getRegime() == ON_GOLD && holds.getRegime() == ON_GOLD
-                && within(breaks.goldCover(under) * (1 - sale / PRICE / ounces), ForeignAccounts.COVER_RATIO * .99, 1e-9)
-                && within(holds.goldCover(over) * (1 - sale / PRICE / ounces), ForeignAccounts.COVER_RATIO * 1.01, 1e-9));
+                && within(breaks.goldCover(under - saleLocal) * (1 - sale / PRICE / ounces), ForeignAccounts.COVER_RATIO * .99, 1e-9)
+                && within(holds.goldCover(over - saleLocal) * (1 - sale / PRICE / ounces), ForeignAccounts.COVER_RATIO * 1.01, 1e-9));
         month(breaks, PRICE, deficit, TRADE);
         month(holds, PRICE, deficit, TRADE);
         assertTrue("a sale that would leave the cover under COVER_RATIO breaks the month: BreakCause.COVER, and the regime is Float", breaks.brokeThisMonth()
@@ -431,7 +441,8 @@ public class GoldStandardCheck {
         assertTrue("the twin whose sale leaves the cover just over COVER_RATIO holds: Gold, the rate at the weak edge, no break", !holds.brokeThisMonth() && holds.getRegime() == ON_GOLD
                 && holds.getLastBreakCause() == ForeignAccounts.BreakCause.NONE && Double.compare(holds.getRate(), holds.goldWeakEdge()) == 0);
         close("...it sold what the probe sold, out of the gold", holds.getDefenceUsd(), sale, 1e-9);
-        assertTrue("...and the cover it is left with is over the law's (" + String.format("%.4f", holds.goldCover(over)) + ")", holds.goldCover(over) >= ForeignAccounts.COVER_RATIO);
+        assertTrue("...and the cover it is left with, over M0 less the sale retired, is over the law's (" + String.format("%.4f", holds.goldCover(over - saleLocal)) + ")",
+                holds.goldCover(over - saleLocal) >= ForeignAccounts.COVER_RATIO);
 
         // A purchase never breaks it, whatever the cover.
         ForeignAccounts buys = onGold(1.2 * TRADE, TRADE, 40_000, 60_000, 0, 1.0);
@@ -743,12 +754,17 @@ public class GoldStandardCheck {
         assertTrue("fixture: on Gold, the autopilot on and aiming at the gold, the cover " + String.format("%.3f", cover) + " between the floor and the defence's own",
                 fx.getRegime() == ON_GOLD && dm.isAutopilot() && dm.getAim() == DebtManager.Aim.GOLD && cover > ForeignAccounts.COVER_RATIO && cover < DebtManager.GOLD_DEFENCE_FROM);
         double gap = fx.currencyGap();
+        // ...and the cover once the month's top has retired what the last month's reprice sold of gold (FB14; GD3's review, item 6), before the dial is struck.
+        CentralBank cb = g.getCentralBank();
+        double atTop = fx.goldCover(cb.m0() - Math.min(cb.getGoldRedeemDue(), Math.max(0, cb.getReserves())));
         play(g, 1);
         double after = g.getGoldCover();
-        double lo = Math.min(dm.goldRate(gap, cover), dm.goldRate(fx.currencyGap(), after)), hi = Math.max(dm.goldRate(gap, cover), dm.goldRate(fx.currencyGap(), after));
-        out.printf("   aiming at the gold: policy rate %.6f, goldRate at the cover the month read (%.3f) %.6f, at the cover after (%.3f) %.6f, the tie %.6f%n", dm.getPolicyRate(), cover,
-                dm.goldRate(gap, cover), after, dm.goldRate(fx.currencyGap(), after), dm.tieRate());
-        assertTrue("the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read", dm.getPolicyRate() >= lo - 1e-9 && dm.getPolicyRate() <= hi + 1e-9);
+        double[] rates = { dm.goldRate(gap, cover), dm.goldRate(gap, atTop), dm.goldRate(fx.currencyGap(), after) };
+        double lo = Math.min(rates[0], Math.min(rates[1], rates[2])), hi = Math.max(rates[0], Math.max(rates[1], rates[2]));
+        out.printf("   aiming at the gold: policy rate %.6f, goldRate at the cover before the month (%.3f) %.6f, at its top after the gold's retirement (%.3f) %.6f, at the cover after (%.3f) %.6f, the tie %.6f%n",
+                dm.getPolicyRate(), cover, rates[0], atTop, rates[1], after, rates[2], dm.tieRate());
+        assertTrue("the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read (its top's, after the gold's last sale was retired, to the month's end)",
+                dm.getPolicyRate() >= lo - 1e-9 && dm.getPolicyRate() <= hi + 1e-9);
         assertTrue("...above the tie (the spread asks something at this cover) and the dial is tied", dm.getPolicyRate() > dm.tieRate() && dm.isTied());
         quietly(() -> dm.setAim(DebtManager.Aim.INFLATION));
         play(g, 1);
@@ -853,5 +869,144 @@ public class GoldStandardCheck {
         assertTrue("24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied",
                 fx.getRegime() == LEAN && fx.getHolding(GOLD) == 0 && fx.getGoldEvent() == NO_EVENT && !(fx.getMintPrice() > 0) && !g.getDebtManager().isTied()
                         && g.getInbox().latest("gold:" + LEFT_1933.name()) == null);
+    }
+
+    /* =====================================================================
+       13-14. FB14: THE GOLD'S OWN DEFENCE, AND THE START-ON-GOLD BOX
+       ===================================================================== */
+
+    /** A city founded through newGame(), the founding screen's door (UserInterface.foundCity()), in the harness's own scratch folder. */
+    static Game founded(String label, Founding f) {
+        Game g = new Game(GameFiles.scratch(label));
+        quietly(() -> {
+            g.run();
+            g.newGame(f);
+        });
+        return g;
+    }
+
+    /** The months section 13 plays its town on Gold, looking for the gold's sales. */
+    static final int REDEEM_MONTHS = 120;
+
+    static void theGoldsSalesRetireMZero() {
+        out.println("\n--- 13. the gold's sales retire M0 (FB14; GD3's review, item 6): the next month's top takes back what the vault paid, the audit says so, the bank keeps nothing ---");
+        Game g = founded("fb14-redeem", Founding.defaults().withGold(true));
+        ForeignAccounts fx = g.getForeignAccounts();
+        CentralBank cb = g.getCentralBank();
+        int months = 0, sales = 0, duesRight = 0, payable = 0, taken = 0, said = 0, closed = 0, keptNothing = 0;
+        double soldSum = 0;
+        while (months < REDEEM_MONTHS && fx.getRegime() == ON_GOLD) {
+            double sold = fx.getDefenceLocal(), due = cb.getGoldRedeemDue(), reserves = cb.getReserves();
+            if (sold > 0) {
+                sales++;
+                soldSum += sold;
+                if (within(due, sold, 1e-12)) duesRight++;
+            }
+            quietly(g::toggleNextMonth);
+            MoneyAudit.Result r = g.getLastMoneyAudit();
+            months++;
+            double back = cb.getGoldRedeemed();
+            if (due > 0 && reserves >= 2 * due) {
+                payable++;
+                if (within(back, due, 1e-9)) taken++;
+            }
+            if (back > 0 && within(r.figure("- centralbank RetiredForGold"), back, 1e-12) && within(r.figure("+ centralbank TakenBackForGold"), back, 1e-12)) said++;
+            if (Math.abs(r.residual) <= MoneyAudit.tolerance(r.moved())) closed++;
+            if (!CurrencyRegimeCheck.keepsSomething(cb)) keptNothing++;
+        }
+        out.printf("   %d months on Gold: the gold sold in %d (D$%,.2fk in all), %d of them due back with the reserves to pay; retired since founding D$%,.2fk, spent from equity D$%,.2fk%n",
+                months, sales, soldSum, payable, cb.getGoldRedeemedLifetime(), cb.getDefendedLifetime());
+        assertTrue("fixture: the town founded on gold sold gold in at least six of its months, and stayed on Gold for twelve or more (" + sales + " of " + months + ")", sales >= 6 && months >= 12);
+        assertTrue("every sale a reprice made under Gold is due back from the reserves, the month's getDefenceLocal() to the bit's share (" + duesRight + " of " + sales + ")", duesRight == sales);
+        assertTrue("...and the next month's top retires it whole wherever the reserves could pay twice over (" + taken + " of " + payable + ")", payable > 0 && taken == payable);
+        assertTrue("...the audit says it twice, + centralbank TakenBackForGold and - centralbank RetiredForGold, each the month's retired gold (" + said + " months)", said > 0 && said >= taken);
+        assertTrue("...the audit closed every month (" + closed + " of " + months + ")", closed == months);
+        assertTrue("...the bank kept nothing every month: equity less the vault plus vaultInNewMoney(), less the remittance due plus the loss carried (" + keptNothing + " of " + months + ")", keptNothing == months);
+        double settled = soldSum;   // ...each counted the month after its reprice, once its top had settled it: the last month's sale is still due
+        close("every sale settled is booked once: retired for gold since the founding plus the bank's equity spent where the reserves could not pay", cb.getGoldRedeemedLifetime() + cb.getDefendedLifetime(), settled, 1e-9);
+        assertTrue("...and most of it was retired, M0 the smaller by it, where GD3 booked all of it as the bank's equity spent (dollarsSold()) and retired none ("
+                + String.format("D$%,.2fk of D$%,.2fk", cb.getGoldRedeemedLifetime(), settled) + ")", cb.getGoldRedeemedLifetime() > settled / 2);
+
+        // By hand, as the reprice books it: a sale the reserves can pay lowers M0 by itself and leaves the equity's line alone. The last month's sale is settled first, as its top would.
+        cb.settleGoldRedeemed();
+        double m0 = cb.m0(), spent = cb.getDefendedLifetime(), newMoney = cb.vaultInNewMoney(), x = Math.min(cb.getReserves() / 4, 1);
+        assertTrue("fixture: the reserves have a sale to pay (D$" + String.format("%,.3fk", cb.getReserves()) + ")", x > 0);
+        cb.goldPaidOut(x);
+        same("a sale of gold is due back, and M0 has not moved before the next month's top", cb.m0(), m0);
+        double retired = cb.settleGoldRedeemed();
+        close("at the top it is retired: M0 is lower by the sale (GD3 left it where it was)", cb.m0(), m0 - x, 1e-12);
+        close("...the retirement is the sale", retired, x, 1e-12);
+        same("...nothing of it is the bank's equity spent", cb.getDefendedLifetime(), spent);
+        close("...and the vault's new money is less by it", cb.vaultInNewMoney(), newMoney - x, 1e-12);
+        // ...and one past the reserves retires them all, the rest spent as a defence is (dollarsSold()).
+        double all = cb.getReserves(), past = all + 2.5;
+        spent = cb.getDefendedLifetime();
+        cb.goldPaidOut(past);
+        double paid = cb.settleGoldRedeemed();
+        close("a sale past the reserves retires them all", paid, all, 1e-12);
+        assertTrue("...leaving none (" + cb.getReserves() + ")", Math.abs(cb.getReserves()) <= 1e-9 * Math.max(1, all));
+        close("...and the rest is the bank's equity spent, as any defence is", cb.getDefendedLifetime() - spent, past - all, 1e-12);
+        same("...nothing left due", cb.getGoldRedeemDue(), 0.0);
+    }
+
+    /** A custom founding whose vault is the treasury's worth: deeper than the law's 40%, so the box keeps the rest in dollars. */
+    static final double DEEP_VAULT_USD = Game.FOUNDING_CASH;
+
+    static void theStartOnGoldBox() {
+        out.println("\n--- 14. the start-on-gold box (FB14; GD3-F): the founding puts the law's cover of the treasury into gold, never more than the vault, and founds on Gold ---");
+        for (Founding.Preset p : new Founding.Preset[] { Founding.Preset.STANDARD, Founding.Preset.LEAN, Founding.Preset.WEALTHY }) {
+            Founding f = Founding.named(Founding.DEFAULT_CITY_NAME, p, WorldEconomy.DEFAULT_MEAN_INFLATION).withGold(true);
+            Game g = founded("fb14-box-" + p.name().toLowerCase(), f);
+            ForeignAccounts fx = g.getForeignAccounts();
+            double gold = fx.getHoldingUsd(GOLD), dollars = fx.getHolding(0);
+            out.printf("   %-8s founded: US$%,.1fk in gold, US$%,.1fk in dollars, of a vault of US$%,.1fk; %s, the aim %s, the mint D$%.4f an ounce%n",
+                    p, gold, dollars, f.getReserveUsd(), fx.getRegime(), g.getDebtManager().getAim(), fx.getMintPrice());
+            close(p + ": Founding.goldUsd() at the opening rate is the whole vault (its 40% of the treasury is the vault or more)", f.goldUsd(ForeignAccounts.OPENING_RATE), f.getReserveUsd(), 0);
+            close("...the city founds with the whole vault in gold", gold, f.getReserveUsd(), 1e-12);
+            assertTrue("...and none in dollars (" + dollars + ")", dollars == 0);
+            assertTrue("...on Gold, Defend the gold the aim, the mint the day's rate times gold's price, and nothing in the player's log",
+                    fx.getRegime() == ON_GOLD && g.getDebtManager().getAim() == DebtManager.Aim.GOLD
+                            && within(fx.getMintPrice(), fx.getRate() * fx.getMoneyUsd(GOLD), 1e-12) && g.getDecisions().size() == 0);
+            play(g, 1);
+            assertTrue("...a month on it holds the cover: still on Gold, the cover " + String.format("%.1f", g.getGoldCover()) + " over the law's " + ForeignAccounts.COVER_RATIO,
+                    fx.getRegime() == ON_GOLD && g.getGoldCover() > ForeignAccounts.COVER_RATIO && fx.getHolding(GOLD) > 0);
+        }
+
+        Founding deep = Founding.custom(Founding.DEFAULT_CITY_NAME, Game.FOUNDING_CASH, DEEP_VAULT_USD, WorldEconomy.DEFAULT_MEAN_INFLATION).withGold(true);
+        assertTrue("fixture: the custom founding is one the screen lets through (" + deep.problem() + ")", deep.problem() == null);
+        Game d = founded("fb14-box-deep", deep);
+        ForeignAccounts dfx = d.getForeignAccounts();
+        double want = ForeignAccounts.COVER_RATIO * Game.FOUNDING_CASH / ForeignAccounts.OPENING_RATE;
+        out.printf("   a custom vault of US$%,.1fk on a treasury of D$%,.1fk: US$%,.1fk in gold, US$%,.1fk in dollars%n", DEEP_VAULT_USD, Game.FOUNDING_CASH, dfx.getHoldingUsd(GOLD), dfx.getHolding(0));
+        close("a custom vault deeper than 40% of the treasury: the gold is 40% of the treasury at the opening rate", dfx.getHoldingUsd(GOLD), want, 1e-12);
+        close("...the rest stays in dollars", dfx.getHolding(0), DEEP_VAULT_USD - want, 1e-12);
+        close("...the vault's worth is the founding's", dfx.getReservesUsd(), DEEP_VAULT_USD, 1e-12);
+        assertTrue("...and it is on Gold", dfx.getRegime() == ON_GOLD);
+
+        Game off = founded("fb14-box-off", Founding.defaults());
+        ForeignAccounts ofx = off.getForeignAccounts();
+        assertTrue("the box off: no gold, the vault in dollars, Lean, the aim Inflation", ofx.getHolding(GOLD) == 0 && ofx.getRegime() == LEAN
+                && off.getDebtManager().getAim() == DebtManager.Aim.INFLATION && Founding.defaults().goldUsd(ForeignAccounts.OPENING_RATE) == 0);
+        play(off, 1);
+        assertTrue("...and none a month on", ofx.getHolding(GOLD) == 0 && ofx.getRegime() == LEAN);
+
+        // The other door: a new Game handed the founding, its run() the first month's.
+        Game door = new Game(GameFiles.scratch("fb14-box-door"), Founding.defaults().withGold(true));
+        quietly(door::run);
+        assertTrue("a new Game handed the box founds on gold too, its run() the door (the whole vault in gold, on Gold)",
+                door.getForeignAccounts().getRegime() == ON_GOLD && within(door.getForeignAccounts().getHoldingUsd(GOLD), Game.FOUNDING_RESERVE_USD, 1e-12));
+
+        // 1900: Canada's peg at par, left for the box's Gold.
+        Game old = founded("fb14-box-1900", Founding.defaults().withUnfitted(true).withGold(true));
+        ForeignAccounts ofx1900 = old.getForeignAccounts();
+        assertTrue("founded the 1900 way with the box: on Gold, not on Canada's peg at par (isCanadaGold() false), the whole vault in gold",
+                ofx1900.getRegime() == ON_GOLD && !ofx1900.isCanadaGold() && within(ofx1900.getHoldingUsd(GOLD), Game.FOUNDING_RESERVE_USD, 1e-12));
+        Game peg1900 = founded("fb14-nobox-1900", Founding.defaults().withUnfitted(true));
+        assertTrue("...where without it the 1900 city is on Canada's peg (OP1), with no gold", peg1900.getForeignAccounts().isCanadaGold() && peg1900.getForeignAccounts().getHolding(GOLD) == 0);
+
+        Founding insane = Founding.named(Founding.DEFAULT_CITY_NAME, Founding.Preset.INSANE, WorldEconomy.DEFAULT_MEAN_INFLATION).withGold(true);
+        Game bare = founded("fb14-box-insane", insane);
+        assertTrue("Insane, with no vault, has no gold to found on: the box founds it on dollars (Lean, no gold)",
+                insane.goldUsd(ForeignAccounts.OPENING_RATE) == 0 && bare.getForeignAccounts().getRegime() == LEAN && bare.getForeignAccounts().getHolding(GOLD) == 0);
     }
 }
