@@ -294,3 +294,9 @@ harnesses. Each reproduces here on the merge and passes in CPB2's kept run of ma
   forms. Main's city made its pool by one worker (1,440 of 1,621 filled, 1 out of work), which is the "barely
   enough" the fixture's 0.7.7 comment already met. It is not OE1's code: the path moved (a Fabrication Works of
   828 posts where main has a Fabrication Shop of 405).
+
+The orchestrator's calls: CarCheck passes by name to a new queued row, CI1 (Motoring strikes the import half
+from the spend's own sum, so paid and imported are one number by construction). A source mend here was not one
+line: `householdCarImports` feeds MoneyAudit's domestic and trade scopes and `tradeByGood`. OutsideCheck passes
+by name to FS16, which is in flight and whose sweep owns it; the orchestrator gives FS16 the pool's figures.
+Both rows are in the ship file's `## known-reds` (known-reds.sh exit 0).
