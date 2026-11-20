@@ -78,9 +78,11 @@ public final class HousingDoorCheck {
         long built;
         /** The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). */
         boolean markedForCapital;
-        /** The order's cost, the owners' issue this month, and whether the door would have refused the order's mortgage for the bank's capital on the till before that issue (MC1). */
-        double cost, raised;
+        /** The order's cost, the till before the owners' issue, what consider() offered the owners this month and what they put in, and whether the door would have refused the order's mortgage for the bank's capital on that till (MC1). */
+        double cost, held, offered, raised;
         boolean shortBeforeOwners;
+        /** The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). */
+        boolean quoteShut;
     }
 
     static Ask pending;
@@ -200,28 +202,32 @@ public final class HousingDoorCheck {
                 + " %d left marked as held for it%n", halved + notHalved, halved, forCapital, leftMarked);
         check("every order the door cut is the plan's order halved, down to one", notHalved == 0);
         check("...and the advisor's line says it was trimmed", unsaid == 0);
-        /* MC1: while the door would refuse an order's mortgage for the bank's capital, the owners are asked for the
-           whole order first, so the door trims for the capital only what their issue left uncovered. That trim is
-           caused where the issue falls short, CreditCrunchCheck 3; here the window must hold the crunch put to the
-           owners, and no capital trim the owners were not asked first for. */
-        int putToOwners = 0, capitalNotPut = 0;
-        String firstPut = null;
+        /* MC1: while the door would refuse an order's mortgage for the bank's capital, the owners are offered what
+           the till lacks on the whole order first, so the door trims for the capital only what their issue left
+           uncovered. That trim is caused where the issue falls short, CreditCrunchCheck 3. Here the window must hold
+           such an order, and each must have been offered whole: what consider() offered (Equity's offered this
+           month, the ask itself) against what the till lacked - not the desk's test asked again here (REV-MC1-2). */
+        int crunched = 0, shut = 0, offeredWhole = 0, offeredShort = 0;
+        String firstWhole = null, firstShort = null;
         for (Ask a : asks) {
-            if (a.shortBeforeOwners) {
-                putToOwners++;
-                if (firstPut == null) firstPut = String.format(Locale.ROOT, "m%d: order %.0f, the owners put in %.0f - %s",
-                        a.month, a.cost, a.raised, a.line);
-            }
-            boolean capitalTrim = a.built >= 1 && a.built < a.passed && a.line != null
-                    && a.line.contains("the bank is short of capital");
-            if (capitalTrim && !a.shortBeforeOwners) capitalNotPut++;
+            if (!a.shortBeforeOwners) continue;
+            crunched++;
+            if (a.quoteShut) { shut++; continue; }
+            double lacking = a.cost - a.held;
+            boolean whole = a.offered >= lacking - 1e-6 * Math.max(1, Math.abs(lacking));
+            String said = String.format(Locale.ROOT, "m%d: order %.0f, the till %.0f, offered %.0f, put in %.0f - %s",
+                    a.month, a.cost, a.held, a.offered, a.raised, a.line);
+            if (whole) { offeredWhole++; if (firstWhole == null) firstWhole = said; }
+            else { offeredShort++; if (firstShort == null) firstShort = said; }
         }
-        out.printf("   %d order(s) the door would have refused for the bank's capital, put to the owners first%s%n",
-                putToOwners, firstPut == null ? "" : "; first " + firstPut);
+        out.printf("   %d order(s) the door would have refused for the bank's capital: %d offered to the owners whole,"
+                + " %d offered less, %d behind a quote that supported no issue%n", crunched, offeredWhole, offeredShort, shut);
+        if (firstWhole != null) out.println("   first offered whole " + firstWhole);
+        if (firstShort != null) out.println("   first offered less " + firstShort);
         check("fixture: the window holds an order the door would have refused for the bank's capital, put to the owners"
-                + " first (MC1)", putToOwners > 0);
-        check("...and the door trimmed for the bank's capital no order the owners were not asked for first",
-                capitalNotPut == 0);
+                + " (MC1)", offeredWhole + offeredShort > 0);
+        check("...and each was offered to the owners whole: what the till lacked on the order, not only its down payment",
+                offeredShort == 0);
         check("...and no month the door trimmed is left marked as held for the bank's capital", leftMarked == 0);
 
         out.println("\n--- 4. LongPlaytest's watch, and the homes that finished by size ---");
@@ -253,9 +259,12 @@ public final class HousingDoorCheck {
         // MC1: the till before the owners' issue, and the door's capital test on the order's mortgage there (ownersAskOnMortgage()).
         a.cost = costOf.applyAsDouble(Math.max(1, asked));
         a.raised = g.getEconomyManager().getEquityRaised(RE);
-        double held = cash - a.raised;
+        a.held = cash - a.raised;
         a.shortBeforeOwners = g.getEconomyManager().getBusinessDebtManager()
-                .mortgageShortOfCapital(RE, a.cost - Math.max(held, Mortgage.ownFundsFor(a.cost)));
+                .mortgageShortOfCapital(RE, a.cost - Math.max(a.held, Mortgage.ownFundsFor(a.cost)));
+        int company = Equity.indexOf(RE);
+        a.offered = company >= 0 ? g.getEquity().getOfferedThisMonth(company) : 0;
+        a.quoteShut = company >= 0 && !g.getExchange().quoteSupportsIssue(company);
         double one = costOf.applyAsDouble(1);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(RE)) {
             if (t.getCapacity() <= 0 || g.getBusinessInvestment().getCostOf(t, 1) != one) continue;

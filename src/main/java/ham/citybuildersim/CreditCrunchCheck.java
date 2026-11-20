@@ -342,15 +342,17 @@ public final class CreditCrunchCheck {
         check("no month of the crunch leaves more than one household with no home (LongPlaytest's watch)", worst <= 1);
 
         // The door's capital trim (HN1) where the owners' issue fell short of the order: what equity did not cover.
-        int capitalTrims = 0, leftMarked = 0;
+        // A trim in a month the owners put nothing in is a shut quote or an issue nobody took: counted apart (REV-MC1-2).
+        int capitalTrims = 0, behindNoIssue = 0, leftMarked = 0;
         for (Month r : months) {
             if (r.line == null || !r.line.contains("(trimmed from ") || !r.line.contains("the bank is short of capital")) continue;
-            capitalTrims++;
             if (r.refusedForCapital) leftMarked++;
+            if (!(r.raised > 0)) { behindNoIssue++; continue; }
+            capitalTrims++;
             if (capitalTrims <= 3) out.printf(Locale.ROOT, "   m%d: raised %.0f; %s%n", r.month, r.raised, r.line);
         }
-        out.printf("   %d order(s) the door trimmed after first refusing them for the bank's capital, %d left marked as held for it%n",
-                capitalTrims, leftMarked);
+        out.printf("   %d order(s) the door trimmed for the bank's capital after the owners put in part of them, %d with nothing"
+                + " put in; %d left marked as held for it%n", capitalTrims, behindNoIssue, leftMarked);
         check("the door trimmed an order the owners' issue did not cover, first refused for the bank's capital", capitalTrims > 0);
         check("...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)", leftMarked == 0);
     }
