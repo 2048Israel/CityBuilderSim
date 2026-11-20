@@ -1,4 +1,4 @@
-# CentralBank.java - 1,059 lines · 104 methods · 8 constants · model
+# CentralBank.java - 1,069 lines · 106 methods · 8 constants · model
 
 `ham/citybuildersim/CentralBank.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -82,7 +82,7 @@
 | 629 | THE DEFENCE (0.7.2) |
 | 800 | THE CEILING |
 | 848 | READING |
-| 917 | THE SAVE |
+| 927 | THE SAVE |
 
 ## Constants
 
@@ -144,7 +144,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 94 | 966 | **type** `public final class CentralBank` | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. |
+| 94 | 976 | **type** `public final class CentralBank` | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. |
 | 100 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 102 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -240,7 +240,7 @@
 | 843 | 1 | `public double headroom()` | What the treasury may still draw for anything that is not a promise. |
 | 846 | 1 | `public boolean ceilingBound()` | True once the treasury owes the ceiling or more. |
 
-### READING (lines 848-916)
+### READING (lines 848-926)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -252,47 +252,49 @@
 | 856 | 1 | `public double getCurrency()` |  |
 | 858 | 3 | `public double totalAssets()` |  |
 | 863 | 1 | `public double m0()` | M0: everything this bank owes, which is every dollar it has made and not taken back. |
-| 865 | 1 | `public double totalLiabilities()` |  |
-| 867 | 1 | `public double equity()` |  |
-| 869 | 1 | `public double getLossCarried()` |  |
-| 870 | 1 | `public double getRemittanceDue()` |  |
-| 872 | 1 | `public double getIssued()` |  |
-| 873 | 1 | `public double getRetired()` |  |
-| 876 | 1 | `public double getM0Moved()` | What M0 moved by this month: the money made less the money destroyed (0.7.32, the Finances tab's THIS MONTH, which subtracted them itself). |
-| 877 | 1 | `public double getAdvancedToBank()` |  |
-| 878 | 1 | `public double getRepaidByBank()` |  |
-| 880 | 1 | `public double getAdvancedToTreasury()` | Printed this month: what was advanced to the treasury. |
-| 881 | 1 | `public double getRepaidByTreasury()` |  |
-| 882 | 1 | `public double getInterestOnReserves()` |  |
-| 883 | 1 | `public double getWindowInterest()` |  |
-| 884 | 1 | `public double getAdvancesInterest()` |  |
-| 886 | 1 | `public double getRemitted()` | The remittance paid to the treasury this month. |
-| 888 | 1 | `public double getBoughtPaper()` | The holdings' month (0.7.1). |
-| 889 | 1 | `public double getSoldPaper()` |  |
-| 890 | 1 | `public double getPaperCoupons()` |  |
-| 891 | 1 | `public double getPaperRedeemed()` |  |
-| 893 | 1 | `public double getBoughtBack()` | What a buyback redeemed of its paper, settled this month. |
-| 894 | 1 | `public double getPaperGains()` |  |
-| 895 | 1 | `public double getBoughtPaperLifetime()` |  |
-| 896 | 1 | `public double getSoldPaperLifetime()` |  |
-| 898 | 1 | `public double getBoughtFromHouseholds()` | Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. |
-| 900 | 1 | `public double getBoughtFromWorld()` | ...and the world (CD2, slice 5). |
-| 902 | 1 | `public double getBoughtFromHouseholdsLifetime()` | ...and since founding. |
-| 904 | 1 | `public double getBoughtAtIssue()` | What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). |
-| 906 | 1 | `public double getParAtIssue()` | ...their par: what of its maturing paper it rolled this month. |
-| 908 | 1 | `public double getBoughtAtIssueLifetime()` | ...and since founding, what it paid. |
-| 910 | 1 | `public double getParAtIssueLifetime()` | ...and the par. |
-| 912 | 1 | `public double getPrintedLifetime()` |  |
-| 913 | 1 | `public double getIssuedLifetime()` |  |
-| 914 | 1 | `public double getRetiredLifetime()` |  |
-| 915 | 1 | `public double getRemittedLifetime()` |  |
+| 870 | 1 | `public double m0AfterGoldDue()` | M0 as the gold's cover reads it (FB14; REV-FB14): m0() less what the gold paid out at the last reprice will retire at the top of the next month (settleGoldRedeemed(), up to the reserves), so the cover shown between th... |
+| 873 | 1 | `public double goldRetirable()` | ...and what a further sale of gold could still retire, M0 down by it: the reserves past the due, never under nothing (settleGoldRedeemed()'s cap). |
+| 875 | 1 | `public double totalLiabilities()` |  |
+| 877 | 1 | `public double equity()` |  |
+| 879 | 1 | `public double getLossCarried()` |  |
+| 880 | 1 | `public double getRemittanceDue()` |  |
+| 882 | 1 | `public double getIssued()` |  |
+| 883 | 1 | `public double getRetired()` |  |
+| 886 | 1 | `public double getM0Moved()` | What M0 moved by this month: the money made less the money destroyed (0.7.32, the Finances tab's THIS MONTH, which subtracted them itself). |
+| 887 | 1 | `public double getAdvancedToBank()` |  |
+| 888 | 1 | `public double getRepaidByBank()` |  |
+| 890 | 1 | `public double getAdvancedToTreasury()` | Printed this month: what was advanced to the treasury. |
+| 891 | 1 | `public double getRepaidByTreasury()` |  |
+| 892 | 1 | `public double getInterestOnReserves()` |  |
+| 893 | 1 | `public double getWindowInterest()` |  |
+| 894 | 1 | `public double getAdvancesInterest()` |  |
+| 896 | 1 | `public double getRemitted()` | The remittance paid to the treasury this month. |
+| 898 | 1 | `public double getBoughtPaper()` | The holdings' month (0.7.1). |
+| 899 | 1 | `public double getSoldPaper()` |  |
+| 900 | 1 | `public double getPaperCoupons()` |  |
+| 901 | 1 | `public double getPaperRedeemed()` |  |
+| 903 | 1 | `public double getBoughtBack()` | What a buyback redeemed of its paper, settled this month. |
+| 904 | 1 | `public double getPaperGains()` |  |
+| 905 | 1 | `public double getBoughtPaperLifetime()` |  |
+| 906 | 1 | `public double getSoldPaperLifetime()` |  |
+| 908 | 1 | `public double getBoughtFromHouseholds()` | Of what it paid for paper this month, what it paid the households (0.7.15); the treasury at issue, getBoughtAtIssue() (round 2); the rest it paid the bank. |
+| 910 | 1 | `public double getBoughtFromWorld()` | ...and the world (CD2, slice 5). |
+| 912 | 1 | `public double getBoughtFromHouseholdsLifetime()` | ...and since founding. |
+| 914 | 1 | `public double getBoughtAtIssue()` | What it paid the treasury this month for its add-ons at issue, rolling its own maturing paper (0.7.15, round 2). |
+| 916 | 1 | `public double getParAtIssue()` | ...their par: what of its maturing paper it rolled this month. |
+| 918 | 1 | `public double getBoughtAtIssueLifetime()` | ...and since founding, what it paid. |
+| 920 | 1 | `public double getParAtIssueLifetime()` | ...and the par. |
+| 922 | 1 | `public double getPrintedLifetime()` |  |
+| 923 | 1 | `public double getIssuedLifetime()` |  |
+| 924 | 1 | `public double getRetiredLifetime()` |  |
+| 925 | 1 | `public double getRemittedLifetime()` |  |
 
-### THE SAVE (lines 917-1059)
+### THE SAVE (lines 927-1069)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 935 | 33 | `public double[] toSaveArray()` | Everything above that is state rather than this month's flow, as one array under its own key (DataSave.centralBank). |
-| 969 | 39 | `public void restore(double[] saved)` |  |
-| 1010 | 18 | `public void reset()` | An empty bank: nothing lent, nothing made. |
-| 1034 | 25 | `public void redenominate(double scale)` | Every figure on this balance sheet, in the new unit. |
+| 945 | 33 | `public double[] toSaveArray()` | Everything above that is state rather than this month's flow, as one array under its own key (DataSave.centralBank). |
+| 979 | 39 | `public void restore(double[] saved)` |  |
+| 1020 | 18 | `public void reset()` | An empty bank: nothing lent, nothing made. |
+| 1044 | 25 | `public void redenominate(double scale)` | Every figure on this balance sheet, in the new unit. |
 

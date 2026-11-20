@@ -1,4 +1,4 @@
-# Founding.java - 688 lines · 62 methods · 16 constants · model
+# Founding.java - 710 lines · 66 methods · 16 constants · model
 
 `ham/citybuildersim/Founding.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > a save without them reads the same. Nothing in the economy reads them yet
 > ... (1 more lines in the source)
 
-**Uses:** [Currency](Currency.md) (13), [World](World.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [PriceLevel](PriceLevel.md) (7), [Nations](Nations.md) (6), [CityLand](CityLand.md) (3), [LandManager](LandManager.md) (3), [WorldEconomy](WorldEconomy.md) (3), [LandMarket](LandMarket.md) (2), [Game](Game.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EarthData](EarthData.md) (1), [EarthSite](EarthSite.md) (1), [Good](Good.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [Currency](Currency.md) (13), [World](World.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [PriceLevel](PriceLevel.md) (7), [Nations](Nations.md) (6), [CityLand](CityLand.md) (3), [LandManager](LandManager.md) (3), [WorldEconomy](WorldEconomy.md) (3), [ForeignAccounts](ForeignAccounts.md) (3), [LandMarket](LandMarket.md) (2), [Game](Game.md) (2), [TaxPolicy](TaxPolicy.md) (2), [EarthData](EarthData.md) (1), [EarthSite](EarthSite.md) (1), [Good](Good.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 **Used by (144):** [ArrivalMixCheck](ArrivalMixCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BasketYearCheck](BasketYearCheck.md), [BondCheck](BondCheck.md), [BridgeCheck](BridgeCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DenominationCheck](DenominationCheck.md), [DeskCheck](DeskCheck.md), [DeterminismCheck](DeterminismCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [FoundingName](FoundingName.md), [FoundingScreen](FoundingScreen.md), [FoundingYardCheck](FoundingYardCheck.md), [FreightViewCheck](FreightViewCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [GdpCheck](GdpCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [GridCheck](GridCheck.md), [GroceryCheck](GroceryCheck.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [InterventionCheck](InterventionCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandNetCheck](IslandNetCheck.md), [IslandRailCheck](IslandRailCheck.md), [JunctionCheck](JunctionCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandNationsCheck](LandNationsCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LandmassCheck](LandmassCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [MedicineCheck](MedicineCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [MoneySignCheck](MoneySignCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [NewUnitCheck](NewUnitCheck.md), [OilCheck](OilCheck.md), [OilViewCheck](OilViewCheck.md), [OutsideCheck](OutsideCheck.md), [PartnerCallsCheck](PartnerCallsCheck.md), [PartnersCheck](PartnersCheck.md), [PassThroughCheck](PassThroughCheck.md), [PlanCheck](PlanCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollarCheck](RealDollarCheck.md), [RecipeCheck](RecipeCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [SicknessCheck](SicknessCheck.md), [SkipReportCheck](SkipReportCheck.md), [SlopeCheck](SlopeCheck.md), [SlopeRenders](SlopeRenders.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeBandCheck](TradeBandCheck.md), [TreasuryCheck](TreasuryCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [UserInterface](UserInterface.md), [VanCheck](VanCheck.md), [WageLadder](WageLadder.md), [WageLadderCheck](WageLadderCheck.md), [WellCheck](WellCheck.md), [WorldCheck](WorldCheck.md), [WorldMoneysCheck](WorldMoneysCheck.md), [YoungBankCheck](YoungBankCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -77,8 +77,8 @@
 | 226 | · the name |
 | 234 | · the world |
 | 271 | · the record |
-| 470 | · is it a city |
-| 532 | WHAT IT BUYS (0.7.10) |
+| 492 | · is it a city |
+| 554 | WHAT IT BUYS (0.7.10) |
 
 ## Enum constants
 
@@ -108,8 +108,8 @@
 | 232 | `Founding.MAX_CITY_NAME_LENGTH` | `24` | The longest city name: room for the window's title and the slot list's line, not a policy. |
 | 237 | `Founding.DEFAULT_WORLD_SEED` | `4127` | The world a founding stands on when nobody rolls another: 4127, the map mockup's default seed (city-map.html), so every harness and the playtest found on the same ground. |
 | 240 | `Founding.ROLLED_SEED_MAX` | `999_999_999` | The largest seed the founding screen's dice rolls: 999,999,999, nine digits a player can read back and type. |
-| 562 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "...` | The founding village: the playtest's hand-built settlement, name and count. |
-| 566 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
+| 584 | `Founding.VILLAGE` | `{ { "House", "60" }, { "Convenience Store", "5" }, { "Mixed Farm", "2" }, { "...` | The founding village: the playtest's hand-built settlement, name and count. |
+| 588 | `Founding.FIRST_WORKS` | `{ "Wind Farm", "Water Treatment Plant", "Elementary School", "Police Station" }` | The first big works, in the order a young city tends to need them. |
 
 ## Fields (state)
 
@@ -133,7 +133,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 72 | 617 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
+| 72 | 639 | **type** `public final class Founding` | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. |
 
 ### THE PRESETS (0.7.10) (lines 74-175)
 
@@ -161,7 +161,7 @@
 | 248 | 9 | `public static Long parseWorldSeed(String typed)` | A typed seed as a whole number - digits, a leading minus, commas ignored - or null when it is not one. |
 | 265 | 5 | `public static long derivedWorldSeed(String cityName, double foundingCash, double landOwnedSqFt, int month)` | The seed a save from before 0.7.56 is read with (spec-land 2.9): SplitMix64 of its city's name's hash, the bits of the treasury it was founded with, the bits of the ground it owns and the month, XORed - what the save ... |
 
-### the record (lines 271-469)
+### the record (lines 271-491)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -193,40 +193,44 @@
 | 433 | 1 | `public long getPathSeed()` | The seed that draws the path (WN1; spec-nations 7.3) - not getWorldSeed(), the ground's. |
 | 445 | 1 | `public double goldUsd(double rate)` | THE FOUNDERS' GOLD (FB14; GD3-F, ★): how much of the vault the "start on gold" box puts into gold, in thousands of US dollars, at this rate (D$ per US$) - none without the box. |
 | 448 | 5 | `public static double goldUsd(double cash, double reserveUsd, double rate)` | ...for these figures, box or not: what the founding screen quotes beside the box. |
-| 455 | 1 | `public boolean isOnGold()` | Whether the city founds on Gold, the founding screen's "start on gold" box (FB14; withGold()): false unless it says so. |
-| 458 | 1 | `public boolean isUnfitted()` | Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so (the founding screen's "1900" chip and the playtest's flag since R1d). |
-| 460 | 1 | `public World.Kind getWorldKind()` | Which world it stands on (0.7.121): GENERATED, or EARTH. |
-| 462 | 1 | `public boolean isOnEarth()` | Whether it stands on the real Earth (0.7.121). |
-| 464 | 1 | `public double getEarthLat()` | On Earth, the spot's latitude in degrees - the projection's centre, which the site is snapped from; NaN on a generated world (0.7.121). |
-| 466 | 1 | `public double getEarthLon()` | ...and its longitude. |
-| 468 | 1 | `public String getEarthData()` | On Earth, the data it is drawn from, by identity ("earth-2:<hash>"); null on a generated world (0.7.121). |
+| 455 | 1 | `public double dollarsUsd(double rate)` | What of the vault stays in US dollars at this rate (FB14; REV-FB14): the vault less goldUsd(rate) - all of it without the box. |
+| 458 | 3 | `public static double dollarsUsd(double cash, double reserveUsd, double rate)` | ...for these figures, the box ticked: the vault less goldUsd(cash, reserveUsd, rate), nothing in every preset. |
+| 466 | 4 | `public static double goldShareOfTreasury(double cash, double reserveUsd, double rate)` | ...and what that gold is worth against the treasury, at this rate (FB14; REV-FB14): COVER_RATIO when the vault is deep enough (Lean's, Wealthy's, a deeper custom vault's), less when the whole vault falls short of it (... |
+| 472 | 3 | `public static boolean goldCoversTheLaw(double cash, double reserveUsd, double rate)` | ...whether the gold is the law's whole share of the treasury, not all a shallower vault has (a rounding short of it counts). |
+| 477 | 1 | `public boolean isOnGold()` | Whether the city founds on Gold, the founding screen's "start on gold" box (FB14; withGold()): false unless it says so. |
+| 480 | 1 | `public boolean isUnfitted()` | Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so (the founding screen's "1900" chip and the playtest's flag since R1d). |
+| 482 | 1 | `public World.Kind getWorldKind()` | Which world it stands on (0.7.121): GENERATED, or EARTH. |
+| 484 | 1 | `public boolean isOnEarth()` | Whether it stands on the real Earth (0.7.121). |
+| 486 | 1 | `public double getEarthLat()` | On Earth, the spot's latitude in degrees - the projection's centre, which the site is snapped from; NaN on a generated world (0.7.121). |
+| 488 | 1 | `public double getEarthLon()` | ...and its longitude. |
+| 490 | 1 | `public String getEarthData()` | On Earth, the data it is drawn from, by identity ("earth-2:<hash>"); null on a generated world (0.7.121). |
 
-### is it a city (lines 470-531)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 473 | 8 | `public static String cityNameProblem(String name)` | Why a city name will not do, in the player's words, or null when it will. |
-| 483 | 4 | `private static String millions(double thousands)` | Thousands as millions for a sentence: whole above ten, with decimals below, so a 1900-priced bound (EP1: D$0.16M) does not read $0M. |
-| 489 | 7 | `public static String cashProblem(double cash)` | Why a treasury will not do, or null. |
-| 498 | 6 | `public static String reserveProblem(double reserveUsd)` | Why a vault will not do, or null. |
-| 513 | 18 | `public String problem()` | Why this founding cannot found a city, or null when it can: the first of the city's name, its money (a typed pair that did not pass leaves no currency - the screen says which half), the two amounts and the world - and... |
-
-### WHAT IT BUYS (0.7.10) (lines 532-688)
+### is it a city (lines 492-553)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 570 | 1 | **type** `public record Work(String name, double cost, boolean fitsInCash, double bondNeeded)` | One of the first works: what it is invoiced at on a new city, and whether the treasury pays it in cash after the village or needs a bond for the rest. |
-| 576 | 17 | **type** `public record Buys(double village, double leftAfterVillage, List<Work> works, double reserveUsd, String vau...` | What a founding buys: the village, what is left, each first work taken on its own after the village, and the vault in words. |
-| 580 | 5 | `public List<Work> inCash()` _(in Founding.Buys)_ | The works the treasury pays for in cash after the village, each on its own. |
-| 587 | 5 | `public List<Work> onABond()` _(in Founding.Buys)_ | The ones it needs a bond for. |
-| 595 | 3 | `public static double foundingMaterialPrice()` | What one unit of building material costs a new city abroad: the world's price at the opening rate, the world's level at one. |
-| 604 | 5 | `public static double foundingBuildersRate()` | The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE), opened as a city's is at its founding (TaxPolicy.openAtFounding(), OP1: the sales ... |
-| 617 | 3 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard)` | An order's invoice on a new city with `yard` units of material in the yard: its cash cost - no wage has been paid yet, so its labour is at the founding ladder - and whatever material the yard does not hold at founding... |
-| 622 | 5 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard, double multiple)` | ...with its work at the builders' multiple (FC1; BuildingManager.orderPriceMultiplier()): the cash cost times it, the material not. |
-| 629 | 3 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd)` | What these two figures buy, over this catalogue. |
-| 639 | 3 | **type** `public interface OrderMultiple` | The builders' price multiple of an order (FC1; BA1): with `pointsAhead` ordered before it on the queue, for `n` buildings of `pointsEach` points, each on the queue the ones before it leave (BuildingManager.orderPriceM... |
-| 640 | 1 | `double of(double pointsAhead, double pointsEach, long n)` _(in Founding.OrderMultiple)_ |  |
-| 649 | 22 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd, OrderMultiple multiple)` | ...on a founded city's builders (FC1): `multiple` is their price's multiple with that many points ordered ahead of an order on its queue (BuildingManager.orderPriceMultiplier(double, double, long)), so the village is ... |
-| 673 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
-| 684 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
+| 495 | 8 | `public static String cityNameProblem(String name)` | Why a city name will not do, in the player's words, or null when it will. |
+| 505 | 4 | `private static String millions(double thousands)` | Thousands as millions for a sentence: whole above ten, with decimals below, so a 1900-priced bound (EP1: D$0.16M) does not read $0M. |
+| 511 | 7 | `public static String cashProblem(double cash)` | Why a treasury will not do, or null. |
+| 520 | 6 | `public static String reserveProblem(double reserveUsd)` | Why a vault will not do, or null. |
+| 535 | 18 | `public String problem()` | Why this founding cannot found a city, or null when it can: the first of the city's name, its money (a typed pair that did not pass leaves no currency - the screen says which half), the two amounts and the world - and... |
+
+### WHAT IT BUYS (0.7.10) (lines 554-710)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 592 | 1 | **type** `public record Work(String name, double cost, boolean fitsInCash, double bondNeeded)` | One of the first works: what it is invoiced at on a new city, and whether the treasury pays it in cash after the village or needs a bond for the rest. |
+| 598 | 17 | **type** `public record Buys(double village, double leftAfterVillage, List<Work> works, double reserveUsd, String vau...` | What a founding buys: the village, what is left, each first work taken on its own after the village, and the vault in words. |
+| 602 | 5 | `public List<Work> inCash()` _(in Founding.Buys)_ | The works the treasury pays for in cash after the village, each on its own. |
+| 609 | 5 | `public List<Work> onABond()` _(in Founding.Buys)_ | The ones it needs a bond for. |
+| 617 | 3 | `public static double foundingMaterialPrice()` | What one unit of building material costs a new city abroad: the world's price at the opening rate, the world's level at one. |
+| 626 | 5 | `public static double foundingBuildersRate()` | The builders' sales tax on a new city: what a fresh policy charges them in the city's first month (0.7.19; Game, THE BUILDERS' PRICE), opened as a city's is at its founding (TaxPolicy.openAtFounding(), OP1: the sales ... |
+| 639 | 3 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard)` | An order's invoice on a new city with `yard` units of material in the yard: its cash cost - no wage has been paid yet, so its labour is at the founding ladder - and whatever material the yard does not hold at founding... |
+| 644 | 5 | `public static double orderCost(BuildingsTemplate t, int quantity, double yard, double multiple)` | ...with its work at the builders' multiple (FC1; BuildingManager.orderPriceMultiplier()): the cash cost times it, the material not. |
+| 651 | 3 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd)` | What these two figures buy, over this catalogue. |
+| 661 | 3 | **type** `public interface OrderMultiple` | The builders' price multiple of an order (FC1; BA1): with `pointsAhead` ordered before it on the queue, for `n` buildings of `pointsEach` points, each on the queue the ones before it leave (BuildingManager.orderPriceM... |
+| 662 | 1 | `double of(double pointsAhead, double pointsEach, long n)` _(in Founding.OrderMultiple)_ |  |
+| 671 | 22 | `public static Buys whatItBuys(List<BuildingsTemplate> catalogue, double cash, double reserveUsd, OrderMultiple multiple)` | ...on a founded city's builders (FC1): `multiple` is their price's multiple with that many points ordered ahead of an order on its queue (BuildingManager.orderPriceMultiplier(double, double, long)), so the village is ... |
+| 695 | 10 | `public static String vaultSays(double reserveUsd)` | The vault, in words: what it is for. |
+| 706 | 4 | `private static BuildingsTemplate find(List<BuildingsTemplate> catalogue, String name)` |  |
 

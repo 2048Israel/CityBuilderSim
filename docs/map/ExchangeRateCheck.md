@@ -1,4 +1,4 @@
-# ExchangeRateCheck.java - 1,507 lines · 50 methods · 7 constants · harnesses
+# ExchangeRateCheck.java - 1,508 lines · 50 methods · 7 constants · harnesses
 
 `ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 1393 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
+| 115 | 1394 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
 | 121 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 126 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 137 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
@@ -241,10 +241,10 @@
 |---:|---:|---|---|
 | 1386 | 52 | `static void theTermsOfTrade()` |  |
 
-### 14. the moves add up (lines 1439-1507)
+### 14. the moves add up (lines 1439-1508)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1442 | 6 | `static void world(ForeignAccounts fx, int t)` | The world a section plays month t: the cycle swinging, a risk-off in two spells, hot money coming and going, a January's terms of trade. |
-| 1455 | 52 | `static void theMovesAddUp()` |  |
+| 1455 | 53 | `static void theMovesAddUp()` |  |
 

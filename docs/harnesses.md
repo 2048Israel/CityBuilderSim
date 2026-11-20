@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,174 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,183 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -254,7 +254,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DeathRecordCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GoldStandardCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, FundCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -9820,11 +9820,11 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1431 a level that is no number is no news
   - L1436 the terms of trade are gated: a city at half of OPEN_ENOUGH feels half of the first piece
 - **L1456 14. the moves add up: the lines and the hold sum to the month's move with the world on**
-  - L1500 fixture: the Gold city is on Gold in every month of the 120, its gold priced and covered (
-  - L1501 fixture: under
-  - L1502 under
-  - L1503 ...getLastMove() is that move too
-  - L1504 ...and the world's line is gate() times the change in the world's level, every month
+  - L1500 fixture: the Gold city is on Gold in every month of the 120, its gold priced and covered, and its gold never broke, the 120th reprice's included (
+  - L1502 fixture: under
+  - L1503 under
+  - L1504 ...getLastMove() is that move too
+  - L1505 ...and the world's line is gate() times the change in the world's level, every month
 
 ## ExpectationsCheck.java - 67 labelled assertions
 
@@ -12873,7 +12873,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L488 ...about US$798 of 2025
   - L489 2025's US$3,300 is about 4.13 times that
 
-## GoldStandardCheck.java - 177 labelled assertions
+## GoldStandardCheck.java - 186 labelled assertions
 
 > The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the
 > centre that moves with gold, the sale paid in gold first and the purchase made into gold, the cover that breaks it, doubt that grows as the cover thins, the central bank
@@ -12889,197 +12889,207 @@ _(this harness does not label its checks through a helper - it prints its findin
 > to the month the dollar left gold.
 > ...
 
-- **L161 1. entering Gold keeps the D$'s value: the mint price is the day's rate times gold's price**
-  - L165 fixture: a settled currency on Lean at a rate of 1.00, gold rated at GoldPrice.PAR_1900, no mint struck
-  - L169 setRegime(GOLD) enters Gold
-  - L170 ...at the par mintAtToday() said before it was entered (the screen's staged par starts there)
-  - L171 the mint price is the day's rate times gold's US$ price
-  - L172 ...the mint rate is the day's rate
-  - L173 ...and the centre is the day's rate: goldCentre() is getRate()
-  - L174 at a rate of 1.00 the mint price is D$20.6718 an ounce (480 / 23.22 US$ to the ounce: the US$'s own 1.504631 g of fine gold)
-  - L176 the weak edge is the centre plus GOLD_POINTS
-  - L177 ...and the strong edge the centre less GOLD_POINTS
-  - L178 entering Gold leaves the mint not following and no date open
-  - L183 a currency never handed a gold price cannot enter Gold: setRegime(GOLD) is refused, it stays on Lean and no mint is struck
-  - L185 ...and its mintAtToday() is NaN: there is no par to offer
-  - L189 ...nor one handed the eight's rates and not gold's
-  - L193 ...nor one handed a gold price that is no number
-  - L194 ...whose mintAtToday() is NaN too
-  - L197 ...and the refusal cleared nothing: once the price is handed it enters
-  - L202 setMintPrice(30) under Gold: the mint price is the typed price
-  - L203 ...the centre is the typed price over gold's price
-  - L204 ...and the mint rate is that centre
-  - L207 ...a price that is zero, negative or no number changes nothing
-  - L212 outside Gold setMintPrice() does nothing, and no date can be opened
-  - L217 fixture: a currency on Gold whose vault holds gold bought by name
-  - L220 answering FOLLOW closes the date and keeps the mint following the dollar
-  - L222 typing a mint price stops the mint following the dollar
-  - L224 an answer with no date open does nothing
-  - L228 fixture: following the dollar with a date open
-  - L230 leaving Gold clears the following and the open date
-  - L231 ...and keeps the gold in the vault: the ounces are what they were
-  - L232 ...worth gold's price an ounce
-  - L237 goldCoverAt() at the mint price in force is goldCover() (
-  - L238 ...at twice that par, twice the cover
-  - L239 ...and off Gold, the vault's ounces at the par over M0: what entering at it would give
-- **L247 2. the gold points hold the rate: the sale is paid in gold, the purchase made into gold, the US$ untouched; a band of the same width deal...**
-  - L257 fixture: a gold currency and a band of GOLD_POINTS on the same centre and trade, the edges the same
-  - L279 fixture: the shadow stands past the weak edge in every month (
-  - L280 past the weak edge the rate is goldWeakEdge() to the bit, every month (
-  - L281 ...the hold sold dollars in every month (
-  - L282 ...paid out of gold: the ounces fell by getDefenceUsd() over gold's price, every month (worst gap US$
-  - L283 ...and the US$ balance was untouched, to the bit, every month (
-  - L284 a band of GOLD_POINTS on the same centre sold the same dollars, every month (
-  - L308 fixture: the shadow stands past the strong edge in every month (
-  - L309 past the strong edge the rate is goldStrongEdge() to the bit, every month (
-  - L310 ...the hold bought dollars in every month and sold in none (
-  - L311 ...into gold: the ounces rose by getEdgeBoughtUsd() over gold's price, every month (
-  - L312 ...and the US$ balance was untouched, to the bit, every month (
-  - L313 a band of GOLD_POINTS on the same centre bought the same dollars, every month (
-  - L327 exports
-  - L328 ...nothing is dealt in any, the vault is where it was to the bit (
-- **L341 3. the centre moves with gold: the mint price over the month's price; following holds it at the mint rate, staying leaves the mint price**
-  - L349 fixture: three gold currencies struck alike in March 1933 (month
-  - L368 answering FOLLOW re-strikes the mint price at once: the mint rate times the month's price
-  - L385 every month from March 1933 to February 1934 the centre is the mint price over that month's price (
-  - L386 ...the mint price itself never moves, answered STAY or never answered, to the bit (
-  - L387 ...and the rate is held inside the gold points of the centre, every month (
-  - L388 ...the centre falls in each of the
-  - L389 by February 1934 the centre is March 1933's times PAR_1900 / PAR_1934
-  - L390 ...the D$ 69.3% dearer: PAR_1934 over PAR_1900 less one
-  - L391 ...which is the centre's fall: March's over February's centre less one
-  - L392 answering STAY closes the date (and FOLLOW does too), and the mint stops following
-  - L393 the twin that answered FOLLOW keeps the centre at the mint rate in every month after (
-  - L395 ...so in February 1934 its centre is the mint rate, not March's times the ratio
-  - L396 the twin never asked has the same centre as the one that answered STAY, to the bit
-  - L397 ...and the same rate
-- **L405 4. the cover breaks it: a sale that would leave it under COVER_RATIO breaks the month, a purchase never does, the vault's floor is not asked**
-  - L411 fixture: a deficit month's hold sells US$
-  - L427 fixture: before the month both covers stand over the law's (
-  - L434 a sale that would leave the cover under COVER_RATIO breaks the month: BreakCause.COVER, and the regime is Float
-  - L436 ...nothing was sold: no dollars dealt, the ounces and the US$ where they were, to the bit
-  - L438 ...the rate landed where breakLanding() says: the twin that held would have broken at
-  - L439 ...past the shadow on the weak side, the shadow the gold held it under
-  - L440 ...and the mint stops following and the open date closes with the gold
-  - L441 the twin whose sale leaves the cover just over COVER_RATIO holds: Gold, the rate at the weak edge, no break
-  - L443 ...it sold what the probe sold, out of the gold
-  - L444 ...and the cover it is left with, over M0 less the sale retired, is over the law's (
-  - L450 fixture: a cover far under COVER_RATIO (
-  - L454 a purchase at the strong edge with the cover under the floor holds: Gold, the rate at the strong edge, gold bought, no break
-  - L462 fixture: a vault of US$
-  - L467 the peg on that vault breaks for want of it: BreakCause.VAULT
-  - L468 ...the gold on it holds, and sold (US$
-- **L508 5. doubt is scaled by the cover: the peg's chance at the legal cover, none at a full one**
-  - L511 fixture: a gap of
-  - L512 goldHazard(gap, COVER_RATIO) is hazard(gap): the peg's own chance at the legal cover
-  - L513 ...and under the legal cover too
-  - L514 ...and at no cover at all
-  - L515 goldHazard(gap, 1) is nothing: a full cover never doubts
-  - L516 ...nor over a full one
-  - L517 half way between the legal and the full cover it is half of the peg's
-  - L518 a gap under the centre counts as none: goldHazard(-.3, COVER_RATIO) is BREAK_BASE
-  - L525 fixture: held at a gap whose hazard is several percent a month, on the legal twins (a month's hazard averages
-  - L527 fixture: none of the three broke by the cover: the sales are small beside the gold, only doubt is counted (
-  - L528 the currencies at a full cover never break by doubt, and their hazard is nothing every month (
-  - L529 the ones at the legal cover do (
-  - L531 the ones half way between break as often as half the legal chance puts them at (
-  - L533 ...fewer than the legal ones and more than the full ones (
-- **L541 6. Defend the gold sets the dial: a bare DebtManager, the spread the cover asks, the aims, and the aim that goes with a break**
-  - L543 goldSpread() is nothing at GOLD_DEFENCE_FROM
-  - L544 ...and over it
-  - L545 ...and with the gold at infinity over a base of none
-  - L546 goldSpread() is GOLD_DEFENCE at COVER_RATIO
-  - L547 ...and under it
-  - L548 ...and with no cover at all
-  - L549 half way between the two it is half of GOLD_DEFENCE
-  - L557 it rises as the cover falls between: each step of an eighth of the way down asks more than the one before
-  - L558 GOLD_DEFENCE_FROM is twice the legal floor: nothing asked at twice the floor
-  - L573 with the autopilot aiming at the gold, goldRate() is the tie rate plus the spread the cover asks
-  - L574 ...the US's rate (the tie money is the US$) and not the gap's: the gap changes nothing
-  - L576 aiming at the currency it is the tie rate plus CURRENCY_WEIGHT x the gap
-  - L579 ...and aiming at a mix
-  - L582 with the autopilot off it is the player's spread over the tie rate whatever the aim
-  - L586 the dial stays inside its bounds: the spread over a US rate of 95% is clamped to MAX_POLICY_RATE
-  - L590 tiedRate() with the autopilot aiming at the gold reads the player's spread
-  - L595 dropGoldAim() makes the aim Inflation and writes no decision line (
-  - L599 ...and does nothing to another aim
-  - L601 setAim() does write its line: \"
-  - L603 untied, the tie money is none and the tie rate the US's: the autopilot aiming at inflation is the rule's
-- **L687 7. a town on gold through 1933 and 1934**
-  - L695 fixture: the town is on Gold, its aim Defend the gold, struck at the D$'s rate of the day times gold's price (D$
-  - L706 the town is still on Gold in March 1933, with a cover over the law's floor
-  - L707 ...its event none, and the centre the entry rate: the mint price over the statute's price (the D$ where it was struck)
-  - L708 saved to the harness's scratch folder
-  - L715 the event of April 1933 is open that month, and the answer is written in the decision log (
-  - L717 leave: the event opens, the answer is written, and the regime goes to Lean with the aim Inflation
-  - L719 stay: still on Gold in February 1934 (world month
-  - L723 stay: the centre in February 1934 is March 1933's times PAR_1900 / PAR_1934
-  - L724 stay: in February 1934 the PAR_1934 event opens
-  - L725 follow: still on Gold, its centre at the mint rate every month, the rate inside the points, and no PAR_1934 event (it follows the dollar already)
-  - L727 follow: the centre in February 1934 is March 1933's
-- **L729 8. the notice**
-  - L730 the notice 'gold:LEFT_1933' is raised the month the event opens (month
-  - L732 ...and is resolved the month after it is answered (raised
-  - L733 ...a leaver's too, the month after it left gold
-  - L734 the notice 'gold:PAR_1934' stands in February 1934 for the city that stayed, and is never raised for the one that followed
-  - L739 a city not on gold in April 1933 has no event and no notice
-- **L743 9. the dial in the town**
-  - L754 fixture: on Gold, the autopilot on and aiming at the gold, the cover
-  - L766 the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read (its top's, after the gold's last sale wa...
-  - L768 ...above the tie (the spread asks something at this cover) and the dial is tied
-  - L771 aiming at inflation the dial is the inflation rule's, untied: isTied() false, and not the gold's
-  - L774 the autopilot off, the dial is the tie plus the player's spread (not the cover's)
-  - L786 forced break: the regime is Float, the cause the cover or doubt, and the aim Inflation
-  - L788 ...and the decision log gained no line about the aim (the city's fate, not a decision)
-- **L792 10. saved mid-gold**
-  - L796 fixture: on Gold with the April 1933 event open, the mint price not following
-  - L798 saved to the scratch folder
-  - L801 round
-  - L806 ...and the second round follows the dollar with no event open
-  - L822 round
-- **L837 11. GD2's two findings**
-  - L846 fixture: a GoldPrice on a US price level that is NaN from 1980 throws on its own at 1990 (the Random rule, from August 1971, walks on it)
-  - L847 (a) Game.priceOrNaN() gives NaN there, no throw, and the price where the level is fine (1940)
-  - L852 (b) Game.eightOf(moneys, \"XAU\") is not the vault's gold (
-  - L859 ...and tradeSharesByMoney never gives gold a share (
-- **L863 12. Lean is the default**
-  - L866 a new town: Lean, the aim Inflation, no mint price, no event, not tied
-  - L869 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
-- **L892 13. the gold's sales retire M0 (FB14; GD3's review, item 6): the next month's top takes back what the vault paid, the audit says so, the ...**
-  - L919 fixture: the town founded on gold sold gold in at least six of its months, and stayed on Gold for twelve or more (
-  - L920 every sale a reprice made under Gold is due back from the reserves, the month's getDefenceLocal() to the bit's share (
-  - L921 ...and the next month's top retires it whole wherever the reserves could pay twice over (
-  - L922 ...the audit says it twice, + centralbank TakenBackForGold and - centralbank RetiredForGold, each the month's retired gold (
-  - L923 ...the audit closed every month (
-  - L924 ...the bank kept nothing every month: equity less the vault plus vaultInNewMoney(), less the remittance due plus the loss carried (
-  - L926 every sale settled is booked once: retired for gold since the founding plus the bank's equity spent where the reserves could not pay
-  - L927 ...and most of it was retired, M0 the smaller by it, where GD3 booked all of it as the bank's equity spent (dollarsSold()) and retired none (
-  - L933 fixture: the reserves have a sale to pay (D$
-  - L935 a sale of gold is due back, and M0 has not moved before the next month's top
-  - L937 at the top it is retired: M0 is lower by the sale (GD3 left it where it was)
-  - L938 ...the retirement is the sale
-  - L939 ...nothing of it is the bank's equity spent
-  - L940 ...and the vault's new money is less by it
-  - L946 a sale past the reserves retires them all
-  - L947 ...leaving none (
-  - L948 ...and the rest is the bank's equity spent, as any defence is
-  - L949 ...nothing left due
-- **L956 14. the start-on-gold box (FB14; GD3-F): the founding puts the law's cover of the treasury into gold, never more than the vault, and foun...**
-  - L965 ...the city founds with the whole vault in gold
-  - L966 ...and none in dollars (
-  - L967 ...on Gold, Defend the gold the aim, the mint the day's rate times gold's price, and nothing in the player's log
-  - L971 ...a month on it holds the cover: still on Gold, the cover
-  - L976 fixture: the custom founding is one the screen lets through (
-  - L981 a custom vault deeper than 40% of the treasury: the gold is 40% of the treasury at the opening rate
-  - L982 ...the rest stays in dollars
-  - L983 ...the vault's worth is the founding's
-  - L984 ...and it is on Gold
-  - L988 the box off: no gold, the vault in dollars, Lean, the aim Inflation
-  - L991 ...and none a month on
-  - L996 a new Game handed the box founds on gold too, its run() the door (the whole vault in gold, on Gold)
-  - L1002 founded the 1900 way with the box: on Gold, not on Canada's peg at par (isCanadaGold() false), the whole vault in gold
-  - L1005 ...where without it the 1900 city is on Canada's peg (OP1), with no gold
-  - L1009 Insane, with no vault, has no gold to found on: the box founds it on dollars (Lean, no gold)
+- **L166 1. entering Gold keeps the D$'s value: the mint price is the day's rate times gold's price**
+  - L170 fixture: a settled currency on Lean at a rate of 1.00, gold rated at GoldPrice.PAR_1900, no mint struck
+  - L174 setRegime(GOLD) enters Gold
+  - L175 ...at the par mintAtToday() said before it was entered (the screen's staged par starts there)
+  - L176 the mint price is the day's rate times gold's US$ price
+  - L177 ...the mint rate is the day's rate
+  - L178 ...and the centre is the day's rate: goldCentre() is getRate()
+  - L179 at a rate of 1.00 the mint price is D$20.6718 an ounce (480 / 23.22 US$ to the ounce: the US$'s own 1.504631 g of fine gold)
+  - L181 the weak edge is the centre plus GOLD_POINTS
+  - L182 ...and the strong edge the centre less GOLD_POINTS
+  - L183 entering Gold leaves the mint not following and no date open
+  - L188 a currency never handed a gold price cannot enter Gold: setRegime(GOLD) is refused, it stays on Lean and no mint is struck
+  - L190 ...and its mintAtToday() is NaN: there is no par to offer
+  - L194 ...nor one handed the eight's rates and not gold's
+  - L198 ...nor one handed a gold price that is no number
+  - L199 ...whose mintAtToday() is NaN too
+  - L202 ...and the refusal cleared nothing: once the price is handed it enters
+  - L207 setMintPrice(30) under Gold: the mint price is the typed price
+  - L208 ...the centre is the typed price over gold's price
+  - L209 ...and the mint rate is that centre
+  - L212 ...a price that is zero, negative or no number changes nothing
+  - L217 outside Gold setMintPrice() does nothing, and no date can be opened
+  - L222 fixture: a currency on Gold whose vault holds gold bought by name
+  - L225 answering FOLLOW closes the date and keeps the mint following the dollar
+  - L227 typing a mint price stops the mint following the dollar
+  - L229 an answer with no date open does nothing
+  - L233 fixture: following the dollar with a date open
+  - L235 leaving Gold clears the following and the open date
+  - L236 ...and keeps the gold in the vault: the ounces are what they were
+  - L237 ...worth gold's price an ounce
+  - L242 goldCoverAt() at the mint price in force is goldCover() (
+  - L243 ...at twice that par, twice the cover
+  - L244 ...and off Gold, the vault's ounces at the par over M0: what entering at it would give
+- **L252 2. the gold points hold the rate: the sale is paid in gold, the purchase made into gold, the US$ untouched; a band of the same width deal...**
+  - L262 fixture: a gold currency and a band of GOLD_POINTS on the same centre and trade, the edges the same
+  - L284 fixture: the shadow stands past the weak edge in every month (
+  - L285 past the weak edge the rate is goldWeakEdge() to the bit, every month (
+  - L286 ...the hold sold dollars in every month (
+  - L287 ...paid out of gold: the ounces fell by getDefenceUsd() over gold's price, every month (worst gap US$
+  - L288 ...and the US$ balance was untouched, to the bit, every month (
+  - L289 a band of GOLD_POINTS on the same centre sold the same dollars, every month (
+  - L313 fixture: the shadow stands past the strong edge in every month (
+  - L314 past the strong edge the rate is goldStrongEdge() to the bit, every month (
+  - L315 ...the hold bought dollars in every month and sold in none (
+  - L316 ...into gold: the ounces rose by getEdgeBoughtUsd() over gold's price, every month (
+  - L317 ...and the US$ balance was untouched, to the bit, every month (
+  - L318 a band of GOLD_POINTS on the same centre bought the same dollars, every month (
+  - L332 exports
+  - L333 ...nothing is dealt in any, the vault is where it was to the bit (
+- **L346 3. the centre moves with gold: the mint price over the month's price; following holds it at the mint rate, staying leaves the mint price**
+  - L354 fixture: three gold currencies struck alike in March 1933 (month
+  - L373 answering FOLLOW re-strikes the mint price at once: the mint rate times the month's price
+  - L390 every month from March 1933 to February 1934 the centre is the mint price over that month's price (
+  - L391 ...the mint price itself never moves, answered STAY or never answered, to the bit (
+  - L392 ...and the rate is held inside the gold points of the centre, every month (
+  - L393 ...the centre falls in each of the
+  - L394 by February 1934 the centre is March 1933's times PAR_1900 / PAR_1934
+  - L395 ...the D$ 69.3% dearer: PAR_1934 over PAR_1900 less one
+  - L396 ...which is the centre's fall: March's over February's centre less one
+  - L397 answering STAY closes the date (and FOLLOW does too), and the mint stops following
+  - L398 the twin that answered FOLLOW keeps the centre at the mint rate in every month after (
+  - L400 ...so in February 1934 its centre is the mint rate, not March's times the ratio
+  - L401 the twin never asked has the same centre as the one that answered STAY, to the bit
+  - L402 ...and the same rate
+- **L410 4. the cover breaks it: a sale that would leave it under COVER_RATIO breaks the month, a purchase never does, the vault's floor is not asked**
+  - L416 fixture: a deficit month's hold sells US$
+  - L432 fixture: before the month both covers stand over the law's (
+  - L439 a sale that would leave the cover under COVER_RATIO breaks the month: BreakCause.COVER, and the regime is Float
+  - L441 ...nothing was sold: no dollars dealt, the ounces and the US$ where they were, to the bit
+  - L443 ...the rate landed where breakLanding() says: the twin that held would have broken at
+  - L444 ...past the shadow on the weak side, the shadow the gold held it under
+  - L445 ...and the mint stops following and the open date closes with the gold
+  - L446 the twin whose sale leaves the cover just over COVER_RATIO holds: Gold, the rate at the weak edge, no break
+  - L448 ...it sold what the probe sold, out of the gold
+  - L449 ...and the cover it is left with, over M0 less the sale retired, is over the law's (
+  - L455 fixture: a cover far under COVER_RATIO (
+  - L459 a purchase at the strong edge with the cover under the floor holds: Gold, the rate at the strong edge, gold bought, no break
+  - L467 fixture: a vault of US$
+  - L472 the peg on that vault breaks for want of it: BreakCause.VAULT
+  - L473 ...the gold on it holds, and sold (US$
+- **L513 5. doubt is scaled by the cover: the peg's chance at the legal cover, none at a full one**
+  - L516 fixture: a gap of
+  - L517 goldHazard(gap, COVER_RATIO) is hazard(gap): the peg's own chance at the legal cover
+  - L518 ...and under the legal cover too
+  - L519 ...and at no cover at all
+  - L520 goldHazard(gap, 1) is nothing: a full cover never doubts
+  - L521 ...nor over a full one
+  - L522 half way between the legal and the full cover it is half of the peg's
+  - L523 a gap under the centre counts as none: goldHazard(-.3, COVER_RATIO) is BREAK_BASE
+  - L530 fixture: held at a gap whose hazard is several percent a month, on the legal twins (a month's hazard averages
+  - L532 fixture: none of the three broke by the cover: the sales are small beside the gold, only doubt is counted (
+  - L533 the currencies at a full cover never break by doubt, and their hazard is nothing every month (
+  - L534 the ones at the legal cover do (
+  - L536 the ones half way between break as often as half the legal chance puts them at (
+  - L538 ...fewer than the legal ones and more than the full ones (
+- **L546 6. Defend the gold sets the dial: a bare DebtManager, the spread the cover asks, the aims, and the aim that goes with a break**
+  - L548 goldSpread() is nothing at GOLD_DEFENCE_FROM
+  - L549 ...and over it
+  - L550 ...and with the gold at infinity over a base of none
+  - L551 goldSpread() is GOLD_DEFENCE at COVER_RATIO
+  - L552 ...and under it
+  - L553 ...and with no cover at all
+  - L554 half way between the two it is half of GOLD_DEFENCE
+  - L562 it rises as the cover falls between: each step of an eighth of the way down asks more than the one before
+  - L563 GOLD_DEFENCE_FROM is twice the legal floor: nothing asked at twice the floor
+  - L578 with the autopilot aiming at the gold, goldRate() is the tie rate plus the spread the cover asks
+  - L579 ...the US's rate (the tie money is the US$) and not the gap's: the gap changes nothing
+  - L581 aiming at the currency it is the tie rate plus CURRENCY_WEIGHT x the gap
+  - L584 ...and aiming at a mix
+  - L587 with the autopilot off it is the player's spread over the tie rate whatever the aim
+  - L591 the dial stays inside its bounds: the spread over a US rate of 95% is clamped to MAX_POLICY_RATE
+  - L595 tiedRate() with the autopilot aiming at the gold reads the player's spread
+  - L600 dropGoldAim() makes the aim Inflation and writes no decision line (
+  - L604 ...and does nothing to another aim
+  - L606 setAim() does write its line: \"
+  - L608 untied, the tie money is none and the tie rate the US's: the autopilot aiming at inflation is the rule's
+- **L692 7. a town on gold through 1933 and 1934**
+  - L700 fixture: the town is on Gold, its aim Defend the gold, struck at the D$'s rate of the day times gold's price (D$
+  - L711 the town is still on Gold in March 1933, with a cover over the law's floor
+  - L712 ...its event none, and the centre the entry rate: the mint price over the statute's price (the D$ where it was struck)
+  - L713 saved to the harness's scratch folder
+  - L720 the event of April 1933 is open that month, and the answer is written in the decision log (
+  - L722 leave: the event opens, the answer is written, and the regime goes to Lean with the aim Inflation
+  - L724 stay: still on Gold in February 1934 (world month
+  - L728 stay: the centre in February 1934 is March 1933's times PAR_1900 / PAR_1934
+  - L729 stay: in February 1934 the PAR_1934 event opens
+  - L730 follow: still on Gold, its centre at the mint rate every month, the rate inside the points, and no PAR_1934 event (it follows the dollar already)
+  - L732 follow: the centre in February 1934 is March 1933's
+- **L734 8. the notice**
+  - L735 the notice 'gold:LEFT_1933' is raised the month the event opens (month
+  - L737 ...and is resolved the month after it is answered (raised
+  - L738 ...a leaver's too, the month after it left gold
+  - L739 the notice 'gold:PAR_1934' stands in February 1934 for the city that stayed, and is never raised for the one that followed
+  - L744 a city not on gold in April 1933 has no event and no notice
+- **L748 9. the dial in the town**
+  - L759 fixture: on Gold, the autopilot on and aiming at the gold, the cover
+  - L771 the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read (its top's, after the gold's last sale wa...
+  - L773 ...above the tie (the spread asks something at this cover) and the dial is tied
+  - L776 aiming at inflation the dial is the inflation rule's, untied: isTied() false, and not the gold's
+  - L779 the autopilot off, the dial is the tie plus the player's spread (not the cover's)
+  - L791 forced break: the regime is Float, the cause the cover or doubt, and the aim Inflation
+  - L793 ...and the decision log gained no line about the aim (the city's fate, not a decision)
+- **L797 10. saved mid-gold**
+  - L801 fixture: on Gold with the April 1933 event open, the mint price not following
+  - L803 saved to the scratch folder
+  - L806 round
+  - L811 ...and the second round follows the dollar with no event open
+  - L827 round
+- **L842 11. GD2's two findings**
+  - L851 fixture: a GoldPrice on a US price level that is NaN from 1980 throws on its own at 1990 (the Random rule, from August 1971, walks on it)
+  - L852 (a) Game.priceOrNaN() gives NaN there, no throw, and the price where the level is fine (1940)
+  - L857 (b) Game.eightOf(moneys, \"XAU\") is not the vault's gold (
+  - L864 ...and tradeSharesByMoney never gives gold a share (
+- **L868 12. Lean is the default**
+  - L871 a new town: Lean, the aim Inflation, no mint price, no event, not tied
+  - L874 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
+- **L897 13. the gold's sales retire M0 (FB14; GD3's review, item 6): the next month's top takes back what the vault paid, the audit says so, the ...**
+  - L924 fixture: the town founded on gold sold gold in at least six of its months, and stayed on Gold for all
+  - L926 every sale a reprice made under Gold is due back from the reserves, the month's getDefenceLocal() to the bit's share (
+  - L927 ...and the next month's top retires it whole wherever the reserves could pay twice over (
+  - L928 ...the audit says it twice, + centralbank TakenBackForGold and - centralbank RetiredForGold, each the month's retired gold (
+  - L929 ...the audit closed every month (
+  - L930 ...the bank kept nothing every month: equity less the vault plus vaultInNewMoney(), less the remittance due plus the loss carried (
+  - L932 every sale settled is booked once: retired for gold since the founding plus the bank's equity spent where the reserves could not pay
+  - L933 ...and most of it was retired, M0 the smaller by it, where GD3 booked all of it as the bank's equity spent (dollarsSold()) and retired none (
+  - L939 fixture: the reserves have a sale to pay (D$
+  - L941 a sale of gold is due back, and M0 has not moved before the next month's top
+  - L943 at the top it is retired: M0 is lower by the sale (GD3 left it where it was)
+  - L944 ...the retirement is the sale
+  - L945 ...nothing of it is the bank's equity spent
+  - L946 ...and the vault's new money is less by it
+  - L952 a sale past the reserves retires them all
+  - L953 ...leaving none (
+  - L954 ...and the rest is the bank's equity spent, as any defence is
+  - L955 ...nothing left due
+- **L962 14. the start-on-gold box (FB14; GD3-F): the founding puts the law's cover of the treasury into gold, never more than the vault, and foun...**
+  - L974 ...nothing stays in dollars (dollarsUsd(), the screen's \"the other\")
+  - L975 ...the gold's share of the treasury is the vault's at the opening rate, never over the law's (
+  - L977 ...and the line says the law's 40% only where the vault holds it: Lean and Wealthy do, Standard's whole vault is short (
+  - L979 ...the city founds with the whole vault in gold
+  - L980 ...and none in dollars (
+  - L981 ...on Gold, Defend the gold the aim, the mint the day's rate times gold's price, and nothing in the player's log
+  - L985 ...a month on it holds the cover: still on Gold, the cover
+  - L990 fixture: the custom founding is one the screen lets through (
+  - L995 a custom vault deeper than 40% of the treasury: the gold is 40% of the treasury at the opening rate
+  - L996 ...the rest stays in dollars
+  - L997 ...the dollars the box's line quotes (Founding.dollarsUsd()) are those
+  - L998 ...and its gold is the law's 40% of the treasury
+  - L999 ...the vault's worth is the founding's
+  - L1000 ...and it is on Gold
+  - L1004 the box off: no gold, the vault in dollars, Lean, the aim Inflation
+  - L1007 ...and none a month on
+  - L1012 a new Game handed the box founds on gold too, its run() the door (the whole vault in gold, on Gold)
+  - L1018 founded the 1900 way with the box: on Gold, not on Canada's peg at par (isCanadaGold() false), the whole vault in gold
+  - L1021 ...where without it the 1900 city is on Canada's peg (OP1), with no gold
+  - L1025 Insane, with no vault, has no gold to found on: the box founds it on dollars (Lean, no gold)
+- **L1034 15. the dates pass it by (FB14; REV-FB14): a 1900 box city stays on its own Gold through August 1914 and July 1926**
+  - L1054 fixture: the city reached July 1926 on Gold, every month of the
+  - L1055 August 1914, Canada's suspension, does not float it: on Gold that month
+  - L1056 ...and July 1926, Canada's return, does not peg it: on Gold that month, and on Canada's peg in none (
+  - L1057 ...and every month the cover it shows is over M0 after the last sale's retirement (Game.getGoldBase()), the one the next reprice reads (
 
 ## GovernmentPlayerCheck.java - 34 labelled assertions
 

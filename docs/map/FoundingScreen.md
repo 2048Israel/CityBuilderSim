@@ -1,4 +1,4 @@
-# FoundingScreen.java - 1,576 lines · 69 methods · 20 constants · interface
+# FoundingScreen.java - 1,583 lines · 69 methods · 20 constants · interface
 
 `ham/citybuildersim/ui/FoundingScreen.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > there (EarthSite.dataWords()). On Earth the panel widens to two
 > ... (37 more lines in the source)
 
-**Uses:** [Palette](Palette.md) (133), [Founding](Founding.md) (59), [Currency](Currency.md) (34), [EarthSite](EarthSite.md) (28), [World](World.md) (20), [Nations](Nations.md) (17), [GlobeFrame](GlobeFrame.md) (15), [EarthProj](EarthProj.md) (14), [EarthData](EarthData.md) (12), [MapFrame](MapFrame.md) (4), [GlobePicture](GlobePicture.md) (4), [UserInterface](UserInterface.md) (2), [FoundingName](FoundingName.md) (2), [SignFont](SignFont.md) (2), [Resource](Resource.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [TileRaster](TileRaster.md) (2), [Icons](Icons.md) (1), [Geology](Geology.md) (1), [PolicyScreen](PolicyScreen.md) (1), [CityCalendar](CityCalendar.md) (1), [WorldData](WorldData.md) (1), [WorldEconomy](WorldEconomy.md) (1), [MapTiles](MapTiles.md) (1)
+**Uses:** [Palette](Palette.md) (133), [Founding](Founding.md) (62), [Currency](Currency.md) (34), [EarthSite](EarthSite.md) (28), [World](World.md) (20), [Nations](Nations.md) (17), [GlobeFrame](GlobeFrame.md) (15), [EarthProj](EarthProj.md) (14), [EarthData](EarthData.md) (12), [MapFrame](MapFrame.md) (4), [GlobePicture](GlobePicture.md) (4), [UserInterface](UserInterface.md) (2), [FoundingName](FoundingName.md) (2), [SignFont](SignFont.md) (2), [Resource](Resource.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [PolicyScreen](PolicyScreen.md) (2), [TileRaster](TileRaster.md) (2), [Icons](Icons.md) (1), [Geology](Geology.md) (1), [CityCalendar](CityCalendar.md) (1), [WorldData](WorldData.md) (1), [WorldEconomy](WorldEconomy.md) (1), [MapTiles](MapTiles.md) (1)
 
 **Used by (2):** [SlopeRenders](SlopeRenders.md), [UserInterface](UserInterface.md)
 
@@ -82,12 +82,12 @@
 | 414 | · · found it |
 | 499 | THE WORLD: EARTH OR GENERATED (0.7.121) |
 | 714 | · the card |
-| 954 | THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4) |
-| 1029 | WHAT A KEYSTROKE CHANGES |
-| 1058 | THE CHOICES, AS THE MODEL READS THEM |
-| 1179 | THE GLOBE (0.7.121, batch E4; spec-earth 2: "the globe from the 4' |
-| 1405 | · W, A, S and D (0.7.135; spec-globe 3.11, ★E9: the founding globe takes the keys while it has the focus) |
-| 1553 | · the close tier's ground |
+| 961 | THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4) |
+| 1036 | WHAT A KEYSTROKE CHANGES |
+| 1065 | THE CHOICES, AS THE MODEL READS THEM |
+| 1186 | THE GLOBE (0.7.121, batch E4; spec-earth 2: "the globe from the 4' |
+| 1412 | · W, A, S and D (0.7.135; spec-globe 3.11, ★E9: the founding globe takes the keys while it has the focus) |
+| 1560 | · the close tier's ground |
 
 ## Constants
 
@@ -105,14 +105,14 @@
 | 267 | `FoundingScreen.GLOBE_H` | `GlobeFrame.FOUNDING_H` | The globe's height: 270 px, so the page still fits an 868-pixel window with the longest card under it (the words probe's, 0.7.121; GlobeFrame.FOUNDING_H since 0.7.135). |
 | 270 | `FoundingScreen.LEFT` | `EARTH_PANEL - 2 * PANEL_PAD - COLUMN_GAP - GLOBE_W` | The left column's width on Earth: what the panel leaves. |
 | 757 | `FoundingScreen.NO_SPOT_WORDS` | `"None yet.Drag the globe or hold W, A, S and D to turn it, zoom with the whee...` | The card's line before a spot is picked; how the globe is used. |
-| 1069 | `FoundingScreen.SIGN_EXAMPLE` | `"2.6M"` | The figure the place chips show the sign beside. |
-| 1208 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
-| 1211 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
-| 1214 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
-| 1217 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
-| 1220 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
-| 1223 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
-| 1226 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
+| 1076 | `FoundingScreen.SIGN_EXAMPLE` | `"2.6M"` | The figure the place chips show the sign beside. |
+| 1215 | `FoundingScreen.Globe.MOST_KM_PX` | `2 * EarthProj.RADIUS_M / 1000 /(GlobeFrame.FIT_SHARE * GLOBE_H)` | The widest view: the whole planet, 12,742 km, across GlobeFrame.FIT_SHARE (nine tenths) of the globe's height. |
+| 1218 | `FoundingScreen.Globe.GROUND_KM_PX` | `GlobeFrame.FOUNDING_HANDOFF_KM` | From here closer the ground is drawn round the view's centre, not through the globe: GlobeFrame.FOUNDING_HANDOFF_KM, 2.32 km a pixel (★E9; 4 until 0.7.135). |
+| 1221 | `FoundingScreen.Globe.LEAST_KM_PX` | `5 * World.PLOT_M / 1000.0` | The closest view: 150 m a pixel, five plots (spec-earth 2's 150 m view). |
+| 1224 | `FoundingScreen.Globe.PICK_KM_PX` | `0.3` | How close a pick from the search or Random spot opens: 0.3 km a pixel, the 5 km round the site 33 pixels across. |
+| 1227 | `FoundingScreen.Globe.STEP` | `MapFrame.ZOOM_STEP` | A wheel notch's zoom, the map's: MapFrame.ZOOM_STEP. |
+| 1230 | `FoundingScreen.Globe.SPACE` | `0xff0b1118` | Space round the globe: the page's stage. |
+| 1233 | `FoundingScreen.Globe.COLOURS` | `GlobePicture.colours(false)` | The ground's colours, as the map draws them where the city owns it (GlobePicture.colours()): the founding globe dims nothing. |
 
 ## Fields (state)
 
@@ -147,24 +147,24 @@
 | 186 | `private VBox cardBox, hitsBox` |  |
 | 189 | `private final Globe globe` | The globe, kept across redraws: its view and its last picture. |
 | 199 | `private long cardAsked` | Which measurement is the latest: a card that comes back for an older one is dropped. |
-| 1229 | `double lat` | The view: its centre, degrees, and its scale, km a pixel. |
-| 1232 | `private final GlobeFrame wide` | The wide view's arithmetic: the map's globe, a canvas's size, north up (it never comes near the map's handoff, where it would turn). |
-| 1234 | `private Canvas canvas` |  |
-| 1235 | `private WritableImage picture` |  |
-| 1237 | `private double drawnLat` | The view the picture was drawn for. |
-| 1238 | `private long asked` |  |
-| 1239 | `private double pressX, pressY, lastX, lastY` |  |
-| 1240 | `private boolean dragging` |  |
-| 1242 | `private boolean keyW, keyA, keyS, keyD` | W, A, S and D held, and when they last turned it. |
-| 1243 | `private long keyNanos` |  |
-| 1245 | `private javafx.animation.AnimationTimer keys` | The frames that turn it while a key is held: made at the first key (an AnimationTimer needs the toolkit, which a harness's window has not started). |
-| 1248 | `private final ExecutorService worker` | The worker the globe is drawn on: one at a time, the newest asked for. |
+| 1236 | `double lat` | The view: its centre, degrees, and its scale, km a pixel. |
+| 1239 | `private final GlobeFrame wide` | The wide view's arithmetic: the map's globe, a canvas's size, north up (it never comes near the map's handoff, where it would turn). |
+| 1241 | `private Canvas canvas` |  |
+| 1242 | `private WritableImage picture` |  |
+| 1244 | `private double drawnLat` | The view the picture was drawn for. |
+| 1245 | `private long asked` |  |
+| 1246 | `private double pressX, pressY, lastX, lastY` |  |
+| 1247 | `private boolean dragging` |  |
+| 1249 | `private boolean keyW, keyA, keyS, keyD` | W, A, S and D held, and when they last turned it. |
+| 1250 | `private long keyNanos` |  |
+| 1252 | `private javafx.animation.AnimationTimer keys` | The frames that turn it while a key is held: made at the first key (an AnimationTimer needs the toolkit, which a harness's window has not started). |
+| 1255 | `private final ExecutorService worker` | The worker the globe is drawn on: one at a time, the newest asked for. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 130 | 1447 | **type** `public final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
+| 130 | 1454 | **type** `public final class FoundingScreen` | Found a city: its name, its money, what the founders leave in the treasury and the vault, the ground it stands on and the world it is founded into. |
 | 138 | 1 | `FoundingScreen(UserInterface ui)` |  |
 
 ### the choices, between redraws (lines 140-177)
@@ -199,7 +199,7 @@
 | 667 | 6 | `void pick(double lat, double lon, boolean closer)` | A spot picked - by a click, the search or Random spot: the view centred on it (and closer, `closer`), its card measured. |
 | 675 | 38 | `private void measure()` | The card for the spot as chosen now, measured on the worker; the card shows the measuring until it comes back. |
 
-### the card (lines 714-953)
+### the card (lines 714-960)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -219,67 +219,67 @@
 | 907 | 4 | `private Currency chosenMoney()` | The money the page is choosing now: the typed one, the city's derived one, or the "$" before while a typed pair does not pass yet. |
 | 913 | 4 | `private String cardWords(Founding.Preset p)` | A card's figures, the treasury (with the money's qualified sign, as the vault is beside it) and the vault, written in the money being chosen. |
 | 919 | 4 | `private String tipWords(Founding.Preset p)` | A card's tip: the same figures in full. |
-| 928 | 11 | `private String goldWords()` | The "start on gold" box's line (FB14): what the founding puts into gold, in the money being chosen - Founding.goldUsd() at the opening rate, the law's 40% of the treasury and never more than the vault, which is all of... |
-| 941 | 7 | `private String boundsWords()` | The Custom fields' bounds, in the money being chosen. |
-| 950 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M", and "2.0B kr" "2B kr", on a card, where the room is a card's. |
+| 929 | 17 | `private String goldWords()` | The "start on gold" box's line (FB14): what the founding puts into gold, in the money being chosen - Founding.goldUsd() at the opening rate, the law's 40% of the treasury and never more than the vault, which is all of... |
+| 948 | 7 | `private String boundsWords()` | The Custom fields' bounds, in the money being chosen. |
+| 957 | 3 | `private static String compact(String amount)` | A whole amount without its ".0": "D$100.0M" is "D$100M", and "2.0B kr" "2B kr", on a card, where the room is a card's. |
 
-### THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4) (lines 954-1028)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 964 | 22 | `private static String[] pathWords(Nations.Path p)` | The path's three texts: the line under the row, the (i)'s whole words, and the chip's tooltip, which is the whole words' first sentence. |
-| 988 | 13 | `private VBox equipmentBlock()` | The 1900 founding and the all-fitted one, the page's default (R1d call 2), kept in the founding record. |
-| 1003 | 25 | `private VBox pathBlock()` | The two path chips, its seed and the words for the path chosen. |
-
-### WHAT A KEYSTROKE CHANGES (lines 1029-1057)
+### THE WORLD BEYOND THE CITY: HISTORICAL OR RANDOM (WN1; spec-nations 7, board 4) (lines 961-1035)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1032 | 25 | `private void refresh()` |  |
+| 971 | 22 | `private static String[] pathWords(Nations.Path p)` | The path's three texts: the line under the row, the (i)'s whole words, and the chip's tooltip, which is the whole words' first sentence. |
+| 995 | 13 | `private VBox equipmentBlock()` | The 1900 founding and the all-fitted one, the page's default (R1d call 2), kept in the founding record. |
+| 1010 | 25 | `private VBox pathBlock()` | The two path chips, its seed and the words for the path chosen. |
 
-### THE CHOICES, AS THE MODEL READS THEM (lines 1058-1178)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1063 | 4 | `private Currency currency()` | The money as chosen, or null when a typed name, code or sign does not pass. |
-| 1072 | 5 | `private Currency signedAs(boolean after)` | A money that is only the typed sign, in the given place, for the place chips' captions: the "$" where the sign does not pass yet. |
-| 1079 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
-| 1084 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
-| 1089 | 3 | `private Long seed()` | The world's seed as typed, or null when it is not a whole number. |
-| 1094 | 3 | `private Long pathSeed()` | The path's seed as typed (WN1), or null when it is not a whole number. |
-| 1105 | 22 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse - and on Earth (0.7.121) no spot yet, the card still being measured, or its refusal. |
-| 1129 | 10 | `private Founding generatedChoices()` | The founding as chosen on its seed's generated world: the city's own choices, which problem() asks first. |
-| 1141 | 4 | `private Founding choices()` | The founding as chosen: on Earth (0.7.121) round the spot picked. |
-| 1150 | 15 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
-| 1166 | 8 | `private static double millions(String typed)` |  |
-| 1175 | 3 | `private static String trim(double v)` |  |
-
-### THE GLOBE (0.7.121, batch E4; spec-earth 2: "the globe from the 4' (lines 1179-1552)
+### WHAT A KEYSTROKE CHANGES (lines 1036-1064)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1205 | 347 | **type** `final class Globe` |  |
-| 1255 | 51 | `StackPane node(FoundingScreen screen)` _(in FoundingScreen.Globe)_ | The globe's canvas with its zoom buttons, made again with the page. |
-| 1307 | 8 | `private Button zoomButton(String words, String tip)` _(in FoundingScreen.Globe)_ |  |
-| 1317 | 7 | `void centre(double atLat, double atLon, boolean closer)` _(in FoundingScreen.Globe)_ | The view centred on a spot, and as close as a pick opens (`closer`) if it is wider than that. |
-| 1326 | 1 | `private boolean isWide()` _(in FoundingScreen.Globe)_ | Whether the view is wide: drawn through the map's globe. |
-| 1329 | 4 | `private GlobeFrame wide()` _(in FoundingScreen.Globe)_ | The wide view's frame, on the view. |
-| 1335 | 24 | `private void zoomAt(double px, double py, double by)` _(in FoundingScreen.Globe)_ | A zoom by a factor (under one closer) at a canvas point: the point under it stays under it - through the map's globe while wide, round the view's centre close - snapped to whole plots close. |
-| 1361 | 5 | `private double snapped(double km)` _(in FoundingScreen.Globe)_ | A scale as drawn: close, a whole number of plots a pixel. |
-| 1368 | 10 | `private void turn(double x0, double y0, double x1, double y1)` _(in FoundingScreen.Globe)_ | The view turned by the pointer from (x0, y0) to (x1, y1): the point grabbed stays under it - the map's globe's drag while wide, the plane round the view's centre slid close. |
-| 1380 | 8 | `private void slide(double dx, double dy)` _(in FoundingScreen.Globe)_ | Close, the ground slid by (dx, dy) pixels: the new centre is the point that lay (dx, dy) back from it, on the plane round the old. |
-| 1390 | 6 | `double[] latLonAt(double px, double py)` _(in FoundingScreen.Globe)_ | The latitude and longitude under a canvas point, in the view as it is drawn; null off the planet. |
-| 1398 | 6 | `double[] at(double atLat, double atLon)` _(in FoundingScreen.Globe)_ | Where a latitude and longitude lie on the canvas in the view as drawn, or null where it is not seen. |
-| 1408 | 17 | `private boolean key(javafx.scene.input.KeyCode k, boolean down)` _(in FoundingScreen.Globe)_ | A key down or up on the focused globe: true when it was one of the four. |
-| 1427 | 3 | `private void letGo()` _(in FoundingScreen.Globe)_ | The focus gone: the keys let go, whose key-ups it would not hear. |
-| 1432 | 21 | `private void keysFrame()` _(in FoundingScreen.Globe)_ | A frame of the keys held: the globe turned by MapFrame.keyVelocity() over the time since the last - the map's globe's keyPan() while wide, the ground slid close. |
-| 1455 | 40 | `void redraw()` _(in FoundingScreen.Globe)_ | The picture asked for again, on the worker: the newest wins. |
-| 1497 | 5 | `private World.Key spotKey()` _(in FoundingScreen.Globe)_ | The spot's own world's key while the view is centred on it (the city's ground), else null. |
-| 1504 | 47 | `void repaint()` _(in FoundingScreen.Globe)_ | The canvas painted: the last picture (where its centre lies now, at the view's scale), the spot, and the site with its 5 km once the card has one. |
+| 1039 | 25 | `private void refresh()` |  |
 
-### the close tier's ground (lines 1553-1576)
+### THE CHOICES, AS THE MODEL READS THEM (lines 1065-1185)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1556 | 20 | `static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx)` | The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel, each pixel's colour by its cover and relief... |
+| 1070 | 4 | `private Currency currency()` | The money as chosen, or null when a typed name, code or sign does not pass. |
+| 1079 | 5 | `private Currency signedAs(boolean after)` | A money that is only the typed sign, in the given place, for the place chips' captions: the "$" where the sign does not pass yet. |
+| 1086 | 3 | `private double cash()` | The treasury in thousands, or NaN when a custom figure will not parse. |
+| 1091 | 3 | `private double reserveUsd()` | The vault in thousands of US dollars, or NaN. |
+| 1096 | 3 | `private Long seed()` | The world's seed as typed, or null when it is not a whole number. |
+| 1101 | 3 | `private Long pathSeed()` | The path's seed as typed (WN1), or null when it is not a whole number. |
+| 1112 | 22 | `private String problem()` | Why Found is not lit, or null: the model's reason, or the screen's when a field will not parse - and on Earth (0.7.121) no spot yet, the card still being measured, or its refusal. |
+| 1136 | 10 | `private Founding generatedChoices()` | The founding as chosen on its seed's generated world: the city's own choices, which problem() asks first. |
+| 1148 | 4 | `private Founding choices()` | The founding as chosen: on Earth (0.7.121) round the spot picked. |
+| 1157 | 15 | `boolean foundIfReady()` | Found it if it can be - Found's button and the Enter key. |
+| 1173 | 8 | `private static double millions(String typed)` |  |
+| 1182 | 3 | `private static String trim(double v)` |  |
+
+### THE GLOBE (0.7.121, batch E4; spec-earth 2: "the globe from the 4' (lines 1186-1559)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1212 | 347 | **type** `final class Globe` |  |
+| 1262 | 51 | `StackPane node(FoundingScreen screen)` _(in FoundingScreen.Globe)_ | The globe's canvas with its zoom buttons, made again with the page. |
+| 1314 | 8 | `private Button zoomButton(String words, String tip)` _(in FoundingScreen.Globe)_ |  |
+| 1324 | 7 | `void centre(double atLat, double atLon, boolean closer)` _(in FoundingScreen.Globe)_ | The view centred on a spot, and as close as a pick opens (`closer`) if it is wider than that. |
+| 1333 | 1 | `private boolean isWide()` _(in FoundingScreen.Globe)_ | Whether the view is wide: drawn through the map's globe. |
+| 1336 | 4 | `private GlobeFrame wide()` _(in FoundingScreen.Globe)_ | The wide view's frame, on the view. |
+| 1342 | 24 | `private void zoomAt(double px, double py, double by)` _(in FoundingScreen.Globe)_ | A zoom by a factor (under one closer) at a canvas point: the point under it stays under it - through the map's globe while wide, round the view's centre close - snapped to whole plots close. |
+| 1368 | 5 | `private double snapped(double km)` _(in FoundingScreen.Globe)_ | A scale as drawn: close, a whole number of plots a pixel. |
+| 1375 | 10 | `private void turn(double x0, double y0, double x1, double y1)` _(in FoundingScreen.Globe)_ | The view turned by the pointer from (x0, y0) to (x1, y1): the point grabbed stays under it - the map's globe's drag while wide, the plane round the view's centre slid close. |
+| 1387 | 8 | `private void slide(double dx, double dy)` _(in FoundingScreen.Globe)_ | Close, the ground slid by (dx, dy) pixels: the new centre is the point that lay (dx, dy) back from it, on the plane round the old. |
+| 1397 | 6 | `double[] latLonAt(double px, double py)` _(in FoundingScreen.Globe)_ | The latitude and longitude under a canvas point, in the view as it is drawn; null off the planet. |
+| 1405 | 6 | `double[] at(double atLat, double atLon)` _(in FoundingScreen.Globe)_ | Where a latitude and longitude lie on the canvas in the view as drawn, or null where it is not seen. |
+| 1415 | 17 | `private boolean key(javafx.scene.input.KeyCode k, boolean down)` _(in FoundingScreen.Globe)_ | A key down or up on the focused globe: true when it was one of the four. |
+| 1434 | 3 | `private void letGo()` _(in FoundingScreen.Globe)_ | The focus gone: the keys let go, whose key-ups it would not hear. |
+| 1439 | 21 | `private void keysFrame()` _(in FoundingScreen.Globe)_ | A frame of the keys held: the globe turned by MapFrame.keyVelocity() over the time since the last - the map's globe's keyPan() while wide, the ground slid close. |
+| 1462 | 40 | `void redraw()` _(in FoundingScreen.Globe)_ | The picture asked for again, on the worker: the newest wins. |
+| 1504 | 5 | `private World.Key spotKey()` _(in FoundingScreen.Globe)_ | The spot's own world's key while the view is centred on it (the city's ground), else null. |
+| 1511 | 47 | `void repaint()` _(in FoundingScreen.Globe)_ | The canvas painted: the last picture (where its centre lies now, at the view's scale), the spot, and the site with its 5 km once the card has one. |
+
+### the close tier's ground (lines 1560-1583)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1563 | 20 | `static int[] groundPixels(World.Key spot, double lat0, double lon0, double kmPx)` | The ground close: the city's own far view (MapTiles.nodeTerrain()) on an Earth world centred on the view - the spot's own when it is there - a whole number of plots a pixel, each pixel's colour by its cover and relief... |
 
