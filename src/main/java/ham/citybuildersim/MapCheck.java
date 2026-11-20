@@ -580,6 +580,7 @@ public class MapCheck {
         aDepotLeavesTheYardsDistrict();
         frontageDrawn(sq.types);
         depotAloneRails();
+        oldWorksSentOn();
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -16345,6 +16346,209 @@ public class MapCheck {
         out.printf("      %d months on: %d yards, the runs lay %,d plots, the painter draws %,d%n", CityRuns.YARD_IDLE_MONTHS, runs.yards().size(), gone.laid, gone.rail);
         check("...and once its time is up the yard is taken up and the line with it: no station, no plots of track the model does not hold, the law exact on nothing",
                 runs.yards().isEmpty() && gone.laid == 0 && gone.rail == 0 && runs.stationLine(0) == 0 && !gone.station && gone.sameAs(c.model, c.types) && c.reconciled);
+    }
+
+    /* =====================================================================
+       26. AN OLD WORKS ITS PLAN SENT ON IS NOT THE DISTRICT'S TO STAND (RN1-H-M)
+       ===================================================================== */
+
+    /*
+     * WHY (RN1-H-M, 2026-11-20): LongPlaytest's oldest-works watch (THE OLDEST WORKS, CL3) named district (0,0)'s Industrial Bakery at m2400 from RN1-H's gate
+     * to R1e's (2026-11-19): the one standing at m601 gone, the district holding 4 against 1 then. No box had moved. The district's first bakery (m43) found
+     * no estate cell, and its plan sent it on at its arrival (CL3: an arrival that finds no place goes on its overflow log); the second (m365) was placed, and
+     * was the one box drawn at m601. At m906-908 the count fell from 4 to 1, and CL3's rule took the newest, m745, m744 and m365, leaving m43, still sent on:
+     * the district drew none, and the bakeries that came after stood elsewhere. The watch's law - of the boxes standing then, no fewer than its own count then
+     * and its lowest since stand now - took the oldest of its own count to be drawn ones, and one of them had been sent on. The law gains that term
+     * (LongPlaytest, THE WORKS SENT ON): of the oldest `lowest since` of the district's own live instances, those its plan had sent on are not its to stand,
+     * a month's ties counted drawn as far as the month's numbers allow. The run and spill exclusions are untouched, and CL3's rule stays.
+     *
+     * The fixture causes it on one district, no Game: one cell owned round the founding site, opened for homes; a bakery that finds no estate cell and is
+     * sent on; the next cell bought and a second bakery placed in it; the oldest works kept; the count falling back to one (the placed one leaves, the sent-on
+     * one stays) while a works of its size takes its place, and a bakery coming again elsewhere. Judged by the law as it stood it is flagged (so the section
+     * fails before the fix) and by the law as it stands it is not; the control moves the drawn old box while the count holds, and is flagged by both.
+     */
+
+    /** 26's city: one district on the default world's dry ground, owned a cell at a time from the founding site's - the ground a city starts on, where its first works finds no estate cell. */
+    static final class SentOnCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int house = idNamed(catalog, "House"), bakery = idNamed(catalog, "Industrial Bakery");
+        /** A works of the bakery's size bound to no site: what takes the place the placed bakery leaves. */
+        final int other;
+        CityLand land;
+        CityMap map;
+        final long[] model = new long[types.length];
+        /** The founding site's cell's north-west corner, and the next cell's east of it: each owned to its far ring line. */
+        long hx, hy, nx;
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        SentOnCity() {
+            int[] size = BuildingVisual.footprint(types[bakery]);
+            int found = -1;
+            for (int t = 0; t < types.length && found < 0; t++) {
+                BuildingVisual.Type y = types[t];
+                if (t == bakery || y == null || LongPlaytest.layoutBand(y) != 1 || y.site() != null || y.track() || y.terminal() || y.sea() || y.campus() || y.shore() || y.siding()) continue;
+                if (java.util.Arrays.equals(BuildingVisual.footprint(y), size)) found = t;
+            }
+            other = found;
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT, c = DistrictPlan.CELL;
+            World w = World.of(seed);
+            long[] dry = dryPlace(w);
+            long bx = Math.floorDiv(dry[0], f), by = Math.floorDiv(dry[1], f);
+            for (int ring = 0; ring < World.CELLS; ring++) {
+                for (int dy = -ring; dy <= ring; dy++) for (int dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                    long x = (bx + dx) * f + DistrictPlan.CELLS_A_SIDE / 2 * c, y = (by + dy) * f + DistrictPlan.CELLS_A_SIDE / 2 * c;
+                    if (!dryGround(w, x, y, x + 2 * c + 1, y + c + 1)) continue;
+                    hx = x;
+                    hy = y;
+                    nx = x + c + 1;
+                    double[] centre = new double[CityLand.CENTRE_FIELDS];
+                    centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+                    centre[CityLand.CENTRE_FIELDS - 2] = x + c / 2;
+                    centre[CityLand.CENTRE_FIELDS - 1] = y + c / 2;
+                    land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x, y, x + c + 1, y + c + 1 } }, null, null, null);
+                    map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+                    return;
+                }
+            }
+            throw new IllegalStateException("no dry ground for 26's city");
+        }
+
+        /** Whether every plot of [x0, x1) x [y0, y1) can be built on. */
+        static boolean dryGround(World w, long x0, long y0, long x1, long y1) {
+            for (long y = y0; y < y1; y++) for (long x = x0; x < x1; x++) if (!World.buildable(w.terrainAt(x, y), w.reliefAt(x, y))) return false;
+            return true;
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** The month that last ran: what a purchase made between months is dated. */
+        int last() { return month - 1; }
+
+        /** The next cell east, bought between months. */
+        void buyNext() {
+            long c = DistrictPlan.CELL;
+            land.extend(new LandParcel(-5, 1, 0, land.level(), nx, hy, nx + c, hy + c + 1, null, null, null, 0, 0), last(), 0);
+        }
+
+        CityMap.District district() { return map.districts().get(0); }
+
+        /** The district's drawn boxes of type t. */
+        List<PlanBox> drawn(int t) {
+            List<PlanBox> list = new ArrayList<>();
+            for (PlanBox b : boxesOf(map.plan(district()))) if (b.type() == t) list.add(b);
+            return list;
+        }
+
+        /** How many of type t the district's plan has sent on and not taken back: its carry-out's arrivals less its departures of them. */
+        int sentOn(int t) {
+            int[] pairs = map.carriedOnLog(district());
+            return pairs == null ? 0 : LongPlaytest.layoutSentMonths(pairs, t).length;
+        }
+    }
+
+    /** The watch's finding, judged by the law as it stood before RN1-H-M or as it stands: whether it names an old works moved. */
+    static boolean oldWorksFlagged(CityMap m, int month, java.util.Map<Long, LongPlaytest.LayoutSnap> now, boolean countsSentOn) {
+        LongPlaytest.findings.remove("an old works moved");
+        LongPlaytest.layoutCountsSentOn = countsSentOn;
+        try {
+            LongPlaytest.layoutFinish(null, m, month, now);
+        } finally {
+            LongPlaytest.layoutCountsSentOn = true;
+        }
+        return LongPlaytest.findings.containsKey("an old works moved");
+    }
+
+    static void oldWorksSentOn() {
+        out.println("\n--- 26. an old works its plan sent on is not the district's to stand: the oldest-works watch counts the works sent on, and still names a drawn one that moves (RN1-H-M) ---");
+        java.util.Set<String> findingsBefore = new java.util.HashSet<>(LongPlaytest.findings.keySet());
+        LongPlaytest.layoutOldForget();
+        SentOnCity c = new SentOnCity();
+        int b = c.bakery;
+        CityMap m = c.map;
+
+        // ----- the city: homes first, a bakery with nowhere to stand, the next cell bought, a bakery in it -----
+        c.model[c.house] = 12;
+        c.run();
+        int homesMonth = c.last();
+        c.model[b] = 1;
+        c.run();
+        int firstMonth = c.last(), sentAtArrival = c.sentOn(b), drawnAtArrival = c.drawn(b).size();
+        c.buyNext();
+        c.model[b] = 2;
+        c.run();
+        int secondMonth = c.last();
+        c.run();
+        int keepMonth = c.last();
+        java.util.Map<Long, LongPlaytest.LayoutSnap> kept = LongPlaytest.layoutSnapshot(m);
+        List<PlanBox> keptBoxes = c.drawn(b);
+        int sentAtKeep = c.sentOn(b);
+        out.printf("      m%d %d houses; m%d a bakery, sent on (%d sent on, %d drawn); the next cell bought; m%d a second, drawn at %s; kept at m%d: %d sent on, %d drawn%n",
+                homesMonth, c.model[c.house], firstMonth, sentAtArrival, drawnAtArrival, secondMonth, keptBoxes, keepMonth, sentAtKeep, keptBoxes.size());
+        check("the fixture: the city's first bakery found no estate cell and its plan sent it on at its arrival; the second, on the cell bought, is the one drawn when the oldest works are kept",
+                c.other >= 0 && sentAtArrival == 1 && drawnAtArrival == 0 && sentAtKeep == 1 && keptBoxes.size() == 1 && c.reconciled);
+
+        // ----- the control: the count held, the drawn old box moved a plot - flagged by the law as it stood and as it stands -----
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> moved = new java.util.HashMap<>();
+        for (java.util.Map.Entry<Long, LongPlaytest.LayoutSnap> e : kept.entrySet()) {
+            LongPlaytest.LayoutSnap s = e.getValue(), t = new LongPlaytest.LayoutSnap();
+            t.boxes = s.boxes.clone();
+            t.dims = s.dims;
+            t.byType = s.byType;
+            t.carryIn = s.carryIn;
+            t.carryLog = s.carryLog;
+            t.counted = s.counted;
+            for (int i = 0; i < t.boxes.length; i++) if ((int) (t.boxes[i] >>> 40) == b) t.boxes[i]++;
+            java.util.Arrays.sort(t.boxes);
+            moved.put(e.getKey(), t);
+        }
+        boolean stillOld = oldWorksFlagged(m, keepMonth, kept, false), stillNew = oldWorksFlagged(m, keepMonth, kept, true);
+        boolean movedOld = oldWorksFlagged(m, keepMonth, moved, false), movedNew = oldWorksFlagged(m, keepMonth, moved, true);
+        out.printf("      the control at m%d: as drawn, flagged %b by the law as it stood, %b as it stands; the bakery's box moved a plot, %b and %b%n", keepMonth, stillOld, stillNew, movedOld, movedNew);
+        check("the control: the boxes as drawn are no finding by either law, and the drawn old bakery moved a plot while the count holds is named by the law as it stood and by the law as it stands",
+                !stillOld && !stillNew && movedOld && movedNew);
+
+        // ----- the event: the count falls back to one and comes again, another works in the place the bakery left -----
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        c.model[b] = 1;
+        c.model[c.other] = 1;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int sentAtFall = c.sentOn(b), drawnAtFall = c.drawn(b).size();
+        List<PlanBox> others = c.drawn(c.other);
+        c.model[b] = 2;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int endMonth = c.last();
+        List<PlanBox> endBoxes = c.drawn(b);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> end = LongPlaytest.layoutSnapshot(m);
+        boolean oldLaw = oldWorksFlagged(m, endMonth, end, false), newLaw = oldWorksFlagged(m, endMonth, end, true);
+        out.printf("      m%d: the count back to 1 (%d sent on, %d drawn), another works at %s; m%d a bakery again, drawn at %s; flagged %b by the law as it stood, %b as it stands (%d of the oldest kept sent on)%n",
+                endMonth - 1, sentAtFall, drawnAtFall, others, endMonth, endBoxes, oldLaw, newLaw, LongPlaytest.layoutOldSentOn);
+        check("the event: the count fell to the one sent on, so the placed bakery left; the district draws a bakery again, not where the old one stood",
+                sentAtFall == 1 && drawnAtFall == 0 && endBoxes.size() == 1 && !endBoxes.get(0).equals(keptBoxes.get(0)) && c.reconciled);
+        check("...and the law as it stood names it an old works moved, its own count's oldest taken for drawn ones (the section fails before RN1-H-M)", oldLaw);
+        check("...and the law as it stands does not: the oldest of its own count was sent on, not its to stand, and no box moved", !newLaw && LongPlaytest.layoutOldSentOn > 0);
+
+        // ----- the term on its own: the sent on among the oldest, a month's ties counted drawn as far as its numbers allow -----
+        check("the term: the oldest sent on and the lowest since one, it is the one (1); the newer sent on, none (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 11 }, 1) == 1 && LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 12 }, 1) == 0);
+        check("...two of one month, one sent on: the oldest one counted drawn (0), the oldest two hold it (1); both sent on, the oldest is (1)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 1) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 2) == 1
+                && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5, 7 }, new int[] { 5, 5 }, 1) == 1);
+        check("...and none sent on, or a count fallen to none, is no term (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5, 5 }, new int[0], 3) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5 }, new int[] { 3 }, 0) == 0);
+
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.findings.keySet().retainAll(findingsBefore);
     }
 
 }

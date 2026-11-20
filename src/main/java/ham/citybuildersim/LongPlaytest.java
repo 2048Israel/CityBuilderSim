@@ -4679,7 +4679,8 @@ public class LongPlaytest {
      *    they stood at the last window's last month; flagged "an old works moved"
      *    where a district holds no fewer of a type than it did and fewer of its old
      *    boxes stand - not counting the old works a run laid since lies across or
-     *    beside, which moved off it (MF1: counted apart).
+     *    beside, which moved off it (MF1: counted apart), nor the oldest its own count
+     *    kept that its plan had sent on to the next district (THE WORKS SENT ON, RN1-H-M).
      *
      * WHY: CL3 promises that a building stays where it was put and that the uses no
      * longer ring, and a promise of that kind is the finding only when it is counted
@@ -4748,6 +4749,90 @@ public class LongPlaytest {
     /** The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahead of them hands the chain's carry on afresh, and what was carried in comes before them by month. */
     static final java.util.Set<Long> layoutOldSpill = new java.util.HashSet<>();
     static long layoutOldSpillN, layoutOldSpillStand;
+    /**
+     * THE WORKS SENT ON (RN1-H-M, 2026-11-20). Each district's own live instances of each industry type it drew a box of when the oldest
+     * works were kept, by the month each came in (its log read as CL3 reads it, a departure taking the newest), and of those the ones its
+     * plan had sent on to the next district (the arrival pairs of its carry out still live, CityMap.carriedOnLog()) - by district key, then
+     * type id; a type it drew no box of is null.
+     * WHY: the watch protected the district's own count's lowest since of its boxes, as if its boxes then were its oldest instances. On the
+     * playtest's founding district they were not: its first Industrial Bakery (m43) found no estate cell and was sent on at its arrival,
+     * the second (m365) stood, and when the count fell 4 to 1 at m906-908 CL3's rule took the newest three, the m365 one among them, and kept
+     * the m43 one - still where it was sent. A departure, no box moved; the watch called it "an old works moved". Of the oldest the count
+     * kept, those sent on are not the district's to stand: kept = min(had, the count then, its lowest since - the sent on among the oldest).
+     */
+    static final Map<Long, int[][]> layoutOldLive = new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>();
+    /** ...and how many of the old works the counts kept were instances sent on, over the districts the watch judged (not those a spill reached): the term at work, counted. */
+    static long layoutOldSentOn;
+    /** Whether the watch counts the works sent on (true in play): a harness sets it false to judge a city by the law as it stood before RN1-H-M. */
+    static boolean layoutCountsSentOn = true;
+
+    /** The old works' state forgotten, so a harness can keep and judge a city of its own: what layoutKeepOldWorks() keeps and layoutFinish() counts, and the finding it may have flagged. */
+    static void layoutOldForget() {
+        layoutOldMonth = 0;
+        layoutOldBoxes.clear();
+        layoutOldDims.clear();
+        layoutOldCounts.clear();
+        layoutOldModel.clear();
+        layoutOldSpill.clear();
+        layoutOldLive.clear();
+        layoutOldSent.clear();
+        layoutOldN = layoutOldStand = layoutOldHeldN = layoutOldHeldStand = layoutOldMovedOff = layoutOldSpillN = layoutOldSpillStand = layoutOldSentOn = 0;
+        findings.remove("an old works moved");
+    }
+
+    /** District d's own live instances of type t, by the month each came in (ascending): its log read as CL3 reads it, each departure taking the newest. */
+    static int[] layoutLiveMonths(CityMap.District d, int t) {
+        int[] stack = new int[8];
+        int n = 0;
+        for (int r = 0; r < d.logN; r++) {
+            if (d.logType[r] != t) continue;
+            int ch = d.logChange[r];
+            if (ch < 0) {
+                n = Math.max(0, n + ch);
+                continue;
+            }
+            if (n + ch > stack.length) stack = java.util.Arrays.copyOf(stack, Math.max(2 * stack.length, n + ch));
+            for (int j = 0; j < ch; j++) stack[n++] = d.logMonth[r];
+        }
+        return java.util.Arrays.copyOf(stack, n);
+    }
+
+    /** The months the instances of type t a carry's {month, code} pairs bring came in that have not left again (a pair ~k takes the k-th pair's back), ascending. */
+    static int[] layoutSentMonths(int[] pairs, int t) {
+        if (pairs == null) return new int[0];
+        int n = pairs.length / 2;
+        boolean[] gone = new boolean[n];
+        for (int k = 0; k < n; k++) {
+            int code = pairs[2 * k + 1];
+            if (code < 0 && ~code < k) gone[~code] = true;
+        }
+        int[] out = new int[n];
+        int c = 0;
+        for (int k = 0; k < n; k++) if (pairs[2 * k + 1] == t && !gone[k]) out[c++] = pairs[2 * k];
+        out = java.util.Arrays.copyOf(out, c);
+        java.util.Arrays.sort(out);
+        return out;
+    }
+
+    /**
+     * Of the `low` oldest of a district's own live instances of a type (live: the months they came in, ascending), how many its plan had sent on
+     * (sent: their months, ascending). Where a month holds both, the drawn ones are counted first among the oldest, so only those sent on that
+     * the oldest must take are counted: ties go to the drawn wherever the months allow, and the watch is never slacker than the instances say.
+     */
+    static int layoutSentAmongOldest(int[] live, int[] sent, int low) {
+        if (live == null || sent == null || sent.length == 0 || low <= 0) return 0;
+        int s = 0, left = low, i = 0, j = 0;
+        while (left > 0 && i < live.length) {
+            int month = live[i], cl = 0, cs = 0;
+            while (i < live.length && live[i] == month) { cl++; i++; }
+            while (j < sent.length && sent[j] < month) j++;
+            while (j < sent.length && sent[j] == month) { cs++; j++; }
+            int take = Math.min(left, cl);
+            s += Math.max(0, take - (cl - Math.min(cs, cl)));
+            left -= take;
+        }
+        return s;
+    }
 
     /** Whether a carry in, counted by type, holds anything. */
     static boolean layoutCarries(int[] carryIn) {
@@ -4864,7 +4949,7 @@ public class LongPlaytest {
 
     /** A building type's words for a finding: its name by id, else its id. */
     static String layoutName(Game g, int type) {
-        String name = nameOf(g, type);
+        String name = g == null ? null : nameOf(g, type);
         return name == null ? "type " + type : name;
     }
 
@@ -5046,6 +5131,19 @@ public class LongPlaytest {
             int[] counted = new int[types.length];
             for (int t = 0; t < types.length; t++) counted[t] = d.count(t);
             layoutOldModel.put(layoutKey(d), new int[][] { counted, counted.clone() });
+            // THE WORKS SENT ON (RN1-H-M): for each type it drew an industry box of, its own live instances by month and those its plan had sent on.
+            long[] mine = boxes.get(layoutKey(d));
+            if (mine == null || mine.length == 0) continue;
+            int[][] live = new int[types.length][], sent = new int[types.length][];
+            int[] out = m.carriedOnLog(d);
+            for (long k : mine) {
+                int t = (int) (k >>> 40);
+                if (live[t] != null) continue;
+                live[t] = layoutLiveMonths(d, t);
+                sent[t] = layoutSentMonths(out, t);
+            }
+            layoutOldLive.put(layoutKey(d), live);
+            layoutOldSent.put(layoutKey(d), sent);
         }
     }
 
@@ -5105,11 +5203,20 @@ public class LongPlaytest {
                     layoutOldSpillStand += Math.min(stand[t], kept);
                     continue;
                 }
+                // Of the oldest its own count kept, those its plan had sent on are not its boxes to stand (THE WORKS SENT ON, RN1-H-M).
+                int[][] live = layoutOldLive.get(key), sent = layoutOldSent.get(key);
+                int sentOn = !layoutCountsSentOn || model == null || live == null || sent == null ? 0 : layoutSentAmongOldest(live[t], sent[t], model[1][t]);
+                if (sentOn > 0) {
+                    int was = kept;
+                    kept = Math.min(had[t], Math.min(model[0][t], model[1][t] - sentOn));
+                    layoutOldSentOn += was - kept;
+                }
                 if (stand[t] + displaced[t] < kept) {
                     flag(month, "an old works moved", String.format("district (%d,%d), %s: %d of the %d standing at m%d are not where they stood at m%d,"
-                            + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between; %d of them moved off a run)",
+                            + " and the district holds %d of the type now against %d then (the model's count of it %d then, as low as %d in between, %d of the oldest it kept sent on;"
+                            + " %d of them moved off a run)",
                             (int) (key >> 32), (int) key, layoutName(g, t), had[t] - stand[t], had[t], layoutOldMonth, month, s.byType[t], then[t],
-                            model == null ? -1 : model[0][t], model == null ? -1 : model[1][t], displaced[t]), had[t] - stand[t]);
+                            model == null ? -1 : model[0][t], model == null ? -1 : model[1][t], sentOn, displaced[t]), had[t] - stand[t]);
                 }
             }
         }
@@ -5149,8 +5256,8 @@ public class LongPlaytest {
                 + " (boxes at the windows' first months, homes' band / industry / outer: " + String.join(", ", layoutBandsAt) + ")";
         String old = layoutOldMonth == 0 || layoutRing == null ? "not measured (no industry on the map at a window's first month before the last window)"
                 : String.format("%,d of %,d industry box(es) of m%d stand where they stood at m%d (%,d of %,d in the types whose district count held;"
-                + " of the oldest its own count kept, %,d of %,d stand in the districts a spill reached, counted apart)",
-                layoutOldStand, layoutOldN, layoutOldMonth, layoutRingMonth, layoutOldHeldStand, layoutOldHeldN, layoutOldSpillStand, layoutOldSpillN);
+                + " of the oldest its own count kept, %,d of %,d stand in the districts a spill reached, counted apart; %,d its plan had sent on, not its to stand)",
+                layoutOldStand, layoutOldN, layoutOldMonth, layoutRingMonth, layoutOldHeldStand, layoutOldHeldN, layoutOldSpillStand, layoutOldSpillN, layoutOldSentOn);
         out.add("  ...the ring at " + ring + "; the oldest works: " + old);
         return out;
     }
