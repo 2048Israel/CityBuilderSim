@@ -18,6 +18,26 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GB3 — ensembles run on the gate box first, and BW2 — 2026-11-20, ready, see docs/queue/GB3-notes.md
+A builder's 80-run ensemble (`tools/ensemble/ensemble.sh <label>`) runs on `gatebox` first, with the laptop as the overflow
+(Jerus, 2026-11-20, "Gatebox first"). It hands its runs to `tools/gate-box.sh --ensemble`, GB1's road: the box plays the
+branch's pushed commit eight runs at once (BO1-S's 80 in 17.5 min, against 116 on the laptop), and the runs come home to
+`target/ensemble/<label>/` to be scored here as before. Gates and the nightly come first: an ensemble waits for them and
+holds `~/cbs/box.lock` whole while it plays; when one comes, the runs started finish (277 s at the longest), the rest
+give way, and it resumes after. It runs on the laptop and says why when two heavy jobs already run or wait on the box,
+when the box is down (`jerus` mailed), or when it names its own data files. Measured first: the box's scores equal the
+laptop's in 47 of 50 rows, the other three one ZERO_SLACK seed's minimums, within the ensemble's noise. With it, BW2: a
+gate says "published" only when origin's main holds the batch's tip, and never on a dry run (HS2's dry run beside
+FB13's ship was told "HS2 shipped"). Scripts and docs only.
+
+### GB4 — the gate box's measurements on record — 2026-11-20, ready, see docs/queue/GB4-notes.md
+`docs/gatebox.md` holds what the gate box is and what its first night measured (Jerus, 2026-11-20: "put it on github
+so that if other sessions ask its there"). It covers the machine, its 7-hour soak (every test passed, 83.8 °C at
+most), one job alone (3% from best core to worst, +30% beside its own core's other thread) and many at once. 16 jobs
+at once run about 40% slower each, yet finish about 30% sooner than two rounds of 8. A gate someone waits on runs at
+most 8 at once, one per core; a pile of independent runs fills all 16 threads. The contract's gate box bullet points
+to it. Docs only.
+
 ### 0.9.167 — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
 The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
 1/420 (at 70, as before). The young form seven of the eleven household shapes and carry half the babies, a quarter of

@@ -1091,7 +1091,8 @@ adds its line here, not in `CLAUDE.md`.
     tools/ensemble/                      the 16-seed x 5-policy ensemble (EN1, 2026-10-20; until then only in
                                          workbench/workbench-delta-20261010.zip and each session's copy):
                                          the driver (class Ensemble), compiled at run time against a snapshot of
-                                         target/classes; ensemble.sh the runner, five runs at once on the PC;
+                                         target/classes; ensemble.sh the runner, on the gate box first, eight
+                                         at once, else five on the laptop (GB3, 2026-11-20, "Gatebox first");
                                          score.py the scorer (pandas); README.md. Its scores, one a version
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable
