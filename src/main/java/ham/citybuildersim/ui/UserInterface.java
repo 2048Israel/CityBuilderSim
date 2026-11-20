@@ -6503,7 +6503,10 @@ public class UserInterface extends Application {
 
     private String dealLabel(String key) {
         // The ground no port links (ET5): one notice for each landmass, "island:" and its id, so no exact key names it.
-        if (LandmassView.noticeId(key) >= 0) return LandmassView.noticeButton(game.getLandManager().getLandmasses(), LandmassView.noticeId(key));
+        if (LandmassView.noticeId(key) >= 0) {
+            int island = LandmassView.noticeId(key);
+            return LandmassView.noticeButton(game.getLandManager().getLandmasses(), island, BuildAdvice.islandLink(game, island));
+        }
         switch (key) {
             case "shedding":   return "Go to the builders →";
             case "landlock":   return "Go to the land office →";
@@ -6535,8 +6538,13 @@ public class UserInterface extends Application {
         // city owns no shore on it and a terminal cannot stand there yet, the Land office, where the sea in front of it is bought.
         int island = LandmassView.noticeId(notice.getKey());
         if (island >= 0) {
-            if (game.getLandManager().getLandmasses().shorePlots(island) > 0) buildScreen.openPortCardFor(island);
-            else landScreen.showLandMenu();
+            // ...or, where the rule would link the island by a bridge (FB13, AL1-W), or one is on site to it, the bridge's card.
+            BuildAdvice.Link link = BuildAdvice.islandLink(game, island);
+            switch (LandmassView.noticeDoor(game.getLandManager().getLandmasses(), island, link)) {
+                case BRIDGE -> buildScreen.openBridgeCardFor(island, link);
+                case PORT -> buildScreen.openPortCardFor(island);
+                case LAND_OFFICE -> landScreen.showLandMenu();
+            }
             return;
         }
         switch (notice.getKey()) {

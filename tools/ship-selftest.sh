@@ -571,8 +571,8 @@ cat > "$TA/fake-ssh" <<'STUB'
 #!/bin/sh
 while [ "$#" -gt 0 ]; do case "$1" in -o) shift 2 ;; -n) shift ;; *) break ;; esac; done
 [ "$1" = box ] || exit 255
-case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; esac
-exec env HOME="$GBOX_HOME" sh "$GBOX_SERVE" --serve
+case "${2:-}" in true) exit 0 ;; "tar -C "*) exec sh -c "$2" ;; "cd && "*) exec env HOME="$GBOX_HOME" sh -c "$2" ;; esac
+exec env HOME="$GBOX_HOME" TZ=UTC sh "$GBOX_SERVE" --serve
 STUB
 chmod +x "$TA/fake-ssh"; GBOX_HOME=$TA/boxhome; GBOX_SERVE=$SRC/tools/gate-box.sh; export GBOX_HOME GBOX_SERVE
 mkdir -p "$GBOX_HOME"; git config --file "$GBOX_HOME/.gitconfig" user.name selftest; git config --file "$GBOX_HOME/.gitconfig" user.email selftest@example.invalid   # the box's own git name
@@ -601,6 +601,41 @@ CBS_BUS="$TA/bus-stub" boxlaunch nobox BX3
 LABEL="GB1 with no gate box answering, the gate mails jerus and runs here"
 ok grep -q -x -F "send jerus --kind info --urgent --body The gate box cannot be reached (nobox): BX3's gate runs on the laptop." "$BUS_LOG"
 LABEL="...and ships"; ok shipped BX3
+# GB2: the nightly through the box, faked: tools/nightly.sh here, and on the box gate-box.sh and bus.sh beside a stub night.
+NB=$TA/nbox/tools; mkdir -p "$NB" "$TA/nhome"; cp "$SRC/tools/gate-box.sh" "$SRC/tools/bus.sh" "$NB/"
+cat > "$NB/nightly.sh" <<'STUB'
+#!/bin/sh
+[ -n "${CBS_GATE_ON_BOX:-}" ] || { echo here > "$TA/night-here"; exit 0; }
+[ "$(pwd)" = "$(cd "$(dirname "$0")/.." && pwd)" ] || exit 9
+date +%z > "$TA/night-zone"; mkdir -p "$HOME/.cbs-observations"; echo held > "$HOME/.cbs-observations/held.tsv"; echo green > "$HOME/.cbs-nightly-tier-green"
+echo 'the night in full' > "$HOME/.cbs-nightly.log"
+echo "2026-11-21 02:00 0.0.0 abc1234 4,000 months: RED; $HOME/.cbs-observations/misses.tsv; timing: loaded=0; $HOME/.cbs-timing/box/n1" | tee "$HOME/.cbs-nightly.txt"
+printf 'nightly RED: the playtest\n' | sh "$(dirname "$0")/bus.sh" send jerus --kind info -
+[ -z "${NIGHT_HOLD:-}" ] || { : > "$NIGHT_HOLD.held"; while [ ! -f "$NIGHT_HOLD" ]; do sleep 1; done; }
+exit 1
+STUB
+nightrun() { NT=$1; shift; ( cd "$SRC" && HOME=$TA/nhome CBS_ME= GBOX_SERVE=$NB/gate-box.sh CBS_GATE_SSH="$TA/fake-ssh" CBS_GATE_HOST="$1" \
+    CBS_BUS="$TA/bus-stub" TA=$TA sh "${2:-tools/nightly.sh}" ${3:-} ) > "$TA/night-$NT.out" 2>&1; }
+rm -f "$BUS_LOG"; ( TZ=UTC-09:00; export TZ; nightrun n1 box ); RC=$?
+LABEL="GB2 tools/nightly.sh hands its night to the gate box, its checkout the night's, and keeps the night's exit"; ok test "$RC" = 1
+LABEL="...its dates in the caller's zone, not the box's UTC"; ok grep -q -x -F '+0900' "$TA/night-zone"
+LABEL="...the verdict, log and records copied home, paths named from here"
+ok grep -q -x -F "2026-11-21 02:00 0.0.0 abc1234 4,000 months: RED; $TA/nhome/.cbs-observations/misses.tsv; timing: loaded=0; box:.cbs-timing/box/n1" "$TA/nhome/.cbs-nightly.txt"
+ok sh -c "grep -q -x 'the night in full' '$TA/nhome/.cbs-nightly.log' && test -s '$TA/nhome/.cbs-nightly-tier-green' && test -s '$TA/nhome/.cbs-observations/held.tsv'"
+LABEL="...and its red mail posted here through the relay"; ok one_send 'send jerus --kind info -'; ok grep -q -x -F '| nightly RED: the playtest' "$BUS_LOG"
+rm -f "$BUS_LOG"; nightrun n2 nobox "$NB/gate-box.sh" --nightly
+LABEL="GB2 with no gate box answering, the nightly mails jerus and runs here"; ok test -f "$TA/night-here"
+ok one_send "send jerus --kind info --urgent --body The gate box cannot be reached (nobox): the nightly runs on the laptop."
+if command -v flock > /dev/null; then   # the box's lock: flock is the box's, not Git Bash's
+    upto() { i=0; while [ "$i" -lt 60 ] && ! sh -c "$1"; do sleep 1; i=$((i + 1)); done; }
+    ( export NIGHT_HOLD=$TA/night-go; nightrun n3 box ) & NP=$!; upto "test -f '$TA/night-go.held'"
+    nightrun n4 box; RC=$?
+    LABEL="GB2 a second nightly while one runs is refused"; ok sh -c "test '$RC' = 3 && grep -q 'nightly: already running on the gate box' '$TA/night-n4.out'"
+    ( export CBS_BUS="$TA/bus-stub"; boxlaunch box BX4; exit "$RC" ) & GP=$!; upto "grep -q 'this gate waits for it' '$TA/box-BX4.out' 2> /dev/null"
+    LABEL="GB2 a gate waits while the nightly holds the gate box"; ok sh -c "test ! -f '$TA/boxhome/cbs/runs/bus-BX4/ship.log'"
+    : > "$TA/night-go"; wait "$NP"; wait "$GP"; RC=$?; RUNDIR=$TA/laptop/bus-BX4; TAGV=$(cat "$RUNDIR/tag" 2>/dev/null)
+    LABEL="...and ships once the night is done"; ok shipped BX4; ok boxsaid BX4 'gate: the gate box runs the nightly; this gate waits for it'
+else echo "SKIP  GB2 the gate box's lock: no flock on this machine"; fi
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"

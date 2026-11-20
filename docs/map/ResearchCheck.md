@@ -53,7 +53,7 @@
 
 **Uses:** [ResearchCatalog](ResearchCatalog.md) (84), [BuildingsTemplate](BuildingsTemplate.md) (28), [PolicyDates](PolicyDates.md) (19), [Game](Game.md) (17), [CityCalendar](CityCalendar.md) (13), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [BuildAdvice](BuildAdvice.md) (8), [Refining](Refining.md) (7), [Equipment](Equipment.md) (5), [Sectors](Sectors.md) (5), [ResearchView](ResearchView.md) (5), [BuildingManager](BuildingManager.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Ports](Ports.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Founding](Founding.md) (3), [Good](Good.md) (3), [Recipe](Recipe.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BuildingType](BuildingType.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [GameFiles](GameFiles.md) (1), [RefineryFlow](RefineryFlow.md) (1), [Investor](Investor.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
-**Used by (8):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
+**Used by (9):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
 ## Sections
 
