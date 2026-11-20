@@ -1,4 +1,4 @@
-# FB13Check.java - 458 lines · 11 methods · 2 constants · harnesses
+# FB13Check.java - 600 lines · 13 methods · 2 constants · harnesses
 
 `ham/citybuildersim/FB13Check.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -29,87 +29,96 @@
 >   5. A SCREEN'S READ MOVES NOTHING. Reading the island for a screen leaves the bridge card's chosen landmass alone, does not count as
 >      one of the rule's surveys, leaves the rule's own memory of a survey that found no crossing as it was (so the rule surveys when it
 >      would have), and is kept for the month: a second read with nothing changed reads nothing.
->   6. THE GOVERNMENT SCREEN'S COUPONS. The row's note names D$ and the moneys the foreign paper is written in, from the debt's own
->      books (US dollars, euros, yen), and says "in dollars" for none of them; with no foreign paper it says D$ alone; the screen's line
->      places that note and no other.
->   7. THE BUILD CARD'S LICENCE LINE. In a city founded the 1900 way a building the city found itself says none ever, one the world had
->      first and still patented says a quarter of what it adds goes abroad until the month its patent ends (history's date and
->      LicenceFees.TERM_MONTHS) and about what the licence costs a month (LicenceFees.forNew()), one whose patent has ended or that
->      the city has found since says none now, an unpatented one none; a building known by a year, a house and every card of a city
->      founded the default way have no line.
+>   6. THE GOVERNMENT SCREEN'S COUPONS. The row's note says D$ and, held now, the moneys the foreign paper is written in, from the debt's own
+>      books (US dollars, euros, yen), and says "in dollars" for none of them; with no foreign paper it says D$ alone; the screen's line places that note.
+>   7. THE BUILD CARD'S LICENCE LINE. It is the planners' licence, template by template (LicenceFees.rentOnNew(): the patents forNew() and
+>      forNewWork() are made of - the building's, its recipe's, a piece's - with the same fee to the bit): UNDER wherever one is due, saying the date its
+>      patent ends or how many there are and when the first and the last end; never none where the planners charge something. With none due, the
+>      building's own discovery says it: found here (none, ever), found here since the world had it, not patented, ended. A house and every card of a
+>      city founded the default way have no line.
+>   8. THE SCREENS CALL THE MODEL. A screen cannot be drawn without the toolkit, so the line of each that hands the model's link, note or licence to the
+>      words (LandScreen, MapView, UserInterface, Inbox, BuildScreen, GovernmentScreen) is held as text: putting one back fails here.
 > 
 > Every premise is asserted before what rests on it.
 
-**Uses:** [LandmassView](LandmassView.md) (77), [BuildAdvice](BuildAdvice.md) (52), [ResearchView](ResearchView.md) (32), [LandmassCheck](LandmassCheck.md) (23), [BridgeCheck](BridgeCheck.md) (20), [Game](Game.md) (11), [World](World.md) (10), [DebtMoneysCheck](DebtMoneysCheck.md) (9), [ForeignAccounts](ForeignAccounts.md) (9), [ResearchViewCheck](ResearchViewCheck.md) (9), [LandMap](LandMap.md) (8), [LicenceFees](LicenceFees.md) (8), [Landmasses](Landmasses.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [ForeignCouponView](ForeignCouponView.md) (5), [ResearchCatalog](ResearchCatalog.md) (5), [ResearchCheck](ResearchCheck.md) (5), [CityCalendar](CityCalendar.md) (4), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Good](Good.md) (3), [LandManager](LandManager.md) (2), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [Notice](Notice.md) (1), [BridgeWorks](BridgeWorks.md) (1), [Bridges](Bridges.md) (1), [DebtManager](DebtManager.md) (1), [WorldMoneys](WorldMoneys.md) (1)
+**Uses:** [LandmassView](LandmassView.md) (77), [BuildAdvice](BuildAdvice.md) (75), [ResearchView](ResearchView.md) (44), [LandmassCheck](LandmassCheck.md) (27), [LicenceFees](LicenceFees.md) (24), [BridgeCheck](BridgeCheck.md) (23), [World](World.md) (13), [Game](Game.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (10), [DebtMoneysCheck](DebtMoneysCheck.md) (9), [ForeignAccounts](ForeignAccounts.md) (9), [ResearchViewCheck](ResearchViewCheck.md) (9), [LandMap](LandMap.md) (8), [ResearchCheck](ResearchCheck.md) (8), [Landmasses](Landmasses.md) (6), [ResearchCatalog](ResearchCatalog.md) (6), [CityCalendar](CityCalendar.md) (6), [ForeignCouponView](ForeignCouponView.md) (5), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Good](Good.md) (3), [LandManager](LandManager.md) (2), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [Notice](Notice.md) (1), [BridgeWorks](BridgeWorks.md) (1), [Bridges](Bridges.md) (1), [DebtManager](DebtManager.md) (1), [WorldMoneys](WorldMoneys.md) (1), [PolicyDates](PolicyDates.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 105 | 1. THE ISLAND'S WORDS, A CROSSING ALLOWED |
-| 188 | 2. A BRIDGE UNDER WAY |
-| 219 | 3. DEEP SEA AND NO LINK |
-| 277 | 5. A SCREEN'S READ MOVES NOTHING |
-| 322 | 6. THE GOVERNMENT SCREEN'S COUPONS ABROAD |
-| 372 | 7. THE BUILD CARD'S LICENCE LINE |
+| 107 | 1. THE ISLAND'S WORDS, A CROSSING ALLOWED |
+| 190 | 2. A BRIDGE UNDER WAY |
+| 221 | 3. DEEP SEA AND NO LINK |
+| 279 | 5. A SCREEN'S READ MOVES NOTHING |
+| 356 | 6. THE GOVERNMENT SCREEN'S COUPONS ABROAD |
+| 406 | 7. THE BUILD CARD'S LICENCE LINE |
+| 555 | 8. THE SCREENS CALL THE MODEL'S READS |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 53 | `FB13Check.out` | `System.out` |  |
-| 103 | `FB13Check.OLD_NEEDS` | `"no: needs a port here and one at home"` | "no: needs a port here and one at home", the words as they were before a link was given (no terminal stands anywhere in these fixtures). |
+| 54 | `FB13Check.out` | `System.out` |  |
+| 105 | `FB13Check.OLD_NEEDS` | `"no: needs a port here and one at home"` | "no: needs a port here and one at home", the words as they were before a link was given (no terminal stands anywhere in these fixtures). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 52 | `static int fails` |  |
+| 53 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 409 | **type** `public class FB13Check` | FB13's three texts, each asked of the model that says it: the island's words (AL1-W), the Government screen's coupons abroad (CD9-G) and the build card's licence line (R5-L). |
-| 55 | 4 | `static void check(String label, boolean ok)` |  |
-| 60 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 65 | 1 | `static void quietly(Runnable r)` |  |
-| 68 | 4 | `static LandmassView.Line oldRow(LandManager land, int island)` | The island's row as the one-argument rows have it, with no link given. |
-| 73 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 51 | 550 | **type** `public class FB13Check` | FB13's three texts, each asked of the model that says it: the island's words (AL1-W), the Government screen's coupons abroad (CD9-G) and the build card's licence line (R5-L). |
+| 56 | 4 | `static void check(String label, boolean ok)` |  |
+| 61 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 66 | 1 | `static void quietly(Runnable r)` |  |
+| 69 | 4 | `static LandmassView.Line oldRow(LandManager land, int island)` | The island's row as the one-argument rows have it, with no link given. |
+| 74 | 29 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE ISLAND'S WORDS, A CROSSING ALLOWED (lines 105-187)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 109 | 78 | `static void islandWithACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
-
-### 2. A BRIDGE UNDER WAY (lines 188-218)
+### 1. THE ISLAND'S WORDS, A CROSSING ALLOWED (lines 107-189)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 192 | 26 | `static void islandUnderWay(BridgeCheck.Island isle)` |  |
+| 111 | 78 | `static void islandWithACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
 
-### 3. DEEP SEA AND NO LINK (lines 219-276)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 223 | 53 | `static void islandOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
-
-### 5. A SCREEN'S READ MOVES NOTHING (lines 277-321)
+### 2. A BRIDGE UNDER WAY (lines 190-220)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 281 | 40 | `static void screensMoveNothing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+| 194 | 26 | `static void islandUnderWay(BridgeCheck.Island isle)` |  |
 
-### 6. THE GOVERNMENT SCREEN'S COUPONS ABROAD (lines 322-371)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 326 | 45 | `static void couponsAbroad()` |  |
-
-### 7. THE BUILD CARD'S LICENCE LINE (lines 372-458)
+### 3. DEEP SEA AND NO LINK (lines 221-278)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 376 | 82 | `static void licenceLine() throws Exception` |  |
+| 225 | 53 | `static void islandOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
+
+### 5. A SCREEN'S READ MOVES NOTHING (lines 279-355)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 283 | 72 | `static void screensMoveNothing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+
+### 6. THE GOVERNMENT SCREEN'S COUPONS ABROAD (lines 356-405)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 360 | 45 | `static void couponsAbroad()` |  |
+
+### 7. THE BUILD CARD'S LICENCE LINE (lines 406-554)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 410 | 144 | `static void licenceLine() throws Exception` |  |
+
+### 8. THE SCREENS CALL THE MODEL'S READS (lines 555-600)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 560 | 19 | `static boolean sourceHas(String file, String...pieces)` | Whether a source file holds every one of these pieces of text (a screen cannot be drawn without the toolkit, so the line that places the model's words is read as text). |
+| 580 | 20 | `static void screensCallTheModel()` |  |
 

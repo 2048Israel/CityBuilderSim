@@ -2530,7 +2530,7 @@ public final class BuildAdvice {
         if (islands.isEmpty()) return null;
         Link first = null;
         for (Landmasses.Row island : islands) {
-            Link l = linkOf(game, lms, island, NO_CROSSING);
+            Link l = linkOf(game, lms, island, false);
             if (l.kind() != LinkKind.NONE) return l;
             if (first == null) first = l;
         }
@@ -2561,7 +2561,11 @@ public final class BuildAdvice {
         return n;
     }
 
-    private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island, Map<Landmasses, Map<Integer, NoCrossing>> memory) {
+    /**
+     * The rule for one island. `screens` is a screen's read of it (FB13): the same rule, but it reads the rule's own memory of a survey that found no
+     * crossing and never writes it, remembering what its own surveys found in SCREEN_NO_CROSSING, kept for the ground it found it on.
+     */
+    private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island, boolean screens) {
         int id = island.id();
         boolean needHome = linkedTerminals(lms) == 0;
         String bridgeWhy = null, portWhy = null;
@@ -2572,27 +2576,35 @@ public final class BuildAdvice {
         }
         // A bridge where a crossing is allowed.
         BuildingsTemplate bridge = bridgeTemplate(game);
-        Map<Integer, NoCrossing> none = memory.computeIfAbsent(lms, k -> new java.util.HashMap<>());
-        NoCrossing known = none.get(id);
+        Map<Integer, NoCrossing> none = screens ? NO_CROSSING.get(lms) : NO_CROSSING.computeIfAbsent(lms, k -> new java.util.HashMap<>());
+        NoCrossing known = none == null ? null : none.get(id);
+        CityLand land = game.getLandManager().getCityLand();
+        long stamp = land == null ? 0 : land.stamp();
+        ScreenNone seen = screens ? SCREEN_NO_CROSSING.computeIfAbsent(lms, k -> new java.util.HashMap<>()).get(id) : null;
         int age = known == null ? -1 : game.getMonth() - known.month();
         if (bridge == null) bridgeWhy = "No bridge is known yet.";
         // ...a survey that found no crossing stands NO_CROSSING_MONTHS (a month from before it, a city loaded over this one's, does not).
         else if (age >= 0 && age < NO_CROSSING_MONTHS) bridgeWhy = known.why();
+        // ...and a screen's read goes by it first, so that it says what the rule will do: its own memory only where the rule has none, and then only for the ground it surveyed.
+        else if (seen != null && seen.version() == lms.version() && seen.stamp() == stamp) bridgeWhy = seen.why();
         else {
             Bridges bridges = game.getBridges();
             int before = bridges.chosen(bridge.getId());
             try {
                 game.chooseBridgeLandmass(bridge, id);
-                if (memory == NO_CROSSING) linkSurveys++;
+                if (screens) screenSurveys++;
+                else linkSurveys++;
                 BridgeSurvey.Result survey = game.bridgeSurvey(bridge);
                 if (survey != null && survey.ok()) {
-                    none.remove(id);
+                    if (screens) SCREEN_NO_CROSSING.get(lms).remove(id);
+                    else none.remove(id);
                     Game.BuildQuote q = game.quoteBuildOn(bridge, 1, Landmasses.RULE);
                     return new Link(id, island.name(), island.buildableSqFt(), LinkKind.BRIDGE,
                             List.of(new LinkOrder(bridge, id, q.total)), survey, q.total, q.months, null);
                 }
                 bridgeWhy = survey == null ? "No crossing could be surveyed." : BridgeView.refusal(survey, lms);
-                none.put(id, new NoCrossing(game.getMonth(), bridgeWhy));
+                if (screens) SCREEN_NO_CROSSING.get(lms).put(id, new ScreenNone(lms.version(), stamp, bridgeWhy));
+                else none.put(id, new NoCrossing(game.getMonth(), bridgeWhy));
             } finally {
                 if (before == Bridges.NONE_CHOSEN) bridges.clearChoice(bridge.getId());
                 else game.chooseBridgeLandmass(bridge, before);
@@ -2663,12 +2675,19 @@ public final class BuildAdvice {
        card for the link. They now say what linkOf() says, island by island: a bridge where the rule would order one, a port where it would not.
        linkFor() is not what a screen reads: it places nothing but it does write (the survey that found no crossing is remembered for
        NO_CROSSING_MONTHS, and the rule's next survey waits on it), so a screen that read it would make the model depend on which screen was
-       open. The screens run the same rule against a memory of their own (SCREEN_NO_CROSSING) and keep what it says for the month, the
+       open. The screens run the same rule, reading the rule's own fresh memory first (so that they say what it will do) and keeping a memory
+       of their own (SCREEN_NO_CROSSING) only where it has none, for the ground it surveyed; they keep what it says for the month, the
        landmasses' version, the land's stamp and the terminals and bridges on each island: one reading by a map that draws every frame.
        ===================================================================== */
 
-    /** The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory. */
-    private static final Map<Landmasses, Map<Integer, NoCrossing>> SCREEN_NO_CROSSING = new java.util.WeakHashMap<>();
+    /** A survey that found no crossing as a screen's read of it remembers it: the refusal, and the landmasses' version and the land's stamp it was made on (it stands for that ground and no other, where the rule's stands NO_CROSSING_MONTHS). */
+    private record ScreenNone(int version, long stamp, String why) { }
+
+    /** The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. */
+    private static final Map<Landmasses, Map<Integer, ScreenNone>> SCREEN_NO_CROSSING = new java.util.WeakHashMap<>();
+
+    /** How many crossings the screens have surveyed in this run (FB13): a harness reads that a no-crossing island is surveyed once for a ground, not each month. */
+    static int screenSurveys;
 
     /** What the screens last read, and what it was read against. */
     private record Shown(java.lang.ref.WeakReference<Landmasses> landmasses, int month, int version, long stamp, String fingerprint,
@@ -2714,7 +2733,7 @@ public final class BuildAdvice {
         }
         Link advice = null, first = null;
         for (Landmasses.Row island : islandsToLink(game, lms)) {
-            Link l = linkOf(game, lms, island, SCREEN_NO_CROSSING);
+            Link l = linkOf(game, lms, island, true);
             by.put(island.id(), l);
             if (advice == null && l.kind() != LinkKind.NONE) advice = l;
             if (first == null) first = l;

@@ -2,9 +2,9 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,257 constants in 605 files.**
+**6,258 constants in 605 files.**
 
-## model (2956 constants)
+## model (2957 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -220,7 +220,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1953 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
 | 2510 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
 | 2516 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 2671 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory. |
+| 2687 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ### BuildCard.java ([map](map/BuildCard.md))
 
@@ -2449,6 +2449,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 33 | `LicenceFees.TERM_MONTHS` | `20 * 12` | Patent life from history's month, in months; adoption never restarts it. |
 | 35 | `LicenceFees.IP_CHARGES` | `"IP charges"` | The imported service's name on the firm's saved statement and the audit. |
 | 76 | `LicenceFees.pricing` | `ThreadLocal.withInitial(() -> false)` | A new building's gain is its sector's estimate, including special outputs (refinery streams, retail service). |
+| 562 | `LicenceFees.Rent.NONE` | `new Rent(0, List.of())` |  |
 
 ### LongTermBond.java ([map](map/LongTermBond.md))
 
@@ -3103,13 +3104,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 43 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
 | 50 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
 | 53 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
-| 836 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
-| 837 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
-| 931 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
-| 932 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
-| 958 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
-| 961 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
-| 964 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
+| 847 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
+| 848 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
+| 942 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
+| 943 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
+| 969 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
+| 972 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
+| 975 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
 
 ### Resource.java ([map](map/Resource.md))
 
@@ -6566,8 +6567,8 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 53 | `FB13Check.out` | `System.out` |  |
-| 103 | `FB13Check.OLD_NEEDS` | `"no: needs a port here and one at home"` | "no: needs a port here and one at home", the words as they were before a link was given (no terminal stands anywhere in these fixtures). |
+| 54 | `FB13Check.out` | `System.out` |  |
+| 105 | `FB13Check.OLD_NEEDS` | `"no: needs a port here and one at home"` | "no: needs a port here and one at home", the words as they were before a link was given (no terminal stands anywhere in these fixtures). |
 
 ### FieldOperatorsCheck.java ([map](map/FieldOperatorsCheck.md))
 

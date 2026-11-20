@@ -423,33 +423,38 @@ public final class ResearchView {
 
     /* ----- the licence line (FB13, R5-L; research-design 2.4, mockup 5) ----- */
 
-    /** What a building's licence is, from the model's own reading of its discovery: found here, found here since, not patented, under patent, or its patent has ended. */
+    /** What a building's licence is: patents running on one more of it, or - with none running - found here, found here since, not patented, or its patent ended. */
     public enum LicenceKind { HERE, OWN, FREE, UNDER, ENDED }
 
     /**
-     * What a building the city came to know after the founding owes for its patent (R2c): its kind, the month the patent ends (history's date and
-     * LicenceFees.TERM_MONTHS; 0 for a discovery with none to end), and what the licence costs a month on one more of it (LicenceFees.forNew(); 0
-     * for a work that is no sector's, which the licence is struck on in its own way, and for one that adds nothing now).
+     * What one more of a building owes for its patents (R2c, R2c-P), read from LicenceFees.rentOnNew(), the reckoning the planners' running cost sums: its
+     * kind, the patents that are running among those the bill is made of (the building's own, its recipe's, a fitted piece's), the soonest to end first,
+     * what the licence costs a month (the rent's; 0 where it adds nothing now), and the entry of the building's own discovery where it has one (null for a
+     * building known by a year, whose pieces' patents may still run).
      */
-    public record Licence(LicenceKind kind, int endsMonth, double perMonth, Entry entry) { }
+    public record Licence(LicenceKind kind, java.util.List<LicenceFees.Patent> patents, double perMonth, Entry entry) {
+
+        /** The month the building's own patent ends (history's date and LicenceFees.TERM_MONTHS); 0 where it has no entry or none to end. */
+        public int ownEnds() { return entry == null || !entry.fee() ? 0 : entry.worldMonth() + LicenceFees.TERM_MONTHS; }
+    }
 
     /**
-     * The licence of a template in a city founded the 1900 way, or null where its card has no line: no origin, and one known by a year, which
-     * has no discovery to carry a patent. HERE where the city found it before history's date, OWN where it has found it since, FREE where the
-     * entry is not patented, UNDER while LicenceFees.payable() says the world's share is due (a quarter of what it adds, until the patent ends),
-     * ENDED once it has.
+     * The licence of a template in a city founded the 1900 way, or null where its card has no line (a city founded the default way, and a building
+     * with no patent running and no discovery of its own to say it was found here). UNDER wherever LicenceFees.rentOnNew() has a patent due - the
+     * building's or a recipe's or a piece's, so a building known by a year with a patented piece has its line too - and, with none due, by the building's
+     * own discovery: HERE where the city found it before history's date, OWN where it has found it since, FREE where the entry is not patented, ENDED
+     * once its patent has run out.
      */
     public static Licence licence(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted()) return null;
+        LicenceFees.Rent rent = LicenceFees.rentOnNew(game, t);
         Origin o = origin(game, t);
-        if (o == null || o.entry() == null) return null;
-        Entry e = o.entry();
-        int ends = e.fee() ? e.worldMonth() + LicenceFees.TERM_MONTHS : 0;
-        if (o.source() == Source.HERE) return new Licence(LicenceKind.HERE, ends, 0, e);
-        if (!e.fee()) return new Licence(LicenceKind.FREE, 0, 0, e);
-        if (LicenceFees.payable(e.code(), game.getMonth(), game.getResearch())) {
-            return new Licence(LicenceKind.UNDER, ends, LicenceFees.forNew(game, t), e);
-        }
-        return new Licence(game.getMonth() >= ends ? LicenceKind.ENDED : LicenceKind.OWN, ends, 0, e);
+        Entry e = o == null ? null : o.entry();
+        if (!rent.patents().isEmpty()) return new Licence(LicenceKind.UNDER, rent.patents(), rent.perMonth(), e);
+        if (e == null) return null;
+        if (o.source() == Source.HERE) return new Licence(LicenceKind.HERE, java.util.List.of(), 0, e);
+        if (!e.fee()) return new Licence(LicenceKind.FREE, java.util.List.of(), 0, e);
+        return new Licence(game.getMonth() >= e.worldMonth() + LicenceFees.TERM_MONTHS ? LicenceKind.ENDED : LicenceKind.OWN, java.util.List.of(), 0, e);
     }
 
     /** The world's share as the line says it: "a quarter" for LicenceFees.SHARE's .25, else a percentage. */
@@ -458,18 +463,24 @@ public final class ResearchView {
     }
 
     /**
-     * The card's line on its licence (mockup 5): "Licence: a quarter of what it adds goes abroad until June 1975, about D$1.17M a month." while the
-     * patent runs, "Licence: none. Found by the Institute of technology; your builders pay no fee, ever." for what the city found first, and the
-     * rest in the same shape. `money` writes the month's fee in the screen's money (thousands in); the fee is left out where it is nothing.
+     * The card's line on its licence (mockup 5): "Licence: a quarter of what it adds goes abroad until June 1975, about D$1.17M a month." while one patent
+     * runs, "... on 3 patents, the first ending June 1975 and the last March 1991, ..." while several do, "Licence: none. Found by the Institute of technology;
+     * your builders pay no fee, ever." for what the city found first, and the rest in the same shape. `money` writes the month's fee in the screen's money
+     * (thousands in); the fee is left out where it is nothing.
      */
     public static String licenceWords(Licence l, java.util.function.DoubleFunction<String> money) {
         return switch (l.kind()) {
             case HERE -> "Licence: none. Found by " + l.entry().field().school() + "; your builders pay no fee, ever.";
             case OWN -> "Licence: none now. Your researchers have found it themselves, so your builders pay no fee.";
             case FREE -> "Licence: none. It is not patented.";
-            case ENDED -> "Licence: none now. The patent ended " + CityCalendar.format(l.endsMonth()) + ".";
-            case UNDER -> "Licence: " + shareWords() + " of what it adds goes abroad until " + CityCalendar.format(l.endsMonth())
-                    + (l.perMonth() > 0 ? ", about " + money.apply(l.perMonth()) + " a month" : "") + ".";
+            case ENDED -> "Licence: none now. The patent ended " + CityCalendar.format(l.ownEnds()) + ".";
+            case UNDER -> {
+                java.util.List<LicenceFees.Patent> p = l.patents();
+                int first = p.get(0).endsMonth(), last = p.get(p.size() - 1).endsMonth();
+                String until = p.size() == 1 ? "until " + CityCalendar.format(first)
+                        : "on " + p.size() + " patents, the first ending " + CityCalendar.format(first) + (last != first ? " and the last " + CityCalendar.format(last) : "");
+                yield "Licence: " + shareWords() + " of what it adds goes abroad " + until + (l.perMonth() > 0 ? ", about " + money.apply(l.perMonth()) + " a month" : "") + ".";
+            }
         };
     }
 

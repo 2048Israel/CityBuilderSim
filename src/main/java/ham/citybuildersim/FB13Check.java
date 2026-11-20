@@ -34,14 +34,15 @@ import java.util.Map;
  *   5. A SCREEN'S READ MOVES NOTHING. Reading the island for a screen leaves the bridge card's chosen landmass alone, does not count as
  *      one of the rule's surveys, leaves the rule's own memory of a survey that found no crossing as it was (so the rule surveys when it
  *      would have), and is kept for the month: a second read with nothing changed reads nothing.
- *   6. THE GOVERNMENT SCREEN'S COUPONS. The row's note names D$ and the moneys the foreign paper is written in, from the debt's own
- *      books (US dollars, euros, yen), and says "in dollars" for none of them; with no foreign paper it says D$ alone; the screen's line
- *      places that note and no other.
- *   7. THE BUILD CARD'S LICENCE LINE. In a city founded the 1900 way a building the city found itself says none ever, one the world had
- *      first and still patented says a quarter of what it adds goes abroad until the month its patent ends (history's date and
- *      LicenceFees.TERM_MONTHS) and about what the licence costs a month (LicenceFees.forNew()), one whose patent has ended or that
- *      the city has found since says none now, an unpatented one none; a building known by a year, a house and every card of a city
- *      founded the default way have no line.
+ *   6. THE GOVERNMENT SCREEN'S COUPONS. The row's note says D$ and, held now, the moneys the foreign paper is written in, from the debt's own
+ *      books (US dollars, euros, yen), and says "in dollars" for none of them; with no foreign paper it says D$ alone; the screen's line places that note.
+ *   7. THE BUILD CARD'S LICENCE LINE. It is the planners' licence, template by template (LicenceFees.rentOnNew(): the patents forNew() and
+ *      forNewWork() are made of - the building's, its recipe's, a piece's - with the same fee to the bit): UNDER wherever one is due, saying the date its
+ *      patent ends or how many there are and when the first and the last end; never none where the planners charge something. With none due, the
+ *      building's own discovery says it: found here (none, ever), found here since the world had it, not patented, ended. A house and every card of a
+ *      city founded the default way have no line.
+ *   8. THE SCREENS CALL THE MODEL. A screen cannot be drawn without the toolkit, so the line of each that hands the model's link, note or licence to the
+ *      words (LandScreen, MapView, UserInterface, Inbox, BuildScreen, GovernmentScreen) is held as text: putting one back fails here.
  *
  * Every premise is asserted before what rests on it.
  *
@@ -95,6 +96,7 @@ public class FB13Check {
         screensMoveNothing(f, isle);
         couponsAbroad();
         licenceLine();
+        screensCallTheModel();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -317,6 +319,38 @@ public class FB13Check {
         check("the rule, asked after the screens' read of a survey that found no crossing, surveys for itself (the screens' memory is not its own)", BuildAdvice.linkSurveys == before + 1);
         BuildAdvice.linkFor(s.g);
         check("...and remembers it as ever: asked again in the month it does not survey", BuildAdvice.linkSurveys == before + 1);
+
+        // The rule's fresh memory is read first: the screens say what the rule will do, not what a survey of their own would find.
+        LandmassCheck.City u = LandmassCheck.portCity(f, "fb13-reads-rule", true);
+        BridgeCheck.seam(u, isle, 12, World.SALT, 45);
+        BuildAdvice.linkFor(u.g);
+        int ruleMonth = u.g.getMonth();
+        BridgeCheck.seam(u, isle, 14, World.SHALLOW, 10);
+        quietly(() -> u.g.simulateMonths(1));
+        BuildAdvice.Link ruleNow = BuildAdvice.linkFor(u.g), screenNow = BuildAdvice.islandLink(u.g, island);
+        report("with the rule holding a refusal (a month old) the crossing handed to the survey since is not what either says: the rule orders terminals and so do the screens, the same answer",
+                u.g.getMonth() - ruleMonth < BuildAdvice.NO_CROSSING_MONTHS && ruleNow != null && ruleNow.kind() == BuildAdvice.LinkKind.PORT && screenNow != null && screenNow.kind() == BuildAdvice.LinkKind.PORT
+                        && screenNow.orders().size() == ruleNow.orders().size() && screenNow.landmass() == ruleNow.landmass(),
+                ruleNow == null || screenNow == null ? "none" : ruleNow.kind() + " / " + screenNow.kind());
+        quietly(() -> u.g.simulateMonths(BuildAdvice.NO_CROSSING_MONTHS));
+        BuildAdvice.Link ruleLater = BuildAdvice.linkFor(u.g), screenLater = BuildAdvice.islandLink(u.g, island);
+        report("...and once its memory is NO_CROSSING_MONTHS old the rule surveys again, finds the crossing, and the screens say the bridge with it",
+                ruleLater != null && ruleLater.kind() == BuildAdvice.LinkKind.BRIDGE && screenLater != null && screenLater.kind() == BuildAdvice.LinkKind.BRIDGE
+                        && screenLater.bridge() != null && screenLater.bridge().getId() == ruleLater.bridge().getId(),
+                ruleLater == null || screenLater == null ? "none" : ruleLater.kind() + " / " + screenLater.kind());
+
+        // Where the rule holds nothing, the screens' own memory stands for the ground it surveyed and no other.
+        LandmassCheck.City t = LandmassCheck.portCity(f, "fb13-reads-ground", true);
+        BridgeCheck.seam(t, isle, 12, World.SALT, 45);
+        int surveyed = BuildAdvice.screenSurveys, ruleSurveys = BuildAdvice.linkSurveys;
+        BuildAdvice.islandLink(t.g, island);
+        check("the screens' first read of an island whose survey finds no crossing is one survey of their own, and none of the rule's", BuildAdvice.screenSurveys == surveyed + 1 && BuildAdvice.linkSurveys == ruleSurveys);
+        quietly(() -> t.g.simulateMonths(3));
+        BuildAdvice.islandLink(t.g, island);
+        check("...three months on, with the ground as it was, the read is again and the survey is not: the memory stands for the ground", BuildAdvice.screenSurveys == surveyed + 1);
+        t.buy(f.withoutShore);
+        BuildAdvice.islandLink(t.g, island);
+        check("...and ground bought (the land's stamp moves) is surveyed afresh, not read from a memory of ground that is gone", BuildAdvice.screenSurveys > surveyed + 1);
     }
 
     /* =====================================================================
@@ -334,8 +368,8 @@ public class FB13Check {
         check("with no foreign paper the note is D$ alone: 'in D$, at the month's rates'", ForeignCouponView.moneys(ledger).isEmpty() && ForeignCouponView.note(ledger).equals("in D$, at the month's rates"));
         String usd = DebtMoneysCheck.sell(g, "Term", "USD", DebtMoneysCheck.askIn(g, "USD"), 10, false);
         report("premise: a US$ term bond is sold", ledger.hasForeignDebtIn("USD") && !ledger.hasForeignDebtIn("EUR"), usd);
-        check("one money: the note names it, from the books ('US dollars' is ForeignAccounts.MONEY_PLURAL's first), and says D$ first",
-                ForeignCouponView.note(ledger).equals("in D$, from coupons written in " + ForeignAccounts.MONEY_PLURAL[0] + ", at the month's rates")
+        check("one money: the note says D$ first and names the paper held now ('US dollars' is ForeignAccounts.MONEY_PLURAL's first)",
+                ForeignCouponView.note(ledger).equals("in D$, at the month's rates · paper held now in " + ForeignAccounts.MONEY_PLURAL[0])
                         && ForeignCouponView.moneys(ledger).equals(List.of("US dollars")));
         String euro = DebtMoneysCheck.sell(g, "Term", "EUR", DebtMoneysCheck.askIn(g, "EUR"), 10, false);
         String yen = DebtMoneysCheck.sell(g, "Note", "JPY", DebtMoneysCheck.askIn(g, "JPY"), 12, false);
@@ -343,8 +377,8 @@ public class FB13Check {
         String names = ForeignAccounts.MONEY_PLURAL[ForeignAccounts.moneyIndex("USD")] + ", " + ForeignAccounts.MONEY_PLURAL[ForeignAccounts.moneyIndex("EUR")]
                 + " and " + ForeignAccounts.MONEY_PLURAL[ForeignAccounts.moneyIndex("JPY")];
         String note = ForeignCouponView.note(ledger);
-        check("three moneys: 'in D$, from coupons written in US dollars, euros and yen, at the month's rates' - in the eight's order, each as the model names it",
-                note.equals("in D$, from coupons written in " + names + ", at the month's rates") && note.equals("in D$, from coupons written in US dollars, euros and yen, at the month's rates"));
+        check("three moneys: 'in D$, at the month's rates · paper held now in US dollars, euros and yen' - in the eight's order, each as the model names it, and saying held now (the books keep no split of the month's coupons by money)",
+                note.equals("in D$, at the month's rates · paper held now in " + names) && note.equals("in D$, at the month's rates · paper held now in US dollars, euros and yen"));
         boolean none = true;
         for (String code : WorldMoneys.EIGHT) if (!List.of("USD", "EUR", "JPY").contains(code)) none &= !ledger.hasForeignDebtIn(code) && !note.contains(ForeignAccounts.MONEY_PLURAL[ForeignAccounts.moneyIndex(code)]);
         check("...and no money the city owes nothing in is named; 'in dollars' is not said of any of them", none && !note.contains("in dollars"));
@@ -374,85 +408,193 @@ public class FB13Check {
        ===================================================================== */
 
     static void licenceLine() throws Exception {
-        out.println("\n--- 7. the build card's licence line: a quarter of what it adds, until the patent ends - and none for what the city found itself ---");
+        out.println("\n--- 7. the build card's licence line: drawn from the patents the planners' licence is made of, and none where it charges nothing ---");
         Game town = ResearchViewCheck.researchTown();
         BuildingsTemplate furnace = ResearchViewCheck.template(town, "Electric Arc Furnace");
         BuildingsTemplate house = ResearchViewCheck.template(town, "House");
         ResearchCatalog.Entry pe1 = ResearchCatalog.get().entry("PE1");
         int foundAt = town.getResearch().foundMonth("PE1");
-        int ends = pe1.worldMonth() + LicenceFees.TERM_MONTHS;
         check("premise: the furnace is opened by PE1, a patented entry (fee) the city found itself in month " + foundAt + " ahead of history's " + pe1.worldMonth()
                 + "; the 1900 city is in month " + town.getMonth(), "PE1".equals(furnace.getSinceText()) && pe1.fee() && foundAt < pe1.worldMonth() && town.foundedUnfitted());
-
-        // Found here first: none, ever.
-        ResearchView.Licence mine = ResearchView.licence(town, furnace);
-        report("found here before history's date, the licence is HERE and the line says none, ever, naming the school that found it",
-                mine != null && mine.kind() == ResearchView.LicenceKind.HERE && mine.perMonth() == 0 && mine.entry() == pe1
-                        && ResearchView.licenceWords(mine, v -> "$" + v).equals("Licence: none. Found by " + pe1.field().school() + "; your builders pay no fee, ever.")
-                        && !LicenceFees.payable("PE1", town.getMonth(), town.getResearch()),
-                mine == null ? "none" : ResearchView.licenceWords(mine, v -> "$" + v));
-
-        // The world had it first, and the patent runs: a quarter of what it adds, until it ends.
+        java.util.function.DoubleFunction<String> money = v -> String.format("$%.2f", v);
+        // Steel at a hundred times its price causes a gain for a furnace to share; the furnace's own patent is the world's, the city's finds none.
         ResearchViewCheck.setFinds(town, Map.of());
         quietly(() -> town.getMarkets().get(Good.STEEL).setWorldPrices(100 * Good.STEEL.worldImportPrice(), 100 * Good.STEEL.worldExportPrice()));
-        ResearchView.Licence theirs = ResearchView.licence(town, furnace);
-        double fee = LicenceFees.forNew(town, furnace);
-        report("premise: found by no one the world's month is the origin and its patent is payable now, and a new furnace pays the licence a month (steel at 100 times its price causes a gain to share): LicenceFees.forNew() > 0",
-                theirs != null && theirs.kind() == ResearchView.LicenceKind.UNDER && LicenceFees.payable("PE1", town.getMonth(), town.getResearch()) && fee > 0,
-                String.format("fee %.4f", fee));
-        java.util.function.DoubleFunction<String> money = v -> String.format("$%.2f", v);
-        String line = ResearchView.licenceWords(theirs, money);
-        report("from abroad and under patent the line is: 'Licence: a quarter of what it adds goes abroad until <the month history's date and the term end in>, about <LicenceFees.forNew()> a month.'",
-                theirs.endsMonth() == ends && theirs.perMonth() == fee && ResearchView.shareWords().equals("a quarter") && LicenceFees.SHARE == .25
-                        && line.equals("Licence: a quarter of what it adds goes abroad until " + CityCalendar.format(ends) + ", about " + money.apply(fee) + " a month."),
-                line);
-        check("...the term is history's date and LicenceFees.TERM_MONTHS: twenty years", LicenceFees.TERM_MONTHS == 240 && ends - pe1.worldMonth() == 240 && !CityCalendar.format(ends).isEmpty());
-        String noFee = ResearchView.licenceWords(new ResearchView.Licence(ResearchView.LicenceKind.UNDER, ends, 0, pe1), money);
-        check("a patent that adds nothing now leaves the amount out: 'Licence: a quarter of what it adds goes abroad until <month>.'",
-                noFee.equals("Licence: a quarter of what it adds goes abroad until " + CityCalendar.format(ends) + "."));
 
-        // The patent's last month and the one after.
+        // The line is the planners' licence, template by template: UNDER exactly where the rent has a patent due, with the rent's own figure to the bit.
+        int under = 0, none = 0, noLine = 0, drift = 0, wrongFee = 0, feeWhileNone = 0, noPatentUnder = 0;
+        java.util.Map<ResearchView.LicenceKind, Integer> kinds = new java.util.EnumMap<>(ResearchView.LicenceKind.class);
+        BuildingsTemplate one = null, several = null, yearWithPieces = null;
+        int month0 = town.getMonth();
+        // ...at the town's own month and at 1960's January, when more of the catalogue is known and more patents are running.
+        for (int at : new int[] { month0, PolicyDates.monthOf(1960, 1) }) {
+        ResearchCheck.atMonth(town, at);
+        for (BuildingsTemplate t : town.getBuildingManager().getTemplates()) {
+            ResearchView.Licence l = ResearchView.licence(town, t);
+            LicenceFees.Rent rent = LicenceFees.rentOnNew(town, t);
+            double planners = t.isOwnedBySector() ? LicenceFees.forNew(town, t)
+                    : LicenceFees.forNewWork(town, t, BuildAdvice.rawRunningCostAt(town, t, 0), 1, 0);
+            if (l == null) {
+                noLine++;
+                if (!rent.patents().isEmpty()) drift++;
+                if (planners > 0) feeWhileNone++;
+                continue;
+            }
+            kinds.merge(l.kind(), 1, Integer::sum);
+            if (l.kind() == ResearchView.LicenceKind.UNDER) {
+                under++;
+                if (rent.patents().isEmpty() || !l.patents().equals(rent.patents())) noPatentUnder++;
+                if (l.perMonth() != planners || rent.perMonth() != planners) wrongFee++;
+                if (l.patents().size() == 1 && l.perMonth() > 0 && one == null) one = t;
+                if (l.patents().size() > 1 && several == null) several = t;
+                if (ResearchView.origin(town, t) == null && yearWithPieces == null) yearWithPieces = t;
+            } else {
+                none++;
+                if (!rent.patents().isEmpty()) drift++;
+                if (planners > 0) feeWhileNone++;
+            }
+        }
+        }
+        ResearchCheck.atMonth(town, month0);
+        out.println("   the town's templates by licence, in the two months: " + kinds + ", " + noLine + " with no line");
+        report("a template's line is UNDER exactly where the rent has a patent due, naming those patents, and its fee is the planners' to the bit (forNew() for a sector's building, forNewWork() for a city utility's)",
+                under > 0 && noPatentUnder == 0 && wrongFee == 0 && drift == 0, under + " under patent; mismatched patents " + noPatentUnder + ", fees " + wrongFee + ", drift " + drift);
+        check("...and no card says none, or has no line, where the planners' licence charges something (the old line drew the building's own entry alone)", feeWhileNone == 0);
+        check("premise: the town has a template under one patent with a fee to share", one != null);
+
+        if (one != null) {
+            ResearchView.Licence l = ResearchView.licence(town, one);
+            LicenceFees.Patent patent = l.patents().get(0);
+            String line = ResearchView.licenceWords(l, money);
+            report("one patent running: 'Licence: a quarter of what it adds goes abroad until <the month its patent ends>, about <the planners' fee> a month.' (" + one.getName() + ")",
+                    patent.endsMonth() == ResearchCatalog.get().entry(patent.code()).worldMonth() + LicenceFees.TERM_MONTHS && ResearchView.shareWords().equals("a quarter") && LicenceFees.SHARE == .25
+                            && line.equals("Licence: a quarter of what it adds goes abroad until " + CityCalendar.format(patent.endsMonth()) + ", about " + money.apply(l.perMonth()) + " a month."),
+                    line);
+        }
+        if (several != null) {
+            ResearchView.Licence l = ResearchView.licence(town, several);
+            int first = l.patents().get(0).endsMonth(), last = l.patents().get(l.patents().size() - 1).endsMonth();
+            String line = ResearchView.licenceWords(l, money);
+            report("several patents running say how many and when the first and the last end, never one date for fees that end at others (" + several.getName() + ")",
+                    first <= last && line.startsWith("Licence: a quarter of what it adds goes abroad on " + l.patents().size() + " patents, the first ending " + CityCalendar.format(first))
+                            && (first == last || line.contains(" and the last " + CityCalendar.format(last))), line);
+        } else {
+            out.println("  (no template in the town is under several patents at once: the words for several are held on a record built for them, below)");
+        }
+        LicenceFees.Patent early = new LicenceFees.Patent("PE1", pe1.worldMonth() + LicenceFees.TERM_MONTHS), late = new LicenceFees.Patent("PE1", pe1.worldMonth() + LicenceFees.TERM_MONTHS + 100);
+        String many = ResearchView.licenceWords(new ResearchView.Licence(ResearchView.LicenceKind.UNDER, List.of(early, late, late), 0, pe1), money);
+        check("three patents, the first and the last ending months apart: 'on 3 patents, the first ending <first> and the last <last>', and no amount where the rent is nothing",
+                many.equals("Licence: a quarter of what it adds goes abroad on 3 patents, the first ending " + CityCalendar.format(early.endsMonth()) + " and the last " + CityCalendar.format(late.endsMonth()) + "."));
+        out.println("   a building known by a year with a patent due on a piece or a recipe: " + (yearWithPieces == null ? "none in this town" : yearWithPieces.getName() + " (its line is UNDER with no discovery of its own)"));
+
+        // The building's own discovery, with no patent running anywhere on it.
+        int ends = pe1.worldMonth() + LicenceFees.TERM_MONTHS;
+        int month = town.getMonth();
+        ResearchViewCheck.setFinds(town, Map.of("PE1", foundAt));
+        ResearchView.Licence mine = ResearchView.licence(town, furnace);
+        LicenceFees.Rent mineRent = LicenceFees.rentOnNew(town, furnace);
+        report("found here before history's date its own patent is not due: where nothing else on the furnace is, the licence is HERE and says none, ever, naming the school; where a recipe's or a piece's is, it is UNDER with that patent and not PE1",
+                mine != null && (mineRent.patents().isEmpty()
+                        ? mine.kind() == ResearchView.LicenceKind.HERE && mine.perMonth() == 0 && mine.entry() == pe1
+                                && ResearchView.licenceWords(mine, money).equals("Licence: none. Found by " + pe1.field().school() + "; your builders pay no fee, ever.")
+                        : mine.kind() == ResearchView.LicenceKind.UNDER && mine.patents().stream().noneMatch(p -> p.code().equals("PE1"))) && !LicenceFees.payable("PE1", month, town.getResearch()),
+                mine == null ? "none" : ResearchView.licenceWords(mine, money));
+
+        // The patent's own ends.
+        ResearchViewCheck.setFinds(town, Map.of());
         ResearchCheck.atMonth(town, ends - 1);
-        ResearchView.Licence last = ResearchView.licence(town, furnace);
+        LicenceFees.Rent lastRent = LicenceFees.rentOnNew(town, furnace);
         ResearchCheck.atMonth(town, ends);
         ResearchView.Licence after = ResearchView.licence(town, furnace);
-        report("in the patent's last month it is still UNDER, and in the month it ends (history's date plus the term) it is ENDED: 'Licence: none now. The patent ended <that month>.'",
-                last != null && last.kind() == ResearchView.LicenceKind.UNDER && after != null && after.kind() == ResearchView.LicenceKind.ENDED && !LicenceFees.payable("PE1", ends, town.getResearch())
-                        && ResearchView.licenceWords(after, money).equals("Licence: none now. The patent ended " + CityCalendar.format(ends) + "."),
+        LicenceFees.Rent afterRent = LicenceFees.rentOnNew(town, furnace);
+        report("in the patent's last month PE1 is still due on the furnace, and in the month it ends (history's date plus the term) it is not: the line is then ENDED, 'Licence: none now. The patent ended <that month>.', unless another of the furnace's patents is due",
+                lastRent.patents().stream().anyMatch(p -> p.code().equals("PE1")) && afterRent.patents().stream().noneMatch(p -> p.code().equals("PE1")) && !LicenceFees.payable("PE1", ends, town.getResearch())
+                        && after != null && (afterRent.patents().isEmpty()
+                                ? after.kind() == ResearchView.LicenceKind.ENDED && ResearchView.licenceWords(after, money).equals("Licence: none now. The patent ended " + CityCalendar.format(ends) + ".")
+                                : after.kind() == ResearchView.LicenceKind.UNDER),
                 after == null ? "none" : ResearchView.licenceWords(after, money));
 
-        // Found here, but after the world: the licence stops being payable.
+        // Found here, but after the world: the patent stops being due.
         ResearchCheck.atMonth(town, pe1.worldMonth() + 24);
         ResearchViewCheck.setFinds(town, Map.of("PE1", pe1.worldMonth() + 12));
         ResearchView.Licence own = ResearchView.licence(town, furnace);
-        report("found here twelve months after the world had it, the patent is no longer payable and the line says the city's researchers have found it themselves: OWN",
-                own != null && own.kind() == ResearchView.LicenceKind.OWN && !LicenceFees.payable("PE1", town.getMonth(), town.getResearch())
-                        && ResearchView.licenceWords(own, money).equals("Licence: none now. Your researchers have found it themselves, so your builders pay no fee."),
+        LicenceFees.Rent ownRent = LicenceFees.rentOnNew(town, furnace);
+        report("found here twelve months after the world had it, PE1 is no longer due: OWN, 'Licence: none now. Your researchers have found it themselves, so your builders pay no fee.', unless another of the furnace's patents is due",
+                own != null && !LicenceFees.payable("PE1", town.getMonth(), town.getResearch()) && ownRent.patents().stream().noneMatch(p -> p.code().equals("PE1"))
+                        && (ownRent.patents().isEmpty()
+                                ? own.kind() == ResearchView.LicenceKind.OWN && ResearchView.licenceWords(own, money).equals("Licence: none now. Your researchers have found it themselves, so your builders pay no fee.")
+                                : own.kind() == ResearchView.LicenceKind.UNDER),
                 own == null ? "none" : ResearchView.licenceWords(own, money));
 
-        // An entry that is not patented, built into the words, and the buildings with no line.
-        ResearchCatalog.Entry free = null;
-        for (ResearchCatalog.Entry e : ResearchCatalog.get().entries()) if (!e.fee() && free == null) free = e;
-        check("premise: the catalogue has an entry that is not patented (medical, business, law)", free != null);
-        check("an unpatented entry's line is 'Licence: none. It is not patented.'",
-                ResearchView.licenceWords(new ResearchView.Licence(ResearchView.LicenceKind.FREE, 0, 0, free), money).equals("Licence: none. It is not patented."));
+        // An unpatented entry's building, if the catalogue opens one: licence() says FREE for it itself.
         ResearchViewCheck.setFinds(town, Map.of());
-        ResearchCheck.atMonth(town, ResearchViewCheck.CAT.entry("PE1").worldMonth() + 2);
-        check("a building known at the founding (a house) has no line, nor one known by a year, nor one the catalogue's code does not date",
-                ResearchView.licence(town, house) == null && ResearchView.licence(town, ResearchViewCheck.template(town, "Mixed Farm")) == null);
-        Game plain = ResearchCheck.datedCity("fb13-default", false);
-        check("a city founded the default way has no licence line on any card",
-                !plain.foundedUnfitted() && ResearchView.licence(plain, ResearchViewCheck.template(plain, "Electric Arc Furnace")) == null);
-
-        // The card places the model's line.
-        Path source = Path.of("src/main/java/ham/citybuildersim/ui/BuildScreen.java");
-        if (Files.exists(source)) {
-            String text = Files.readString(source);
-            check("the build card draws the line the model words, under the origin: ResearchView.licence() and ResearchView.licenceWords(), in a scope of its own",
-                    text.contains("ResearchView.Licence licence = ResearchView.licence(ui.game, template);") && text.contains("Kept.scope(\"licence\", () -> licenceLine(licence))")
-                            && text.contains("ResearchView.licenceWords(l, v -> money(v))") && text.indexOf("Kept.scope(\"origin\"") < text.indexOf("Kept.scope(\"licence\""));
-        } else {
-            out.println("  (skipped: the screen's source is not beside the run)");
+        ResearchCheck.atMonth(town, 9_999);
+        BuildingsTemplate unpatented = null;
+        boolean anyUnpatented = false;
+        for (BuildingsTemplate t : town.getBuildingManager().getTemplates()) {
+            ResearchCatalog.Entry e = ResearchCatalog.get().entry(t.getSinceText());
+            if (e == null || e.fee()) continue;
+            anyUnpatented = true;
+            ResearchView.Licence l = ResearchView.licence(town, t);
+            if (l != null && l.kind() == ResearchView.LicenceKind.FREE && unpatented == null) unpatented = t;
         }
+        if (unpatented != null) {
+            check("a building opened by an unpatented entry says so from licence() itself: 'Licence: none. It is not patented.' (" + unpatented.getName() + ")",
+                    ResearchView.licenceWords(ResearchView.licence(town, unpatented), money).equals("Licence: none. It is not patented."));
+        } else {
+            out.println("   no building of the catalogue is opened by an unpatented entry with no other patent due (" + (anyUnpatented ? "some are opened by one, with a patent due on a piece or a recipe" : "none is opened by one") + "): licence() has none to say FREE of, and the words are held on a record built for them");
+            check("...an unpatented entry's words: 'Licence: none. It is not patented.'",
+                    ResearchView.licenceWords(new ResearchView.Licence(ResearchView.LicenceKind.FREE, List.of(), 0, ResearchCatalog.get().entries().get(0)), money).equals("Licence: none. It is not patented."));
+        }
+        ResearchCheck.atMonth(town, month);
+        Game plain = ResearchCheck.datedCity("fb13-default", false);
+        check("a building known at the founding (a house) has no line, and neither has a city founded the default way on any card",
+                ResearchView.licence(town, house) == null && !plain.foundedUnfitted() && ResearchView.licence(plain, ResearchViewCheck.template(plain, "Electric Arc Furnace")) == null);
+    }
+
+    /* =====================================================================
+       8. THE SCREENS CALL THE MODEL'S READS
+       ===================================================================== */
+
+    /** Whether a source file holds every one of these pieces of text (a screen cannot be drawn without the toolkit, so the line that places the model's words is read as text). */
+    static boolean sourceHas(String file, String... pieces) {
+        Path source = Path.of("src/main/java/ham/citybuildersim/" + file);
+        if (!Files.exists(source)) {
+            out.println("  (skipped: " + file + " is not beside the run)");
+            return true;
+        }
+        try {
+            String text = Files.readString(source);
+            for (String piece : pieces) {
+                if (!text.contains(piece)) {
+                    out.println("   missing from " + file + ": " + piece);
+                    return false;
+                }
+            }
+            return true;
+        } catch (java.io.IOException e) {
+            return false;
+        }
+    }
+
+    static void screensCallTheModel() {
+        out.println("\n--- 8. each screen puts the model's words where they go: the call that hands the link to the words is the screen's line, so reverting one fails here ---");
+        check("the Land tab's table is LandmassView.rows() given BuildAdvice.islandLink() for each landmass",
+                sourceHas("ui/LandScreen.java", "LandmassView.rows(land, id -> BuildAdvice.islandLink(ui.game, id))"));
+        check("the map's chip is LandmassView.chipLines() given the island's link",
+                sourceHas("ui/MapView.java", "LandmassView.chipLines(lms, chip, BuildAdvice.islandLink(g, chip.id()))"));
+        check("the notice's button label is LandmassView.noticeButton() given the link, and its door is noticeDoor()'s: the bridge's card for a bridge",
+                sourceHas("ui/UserInterface.java", "LandmassView.noticeButton(game.getLandManager().getLandmasses(), island, BuildAdvice.islandLink(game, island))",
+                        "LandmassView.noticeDoor(game.getLandManager().getLandmasses(), island, link)", "case BRIDGE -> buildScreen.openBridgeCardFor(island, link);",
+                        "case PORT -> buildScreen.openPortCardFor(island);", "case LAND_OFFICE -> landScreen.showLandMenu();"));
+        check("the notice's body is LandmassView.noticeBody() given the link, raised by the Inbox each month",
+                sourceHas("Inbox.java", "LandmassView.noticeBody(lms, id, BuildAdvice.islandLink(game, id))"));
+        check("the Build tab's Overview draws the link's card from BuildAdvice.linkShown() through LandmassView.linkCard(), and the not-enough-land page its bridge line and door",
+                sourceHas("ui/BuildScreen.java", "LandmassView.linkCard(lms, BuildAdvice.linkShown(ui.game))", "Kept.scope(\"link\", this::linkSection)",
+                        "LandmassView.noLandLines(land, advice)", "openBridgeCardFor(advice.landmass(), advice)", "ui.game.chooseBridgeLandmass(t, card.landmass())"));
+        check("the Government screen's row, the build card's line and the card's wait are the model's: ForeignCouponView.note(), ResearchView.licence() and licenceWords()",
+                sourceHas("ui/GovernmentScreen.java", "ForeignCouponView.note(ui.game.getDebtManager())")
+                        && sourceHas("ui/BuildScreen.java", "ResearchView.Licence licence = ResearchView.licence(ui.game, template);", "Kept.scope(\"licence\", () -> licenceLine(licence))",
+                                "ResearchView.licenceWords(l, v -> money(v))"));
     }
 }

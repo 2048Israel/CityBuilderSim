@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**229 harness files, 26,120 labelled assertions.** AllChecks runs 229 of them.
+**229 harness files, 26,131 labelled assertions.** AllChecks runs 229 of them.
 
 ## Which harnesses read which class
 
@@ -254,7 +254,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DeathRecordCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, FundCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -9918,7 +9918,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L557 ...its month's move in credibility at nothing (0.7.45)
   - L558 ...and the level at 1, so nothing jumps: its constants are at founding money
 
-## FB13Check.java - 61 labelled assertions
+## FB13Check.java - 72 labelled assertions
 
 > FB13's three texts, each asked of the model that says it: the island's words (AL1-W), the Government screen's coupons abroad (CD9-G) and the
 > build card's licence line (R5-L). Not part of the game.
@@ -9934,74 +9934,86 @@ _(this harness does not label its checks through a helper - it prints its findin
 > WHAT THIS HAS TO PROVE:
 > ...
 
-- **L75 the fixture**
-  - L77 EarthCheck's fixture is beside the classes (
-  - L86 the island square with shore, the one with none and home's coast were found (LandmassCheck's fixtures)
-- **L110 1. the island's words, a crossing allowed: the table, the chip, the notice and its door name the bridge the rule would order**
-  - L119 premise: the rule links the island by a BRIDGE (the Road Bridge: no highway stands), and the screens' read of it is that answer: the same kind, template, lan...
-  - L125 premise: no terminal stands anywhere, so the port's half of the words is 'a port here and one at home'
-  - L128 the bridge in words is the template's name and the survey's length:
-  - L130 the table's cell names the bridge first and the port after it: 'no: needs
-  - L132 ...and with no link given the words are the old ones (a port alone), as the one-argument form says them
-  - L136 the Land tab's row for the island says the same in its 'linked' cell, and its tooltip says 'until it is linked' (a bridge links it as a port does), where the...
-  - L143 premise: the map has one chip, for the island
-  - L146 the map's chip is three lines, each short as the old second line was: the name and area, 'not linked: needs
-  - L149 ...its one-line words are the three joined, and the old chip (no link) is the old two lines
-  - L157 a month on, the island's notice is raised with the body the view writes for the link the screens read, which says the bridge and the crossing it found before...
-  - L162 ...and a body with no link is the old one: the bridge's sentence is the only difference
-  - L164 the notice's door is the bridge's, 'Build a bridge there ›', where the city owns shore on the island or none (a bridge wants landings, not a port's shore); t...
-  - L174 the Build tab's card for it (4): the island and its ground, the bridge and its crossing, the price and the months of the rule's own quote, and the door to th...
-  - L180 ...and it is the rule's link: the card's island, building and price are linkFor()'s
-  - L182 the section's head and hint are the view's words
-  - L183 a city on one landmass has no link to say: the screens' reads are null, and so is the card
-  - L184 the bridge's door where none is named (one is on site) is the catalogue's first Road Bridge
-- **L193 2. a bridge under way: the island's words say one is being built, and the door is the bridge's, to see it**
-  - L201 premise: the Road Bridge is ordered toward the island, on site (not at once), and the island is still unlinked
-  - L204 the screens' read of the island is a link under way: a BRIDGE with no order and no survey, which the rule's own answer never is (the rule leaves the island a...
-  - L207 the cell says 'no: a bridge is being built to it' and the chip 'not linked: a bridge is being built to it', in two lines as before
-  - L212 the notice's body says a bridge is being built and links it when it opens, and the card of the Build tab has none (nothing to order)
-  - L214 the door is the bridge's, 'See the bridge ›', not the port card's
-- **L224 3. deep sea and no link: the words are the old ones, and the card says why where nothing links**
-  - L232 premise: the survey finds deep water, so the link is two sea terminals (a PORT), the island's own and one at home, and the screens read what the rule does
-  - L238 every word is the old one for a port: the cell, the chip's two lines, the notice's body and its button (the port card's)
-  - L245 the Build tab's card is the two terminals the rule would order: 'No bridge can be built there, so sea terminals link it: <island's> and <home's>', their pric...
-  - L258 with a terminal standing at home the island's alone links it, and with a port standing the words name where it is: 'needs a port here (home has one)'
-  - L268 an island owned with no shore and no crossing is NONE: the words are the old ones, and the card says the rule's own reason with no price and no door
-  - L273 ...and with no door the notice's button is the port card's or the Land office's as it was
-- **L282 5. a screen's read moves nothing: not the bridge card's pick, not the rule's survey count or its memory; and it is kept for the month**
-  - L292 premise: the island has a crossing, and the first read is a BRIDGE
-  - L293 the bridge card's chosen landmass is as the screen found it (none), and the rule's survey count did not move: the screens' surveys are not the rule's
-  - L297 ...and a pick the player had made (home) is the pick still, after a read
-  - L304 a read with nothing changed reads nothing: ten asks in the month are no new reading (the map asks every frame)
-  - L307 ...and the next month reads again, once
-  - L315 premise: the survey finds deep water, and the screens' read is a PORT
-  - L317 the rule, asked after the screens' read of a survey that found no crossing, surveys for itself (the screens' memory is not its own)
-  - L319 ...and remembers it as ever: asked again in the month it does not survey
-- **L327 6. the Government screen's '...of which paid abroad': D$, and the moneys the coupons are written in**
-  - L332 premise: the city has the world's moneys, owes nothing abroad yet, and every one of the eight is offered but by what the files say
-  - L334 with no foreign paper the note is D$ alone: 'in D$, at the month's rates'
-  - L336 premise: a US$ term bond is sold
-  - L337 one money: the note names it, from the books ('US dollars' is ForeignAccounts.MONEY_PLURAL's first), and says D$ first
-  - L342 premise: a euro term bond and a twelve-month yen note are sold as well
-  - L346 three moneys: 'in D$, from coupons written in US dollars, euros and yen, at the month's rates' - in the eight's order, each as the model names it
-  - L350 ...and no money the city owes nothing in is named; 'in dollars' is not said of any of them
-  - L353 the figure the row carries is the month's coupons in the city's own D$ (Game.getForeignInterestPaidThisMonth()): positive after a month with paper in three m...
-  - L362 the screen's row puts ForeignCouponView.note() beside the figure, and the old 'in dollars' is not said anywhere on the screen
-  - L365 the screen's source is readable
-- **L377 7. the build card's licence line: a quarter of what it adds, until the patent ends - and none for what the city found itself**
-  - L384 premise: the furnace is opened by PE1, a patented entry (fee) the city found itself in month
-  - L389 found here before history's date, the licence is HERE and the line says none, ever, naming the school that found it
-  - L400 premise: found by no one the world's month is the origin and its patent is payable now, and a new furnace pays the licence a month (steel at 100 times its pr...
-  - L405 from abroad and under patent the line is: 'Licence: a quarter of what it adds goes abroad until <the month history's date and the term end in>, about <Licenc...
-  - L409 ...the term is history's date and LicenceFees.TERM_MONTHS: twenty years
-  - L411 a patent that adds nothing now leaves the amount out: 'Licence: a quarter of what it adds goes abroad until <month>.'
-  - L419 in the patent's last month it is still UNDER, and in the month it ends (history's date plus the term) it is ENDED: 'Licence: none now. The patent ended <that...
-  - L428 found here twelve months after the world had it, the patent is no longer payable and the line says the city's researchers have found it themselves: OWN
-  - L436 premise: the catalogue has an entry that is not patented (medical, business, law)
-  - L437 an unpatented entry's line is 'Licence: none. It is not patented.'
-  - L441 a building known at the founding (a house) has no line, nor one known by a year, nor one the catalogue's code does not date
-  - L444 a city founded the default way has no licence line on any card
-  - L451 the build card draws the line the model words, under the origin: ResearchView.licence() and ResearchView.licenceWords(), in a scope of its own
+- **L76 the fixture**
+  - L78 EarthCheck's fixture is beside the classes (
+  - L87 the island square with shore, the one with none and home's coast were found (LandmassCheck's fixtures)
+- **L112 1. the island's words, a crossing allowed: the table, the chip, the notice and its door name the bridge the rule would order**
+  - L121 premise: the rule links the island by a BRIDGE (the Road Bridge: no highway stands), and the screens' read of it is that answer: the same kind, template, lan...
+  - L127 premise: no terminal stands anywhere, so the port's half of the words is 'a port here and one at home'
+  - L130 the bridge in words is the template's name and the survey's length:
+  - L132 the table's cell names the bridge first and the port after it: 'no: needs
+  - L134 ...and with no link given the words are the old ones (a port alone), as the one-argument form says them
+  - L138 the Land tab's row for the island says the same in its 'linked' cell, and its tooltip says 'until it is linked' (a bridge links it as a port does), where the...
+  - L145 premise: the map has one chip, for the island
+  - L148 the map's chip is three lines, each short as the old second line was: the name and area, 'not linked: needs
+  - L151 ...its one-line words are the three joined, and the old chip (no link) is the old two lines
+  - L159 a month on, the island's notice is raised with the body the view writes for the link the screens read, which says the bridge and the crossing it found before...
+  - L164 ...and a body with no link is the old one: the bridge's sentence is the only difference
+  - L166 the notice's door is the bridge's, 'Build a bridge there ›', where the city owns shore on the island or none (a bridge wants landings, not a port's shore); t...
+  - L176 the Build tab's card for it (4): the island and its ground, the bridge and its crossing, the price and the months of the rule's own quote, and the door to th...
+  - L182 ...and it is the rule's link: the card's island, building and price are linkFor()'s
+  - L184 the section's head and hint are the view's words
+  - L185 a city on one landmass has no link to say: the screens' reads are null, and so is the card
+  - L186 the bridge's door where none is named (one is on site) is the catalogue's first Road Bridge
+- **L195 2. a bridge under way: the island's words say one is being built, and the door is the bridge's, to see it**
+  - L203 premise: the Road Bridge is ordered toward the island, on site (not at once), and the island is still unlinked
+  - L206 the screens' read of the island is a link under way: a BRIDGE with no order and no survey, which the rule's own answer never is (the rule leaves the island a...
+  - L209 the cell says 'no: a bridge is being built to it' and the chip 'not linked: a bridge is being built to it', in two lines as before
+  - L214 the notice's body says a bridge is being built and links it when it opens, and the card of the Build tab has none (nothing to order)
+  - L216 the door is the bridge's, 'See the bridge ›', not the port card's
+- **L226 3. deep sea and no link: the words are the old ones, and the card says why where nothing links**
+  - L234 premise: the survey finds deep water, so the link is two sea terminals (a PORT), the island's own and one at home, and the screens read what the rule does
+  - L240 every word is the old one for a port: the cell, the chip's two lines, the notice's body and its button (the port card's)
+  - L247 the Build tab's card is the two terminals the rule would order: 'No bridge can be built there, so sea terminals link it: <island's> and <home's>', their pric...
+  - L260 with a terminal standing at home the island's alone links it, and with a port standing the words name where it is: 'needs a port here (home has one)'
+  - L270 an island owned with no shore and no crossing is NONE: the words are the old ones, and the card says the rule's own reason with no price and no door
+  - L275 ...and with no door the notice's button is the port card's or the Land office's as it was
+- **L284 5. a screen's read moves nothing: not the bridge card's pick, not the rule's survey count or its memory; and it is kept for the month**
+  - L294 premise: the island has a crossing, and the first read is a BRIDGE
+  - L295 the bridge card's chosen landmass is as the screen found it (none), and the rule's survey count did not move: the screens' surveys are not the rule's
+  - L299 ...and a pick the player had made (home) is the pick still, after a read
+  - L306 a read with nothing changed reads nothing: ten asks in the month are no new reading (the map asks every frame)
+  - L309 ...and the next month reads again, once
+  - L317 premise: the survey finds deep water, and the screens' read is a PORT
+  - L319 the rule, asked after the screens' read of a survey that found no crossing, surveys for itself (the screens' memory is not its own)
+  - L321 ...and remembers it as ever: asked again in the month it does not survey
+  - L331 with the rule holding a refusal (a month old) the crossing handed to the survey since is not what either says: the rule orders terminals and so do the screen...
+  - L337 ...and once its memory is NO_CROSSING_MONTHS old the rule surveys again, finds the crossing, and the screens say the bridge with it
+  - L347 the screens' first read of an island whose survey finds no crossing is one survey of their own, and none of the rule's
+  - L350 ...three months on, with the ground as it was, the read is again and the survey is not: the memory stands for the ground
+  - L353 ...and ground bought (the land's stamp moves) is surveyed afresh, not read from a memory of ground that is gone
+- **L361 6. the Government screen's '...of which paid abroad': D$, and the moneys the coupons are written in**
+  - L366 premise: the city has the world's moneys, owes nothing abroad yet, and every one of the eight is offered but by what the files say
+  - L368 with no foreign paper the note is D$ alone: 'in D$, at the month's rates'
+  - L370 premise: a US$ term bond is sold
+  - L371 one money: the note says D$ first and names the paper held now ('US dollars' is ForeignAccounts.MONEY_PLURAL's first)
+  - L376 premise: a euro term bond and a twelve-month yen note are sold as well
+  - L380 three moneys: 'in D$, at the month's rates · paper held now in US dollars, euros and yen' - in the eight's order, each as the model names it, and saying held...
+  - L384 ...and no money the city owes nothing in is named; 'in dollars' is not said of any of them
+  - L387 the figure the row carries is the month's coupons in the city's own D$ (Game.getForeignInterestPaidThisMonth()): positive after a month with paper in three m...
+  - L396 the screen's row puts ForeignCouponView.note() beside the figure, and the old 'in dollars' is not said anywhere on the screen
+  - L399 the screen's source is readable
+- **L411 7. the build card's licence line: drawn from the patents the planners' licence is made of, and none where it charges nothing**
+  - L417 premise: the furnace is opened by PE1, a patented entry (fee) the city found itself in month
+  - L460 a template's line is UNDER exactly where the rent has a patent due, naming those patents, and its fee is the planners' to the bit (forNew() for a sector's bu...
+  - L462 ...and no card says none, or has no line, where the planners' licence charges something (the old line drew the building's own entry alone)
+  - L463 premise: the town has a template under one patent with a fee to share
+  - L469 one patent running: 'Licence: a quarter of what it adds goes abroad until <the month its patent ends>, about <the planners' fee> a month.' (
+  - L478 several patents running say how many and when the first and the last end, never one date for fees that end at others (
+  - L486 three patents, the first and the last ending months apart: 'on 3 patents, the first ending <first> and the last <last>', and no amount where the rent is nothing
+  - L496 found here before history's date its own patent is not due: where nothing else on the furnace is, the licence is HERE and says none, ever, naming the school;...
+  - L510 in the patent's last month PE1 is still due on the furnace, and in the month it ends (history's date plus the term) it is not: the line is then ENDED, 'Licen...
+  - L522 found here twelve months after the world had it, PE1 is no longer due: OWN, 'Licence: none now. Your researchers have found it themselves, so your builders p...
+  - L542 a building opened by an unpatented entry says so from licence() itself: 'Licence: none. It is not patented.' (
+  - L546 ...an unpatented entry's words: 'Licence: none. It is not patented.'
+  - L551 a building known at the founding (a house) has no line, and neither has a city founded the default way on any card
+- **L581 8. each screen puts the model's words where they go: the call that hands the link to the words is the screen's line, so reverting one fai...**
+  - L582 the Land tab's table is LandmassView.rows() given BuildAdvice.islandLink() for each landmass
+  - L584 the map's chip is LandmassView.chipLines() given the island's link
+  - L586 the notice's button label is LandmassView.noticeButton() given the link, and its door is noticeDoor()'s: the bridge's card for a bridge
+  - L590 the notice's body is LandmassView.noticeBody() given the link, raised by the Inbox each month
+  - L592 the Build tab's Overview draws the link's card from BuildAdvice.linkShown() through LandmassView.linkCard(), and the not-enough-land page its bridge line and...
+  - L595 the Government screen's row, the build card's line and the card's wait are the model's: ForeignCouponView.note(), ResearchView.licence() and licenceWords()
 
 ## FieldOperatorsCheck.java - 70 labelled assertions
 

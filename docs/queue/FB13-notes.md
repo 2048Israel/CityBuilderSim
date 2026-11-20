@@ -1,55 +1,61 @@
 # FB13 - the island's words, the Government screen's coupons and the build card's licence line (2026-11-20)
 
 The brief is `docs/queue/FB13.md` (AL1-W, CD9-G, R5-L; each row's own brief stands: AL1-notes, CD9-notes §3, R5-notes §2). Built on
-main at 919c1fa41 (0.9.162), one Sonnet session, no slices. Screens only: no money, save or month line is touched, so **the default
-trace does not move and no ensemble runs** (section 5).
+main at 919c1fa41 (0.9.162), one Sonnet session, no slices; main 44e0aa664 merged in. Screens only in what the player sees; the model is
+touched by reads that place nothing, so **the default trace does not move and no ensemble runs** (section 5, proved byte for byte).
 
 ## 1. Findings
 
-- **R5-L stays in the bundle.** Licence fees exist since R2c and R2c-P: `LicenceFees.payable()`, `TERM_MONTHS`, `SHARE`, `forNew()` (a sector's
-  new building's monthly rent on its own estimate), `ResearchCatalog.Entry.fee()` and `worldMonth()`. The line is drawn from them.
+- **R5-L stays in the bundle.** Licence fees exist since R2c and R2c-P (`LicenceFees`). The line is drawn from the reckoning the planners' running
+  cost sums, `LicenceFees.rentOnNew()`, not from the building's own discovery alone (section 7 below, the review's P2-2).
 - **AL1-W: the words were `LandmassView`'s**, pure functions of `Landmasses`, so `IslandChip` needed no change (it takes any number of
   lines); `LandScreen`, `MapView`, `Inbox` and `UserInterface` only pass what `BuildAdvice` says. The rule the builders read,
   `BuildAdvice.linkFor()`, cannot be what a screen reads: it places nothing but it writes (the bridge card's chosen landmass, restored; the
-  survey that found no crossing, remembered 12 months and then waited on; `Game`'s one-slot survey cache), so a screen that read it would
-  make the model's timing depend on which screen was open. A fifth place named the port too: the not-enough-land page ("Only a sea terminal
-  can be built there... Build a port there ›").
+  survey that found no crossing, remembered 12 months; `Game`'s one-slot survey cache), so a screen that read it would make the model's timing
+  depend on which screen was open. A fifth place named the port too: the not-enough-land page ("Only a sea terminal can be built there...
+  Build a port there ›").
 - **CD9-G:** the figure (`Game.getForeignInterestPaidThisMonth()`, "kept in LOCAL money") is the month's coupons in D$; the note "in
-  dollars" dates from before CD8 and read as US$. The model keeps no per-money split of the month's coupons (a flow; saving one is a model
-  change, not a screen's), so the note names the moneys the paper on the books is written in.
+  dollars" dates from before CD8 and read as US$. The books keep no split of the month's coupons by money (`getInterestBookedOf()` is by
+  kind), so the note says D$ and names the paper *held now*, in those words.
 
 ## 2. What was built
 
-- **`BuildAdvice` (THE ISLAND LINK, AS THE SCREENS SAY IT).** `linkFor()` is unchanged in what it answers (its island list and `linkOf()` are
-  split out so the screens' read runs the very same code); `linkOf()` takes the memory of surveys that found no crossing as a parameter: the
-  rule's `NO_CROSSING`, the screens' `SCREEN_NO_CROSSING`. `islandLink(game, id)` and `linkShown(game)` are the screens' reads: the link for
-  each island (a BRIDGE with no orders for an island a bridge is on site to: `Link.underWay()`), kept for the month, the landmasses' version,
-  the land's stamp and the terminals and bridges on each island, so a map that draws every frame reads once. `Link.bridge()` and
-  `underWay()` are small getters.
+- **`BuildAdvice` (THE ISLAND LINK, AS THE SCREENS SAY IT).** `linkFor()` answers as before (`islandsToLink()` and `linkOf()` are split out so
+  the screens run the very same code). `linkOf(.., screens)`: the rule writes its memory of a survey that found no crossing (`NO_CROSSING`,
+  12 months, `linkSurveys`); a screen's read **reads the rule's fresh entry first** (so it says what the rule will order) and keeps a memory
+  of its own (`SCREEN_NO_CROSSING`, `screenSurveys`) only where the rule has none, for the landmasses' version and the land's stamp it was
+  made on (REV-FB13 P2-1: it was 12 months whatever the land did). `islandLink(game, id)` and `linkShown(game)` are the reads: the link for
+  each island (a BRIDGE with no orders for an island a bridge is on site to: `Link.underWay()`), kept for the month, the version, the stamp
+  and the terminals and bridges on each island, so a map that draws every frame reads once.
 - **`LandmassView` (the words).** `needsWords/chipLines/chipWords/noticeBody/noticeButton/rows/noLandLines` each gain a form taking the link
   (the old forms pass null and are the old words, to the letter: LandmassCheck unchanged and green). A bridge is named first, the port after:
-  "no: needs a Road Bridge (450 m) or a port here and one at home"; the chip has a third line, "or a port here ...", each line as short as
-  the old second; the notice says "A bridge links Island 2 without a port: A Road Bridge (450 m) is allowed there (To Island 2: 450 m over
-  water up to 10 m deep (mean 10 m))" before the port's sentence; its button is "Build a bridge there ›" (the bridge's card with the island
-  chosen), "See the bridge ›" while one is being built. `Door` says where a button goes; `linkCard()` words the Build tab's card.
+  "no: needs a Road Bridge (450 m) or a port here and one at home"; the chip has a third line, "or a port here ...", each line as short as the
+  old second; the notice says "A bridge links Island 2 without a port: A Road Bridge (450 m) is allowed there (To Island 2: 450 m over water
+  up to 10 m deep (mean 10 m))" before the port's sentence; its button is "Build a bridge there ›" (the bridge's card with the island chosen),
+  "See the bridge ›" while one is being built. `Door` says where a button goes; `linkCard()` words the Build tab's card.
 - **The Build tab** (`BuildScreen`): AN ISLAND TO LINK, between WHAT WOULD HELP MOST and AUTOMATIC BUILDING on the Overview, drawn only while
-  the rule has an island to link: the island and its ground, what links it, the price and the wait of the rule's quote, a door to the card
-  of the building (a bridge or the first terminal), with the island chosen for its next order. Where nothing can link the island the card
-  says the rule's reason and has no door. `openBridgeCardFor()` is the notice's door; the not-enough-land page gains the bridge line and door.
-- **`ForeignCouponView`** (new): the Government row's note, "in D$, from coupons written in US dollars, euros and yen, at the month's rates"
-  (the moneys by `DebtManager.hasForeignDebtIn()`, named by `ForeignAccounts.MONEY_PLURAL`), "in D$, at the month's rates" with no foreign
-  paper.
-- **`ResearchView`** (R5-L): `licence(game, template)` (HERE, OWN, FREE, UNDER, ENDED, from `LicenceFees.payable()`, the entry's `fee()`
-  and `worldMonth() + TERM_MONTHS`; the amount `LicenceFees.forNew()`) and `licenceWords()`, the line under the origin on the card:
-  "Licence: a quarter of what it adds goes abroad until December 1920, about $18k a month." (amber), "Licence: none. Found by the Institute of
-  technology; your builders pay no fee, ever." (violet), "none now" with the patent ended or found since, "none. It is not patented".
+  the rule has an island to link: the island and its ground, what links it, the price and the wait of the rule's quote (the wait left out
+  where the quote has none), a door to the card of the building (a bridge or the first terminal) with the island chosen for its next
+  order. Where nothing can link the island the card says the rule's reason and has no door. `openBridgeCardFor()` is the notice's door; the
+  not-enough-land page gains the bridge line and door.
+- **`ForeignCouponView`** (new): the Government row's note, "in D$, at the month's rates · paper held now in US dollars, euros and yen" (the
+  moneys by `DebtManager.hasForeignDebtIn()`, named by `ForeignAccounts.MONEY_PLURAL`), "in D$, at the month's rates" with no foreign paper.
+- **`LicenceFees.rentOnNew()`** (new read; `one()` and `billOf()` gain an overload that hands out the codes they charge, their values untouched):
+  what one more of a building pays a month (`forNew()` for a sector's building, `forNewWork(.., 1, 0)` for a city utility) and the patents
+  among those the bill is made of that are due now, the soonest to end first. **`ResearchView.licence()`** is UNDER wherever one is due and
+  otherwise the building's own discovery says it (HERE, OWN, FREE, ENDED); `licenceWords()` words it, on the card under the origin line:
+  "Licence: a quarter of what it adds goes abroad until December 1920, about $18k a month." (amber; "on 3 patents, the first ending X and the
+  last Y" where several are due), "Licence: none. Found by the Institute of technology; your builders pay no fee, ever." (violet), "none now"
+  with the patent ended or found since, "none. It is not patented".
 - `AllChecks` gains `FB13Check`; `docs/tree.md` the two new files.
 
 ## 3. The calls (★; each taken as recommended)
 
-1. ★ **The screens read the island rule with a memory of their own**, not `linkFor()`: a screen open must not decide when the rule surveys
-   (FB13Check 5 causes it: the rule, asked after a screen's read of a no-crossing island, still surveys once and then remembers). The cost:
-   a no-crossing island is surveyed once more by the screens (up to 1.7 s, ET6) on the first read after any land change.
+1. ★ **The screens read the island rule through the rule's own fresh memory, then a memory of their own keyed by ground**: a screen open must
+   not decide when the rule surveys, and must say what the rule will order (FB13Check 5 causes both: the rule asked after a screen's read
+   still surveys once and remembers; with the rule holding a refusal a month old the screens say terminals with it, and the bridge the month
+   it surveys again). The cost: a no-crossing island is surveyed by the screens once per ground where the rule has no entry (up to 1.7 s,
+   ET6, on the first read after a land change).
 2. ★ **A bridge named first, the port after it**, both: a port links the island too. Where the rule would link by port or has no link, every
    word is the old one.
 3. ★ **The chip grows a third line** rather than one long line (MT1/BK1-L: some 70 characters over a small island was the fault).
@@ -57,47 +63,49 @@ trace does not move and no ensemble runs** (section 5).
    no orders, which `linkFor()` never returns.
 5. ★ **The Build tab's card is its own section**, not one of WHAT WOULD HELP MOST's cards: those are the city's needs ranked; the link is
    the rule's (AL1), worded as a card of its own with the price and wait of the quote.
-6. ★ **The coupons' note names the moneys on the books**, not the month's coupons by money (no such flow is kept): a piece whose last
-   coupon fell due in the month is not named (the note then names what remains, or D$ alone).
-7. ★ **The licence line has five kinds** (mockup 5 shows two): found here (none, ever), found here since the world had it (none now), not
-   patented, under patent, ended. The amount is `LicenceFees.forNew()`, a sector's new building's monthly rent: a city's own works (power,
-   water: R2c-P's `forNewWork()`, a licence over a life) get the date without an amount; pending as FB13-U.
+6. ★ **The coupons' note says "held now"** (the books keep no split of the month's coupons by money): the moneys the paper on the books is
+   written in, or D$ alone with none; a piece whose last coupon fell due in the month is not named.
+7. ★ **The licence line is the planners' licence**, not the building's entry: UNDER from any patent due among the building's, its recipe's and
+   its fitted pieces' (so a building known by a year with a patented piece has its line, and no card says none while `forNew()` charges),
+   one date for one patent, "on N patents, the first ending X and the last Y" for several; five kinds (mockup 5 shows two). A city's own
+   works (power, water) get the amount too, by `forNewWork(.., 1, 0)`, which is already a month's bill (FB13-U, filed first as a pending
+   row, is not needed).
 
-## 4. The checks
+## 4. The review (REV-FB13: SHIP, no P1) and what the mends were
 
-- **FB13Check** (new, 60 assertions, seven sections; the Rotterdam fixture of IslandLinkCheck and BridgeCheck, DebtMoneysCheck's town,
-  ResearchViewCheck's `researchTown()`): green. The old words are put back by reverting: with `"in dollars"` back on the Government row
-  the check fails on the screen's line (tried); each text is asserted against literal strings built from the model's constants and getters.
-- **IslandLinkCheck**: exactly its one known red (FS7, `docs/notes/known-reds.txt`), section 9's played run unmoved (6 months short of ground,
-  one port link of 2 terminal orders, never linked), sections 1-8 green. **LandmassCheck**, **ResearchViewCheck**, **BuildCardCheck**: green.
-- **KeptCheck** (the screens: the Overview now draws `linkSection()`, the card `licenceLine()`, the Government detail the new note): sections
-  1-74 green on this laptop (802 and more OKs, no FAIL), then the harness's own 1740 s limit (`AllChecks.HARNESS_SECONDS`) was reached
-  at section 74 with HS2's ensemble running beside it, so sections 75-100 (97, the NEW build card of the 1900 town, is the one that draws
-  the licence line) are left to the dry run on the gate box. Section 97's assertions are "the kept page equals a page built new" and the
-  origin line's words, both unmoved by a deterministic line of the model's.
-- **`./batch-check.sh --fast`**: green (compile, maps regenerated, Stale 0 firm findings). Maps and docs regenerated and committed.
+- **P2-1** the screens' memory and the rule's were separate and not keyed by land: for up to 11 months the card and the notice could name a
+  bridge while `linkFor()` ordered terminals, or the reverse. Mended as the review said (the rule's fresh entry first, the screens' own only
+  where it has none) and keyed the screens' own by the landmasses' version and the land's stamp (call 1; FB13Check 5's two new scenarios).
+- **P2-2** the kind and date came from the template's own entry, the amount from `forNew()`, which also charges recipe and fitted-piece
+  patents. Mended: `LicenceFees.rentOnNew()` hands out the patents the bill is made of (the codes `one()` and `billOf()` look at),
+  `ResearchView.licence()` is built on it (call 7). FB13Check 7 holds, for every template of the 1900 town at its own month and at 1960's
+  January (14 under patent, 8 ended, 4 not patented, 284 with no line; fees equal `forNew()`/`forNewWork()` to the bit, no template says none or
+  has no line while the planners charge), a year-known building (Fabrication Shop) with a line from its pieces, and FREE from `licence()` itself
+  on a real card (Walk-in Clinic).
+- **P3**: (3) FB13-U withdrawn (above); (4) the coupons' note says "held now" (call 6); (5) FB13Check 8 holds as text the line of each screen
+  that hands the model's link, note or licence to the words (LandScreen, MapView, UserInterface's label and its door, Inbox, BuildScreen's
+  Overview card, no-land page and licence line, GovernmentScreen), so reverting one fails (a screen cannot be drawn without the toolkit); FREE
+  is `licence()`'s own answer, not a record built by hand (the one hand-built record left holds the words for several patents, which no card of
+  the 1900 town has at once).
 
-## 5. The trace
+## 5. The trace: byte for byte
 
-Screens only, and the model's reads are nothing where nothing is unlinked: `BuildAdvice.islandLink()` returns at once for a city with no
-unlinked landmass (every generated world, which the default playtest founds, and every city on one landmass), so the default trace does
-not move and **no ensemble runs**. Where an island is unlinked the new reads (the notice's, a screen's) place nothing, buy nothing, and
-restore the one thing the rule touches (the bridge card's chosen landmass); IslandLinkCheck section 9's played Earth run, which has the
-notice taken every month, gives the figures the known red's row records (6 months short of ground, one port link of 2 terminal orders, never
-linked in 240) - the same as main's. The Inbox's body for an island is the one text the saved state carries that differs (a bridge's
-sentence), and only where a bridge is allowed.
+(filled in below once both runs are done)
 
-## 6. For the reviewer
+## 6. The checks
 
-- `BuildAdvice` gains a `static volatile` cache (`shownKept`): the word is the review line's "threading", and nothing runs concurrently - every
-  read is the FX thread's or the month's, one thread - the volatile only publishes an immutable record safely if a harness thread ever reads.
-- `linkOf()`'s signature gained the memory parameter; `linkFor()` passes `NO_CROSSING`, so the rule's own behaviour is untouched
-  (IslandLinkCheck 1-8 green, `linkSurveys` counted only for the rule's memory).
-- A screen's read of an island whose crossing survey finds none costs up to a survey (1.7 s, ET6) once per land change (calls, 1).
+- **FB13Check** (new, 8 sections; the Rotterdam fixture of IslandLinkCheck and BridgeCheck, DebtMoneysCheck's town, ResearchViewCheck's
+  `researchTown()`): green. The old words are put back by reverting: with `"in dollars"` back on the Government row the check fails on
+  the screen's line (tried); each text is asserted against literal strings built from the model's constants and getters.
+- **IslandLinkCheck** (before the mends): exactly its one known red (FS7, `docs/notes/known-reds.txt`), section 9's played run unmoved (6 months
+  short of ground, one port link of 2 terminal orders, never linked), sections 1-8 green. **LandmassCheck**, **ResearchViewCheck**,
+  **BuildCardCheck**: green (before the mends; the dry run runs them all again).
+- **KeptCheck** (before the mends): sections 1-74 green on this laptop, then the harness's own 1740 s limit (`AllChecks.HARNESS_SECONDS`)
+  with HS2's ensemble running beside it; sections 75-100 (97 draws the licence line) are the dry run's.
+- **`./batch-check.sh --fast`**: green. Maps and docs regenerated and committed.
 
 ## 7. Left
 
-- FB13-U (the ship file's `## pending`): the licence line has no monthly amount for a city's own works.
-- Nothing is queued by this batch beyond it; the eye check (not pending work): the Land tab's table and the map's chip on Jerus's Bergen
-  city once it loads (a bridge-allowed island reads "needs a Road Bridge (… m) or a port here (…)", three lines on the chip); the Build tab's
-  Overview with an island to link; a 1900 city's card of a patented building (amber line) and of what the city found itself (violet).
+- Nothing is queued by this batch. The eye check (not pending work): the Land tab's table and the map's chip on Jerus's Bergen city once it
+  loads (a bridge-allowed island reads "needs a Road Bridge (… m) or a port here (…)", three lines on the chip); the Build tab's Overview
+  with an island to link; a 1900 city's card of a patented building (amber line) and of what the city found itself (violet).
