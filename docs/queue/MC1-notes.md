@@ -66,12 +66,21 @@ It also asked for a harness whose own crunch does not depend on a played path.
 
 ## What was built
 
-- **`BusinessDebtManager.mortgageShortOfCapital(sector, shortfall)`** (line 2202) asks
-  `canFundMortgage`'s capital test before the order goes to the door. It records no refusal, and it
-  is false when there is nothing to borrow or the lender is shut. The door's own test is now the
-  shared `capitalShortFor`, so the two cannot drift apart.
+- **`BusinessDebtManager.mortgageShortOfCapital(sector, shortfall)`** (line 2207) asks the door
+  before the order goes to it: whether it would refuse that mortgage for the bank's capital and for
+  nothing else. It records no refusal. It is false when there is nothing to borrow, the lender is
+  shut, the landlord is banned from borrowing, or it is past its default point (the review's P2).
+  The door's own tests are now the shared `mortgagePastDefaultPoint` (line 2187) and
+  `capitalShortFor` (line 2194), so the two cannot drift apart.
+- **`BusinessDebtManager.ownersAskOnMortgage(sector, cost, held)`** (line 2224) is what the owners
+  are asked for on an order bought on a mortgage:
+  - normally, what the till lacks on the down payment, as before;
+  - while `mortgageShortOfCapital` says short, what it lacks on the whole order.
+
+  The mortgage it asks about is the one the door is asked for once the down payment is in: the
+  cost less the larger of the till and the down payment (the review's P1).
 - **`Game.consider()`**, in the banner "THE OWNERS FIRST, ...AND THE WHOLE ORDER WHILE THE BANK IS
-  SHORT" (line 7081):
+  SHORT" (line 7079), takes its ask from `ownersAskOnMortgage` (line 7099):
   - while the desk says the bank has no capital for the mortgage the order needs, the landlord's
     owners are asked for all the till lacks on the order, not only its down payment;
   - `Equity.offer` sells the new shares, households first and the world for the rest, behind its
@@ -85,7 +94,14 @@ It also asked for a harness whose own crunch does not depend on a played path.
   - **Section 1** builds the desk by hand: one branch, its cash and foreign deposits set so the
     leverage ratio stands in the band, then over the target. The test asked first agrees with the door
     in the band, over the target within the room, and over the target past it. It says no while the
-    risk weights bind, while the lender is shut, and with nothing to borrow. It records nothing.
+    risk weights bind, while the lender is shut, with nothing to borrow, for a banned landlord and
+    for one past its default point. It records nothing.
+  - **Section 1b** checks the owners' ask:
+    - in the band it is the whole order;
+    - for a banned landlord, or one the risk weights leave unrationed, it is the down payment;
+    - over the target, with the till empty and the bank's room (1,190,476) between the door's loan
+      (1,091,746) and the loan on the cost less the till (1,298,135), it is the down payment only,
+      and the door writes the mortgage on the rest.
   - **Sections 2-3** play the ensemble's seed 13, AUTO2 at 2%, to m150, from `GameFiles.scratch`.
     At m150 the landlords' homes are retired, blocks first and then houses, down to the doubling
     valve's last 12 households of room. From then on the bank is held by its restore setters
@@ -116,11 +132,42 @@ The control ran against the first form of the cut premise ("room ≤ MARGIN"), w
 on 12.1. The premise now reads "room ≥ MARGIN and less than one house more", which 12.1 meets. The
 control's remaining red is the watch's.
 
+## The review (REV-MC1, on 3251de681): not yet, one P1 and one P2, both mended
+
+The review found no money finding: the issue is booked once, and the holders who buy owe nothing.
+It judged the harness's crunch, the control and the call sound.
+
+- **P1.** The pre-test was asked on `planCost − held`, the till before the down payment the same
+  order raises. The door is asked on `planCost − max(held, down)`.
+  - With the till under the down payment, the test priced a loan up to about 1.18 times the door's.
+  - So a bank with room between the two (over its target, where BF1's room is finite, or with a
+    little room in a keep-going month) read short.
+  - The owners of a landlord *not* in a crunch were then asked for the whole order.
+  - Mended in `ownersAskOnMortgage`, which asks on the door's own shortfall. The harness's order
+    watch now asks on it too.
+- **P2.** The pre-test skipped the door's two tests before the capital's: the ban, and the default
+  point. A banned landlord, or one past its default point, got the whole-order ask in a crunch.
+  - Mended: it is false for both, so it means exactly "refused for capital", as the review
+    recommended.
+- **Before the mends.** The harness was compiled against the desk as it stood before them (the old
+  pre-test, and the ask on the cost less the till; `target/probe/before.txt`). Five lines fail:
+  - the banned landlord's no shortage;
+  - the past-default landlord's;
+  - the banned landlord's owners asked for the down payment;
+  - the down payment only, with the room between the two loans;
+  - the door's mortgage on the rest.
+
+  The mended desk passes them all.
+- **The played crunch is unchanged by the mends:** the owners put in 13,431, homes went 497 → 1,522,
+  and the most households with no home was 0.00. The order watch's own count of short months now
+  reads 56 of the 91 months with an ask, where the till-priced test read 120 of 120.
+
 ## Trace
 
 The trace moves: `Game.consider()` asks for more equity whenever the desk is short of capital for a
-landlord's mortgage. The ensemble against `docs/ensemble/0.9.167.md` (`docs/ensemble/MC1.md`) is
-waiting for the orchestrator's go.
+landlord's mortgage. The ensemble against `docs/ensemble/0.9.167.md` was handed to the gate box at
+3251de681 and cancelled before its runs started, when the review's mends moved the model. It runs
+again on the mended commit.
 
 ## Checks
 
