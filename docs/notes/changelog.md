@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS16 (untagged) — schools, work and the households' books cause their conditions — 2026-11-20, ready, see docs/queue/FS16-notes.md
+The nine schools, work and household-books harnesses cause what they used to find by playing (the flaky-suite study's FS16
+rows), harness-only: no model class moves. EducationCheck's fourteen played sections set the licensed heads, posts and
+students directly and seed the courses (seeded, finishing); LabourCheck's staffing, rent, arrivals and doctor sections run
+on hand-fed people and markets priced by the labour market's own months, and LabourCheck leaves Observation. The ties
+and the staffing draw are seated by hand in a month, not waited 328 months for; the flatshares, the real deposit rate and
+the commute are struck on set books, rates and cars; the EI city is handed its adults, the college town its students;
+the 1900 arrivals are drawn by hand; the owners' listing is read at the month the founding causes it. LabourCheck's
+known red ("...and not the whole mix") goes green: a departures-dominated month, not a model fault. The nine run in 96 s
+where they took 267.
+
 ### 0.9.171 — MC1, a crunch no longer leaves households without a home — 2026-11-20, ready, see docs/queue/MC1-notes.md
 While the bank's leverage ratio binds and it stands in its band, the mortgage desk has no capital room for a landlord's block, so it refuses the mortgage. The landlord's owners had been asked only for the down payment, which buys nothing once the loan is refused: on CU2's SHOCK seed 13, Real Estate built one block in 70 months while up to 174 households had no home. Now, while the desk would refuse the order's mortgage for the bank's capital and for nothing else (`BusinessDebtManager.mortgageShortOfCapital`, the door asked first on its own loan, recording nothing; never for a landlord banned or past its default point), `Game.consider()` asks the owners for all the till lacks on the order (`ownersAskOnMortgage`). The shares are sold households first and the world for the rest, as before. HN1's halving then finds an order the till covers outright. The bank's books and rules are untouched. `CreditCrunchCheck` plays the ensemble's seed 13, cuts the landlords' homes at m150 to the doubling valve's last 12 households, and holds the bank halfway up its leverage band for 120 months through its restore setters. With the mend the owners put in 13,431, homes go 497 to 1,522 and nobody is left with no home. Without it homes stand at 497 for a hundred months and 5.45 households are left with no home (m252). BF1's room to the leverage target, which leaves the band no insured share at all, is queued as MC2.
 
