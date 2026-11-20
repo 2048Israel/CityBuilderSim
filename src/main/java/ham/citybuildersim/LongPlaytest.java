@@ -1594,7 +1594,9 @@ public class LongPlaytest {
          * takes the vault and equity down together and M0 not at all
          * (CentralBank, THE DEFENCE). The dollars it buys at a band's or a
          * peg's strong edge in new money (XR2) raise M0 and the vault together,
-         * so they are added back (FX8, 2026-10-22; 0 under Lean).
+         * so they are added back (FX8, 2026-10-22; 0 under Lean), and the gold the
+         * mint pays out under Gold takes M0 and the vault down together (FB14), so
+         * it is taken off: CentralBank.vaultInNewMoney().
          */
         CentralBank cb = g.getCentralBank();
         double made = cb.getIssued() - cb.getRetired();
@@ -1608,7 +1610,7 @@ public class LongPlaytest {
                     String.format("M0 moved $%,.2f, made $%,.2f", cb.m0() - lastM0, made));
         }
         lastM0 = cb.m0();
-        double kept = cb.equity() - cb.getVault() + cb.getDollarsBoughtLifetime() - (cb.getRemittanceDue() - cb.getLossCarried());
+        double kept = cb.equity() - cb.getVault() + cb.vaultInNewMoney() - (cb.getRemittanceDue() - cb.getLossCarried());
         if (Math.abs(kept) > .01 && Math.abs(kept) > 1e-9 * Math.max(1, cb.m0())) {
             flag(month, "the central bank kept a profit", String.format("$%,.2f", kept));
         }

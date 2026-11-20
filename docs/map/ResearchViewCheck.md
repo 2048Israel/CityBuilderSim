@@ -66,7 +66,7 @@
 
 **Uses:** [ResearchView](ResearchView.md) (521), [Research](Research.md) (59), [HistorySave](HistorySave.md) (48), [ResearchPreview](ResearchPreview.md) (45), [Game](Game.md) (44), [DecisionLog](DecisionLog.md) (24), [BuildingsTemplate](BuildingsTemplate.md) (20), [EducationType](EducationType.md) (18), [FittingCheck](FittingCheck.md) (13), [ChartModel](ChartModel.md) (11), [YearBook](YearBook.md) (10), [BuildingsStacks](BuildingsStacks.md) (9), [ResearchCatalog](ResearchCatalog.md) (8), [Founding](Founding.md) (6), [EquipmentFit](EquipmentFit.md) (6), [EquipmentCheck](EquipmentCheck.md) (5), [DiscoveryCheck](DiscoveryCheck.md) (5), [PrizeCheck](PrizeCheck.md) (4), [MaterialsCheck](MaterialsCheck.md) (4), [Pieces](Pieces.md) (3), [Equipment](Equipment.md) (2), [Sectors](Sectors.md) (2), [GameFiles](GameFiles.md) (2), [ResearchPreviewCheck](ResearchPreviewCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [Recipe](Recipe.md) (1), [BuildingType](BuildingType.md) (1), [PolicyDates](PolicyDates.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingManager](BuildingManager.md) (1)... and 1 more
 
-**Used by (4):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [KeptCheck](KeptCheck.md)
+**Used by (5):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [KeptCheck](KeptCheck.md)
 
 ## Sections
 
