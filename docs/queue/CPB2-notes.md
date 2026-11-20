@@ -1,7 +1,9 @@
 # CPB2 — no feed bought for undemanded output that cannot cover it
 
 Base: origin/main 8ada323e3 (0.9.164); main's FB14, 5c8e6c937 (0.9.165), is
-merged in c5dc51182 (no conflict). Built by CPB2 (Claude, Opus) on
+merged in c5dc51182 (no conflict), and 0.9.166, 2677b1580 (SB1, FS2,
+R2e-PE4), in 2f7b25ca0 (only the generated indexes met; main's taken and
+regenerated). Neither merge touched `Sector` or the order pass. Built by CPB2 (Claude, Opus) on
 `batch/CPB2`. Source changed: `Sector.java` (the model) and the new
 `UndemandedFeedCheck.java`, with its `AllChecks` line and `docs/tree.md`
 entry. No save field, balance figure, dial or `SAVE_FORMAT` change.
@@ -75,7 +77,9 @@ what it makes), `GoldMining` (bullion to the mint under the gold regime) and
   `committedFloor`, lifted out of `buildingOrder` unchanged), make what the
   month needs. Exactly the old `(own + made) / nameplate` wherever no building
   has a floor, so only Copper Refining's Scrap Refinery with recovered copper
-  in the pool can move.
+  in the pool can move; a sector with no committed feed that month returns
+  the old share before the stack is scanned, so the solve costs the others
+  nothing.
 
 ## The harness
 
