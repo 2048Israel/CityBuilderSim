@@ -1,4 +1,4 @@
-# SlopeCheck.java - 941 lines · 33 methods · 15 constants · harnesses
+# SlopeCheck.java - 987 lines · 34 methods · 17 constants · harnesses
 
 `ham/citybuildersim/SlopeCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 > sections that need the real Earth say so in one line and skip where the file is not named, as EarthFoundingCheck
 > does (-Dcbs.earth=<path>, or data/earth-2.bin).
 
-**Uses:** [World](World.md) (72), [Game](Game.md) (58), [DistrictPlan](DistrictPlan.md) (33), [LongPlaytest](LongPlaytest.md) (29), [LandManager](LandManager.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (12), [EarthSite](EarthSite.md) (12), [EarthData](EarthData.md) (11), [SitePreparation](SitePreparation.md) (11), [SectorStatementCheck](SectorStatementCheck.md) (7), [BuildingVisual](BuildingVisual.md) (7), [CityLand](CityLand.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [Sectors](Sectors.md) (4), [Construction](Construction.md) (4), [PlanCheck](PlanCheck.md) (4), [EarthTerrain](EarthTerrain.md) (4), [GameFiles](GameFiles.md) (3), [Mining](Mining.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Resource](Resource.md) (2), [Founding](Founding.md) (2), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [EarthTerrainCheck](EarthTerrainCheck.md) (1), [LandMap](LandMap.md) (1), [CityMap](CityMap.md) (1), [TreasuryFund](TreasuryFund.md) (1)
+**Uses:** [World](World.md) (76), [Game](Game.md) (59), [DistrictPlan](DistrictPlan.md) (33), [LongPlaytest](LongPlaytest.md) (29), [LandManager](LandManager.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (12), [EarthSite](EarthSite.md) (12), [EarthData](EarthData.md) (11), [SitePreparation](SitePreparation.md) (11), [SectorStatementCheck](SectorStatementCheck.md) (7), [BuildingVisual](BuildingVisual.md) (7), [CityLand](CityLand.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [Sectors](Sectors.md) (4), [Construction](Construction.md) (4), [PlanCheck](PlanCheck.md) (4), [EarthTerrain](EarthTerrain.md) (4), [GameFiles](GameFiles.md) (3), [Mining](Mining.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Resource](Resource.md) (2), [Founding](Founding.md) (2), [Sector](Sector.md) (1), [NationalAccounts](NationalAccounts.md) (1), [BuildingCatalog](BuildingCatalog.md) (1), [EarthTerrainCheck](EarthTerrainCheck.md) (1), [LandMap](LandMap.md) (1), [CityMap](CityMap.md) (1), [TreasuryFund](TreasuryFund.md) (1)
 
 **Used by (1):** [RunWorksCheck](RunWorksCheck.md)
 
@@ -81,7 +81,9 @@
 | 652 | `SlopeCheck.VERY_FROM` | `STEEP_FROM + STEEP_ROWS, ICE_FROM = VERY_FROM + VERY_ROWS, ICE_TO = ICE_FROM ...` | The bands' rows: steep [STEEP_FROM, VERY_FROM), very steep [VERY_FROM, ICE_FROM), ice [ICE_FROM, ICE_TO). |
 | 780 | `SlopeCheck.MEDELLIN` | `{ 6.25, - 75.57 }` |  |
 | 783 | `SlopeCheck.SUMMIT` | `EarthTerrainCheck.SUMMIT, SLOPES = { 27.60, 86.70 }` | Everest's summit: ice (EarthTerrainCheck's SUMMIT) - and a spot on its steep southern slopes, no ice about it, no buildable ground within 5 km. |
-| 857 | `SlopeCheck.RUN_MONTHS` | `2000` | The months the Medellin run plays: enough for the land office's offers to have brought the city steep ground (at 1,000 it owns none; at 2,000, about a tenth of it) - the section about twenty seconds. |
+| 861 | `SlopeCheck.RUN_MONTHS` | `2000` | The months the Medellin run plays, its audit and the off-the-steep law read on every one: 2,000 (about twenty seconds). |
+| 864 | `SlopeCheck.STEEP_SQUARE` | `32` | The side of the square of steep ground section 9's city is given at its founding, in plots: 32 (FS7). |
+| 867 | `SlopeCheck.STEEP_RINGS` | `40` | Squares searched out each way from the founding site for it: 40. |
 
 ## Fields (state)
 
@@ -98,7 +100,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 884 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
+| 58 | 930 | **type** `public class SlopeCheck` | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill ground and on no steeper, a mine on any, a foothill pad is prepared and p... |
 | 64 | 4 | `static void check(String label, boolean ok)` |  |
 | 69 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 74 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
@@ -174,9 +176,10 @@
 | 785 | 3 | `static World.Key key(double[] at)` |  |
 | 789 | 62 | `static void foundingOnBuildableGround(EarthData file)` |  |
 
-### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 852-941)
+### 9. HOW OFTEN IT FIRES IN A REAL RUN (Medellin, the real Earth) (lines 852-987)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 859 | 82 | `static void inARealRun(EarthData file)` |  |
+| 873 | 23 | `static long[] steepSquare(Game g)` | The nearest square to the founding site, STEEP_SQUARE plots a side on a grid of its own size, none of whose plots the city owns and at least half of whose dry plots are steep or very steep by the model's reader (World... |
+| 897 | 90 | `static void inARealRun(EarthData file)` |  |
 
