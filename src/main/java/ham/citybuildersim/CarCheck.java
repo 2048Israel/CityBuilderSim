@@ -369,6 +369,22 @@ public class CarCheck {
          * the cars) is read at once, so what is sold, to whom and at what price is the model's, from savings nobody's rate decided.
          */
         GoodsMarket carMarket = game.getMarkets().get(Good.CARS);
+        /*
+         * FS7, on HS2's households (merged at 0.9.168): this town's cells that hold 1 / CAR_ADOPTION households or more - the size at which a
+         * cell wants a whole car, the most it buys - are its retired and its unemployed (106, 65, 57 and 351 households), discharged (lockout)
+         * and going short, and its working cells are under that size: none wanted a car (0 of 53 able cells). So the money is given whole:
+         * every cell's debt cleared, its lockout lifted and a car's price over its cushion put in the bank, and one month played on it, so that
+         * the month's plan is made with the money (none short, none discharged again); the buying below is then read as it was.
+         */
+        quietly(() -> {
+            for (Household c : homes.cells()) {
+                if (c.isEmpty()) continue;
+                c.debt = 0;
+                c.lockout = 0;
+                c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carMarket.getLocalPrice();
+            }
+            game.toggleNextMonth();
+        });
         double carAsking = carMarket.getLocalPrice();
         int able = 0;
         for (Household c : homes.cells()) {
