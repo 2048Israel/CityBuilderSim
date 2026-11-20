@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS13 (untagged) — the fund, the treasury and the trading city cause their conditions — 2026-11-20, ready, see docs/queue/FS13-notes.md
 The sweep for the fund, the treasury and the trading city (the FS1 study, 6.12, with PK1's FundCheck half): seven harnesses now cause the premises they had read off played cities.
