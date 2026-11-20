@@ -8,10 +8,13 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 /**
- * Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load.
+ * Proves Canada's dated gold in a city founded the 1900 way: both episodes, Money the player's from the first month, and a reserve exhaustion
+ * that survives a load.
  *
- * WHY. PolicyDates declared Money's dates but nothing used them. These towns actually cross every boundary; no fixture moves a boundary
- * or opens a lever early. The empty-vault town causes exhaustion, then receives reserves to distinguish remembering an exit from rechecking
+ * WHY. PolicyDates declared Money's dates but nothing used them (R0f). Since OP1 (2026-11-19) the Advance Rate and the Bank of Canada are open
+ * from the founding, as every lever is, and the gold years stay history's (call 2): the town is founded on gold, floats in August 1914 if still
+ * on it, is put back at par in July 1926 if floating, and floats in September 1931; a player who leaves gold leaves it for the episode, and the
+ * Bank's date of March 1935 passes as data. These towns actually cross every boundary; no fixture moves a boundary. The empty-vault town causes exhaustion, then receives reserves to distinguish remembering an exit from rechecking
  * today's balance. Save files belong only to GameFiles.scratch(), never a player's folder.
  */
 public final class MoneyDatesCheck {
@@ -118,9 +121,8 @@ public final class MoneyDatesCheck {
             double[] stock = g.getForeignAccounts().toSaveArray();
             double rate = g.getDebtManager().getPolicyRate();
             for (int i = 0; i < 20; i++) {
-                g.isLeverOpen(PolicyDates.Lever.POLICY_RATE);
-                g.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK);
-                g.leverOpeningMonth(PolicyDates.Lever.CENTRAL_BANK);
+                g.getForeignAccounts().isCanadaGold();
+                g.getDebtManager().isTied();
                 g.getForeignAccounts().regimeWords();
                 g.getForeignAccounts().getRate();
                 g.getDebtManager().getPolicyRate();
@@ -129,7 +131,7 @@ public final class MoneyDatesCheck {
         } finally { System.setOut(before); }
     }
 
-    /** REV-R0f-1: exhaustion after the Advance Rate's date must release the dial in that very month, before any reload. */
+    /** REV-R0f-1: exhaustion of the returned gold must release the dial in that very month, before any reload. */
     private static boolean secondExhaustion() throws Exception {
         Game g = town("money-second-exhaustion", 0);
         ForeignAccounts fx = g.getForeignAccounts();
@@ -153,78 +155,85 @@ public final class MoneyDatesCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(QUIET);
         try {
-            OUT.println("--- 1. gold to August 1914, with no policy rate ---");
+            OUT.println("--- 1. gold to August 1914, with Money the player's from the first month ---");
             Game g = town("money-dates", Founding.MAX_RESERVE_USD);
             DebtManager rates = g.getDebtManager();
             ForeignAccounts fx = g.getForeignAccounts();
-            check("January 1900 starts held at par by the vault", fx.getRegime() == ForeignAccounts.Regime.PEG
-                    && fx.getRate() == ForeignAccounts.OPENING_RATE);
+            check("January 1900 starts held at par by the vault, its dial tied to the US$", fx.getRegime() == ForeignAccounts.Regime.PEG
+                    && fx.isCanadaGold() && fx.getRate() == ForeignAccounts.OPENING_RATE && rates.isTied());
+            check("the rule has the dial from the first month (OP1: the Bank is open from the founding)", rates.isAutopilot());
             rates.takeTheDial(DebtManager.MAX_POLICY_RATE);
-            rates.setAutopilot(true);
-            g.setCurrencyRegime(ForeignAccounts.Regime.FLOAT);
-            check("before the Finance Act, the player's rate and the rule are refused and gold stays in force",
-                    rates.getPolicyRate() == rates.worldRate() && !rates.isAutopilot() && fx.getRegime() == ForeignAccounts.Regime.PEG);
-            int advance = PolicyDates.openingMonth(PolicyDates.Lever.POLICY_RATE);
-            through(g, advance - 1);
-            check("the founded town actually reaches July 1914 still held at par, without a doubt break", g.getMonth() == advance - 1
-                    && fx.getRate() == ForeignAccounts.OPENING_RATE && fx.getRegime() == ForeignAccounts.Regime.PEG
-                    && rates.getPolicyRate() == rates.worldRate());
-            boolean heldBeforeWar = fx.getRegime() == ForeignAccounts.Regime.PEG && !g.isLeverOpen(PolicyDates.Lever.POLICY_RATE);
             step(g);
-            check("crossing August 1914 floats the dollar and opens the Advance Rate", g.getMonth() == advance && heldBeforeWar
-                    && fx.getRegime() == ForeignAccounts.Regime.FLOAT && g.isLeverOpen(PolicyDates.Lever.POLICY_RATE));
+            check("on gold a hand's rate is taken, and the month's tie puts the dial at the world's", !rates.isAutopilot()
+                    && rates.getPolicyRate() == rates.worldRate() && fx.getRegime() == ForeignAccounts.Regime.PEG);
+            rates.setAutopilot(true);
+            int suspended = PolicyDates.GOLD_SUSPENDED;
+            through(g, suspended - 1);
+            check("the founded town actually reaches July 1914 still held at par, without a doubt break", g.getMonth() == suspended - 1
+                    && fx.getRate() == ForeignAccounts.OPENING_RATE && fx.getRegime() == ForeignAccounts.Regime.PEG && fx.isCanadaGold()
+                    && rates.getPolicyRate() == rates.worldRate());
+            step(g);
+            check("crossing August 1914 floats the dollar", g.getMonth() == suspended && fx.getRegime() == ForeignAccounts.Regime.FLOAT
+                    && !fx.isCanadaGold());
             double manual = DebtManager.MAX_POLICY_RATE / 10;
             rates.takeTheDial(manual);
-            rates.setAutopilot(true);
-            rates.setInflationTarget(DebtManager.MAX_INFLATION_TARGET);
-            g.getCentralBank().setTargetShare(CentralBank.MAX_QE_SHARE);
-            g.setCurrencyRegime(ForeignAccounts.Regime.LEAN);
-            check("the Advance Rate takes a setting while the rest of Money remains shut", rates.getPolicyRate() == manual
-                    && !rates.isAutopilot() && rates.getInflationTarget() == DebtManager.DEFAULT_INFLATION_TARGET
-                    && g.getCentralBank().getTargetShare() == 0 && fx.getRegime() == ForeignAccounts.Regime.FLOAT);
+            check("floating, the dial takes a hand's rate", rates.getPolicyRate() == manual && !rates.isAutopilot());
             step(g);
-            check("the chosen Advance Rate survives the next month", rates.getPolicyRate() == manual);
+            check("the chosen rate survives the next month", rates.getPolicyRate() == manual);
             Game advanceBack = reload(g, "advance rate");
-            check("the Advance Rate survives the ordinary load", advanceBack.getDebtManager().getPolicyRate() == manual
+            check("the chosen rate survives the ordinary load", advanceBack.getDebtManager().getPolicyRate() == manual
                     && advanceBack.getForeignAccounts().getRegime() == ForeignAccounts.Regime.FLOAT);
 
-            OUT.println("--- 2. July 1926 returns to par; September 1931 floats again ---");
+            OUT.println("--- 2. July 1926 returns a floating dollar to par; September 1931 floats again ---");
             through(g, PolicyDates.GOLD_RETURN - 1);
             check("June 1926 remains a float in the same founded city", fx.getRegime() == ForeignAccounts.Regime.FLOAT);
             step(g);
             check("crossing July 1926 returns to the old par and world interest", g.getMonth() == PolicyDates.GOLD_RETURN
-                    && fx.getRegime() == ForeignAccounts.Regime.PEG && fx.getRate() == ForeignAccounts.OPENING_RATE
+                    && fx.getRegime() == ForeignAccounts.Regime.PEG && fx.isCanadaGold() && fx.getRate() == ForeignAccounts.OPENING_RATE
                     && rates.getPolicyRate() == rates.worldRate());
             rates.takeTheDial(manual);
-            check("the returned gold fixes interest to the world even though the Advance Rate's date has passed", rates.getPolicyRate() == rates.worldRate());
+            step(g);
+            check("the returned gold ties interest to the world's whatever the hand sets", rates.getPolicyRate() == rates.worldRate());
             Game goldBack = reload(g, "returned gold");
             check("the second gold episode crosses JSON intact", Arrays.equals(fx.toSaveArray(), goldBack.getForeignAccounts().toSaveArray()));
             through(g, PolicyDates.GOLD_END - 1);
             check("August 1931 is still on gold at par", fx.getRegime() == ForeignAccounts.Regime.PEG && fx.getRate() == ForeignAccounts.OPENING_RATE);
             step(g);
-            check("crossing the final gold date floats again", g.getMonth() == PolicyDates.GOLD_END && fx.getRegime() == ForeignAccounts.Regime.FLOAT);
+            check("crossing the final gold date floats again", g.getMonth() == PolicyDates.GOLD_END && fx.getRegime() == ForeignAccounts.Regime.FLOAT
+                    && !fx.isCanadaGold());
 
-            OUT.println("--- 3. March 1935 opens the Bank of Canada as data, never a discovery ---");
-            check("a law find cannot bring either Money date forward", !g.getEconomyManager().getTaxPolicy().bringForward(PolicyDates.Lever.CENTRAL_BANK, g.getMonth())
-                    && !g.getEconomyManager().getTaxPolicy().bringForward(PolicyDates.Lever.POLICY_RATE, 1));
-            int bank = PolicyDates.openingMonth(PolicyDates.Lever.CENTRAL_BANK);
-            through(g, bank - 1);
-            boolean bankWasShut = !g.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK) && !rates.isAutopilot()
-                    && rates.getInflationTarget() == DebtManager.DEFAULT_INFLATION_TARGET && g.getCentralBank().getTargetShare() == 0;
-            check("February 1935 keeps the Bank and its controls closed", bankWasShut);
-            step(g);
+            OUT.println("--- 3. the player leaves gold when they like, and March 1935 passes as data ---");
+            Game early = town("money-left-gold", Founding.MAX_RESERVE_USD);
+            ForeignAccounts earlyFx = early.getForeignAccounts();
+            early.getDebtManager().setInflationTarget(DebtManager.MAX_INFLATION_TARGET);
+            early.getCentralBank().setTargetShare(CentralBank.MAX_QE_SHARE);
+            early.setCurrencyRegime(ForeignAccounts.Regime.BAND);
+            check("in January 1900 the target, the holdings and the regime take settings, and the band leaves gold",
+                    early.getDebtManager().getInflationTarget() == DebtManager.MAX_INFLATION_TARGET
+                            && early.getCentralBank().getTargetShare() == CentralBank.MAX_QE_SHARE
+                            && earlyFx.getRegime() == ForeignAccounts.Regime.BAND && !earlyFx.isCanadaGold());
+            step(early);
+            check("...and the next month leaves the band as chosen", earlyFx.getRegime() == ForeignAccounts.Regime.BAND && !earlyFx.isCanadaGold());
+            double par = ForeignAccounts.OPENING_RATE;
+            earlyFx.hearMoneyMonth(PolicyDates.GOLD_SUSPENDED, par);
+            check("the suspension passes a dollar already off gold by", earlyFx.getRegime() == ForeignAccounts.Regime.BAND);
+            earlyFx.hearMoneyMonth(PolicyDates.GOLD_RETURN, par);
+            check("...and so does the return: a band the player chose is not put back on gold", earlyFx.getRegime() == ForeignAccounts.Regime.BAND
+                    && !earlyFx.isCanadaGold());
+            int bank = PolicyDates.canadaMonth(PolicyDates.Lever.CENTRAL_BANK);
+            g.setCurrencyRegime(ForeignAccounts.Regime.LEAN);
             rates.setAutopilot(true);
             rates.setInflationTarget(DebtManager.MAX_INFLATION_TARGET);
             g.getCentralBank().setTargetShare(CentralBank.MAX_QE_SHARE);
-            g.setCurrencyRegime(ForeignAccounts.Regime.LEAN);
-            check("crossing March 1935 opens the rule, target, holdings and currency regime", g.getMonth() == bank && bankWasShut
-                    && g.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK) && rates.isAutopilot()
-                    && rates.getInflationTarget() == DebtManager.MAX_INFLATION_TARGET
-                    && g.getCentralBank().getTargetShare() == CentralBank.MAX_QE_SHARE && fx.getRegime() == ForeignAccounts.Regime.LEAN);
+            through(g, bank);
+            check("crossing March 1935 leaves the regime, the rule, the target and the holdings as set", g.getMonth() == bank
+                    && fx.getRegime() == ForeignAccounts.Regime.LEAN && rates.isAutopilot() && rates.getInflationTarget() == DebtManager.MAX_INFLATION_TARGET
+                    && g.getCentralBank().getTargetShare() == CentralBank.MAX_QE_SHARE);
             Game bankBack = reload(g, "bank open");
-            check("Money's opened settings cross a save", bankBack.getDebtManager().isAutopilot()
+            check("Money's settings cross a save", bankBack.getDebtManager().isAutopilot()
                     && bankBack.getDebtManager().getInflationTarget() == rates.getInflationTarget()
-                    && bankBack.getCentralBank().getTargetShare() == g.getCentralBank().getTargetShare());
+                    && bankBack.getCentralBank().getTargetShare() == g.getCentralBank().getTargetShare()
+                    && bankBack.getForeignAccounts().getRegime() == ForeignAccounts.Regime.LEAN);
             step(g);
             check("after March 1935 the historical switch leaves the chosen regime alone", fx.getRegime() == ForeignAccounts.Regime.LEAN);
 
@@ -237,7 +246,7 @@ public final class MoneyDatesCheck {
             check("second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON", secondExhaustion());
             check("reading Money never mutates its saved rule or inherited rate", readChecks());
             check("every played month conserves money to MoneyAudit's tolerance, across both gold and floating months",
-                    auditedMonths > PolicyDates.openingMonth(PolicyDates.Lever.CENTRAL_BANK) && goldMonths > 0 && floatingMonths > 0 && auditFailures == 0);
+                    auditedMonths > PolicyDates.canadaMonth(PolicyDates.Lever.CENTRAL_BANK) && goldMonths > 0 && floatingMonths > 0 && auditFailures == 0);
             OUT.printf("Caused months: %d audited, %d on dated gold, %d floating; audit failures %d%n", auditedMonths, goldMonths, floatingMonths, auditFailures);
         } finally { System.setOut(OUT); }
         OUT.println("MoneyDatesCheck: " + fails + " failures");

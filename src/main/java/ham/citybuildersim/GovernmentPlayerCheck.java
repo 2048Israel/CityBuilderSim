@@ -5,9 +5,10 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 
 /**
- * The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path.
+ * The test player's annual wealth policy: both directions, boundaries, caps, the first eligible January and the actual skip/reload path.
  *
- * WHY (GV1/GV2). The study's December modulo missed January's newly opened levers, and a driver that only reviewed its skip's endpoint
+ * WHY (GV1/GV2). The study's December modulo missed January's newly opened levers (R0's dates; since OP1 every lever is open from the
+ * founding, and the player's first move is month 13's), and a driver that only reviewed its skip's endpoint
  * could cross years without ever reviewing policy. The fixtures cause each balance directly; the last section plays through two actual
  * Januaries, saving and loading between them, and counts how often taxes really move. Every city and its slot 10 live in scratch data.
  */
@@ -26,18 +27,15 @@ public final class GovernmentPlayerCheck {
         out.printf("%s %.12g expected %.12g %s%n", label, actual, expected, ok ? "OK" : "FAIL");
     }
 
-    private static Game city(String label, boolean open) {
-        Game g = new Game(GameFiles.scratch(label));
-        if (open) g.getEconomyManager().getTaxPolicy().openAll();
-        return g;
+    private static Game city(String label) {
+        return new Game(GameFiles.scratch(label));
     }
 
-    /** Fixture dates also tell the policy, exactly as Game does before running a month's flows. */
+    /** A fixture's date, set on the city as its month (the policy hears no month since OP1). */
     private static void at(Game g, int month) throws ReflectiveOperationException {
         Field field = Game.class.getDeclaredField("month");
         field.setAccessible(true);
         field.setInt(g, month);
-        g.getEconomyManager().getTaxPolicy().setMonth(month);
     }
 
     private static void history(Game g, int count, double revenue) throws ReflectiveOperationException {
@@ -74,7 +72,7 @@ public final class GovernmentPlayerCheck {
 
     private static void directionsAndCaps() throws Exception {
         out.println("--- wealth moves all three lever families in both directions, to their caps ---");
-        Game g = city("government-player-caps", true);
+        Game g = city("government-player-caps");
         history(g, GovernmentView.REVENUE_MONTHS, 1_000_000);
         at(g, 13);
         rates(g, .20, .10, .50, .65, 4);
@@ -116,7 +114,7 @@ public final class GovernmentPlayerCheck {
 
     private static void calendarAndBoundaries() throws Exception {
         out.println("--- only a new completed January outside the band moves policy ---");
-        Game g = city("government-player-calendar", true);
+        Game g = city("government-player-calendar");
         history(g, GovernmentView.REVENUE_MONTHS, 1_000_000);
         rates(g, .20, .10, .50, .65, 4);
         at(g, 1);
@@ -150,27 +148,23 @@ public final class GovernmentPlayerCheck {
         check("a later measurable January can act", GovernmentPlayer.step(g));
     }
 
-    private static void historicalGates() throws Exception {
-        out.println("--- historical setters stay closed and newly opened January levers can move ---");
-        Game g = city("government-player-dates", false);
+    private static void openFromFounding() throws Exception {
+        out.println("--- every lever this player moves is open from the founding, and moves in the first eligible January ---");
+        Game g = city("government-player-dates");
+        // The founding's levers (OP1): the income taxes at the founding rate, every promise at zero, as Game opens them.
+        g.getEconomyManager().getTaxPolicy().openAtFounding();
         history(g, GovernmentView.REVENUE_MONTHS, 1_000_000);
+        at(g, 13);
+        wealth(g, GovernmentView.RICH_MIN + 1);
+        GovernmentPlayer.step(g);
         for (PolicyDates.Lever lever : new PolicyDates.Lever[] { PolicyDates.Lever.PROFIT_TAX, PolicyDates.Lever.SALES_TAX,
                 PolicyDates.Lever.PENSION_REPLACEMENT, PolicyDates.Lever.EI }) {
-            int opens = PolicyDates.openingMonth(lever);
-            int before = 1 + ((opens - 2) / 12) * 12;
-            at(g, before);
-            wealth(g, GovernmentView.RICH_MIN + 1);
-            GovernmentPlayer.step(g);
-            same(lever.label() + " is zero before its date", rate(g, lever), 0);
-            int january = 1 + ((opens - 1 + 11) / 12) * 12;
-            at(g, january);
-            GovernmentPlayer.step(g);
             double expected = switch (lever) {
                 case PROFIT_TAX -> TaxPolicy.DEFAULT_INCOME_TAX - GovernmentPlayer.PROFIT_STEP;
                 case SALES_TAX -> TaxPolicy.DEFAULT_INCOME_TAX - GovernmentPlayer.SALES_STEP;
                 default -> GovernmentPlayer.TRANSFER_STEP;
             };
-            same(lever.label() + " moves in its first eligible January", rate(g, lever), expected);
+            same(lever.label() + " moves in the first eligible January, month 13", rate(g, lever), expected);
         }
     }
 
@@ -188,7 +182,6 @@ public final class GovernmentPlayerCheck {
     private static void fixtureRunnerKeepsPolicy() {
         out.println("--- borrowed fixture months retain the supplied policy across January ---");
         Game g = LongPlaytest.probeCity(GameFiles.scratch("government-fixture-policy"), null);
-        g.getEconomyManager().getTaxPolicy().openAll();
         g.setCashForTest(1e12);
         rates(g, .25, .10, .50, .65, 0);
         int before = g.getMonth();
@@ -204,7 +197,6 @@ public final class GovernmentPlayerCheck {
         GameFiles files = GameFiles.scratch("government-player-play");
         Game g = new Game(files);
         g.run();
-        g.getEconomyManager().getTaxPolicy().openAll();
         g.setCashForTest(1e12);
         rates(g, .25, .10, .50, .65, 0);
         LongPlaytest.villageBuild(g, "House", 40);
@@ -236,7 +228,7 @@ public final class GovernmentPlayerCheck {
             try {
                 directionsAndCaps();
                 calendarAndBoundaries();
-                historicalGates();
+                openFromFounding();
                 fixtureRunnerKeepsPolicy();
                 skipsAndReload();
             } finally {

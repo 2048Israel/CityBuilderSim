@@ -512,12 +512,11 @@ public class MonetaryCheck {
         System.setOut(quiet);
         try {
             city.run();
-            // THE LEVERS OPENED IN THE FIXTURE (R0, a fixture condition): "the city based its basket" below needs a city that shops and pays
-            // rent for 24 months (PriceIndex.SETTLING_MONTHS), and the town this was written against taxes from month 1; a 1900 town has no
-            // income tax to 1916-17 and no sales tax to 1920, and this one ended its eleven years at index 1.000, its basket never based.
-            // Every lever opened and the defaults put back, before a month has run.
+            // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, a fixture condition; OP1): "the city based its basket" below needs a city that shops and
+            // pays rent for 24 months (PriceIndex.SETTLING_MONTHS), and the town this was written against taxes from month 1; until OP1 a 1900
+            // town had no income tax to 1916-17 and no sales tax to 1920, and this one ended its eleven years at index 1.000, its basket never
+            // based. Since OP1 every lever is open from the founding, and the defaults are put back before a month has run.
             city.getEconomyManager().getTaxPolicy().reset();
-            city.getEconomyManager().getTaxPolicy().openAll();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
             // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
             // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
@@ -768,12 +767,13 @@ public class MonetaryCheck {
         if (onLiterals) g.playOnLiterals();
         if (causesHeldOff) g.holdCausesOfDeathOff();
         g.run();
-        // THE LEVERS OPENED IN THE FIXTURE (BA1, 2026-11-05; R0 dates a 1900 city on Canada's policy): the premise is a steady town, and the founding this was written
-        // against taxes from month 1 (as section 5's city below has it opened). A 1900 town has no income tax to 1916-17 and no sales tax to 1920, and with BA1's uncapped orders
-        // the held runs took another way (the dates are the cause found; no further): inflation 9.6% a year at the founding's 3% dial, and holding the dial a month late moved the
-        // 20% row 0.125 points against the 0.100 allowance. Opened, and the defaults put back, before a month has run: 6.5%, and the largest move 0.087.
+        // THE DEFAULTS PUT BACK IN THE FIXTURE (BA1, 2026-11-05; from R0 to OP1 a 1900 city was dated on Canada's policy): the premise is a
+        // steady town, and the founding this was written against taxes from month 1 (as section 5's city below has it). Until OP1 a 1900 town had
+        // no income tax to 1916-17 and no sales tax to 1920, and with BA1's uncapped orders the held runs took another way (the dates are the
+        // cause found; no further): inflation 9.6% a year at the founding's 3% dial, and holding the dial a month late moved the 20% row 0.125
+        // points against the 0.100 allowance. With every lever open and the defaults put back before a month has run (as every founding is since
+        // OP1): 6.5%, and the largest move 0.087.
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
         for (String sector : held) g.getBusinessInvestment().holdSector(sector);
         LongPlaytest.build(g, "House", 40);
         LongPlaytest.build(g, "Convenience Store", 3);

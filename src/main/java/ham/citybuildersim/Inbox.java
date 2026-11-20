@@ -206,8 +206,6 @@ public class Inbox {
 
         takeIslands(game, month);
 
-        takeLevers(game, month);
-
         takeGold(game, month);
 
         takeResearch(game, month);
@@ -281,39 +279,11 @@ public class Inbox {
         return n == 1 ? "1 person" : String.format("%,d people", n);
     }
 
-    /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) zoning (Game.setZone's gate), and the two dated Money institutions (R0f). */
-    private static final PolicyDates.Lever[] NOTICED = noticed();
-
-    private static PolicyDates.Lever[] noticed() {
-        PolicyDates.Lever[] all = java.util.Arrays.copyOf(TaxPolicy.GATED, TaxPolicy.GATED.length + 4);
-        all[TaxPolicy.GATED.length] = PolicyDates.Lever.MINIMUM_WAGE;
-        all[TaxPolicy.GATED.length + 1] = PolicyDates.Lever.ZONING;
-        all[TaxPolicy.GATED.length + 2] = PolicyDates.Lever.POLICY_RATE;
-        all[TaxPolicy.GATED.length + 3] = PolicyDates.Lever.CENTRAL_BANK;
-        return all;
-    }
-
-    /**
-     * The Policy levers history opens (R0): in the month a lever opens, one notice of Canada's first terms for it, titled "An income
-     * tax: 1917", keyed "lever:" and its name so it is raised once. The month of a city's first day raises none (a lever open from the
-     * start has no first day to report), and nor does a save from before R0, whose levers are all open from month 1. It is settled the
-     * month after, like any one-off, and kept two years. The levers TaxPolicy holds, the minimum wage, zoning and the two Money institutions; default founding opens Money on day one, so raises neither.
-     */
-    private void takeLevers(Game game, int month) {
-        for (PolicyDates.Lever lever : NOTICED) {
-            boolean opensNow = month > 1 && month == game.leverOpeningMonth(lever);
-            take(game, month, "lever:" + lever.name(),
-                    opensNow,
-                    leverTitle(lever),
-                    opensNow ? wrapped(PolicyDates.notice(lever), BODY_COLUMNS) : new ArrayList<>());
-        }
-    }
-
     /**
      * The US$'s gold dates (GD3), one condition each, keyed "gold:" and the date's name (gold:LEFT_1933, gold:PAR_1934, gold:WINDOW_1971): a city on
      * Gold has a decision to make in the month the dollar left gold, came back at its par or closed its window (Game.takeTheDollarsGoldDates() opens
      * it), and the notice stands for as long as the date is open - it is refreshed each month with where the D$ stands - and is settled the month after
-     * the city answers it (or comes off gold, which closes it), like a lever's, and kept two years. A city not on Gold has none: its date never opens.
+     * the city answers it (or comes off gold, which closes it), like any one-off, and kept two years. A city not on Gold has none: its date never opens.
      */
     private void takeGold(Game game, int month) {
         for (ForeignAccounts.GoldEvent e : ForeignAccounts.GoldEvent.values()) {
@@ -347,7 +317,7 @@ public class Inbox {
     }
 
     /**
-     * What the city's research found and what reached it from abroad (R3), each a one-off like a lever's: raised in the month it happened, keyed
+     * What the city's research found and what reached it from abroad (R3), each a one-off: raised in the month it happened, keyed
      * "found:" or "abroad:" and the discovery's code so that it is raised once, settled the month after and kept two years. "Found here" names the
      * school that researched it, how far ahead of the world the city was and what the discovery touches; "From abroad" what the world did and what
      * it touches. None in the month of a city's first day, which reports nothing that predates it, and none in a city founded the default way,
@@ -399,12 +369,6 @@ public class Inbox {
     /** "the Medical school" as a sentence starts it: "The Medical school". */
     private static String capital(String phrase) {
         return phrase.isEmpty() ? phrase : Character.toUpperCase(phrase.charAt(0)) + phrase.substring(1);
-    }
-
-    /** "An income tax: 1917", "A profit tax: 1916", "Student aid: 1939", "Zoning: 1924": the lever as the player reads it (PolicyDates.named(), the rule the Policy screen's shut card shares), and the date it opened. */
-    static String leverTitle(PolicyDates.Lever lever) {
-        String named = PolicyDates.named(lever);
-        return Character.toUpperCase(named.charAt(0)) + named.substring(1) + ": " + PolicyDates.openingDate(lever);
     }
 
     /**

@@ -123,13 +123,12 @@ public class ForeignDebtCheck {
         return tradingCity(dir, depotsStanding, false);
     }
 
-    /** ...the one builder of both: `levers` opens every lever and puts the defaults back before a month (tradingCityTaxed()). */
+    /** ...the one builder of both: `levers` puts the defaults back before a month (every lever is open since OP1; tradingCityTaxed()). */
     private static Game tradingCity(Path dir, int depotsStanding, boolean levers) throws Exception {
         Game g = new Game(new GameFiles(dir.resolve("data"), dir.resolve("no-legacy")));
         g.run();
         if (levers) {
             g.getEconomyManager().getTaxPolicy().reset();
-            g.getEconomyManager().getTaxPolicy().openAll();
         }
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the

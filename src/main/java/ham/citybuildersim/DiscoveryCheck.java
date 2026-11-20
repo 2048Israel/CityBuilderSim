@@ -51,7 +51,7 @@ import java.util.Set;
  *  11. A NEW GAME CLEARS IT. Grants, posts, piles and finds are gone after newGame().
  *
  * Slice B, the research in the city's month (Game.nextMonth() strikes the posts, getJobs() counts them, advanceDemographics() pays and works them,
- * finalUpdateEconomy() settles the treasury's line; DataSave, Inbox, TaxPolicy.bringForward()); each section plays a village with a University:
+ * finalUpdateEconomy() settles the treasury's line; DataSave, Inbox; TaxPolicy.bringForward() until OP1); each section plays a village with a University:
  *
  *  12. POSTS IN THE LABOUR MARKET. A grant buys the posts Research.posts() says at the strike's wages, never above the room; the city's jobs are
  *      the buildings' plus Research.jobs() exactly; with every grant at 0 they are the buildings' alone.
@@ -59,8 +59,9 @@ import java.util.Set;
  *      line is a promise and the last of its constants; getExpenses() and the national accounts carry it; the month's money audit closes.
  *  14. A CITY FOUNDED THE DEFAULT WAY. No grant, no change (no job, no bill, no notice); a grant buys posts that are paid, and every researcher is idle.
  *  15. THE INBOX. A find raises one "found:" notice in its month and an arrival one "abroad:" notice, neither twice, none in the first month.
- *  16. A LAW FIND OPENS ITS LEVER EARLY. The lever of a found PL entry opens the month after the find, never before its earliest, never later than
- *      it was; a code that is no lever's key moves nothing; the openings are saved.
+ *  16. A LAW FIND OPENS NO LEVER (OP1; from R3 to OP1 it brought its lever up to four years forward). Every lever's entry key is a law row of
+ *      the catalogue, on Canada's month, and the row says the find opens nothing; a lever with no key (the policy rate, the Bank) has no row.
+ *      PolicyOpenCheck 5 finds PL3 in a 1900 city and holds every dial of the policy still.
  *  17. THE SAVE. A city with research writes it and a load restores grants, posts, piles, finds, jobs and the bill, and plays on as the city saved;
  *      a city with none writes no key.
  *  18. A REFORM OF THE MONEY scales the grants and the bill and nothing else of the research.
@@ -428,8 +429,8 @@ public class DiscoveryCheck {
         check("the lags are the study's: engineering 7 years, medicine 9, business 4, law 4",
                 Research.lagYears(Field.ENGINEERING) == STUDY_LAG_YEARS.get(Field.ENGINEERING) && Research.lagYears(Field.MEDICINE) == STUDY_LAG_YEARS.get(Field.MEDICINE)
                         && Research.lagYears(Field.BUSINESS) == STUDY_LAG_YEARS.get(Field.BUSINESS) && Research.lagYears(Field.LAW) == STUDY_LAG_YEARS.get(Field.LAW));
-        check("...a lag in months is twelve times it, and law's is the most months a law lever may be brought forward (PolicyDates.MAX_EARLY_MONTHS)",
-                Research.lagMonths(Field.ENGINEERING) == 84 && Research.lagMonths(Field.MEDICINE) == 108 && Research.lagMonths(Field.LAW) == PolicyDates.MAX_EARLY_MONTHS);
+        check("...a lag in months is twelve times it: engineering 84, medicine 108, law 48",
+                Research.lagMonths(Field.ENGINEERING) == 84 && Research.lagMonths(Field.MEDICINE) == 108 && Research.lagMonths(Field.LAW) == 48);
 
         Entry pe14 = of("PE14");
         int opens = pe14.worldMonth() - Research.lagMonths(pe14.field());
@@ -1158,71 +1159,26 @@ public class DiscoveryCheck {
         check("the month a city is founded raises none: no research notice dated month 1", g.getInbox().all().stream().filter(x -> x.getKey().startsWith("found:") || x.getKey().startsWith("abroad:")).allMatch(x -> x.getRaised() > 1));
     }
 
-    /* ==================== 16. a law find brings its lever forward ==================== */
+    /* ==================== 16. a law find opens no lever ==================== */
 
-    static void sectionSixteen() throws Exception {
-        System.out.println("\n--- 16. a law discovery found here brings its Policy lever forward, never before its earliest and never later than it was ---");
-        TaxPolicy p = new TaxPolicy();
-        PolicyDates.Lever tax = PolicyDates.Lever.WAGE_TAX;
-        int history = PolicyDates.openingMonth(tax), earliest = PolicyDates.earliestOpening(tax);
-        check("fixture: the income tax's entry is PL3, history opens it in month " + history + ", the earliest a find may bring it is " + earliest + ", and the lookup finds the lever by its key",
-                tax.entry().equals("PL3") && PolicyDates.leverOf("PL3") == tax && PolicyDates.leverOf(" PL3 ") == tax && earliest == history - PolicyDates.MAX_EARLY_MONTHS && earliest > 2);
-        check("a code that is no lever's key finds none: a blank, an unknown code, a lever with no key (the policy rate) and a discovery of another kind",
-                PolicyDates.leverOf("") == null && PolicyDates.leverOf(null) == null && PolicyDates.leverOf("ZZ99") == null && PolicyDates.leverOf("PL1") == null && PolicyDates.leverOf("E1") == null
-                        && PolicyDates.Lever.POLICY_RATE.entry().isEmpty());
-        check("every lever that carries a key is found by it, and the key is a law discovery of the catalogue",
-                java.util.Arrays.stream(PolicyDates.Lever.values()).filter(l -> !l.entry().isEmpty()).allMatch(l -> PolicyDates.leverOf(l.entry()) == l && CAT.entry(l.entry()) != null && CAT.entry(l.entry()).field() == Field.LAW));
-
-        check("a find before the earliest month brings the lever to the earliest and no sooner", p.bringForward(tax, 3) && p.openingMonth(tax) == earliest);
-        check("...a second find, in a later month, does not move it later", !p.bringForward(tax, earliest + 5) && p.openingMonth(tax) == earliest);
-        TaxPolicy q = new TaxPolicy();
-        check("a find in a month between the earliest and history brings the lever to that month", q.bringForward(tax, earliest + 10) && q.openingMonth(tax) == earliest + 10);
-        check("...a find in a month after history's, or in one that leaves the lever open, moves nothing", !q.bringForward(tax, history + 30) && !q.bringForward(tax, history) && q.openingMonth(tax) == earliest + 10);
-        check("a lever open from founding has nothing to bring forward, and nor does a null lever", !q.bringForward(PolicyDates.Lever.PROPERTY_TAX, 1) && !q.bringForward(null, 1) && q.openingMonth(PolicyDates.Lever.PROPERTY_TAX) == 1);
-        TaxPolicy opened = new TaxPolicy();
-        opened.openAll();
-        check("a lever already open (openAll()) is untouched", !opened.bringForward(tax, 200) && opened.openingMonth(tax) == 1);
-        TaxPolicy saved = new TaxPolicy();
-        saved.bringForward(tax, earliest + 10);
-        TaxPolicy back = new TaxPolicy();
-        back.restoreOpenings(saved.openingsForSave());
-        check("a lever brought forward is saved with the other openings and comes back", back.openingMonth(tax) == earliest + 10 && back.openingMonth(PolicyDates.Lever.PROFIT_TAX) == PolicyDates.openingMonth(PolicyDates.Lever.PROFIT_TAX));
-
-        // The city: a Law School's faculty find PL3 and PL1 (no lever) in the same month; only the income tax moves. The save is carried to month 156 by its file.
-        Game start = cityWithSchools("discovery-lever", true, true);
-        play(start, 1);
-        GameFiles.Result wrote = EquipmentCheck.save(start, "lever start");
-        String json = Files.readString(start.getGameFiles().saveFile(1));
-        int month = earliest - 1;
-        String moved = json.replaceFirst("\"month\": *\\d+", "\"month\": " + month);
-        check("fixture: the city's save carries its month and is carried to month " + month + ", the one before the income tax's earliest", wrote.ok && !moved.equals(json) && moved.contains("\"month\": " + month));
-        Files.writeString(start.getGameFiles().saveFile(1), moved);
-        Game g = new Game(start.getGameFiles());
-        quietly(() -> g.loadGameSave(1));
-        check("fixture: the carried city loads in month " + month + " with a Law School and a 1900 founding", g.getLoadFailure() == null && g.getMonth() == month && g.foundedUnfitted(), String.valueOf(g.getLoadFailure()));
-        if (g.getLoadFailure() != null || g.getMonth() != month) return;
-        // The staff handed again: a loaded village starts its first month with the workforce it had, as the village's own first month does with the staff handed.
-        quietly(() -> MaterialsCheck.handWorkers(g));
-        Research r = g.getResearch();
-        TaxPolicy policy = g.getEconomyManager().getTaxPolicy();
-        Entry pl3 = CAT.entry("PL3"), pl1 = CAT.entry("PL1");
-        check("fixture: both laws are open to the law faculty next month, and the income tax opens in history's month in this city",
-                r.isOpen(pl3, month + 1) && r.isOpen(pl1, month + 1) && g.leverOpeningMonth(tax) == history && !g.isLeverOpen(tax));
-        Map<String, Integer> openings = policy.openingsForSave();
-        pileJustUnder(g, pl3);
-        pileJustUnder(g, pl1);
-        play(g, 1);
-        check("both are found in month " + g.getMonth() + ", the first month the law faculty could", r.foundMonth("PL3") == month + 1 && r.foundMonth("PL1") == month + 1 && r.foundThisMonth().containsAll(List.of("PL3", "PL1")));
-        Map<String, Integer> after = policy.openingsForSave();
-        int expected = Math.max(month + 2, earliest);
-        check("the income tax now opens in month " + g.leverOpeningMonth(tax) + ", the month after the find (the first the policy hears), and no other lever's opening moved",
-                g.leverOpeningMonth(tax) == expected && after.get(tax.name()) == expected && after.entrySet().stream().allMatch(en -> en.getKey().equals(tax.name()) || en.getValue().equals(openings.get(en.getKey()))),
-                openings + " -> " + after);
-        check("...so it is still shut in the month of the find, the policy having held it at the top of the month",
-                !g.isLeverOpen(tax) && g.leverOpeningMonth(tax) == g.getMonth() + 1);
-        play(g, 1);
-        check("the month after the find the lever is open and its own notice is raised, as for a lever history opens",
-                g.isLeverOpen(tax) && g.getMonth() == g.leverOpeningMonth(tax) && noticesKeyed(g, "lever:WAGE_TAX").size() == 1 && noticesKeyed(g, "found:PL3").size() == 1);
+    static void sectionSixteen() {
+        System.out.println("\n--- 16. a law find opens no lever: every lever's key is a law row that says so ---");
+        boolean rows = true;
+        StringBuilder off = new StringBuilder();
+        for (PolicyDates.Lever l : PolicyDates.Lever.values()) {
+            if (l.entry().isEmpty()) continue;
+            Entry e = CAT.entry(l.entry());
+            boolean ok = e != null && e.field() == Field.LAW && "a Policy lever".equals(e.kindNote()) && e.worldMonth() == PolicyDates.canadaMonth(l)
+                    && e.touches().endsWith(PolicyOpenCheck.OPENS_NOTHING);
+            if (!ok) off.append(l).append(' ');
+            rows &= ok;
+        }
+        check("every lever's entry key is a law row of the catalogue, on Canada's month, that says its find opens nothing", rows, off.toString());
+        check("...and the policy rate and the Bank of Canada carry no key, so no find is theirs",
+                PolicyDates.Lever.POLICY_RATE.entry().isEmpty() && PolicyDates.Lever.CENTRAL_BANK.entry().isEmpty());
+        long leverRows = CAT.entries().stream().filter(e -> "a Policy lever".equals(e.kindNote())).count();
+        long keyed = java.util.Arrays.stream(PolicyDates.Lever.values()).filter(l -> !l.entry().isEmpty()).count();
+        check("...and the catalogue has no lever row that no lever keys (" + leverRows + " rows, " + keyed + " keys)", leverRows == keyed);
     }
 
     /* ==================== 17. the save ==================== */

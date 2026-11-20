@@ -1299,13 +1299,12 @@ public class FittingCheck {
         check("the real fitting verdict now has a finite gain and includes the form", Double.isFinite(EquipmentFit.verdictForNew(g, farm, tractor).gain()));
     }
 
-    /** An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). */
+    /** A sales tax in force (open from the founding since OP1) is a caused premise, and its capital credit must actually reach the owner (R1d). */
     static void taxedFitting() {
         out.println("\n--- 16. a fitting quotes sales tax and credits the owner's capital purchase ---");
         Game g = village("fitting-vat", Founding.defaults(), true, false);
         holdAll(g);
         g.getEconomyManager().getTaxPolicy().reset();
-        g.getEconomyManager().getTaxPolicy().openAll();
         BuildingsStacks bakery = stack(g, "Bakery");
         bakery.setUnfitted(DRIVE, 1);
         Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
