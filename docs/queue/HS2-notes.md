@@ -404,6 +404,7 @@ its own, the rent and the skills). The town it hits is a fixture's: CentralBankC
 build that never stands more than one House (16 people to m97), named under FS10. No mend
 recommended: lowering EMPTY_CELL for split cells would undo the ghost-cell guard its banner records
 (DenominationCheck's twins parting on a cell under the line), and the household who buys nothing in
-an empty cell is paid nothing either: its row's income goes to the settled cells
-(`HouseholdBalance`, the income handed to a cell too small to settle). It went in the ship file's
+an empty cell is paid nothing either: its share of the row's take-home is the money no cell took, which
+HL1 measures and HL2 (queued) is to mend (`HouseholdBalance`, "WHAT THE ROWS WERE HANDED THAT NO
+CELL TOOK"). It went in the ship file's
 changelog.
