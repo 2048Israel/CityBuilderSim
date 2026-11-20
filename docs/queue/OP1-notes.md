@@ -195,4 +195,38 @@ seniors, and the retired's net worth against the working. My background call's t
 
 ## The dry run
 
-(to come)
+**The first, 2026-11-20:** kept at `/tmp/cbs-gate-OP1-YDcL8un6`, branch 031d53468 over main 24b7bfcbc. The suite
+took 3,652 s and exited 4, and the gate exited 1 on 60 unnamed lines in eight harnesses.
+
+Four harnesses were OP1's own reds: their premises were written while the sales tax was held at 0 until 1920. All
+four are mended at 4e5a2ffed, and each is green run alone.
+
+- **FittingCheck 6, 9 and 10, EquipmentCheck 9 and 10:** a fitting's cost is grossed up at the builders' sales tax
+  (`EquipmentFit.pricedAsStanding`, `Game.quoteFitting`; FittingCheck 16 proves the gross-up). The harnesses expected
+  it untaxed, and every failing pair stood at 1/0.85. Their expectations now gross up too: `FittingCheck.buildersNet()`,
+  and in EquipmentCheck the same divisor, to the bit.
+- **BuildCardCheck 14:** at a till of nine tenths, the loan on the taxed House was covered by its rent 1.04× against
+  the 1.20× asked. The till now steps up by hundredths from nine tenths until the rent covers the payment 1.5 times what
+  the lender asks, short of the whole cost. It stops at 95%.
+- **StaffingDrawCheck 8:** its city is founded the 1900 way, so `NewUnit.of()` keeps the pieces `fittedForNew()`
+  judges. Those verdicts read the taxed fitting, so one order's unit posts parted from its template's, and the model
+  drew for it where the check, counting the template's posts, said nothing. The check now reads the unit's posts, as
+  `Sector.staffing()` does; with them, 38 of 78 orders fall short of the gap, against 39 before.
+
+The other four are played cities on OP1's moved path, not OP1's code. No map, plan or land file is in OP1's diff. They
+are now rows in the ship file, each naming the sweep the flaky-suite study gives the section:
+
+- **PriceLevelCheck 9 (FS2):** the twin on ScaleCheck's town. The same-level 1e-12 nudge parts at month 80 at both
+  levels, so the horizon is 79. The factor twin parts at 79 itself: a landlords' order is taken at one level only,
+  homes 179 against 150. Every series is equal through month 78, which a nominal leak from the founding would not
+  allow. Main's own section-9 lines, at month 94, are gate.txt's.
+- **MapCheck 8 (FS6):** the copy a mine is born on, built from MapCheck 1's played city with 5,981 houses on its
+  ground. It has 1,272 road plots in two pieces, one of them joined by the city's own ground, and 2,631 of 5,867
+  buildings drawn: 115 have no ground and 1,181 stand past the ground the city owns.
+- **PlanCheck 17 (FS6):** the same played city at month 121, with 803 of 1,418 buildings placed. One of its two
+  districts keeps every check; the other fails only "T junctions only in an estate cell". The study keeps 17's
+  identity played.
+- **IslandLinkCheck 9 (FS7):** the 240-month played Earth run orders the port link (two terminal orders), and the
+  island is still unlinked at month 240.
+
+Re-judged with the rows, the first dry run's log leaves only the four mended harnesses as NEW.
