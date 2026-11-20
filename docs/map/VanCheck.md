@@ -1,4 +1,4 @@
-# VanCheck.java - 476 lines · 5 methods · 0 constants · harnesses
+# VanCheck.java - 537 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/VanCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -21,7 +21,11 @@
 >      arithmetic, because have/need is 1 to within an ulp and not 1, and an
 >      ulp in an operating rate is a different city.
 > 
->   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES - the GOODS it makes and the
+>   2. THE FLEET IS SIZED BY WHAT THE PLANT MOVES (FS7: the works are BUILT
+>      and each sector's fleet seeded by Sector.runFleet(), as the top of a
+>      month seeds one never asked - no month is played to get a town whose
+>      tonnes happen to be there, and the counts are the formulas, asserted
+>      against Sector's constants) - the GOODS it makes and the
 >      GOODS it buys, by weight, at NAMEPLATE rather than at this month's
 >      rate, which would be a circle. Since FR2 (2026-10-18) the vans carry the
 >      goods stream only: a bulk works keeps no vans, its tonnes go by
@@ -43,36 +47,41 @@
 >      hires haulage and sends fuller loads. The same shape as the road's own
 >      floor, and for the same reason.
 > 
+> And the city BUYS them (FS7): a sector's pantry set short of vans, one
+> month's order read - the market's bid, the vans delivered, the cost line,
+> the price inside the market's own band - not a town played twelve months.
+> 
 > See claude/the-sixth-link.md and Sector's THE FLEET.
 
-**Uses:** [Good](Good.md) (40), [Sector](Sector.md) (37), [Game](Game.md) (4), [Traffic](Traffic.md) (4), [BuildingManager](BuildingManager.md) (3), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [HeavyIndustry](HeavyIndustry.md) (1), [PriceLevel](PriceLevel.md) (1)
+**Uses:** [Good](Good.md) (47), [Sector](Sector.md) (42), [Traffic](Traffic.md) (6), [Game](Game.md) (4), [BuildingManager](BuildingManager.md) (3), [Sectors](Sectors.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [SectorState](SectorState.md) (2), [GoodsMarket](GoodsMarket.md) (2), [CarCheck](CarCheck.md) (2), [HeavyIndustry](HeavyIndustry.md) (1), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 134 | · 1. WHAT A FLEET IS FOR |
-| 224 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
-| 262 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
-| 283 | · 4. IT WEARS OUT |
-| 325 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
-| 362 | · 6. IN A CITY THAT RUNS |
-| 401 | · 7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5) |
+| 166 | · 1. WHAT A FLEET IS FOR |
+| 263 | · 2. THE FLOOR AND THE CEILING OF THE RATIO |
+| 301 | · 3. YOU CANNOT PUT A FLEET ON THE ROAD IN A MONTH |
+| 322 | · 4. IT WEARS OUT |
+| 364 | · 5. A SAVE FROM BEFORE VANS HAD VANS |
+| 401 | · 6. IN A CITY THAT RUNS |
+| 462 | · 7. AND THE VANS BURN DIESEL (0.7.83, batch O6; spec-oil 2.5) |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 51 | `static int fails` |  |
+| 59 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 428 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
-| 53 | 5 | `static void quietly(Runnable r)` |  |
-| 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 64 | 4 | `static void report(String label, boolean ok, String detail)` |  |
-| 70 | 3 | `static boolean same(double a, double b)` | Bitwise. |
-| 74 | 402 | `public static void main(String[] args)` |  |
+| 57 | 481 | **type** `public class VanCheck` | The vans: what a sector needs, what it costs it, and what happens while it waits for them. |
+| 61 | 5 | `static void quietly(Runnable r)` |  |
+| 67 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 72 | 4 | `static void report(String label, boolean ok, String detail)` |  |
+| 78 | 3 | `static boolean same(double a, double b)` | Bitwise. |
+| 86 | 13 | `static double[] nameplate(Sector s)` | FS7: what a sector's standing plant moves by lorry at nameplate, worked by hand from its goods: {goods it makes, goods it buys, bulk it leaves to the trucks} in tonnes - the vans and the trucks left out of what it buy... |
+| 100 | 437 | `public static void main(String[] args)` |  |
 
