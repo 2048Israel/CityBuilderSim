@@ -45,6 +45,11 @@ import java.util.Map;
  * records are written at today's prices to six figures and read back times
  * FACTOR, and a reload that moved one bit of one of them would move the bank's
  * volatility, and every trace played from the file, without a word.
+ *
+ * FS17: sections 1, 2, 2b and 2c are identities over whatever was played and stay so. What sections 2d, 2e and 2f read off a played city
+ * is caused now: the bank's fees, loss record and sheet on one fixture bank (a founding with a loan written to Retail, its capital record
+ * put by hand to no bad year and then to the worst one, its fee taken as the settle takes it - the "lent" city, scratch files), and the
+ * schools' diplomas at the month they first flow, inside a bound that fails as a fixture.
  */
 public class HistoryCheck {
 
@@ -303,15 +308,39 @@ public class HistoryCheck {
                 Math.abs(h.aligned("bankFees")[last] - lender.feeIncome())
                         <= MoneyAudit.tolerance(.005 + 1e-9, lender.feeIncome()));
         double[] dials = h.aligned("policyRate"), primes = h.aligned("bankPrime");
-        boolean primeOverDial = true, anyFee = false;
+        boolean primeOverDial = true;
         for (int i = 0; i < h.months(); i++) {
             // Every part of the price is at least zero and the first is the
             // dial itself, so prime is never under it (rounding allowed).
             if (primes[i] < Math.max(0, dials[i]) - 1e-4) primeOverDial = false;
-            if (h.aligned("bankFees")[i] > 0) anyFee = true;
         }
         assertTrue("prime is never under the dial, in any month", primeOverDial);
-        assertTrue("...and the founding bank charged a fee in some month", anyFee);
+        /*
+         * FS17: the fee series used to be read off the played city - "the founding bank charged a fee in some month" held only while an
+         * unbuilt default city's thirty months happened to charge one - and the bank's capital (2e) off the same city's bank, whether it
+         * had lived through a bad year and had anything on its sheet. Both are CAUSED on one fixture city now, a founding played a month, the
+         * bank lent by hand through its own call (Bank.lendCarry(): cash out, book up, the claim as large as its equity so its weighted
+         * book is a figure against its capital), its loss record put to a bank that has lived no year by Bank.restoreCapitalRecord(), the fee
+         * on the loan taken by Bank.takeLoanFees() as Game's settle takes it (a business loan written between months is not settled: the
+         * month's audit starts after it, and a founding's Retail cannot carry one), and the month recorded by the game's own recordMonth().
+         * 2d reads the fee, 2e the six series and the leverage pair, on it.
+         */
+        Game lent = new Game(GameFiles.scratch("historycheck-bank"));
+        quietly(() -> { lent.newGame(); lent.simulateMonths(1); });
+        Bank lentBank = lent.getBank();
+        double face = lentBank.equity();
+        lentBank.lendCarry(face);
+        lentBank.restoreCapitalRecord(new double[3 + 4 * Bank.YEAR_MONTHS]);
+        lentBank.takeLoanFees(BusinessDebtManager.feeOn(face));
+        quietly(lent::recordMonth);
+        HistorySave lentHist = lent.getHistorySave();
+        int lentLast = lentHist.months() - 1;
+        assertTrue("fixture: the bank lent, and took the fee on the loan this month",
+                BusinessDebtManager.feeOn(face) > 0 && lentBank.feeIncome() >= BusinessDebtManager.feeOn(face));
+        assertTrue("...and the bank's bankFees reads that month's fee income, no less than the fee on its loan",
+                Math.abs(lentHist.aligned("bankFees")[lentLast] - lentBank.feeIncome())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.feeIncome())
+                        && lentHist.aligned("bankFees")[lentLast] >= BusinessDebtManager.feeOn(face) - (.005 + 1e-9));
 
         /* ============ 2e. the bank's capital (0.7.8) ============
 
@@ -325,51 +354,65 @@ public class HistoryCheck {
            ================================================================= */
         System.out.println("\n--- the bank's capital ---");
 
+        // FS17: the six series, the leverage pair and the targets below are read on the caused fixture bank above (lent), whose loss record
+        // and sheet are set, not on the played city's bank.
         System.out.printf("  last month: ratio %.4f, target %.4f, allowance %.2f, provisions %.2f, dividends %.2f, ROE %.4f%n",
-                h.aligned("bankCapitalRatio")[last], h.aligned("bankCapitalTarget")[last],
-                h.aligned("bankAllowance")[last], h.aligned("bankProvisions")[last],
-                h.aligned("bankDividends")[last], h.aligned("bankReturnOnEquity")[last]);
-        double weighted = lender.getWeightedBook();
+                lentHist.aligned("bankCapitalRatio")[lentLast], lentHist.aligned("bankCapitalTarget")[lentLast],
+                lentHist.aligned("bankAllowance")[lentLast], lentHist.aligned("bankProvisions")[lentLast],
+                lentHist.aligned("bankDividends")[lentLast], lentHist.aligned("bankReturnOnEquity")[lentLast]);
+        double weighted = lentBank.getWeightedBook();
         assertTrue("the last month's bankCapitalRatio is Bank.capitalRatio(), clamped at ten",
-                Math.abs(h.aligned("bankCapitalRatio")[last]
-                        - (weighted > 0 ? Math.min(10, lender.capitalRatio()) : 10)) <= 5e-5 + 1e-12);
+                Math.abs(lentHist.aligned("bankCapitalRatio")[lentLast]
+                        - (weighted > 0 ? Math.min(10, lentBank.capitalRatio()) : 10)) <= 5e-5 + 1e-12);
         assertTrue("...its bankCapitalTarget is the target the bank chose",
-                Math.abs(h.aligned("bankCapitalTarget")[last] - lender.capitalTarget()) <= 5e-5 + 1e-12);
+                Math.abs(lentHist.aligned("bankCapitalTarget")[lentLast] - lentBank.capitalTarget()) <= 5e-5 + 1e-12);
         assertTrue("...its bankAllowance is what it has set aside, to the cent",
-                Math.abs(h.aligned("bankAllowance")[last] - lender.getAllowance())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getAllowance()));
+                Math.abs(lentHist.aligned("bankAllowance")[lentLast] - lentBank.getAllowance())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.getAllowance()));
         assertTrue("...its bankProvisions is the month's provision, to the cent",
-                Math.abs(h.aligned("bankProvisions")[last] - lender.provisions())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.provisions()));
+                Math.abs(lentHist.aligned("bankProvisions")[lentLast] - lentBank.provisions())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.provisions()));
         assertTrue("...its bankDividends is what it paid its owners, to the cent",
-                Math.abs(h.aligned("bankDividends")[last] - lender.getDividendsPaid())
-                        <= MoneyAudit.tolerance(.005 + 1e-9, lender.getDividendsPaid()));
+                Math.abs(lentHist.aligned("bankDividends")[lentLast] - lentBank.getDividendsPaid())
+                        <= MoneyAudit.tolerance(.005 + 1e-9, lentBank.getDividendsPaid()));
         assertTrue("...and its bankReturnOnEquity is the month's return, a year, clamped at ten",
-                Math.abs(h.aligned("bankReturnOnEquity")[last]
-                        - Math.max(-10, Math.min(10, lender.returnOnEquity()))) <= 5e-5 + 1e-12);
-        double[] targets = h.aligned("bankCapitalTarget");
+                Math.abs(lentHist.aligned("bankReturnOnEquity")[lentLast]
+                        - Math.max(-10, Math.min(10, lentBank.returnOnEquity()))) <= 5e-5 + 1e-12);
+        double[] targets = lentHist.aligned("bankCapitalTarget");
         boolean young = true;
-        for (int i = 0; i < h.months(); i++) {
+        for (int i = 0; i < lentHist.months(); i++) {
             if (!Double.isNaN(targets[i])
                     && Math.abs(targets[i] - (Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER)) > 5e-5 + 1e-12) young = false;
         }
-        assertTrue("fixture: the founding bank has lived through no bad year", lender.getWorstLossRate() <= Bank.CONSERVATION_BUFFER);
+        assertTrue("fixture: the founding bank has lived through no bad year", lentBank.getWorstLossRate() <= Bank.CONSERVATION_BUFFER);
         assertTrue("...so it targets the minimum and the conservation buffer in every month", young);
+        // FS17: ...and the other side of it, the same bank with a bad year in its record (Bank.restoreCapitalRecord(), the worst year it has
+        // lived at the buffer's ceiling): the series reads the target it chose, above the minimum and the conservation buffer.
+        double[] badYear = new double[3 + 4 * Bank.YEAR_MONTHS];
+        badYear[1] = Bank.MAX_BUFFER;
+        lentBank.restoreCapitalRecord(badYear);
+        quietly(lent::recordMonth);
+        lentHist = lent.getHistorySave();
+        lentLast = lentHist.months() - 1;
+        assertTrue("a bank that has lived through a bad year targets the minimum and the buffer that year sized, in the month it is recorded",
+                lentBank.capitalTarget() == Bank.CAPITAL_RATIO + Bank.MAX_BUFFER
+                        && Math.abs(lentHist.aligned("bankCapitalTarget")[lentLast] - lentBank.capitalTarget()) <= 5e-5 + 1e-12
+                        && lentHist.aligned("bankCapitalTarget")[lentLast] > Bank.CAPITAL_RATIO + Bank.CONSERVATION_BUFFER + 5e-5);
         /*
          * ...AND THE OTHER MEASURE (A7, 0.7.46): the leverage ratio - which
          * can bind where the clamped capital ratio reads ten - and the target
          * the bank holds on it, every month, at the getters' own figures.
          */
         assertTrue("fixture: the bank has something on its sheet, so its leverage ratio is a figure",
-                lender.exposure() > 0 && lender.leverageRatio() < 10);
+                lentBank.exposure() > 0 && lentBank.leverageRatio() < 10);
         // ...and the outbreak the year book names an epidemic on (A8, 0.7.46), as Health reads it.
         assertTrue("the outbreak series is Health's outbreak, 0 between them, every month",
                 h.monthsRecorded("outbreak") == h.months()
                         && Math.abs(h.aligned("outbreak")[last] - city.getHealth().getOutbreakSeverity()) <= 5e-5 + 1e-12);
         assertTrue("the leverage ratio and its target are recorded every month as the bank reads them",
-                h.monthsRecorded("bankLeverageRatio") == h.months() && h.monthsRecorded("bankLeverageTarget") == h.months()
-                        && Math.abs(h.aligned("bankLeverageRatio")[last] - Math.min(10, lender.leverageRatio())) <= 5e-5 + 1e-12
-                        && Math.abs(h.aligned("bankLeverageTarget")[last] - lender.leverageTarget()) <= 5e-5 + 1e-12);
+                lentHist.monthsRecorded("bankLeverageRatio") == lentHist.months() && lentHist.monthsRecorded("bankLeverageTarget") == lentHist.months()
+                        && Math.abs(lentHist.aligned("bankLeverageRatio")[lentLast] - Math.min(10, lentBank.leverageRatio())) <= 5e-5 + 1e-12
+                        && Math.abs(lentHist.aligned("bankLeverageTarget")[lentLast] - lentBank.leverageTarget()) <= 5e-5 + 1e-12);
 
         /* ============ 2f. the month's graduates (A6, 0.7.46) ============
 
@@ -381,24 +424,41 @@ public class HistoryCheck {
            few months.
            ================================================================= */
         System.out.println("\n--- the month's graduates are the people who gained a qualification ---");
+        /*
+         * FS17: this played twelve months and read the twelfth for a month the high schools handed out diplomas in. It plays a month at a
+         * time until they do, and reads THAT month: the diplomas the schools hand out are Education.getNewDiplomas() (the teens ageing out
+         * at the ladder's coverage, once the schools are built and staffed, which the model gives no month for), and the twelve months are
+         * the fixture's bound, not a reading - a town whose schools hand out none by then fails the fixture line below, not the series.
+         * The town is then played on to twelve months in all, as 2g reads a company a household holds a share of in it.
+         */
+        final int schoolBound = 12;
+        final int[] schoolMonths = { 0 };
+        final double[] atFirst = new double[3];   // the month the diplomas first flowed: the schools' diplomas, what they gained, the series' point
         Game[] schooledBox = new Game[1];
         quietly(() -> {
             schooledBox[0] = EducationCheck.city(null);
             EducationCheck.build(schooledBox[0], "Elementary School", 2);
             EducationCheck.build(schooledBox[0], "Middle School", 2);
             EducationCheck.build(schooledBox[0], "High School", 2);
-            schooledBox[0].simulateMonths(12);
+            while (!(schooledBox[0].getEducation().getNewDiplomas() > 0) && schoolMonths[0] < schoolBound) {
+                schooledBox[0].simulateMonths(1);
+                schoolMonths[0]++;
+            }
+            double[] pointsThen = schooledBox[0].getHistorySave().aligned("graduates");
+            atFirst[0] = schooledBox[0].getEducation().getNewDiplomas();
+            atFirst[1] = schooledBox[0].getEducation().gainedThisMonth();
+            atFirst[2] = pointsThen[pointsThen.length - 1];
+            for (; schoolMonths[0] < schoolBound; schoolMonths[0]++) schooledBox[0].simulateMonths(1);
         });
+        System.out.printf("  the month the diplomas first flowed: %.3f handed out, %.3f gained, %.2f recorded%n", atFirst[0], atFirst[1], atFirst[2]);
         Game schooled = schooledBox[0];
         double[] graduated = schooled.getHistorySave().aligned("graduates");
         boolean neverNegative = true;
         for (double v : graduated) if (v < 0) neverNegative = false;
-        assertTrue("fixture: the town's high schools handed out diplomas this month",
-                schooled.getEducation().getNewDiplomas() > 0);
+        assertTrue("fixture: the town's high schools handed out diplomas this month", atFirst[0] > 0);
         assertTrue("the graduates series is never negative", neverNegative);
         assertTrue("...and its last month is what the schools gained, to the history's rounding",
-                Math.abs(graduated[graduated.length - 1] - schooled.getEducation().gainedThisMonth()) <= .005 + 1e-9
-                        && graduated[graduated.length - 1] > 0);
+                Math.abs(atFirst[2] - atFirst[1]) <= .005 + 1e-9 && atFirst[2] > 0);
 
         /* ============ 2g. a consolidated company's price (C5, 0.7.48) ============
 
