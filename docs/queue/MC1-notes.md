@@ -226,9 +226,22 @@ at 3251de681, on a path that differs from the first changed equity ask on.
 
 The trace moves: `Game.consider()` asks for more equity whenever the desk is short of capital for a
 landlord's mortgage. The ensemble against `docs/ensemble/0.9.167.md` was handed to the gate box at
-3251de681 and cancelled before its runs started, when the review's mends moved the model. It runs
-again at be09ec6ee, the mended model merged with CPB2 (0.9.170); REV-MC1-2's mends since touch only
-the two harnesses, so they leave the trace where it is.
+3251de681 and cancelled before its runs started, when the review's mends moved the model. It ran
+again at be09ec6ee, the mended model merged with CPB2 (0.9.170), on the gate box: 80 of 80 runs,
+recorded as `docs/ensemble/MC1.md`. REV-MC1-2's mends since then touch only the two harnesses, so
+they leave the trace where it is.
+
+- **Batch verdict PASS:** hard criteria 10 of 10, 24 of 26 in all, none missing or short.
+- **M1 and F1:** 0 months with a failed money audit and 0 of 16 runs with a LongPlaytest finding,
+  in every policy.
+- **Changed verdicts, all info:**
+  - AUTO2 T2 and ZERO_SLACK T2 go FAIL to PASS: AUTO2's final population is 1,992,305 against
+    0.9.167's 1,820,652.
+  - AUTO2 A1 goes PASS to FAIL, 10 of 16 seeds in the 1-3% band where 12 are asked for. The median
+    is 2.86% (2.88% at 0.9.170) and the highest seed 3.19% (3.31%).
+- **A1 seed by seed, against CPB2's runs of 0.9.170 on the box:** seeds 3 (2.65% to 3.01%), 6
+  (2.96% to 3.10%) and 7 (2.94% to 3.12%) go just over 3%, and seed 14 comes back in (3.17% to
+  2.94%). Seeds 5, 8 and 9 were over before and still are.
 
 ## Checks
 
