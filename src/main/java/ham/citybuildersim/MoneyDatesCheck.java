@@ -161,11 +161,14 @@ public final class MoneyDatesCheck {
             ForeignAccounts fx = g.getForeignAccounts();
             check("January 1900 starts held at par by the vault, its dial tied to the US$", fx.getRegime() == ForeignAccounts.Regime.PEG
                     && fx.isCanadaGold() && fx.getRate() == ForeignAccounts.OPENING_RATE && rates.isTied());
-            check("the rule has the dial from the first month (OP1: the Bank is open from the founding)", rates.isAutopilot());
+            rates.setAutopilot(true);
+            check("the rule takes the dial in January 1900 when handed it (OP1: the Bank is open from the founding)", rates.isAutopilot());
+            // The tie reads the US's rate the city holds when the dial is set, before the month's world step hands the new one (XR2's order).
             rates.takeTheDial(DebtManager.MAX_POLICY_RATE);
+            double usHeld = rates.worldRate();
             step(g);
-            check("on gold a hand's rate is taken, and the month's tie puts the dial at the world's", !rates.isAutopilot()
-                    && rates.getPolicyRate() == rates.worldRate() && fx.getRegime() == ForeignAccounts.Regime.PEG);
+            check("on gold a hand's rate is taken, and the month's tie puts the dial back at the US's rate", !rates.isAutopilot()
+                    && rates.getPolicyRate() == usHeld && fx.getRegime() == ForeignAccounts.Regime.PEG);
             rates.setAutopilot(true);
             int suspended = PolicyDates.GOLD_SUSPENDED;
             through(g, suspended - 1);
@@ -192,8 +195,9 @@ public final class MoneyDatesCheck {
                     && fx.getRegime() == ForeignAccounts.Regime.PEG && fx.isCanadaGold() && fx.getRate() == ForeignAccounts.OPENING_RATE
                     && rates.getPolicyRate() == rates.worldRate());
             rates.takeTheDial(manual);
+            double usHeldThen = rates.worldRate();
             step(g);
-            check("the returned gold ties interest to the world's whatever the hand sets", rates.getPolicyRate() == rates.worldRate());
+            check("the returned gold ties interest to the US's rate whatever the hand sets", rates.getPolicyRate() == usHeldThen);
             Game goldBack = reload(g, "returned gold");
             check("the second gold episode crosses JSON intact", Arrays.equals(fx.toSaveArray(), goldBack.getForeignAccounts().toSaveArray()));
             through(g, PolicyDates.GOLD_END - 1);

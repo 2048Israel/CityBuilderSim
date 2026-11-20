@@ -1,4 +1,4 @@
-# MoneyDatesCheck.java - 255 lines · 10 methods · 2 constants · harnesses
+# MoneyDatesCheck.java - 259 lines · 10 methods · 2 constants · harnesses
 
 `ham/citybuildersim/MoneyDatesCheck.java` - generated 2026-11-19 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 236 | **type** `public final class MoneyDatesCheck` | Proves Canada's dated gold in a city founded the 1900 way: both episodes, Money the player's from the first month, and a reserve exhaustion that survives a load. |
+| 20 | 240 | **type** `public final class MoneyDatesCheck` | Proves Canada's dated gold in a city founded the 1900 way: both episodes, Money the player's from the first month, and a reserve exhaustion that survives a load. |
 | 29 | 4 | `private static void check(String label, boolean ok)` |  |
 | 34 | 6 | `private static Game town(String name, double reserves)` |  |
 | 41 | 11 | `private static void step(Game g)` |  |
@@ -45,5 +45,5 @@
 | 109 | 4 | `private static void difference(String when, double[] a, double[] b)` |  |
 | 115 | 18 | `static boolean readChecks() throws Exception` | ReadPathCheck holds the saved rule still while its public readers are asked repeatedly. |
 | 135 | 19 | `private static boolean secondExhaustion() throws Exception` | REV-R0f-1: exhaustion of the returned gold must release the dial in that very month, before any reload. |
-| 155 | 100 | `public static void main(String[] args) throws Exception` |  |
+| 155 | 104 | `public static void main(String[] args) throws Exception` |  |
 

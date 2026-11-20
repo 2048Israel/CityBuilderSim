@@ -21251,37 +21251,37 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 - **L158 1. gold to August 1914, with Money the player's from the first month**
   - L162 January 1900 starts held at par by the vault, its dial tied to the US$
-  - L164 the rule has the dial from the first month (OP1: the Bank is open from the founding)
-  - L167 on gold a hand's rate is taken, and the month's tie puts the dial at the world's
-  - L172 the founded town actually reaches July 1914 still held at par, without a doubt break
-  - L176 crossing August 1914 floats the dollar
-  - L180 floating, the dial takes a hand's rate
-  - L182 the chosen rate survives the next month
-  - L184 the chosen rate survives the ordinary load
-- **L187 2. July 1926 returns a floating dollar to par; September 1931 floats again**
-  - L189 June 1926 remains a float in the same founded city
-  - L191 crossing July 1926 returns to the old par and world interest
-  - L196 the returned gold ties interest to the world's whatever the hand sets
-  - L198 the second gold episode crosses JSON intact
-  - L200 August 1931 is still on gold at par
-  - L202 crossing the final gold date floats again
-- **L205 3. the player leaves gold when they like, and March 1935 passes as data**
-  - L211 in January 1900 the target, the holdings and the regime take settings, and the band leaves gold
-  - L216 ...and the next month leaves the band as chosen
-  - L219 the suspension passes a dollar already off gold by
-  - L221 ...and so does the return: a band the player chose is not put back on gold
-  - L229 crossing March 1935 leaves the regime, the rule, the target and the holdings as set
-  - L233 Money's settings cross a save
-  - L238 after March 1935 the historical switch leaves the chosen regime alone
-- **L240 4. empty reserves cause an early exit and the exit survives next month and a load**
-  - L241 an exhausted episode stays left even after reserves return, identically after JSON and a month
-  - L242 fixture: the exhausted-gold city is saved in a month its shops want nothing in
-  - L243 the exhausted-gold city comes back with the shops' saved want and means, to the bit, a want of nothing included
-  - L244 the exhausted-gold city's whole foreign-account twin matches after the next month
-  - L245 ...and after the next month its rent, the city's cash and the households' savings are its twin's
-  - L246 second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON
-  - L247 reading Money never mutates its saved rule or inherited rate
-  - L248 every played month conserves money to MoneyAudit's tolerance, across both gold and floating months
+  - L165 the rule takes the dial in January 1900 when handed it (OP1: the Bank is open from the founding)
+  - L170 on gold a hand's rate is taken, and the month's tie puts the dial back at the US's rate
+  - L175 the founded town actually reaches July 1914 still held at par, without a doubt break
+  - L179 crossing August 1914 floats the dollar
+  - L183 floating, the dial takes a hand's rate
+  - L185 the chosen rate survives the next month
+  - L187 the chosen rate survives the ordinary load
+- **L190 2. July 1926 returns a floating dollar to par; September 1931 floats again**
+  - L192 June 1926 remains a float in the same founded city
+  - L194 crossing July 1926 returns to the old par and world interest
+  - L200 the returned gold ties interest to the US's rate whatever the hand sets
+  - L202 the second gold episode crosses JSON intact
+  - L204 August 1931 is still on gold at par
+  - L206 crossing the final gold date floats again
+- **L209 3. the player leaves gold when they like, and March 1935 passes as data**
+  - L215 in January 1900 the target, the holdings and the regime take settings, and the band leaves gold
+  - L220 ...and the next month leaves the band as chosen
+  - L223 the suspension passes a dollar already off gold by
+  - L225 ...and so does the return: a band the player chose is not put back on gold
+  - L233 crossing March 1935 leaves the regime, the rule, the target and the holdings as set
+  - L237 Money's settings cross a save
+  - L242 after March 1935 the historical switch leaves the chosen regime alone
+- **L244 4. empty reserves cause an early exit and the exit survives next month and a load**
+  - L245 an exhausted episode stays left even after reserves return, identically after JSON and a month
+  - L246 fixture: the exhausted-gold city is saved in a month its shops want nothing in
+  - L247 the exhausted-gold city comes back with the shops' saved want and means, to the bit, a want of nothing included
+  - L248 the exhausted-gold city's whole foreign-account twin matches after the next month
+  - L249 ...and after the next month its rent, the city's cash and the households' savings are its twin's
+  - L250 second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON
+  - L251 reading Money never mutates its saved rule or inherited rate
+  - L252 every played month conserves money to MoneyAudit's tolerance, across both gold and floating months
 
 ## MoneySignCheck.java - 70 labelled assertions
 
@@ -23883,30 +23883,30 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L241 2. the founding**
   - L243 PolicyDates.opensAtFoundingRate() names the three income taxes and nothing else
   - L246 fixture: one city founded the 1900 way and one the default way, each in month 1
-- **L266 3. every setter takes in month 1**
-- **L295 4. money is the player's from the founding**
-  - L300 the 1900 city is founded on Canada's gold at par, its dial tied to the US$
-  - L305 in month 1 the inflation target and the bank's holdings take a setting
-  - L308 ...the dollar can be floated in month 1, which leaves Canada's gold
-  - L312 ...and the dial then takes a hand's rate, from the rule
-  - L315 a month on, the float, the hand's rate, the target and the holdings stand: gold is not forced back
-  - L320 fixture: the default city is on no gold, its dial not tied
-  - L325 the default city's dial, target, holdings and regime take settings in month 1
-- **L329 5. a law find opens nothing**
-  - L335 every law row of a lever (
-  - L342 ...and every lever's entry key is one of those rows, on Canada's month
-- **L345 6. nothing tells a date**
-  - L348 fixture: the source tree is found from the working directory
-  - L359 no interface file (
-  - L363 the 1900 city's first year (to month
-- **L365 7. the gate cannot come back by its old names**
-  - L380 no class declares a member of the gate
-  - L405 fixture: the 1900 village with a Law School is carried to month
-  - L411 fixture: PL3 is open to the law faculty next month, and the wage tax already reads the founding rate,
-  - L416 PL3 is found in month
-  - L417 ...and no dial of the policy moved in the find's month
-  - L420 ...nor in the month after
-  - L421 the find is told as a find, once, and no lever's opening is told
+- **L267 3. every setter takes in month 1**
+- **L296 4. money is the player's from the founding**
+  - L301 the 1900 city is founded on Canada's gold at par, its dial tied to the US$
+  - L306 in month 1 the inflation target and the bank's holdings take a setting
+  - L309 ...the dollar can be floated in month 1, which leaves Canada's gold
+  - L313 ...and the dial then takes a hand's rate, from the rule
+  - L316 a month on, the float, the hand's rate, the target and the holdings stand: gold is not forced back
+  - L321 fixture: the default city is on no gold, its dial not tied
+  - L326 the default city's dial, target, holdings and regime take settings in month 1
+- **L330 5. a law find opens nothing**
+  - L336 every law row of a lever (
+  - L343 ...and every lever's entry key is one of those rows, on Canada's month
+- **L346 6. nothing tells a date**
+  - L349 fixture: the source tree is found from the working directory
+  - L360 no interface file (
+  - L364 the 1900 city's first year (to month
+- **L366 7. the gate cannot come back by its old names**
+  - L381 no class declares a member of the gate
+  - L406 fixture: the 1900 village with a Law School is carried to month
+  - L412 fixture: PL3 is open to the law faculty next month, and the wage tax already reads the founding rate,
+  - L417 PL3 is found in month
+  - L418 ...and no dial of the policy moved in the find's month
+  - L421 ...nor in the month after
+  - L422 the find is told as a find, once, and no lever's opening is told
 
 ## PolicyPreviewCheck.java - 151 labelled assertions
 

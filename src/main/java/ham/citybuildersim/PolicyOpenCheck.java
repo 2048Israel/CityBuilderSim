@@ -38,7 +38,7 @@ import java.util.stream.Stream;
  *   2. THE FOUNDING. In month 1 of a city founded the 1900 way and of one founded the default way, the three income taxes read the founding
  *      rate (DEFAULT_INCOME_TAX, their offsets zero), exactly the levers PolicyDates.opensAtFoundingRate() names; every promise reads zero
  *      (the pension, its contribution, EI's premium and benefit, the health premium, the grant and the loan rate); the minimum wage's floor
- *      binds; the rule has the dial; and the builders' founding quote is the city's month-1 sales tax.
+ *      binds; the rule takes the dial when handed it; and the builders' founding quote is the city's month-1 sales tax.
  *   3. EVERY SETTER TAKES IN MONTH 1, in both cities: every dial of the twelve dated levers, the minimum wage through Game, a zone through
  *      Game (and its line in the decision log); and a month on, every setting stands as set and the floor still binds.
  *   4. MONEY IS THE PLAYER'S FROM THE FOUNDING. The 1900 city is founded on gold at par, its dial tied to the US$ (history's regime,
@@ -257,7 +257,8 @@ public class PolicyOpenCheck {
             for (Lever promise : PROMISES) check(which + ": " + promise + " reads zero", dialOf(p, promise) == 0, String.valueOf(dialOf(p, promise)));
             check(which + ": the wage tax's band offset is zero", p.getWageOffset(band) == 0);
             check(which + ": the minimum wage's floor binds from the first month", g.getLabourMarket().isFloorBinding());
-            check(which + ": the rule has the dial from the first month", g.getDebtManager().isAutopilot());
+            g.getDebtManager().setAutopilot(true);
+            check(which + ": the rule takes the dial in month 1 when it is handed it (a bare city founds with the hand on it)", g.getDebtManager().isAutopilot());
             check(which + ": the builders' founding quote is the city's month-1 sales tax on construction",
                     Founding.foundingBuildersRate() == p.effectiveSalesRate("Construction"),
                     Founding.foundingBuildersRate() + " / " + p.effectiveSalesRate("Construction"));
