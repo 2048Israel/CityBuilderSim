@@ -131,6 +131,9 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
     fixture on both, the switch removed): a threshold crossed by chance, not a smaller city. The loop that plays
     on with the pass off now also plays until the city has outgrown the founding's care, within the same year:
     1,224 people at month 61. The section's assertions after it pass as before.
+- **FoodProcessingCheck's Meat Works fixture** (FPK1) set the old rate's four ratios to make nameplate. It now
+  also fills every post, sets the road load to nil and puts every city leg on the hired teams, then restores all
+  three; its nameplate line reads `plannedRate(newUnit(meat))` (§10).
 - **WantedPostsCheck's `marginOf()`** and §5's `earns5` read the hold's earnings as the hold now does, through
   `Sector.staffed()` (§2): the margin the harness works out is `Game.noteStaffingHold()`'s.
 - **HousingCheck, a new section, "an exact packing leaves nobody doubled up"**, causes the dust by hand: 301.6
