@@ -33,6 +33,10 @@ adds its line here, not in `CLAUDE.md`.
         HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
                                    played to m500, no landlord whose till buys one of the homes the
                                    plan passed held with none, and LongPlaytest's homeless watch
+        CreditCrunchCheck.java     MC1's credit crunch: the bank's leverage ratio binding, a
+                                   mortgage desk with no room, and the landlords' owners asked
+                                   for the whole order (the ensemble's seed 13, its bank held in
+                                   its band from m150), no month with over one household homeless
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
