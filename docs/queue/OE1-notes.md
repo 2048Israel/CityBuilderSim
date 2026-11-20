@@ -300,3 +300,28 @@ from the spend's own sum, so paid and imported are one number by construction). 
 line: `householdCarImports` feeds MoneyAudit's domestic and trade scopes and `tradeByGood`. OutsideCheck passes
 by name to FS16, which is in flight and whose sweep owns it; the orchestrator gives FS16 the pool's figures.
 Both rows are in the ship file's `## known-reds` (known-reds.sh exit 0).
+
+## 11. The ensemble on 0.9.171 (OE1d) and its one finding
+
+OE1d: 80 of 80 runs on the gate box (classes of cdb8b15b3, OE1 merged with 0.9.171; the baseline's `JAVA_OPTS`
+extra columns), against `docs/ensemble/0.9.167.md`. The result is exit 4: criteria 23 of 26, hard 8 of 10, batch
+verdict FAIL. T2 goes from FAIL to PASS in AUTO2 and ZERO_SLACK, as on OE1c. F1 goes from PASS to FAIL in the
+same two policies, 1 of 16 each with one cause: ZERO_SLACK 6 is AUTO2 6's twin until m1800, and both flag "the
+households' money was not conserved" at m655.
+
+**The trace.** A local replay of AUTO2 6 to m656 (a scratch copy of Ensemble.java printing the households' strike)
+gives +11.42 that no line names, 0.034% of what moved. The seed's other months are 1e-11. The households'
+in-transit at the strike holds it, in one term: Automotive's pending sales to households, 296.84. Motoring.month
+(Motoring.java 347-354) draws `affordable` = `carsWanted(quote.cost() / wanted)` = 26 cars, and Automotive books
+all 26 as sold to households (Sector.java 2156). `takeCars(26, took.cost() / 26)` then reads each cell's want in
+whole cars at the draw's own per-car price, 11.41706, dearer than the quote's, and wants 25.
+`scale = Math.min(1, units / total)` (HouseholdBalance.java 3065) places those 25 and charges $285.43. The 26th
+car, 296.84 / 26 = 11.41706, is on Automotive's books, in no household's garage, and paid for by nobody: the
+residual exactly.
+
+**OE1's part.** The same replay with OE1's packing snap switched off (a scratch FamilyModel whose
+`packingRounding()` is -1) agrees on the households' savings to 1e-8 and on every pool line at m655. The car price
+is 11.1654 against 11.1772, so 25 are drawn and 25 placed, and the residual is 1e-11. The snap moved the car
+market 0.1% on the way to m655 and put one cell on a whole-car edge. The gap is Motoring's: the draw and the take
+are struck at two prices with whole cars between them, so the units the market books need not be the units the
+households take. It sits on the same lines as CarCheck's red (CI1).
