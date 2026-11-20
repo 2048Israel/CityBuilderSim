@@ -40,7 +40,10 @@ import java.util.Locale;
  *   3. an order the door cut is a halving of what the plan passed, and the
  *      advisor says it was trimmed; a month the door trimmed for the bank's
  *      capital is not left marked as held for it (REV-HN1-1: LongPlaytest
- *      counts the mark as a month held for the bank's leverage);
+ *      counts the mark as a month held for the bank's leverage); since MC1
+ *      an order the door would refuse for the bank's capital is put to the
+ *      owners first, and the door trims for the capital only what their
+ *      issue left uncovered (that trim caused in CreditCrunchCheck 3);
  *   4. LongPlaytest's watch holds - no month leaves more than one household
  *      with no door - and the homes that finish are counted by size;
  *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
@@ -75,6 +78,9 @@ public final class HousingDoorCheck {
         long built;
         /** The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). */
         boolean markedForCapital;
+        /** The order's cost, the owners' issue this month, and whether the door would have refused the order's mortgage for the bank's capital on the till before that issue (MC1). */
+        double cost, raised;
+        boolean shortBeforeOwners;
     }
 
     static Ask pending;
@@ -194,7 +200,28 @@ public final class HousingDoorCheck {
                 + " %d left marked as held for it%n", halved + notHalved, halved, forCapital, leftMarked);
         check("every order the door cut is the plan's order halved, down to one", notHalved == 0);
         check("...and the advisor's line says it was trimmed", unsaid == 0);
-        check("fixture: the door trimmed an order it first refused for the bank's capital", forCapital > 0);
+        /* MC1: while the door would refuse an order's mortgage for the bank's capital, the owners are asked for the
+           whole order first, so the door trims for the capital only what their issue left uncovered. That trim is
+           caused where the issue falls short, CreditCrunchCheck 3; here the window must hold the crunch put to the
+           owners, and no capital trim the owners were not asked first for. */
+        int putToOwners = 0, capitalNotPut = 0;
+        String firstPut = null;
+        for (Ask a : asks) {
+            if (a.shortBeforeOwners) {
+                putToOwners++;
+                if (firstPut == null) firstPut = String.format(Locale.ROOT, "m%d: order %.0f, the owners put in %.0f - %s",
+                        a.month, a.cost, a.raised, a.line);
+            }
+            boolean capitalTrim = a.built >= 1 && a.built < a.passed && a.line != null
+                    && a.line.contains("the bank is short of capital");
+            if (capitalTrim && !a.shortBeforeOwners) capitalNotPut++;
+        }
+        out.printf("   %d order(s) the door would have refused for the bank's capital, put to the owners first%s%n",
+                putToOwners, firstPut == null ? "" : "; first " + firstPut);
+        check("fixture: the window holds an order the door would have refused for the bank's capital, put to the owners"
+                + " first (MC1)", putToOwners > 0);
+        check("...and the door trimmed for the bank's capital no order the owners were not asked for first",
+                capitalNotPut == 0);
         check("...and no month the door trimmed is left marked as held for the bank's capital", leftMarked == 0);
 
         out.println("\n--- 4. LongPlaytest's watch, and the homes that finished by size ---");
@@ -223,6 +250,12 @@ public final class HousingDoorCheck {
         a.asked = asked;
         a.passed = found.quantity();
         a.till = cash;
+        // MC1: the till before the owners' issue, and the door's capital test on the order's mortgage there (ownersAskOnMortgage()).
+        a.cost = costOf.applyAsDouble(Math.max(1, asked));
+        a.raised = g.getEconomyManager().getEquityRaised(RE);
+        double held = cash - a.raised;
+        a.shortBeforeOwners = g.getEconomyManager().getBusinessDebtManager()
+                .mortgageShortOfCapital(RE, a.cost - Math.max(held, Mortgage.ownFundsFor(a.cost)));
         double one = costOf.applyAsDouble(1);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(RE)) {
             if (t.getCapacity() <= 0 || g.getBusinessInvestment().getCostOf(t, 1) != one) continue;

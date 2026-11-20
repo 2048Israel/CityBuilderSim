@@ -43,7 +43,10 @@ import java.util.Locale;
  *      few of the valve's ceiling;
  *   3. through the crunch the owners put in what the till lacked, homes are
  *      built, and no month leaves more than one household with no home
- *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved).
+ *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved); where
+ *      their issue fell short of the order, the door trimmed for the bank's
+ *      capital what equity did not cover, and left no such month marked as
+ *      held for it (HN1, REV-HN1-1; HousingDoorCheck's city covers its orders).
  */
 public final class CreditCrunchCheck {
 
@@ -337,6 +340,19 @@ public final class CreditCrunchCheck {
         check("the landlords' owners were asked, and put money in, while the bank was short", raised > 0);
         check("...and homes were built in the crunch", homesTo > homesFrom);
         check("no month of the crunch leaves more than one household with no home (LongPlaytest's watch)", worst <= 1);
+
+        // The door's capital trim (HN1) where the owners' issue fell short of the order: what equity did not cover.
+        int capitalTrims = 0, leftMarked = 0;
+        for (Month r : months) {
+            if (r.line == null || !r.line.contains("(trimmed from ") || !r.line.contains("the bank is short of capital")) continue;
+            capitalTrims++;
+            if (r.refusedForCapital) leftMarked++;
+            if (capitalTrims <= 3) out.printf(Locale.ROOT, "   m%d: raised %.0f; %s%n", r.month, r.raised, r.line);
+        }
+        out.printf("   %d order(s) the door trimmed after first refusing them for the bank's capital, %d left marked as held for it%n",
+                capitalTrims, leftMarked);
+        check("the door trimmed an order the owners' issue did not cover, first refused for the bank's capital", capitalTrims > 0);
+        check("...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)", leftMarked == 0);
     }
 
     /* =====================================================================
