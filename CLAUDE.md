@@ -22,7 +22,7 @@ every call after it.
 
 - **Checks:** `./batch-check.sh [harness names]` - compile, suite, maps,
   Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
-  runs the timing harnesses alone and hard, judged nightly by `tools/nightly.sh`, `--pick` runs the harnesses that
+  runs the timing harnesses alone and hard, judged nightly on the gate box by `tools/nightly.sh`, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
   are exact lines in `docs/notes/gate.txt` or harness-scoped parts in
   `docs/notes/known-reds.txt` (GR2, the approvals left in temp scripts). Logs go to

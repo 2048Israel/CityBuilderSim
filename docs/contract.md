@@ -100,7 +100,8 @@ own words, and it is the requirement.
   (`~/.cbs-gate-box`), started headless as before; when no box answers it
   mails `jerus` and runs here ("notify me then run on laptop"). Its runs are in
   `~/cbs/runs` there, copied home at the end; `--reuse` and a ship file's
-  gate-run name the box's run, as `gate: run` prints it.
+  gate-run name the box's run, as `gate: run` prints it. `tools/nightly.sh` too
+  runs there, the box held whole, its verdict copied home (GB2).
 - **Still his to decide** (`docs/queue/WC1.md`), unanswered: what the
   orchestrator becomes once MemWatch dispatches; who keeps the gate day to day;
   which of the standing rules stay as they are (he said in the MemWatch session
