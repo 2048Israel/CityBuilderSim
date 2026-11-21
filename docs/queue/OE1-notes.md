@@ -396,3 +396,15 @@ The fixture's condition holds only while the shops hand over the households' nee
 The orchestrator's call: an OE1-path premise, not OE1's code. It passes by name to a new queued row, PT2 (the
 fixture causes the shops' hand-over in its twelve months), in the ship file's `## queued` and `## known-reds`.
 Then main merged again (ac224abf3, FS17) and the dry run again.
+
+**CQ1 taken by OE1** (the orchestrator, 2026-11-20). QUEUE.md's CQ1 is this fault, found by HS1 in SlopeCheck's
+Medellin run (m861, 50 cars drawn at 14.117593 and 49 taken, +14.1176 on the households' identity). OE1's mend
+closes it by construction, another way than CQ1's brief: the take reads its want at the price the draw was
+sized at, not a quote repeated until `carsWanted` holds the count (§3 ★: the draw stays one booking). CarCheck's
+new section (§5) is its harness: it causes a household on the whole-car edge and fails on the old call. Nothing
+of CQ1 is left. SlopeCheck passed on the third dry run, and it passes on OE1's merge with the old call put back
+too (run alone, the call restored after), so OE1's path no longer reaches HS1's edge there. Its green is not the
+mend's evidence; CarCheck's section is. The known-reds row that passes SlopeCheck by name to CQ1 (2026-11-19) is
+the orchestrator's to take out with CQ1's row. The ship file has no way to delete another batch's row
+(`ship.sh` takes out OE1's own), so CQ1's QUEUE.md row goes by QUEUE.md's rule: a row the batch it names settled
+in its notes.
