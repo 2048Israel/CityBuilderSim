@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — GY1, the graph's GDP by the year, and debt to GDP — 2026-11-20, ready, see docs/queue/GY1-notes.md
 The graph's "GDP" line is now a rolling year of output ("GDP (yr)", nominal, the twelve months summed the way real GDP's
