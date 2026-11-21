@@ -65,16 +65,22 @@ package ham.citybuildersim;
  *
  *   7. AND WHAT FALLS DUE ROLLS AS THE SETTING SAYS (0.7.13, section 7).
  *      Rollover.netting() on the brief's own figures; then played cities,
- *      each fixture causing its condition: a city in surplus whose surplus
+ *      each fixture causing its condition: a city in surplus (FS13: its taxes
+ *      at the most, its notes sized from the year's surplus, its ledger leaving
+ *      half of the first note to net) whose surplus
  *      nets part of a note and the rest rolls into the same note, sized so
  *      its cash covers it and so of a face above that cash - the discount
  *      borrowed into the debt - with the ledger netting a surplus once, and
- *      its twins as 12-month notes and by hand; a city in deficit where
+ *      its twins as 12-month notes and by hand; a city in deficit (the cost
+ *      of five roads against the year's surplus, its months of falling due
+ *      counted from the paper it issued) where
  *      everything rolls, a dollar note at home with the window abroad shut
  *      and a serial's instalment into a new serial of its term; a dollar
- *      note rolled abroad in dollars, and its twin, the same note sized over
- *      the share of exports the window shuts at (TW1: each twin's window caused
- *      by the size of its note, so the dollar note rolls at home); every press
+ *      note rolled abroad in dollars, and its twin, the same note whose
+ *      service is over the share of exports the window shuts at (TW1, FS13:
+ *      each twin's exports set by hand from the note's service, just under and
+ *      just over the share, and its ledger holding the year's surplus, so the
+ *      dollar note rolls abroad in the one and at home in the other); every press
  *      audited, and the setting, the ledger and the record through a save.
  *
  *   8. AND EARNED WALKS TO THE BUDGET (0.7.31, section 8). The Government
@@ -840,16 +846,36 @@ public class TreasuryCheck {
         bills.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
         byHand.setRolloverMode(Rollover.Mode.MANUAL);
         Game[] three = { same, bills, byHand };
+        /*
+         * ...THE YEAR'S SURPLUS CAUSED, AND THE NOTES SIZED FROM IT (FS13, 2026-11-20). This section used to read whatever surplus the
+         * played city made over its year and ask it for two flat notes, and "the city ran a surplus" and "it nets part of what falls
+         * due" were the path's: a note of 20,000 FACTOR is part of a surplus of a hundred-odd thousand only while the city makes that
+         * much. Now the three twins' income taxes are at the most the model lets them be (TaxPolicy.MAX_INCOME_TAX) from the first
+         * month, and each note's cash is NOTE_IN_SURPLUSES of the year's surplus read the month it is issued, so that whatever the
+         * surplus is, the note falling due is a few times it and the netting is a part of it and no more.
+         */
+        for (Game g : three) g.getEconomyManager().getTaxPolicy().setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
         for (Game g : three) for (int i = 0; i < 12; i++) press(g);
-        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE));
+        double surplusAtFirst = Math.max(0, same.surplusOverLastYear());
+        for (Game g : three) quietly(() -> g.handleTBillLogic(NOTE_IN_SURPLUSES * surplusAtFirst, 3, Game.BUILD_NOTE_GRANULE));
         for (Game g : three) press(g);
-        for (Game g : three) quietly(() -> g.handleTBillLogic(20_000 * PriceLevel.FACTOR, 3, Game.BUILD_NOTE_GRANULE));
+        double surplusAtSecond = Math.max(0, same.surplusOverLastYear());
+        for (Game g : three) quietly(() -> g.handleTBillLogic(NOTE_IN_SURPLUSES * surplusAtSecond, 3, Game.BUILD_NOTE_GRANULE));
         for (Game g : three) press(g);
 
         int m = same.getMonth();
         Debt first = paper(same, "NOTE", 3, m - 2, false), second = paper(same, "NOTE", 3, m - 1, false);
         check("fixture: the first note falls due next month, the second the month after",
                 first != null && second != null && first.getRemainingMonths() == 1 && second.getRemainingMonths() == 2);
+        /*
+         * ...AND THE NETTING A PART OF THE NOTE BY CONSTRUCTION (FS13, 2026-11-20). Rollover.netting() is the least of what is left of the
+         * surplus, the cash and what falls due, and the notes are sized from the surplus of two months ago: a surplus that grew past
+         * the note's multiple of it since would net the whole note and leave nothing to roll. So the ledger is given, in the three
+         * twins alike, a netting that leaves no more than half of what falls due unused (useOfTheYearsSurplus()), as if an earlier
+         * rollover this year had netted the rest: what is left to net is then a part of the note, whatever the surplus is.
+         */
+        double firstDue = same.rolloverPlan().due();
+        for (Game g : three) useOfTheYearsSurplus(g, firstDue / 2);
         Rollover.Plan p1 = same.rolloverPlan();
         System.out.printf("   month %d: %,.2fk falls due; the year's surplus %,.2fk; cash %,.2fk; nets %,.2fk%n",
                 m, p1.due(), p1.surplus(), p1.cash(), p1.netted());
@@ -894,7 +920,7 @@ public class TreasuryCheck {
                 owedBefore - p1.due() + (rolledNote == null ? 0 : rolledNote.getFaceValue()));
         check("...more than the netting alone would leave: the note's discount is borrowed into the debt",
                 owedAfter > owedBefore - p1.netted() + 1e-6);
-        near("the ledger keeps what it netted, the month it ran", m, roll.usedInYear(m - 1), p1.netted());
+        near("the ledger keeps what it netted, the month it ran", m, roll.usedInYear(m - 1), p1.used() + p1.netted());
         near("the bridge's raised row is what it raised", m, same.getTreasuryRaised(), roll.getLastRaised());
         near("...and its repaid row the note that fell due", m, same.getTreasuryRepaid(), p1.due());
         check("...and the month closes its audit", audited(same));
@@ -910,9 +936,9 @@ public class TreasuryCheck {
         System.out.printf("   month %d: %,.2fk falls due; the year's surplus %,.2fk, %,.2fk of it netted; nets %,.2fk%n",
                 m, p2.due(), p2.surplus(), p2.used(), p2.netted());
         near("the second note falls due the month after", m, p2.due(), second.getFaceValue());
-        near("...and the ledger carries the first netting into its year", m, p2.used(), p1.netted());
+        near("...and the ledger carries the first netting into its year", m, p2.used(), p1.used() + p1.netted());
         near("...so it nets only the surplus not netted already", m, p2.netted(),
-                Rollover.netting(p2.surplus(), p1.netted(), p2.cash(), p2.due()));
+                Rollover.netting(p2.surplus(), p2.used(), p2.cash(), p2.due()));
         check("the surplus nets once: the two months net no more than a year's surplus between them",
                 p1.netted() + p2.netted() <= Math.max(p1.surplus(), p2.surplus()) + 1e-6);
         press(same);
@@ -940,7 +966,19 @@ public class TreasuryCheck {
         press(roads);
         BuildingsTemplate road = template(roads, "Paved Road");
         roads.getLandManager().setOwnedSqFt(roads.getLandManager().getOwnedSqFt() + road.getLandSqFt() * 10);
+        /*
+         * ...THE DEFICIT CAUSED BY THE BUILD, AND THE MONTHS COUNTED FROM THE PAPER (FS13, 2026-11-20). The five roads are what makes the
+         * year a deficit: what the build is struck at (Game.quoteBuild()) is set against the year's surplus before it, both the model's own
+         * figures. And the months in which something falls due are counted from the pieces this fixture issues, not from the months the
+         * played city happened to roll in: a note of T months falls due when one month of it is left and, rolled into a note of its term
+         * in the month before, T-1 months on again; a serial's instalment when its remaining months are one over a whole year.
+         * The deficit in each of those months is asserted as a fixture of its own, and the city sells nothing abroad by the exports set
+         * to nothing before the dollar note and before each plan (the month overwrites them at its step 156), not by the path's.
+         */
+        double roadsCost = roads.quoteBuild(road, 5).total, surplusBeforeRoads = roads.surplusOverLastYear();
         check("fixture: it builds five roads this year", roads.buildStack(road, 5, false) == Game.BuildResult.SUCCESS);
+        check("fixture: ...which cost more than the year's surplus before them, so the year is a deficit", roadsCost > surplusBeforeRoads);
+        sellsNothingAbroad(roads);
         check("fixture: the window abroad is open while it owes nothing abroad", roads.foreignWindowOpen());
         quietly(() -> roads.handleForeignLogic("Note", 2_000 * PriceLevel.FACTOR, 6, Game.BUILD_NOTE_GRANULE, false));
         check("fixture: ...and shut once it owes dollars and sells nothing abroad", !roads.foreignWindowOpen());
@@ -951,11 +989,23 @@ public class TreasuryCheck {
         int issuedAt = roads.getMonth();
         Debt dollars = paper(roads, "NOTE", 6, issuedAt, true);
         Debt serial = paper(roads, "SERIAL", 60, issuedAt, false);
+        Debt shortNote = paper(roads, "NOTE", 3, issuedAt, false);
+        int presses = 12;
+        java.util.TreeSet<Integer> dollarMonths = noteDueMonths(dollars == null ? 0 : dollars.getRemainingMonths(), presses);
+        java.util.TreeSet<Integer> shortMonths = noteDueMonths(shortNote == null ? 0 : shortNote.getRemainingMonths(), presses);
+        java.util.TreeSet<Integer> serialMonths = serialDueMonths(serial == null ? 0 : serial.getRemainingMonths(), presses);
+        java.util.TreeSet<Integer> expectedMonths = new java.util.TreeSet<>(dollarMonths);
+        expectedMonths.addAll(shortMonths);
+        expectedMonths.addAll(serialMonths);
+        check("fixture: each piece it issued falls due in the year: the dollar note, the 3-month note and the serial's instalment",
+                !dollarMonths.isEmpty() && !shortMonths.isEmpty() && !serialMonths.isEmpty());
+        java.util.TreeSet<Integer> fellDueIn = new java.util.TreeSet<>();
 
         int rolledMonths = 0;
-        boolean allDeficit = true, allRolled = true, allAudited = true, dollarsAtHome = false, logSaid = false;
+        boolean inDeficit = true, nettedNothing = true, allRolled = true, allAudited = true, dollarsAtHome = false, logSaid = false;
         boolean serialRolled = false, allCapitalised = true;
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < presses; i++) {
+            sellsNothingAbroad(roads);
             Rollover.Plan p = roads.rolloverPlan();
             int now = roads.getMonth();
             boolean dollarsDue = dollars != null && roads.getDebtManager().getDebt().contains(dollars)
@@ -964,7 +1014,9 @@ public class TreasuryCheck {
             String log = press(roads);
             if (!(p.due() > 0)) continue;
             rolledMonths++;
-            if (!(p.surplus() < 0) || p.netted() != 0) allDeficit = false;
+            fellDueIn.add(i);
+            if (!(p.surplus() < 0)) inDeficit = false;
+            if (p.netted() != 0) nettedNothing = false;
             if (Math.abs(p.toRaise() - p.due()) > 1e-6 || roads.getRollover().getLastRaised() < p.due() - 1e-6) allRolled = false;
             if (!(roads.getRollover().getLastIssued() > roads.getRollover().getLastRaised())) allCapitalised = false;
             if (!audited(roads)) allAudited = false;
@@ -975,10 +1027,12 @@ public class TreasuryCheck {
             }
             if (serialDue) serialRolled = paper(roads, "SERIAL", 60, now, false) != null;
         }
-        System.out.printf("   %d month(s) rolled; the year's surplus %,.2fk at the end%n",
-                rolledMonths, roads.surplusOverLastYear());
-        check("fixture: something fell due in the deficit year", rolledMonths >= 3);
-        check("a deficit year nets nothing", allDeficit);
+        System.out.printf("   %d month(s) rolled, %d by its paper's schedules (%s); the year's surplus %,.2fk at the end; the roads cost %,.2fk against %,.2fk%n",
+                rolledMonths, expectedMonths.size(), expectedMonths, roads.surplusOverLastYear(), roadsCost, surplusBeforeRoads);
+        check("fixture: something fell due in the deficit year, in the months its paper's schedules say and no others",
+                rolledMonths == expectedMonths.size() && fellDueIn.equals(expectedMonths));
+        check("fixture: the year is a deficit in every month something falls due", inDeficit);
+        check("a deficit year nets nothing", nettedNothing);
         check("...so everything that fell due rolled, and its cash covered it", allRolled);
         check("...each month's new face more than the cash it raised: the interest capitalised", allCapitalised);
         check("the dollar note, the window shut, rolled into a local note of its term", dollarsAtHome);
@@ -988,10 +1042,14 @@ public class TreasuryCheck {
 
         System.out.println("\n--- the surplus city, exporting: a dollar note rolls abroad, in dollars ---");
 
-        // RT2: the same city at m60 sells abroad; m20 no longer does after bakery sales.
-        while (same.getMonth() < 60) press(same);
-        check("fixture: it sells abroad now, and the window is open",
-                same.getDebtManager().getMonthlyExports() > 0 && same.foreignWindowOpen());
+        /*
+         * RT2, re-caused (FS13, 2026-11-20): this section pressed the city to month 60 because that city sold abroad and m20 did not, and
+         * what it sold and whether its window was open were the path's. The city now stays where the last section left it, and its
+         * exports are set by hand (DebtManager.setTrade(), the import cover as it stands): first to a level the dollar note is issued
+         * at, then to the share of a year of them that the note's service is to be. The month overwrites them at its step 156 (the
+         * path's exports), after the rollover has run at step 8, so a value set between two presses is what the next press's
+         * rollover and every plan and quote before it read, and it is set again before each press and before the plan is read.
+         */
         /*
          * ...AND THE WINDOW IS CAUSED, NOT GIVEN (TW1). This section used to ask the city for a flat D$500k six-month note
          * and then assert the window open as the note fell due, and nothing here made it so: the window's own test
@@ -999,9 +1057,9 @@ public class TreasuryCheck {
          * WINDOW_SHUT_SERVICE_SHARE of a year's exports, and the exports are the path's. On TQ1's path before main's
          * 0.9.130 they were small enough to shut it ("65% of exports already goes to foreign creditors", five assertions
          * red); on the merged tree DQ1's young-town borrowing and CU2's chained world prices opened it again. So the
-         * note is sized from the city's own exports, to a share of that constant, in two twins - the city, and a save of
-         * it taken the same month - the one at OPEN_SHARE of it and the other at SHUT_SHARE of it, and neither's window
-         * depends on what the path gives at month 65.
+         * exports are sized from the note, to a share of that constant, in two twins - the city, and a save of it taken
+         * the same month - the one at OPEN_SHARE of it and the other at SHUT_SHARE of it, from just under it and just over
+         * it, and neither's window depends on what the path gives.
          */
         quietly(() -> same.saveGame(10));
         Game shutTwin = new Game(same.getGameFiles());
@@ -1017,6 +1075,9 @@ public class TreasuryCheck {
          * having moved at all. Left floating, the share at the maturity is the market's and not the fixture's.
          */
         for (Game g : new Game[] { same, shutTwin }) g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
+        for (Game g : new Game[] { same, shutTwin }) sellsAbroad(g);
+        check("fixture: it sells abroad now, and the window is open",
+                same.getDebtManager().getMonthlyExports() > 0 && same.foreignWindowOpen());
         Debt abroad = dollarNoteAtShare(same, OPEN_SHARE);
         Debt shutAbroad = dollarNoteAtShare(shutTwin, SHUT_SHARE);
         check("fixture: it owes a dollar note", abroad != null);
@@ -1025,24 +1086,24 @@ public class TreasuryCheck {
                         + " (the window shuts above %.0f%%)%n", same.getMonth(),
                 same.getDebtManager().getMonthlyExports() * 12, 100 * serviceShare(same), 100 * serviceShare(shutTwin),
                 100 * DebtManager.WINDOW_SHUT_SERVICE_SHARE);
-        Game[] twinsAbroad = { same, shutTwin };
-        while (abroad != null && abroad.getRemainingMonths() > 2) for (Game g : twinsAbroad) press(g);
+        while (abroad != null && abroad.getRemainingMonths() > 1) {
+            pressAtShare(same, OPEN_SHARE);
+            pressAtShare(shutTwin, SHUT_SHARE);
+        }
         /*
-         * ...AND THE YEAR'S SURPLUS SPENT BEFORE IT FALLS DUE (0.7.18,
-         * re-caused). Rolled whole needs nothing of the year's surplus left to
-         * net, and this city had netted its surplus in month fifteen and run a
-         * shrinking one since - a history, not a cause. Its founding is
-         * different now (the bakery above, and planners that wait for staff),
-         * its surplus grows, and a hundred-odd thousand of it was left to net
-         * in month twenty-five. So the month before, the city spends what it
-         * has not netted, and twice what it made last month besides, on an
-         * elevated highway or as many as that takes - public works with no
-         * posts, on ground it is given for them.
+         * ...AND THE YEAR'S SURPLUS USED UP BEFORE IT FALLS DUE (0.7.18, re-caused; FS13, 2026-11-20). Rolled whole needs nothing of
+         * the year's surplus left to net, and this city had netted its surplus in month fifteen and run another since - a history, not a
+         * cause; 0.7.18 then spent it on elevated highways, twice what the city made last month besides, a margin of the path's. Now the
+         * month it falls due the ledger is given a netting of the whole of the year's surplus (Rollover.restoreLedger()), as if a
+         * rollover had netted it, so that the used is the surplus and more, and nothing is left to net by construction.
          */
-        check("fixture: the city spent the year's surplus it had not netted",
-                spendTheYearsSurplus(same) == Game.BuildResult.SUCCESS);
-        check("fixture: ...and so did its twin", spendTheYearsSurplus(shutTwin) == Game.BuildResult.SUCCESS);
-        while (abroad != null && abroad.getRemainingMonths() > 1) for (Game g : twinsAbroad) press(g);
+        for (Game g : new Game[] { same, shutTwin }) useOfTheYearsSurplus(g, 0);
+        check("fixture: the year's surplus is used up in the ledger, so none of it is left to net",
+                same.getRollover().usedInYear(same.getMonth()) >= same.surplusOverLastYear());
+        check("fixture: ...and so is its twin's",
+                shutTwin.getRollover().usedInYear(shutTwin.getMonth()) >= shutTwin.surplusOverLastYear());
+        tradeAtShare(same, OPEN_SHARE);
+        tradeAtShare(shutTwin, SHUT_SHARE);
         Rollover.Plan pd = same.rolloverPlan();
         Rollover.Issue inDollars = null;
         for (Rollover.Issue issue : pd.issues()) if (issue.foreign()) inDollars = issue;
@@ -1109,11 +1170,20 @@ public class TreasuryCheck {
         check("...and the month closes its audit", audited(shutTwin));
     }
 
-    /** The share of a year's exports the six-month dollar note is sized to in the city whose window must be open: well under the one the window shuts at. */
-    static final double OPEN_SHARE = .5;
+    /**
+     * The share of the share the window shuts at that the six-month dollar note's next year of service is, in the city whose window must be open:
+     * just under it (FS13: the exports are set by hand, so the share can be brought close to the threshold from below).
+     */
+    static final double OPEN_SHARE = .9;
 
-    /** ...and in its twin, whose window must be shut: well over it. Both are fractions of DebtManager.WINDOW_SHUT_SERVICE_SHARE. */
-    static final double SHUT_SHARE = 2;
+    /** ...and in its twin, whose window must be shut by that share alone: just over it. Both are fractions of DebtManager.WINDOW_SHUT_SERVICE_SHARE. */
+    static final double SHUT_SHARE = 1.1;
+
+    /** The dollar note's size, in times the smallest issue the rollover makes (Game.minimumIssueSize()), so that what falls due abroad is an issue it can make. */
+    static final double DOLLAR_NOTE_IN_MINIMUMS = 10;
+
+    /** Each of the two notes falling due in the city in surplus has a cash of this many of the year's surplus, so that a surplus netted against it is part of it. */
+    static final double NOTE_IN_SURPLUSES = 3;
 
     /**
      * What the window's own test reads (DebtManager.foreignWindowReason()): the next year's service on what the city owes abroad, as a share of
@@ -1124,29 +1194,90 @@ public class TreasuryCheck {
         return annual > 0 ? g.getDebtManager().nextYearService() / annual : Double.POSITIVE_INFINITY;
     }
 
-    /**
-     * A six-month dollar note on a city that sells abroad, sized from its own exports so that the next year's service on it is about {@code of}
-     * times WINDOW_SHUT_SERVICE_SHARE of a year of them (the coupons come to a little more than the face): the fixture sets the share the window
-     * reads, so that it is open or shut by construction and not by the exports the path happened to give (TW1). Null when it was not issued.
-     */
-    static Debt dollarNoteAtShare(Game g, double of) {
-        double annual = g.getDebtManager().getMonthlyExports() * 12;
-        double usd = g.getForeignAccounts().toUsd(of * DebtManager.WINDOW_SHUT_SERVICE_SHARE * annual);
-        quietly(() -> g.handleForeignLogic("Note", usd, 6, PriceLevel.FACTOR, false));
-        return paper(g, "NOTE", 6, g.getMonth(), true);
+    /** The city sells nothing abroad (FS13): its exports set by hand to nothing (DebtManager.setTrade(), the import cover as it stands), so that owing dollars shuts its window by that alone, whatever the path's exports are. */
+    static void sellsNothingAbroad(Game g) {
+        g.getDebtManager().setTrade(0, g.getDebtManager().getImportCover());
+    }
+
+    /** The dollar note's face, in US$: DOLLAR_NOTE_IN_MINIMUMS of the smallest issue the rollover makes, at the month's D$. */
+    static double dollarNoteUsd(Game g) {
+        return g.getForeignAccounts().toUsd(DOLLAR_NOTE_IN_MINIMUMS * g.minimumIssueSize());
     }
 
     /**
-     * The city spends what it has not netted of the year's surplus, and twice what it made last month besides, on an elevated highway or as many
-     * as that takes, on ground it is given for them: so what falls due rolls whole.
+     * The city sells abroad (FS13): its exports set by hand (DebtManager.setTrade(), the import cover as it stands) to the level at which a
+     * year of the dollar note's face would be OPEN_SHARE of the share the window shuts at - a level the window is open at, where the city owes
+     * nothing abroad, whatever the path's exports are.
      */
-    static Game.BuildResult spendTheYearsSurplus(Game g) {
-        double leftToNet = Math.max(0, g.surplusOverLastYear() - g.getRollover().usedInYear(g.getMonth()))
-                + 2 * Math.abs(g.getEconomyManager().getNationalAccounts().getBalance());
-        BuildingsTemplate spendOn = template(g, "Elevated Highway");
-        int spent = Math.max(1, (int) Math.ceil(leftToNet / spendOn.getCashCost()));
-        g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + spendOn.getLandSqFt() * spent);
-        return g.buildStack(spendOn, spent, true);
+    static void sellsAbroad(Game g) {
+        DebtManager debt = g.getDebtManager();
+        double face = g.getForeignAccounts().toLocal(dollarNoteUsd(g));
+        debt.setTrade(face / (OPEN_SHARE * DebtManager.WINDOW_SHUT_SERVICE_SHARE) / 12, debt.getImportCover());
+    }
+
+    /**
+     * The exports set by hand so that the next year's service on what the city owes abroad is exactly {@code of} times WINDOW_SHUT_SERVICE_SHARE of
+     * a year of them (DebtManager.nextYearService(), the sum the window's own test reads): the share is the fixture's, not the path's. The month
+     * overwrites the exports at its step 156, after the rollover (step 8), so this is set again before each press and before a plan is read.
+     */
+    static void tradeAtShare(Game g, double of) {
+        DebtManager debt = g.getDebtManager();
+        double service = debt.nextYearService();
+        if (service > 0) debt.setTrade(service / (of * DebtManager.WINDOW_SHUT_SERVICE_SHARE) / 12, debt.getImportCover());
+    }
+
+    /** One press with the exports set to the share first, its printing kept. */
+    static String pressAtShare(Game g, double of) {
+        tradeAtShare(g, of);
+        return press(g);
+    }
+
+    /**
+     * A six-month dollar note on a city that sells abroad (sellsAbroad()), its size the fixture's (dollarNoteUsd()), and then its exports set so that
+     * the next year's service on it is {@code of} times WINDOW_SHUT_SERVICE_SHARE of a year of them (the coupons come to a little more than the
+     * face): the fixture sets the share the window reads, so that it is open or shut by construction and not by the exports the path happened to
+     * give (TW1). The window is open as the note is issued, owing nothing abroad yet, in both twins. Null when it was not issued.
+     */
+    static Debt dollarNoteAtShare(Game g, double of) {
+        double usd = dollarNoteUsd(g);
+        quietly(() -> g.handleForeignLogic("Note", usd, 6, PriceLevel.FACTOR, false));
+        Debt note = paper(g, "NOTE", 6, g.getMonth(), true);
+        tradeAtShare(g, of);
+        return note;
+    }
+
+    /**
+     * The year's surplus used in the ledger, all but {@code leavingUnused} of it, by construction (FS13): the ledger is given, in this month, the
+     * netting that brings what it holds (Rollover.usedInYear()) up to the surplus less that (Rollover.restoreLedger()), as if a rollover earlier in
+     * the year had netted it, so that Rollover.netting() reads at most {@code leavingUnused} left to net - nothing, at 0, where what falls due
+     * rolls whole. What the ledger holds already is kept.
+     */
+    static void useOfTheYearsSurplus(Game g, double leavingUnused) {
+        double[] held = g.getRollover().ledgerToSave();
+        double more = g.surplusOverLastYear() - leavingUnused - g.getRollover().usedInYear(g.getMonth());
+        if (!(more > 0)) return;
+        double[] now = java.util.Arrays.copyOf(held, held.length + 2);
+        now[held.length] = g.getMonth();
+        now[held.length + 1] = more;
+        g.getRollover().restoreLedger(now);
+    }
+
+    /**
+     * The plan-months, counted from the first press, at which a note of {@code term} months falls due in a run of {@code presses}: when one month of
+     * it is left, and then again every term-1 months, as it rolls into a note of its term in the month before. A note of one month or less never
+     * falls due after the rollover rolled it, and no more is counted.
+     */
+    static java.util.TreeSet<Integer> noteDueMonths(int term, int presses) {
+        java.util.TreeSet<Integer> months = new java.util.TreeSet<>();
+        for (int k = 1; term > 1 && k * (term - 1) < presses; k++) months.add(k * (term - 1));
+        return months;
+    }
+
+    /** ...and a serial's: its instalments fall due when its remaining months are one over a whole year, the harness's own reading of the paper's schedule. */
+    static java.util.TreeSet<Integer> serialDueMonths(int remaining, int presses) {
+        java.util.TreeSet<Integer> months = new java.util.TreeSet<>();
+        for (int i = 0; i < presses; i++) if ((remaining - i) % 12 == 1) months.add(i);
+        return months;
     }
 
     /* ===================================================================

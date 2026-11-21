@@ -1,6 +1,6 @@
 # ExchangeRateCheck.java - 1,508 lines · 50 methods · 7 constants · harnesses
 
-`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Proves the D$ is a float that follows its parity and swings like a real
 > currency (XR1, 2026-10-21): parity is the basket with rent held to a third,

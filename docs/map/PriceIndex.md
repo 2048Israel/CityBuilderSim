@@ -1,6 +1,6 @@
 # PriceIndex.java - 781 lines · 37 methods · 15 constants · model
 
-`ham/citybuildersim/PriceIndex.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceIndex.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > What a month costs a household, against what it cost at founding.
 > 
@@ -29,7 +29,7 @@
 > a food-weighted index, and it should, because that is whose cost of living
 > this is.
 
-**Used by (22):** [ChartModel](ChartModel.md), [CityNeeds](CityNeeds.md), [CurrencyCheck](CurrencyCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PassThroughCheck](PassThroughCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [StepsCheck](StepsCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
+**Used by (23):** [ChartModel](ChartModel.md), [CityNeeds](CityNeeds.md), [CurrencyCheck](CurrencyCheck.md), [CurveCheck](CurveCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GroceryCheck](GroceryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [PassThroughCheck](PassThroughCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [StepsCheck](StepsCheck.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md)
 
 ## Sections
 

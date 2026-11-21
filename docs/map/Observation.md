@@ -1,6 +1,6 @@
 # Observation.java - 71 lines · 5 methods · 4 constants · model
 
-`ham/citybuildersim/Observation.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Observation.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The played city's path premises, reported without counting a failure.
 > 
@@ -10,7 +10,7 @@
 
 **Uses:** [Timing](Timing.md) (1)
 
-**Used by (28):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DeskCheck](DeskCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [FundCheck](FundCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [MonetaryCheck](MonetaryCheck.md), [ObservationCheck](ObservationCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (26):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DeskCheck](DeskCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [MonetaryCheck](MonetaryCheck.md), [ObservationCheck](ObservationCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 

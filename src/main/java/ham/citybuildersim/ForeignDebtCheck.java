@@ -53,6 +53,11 @@ import java.nio.file.Path;
  *      by the quote for the sale itself? Not by the two rates before it: a sale of two years' tax is quoted dear abroad and goes home
  *      though the world's rate before it is the lower, and a small one goes
  *      abroad once the city's own paper is dearer; quoting books nothing.
+ *
+ * THE FIXTURES (FS13, 2026-11-20): a played city (tradingCity(), 60 months) is the state the sections read, and what the world prices
+ * it on is SET on it, not read off what its depots earned or borrowed up to: section 2 holds the dial over the world's rate, section 8
+ * hands the city its exports (earnsAbroad()) sized to its bond, and section 10 hands it exports sized to the big sale and holds the
+ * dial over the world's quote for the small one.
  */
 public class ForeignDebtCheck {
 
@@ -118,6 +123,9 @@ public class ForeignDebtCheck {
      * could not raise it, and the world's curve could not move a bond's value (section 8). Two more depots
      * (addStack(t, n, true), as foundingDepot() stood its one) are builders enough to raise the houses: 1,461
      * people and 962 a month earned abroad, a premium of 1.0% that a quarter of the exports raises to 4.2%.
+     *
+     * FS13, 2026-11-20: section 8 and RestructureCheck's dollar pump are handed their exports now (earnsAbroad()) and stand no depots for
+     * them; only section 10 stands these two, for its tax.
      */
     static Game tradingCity(Path dir, int depotsStanding) throws Exception {
         return tradingCity(dir, depotsStanding, false);
@@ -153,6 +161,27 @@ public class ForeignDebtCheck {
      */
     static Game tradingCityTaxed(Path dir, int depotsStanding) throws Exception {
         return tradingCity(dir, depotsStanding, true);
+    }
+
+    /** How far over the world's rate a fixture holds the city's dial to make its own paper the dearer: a point, over the floor the paper stands on. */
+    static final double DIAL_OVER_THE_WORLD = .01;
+
+    /** The share of a full solvency stress (DebtManager.FULL_STRESS_EXPORT_YEARS of exports owed) section 8's bond is sized to: an eighth, a few points of premium with room above it for a quarter of the exports to raise. */
+    static final double BOND_STRESS_SHARE = 1.0 / 8;
+
+    /** ...and the share section 10's big sale (two years of tax) is sized to: half, so the world prices the big sale dear and the small one a twenty-fourth of it near nothing. */
+    static final double BIG_SALE_STRESS_SHARE = 1.0 / 2;
+
+    /**
+     * THE EXPORTS A FIXTURE HANDS THE WORLD (FS13, 2026-11-20). The world prices the city's dollar debt against what the city sells
+     * abroad (DebtManager.setTrade(), solvency and service stress), and a played city's exports are whatever its depots and bakeries
+     * earned by month 60: 41 a month on four depots, 962 on six, and the premium sat at its ceiling or at a point on that. So the
+     * exports are set, from the paper they are to price: a month's exports at which `owedLocal` stands at `stressShare` of
+     * DebtManager.FULL_STRESS_EXPORT_YEARS of them, the solvency stress the model reads it at (the service stress follows from the
+     * paper's own coupons). Set again after any press of a month, which hands them back from the accounts (Game.nextMonth()).
+     */
+    static void earnsAbroad(DebtManager dm, double owedLocal, double stressShare) {
+        dm.setTrade(owedLocal / (12 * stressShare * DebtManager.FULL_STRESS_EXPORT_YEARS), dm.getImportCover());
     }
 
     public static void main(String[] args) throws Exception {
@@ -229,57 +258,30 @@ public class ForeignDebtCheck {
             city.buildStack(template(city, "Paved Road"), 30, false);
 
             /*
-             * AND THEN ENOUGH ROAD TO PUT IT IN DEBT, WHICH IS THE POINT.
+             * THE CITY IS PLAYED, AND THEN ITS PRICE IS CAUSED (FS13, 2026-11-20).
              *
              * The comparison below is between the city's OWN cost of money and
-             * the world's, and a city with no debt is priced at the floor - it
-             * came out at 1.00% against the world's 2.00% and the assertion
-             * inverted. That is not the model being wrong; a debt-free treasury
-             * really is the best credit in the room.
-             *
-             * The endowment went from $500M to $3.5B the night rebalance stage
-             * two put every building on its real capital cost, and this build
-             * list stopped being able to spend it. So the order is SIZED FROM
-             * THE CITY'S CASH rather than written down - the same fix
-             * CreditCheck's road city needed on the same night, for the same
-             * reason - and the city borrows because it has been made to.
+             * the world's, and a city with no debt is priced at the floor - the
+             * dial - so it came out at 1.00% against the world's 2.00% and the
+             * assertion inverted. That is not the model being wrong; a debt-free
+             * treasury really is the best credit in the room. Until FS13 the
+             * section borrowed, a note a month up to six times, until the city's
+             * own paper cost more than the world's, which was a read of what the
+             * city's debt against its GDP and tax happened to price at. It is
+             * caused now: the dial goes over the world's rate (below), so the
+             * floor the city's paper stands on is over the world's price of money.
              */
             city.simulateMonths(60);
-
-            /*
-             * ...AND THEN PUT IT IN DEBT, LAST, BECAUSE THE RATE IS READ NEXT.
-             *
-             * Ordered BEFORE the sixty months it simply paid the loan off again
-             * and arrived at the read with a clean balance sheet, which is the
-             * same 1.00% floor by a longer road.
-             */
-            /*
-             * Issued directly rather than provoked through a build. Ordering
-             * more road than the treasury holds was the first attempt and it
-             * never moved the rate - the city pays for a queue as it builds it,
-             * so the debt never existed to be priced. What this section needs is
-             * simply A CITY WITH DEBT ON ITS BOOKS at the moment the rate is
-             * read, and the debt market is the honest way to give it one.
-             */
-            /*
-             * ...AND ENOUGH OF IT. The quote is a spread on debt over output
-             * and over revenue, so "twice the treasury" is however many
-             * points that happens to be against this city's GDP - and the
-             * accounts stopped booking build contracts as output on
-             * 2026-09-11 (see NationalAccounts), which moved it. The section
-             * needs a city whose own paper costs more than the world's; it
-             * borrows until it does, within reason.
-             */
-            for (int k = 0; k < 6; k++) {
-                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR);
-                city.simulateMonths(1);
-                if (city.getDebtManager().getRate() > city.getDebtManager().foreignRate()) break;
-            }
         } finally {
             System.setOut(out);
         }
 
+        // FS13, 2026-11-20: the dial over the world's rate, struck now (the world's rate is handed each month and is read here, after the last one).
         DebtManager market = city.getDebtManager();
+        final double dialPlayed = market.getPolicyRate();
+        market.setPolicyRate(market.worldRate() + DIAL_OVER_THE_WORLD);
+        market.updateInterest();
+        assertTrue("fixture: the city's dial stands over the world's rate", market.getPolicyRate() > market.worldRate());
         out.printf("   at home %.2f%%, abroad %.2f%% (premium %.2f%%)%n",
                 market.getRate() * 100, market.foreignRate() * 100,
                 market.countryPremium() * 100);
@@ -289,6 +291,9 @@ public class ForeignDebtCheck {
         assertTrue("...so the world's money starts cheaper than the city's own",
                 market.foreignRate() < market.getRate());
         assertTrue("...and the window is open", market.foreignWindowOpen());
+        // ...and the dial put back where the city played it, for the sections below, which read the same city and what its currency does a month (section 7).
+        market.setPolicyRate(dialPlayed);
+        market.updateInterest();
 
         /* ============ 3. the books balance with dollars on them ============ */
         out.println("\n--- and the books still balance ---");
@@ -699,18 +704,21 @@ public class ForeignDebtCheck {
         Game city;
         System.setOut(quiet);
         try {
-            // Two depots stand beside the plant's (PT1-M4): see tradingCity(); without them the premium is at its ceiling.
-            city = tradingCity(dir, 2);
+            city = tradingCity(dir);
         } finally {
             System.setOut(out);
         }
         DebtManager market = city.getDebtManager();
+        // FS13, 2026-11-20: the city is handed its exports, sized to the bond it is about to owe (earnsAbroad()), so the premium it is charged is the
+        // fixture's and the depots' earnings by month 60 decide nothing. Set before the quote and the issue, which price the city on them.
+        final double bondUsd = 5_000 * PriceLevel.FACTOR;
+        earnsAbroad(market, bondUsd * market.rateOf("USD"), BOND_STRESS_SHARE);
         assertTrue("fixture: the world will lend", market.foreignWindowOpen());
 
-        DebtQuote quote = city.quoteForeign("Term", 5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);
+        DebtQuote quote = city.quoteForeign("Term", bondUsd, 20, 100 * PriceLevel.FACTOR);
         System.setOut(quiet);
         try {
-            city.handleForeignLogic("Term", 5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, true);
+            city.handleForeignLogic("Term", bondUsd, 20, 100 * PriceLevel.FACTOR, true);
         } finally {
             System.setOut(out);
         }
@@ -755,6 +763,8 @@ public class ForeignDebtCheck {
         market.updateInterest();
 
         double premium = market.countryPremium();
+        assertTrue("fixture: the exports handed in leave the premium above nothing and well under the world's ceiling",
+                premium > 0 && premium < DebtManager.MAX_COUNTRY_PREMIUM / 2);
         double exports = market.getMonthlyExports(), cover = market.getImportCover();
         market.setTrade(exports / 4, cover);
         assertTrue("fixture: a city earning a quarter as much abroad is charged more for it",
@@ -763,6 +773,12 @@ public class ForeignDebtCheck {
                 market.marketValue(twenty) < value - 1e-6);
         market.setTrade(exports, cover);
         close("...and back when the city's standing is", market.marketValue(twenty), value, 1e-9);
+        // ...and from the other side: more exports, a lower premium, and the paper is worth more.
+        market.setTrade(exports * 4, cover);
+        assertTrue("a city earning four times as much abroad is charged less for it", market.countryPremium() < premium);
+        assertTrue("...and the world charging the city less moves it: up", market.marketValue(twenty) > value + 1e-6);
+        market.setTrade(exports, cover);
+        close("...and back again when the city's standing is", market.marketValue(twenty), value, 1e-9);
     }
 
     /* ============ 9. the ladder, by the calendar year it is paid in (0.7.32) ============ */
@@ -974,13 +990,12 @@ public class ForeignDebtCheck {
         // calendar that begins in 1900 meets other draws (EP1): at month 61 the US rate stood at 5.5% here, over the city's 3% dial, and the
         // premise below was luck of the draw. A fixture causes its condition: the dial goes over the world's rate by enough for the share
         // (ABROAD_SHARE) to hold.
+        // FS13, 2026-11-20: and no month is played after it (the month hands the exports back from the accounts, and the world's rate with
+        // them): the city's rate is struck now (updateInterest()), and the exports the world prices the city on are handed in, sized to the
+        // big sale - the paper whose premium decides that it goes home - so the small sale, a twenty-fourth of it, is priced small by cause.
+        earnsAbroad(dm, big, BIG_SALE_STRESS_SHARE);
         dm.setPolicyRate(dm.worldRate() / LongPlaytest.ABROAD_SHARE + .02);
-        System.setOut(quiet);
-        try {
-            city.simulateMonths(1);   // the city's rate (getRate()) is struck in the month, so the dial is read once it has turned
-        } finally {
-            System.setOut(out);
-        }
+        dm.updateInterest();
 
         assertTrue("fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone",
                 !LongPlaytest.BORROW_AT_HOME);
@@ -994,7 +1009,7 @@ public class ForeignDebtCheck {
         double[] before = books(city);
         double bigAbroad = LongPlaytest.abroadQuote(city, big).marketRate();
         double bigHome = dm.quoteRate(big);
-        quotes("no debt at home", city, small, big);
+        quotes("the dial over the world's", city, small, big);
         assertTrue("fixture: the big sale's quote abroad is at or above the share of its quote at home",
                 bigAbroad >= LongPlaytest.ABROAD_SHARE * bigHome);
         assertTrue("a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower",
@@ -1002,21 +1017,13 @@ public class ForeignDebtCheck {
         assertTrue("quoting both sales booked nothing: cash, debts and both rates are as they were",
                 java.util.Arrays.equals(before, books(city)));
 
-        // ...and the city's own paper made dear, as section 2 does it: borrowed at home until a small sale is cheaper abroad.
-        System.setOut(quiet);
-        try {
-            for (int k = 0; k < 6; k++) {
-                city.handleTBillLogic(city.getCash() * 2, Game.BUILD_NOTE_MONTHS, 1000.0 * PriceLevel.FACTOR);
-                city.simulateMonths(1);
-                if (LongPlaytest.abroadQuote(city, small).marketRate()
-                        < LongPlaytest.ABROAD_SHARE * dm.quoteRate(small)) break;
-            }
-        } finally {
-            System.setOut(out);
-        }
-        quotes("debt at home", city, small, big);
-        assertTrue("fixture: the city now owes at home and still owes nothing abroad",
-                dm.getDomesticPrincipal() > 0 && dm.getForeignPrincipal() < 1e-9);
+        // ...and the city's own paper made dear (FS13: by the dial, not by borrowing at home until the quotes parted): the dial goes over
+        // what the world quotes for the small sale, by the share and a margin, so the small sale is cheaper abroad by cause.
+        dm.setPolicyRate(LongPlaytest.abroadQuote(city, small).marketRate() / LongPlaytest.ABROAD_SHARE + DIAL_OVER_THE_WORLD);
+        dm.updateInterest();
+        quotes("the dial dear", city, small, big);
+        assertTrue("fixture: the city still owes nothing abroad and the window is open, with its own paper dear",
+                dm.getForeignPrincipal() < 1e-9 && dm.foreignWindowOpen() && dm.getPolicyRate() > dm.worldRate());
 
         before = books(city);
         double smallAbroad = LongPlaytest.abroadQuote(city, small).marketRate();

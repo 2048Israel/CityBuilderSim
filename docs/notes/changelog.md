@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS13 (untagged) — the fund, the treasury and the trading city cause their conditions — 2026-11-20, ready, see docs/queue/FS13-notes.md
+The sweep for the fund, the treasury and the trading city (the FS1 study, 6.12, with PK1's FundCheck half): seven harnesses now cause the premises they had read off played cities.
+TreasuryCheck's rollovers set the year's surplus by the tax and take the notes' due months from the pieces issued. The window is set by the share of exports on both sides of WINDOW_SHUT_SERVICE_SHARE, with no press to month 60.
+ForeignDebtCheck, RestructureCheck and BuybackCheck set the exports, the dial over the world and the auction's holders (the savers' rate, the bank's room, the sale's size). Their guard and borrowing loops are gone.
+CurveCheck sets the inflation and the expectation through their save arrays, and its one-ulp line states MoneyAudit.tolerance (row 114 retired).
+FundCheck and FundLedgerCheck build their bank at the founding and play a named 72 months, and are green at 60 and 84 too. The desk's room, the holders and the split unit are caused. Row 82 is retired: the town's sellers used up the desk's bid before the fund's ask.
+CurveCheck and FundCheck leave Observation.HARNESSES. Queued: RB3, the fund's limit ask at fair resting when a company trades under fair. The batch is harness-only: the model and the trace do not move.
+
 ### FS16 (untagged) — schools, work and the households' books cause their conditions — 2026-11-20, ready, see docs/queue/FS16-notes.md
 The nine schools, work and household-books harnesses cause what they used to find by playing (the flaky-suite study's FS16
 rows), harness-only: no model class moves. EducationCheck's fourteen played sections set the licensed heads, posts and
