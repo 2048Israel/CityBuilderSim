@@ -673,73 +673,127 @@ cells that settle and deletes the bound.
   this PC for 2,400 months (the mean, 1,852,269 people) against 18 for
   today's (1,479,891). Late months run at about 80 per 9 minutes.
 
+
 ## 7. Recovery and the reload mend (2026-11-21, R1gc2)
 
-Recovered the same `batch/R1g` worktree at af8864834, the merge of
-0.9.177 (FB15), preserving the uncommitted `Sector` and `ReloadCheck`
-mends and the generated indexes. The original launch brief is also kept
-in `C:/Users/Jerus/cbs/sessions/R1g/in-1.txt`; the old worker's last work
-is in `out-3.jsonl`. The pace experiments in section 6 stand. Jerus's
-wage-based trailing twelve-month mean and the 1900 default are accepted
-decisions, not questions reopened by recovery. The ensemble baseline is
-`docs/ensemble/0.9.177.md`; no new ensemble or dry run has been started.
+Recovered the same `batch/R1g` worktree at af8864834, preserving its
+uncommitted Sector/ReloadCheck mends and generated indexes. The original
+launch brief is archived in `C:/Users/Jerus/cbs/sessions/R1g/in-1.txt` and
+the old worker's last work in `out-3.jsonl`. The accepted decisions stand:
+the home's cost follows the households' trailing twelve-month mean pay,
+and the founding screen and playtest default to 1900. No pace experiment
+was repeated. The recovery source mend is 47ae0d63f; main's GB5 and TN1
+were then merged at 469f69263 (main 5790d0506, 0.9.178). Only generated
+indexes conflicted; they were regenerated. TN1 records a byte-identical
+default trace; the newest ensemble baseline remains `docs/ensemble/0.9.177.md`.
 
-**The captive fault, approved in the orchestrator's 05:02 mail.**
-`Sector.produceStock()` subtracted the output row's captive use from an
-order even after a farm's horse share fell to zero. Both production paths
-now set the row's captive figure to zero when `captive(g)` is false. The
-prior trace found 4.398 tonnes retained after the last horse month, and
-ReloadCheck's reloaded farm made 4.128116 tonnes more crop, because a fresh
-row had no retained feed. The fault was also present with R1g's switches
-off. The mend changes that transition in a 1900 city; a city founded
-today's way never has horse feed to retain, so this reset does not move
-its trace. The earlier bit-for-bit comparisons of today's founding in
-sections 4–5 remain evidence for the preceding model changes; they have
-not been rerun for recovery.
+**The captive fault, approved by the orchestrator at 05:02.**
+Sector.produceStock subtracted the output row's captive use from an order
+after a farm's horse share fell to zero. Both production paths now set
+that figure to zero when captive(g) is false. The original trace found
+4.398 tonnes retained after the last horse month, and the loaded farm
+made 4.128116 tonnes more crop because its fresh row held no old feed.
+The fault also occurred with R1g's switches off. This changes the 1900
+transition. Today's founding has no horse share; ProcessingSector's
+other captive test is membership in its makes/uses sets, fixed for that
+founding. Thus the reset does not move today's founding's trace. This is
+a source-based conclusion, not a newly run 2,400-month comparison; the
+earlier bit-for-bit comparisons in sections 4–5 stand for the preceding
+model changes.
 
-Village1900Check section 9 causes the transition on its existing scratch
-village: set every standing farm's tractor count unfitted, apply the
-recipes and equipment forms, produce a crop and assert positive captive
-feed; fit all those tractors, apply both model passes again, assert a zero
-horse share, then produce on the same output row and require zero captive
-feed. The first recovery fixture omitted `EquipmentForms.apply()` and
-failed its own zero-horse premise; adding the normal forms pass made all
-nine sections pass. No bound or premise was loosened. A pre-mend class
-overlay proof remains to be run, without replacing the worktree source.
+Village1900Check section 9 causes the last-horse transition on its scratch
+village. Every standing tractor is marked unfitted; the model's recipes
+and equipment forms are applied; a crop must have positive captive feed.
+All tractors are then fitted and both passes applied again; the horse
+share must be zero, and the same output row's next crop must have no
+captive feed. The first fixture omitted the equipment-forms pass and
+failed its own zero-horse premise; the normal pass fixed that premise.
+The completed harness passes all nine sections. An isolated class overlay
+then ran the same transition with current Sector (exit 0) and with Sector
+from af8864834 (exit 1): both premises pass on the old class, and only the
+last assertion fails, retaining 3.326254965 tonnes. No worktree source was
+replaced for this negative proof.
 
-**ReloadCheck 3b.** FS17 has shipped, so this is repaired here, not passed
-by name. The preserved first mend buys ground as the screens do and
-removes the yard and salvaged material through their model methods. It
-still failed the by-hand assertion: an order placed immediately before
-the save has no materials on the next statement. Construction's
-`beforeBank()` snapshots the month just closed; the work in the month it
-starts is reported at the following strike. The caused order is now
-worked for one normal month before the save, before the other FS17
-conditions are placed. The order size and the by-hand assertion are
-unchanged. Verification of this completed fixture is still outstanding.
+**ReloadCheck 3b is caused, with its assertion retained.** FS17 has shipped,
+so there is no by-name row for it. The preserved ground/yard/salvage mend
+was necessary but insufficient. A diagnostic on the exact checkpoint
+sequence found the city at m1208 with cash -4583.4374: LongPlaytest.build
+returned false, and no House was on site. Its borrowing guard refuses that
+treasury. The fixture now gives it the model's Founding.WEALTHY_CASH,
+requires the normal House order to succeed, and works it for a normal
+month before the save. Construction.beforeBank reports the month just
+closed, so that draw is on the next statement. All other FS17 conditions
+are placed after the working month. The order size and by-hand assertion
+are unchanged. ReloadCheck passes completely, including the caused point,
+all checkpoints, both subsequent months, the skips, Earth and autosave.
 
-**Review as a stranger.** Read the entire saved source delta against main,
-including the pay window's save/load order, exact catalogue-based home
-costs, apprentice netting, the pure advice hold and catalogue cache, and
-the new captive reset and causing fixtures. The review corrected a
-Founding javadoc that still said the screen opened on All fitted. The
-pay window is restored before `Recipes.apply()` and takes one index per
-game month; the cache is thread-local and removed in `finally`, and the
-catalogue lookup cache is concurrent. This builder pass does not replace
-the fresh stranger review the orchestrator orders for money, saves and
-threading.
+**The other moved premises.** HousingDoorCheck's 1900 city has one red:
+the watched window finds no order the bank would refuse for its capital.
+Today's founding passes on the same economic code. Its other housing,
+trim and household cash-identity assertions pass; the one row is FS11.
+CreditCrunchCheck has seven reds on 1900, two already on main under FS9.
+Its five additional assertions all pass with today's founding (which has
+only those two known reds). At m270 the 1900 yard covers all six blocks,
+so the door and plan are both 930.4; the bank funds the whole order on an
+insured mortgage instead of trimming it. The fixture's supposed whole-order
+equity ask is -84.7, while the actual down-payment issue offers 157.6.
+Thus the extra price/issue/trim assertions lack their stated premises,
+not a working lender rule. Those five rows are FS9. No bank or business
+debt code was changed. The obsolete pre-FB15 HousingDoor red is not added.
 
-Recovery checks so far: `./batch-check.sh --fast` exit 0; then
-`./batch-check.sh Village1900Check` exit 0 (all nine sections, including
-the walk's save/load equality and the captive transition). Logs are
-`target/r1g/recovery---fast.txt` and
-`target/r1g/recovery-Village1900Check.txt`. TN1's box gate began before
-the remaining focused checks, so no JVM beyond `--fast` runs while it is
-active. Remaining: the negative captive proof, ReloadCheck, and the
-moved-city HousingDoorCheck/CreditCrunchCheck evidence and named rows
-(FS11/FS9 only where their faults are premises moved by the new founding).
-The approved RN2 expansion covers the caused point's two history lines
-as well as its two save lines; its unsaved owned capacity changes the
-stranded share, rent and price index. Exact current rows follow the
-focused result. No gate-run line will reuse the earlier failed dry run
-`cbs-gate-R1g-A8QKMhXJ`, whose model predates these mends.
+The ship file also adds the two history lines approved at 05:02 under
+RN2, beside main's two save lines. The earlier caused point at m1211
+(`target/r1g/reload-mend.txt`) showed unsaved RealEstate.ownedCapacity
+leaving the loaded stranded share at 0.24110154570507586 while the live
+share diluted to 0.24020725213792052, changing rent and the price index,
+then the money path. The current final ReloadCheck run does not reach
+that gap; the two rows preserve the already traced, approved transfer.
+
+**Review as a stranger.** Read the entire saved source delta against main:
+the pay window's save/load order, exact catalogue-based costs, apprentice
+netting, pure advice hold, catalogue cache, captive reset and causing
+fixtures. Corrected a Founding javadoc that still said the screen opened
+on All fitted. The pay window restores before Recipes.apply and takes one
+index per month; the advice cache is thread-local and removed in finally;
+the catalogue cache is concurrent. This builder pass does not replace the
+fresh stranger review owed for money, saves and threading.
+
+### Recovery checks and the remaining gates
+
+Every game JVM named the main worktree's earth-2.bin and world-1.bin with
+C:/ paths. Named harness calls were sequential. An early HousingDoor call
+was stopped while ReloadCheck's post-check wrapper was finishing and then
+rerun; only completed results below count. The 10:48 orchestrator mail
+explicitly allowed focused laptop checks beside a box gate, superseding
+the old prompt's global gate-file hold. The 11:08 hold reserved the laptop
+for FS5; the already-started final ReloadCheck was owned to exit, and no
+new long check was started after that hold.
+
+| check | completed result and evidence |
+|---|---|
+| --fast, before and after the main merge | green, compile/maps/Stale (0 firm), `target/r1g/recovery-fast-merge.txt` |
+| Village1900Check | all nine sections green, including saved mean equality and the last horse, `recovery-Village1900Check.txt` |
+| isolated captive transition | current Sector exit 0; pre-mend Sector exit 1 with both premises satisfied, `recovery-captive-positive.txt`, `recovery-captive-negative.txt` |
+| ReloadCheck on 0.9.177 | all green, 88 s, `recovery-ReloadCheck-v177.log` |
+| ReloadCheck after merging 0.9.178 | all green, 93 s, including by-hand 3b, `recovery-ReloadCheck.log` |
+| HousingDoorCheck | 1900: one FS11 premise red; today's control: green, `recovery-HousingDoorCheck.log`, `recovery-today-HousingDoorCheck.log` |
+| CreditCrunchCheck | 1900: seven reds (two main FS9, five added FS9); today's control: only the two main FS9 reds, `recovery-CreditCrunchCheck.log`, `recovery-today-CreditCrunchCheck.log` |
+
+All log names without a directory above are under `target/r1g/`.
+The old failed dry run `cbs-gate-R1g-A8QKMhXJ` predates the mends and is not
+reused: no gate-run line. A read-only look at its kept suite recovered the
+box's LongPlaytest time, 248.9 seconds, against section 6's 38 minutes on
+this PC. No new full pick, long playtest, ensemble or dry run was run.
+The pick is ALL; provisional readiness stays in place for the fresh
+review, the final ensemble against the newest baseline after the next
+approved model/base merge (currently 0.9.177), and the orchestrator's gate.
+MC2's model is due to ship first; do not run
+the ensemble ahead of its merge or reopen Jerus's accepted pace choice.
+
+
+The project write-up is [The 1900 city grows](../../claude/the-1900-city-grows.md).
+Record validation passed strict UTF-8/LF, the changelog's twelve-line limit,
+the provisional marker and absence of a stale gate-run, known-red row syntax,
+and coverage of all eight captured HDC/CCC failing assertions by main's
+registry plus this ship file. These are focused results; the ALL gate
+remains owed after review and the approved final ensemble.
