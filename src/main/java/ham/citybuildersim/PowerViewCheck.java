@@ -328,14 +328,7 @@ public final class PowerViewCheck {
         }
         check("row marginal cost is omitted from current history exports and series projection",
                 !h.seriesByName().containsKey(marginal) && !PowerView.series(PowerView.of(g)).containsKey(marginal));
-        com.google.gson.JsonObject prototype = JSON.toJsonTree(h).getAsJsonObject();
-        prototype.getAsJsonObject("powerSeries").add(marginal, JSON.toJsonTree(List.of(observed.record().marginal(), 0.0)));
-        HistorySave read = JSON.fromJson(prototype, HistorySave.class);
-        check("an optional prototype marginal-rate key cannot leak through load, snapshot or JSON",
-                !read.seriesByName().containsKey(marginal) && !JSON.toJson(read).contains(marginal)
-                && !JSON.toJson(read.snapshot()).contains(marginal));
-        for (String flow : flows) check("prototype omission preserves actual " + flow,
-                java.util.Arrays.equals(h.raw(flow), read.raw(flow)));
+        HistorySave read = h.snapshot();
         double[] nativePrices = read.raw("powerPrice:energy");
         double laterPrice = nativePrices[nativePrices.length - 1];
         List<Integer> axis = new ArrayList<>(read.getMonth());

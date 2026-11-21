@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,179 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,177 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -25778,7 +25778,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L611 both are in TRADE: the month's imports (tradeOut) hold the two lines
   - L612 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
 
-## PowerViewCheck.java - 40 labelled assertions
+## PowerViewCheck.java - 38 labelled assertions
 
 > Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves.
 > WHY. A screen can look plausible while showing next month's fleet or calling row receipts profit. The fixtures cause
@@ -25820,15 +25820,13 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L314 actual tariff remains the retained model tariff at event step
   - L318 the original completed dispatch precedes three absent strikes, then the rejoin dispatch
   - L329 row marginal cost is omitted from current history exports and series projection
-  - L334 an optional prototype marginal-rate key cannot leak through load, snapshot or JSON
-  - L337 prototype omission preserves actual
-  - L343 all actual departure/rejoin events lie in the first calendar year to be folded
-  - L360 the native departure/rejoin year actually folds
-  - L366 the real global energy price retains its own annual RATE mean
-  - L367 no omitted marginal RATE is exposed by folds or folded JSON
-- **L373 actual save/load and missing old observations**
-  - L374 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
-  - L375 the saved closing dispatch feeds the next native month without being rebuilt from ending state
+  - L336 all actual departure/rejoin events lie in the first calendar year to be folded
+  - L353 the native departure/rejoin year actually folds
+  - L359 the real global energy price retains its own annual RATE mean
+  - L360 no omitted marginal RATE is exposed by folds or folded JSON
+- **L366 actual save/load and missing old observations**
+  - L367 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
+  - L368 the saved closing dispatch feeds the next native month without being rebuilt from ending state
 
 ## PriceLevelCheck.java - 93 labelled assertions
 

@@ -594,23 +594,7 @@ public class HistorySave {
     private Map<String, List<Double>> researchSeries = new LinkedHashMap<>();
 
     /** Struck power observations, at the strike month; source dispatch and paid dispatch months are separate series. */
-    @JsonAdapter(PowerSeriesAdapter.class)
     private Map<String, List<Double>> powerSeries = new LinkedHashMap<>();
-
-    /** Omit only the retired optional prototype metric: an absent plant has no observed marginal cost, not zero cost. */
-    private static final class PowerSeriesAdapter extends TypeAdapter<Map<String, List<Double>>> {
-        private final TypeAdapter<Map<String, List<Double>>> plain = new Gson().getAdapter(new TypeToken<Map<String, List<Double>>>() {});
-
-        private Map<String, List<Double>> withoutMarginal(Map<String, List<Double>> from) {
-            if (from == null) return null;
-            Map<String, List<Double>> kept = new LinkedHashMap<>(from);
-            kept.keySet().removeIf(k -> k.startsWith("powerPrice:row:") && k.endsWith(":marginal"));
-            return kept;
-        }
-
-        @Override public Map<String, List<Double>> read(JsonReader in) throws IOException { return withoutMarginal(plain.read(in)); }
-        @Override public void write(JsonWriter out, Map<String, List<Double>> values) throws IOException { plain.write(out, withoutMarginal(values)); }
-    }
 
     private void recordPower(Game game) {
         Map<String, Double> values = PowerView.series(PowerView.of(game));

@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 617 files, 670,496 lines, 29,214 methods, 6,491 constants. `GameVersion.VERSION` is "0.9.180", `SAVE_FORMAT` 58.
+**The tree:** 617 files, 670,473 lines, 29,211 methods, 6,491 constants. `GameVersion.VERSION` is "0.9.180", `SAVE_FORMAT` 58.
 
 ## model (274 files)
 
@@ -126,7 +126,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Health.java](Health.md) | 450 | 27 | How much of the workforce is off sick this month. | 29 |
 | [Healthcare.java](Healthcare.md) | 997 | 57 | The city's healthcare service: what it costs, what it collects, and what it does with the dead. | 28 |
 | [HistoryGrapher.java](HistoryGrapher.md) | 115 | 1 |  | 1 |
-| [HistorySave.java](HistorySave.md) | 2,495 | 98 | Every month the city has ever lived, one number at a time. | 58 |
+| [HistorySave.java](HistorySave.md) | 2,479 | 95 | Every month the city has ever lived, one number at a time. | 58 |
 | [HomeFuel.java](HomeFuel.md) | 171 | 20 | The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the ho... | 4 |
 | [Household.java](Household.md) | 1,478 | 124 | Every household of one shape at one pay tier, as one ledger. | 50 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,451 | 109 | The city's residents, treated as one household. | 19 |
@@ -556,7 +556,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PostwarRecipeCheck.java](PostwarRecipeCheck.md) | 934 | 21 | The postwar engineering and business discoveries run their sourced earlier figures, compose in either order, retain saved decisions and leave defau... | 0 |
 | [PowerDispatchCheck.java](PowerDispatchCheck.md) | 412 | 24 | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the win... | 0 |
 | [PowerPriceCheck.java](PowerPriceCheck.md) | 616 | 27 | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what... | 2 |
-| [PowerViewCheck.java](PowerViewCheck.md) | 379 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
+| [PowerViewCheck.java](PowerViewCheck.md) | 372 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
 | [PriceLevelCheck.java](PriceLevelCheck.md) | 1,654 | 64 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 13 |
 | [PrizeCheck.java](PrizeCheck.md) | 2,023 | 76 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
 | [PublicLicenceCheck.java](PublicLicenceCheck.md) | 778 | 34 | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it deli... | 2 |

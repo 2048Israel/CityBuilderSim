@@ -1,9 +1,10 @@
 # PW6 — the recorded power month (2026-11-21)
 
-> P2 provisional mends after REV-PW6c1-1, based on `215d3a39cb5997fed7f7dd96444503f2a98fea0e`.
-> The new negative control reproduced the three intended failures with all hard premises
-> held. Positive PowerViewCheck, YearBookCheck and SaveFileCheck each exited 0 after exact
-> checkpoint restoration. Scoped delta review remains owed; the source is not SHIP.
+> Corrected P2 provisional mends after scoped review turn 2: the adapter/prototype
+> conversion has been removed for the contract. The new native-only negative control
+> reproduced exactly two intended failures with all hard premises held. Correctly rebuilt
+> positive PowerViewCheck and SaveFileCheck each exited 0. Earlier adapter results below
+> are historical for `8079445ee`. Scoped delta review remains owed; source is not SHIP.
 > The provisional ship marker remains; no ensemble/dry/screen/readiness GO was used.
 
 PW6 implements the accepted electricity study §5 power screen after shipped PW1, from
@@ -136,7 +137,11 @@ Ask root for a separate screen-check session: inspect narrow/wide wrapping, all 
 stack ticks and row colours, dates versus billing/payment periods, empty/founding and
 old-save messages, month updates and scroll position. An eye check is not a Pending row.
 
-## REV-PW6c1-1 P2 — optional marginal-cost history omitted
+## Historical `8079445ee` P2 attempt — optional marginal-cost history omitted
+
+This section records the earlier adapter attempt and its actual evidence. Scoped review
+55f3/root rejected the adapter as conversion code. It is absent from current source;
+the corrected native-only implementation and evidence are recorded in the next section.
 
 The review found that `recordPower()` filled an absent row's optional marginal-price
 RATE with zero, reducing its annual mean. Zero is correct for absent energy, fuel and
@@ -204,7 +209,58 @@ phase/currency/save-continuation laws still pass. No unrelated named/fast replay
 fullpick, Kept, display, ensemble or dry run was added. All owned jobs are terminal;
 the local named slot was released to root.
 
-Scoped source-delta review against `215d` remains owed, including the field-only adapter's
-unpublished-prototype omission versus the no-conversion rule; green runtime proofs do
-not substitute for that review. Final-model ensemble against .180 and ALL-238 dry
-ordering remain owed, without execution GO. The provisional marker remains.
+At `8079`, scoped source review of the adapter versus the no-conversion rule remained
+owed; that review subsequently rejected it. Those greens do not stand for current
+source approval or current reduced native-proof results. The provisional marker remains.
+
+## Scoped turn 2 correction — plain map and native-only proof
+
+Root instruction `20261121-185026-446-orchestrator-c254` accepted reviewer 55f3's P2:
+the field adapter was conversion code, contrary to contract §1, "Write no conversion
+code." Shipped .180 has no powerSeries and its generic Map schema needs no prototype
+migration. The annotation and PowerSeriesAdapter implementation are removed entirely.
+Existing Gson/TypeToken/TypeAdapter/JsonAdapter imports remain used elsewhere in the
+class. No alternative cleaning/filtering route, format bump or shared fold change is
+introduced. Current HistorySave.java bytes equal `215d`'s plain-map implementation.
+
+The one-line PowerView.series marginal-key omission remains. rowLeaveRejoinHistory now
+uses the actual native history snapshot; synthetic prototype injection and migration
+assertions are removed. Observed nonzero coal generation/fuel/receipts/current cost,
+native complete retirement and same-id rejoin, the three absent strikes, exact zero
+FLOW/rejoin positions, actual tariff, yearly FLOW totals and global RATE mean remain
+hard. Native history/export/fold JSON must lack the newly omitted row metric. The
+pending-flow/source-order/money/currency/Services/save conclusions are unchanged.
+
+The NEW minimal negative control restored ONLY the single PowerView marginal series
+line from `215d`; HistorySave stayed the corrected plain map, and the corrected native
+fixture stayed intact. Its normal PowerViewCheck wrapper exited 4 (class exit 2), with
+exactly two intended failures: native marginal history/series export and its presence
+after actual folding/JSON. Every hard setup/phase/FLOW/current-cost/tariff/year-total/
+global-rate premise held. Exact raw source/log/suite/exit were archived BEFORE restoration
+at `target/PW6-P2-native-negative-20261121-1851/`; it is immutable evidence. Both earlier
+negative archives, their source checkpoints and the historical `8079` greens remain
+untouched.
+
+An attempted positive run reused the negative bytecode: my Copy-Item restore preserved
+PowerView.java's 18:37:51 source timestamp, older than the 18:54:02 negative class, and
+Maven's 3-second compile did not rebuild it. The class still contained the omitted key.
+That attempt exited 4 and was stopped before SaveFileCheck; it is not a corrected-source
+semantic result. Its exact failed raw/source/suite/exit, stale class and timestamp/hash
+evidence are retained at `target/PW6-P2-native-positive-20261121-1855/`.
+
+Writing the IDENTICAL corrected bytes with a fresh timestamp forced the ordinary full
+compile (38 seconds). The compiled class then lacked the retired key. Sequential normal
+PowerViewCheck and SaveFileCheck wrappers each exited 0, including compile/maps/Stale
+with zero firm findings. Exact source/raw logs/suites/exits and build verification are
+archived at `target/PW6-P2-native-positive-20261121-1857/`. No code, fixture, threshold
+or causal premise was adjusted to obtain these results. Prior YearBookCheck's 836
+assertions remain valid for its unchanged fold rules; no unchanged YearBook or separate
+fast replay was run. The current native annual-fold proof ran in PowerViewCheck.
+
+All owned jobs are terminal and the named slot was released. Relative to `8079`, this
+correction changes HistorySave.java and PowerViewCheck.java plus generated indexes and
+these notes; relative to `215d`, the remaining source delta is PowerView.java's one-line
+omission and the native history/fold proof in PowerViewCheck.java. No slim/readKept,
+pending restore, planner, money, Services or YearBook rule was reopened. Scoped source
+review, final-model ensemble against .180 and ALL-238 dry ordering remain owed. No
+ensemble/dry/fullpick/Kept/screen/readiness/publication GO was used. Marker retained.
