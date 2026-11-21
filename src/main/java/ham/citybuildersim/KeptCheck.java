@@ -4465,11 +4465,6 @@ public class KeptCheck {
     /** The months a lot the let-go month settled is watched through in 63: its page and its two reviews, a month landing after each. */
     static final int SETTLED_WATCH = 3;
 
-    /**
-     * The most months 63's let-go hand plays, ordering a bond and a share the fund does not hold each month, until one of them settles (KFP1):
-     * a hand bid rests on the book until a seller comes (BondCheck's fixture), and on FS5's first run one month's bid settled none.
-     */
-    static final int SETTLE_MONTHS = 6;
 
     /** What 61 pays into a fund that holds nothing, in the city's smallest bond issues: a fund with something to buy whatever the treasury holds (FS5). */
     static final int FUND_PAY_IN_ISSUES = 200;
@@ -4744,38 +4739,41 @@ public class KeptCheck {
             letGoFrom.clear();
             letGoFrom.addAll(b.fundHoldings());
             fundRule(g, true);
-            // FS5 (KFP1): the settlement caused - lots the fund does not hold, bought through the model as the ticket's button buys, while the rule
-            // is let go: the bond in its reach that runs the longest past the watch and a share it does not hold, ordered again each month until one
-            // settles, SETTLE_MONTHS at the most (on AP1's city the rule's own buys settled none; on FS5's first run one month's bid settled none).
-            String bondOrdered = null, shareOrdered = null;
-            int months = 0;
-            while (months < SETTLE_MONTHS) {
-                bondOrdered = null;
-                int most = SETTLED_WATCH + 1;
-                for (String key : b.fundSecurities()) {
-                    if (!key.startsWith("B:") || key.contains(":rescue") || letGoFrom.contains(key)) continue;
-                    CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
-                    int left = cb == null ? 0 : cb.remainingMonths(g.getMonth());
-                    if (left > most) {
-                        most = left;
-                        bondOrdered = key;
-                    }
+            // FS5 (KFP1): the settlement caused, on the bond's own book. The hand bids for the bond in the fund's reach that it does not hold, that
+            // runs the longest past the watch and that the world or the bank holds; the month's step posts the bid at the bond's value, where it
+            // rests until a seller comes (BondCheck's fixture) - on this city none came in six months of a bond's and a share's bids (FS5's run 2),
+            // nor to the rule's own (main's KFP1). So the holder sells into it (BondMarket.tradeForCheck, the book's own Settle: the face, the fund's
+            // cash, the ledger's lot and the hand's fill all move as a trade moves them), and the fund holds a lot it did not hold.
+            String free = null;
+            int most = SETTLED_WATCH + 1;
+            for (String key : b.fundSecurities()) {
+                if (!key.startsWith("B:") || key.contains(":rescue") || letGoFrom.contains(key)) continue;
+                CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
+                if (cb == null || !(cb.world() > FundLedger.DUST || cb.bank() > FundLedger.DUST)) continue;
+                int left = cb.remainingMonths(g.getMonth());
+                if (left > most) {
+                    most = left;
+                    free = key;
                 }
-                shareOrdered = lotOf(b.fundSecurities(), "S:", letGoFrom, false);
-                if (bondOrdered == null && shareOrdered == null) return "the fund's reach has no lot it does not hold";
-                if (bondOrdered != null) g.fundBuyBond(Integer.parseInt(bondOrdered.substring(2)), g.fundCashFree() / 10, 0);
-                if (shareOrdered != null) g.fundBuyShares(FundView.companyOf(shareOrdered), g.fundCashFree() / 10, 0);
-                for (String k : new String[]{bondOrdered, shareOrdered}) if (k != null && !handOrdered.contains(k)) handOrdered.add(k);
-                month(g);
-                months++;
-                List<String> now = new ArrayList<>(b.fundHoldings());
-                now.removeAll(letGoFrom);
-                if (!now.isEmpty()) break;
             }
+            if (free == null) return "the fund's reach has no bond it does not hold that the world or the bank holds, running past the watch";
+            int id = Integer.parseInt(free.substring(2));
+            handOrdered.add(free);
+            g.fundBuyBond(id, g.fundCashFree() / 10, 0);
+            month(g);
+            CorporateBond cb = g.getBondMarket().bond(id);
+            TreasuryFund.HandOrder bid = null;
+            for (TreasuryFund.HandOrder o : g.getFund().getPosted()) if (o.bond() && o.buy() && o.bondId() == id) bid = o;
+            String seller = cb.world() > FundLedger.DUST ? BondMarket.WORLD : BondMarket.BANK;
+            double holds = BondMarket.WORLD.equals(seller) ? cb.world() : cb.bank();
+            double price = bid != null ? bid.price : g.getBondMarket().modelPrice(cb, g.getMonth());
+            double q = Math.min(holds, bid != null ? Math.max(0, bid.units - bid.filled) : cb.face() / 100);
+            List<OrderBook.Fill> fills = q > FundLedger.DUST ? g.getBondMarket().tradeForCheck(cb, seller, OrderBook.Side.SELL, price, q) : List.of();
             List<String> came = new ArrayList<>(b.fundHoldings());
             came.removeAll(letGoFrom);
-            System.out.println("  the rule let go, " + bondOrdered + " and " + shareOrdered + " ordered each month: " + months + " months played, "
-                    + (came.isEmpty() ? "nothing settled" : came.size() + " lots it did not hold settled " + (came.size() > 4 ? came.subList(0, 4) + "..." : came)));
+            System.out.printf("  the rule let go; the hand bid for %s (%d months left; %s), the %s sold %.4g of face into it: %d fills; lots it did not hold: %s%n",
+                    free, most, bid == null ? "no bid posted" : String.format("posted %.4g at %.4f", bid.units, bid.price), seller, q, fills.size(),
+                    came.size() > 4 ? came.subList(0, 4) + "..." : came);
             b.fundPage("Portfolio");
             b.fundUnfold();
             return null;
