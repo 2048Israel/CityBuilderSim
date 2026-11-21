@@ -1906,3 +1906,162 @@ mend, reclassification, waiver, dry, ensemble or readiness change.
 [r1g-fixture-settleprobe]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L14024
 [r1g-fixture-holds]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BusinessInvestment.java#L117
 [r1g-fixture-auto]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/AutoBuilder.java#L1249
+
+## 19. One reviewed BOX fixture completed; hard yard premise failed
+
+Root reviewed the complete prepared driver/checker and the actual
+delegation/API/cleanup/hold path, then authorized exactly this attempt in
+`20261121-162441-926-orchestrator-6c94` (2026-11-21 16:24). The reviewed
+section 18 source/checker/manifest hashes were unchanged. No driver,
+checker, model or harness edit was made to obtain a passing premise.
+
+The prepared checker reports **INCONCLUSIVE: yard/salvage route: paid**,
+exit 2. The raw paid and unpaid cities both started the press with yard=0
+but had 36 units in the yard immediately before the real repair draw.
+The requested repair need was 450; the draw consumed that yard and
+imported 414. Salvage/cost remained zero. This violates the prescribed
+zero-yard/all-import isolation, so the negative raw GDP readings below
+do not establish a matched causing fixture. No premise was relaxed, no
+service whitelisted and no second attempt/extra press was made.
+
+### Read-only preflight and actual bounded execution
+
+The first BOX work was read-only: unused safe job/output labels, immutable
+627 HEAD/source status, all approved source/resource hashes (including the
+five runtime JSON resources), retained snapshot metadata, 2395 model and
+four cached Ensemble-driver class hashes, data hashes, original classpath
+and native `~/cbs/gate.env`. Native java and javac both resolved to
+`/home/jerus/cbs/jdk-21.0.13+9/bin/`; release/build and the pinned Java
+executable matched. No version JVM, Maven, local javac/JVM or fallback was
+used. No gate/nightly/JVM was announced, and existing heavy/ensemble/
+nightly/box locks were acquired nonblocking/exclusive. Priority/occupancy
+was rechecked before compilation and before the model; no wait/retry was
+used. Root had released the slot after WG's named check was terminal.
+
+All six dependency bytes matched their locally pinned identical Maven
+coordinates. The following four hashes were **new current measurements
+before compilation**, not claims of historical byte identity:
+
+| Linux JavaFX 21 classifier jar | Newly measured SHA-256 |
+| --- | --- |
+| `javafx-controls-21-linux.jar` | `5174110cdbd70e5724796b894334fe50dc8d0aebe73a5a8654f693212b904bda` |
+| `javafx-graphics-21-linux.jar` | `8309b4376cc246442e6ddf1f0bc5fff5091438a3b0eb059dd5095b9c1770f0ba` |
+| `javafx-base-21-linux.jar` | `0d365b0457faa610cc6e3807514eff9a12e624319768814a6d6efa4a02103364` |
+| `javafx-fxml-21-linux.jar` | `8dca88e4b17ca5c89ab8b2753a0c50ae0a94a0794cfabd9de2aa70c6be9922bc` |
+
+All ten were pinned before compilation and identical after execution.
+The read-only preflight is separate from the single 30-second
+compile-plus-model allowance; it did not increase that allowance.
+
+| Actual stage on BOX | Terminal evidence |
+| --- | --- |
+| Isolated javac, PID 2235384 | Started 20:31:57.716550Z; ended 20:31:58.080246Z; exit 0; 0.363835362 s. Explicit empty sourcepath, -proc:none/-implicit:none, original driver/model/dependencies on classpath; no model/cached-driver compilation. |
+| One model JVM, PID 2235417 | Started 20:31:58.127074Z; ended 20:31:59.241682Z; exit 1; 1.114747139 s. Exactly the two prescribed fresh standard/played1900 cities, each completed one original step from month 1 to 2. |
+| Shared compile/model bound | 1.525293977 s total by monotonic clock, limit 30; not timed out, no extension/retry. Model exit 1 reflects its original-law result, not a timeout or a compile failure. |
+| Controller and cleanup | Terminal 20:31:59.241719Z; both children reaped, no owned process alive, no scratch leftovers. Locks closed, foreground controller/SSH exited, then homecopy completed. |
+
+Only two fixture class files were produced and remained unchanged:
+`R1gPublicRepairProof.class`, SHA-256
+`a614dfc906c415885c7cb5a7483b17d4a0213bdeb1bf4ddcbe14b13ecbdfd036`,
+and `$ObservedGame.class`, SHA-256
+`5b25155e9a002e60276822b9e5bd1b7be5eda42e3a593712c43f5488c53ae539`.
+The original 2395+4 classes, JDK java/javac/release, native profile, all
+ten dependencies, data and approved source/source-resource/runtime-resource
+hashes were identical after the JVM exit. The guarded driver output is
+under frozen worktree `target/diagnostics/R1gc2-repair-pay-2press`; sources,
+new classes, logs and provenance are in its separate
+`target/r1g/R1gc2-repair-pay-2press-job` directory. No real save slots or
+earlier diagnostic directories were used.
+
+Homecopy is `target/diagnostics/R1gc2-repair-pay-2press-job/` locally,
+including the byte-identical raw fixture, source/patch/checker/manifest,
+commands, classes, logs and terminal/provenance. The copy exited normally;
+tar reported file times about 0.28 s ahead of the laptop, so cross-host
+wall-clock stamps are not an elapsed-time measure. The foreground order
+and monotonic compile/model bound above are the timing evidence. The
+prepared checker alone judged the fixture after homecopy. Subsequent
+`inspect_raw.py` only extracts retained raw facts for this report; it does
+not replace that verdict or perform another semantic check.
+
+### Retained raw measurements after the failed premise
+
+These are observations, not later premises promoted to a passing pair.
+Both cities had the same 600 Paved Roads from the actual catalogue/rate;
+both completed one step, setup/observer issues were empty, legacy instance
+counts were zero and their scratch folders were removed. The checker's
+finite/missing/setup gates ran before the reported yard failure. It did
+not proceed to endorse the downstream isolation/identity assertions.
+
+| Measured value at the named phase | Paid arm | Unpaid arm |
+| --- | --- | --- |
+| Yard at setup -> before repair -> after repair | 0 -> 36 -> 0 | 0 -> 36 -> 0 |
+| Salvage units/cost before/after repair | 0/0 | 0/0 |
+| Actual repair need; returned market units/local/imported | 450; 414/0/414 | 450; 414/0/414 |
+| Quote; exchange at draw | 0.46700362180103044; 1.0023637413062465 | Same observed values |
+| Current local / boundary import / import-with-domestic-haulage prices | 0.3261316444215281 / 0.5701588727476038 / 0.5701588727476038 | Same observed values |
+| Actual draw local cost / import cost | 0 / 236.04577331750798 | Same observed values |
+| Full / city / bank bill, every private owner bill | 411.6733347794672 / 411.6733347794672 / 0; all private bills 0 | Same observed bills |
+| City payment-boundary room; P; refused/U; immediate city arrears increment | 64708.65960744605; 411.6733347794672; 0; 0 | 0; 0; 411.6733347794672; 411.6733347794672 |
+| Struck Repairs billed / entire otherRevenue | 411.6733347794672 / 411.6733347794672 | 0 / 0 (empty otherParts) |
+| Struck capital parts | None | None |
+| Struck bought goods and imports; retained drawn local/import units | Only MATERIALS abroad 236.04577331750798; imports same; 0/414 | Same observed amounts |
+| Struck otherInputs / purchasesBySupplier | Empty / empty | Empty / empty |
+| Actual NA G / Iconst / Iinventories / Ivaluables | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| Actual NA NX / material imports / GDP | -236.04577331750798 / 236.04577331750798 / -236.04577331750798 | Same observed readings |
+| Other captured NA components | C goods/housing, food/raw imports, exports, food/materials/luxuries/held inventory components all 0 | Same observed readings |
+| Original GDP>=0 law | False | False |
+| Original cached audit result; raw residual/relative; post-audit drift | 0; -5.684341886080802e-14 / 2.3731192278022524e-16; 0 | 0; 0 / 0; 0 |
+
+The zero G reading is retained as a fact, never a premise. The original
+GDP bound and money-audit rules were unchanged. All captured NA component
+differences between these arms are zero, even though their repair receipts
+and cash outcomes differ. This does not turn receipt difference into GDP
+or authorize any spending reclassification. The origin/phase of the 36
+units appearing between setup and the repair boundary is not measured by
+these two observers, and is not attributed here. Their presence is enough
+to retain the hard INCONCLUSIVE verdict. It supplies no allocation of the
+original seed's 203 units or its earlier point/credit cause.
+
+Other cash-dependent outcomes were observed rather than assumed equal.
+Each full payment tape has 14 entries. CITY_REPAIRS is its only positive
+request; all 13 other requested/paid amounts are zero in both arms. Ending
+governmentToSave has three changed slots: taxBusiness 17.081484186755873
+versus 0, taxSales 61.751000216920076 versus 0, cityRepairs
+411.6733347794672 versus 0; the other 37 slots are zero in both arms.
+CB trailing revenue is 78.83248440367595 versus 0. Paid cash/room moves
+from 64708.65960744605 at the city request to 64296.98627266658 just after
+payment and 64375.81875707026 at completion; unpaid remains 0. Ending
+CITY_REPAIRS arrears/refused-this-month are 0 versus 411.6733347794672.
+The paid treasury vector is [64708.65960744605,64375.81875707026,0,0,
+-332.84085037579126,1,0], unpaid [0,0,0,0,0,1,0]. Treasury residual and
+unexplained are 2.1032064978498966e-12 versus 0. Ending paid-arrears counter,
+CB headroom/ceiling/treasury and bank advances, bank cash/operating cost and
+debt are all 0 in both; ceilingBound is false in both. Fund withdrawal is
+0.0025 in both; ending journal lists are empty and decision lists equal.
+These reported tax/budget changes are not presumed absent to isolate the
+city payment. Full before/after boundary vectors and tapes remain in the
+raw capture and checker's report.
+
+### Evidence and disposition
+
+| Homecopied artifact | SHA-256 |
+| --- | --- |
+| `fixture.json` | `b040bdcb47be7f567b2d071287f403c5bd3c45767e210d10e755fefd4263d6dd` |
+| `fixture-checked.json` | `d51d33da32e05d09a65432fbb8e5eeee57f9494ca589fb9813a6f506b0c79dea` |
+| `terminal.json` | `e93f2b6dedee3b6bfaeed9575b1698bb5ce9770eacf73a3770ecc79a1bcadfd7` |
+| `provenance.json` | `192d4fd2b66b43ff40da00847b79ab3cd683e85e8931a062eb68097c34939093` |
+| `raw-facts.json` (read-only extraction, no replacement verdict) | `0a28dd25dde242c4942346e60e5380f00ef6b26ae363536f4b1f38e870970d08` |
+| `model.log` | `06421a622b8a01c08268b749e871196caddb01dcd32c88a18ef4c065bb32f243` |
+
+The foreground controller and local wrapper remain ignored under the prep
+directory, hashes respectively
+`295197daace481d0088b793e78dfccf47888f1022e7714d4a0e5500b8405b69c`
+and `8c90106d760e8c013e487ebc619b11ac5e4a1a6804fc76e4a64455220897088e`.
+Their complete stdout/exit/checker/homecopy records are retained there.
+Root was mailed the real terminal/homecopy and release of ownership as
+soon as it was observed. No JVM/controller remains owned. The attempt is
+finished with its hard failed premise intact, not a ready or a waiver.
+Source, reviews, prior proofs/captures, failed full baseline and provisional
+marker remain frozen. No model/harness mend, rerun, reclassification, dry,
+ensemble or readiness action followed. R1g remains Pending; return to
+Queued remains Jerus's decision.
