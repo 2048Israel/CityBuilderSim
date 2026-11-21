@@ -394,6 +394,23 @@ public class ExchangeCheck {
             return this;
         }
 
+        int tradedIn = -1;
+        double tradedAt = Double.NaN;
+
+        /** ...the book having traded at `last` in month 1, a share between two who settle nothing, and the step `age` months on (RB3's stale trade). */
+        LeaversTown stepAged(double last, int age) {
+            OrderBook.Clearing anyone = new OrderBook.Clearing() {
+                @Override public double capacity(String who, OrderBook.Side side, double price) { return Double.MAX_VALUE; }
+                @Override public void settle(String buyer, String seller, double quantity, double price) { }
+            };
+            ex.bookOf(RETAIL).submit("a seller", OrderBook.Side.SELL, last, 1, 1, anyone);
+            ex.bookOf(RETAIL).submit("a buyer", OrderBook.Side.BUY, last, 1, 1, anyone);
+            tradedIn = ex.bookOf(RETAIL).lastTradeMonth();
+            tradedAt = ex.bookOf(RETAIL).lastPrice();
+            ExchangeCheck.step(ex, reg, owners, bank, firms, bookOf(RETAIL, 10_000), W, DEPOSIT_AT_HURDLE, 1 + age);
+            return this;
+        }
+
         /** The shares the fund sold in the month, out of its market book. */
         double sold() { return held - reg.getCityMarketShares(RETAIL); }
 
@@ -406,8 +423,9 @@ public class ExchangeCheck {
      * and 84 months of founding). The over-limit sale asked fair value after the leavers, who rest at the market and at the desk's bid
      * at the least: a buyback took theirs first, and with more of them than it had money for the fund's ask rested while the buyback
      * retired the shares around it - so the fund's holding rose past L x s / (s - b). Here every condition is caused: the leavers, the
-     * fund over its limit, the buyback, and the book's last trade, seeded. On the old rule every line below fails; the last is the
-     * other side of the threshold, fair value where the book last traded over it, as on the old rule.
+     * fund over its limit, the buyback, and the book's last trade, seeded (in (e) a real trade, aged). On the old rule every line below
+     * fails but the fixtures, (d) - the other side of the threshold, fair value where the book last traded over it, as on the old
+     * rule - and (e)'s last, fair value on a trade older than STALE_MARK_MONTHS, as the fund's mark reads the holding (REV-RB3).
      */
     static void theLastTradeUnderFair() {
         out.println("\n--- 7c. the book last traded under fair value and twenty owners leave: the fund's tenth is asked at the market, first, and sold (RB3) ---");
@@ -457,6 +475,23 @@ public class ExchangeCheck {
         LeaversTown d = new LeaversTown(fixedPoint, 0).step(fair * (1 + Exchange.SPREAD));
         close("where the book last traded over fair value, the tenth is asked at fair value, as on the old rule: what it was paid",
                 d.fund.getMonthSold(), d.asked() * fair, 1e-9);
+
+        // (e) (a)'s month with the last trade a real one, STALE_MARK_MONTHS old and then a month older: past that age the fund marks the
+        // holding at fair value (markedAtFair()), and it asks fair value, not the stale trade (REV-RB3).
+        int stale = Exchange.STALE_MARK_MONTHS;
+        LeaversTown e0 = new LeaversTown(fixedPoint, 0).stepAged(fair * (1 - Exchange.SPREAD), stale);
+        LeaversTown e1 = new LeaversTown(fixedPoint, 0).stepAged(fair * (1 - Exchange.SPREAD), stale + 1);
+        OrderBook.Order restsE1 = e1.ex.bookOf(RETAIL).asks().stream().filter(o -> o.who().equals(Exchange.FUND)).findFirst().orElse(null);
+        out.printf(java.util.Locale.ROOT, "   (e) the trade %d months old: sold %.4f for %.6f; %d months old: sold %.4f, %.4f rest at %.6f%n",
+                stale, e0.sold(), e0.fund.getMonthSold(), stale + 1, e1.sold(),
+                restsE1 == null ? 0 : restsE1.quantity(), restsE1 == null ? Double.NaN : restsE1.price());
+        assertTrue("fixture: before the step the book's last trade is a real one, a spread under fair value, made in month 1",
+                e0.tradedIn == 1 && e1.tradedIn == 1 && Math.abs(e1.tradedAt - fair * (1 - Exchange.SPREAD)) < 1e-12);
+        close("a last trade STALE_MARK_MONTHS old is still the market: the tenth sold at the desk's bid, as in (a)",
+                e0.fund.getMonthSold(), e0.asked() * bid, 1e-9);
+        assertTrue("a month older, the fund asked fair value, as its mark reads the holding: that ask rests, the price of none sold",
+                restsE1 != null && Math.abs(restsE1.price() - fair) < 1e-12 && Math.abs(restsE1.quantity() - e1.asked()) < 1e-9
+                        && e1.fund.getMonthSold() == 0);
     }
 
     public static void main(String[] args) throws Exception {

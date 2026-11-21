@@ -30,13 +30,24 @@ fixture month by month). On 60 months of founding, Construction, m138 to m171:
 
 - **The price.** `Exchange.limitAsk()` asks the market's own price: the book's last trade, held between
   the desk's bid (fair value less `TreasuryFund.RULE_PREMIUM`) and fair value. Before the first trade it
-  asks fair value.
+  asks fair value. It also asks fair value on a last trade older than `Exchange.STALE_MARK_MONTHS`, the age
+  past which the fund marks the holding at fair value (`markedAtFair()`), so it never sells under its own
+  mark on a price nobody has paid for a year (REV-RB3's P3). That month the leavers can rest ahead of the
+  fund, and their trade makes the next month's price current.
 - **The place in the month.** The ask is posted after the desk and before the leavers, so at an equal
   price it stands first (the book is price-time, `OrderBook` line 95).
 - **What follows.** A buyback meets the fund's ask before every other ask that the rules make, except one
   case: the world selling on its yield (`postWorld()`, never less than `FOREIGN_TOLERANCE` under fair
   value). Where the desk's bid stands and the last trade is at or under it, the fund's ask sells into that
   bid. The withdrawal's forced sale already takes that path (A21).
+- **What the leavers now ask in one case** (REV-RB3's P3). A month the fund is over its limit, where the book
+  last traded over fair value and no bid stands (the desk closed, or its bid taken), the leavers' unsold
+  shares now rest at fair value, not at the last trade. The fund's ask at fair value is in the book before
+  them, and `post()` rests a seller at the market (`price()`, the last trade bounded by that ask). So a
+  buyer pays the leavers fair value, not the trade over it. Before RB3 they posted before the fund and
+  rested at the last trade. `getLifePostedSellBy()`, the class's posted-sell diagnostic, counts their asks
+  at the same lower price. With the desk closed and the last trade at or under fair value, the leavers'
+  price is unchanged: the fund's ask is at the price they rest at, or over it.
 - **The comments.** The comments of `postFundOverLimit()` and `postFund()`, the class header and
   `TreasuryFund`'s say all this, with RB3's case.
 - **A new reading.** `getFundLimitAsked(int c)` gives one company's ask for the month (not saved, as the
@@ -83,20 +94,35 @@ fixture month by month). On 60 months of founding, Construction, m138 to m171:
 - **ExchangeCheck 7c (new): the condition, caused.** The town is 7b's company and its buyback, with 20 of
   its 100 owners leaving with 2,000 shares (section 3's leavers, more than the buyback's 84 a month). The
   fund holds L x s / (s - b) of the company at the fastest buyback, the last trade is seeded with
-  `seedLastPrice`, and fair value is read off a twin's step. Four cases:
+  `seedLastPrice`, and fair value is read off a twin's step. Five cases:
   - (a) Desk closed, last trade a spread under fair value. The fund sold its whole tenth (9.1912 shares)
     at the desk's bid. The leavers' asks at that price still rest (1,925.0161). The holding is
     (held - tenth) / (shares left) = 10.919118%, no higher than the fixed point it started at.
   - (b) Last trade inside the half-spread. The tenth sold at that trade's price.
   - (c) Desk open. The tenth sold at the desk's bid.
   - (d) Last trade over fair value. The ask is fair value, RB1's.
-  - **Against main's model** (this ExchangeCheck compiled on 1557daaaf's classes): every line of 7c
-    fails except its three fixtures and (d), which is the other side of the threshold by design. That is 8
-    FAIL lines, for example "the fund sold the tenth ... 0.000000000 != 9.191176471" and "the fund's
-    holding is the rule's ... 0.110118096 != 0.109191176". On the branch: 12 of 12 OK, and ExchangeCheck
-    exits 0.
+  - (e) (a) again, with a real trade in the book, a share at a spread under fair value in month 1
+    (REV-RB3's P3). With the step 12 months on (`STALE_MARK_MONTHS`), the tenth sold at the desk's bid, as
+    in (a). A month later the fund asked fair value, as its mark reads the holding: all 9.1912 shares rest
+    there and none sold.
+  - **Against main's Exchange** (this ExchangeCheck run with main's Exchange first on the classpath; the
+    model is otherwise the same on 1557daaaf and the merged origin/main): every line of 7c fails except its
+    four fixtures, (d) and (e)'s last, which are the other side of each threshold by design. That is 9 FAIL
+    lines, for example "the fund sold the tenth ... 0.000000000 != 9.191176471" and "the fund's holding is
+    the rule's ... 0.110118096 != 0.109191176".
+  - **Against the branch without the stale clause:** (e)'s last line fails alone, the tenth sold at the
+    desk's bid on the 13-month-old trade.
+  - On the branch: 15 of 15 OK, and ExchangeCheck exits 0.
 - **FundCheck 9e without the world bid.** On 72 months of founding: cap sale in 239 months, Construction
-  bought back in 235, most held 10.2786% against 10.9191%, and every line OK. FundCheck exits 0.
+  bought back in 235, most held 10.2786% against 10.9191%, the fund short of its ask in 0 (its printed
+  line now gives that count), and every line OK. FundCheck exits 0.
+- **9e against main's Exchange** (REV-RB3's P2; the branch's FundCheck with main's Exchange first on the
+  classpath, plus a copy of the per-company reading that changes nothing). Main held 10.2778% at most,
+  under the fixed point, so 9e's fixed-point line passes on main and cannot catch the fund's ask going back
+  to rest at fair value. Its unmet line does: "in every month the company bought back over the limit, it
+  met the fund's ask first ... FAIL", with the fund short in 1 month. That month the ask rested while the
+  buyback retired other shares. It is FundCheck's only red there (exit 1). So 9e's unmet line guards the
+  sale on the town's own path, and 7c guards each price exactly.
 - **9e's run on other founding counts** (the diagnostic, which uses the same fixture):
 
   | founding | branch: most held | branch: months short of the ask | main: most held | main: months short |
@@ -111,9 +137,15 @@ fixture month by month). On 60 months of founding, Construction, m138 to m171:
   trade is path; 7c holds each side exactly.
 - **The default trace.** Main's default playtest (1557daaaf, `-Dplaytest.trace`, one JVM, both data files
   named) reports 0 of 41,190 company-months over the 10% and the most of any company 0.0%. The cap sale
-  never fires, so nothing posts where the order moved. On this branch (its final model, the same JVM line)
-  all eight CSVs are byte-identical to main's, and the logs differ only in their run times (595 s, 640 s)
-  and the clock stamps of two lines. No ensemble (the contract, 4).
+  never fires, so nothing posts where the order moved. On this branch at that base (the same JVM line) all
+  eight CSVs are byte-identical to main's. The logs differ only in their run times (595 s, 640 s) and the
+  clock stamps of two lines.
+- **The trace again, on the merged base** (after REV-RB3, with origin/main's OE1 and FS4 merged in and
+  the stale clause added). Main's model is the merged classes with origin/main's Exchange and
+  TreasuryFund first on the classpath. It reports 0 of 36,831 company-months over the 10% and the most of
+  any company 4.0%. The branch's final model, the same JVM line, gives eight CSVs byte-identical to main's.
+  The logs differ only in their run times (1,810 s, 2,372 s) and one object's identity hash in a printed
+  land parcel. No ensemble (the contract, 4).
 - `./batch-check.sh --fast`: compile OK, maps regenerated, Stale 0 firm findings, tree clean but for the
   generated docs.
 - **The pick** (`sh tools/pick.sh origin/main HEAD`): 38 of 233 harnesses for the 12 files changed. Every one

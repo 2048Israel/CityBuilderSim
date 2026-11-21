@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**234 harness files, 26,866 labelled assertions.** AllChecks runs 234 of them.
+**234 harness files, 26,881 labelled assertions.** AllChecks runs 234 of them.
 
 ## Which harnesses read which class
 
@@ -9636,7 +9636,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1070 past that deadline the automatic path orders more power despite the pending wind
   - L1071 the real loaded city and its unbroken twin place the same later automatic orders, one by one
 
-## ExchangeCheck.java - 221 labelled assertions
+## ExchangeCheck.java - 236 labelled assertions
 
 > Verifies the exchange on the order book (0.7.12 round 2): what the desk
 > posts and what it is not obliged to take, who trades with whom and at what
@@ -9665,230 +9665,246 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L329 every founding-share chart point keeps its value across the adjustment
   - L334 a quote exactly on the wage dial does not adjust
   - L341 with no usable paid wage the counts wait
-- **L355 1. the price is the quote**
-  - L366 a bank with capital posts on the book
-  - L367 fair value is the register's reckoning: book over shares
-  - L368 ...and before any trade the price is it
-  - L369 the desk bids half a spread under fair value
-  - L370 ...for the tightest of its limits: its capital (marked at the price it pays), its caps, the float
-  - L372 ...and asks nothing: it holds nothing
-  - L377 a household short of money sells into the desk's bid for what it is short
-  - L378 ...at the bid: the shares it gave up
-  - L379 THE LAST TRADE IS THE DESK'S BID, which the household sold into
-  - L380 ...the book's own last price
-  - L381 ...only the bid rests, so the price is the last trade held inside it: the more of the two
-  - L384 ...with fair value beside it, unmoved
-  - L385 the desk carries its inventory at the lower of the two
-  - L386 ...and holds what it bought
-  - L387 the register still agrees with the households
-  - L390 a month on, with nothing traded, the last trade is still the desk's bid it was
-  - L391 ...the desk asks half a spread over fair value
-  - L392 ...so a bid and an ask rest and the price is the middle of them
-  - L394 ...which is not the last trade: the desk's quotes are a half spread either side of fair value
-  - L395 ...for exactly what it holds
-- **L397 2. nobody is obliged**
-  - L407 a bank with no capital posts nothing
-  - L418 a household short of money with nobody bidding sells nothing
-  - L419 ...keeps its shares
-  - L420 ...its ask waits on the book
-  - L421 ...and it borrows what it was short
-  - L422 the price did not move: nothing traded
-  - L426 the step withdraws it and counts the seller who waited (what rests now is the step's own)
-  - L436 fixture: a small bank's desk bids for the tightest of its limits
-  - L439 fixture: ...which is less than a hundred households short of $90k each offer
-  - L443 the desk takes what its limits allow and not a share more
-  - L444 ...the household raising what it paid
-  - L445 ...and the rest of its offer waits on the book, unfilled: AN UNFILLED SALE RESTS
-- **L448 2b. the desk's caps (round 3)**
-  - L460 fixture: its capital would carry more than a quarter of its equity in the company
-  - L462 the desk bids for POSITION_LIMIT of the bank's equity in one company, at fair value
-  - L464 ...counted as the cap that bound
-  - L467 a household offering $5,000k sells only what the cap leaves
-  - L468 ...the desk holding a quarter of the equity it posted on, at fair value, no more
-  - L470 ...and the rest of the sale rests on the book
-  - L488 fixture: what the book has left is under the single-name cap
-  - L489 with $4,000k of Industry held, the desk bids for Retail only what BOOK_LIMIT leaves
-  - L491 ...counted as the cap that bound
-  - L492 ...its Industry bid none: it is at the single-name cap there
-- **L495 2c. what is over the caps, offered at fair value**
-  - L511 fixture: the desk holds more than POSITION_LIMIT of the bank's equity in one company, under BOOK_LIMIT in all
-  - L520 a desk over its position cap offers exactly the excess, at fair value
-  - L521 ...counted as the month's excess
-  - L522 ...and the rest of what it holds at fair value plus half the spread
-  - L523 nothing is asked under fair value
-  - L524 with no bid to meet it, the excess rests, on offer at fair value
-  - L525 ...and nothing of it sold
-  - L543 fixture: the company's month of buybacks is less than the desk's excess
-  - L544 the excess sells when a bid meets it: the company's buyback took it
-  - L545 ...at fair value, not under it
-  - L546 ...out of the desk's holding
-  - L547 ...into the bank's cash
-  - L548 ...and the rest of the excess still rests at fair value
-  - L559 a desk under both caps offers no excess
-  - L560 ...and asks what it holds at fair value plus half the spread
-  - L581 fixture: the book is over BOOK_LIMIT, and only Retail over POSITION_LIMIT
-  - L583 the book's excess is spread pro rata by value at fair value: Industry its sixth
-  - L585 ...Materials the same
-  - L586 a holding over both caps offers the larger of its two excesses, not the two added
-- **L589 3. the leavers**
-  - L601 fixture: twenty households leave with two thousand shares
-  - L603 ...held abroad from the moment they go
-  - L608 the leavers sell into the desk's bid, and the cash leaves with them
-  - L610 ...out of the bank's cash
-  - L611 ...onto the desk
-  - L612 ...and nothing is held abroad any more
-  - L613 the register still agrees with the households
-  - L622 with nobody bidding, an emigrant's shares rest unfilled on the book
-  - L624 ...nobody paid them
-  - L627 the next step withdraws their ask and counts it waited
-  - L629 ...and their shares stay abroad with them
-- **L631 4. the world**
-  - L637 fixture: the company is wholly foreign-owned
-  - L645 fixture: the yield at the desk's bid is under the world's hurdle
-  - L647 the world sells a share of its holding in proportion to the shortfall
-  - L649 ...to the desk
-  - L650 ...at the desk's bid, the resting price
-  - L666 fixture: fair value is the earnings (here the dividend) capitalised at the hurdle
-  - L669 the world bids for a share of the float in proportion to the excess yield
-  - L671 ...resting at the market, the last trade - not at its reservation
-  - L676 a household short of money sells into the world's bid
-  - L677 ...declared abroad, at the world's price
-  - L678 ...raising what it was short and banking the rest
-  - L679 ...the shares abroad again
-  - L685 a company with no record is not traded by the world: not sold
-  - L686 ...and not bid for
-- **L688 5. the household cells**
-  - L712 fixture: Industry returns more at the desk's ask than Retail, both over the best alternative plus the premium and the band
-  - L714 the cell takes everything asked of the best yield first
-  - L715 ...then the next best with the rest
-  - L716 ...its month's money, out of its own savings
-  - L717 ...into shares of both
-  - L718 ...the register agreeing on each
-  - L719 the desk sold nothing it did not have
-  - L738 with nothing asked, what the cell has rests as a bid on the best return
-  - L740 ...AT THE MARKET, its last trade - not at the price that returns the floor
-  - L743 ...which is higher: the reservation is the lesser of the price that returns the floor and the desk's ask
-  - L749 with the deposit rate above every yield, nobody buys
-  - L750 ...and nobody's savings moved
-  - L769 fixture: both are priced to the required return
-  - L770 fixture: ...on different share counts
-  - L772 tied names: the bid rests on the deepest
-  - L780 earnings moved by one ulp do not move where the money goes
-- **L783 6. cell to cell**
-  - L806 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
-  - L808 fixture: ...at the market, fair value
-  - L817 the short cell sold into the rich cell's bid
-  - L818 ...the rich cell holds what it sold
-  - L819 ...at the rich cell's resting price, the last trade
-  - L820 ...sized at its own ask, the price its borrowing rate puts on the dividend
-  - L822 ...the cash between them the transfer counted
-  - L823 ...the short cell raising what it was short
-  - L824 ...and borrowing nothing
-  - L825 no pool line moved: nothing sold to or bought from the households by anybody else
-  - L828 the register still agrees with the cells
-- **L830 6b. the cells rebalance by the bond rule (round 3)**
-  - L843 fixture: the cell under its cushion holds more than its shortfall in shares
-  - L849 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
-  - L851 ...the cell past its cushion takes all of it
-  - L852 ...cell to cell, the transfer counted
-  - L853 ...at the market: the price is where it was
-  - L854 ...the seller's savings up by what it was paid
-  - L855 ...and the buyer bids for the rest of OUT_SPEED of its excess
-  - L858 no pool line moved
-- **L861 7. the buyback, and the money that stays**
-  - L867 fixture: the company is in a normal year
-  - L882 it retires a month of the pace, in shares, at the desk's ask
-  - L884 ...paid from its till
-  - L885 ...to the desk, which was asking
-  - L886 ...into the bank's cash
-  - L887 ...and the shares are gone
-  - L888 ...and nothing of its bid is left to rest: it spent the month's money
-  - L899 fixture: six months of its costs with the payments are more than its till, without them far less
-  - L903 a company whose loan payments take its cushion past its till buys nothing back
-  - L905 ...bids for nothing either
-  - L906 ...and its till is untouched
-  - L925 fixture: the only ask rests past fair value plus the tolerance
-  - L929 so the money stays in the till
-  - L930 ...and the bid rests at its limit, fair value plus the tolerance
-  - L932 ...for what the month's money buys there
-  - L934 ...no holder is paid a dividend for it
-  - L935 ...not one share retired
-  - L958 fixture: nobody offers the company's shares at all
-  - L960 with nobody offering its shares, the money stays in the till
-  - L961 ...and the bid rests at its limit
-  - L962 ...for what the month's money buys there
-  - L964 ...not one share retired yet
-  - L967 fixture: a household short of money sells in the waterfall and the bid meets it
-  - L968 a household short of money sells into the resting bid, at the bid's price
-  - L970 ...paid from the company's till
-  - L971 ...the shares retired
-  - L972 ...counted as a buyback from the households
-  - L973 ...and the rest of the bid still rests
-  - L983 a company in a bad year buys nothing back
-  - L984 ...and bids for nothing
-  - L993 a company at its target buys nothing back
-- **L995 7b. the fund past its cap (RB1)**
-  - L1020 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
-  - L1025 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
-  - L1027 the fund sold the tenth of its excess over the limit that month, in shares
-  - L1029 ...at fair value: what it was paid
-  - L1030 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
-  - L1032 ...the desk's ask still rests above fair value, by half a spread
-  - L1033 ...and the fund's share of the company is lower than the 15% it started at
-  - L1058 fixture: the fund starts at exactly the limit
-  - L1079 fixture: the buyback fired in every month of the run
-  - L1080 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
-  - L1082 the buybacks lifted the fund's share past the limit
-  - L1083 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
-- **L1085 8. the split**
-  - L1101 a share past the wage dial splits by the derived power of ten
-  - L1102 ...the register's count by the factor
-  - L1103 ...every household's count by the factor
-  - L1104 ...the last trade by its inverse: the price
-  - L1105 ...fair value with it
-  - L1106 ...and what the households hold is worth what it was
-  - L1107 the desk's resting bid moves too: its price by the inverse
-  - L1108 ...its quantity by the factor: still the ten shares' worth it was
-  - L1109 the split factor remembers it
-  - L1110 ...so the price per FOUNDING share is what it was: the history has no cliff
-  - L1122 a share below the wage dial consolidates by the derived power of ten
-  - L1123 ...the register shrinks by that factor
-  - L1124 ...the price rises by its inverse
-  - L1125 ...the households still agreeing with the register
-- **L1130 9. the save**
-  - L1136 it restores
-  - L1137 ...the last trade, so the price
-  - L1138 ...fair value
-  - L1139 ...the desk's resting ask
-  - L1141 ...and its bid
-  - L1145 ...and the split factor
-  - L1146 ...closed until the bank says otherwise
-  - L1148 ...open once a bank with capital is put back
-  - L1150 ...and not for a bank without
-  - L1157 the dealer's save, four a company, still restores
-  - L1158 ...its last quote the book's last price, so where the market opens
-  - L1159 ...fair value and the split factor as they were
-  - L1160 ...and the demand it carried is no order
-  - L1163 the exchange's first-night save, three a company, still restores
-  - L1164 ...with one share then being one share now
-  - L1165 an array of the wrong length is refused whole
-- **L1167 10. a live city**
-  - L1244 ...and every month of it is conserved
-  - L1245 MoneyAudit closes in every month with a split
-  - L1246 the dearest and cheapest live quotes stay inside the wage band every month
-  - L1260 ...and the audit closed through every month it did
-  - L1261 ...with the bank carrying the desk at the exchange's mark all along
-  - L1262 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
-  - L1270 ...the register and the cells agreeing on every company
-  - L1271 ...and the desk never short of anything
-  - L1273 the city saves
-  - L1278 ...and loads
-  - L1300 every quote, last trade and fair value comes back
-  - L1301 ...every book with the orders resting on it
-  - L1302 ...and the desk's inventory
-  - L1303 a save across the played splits keeps the factors and founding-share charts
-  - L1304 ...and the register, fund and households keep the same split holdings
-  - L1305 ...at the same mark
+- **L431 7c. the book last traded under fair value and twenty owners leave: the fund's tenth is asked at the market, first, and sold (RB3)**
+  - L449 fixture: the desk is closed, and the fund holds L x s / (s - b) of the company at the fastest buyback, over the limit
+  - L451 fixture: the buyback fired, and the leavers asked more shares than its money bought
+  - L452 the fund sold the tenth of its excess over the limit that month
+  - L453 ...at the desk's bid, fair value less RULE_PREMIUM, the last trade being under it: what it was paid
+  - L455 ...while the leavers' asks at that price still rest: the fund's stood first at it
+  - L457 the fund's holding is the rule's: what the tenth left of it, over the shares the buyback left
+  - L459 ...no higher than the fixed point it started at
+  - L464 the book last traded between the desk's bid and fair value: the fund's tenth sold at that trade's price
+  - L466 ...all of it
+  - L470 fixture: the desk is open
+  - L471 with the desk's bid standing, the fund's tenth sold at that bid, the price the desk stands ready to pay: what the fund was paid
+  - L476 where the book last traded over fair value, the tenth is asked at fair value, as on the old rule: what it was paid
+  - L488 fixture: before the step the book's last trade is a real one, a spread under fair value, made in month 1
+  - L490 a last trade STALE_MARK_MONTHS old is still the market: the tenth sold at the desk's bid, as in (a)
+  - L492 a month older, the fund asked fair value, as its mark reads the holding: that ask rests, the price of none sold
+- **L507 1. the price is the quote**
+  - L518 a bank with capital posts on the book
+  - L519 fair value is the register's reckoning: book over shares
+  - L520 ...and before any trade the price is it
+  - L521 the desk bids half a spread under fair value
+  - L522 ...for the tightest of its limits: its capital (marked at the price it pays), its caps, the float
+  - L524 ...and asks nothing: it holds nothing
+  - L529 a household short of money sells into the desk's bid for what it is short
+  - L530 ...at the bid: the shares it gave up
+  - L531 THE LAST TRADE IS THE DESK'S BID, which the household sold into
+  - L532 ...the book's own last price
+  - L533 ...only the bid rests, so the price is the last trade held inside it: the more of the two
+  - L536 ...with fair value beside it, unmoved
+  - L537 the desk carries its inventory at the lower of the two
+  - L538 ...and holds what it bought
+  - L539 the register still agrees with the households
+  - L542 a month on, with nothing traded, the last trade is still the desk's bid it was
+  - L543 ...the desk asks half a spread over fair value
+  - L544 ...so a bid and an ask rest and the price is the middle of them
+  - L546 ...which is not the last trade: the desk's quotes are a half spread either side of fair value
+  - L547 ...for exactly what it holds
+- **L549 2. nobody is obliged**
+  - L559 a bank with no capital posts nothing
+  - L570 a household short of money with nobody bidding sells nothing
+  - L571 ...keeps its shares
+  - L572 ...its ask waits on the book
+  - L573 ...and it borrows what it was short
+  - L574 the price did not move: nothing traded
+  - L578 the step withdraws it and counts the seller who waited (what rests now is the step's own)
+  - L588 fixture: a small bank's desk bids for the tightest of its limits
+  - L591 fixture: ...which is less than a hundred households short of $90k each offer
+  - L595 the desk takes what its limits allow and not a share more
+  - L596 ...the household raising what it paid
+  - L597 ...and the rest of its offer waits on the book, unfilled: AN UNFILLED SALE RESTS
+- **L600 2b. the desk's caps (round 3)**
+  - L612 fixture: its capital would carry more than a quarter of its equity in the company
+  - L614 the desk bids for POSITION_LIMIT of the bank's equity in one company, at fair value
+  - L616 ...counted as the cap that bound
+  - L619 a household offering $5,000k sells only what the cap leaves
+  - L620 ...the desk holding a quarter of the equity it posted on, at fair value, no more
+  - L622 ...and the rest of the sale rests on the book
+  - L640 fixture: what the book has left is under the single-name cap
+  - L641 with $4,000k of Industry held, the desk bids for Retail only what BOOK_LIMIT leaves
+  - L643 ...counted as the cap that bound
+  - L644 ...its Industry bid none: it is at the single-name cap there
+- **L647 2c. what is over the caps, offered at fair value**
+  - L663 fixture: the desk holds more than POSITION_LIMIT of the bank's equity in one company, under BOOK_LIMIT in all
+  - L672 a desk over its position cap offers exactly the excess, at fair value
+  - L673 ...counted as the month's excess
+  - L674 ...and the rest of what it holds at fair value plus half the spread
+  - L675 nothing is asked under fair value
+  - L676 with no bid to meet it, the excess rests, on offer at fair value
+  - L677 ...and nothing of it sold
+  - L695 fixture: the company's month of buybacks is less than the desk's excess
+  - L696 the excess sells when a bid meets it: the company's buyback took it
+  - L697 ...at fair value, not under it
+  - L698 ...out of the desk's holding
+  - L699 ...into the bank's cash
+  - L700 ...and the rest of the excess still rests at fair value
+  - L711 a desk under both caps offers no excess
+  - L712 ...and asks what it holds at fair value plus half the spread
+  - L733 fixture: the book is over BOOK_LIMIT, and only Retail over POSITION_LIMIT
+  - L735 the book's excess is spread pro rata by value at fair value: Industry its sixth
+  - L737 ...Materials the same
+  - L738 a holding over both caps offers the larger of its two excesses, not the two added
+- **L741 3. the leavers**
+  - L753 fixture: twenty households leave with two thousand shares
+  - L755 ...held abroad from the moment they go
+  - L760 the leavers sell into the desk's bid, and the cash leaves with them
+  - L762 ...out of the bank's cash
+  - L763 ...onto the desk
+  - L764 ...and nothing is held abroad any more
+  - L765 the register still agrees with the households
+  - L774 with nobody bidding, an emigrant's shares rest unfilled on the book
+  - L776 ...nobody paid them
+  - L779 the next step withdraws their ask and counts it waited
+  - L781 ...and their shares stay abroad with them
+- **L783 4. the world**
+  - L789 fixture: the company is wholly foreign-owned
+  - L797 fixture: the yield at the desk's bid is under the world's hurdle
+  - L799 the world sells a share of its holding in proportion to the shortfall
+  - L801 ...to the desk
+  - L802 ...at the desk's bid, the resting price
+  - L818 fixture: fair value is the earnings (here the dividend) capitalised at the hurdle
+  - L821 the world bids for a share of the float in proportion to the excess yield
+  - L823 ...resting at the market, the last trade - not at its reservation
+  - L828 a household short of money sells into the world's bid
+  - L829 ...declared abroad, at the world's price
+  - L830 ...raising what it was short and banking the rest
+  - L831 ...the shares abroad again
+  - L837 a company with no record is not traded by the world: not sold
+  - L838 ...and not bid for
+- **L840 5. the household cells**
+  - L864 fixture: Industry returns more at the desk's ask than Retail, both over the best alternative plus the premium and the band
+  - L866 the cell takes everything asked of the best yield first
+  - L867 ...then the next best with the rest
+  - L868 ...its month's money, out of its own savings
+  - L869 ...into shares of both
+  - L870 ...the register agreeing on each
+  - L871 the desk sold nothing it did not have
+  - L890 with nothing asked, what the cell has rests as a bid on the best return
+  - L892 ...AT THE MARKET, its last trade - not at the price that returns the floor
+  - L895 ...which is higher: the reservation is the lesser of the price that returns the floor and the desk's ask
+  - L901 with the deposit rate above every yield, nobody buys
+  - L902 ...and nobody's savings moved
+  - L921 fixture: both are priced to the required return
+  - L922 fixture: ...on different share counts
+  - L924 tied names: the bid rests on the deepest
+  - L932 earnings moved by one ulp do not move where the money goes
+- **L935 6. cell to cell**
+  - L958 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
+  - L960 fixture: ...at the market, fair value
+  - L969 the short cell sold into the rich cell's bid
+  - L970 ...the rich cell holds what it sold
+  - L971 ...at the rich cell's resting price, the last trade
+  - L972 ...sized at its own ask, the price its borrowing rate puts on the dividend
+  - L974 ...the cash between them the transfer counted
+  - L975 ...the short cell raising what it was short
+  - L976 ...and borrowing nothing
+  - L977 no pool line moved: nothing sold to or bought from the households by anybody else
+  - L980 the register still agrees with the cells
+- **L982 6b. the cells rebalance by the bond rule (round 3)**
+  - L995 fixture: the cell under its cushion holds more than its shortfall in shares
+  - L1001 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
+  - L1003 ...the cell past its cushion takes all of it
+  - L1004 ...cell to cell, the transfer counted
+  - L1005 ...at the market: the price is where it was
+  - L1006 ...the seller's savings up by what it was paid
+  - L1007 ...and the buyer bids for the rest of OUT_SPEED of its excess
+  - L1010 no pool line moved
+- **L1013 7. the buyback, and the money that stays**
+  - L1019 fixture: the company is in a normal year
+  - L1034 it retires a month of the pace, in shares, at the desk's ask
+  - L1036 ...paid from its till
+  - L1037 ...to the desk, which was asking
+  - L1038 ...into the bank's cash
+  - L1039 ...and the shares are gone
+  - L1040 ...and nothing of its bid is left to rest: it spent the month's money
+  - L1051 fixture: six months of its costs with the payments are more than its till, without them far less
+  - L1055 a company whose loan payments take its cushion past its till buys nothing back
+  - L1057 ...bids for nothing either
+  - L1058 ...and its till is untouched
+  - L1077 fixture: the only ask rests past fair value plus the tolerance
+  - L1081 so the money stays in the till
+  - L1082 ...and the bid rests at its limit, fair value plus the tolerance
+  - L1084 ...for what the month's money buys there
+  - L1086 ...no holder is paid a dividend for it
+  - L1087 ...not one share retired
+  - L1110 fixture: nobody offers the company's shares at all
+  - L1112 with nobody offering its shares, the money stays in the till
+  - L1113 ...and the bid rests at its limit
+  - L1114 ...for what the month's money buys there
+  - L1116 ...not one share retired yet
+  - L1119 fixture: a household short of money sells in the waterfall and the bid meets it
+  - L1120 a household short of money sells into the resting bid, at the bid's price
+  - L1122 ...paid from the company's till
+  - L1123 ...the shares retired
+  - L1124 ...counted as a buyback from the households
+  - L1125 ...and the rest of the bid still rests
+  - L1135 a company in a bad year buys nothing back
+  - L1136 ...and bids for nothing
+  - L1145 a company at its target buys nothing back
+- **L1147 7b. the fund past its cap (RB1)**
+  - L1172 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
+  - L1177 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
+  - L1179 the fund sold the tenth of its excess over the limit that month, in shares
+  - L1181 ...at fair value: what it was paid
+  - L1182 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
+  - L1184 ...the desk's ask still rests above fair value, by half a spread
+  - L1185 ...and the fund's share of the company is lower than the 15% it started at
+  - L1210 fixture: the fund starts at exactly the limit
+  - L1231 fixture: the buyback fired in every month of the run
+  - L1232 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
+  - L1234 the buybacks lifted the fund's share past the limit
+  - L1235 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
+- **L1239 8. the split**
+  - L1255 a share past the wage dial splits by the derived power of ten
+  - L1256 ...the register's count by the factor
+  - L1257 ...every household's count by the factor
+  - L1258 ...the last trade by its inverse: the price
+  - L1259 ...fair value with it
+  - L1260 ...and what the households hold is worth what it was
+  - L1261 the desk's resting bid moves too: its price by the inverse
+  - L1262 ...its quantity by the factor: still the ten shares' worth it was
+  - L1263 the split factor remembers it
+  - L1264 ...so the price per FOUNDING share is what it was: the history has no cliff
+  - L1276 a share below the wage dial consolidates by the derived power of ten
+  - L1277 ...the register shrinks by that factor
+  - L1278 ...the price rises by its inverse
+  - L1279 ...the households still agreeing with the register
+- **L1284 9. the save**
+  - L1290 it restores
+  - L1291 ...the last trade, so the price
+  - L1292 ...fair value
+  - L1293 ...the desk's resting ask
+  - L1295 ...and its bid
+  - L1299 ...and the split factor
+  - L1300 ...closed until the bank says otherwise
+  - L1302 ...open once a bank with capital is put back
+  - L1304 ...and not for a bank without
+  - L1311 the dealer's save, four a company, still restores
+  - L1312 ...its last quote the book's last price, so where the market opens
+  - L1313 ...fair value and the split factor as they were
+  - L1314 ...and the demand it carried is no order
+  - L1317 the exchange's first-night save, three a company, still restores
+  - L1318 ...with one share then being one share now
+  - L1319 an array of the wrong length is refused whole
+- **L1321 10. a live city**
+  - L1398 ...and every month of it is conserved
+  - L1399 MoneyAudit closes in every month with a split
+  - L1400 the dearest and cheapest live quotes stay inside the wage band every month
+  - L1414 ...and the audit closed through every month it did
+  - L1415 ...with the bank carrying the desk at the exchange's mark all along
+  - L1416 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
+  - L1424 ...the register and the cells agreeing on every company
+  - L1425 ...and the desk never short of anything
+  - L1427 the city saves
+  - L1432 ...and loads
+  - L1454 every quote, last trade and fair value comes back
+  - L1455 ...every book with the orders resting on it
+  - L1456 ...and the desk's inventory
+  - L1457 a save across the played splits keeps the factors and founding-share charts
+  - L1458 ...and the register, fund and households keep the same split holdings
+  - L1459 ...at the same mark
 
 ## ExchangeRateCheck.java - 216 labelled assertions
 
@@ -12189,176 +12205,176 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1026 fixture: the households can hand the fund 15% of the company
   - L1033 fixture: its shares are inside the band, so it has no mix to sell for
   - L1053 over 10% of a company, it offers a tenth of the excess (LIMIT_SALE_SHARE) a month
-  - L1055 ...at fair value
-- **L1064 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
-  - L1074 fixture: a listed company that has traded away from its fair value
-  - L1081 fixture: the fund holds it and nothing else
-  - L1103 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
-  - L1106 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
-  - L1119 fixture: no side rests, so the quote is the last trade
-  - L1120 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
-  - L1124 ...and the price trading reads is still the last trade
-- **L1141 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
-  - L1154 fixture: a pay-in the rule can place, so none of the fund's cash is idle before the month
-  - L1157 fixture: ...and none of the month's transfer was struck on idle cash
-  - L1158 a twelfth of 3% of all it is worth
-  - L1159 ...paid from its cash
-  - L1160 ...a revenue line in the budget
-  - L1163 a fund worth something with no cash pays nothing
-  - L1164 ...and says so
-  - L1166 with some cash, what it has
-  - L1167 fixture: the treasury was not what paid it
-- **L1234 the withdrawal dial**
-  - L1243 fixture: a pay-in the rule can place, so none of the fund's cash is idle (RB1)
-  - L1245 at the default the withdrawal is today's transfer to the bit
-  - L1259 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
-  - L1260 ...the most of them 10% of its value a month
-  - L1273 fixture: at nothing the fund holds cash its rule places
-  - L1274 at nothing it pays nothing and sells nothing
-  - L1294 fixture: its twin at the default bids for its book with the same cash
-  - L1296 it buys nothing while over the default
-  - L1303 fixture: a market book in two companies, a rescue book, no cash and no bonds
-  - L1309 fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it
-  - L1322 fixture: its cash could not cover the month, all of it to raise
-  - L1338 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
-  - L1340 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
-  - L1342 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
-  - L1351 fixture: a bid took every share the fund asked
-  - L1357 ...and paid at the next month's top
-  - L1358 ...to the treasury with the month's own
-  - L1360 ...off the short it was counted in
-  - L1361 ...and into the paid
-  - L1362 the rescue book is never sold to pay it
-  - L1373 fixture: the bank is rebuilding its capital, between its minimum and its target, so it pays its owners nothing
-  - L1380 fixture: at the default its cash could not cover the month either
-  - L1382 at or under the default a short is not paid
-  - L1385 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
-- **L1398 9c. the idle cash: what is past the room its caps leave goes to the budget, a 24th a month (RB1)**
-  - L1403 a share room that is not a number reads as unlimited: nothing is idle
-  - L1405 ...so does a bond room that is not a number
-  - L1407 an unlimited share room takes the whole cash: nothing is idle
-  - L1408 ...so does an unlimited bond room
-  - L1409 no room at all: the cash less the hand's reserve is idle
-  - L1411 rooms that sum to less than the free cash: what is past them is idle
-  - L1413 rooms that sum to the free cash leave none idle
-  - L1415 a reserve larger than the cash leaves nothing free, so nothing idle
-  - L1419 the mix is not read: a share room that covers the cash leaves none idle, though no bond has a room
-  - L1427 fixture: at the default the dial takes less of the idle cash than the 24th
-  - L1428 fixture: at the most of the dial it takes more than the 24th
-  - L1429 with none idle the due is transferOn() at the default, to the bit
-  - L1434 at the default with idle cash: the dial's share of the rest and the 24th of the idle
-  - L1436 ...which is more than the dial's share of the whole value
-  - L1437 ...the part of it on the idle cash is the 24th of it
-  - L1438 at a dial of nothing nothing is withdrawn, idle or not
-  - L1440 at the most of the dial the idle cash is withdrawn at the dial, as the rest
-  - L1442 ...and its part is the dial's share of it
-  - L1443 idle cash above the fund's value is held to it
-  - L1445 ...and then the whole value is withdrawn at the 24th
-  - L1447 a fund worth nothing is due nothing
-  - L1452 fixture: the rule's rooms are a number, finite
-  - L1457 fixture: paid in past its rooms, the fund holds idle cash, and no more than its cash
-  - L1460 fixture: the dial is at the default
-  - L1461 the due the city reads is the model's, on the fund as it stands
-  - L1463 ...its idle part likewise
-  - L1465 ...and more than the dial would have taken of the whole
-  - L1466 fixture: nothing has been paid from idle cash yet
-  - L1469 the month's audit closes with the idle cash paid out
-  - L1470 the month's transfer has a part struck on the idle cash
-  - L1471 ...which is part of the due, and the life total holds it
-  - L1473 ...the budget's line is what the fund paid
-  - L1475 ...and the fund paid it all, from its cash
-  - L1482 the idle cash's part of the transfer, this month's and the life total, comes back from a save
-  - L1491 fixture: the dial is at nothing and cash lies idle
-  - L1492 at a dial of nothing the city is due nothing, and nothing of it from idle cash
-  - L1495 ...and the month pays none
-- **L1509 9d. the idle cash is read after last month's toRaise (RB1-R)**
-  - L1514 fixture: S is over the default, its share of the dial is under the 24th and one more step's is not
-  - L1519 fixture: a market book in two companies, a rescue book, no cash
-  - L1522 fixture: the dial is at S steps, over the default
-  - L1525 fixture: its cash could not cover the month, so there is a toRaise
-  - L1528 fixture: the rule's rooms are a number, finite
-  - L1536 fixture: paid in past its rooms, the cash is over the toRaise and the whole cash has idle cash in it
-  - L1538 the idle cash is the model's on the cash less last month's toRaise, to the bit
-  - L1539 ...and less than the idle cash on the whole cash, which counted the toRaise as idle
-  - L1544 the preview's due at the dial in force is the city's, and the model's on the idle cash after toRaise
-  - L1546 ...and what its cash pays of it is the due or the cash after toRaise, the less of the two
-  - L1553 fixture: the bond room is under the toRaise, so the bound tells the old read from the new
-  - L1556 the month's audit closes
-  - L1558 the month's due is the model's on the idle cash after toRaise (and so the preview's), to the 24th less the dial of the bond room
-  - L1560 ...its idle part is the model's on the idle cash after toRaise, to the 24th of the bond room (all of it paid)
-  - L1562 last month's toRaise was paid first, from the cash
-  - L1563 ...the month's own due was paid from what was left
-  - L1565 ...and the new toRaise is what its cash could not cover of the month
-  - L1567 fixture: its cash covered the month, so none is to raise
-- **L1595 9e. a real run at the default dial: the cap sale and the idle transfer fire, and no holding passes the fixed point (RB1-R)**
-  - L1616 fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes
-  - L1623 fixture: the fund holds the limit of it,
-  - L1626 fixture: the dial is at the default
-  - L1628 fixture: the rule's rooms are a number, finite
-  - L1632 fixture: paid in past its rooms, the fund holds idle cash
-  - L1663 the dial stayed at the default
-  - L1664 every month's audit closed
-  - L1665 the cap sale fired: the rule asked shares past the limit in some month
-  - L1666 the idle transfer fired: a month's transfer had a part struck on the idle cash
-  - L1667 fixture: a bid took every share the fund asked of the company, in every month
-  - L1668 no company was held past the fixed point
-- **L1674 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
-  - L1684 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
-  - L1686 ...and the journal names it
-  - L1688 a draw-out moves what the fund's cash holds back
-  - L1690 the hand's order waits for the step
-  - L1692 ...and is posted at it, at fair value
-  - L1699 fixture: two orders wait for the step, one at a price the player named
-  - L1701 ...and the second can be cancelled
-  - L1703 a limit posts at its limit
-  - L1707 a cancelled order never reaches the step
-- **L1714 11. every piece through a save, and an older save's fund**
-  - L1733 the dial and the rescue setting
-  - L1734 its cash
-  - L1740 its shares, both books, on the register
-  - L1741 its bonds, on the bonds
-  - L1742 the preferred
-  - L1743 ...its arrears
-  - L1744 ...its anniversary and warrants
-  - L1747 the player's order waiting for the step
-  - L1749 its record of the offers
-  - L1751 its value
-  - L1752 fixture: the month just closed paid a transfer and bought something
-  - L1754 ...and the month's transfer and flows, which the Fund page reads, come back with it
-  - L1759 ...and the part of it struck on the idle cash, this month's and the life total (RB1)
-  - L1763 a save from before the fund loads it empty, the dial at 0, the rescue on the button
-- **L1771 12. Insane: nothing, and the ground owed abroad**
-  - L1773 D$0 and US$0 read back as Insane
-  - L1775 ...and a custom founding still takes at least D$6M
-  - L1778 the treasury holds nothing and the vault nothing
-  - L1783 it owes one piece of paper
-  - L1784 ...a dollar term loan abroad
-  - L1786 ...at 3%
-  - L1787 ...for twenty years
-  - L1791 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
-  - L1795 ...the figure the founding screen quotes for its world
-  - L1797 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
-  - L1811 a day-0 city is quoted a bond
-  - L1815 ...and the note
-  - L1817 the build screen at D$0: a house asks for funding, the whole of it
-  - L1820 the land office at D$0: a plot asks for funding, and is quoted both offers
-  - L1825 borrowed, the treasury holds cash
-  - L1827 ...a month
-  - L1829 ...and its audit closes
-- **L1843 13. Insane, never borrowing: play runs on the central bank's advances**
-  - L1848 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
-  - L1850 ...and nothing that is not a promise may be spent
-  - L1853 ...a purchase asked of it is refused whole, and nothing is owed for it
-  - L1855 ...a discretionary line is refused, and owed as arrears
-  - L1858 ...and a promise is paid past it, taking the treasury under nothing
-  - L1887 an Insane city that never borrowed runs twelve months through the time skip
-  - L1888 ...and the audit closes every month, nothing moving after it
-  - L1889 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
-  - L1891 ...from a treasury that held nothing, which the month leaves overdrawn
-  - L1892 month two's settle: the central bank advances the whole shortfall
-  - L1893 every month's coupon is paid, the land bond owed whole and never missed
-  - L1897 nothing that is not a promise was spent past the room the month opened with
-  - L1898 ...and it borrowed nothing: the land bond is still all it owes
+  - L1057 ...at the market: the last trade, held between the desk's bid and fair value (RB3)
+- **L1066 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
+  - L1076 fixture: a listed company that has traded away from its fair value
+  - L1083 fixture: the fund holds it and nothing else
+  - L1105 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
+  - L1108 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
+  - L1121 fixture: no side rests, so the quote is the last trade
+  - L1122 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
+  - L1126 ...and the price trading reads is still the last trade
+- **L1143 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
+  - L1156 fixture: a pay-in the rule can place, so none of the fund's cash is idle before the month
+  - L1159 fixture: ...and none of the month's transfer was struck on idle cash
+  - L1160 a twelfth of 3% of all it is worth
+  - L1161 ...paid from its cash
+  - L1162 ...a revenue line in the budget
+  - L1165 a fund worth something with no cash pays nothing
+  - L1166 ...and says so
+  - L1168 with some cash, what it has
+  - L1169 fixture: the treasury was not what paid it
+- **L1236 the withdrawal dial**
+  - L1245 fixture: a pay-in the rule can place, so none of the fund's cash is idle (RB1)
+  - L1247 at the default the withdrawal is today's transfer to the bit
+  - L1261 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
+  - L1262 ...the most of them 10% of its value a month
+  - L1275 fixture: at nothing the fund holds cash its rule places
+  - L1276 at nothing it pays nothing and sells nothing
+  - L1296 fixture: its twin at the default bids for its book with the same cash
+  - L1298 it buys nothing while over the default
+  - L1305 fixture: a market book in two companies, a rescue book, no cash and no bonds
+  - L1311 fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it
+  - L1324 fixture: its cash could not cover the month, all of it to raise
+  - L1340 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
+  - L1342 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
+  - L1344 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
+  - L1353 fixture: a bid took every share the fund asked
+  - L1359 ...and paid at the next month's top
+  - L1360 ...to the treasury with the month's own
+  - L1362 ...off the short it was counted in
+  - L1363 ...and into the paid
+  - L1364 the rescue book is never sold to pay it
+  - L1375 fixture: the bank is rebuilding its capital, between its minimum and its target, so it pays its owners nothing
+  - L1382 fixture: at the default its cash could not cover the month either
+  - L1384 at or under the default a short is not paid
+  - L1387 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
+- **L1400 9c. the idle cash: what is past the room its caps leave goes to the budget, a 24th a month (RB1)**
+  - L1405 a share room that is not a number reads as unlimited: nothing is idle
+  - L1407 ...so does a bond room that is not a number
+  - L1409 an unlimited share room takes the whole cash: nothing is idle
+  - L1410 ...so does an unlimited bond room
+  - L1411 no room at all: the cash less the hand's reserve is idle
+  - L1413 rooms that sum to less than the free cash: what is past them is idle
+  - L1415 rooms that sum to the free cash leave none idle
+  - L1417 a reserve larger than the cash leaves nothing free, so nothing idle
+  - L1421 the mix is not read: a share room that covers the cash leaves none idle, though no bond has a room
+  - L1429 fixture: at the default the dial takes less of the idle cash than the 24th
+  - L1430 fixture: at the most of the dial it takes more than the 24th
+  - L1431 with none idle the due is transferOn() at the default, to the bit
+  - L1436 at the default with idle cash: the dial's share of the rest and the 24th of the idle
+  - L1438 ...which is more than the dial's share of the whole value
+  - L1439 ...the part of it on the idle cash is the 24th of it
+  - L1440 at a dial of nothing nothing is withdrawn, idle or not
+  - L1442 at the most of the dial the idle cash is withdrawn at the dial, as the rest
+  - L1444 ...and its part is the dial's share of it
+  - L1445 idle cash above the fund's value is held to it
+  - L1447 ...and then the whole value is withdrawn at the 24th
+  - L1449 a fund worth nothing is due nothing
+  - L1454 fixture: the rule's rooms are a number, finite
+  - L1459 fixture: paid in past its rooms, the fund holds idle cash, and no more than its cash
+  - L1462 fixture: the dial is at the default
+  - L1463 the due the city reads is the model's, on the fund as it stands
+  - L1465 ...its idle part likewise
+  - L1467 ...and more than the dial would have taken of the whole
+  - L1468 fixture: nothing has been paid from idle cash yet
+  - L1471 the month's audit closes with the idle cash paid out
+  - L1472 the month's transfer has a part struck on the idle cash
+  - L1473 ...which is part of the due, and the life total holds it
+  - L1475 ...the budget's line is what the fund paid
+  - L1477 ...and the fund paid it all, from its cash
+  - L1484 the idle cash's part of the transfer, this month's and the life total, comes back from a save
+  - L1493 fixture: the dial is at nothing and cash lies idle
+  - L1494 at a dial of nothing the city is due nothing, and nothing of it from idle cash
+  - L1497 ...and the month pays none
+- **L1511 9d. the idle cash is read after last month's toRaise (RB1-R)**
+  - L1516 fixture: S is over the default, its share of the dial is under the 24th and one more step's is not
+  - L1521 fixture: a market book in two companies, a rescue book, no cash
+  - L1524 fixture: the dial is at S steps, over the default
+  - L1527 fixture: its cash could not cover the month, so there is a toRaise
+  - L1530 fixture: the rule's rooms are a number, finite
+  - L1538 fixture: paid in past its rooms, the cash is over the toRaise and the whole cash has idle cash in it
+  - L1540 the idle cash is the model's on the cash less last month's toRaise, to the bit
+  - L1541 ...and less than the idle cash on the whole cash, which counted the toRaise as idle
+  - L1546 the preview's due at the dial in force is the city's, and the model's on the idle cash after toRaise
+  - L1548 ...and what its cash pays of it is the due or the cash after toRaise, the less of the two
+  - L1555 fixture: the bond room is under the toRaise, so the bound tells the old read from the new
+  - L1558 the month's audit closes
+  - L1560 the month's due is the model's on the idle cash after toRaise (and so the preview's), to the 24th less the dial of the bond room
+  - L1562 ...its idle part is the model's on the idle cash after toRaise, to the 24th of the bond room (all of it paid)
+  - L1564 last month's toRaise was paid first, from the cash
+  - L1565 ...the month's own due was paid from what was left
+  - L1567 ...and the new toRaise is what its cash could not cover of the month
+  - L1569 fixture: its cash covered the month, so none is to raise
+- **L1597 9e. a real run at the default dial: the cap sale and the idle transfer fire, and no holding passes the fixed point (RB1-R)**
+  - L1618 fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes
+  - L1625 fixture: the fund holds the limit of it,
+  - L1628 fixture: the dial is at the default
+  - L1630 fixture: the rule's rooms are a number, finite
+  - L1634 fixture: paid in past its rooms, the fund holds idle cash
+  - L1667 the dial stayed at the default
+  - L1668 every month's audit closed
+  - L1669 the cap sale fired: the rule asked shares past the limit in some month
+  - L1670 the idle transfer fired: a month's transfer had a part struck on the idle cash
+  - L1671 in every month the company bought back over the limit, it met the fund's ask first: the fund sold what it asked, or all that was retired (RB3)
+  - L1673 no company was held past the fixed point
+- **L1679 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
+  - L1689 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
+  - L1691 ...and the journal names it
+  - L1693 a draw-out moves what the fund's cash holds back
+  - L1695 the hand's order waits for the step
+  - L1697 ...and is posted at it, at fair value
+  - L1704 fixture: two orders wait for the step, one at a price the player named
+  - L1706 ...and the second can be cancelled
+  - L1708 a limit posts at its limit
+  - L1712 a cancelled order never reaches the step
+- **L1719 11. every piece through a save, and an older save's fund**
+  - L1738 the dial and the rescue setting
+  - L1739 its cash
+  - L1745 its shares, both books, on the register
+  - L1746 its bonds, on the bonds
+  - L1747 the preferred
+  - L1748 ...its arrears
+  - L1749 ...its anniversary and warrants
+  - L1752 the player's order waiting for the step
+  - L1754 its record of the offers
+  - L1756 its value
+  - L1757 fixture: the month just closed paid a transfer and bought something
+  - L1759 ...and the month's transfer and flows, which the Fund page reads, come back with it
+  - L1764 ...and the part of it struck on the idle cash, this month's and the life total (RB1)
+  - L1768 a save from before the fund loads it empty, the dial at 0, the rescue on the button
+- **L1776 12. Insane: nothing, and the ground owed abroad**
+  - L1778 D$0 and US$0 read back as Insane
+  - L1780 ...and a custom founding still takes at least D$6M
+  - L1783 the treasury holds nothing and the vault nothing
+  - L1788 it owes one piece of paper
+  - L1789 ...a dollar term loan abroad
+  - L1791 ...at 3%
+  - L1792 ...for twenty years
+  - L1796 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
+  - L1800 ...the figure the founding screen quotes for its world
+  - L1802 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
+  - L1816 a day-0 city is quoted a bond
+  - L1820 ...and the note
+  - L1822 the build screen at D$0: a house asks for funding, the whole of it
+  - L1825 the land office at D$0: a plot asks for funding, and is quoted both offers
+  - L1830 borrowed, the treasury holds cash
+  - L1832 ...a month
+  - L1834 ...and its audit closes
+- **L1848 13. Insane, never borrowing: play runs on the central bank's advances**
+  - L1853 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
+  - L1855 ...and nothing that is not a promise may be spent
+  - L1858 ...a purchase asked of it is refused whole, and nothing is owed for it
+  - L1860 ...a discretionary line is refused, and owed as arrears
+  - L1863 ...and a promise is paid past it, taking the treasury under nothing
+  - L1892 an Insane city that never borrowed runs twelve months through the time skip
+  - L1893 ...and the audit closes every month, nothing moving after it
+  - L1894 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
+  - L1896 ...from a treasury that held nothing, which the month leaves overdrawn
+  - L1897 month two's settle: the central bank advances the whole shortfall
+  - L1898 every month's coupon is paid, the land bond owed whole and never missed
+  - L1902 nothing that is not a promise was spent past the room the month opened with
+  - L1903 ...and it borrowed nothing: the land bond is still all it owes
 
 ## FundLedgerCheck.java - 143 labelled assertions
 

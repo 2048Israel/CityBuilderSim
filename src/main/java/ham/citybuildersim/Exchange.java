@@ -1660,14 +1660,18 @@ public class Exchange {
      * TreasuryFund.RULE_PREMIUM, the price a forced sale meets (A21, the
      * withdrawal's sale in postFund()) and the least the leavers ask - and
      * fair value, RB1's ask while the book trades at or over it; fair value
-     * before the first trade. Read before the month's first trade, so it is
-     * last month's. Under it nobody rests ahead of the fund but the world
-     * selling on its yield (postWorld(), at no less than FOREIGN_TOLERANCE
-     * under fair value).
+     * before the first trade, and on a last trade older than
+     * STALE_MARK_MONTHS, the age past which the fund marks the holding at
+     * fair value (markedAtFair()): it does not sell under its own mark on a
+     * price nobody has paid for a year. That month the leavers can rest
+     * ahead of it, and their trade makes the next month's price current.
+     * Read before the month's first trade, so it is last month's. Under it
+     * nobody rests ahead of the fund but the world selling on its yield
+     * (postWorld(), at no less than FOREIGN_TOLERANCE under fair value).
      */
     private double limitAsk(int c) {
         double last = books[c].lastPrice();
-        if (!(last > 0)) return fair[c];
+        if (!(last > 0) || month - books[c].lastTradeMonth() > STALE_MARK_MONTHS) return fair[c];
         return Math.max(fair[c] * (1 - TreasuryFund.RULE_PREMIUM), Math.min(fair[c], last));
     }
 

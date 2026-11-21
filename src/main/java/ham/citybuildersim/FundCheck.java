@@ -1662,8 +1662,8 @@ public class FundCheck {
             }
         }
         double seconds = (System.nanoTime() - t0) / 1e9;
-        out.printf("   %d months in %.1fs: the cap sale asked in %d, the idle cash paid in %d, %s bought back in %d; the most of any company the fund held %.4f%%, the fixed point %.4f%%%n",
-                MONTHS_9E, seconds, capMonths, idleMonths, Equity.COMPANIES[buyer], buybackMonths, most * 100, fixedPoint * 100);
+        out.printf("   %d months in %.1fs: the cap sale asked in %d, the idle cash paid in %d, %s bought back in %d; the most of any company the fund held %.4f%%, the fixed point %.4f%%; the fund short of its ask in %d%n",
+                MONTHS_9E, seconds, capMonths, idleMonths, Equity.COMPANIES[buyer], buybackMonths, most * 100, fixedPoint * 100, unmet);
         check("the dial stayed at the default", g.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS);
         check("every month's audit closed", closedMonths == MONTHS_9E);
         check("the cap sale fired: the rule asked shares past the limit in some month", capMonths > 0);
