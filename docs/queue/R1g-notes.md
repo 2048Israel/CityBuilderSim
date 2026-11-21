@@ -1153,3 +1153,88 @@ Static evidence and extraction code are `target/r1g/gdp-static-evidence.py`,
 `gdp-static-evidence.json` and `gdp-static-window.csv`. Read-only Python
 comparison and source inspection were the only work beyond recording
 these notes. This bounded run remains a proposal pending explicit GO.
+
+## 13. Component trace prepared; execution slot held
+
+The orchestrator adopted section 12's scope at 14:24, but held execution
+while WG3's eight-JVM box ensemble is active. This turn prepared static
+access verification and a CSV checker only. No JVM, compilation, scorer,
+remote job, sleep or job-poll loop was started. R1g remains Pending under
+the orchestrator's df12 records change; return needs Jerus. Completion
+of WG3 does not itself release this trace: wait for the explicit message.
+
+`target/r1g/gdp-verify-paths.py` walks all 29 accessor chains against source
+bytes from frozen 627174320. It verifies Game's two root getters,
+EconomyManager.getNationalAccounts, ServicesManager.getUtilitiesHandler,
+each final no-argument double getter or declared private double field,
+the pure-return NA getters and annual-history sum. The existing driver
+first resolves no-argument methods, then fields through superclasses,
+uses setAccessible(true), and accepts Number.doubleValue. This proves
+declarations and adapter support statically; runtime access is still a
+premise of the future run and a missing value makes it inconclusive.
+The machine-readable paths, declarations, lines, bodies and phase labels
+are in `target/r1g/gdp-field-catalog.json`.
+
+**22 retained NA readings:** gdp_annual; c_goods, c_housing;
+i_construction, i_valuables, i_stock, i_food, i_materials, i_luxuries,
+i_held; g_services, nx; imports_food, imports_materials, imports_raw,
+exports; measured_food_units, measured_material_units,
+measured_luxury_units; written_off_food, written_off_materials,
+written_off_luxuries. These are the actual stored GDP components,
+inventory measurements/write-offs, or the sum of the NA history. The
+measured-unit getters are the baseline after the accounting strike has
+advanced it, rather than an independently sampled end-of-month stock.
+
+**Seven supporting inputs read at month end:** utility_imports_in_na,
+utility_fuel_imported, utility_fuel_local, utility_upkeep_paid,
+city_crude_imports, city_crude_exports and public_ip_imports. The first
+and the two crude inputs use the declared EconomyManager private fields;
+the rest use no-argument getters. These are last-set/last-paid views
+outside the retained NA component block, observed after the rest of the
+month. Reset, load and currency-scaling paths can also write such state.
+They may help interpret a component, but they cannot alone prove that a
+flow was omitted or that the amount read is the strike's original input.
+The checker labels these separately and makes no causal attribution.
+
+`target/r1g/gdp-prefix-check.py` pins the original AUTO2-1.csv and approved
+EXTRA spec by SHA-256. It requires exactly the existing 68 columns plus
+the 29 extras in the driver's order and the complete 1144-row prefix,
+months 2-1145. Every original field, including phase, flags and blank
+values, must match the retained CSV exactly. Every extra must be present
+and finite in every row. A failed premise returns INCONCLUSIVE before
+any component identity or annual reconciliation is attempted.
+
+Only with those premises met, the checker extracts 1122-1145, checks
+inventory=sum of its four parts, NX=exports-imports and the full GDP
+identity in each of those 24 rows, and compares annual GDP at 1144/1145
+with the respective twelve original monthly readings. Precision bounds
+come from the driver's %.9g serialization (half a ninth-significant-digit
+unit per reading), double-addition error and GDP's existing relative
+cancellation guard; this changes no model threshold. It reports the
+1133-to-1134 and 1134-to-1135 component changes only after reconciliation.
+Its positive status is MATCHED_COMPONENT_READINGS, never a ship verdict
+or causal claim. The future process exit/log/time limit also must be
+accepted before treating any checker output as a completed diagnostic.
+
+Fifteen Python-only synthetic CSV controls passed: consistent readings;
+original-column mutation; absent, blank, NaN and infinite extras;
+duplicate month; truncated prefix; changed accessor spec; broken monthly,
+inventory, NX and annual identities; and readings just inside/outside
+the serialization bound. Failed prefix/finite premises were proved to
+produce no identity results. These are checker controls, not a seed-1
+model run. Results are `target/r1g/gdp-checker-controls.json`; fixture
+filenames explicitly say synthetic. The checker SHA-256 is
+`96a718c228900da956206ec082158a1909733a708eece32396868ae4a69ffe7f`;
+the field catalog's is
+`3c6dbef6b6cd470b1b6d882304042f71795f51bd9273b769603fa142ff1b7322`.
+
+The retained reference SHA-256 is
+`b50d0144f17257a7a8ee84f118577ec4a73bc1deda69382e820a5c46020f44e4`;
+the approved 29-path spec SHA-256 is
+`6a247dad2fd70cbf4a8c883e09ca2dad12207fe140baf6403f83785a4f9ff1da`.
+The future output label remains R1gc2-gdp1-1145; no actual diagnostic
+output has been created. Check it unused on the box when the slot is
+released. Keep the original immutable classes/driver, data and JDK;
+one AUTO2 seed-1 JVM, end 1145/exception/stuck/180 seconds total, no retry
+or extension, no laptop fallback. All source, prior reviews/proofs,
+baseline and provisional marker remain frozen. Await explicit slot GO.
