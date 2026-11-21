@@ -7048,7 +7048,8 @@ public class Game {
         int company = Equity.indexOf(decision.sector);
         if (company >= 0) {
             SectorBooks.SectorMonth books = sectorBooks.get(decision.sector);
-            double planCost = businessInvestment.getCostOf(decision.template, decision.quantity);
+            // ...a landlord's home at the door's own price (FB15, HN1-A; orderCostOf()), so the down payment raised is the door's.
+            double planCost = orderCostOf(decision, decision.quantity);
             double ask = equity.raiseFor(company, books.totalAssets(), books.equity(), planCost);
             /*
              * ...AND THE DOWN PAYMENT A MORTGAGE ASKS FOR (0.7.11). Jerus: "the
@@ -7124,7 +7125,7 @@ public class Game {
         // credit screens use, rather than discovered as a silent buildFor()
         // refusal that would have read as "land went" below.
         if (credit.isBorrowingBlocked(decision.sector)
-                && businessInvestment.getCostOf(decision.template, 1) > cash) {
+                && orderCostOf(decision, 1) > cash) {
             lastInvestment.put(slot,
                     String.format("Holding: borrowing ban, %d more months - %s would need credit",
                             credit.getBlockedMonths(decision.sector),
@@ -7169,7 +7170,42 @@ public class Game {
                 : "";
 
         projectFinancing.remove(decision.sector);
-        if (buildFor(payer, decision.template, quantity)) {
+        /*
+         * THE DOOR'S NO IS TO THE ORDER HERE TOO (FB15, HN1-B, 2026-11-20). The
+         * slice above carries its interest; the door then asks the lender for
+         * what the till does not cover, on the whole slice: the bank's capital
+         * rule, the default point, a ban, a shut bank. A no held all of it, as
+         * the landlords' door did until HN1 (considerOnMortgage(), THE DOOR'S
+         * NO IS TO THE ORDER). FB15's fixture (OrderDoorCheck 3): six
+         * Convenience Stores held whole for the bank's capital ("lets a
+         * borrower's debt grow 0.00% this month") with the till holding one.
+         * So a no from the lender is asked again of half the order, down to
+         * one: a smaller order needs a smaller loan, and one the till covers
+         * needs none, which is what a banned sector may build too (above). A
+         * failed buildFor() changes nothing before canBorrow() says no
+         * (financeProject() only prices the plan); a no for the ground is not
+         * the lender's and is not asked again. An order the door trimmed was
+         * not held, so the capital marks the larger try left are taken back,
+         * as REV-HN1-1 took the landlords' back.
+         */
+        boolean[] door = { false, false };   // the lender said no; the build borrowed
+        Investor asking = lenderWatched(payer, door);
+        boolean capitalBefore = credit.wasRefusedForCapital(decision.sector),
+                projectCapitalBefore = credit.wasProjectRefusedForCapital(decision.sector);
+        long tried = quantity;
+        boolean built = buildFor(asking, decision.template, quantity);
+        String doorNo = door[0] ? projectRefusal(credit, decision.sector) : null;
+        while (!built && quantity > 1 && door[0]) {
+            quantity /= 2;
+            door[0] = false;
+            projectFinancing.remove(decision.sector);
+            built = buildFor(asking, decision.template, quantity);
+        }
+        if (built && quantity < tried) {
+            credit.takeBackCapitalRefusal(decision.sector, capitalBefore, true, projectCapitalBefore);
+            trimmed = projectDoorTrimmed(doorNo, decision.quantity, door[1]);
+        }
+        if (built) {
             lastInvestment.put(slot,
                     String.format("Built %,d %s%s%s - %s",
                             quantity, decision.template.getName(), trimmed,
@@ -7681,10 +7717,38 @@ public class Game {
                 && getSectors().realEstate().key().equals(sector);
     }
 
+    /*
+     * A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE (FB15, HN1-A, 2026-11-20).
+     * The planner prices materials at the builders' price
+     * (BusinessInvestment.getCostOf()); the door, buildFor(), charges the
+     * quote, whose materials beyond the yard are the market's draw, and the
+     * plot at its zone's price - 2-5% more while the city buys materials in.
+     * The landlords' order was sized on the till at the planner's price and
+     * its owners asked for the down payment on it, so a down payment raised
+     * to the plan's figure fell short of the door's 15%: HN1's seed 12 held
+     * one Low-Rise Apartments "for the 15% down payment" at m267, m356,
+     * m376, m700, m704 and m706, and an order of more lost half at the door.
+     * So the order, its lender's test and the owners' ask are priced as the
+     * door will charge them; every other order keeps the planner's price.
+     */
+
+    /** What consider() sizes an order of `quantity` at and raises its owners' money on: a landlord's home at the door's own price (doorPriceOf()), every other order at the planner's (BusinessInvestment.getCostOf()). */
+    private double orderCostOf(BusinessInvestment.Decision decision, long quantity) {
+        return buysOnMortgage(decision) ? doorPriceOf(decision.template, quantity)
+                : businessInvestment.getCostOf(decision.template, quantity);
+    }
+
+    /** What buildFor() charges for `quantity` of these, as it reads them: the quote's total and the plot at its zone's price. */
+    public double doorPriceOf(BuildingsTemplate t, long quantity) {
+        double landNeeded = t.getLandSqFt() * quantity;
+        return quoteBuild(t, quantity).total + landManager.priceFor(landNeeded, t.getSector(), groundUse(t));
+    }
+
     /**
      * HOW ONE OF THESE WOULD BE PAID FOR (0.7.75, the sector statements' R4):
      * consider()'s split of an order of one, read and never acted on - what
-     * it would cost (BusinessInvestment.getCostOf()); what the register would
+     * it would cost (BusinessInvestment.getCostOf(); a landlord's home at the
+     * door's own price since FB15, doorPriceOf()); what the register would
      * ask its owners for (Equity.raiseFor() - and a landlord's down payment
      * its till and its money abroad cannot put down - nothing at a quote under
      * what its shares are worth), no more than the cost; what its till and
@@ -7694,7 +7758,7 @@ public class Game {
      * they take: the households and the world decide that at the offering.
      */
     public double[] financingOf(String sector, BuildingsTemplate t) {
-        double cost = businessInvestment.getCostOf(t, 1);
+        double cost = buysOnMortgage(sector, t) ? doorPriceOf(t, 1) : businessInvestment.getCostOf(t, 1);
         double till = economyManager.getSectorCash(sector), abroad = economyManager.getForeignAssets(sector);
         double ask = 0;
         int company = Equity.indexOf(sector);
@@ -7723,7 +7787,8 @@ public class Game {
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
-        java.util.function.LongToDoubleFunction costOf = n -> businessInvestment.getCostOf(t, n);
+        // ...at the door's own price (FB15, HN1-A; A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE): the planner's was 2-5% under it.
+        java.util.function.LongToDoubleFunction costOf = n -> doorPriceOf(t, n);
         // ...the shortfall grown over the order's wait (BA1; carryOf() applies the real rate itself, so it is handed the insured one).
         java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
         double noi = perUnitRent - economyManager.housingCarry(t);
@@ -7818,7 +7883,8 @@ public class Game {
         /*
          * THE DOOR'S NO IS TO THE ORDER, NOT TO THE LANDLORD (HN1, 2026-11-18).
          * Mortgage.decide() sizes the order on the landlord's till and the
-         * lender's test, at the plan's price; the door then asks the bank's
+         * lender's test, at the plan's price (the door's own since FB15,
+         * lenderReads()); the door then asks the bank's
          * capital (while its leverage ratio binds), the down payment at the
          * purchase's own price, and the default point, all on the whole
          * order. A no to the whole order held all of it: AUTO2 seed 12 (R0h's
@@ -7918,6 +7984,48 @@ public class Game {
                     asked, BusinessDebtManager.INSOLVENCY_TRIGGER);
             default -> String.format(" (trimmed from %,d - the lender would not write more: %s)", asked, refusal);
         };
+    }
+
+    /* ----- a project's order at the door (FB15, HN1-B) ----- */
+
+    /** The payer, with its lender's no and its borrowing noted in `door` ({said no, borrowed}): consider() asks a smaller order again only after the lender's no. */
+    private static Investor lenderWatched(Investor payer, boolean[] door) {
+        return new Investor() {
+            @Override public String getName() { return payer.getName(); }
+            @Override public double getCash() { return payer.getCash(); }
+            @Override public void spend(double amount) { payer.spend(amount); }
+            @Override public void receive(double amount) { payer.receive(amount); }
+            @Override public boolean canBorrow(double amount) {
+                boolean yes = payer.canBorrow(amount);
+                if (!yes) door[0] = true;
+                return yes;
+            }
+            @Override public void borrow(double amount, int month) {
+                payer.borrow(amount, month);
+                door[1] = true;
+            }
+        };
+    }
+
+    /** Which of canFundProject()'s refusals the lender's first no to a project's order was, for projectDoorTrimmed(). */
+    private static String projectRefusal(BusinessDebtManager credit, String sector) {
+        if (!credit.isLendingOpen()) return BusinessDebtManager.MORTGAGE_BANK_SHUT;
+        if (credit.isBorrowingBlocked(sector)) return BusinessDebtManager.MORTGAGE_BANNED;
+        if (credit.wasProjectRefusedForCapital(sector)) return BusinessDebtManager.MORTGAGE_CAPITAL;
+        return BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT;   // the default point, or the line the loan would cross
+    }
+
+    /** The advisor's words for a project's order the door cut down (HN1-B): by the lender's first no, on a smaller loan or bought outright. */
+    private static String projectDoorTrimmed(String refusal, long asked, boolean borrowed) {
+        String past = String.format("would leave it owing past %.2f times what it owns", BusinessDebtManager.INSOLVENCY_TRIGGER);
+        if (borrowed) return String.format(" (trimmed from %,d - %s)", asked,
+                BusinessDebtManager.MORTGAGE_CAPITAL.equals(refusal) ? "the bank is short of capital for more" : "more " + past);
+        return String.format(" (trimmed from %,d - %s, so what its own funds buy outright)", asked, switch (refusal) {
+            case BusinessDebtManager.MORTGAGE_CAPITAL -> "the bank is short of capital for a loan";
+            case BusinessDebtManager.MORTGAGE_BANNED -> "it may not borrow";
+            case BusinessDebtManager.MORTGAGE_BANK_SHUT -> "the bank has failed";
+            default -> "a loan " + past;
+        });
     }
 
     /**
