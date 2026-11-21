@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**234 harness files, 26,866 labelled assertions.** AllChecks runs 234 of them.
+**234 harness files, 26,880 labelled assertions.** AllChecks runs 234 of them.
 
 ## Which harnesses read which class
 
@@ -75,7 +75,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, GroundInputCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, ConstructionTrapCheck, FitoutCheck, FittingCheck, FoundingYardCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SlopeCheck, WantedPostsCheck |
-| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildersFirstCheck, BuildingStackCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, FitoutCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck, WorksFinanceCheck |
+| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildersFirstCheck, BuildingStackCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, FitoutCheck, LandmassCheck, LongPlaytest, NewUnitCheck, RoadCheck, SaveSlotCheck, WorksFinanceCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, GroundInputCheck, HistoricalRecipeCheck, IndustryViewCheck, SulphideLeachCheck |
@@ -22704,7 +22704,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1455 a place the Earth search found names the city with its own name, trimmed
   - L1467 ...and every place's name in a sample of
 
-## NewUnitCheck.java - 74 labelled assertions
+## NewUnitCheck.java - 88 labelled assertions
 
 > A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every
 > future-building figure.
@@ -22720,80 +22720,94 @@ _(this harness does not label its checks through a helper - it prints its findin
 > stack set unfitted for the pieces a new one would not get, the recipes applied, and the template's live figures read
 > ...
 
-  - L215 1. the default city reads every template as it stands; no undo moves land
-  - L225 fixture: a city founded the default way, with templates that have a recipe choice
-  - L227 every template's new unit is standing and carries the template's posts, draw, makes and uses
-  - L229 no game, no template: standing figures and null
-  - L248 data guard: no recipeChanges 'without' block in buildings.json moves land (NewUnit keeps the template's)
-  - L256 2. the rejected robot: the fleet keeps 100 posts, the new plant has 300, and every estimate reads the new plant
-  - L264 fixture: stepping machinery from a cent flips the verdict on the robot, kept at a cent and rejected above
-  - L270 fixture: the fleet is fitted at 100 unskilled posts; the actual new plant, without the robot, has 300; wages are positive
-  - L277 the new unit carries the actual new plant's posts and is of the catalogue template
-  - L280 premise: the fleet's quote differs from the actual new plant's estimate, so a reader of the fleet fails
-  - L283 the investors' estimate is the actual new plant's
-  - L287 the appraisal's and the investors' summary's estimates are the actual new plant's
-  - L290 none of them quotes the fleet's
-  - L297 3. the staffing boundary, arrivals closed: the card, the investors' gate and the order bar read the 300 posts
-  - L327 fixture: a staffing pass for the fleet's 100 posts and a fail for the new plant's 300, arrivals closed
-  - L332 the Build card is of the catalogue template and carries the 300-post unit
-  - L335 premise: the fleet's running bill differs from the actual new plant's
-  - L337 the card's running bill is the actual new plant's, not the fleet's
-  - L340 the investors' own gate is STAFFING (the fleet's 100 posts would pass it)
-  - L346 the order bar counts 600 unskilled posts for two; the old overload keeps the fleet's 200 and the fleet's 100 stand
-  - L354 4. a pulp mill's saved choice is the new unit's, not a fresh one (a guard)
-  - L367 fixture: a Pulp Mill with no independent changes saved kraft; moved residue prices now prefer groundwood, which uses no residues
-  - L371 guard: the new pulp mill keeps kraft's figures (residues 21500, the mill's own), whatever a fresh choice would pick
-  - L380 5. the bank's new branch: its own clerks, once, and the fee gate's boundary
-  - L396 fixture: a fitted bank with a branch standing and a cost known; the new branch rejects both machines and hires clerks at positive wages
-  - L402 the investors' new-branch estimate carries the new branch's clerks over a later branch's cost
-  - L419 fixture: positive fees just above and just below N x C + (C + extra) - the charter's exemption
-  - L421 just above, the gate lets the branch open; just below, it does not
-  - L423 premise: the removed (N + 1) x (C + extra) gate would have refused the case above, and the fleet's C would have passed the case below
-  - L430 6. with the robot accepted again, the new unit's figures are the template's
-  - L436 fixture: machinery cheap again keeps the robot for a new plant, and the unit is resolved, not the template as it stands
-  - L439 its figures equal the template's and its template is the same object
-  - L443 the card and the investors' estimate then agree with the fleet's own figures
-  - L469 7. identities: through a month, a changed fitting input and an order on site
-  - L479 the card, the appraisal and the investors keep the catalogue template (machinery cheap: the new unit has the fleet's 100)
-  - L496 fixture: the Vehicles page has the catalogue template's card, two dialled up, and the order bar at the fleet's 200 unskilled posts while machinery is cheap
-  - L506 a month on, a fresh card is of the same template with the current unit
-  - L516 a month on, the kept page keeps the Build button and the steps held from the first draw, on the catalogue template's card
-  - L525 fixture: machinery dear now rejects the robot; a fresh card is of the same template with the actual new plant's 300 while the fleet keeps 100
-  - L532 fixture: nothing else on site and nothing pending
-  - L555 the kept steps, pressed after the month and the fitting change, reprice the order bar at the actual new plants' posts: 900 at three, 600 back at two, not the...
-  - L574 with the order on site, the card, the investors and the appraisal leave the stack, its quantity, its sites, the wait and the contracts as they were
-  - L577 ...and still read the unit at the new plant's 300 and 2 on site
-  - L584 placing one beside them, with no construction, keeps the stack on its catalogue template and the queue as it was
-  - L589 8. what is on site: the actual new plants' posts, and the power ahead from their completion
-  - L590 the posts and total jobs under construction are the actual new plants', not the fleet's
-  - L602 premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage
-  - L604 the landlords' head shortage counts the actual new plants' posts on site, not the fleet's
-  - L641 9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion
-  - L661 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
-  - L666 fixture: nothing on site and nothing pending
-  - L677 fixture: two queued on the plant's own stack, the first finishing before the last
-  - L682 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
-  - L684 ...and not the fleet's draw
-  - L691 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
-  - L708 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
-  - L718 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
-  - L724 fixture: two queued on the centre's own stack
-  - L727 the colleges' places grow by the queued centres' own college posts, not the fleet's
-  - L731 the landlords' head shortage counts the queued centres' own posts, not the fleet's
-  - L745 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
-  - L760 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
-  - L769 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
-  - L793 fixture: the utilities have posts and a fill, and a base to supply from
-  - L795 premise: the fleet's generation would read a different figure than the actual new plant's
-  - L797 the power measure reads the actual new plant's generation (and its draw)
-  - L804 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
-  - L822 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
-  - L828 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
-  - L839 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
-  - L866 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
-  - L878 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
-  - L891 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
-  - L908 the camp's card says it makes the actual new camp's cut a month, not the fleet's
+  - L219 1. the default city reads every template as it stands; no undo moves land
+  - L229 fixture: a city founded the default way, with templates that have a recipe choice
+  - L231 every template's new unit is standing and carries the template's posts, draw, makes and uses
+  - L233 no game, no template: standing figures and null
+  - L252 data guard: no recipeChanges 'without' block in buildings.json moves land (NewUnit keeps the template's)
+  - L260 2. the rejected robot: the fleet keeps 100 posts, the new plant has 300, and every estimate reads the new plant
+  - L268 fixture: stepping machinery from a cent flips the verdict on the robot, kept at a cent and rejected above
+  - L274 fixture: the fleet is fitted at 100 unskilled posts; the actual new plant, without the robot, has 300; wages are positive
+  - L281 the new unit carries the actual new plant's posts and is of the catalogue template
+  - L284 premise: the fleet's quote differs from the actual new plant's estimate, so a reader of the fleet fails
+  - L287 the investors' estimate is the actual new plant's
+  - L291 the appraisal's and the investors' summary's estimates are the actual new plant's
+  - L294 none of them quotes the fleet's
+  - L301 3. the staffing boundary, arrivals closed: the card, the investors' gate and the order bar read the 300 posts
+  - L331 fixture: a staffing pass for the fleet's 100 posts and a fail for the new plant's 300, arrivals closed
+  - L336 the Build card is of the catalogue template and carries the 300-post unit
+  - L339 premise: the fleet's running bill differs from the actual new plant's
+  - L341 the card's running bill is the actual new plant's, not the fleet's
+  - L344 the investors' own gate is STAFFING (the fleet's 100 posts would pass it)
+  - L350 the order bar counts 600 unskilled posts for two; the old overload keeps the fleet's 200 and the fleet's 100 stand
+  - L358 4. a pulp mill's saved choice is the new unit's, not a fresh one (a guard)
+  - L371 fixture: a Pulp Mill with no independent changes saved kraft; moved residue prices now prefer groundwood, which uses no residues
+  - L375 guard: the new pulp mill keeps kraft's figures (residues 21500, the mill's own), whatever a fresh choice would pick
+  - L384 5. the bank's new branch: its own clerks, once, and the fee gate's boundary
+  - L400 fixture: a fitted bank with a branch standing and a cost known; the new branch rejects both machines and hires clerks at positive wages
+  - L406 the investors' new-branch estimate carries the new branch's clerks over a later branch's cost
+  - L423 fixture: positive fees just above and just below N x C + (C + extra) - the charter's exemption
+  - L425 just above, the gate lets the branch open; just below, it does not
+  - L427 premise: the removed (N + 1) x (C + extra) gate would have refused the case above, and the fleet's C would have passed the case below
+  - L434 6. with the robot accepted again, the new unit's figures are the template's
+  - L440 fixture: machinery cheap again keeps the robot for a new plant, and the unit is resolved, not the template as it stands
+  - L443 its figures equal the template's and its template is the same object
+  - L447 the card and the investors' estimate then agree with the fleet's own figures
+  - L473 7. identities: through a month, a changed fitting input and an order on site
+  - L483 the card, the appraisal and the investors keep the catalogue template (machinery cheap: the new unit has the fleet's 100)
+  - L500 fixture: the Vehicles page has the catalogue template's card, two dialled up, and the order bar at the fleet's 200 unskilled posts while machinery is cheap
+  - L510 a month on, a fresh card is of the same template with the current unit
+  - L520 a month on, the kept page keeps the Build button and the steps held from the first draw, on the catalogue template's card
+  - L529 fixture: machinery dear now rejects the robot; a fresh card is of the same template with the actual new plant's 300 while the fleet keeps 100
+  - L536 fixture: nothing else on site and nothing pending
+  - L559 the kept steps, pressed after the month and the fitting change, reprice the order bar at the actual new plants' posts: 900 at three, 600 back at two, not the...
+  - L578 with the order on site, the card, the investors and the appraisal leave the stack, its quantity, its sites, the wait and the contracts as they were
+  - L581 ...and still read the unit at the new plant's 300 and 2 on site
+  - L588 placing one beside them, with no construction, keeps the stack on its catalogue template and the queue as it was
+  - L593 8. what is on site: the actual new plants' posts, and the power ahead from their completion
+  - L594 the posts and total jobs under construction are the actual new plants', not the fleet's
+  - L606 premise: only the two plants are on site, and the fleet's posts would give the landlords another head shortage
+  - L608 the landlords' head shortage counts the actual new plants' posts on site, not the fleet's
+  - L645 9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion
+  - L665 fixture: the fleet is fitted and on its rotary kiln; a new plant rejects the kiln, and its shaft kilns draw other power than the fleet's
+  - L670 fixture: nothing on site and nothing pending
+  - L681 fixture: two queued on the plant's own stack, the first finishing before the last
+  - L686 the power ahead adds the queued plants' own draw only from their completion: none before the first, one at it, both past the last
+  - L688 ...and not the fleet's draw
+  - L726 13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush
+  - L735 fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon
+  - L752 inside a scope the power ahead at each of
+  - L754 one schedule is built for the scope's
+  - L760 premise: outside a scope each reading builds its own schedule
+  - L774 premise: a third plant ordered moves the power ahead
+  - L776 an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew
+  - L790 premise: the city's site is rushed, and the rush moves the power ahead
+  - L792 a rush inside a scope: the readings after it are the bare ones to the bit
+  - L809 premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead
+  - L812 a priority inside a scope: the readings after it are the bare ones to the bit
+  - L821 closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does
+  - L840 premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead
+  - L843 ...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit
+  - L850 10. what posts on site ask of the city: two queued Shared Services Centres without their computer, their college places and their homes
+  - L867 fixture: the fleet is fitted; a new centre rejects the business computer and has more college posts than the fleet
+  - L877 fixture: nothing on site, nobody college-qualified, and the colleges' places are the standing college posts
+  - L883 fixture: two queued on the centre's own stack
+  - L886 the colleges' places grow by the queued centres' own college posts, not the fleet's
+  - L890 the landlords' head shortage counts the queued centres' own posts, not the fleet's
+  - L904 11. power ahead: a queued Coal Power Plant that rejects its turbine and its pulverised coal generates less
+  - L919 fixture: the fleet is fitted and generates more than a new plant, which rejects both the turbine and the pulverised coal; the posts and draw do not move
+  - L928 fixture: one Coal Power Plant is queued and the power measure's on-site map holds it on the catalogue template
+  - L952 fixture: the utilities have posts and a fill, and a base to supply from
+  - L954 premise: the fleet's generation would read a different figure than the actual new plant's
+  - L956 the power measure reads the actual new plant's generation (and its draw)
+  - L963 12. the card's goods: a furnace without its caster burns fuel oil, a camp without its chainsaw cuts less, and the card says so
+  - L981 fixture: both fleets are fitted; a new furnace rejects the continuous caster and burns fuel oil the fleet does not
+  - L987 fixture: a new camp rejects the chainsaw and cuts other figures than the fleet
+  - L998 the camp's card lists its outlets at the actual new camp's cut, not the fleet's
+  - L1025 tripwire: no piece changes which goods a building makes, nor what a building on typed ground makes (the group heading's made words and stands() read alike fo...
+  - L1037 the furnace's card says it is made from the actual new furnace's inputs, fuel oil among them
+  - L1050 the furnace's group heading says its cards are made from fuel oil, which only the actual new furnaces burn
+  - L1067 the camp's card says it makes the actual new camp's cut a month, not the fleet's
 
 ## ObservationCheck.java - 5 labelled assertions
 
