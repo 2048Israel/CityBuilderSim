@@ -1723,3 +1723,186 @@ model mend, waiver, reclassification, dry or ready action is authorized.
 [r1g-repair-import]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/GoodsMarket.java#L324
 [r1g-repair-pay]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L20038
 [r1g-repair-arrears]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L20075
+
+## 18. Paid/unpaid public-road fixture prepared; no execution
+
+Orchestrator's 2026-11-21 15:45 instruction
+`20261121-154502-557-orchestrator-99ca` authorizes target-only preparation
+from reviewed section 17/c06357452. The following is a proposed diagnostic,
+not a compiled check, a measurement or a mend. No compiler, JVM, monthly
+step, BOX access or BOX-job polling was performed. WG4eaa's slot is left
+alone. R1g remains Pending; only Jerus can return it to Queued.
+
+### Reviewable artifacts and pins
+
+All new code is ignored under `target/r1g/repair-fixture-prep/`:
+
+| Artifact | Purpose | SHA-256 |
+| --- | --- | --- |
+| `R1gPublicRepairProof.java` | Actual standalone driver, including the two proposed observers | `52dc30eea5fbe63d68fd9a7450a56a06249e3bf90c1ccd48f5eba39508d8894e` |
+| `R1gPublicRepairProof.patch` | Unified source diff from /dev/null; no production patch | `cee4250d2f242f9d094392e45ebce67b6726a16a133b525b4084ef34403c7bc0` |
+| `check_fixture.py` | Independent raw-data premises/identities/original-law check | `108fdd45c47ed21d1fd715cbd727dcb3f1099ebf09b59b40aa30fa0a4cde7349` |
+| `prepare_manifest.py` | Static declarations/order checks and provenance manifest builder | `8069de7587e54f7dd0aa426b3232087661d1c032c942b6e225f015784ee1fd66` |
+| `manifest.json` | Exact proposed classpath, source/resource hashes, observer paths and bounded scope | `201c0cbd90118941e5883e429ad56abe2e39a89ee995badc18b8b05ca6383654` |
+
+The static preparation script passes, including Python syntax parsing,
+ignored-path validation, comparison of 23 relevant production files with
+frozen 627174320, and declaration checks for every dotted measurement
+path. It does not compile or type-check Java. The files' byte hashes match
+the manifest. No `fixture.json` exists and the proposed local output label
+is unused; this is not an assertion about BOX occupancy or label state.
+
+Expected model provenance is the same immutable
+`627174320f11063976b6f05abdf68cfe72e1adc9` and retained ledger-trace pins:
+2395 model classes, canonical tree SHA-256
+`fcc468f43f860a2ec4d015eb76b5c907f65e30e925ab91e954d4ffde651c01c9`;
+four original cached Ensemble driver classes, tree SHA-256
+`e74f4e8aa6edd719b00594bbe436c9923469d4bf09625e1edb4c349f605374ff`.
+Use JDK 21.0.13+9 at `/home/jerus/cbs/jdk-21.0.13+9/bin/java`, executable
+SHA-256 `9cad3f2620d3ef2ed10b26f922af7e773d54fdaa05f615d6d6df014f3fec4155`.
+Earth/world remain `/home/jerus/cbs/main/data/earth-2.bin` and `world-1.bin`,
+SHA-256 respectively
+`c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b` and
+`fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1`.
+These are retained expectations, not a fresh BOX verification.
+
+The manifest pins the ten-entry original Maven classpath (Gson 2.10.1,
+JavaFX 21 and Monocle 21.0.2), its string SHA-256
+`fbc5cc674bb11cb14aad28499288e73f3b9c61dd8aa685c7fcc059f8fc10c033`,
+23 frozen source files and all five JSON resources. Six dependency byte
+hashes are available from identical local Maven coordinates. The four
+Linux JavaFX classifier jars are absent locally: their bytes are **not
+newly verified or historically byte-pinned here**. A released preflight
+must acquire/record those four hashes, verify the other six against their
+pins, and freeze all ten before/after compilation and execution. Any
+disagreement with retained model/driver/JDK/data expectations stops before
+compile/launch. This dependency gap and Java compilation remain explicit
+review/preflight limits; no BOX access was used to conceal them.
+
+### Original path and smallest proposed target observer
+
+The existing `autoBuildProbeForTest` is before the monthly work
+([Game:13733][r1g-fixture-autoprobe]); `settleProbeForTest` is after the
+simulation/NA work ([Game:14024][r1g-fixture-settleprobe]). Neither exposes
+the required repair prices, pending ledger and payment room at the charge.
+The proposed target-only `ObservedGame extends Game` has exactly two
+overrides, both existing nonfinal package methods in the same package:
+
+| Observer | Exact boundary and original delegation | Evidence limit |
+| --- | --- | --- |
+| `drawMaterials(double,boolean)` | When armed around the one original monthly call, detach raw observations immediately before and after `super.drawMaterials`; record caller, requested units, yardFirst and all five actual Draw return values. The maintenance caller reaches this after EconomyManager.chargeMaintenance, before the city payment. Each armed/unarmed route delegates once and returns the original Draw. | The charge-phase bill/need belongs to this press. Before-city snapshots outside this boundary can contain initial/stale totals. No quote or flow is rebuilt. |
+| `treasuryPays(TreasuryLine,double,String)` | Observe every treasury request/return, room, cash, arrears and budget context immediately before/after `super.treasuryPays`; add physical snapshot for CITY_REPAIRS. The original two-argument entry delegates to this virtual overload. Each route calls super once and returns the actual paid amount. | At return, EconomyManager.cityRepairsPaid still precedes its caller's setter. Use returnedPaid for P; read the struck Repairs billed part after completion for R. End-state cityPaid is supporting context. |
+
+Observer failures are recorded as issues, never replaced with zero; the
+original method still executes. Gson preserves nonfinite numbers for the
+independent finite gate. No model hook/field, source-tree code, phase copy,
+ledger mutation or override of run/nextMonth/simulateMonths is proposed.
+The raw pending ledger is detached into JSON at observation, so later
+reset/settlement cannot rewrite an earlier snapshot.
+
+Static hold-path checks find no conflict that substitutes the repair path.
+[holdSector:117][r1g-fixture-holds] marks investment/retirement holds;
+holdBranches/planBank and Game.closeBranches guard opening/closing only.
+[AutoBuilder.pass:1249][r1g-fixture-auto] returns inside that pass when off;
+Game.nextMonth continues into startOfMonthUpdate and simulation. The
+unmodified charge contains no hold/autobuilder guard and orders
+chargeMaintenance -> drawMaterials -> treasuryPays -> receiveMaintenance.
+The unmodified startOfMonthUpdate orders that charge before strikeSectors
+and updateNationalAccounts, followed by private investment. Holding these
+routes therefore does not bypass the actual draw/payment/strike under
+test. It does not stop all trading, freight, policy, bank or budget work.
+
+### Prescribed pair and exact measurements
+
+Use two fresh GameFiles.scratch cities, both original
+LongPlaytest.played(null) founding, standard/1900 (guarded), Game.run and
+seedMarket(g,1). In each, select actual catalogue Paved Road, obtain its
+positive repairsPerYear, set N=ceil(12/share), clearStacks/addStack(road,N,
+true), and setConstructionMaterials(0). Hold every sector and branches,
+turn the autobuilder off, set central-bank advance ceiling months to zero.
+The sole designed arm difference is setCashForTest(Founding.WEALTHY_CASH)
+versus setCashForTest(0). There is one original simulateMonths(1) call per
+arm, not a manual sequence or a copied bill/GDP formula. Model-derived N
+and actual catalogue inputs stay fixed; no tuning is permitted after a
+failed premise or a noncausing result.
+
+| Phase | Raw fields and hard checks |
+| --- | --- |
+| Setup and completed state | Month/completed count; whole standing catalogue quantities, cashCost/upkeep/materials/points/repair share; sites, fittings, legacy-instance count; yard, salvage/cost, construction backlog and unearned revenue. Require only Paved Road standing, no sites/fittings/legacy instances, no salvage/pre-existing arrears, one original step and successful owned-scratch cleanup. |
+| Immediately before/after real maintenance draw | Quote/exchange; current local, boundary-import and import-plus-domestic-haulage prices; actual total materials/points need; full/city/bank bills and every private-sector bill; every sector's MATERIALS stock/pantry; builder pending ledger and raw local/import rows. Require one chargeBuildingMaintenance draw, yardFirst, positive whole need, no yard/salvage/local stock route, no earlier builder purchase, Btotal=Bcity>0, private/bank bills zero. Require actual Draw units=need, local units/cost zero, imported units=need, and import cost bound to observed boundary price within original MoneyAudit.CENT. |
+| Every treasury payment, especially CITY_REPAIRS | Requested amount, payee/line, returned P; before/after cash/discretionaryRoom, arrears by line/total, refused/paid counters; CB headroom/ceiling/bound/treasury and bank advances/trailing revenue, total debt; bank cash/operating cost, fund withdrawal, cityPaid. Require one city request matching observed Bcity; paid arm actual room covers/full payment; unpaid actual room=0/P=0; immediate CITY_REPAIRS arrear increment equals refused amount. No assumption that a zero ceiling alone proves room zero. |
+| Original struck Construction statement | Entire Statement DTO, all bought goods/local/abroad values, imports, otherInputs, purchasesBySupplier, otherRevenue/otherParts and retained local/imported drawn units. Require only MATERIALS bought abroad at the actual draw cost, all other input/supplier purchases zero, four capital parts zero, retained units matching draw; actual Repairs billed=observed Btotal-refused and entire otherRevenue equals that receipt. There is no haulage/imported-service whitelist. |
+| Actual NA and original money audit | Read GDP, C goods/housing, I construction/inventories/valuables, G, NX, imports materials/food/raw, exports and inventory food/materials/luxuries/held. Require Iconst zero and NA builder imports equal actual draw as isolation/wiring premises. Preserve the production GDP>=0 law without a G=0 premise. Use the unchanged cached Ensemble.Adapter.auditResidual with original raw residual/relative/postAuditDrift; absent/nonfinite or failed original audit cannot establish a GDP cause. |
+| Other cash-dependent outcomes | Before/after and every-payment budget context includes the original seven-slot treasuryMonthToSave vector (opening, closing, raised, repaid, surplus, recorded, noncash), all 40 governmentToSave budget slots, TreasuryJournal's last-month entries, DecisionLog.toState, treasury residual/unexplained, debt/CB/bank/fund fields. Preserve both full payment tapes and report every changed ending budget/decision field. Cash may change other policies, transfers or spending; equality is neither presumed nor used as a premise. |
+
+Across arms the checker requires identical actual standing catalogue,
+quote/exchange, need, owner bills, all observed material prices and actual
+Draw fills/cost. It separately checks receipt difference against the
+measured city share, and reports actual changes in every captured NA
+component, including G/I/NX. It does **not** assert receipt difference is
+GDP or subtract imports/receipts to invent final spending. Government
+budget slots and the post-step live builder ledger are context at their
+named phases, not substitutes for the retained strike.
+
+All numbers must be finite. Any missing field, observer/setup issue,
+phase/cardinality failure or isolation mismatch yields INCONCLUSIVE.
+Only a completely matched pair with the original audit passing can be
+labelled a GDP-law failure in this controlled fixture. A matched pair with
+nonnegative GDP is NOT_CAUSING_GDP_LAW_FAILURE; do not alter stock, price,
+holds or thresholds to manufacture a red. The checker records other
+budget differences before testing isolation, so a rejected fixture still
+retains rather than hides those changes.
+
+Static feasibility remains conditional. clearStacks clears stacks only;
+it does not erase legacy instances or repair bank asset history. Those
+measured premises/original audit may reject the proposed city. Freight
+still runs and may create a nonzero Haulage/supplier route; that is a hard
+failure, not permission to skip freight or whitelist a service. Likewise
+other cash receipts/payments may prevent the unpaid arm from having zero
+room at the repair boundary. None of those premises is claimed true from
+source inspection. If they fail, stop with the raw conflict and no
+scenario adjustment. These controls cannot allocate the original seed's
+203 units, prove its missing phase values or establish its earlier
+point/credit cause, even if a current controlled GDP law fails.
+
+### Proposed execution scope, lifecycle and stop rule; separate GO required
+
+Propose **one BOX model JVM**, label `R1gc2-repair-pay-2press`, at most the
+two specified fresh cities/one press each, **30 seconds total**, no retry,
+extension or laptop fallback. There is no execution launcher/GO here.
+After root review and slot release, first require gate/nightly priority
+clear, reachable/free BOX, label entirely unused and safe output, and all
+provenance checks above. Occupied/unreachable/mismatch means STOP before
+any compiler/model launch. WG4eaa is not polled by this preparation.
+
+Compile only this driver into a separate ignored diagnostic directory
+using JDK21 javac, -proc:none/-implicit:none, an explicit empty sourcepath
+and classpath of the original four cached driver classes, original 2395
+model classes and pinned dependencies. Expected new output is only the
+outer driver and ObservedGame class. Never compile/rewrite model or cached
+driver classes. Recheck their complete hashes and dependencies before and
+after. The manifest records the exact proposed argv/properties; execution
+also requires an explicit driver GO property and the original model code
+source. The driver atomically creates its guarded output label and refuses
+any existing directory. Logs must be kept outside that label until then.
+
+The 30-second total is the single proposed compile/run budget, with the
+real owned foreground process terminated on exception/stuck/deadline and
+no extra press or retry. Own it to real exit, record terminal/provenance,
+homecopy the raw output/logs and run only the static checker after exit.
+Timeout/partial/missing output is inconclusive. No timing success is
+claimed before a separately authorized run.
+
+Each scratch path is verified below this JVM's dedicated
+java.io.tmpdir/citybuildersim-tmp/PID before cleanup. Original
+LongPlaytest.cleanUp runs in finally per arm; remaining files become an
+issue and original TempDirs shutdown cleanup is a backstop. No slot path
+or old evidence directory is used. Source, reviews, earlier proofs and
+captures, hard failed full baseline and provisional ship marker remain
+frozen. This notes-only preparation does not authorize a model/harness
+mend, reclassification, waiver, dry, ensemble or readiness change.
+
+[r1g-fixture-autoprobe]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L13733
+[r1g-fixture-settleprobe]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L14024
+[r1g-fixture-holds]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BusinessInvestment.java#L117
+[r1g-fixture-auto]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/AutoBuilder.java#L1249
