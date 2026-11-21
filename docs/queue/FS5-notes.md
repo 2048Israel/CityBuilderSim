@@ -932,3 +932,49 @@ use a redraw to conceal it. If the cause is FS5's fixture/measurement, mend it
 here; a demonstrated actual UI defect gets its own fix. FS5 keeps the hard
 veto until that causal disposition is complete. The 53.6 MiB heap miss remains
 a separate, unclassified responsibility and is not passed by KHL1 or FS1.
+
+## Read-only ownership trace after run 6
+
+On the 12:56 records/read-only GO, no further JVM, probe execution or source
+edit ran. The concrete proposed proofs are in `target/FS5c2-next-trace.md`.
+Both are separately gated proposals, each at most one native Windows/SW
+JVM, Xmx768m, expected at most 20 s with a 45-second guard; neither includes
+the 600-month builder or a replay.
+
+Healthcare has a source-level feedback candidate: GovernmentScreen.frameOver
+binds page width to scroller viewport width (minimum 320), while its height
+follows window space less the frame. UserInterface.scrolled fits the outer
+content to width but makes the inner page prefer its bound width. A bar can
+narrow text, wrapping can add height, and height controls the bar. Two stable
+width/wrapping states are therefore plausible. KeptBench.settle's two quiet
+hashes may accept either; its extra scroller kick requires a content-height
+change over 400. None of that proves UI versus bench ownership.
+
+The proposed positive causes the wrap/overflow boundary from actual measured
+font, viewport and scrollbar dimensions, comparing kept closed-to-open with
+fresh construction. Taller space and a wide-seeded fresh initialization
+with the same final AS_NEEDED policy are negative controls. A real native
+stage/pulse control would need explicit permission for one transparent,
+non-maximized stage; without it, the ordinary-UI attribution remains limited.
+Anticipated source is KHL1's Government frame initialization only if an actual
+UI cause is demonstrated; a bench-only layout/pulse cause remains FS5's.
+No stripping style width, tolerance change or redraw-to-heal is proposed.
+
+Heap accounting has a proved traversal-completeness gap (parent ownership
+finds an extra canvas in probe 5) but zero explained bytes there. Read-only
+installed OpenJFX-21 fields also show NGNode cache/effect buffers outside
+NGCanvas: CacheFilter.cachedImageData/tempTexture and NodeEffectInput's cached
+ImageData can reach PrTexture/PSWDrawable render textures and pixel buffers.
+The UI uses DropShadow/effect styles, but field existence and style use do
+not prove any such payload survived at the full heap line. Static evidence
+is preserved in `target/FS5c2-render-cache-static-fields.txt` and
+`target/FS5c2-effect-buffer-static-fields.txt`.
+
+The proposed heap positive renders a bounded detached canvas graph retained
+only through a leaf map entry, comparing current versus parent-inclusive
+traversal of actual backing arrays. Direct-canvas ownership is its negative
+control. At most one cache/effect node adds an independent actual-peer payload
+check, with cache/effect disabled and snapshot copies separated as negatives.
+Anticipated source, only after bytes and a separate mend GO, is
+KeptBench.canvasTargets traversal/accounting. No proposed subtraction is
+chosen to close 53.6 MiB, and that residual remains unexplained.
