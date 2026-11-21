@@ -30,7 +30,8 @@ import java.io.PrintStream;
  *   2. a surface coal mine on a short thermal seam bids the diesel of its
  *      lift, and once the seam is out clears none for its run;
  *   3. a leach plant on short oxide ground bids the acid of its cathode, and
- *      once the oxide is out clears none;
+ *      once the oxide is out clears none; a Copper Mine & Mill on short
+ *      sulphide reads the share its concentrate's dig got;
  *   4. a gold mill on a worked-out field bids and clears no acid or diesel,
  *      and on a falling grade still bids its whole throughput's;
  *   5. kept: on ample ground each one's bid is its recipe at its order share
@@ -222,6 +223,31 @@ public class GroundInputCheck {
         check("premise: the oxide out, the plant standing", land.getRemaining(r, ox) == 0 && cu.lift() == 0);
         check("once the oxide is out the plant bids no acid, and the clearing buys it none", none[1] == 0 && acid == 0);
         check("...and the accounts add up", identity(accounts(g)));
+
+        // ...and a Copper Mine & Mill, whose concentrate CopperMining digs in its own copy of the loop (REV-NG1), reads what that dig
+        // got: none of its recipe is a traded input today, so its share is asserted itself, to hold whatever buildings.json says.
+        Game m = CopperMiningCheck.copperTown("groundinputcheck-mill", 1);
+        CopperMining mills = m.getSectors().copperMining();
+        BuildingsTemplate mt = m.getBuildingManager().getTemplate(CopperMining.MINE_AND_MILL);
+        quietly(() -> m.getBuildingManager().addStack(mt, 1, true));
+        LandManager ml = m.getLandManager();
+        Deposit.FieldType su = Deposit.FieldType.SULPHIDE;
+        ml.extract(r, su, ml.getRemaining(r, su) - 300);
+        Sector asSector = mills;
+        double[] mill = { 0, 0, Double.NaN };
+        quietly(() -> {
+            mills.planOrders();
+            mills.produceFlow(Good.COPPER_CONC);
+            Sector.Output conc = mills.outputRow(Good.COPPER_CONC);
+            mill[0] = conc.planned;
+            mill[1] = conc.produced;
+            try { mill[2] = asSector.groundShare(mt); } catch (LinkageError before) { /* a build with no groundShare() */ }
+            mills.endOrders();
+        });
+        out.printf("mill: 300 t of sulphide field; asked %,.1f t of concentrate, dug %,.1f t; its ground share %.6f%n", mill[0], mill[1], mill[2]);
+        check("premise: one mill, its month's ask past the sulphide, which gives up what it holds", mill[0] > mill[1] && mill[1] > 0);
+        check("the mill's ground share is what its concentrate's dig got, so its inputs would follow the dig",
+                mill[2] < 1 && near(mill[2], mill[1] / mill[0]));
     }
 
     /* ----- 4: the gold mill ----- */

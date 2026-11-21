@@ -138,15 +138,27 @@ public abstract class ExtractionSector extends Sector {
             }
             double field = part * d.dig, got = dig(land, d.type, field, i > 0);
             came += got / d.dig;
-            // ...and what of its ask each kind's ground gave, for the inputs it orders after the dig (NG1, groundShare()):
-            // exactly 1 where the ground held the whole ask, as extract() then returns it whole.
-            if (field > 0) dugShares.put(kind(d.type, d.dig), got / field);
+            // ...and what of its ask each kind's ground gave, for the inputs it orders after the dig (NG1, groundShare()).
+            noteDug(d.type, d.dig, field, got);
         }
         return came;
     }
 
-    /** What of its ask each kind of dig (kind()) got from its ground in this month's market pass (NG1): put by groundLimit(), emptied as the pass's orders are planned, never saved. */
+    /** What of its ask each kind of dig (kind()) got from its ground in this month's market pass (NG1): put by noteDug(), emptied as the pass's orders are planned, never saved. */
     private final Map<String, Double> dugShares = new HashMap<>();
+
+    /**
+     * Keeps what of its field tonnes one kind of dig got this month (NG1, groundShare()): groundLimit()'s, and a sector's own copy of
+     * the dig's (CopperMining's concentrate). Exactly 1 where the ground held the whole ask, as extract() then returns it whole.
+     */
+    protected final void noteDug(Deposit.FieldType type, double dig, double field, double got) {
+        if (field > 0) dugShares.put(kind(type, dig), got / field);
+    }
+
+    /** The share of its ask a building's kind of dig got this month (noteDug()): 1 before the dig and for a kind not dug. */
+    protected final double dugShare(BuildingsTemplate t) {
+        return dugShares.isEmpty() ? 1 : dugShares.getOrDefault(kindOf(t), 1.0);
+    }
 
     /** A month's dig shares are the month's: none until groundLimit() digs, so every building reads 1 before it (THE ORDER, NG1). */
     @Override
@@ -161,8 +173,7 @@ public abstract class ExtractionSector extends Sector {
      */
     @Override
     protected double groundShare(BuildingsTemplate t) {
-        if (dugShares.isEmpty() || !(t.makes(groundGood()) > 0)) return 1;
-        return dugShares.getOrDefault(kindOf(t), 1.0);
+        return t.makes(groundGood()) > 0 ? dugShare(t) : 1;
     }
 
     /** A building's kind of dig, as digs() merges them: the type of field it stands on and its dig (ANY at a tonne a tonne off its resource). */

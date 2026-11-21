@@ -139,7 +139,10 @@ public final class CopperMining extends ExtractionSector {
                 came += part;
                 continue;
             }
-            came += dig(land, d.type(), part * d.dig(), i > 0) / d.dig();
+            double field = part * d.dig(), got = dig(land, d.type(), field, i > 0);
+            came += got / d.dig();
+            // ...and what of its ask each kind got, as ExtractionSector keeps it (NG1), so a mill's inputs follow its dig.
+            noteDug(d.type(), d.dig(), field, got);
         }
         return came;
     }
@@ -173,11 +176,12 @@ public final class CopperMining extends ExtractionSector {
     /**
      * The share of a leach plant's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's cathode
      * (leached()) over its ask at the sector's rate - exactly 1 where the ore holds the whole ask, 0 once its type is out - so its
-     * acid is ordered for the cathode the lift makes, and none for a worked-out plant. ExtractionSector's for a building that leaches
-     * no cathode.
+     * acid is ordered for the cathode the lift makes, and none for a worked-out plant. A mill's is what its concentrate's dig got
+     * (groundLimit(), ExtractionSector.dugShare()), so its inputs follow the dig whatever its recipe; ExtractionSector's for the rest.
      */
     @Override
     protected double groundShare(BuildingsTemplate t) {
+        if (t.makes(Good.COPPER_CONC) > 0) return dugShare(t);
         if (!(t.makes(Good.COPPER) > 0)) return super.groundShare(t);
         List<Dig> kinds = digs(Good.COPPER);
         double[] leached = leached(kinds);
