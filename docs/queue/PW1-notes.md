@@ -198,7 +198,8 @@ OE1's 0.9.174, FS4 and after). The generated docs are main's, regenerated. The c
   `ServicesManager`, `PowerDispatchCheck`, `BuildAdviceCheck` 14-15).
 
 **Old saves.** Today's floor and format are 58 and 58. PW1 adds one field, `powerBooks`; a format-58 save without it
-loads the founding book until the next month strikes one: incomplete, not wrong (spec §3). No bump.
+loads the founding book's prices (the founding tariff, main's flat price) with the ratio its load dispatched, as main
+handed the sectors its computed ratio (REV-PW1c, below), until the next month strikes a book. No bump.
 
 **Main's new harnesses, restated to cause their premises under PW1** (each a fixture, none a loosened bound):
 - ★ `EssentialWorksCheck.powerDrawAt(g, share)`: the draw at which the advice's own reading (the calm peak's draw
@@ -219,12 +220,12 @@ loads the founding book until the next month strikes one: incomplete, not wrong 
   production written stands, and the served share summed over the half-blocks, the ratio PW1 strikes.
 - ★ `HydrogenSteelCheck`: Heavy Industry pays the industry tariff, the energy and transmission.
 - `NewUnitCheck`: the expected figure from the advice's own `supplyDemand`, the calm peak.
-- ★ `PublicLicenceCheck`, both desalination sections: the plant draws nothing. At the market's price the commerce
-  bill carries both wires (4.3 times the founding tariff in that town) and the plant's water at the water tariff, a
-  constant, no longer covers its power, so a patented plant earns no licence. Pending as PW1-W.
+- `PublicLicenceCheck`, both desalination sections, are main's (REV-PW1c restored them; PW1c had set the plant's
+  draw to 0, which moved the premise). At the market's price the commerce bill carries both wires (4.3 times the
+  founding tariff in that town) and the plant's water at the water tariff, a constant, no longer covers its power,
+  so a patented plant earns no licence: four reds, passed by name in the ship file's known-reds, naming PW1-W.
 
-**What each check showed** (one harness at a time, `./batch-check.sh <name>`, the merged tree): see §7 for the final
-run. Before the mends, NEW reds only in main's new harnesses above; `BuildAdviceCheck` red only on main's
+**What each check showed** (one harness at a time, `./batch-check.sh <name>`, the merged tree). Before the mends, NEW reds only in main's new harnesses above; `BuildAdviceCheck` red only on main's
 streets' card line (`docs/notes/gate.txt`, FS12's in known-reds); LongPlaytest, holding MoneyCheck's audit, green.
 
 **The review.** The merge changed what PW1-R read: R6d's electrolyser saving nets off the draw the grid is asked
@@ -235,3 +236,23 @@ LongPlaytest. Review: needed - money.
 **The rows.** PW1-W added (the water tariff). PW1-P gains the pooled-fill gap. MR1 (the map's rail after a load) is
 renamed ML1, MR1 being main's own batch since. AU1 dropped: FS15 rewrote AuctionCheck 10 to cause its premise. The old
 known-reds for HealthCheck and KeptCheck dropped (HX1 and KL1 shipped).
+
+**REV-PW1c** (money, on 39c5b7819: not SHIP, two P1), mended:
+- ★ A works' power at its class's price everywhere a licence or a recipe prices it. `LicenceFees` priced a mine's or
+  a works' own generation at the commerce price (`getPricePerWatt()`), and `Recipes.pricesOf(game)`, which the recipe
+  fees, `RecipeChanges` and `EquipmentFit`'s recipe gain read, priced every recipe's power so. Now
+  `owner.powerPriceFor(t)` and `Recipes.pricesOf(game, t)` (`getPowerPriceFor(t)`: Heavy Industry and Mining the
+  energy and transmission); `Recipes.choose()` scores each template's recipes at its own price. Harnessed by
+  `LicenceFeesCheck`'s last-ore section, restated to cause it: a month struck before the mine opens (so the book is
+  the merit order's, not the founding tariff's single price) and the mine given a generating set the size of its
+  draw, whose licence gain is its set times what Mining is billed, not what commerce is; on the old line it failed.
+  `RecipeChanges`' rail service and a utility's own output keep the commerce price (their buyer is the city).
+- ★ A save from before PW1 loads at the ratio its load dispatched. The founding book carried ratio 1 into
+  `rebuildSimulationState()`, where main handed the sectors the ratio `updateServices()` had just computed; now a load
+  whose save had no `powerBooks` seeds the founding book's ratio from that dispatch
+  (`UtilitiesHandler.seedLoadedRatio()`), as main did. Mended, no bump. The sectors then take the ratios their month
+  ran at back from the save (`Sector.restoreBills()`, 0.7.63), as on main, so the first month bills at the saved
+  ratio and the founding tariff, main's figures. `SaveFileCheck` (through `PowerPriceCheck.saveChecks()`) loads a
+  format-58 power-short town, stock templates only (a fixture's template draws are not in a save: the first
+  attempt, section 3's short town, loaded unshort), and asserts both; on the old line its book read 1.
+- Not before the gate: `LicenceFees.powerDelivered()` still the flat rule, PW1-L beside PW1-W.
