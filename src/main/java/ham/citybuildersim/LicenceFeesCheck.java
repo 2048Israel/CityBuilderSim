@@ -282,6 +282,9 @@ public final class LicenceFeesCheck {
         LandManager land = g.getLandManager();
         Deposit.FieldType mag = Deposit.FieldType.MAGNETITE;
         quietly(() -> {
+            // THE FIXTURE CAUSES IT (PW1, REV-PW1c): a month struck before the mine opens, so the book is the merit order's, not the founding
+            // tariff, and Mining pays the energy and transmission while commerce pays both wires: the mine's owner is billed below commerce.
+            g.simulateMonths(1);
             for (int n = 0; n < 300 && land.getSites(Resource.IRON, mag) == 0; n++) {
                 LandParcel offer = land.getMarket().richest(Resource.IRON);
                 if (offer == null) {
@@ -315,13 +318,25 @@ public final class LicenceFeesCheck {
         var plans = g.getBusinessInvestment();
         double gain = ham.citybuildersim.sectors.ProcessingSector.grossStanding(mine, SpreadPlanner.values(g.getMarkets()), rate)
                 - plans.standingRunningCostOf(mine) - plans.standingCostOf(firm, mine)
-                - SpreadPlanner.ownCosts(mine, rate, g.getMarkets().getExchangeRate(), g.getEconomyManager().getPricePerWatt())
+                - SpreadPlanner.ownCosts(mine, rate, g.getMarkets().getExchangeRate(), firm.powerPriceFor(mine))
                 - firm.freightRunning(mine, rate);
+        double commerce = g.getEconomyManager().getPricePerWatt();
         g.restoreLicenceFees(captured);
         boolean reached = made > 0 && firm.isWorkedOut(mine)
                 && gain > 0 && LicenceFees.payable("E4", g.getMonth(), g.getResearch());
         check("fixture: the patented magnetite mine actually dispatches its last ore profitably and exhausts its typed field", reached);
         check("that final positive dispatch accrues a royalty despite no ore remaining at capture", reached && bill > 0);
+        // THE FIXTURE CAUSES IT (PW1, REV-PW1c): the mine given a generating set the size of its draw, so its own generation is in its
+        // licence gain; after the month struck above, Mining is billed the energy and transmission, below commerce's both wires.
+        double gen0 = mine.getGen(), set = mine.getElectricityConsumption();
+        mine.setGen(gen0 + set);
+        double withSet = LicenceFees.installedBuildingGain(g, mine, firm, rate);
+        mine.setGen(gen0);
+        double without = LicenceFees.installedBuildingGain(g, mine, firm, rate);
+        check("fixture: after a struck month Mining is billed below commerce, and the mine runs (its rate over 0)",
+                firm.powerPriceFor(mine) < commerce && rate > 0 && set > 0);
+        check("a mine's licence gain prices its own generation at what its owner is billed (PW1: Mining the energy and transmission, not both wires)",
+                near(withSet - without, set * firm.powerPriceFor(mine)) && !near(withSet - without, set * commerce));
         quietly(() -> {
             // A different, unpatented type keeps the sector producing next
             // month. Its aggregate iron row must not pay for the empty mine.
@@ -397,7 +412,7 @@ public final class LicenceFeesCheck {
         // this switch pay, and a zero fee could conceal the default-city bug.
         GoodsMarket coal = plain.getMarkets().get(Good.THERMAL_COAL);
         coal.setWorldPrices(10_000 * Good.THERMAL_COAL.worldImportPrice(), 10_000 * Good.THERMAL_COAL.worldExportPrice());
-        Recipes.Prices prices = Recipes.pricesOf(plain);
+        Recipes.Prices prices = Recipes.pricesOf(plain, steel);   // the steel works' recipes at what Heavy Industry is billed (PW1, REV-PW1c)
         Recipe oxygen = steel.getRecipe("basic-oxygen"), old = steel.getRecipe("open-hearth");
         double gross = Recipes.value(old, prices) - Recipes.value(oxygen, prices);
         check("fixture: E1 is under patent and its oxygen recipe has a positive gain to license",

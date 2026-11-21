@@ -372,10 +372,6 @@ public final class PublicLicenceCheck {
         ResearchCheck.atMonth(g, Math.max(ResearchCatalog.knownFrom("E5"), ResearchCatalog.knownFrom("E6")));
         BuildingsTemplate terminal = HistoricalLicenceCheck.stand(g, "Container Terminal", 1);
         BuildingsTemplate desal = HistoricalLicenceCheck.stand(g, "Desalination Plant", 1);
-        // THE FIXTURE CAUSES IT (PW1, 2026-11-20): at the market's price the commerce bill carries both wires, 4.3 times the founding tariff in
-        // this town, and the plant's water at the water tariff (a constant of UtilitiesHandler) no longer covers its power: here it draws none,
-        // so its gain over its running cost is its water less its repairs and posts.
-        desal.setElectricityConsumption(0);
         BuildingsStacks berth = g.getBuildingManager().getStack(terminal), sea = g.getBuildingManager().getStack(desal);
         months(g, 1);
         long mills = crowd(g, desal.getProduction1() * sea.getQuantity());
@@ -445,7 +441,6 @@ public final class PublicLicenceCheck {
         allExcept(d, "E6");
         ResearchCheck.atMonth(d, ResearchCatalog.knownFrom("E6"));
         BuildingsTemplate desal = HistoricalLicenceCheck.stand(d, "Desalination Plant", 1);
-        desal.setElectricityConsumption(0);   // ...drawing no power, as in section 5 (PW1: the wires price its power past its water).
         BuildingsStacks sea = d.getBuildingManager().getStack(desal);
         months(d, 2);
         UtilitiesHandler w = d.getServicesManager().getUtilitiesHandler();

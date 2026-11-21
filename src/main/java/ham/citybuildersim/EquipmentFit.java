@@ -218,7 +218,7 @@ public final class EquipmentFit {
                     t.getEquipment().stream().map(Equipment::getId).collect(java.util.stream.Collectors.toSet()));
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
-            Recipes.Prices p = Recipes.pricesOf(game);
+            Recipes.Prices p = Recipes.pricesOf(game, t);
             Recipe fitted = game.foundedUnfitted() ? Recipes.best(t, true, game.getMonth(), p, game.getResearch())
                     : Recipes.bestGross(t, true, game.getMonth(), p, game.getResearch());
             Recipe without = game.foundedUnfitted() ? Recipes.best(t, false, game.getMonth(), p, game.getResearch())
