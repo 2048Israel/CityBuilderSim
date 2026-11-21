@@ -265,3 +265,14 @@ AUTO2 T2 (info, the final population), PASS to FAIL, a median of 1,666,304 again
 2,226,328 (1,669,746). R2, PW1's earlier R2 row (§4), passes against 0.9.174: 2.30 points. PW1-E restated. The
 first run, PW1c on 39c5b7819 before the mends, gave the same verdicts (24 of 26, the same change); the mends move the
 playtest's bytes (the Pulp Mill's recipe, Heavy Industry's and Mining's licences), so PW1d is the record.
+
+**ScaleCheck after FB15's merge** (4c52c2623): "a copy 1,000 times over tracks its city" red on savings alone, 2.95e-2
+at month 6 against `TRACK_SAVINGS` .016 (people 4.38e-3 against .015). Green on b5d7e2969 (PW1 with RB3); FB15 moved
+the grown city (96,518 people a copy to 60,028 for ten). Traced with a temporary per-month print of both copies (not
+committed): every stack's count, the sites (none), the homes (7,068 a copy), the power book (ratio 1, no fuel bought,
+the same prices) equal throughout. What parts: at K = 10 the households' income and rent go to cells too small to
+settle (0.146 and 0.015 a copy at month 4; none at K = 10,000), which pay no bills and so never go broke; at K = 10,000
+those cells settle, and from month 5 households are discharged and leave (`Migration.getLastBankruptcyDepartures()`
+2.29 a copy at month 5, 24.0 at month 6; none at K = 10), the departures 31.4 a copy against 7.4. HL1's open fault,
+named in `HouseholdBalance` for HL2, whose queue row mends both (income and rent split over the cells that settle; a
+household whose savings cover its debt not bankrupt). Passed by name to HL2 in the ship file's known-reds.
