@@ -383,9 +383,11 @@ of inflation above 10%: 15 months [4 to 36] against fewer than 12 in every seed,
 
 AUTO2 T2 now passes: final population median 2,532,050 [28,685 to 4,208,078], against at least 75% of .179's
 2,001,654 [963,702 to 4,813,651]. The historical PW1d miss against .174 is not the current result. The range
-remains wide; this passing median does not assert every seed grew as much as its baseline twin. PW1-E's row
-records both results and recommends closing the historical median miss, subject to the orchestrator's decision;
-the measured planner gaps remain PW1-P. PW1-L and PW1-G are retained unchanged.
+remains wide; this passing median does not assert every seed grew as much as its baseline twin. The orchestrator
+adopted closure of PW1-E at 12:35 on 2026-11-21: the historical .174 median miss is not reproduced on this final
+.179 merge, so PW1-E is removed from ship Pending. Its historical FAIL, current PASS, archived report and evidence
+remain here. This is a records disposition, not a model or design change. The separate measured planner gaps
+remain PW1-P. PW1-L and PW1-G, and every other future row's stated scope, are retained unchanged.
 
 The run used the pushed source of `7a06097bc`, on gatebox, OpenJDK 21.0.13. The snapshot names
 `/home/jerus/cbs/main/data/earth-2.bin` and `world-1.bin`. Remote runs took 14.2 minutes; per-run median seconds
@@ -399,3 +401,18 @@ report remains separately archived, with its original comparison baseline and ru
 After scoring, only the baseline, these notes and the provisional ship file change. No model source changed
 after the ensemble snapshot. The baseline is committed before any dry run; no dry run, full pick or separate
 playtest has been started. Pick remains ALL 237 harnesses; the provisional marker remains pending explicit dry go.
+
+## 9. Fresh launcher dry run (PW1c2, 2026-11-21)
+
+The orchestrator's 12:35 conditional go accepts the final ensemble and PW1-E's closure. The final baseline,
+closure disposition and provisional notes/ship records must be committed and pushed before the launcher starts.
+Main is verified at `2b049188b` (.179), and model/publisher sources are byte-unchanged from the ensemble's
+`7a06097bc`. No branch-publisher mode, red override, full pick, focused check or playtest is authorized here.
+
+The gate-specific laptop fallback was inspected separately: `gate-box.sh` re-enters `gate.sh` with an empty
+`CBS_GATE_HOST` if the box cannot be reached. A local `sh` PATH guard refuses that exact entry before any clone,
+compile or suite, with separate local java/javac/Maven blockers as backup. The harmless nonexistent-path proof
+returns 125 for the fallback, and the JVM proof also returns 125; no real gate or JVM was invoked by the proofs.
+The box's own PATH is unaffected. The normal command is `sh tools/gate.sh PW1 --dry-run`, gate-box-only, with a
+7,200-second foreground timeout and unique log `target/PW1c2-dry.txt`. No source change or push is allowed while
+it runs. Only notes/ship may change afterward; the provisional marker stays until a separate readiness go.
