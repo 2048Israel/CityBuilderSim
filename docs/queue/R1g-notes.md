@@ -1482,3 +1482,112 @@ not prepared or run under the present static-only GO.
 [r1g-g]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L14921
 [r1g-budget]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L1487
 [r1g-date]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Recipes.java#L369
+
+## 16. One read-only struck-Statement sidecar completed
+
+On the orchestrator's 15:11 execution GO, ran the sole adopted sidecar
+diagnostic, label `R1gc2-ledger1-1145`. Before compiling or running, checked
+the unused label and safe output paths, gate/nightly/JVM absence and
+nonblocking priority locks, frozen 627 source, exact original model/driver
+tree pins, JDK 21.0.13+9 executable pin and the prior diagnostic's data
+hashes. No laptop fallback or queue wait occurred.
+
+Compiled only an ignored diagnostic DRIVER COPY with `-proc:none`,
+`-implicit:none`, an explicit empty sourcepath, and classpath comprising
+the retained original model classes plus its dependencies. The original
+2,395 model classes and four cached driver classes were not compiler
+outputs; their full tree hashes matched the prior run before compilation,
+after compilation and after execution. Exactly four diagnostic classes
+were produced in their separate target directory, also unchanged by the
+run. No Java source-tree file was edited.
+
+The driver patch adds one post-completed-step observer and a helper that
+directly serializes only the approved fields at 1133/1134/1135. Static
+phase verification: Sector.strike copies otherParts and otherInputs and
+deep-copies bought (copyOf at 2154); bank clears pending rather than these
+Statement maps. Construction.beforeBank keeps drawn material units before
+clearing input rows. Restore/currency-scaling paths can restore or rescale
+retained records rather than create new flows; the driver has no reload,
+and original-prefix/component identities remain mandatory. No live
+recognized/fitting/capacity getter was substituted for a struck value.
+The original seven supporting end-state scalar inputs remain noncausal
+alone. Source/patch/phase proof and hashes are preserved in the output.
+
+The allowed driver compile took **0.363848 seconds**. The **single model
+JVM**, PID 2035330, started **2026-11-21T19:19:34.070708Z** and exited
+**0** at **19:20:20.493386Z**, DONE at month 1145. Model elapsed was
+46.422693 seconds; **total including compile was 46.832208 seconds**, below
+the one 180-second total limit. No retry, extension or exception/stuck
+month occurred. The owner waited for real exit, released locks, copied
+the records home and closed its foreground session. The orchestrator was
+notified of terminal/homecopy/checker completion so it could release WG3.
+
+The pinned 96a718 prefix checker passed: all 1,144 rows/68 original columns
+match exactly, all 29 extras finite, all original component/annual
+identities reconciled. Only then did the sidecar checker accept exactly
+three rows, the approved fields/finite numeric maps and retained-unit
+values. All twelve new identities pass: four capital parts -> NA Iconst;
+per-good abroad plus explicit imported services -> builder imports;
+builder imports -> NA importsMaterials; all revenue parts -> otherRevenue.
+Zero capital keys omitted by nameOtherRevenue's documented nonzero-only
+rule count as zero, not as a missing map.
+
+### Actual struck construction categories
+
+| retained category | m1133 | m1134 | m1135 |
+|---|---:|---:|---:|
+| Building work recognised | 3440.355346431233 | 3418.1332965423267 | 0 |
+| Material escalation | 294.94422186432763 | 197.71149960249033 | 0 |
+| Overtime on rushed sites | 0 | 0 | 0 |
+| Equipment fitted | 0 | 0 | 0 |
+| Repairs billed | 947.067417937857 | 1058.868254413499 | 1064.4066729404876 |
+| otherRevenue | 4682.366986233417 | 4674.713050558315 | 1064.4066729404876 |
+| MATERIALS bought abroad = entire builder import bill | 4716.41992589238 | 5499.175293891376 | 3474.9581216832403 |
+| MATERIALS bought locally, money and units | 0 | 0 | 0 |
+| Retained MATERIALS units imported | 281 | 325 | 203 |
+| Haulage, otherInputs; not classified as an import | 1.085495915264489 | 1.2853540531108545 | 0.8253459526555808 |
+
+No other bought-good entry exists in any of the three snapshots. Explicit
+imported-service names Foreign crews, Consumables and IP charges are
+absent (zero); all three unclassified import residuals are exactly zero.
+The Haulage entry is kept separate: the import identity closes without
+counting it. All named revenue is capital work/escalation plus repairs,
+with the entire m1135 revenue made up of repairs. The m1133/m1134 capital
+sums reconcile to the recorded 3735.29957/3615.84480; the m1135 sum is
+exactly zero. The largest capital-projection residual is 0.000003855183,
+within its CSV precision bound; revenue-part residuals are at most
+0.00000000000103.
+
+This rules out the previously possible signed capital-part cancellation,
+bitumen/imported-service composition, and fitting-order capital receipts
+in these captured strikes. It establishes **zero capital parts with a
+positive physical MATERIALS import bill and repair-only builder revenue
+at 1135**. It does not prove which draw consumed those 203 units or why
+earlier site points/book credit ceased earning capital. Import cost less
+repair receipts is 2410.5514487427527; this is a subtraction of observed
+amounts, not an identified omitted flow. The implied average paid per
+imported unit is 17.1180203038583, not a captured market quote. The full
+repair bill, its quote price, city unpaid repair share/arrears and point/
+credit inputs were not captured. The original seven end-state zeros do
+not fill those gaps. No own-versus-latent cause or waiver follows.
+
+Evidence: `target/ensemble/R1gc2-ledger1-1145/` retains the original
+97-column CSV, three-line statements.jsonl, both checker reports, log,
+terminal, compiler command/log, exact driver source/patch, diagnostic
+bytecode and original/custom/JDK/data provenance. Local preparation and
+checkers are `target/r1g/ledger1-*`. Custom source SHA-256:
+`f54584793e39ee93d501af1e547649032edc506c759f348a1f84ffbbcf47ffe5`;
+patch SHA-256:
+`953021bc8e431a843c82fa382da7972bd4ad4d15354fa4bb35a2174a35707950`;
+raw sidecar SHA-256:
+`f6293d0f90d87c1be4ff591bc2f7141a247e5e4a0b0ce47626cbf74eaec0a957`;
+sidecar checker report SHA-256:
+`6539c6981fa7ca37d05fc3482dbdb8430d4bc53cb5ff98028b707b86cddd461d`.
+
+Smallest next decision: a static check of the repair bill's quote-price
+binding versus the actual imported-material price, and the unpaid-city-
+repair deduction, before choosing a short causing fixture. This needs no
+further seed-length run. No additional execution or production mend was
+started after this capture. Source, reviews, saved proofs, failed full
+baseline and provisional marker remain frozen; F1 stays hard and R1g
+Pending unchanged. No dry/ready/reclassification action was taken.
