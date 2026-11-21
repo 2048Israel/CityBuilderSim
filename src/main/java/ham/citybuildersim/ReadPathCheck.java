@@ -44,6 +44,14 @@ import java.util.Map;
  * The repetition is the point. A read path that mutates ONCE and then settles
  * would pass a before/after comparison; one that accumulates shows up as a field
  * that drifts further the more the screens are opened.
+ *
+ * FS17 (the flaky-suite sweep): "a city worth reading" is caused, not waited
+ * for. After its two played years the businesses' bond is issued by the bond
+ * desk's own call, the fund's hand buys half of what its biggest holder has of
+ * it and a share the world sells it, and an ask rests on the bond's book - so the
+ * fund's bond, its shares and the resting orders are not whatever the played
+ * months let the fund's rule and the holders reach. The reads' identities
+ * below are untouched.
  */
 public class ReadPathCheck {
 
@@ -1656,40 +1664,70 @@ public class ReadPathCheck {
             g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, -5_000 * PriceLevel.FACTOR);
             g.simulateMonths(2);
             /*
-             * ...AND PLAYED ON UNTIL THE FUND HOLDS A BOND (0.7.18, re-caused).
-             * The fund buys bonds only on the book, at fair value, from a
-             * holder who offers one - never at an issue - so the month it
-             * first holds one is whenever a holder first sells at its bid.
-             * On 0.7.17 that was month 27, this fixture's last, and $4.0k of
-             * bonds; in 0.7.18's city (planners that wait for staff, workers
-             * that take the best-paid job) it is month 29. A history, not a
-             * cause: so the city is played on, a month at a time and bounded
-             * at a year, until its fund holds a bond. RE-CAUSED (revised
-             * 0.7.19): with the charter branch exempt from its operating cost
-             * it is month 74, past the year, so the bound is five years.
+             * FS17: THE FUND'S BOND, ITS SHARES AND THE ORDERS ON THE BOOKS ARE
+             * SEEDED BY HAND. This section used to play the city on, a month at
+             * a time and bounded at five years, until its fund held a bond (the
+             * fund buys one only on the book, from a holder who offers it at
+             * its bid, so the month it first held one was a history: month 27
+             * on 0.7.17, 29 on 0.7.18, 74 on 0.7.19), then caused it by hand
+             * only if none had by then; and it read the shares the fund's rule
+             * happened to have bought and the orders the month happened to
+             * leave resting. Now, at the month the two played years end: a bond
+             * issued by the bond desk's own call (BondMarket.plan() prices it,
+             * issue() sells it, its proceeds handed the issuer as Game hands
+             * them), half of what its biggest holder has sold to the fund's
+             * hand (FundLedgerCheck 3's trade), a share of a company the world
+             * holds sold to the fund the same way, and an ask the holder
+             * stands on the bond's book at twice its value, which no bid
+             * reaches. What stays played is the two years and the builders'
+             * borrowing, the breadth the reads are taken over; past them
+             * nothing is waited for.
              */
-            for (int more = 0; more < 60 && !(g.fundBondsValue() > 0); more++) g.simulateMonths(1);
-            /*
-             * ...AND IF NO HOLDER HAS SOLD IT ONE BY THEN, ONE ABROAD DOES, AT
-             * THE BOND'S VALUE (0.7.120, batch I3). In 0.7.120's city - its
-             * furnace on scrap at steel's world price, its mine bigger and
-             * dearer - none had by the five years' end (month 87), nor by
-             * month 147. So the fixture causes it as FundLedgerCheck 3 does,
-             * between months: the world sells half its holding of the bond it
-             * holds most of on its book, and the fund's hand buys it.
-             */
-            if (!(g.fundBondsValue() > 0)) {
-                BondMarket bonds = g.getBondMarket();
-                CorporateBond most = null;
-                for (CorporateBond bond : bonds.getBonds()) if (most == null || bond.world() > most.world()) most = bond;
-                if (most != null && most.world() > 0) {
-                    double p = bonds.modelPrice(most, g.getMonth()), q = most.world() / 2;
-                    // ...its book cleared of the month's resting orders first, as SaveFileCheck clears a share's, so the two meet.
-                    if (bonds.bookOf(most) != null) bonds.bookOf(most).withdrawAll();
-                    bonds.tradeForCheck(most, BondMarket.WORLD, OrderBook.Side.SELL, p, q);
-                    bonds.tradeForCheck(most, BondMarket.FUND_HAND, OrderBook.Side.BUY, p, q);
+            BondMarket bonds = g.getBondMarket();
+            EconomyManager econ0 = g.getEconomyManager();
+            String borrower = Sectors.CONSTRUCTION;
+            double ask = 20_000 * PriceLevel.FACTOR;
+            BusinessDebtManager.Plan plan = bonds.plan(borrower, ask, lender.projectRate(borrower, ask), ask, ask, ask, g.getMonth());
+            assertTrue("fixture: the bond desk prices a bond for the builders", plan != null && plan.hasBond());
+            if (plan != null && plan.hasBond()) {
+                double proceeds = bonds.issue(plan, g.getMonth());
+                econ0.setSectorCash(borrower, econ0.getSectorCash(borrower) + proceeds);
+            }
+            CorporateBond seeded = bonds.getBonds().isEmpty() ? null : bonds.getBonds().get(bonds.getBonds().size() - 1);
+            // ...whoever holds most of it sells half of that to the fund's hand: the world, the bank or the household cell the bond desk sold it to
+            // (FundLedgerCheck 3 sells the fund the bank's shares so).
+            String seller = null;
+            double held = 0;
+            if (seeded != null) {
+                if (seeded.world() > held) { seller = BondMarket.WORLD; held = seeded.world(); }
+                if (seeded.bank() > held) { seller = BondMarket.BANK; held = seeded.bank(); }
+                for (Household cell : g.getHouseholdBalance().cells()) {
+                    double cellHolds = Math.min(seeded.households(), cell.bondFace(seeded.id()) * cell.households());
+                    if (cellHolds > held) { seller = BondMarket.CELL + cell.key(); held = cellHolds; }
                 }
             }
+            assertTrue("fixture: the issue is on the books, and somebody other than the fund holds part of it", held > 0);
+            if (held > 0) {
+                out.printf("   the issue: face %,.2fk, sold to the fund's hand by %s: %,.2fk of it%n", seeded.face(), seller, held / 2);
+                double p = bonds.modelPrice(seeded, g.getMonth()), q = held / 2;
+                g.fundPayIn(2 * p * q);
+                bonds.tradeForCheck(seeded, seller, OrderBook.Side.SELL, p, q);
+                bonds.tradeForCheck(seeded, BondMarket.FUND_HAND, OrderBook.Side.BUY, p, q);
+                // ...and a resting ask: the same holder's, at twice the bond's value, which no bid reaches.
+                bonds.tradeForCheck(seeded, seller, OrderBook.Side.SELL, 2 * p, held / 4);
+                assertTrue("fixture: the fund's hand holds part of the issue, and the ask rests on its book",
+                        seeded.city() > 0 && !bonds.bookOf(seeded).asks().isEmpty());
+            }
+            Exchange market = g.getExchange();
+            int shareCo = -1;
+            for (int c = 0; c < Equity.COMPANIES.length && shareCo < 0; c++) {
+                if (c == Equity.BANK || !(g.getEquity().getForeignShares(c) > 1) || !(market.fair(c) > 0)) continue;
+                double p = market.price(c), q = Math.min(1, g.getEquity().getForeignShares(c) / 2);
+                g.fundPayIn(2 * p * q);
+                market.tradeForCheck(c, Exchange.WORLD, OrderBook.Side.SELL, p, q);
+                if (!market.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, p, q).isEmpty()) shareCo = c;
+            }
+            assertTrue("fixture: the fund holds a share of a company the world sold it", shareCo >= 0);
         } finally {
             System.setOut(out);
         }
