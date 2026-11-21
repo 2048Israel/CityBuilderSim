@@ -96,9 +96,10 @@ import java.util.List;
  *     gap to its mix (fair value plus TreasuryFund.RULE_PREMIUM, 0.7.48),
  *     never past TreasuryFund.OWNERSHIP_LIMIT of a company, and an ask at
  *     fair value for an excess or a withdrawal to pay (a holding past the
- *     limit is a tenth of its excess a month, posted after the desk and
- *     the emigrants and before the world and the companies:
- *     postFundOverLimit(), RB1); then
+ *     limit is a tenth of its excess a month at the last trade held
+ *     between the desk's bid and fair value, posted after the desk and
+ *     before the emigrants, the world and the companies:
+ *     postFundOverLimit(), RB1, RB3); then
  *     the player's hand, at fair
  *     value or the price it names and no further than the limit, every buy
  *     of the fund's on the company counted as filled and the rule's making
@@ -464,6 +465,7 @@ public class Exchange {
     private final int[] betweenHouseholdsTrades = new int[n];
     private double ownBoughtThisMonth, ownSoldThisMonth;          // the bank's own shares, for the pace
     private double fundLimitAsked;                                // the shares the rule asked this month past its limit (RB1), a month's figure, not saved
+    private final double[] fundLimitAskedOf = new double[n];      // ...and of each company (RB3), a month's figure, not saved
 
     /* ---- the shorts (EM2): the world's position in each company, the account behind it, and who lends it ---- */
     /** Whether the world sells short at all: on, the default; the checks and -Dplaytest.shorts=off switch it off to see the market without it. */
@@ -831,8 +833,8 @@ public class Exchange {
 
         /* ---- and the orders, in the order they rest ---- */
         if (deskOpen) postDesk();
-        postEmigrants();
         postFundOverLimit();
+        postEmigrants();
         postWorld(worldRate);
         postCompanies();
         postWorldPrice();
@@ -1605,22 +1607,39 @@ public class Exchange {
      * THE FUND HOLDS TO ITS 10% (RB1). A company's buyback retires shares
      * under the fund and lifts its holding past TreasuryFund.OWNERSHIP_LIMIT,
      * and the rule offers a tenth of the excess (TreasuryFund.limitSale())
-     * at fair value, a month. It is posted here, before the world, the
-     * companies and the households, and not with the rest of the fund's
-     * orders in postFund(): a buyback's bid takes the cheapest ask first, and
-     * at fair value the fund's ask is under the desk's and the households' -
-     * posted last, as until RB1, the households had filled the buyback before
-     * the ask arrived, and neither the world nor the households ever saw it
-     * (asks are withdrawn at each month's top). The probe on the old rule:
-     * by month 2,154 the fund held 100% of two companies, and the only bid
-     * resting on their books was the desk's, under fair value. A tenth a
-     * month (TreasuryFund.LIMIT_SALE_SHARE) is fast enough that a buyback
-     * cannot outrun it and slow enough to stay inside the book's band;
-     * postFund() reads what rests of this ask and sizes the rebalancing, the
-     * withdrawal's and the price-driven sales beside it.
+     * a month, at limitAsk(). It is posted here, after the desk and before
+     * the emigrants, the world, the companies and the households, and not
+     * with the rest of the fund's orders in postFund(): a buyback's bid takes
+     * the cheapest ask first, and the earliest at a price, and the fund's ask
+     * is the cheapest - under the desk's ask, and at or under the leavers'
+     * and the households', which rest at the market (post()) - and the
+     * first at its price. Posted last, as until RB1, the households had
+     * filled the buyback before the ask arrived, and neither the world nor
+     * the households ever saw it (asks are withdrawn at each month's top).
+     * The probe on the old rule: by month 2,154 the fund held 100% of two
+     * companies, and the only bid resting on their books was the desk's,
+     * under fair value. A tenth a month (TreasuryFund.LIMIT_SALE_SHARE) is
+     * fast enough that a buyback cannot outrun it and slow enough to stay
+     * inside the book's band; postFund() reads what rests of this ask and
+     * sizes the rebalancing, the withdrawal's and the price-driven sales
+     * beside it.
+     *
+     * WHY NOT AT FAIR VALUE, AND NOT AFTER THE EMIGRANTS (RB3, 2026-11-20).
+     * RB1 asked fair value after the leavers' asks. Where the book had
+     * traded under fair value, the leavers rested under it (at the market,
+     * the desk's bid at the least), and where the desk's bid stood they
+     * rested at fair value, ahead of the fund's by time: a buyback took
+     * theirs first, and with more of them than it had money for the fund's
+     * ask rested while the buyback retired the shares around it. FundCheck
+     * 9e's town on 60 months of founding: Construction's last trade 0.01039
+     * against fair 0.01050, the leavers asking 270 to 400 shares a month at
+     * the desk's bid, the buyback buying 200, the fund's ask unfilled 34
+     * months running (68 to 83 shares), and its holding 11.17% of the
+     * company against the fixed point of 10.92% (FS13, ★g).
      */
     private void postFundOverLimit() {
         fundLimitAsked = 0;
+        java.util.Arrays.fill(fundLimitAskedOf, 0);
         if (fund == null || register == null) return;
         for (int c = 0; c < n; c++) {
             double mine = register.getCityMarketShares(c);
@@ -1628,14 +1647,35 @@ public class Exchange {
             if (!(mine > 0) || !(inIssue > 0) || fair[c] <= minFair) continue;
             double q = Math.min(mine, TreasuryFund.limitSale(mine, inIssue));
             if (q > OrderBook.DUST) {
-                submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+                submit(c, FUND, OrderBook.Side.SELL, limitAsk(c), q);
                 fundLimitAsked += q;
+                fundLimitAskedOf[c] = q;
             }
         }
     }
 
+    /**
+     * WHAT THE OVER-LIMIT SALE ASKS (RB3): the market's own price, the book's
+     * last trade, held between the desk's bid - fair value less
+     * TreasuryFund.RULE_PREMIUM, the price a forced sale meets (A21, the
+     * withdrawal's sale in postFund()) and the least the leavers ask - and
+     * fair value, RB1's ask while the book trades at or over it; fair value
+     * before the first trade. Read before the month's first trade, so it is
+     * last month's. Under it nobody rests ahead of the fund but the world
+     * selling on its yield (postWorld(), at no less than FOREIGN_TOLERANCE
+     * under fair value).
+     */
+    private double limitAsk(int c) {
+        double last = books[c].lastPrice();
+        if (!(last > 0)) return fair[c];
+        return Math.max(fair[c] * (1 - TreasuryFund.RULE_PREMIUM), Math.min(fair[c], last));
+    }
+
     /** The shares the rule asked this month past OWNERSHIP_LIMIT (postFundOverLimit(), RB1): 0 in a month no holding was over it. A month's figure, not saved. */
     public double getFundLimitAsked() { return fundLimitAsked; }
+
+    /** ...of one company (RB3): what the rule asked of it this month past OWNERSHIP_LIMIT, 0 if it was not over. A month's figure, not saved. */
+    public double getFundLimitAsked(int c) { return fundLimitAskedOf[c]; }
 
     /**
      * THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND
@@ -1650,7 +1690,7 @@ public class Exchange {
      * at or under it, and what rests waits at that bid for the month. Over TreasuryFund.REBALANCE_OVER it
      * asks fair value for the excess instead, the desk's rule for an excess
      * (postDesk()); and a holding a company's buyback has lifted past the
-     * limit is offered a tenth of the excess a month at fair value, whatever
+     * limit is offered a tenth of the excess a month at the market (RB3), whatever
      * the mix - not here but before the world's, the companies' and the
      * households' posts (postFundOverLimit(), RB1), so a buyback's bid meets it - and what rests of that ask counts
      * against the sales here. The hand's
@@ -1699,7 +1739,7 @@ public class Exchange {
             // retires shares under the fund and lifts its share past OWNERSHIP_LIMIT. Until
             // RB1 the rule asked the whole excess here, last of the month's posts, and the
             // households had filled the buyback's bid before the ask came; the sale is now
-            // postFundOverLimit()'s, a tenth of the excess at fair value, posted early. What is
+            // postFundOverLimit()'s, a tenth of the excess at the market (RB3), posted early. What is
             // left of that ask is `early` below, and the sales here come on top of it - the
             // rebalancing's, the withdrawal's and the price's, whichever is largest; and
             // while it rebalances it buys no shares.
@@ -1793,8 +1833,8 @@ public class Exchange {
      * hand's on the company the rule's room is what it always was - the cap
      * less what it holds when it bids, its cash alone between steps - and a
      * company's buyback can still lift the fund past the cap, a tenth of
-     * which excess the rule then offers back each month at fair value,
-     * before the buybacks bid (postFundOverLimit(), RB1).
+     * which excess the rule then offers back each month at the market,
+     * before the buybacks bid (postFundOverLimit(), RB1, RB3).
      */
 
     /** The hand's buys on a company, in shares: those resting on its book, and the waiting orders' money over their price (the price named, or fair value as struck now). */

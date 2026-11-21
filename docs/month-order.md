@@ -1,6 +1,6 @@
 # The order the month runs in
 
-Generated 2026-11-21 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-20 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
 
 `Game.nextMonth()` is what the clock and the button call; it does the bookkeeping either side of `SimulationEngine.simulateMonth()`, which is the spine. Read the two together. A statement shown as `if (...) {` or `for (...) {` is a whole block; open the source at that line for its body.
 
@@ -34,7 +34,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 17. **L13643** `fund.startMonth();` → [TreasuryFund.startMonth](map/TreasuryFund.md) (L742)
 18. **L13646** `equity.startMonth();` → [Equity.startMonth](map/Equity.md) (L370)  
    _The register's month: nothing offered, nothing paid, until it is._
-19. **L13647** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L523)
+19. **L13647** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L525)
 20. **L13648** `bondMarket.startMonth();` → [BondMarket.startMonth](map/BondMarket.md) (L1190)
 21. **L13649** `economyManager.clearEquityFlows();` → [EconomyManager.clearEquityFlows](map/EconomyManager.md) (L1661)
 22. **L13667** `treasuryOpening = treasuryRecorded ? treasuryClosing : cash;`  
@@ -176,7 +176,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 118. **L14141** `tradeShares();` → [Game.tradeShares](map/Game.md) (L5045)
 119. **L14151** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5619)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-120. **L14161** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1222), [Exchange.cityMarketValue](map/Exchange.md) (L1861)  
+120. **L14161** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1222), [Exchange.cityMarketValue](map/Exchange.md) (L1901)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 121. **L14162** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5252)
 122. **L14167** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2950), [DebtManager.firmBookYield](map/DebtManager.md) (L2956)  
