@@ -289,7 +289,7 @@ public final class Founding {
      * a count of the buildings still without it (BuildingsStacks.getUnfitted()), empty in every played city; a city founded this way starts
      * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). R1d offers it
      * with R0d's 1901 ladder where a city is played: the founding screen's "1900" chip, beside "All fitted", which the screen opens on
-     * until the 1900 city grows (R1g), and the playtest under -Dplaytest.founded=1900 (LongPlaytest.played()). The engine's own door stays
+     * since the 1900 city grows (R1g), and the playtest, which founds it by default since R1g (LongPlaytest.played()). The engine's own door stays
      * all fitted, so every harness city keeps the premise it was written on and asks for 1900 by name (R1d calls 1 and 2). Saved with the founding (DataSave.foundedUnfitted).
      */
     private final boolean unfitted;

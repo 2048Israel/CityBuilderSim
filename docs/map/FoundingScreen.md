@@ -129,7 +129,7 @@
 | 152 | `private String customCash` | A custom founding, as typed: millions of the city's money, and millions of US dollars. |
 | 154 | `private String worldSeed` | The world's seed, as typed or rolled. |
 | 156 | `private Nations.Path path` | The path of the world beyond the city (WN1): Historical or Random. |
-| 158 | `private boolean historicalEquipment` | The equipment chosen (R1d): the "1900" chip or "All fitted", which the page opens on until the 1900 city grows (R1g; R1d call 2). |
+| 158 | `private boolean historicalEquipment` | The equipment chosen (R1d): the "1900" chip or "All fitted". |
 | 160 | `private boolean startOnGold` | The "start on gold" box beside the money (FB14; GD3-F, spec-gold-money 4.3): off until ticked, kept in the founding (Founding.withGold()). |
 | 162 | `private String pathSeed` | The path's seed, as typed or rolled: not the ground's (WN1). |
 | 165 | `private boolean earth` | The real Earth or the generated world (0.7.121): Earth when its data is here. |
