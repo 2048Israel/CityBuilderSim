@@ -1063,3 +1063,31 @@ KHL1 remains a provisional ownership proposal with no UI-versus-bench cause
 or named exemption adopted. No Healthcare, Stage, full replay, ensemble,
 dryrun or readiness check ran. The provisional marker stays; next execution
 requires the orchestrator's scoped GO.
+
+## PW1 .180 integration and final fast
+
+On GO `20261121-133658-504-orchestrator-2d50`, the completed parent proof and
+its records were already checkpointed and pushed at 150c9e02d. Merged
+verified main d1d70f0ae (.180) into the same batch/FS5 branch as 6554d848b.
+No semantic overlap touched KeptCheck, Observation or KeptBench. Three
+generated-index conflicts (dials, harnesses and map README) took main's
+version before regeneration. All 13 incoming registry rows and all four
+existing FS5 vetoes were retained; the four veto rows compare byte-for-byte
+with the checkpoint. No publisher record was manually changed.
+
+The entire KeptBench source blob is identical before and after integration:
+995a8099eb4ed11f6df223e9adb78b820335f9c5. The one-line parent mend, actual
+texture reader and identity walk are unchanged. The valid 4.769 s bounded
+proof was not replayed solely for upstream power changes. This correspondence
+preserves its measurement-helper evidence, not a claim about .180's played
+city or full-run heap. The old full result remains historical on .179.
+
+`target/FS5c2-main180-fast.log`: final --fast exit 0, 13:40:07--13:41:07,
+compile 40 s, maps regenerated, Stale 0 firm / 193 soft. Prior target/checks
+artifacts were copied to target/fs5c2-before-main180-checks before this run.
+The committed read-only pick is the same named 24 harnesses, now 24/237
+because main added two checks. Review remains not needed: no money, saves
+or threading in the FS5 diff. Exact process counts remain Java +653/-607,
+registry inclusive +653/-627, generated/notes/ship excluded. No suite or
+bounded parent replay ran. The marker stays provisional and the four vetoes,
+unattributed 53.6 MiB residual and unknown cache-array root stay unchanged.
