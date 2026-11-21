@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — OE1, a first plant weighed at the rate it will run at — 2026-11-20, ready, see docs/queue/OE1-notes.md
 An order for a sector with nothing running weighed its first plant at the empty sector's rate, its staffing at 1:
