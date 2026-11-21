@@ -408,3 +408,23 @@ mend's evidence; CarCheck's section is. The known-reds row that passes SlopeChec
 the orchestrator's to take out with CQ1's row. The ship file has no way to delete another batch's row
 (`ship.sh` takes out OE1's own), so CQ1's QUEUE.md row goes by QUEUE.md's rule: a row the batch it names settled
 in its notes.
+
+## 13. The fourth dry run (6ac3def8a, main ac224abf3)
+
+On the box (the kept run: `Temp/cbs-gate-OE1-z1vamJ8O`), the suite exit 4, one NEW red: **ReloadCheck 2**, FS17's
+caused point, "Danzik, caused month 1211, reloaded and a month on: every figure in the save is the live city's,
+to the cent" and its "two months on". Of about 90,000 figures one differs: `.sectors[1].extras.strandedDebtShare`,
+live 0.12079056423500815 against reloaded 0.12091110568025631, the same both months. The history is equal.
+
+**The cause**, from the source. `RealEstate.ownedCapacity` (RealEstate.java:225) is in neither `saveExtras()` nor
+`restoreExtras()`, so a load leaves it 0. `setOwnedHousingCapacity()` (297-308, called each month by
+EconomyManager:613) moves `strandedDebtShare` only when there was a capacity before. The reload's first month
+takes the "from nothing" branch and keeps the saved share. In the live city the owned capacity rose that month
+(the shares' ratio, 0.999, is a rise of about 0.1%), which diluted the share by before/after; after that the two
+hold. It is main's latent save gap, RN1's field (2026-11-09), not OE1's code. OE1's path is the first to change
+Real Estate's capacity in the month after the caused point; main's does not, so FS17 was green.
+
+The orchestrator's call: pass it by name to a new queued row, RN2 (RealEstate saves its owned housing capacity,
+with a fixture that changes the capacity in the reload's first month), in the ship file's `## queued` and
+`## known-reds`. Then main merged again (1557daaaf, NG1 0.9.173 and FS14), and no fifth dry run: main has moved,
+so the orchestrator gates OE1 with a fresh suite. The ship file carries no gate-run comment for that reason.
