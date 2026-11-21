@@ -950,3 +950,60 @@ to the orchestrator, not added to this frozen model; its unmerged Education
 API and policy work are outside this run. The marker stays in place. The
 final baseline must be committed as docs/ensemble/R1g.md before asking for
 dry-run go; no dry run, full pick or standalone playtest is authorized yet.
+
+## 11. Final .180 box ensemble completed; F1 blocks shipping
+
+The one authorized final-model ensemble ran on the gate box from
+2026-11-21T17:46:14Z to 18:01:37Z, label `R1gc2-final180`, snapshot
+`627174320f11063976b6f05abdf68cfe72e1adc9`, against
+`docs/ensemble/0.9.180.md`. It completed all 80 runs, eight at once, with
+none missing or short and all 64 before-switch twins identical. The
+published helper copied every result home and scored it: exit **4**,
+batch **FAIL**, hard criteria **8/10**. No laptop fallback occurred.
+The recorded host is gatebox, OpenJDK 21.0.13 LTS, with the box main
+worktree's earth-2.bin and world-1.bin paths. Box models took 14.9 minutes;
+end-to-end run, copy and score took 15 minutes 23 seconds. Summed run time
+is 117.9 minutes; median seconds are AUTO2 203.5, ZERO_SLACK 154.4,
+ZERO_HOT 11.6, SHOCK 39.3 and HIGH 31.2.
+
+All five **M1 PASS**, with zero failed and zero unread money-audit months.
+**F1 FAIL** in AUTO2 and ZERO_SLACK, each 1/16 runs versus the baseline's
+0/16. Both are seed 1: the first negative monthly GDP is at month 1135,
+GDP -360.892347, population 11,379; the first negative annual GDP is at
+month 1145. These findings precede ZERO_SLACK's policy switch at month
+1800 and are identical in its AUTO2 twin. The money audit passes with
+residual zero at both finding months. The other three F1 rows pass.
+The saved findings establish the failing path; its cause has not been
+traced, and no attribution, waiver or assertion change is made.
+
+The score retains every informational reading: 12/25 criteria pass,
+with one vacuous and one retired row excluded. AUTO2 A3, SHOCK K2,
+HIGH R1/R2/R3 and all five T2 rows changed from PASS to FAIL; ZERO_HOT
+H2 changed from PASS to VACUOUS. AUTO2 A2 remains FAIL. AUTO2 A1 is PASS
+at 2.92% median annual inflation (12/16 in band); ZERO_SLACK S1 is PASS
+with 1.39% median excess (16/16 within); SHOCK K1 is PASS at 16.68%.
+T1 passes at 14/16 reaching 40,000, median month 1286 versus baseline
+16/16, month 758. Final-population medians, alongside .180, are:
+
+| policy | R1g final population | .180 final population |
+|---|---:|---:|
+| AUTO2 | 1,466,969 | 2,532,050 |
+| ZERO_SLACK | 750,928 | 1,841,309 |
+| ZERO_HOT | 2,000 | 6,740 |
+| SHOCK | 10,520 | 36,560 |
+| HIGH | 4,918 | 29,621 |
+
+`docs/ensemble/R1g.md` preserves the official baseline's complete table,
+snapshot provenance and summary JSON; only the heading/introduction's
+version is changed to the publisher's {next} token. Full evidence is in
+`target/ensemble/R1gc2-final180/`; invocation, exit, timing, local fallback
+guard and compact finding evidence are in `target/r1g/final180-*`.
+Read-only validation confirms 80 CSVs and timings, completion lengths,
+all four finding rows, exact summary JSON, the source freeze, existing
+proof hashes and provisional marker. Source remains unchanged from the
+reviewed .180 integration. No Village/Reload replay, second ensemble,
+new harness, standalone playtest or dry run has started.
+
+Shipping is blocked on F1. Request the orchestrator's GO and slot for the
+smallest seed-1 GDP component trace around month 1135 before any new run
+or model change. Dry-run GO is not requested while the hard failures stand.
