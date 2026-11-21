@@ -79,6 +79,7 @@ public class TimingCheck {
             restUntouched();
             theFiguresRecord();
             theMarginsArithmetic();
+            noDisplayHarnessSkips();
         } finally {
             if (savedTsv == null) System.clearProperty(Timing.TSV_PROPERTY);
             else System.setProperty(Timing.TSV_PROPERTY, savedTsv);
@@ -302,7 +303,12 @@ public class TimingCheck {
 
     /** A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. */
     static Run runFixture(String javaExe, String classpath) throws Exception {
-        ProcessBuilder pb = new ProcessBuilder(AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true));
+        return run(AllChecks.command(javaExe, classpath, FIXTURE_HARNESS, true));
+    }
+
+    /** A child JVM on this command alone: JDK_JAVA_OPTIONS (the gate box's display, the data files) is not passed down. */
+    static Run run(List<String> command) throws Exception {
+        ProcessBuilder pb = new ProcessBuilder(command);
         pb.environment().remove("JDK_JAVA_OPTIONS");
         pb.redirectErrorStream(true);
         Process p = pb.start();
@@ -724,5 +730,52 @@ public class TimingCheck {
         Files.writeString(dir.resolve("residual.txt"), residual + "GridCheck | exit 1\nGridCheck | a failure that is not a clock's     FAIL\n", StandardCharsets.UTF_8);
         names = awk(List.of("-v", "mode=harnesses", "-f", PAIR_AWK.toString(), dir.resolve("hard.tsv").toString(), dir.resolve("residual.txt").toString()));
         check("the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck", names != null && names.equals(List.of("MapCheck")));
+    }
+    /* =====================================================================
+     * 10. THE DISPLAY (GB5)
+     * ===================================================================== */
+
+    /** GB5: the display harness the children run (its toolkit start is its first act), and the pipeline Prism has none of. */
+    static final String DISPLAY_FIXTURE = "ChartFitCheck", NO_PIPELINE = "nonesuch";
+
+    /** The gate box draws on Monocle; the children do too, on this machine, with only these options (the box's own not passed down). */
+    static Run onMonocle(String... options) throws Exception {
+        List<String> c = new ArrayList<>(List.of(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                "-Dglass.platform=Monocle", "-Dmonocle.platform=Headless", "-Dstdout.encoding=UTF-8"));
+        c.addAll(Arrays.asList(options));
+        c.addAll(List.of("-cp", System.getProperty("java.class.path"), "ham.citybuildersim." + DISPLAY_FIXTURE));
+        return run(c);
+    }
+
+    static void noDisplayHarnessSkips() throws Exception {
+        System.out.println("--- 10. the display harnesses start the toolkit in one place, and where a display is named none skips (GB5) ---");
+        List<String> starts = new ArrayList<>(), asksAwt = new ArrayList<>(), display = new ArrayList<>();
+        try (Stream<Path> s = Files.walk(SOURCES)) {
+            for (Path p : s.filter(f -> f.toString().endsWith(".java")).sorted().toList()) {
+                String text = readSource(p), file = SOURCES.relativize(p).toString().replace(File.separatorChar, '/');
+                if (text.contains("Platform.startup(") && !file.equals("ui/FollowBench.java") && !file.equals("tools/ChipRender.java")) starts.add(file);
+                if (text.contains("isHeadless()") && !file.equals("ui/FollowBench.java")) asksAwt.add(file);
+                String name = p.getFileName().toString().replace(".java", "");
+                if (text.contains("startJavaFx()") && Arrays.asList(AllChecks.HARNESSES).contains(name)) display.add(name);
+            }
+        }
+        none("no harness, bench or probe starts the toolkit but through ui.FollowBench.startJavaFx (tools.ChipRender, run by hand, aside)", starts);
+        none("...nor asks AWT whether it is headless, which says nothing of Monocle", asksAwt);
+        check("AllChecks.DISPLAY, the summary's display line, is every harness that starts the toolkit (" + display.size() + ": " + String.join(", ", display) + ")",
+                new TreeSet<>(display).equals(new TreeSet<>(AllChecks.DISPLAY)));
+
+        String named = "-D" + ham.citybuildersim.ui.FollowBench.DISPLAY_PROPERTY + "=fixture";
+        Run unnamed = onMonocle("-Dprism.order=" + NO_PIPELINE);
+        check("with no display named, a toolkit that cannot start (prism.order=" + NO_PIPELINE + ") is a skip and exit 0, as on the PC and in the cloud ("
+                + unnamed.exit() + ")", unnamed.exit() == 0 && unnamed.output().contains("skipped: the JavaFX toolkit cannot start here"));
+        Run down = onMonocle(named, "-Dprism.order=" + NO_PIPELINE);
+        check("...with " + named + " the same toolkit is a FAIL naming it and exit 1, never a skip (" + down.exit() + ")", down.exit() == 1
+                && down.output().contains("FAIL: the JavaFX toolkit cannot start here") && down.output().contains(named) && !down.output().contains("skipped"));
+        Run drawn = onMonocle(named, "-Dprism.order=sw");
+        check("...and on Monocle's software pipeline, the box's, the page is laid out and the harness passes (" + drawn.exit() + ")",
+                drawn.exit() == 0 && drawn.output().contains(DISPLAY_FIXTURE + ": all ok") && !drawn.output().contains("skipped"));
+        check("AllChecks' display line names the display harnesses a run started, and no other",
+                AllChecks.displayLine("monocle", List.of("KeptCheck", "BankCheck", "ToastCheck")).equals(
+                        "display: monocle: 2 display harnesses started, none can skip here (red if the toolkit cannot start): KeptCheck, ToastCheck"));
     }
 }

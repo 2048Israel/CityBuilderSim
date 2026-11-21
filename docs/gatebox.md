@@ -18,6 +18,10 @@ asking again (2026-11-20: "if other sessions ask its there").
   (0, 2, 5, 3, 1, 4, 7, 6).
 - **The gate's own folders:** `~/cbs/main`, `~/cbs/runs`, `~/cbs/tools`, and
   Temurin in `~/cbs/jdk`. See `docs/queue/GB1-notes.md`.
+- **The display (GB5):** none. Gates and nights draw the display harnesses on
+  JavaFX's Monocle (pom.xml, headless, in software), which needs Pango's text layout:
+  `sudo apt install libpangoft2-1.0-0`. Without it every display harness fails, and
+  the run says so in one line. See `docs/queue/GB5-notes.md`.
 
 ## The soak: 7 hours, every test passed
 
