@@ -37,6 +37,11 @@ import java.util.Locale;
  *      each company is what it was, the savings and money abroad go to the
  *      cell that grew.
  *   9. A REAL CITY: the playtest's city with the line on, 120 months, counted.
+ *      Since FS16 its two premises are read at the months the founding causes
+ *      them, not found over the run: the first month a company stands
+ *      unlisted with no family on a positive book (the village's stores),
+ *      it has its family when the month ends; the first month that opens with
+ *      the owner cell holding a stake above the floor, the owners offer.
  *  10. A SAVE FROM BEFORE THE OWNER FAMILIES LOADS ITS ROWS: main's statement
  *      and row array, one row short, fed to the readers; the marked figures
  *      come back where the save put them, the owners' row empty.
@@ -522,6 +527,13 @@ public class OwnerCheck {
      */
     static final double CRUMB = 1e-3;
 
+    /**
+     * The month played, counting from one, in which a company of the founding lists: the first month's dividends read no sheet (none is recorded
+     * before it: Game.recordMonth runs after payDividends), and the second reads Retail's first, the three stores the village built before it
+     * on its books and nothing owed. FS16: the listing is caused by the founding at that month, not found over the run.
+     */
+    static final int MONTHS_TO_THE_LISTING = 2;
+
     /** The game's log while a city runs: kept, and read for the families that rejoin the population and why. */
     static final java.io.ByteArrayOutputStream LOG = new java.io.ByteArrayOutputStream();
 
@@ -541,6 +553,7 @@ public class OwnerCheck {
 
         int n = Equity.COMPANIES.length;
         Tally t = new Tally(n);
+        int first = -1;
         try {
             g.run();
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
@@ -550,6 +563,7 @@ public class OwnerCheck {
             LongPlaytest.villageBuild(g, "House", 40);
             LongPlaytest.villageBuild(g, "Convenience Store", 3);
             LongPlaytest.villageBuild(g, "Mixed Farm", 2);
+            first = g.getMonth();
             t.play(g, 3);
             LongPlaytest.villageBuild(g, "House", 20);
             t.play(g, 4);
@@ -579,7 +593,12 @@ public class OwnerCheck {
         System.out.println("   in issue with no family (their first shares were not founders'): " + (t.otherwise.isEmpty() ? "none" : t.otherwise + " (the month each was first seen)"));
         if (!t.gap.isEmpty()) System.out.println("   the largest stake the owners held in a company without a family: " + t.gap);
         if (!t.disagreement.isEmpty()) System.out.println("   first census disagreement: " + t.disagreement);
+        System.out.printf("   the month that opened with a company unlisted on a positive book ended at month %d (%s); the first that opened with the owners holding above the floor, at %d%n",
+                t.listedMonth, t.listedCompany, t.offerMonth);
         check("the city played the run", g.getMonth() >= months);
+        check("fixture: the second month played (MONTHS_TO_THE_LISTING) was the first to open with a company unlisted, with no family, on a positive book (the village's stores)",
+                t.listedMonth == first + MONTHS_TO_THE_LISTING);
+        check("...it had its family when that month ended: the dividends' listing reserved it, or listed it to the cell (Equity.listIfUnlisted)", t.listedFamily);
         check("the line formed families: a company listed", t.formed > 0);
         check("every month, the line's count is the companies that have a family", t.countsAgreed);
         check("from the first month the owner cell is not empty, the owners hold no real stake (under CRUMB of the shares) in a company without a family, unless it was dropped:"
@@ -588,6 +607,8 @@ public class OwnerCheck {
                 t.outOfTheLabourForce);
         check("...the family model holds out the same adults, and the cell holds the families the census before it counted (the households step first)", t.censusAgreed);
         check("the owners hold a positive stake in every company whose family exists and is in issue", t.positiveStake);
+        check("fixture: a month opened with the exchange open and the owner cell holding a stake in a company in issue above its floor", t.offerMonth > 0);
+        check("...the owners' offers rose in that month (Exchange.postOwners)", t.offerRose);
         check("the owners offered something at the market in the run, and what they sold never exceeded what they offered",
                 ex.getLifePostedSellBy(Exchange.BY_OWNERS) > 0
                 && ex.getLifeFilledSellBy(Exchange.BY_OWNERS) <= ex.getLifePostedSellBy(Exchange.BY_OWNERS) * (1 + 1e-9));
@@ -703,11 +724,55 @@ public class OwnerCheck {
             leftOnce = new boolean[n];
         }
 
+        /*
+         * FS16: the run's two premises, read at the months the founding causes them. Game.payDividends lists a company on the sheet
+         * the month before recorded (recordMonth runs after it), so what is read before a month is what that month's dividends see.
+         */
+        /** The first month that opened with a company unlisted, with no family, on a positive book; the company; whether it had its family when the month ended. */
+        int listedMonth = -1;
+        String listedCompany = "";
+        boolean listedFamily;
+        /** The first month that opened with the exchange open and the owner cell holding a stake in a company in issue above its floor; whether the owners' offers rose in it. */
+        int offerMonth = -1;
+        boolean offerRose;
+
         void play(Game g, int months) {
             for (int i = 0; i < months; i++) {
+                int waiting = listedMonth < 0 ? unlistedOnAPositiveBook(g) : -1;
+                boolean holding = offerMonth < 0 && holdsAboveTheFloor(g);
+                double offered = g.getExchange().getLifePostedSellBy(Exchange.BY_OWNERS);
                 LongPlaytest.run(g, 1);
+                if (waiting >= 0) {
+                    listedMonth = g.getMonth();
+                    listedCompany = Equity.COMPANIES[waiting];
+                    listedFamily = g.getHouseholdBalance().hasOwnerFamily(waiting);
+                }
+                if (holding) {
+                    offerMonth = g.getMonth();
+                    offerRose = g.getExchange().getLifePostedSellBy(Exchange.BY_OWNERS) > offered;
+                }
                 audit(g);
             }
+        }
+
+        /** A company the month's dividends would list (Equity.listIfUnlisted): none in issue, no family, a positive book; -1 if none. Not the bank, whose book is its own and whose desk issues its shares. */
+        static int unlistedOnAPositiveBook(Game g) {
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                if (c == Equity.BANK) continue;
+                if (g.getEquity().getShares(c) == 0 && !g.getHouseholdBalance().hasOwnerFamily(c)
+                        && g.getSectorBooks().get(Equity.COMPANIES[c]).equity() > 0) return c;
+            }
+            return -1;
+        }
+
+        /** Whether the owners would offer this month (Exchange.postOwners): the exchange open, the cell not empty, a stake in a company in issue above its floor. */
+        static boolean holdsAboveTheFloor(Game g) {
+            Exchange ex = g.getExchange();
+            Household cell = g.getHouseholdBalance().owners();
+            if (!ex.isOpen() || cell == null || cell.isEmpty()) return false;
+            for (int c = 0; c < Equity.COMPANIES.length; c++)
+                if (cell.shares[c] > 0 && g.getEquity().getShares(c) > 0 && !ex.atFloor(c)) return true;
+            return false;
         }
 
         void audit(Game g) {

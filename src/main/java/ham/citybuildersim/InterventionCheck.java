@@ -44,9 +44,13 @@ import java.io.PrintStream;
  *   4. ROTTERDAM'S CASE. Twins on one seed, one buys 4.5 years of output: the
  *      D$ moves by interventionMove(), I x s0 x (1 + ln 45), the rate x2.6 and
  *      not x8,100 - on a bare currency, and on a played town under Float.
- *   5. HOW OFTEN IT FIRES IN A REAL RUN. The default town, Lean, nobody
- *      dealing, played 240 months: no reprice's defence passes the bound, the
- *      premise of the byte-identical claim.
+ *   5. HOW OFTEN IT FIRES IN A REAL RUN. The bound by arithmetic and the
+ *      lean's sale by a forced deficit (FS10, bare books): the most the rule
+ *      sells is MAX_ABSORPTION x the deficit, under the bound from a deficit
+ *      just under INTERVENTION_LINEAR / MAX_ABSORPTION of a year's output and
+ *      past it from one just over, the lean selling in both. Then the default
+ *      town, Lean, nobody dealing, played 240 months: no reprice's defence
+ *      passes the bound, the premise of the byte-identical claim.
  *
  *   6. THE MONTH'S DEALING IS ONE SUM (XI2, the model Trade's warning reads).
  *      Two pieces of 9% of a year's output each are under the bound and 18%
@@ -426,16 +430,64 @@ public class InterventionCheck {
 
     /* ================= 5. how often it fires in a real run ================= */
 
+    /** FS10: how far either side of the line a forced deficit of section 5 stands, as a share of the deficit whose largest sale is exactly INTERVENTION_LINEAR of a year's output. */
+    static final double JUST = .1;
+
+    /**
+     * FS10: a month the rule sells all it can, on bare books: CurrencyCheck.defended()'s currency with a vault at six months' cover (the
+     * capacity there is, MAX_ABSORPTION), a chronic deficit of this many US$ (so the trailing balance is the month's own), and the widest
+     * real rate gap there is behind a fall of about a third. Not yet repriced: the caller asserts what the figures cause, then reprices.
+     */
+    static ForeignAccounts forcedDeficit(double deficitUsd) {
+        final double vault = 10_000, imports = vault / ForeignAccounts.COMFORTABLE_COVER, exports = imports / 2, gdp = 1_000;
+        final double capitalOut = deficitUsd - (imports - exports);
+        ForeignAccounts fx = CurrencyCheck.defended(exports, imports, gdp, vault, capitalOut, capitalOut);
+        fx.setRealRateDifferential(-ForeignAccounts.GAP_CAP);
+        return fx;
+    }
+
     static void howOftenItFires() {
         out.println("\n--- 5. how often it fires in a real run ---");
+
+        /*
+         * FS10: THE BOUND BY ARITHMETIC, AND THE LEAN'S SALE BY A FORCED DEFICIT, on bare books. The most the rule can sell in a month is
+         * MAX_ABSORPTION x that month's deficit (the capacity at its fullest, the need being more), so it can pass INTERVENTION_LINEAR of a
+         * year's output only in a month whose deficit is over INTERVENTION_LINEAR / MAX_ABSORPTION of it: a deficit just under that sells
+         * just under the bound and one just over it just over, each the deficit's cap exactly, the fall and the vault leaving it the cap.
+         */
+        final double year0 = 12 * 1_000, r00 = 1.0;
+        final double atTheLine = LINEAR * year0 / (ForeignAccounts.MAX_ABSORPTION * r00);
+        double[] bound = new double[2], boundSold = new double[2];
+        final double[] deficits = { (1 - JUST) * atTheLine, (1 + JUST) * atTheLine };
+        for (int k = 0; k < 2; k++) {
+            ForeignAccounts book = forcedDeficit(deficits[k]);
+            double capacity = book.absorption(), r0 = book.getRate(), year = 12 * book.getGdpTrailing();
+            double fall0 = CurrencyCheck.firstFall(book, book.getRealRateDifferential());
+            double need = ForeignAccounts.interventionLocalFor(capacity * fall0, year) / r0;
+            String side = k == 0 ? "under" : "over";
+            close("fixture: the " + side + " book's month shows its forced deficit", book.monthDeficitUsd(), deficits[k], 1e-9);
+            close("fixture: the " + side + " book's vault is at six months' cover, so its capacity is the most there is", capacity, ForeignAccounts.MAX_ABSORPTION, 1e-12);
+            assertTrue("fixture: the " + side + " book's year and rate are the ones the line was struck on", Math.abs(year - year0) < 1e-9 && r0 == r00 && book.gate() == 1);
+            assertTrue("fixture: the " + side + " book's fall takes more than the deficit's cap to take back, and the vault holds the cap",
+                    fall0 > 0 && need > capacity * deficits[k] && book.getReservesUsd() > capacity * deficits[k]);
+            book.repriceCurrency();
+            bound[k] = book.getDefenceLocal() / year;
+            boundSold[k] = book.getDefenceUsd();
+            out.printf("   a forced deficit of %.1f%% of a year's output (the line's is %.2f%%): sold US$%,.2fk, %.2f%% of a year's output (the bound's %.0f%%)%n",
+                    100 * deficits[k] * r0 / year, 100 * atTheLine * r0 / year, boundSold[k], 100 * bound[k], LINEAR * 100);
+            close("the largest sale the rule makes is MAX_ABSORPTION x the month's deficit (" + side + " the line)", boundSold[k], ForeignAccounts.MAX_ABSORPTION * deficits[k], 1e-9);
+        }
+        assertTrue("a deficit under INTERVENTION_LINEAR / MAX_ABSORPTION of a year's output sells under INTERVENTION_LINEAR of it, at the rule's most", bound[0] < LINEAR);
+        assertTrue("...and a deficit over it sells past INTERVENTION_LINEAR: a sale reaches the bound only in a month whose deficit is over the line", bound[1] > LINEAR);
 
         Game city = CurrencyRegimeCheck.town("xi1-default-lean", Founding.defaults());
         ForeignAccounts fx = city.getForeignAccounts();
         assertTrue("fixture: the default town is on Lean", fx.getRegime() == ForeignAccounts.Regime.LEAN);
 
-        int sold = 0, past = 0, dealt = 0, repriced = 0, largestMonth = 0, firstUnweighed = 0;
-        double largest = 0;
+        int sold = 0, past = 0, dealt = 0, repriced = 0, largestMonth = 0, firstUnweighed = 0, overCap = 0;
+        double largest = 0, largestDeficit = 0;
         for (int m = 1; m <= RUN_MONTHS; m++) {
+            double rateBefore = fx.getRate();
             CurrencyRegimeCheck.play(city, 1);
             double year = 12 * fx.getGdpTrailing();
             if (year <= 0) { if (firstUnweighed == 0) firstUnweighed = m; continue; }
@@ -445,13 +497,20 @@ public class InterventionCheck {
             if (fx.getDefenceUsd() > 0) sold++;
             if (share > LINEAR) past++;
             if (share > largest) { largest = share; largestMonth = m; }
+            // ...and in every month, whatever it did: no sale was more than MAX_ABSORPTION x that month's deficit, the arithmetic above.
+            double deficitUsd = Math.max(0, -fx.balance()) / rateBefore;
+            largestDeficit = Math.max(largestDeficit, deficitUsd * rateBefore / year);
+            if (fx.getDefenceUsd() > ForeignAccounts.MAX_ABSORPTION * deficitUsd * (1 + 1e-12) + 1e-12) overCap++;
         }
         out.printf("   %d months: the lean sold in %d of them; its largest sale was %.2f%% of a year's output (month %d), against the bound's %.0f%%;"
-                + " %d months passed the bound%n", RUN_MONTHS, sold, largest * 100, largestMonth, LINEAR * 100, past);
+                + " %d months passed the bound; the largest month's deficit was %.2f%% of a year's output, against the line's %.2f%%%n",
+                RUN_MONTHS, sold, largest * 100, largestMonth, LINEAR * 100, past, largestDeficit * 100, LINEAR / ForeignAccounts.MAX_ABSORPTION * 100);
         assertTrue("fixture: the D$ was repriced against a year of output in every month but the first (" + repriced + " of " + RUN_MONTHS + ", the first unweighed: month " + firstUnweighed + ")",
                 repriced >= RUN_MONTHS - 1 && (repriced == RUN_MONTHS || firstUnweighed == 1));
         assertTrue("fixture: nobody dealt dollars in any month (" + dealt + " did)", dealt == 0);
-        assertTrue("fixture: the lean sold in some month, or the claim means nothing (" + sold + " of " + RUN_MONTHS + ")", sold > 0);
+        assertTrue("fixture: the lean sold in some month, or the claim means nothing (a forced deficit sold US$" + String.format("%,.2f", boundSold[0])
+                + "k; the real run's lean sold in " + sold + " of " + RUN_MONTHS + ")", boundSold[0] > 0);
+        assertTrue("...and in every month of the real run no sale was more than MAX_ABSORPTION x that month's deficit (" + overCap + " of " + RUN_MONTHS + " were)", overCap == 0);
         assertTrue("no reprice's defence passed INTERVENTION_LINEAR of a year's output: the bound changes no figure of the default run ("
                 + past + " of " + RUN_MONTHS + ")", past == 0);
     }

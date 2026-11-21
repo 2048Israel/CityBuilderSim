@@ -32,9 +32,9 @@ import java.util.List;
  *   5. DOUBT IS SCALED BY THE COVER: goldHazard() is hazard() at the legal cover, none at a full cover, half way between at the midpoint; counted over seeded twins.
  *   6. DEFEND THE GOLD SETS THE DIAL (a bare DebtManager): goldSpread(), goldRate() under each aim and the autopilot off, dropGoldAim() writing nothing, tiedRate().
  *   7. A TOWN ON GOLD THROUGH 1933 AND 1934 (the full file only): one town with gold in its vault played to March 1933, saved, loaded three times to answer the US$'s
- *      April 1933 date (stay, follow, leave).
+ *      April 1933 date (stay, follow, leave). Its months on Gold are caused (FS10): the cover is held at HELD_COVER, a full one, by gold bought by name.
  *   8. THE NOTICE: raised the month the date opens, standing while it is open, settled the month after it is answered; none in a city that is not on gold.
- *   9. THE DIAL IN THE TOWN: goldRate() as Game struck it, the inflation rule under that aim, and a break that drops the aim without a decision line.
+ *   9. THE DIAL IN THE TOWN: goldRate() as Game struck it, at the cover the month's top holds still (HP1 item 1, FS10), the inflation rule under that aim, and a break that drops the aim without a decision line.
  *  10. SAVED MID-GOLD: an event open and following the dollar, slots 152-155, the regime and the aim as they were, and the next twelve months to the bit.
  *  11. GD2'S TWO FINDINGS: a price that is NaN is no throw in Game.priceOrNaN(); a money that is gold's code is none of the eight's, and gold gets no share of the trade.
  *  12. LEAN IS THE DEFAULT: a new town has no mint, no event, no gold, and deals none.
@@ -618,6 +618,9 @@ public class GoldStandardCheck {
     /** The founders' money put into gold by name, D$ thousands: with less the cover (gold at the mint price over M0) falls under the floor on the way to 1933 and the city is off gold before the dates. */
     static final double GOLD_LOCAL = 40_000;
 
+    /** The cover section 7 holds the town's gold at or over at every month's end on its way to 1933 (FS10): a full one, at which doubt has no chance (ForeignAccounts.goldHazard(gap, 1) is nothing, section 5). */
+    static final double HELD_COVER = 1;
+
     /** The cover section 9 sets the town's gold to, between the floor and the defence's own: where the autopilot's spread is neither nothing nor the whole. */
     static final double MIDWAY = (ForeignAccounts.COVER_RATIO + DebtManager.GOLD_DEFENCE_FROM) / 2;
 
@@ -699,15 +702,28 @@ public class GoldStandardCheck {
         quietly(() -> g.setCurrencyRegime(ON_GOLD));
         assertTrue("fixture: the town is on Gold, its aim Defend the gold, struck at the D$'s rate of the day times gold's price (D$" + String.format("%.4f", fx.getMintPrice()) + " an ounce)",
                 fx.getRegime() == ON_GOLD && g.getDebtManager().getAim() == DebtManager.Aim.GOLD && within(fx.getMintPrice(), entryRate * PRICE, 1e-9) && g.getGoldCover() > 1);
+        // FS10: the cover is held at HELD_COVER or over at every month's end, by gold bought by name and forgotten as set-up, so the town's months on
+        // Gold are caused: at a full cover doubt has no chance (section 5), and the cover breaks only a sale that would leave it under the floor.
         double lowest = g.getGoldCover();
+        int toppedUp = 0;
+        boolean heldEveryMonth = true;
         while (world(g) < FIRST && fx.getRegime() == ON_GOLD) {
             play(g, 1);
             lowest = Math.min(lowest, g.getGoldCover());
+            if (fx.getRegime() == ON_GOLD && g.getGoldCover() < HELD_COVER) {
+                double ounces = (HELD_COVER - g.getGoldCover()) * g.getGoldBase() / fx.getMintPrice();
+                quietly(() -> g.buyForeignCurrency(ounces * fx.getMoneyUsd(GOLD) * fx.getRate(), "XAU"));
+                fx.forgetDealing();
+                toppedUp++;
+            }
+            heldEveryMonth &= fx.getRegime() != ON_GOLD || g.getGoldCover() >= HELD_COVER * (1 - 1e-9);
             if (world(g) % 120 == 0) out.printf("   world month %d: cover %.2f, rate %.4f, gold %,.0f thousand oz%n", world(g), g.getGoldCover(), fx.getRate(), fx.getHolding(GOLD));
         }
         coverMarch1933 = g.getGoldCover();
         centreMarch1933 = fx.goldCentre();
-        out.printf("   March 1933 (world month %d): cover %.3f (lowest on the way %.3f), centre %.6f, rate %.4f%n", world(g), coverMarch1933, lowest, centreMarch1933, fx.getRate());
+        out.printf("   March 1933 (world month %d): cover %.3f (lowest on the way %.3f), centre %.6f, rate %.4f; gold bought to hold the cover in %d months%n",
+                world(g), coverMarch1933, lowest, centreMarch1933, fx.getRate(), toppedUp);
+        assertTrue("fixture: the cover is held at a full one (" + HELD_COVER + ") or over at every month's end on the way, by gold bought by name", heldEveryMonth);
         assertTrue("the town is still on Gold in March 1933, with a cover over the law's floor " + ForeignAccounts.COVER_RATIO + " all the way", fx.getRegime() == ON_GOLD && lowest > ForeignAccounts.COVER_RATIO);
         assertTrue("...its event none, and the centre the entry rate: the mint price over the statute's price (the D$ where it was struck)", fx.getGoldEvent() == NO_EVENT && within(centreMarch1933, entryRate, 1e-9));
         assertTrue("saved to the harness's scratch folder", g.saveGame(SLOT, "gd3-march-1933").ok);
@@ -759,17 +775,25 @@ public class GoldStandardCheck {
         assertTrue("fixture: on Gold, the autopilot on and aiming at the gold, the cover " + String.format("%.3f", cover) + " between the floor and the defence's own",
                 fx.getRegime() == ON_GOLD && dm.isAutopilot() && dm.getAim() == DebtManager.Aim.GOLD && cover > ForeignAccounts.COVER_RATIO && cover < DebtManager.GOLD_DEFENCE_FROM);
         double gap = fx.currencyGap();
-        // ...and the cover once the month's top has retired what the last month's reprice sold of gold (FB14; GD3's review, item 6), before the dial is struck.
+        /*
+         * HP1 item 1 (FS10): THE COVER HELD STILL. The dial is struck at the month's top, after its settles (Game.nextMonth: the paper redeemed,
+         * the edge's dollars, the gold's due retired), from getGoldCover() there. The harness used to bracket the struck rate between the covers
+         * at the month's two ends, and on OX1's town Game's cover (0.5993) fell outside the bracket. The fixture now holds the top still: no paper
+         * is redeemed, no edge is owed, and the last reprice's gold due is within the reserves, so the top retires it whole and getGoldCover()
+         * read before the month (getGoldBase() already nets the due, CentralBank.m0AfterGoldDue()) is the cover the dial is struck with. The rate
+         * is then asserted against it to the rounding, not inside a bracket.
+         */
         CentralBank cb = g.getCentralBank();
-        double atTop = fx.goldCover(cb.m0() - Math.min(cb.getGoldRedeemDue(), Math.max(0, cb.getReserves())));
+        assertTrue(String.format("fixture: the month's top moves no M0 before the dial: no paper redeemed (%.2f), no edge owed (%.2f), the gold's due (%.2f) within the reserves (%.2f)",
+                        cb.getRedemptionDue(), fx.getEdgeOwedLocal(), cb.getGoldRedeemDue(), cb.getReserves()),
+                cb.getRedemptionDue() == 0 && fx.getEdgeOwedLocal() == 0 && cb.getGoldRedeemDue() <= Math.max(0, cb.getReserves()));
+        double struckWith = dm.goldRate(gap, cover);
         play(g, 1);
         double after = g.getGoldCover();
-        double[] rates = { dm.goldRate(gap, cover), dm.goldRate(gap, atTop), dm.goldRate(fx.currencyGap(), after) };
-        double lo = Math.min(rates[0], Math.min(rates[1], rates[2])), hi = Math.max(rates[0], Math.max(rates[1], rates[2]));
-        out.printf("   aiming at the gold: policy rate %.6f, goldRate at the cover before the month (%.3f) %.6f, at its top after the gold's retirement (%.3f) %.6f, at the cover after (%.3f) %.6f, the tie %.6f%n",
-                dm.getPolicyRate(), cover, rates[0], atTop, rates[1], after, rates[2], dm.tieRate());
-        assertTrue("the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, from the cover the month read (its top's, after the gold's last sale was retired, to the month's end)",
-                dm.getPolicyRate() >= lo - 1e-9 && dm.getPolicyRate() <= hi + 1e-9);
+        out.printf("   aiming at the gold: policy rate %.12f, goldRate at the cover the top holds (%.6f) %.12f, at the month's end's (%.6f) %.12f, the tie %.6f%n",
+                dm.getPolicyRate(), cover, struckWith, after, dm.goldRate(fx.currencyGap(), after), dm.tieRate());
+        close("the month's policy rate is goldRate(currencyGap(), getGoldCover()) as Game struck it, at the cover the month's top holds (read before the month, the gold's due netted)",
+                dm.getPolicyRate(), struckWith, 1e-12);
         assertTrue("...above the tie (the spread asks something at this cover) and the dial is tied", dm.getPolicyRate() > dm.tieRate() && dm.isTied());
         quietly(() -> dm.setAim(DebtManager.Aim.INFLATION));
         play(g, 1);
