@@ -91,7 +91,7 @@ before 0.9.93) for its energy ratio alone. Money is the city's, in the founding'
   to 0.857 at month 710 while its first Coal Power Plant built (ordered by month 620, open at 725, the draw 67 to 173
   MW), and to 0.97 while the next two built (785-860). The advice sizes an order to its opening and counts the plant
   under construction as on site, so nothing bridges the wait (pending, PW1-P).
-- **The ensemble**: 24 of 26 (`docs/ensemble/PW1.md`; 0.9.93 23). A3 and R3, main's reds, pass. A2 is main's (the
+- **The original ensemble** (superseded by sections 6 and 8): 24 of 26 (0.9.93 23). A3 and R3, main's reds, pass. A2 is main's (the
   longest spell 18 months, 32 on 0.9.93). **R2 newly fails**: HIGH's unemployment over its twin is 0.32 points against
   at least 0.50 (0.83 on 0.9.93), the seeds -8.81 to +13.04 (★2).
 - **After §3's fixes** (94bc714c: the founding grid on the books, the Trade tab's goods, ScaleCheck): the ensemble
@@ -292,7 +292,7 @@ month's trade table, outside the old twelve-month window. Retail's sale and Moto
 main; this was a town that had not yet begun to drive, not missing petrol money. The fixture now waits at most
 36 months for an actual fuel sale before ordering its road and starting the same year of observations, as
 OilCheck 20 already establishes its drivers. A new hard assertion proves it drives before that year (0.097 L at
-the pump, first fuel at game month 16 on the final merged tree; warm-up limit 36 months). The original petrol,
+the pump, first fuel at game month 16 on the .177 recovery merge; warm-up limit 36 months). The original petrol,
 diesel, lubricants, bitumen, goods-footing and money-audit assertions are unchanged.
 Named `./batch-check.sh OilCheck`: exit 0, every assertion green, including the new premise. No model change.
 
@@ -374,3 +374,28 @@ Its source snapshot must be pushed before launch. A local PATH guard refuses the
 before any local compile or simulation; a busy or unavailable box requires reporting and waiting, not overflow.
 Gates and the nightly keep priority. There is no dry-run, full-pick or separate playtest go; the marker remains.
 After the .179 merge, `./batch-check.sh --fast` exits 0 (maps regenerated, Stale 0 firm / 194 soft).
+
+**Final result: PASS.** `PW1c2-final` completed and scored with exit 0: all 80 runs, none missing or short,
+all 10 M1/F1 hard criteria passed, 25 of 26 criteria overall, no changed verdicts against .179. All five
+policies report zero money-audit failures (zero unread) and zero runs with a LongPlaytest finding; all 64
+policy twins pair before their switch. The only failing information criterion is AUTO2 A2, the longest spell
+of inflation above 10%: 15 months [4 to 36] against fewer than 12 in every seed, also red on .179 (20 [5 to 39]).
+
+AUTO2 T2 now passes: final population median 2,532,050 [28,685 to 4,208,078], against at least 75% of .179's
+2,001,654 [963,702 to 4,813,651]. The historical PW1d miss against .174 is not the current result. The range
+remains wide; this passing median does not assert every seed grew as much as its baseline twin. PW1-E's row
+records both results and recommends closing the historical median miss, subject to the orchestrator's decision;
+the measured planner gaps remain PW1-P. PW1-L and PW1-G are retained unchanged.
+
+The run used the pushed source of `7a06097bc`, on gatebox, OpenJDK 21.0.13. The snapshot names
+`/home/jerus/cbs/main/data/earth-2.bin` and `world-1.bin`. Remote runs took 14.2 minutes; per-run median seconds
+AUTO2 192.4, ZERO_SLACK 157.2, ZERO_HOT 18.0, SHOCK 41.4, HIGH 34.3 (111.6 summed minutes). The run directory is
+`/home/jerus/cbs/tools/7a06097bc1f2ebb39fc150974ad25bc3eb03cdfa/target/ensemble/PW1c2-final`; all 80 CSVs,
+logs, score, summary, snapshot and baseline are home under `target/ensemble/PW1c2-final/`.
+The final baseline is [PW1.md](../ensemble/PW1.md), with only its publication heading and introductory version
+changed to `{next}`; its compared .179 baseline, source, data and scores are untouched. The historical PW1d
+report remains separately archived, with its original comparison baseline and run files preserved.
+
+After scoring, only the baseline, these notes and the provisional ship file change. No model source changed
+after the ensemble snapshot. The baseline is committed before any dry run; no dry run, full pick or separate
+playtest has been started. Pick remains ALL 237 harnesses; the provisional marker remains pending explicit dry go.
