@@ -89,21 +89,22 @@ All on the laptop, at 778376ca2. The worktree names main's data files (`JDK_JAVA
 - **BuildAdviceCheck**: 1 red, main's own, by `docs/notes/gate.txt` line 7 ("the streets' card has
   the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road,
   Light Rail Line)"). The text is the same.
-- **KeptCheck**: 6 reds, and every Build-screen section is green.
+- **KeptCheck**: 6 reds, and every Build-screen section is green. All six are main's.
   - Four are main's KFP1 class, `docs/notes/known-reds.txt` rows 47-50 (the fund's settled
     holding).
-  - Two are not lines in either file, and both are load classes the tree has traced already. They
-    were read on a laptop busy enough to make main's slot-10 month 40 s, against the 7-9 s the
-    brief measured quiet.
-  - Section 55, "most months make no node at all (9 of 25)", is the Bank's Profit page. KeptCheck's
-    own comment at `playedCity()` says it is KBP1's: "6 of 25 months quiet under a loaded PC, 17
-    of 25 under a quiet one". Rows 30 and 42 hold KBP1's other lines. FS5 is the queued fix.
-  - Section 78, "...the held slider is the same node, still held, at the thumb (0.005)", is a
-    dragged tax dial with a card put in front. That is KRT1's section (row 29). Its FS5 is queued.
-  - Neither page reads `WorksValue`, `AutoBuilder` or the Build screen. The city they draw is
-    `LongPlaytest.probeCity`, and section 5 shows its model is main's to the byte.
-  - The gate box skips KeptCheck, since it is headless with no Monocle until GB5. So no row is
-    added for these two. Should one show at a gate, it passes by name with FS1/FS5.
+  - Two are lines in neither `gate.txt` nor `known-reds.txt`:
+    - Section 55, "most months make no node at all (9 of 25)", the Bank's Profit page. KeptCheck's
+      own comment at `playedCity()` gives it to KBP1.
+    - Section 78, "...the held slider is the same node, still held, at the thumb (0.005)", a dragged
+      tax dial with a card put in front. That is KRT1's section (row 29).
+  - **KeptCheck on main's build** (a9bfcd070, in the detached worktree, right after AP1's run on
+    the same laptop) gives the same six reds at the same lines: "9 of 25" at line 1363 and the held
+    slider at line 4019. The two are main's own.
+  - The gate box skips KeptCheck (headless, no Monocle until GB5), so no gate had seen them. Both
+    are in FS5's queued range ("KeptCheck from section 55; takes ... KBP1 ... KRT1's 77 and 78").
+    The ship file names them in two known-reds rows with FS5, so a gate run on the laptop passes
+    them by name.
+  - For the orchestrator: main's KeptCheck is red at these two lines on a display, unrecorded.
 - **The pick** (`sh tools/pick.sh origin/main HEAD`) is ALL, for BuildingManager.java's 114
   readers, so the dry run applies. Its review line is "needed - threading": the scope is a
   `ThreadLocal`, with an `AtomicLong` count beside it. No money's books are touched.
