@@ -638,3 +638,37 @@ of LongPlaytest that stays in `target/`, out of the branch.
   `choose()` every month (a sed that matched twice). Section 8 read a
   window of one month, every month, and failed; the measured runs above
   came from a snapshot of the classes before it.
+
+### The m2405 red: households' UnsettledFees, traced (PB1)
+
+The line is HL1's (`HouseholdBalance.java:1274`,
+`lastUnsettledFees += sumOfRows(rowFees) - settledFees`): the fees a row
+was billed for treatment and tuition that went to a cell too small to
+settle. LongPlaytest holds its MEAN MONTHLY SHARE (the month's amount over
+what moved that month, every month weighed alike) under
+`OWN_BOUND_UNSETTLED_FEES`, 3e-5 (`LongPlaytest.java:1368-1369`): three
+times the larger of the gate's and the nightly's figures for TODAY'S city,
+measured 2026-11-11 (7.77 ppm). HL2, on the queue, splits the fees over the
+cells that settle and deletes the bound.
+
+| the run (measuring copy, the line each month) | m1–240 | m241–480 | the run's mean |
+|---|---|---|---|
+| the 1900 city, R1g's final code (8eaf2dc1e) | 523.5 ppm | 239.1 ppm | 126.8 ppm to m1686 (86% of it from the first 480 months) |
+| the 1900 city, R1g's switches off (`-Dr1g.home=off -Dr1g.apprentices=off`) | 404.4 | 286.7 | (to m480) |
+| today's city (`-Dplaytest.founded=today`) | 96.0 | 36.8 | 21.8 ppm on 0.9.174 (today174) |
+| the held home, the mean (2,400 months) | | | 69.3, 86.1 |
+
+- **Not R1g's code.** With R1g's switches off, the 1900 city's share is
+  the same size. It is 4–8 times today's in the same months, where the
+  households' unsettled income is 1.4–2.7 times today's: the 1900 path's
+  fees, against what moves, are what is large, at the same size of town.
+- **Why the gate sees it now.** R1g moved the gate's playtest to the 1900
+  city (step 4). The bound was set on today's city, and the 1900 city's
+  first forty years, a village of under 2,000, carry the mean past it.
+- **Passed by name to PB1** (the ship file's `## queued` and `## known-reds`):
+  why the 1900 city's fees go unsettled at four to eight times today's
+  share, and LongPlaytest's own-line bounds set again from the city the
+  gate now plays, unless HL2 has deleted them first.
+- **The run's time.** The 1900 playtest is the slower one: 38 minutes on
+  this PC for 2,400 months (the mean, 1,852,269 people) against 18 for
+  today's (1,479,891). Late months run at about 80 per 9 minutes.
