@@ -278,7 +278,23 @@ public final class Recipes {
      * R1g's switch for the walk paced by the households' pay ((3) on its second index), off unless -Dr1g.walk=pay: each month's apply() sets the
      * homes to homeScaleOfPay().
      */
-    public static boolean HOME_PAY_WALK = "pay".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+    public static boolean HOME_PAY_WALK = System.getProperty("r1g.walk", "off").trim().toLowerCase(java.util.Locale.ROOT).startsWith("pay");
+
+    /**
+     * R1g's test of the pay walk set again only each January (-Dr1g.walk=payyear), off by default: whether the month-to-month re-pricing is
+     * what stalls the walks' cities on 0.9.174 (docs/queue/R1g-notes.md).
+     */
+    public static boolean HOME_PAY_YEARLY = "payyear".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+
+    /**
+     * R1g's test of the pay walk on a trailing 12-month mean of homeScaleOfPay(), set again monthly (-Dr1g.walk=paymean), off by default: the
+     * orchestrator's second remedy if the January steps still churn the landlords (docs/queue/R1g-notes.md).
+     */
+    public static boolean HOME_PAY_MEAN = "paymean".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+
+    /** The pay index of each of the last twelve months the walk on its mean has read, and the month it last read. */
+    private final java.util.ArrayDeque<Double> payIndices = new java.util.ArrayDeque<>();
+    private int payIndexMonth = Integer.MIN_VALUE;
 
     /** A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). */
     private record Dated(double scale, int materials, int points) { }
@@ -396,10 +412,20 @@ public final class Recipes {
         if (!HOMES_1900 || game.getSectors() == null) return;
         String homes = game.getSectors().realEstate().key();
         double scale = HOME_PAY_WALK ? homeScaleOfPay(game) : HOME_WAGE_WALK ? homeScaleOfWages(game) : HOME_WALK ? homeScaleAt(game.getMonth()) : homeScale();
+        if (HOME_PAY_MEAN) {
+            if (game.getMonth() != payIndexMonth) {
+                payIndexMonth = game.getMonth();
+                payIndices.addLast(scale);
+                while (payIndices.size() > 12) payIndices.removeFirst();
+            }
+            double sum = 0;
+            for (double s : payIndices) sum += s;
+            scale = sum / payIndices.size();
+        }
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0) continue;
             Dated was = datedHomes.get(t);
-            if (was != null && was.scale() == scale) continue;
+            if (was != null && (was.scale() == scale || HOME_PAY_YEARLY && game.getMonth() % 12 != 1)) continue;
             double by = was == null ? scale : scale / was.scale();
             int materials = was == null ? t.getConstructionMaterials() : was.materials();
             int points = was == null ? t.getConstructionPoints() : was.points();

@@ -1,6 +1,6 @@
 # RestructureCheck.java - 418 lines · 5 methods · 2 constants · harnesses
 
-`ham/citybuildersim/RestructureCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RestructureCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Buying the city's own debt back, at what the paper is actually worth.
 > 

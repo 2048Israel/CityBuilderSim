@@ -1,6 +1,6 @@
 # Village1900Check.java - 392 lines · 15 methods · 12 constants · harnesses
 
-`ham/citybuildersim/Village1900Check.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Village1900Check.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
 > playtest's way for five years beside its twin founded today's way. Not part of the game.

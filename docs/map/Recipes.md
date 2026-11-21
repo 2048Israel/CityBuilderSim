@@ -1,6 +1,6 @@
-# Recipes.java - 463 lines · 27 methods · 0 constants · model
+# Recipes.java - 489 lines · 27 methods · 0 constants · model
 
-`ham/citybuildersim/Recipes.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recipes.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of
 > R1c's recipes, as EquipmentForms is of R1's forms.
@@ -57,13 +57,17 @@
 | 269 | `public static boolean HOME_WALK` | R1g's switch for the walk back (THE WALK BACK, above), off unless -Dr1g.walk=on: each month's apply() sets the homes to homeScaleAt() the month rather than holding them at homeScale(). |
 | 275 | `public static boolean HOME_WAGE_WALK` | R1g's switch for the walk paced by the city's own wages (the orchestrator's (c)), off unless -Dr1g.walk=wage: each month's apply() sets the homes to homeScaleOfWages() rather than the calendar's homeScaleAt(). |
 | 281 | `public static boolean HOME_PAY_WALK` | R1g's switch for the walk paced by the households' pay ((3) on its second index), off unless -Dr1g.walk=pay: each month's apply() sets the homes to homeScaleOfPay(). |
-| 287 | `private final java.util.Map<BuildingsTemplate, Dated> datedHomes` | The homes this has dated, by identity, a city's templates being its own (weak, so a finished city's templates go with it). |
+| 287 | `public static boolean HOME_PAY_YEARLY` | R1g's test of the pay walk set again only each January (-Dr1g.walk=payyear), off by default: whether the month-to-month re-pricing is what stalls the walks' cities on 0.9.174 (docs/queue/R1g-notes.md). |
+| 293 | `public static boolean HOME_PAY_MEAN` | R1g's test of the pay walk on a trailing 12-month mean of homeScaleOfPay(), set again monthly (-Dr1g.walk=paymean), off by default: the orchestrator's second remedy if the January steps still churn the landlords (docs... |
+| 296 | `private final java.util.ArrayDeque<Double> payIndices` | The pay index of each of the last twelve months the walk on its mean has read, and the month it last read. |
+| 297 | `private int payIndexMonth` |  |
+| 303 | `private final java.util.Map<BuildingsTemplate, Dated> datedHomes` | The homes this has dated, by identity, a city's templates being its own (weak, so a finished city's templates go with it). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 418 | **type** `public final class Recipes` | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1c's recipes, as EquipmentForms is of R1's forms. |
+| 46 | 444 | **type** `public final class Recipes` | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1c's recipes, as EquipmentForms is of R1's forms. |
 | 52 | 7 | **type** `public record Prices(ToDoubleFunction<Good> good, double[] wages, double pricePerWatt, double pricePerWater...` | The prices a recipe is valued at, as the planners know them: a good's price a unit (the city's, SpreadPlanner.cityValue(); or a harness's own), the wage of each band by JobType ordinal, the three units' prices and the... |
 | 55 | 3 | `public Prices withGoods(ToDoubleFunction<Good> other)` _(in Recipes.Prices)_ | The same prices with another price for the goods. |
 
@@ -91,21 +95,21 @@
 | 202 | 18 | `public void apply(Game game)` | Sets every template with a choice of recipes to what its buildings run: the recipes chosen (the default where none was, or where the template no longer has the one saved), weighted by the buildings of each part (the s... |
 | 229 | 7 | `private static void declareGoods(Game game, BuildingsTemplate t)` | The sector of a template with a choice of recipes declares the goods of EVERY recipe of it that its constructor did not (Sector.declareRecipeGoods()), as Agriculture.setHorseShare() declares CROPS once a share is set:... |
 
-### THE 1900 HOME (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) (lines 237-463)
+### THE 1900 HOME (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) (lines 237-489)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 284 | 1 | **type** `private record Dated(double scale, int materials, int points)` | A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). |
-| 294 | 19 | `public static double homeScale()` | What a 1900 home costs of today's: the 1901 household's monthly wage over the same household's on today's ladder (WageLadder.TODAY), the household being 1901's working arrivals by band (ArrivalMix's first knot) and ea... |
-| 318 | 8 | `public static double homeScaleAt(int month)` | What a 1900 home costs of today's in a game month, walked (THE WALK BACK, above): homeScale() to the first knot's January (ArrivalMix.KNOTS), 1 from the last knot's on, linear by month between. |
-| 333 | 23 | `public static double homeScaleOfWages(Game game)` | What a 1900 home costs of today's at the city's own wages ((c)): homeScale()'s household, 1901's working arrivals by band, paid the market's wages this month in founding money (each job's wage over the cost of living,... |
-| 363 | 9 | `public static double homeScaleOfPay(Game game)` | What a 1900 home costs of today's at the households' pay ((3), the second index): what a filled job paid its household last month on average (HouseholdAccounts.getAverageWage()), in founding money as homeScaleOfWages(... |
-| 374 | 16 | `static double todaysHousehold()` | homeScale()'s household on today's ladder: 1901's working arrivals by band, each band paid the mean of its job types' rungs today. |
-| 395 | 18 | `private void dateHomes(Game game)` | Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): once at homeScale(), or with the walk at homeScaleAt() the month, set again whenever that differs from the scale the home stands at. |
-| 415 | 3 | `public boolean datedHome(BuildingsTemplate t)` | Whether this city's homes are built to 1900's standard: for the harnesses. |
-| 420 | 4 | `public double datedScale(BuildingsTemplate t)` | The scale a dated home stands at (homeScale(), or the walk's month's); 1 for a home this has not dated: for the harnesses. |
-| 429 | 3 | `public void clear()` | Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. |
-| 437 | 4 | `public String[] chosen(int templateId)` | The recipes a template's two parts run now (R5: what ResearchView.recipesInUse() counts): a copy of [the fitted part's recipe id, the unfitted part's], or null when both run the default (the template has no choice kept). |
-| 443 | 5 | `public Map<Integer, List<String>> forSave()` | The choices to save, by template id: [the fitted part's recipe id, the unfitted part's]; a fresh map, empty when every part runs the default (the save then has no key). |
-| 454 | 9 | `public void restore(Map<Integer, List<String>> byId)` | Puts the saved choices back, replacing all (Game's load path, then apply()): a load ends on the SAVED choices and does not strike them again from the loaded prices. |
+| 300 | 1 | **type** `private record Dated(double scale, int materials, int points)` | A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). |
+| 310 | 19 | `public static double homeScale()` | What a 1900 home costs of today's: the 1901 household's monthly wage over the same household's on today's ladder (WageLadder.TODAY), the household being 1901's working arrivals by band (ArrivalMix's first knot) and ea... |
+| 334 | 8 | `public static double homeScaleAt(int month)` | What a 1900 home costs of today's in a game month, walked (THE WALK BACK, above): homeScale() to the first knot's January (ArrivalMix.KNOTS), 1 from the last knot's on, linear by month between. |
+| 349 | 23 | `public static double homeScaleOfWages(Game game)` | What a 1900 home costs of today's at the city's own wages ((c)): homeScale()'s household, 1901's working arrivals by band, paid the market's wages this month in founding money (each job's wage over the cost of living,... |
+| 379 | 9 | `public static double homeScaleOfPay(Game game)` | What a 1900 home costs of today's at the households' pay ((3), the second index): what a filled job paid its household last month on average (HouseholdAccounts.getAverageWage()), in founding money as homeScaleOfWages(... |
+| 390 | 16 | `static double todaysHousehold()` | homeScale()'s household on today's ladder: 1901's working arrivals by band, each band paid the mean of its job types' rungs today. |
+| 411 | 28 | `private void dateHomes(Game game)` | Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): once at homeScale(), or with the walk at homeScaleAt() the month, set again whenever that differs from the scale the home stands at. |
+| 441 | 3 | `public boolean datedHome(BuildingsTemplate t)` | Whether this city's homes are built to 1900's standard: for the harnesses. |
+| 446 | 4 | `public double datedScale(BuildingsTemplate t)` | The scale a dated home stands at (homeScale(), or the walk's month's); 1 for a home this has not dated: for the harnesses. |
+| 455 | 3 | `public void clear()` | Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. |
+| 463 | 4 | `public String[] chosen(int templateId)` | The recipes a template's two parts run now (R5: what ResearchView.recipesInUse() counts): a copy of [the fitted part's recipe id, the unfitted part's], or null when both run the default (the template has no choice kept). |
+| 469 | 5 | `public Map<Integer, List<String>> forSave()` | The choices to save, by template id: [the fitted part's recipe id, the unfitted part's]; a fresh map, empty when every part runs the default (the save then has no key). |
+| 480 | 9 | `public void restore(Map<Integer, List<String>> byId)` | Puts the saved choices back, replacing all (Game's load path, then apply()): a load ends on the SAVED choices and does not strike them again from the loaded prices. |
 

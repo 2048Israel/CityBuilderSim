@@ -1,6 +1,6 @@
 # NewUnit.java - 227 lines · 31 methods · 2 constants · model
 
-`ham/citybuildersim/NewUnit.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewUnit.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > One new building of a template, as it would run (QN1): the recipe, posts, utility draw, output and input of a building
 > ordered now - the pieces it would be fitted with (EquipmentFit.fittedForNew()) on the process the month's production
