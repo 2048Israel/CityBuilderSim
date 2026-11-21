@@ -520,6 +520,79 @@ housing capture needs no replay. New driver bytes/pin and execution scope
 need review/GO before editing or running. No production/harness mend,
 reclassification, waiver, kept rejudge, dry restart or readiness is implied.
 
+## University capture completed with the original red law
+
+Mail `20261121-160318-981-orchestrator-84ac` authorized one new university-only
+box job. Only the exact five reviewed target-driver initialization lines
+were applied; its SHA256 matched the independently specified
+`642212538d658c0fd2cf8ae69c1cf36d34dcfb2435faf38f2feb9ce175820e73`.
+The production/original harness/overlay sources remain unchanged. The new
+job `/home/jerus/cbs/runs/WG3codex1-cause03` compiled **only** that driver into
+an isolated empty-sourcepath directory, then ran one fresh `-Xmx2g` JVM with
+the untouched frozen model/BuildAdviceCheck/LongPlaytest classes. No overlay
+was on its runtime classpath and housing was not replayed.
+
+Local ownership was 2026-11-21 **20:04:26–20:04:30 UTC**, four seconds including
+preflight/upload/compile/run/home copy, inside the 90-second total bound.
+Remote controller was 20:04:28–20:04:31 UTC, fixture 20:04:29–20:04:31;
+small host clock skew is visible in the copy log. Job/controller/JVM exit
+**1** and the complete marker records the original red university law,
+without a setup exception. PIDs 2158884/2158881/2159005 are gone, active is
+absent, lock released and the scratch namespace empty. **41/41** retained
+remote/home hashes match, all **2,444** cached classes remain unchanged
+(same `29134c44…` manifest), the three isolated driver class files verify,
+all source pins and data hashes match. Receipts/raw/compiled inputs are
+under `target/wg3-cause/runs/WG3codex1-cause03`, with terminal/copy receipts
+in `cause03-terminal-receipt.txt` and `cause03-copy-receipt.json`.
+
+The exact original `founded(...,9)` and quiet monthly loop produced **28**
+rows, months **9–36**. Every required education field is present and every
+JSON number is finite. At 36 population is **385**, would-come **0** against
+the unchanged **25** floor; demand/month conjunction is false, no-row and
+no-card are true. University student body and every in-flight cohort are
+zero throughout. Native eligibility rises **41.178934 → 187.511875**;
+affordability is **0.889129** at 9 and **0.845204** at 36. The native return
+curve is exactly **0 in all 28 rows**, making willingness and would-come
+zero. This identifies the zero component; it is not an empty eligible pool
+or zero affordability. Native hires at 36 are **4.286519**, against five
+ungated university posts, so the no-row/card outcome also respects the
+unchanged hiring guard.
+
+The native month-36 ladder records annual discount **3%**, loan **0%**, policy
+**3%**, tuition subsidy **60%** and tuition scale **1**. The degree's best
+ungated job is **UNIV_SCIENCE**, paid **0.162543266**, against diploma pay
+**0.134432256**. Its 48-month course costs the family **0.599314676** in fees
+and **6.452748300** in wages forgone. Native after-cost rows are:
+
+| Adult stage | Working months before study | Diploma | University |
+|---|---:|---:|---:|
+| Young | 624 | 0.134048845 | 0.118268846 |
+| Established | 420 | 0.133966302 | 0.108737149 |
+
+Both stages are eligible. Their university after-cost row is below their
+diploma row, and the native gain/curve yields zero. These are direct model
+outputs, not a second formula or a substituted professional wage. The
+played fixture therefore does not cause the positive after-cost return its
+separate class-demand assertion needs. Recommend a harness-only causing
+setup for that positive native return while keeping the original eligible/
+affordable pool, 25 floor, month window and no-row/card premises. No new
+positive fixture is implemented, no production change or red classification
+is authorized, and the original red remains preserved.
+
+The housing query's premises were also checked against
+[the whole native match](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1569):
+its mutable inputs are the household matrix and seeker/sharing arrays,
+all copied and equality-asserted; stock is supplied separately. Shape rules
+and rounding use immutable model definitions. Owners are excluded by the
+native census, not assigned invented doors in this query. The live
+[month sequence](../../src/main/java/ham/citybuildersim/Game.java#L15989)
+uses the previous education step's students, rebuilds families, matches/
+squeezes/matches/records, then applies affordability sharing. The query is
+after those phases and remains hypothetical. The earlier migration room
+limits arrivals, while household reformation and study completion can still
+change demand. This phase trace and the recorded residual do not select a
+housing mend or establish a known unrelated cause; that finding remains open.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
