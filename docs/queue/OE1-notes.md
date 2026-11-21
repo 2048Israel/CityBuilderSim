@@ -54,6 +54,11 @@ Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.16
   `wantPrice` and bills it at `price`; `Motoring.month` passes the quote's per-car price, the price the draw was
   sized at, so the take's want is the draw's units and every car drawn is placed and paid for at the draw's own
   price. The three-argument form (the second-hand market's, one price for both) reads both at `price`, as before.
+  It also moves who gets the cars, not what is paid, in a month a car plant's shelf runs short: the quote blends
+  the wanted cars over shelf and world and the draw the affordable ones, so the draw's price is the cheaper by
+  real money there (a shelf holding every affordable car but not every wanted one: the shelf's own price). The old
+  take, read at that cheaper price, wanted more cars than were drawn and spread them pro rata; the new one gives
+  each household the whole cars it was sized for at the quote's price (the review's finding, §11).
 
 ## 3. The calls (★ = the recommended way, taken)
 
@@ -356,3 +361,14 @@ household's want at the quote's per-car price, the price `affordable` was read a
 and places them all, billed at the draw's own price. CarCheck's new section causes the edge and fails on the old
 call (§5). CarCheck's red (CI1's, `## known-reds`) is unmoved: the mend leaves the paid-vs-imported dust to CI1.
 The ensemble reruns on the mend.
+
+**The review** (REV-OE1-M on b16fd8a5d, the orchestrator's reviewer): SHIP, one finding, not P1. Money closes:
+the take's total is `affordable` = `took.units()`, the scale 1, the bill `took.cost()` to ulps; the draw's price is
+never above the quote's in exact arithmetic, so a loan past a household's line is dust only. The reach is clean (the
+three-argument form is `(u, p, p, c)`; `clearUsedCars()` and CarCheck's calls are unchanged), and the new section is
+sound. The finding: the WHY in HouseholdBalance and CarCheck called the two prices one price in exact arithmetic,
+which is wrong for a draw spanning shelf and world, where the draw's is the cheaper by real money. There the old
+take spread the cars pro rata and the new one gives whole cars to the households sized at the quote's price, so
+the mend changes who gets the cars in every month a car plant's shelf runs short, not only on the edge (§2). Both
+comments corrected (comments only, so OE1e stands on 398057923's classes); the ensemble's shift in car ownership
+is expected from it.

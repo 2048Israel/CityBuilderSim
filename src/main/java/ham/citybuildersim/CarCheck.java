@@ -1205,7 +1205,8 @@ public class CarCheck {
      * WHY: OE1's ensemble on 0.9.171 found F1 at AUTO2 seed 6 month 655, $11.42 of the households' money on no named line.
      * Motoring sizes the draw at the quote's price per car (the cost of the cars wanted at the shelf's price, over them) and
      * billed the take at the draw's own (the cost of the cars drawn, over them), and HouseholdBalance.takeCars read each
-     * household's want at that second price. The two are one price in exact arithmetic and a few bits apart in doubles; the
+     * household's want at that second price. In exact arithmetic the second is never the dearer (it is cheaper by real money
+     * when a short shelf holds the cars afforded but not the cars wanted); in doubles it can be a few bits dearer, and the
      * household whose money stretched to a car at the one and not the other had the car drawn, booked to its seller, and
      * never placed or paid for. This city is the buying city above, at the end of the harness, so nothing after it reads it.
      */

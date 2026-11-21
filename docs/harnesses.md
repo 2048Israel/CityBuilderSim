@@ -4060,11 +4060,11 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L1175 and a car moved with the steel in it, its plants' margin a car to the cent (0.7.120)**
   - L1176 a car is the world's at 41.3125 in and 33.3125 out: 44 and 36 less 3.5 t of fabricated steel at .665 and 0.4 t of
   - L1184 ...so each car plant makes of a car over the parts in it what it did, landed and shipped, to the cent
-- **L1213 and a car drawn is a car placed and paid for, on the whole-car edge (OE1)**
-  - L1283 the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at
-  - L1301 ...and the month is the one found: its ceiling the probe's, one car drawn from the world at the edge's price
-  - L1304 every car drawn is a car placed: the take places the car the draw was sized for
-  - L1307 ...and paid for: the households' money moves by what the world was paid less what the bank lent them, to the cent
+- **L1214 and a car drawn is a car placed and paid for, on the whole-car edge (OE1)**
+  - L1284 the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at
+  - L1302 ...and the month is the one found: its ceiling the probe's, one car drawn from the world at the edge's price
+  - L1305 every car drawn is a car placed: the take places the car the draw was sized for
+  - L1308 ...and paid for: the households' money moves by what the world was paid less what the bank lent them, to the cent
 
 ## CarryTradeCheck.java - 42 labelled assertions
 

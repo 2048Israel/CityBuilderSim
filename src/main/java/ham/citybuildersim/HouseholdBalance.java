@@ -3051,16 +3051,27 @@ public class HouseholdBalance {
      * household's want read at {@code wantPrice}, the price the draw was sized
      * at, and its bill at {@code price}, what the draw cost.
      *
-     * WHY: Motoring sizes the draw at the quote's price per car and bills the
-     * take at the draw's own, and the two are one price in exact arithmetic but
-     * not in doubles. At AUTO2 seed 6 month 655 (OE1's ensemble, F1) the quote
-     * read a car a few ulps under the price a household's money stretched to,
-     * so 26 cars were drawn; the take read the want at the draw's price, where
-     * that household's money stretched to one car fewer, and placed 25. The
-     * 26th was booked to the seller and paid by nobody: $11.42 of the
-     * households' money gone off every named line. Reading the want at the
-     * price the draw was sized at makes the take's want the draw's units by
-     * construction, so every car drawn is a car placed and paid for (OE1 ★).
+     * WHY: Motoring sizes the draw at the quote's price per car, the cars
+     * wanted at the shelf's price blended over shelf and world, and bills the
+     * take at the draw's own, the cars it could afford blended the same way.
+     * In exact arithmetic the draw's is never the dearer: fewer cars than the
+     * quote's take more of their share from the shelf when the world is dearer,
+     * and more take more from the world when it is cheaper, so a shelf short of
+     * the wanted cars and holding the affordable ones makes the draw's the
+     * shelf's own price, real money under the quote's. In doubles the draw's
+     * can be a few bits dearer. At AUTO2 seed 6 month 655 (OE1's ensemble, F1)
+     * the quote read a car a few bits under the price a household's money
+     * stretched to, so 26 cars were drawn; the take read the want at the
+     * draw's price, where that household's money stretched to one car fewer,
+     * and placed 25. The 26th was booked to the seller and paid by nobody:
+     * $11.42 of the households' money gone off every named line. Reading the
+     * want at the price the draw was sized at makes the take's want the draw's
+     * units by construction, so every car drawn is a car placed and paid for
+     * (OE1 ★). Where the draw's price is the cheaper by real money, the take
+     * read at it wanted more cars than were drawn and spread them pro rata;
+     * read at the quote's it gives each household the whole cars it was sized
+     * for. Who gets the cars moves in a month a car plant's shelf runs short;
+     * what is paid does not.
      *
      * @return cash spent
      */

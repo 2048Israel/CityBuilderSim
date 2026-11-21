@@ -1,4 +1,4 @@
-# CarCheck.java - 1,335 lines · 11 methods · 1 constants · harnesses
+# CarCheck.java - 1,336 lines · 11 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CarCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1258 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 78 | 1259 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 82 | 7 | `static void quietly(Runnable r)` |  |
 | 90 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 95 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -116,11 +116,11 @@
 | 139 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
 | 159 | 1039 | `public static void main(String[] args)` |  |
 
-### A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) (lines 1199-1335)
+### A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) (lines 1199-1336)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1212 | 101 | `static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is sized at and not at the price it is struck at, and the car market's month read once. |
-| 1315 | 8 | `static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi)` | The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). |
-| 1325 | 10 | `static boolean importAt(GoodsMarket m, double p)` | Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. |
+| 1213 | 101 | `static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is sized at and not at the price it is struck at, and the car market's month read once. |
+| 1316 | 8 | `static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi)` | The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). |
+| 1326 | 10 | `static boolean importAt(GoodsMarket m, double p)` | Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. |
 
