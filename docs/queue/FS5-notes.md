@@ -1,10 +1,13 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
-Current result: frozen source 0446cec5e on MC2 main .179 completed its one
-authorized final software run with two hard failures: recurring Healthcare
-layout and objects heap 1589.6 MiB against 1536. The full-model Government
-release regression passes (1832 fresh nodes, zero survivors). No readiness
-is claimed; source and bounds remain unchanged after this result.
+Latest full-run result: frozen source 0446cec5e on MC2 main .179 completed
+its one authorized final software run with two hard failures: recurring
+Healthcare layout and objects heap 1589.6 MiB against 1536. The full-model
+Government release regression passes (1832 fresh nodes, zero survivors).
+The subsequent parent-edge-only accounting mend at 4e65bd86b passed --fast
+and one bounded production-helper proof. No subsequent full measurement
+is authorized; the 53.6 MiB residual remains unattributed. No readiness
+is claimed, and bounds and vetoes remain unchanged.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -978,3 +981,85 @@ check, with cache/effect disabled and snapshot copies separated as negatives.
 Anticipated source, only after bytes and a separate mend GO, is
 KeptBench.canvasTargets traversal/accounting. No proposed subtraction is
 chosen to close 53.6 MiB, and that residual remains unexplained.
+
+## Parent-edge completeness diagnostic and mend
+
+The 13:13 GO (`20261121-131353-165-orchestrator-801c`) authorized one bounded
+native Windows/SW diagnostic. It exited 0 in 4.397 s (Java monotonic time;
+wrapper 13:23:07--13:23:13, second precision), Xmx768m, without a Stage or
+the full builder. Four rendered 512x512 canvases were held only through
+leaf labels in Government's target map: label.parent reaches the Group
+whose children include the canvas. Current forward traversal found zero;
+parent-inclusive traversal found four distinct actual texture arrays,
+4,194,304 bytes each, totaling 16,777,216 bytes. Direct map references with
+duplicate references to each canvas found the identical four arrays and
+bytes. The existing production physical-size reader agreed in that control.
+Four separate snapshot copies were 1,048,576 bytes each; all copies died
+while the map-held canvas graphs stayed alive. After map restoration,
+release, FIFO and GC, canvases, labels and renderer arrays were all zero.
+
+The same diagnostic's single controlled cached/effected Rectangle exposed
+1,183,744 actual bytes at
+NGNode.cacheFilter.cachedImageData.image.rtt.data. Its disabled cache/effect
+peer had zero payload. After map release the node died, but that enabled
+renderer array was still alive at the last observation. Its remaining root
+and lifetime are unknown. Snapshot payloads were kept separate; no cache or
+effect exclusion follows. The diagnostic does not attribute any part of the
+full run's 53.6 MiB residual. Source, classes, logs and the exact report are
+preserved under `target/FS5c2-heap-completeness*` and
+`target/FS5c2HeapCompletenessProbe.java`. This original negative was not replayed.
+
+On the parent-only MEND GO (`20261121-132750-572-orchestrator-a245`), commit
+4e65bd86b added exactly `push.accept(n.getParent())` inside canvasTargets'
+existing identity-visited walk. The target reader, physical-size accounting,
+deduplication, model, screens, dials, heap bound and all four own vetoes are
+unchanged. No cache/effect subtraction was added. Main stayed .179 throughout
+the proof; no merge occurred mid-proof. The generated maps were regenerated.
+
+`target/FS5c2-parent-mend-fast.log`: exit 0, 13:31:11--13:32:11; compile 41 s,
+maps regenerated, Stale 0 firm / 193 soft. One changed-source fixture JVM,
+`target/FS5c2-parent-mend-proof.log`, exited 0 in 4.769 s, wrapper
+13:32:25--13:32:31. Actual Glass was com.sun.glass.ui.win.WinApplication and
+renderer SWPipeline; Xmx768m, no Stage, six-month scratch, absolute main data
+paths, only four rendered 512x512 canvases and a 45-second guard not reached.
+It reused only the old diagnostic's bounded fixture and array readers;
+the old main/negative test and cache fixture did not run again.
+
+Both the amended PRODUCTION helper's leaf-held result and its direct plus
+duplicate-node control were `[4,4,4,16777216]`, from baseline `[0,0,0,0]`.
+Both counts and bytes matched four actual arrays, and the controls compared
+the same backing references by identity. Each snapshot copy was proved
+separate. After restoring the exact original map, release, FIFO and GC,
+weak survivors were canvases 0, labels 0, renderer arrays 0, snapshot images
+0 and snapshot arrays 0; all were hard assertions. The control proves
+node/map alias deduplication, not two texture objects sharing an array.
+
+Exact process numstat against .179, excluding generated maps, these notes
+and the ship file:
+
+| File | Added | Removed |
+|---|---:|---:|
+| src/main/java/ham/citybuildersim/KeptCheck.java | 447 | 559 |
+| src/main/java/ham/citybuildersim/Observation.java | 1 | 1 |
+| src/main/java/ham/citybuildersim/ui/KeptBench.java | 205 | 47 |
+| docs/notes/known-reds.txt | 0 | 20 |
+| Java code | 653 | 607 |
+| Registry-inclusive total | 653 | 627 |
+
+The read-only `tools/pick.sh origin/main HEAD` at 4e65bd86b on base
+2b049188b (.179) reports 24/235, not ALL: AutoBuildCheck BankCheck
+BuildAdviceCheck CapitalFlowCheck ChartFitCheck ConstructionControlCheck
+FittingCheck HealthCheck HousingCheck KeptCheck KeptTimingCheck MapCheck
+MoneyWordsCheck NewUnitCheck ObservationCheck PriceLevelCheck PrizeCheck
+ResearchViewCheck SaveFileCheck ScaleCheck ShortSellingCheck StepsCheck
+TimingCheck ToastCheck. Review: not needed, no money, saves or threading in
+the diff. No selected suite was executed on this GO.
+
+The latest full-run figures remain live 1608.1 MiB, measured targets 18.5 MiB,
+objects 1589.6 MiB, 53.6 MiB over the 1536 bound, with recurring Healthcare
+and its four hard held-still looks. The 68-call exclusion table is unchanged.
+No amended full-model heap figure is inferred from the small fixture.
+KHL1 remains a provisional ownership proposal with no UI-versus-bench cause
+or named exemption adopted. No Healthcare, Stage, full replay, ensemble,
+dryrun or readiness check ran. The provisional marker stays; next execution
+requires the orchestrator's scoped GO.
