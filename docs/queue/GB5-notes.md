@@ -245,4 +245,37 @@ ok installed").
 
 ## The dry run
 
-DRY_RUN
+**PASSED**, 2026-11-21 05:38 Halifax (09:38 UTC), gate exit 0,
+published: no. The authorized command was
+`sh tools/gate.sh GB5 --dry-run --no-tag --branch-gate`; the stranger's
+threading review had already said SHIP.
+
+The kept launcher run is `/home/jerus/cbs/runs/cbs-gate-GB5-AJMa9yLa` on the
+box, branch `d7a444724b01fffc0dbd80ca8c5074c75282763a` against main
+`fb64f5c7db286224d7193361282a856ae4a78135` (0.9.177). Its selection is
+`full nightly BridgeMapCheck` followed by `KeptCheck version=0.9.177` on the
+next line, exactly as its `selection` file records. The pick is ALL, 235
+registered harnesses; 222 ran in 867 s, 211 passed and 11 had known reds.
+The suite's 17 failing assertions are all known, with no new or unnamed
+reds; its exit was 3 and the whole check stage took 885 s. Compile passed,
+the maps regenerated, and Stale had 0 firm and 194 soft findings.
+
+All nine display harnesses appear in the Monocle display line. KeptCheck
+completed with only section 102's named software-renderer heap red.
+KeptTimingCheck was soft in this gate and skipped its clock verdict as
+designed; its separate hard box proof above met all 29 budgets. The default
+trace is unchanged; this batch moves no playtest and needs no ensemble.
+
+Recovery session GB5c2 read the original launch input and old out-2/out-3,
+then verified all 853 sealed files both on the box and in the copied run at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GB5-AJMa9yLa`.
+The manifest's SHA-256 is
+`27ba041b73313f46e2ba73d06a782ffbab1200cca480d4822af289a8c3437ae7`
+on both. The MemWatch mirror is
+`C:/Users/Jerus/tools/MemWatch/gatebox/runs/cbs-gate-GB5-AJMa9yLa`.
+No suite or self-test was rerun, and no kept evidence or source was changed.
+At recovery, main `8bf087822c251b44b6434934f5c0dfdc439f0c76` adds only
+OB1's queued Markdown docs beyond the tested main, so the kept run's main
+compatibility rule still holds. Only these notes and the ship file advance
+the tested branch; the orchestrator publishes with `--no-tag --reuse` and
+the box path while that compatibility holds.
