@@ -1,5 +1,9 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
+Current result: the final-source software run completed with one hard heap
+failure; the other six former failures passed. No readiness is claimed.
+The completed run and every exclusion count are recorded at the end.
+
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
 origin/main 4f1056f11 (0.9.174) and merged with 70af30dcc (AP1, 0.9.175). The brief
@@ -190,7 +194,7 @@ ship file):
 
 ## The checks
 
-Current recovery status (FS5c2, 2026-11-21): source is on main 5790d0506
+Pre-full-run recovery checkpoint (FS5c2, 2026-11-21): source is on main 5790d0506
 (TN1, 0.9.178), merged at 0ba94a55e after GB5. The final `--fast` passed,
 exit 0: compile 51 s, maps regenerated, zero firm stale findings (193 soft).
 Log: `target/FS5c2-fast1.log`. All checks name main's earth-2.bin and
@@ -427,3 +431,177 @@ equalities failed in the old run, so they never supplied green identity proof.
 | 95: what reshapes Policy, Research's Found page / 1 | 4 | 4 | 0 | 0 |
 | 99: what reshapes Policy, Research's Overview / 1 | 5 | 5 | 0 | 0 |
 | 100: what reshapes Policy, Research's Funding / 1 | 9 | 9 | 0 | 0 |
+
+
+## Completed final-source software run (FS5c2)
+
+The one authorized direct run on 068f3ab57 (base main 5790d0506, 0.9.178)
+completed **exit 1**, 2026-11-21 11:08:20–11:31:29 (23 min 9 s). Log:
+`target/FS5c2-kept5-sw.log`. Its foreground shell was kept alive until exit.
+It used `-Xmx2048m -Dprism.order=sw`, the contract's C:/ Earth/world paths,
+and Windows' display. The slot was clear of other long harnesses; Jerus's
+game PID 32464 and its Maven launcher stayed open. Timing is soft here.
+No full pick, ensemble, dry run or unchanged-source replay was started.
+
+Six of the old seven failures are now hard green. Section 63 settled
+thirteen new holdings, including B:3071, through the real book. The hand
+bid posted 1.497e11 face; the world's actual available face filled
+1.4701473837738159e9 at 0.509944630131. The watched bond had 116 months left,
+past the three-month page/review watch. Both previously refused comparisons
+and both settlement premises passed. Healthcare's opened comparison also
+passed directly, with no KRT1 reading used. Section 89's three Household
+money premises all reported zero cells closed after the hold; its All of
+them view would have lost two unemployed cells without the complete hold.
+Those cell identities and successful holds are printed in the log.
+
+Section 102 alone still fails: **1635.0 MiB live, 33 canvases found, ten
+targets on heap, 18.5 MiB detected target payload, 1616.5 MiB reported as
+objects against 1536 MiB, an 80.5 MiB miss**. That figure is the current
+measurement's result, not proof that the entire residual is UI/model
+objects. The old software run's 1761.6/18.5/1743.1 MiB figures remain above;
+the difference between these runs is not hidden or waved away as load.
+The unchanged `.75 * AllChecks.HEAP_MB` assertion remains hard. No red
+exemption was added and no real UI/model fault is claimed without a trace.
+
+The five newly green registry removals below are backed by this run. The
+old heap row remains vetoed as FS5's responsibility. With all 21 removals,
+exact process-file numstat is now KeptCheck +442/-540, Observation +1/-1,
+KeptBench +100/-0, known-reds +0/-21: **Java code +543/-541; registry-inclusive
++543/-562**, generated indexes, notes and ship file excluded. The earlier
++543/-557 table records the six-row checkpoint before this run.
+
+| Newly removed label | Final run evidence |
+|---|---|
+| ...the rule held again, Portfolio with the holdings its month settled | line 2067: ...the rule held again, Portfolio with the holdings its month settled, every row that folds opened: the redraw and the next equal a page built new OK |
+| the page of a holding the let-go month settled, from Portfolio | line 2068: the page of a holding the let-go month settled, from Portfolio: the redraw and the next equal a page built new OK |
+| fixture: the month the rule was let go settled holdings the fund did not hold | line 2075: fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (13 settled) OK |
+| fixture: the settled lot watched | line 2076: fixture: the settled lot watched, B:3071, runs 116 months, past the 3 months its page is watched OK |
+| Spending: Healthcare opened: the redraw and the next equal a page built new | line 2558: Spending: Healthcare opened: the redraw and the next equal a page built new OK |
+
+KRT1 accepted zero nonrepeating layout readings; no content difference was
+printed or waived. KBP1 traced seven blocks, none repeating held still.
+Five stayed in their multi-month retention sums; the two after a choice
+were content readings excluded under the standing law. Every count follows,
+including zero-count acting groups. **All refused counts are zero**: every
+choice actually ran in this final record. No group lost most of its months
+to the held-still rule.
+
+| Section/call | Counted | Choices | Content readings excluded | Acted excluded | Refused (no month) |
+|---|---:|---:|---:|---:|---:|
+| 23: what reshapes Infrastructure / 1 | 14 | 14 | 0 | 0 | 0 |
+| 27: what reshapes Services / 1 | 54 | 54 | 0 | 0 | 0 |
+| 31: what reshapes the land office / 1 | 20 | 20 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (a bond) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (the vault's dollars) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 38: what reshapes the Build screen / 1 | 40 | 42 | 0 | 2 | 0 |
+| 42: what reshapes the construction page / 1 | 10 | 10 | 0 | 0 | 0 |
+| 44: what reshapes the no-deposit page (1 x Iron Mine) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-coast page (1 x Desalination Plant) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-river page (1 x Hydro Station) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-bridge page (1 x Highway Bridge) / 4 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-licence page (1 x Engineering Services Office) / 5 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-land page (10000 x House) / 6 | 1 | 1 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors list / 1 | 2 | 2 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 2 | 25 | 25 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 3 | 45 | 45 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 4 | 5 | 5 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 5 | 18 | 18 | 0 | 0 | 0 |
+| 96: what reshapes Agriculture's Investors page / 1 | 3 | 3 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 1 | 10 | 10 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 2 | 22 | 22 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 1 | 11 | 11 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 2 | 9 | 9 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 3 | 33 | 33 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 4 | 36 | 36 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 5 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 6 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 7 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 8 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 9 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 10 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 11 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 12 | 1 | 1 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 1 | 14 | 17 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 2 | 6 | 13 | 0 | 7 | 0 |
+| 63: what reshapes the city's fund / 3 | 8 | 8 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 4 | 0 | 3 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 5 | 18 | 28 | 0 | 10 | 0 |
+| 63: what reshapes the city's fund / 6 | 4 | 5 | 0 | 1 | 0 |
+| 71: what reshapes the Government Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 2 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 3 | 11 | 11 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 4 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 5 | 19 | 19 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 6 | 0 | 86 | 0 | 86 | 0 |
+| 71: what reshapes the Government Overview / 7 | 4 | 10 | 0 | 6 | 0 |
+| 74: what reshapes the Trade Overview / 1 | 7 | 7 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 2 | 21 | 26 | 0 | 5 | 0 |
+| 74: what reshapes the Trade Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 4 | 0 | 25 | 0 | 25 | 0 |
+| 74: what reshapes the Trade Overview / 5 | 27 | 27 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 6 | 9 | 9 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 1 | 24 | 24 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 2 | 39 | 39 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 3 | 44 | 44 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 4 | 55 | 55 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 5 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 6 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 7 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 8 | 10 | 11 | 1 | 0 | 0 |
+| 77: what reshapes the Policy hub / 9 | 10 | 11 | 1 | 0 | 0 |
+| 84: what reshapes Household money / 1 | 69 | 69 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 1 | 44 | 44 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 2 | 15 | 15 | 0 | 0 | 0 |
+| 95: what reshapes Policy, Research's Found page / 1 | 4 | 4 | 0 | 0 | 0 |
+| 99: what reshapes Policy, Research's Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 100: what reshapes Policy, Research's Funding / 1 | 9 | 9 | 0 | 0 | 0 |
+| Total | 1079 | 1229 | 2 | 148 | 0 |
+
+The orchestrator released the long slot after this result and asked for a
+bounded heap diagnostic before another substantial JVM. A read-only parse
+of the installed OpenJFX 21 class files (`target/fs5c2-class-fields.py`)
+shows `NGCanvas.RenderBuf.savedPixelData` contains an IntBuffer, alongside
+its `tex` field, and SWResourceFactory has three static texture caches.
+The current walker reads texture fields only. This is a candidate accounting
+gap, not its demonstrated cause. `target/FS5c2HeapProbe.java` and
+`target/fs5c2-heap-probe.sh` are prepared for one -Xmx768m Monocle/SW JVM,
+expected 10–20 s with a 45-second halt guard: eight 512x512 canvases, explicit
+renderer save, deduplicated texture/saved-pixel arrays, discarded-root weak
+references, then eight comparisons on a six-month scratch town, UI versus
+harness-owned canvas buffers and software texture-cache payloads. The scope
+was sent for check GO. It has not run. No source, model, screen or bound is
+changed for that diagnostic; readiness remains held and the ship marker stays.
+
+## Bounded heap diagnostic 1: negative evidence preserved
+
+On the 11:37 explicit GO, `target/fs5c2-heap-probe.sh` ran one Monocle/SW
+JVM at -Xmx768m, exit 0 in about eight seconds; its 45-second halt guard
+was not reached. Log `target/FS5c2-heap-probe.log`, original source recovered
+as `target/FS5c2HeapProbe-v1.java`, compiled classes preserved separately.
+It played only the scratch fixture's six months and eight comparisons.
+
+- Eight 512x512 synthetic canvases held 8,388,608 unique texture-array bytes.
+  The explicit renderer save added zero distinct saved-pixel bytes after
+  identity deduplication. All eight canvases were collected after the
+  diagnostic discarded its roots.
+- The small town's current FS5 walker reported [2, 1, 1, 4096]. The extended
+  accounting found the same 4096 texture bytes and zero additional saved
+  pixels from both UI-only and UI-plus-harness roots. All three static
+  software texture caches held zero entries/bytes.
+- Sixteen pageTop weak references remained alive after release/GC, while
+  `comparisonRoots()` returned zero. This does not establish a leak: the
+  diagnostic did not record whether the top nodes were distinct from the
+  intentionally kept graph, and omitted `finishPageAnimations`, unlike the
+  real `againstNewHeld` comparison.
+
+Thus **zero bytes of the full run's residual 80.5 MiB are explained** by
+this probe. The saved-pixel/cache hypothesis is not used for any exclusion.
+Static GovernmentScreen inspection creates frame and scroller inside the
+supplied pool, so shared-wrapper identity has not been confirmed. The
+orchestrator's subsequent conditional shared-wrapper GO was not consumed.
+A corrected scope was sent for explicit GO: same limits, but finish
+animations as the real helper does, collect fresh-minus-kept identity sets,
+print shared top identities, and observe those fresh-only nodes after
+release/GC. Prepared `target/fs5c2-heap-probe2.sh` has not run. Model/screens,
+source measurement, bound and provisional marker remain unchanged.
