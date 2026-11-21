@@ -926,21 +926,25 @@ is assumed authorized. The provisional marker remains.
 
 ## KHL1: repeating Healthcare kept-layout fault
 
-Provisional queued trace/fix, not a named-pass exemption. `tools/batch-id.sh
-KHL1` passed on .179. The defect is the repeating kept/fresh law violation
-above, also present on HS2's earlier path and FS5's earlier software run.
-The next work must identify whether the retaining/layout owner is actual UI
-or the comparison machinery before moving a fix outside FS5. Relevant
-methods are GovernmentScreen.frameOver, UserInterface.scrolled and
-KeptBench.settle/showFresh/restoreKeptPage. Trace the actual scroller viewport,
-bar visibility, bound page width and layout invalidation across the Healthcare
-open; cause the threshold in a small scratch fixture and compare both sides.
-Preserve the original style, geometry and equality assertions. Do not strip
-preferred width from signatures, waive the repeated difference as load, or
-use a redraw to conceal it. If the cause is FS5's fixture/measurement, mend it
-here; a demonstrated actual UI defect gets its own fix. FS5 keeps the hard
-veto until that causal disposition is complete. The 53.6 MiB heap miss remains
-a separate, unclassified responsibility and is not passed by KHL1 or FS1.
+Unresolved historical ownership/capture question for Jerus review, placed
+under pending by root GO2413. The earlier provisional ship row was under
+queued, but KHL1 has NEVER been adopted as a queued fix or named exemption.
+Its existing ID/link are retained; no new work order or ID is created.
+
+Full6's original Healthcare choice printed four repeating hard held looks;
+kept7's same choice has equal primary pairs on new source/model-state
+provenance, with no held look needed. The old failure's leaf and UI-versus-
+comparison owner remain unproved. Relevant historical owner candidates are
+GovernmentScreen.frameOver, UserInterface.scrolled and
+KeptBench.settle/showFresh/restoreKeptPage; they are not a decided mend.
+Preserve the original style, geometry, identity, hard equality and heap laws.
+
+Bounded capture may observe a recurrence only during the next independently
+required, separately authorized native software run. There is no automatic
+standalone historical replay, generic calibration or UI/model work order.
+The old53.6MiB excess remains unattributed despite kept7's current green heap.
+No known red is retargeted to KHL1; all four existing FS5 fix-ID vetoes remain
+for the publisher's normal handling, with no waiver or early reclassification.
 
 ## Read-only ownership trace after run 6
 
@@ -1886,3 +1890,64 @@ or publication follows this green current run. KHL1 remains provisional
 ownership work. All old raw evidence/history and four vetoes are retained.
 Notes-only provisional checkpoint; no owned job remains. Waiting for the
 orchestrator's next explicit GO/decision.
+
+
+## Root GO2413: KHL1 pending records disposition
+
+Root independently accepted kept7's complete byte-preserving log scan,
+frozen receipts, current green heap/release and two equal primary captures.
+The final exclusion/paper/quiet audit and all73 per-call rows are recorded
+above at notes-only checkpoint596d97c60. They are carried forward without
+replaying a passed check, parser-derived model fixture or JVM.
+
+The sole publication semantics change here moves the EXISTING KHL1 row
+from queued to pending, as an unresolved historical ownership/capture
+question for Jerus review. KHL1 was never adopted as a queued fix or named
+exemption. Its ID and history anchor stay the same; no new row/ID, decided
+UI/model mend, standalone historical replay or fresh work order is added.
+Full6's four repeating hard Healthcare looks remain historical evidence;
+kept7's current equal pairs have different source/model-state provenance
+and do not prove the old leaf or its owner. Further bounded capture is
+limited to a recurrence during the next independently required native
+software measurement, separately authorized. No automatic replay follows.
+
+Actual final audit remains73 share calls/1237 choices:1087 counted,
+two Policy-currency content readings excluded (calls77/8 and77/9),148
+acting choices excluded, zero refused/no-month choices. KRT1 readings0;
+KBP1 blocks4/nonrecurring4/recurring0. Section92's actual Term10 sale gave
+one paper and passed the hard premise; all-sales-refused fallback remains
+UNEXERCISED. Bank55 Profit quiet diagnostic25/25(max0) accompanies the
+current caused law; it is not a newly invented pass for the retired quiet
+label. Separate target-only copy/detection probes are not evidence of
+original full-run fault/negative-control coverage. No untested branch is
+represented as covered by the green current full run.
+
+Exactly FOUR current registry rows retain fix-ID FS5, byte-for-byte, with
+no KHL1 retargeting, waiver, deletion or early reclassification:
+
+```text
+KeptCheck | Spending: Healthcare opened: the redraw and the next equal a page built new | FS5 | 2026-11-19 | KRT1's class on HS2's played city: the kept content is 1454x684 against a page built new 1446x700, the fresh one narrowed by a scroll bar; HS2 touches no Spending code (HS2-notes.md, The checks)
+KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free | FS5 | 2026-11-21 | Section 102 on the gate box's software renderer (Monocle, prism.order=sw, GB5): a canvas once drawn keeps its render target on the Java heap while it lives, where the PC's Direct3D keeps it in video memory. The pages hold the same objects on both (43,202 Labels each, int[] 226 MB on the box against about 40); 1,554-1,719 MiB against 1,536 (KEPT_HEAP_SHARE .75 of 2,048), the PC 1,379, the PC in software 1,594-1,780 (GB5-notes.md, ★5)
+KeptCheck | most months make no node at all (12 of 25) | FS5 | 2026-11-21 | Section 55's Bank's Profit page (KBP1's, FS5's range), on the PC under load: MC2's merged tree gave 12 of 25 quiet months, and the same tree with main's Bank.java and BusinessDebtManager.java put back gave 9 of 25, a FAIL too (MC2-notes, REV-MC2 and the mends). KeptCheck's own note at playedCity gives 6 of 25 loaded and 17 quiet; main's kept gate runs give 14 to 25, and FS4's gate on the box passed it. Load, not MC2's code.
+KeptCheck | the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now: 0) | FS5 | 2026-11-21 | Section 92 at month 4327 in kept gate cbs-gate-MC2-eaV6vYID: piecesOnTheBooks found no city paper; its Term 10, Note 12 and Serial 10 real auction offers all returned Nothing issued. The unchanged issuance/bidder path permits no sale and never calls MC2's projectHeadroom, projectRoom or bandShare; the helper assumes demand instead of causing the paper needed by its line/Close-it-now page watches (CD9-K). The log does not distinguish zero bids from a tiny fill. FS5 d5f9cf8c6 adds the exact helper's booked-Term fallback and reread, retaining the hard premise; its full software run sold a Term and did not exercise this fallback. Traced in MC2-notes, Stopped gate and section 92 trace.
+```
+
+The publisher's normal fix-ID==FS5 removal remains the publisher's action.
+Java machinery remains+819/-809 and registry-inclusive+819/-829, generated
+maps/notes/ship excluded. FS5 stays UNTAGGED, with no model/playtrace change
+or ensemble owed. The provisional marker remains first; root's final normal
+--no-tag gate is still owed, followed by a separate readiness decision.
+
+Records-only validation: extracted the actual ship.sh sect/shiprows parser
+functions without invoking ship.sh, plus tools/known-reds.sh FS5 on the
+updated ship file. target/FS5c2-2413-record-parse.log exit0: allowed sections,
+UTF-8 two-em-dash untagged heading, first-line provisional marker, one
+four-cell pending KHL1 row, zero queued rows, valid existing notes/history
+anchor, exactly four FS5 vetoes, no KHL1 exemption. git diff --check is
+clean. This parses publication records only; it is not the root gate,
+readiness check or a substitute for any original software coverage.
+
+Only FS5-notes.md and FS5-ship.md change in GO2413. Source, dials, class/data
+files, registry, observer scope and old raw evidence stay unchanged. No
+compile/JVM/fast/pick/ensemble/dry/readiness check ran. Provisional records
+checkpoint; no owned job. Waiting for the orchestrator's explicit next GO.
