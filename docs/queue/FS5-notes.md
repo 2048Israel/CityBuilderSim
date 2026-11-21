@@ -1208,3 +1208,48 @@ scene would precede first kept CSS/layout, with output scale recorded to
 remove the migration confound. This is a proposal only. The laptop slot
 was released to WG3 by the orchestrator; FS5 requires a new slot GO for any
 future JVM. No source mend is recommended from the current evidence.
+
+## Corrected Healthcare attempt: hospital funding premise absent
+
+On GO `20261121-141248-461-orchestrator-7aa3`, exactly one corrected target-only
+diagnostic JVM ran on frozen 4e2769e61/main .180. Actual WinApplication/SW,
+Xmx768m, absolute main data paths, fresh scratch Game and played(null)'s
+standard founding, no probeCity or full builder. Compilation passed. The
+outer process exited 1; Java finally measured 1.297 s and the wrapper ran
+14:20:34--14:20:37. The 45-second guard did not fire; no owned JVM remains.
+
+The actual General Hospital template existed, but the required standing
+build failed its first premise. At month 1 cash was 2588.3463842978417 and
+the actual scaled hospital cost was 3879.1547261471756, a shortfall of
+1290.8083418493339 from those printed values. The single real
+Game.buildStack(hospital,1,true) returned NEEDS_FUNDING. General care capacity
+stayed 1200 before and after. The run immediately stopped as a premise LIMIT.
+No funding retry, changed founding, fake cash/ledger, direct capacity write
+or substituted building followed. There were ZERO simulateMonths calls,
+fresh comparisons and Stage creations. Six monthly deltas, payroll/upkeep,
+NA health spending, visible Healthcare row, actual expansion, font/geometry
+calibration and ownership controls were unreached, not passing results.
+No six-month compliance is claimed for this aborted fixture.
+
+The runner had a separate reporting defect: KeptCheck.fx wrapped the target
+Limit in ExecutionException, bypassing its direct-Limit catch. The finally
+block therefore printed its default inner exit=0 before the uncaught wrapped
+exception caused the authoritative outer exit1. That inner line is incorrect
+and is explicitly not a pass. The complete raw log and stack trace remain;
+the audit JSON separates the outer exit from the wrong inner field. Any
+future target runner must unwrap the FX cause or initialize/report a nonzero
+outcome before execution; no corrective repeat or production mend ran.
+
+Artifacts: target/FS5c2HealthcareSixAccess.java,
+target/FS5c2HealthcareSixDiagnostic.java, the preparatory source and script,
+compiled classes, compile logs, target/FS5c2-healthcare-six.log,
+target/FS5c2-healthcare-six-audit.json and target/FS5c2-healthcare-six-result.md.
+All previous evidence remains. This attempt gives no Healthcare UI/layout
+owner evidence; the diagnostic setup lacked the required building funds.
+It establishes no game fault or source-mend authority. The four vetoes,
+full-run four hard Healthcare looks and 53.6 MiB unattributed residual remain
+unchanged, as do cache-root uncertainty, source, model, dials and bound.
+Process counts remain Java +653/-607 and registry-inclusive +653/-627;
+the previous 24/237 pick and review line are unchanged. The provisional marker
+stays. The result was reported before any further proposal, as instructed;
+any funded replacement fixture or further JVM needs a new scoped/slot GO.
