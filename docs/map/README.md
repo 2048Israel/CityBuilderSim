@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 612 files, 666,513 lines, 29,007 methods, 6,444 constants. `GameVersion.VERSION` is "0.9.175", `SAVE_FORMAT` 58.
+**The tree:** 612 files, 666,527 lines, 29,007 methods, 6,444 constants. `GameVersion.VERSION` is "0.9.175", `SAVE_FORMAT` 58.
 
 ## model (272 files)
 
@@ -460,7 +460,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FoodIndustryCheck.java](FoodIndustryCheck.md) | 67 | 2 | The mills counted in the heads their retirement measure serves (RT2). | 0 |
 | [FoodProcessingCheck.java](FoodProcessingCheck.md) | 639 | 7 | The third of the shelf that arrives already made. | 0 |
 | [ForeignCheck.java](ForeignCheck.md) | 2,071 | 17 | The balance of payments, and whether the boundary it is drawn on is honest. | 7 |
-| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,057 | 15 | Borrowing in somebody else's money. | 3 |
+| [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,071 | 15 | Borrowing in somebody else's money. | 3 |
 | [ForestryCheck.java](ForestryCheck.md) | 706 | 21 | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research... | 4 |
 | [FormatsCheck.java](FormatsCheck.md) | 49 | 2 | Proves the shared readable percentage rule (SX1), without the toolkit. | 0 |
 | [Forms1900Check.java](Forms1900Check.md) | 1,012 | 39 | The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the hom... | 12 |

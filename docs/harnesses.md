@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**235 harness files, 26,905 labelled assertions.** AllChecks runs 235 of them.
+**235 harness files, 26,906 labelled assertions.** AllChecks runs 235 of them.
 
 ## Which harnesses read which class
 
@@ -11365,7 +11365,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2068 ...after which it needs nothing more
   - L2069 and selling it all leaves no cover
 
-## ForeignDebtCheck.java - 110 labelled assertions
+## ForeignDebtCheck.java - 111 labelled assertions
 
 > Borrowing in somebody else's money.
 > 
@@ -11432,76 +11432,77 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L563 ...and it still cannot borrow a dollar
   - L574 ...and says so when asked
 - **L576 7. across a reload**
-  - L627 the fixture has foreign paper worth carrying
-  - L629 the dollars owed reload exactly
-  - L643 ...valued at the rate the city actually has, immediately
-  - L646 ...and the exchange rate reached the instruments
-  - L649 the scar reloads
-  - L651 ...and it is a scar worth reloading
-  - L656 fixture: the live city's window is shut BY THE DEFAULT CLOCK
-  - L659 ...so the window is still shut on the reloaded city
-  - L661 ...and shut for the same reason, not a different one
-  - L665 fixture: by now the currency has done something to the live city's debt
-  - L666 what the currency did to the debt since founding reloads (the history's \"debtExchange\" sum)
-  - L668 ...and what the city walked away from
-  - L689 a reloaded city does not book its whole history as one month
-- **L702 and the world's paper is priced on the world's curve**
-  - L716 fixture: the world will lend
-  - L727 fixture: a dollar twenty-year on the books
-  - L735 the world's curve is the foreign rate plus the city's own term premium table
-  - L737 ...one shape for both currencies, fifty years over ten as on the city's curve
-  - L747 a dollar twenty-year is valued on the world's curve, each payment at its own month's rate
-  - L749 ...not at the city's own rate, which is a different figure
-  - L753 ...and it was issued at the rate it is valued at: the round trip is neutral by construction
-  - L760 fixture: the dial moved the city's own rate
-  - L761 the dial moving does not move a dollar bond's value
-  - L766 fixture: the exports handed in leave the premium above nothing and well under the world's ceiling
-  - L770 fixture: a city earning a quarter as much abroad is charged more for it
-  - L772 ...and the world charging the city more moves it: down
-  - L775 ...and back when the city's standing is
-  - L778 a city earning four times as much abroad is charged less for it
-  - L779 ...and the world charging the city less moves it: up
-  - L781 ...and back again when the city's standing is
-- **L799 and the ladder falls due by the calendar year it is paid in**
-  - L818 fixture: a note, a serial and a term loan on the books
-  - L819 fixture: ...and a piece owed in dollars
-  - L837 every piece's last payment falls in the month it matures
-  - L851 fixture: something falls after the ladder's twelve years
-  - L854 twelve calendar years, the first the year next month is in
-  - L856 ...each rung's months inside its own year
-  - L857 ...and \"later\" starts the year after the twelfth
-  - L860 the ladder carries every payment still owed, coupons and principal
-  - L861 ...and its total says so
-  - L862 ...of it in dollars, exactly what the dollar paper asks
-  - L871 a piece's maturity stands in the year it falls due, not the one before
-  - L876 fixture: \"later\" carries more than any single year
-  - L877 the heaviest year is one of the twelve and the largest of them, never \"later\"
-  - L880 the next twelve months are the first twelve payments of every piece
-  - L882 the coupon is every piece's monthly interest
-  - L883 each kind's principal adds to what is owed
-  - L885 ...the notes' among them, getNotePrincipal()'s
-  - L890 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
-  - L897 fixture: a three-year serial's schedule, a payment a month
-  - L909 a proposed issue adds its whole schedule as its own
-  - L910 ...every payment of it in a year
-  - L911 ...each in the year it is paid, and what is owed stays as it was
-  - L939 fixture: the note falls due next month
-  - L940 netted, the central bank's own, the issues and the cash are what falls due, in every mode
-  - L947 the chart's borrowing flags carry the borrowing decisions and nothing else
-- **L972 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
-  - L1000 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
-  - L1002 fixture: a city with no foreign debt and the window open
-  - L1004 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
-  - L1006 fixture: the city has tax to size a sale by
-  - L1013 fixture: the big sale's quote abroad is at or above the share of its quote at home
-  - L1015 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
-  - L1017 quoting both sales booked nothing: cash, debts and both rates are as they were
-  - L1025 fixture: the city still owes nothing abroad and the window is open, with its own paper dear
-  - L1031 fixture: the small sale's quote abroad is under the share of its quote at home
-  - L1033 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
-  - L1035 fixture: the big sale is still quoted at or above the share of home, though home is dear
-  - L1037 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
-  - L1039 quoting again booked nothing
+  - L628 the fixture has foreign paper worth carrying
+  - L630 the dollars owed reload exactly
+  - L644 ...valued at the rate the city actually has, immediately
+  - L647 ...and the exchange rate reached the instruments
+  - L650 the scar reloads
+  - L652 ...and it is a scar worth reloading
+  - L657 fixture: the live city's window is shut BY THE DEFAULT CLOCK
+  - L660 ...so the window is still shut on the reloaded city
+  - L662 ...and shut for the same reason, not a different one
+  - L666 fixture: by now the currency has done something to the live city's debt
+  - L667 what the currency did to the debt since founding reloads (the history's \"debtExchange\" sum)
+  - L669 ...and what the city walked away from
+  - L701 fixture: the history since founding is more than twice the twin's month, so booking it shows
+  - L703 a reloaded city does not book its whole history as one month: it books its twin's month
+- **L716 and the world's paper is priced on the world's curve**
+  - L730 fixture: the world will lend
+  - L741 fixture: a dollar twenty-year on the books
+  - L749 the world's curve is the foreign rate plus the city's own term premium table
+  - L751 ...one shape for both currencies, fifty years over ten as on the city's curve
+  - L761 a dollar twenty-year is valued on the world's curve, each payment at its own month's rate
+  - L763 ...not at the city's own rate, which is a different figure
+  - L767 ...and it was issued at the rate it is valued at: the round trip is neutral by construction
+  - L774 fixture: the dial moved the city's own rate
+  - L775 the dial moving does not move a dollar bond's value
+  - L780 fixture: the exports handed in leave the premium above nothing and well under the world's ceiling
+  - L784 fixture: a city earning a quarter as much abroad is charged more for it
+  - L786 ...and the world charging the city more moves it: down
+  - L789 ...and back when the city's standing is
+  - L792 a city earning four times as much abroad is charged less for it
+  - L793 ...and the world charging the city less moves it: up
+  - L795 ...and back again when the city's standing is
+- **L813 and the ladder falls due by the calendar year it is paid in**
+  - L832 fixture: a note, a serial and a term loan on the books
+  - L833 fixture: ...and a piece owed in dollars
+  - L851 every piece's last payment falls in the month it matures
+  - L865 fixture: something falls after the ladder's twelve years
+  - L868 twelve calendar years, the first the year next month is in
+  - L870 ...each rung's months inside its own year
+  - L871 ...and \"later\" starts the year after the twelfth
+  - L874 the ladder carries every payment still owed, coupons and principal
+  - L875 ...and its total says so
+  - L876 ...of it in dollars, exactly what the dollar paper asks
+  - L885 a piece's maturity stands in the year it falls due, not the one before
+  - L890 fixture: \"later\" carries more than any single year
+  - L891 the heaviest year is one of the twelve and the largest of them, never \"later\"
+  - L894 the next twelve months are the first twelve payments of every piece
+  - L896 the coupon is every piece's monthly interest
+  - L897 each kind's principal adds to what is owed
+  - L899 ...the notes' among them, getNotePrincipal()'s
+  - L904 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
+  - L911 fixture: a three-year serial's schedule, a payment a month
+  - L923 a proposed issue adds its whole schedule as its own
+  - L924 ...every payment of it in a year
+  - L925 ...each in the year it is paid, and what is owed stays as it was
+  - L953 fixture: the note falls due next month
+  - L954 netted, the central bank's own, the issues and the cash are what falls due, in every mode
+  - L961 the chart's borrowing flags carry the borrowing decisions and nothing else
+- **L986 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
+  - L1014 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
+  - L1016 fixture: a city with no foreign debt and the window open
+  - L1018 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
+  - L1020 fixture: the city has tax to size a sale by
+  - L1027 fixture: the big sale's quote abroad is at or above the share of its quote at home
+  - L1029 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
+  - L1031 quoting both sales booked nothing: cash, debts and both rates are as they were
+  - L1039 fixture: the city still owes nothing abroad and the window is open, with its own paper dear
+  - L1045 fixture: the small sale's quote abroad is under the share of its quote at home
+  - L1047 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
+  - L1049 fixture: the big sale is still quoted at or above the share of home, though home is dear
+  - L1051 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
+  - L1053 quoting again booked nothing
 
 ## ForestryCheck.java - 59 labelled assertions
 
