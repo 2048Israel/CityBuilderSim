@@ -205,3 +205,9 @@ caused point.
 - The model and the trace do not move: no class outside the eleven harnesses
   and `Observation.HARNESSES` is changed (`git diff --stat origin/main` over
   `src/`), so no ensemble is owed.
+- Merged again with origin/main at 1d8a1f243 (FS10, then GY1 0.9.172):
+  `Observation.HARNESSES` resolved by hand to the union of the removals, FS10's
+  CurrencyRegime, Monetary, CentralBank and Foreign and FS17's SaveFile and
+  PolicyPreview; `git diff origin/main` on Observation.java is those two
+  lines alone. On that tree (617d949aa): `--fast` exit 0 and ObservationCheck
+  "suite OK - 1 harnesses", exit 0.
