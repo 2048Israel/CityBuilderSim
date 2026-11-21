@@ -2489,8 +2489,97 @@ final class ServicesScreen {
         page.getChildren().add(Kept.scope("enough head", () -> sectionHead("IS THERE ENOUGH FOR WHAT THE CITY DRAWS", null,
                 hint("the bar: now solid, at full staff light, the city's ask the white tick"))));
         // Kept (KP2): each capacity row a scope keyed by what it is (UtilityRow.key(): power, water).
-        for (UtilityRow r : utilityRows(all)) page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
+        for (UtilityRow r : utilityRows(all)) {
+            page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
+            if ("power".equals(r.key())) page.getChildren().add(Kept.scope("power market", () -> powerMarket(PowerView.of(ui.game))));
+        }
         page.getChildren().add(Kept.scope("road", () -> roadCard(all)));
+    }
+
+    /** The retained dispatch's six supply stacks and its matching prices; the capacity card above remains today's plant. */
+    VBox powerMarket(PowerView.View v) {
+        VBox body = Kept.column(12);
+        body.getChildren().add(sectionHead("HOW THE POWER RAN", null, hint("generation and load; clearing prices per MWh generated")));
+        if (!v.cleared()) {
+            body.getChildren().add(words("No month has cleared yet. Businesses still use the founding tariff.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            return card(body);
+        }
+        String dispatch = powerMonth(v.dispatchMonth());
+        body.getChildren().add(words("Dispatch: " + dispatch + " · tariffs set " + powerMonth(v.struckMonth())
+                + ", used for bills recorded " + powerMonth(v.struckMonth() < 0 ? -1 : v.struckMonth() + 1), Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Load and generation include grid losses. Delivered energy is what reaches the meters.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        body.getChildren().add(lane(List.of(
+                bottomLine(powerEnergy(v.askedKwh()), "asked at the grid", null, Palette.TEXT_HEAD),
+                bottomLine(powerEnergy(v.generatedKwh()), "generated", null, Palette.PEOPLE),
+                bottomLine(powerEnergy(v.deliveredKwh()), "delivered to meters", null, Palette.PEOPLE),
+                bottomLine(powerEnergy(v.curtailedKwh()), "curtailed generation", null, Palette.WARN),
+                bottomLine(powerEnergy(v.unservedKwh()), "unserved at the grid", null, v.unservedKwh() > 0 ? Palette.BAD : Palette.TEXT_HEAD))));
+        if (v.recorded()) {
+            double scale = v.peakKw();
+            for (int s = 0; s < v.halves().size(); s++) {
+                final int half = s;
+                final double axis = scale;
+                body.getChildren().add(Kept.scope("half " + s, () -> {
+                    PowerView.Half h = v.halves().get(half);
+                    List<Segment> segments = new ArrayList<>();
+                    for (PowerView.Row row : v.rows()) {
+                        double kw = row.record().runKw().get(half);
+                        segments.add(new Segment(kw, powerColour(row.record().id()), false, null, null,
+                                row.name() + ": " + power(kw), null));
+                    }
+                    return Kept.column(4,
+                            words(h.name() + " · " + String.format("%,.0f h", h.hours()) + " · " + powerPrice(h.price())
+                                    + " · unserved " + power(h.unservedKw()), Palette.SIZE_LABEL, Palette.TEXT_HEAD),
+                            segmentBar(segments, axis > 0 ? axis : 1,
+                                    List.of(new Tick(h.askedKw(), Palette.TEXT_HEAD, 2, null, "asked " + power(h.askedKw()))), 0, 14));
+                }));
+            }
+            body.getChildren().add(words("The white tick is the load. Colours follow the rows below, in the order they ran.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            if (v.firmKw() >= 0) body.getChildren().add(Kept.scope("reserve", () -> Kept.column(4,
+                    words("Firm capacity " + power(v.firmKw()) + " against peak " + power(v.peakKw()), Palette.SIZE_BODY, Palette.TEXT_HEAD),
+                    segmentBar(List.of(new Segment(v.firmKw(), Palette.PEOPLE, false, null, null, "firm " + power(v.firmKw()), null)),
+                            Math.max(1, Math.max(v.firmKw(), v.peakKw())),
+                            List.of(new Tick(v.peakKw(), Palette.TEXT_HEAD, 2, null, "peak " + power(v.peakKw()))), 0, 12),
+                    words("Firm is the build planner's staffed dependable supply; wind counts at its calm output. Nameplate is listed separately for each plant.",
+                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED))));
+            body.getChildren().add(words("MERIT ORDER · RUN, FUEL AND RECEIPTS", Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+            for (PowerView.Row row : v.rows()) body.getChildren().add(Kept.scope(row.record().id(), () -> powerRun(row)));
+            body.getChildren().add(words("Receipts are generation valued at each half's clearing price, before fuel, upkeep and payroll. They are not plant profit or customers' total bills.",
+                    Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        } else body.getChildren().add(words("This save did not record the dispatch rows or firm capacity. Those details will appear after another month clears.",
+                Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        PowerView.Bill b = v.bill();
+        body.getChildren().add(words("WHAT THE TARIFF PAYS FOR · per MWh delivered", Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Energy including grid losses " + powerPrice(b.energy())
+                + (v.recorded() ? " · transmission " + powerPrice(b.transmission()) + " · distribution " + powerPrice(b.distribution()) : " · wire parts were not recorded"),
+                Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        body.getChildren().add(words("Commerce and light industry " + powerPrice(b.commerce()) + " · Heavy Industry and Mining " + powerPrice(b.industry()),
+                Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Heavy Industry and Mining pay transmission only. Homes draw power but receive no household power bill.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        PowerView.Payment p = v.paid();
+        body.getChildren().add(words("Fuel and variable upkeep paid " + powerMonth(p.month()) + " for dispatch " + powerMonth(p.dispatchMonth())
+                + ": local fuel " + tightMoney(toDollars(p.localFuel())) + " · imported fuel " + tightMoney(toDollars(p.importedFuel()))
+                + " · upkeep " + tightMoney(toDollars(p.upkeep())), Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        return card(body);
+    }
+
+    VBox powerRun(PowerView.Row row) {
+        UtilitiesHandler.RowRecord r = row.record();
+        String fuel = r.fuel() == null ? "no fuel burned" : String.format("%,.3f", r.fuelUnits()) + " "
+                + (r.fuel() == Good.THERMAL_COAL ? "t thermal coal" : r.fuel().name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '));
+        return Kept.column(3,
+                words(row.name(), Palette.SIZE_BODY, powerColour(r.id())),
+                words(powerEnergy(r.kwh()) + " generated · " + fuel + " · clearing receipts " + tightMoney(toDollars(r.receipts())), Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                words("Offered " + power(r.offeredKw()) + (r.id() >= 0 ? " · nameplate " + power(r.nameplateKw()) : "")
+                        + " · dispatch marginal cost " + powerPrice(r.marginal()), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+    }
+
+    static String powerMonth(int month) { return month < 0 ? "not recorded" : CityCalendar.format(month); }
+    static String powerEnergy(double kwh) { return String.format("%,.1f MWh", kwh / 1000); }
+    static String powerPrice(double thousandsPerKwh) { return tightMoney(toDollars(thousandsPerKwh * 1000)) + "/MWh"; }
+    static String powerColour(int id) {
+        String[] tones = {Palette.PEOPLE, Palette.MONEY, Palette.BUILDING, Palette.PEOPLE_LIGHT, Palette.MONEY_LIGHT, Palette.BUILDING_LIGHT};
+        return tones[Math.floorMod(id, tones.length)];
     }
 
     /**
