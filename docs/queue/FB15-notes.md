@@ -217,7 +217,8 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 
   On the mends: OrderDoorCheck and HousingDoorCheck green; CreditCrunchCheck and MortgageCheck red on the
   FS9 rows only.
-- `sh tools/ensemble/stop-selftest.sh`: all passed (five).
+- `sh tools/ensemble/stop-selftest.sh`: all passed (five; ten on REV-FB15-2's mends).
+- On REV-FB15-2's mends: `--fast` exit 0; CreditCrunchCheck red on the two FS9 rows only, section 4 green.
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed). Review: needed - money (the brief).
 - The second ensemble and the dry run: below, when run.
 
