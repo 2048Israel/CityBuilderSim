@@ -41,3 +41,15 @@ Money and saves require a fresh stranger review; this builder does not self-cert
 Actual sources: Household, HouseholdBalance, FundLedger, Exchange, Equity, TaxPolicy, Game, DataSave, HistorySave, GameVersion (save constants only), MoneyAudit, TreasuryJournal, NationalAccounts, YearBook, ui/GovernmentScreen, ui/PolicyScreen, CapitalGainsCheck, AllChecks registry, SaveFileCheck and ReadPathCheck, plus generated indexes. Orchestrator accepted NationalAccounts/GovernmentScreen on 17:05; YearBook's two flow declarations were explained before editing at 17:17. No other lane's dated-home, apprentice, ladder or housing fixture sections were edited. Publisher VERSION/QUEUE/changelog/gate records unchanged. No process/test machinery changed; no one-in/one-out removal is invented.
 
 Eye check once the mechanic is complete: Policy > Taxes > Wage inclusion endpoints/default and staged apply; Government revenues show the two receipts and their histories; the budget-to-cash bridge counts each receipt once.
+
+## Checkpoint pick (classification only; no full suite launched)
+
+Source checkpoint 5c29f8dcd. `sh tools/pick.sh origin/main HEAD` against records-only main9d4467e8 printed:
+
+```
+ALL
+pick      ALL 238 harnesses - src/main/java/ham/citybuildersim/AllChecks.java runs the suite (59 files changed since f2dba242)
+review    needed - money: FundLedger.java, TreasuryJournal.java; saves: DataSave.java, HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT
+```
+
+This is a blocked checkpoint, not complete mends, a readiness claim, or a review/ship request. The provisional marker stays. No owned job remains running. Independent checks are green, but the held tax-collection phase, L7 account design, fresh review, final ensemble and any ordered full gate remain unfulfilled.
