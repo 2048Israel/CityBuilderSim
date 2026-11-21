@@ -188,11 +188,220 @@ changed during the run, home copy or scoring; the remote owned JVM count
 was zero after completion. The baseline and these notes are committed
 before requesting the separate ALL-pick dry-run GO.
 
-All local worktree JVMs name main's absolute earth-2.bin and world-1.bin through
-JDK_JAVA_OPTIONS; the box ensemble names its own main copies. Game checks use
-scratch saves only. No baseline suite of main, full pick, separate LongPlaytest
-or dry run has been started by this builder. The one authorized ensemble is
-complete as recorded above.
+## Dry run: sealed NEW reds, no readiness
+
+On the orchestrator's separate GO (mail 3931), one normal box-only
+`sh tools/gate.sh WG3 --dry-run` ran on branch
+`089f5e2282891d47593e942899fbc4581135b58f`, main
+`df12d7ae3dfd04d541590bb0f1d3ab5b93233504`, with source still frozen at
+6ede2fa3a. The adapted PW1 local shell guard refused an empty-host gate
+before clone/compile/suite; local Java, javac and Maven each refused too.
+The box's executable paths remained `/usr/bin/java`, `/usr/bin/javac` and
+`/usr/bin/mvn`. The timeout was 7,200 seconds; no laptop fallback occurred.
+
+The real remote run was
+`/home/jerus/cbs/runs/cbs-gate-WG3-cM0qFfei`. It exited **1** at
+2026-11-21T19:01:50Z, inactive, uncancelled, with completed checks sealed.
+Its original publisher and guardian exited and no JVM remained under its
+working directory. Client exit 1 and automatic home copy finished at
+19:01:55Z. This is a failed dry run, not a successful reusable gate receipt.
+The selection was `full nightly EducationCheck version=0.9.181`; the kept
+full-suite summary is 225 harnesses, 213 passed, 12 failed. Ten failed
+harnesses matched the existing scoped red records; two had new assertions.
+
+All kept evidence was copied again into `target/wg3-dry/kept` before any
+records change. Independent remote/local verification matches **863/863**
+sealed checks/generated-file hashes and **10/10** auxiliary receipts.
+`checks.sha256` is
+`51ddcb0305e983167b84dbbbd712d0c787eb77a26423caa677e19698d148311b`;
+`checks/suite.txt` is
+`13ef88929641c136863333841b9530913220ec2946dd82846a4ce5ca1c583971`.
+The five exact unnamed lines, complete logs, seal and manifests remain in
+that archive; validation is in `target/wg3-dry/kept-receipt.json` and
+`remote-evidence.txt`. Neither the kept run nor its verdict was rejudged.
+
+The new lines are BuildAdviceCheck's exit/count wrappers and
+`fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university FAIL`,
+plus LongPlaytest's exit wrapper and
+`FAIL households with no home 15 time(s), months 380-394`.
+The university fixture reached month 36, population 385, zero would-be
+university students and five university posts. Its no-university row/card
+assertions passed. The separate positive-demand fixture passed too: 1,134
+would come against a first school's 600, initially only 164 would be hired;
+adding offices raised hiring demand to 632 and the row appeared.
+The home finding's worst case is month 386: **4.922** households nowhere,
+**644** homes, six sizes. The home law remains strictly greater than one.
+Neither new assertion matches the old streets-plan FS12 or ring-distance
+CL7 rows; no class-wide known-red classification is used.
+
+The orchestrator moved WG3 to Pending in records-only main `da43868fb`
+(mail 077a); the game is still .180. WG3 is diagnosing/mending, not ready.
+Return to Queued is Jerus's decision. These notes do not edit that queue,
+name a new red as unrelated, override a red, or place the failed gate path
+in the ship file's successful `gate-run` marker.
+
+## Read-only cause trace: established facts and limits
+
+The two city setups are different. The failed university case uses
+[BuildAdviceCheck.founded](../../src/main/java/ham/citybuildersim/BuildAdviceCheck.java#L1248):
+Standard founding, its listed House/shop/farm builds, three/four initial
+months, then the requested ninth month. It waits only while demand is below
+the model's class floor and the month is below 36 in
+[thePipeline](../../src/main/java/ham/citybuildersim/BuildAdviceCheck.java#L1171).
+It does not apply the full player's explicit map/policy/rescue/fund setup,
+repeated advice, periodic land/retirement moves or round trips.
+
+[CityNeeds.wouldCome](../../src/main/java/ham/citybuildersim/CityNeeds.java#L1093)
+reads Education's eligible band, willingness, enrolment rate and course
+months. [Education's participation](../../src/main/java/ham/citybuildersim/Education.java#L688)
+multiplies the unchanged participation cap, after-cost return curve and
+affordability. [The live stage decision](../../src/main/java/ham/citybuildersim/Education.java#L704)
+weights each stage's own curve; the pure
+[gain](../../src/main/java/ham/citybuildersim/SchoolingLadder.java#L54)
+compares after-cost qualification levels. The university's wage is its best
+ungated job; a doctor's wage cannot establish its return. The played fixture
+never pins its eligible pool, affordability or positive after-cost return.
+The saved log gives only the product zero: it does **not** identify which
+component was zero. A correct zero-return outcome and an uncaused positive
+demand premise are plausible; neither is proved for this city yet.
+
+The advice guards are explicit:
+[wanted](../../src/main/java/ham/citybuildersim/CityNeeds.java#L1022) is the
+smaller of would-come and hires; [listsSchool](../../src/main/java/ham/citybuildersim/CityNeeds.java#L1002)
+requires `SEATS_FLOOR` (25), plus half the smallest school when no seats exist.
+[BuildAdvice.schoolNeed](../../src/main/java/ham/citybuildersim/BuildAdvice.java#L794)
+reads that same wanted figure at its projection. Hence the passing no-row
+result is consistent with the measured zero, without proving the fixture's
+separate demand premise or proving a production bug. A free tuition subsidy
+alone also cannot eliminate years out of work or wages forgone.
+
+For homes, [Game passes sized doors to migration](../../src/main/java/ham/citybuildersim/Game.java#L15879)
+before migrating the cohorts. [Migration](../../src/main/java/ham/citybuildersim/Migration.java#L981)
+asks the existing census's `roomLeft` and caps **arrivals**, not every change
+in the later household census, at its people answer. The room uses the
+[native match and existing household mix](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1991).
+The previous education step's students and the out-of-work adults are then
+outside working families in [Game's census rebuild](../../src/main/java/ham/citybuildersim/Game.java#L15989).
+This is a real route from changed enrolment to changed door demand, but a
+changed city does not identify the failing component.
+
+The live placement sequence is
+[house → squeeze → house → noteUnplaced](../../src/main/java/ham/citybuildersim/Game.java#L16009).
+The [match](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1569)
+queues largest shapes first, takes the smallest fitting unit then crowds,
+and refuses children in studios. The
+[valves](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1718)
+share singles, then [noteUnplaced](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1804)
+applies each group's doubling ceiling and records the residual. Subsequent
+[affordability sharing](../../src/main/java/ham/citybuildersim/Game.java#L16038)
+can change current shapes. A query on those later shapes is **not** the
+earlier recorded placement flow. The residual is explicitly carried through
+saves for that reason ([toSaveArray](../../src/main/java/ham/citybuildersim/FamilyModel.java#L2335)).
+Owners are [outside this native housing match](../../src/main/java/ham/citybuildersim/FamilyModel.java#L553);
+their headcount must be logged separately, not silently added to the matched
+matrix. This is a source fact, not an attribution to HO1 or another batch.
+
+The [player's housing response](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L3892)
+considers House/apartment/studio moves when beds are short or the recorded
+unplaced count is positive. It is made at a player's look, not continuously
+inside a long skip. The monthly [home audit](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L1733)
+still tests the final raw residual above one. The kept summary lacks the
+by-size stock, rejected shapes, seeker/owner/student split and the transitions
+through months 370–400. It cannot establish supply shortage, wrong size mix,
+transition timing, stale placement data, rounding or a different latent fault.
+No homelessness mend or classification is selected from this evidence.
+
+## Prepared diagnostic proposal — not compiled or executed
+
+The orchestrator authorized static preparation only (mail 077a), with R1g's
+next box job ahead of this one. Draft source is under ignored
+`target/wg3-cause/driver-src/ham/citybuildersim/WG3CauseTrace.java`, with
+`prepare-overlay.py`, `preparation.json`, original harness copy and
+`overlay.diff`. No project source, harness, model class or model constant
+has changed, and no JVM has started under this preparation GO.
+
+The proposed one box diagnostic job has **two sequential fresh JVMs** to
+avoid contaminating the original university setup with playtest static state.
+Proposed hard bounds: one at a time, `-Xmx2g`, 300 seconds total, explicit
+box only after the orchestrator releases the slot, native gate/nightly locks
+first and local Java/javac/Maven fallback blocked. Use OpenJDK 21.0.13 and
+the named box main earth-2.bin/world-1.bin, exactly as the retained run.
+Compile only the target driver/harness overlay into separate directories
+against an audited copy of the frozen 6ede2fa3a model/dependency classes;
+do not compile or alter production sources. Record source/class manifests,
+actual host/JDK/data/start/end, exit, elapsed timings and zero owned JVMs.
+
+1. **Original main to month 400.** Use a target-only copy of the frozen
+   LongPlaytest harness with six count-checked insertion sites: establish the
+   primary game/root; observe just before its original monthly simulation;
+   observe after the original audit, countWorks and native trace; observe
+   before/after the original round-trip call and its loaded copy; route only
+   a dedicated planned-bound signal out of the original catch. All original
+   main actions, decision order, stop counter and save/load code remain.
+   Keep `TARGET_MONTHS=2400`: setting it to 400 also changes
+   [layoutStarts](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L4720).
+   Stop after the complete original month-400 audit/trace; close the native
+   writers and clean only the original harness's own scratch root.
+   The frozen original harness SHA256 is
+   `c3d8732e3565c29be3d6c30dd90d4874bb2908b79362c549d1449afa923229cc`;
+   its overlay SHA256 is
+   `38c70e6c9274fbb5c2e9474b1f3b88840b0b7e04877975811856e29afbb2cd35`.
+   No `probePlay` or ensemble driver is substituted: the
+   [original stop loop](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L6837)
+   and [periodic roundTrip](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L6933)
+   stay in use. `roundTrip` loads a separate game for comparisons; it does
+   not replace the main game or explicitly advance it.
+2. **Original university case to its own stopping month, at most 36.** A
+   separate JVM uses the untouched frozen BuildAdviceCheck/LongPlaytest
+   classes, calls `BuildAdviceCheck.founded(..., 9)`, then the same original
+   while condition and quiet monthly step. Capture each month through the
+   first class-size demand or month 36. Change no skill, wage, fee or policy
+   inputs. Preserve the class-floor/month-window, no-row and no-card laws;
+   a failing law still gives a red diagnostic exit, not a fabricated pass.
+
+The JSONL callbacks name before-month, after-original-audit/trace and each
+save/load boundary. They record the real eligible pool, wages/best ungated
+job, native after-cost rows for both stages, fees/subsidy/scales, loan/policy/
+discount rate, native return/affordability/willingness, in-flight cohorts,
+student body and would-come/hires. Housing records include current and last
+recorded-match stock by size, current shape demand, stored unplaced arrays,
+each seeker group's sharing/doubling/unhoused people, owners separately,
+raw residual, census-vs-current student count, births/deaths, migration's
+recorded arrival/room figures and household reformation/return counters.
+
+Detailed rows cover 370–400 and milestones 120/240/360. An isolated
+FamilyModel copy additionally runs the actual matcher to report **current-fit
+query** placed/free by size and residuals, checking matching inputs and that
+the live census's saved state is unchanged. This is labelled separately;
+it is not a reconstructed migration or earlier placement flow and cannot by
+itself clear a finding. The original raw home law above one and native audit
+stay hard; the driver retains a red exit when they fail.
+
+Validation must compare only retained shared evidence: original served/works
+milestone rows at 120/240/360 and the exact 380–394 finding interval, worst
+month 386, rounded 4.922 residual, 644 doors/six sizes. Record original
+round-trip events. The retained run lacks full monthly state rows, so even
+a match does **not** prove a complete byte-identical prefix. Any mismatch,
+missing reload, timeout or incomplete marker stops classification. No rerun
+is automatic.
+
+Only after the original university capture identifies the zero component is
+a harness-only mend proposed: cause an eligible pool, affordability and a
+positive native after-cost return in that fixture, rather than waiting for
+a played wage to happen. Keep its month bound, `SEATS_FLOOR` and no-row/card
+premises; read the original curve/helper, never duplicate a new formula.
+Targeted verification would be that causing fixture plus BuildAdviceCheck,
+one named run only on a new GO. No change to CityNeeds, advice production,
+education production or the home law is proposed. Housing needs its evidence
+before a precise mend can be selected. Any model mend would need a new
+final-model ensemble; a harness-only mend retains the current valid ensemble.
+
+All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
+through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
+Game checks use scratch saves only. No baseline suite of main, standalone
+full pick or separate LongPlaytest replay was run. The one authorized ensemble
+and the failed dry run are recorded above; no dry restart, kept rejudge,
+model/harness mend or diagnostic execution is authorized yet.
 The ship file remains provisional until the orchestrator's readiness GO.
 
 For the optional PC eye check: open Policy → Wages → The ladder, switch both
