@@ -2065,3 +2065,185 @@ Source, reviews, prior proofs/captures, failed full baseline and provisional
 marker remain frozen. No model/harness mend, rerun, reclassification, dry,
 ensemble or readiness action followed. R1g remains Pending; return to
 Queued remains Jerus's decision.
+
+## 20. Static yard-origin and public-road repair disposition
+
+Orchestrator accepted section 19/5732080ae exactly as INCONCLUSIVE and
+authorized only saved/source analysis in
+`20261121-163940-489-orchestrator-c24f`. The old driver, checker, captures,
+verdict and terminal pins remain immutable. No alternate checker/rejudge,
+compile, JVM, BOX access/poll or model/harness edit occurred in this step.
+
+### The observed 0 -> 36 -> 0 has a logged source
+
+The exact monthly call is
+[Game.nextMonth:13760][r1g-yard-tick] ->
+[updateConstructionCost:15485][r1g-yard-call] ->
+[BuildingManager.finalUpdateBuildings:5069][r1g-yard-add]. Despite the
+middle method's name, its sole action is that last call. The last method
+prints production, executes
+`constructionMaterials += getConstructionMaterialsProduction()`, then
+prints the new total. The [production getter:7524][r1g-yard-production]
+returns **BASE_MATERIALS=36**, without a stack, worker, cash, trade, recipe,
+autobuilder or investment-hold condition. This is the works yard's own
+free output, distinct from a Materials sector plant's market output.
+The call is before month++ and before startOfMonthUpdate/repair pricing.
+simulateMonths suppresses reports, but this mutation and these printlns
+are unconditional.
+
+The retained model.log contains exactly the emitted pairs at lines 3/4
+and 44/45: "Construction Materials Produced: 36", then "Total Available:
+36". The complete file hash remains the section 19 pin. These are emitted
+at the actual production/addition, not reconstructed from an ending yard.
+The logged pair, unique production call/binding and entry yard=0 identify
+the monthly 36-unit addition in each prescribed arm. No new observation
+is needed to explain this fixture's refill.
+
+| Phase/binding in frozen 627 | Retained evidence and what it establishes | What it does not establish |
+| --- | --- | --- |
+| Fresh [GameFiles.scratch:107][r1g-yard-scratch], Game.run/initialize | Driver uses fresh dedicated scratch/no-legacy roots and original played1900 founding. [run:769 / initialize:801][r1g-yard-startup] seeds the yard with BASE_MATERIALS during initialization; the driver subsequently clearStacks/addStack and setConstructionMaterials(0). Captured setup yard is 0 in both arms. | The startup seed is real, but was overwritten before the observed press. It is not the later 36-unit flow. No month was loaded from an old save. |
+| Original simulateMonths(1) -> nextMonth prelude | Exactly one completed 1->2 press per arm. The unmodified nextMonth calls updateConstructionCost once at 13760, still before month++ at 13769. | Turning off reports or holding investment does not turn off this yard production. |
+| finalUpdateBuildings/getConstructionMaterialsProduction | Literal log pairs at 3/4 and 44/45 bracket the source addition of the constant 36. Game's captured yard getter [8760][r1g-yard-getter] delegates to this same BuildingManager field. | Template.setConstructionMaterials, DataSave.setConstructionMaterials and a sector's MATERIALS stock are different objects/fields; their similar names are not the observed yard binding. |
+| Pre-repair draw | Observer fires after chargeMaintenance, before the original draw: yard36, salvage/cost0, requested materials450, only Paved Road standing, no local MATERIALS stock/pantry. | A zero stock snapshot elsewhere does not prove that no trade or stock flow happened between snapshots. It is not the reason for attributing the refill. |
+| [Game.drawMaterials:9706][r1g-draw] / [takeFromYard:8773][r1g-yard-take] | The real call has yardFirst=true. Its rule takes min(round(450),36), then salvage and Markets.draw for the remainder; post-draw yard=0 and returned Draw records 414 imported/0 local units at the captured price. The entry/exit observations plus this exact method explain the 36 consumed in this event. | Draw's returned units are the market fill, not the total 450 after including yard. The original zero-yard/all-import assertion remains failed. This is not a reconstruction from a whole month's ending stock. |
+| [deliverYardToSites:9824][r1g-yard-sites] and construction controls | deliverYardToSites takes from the same yard and credits sites; handleConstructionMaterials only calls takeFromYard. Neither produces yard stock. Fixture sites/fittings are empty and only the maintenance draw is retained. | These APIs do not justify adding a second 36 or treating a transfer as purchased/imported material. General site spending cannot be inferred absent from an unrelated ending stock. |
+| Legacy/load/reset setters | BuildingManager's only field writes besides addition/take are setConstructionMaterials and resetBuildingManager's assignment of BASE_MATERIALS. Game's startup seed and load setter at 21354 bind to those; the monthly path here calls neither reset nor load. Fresh driver/source and setup observations identify the active path. | An initialized fresh scratch city is not a resumed legacy city. Legacy-instance counts0 reinforce that setup, but are not a substitute for tracing the load/reset calls. |
+| Retirement/demolition | [retire:6775][r1g-yard-retire] can sell recovered material through [sellMaterialToTheBuilders:8180][r1g-yard-salvage] -> Construction.addSalvage. It may also write off sector stock and settle land/cash. It does not write BuildingManager.constructionMaterials. | The zero salvage snapshots alone would not prove no earlier salvage transfer. Its distinct destination, not endpoint subtraction, rules it out as the direct source of this yard addition. |
+| Materials production/market trade | Sector stock/pantry and [Markets.draw:483][r1g-market] are separate inventory/purchase ledgers. The actual draw bought only 414 imported MATERIALS; local fill0 and other bought/input/supplier maps are empty in the retained strike. | A plant's trade, an import receipt or cash payment is not this unconditional yard output. No original-seed use/allocation follows from this fixture. |
+
+The complete private-yard-field scan is retained in the new static
+artifact: getter, monthly addition, setter, take/debit and reset are the
+only code references that read/write that field. The scan distinguishes
+the yard from catalogue material requirements and sector goods. No
+ending-stock subtraction is used to assign an unlogged origin.
+
+### Public Paved Road repair: ledger and NA disposition in this code
+
+The actual catalogue/standing snapshot is 600 Paved Roads, material input
+450, points4000, own annual repair share.02, cashCost139.77070475208345
+and upkeep0 at the observed price level. [Paved Road:1426][r1g-yard-road]
+is INFRASTRUCTURE, included among
+[CITY_MAINTAINED:868][r1g-yard-owner]. The code's repair costing is a
+quote for inputs at its own rates, not a measurement of delivered labour
+or a replacement for the actual draw cost.
+
+| Item/source | Ledger/phase treatment and retained facts | Direct NA disposition / limit |
+| --- | --- | --- |
+| Repair need and quote: [repaired/maintenanceBillFor:931][r1g-yard-bill] and [maintenanceMaterialsTotal/maintenancePointsTotal:1155][r1g-yard-need] | Template inputs weighted by the monthly repair shares determine requested 450 materials and 4000 points in both arms. The nonmaterial quote uses nonMaterialCost; materials use the stored quote0.46700362180103044, with the builder sales-tax gross-up. Full B=city B=411.6733347794672; bank/private bills0. | These are demand and quoted bill inputs. A positive point need or nonmaterial charge is not a saved quantity of repair work delivered, payroll paid, or final spending. |
+| Physical material: original draw/yard/Markets | The real event takes 36 newly produced yard units and imports414 at boundary0.5701588727476038, import cost236.04577331750798, local cost0; salvage/cost0. Free yard addition/take has no purchase or cash booking. Actual purchase is recorded in the builder's pending bought/import ledger. | No invented cost is assigned to the free36. Imported cost reaches NX through the strike; no assumption that the quoted material part equals the actual import bill. |
+| Private and bank owners: [chargeMaintenance:1175][r1g-yard-charge] | Private sectors receive maintenanceExpense, which enters Sector.strike's operating costs. Bank branch repair due is separate and later paid with bank running costs. Both are zero here. | Their usual treatment is an operating/intermediate expense in these books; it does not establish the classification or service value of city-owned road repairs. |
+| City payment/refusal: [Game.chargeBuildingMaintenance:8664][r1g-charge] and [treasuryPays:20038][r1g-repair-pay] | Full material draw precedes payment. Paid arm has room64708.65960744605/P411.6733347794672/U0; unpaid room0/P0/U411.6733347794672 and that immediate CITY_REPAIRS arrear. Later payDownArrears transfers cash to the payee without a new repair order. | City P is recorded in [budget cityRepairs:963][r1g-yard-budget], later arrears payment separately. These fiscal cash lines are not the same variable as G and do not themselves measure service output. |
+| Repair receipt: [receiveMaintenance:505][r1g-repairs], [nameOtherRevenue:959][r1g-yard-parts], [Sector.strike:2674][r1g-yard-strike] | The builder books R=B-U, resets/names repairsThisMonth, freezes otherRevenue/otherParts. R411.6733347794672 in paid, R0 in unpaid; four capital parts absent in each. Banking later settles taxes/cash and clears pending, while the Statement remains retained. | Construction documents repairs apart from new investment. R is payment-dependent and therefore cannot simply serve as an accrual/delivered-service measure independent of the P/U control. It has no direct C/G/I argument here. |
+| Labour/repair service versus site work: [buildingOutputAfterRepairs:1686][r1g-yard-work] / [getMaintenancePoints:8498][r1g-yard-points] | Later site/fitting capacity is max(0, construction output minus maintenance point demand). chargeBuildingMaintenance does not gate its bill/draw on this capacity. Retained Construction.Statement payroll/electricity/water/own-maintenance are all0 in both arms; the end-of-press log reports Construction Capacity0. The 4000 is demanded points, not a recorded completed-repair quantity. | Payroll is an operating expense and not another term to add to expenditure GDP. The code has no distinct actual delivered-public-repair-service recognition record at this charge; an ending capacity or a price-component estimate cannot create that missing flow. |
+| Current construction I: [Game:14877/14911][r1g-na-read] | Recognised construction work plus fitting income is read before strike. Repairs billed remains separate. | NationalAccounts.investmentConstruction receives that work only; actual Iconst0 in both arms. Adding gross R here would mix repair and new-capital definitions, not merely fill a measured gap. |
+| Material inventory I: [EconomyManager:2269][r1g-yard-stock] and [NationalAccounts:516][r1g-yard-inventory] | Material volume is sectors' MATERIALS stock, with struck write-offs; the yard is deliberately excluded because contracts already embody their material. Source comments warn against counting it again. | Neither the free yard addition nor its repair draw is directly an invMaterials input. Actual inventory and valuables I components0 here. Crediting yard value and a contract/service total without a defined boundary risks duplicate value. |
+| Government consumption G: [Game:14911][r1g-na-read] -> [NationalAccounts:644][r1g-yard-g] | The supplied governmentServices expression names utility payroll, healthcare, crime, schools, research, transit and public IP. It does not supply public-road repair B/P/U/R. Budget cityRepairs is updated separately. | Actual G0 in both arms is an observation under the failed premise, not an assertion or permission to invent a road-service spending term. The absence of that explicit argument is a code fact, not a completed accounting/causal verdict. |
+| Imports/NX and GDP: [EconomyManager:2345][r1g-na-import] | All Construction.Statement.imports, not a repair-only category, feeds materialImports; here the retained bought map contains only MATERIALS abroad236.04577331750798. | NX=-236.04577331750798, GDP same; all other captured NA terms0 in each arm. The original GDP>=0 law is false and cached money audits0 in each. These remain raw observations after INCONCLUSIVE, not a second causing verdict. |
+| Taxes/bank/fiscal consequences | Paid builder operatingIncome175.62756146195923, salesTax61.751000216920076 and profitTax17.081484186755873; unpaid operatingIncome-236.04577331750798 and those taxes0. All14 payment tapes and ending-budget differences remain as section19 records. | Cash conservation/audit0 and named tax receipts do not prove final-output coverage in GDP. Nor does subtracting an import bill from R identify missing final spending. |
+
+The source's generic receiveMaintenance comment describes house repairs
+as intermediate consumption. It is not a source-proven instruction to
+classify every city-owned road service identically or to change a national
+accounts rule here. Conversely, the missing explicit public-road G
+argument does not justify adding R, B, wages or a receipt/import residual
+without an independently defined and measured recognition/value boundary.
+No proposed term or model change is made by this analysis.
+
+### What is still controlled; what is still missing
+
+The retained checkpoints prove equality across these two arms of road
+catalogue/quantity, quote/exchange, requested materials/points, yard36 at
+draw, salvage0, local-stock snapshots, actual market fills/cost, owner
+bills and the complete captured NA components. The original production
+and draw events explain the free36 equally in each arm; the single
+designed control remains initial treasury cash. Full city P/U/refusal and
+immediate arrears are observed, not imputed. The tax and budget differences
+are actual unequal outcomes of the pair; section19's payment tapes and
+all fiscal differences remain part of the evidence, not discarded to
+claim equality. No other-purchase route appears in the retained builder
+Statement. These facts survive the yard failure as observations; they do
+not waive it or make the prescribed all-import pair pass.
+
+For this short pair the 36's origin is no longer missing. What is not
+recorded is a delivered repair-service quantity/value independent of
+payment. Point demand4000 and quoted nonmaterial cost are not that flow;
+the struck zero payroll is not evidence of positive work delivered. For
+the original m1135 seed we additionally still lack purpose-tagged repair
+draw need/yard/salvage/local/import price/cost, owner bill and P/U at the
+charge, and a link from those events to the 203 imported units in its
+aggregate strike. The short fixture cannot supply those historical
+observations, even when its source paths are identical.
+
+### Mechanical comparison and one next decision
+
+New evidence `target/r1g/yard-static-trace.py` / `.json` compares inherited
+.180 d1d70f0a against frozen627. The report SHA-256 is
+`b275c13986cc5489b5488daf033fd5ff7365a5f2270573fe573535ace0784736`.
+Nine complete files match (BuildingManager, EconomyManager,
+NationalAccounts, SimulationEngine, Markets, GoodsMarket, GameFiles,
+TempDirs, Construction). Twenty-one selected method names/overloads match,
+including Game.run/initialize/newGame, simulateMonths/nextMonth,
+updateConstructionCost/startOfMonthUpdate, drawing, retirement/demolition,
+repair/site-capacity and Sector booking/strike/bank. The saved original
+log/capture/checker/terminal hashes were verified while reading; earlier
+comparison artifacts were not rewritten.
+
+R1g's [Recipes.dateHomes:369][r1g-yard-homes] is new. It targets only the
+Real Estate sector's capacity-bearing templates and adjusts their founding
+cash/upkeep/materials/points from the approved pay-mean scale. Paved Road
+is infrastructure, so it does not enter that guard. Yard BASE_MATERIALS,
+road material450/points4000/repair.02 and the repair/draw/payment/NA
+functions are unchanged. Changed residential recipes can still change
+repair demand, site demand and the later played population; that is a
+mechanical input relationship, not a counterfactual attribution from a
+different population, an inherited-fault waiver or a reason to rerun .180.
+
+**One recommendation: require the missing repair-recognition phase before
+any GDP-mend proposal or new causing fixture.** The gap opens in
+Game.chargeBuildingMaintenance after the real draw and before the
+treasuryPays/receiveMaintenance split: those boundaries expose demand,
+inputs and payment, not an actual service-completion event. Later
+buildingOutputAfterRepairs subtracts demand from site capacity without
+retaining completed repair work. Resolve statically which phase delivers
+the public-road service and how its value is recognized independently of
+P/U; any corresponding owner/purpose record must distinguish delivered
+work from quoted cost/requested points and retain its material-use link
+through the strike. This record does not select a new completion time or
+valuation rule. Do not substitute payment-dependent R or an inventory
+endpoint for that missing flow. Original-seed attribution would still
+require its own missing purpose-tagged phase evidence. This is one
+evidence/definition prerequisite, not an execution proposal, an instruction
+to add a final-spending term or permission to revise/replay the failed
+zero-yard fixture.
+
+No compile/JVM/BOX work, model/harness/checker mend, retry, reclassification,
+waiver, dry, ensemble or readiness action follows. Source/reviews/proofs,
+failed full baseline, entire prescribed pair, fourteen-payment tapes per
+arm, old verdict and marker are preserved. R1g stays Pending; Jerus alone
+returns it to Queued.
+
+[r1g-yard-tick]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L13760
+[r1g-yard-call]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L15485
+[r1g-yard-add]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L5069
+[r1g-yard-production]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L7524
+[r1g-yard-scratch]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/GameFiles.java#L107
+[r1g-yard-startup]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L769
+[r1g-yard-getter]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L8760
+[r1g-yard-take]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L8773
+[r1g-yard-sites]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L9824
+[r1g-yard-retire]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L6775
+[r1g-yard-salvage]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L8180
+[r1g-yard-road]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L1426
+[r1g-yard-owner]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L868
+[r1g-yard-bill]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L931
+[r1g-yard-need]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L1155
+[r1g-yard-charge]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L1175
+[r1g-yard-budget]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L963
+[r1g-yard-parts]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/sectors/Construction.java#L959
+[r1g-yard-strike]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Sector.java#L2674
+[r1g-yard-work]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L1686
+[r1g-yard-points]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L8498
+[r1g-yard-stock]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L2269
+[r1g-yard-inventory]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L516
+[r1g-yard-g]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L644
+[r1g-yard-homes]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Recipes.java#L369
