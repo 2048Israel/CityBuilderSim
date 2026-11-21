@@ -12,8 +12,9 @@ Historical full6 remains two hard failures at source0446/.179, including
 objects1589.6MiB/53.6MiB excess and Healthcare's four repeating held looks.
 The86.8MiB lower current object reading is not attributed to cleanup or
 parent traversal, and no historical leaf cause is proved. All FOUR own
-vetoes remain byte-for-byte; registry/ship/source are unchanged after the
-run. Marker stays provisional pending the orchestrator's next decision.
+vetoes remain byte-for-byte; registry/source are unchanged after the run.
+Root GO474f authorizes readiness now, followed by the publisher's normal
+--no-tag publication gate; final records and marker removal are recorded below.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -1935,8 +1936,8 @@ KeptCheck | the city's books hold a piece of paper (the fixture's premise for a 
 The publisher's normal fix-ID==FS5 removal remains the publisher's action.
 Java machinery remains+819/-809 and registry-inclusive+819/-829, generated
 maps/notes/ship excluded. FS5 stays UNTAGGED, with no model/playtrace change
-or ensemble owed. The provisional marker remains first; root's final normal
---no-tag gate is still owed, followed by a separate readiness decision.
+or ensemble owed. Root GO474f settles the order: readiness now, then root's
+normal --no-tag publication gate. No builder dry run or gate-run is owed.
 
 Records-only validation: extracted the actual ship.sh sect/shiprows parser
 functions without invoking ship.sh, plus tools/known-reds.sh FS5 on the
@@ -1950,4 +1951,34 @@ readiness check or a substitute for any original software coverage.
 Only FS5-notes.md and FS5-ship.md change in GO2413. Source, dials, class/data
 files, registry, observer scope and old raw evidence stay unchanged. No
 compile/JVM/fast/pick/ensemble/dry/readiness check ran. Provisional records
-checkpoint; no owned job. Waiting for the orchestrator's explicit next GO.
+checkpoint; no owned job. Root's subsequent readiness GO474f is recorded below.
+
+## Root GO474f: readiness before the publisher's normal gate
+
+Root accepted a58b8f1e2, the complete73-call/exclusion/paper/quiet audit,
+kept7's ALL OK result and unchanged post-run seals for sourceaa570ab45.
+KHL1 stays Pending for Jerus's historical ownership/capture review, with
+no adopted fix/exemption. All four FS5 registry veto rows remain unchanged
+for the publisher's normal fix-ID removal. All actual limits, raw evidence,
+source/model/class/data bytes, hard laws and1536MiB bound are retained.
+
+The final records-only provisional commit replaces the changelog's stale
+waiting/marker narration with the factual current software pass at the
+unchanged bound and historical Healthcare ownership pending review. It is
+pushed and its marker verified on origin BEFORE a separate last commit
+removes only that marker. This is the root's readiness GO, not publication.
+The publisher's normal --no-tag gate follows FS5 ready. No prior gate is
+claimed, no dry run or gate-run is owed, no model/playtrace change or ensemble
+is owed, and the accepted pick24/237/review-not-needed are not replayed.
+If the publisher sends FS5 back, restore and push the marker FIRST.
+
+Records/parser validation uses the same actual publisher sect/shiprows and
+normal known-reds parser as GO2413, with a new474f receipt; this validates
+only records. Java machinery+819/-809 and registry-inclusive+819/-829 remain
+unchanged, generated maps/notes/ship excluded. The final semantic source
+paths are src/main/java/ham/citybuildersim/KeptCheck.java,
+src/main/java/ham/citybuildersim/Observation.java and
+src/main/java/ham/citybuildersim/ui/KeptBench.java, all byte-identical to
+accepted sourceaa570ab45. No compile/JVM/fast/pick/probe/rejudge/ensemble/
+dry/readiness execution, builder publication or main push is performed.
+No owned job remains. Readiness is authorized now; root publication follows.
