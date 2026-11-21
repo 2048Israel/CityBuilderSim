@@ -171,9 +171,9 @@ a call, on the suite's default pool, with the earth and world paths set.
   - The city moved under it. The timed sections that played months left
     KeptCheck (10's running clock, pageCost's months, 68, 81 and 90), and
     35 plays one more.
-  - By the batch rules a red caused only by a moved played city is named in
-    the ship file's known-reds with FS1 as its queued fix. The line still
-    asserts, and FS5 owns the section.
+  - Its known-reds row in the ship file names FS5, the sweep that owns the
+    section (KeptCheck from 55, queued next), as the orchestrator ruled. FS1,
+    named first, has shipped. The line still asserts.
   - Every line below 55 is green, and every FS4 row's line with it.
 - origin/main moved to ac224abf3 (FS17) and was merged at 603fa7137. The
   only conflict was known-reds: FS17 retired its SaveFileCheck row and FS4
@@ -212,6 +212,17 @@ a call, on the suite's default pool, with the earth and world paths set.
     so it is the same page under more load, not a heavier page.
   - Row 22's line (the whole kept chrome) was within KEPT_ALL_CHROME_MS in
     every warmed run: 6.0, 5.2 and 3.8 against 8.
+  - Every budget is KeptCheck's old one, unchanged: the same 19 dials,
+    each with its value and its sentence verbatim (docs/dials.md at
+    1d8a1f243 against now, compared row for row): KEPT_MONTH_MS 12,
+    KEPT_CHROME_MS 4, KEPT_ALL_CHROME_MS 8, KEPT_HISTORY_MS 13,
+    KEPT_INFRASTRUCTURE_MS 9, KEPT_SERVICES_MS 13, KEPT_LAND_MS 5,
+    KEPT_BUILD_MS 12, KEPT_CONSTRUCTION_MS 4, KEPT_SECTORS_MS 18,
+    KEPT_SECTOR_MS 15, KEPT_BANK_MS 12, KEPT_FINANCES_MS 18, KEPT_FUND_MS 92,
+    KEPT_GOVERNMENT_MS 7, KEPT_TRADE_MS 10, KEPT_POLICY_MS 10,
+    KEPT_HOUSEHOLD_MS 8 and KEPT_RANKINGS_MS 7. No budget is new and none
+    moved; the 29 labels are KeptCheck's. The misses above were expected
+    on this PC under load (the orchestrator, 2026-11-20).
   - In the gate's soft suite the harness skips at once. Its hard verdict is
     the nightly's, on the gate box, as KeptCheck's was.
 - `./batch-check.sh TimingCheck` after the merge and the warm-up: OK, and
