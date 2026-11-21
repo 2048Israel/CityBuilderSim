@@ -76,6 +76,10 @@ graph options, if possible as soon as possible". It goes ahead of the queue. One
 - The pick (`tools/pick.sh origin/main HEAD`): ChartCheck ClockCheck HistoryCheck InterestAbroadCheck RankingsCheck
   ReadPathCheck ResearchViewCheck ScaleCheck StaffingDrawCheck TimingCheck WorldMoneysCheck YearBookCheck (12 of 232;
   `HistoryScreen.java` is read by no harness by name; `KeptCheck` draws it and runs at the gate). Not ALL, so no dry run.
+  Run as `./batch-check.sh --pick` with `-Dcbs.parallel=1` on the tree with origin/main (3294dde04, FS13 merged) merged
+  in: **"suite OK - 12 harnesses"** in 3 min 16 s. The merge's only conflicts were the generated `docs/harnesses.md` and
+  `docs/map/README.md`, taken from main and regenerated; the date stamp the laptop writes (2026-11-20 against main's
+  -21) was left out of the commit.
 
 ## 4. The default trace
 
