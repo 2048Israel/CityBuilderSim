@@ -841,6 +841,77 @@ Do not replay a seed merely to retrieve the whole education or player log.
 No production/player/harness mend or red classification is selected here;
 the original `home > 1` law, 15 raw findings and provisional marker remain.
 
+## Static target planner preparation for review
+
+Mail `20261121-164307-265-orchestrator-f786` authorizes preparation only.
+The actual ignored source is
+`target/wg3-planner/driver-src/ham/citybuildersim/WG3PlannerTrace.java`;
+`driver.diff`, `README.md`, `preparation.json` and retained class/dependency/
+data manifests sit beside it. Driver SHA256 is
+`0fe69a94deb4129fb2e1c90aa44ceb06b9aeedc2fecc58117010489c30f35e6d`;
+the full addition diff is
+`4b1fc364f35c6a0eff59b5dda791a9e5b7d351845f98f877eca00498df786851`.
+Only file/hash/JSON and source-signature inspection occurred: **no compile,
+typecheck, JVM, box access or poll**. No scenario or threshold was tried.
+
+One fixed controlled census is formed by native
+`PopulationCohorts.reset/migrate(4 * Low-Rise.capacity)` and
+`FamilyModel.rebuild`, with native age/stage/shape rules, all adults declared
+working in the first PayTier and no outside/owner/seeker adults. Native
+segment/head accessors and standing by-size stock feed RealEstate's ordinary
+setters. Guards require both adult stages, family demand beyond a whole
+Low-Rise and no construction queue. Segment rents are fixed once at 10,
+the existing HousingCheck planner-fixture input; all catalogue templates and
+native maintenance/tax/hurdle/quote rules remain available and unchanged.
+
+The diagnostic uses **native** `getCostOf`, `estimatedMonthlyProfit`,
+`housingBuildHurdle`, `Game.quoteBuild`, sector cash/principal/rate and
+`pastDefaultPoint`. Both positive native rent hurdles must be cleared, with
+finite positive costs/quotes. Declared owner cash is seeded once at 1,000
+times the larger native one-unit cost/quote and must cover both alternatives
+and the ample order; no loan or finance transaction is executed. This is a
+cash-financed controlled planner input, not a substitute lender success flag.
+There is no planner score or latent-demand/GDP formula in the driver.
+
+The ample arm has the native Low-Rise footprint and must natively plan exactly
+one Low-Rise. The second arm changes **only** BusinessInvestment's available-
+area view to the native House footprint, at the same native unit price;
+House plots must be positive and Low-Rise plots zero. Native demand, full
+costs, quotes, hurdles, rents, cash/principal/rate, jobs/stock and month must
+remain identical, and the native family census must remain bitwise equal.
+The Game quote's physical-land view is logged separately and stays fixed:
+this seam test does not pretend to execute a land purchase or building.
+All native templates remain eligible; failed ample selection or any other
+premise yields LIMIT, without input tuning or a retry.
+
+Original 6ede mechanics are expected to return a narrow land hold, since
+selection precedes the plot gate. The target records that complete
+observation with exit 1; a natively selected House is an observation/0,
+never a green gate. Other outcomes, failed premises, nonfinite required
+fields, exceptions or cleanup failure are INCONCLUSIVE/2. This does not
+establish a normative planner mend or clear the original `home > 1` law.
+Original-month House hurdle/finance and prior-look flows remain missing;
+the accepted 5570/3060 land refusal, 373→397 public skip and observed-state
+after-cost owner comparison retain exactly the limits stated above.
+
+The prospective isolated compile uses only this target source, empty
+sourcepath and frozen **6ede2fa3a** model classes/dependencies; runtime is
+driver-classes:base-classes:DEPS with no model/harness overlay. The retained
+2,444-class manifest is `29134c44…`, exact dependency classpath `fbc5cc67…`;
+full pins/source blob ids and Earth/world hashes are in preparation.json.
+Native gate.env must select Temurin **21.0.13+9-LTS**, with named box data,
+headless flags and local fallback refusal. Future cached-class/dependency/
+data before/after checks and actual terminal/home-copy receipts remain owed.
+
+Only on separate central execution GO: **one fresh BOX model JVM, 30 seconds
+remote / 60 total including preflight/compile/copy**, no monthly/seed replay,
+parallel run, extension, retry or laptop fallback. Explicit GameFiles live
+under one TempDirs child; validated child-only, non-following cleanup emits
+a marker, followed by the native shutdown cleanup. The README names every
+accessor, phase, command/classpath and required receipt. No runtime wrapper
+or execution started. Production/harness source, accepted university proof,
+valid ensemble and provisional marker remain unchanged; housing is unresolved.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
