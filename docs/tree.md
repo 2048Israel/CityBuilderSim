@@ -1024,6 +1024,9 @@ adds its line here, not in `CLAUDE.md`.
         Timing.java                the one helper every timing assertion goes through (TM1, 2026-10-18): under
                                    -Dcbs.timing=soft a figure over its budget says SOFT and is not counted, so
                                    two batches' suites check side by side; TimingCheck holds it
+        KeptTimingCheck.java       KeptCheck's timed sections (FS4, KT1): each kept page's month against the same
+                                   month built new, within its KEPT_*_MS budget, on KeptCheck's city played on to
+                                   the month each budget was measured at; nothing when soft, judged hard nightly
         Observation.java           played-path readings, dependent-law skips and locked nightly last-held records (PO1)
         ObservationCheck.java      a held-off premise, its skipped law, hard independent failures and child-JVM forwarding
         DeterminismCheck.java      the month reads nothing of the machine (batch DT1, 2026-11-05): three child
