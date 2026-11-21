@@ -1,20 +1,23 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
-Latest full-run result: frozen source aa570ab45 on .180 completed its
-ONE authorized final native-software run with exit0/ALL OK. Live1521.3MiB
-minus actual18.5MiB render targets gives objects1502.8MiB, below the
-unchanged1536MiB bound by33.2MiB. Government hard release1832->0 passed.
-The exact Healthcare choice's two original primary pairs were equal,
-252 rows each; no held looks were called. Actual73 reshape calls and their
-exclusions are recorded below. Source/classes/JDK/data stayed frozen.
+Current status: BLOCKED/Pending after the stopped BOX gate
+cbs-gate-FS5-pcPZSnVc on ready2dfd503a4/base da438. Sole new hard assertion:
+object heap1711.9MiB > unchanged1536 by175.9 (live1716.5-target4.6).
+Gate phase773s/exit4, outer exit1; not published. Marker was restored and
+pushed FIRST in own commit1d480d976, verified on origin before records edits.
+Root moved FS5 to main Pending in queue-only f2dba242; no merge/check replay.
 
-Historical full6 remains two hard failures at source0446/.179, including
-objects1589.6MiB/53.6MiB excess and Healthcare's four repeating held looks.
-The86.8MiB lower current object reading is not attributed to cleanup or
-parent traversal, and no historical leaf cause is proved. All FOUR own
-vetoes remain byte-for-byte; registry/source are unchanged after the run.
-Root GO474f authorizes readiness now, followed by the publisher's normal
---no-tag publication gate; final records and marker removal are recorded below.
+Native kept7 remains truthful PASS at sourceaa570/.180:
+live1521.3-target18.5=objects1502.8MiB, Government release1832->0 and
+two equal Healthcare primary pairs. It is NOT a gate-box pass or waiver.
+BOX Government release1904->0 also passes, but actual model/workload and
+unsealed class/data/JDK/platform facts limit comparison. BOX73 numeric
+share counts match native totals; funding labels, papers/lots and quiet
+counts differ. No root/source/runtime attribution from209.1MiB object delta.
+
+All four existing FS5 vetoes, KHL1Pending scope, hard laws and old evidence
+remain. Source is unchanged fromaa570; only saved/static audit and records
+are authorized. No owned job. Waiting for root review/separate GO.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -1982,3 +1985,282 @@ src/main/java/ham/citybuildersim/ui/KeptBench.java, all byte-identical to
 accepted sourceaa570ab45. No compile/JVM/fast/pick/probe/rejudge/ensemble/
 dry/readiness execution, builder publication or main push is performed.
 No owned job remains. Readiness is authorized now; root publication follows.
+
+
+## Root GO658b: stopped BOX gate, static/saved evidence only
+
+FS5 was NOT published. Before any other tracked edit, marker-only commit
+1d480d9766f5aaf88595a8e489005a1aef4b9c70 restored the provisional marker,
+pushed and verified on origin. Bus state is blocked, with gate base
+da43868fb86115c2ce41ca669915609f79704170 and the three unchanged source
+paths. Root alone moved FS5 to main Pending in queue-only
+f2dba24270a0ba34bd08f3214285d9e98c1bb942; its sole diff from da438 is QUEUE.md.
+No merge/recheck is needed for that records-only main change. Return to
+Queued remains Jerus's decision. No passing gate-run comment is added.
+
+### Sealed stopped result
+
+Original copied run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FS5-pcPZSnVc.
+Root's immutable receipt records checks.complete, exit1, not cancelled,
+inactive and all original controller/ship/guardian PIDs gone. This worker
+did no remote access or process poll. Root verified ALL859 manifest hashes.
+This audit matched that manifest digest and its859 entries, verified the
+selected manifest entries, and made byte-preserving copies of30 relevant
+files under target/fs5c2-stopped-gate-658b; original gate files were not edited.
+
+| Artifact | SHA256 |
+|---|---|
+| checks.sha256 | e96ef0ffff2ec997c7c791a1b877cacf335b9f1a31890ded89fdbe63425a65e8 |
+| checks/suite.txt | e26236563ec5ecc5f88607bde42dcf0ab60c615401d89de933d0936f3893d345 |
+| checks/KeptCheck.log | 600dcfc884ff7f4f0813ed906741f9d782e88c965bdaa00abf86dff0f4f5227a |
+
+Sealed branch2dfd503a4f67a217e6e8e9da979e10d0c0406018/base da438;
+normal --no-tag gate, no publication. Saved selection says full/nightly
+KeptCheck, PrizeCheck, ShortSellingCheck, version0.9.180. The recorded pick
+was24/237, review not needed; actual suite ran225 harnesses in756s,
+212 passed/13 failed,12 known-red harnesses and only KeptCheck NEW.
+Whole check phase773s/exit4; KeptCheck311.2s/exit1; outer gate exit1.
+The three unnamed lines are exit1, the ONE object-heap assertion FAIL,
+and1 FAILED. Full UTF-8 KeptCheck log scan finds that sole failed assertion
+at line5356 in section102; it continued through103 and its final summaries.
+No absent fault is inferred from a last-N tail.
+
+| Actual reading | Native kept7 | BOX gate |
+|---|---:|---:|
+| Live after release, MiB | 1521.3 | 1716.5 |
+| Render-target payload, MiB | 18.5 | 4.6 |
+| Objects, MiB | 1502.8 | 1711.9 |
+| Unchanged hard bound, MiB | 1536 | 1536 |
+| Margin / excess, MiB | 33.2 below | 175.9 above |
+| Found canvases / target-bearing / heap-bearing | 45 / 10 / 10 | 45 / 10 / 10 |
+
+The BOX live reading is195.2MiB higher, target reading13.9MiB lower, and
+object reading209.1MiB higher. Arithmetic is not source/runtime/root
+attribution. The native pass is NOT a BOX pass or waiver. Neither the old
+full6's53.6MiB excess nor this BOX175.9MiB excess has a proven byte owner.
+
+### Proved provenance and limits
+
+Git src subtree c518908bbc58374df1b680830be6990f7067aa63 is identical at
+aa570ab45, ready2dfd503a4 and this restored branch. Ready full tree is
+79ecf07f914d92eadec074f95120508b87e5ed54; aa570's tree is
+85593ac35c36946a93088db7dee646938402fae2 (notes/ship account for differences).
+Only KeptCheck.java, Observation.java and ui/KeptBench.java differ under src
+between gate base and branch; the sealed pair plus successful8s gate compile
+prove the declared source/build provenance. The gate's uncommitted publisher
+merge/tree was not separately archived as a committed tree digest. No gate
+class-file digests exist in the859-file manifest, so binary class identity
+to native kept7 is NOT proved by source equality or compile success.
+
+Native kept7 has pre/post source/class/classpath/JDK/data hashes, actual
+Oracle21.0.4+8 JDK/native modules and WinApplication/SWPipeline receipts.
+BOX logs name cbs.display=monocle, glass.platform=Monocle,
+monocle.platform=Headless, prism.order=sw, and actual measured SWPipeline;
+the display report says all nine display harnesses started, none skipped.
+No direct loaded Glass-class receipt, JDK patch/binary/jar hashes, selected
+GC/collection-completion telemetry or matching data-byte hashes were sealed
+in this gate. Gatebox docs name its installed Temurin, not this run's exact
+binary. Linux /home/jerus/cbs/main/data/{earth-2.bin,world-1.bin} paths/version
+names alone do not prove equality to the hashed C:/ native data files.
+
+AllChecks.command adds -Xmx2048m/-Xms64m, observation harness forwarding,
+timing forwarding and UTF-8 output options. Native direct kept7 used
+-Xmx2048m/-Dprism.order=sw with no explicit -Xms and only its accepted
+capture properties. Gate runs under the multi-process suite, native alone.
+These are configuration/workload differences, not a demonstrated cause.
+BOX observer writes0; native observer wrote2 equal primary pairs. No BOX
+raw signature/viewport/texture physical-dimension census was captured.
+Same source WIDTH1456/RAIL_HEIGHT900 constrains intended geometry, not
+identical actual layouts. Native's captured restored body1456x698,
+content1454x682/viewport1454x696 cannot be assigned to the BOX graph.
+
+### Actual workload, premises and exclusions
+
+Both watched cities start month605/population4903. Government entry is
+native2369 versus BOX2370. Build44 differs: native no-land10000 Houses
+versus BOX100 Houses; native1000 Metro Line and532 Studio Apartments
+funding cases versus BOX10000/1547 Crude Pipeline cases. Numeric per-call
+counts match for all73 calls, but five call labels/caused workloads differ.
+No complete model-state identity is proved by shared month/population.
+
+Government release: BOX1904 distinct fresh nodes/0alive, versus native1832/0;
+signature/counters/kept-nodes/roots/abort restored all true, all four hard
+assertions pass on both. This proves that specific exercised lifetime
+regression, not release of every prior comparison or an attribution of
+the entire residual. BOX's three Healthcare-open assertions all pass;
+no held content look or accepted KRT1 reading occurs. No original full6
+leaf, historical UI-versus-bench owner or new KHL1 exemption follows.
+
+BOX Fund63 settles1 actual holding/B:3181 lasting114 months versus3 watched,
+and the held-rule assertion reports36->32 lots; native is1 settled/B:3102
+lasting116,17->18 lots. These printed totals differ and are retained as-is.
+BOX section92 finds2 papers already held; it exercises neither a fresh
+Term sale nor refused-sale fallback there. Native needed a real Term10
+sale and found1 paper; its fallback was also unexercised. BOX Bank Profit
+quiet24/25(max1) versus native25/25(max0); retired quiet label is not renamed
+passing. Three BOX grid holds report0closed/unheld0, as native does.
+
+BOX73 calls total1087 counted/1237 choices, two content readings excluded,
+148 acting choices excluded,0 refusals. All numeric rows match native,
+not all page labels. KRT1 readings0/held-content-looks0. BOX KBP1 traces2
+blocks, both Policy Money > The currency22/201, repeated redraw0, retained
+89.1% and excluded only under the standing content law (77 calls8 and9,
+each10/11). BOX has0 recurring blocks. Native had two additional Build
+Overview blocks within its25-month watch; those were not excluded. The
+complete BOX per-call table follows, with its actual funding labels.
+
+### Static lifetime/walker/measurement owners
+
+KeptCheck.kp2cMends (section102, source9396 onward) holds Game/KeptBench on
+the driver stack. It runs retiredPicture/retiredChrome, bench.release,
+a non-FX-to-FX FIFO barrier, System.gc(), hard weak-release assertions,
+then MemoryMXBean heap-used BEFORE canvasTargets/renderer readback.
+There is no sealed GC-completion telemetry; no runtime conclusion about
+collection policy follows. Release snapshots the eight existing scene roots
+into the one existing1x1 image to drain dirty lists; it does not discard
+Game, UI, screen pools or those scenes' graphs.
+
+KeptBench fields64ff retain UI, scenes, kept-node lists/pools and histories.
+UserInterface owns each screen and Game. Kept.Pool/Scope holds made/inner/
+parked keyed scopes (parked bound48). These are existing root candidates,
+not proven excessive owners. Government comparison body/targets restoration
+and finally clearing are at1567-1620; their sampled regression passes.
+The Healthcare observer active context is null outside its exact chain and
+BOX never enabled writes; no observer root or blanket exoneration is inferred.
+
+canvasTargets1692ff identity-visits objects from UI plus eight roots,
+Node.parent/children/graphics/clips/properties/ScrollPane.content,
+collections/maps/Object[] and fields/statics of ham.citybuildersim.ui classes.
+It does not reflect arbitrary JavaFX/Prism internal static roots or all Game
+fields. Reader follows found Canvas.peer fields and NGCanvas$ wrapper fields
+to Texture, counting SW4*physicalWidth*physicalHeight. The visited walk
+deduplicates Node/object identity; no separately proved shared backing-array
+alias dedup is claimed. Both45/10 counts do not prove matching graph or
+array identities across processes. Cache/effect/readback copies and unknown
+arrays remain objects under the hard bound, never presumed subtractable.
+
+Saved official JavaFX21 source (archiveSHA599fa2b1c7dd343ab48bebb7b3da7f490d2420dc82f448e517345e182b94cc76)
+shows NGCanvas.highestPixelScale = ceil(max recommended screen output scale),
+logical dimensions scaled before allocation, and SW physical dimension
+fields. This is a possible mechanism consistent with the roughly4x render
+payload ratio, NOT measured scale/dimension evidence from either full run,
+and it assigns none of the209.1MiB object delta or remaining175.9MiB.
+
+### ONE proposed next evidence scope, not authorized implementation/execution
+
+No hprof/JFR/model-save checkpoint exists in the sealed copied gate; the
+original JVM is gone. Logs cannot reconstruct its retained heap or complete
+model/UI/pool state. A cheap generic fixture cannot honestly recreate it.
+Recommend ONE opt-in failure-time heap evidence bundle on the NEXT
+independently required, separately authorized BOX KeptCheck measurement:
+after printing and recording the unchanged section102 hard verdict,
+capture a uniquely named HPROF with dumpHeap(path,false) plus a small
+allowlisted receipt of the existing used/target readings and actual
+source/class/data/JDK/GC/host identities. No extra model month, signature,
+draw/layout/snapshot/settle, pool clearing, repeated comparison, altered
+bound or target exclusion. Continue normal103/exit, retaining FAIL even
+if capture fails. The dump/receipt is ONE evidence bundle, not another sweep.
+
+Local JDK21 HotSpotDiagnosticMXBean docs verify the API: live=true means
+only reachable objects. false permits all objects; it is not a promise
+of zero VM safepoint/collection side effects. Capture is a subsequent
+snapshot, not retrospective proof of exact bytes at the earlier sample.
+Offline root reachability/dominators can distinguish Game/UI/scene/pool/
+Prism owners and unreachable payloads; any proposed causal release/byte
+assignment would still need separate review/proof. No extra GC is requested
+by this proposal; internal effects and observer footprint remain limits.
+Budget disk for about the2GiB heap plus dump overhead; time/IO cost is
+unmeasured and no20s/45s guarantee is made. Root must separately approve
+implementation, process one-in/one-out, host/disk/wall budget and any run.
+No unchanged full replay, current execution GO, source mend or waiver is
+requested here. Await root review of this single evidence proposal.
+
+| Section/call | Counted | Choices | Content readings excluded | Acting excluded | Refused |
+|---|---:|---:|---:|---:|---:|
+| 23: what reshapes Infrastructure / 1 | 14 | 14 | 0 | 0 | 0 |
+| 27: what reshapes Services / 1 | 54 | 54 | 0 | 0 | 0 |
+| 31: what reshapes the land office / 1 | 20 | 20 | 0 | 0 | 0 |
+| 33: what reshapes the funding page / 1 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (a bond) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (the vault's dollars) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 38: what reshapes the Build screen / 1 | 40 | 42 | 0 | 2 | 0 |
+| 42: what reshapes the construction page / 1 | 10 | 10 | 0 | 0 | 0 |
+| 44: what reshapes the no-deposit page (1 x Iron Mine) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-coast page (1 x Desalination Plant) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-river page (1 x Hydro Station) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-bridge page (1 x Highway Bridge) / 4 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-licence page (1 x Engineering Services Office) / 5 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-land page (100 x House) / 6 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build funding page (10000 x Crude Pipeline) / 7 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build fell-short page (2 x Gravel Road built, 10000 x Crude Pipeline left) / 8 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build fell-short page (none built, 10000 x Crude Pipeline left) / 9 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build funding page (1547 x Crude Pipeline) / 10 | 1 | 1 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors list / 1 | 2 | 2 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 2 | 25 | 25 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 3 | 45 | 45 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 4 | 5 | 5 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 5 | 18 | 18 | 0 | 0 | 0 |
+| 96: what reshapes Agriculture's Investors page / 1 | 3 | 3 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 1 | 10 | 10 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 2 | 22 | 22 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 1 | 11 | 11 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 2 | 9 | 9 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 3 | 33 | 33 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 4 | 36 | 36 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 5 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 6 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 7 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 8 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 9 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 10 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 11 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 12 | 1 | 1 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 1 | 14 | 17 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 2 | 6 | 13 | 0 | 7 | 0 |
+| 63: what reshapes the city's fund / 3 | 8 | 8 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 4 | 0 | 3 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 5 | 18 | 28 | 0 | 10 | 0 |
+| 63: what reshapes the city's fund / 6 | 4 | 5 | 0 | 1 | 0 |
+| 71: what reshapes the Government Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 2 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 3 | 11 | 11 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 4 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 5 | 19 | 19 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 6 | 0 | 86 | 0 | 86 | 0 |
+| 71: what reshapes the Government Overview / 7 | 4 | 10 | 0 | 6 | 0 |
+| 74: what reshapes the Trade Overview / 1 | 7 | 7 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 2 | 21 | 26 | 0 | 5 | 0 |
+| 74: what reshapes the Trade Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 4 | 0 | 25 | 0 | 25 | 0 |
+| 74: what reshapes the Trade Overview / 5 | 27 | 27 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 6 | 9 | 9 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 1 | 24 | 24 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 2 | 39 | 39 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 3 | 44 | 44 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 4 | 55 | 55 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 5 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 6 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 7 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 8 | 10 | 11 | 1 | 0 | 0 |
+| 77: what reshapes the Policy hub / 9 | 10 | 11 | 1 | 0 | 0 |
+| 84: what reshapes Household money / 1 | 72 | 72 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 1 | 44 | 44 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 2 | 15 | 15 | 0 | 0 | 0 |
+| 95: what reshapes Policy, Research's Found page / 1 | 4 | 4 | 0 | 0 | 0 |
+| 99: what reshapes Policy, Research's Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 100: what reshapes Policy, Research's Funding / 1 | 9 | 9 | 0 | 0 | 0 |
+| Total | 1087 | 1237 | 2 | 148 | 0 |
+
+The full audit and30 copied artifact hashes are in
+target/fs5c2-stopped-gate-658b/audit.json; library-source/label comparison
+is static-owner-context.json. No original gate folder/manifest/suite was
+modified; selected original hashes still match the immutable copied set.
+Java machinery+819/-809 and registry-inclusive+819/-829 remain unchanged,
+generated maps/notes/ship excluded. The accepted pick/review are not rerun.
+
+Only notes and provisional changelog wording change after marker restoration:
+both the native pass and hard BOX failure are explicit. No registry removal,
+retarget, red waiver, passing gate-run, new row/ID, code/runtime/dial/model
+mend, readiness, merge, publication or main push. FS5 blocked/Pending;
+no owned process. Waiting for separate root review/GO of the ONE payload.
