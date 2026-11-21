@@ -1253,3 +1253,62 @@ Process counts remain Java +653/-607 and registry-inclusive +653/-627;
 the previous 24/237 pick and review line are unchanged. The provisional marker
 stays. The result was reported before any further proposal, as instructed;
 any funded replacement fixture or further JVM needs a new scoped/slot GO.
+
+## Read-only affordable fixture proposal and target reporting fix
+
+GO `20261121-142357-899-orchestrator-ee79` authorized records/read-only
+preparation, not execution. The raw hospital LIMIT, wrong innerexit0,
+authoritative outerexit1, source and receipts remain unchanged: all five
+artifact hashes from its audit were checked again. New target-only candidate
+files fix reporting without overwriting that evidence. CentreAccess unwraps
+ExecutionException's Exception/Error cause so Limit reaches its handler;
+CentreDiagnostic initializes exit1 and sets success only after normal
+completion, with cleanup in finally. This fix is source-reviewed, not compiled
+or runtime-verified. No JVM, monthly call or Stage ran on this GO.
+
+One proposed fixture, still HELD: the same standard played(null) scratch
+founding, ONE actual Community Health Centre plus forty standing Houses
+through ordinary Game.buildStack(...,true), then exactly six counted monthly
+calls. Catalogue id19 is HEALTHCARE/GENERAL, capacity12000, cash9569,
+upkeep190, land90000 and69 jobs (12 no diploma,20 diploma,26 college health,
+3 college business,8 doctors). House id0 has capacity6/dwellings1, cash266,
+land8000. This reaches the same GENERAL care-accounting and Government
+detail branch as the hospital, with no template, cash, capacity or ledger
+write. Every actual build result/increment would remain required SUCCESS.
+
+The static opening bill uses PriceLevel.FACTOR=8.333/321.943 from source:
+Centre247.67886551346046 plus40 Houses275.40005528929034 equals
+523.0789208027508, against standard cash2588.3463842978417, leaving
+2065.267463495091. The Centre's opening upkeep is4.917858130165899.
+BuildingCatalog reads the definitions, BuildingsTemplate prices cash/upkeep
+at that factor, Game.FOUNDING_CASH uses the same factor, and the standing
+build path bills actual quantity*cashCost. These are static figures, not a
+new runtime quote; ordinary build checks and later monthly repricing remain.
+
+The Houses address a separate staffing premise: founding hundred household
+places are aggregate capacity, while getTotalHomes/homesBySize count actual
+residential doors. Migration caps arrivals at FamilyModel.roomLeft. Real
+doors plus the Centre's jobs let normal migration/cohort/labour paths staff
+its twelve no-diploma posts without manufactured residents, skills or fill
+rates. Positive payroll by month6 is still a required observation, not a
+static guarantee. Any absent premise stops as LIMIT without fallback.
+
+The ordinary monthly category payroll/upkeep reaches Healthcare.advanceMonth,
+then EconomyManager.setHealthcare and NationalAccounts health spending.
+Government.healthSpendDetail reads the same care payroll/upkeep by GENERAL
+type and builds the real "by kind of care" detail. All positive payroll,
+upkeep, NA, visible row, actual expansion and changed-signature premises stay
+hard, as do six delta1 calls and delta6 total. No source mend is established.
+
+The exact proposal, source/static bill and causal trace are in
+target/FS5c2-healthcare-affordable-proposal.md; its static audit JSON records
+catalogue inputs, candidate hashes and unproved payroll. Candidate bridge,
+diagnostic and runner are prepared under unique Centre names and output
+paths; none has been compiled or executed. A future run would still need
+a NEW scoped/slot GO explicitly covering the Centre and forty Houses,
+native Stage before first CSS/layout, separate actual-page calibration,
+at most four hard fresh comparisons, taller negative and held checks,
+nativeWin/SW Xmx768m expected20s/hard45s TOTAL. The laptop is unallocated.
+Four vetoes, full four Healthcare looks, 53.6 MiB residual, cache-root
+uncertainty and provisional marker remain unchanged. Production and process
+counts are unchanged; this is records/preparation only.
