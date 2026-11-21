@@ -18,6 +18,12 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
+The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
+and targets projected subscription use of 98-99% at reset without intentionally exhausting a plan. Stale readings forbid uncertain-provider launches;
+current MemWatch advice routes within the ceiling, with explicit Codex workers while Claude is exhausted and reassessment after reset. Dispatches
+record readings and reserve forecasts, and controller handoff precedes exhaustion. This is operational policy, not a hard MemWatch launcher guard.
+
 ### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
 A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
 `buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised
