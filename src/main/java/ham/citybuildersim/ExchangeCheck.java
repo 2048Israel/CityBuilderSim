@@ -342,6 +342,158 @@ public class ExchangeCheck {
         }
     }
 
+    /* ================= 7c. the last trade under fair value (RB3) ================= */
+
+    /**
+     * RB3'S TOWN: section 7b's company and its buyback over target; twenty of its hundred owners leaving with their 2,000 shares, held
+     * abroad from then (section 3), so the month's leavers ask more than the buyback's money buys; and the city's fund holding `heldShare`
+     * of the company on its market book, handed it by the owners who stayed (a fixture of a holding, as 7b's). The desk's bank has
+     * `deskCapital`, and 0 closes the desk; an open desk holds 1,000 of the shares too, so it asks and the buyback's money is spent.
+     */
+    static final class LeaversTown {
+        /** Section 7b's company, as main() names it. */
+        static final int RETAIL = Equity.indexOf(Sectors.RETAIL);
+        final Equity reg = withRecord(RETAIL, fading(10_000 * Equity.requiredReturn(W)));
+        final HouseholdBalance owners = savers(20.0, 4.0);
+        final Exchange ex = exchange();
+        final TreasuryFund fund = new TreasuryFund();
+        final Firms firms = new Firms();
+        final Bank bank;
+        final double held, inIssue, leavers;
+
+        LeaversTown(double heldShare, double deskCapital) {
+            reg.listIfUnlisted(RETAIL, 10_000, owners);
+            double[][] stay = new double[FamilyStructure.values().length][PayTier.values().length];
+            stay[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 80;
+            double[] income = new double[HouseholdBalance.ROWS];
+            income[PayTier.UNSKILLED.ordinal()] = 80 * 4.0;
+            double[] none = new double[HouseholdBalance.ROWS];
+            owners.advanceMonth((s, t) -> stay[s.ordinal()][t.ordinal()], income, 0, none, none, .25, .05, 1);
+            reg.followEmigrants(owners);
+            leavers = owners.getSharesTakenAway(RETAIL);
+            Household cell = couple(owners);
+            if (deskCapital > 0) {
+                cell.shares[RETAIL] -= 1_000 / cell.households();
+                reg.moveDesk(RETAIL, 1_000);
+            }
+            inIssue = reg.getShares(RETAIL);
+            held = heldShare * inIssue;
+            cell.shares[RETAIL] -= held / cell.households();
+            reg.moveCity(RETAIL, held);
+            fund.receive(1_500);                              // 7b's cash beside its shares: not so overweight that the band sells them too
+            ex.attachFund(fund);
+            firms.assets[RETAIL] = 10_000; firms.equity[RETAIL] = 10_000;
+            firms.cash[RETAIL] = 5_000; firms.opex[RETAIL] = 100;
+            bank = bankWith(deskCapital);
+        }
+
+        /** The month: the exchange's step, the book having last traded at `last` (NaN: never). */
+        LeaversTown step(double last) {
+            if (last > 0) ex.bookOf(RETAIL).seedLastPrice(last);
+            ExchangeCheck.step(ex, reg, owners, bank, firms, bookOf(RETAIL, 10_000), W, DEPOSIT_AT_HURDLE, 1);
+            return this;
+        }
+
+        int tradedIn = -1;
+        double tradedAt = Double.NaN;
+
+        /** ...the book having traded at `last` in month 1, a share between two who settle nothing, and the step `age` months on (RB3's stale trade). */
+        LeaversTown stepAged(double last, int age) {
+            OrderBook.Clearing anyone = new OrderBook.Clearing() {
+                @Override public double capacity(String who, OrderBook.Side side, double price) { return Double.MAX_VALUE; }
+                @Override public void settle(String buyer, String seller, double quantity, double price) { }
+            };
+            ex.bookOf(RETAIL).submit("a seller", OrderBook.Side.SELL, last, 1, 1, anyone);
+            ex.bookOf(RETAIL).submit("a buyer", OrderBook.Side.BUY, last, 1, 1, anyone);
+            tradedIn = ex.bookOf(RETAIL).lastTradeMonth();
+            tradedAt = ex.bookOf(RETAIL).lastPrice();
+            ExchangeCheck.step(ex, reg, owners, bank, firms, bookOf(RETAIL, 10_000), W, DEPOSIT_AT_HURDLE, 1 + age);
+            return this;
+        }
+
+        /** The shares the fund sold in the month, out of its market book. */
+        double sold() { return held - reg.getCityMarketShares(RETAIL); }
+
+        /** The tenth of the excess the rule asks (TreasuryFund.limitSale()), on the holding and the issue the month began with. */
+        double asked() { return TreasuryFund.limitSale(held, inIssue); }
+    }
+
+    /**
+     * THE BOOK LAST TRADED UNDER FAIR VALUE, AND THE LEAVERS ASK UNDER THE FUND'S FAIR VALUE (RB3; FS13's ★g, FundCheck 9e's town on 60
+     * and 84 months of founding). The over-limit sale asked fair value after the leavers, who rest at the market and at the desk's bid
+     * at the least: a buyback took theirs first, and with more of them than it had money for the fund's ask rested while the buyback
+     * retired the shares around it - so the fund's holding rose past L x s / (s - b). Here every condition is caused: the leavers, the
+     * fund over its limit, the buyback, and the book's last trade, seeded (in (e) a real trade, aged). On the old rule every line below
+     * fails but the fixtures, (d) - the other side of the threshold, fair value where the book last traded over it, as on the old
+     * rule - and (e)'s last, fair value on a trade older than STALE_MARK_MONTHS, as the fund's mark reads the holding (REV-RB3).
+     */
+    static void theLastTradeUnderFair() {
+        out.println("\n--- 7c. the book last traded under fair value and twenty owners leave: the fund's tenth is asked at the market, first, and sold (RB3) ---");
+        final int RETAIL = LeaversTown.RETAIL;
+        double s = TreasuryFund.LIMIT_SALE_SHARE;
+        double fastest = Exchange.BUYBACK_PACE / 12 / (1 - Exchange.SPREAD / 2);
+        double fixedPoint = TreasuryFund.OWNERSHIP_LIMIT * s / (s - fastest);
+        // Fair value as the step strikes it, off a twin's step: struck before anybody posts, on nothing the book holds.
+        double fair = new LeaversTown(fixedPoint, 0).step(Double.NaN).ex.fair(RETAIL);
+        double bid = fair * (1 - TreasuryFund.RULE_PREMIUM);
+
+        // (a) The desk closed, the last trade a spread under fair value - under the desk's bid - and the fund at the fixed point for the fastest buyback.
+        LeaversTown a = new LeaversTown(fixedPoint, 0).step(fair * (1 - Exchange.SPREAD));
+        double retiredA = a.reg.getBoughtBackThisMonth(RETAIL);
+        double heldA = a.reg.getCityMarketShares(RETAIL) / a.reg.getShares(RETAIL);
+        double leftA = a.ex.bookOf(RETAIL).resting(Exchange.EMIGRANTS, OrderBook.Side.SELL);
+        boolean leaversAtBid = a.ex.bookOf(RETAIL).asks().stream()
+                .filter(o -> o.who().equals(Exchange.EMIGRANTS)).allMatch(o -> Math.abs(o.price() - bid) < 1e-12);
+        out.printf(java.util.Locale.ROOT, "   fair %.6f; the fund held %.4f%% (the fixed point), asked %.4f shares, sold %.4f for %.6f; the buyback retired %.4f of %,.0f the leavers asked, %.4f of theirs rest; the fund holds %.6f%%%n",
+                fair, fixedPoint * 100, a.asked(), a.sold(), a.fund.getMonthSold(), retiredA, a.leavers, leftA, heldA * 100);
+        assertTrue("fixture: the desk is closed, and the fund holds L x s / (s - b) of the company at the fastest buyback, over the limit",
+                !a.ex.isOpen() && Math.abs(a.held / a.inIssue - fixedPoint) < 1e-12 && a.asked() > 0);
+        assertTrue("fixture: the buyback fired, and the leavers asked more shares than its money bought", retiredA > 0 && a.leavers > retiredA);
+        close("the fund sold the tenth of its excess over the limit that month", a.sold(), a.asked(), 1e-9);
+        close("...at the desk's bid, fair value less RULE_PREMIUM, the last trade being under it: what it was paid",
+                a.fund.getMonthSold(), a.asked() * bid, 1e-9);
+        assertTrue("...while the leavers' asks at that price still rest: the fund's stood first at it",
+                Math.abs(a.sold() - a.asked()) < 1e-9 && leftA > 0 && leaversAtBid);
+        close("the fund's holding is the rule's: what the tenth left of it, over the shares the buyback left",
+                heldA, (a.held - a.asked()) / a.reg.getShares(RETAIL), 1e-12);
+        assertTrue("...no higher than the fixed point it started at", heldA <= fixedPoint * (1 + 1e-9));
+
+        // (b) The last trade inside the half-spread under fair value: the fund asks at it, and the leavers rest there behind it.
+        double lastB = fair * (1 - TreasuryFund.RULE_PREMIUM / 2);
+        LeaversTown b = new LeaversTown(fixedPoint, 0).step(lastB);
+        close("the book last traded between the desk's bid and fair value: the fund's tenth sold at that trade's price",
+                b.fund.getMonthSold(), b.asked() * lastB, 1e-9);
+        close("...all of it", b.sold(), b.asked(), 1e-9);
+
+        // (c) The desk open, the last trade under its bid: the fund's ask meets the bid the desk stands ready to pay, as the withdrawal's sale does (A21).
+        LeaversTown c = new LeaversTown(fixedPoint, 1_000_000).step(fair * (1 - Exchange.SPREAD));
+        assertTrue("fixture: the desk is open", c.ex.isOpen());
+        close("with the desk's bid standing, the fund's tenth sold at that bid, the price the desk stands ready to pay: what the fund was paid",
+                c.fund.getMonthSold(), c.asked() * bid, 1e-9);
+
+        // (d) The other side: the last trade over fair value, and the ask is fair value, RB1's.
+        LeaversTown d = new LeaversTown(fixedPoint, 0).step(fair * (1 + Exchange.SPREAD));
+        close("where the book last traded over fair value, the tenth is asked at fair value, as on the old rule: what it was paid",
+                d.fund.getMonthSold(), d.asked() * fair, 1e-9);
+
+        // (e) (a)'s month with the last trade a real one, STALE_MARK_MONTHS old and then a month older: past that age the fund marks the
+        // holding at fair value (markedAtFair()), and it asks fair value, not the stale trade (REV-RB3).
+        int stale = Exchange.STALE_MARK_MONTHS;
+        LeaversTown e0 = new LeaversTown(fixedPoint, 0).stepAged(fair * (1 - Exchange.SPREAD), stale);
+        LeaversTown e1 = new LeaversTown(fixedPoint, 0).stepAged(fair * (1 - Exchange.SPREAD), stale + 1);
+        OrderBook.Order restsE1 = e1.ex.bookOf(RETAIL).asks().stream().filter(o -> o.who().equals(Exchange.FUND)).findFirst().orElse(null);
+        out.printf(java.util.Locale.ROOT, "   (e) the trade %d months old: sold %.4f for %.6f; %d months old: sold %.4f, %.4f rest at %.6f%n",
+                stale, e0.sold(), e0.fund.getMonthSold(), stale + 1, e1.sold(),
+                restsE1 == null ? 0 : restsE1.quantity(), restsE1 == null ? Double.NaN : restsE1.price());
+        assertTrue("fixture: before the step the book's last trade is a real one, a spread under fair value, made in month 1",
+                e0.tradedIn == 1 && e1.tradedIn == 1 && Math.abs(e1.tradedAt - fair * (1 - Exchange.SPREAD)) < 1e-12);
+        close("a last trade STALE_MARK_MONTHS old is still the market: the tenth sold at the desk's bid, as in (a)",
+                e0.fund.getMonthSold(), e0.asked() * bid, 1e-9);
+        assertTrue("a month older, the fund asked fair value, as its mark reads the holding: that ask rests, the price of none sold",
+                restsE1 != null && Math.abs(restsE1.price() - fair) < 1e-12 && Math.abs(restsE1.quantity() - e1.asked()) < 1e-9
+                        && e1.fund.getMonthSold() == 0);
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -1081,6 +1233,8 @@ public class ExchangeCheck {
                 b7g > 0 && b7g < TreasuryFund.LIMIT_SALE_SHARE);
         assertTrue("the buybacks lifted the fund's share past the limit", top7g > TreasuryFund.OWNERSHIP_LIMIT * (1 + 1e-9));
         assertTrue("...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue", top7g <= fixed7g + 1e-12);
+
+        theLastTradeUnderFair();
 
         /* ================= 8. the split ================= */
         out.println("\n--- 8. a share that gets too dear is split, and one too cheap consolidated ---");

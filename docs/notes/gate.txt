@@ -1,8 +1,8 @@
-# gate of Merge batch/AP1: (Jerus, 2026-11-20: "next definitly"; his city is unplayable at 1x) The auto-builder's month at 400,000 people: `WorksValue.pendingPowerLoad` rebuilds the site's completion schedule (`BuildingManager.siteUnitMonths`, whose `firstOn` -> `buildersOwnOnSite` runs the builders' staffing for every stack on site) and every template's `NewUnit` power draw at each of ~1,100 calls a month, from `BuildAdvice.figure` and `supplyDemand` inside `BuildAdvice.count`'s search. Jerus's slot 10 (m1204, 421,561 people, 57 stacks and 6,188 units on site) took 7.5-17 s a month against 1x's 5 s (`AutoBuilder.pass` 95% of it). Hold the schedule and the draws for one pass, and for one Build-screen draw, cleared by any order; to the bit, the playtest unmoved, 0.9.175
+# gate of Merge batch/RB3: the fund's over-limit sale (`Exchange.postFundOverLimit()`) asks at fair, and its comment says that ask is under the desk's and the households'. When a company's last trade is under fair, the buyback takes the cheaper asks first and the fund's rests. FundCheck 9e's town at 60 and 84 months held 11.17% (m109) and 11.14% of Construction against the fixed point 10.92% (last trade 0.01039, fair 0.01050). a design question for its builder: the limit sale at the market's ask, or the fixed point bends, 0.9.176
 # date: 2026-11-21
 # earth-2.bin: named
 # nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
-# suite: 223 harnesses run in 612s: 215 passed, 8 failed
+# suite: 227 harnesses run in 759s: 217 passed, 10 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -26,13 +26,13 @@ DistressBleedCheck | ...and the rule is not dead: the centres go when the operat
 CarCheck | exit 1
 CarCheck | a month of car sales is a month of real money                        FAIL  11 cars for $13k, $13k of it imported
 CarCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.3, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.154134 != 378.194773
 Forms1900Check | 2 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 166) never stood above the six months of costs it keeps (at least 133), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 286
