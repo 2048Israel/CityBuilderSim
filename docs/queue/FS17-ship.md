@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS17 (untagged) — the saves, the history and the previews cause their conditions — 2026-11-20, ready, see docs/queue/FS17-notes.md
 The sweep of the saves, the history and the previews (FS1 study 6.16): SaveFile, ReadPath, Reload, History, Gdp, NewGame, PolicyPreview,
