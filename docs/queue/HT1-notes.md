@@ -1,5 +1,14 @@
 # HT1 — household basis and investment taxes
 
+**Collection decision, 2026-11-21 18:35 Atlantic:** Jerus reviewed the liquidity block and
+delegated acquisition of a rule in mail `20261121-182152-415-jerus-422e`.
+The orchestrator chose [cash-first secured deferral](HT1-collection.md): assess
+once, collect available cash after existing estate debt settlement, carry the
+shortfall with affected assets, and book revenue only when cash is collected.
+The earlier blocked-call paragraphs below remain the historical checkpoint;
+they are superseded on this policy question. The implementation is still absent,
+and begins with a static phase/stock plan. L7 remains a separate owner item.
+
 2026-11-21. HT1codex1, gpt-6.1-sol/xhigh, Codex. New isolated batch/HT1 at launch base f2dba24270a0ba34bd08f3214285d9e98c1bb942; origin/main later advanced only QUEUE to 9d4467e8ae610a777f7ce445702c205f3984042c; orchestrator explicitly said not to merge that records-only update to rerun checks. This is a provisional, incomplete checkpoint, **not ready for publication**.
 
 ## Accepted scope and what is implemented
