@@ -1,6 +1,6 @@
-# WantedPostsCheck.java - 1,056 lines · 31 methods · 4 constants · harnesses
+# WantedPostsCheck.java - 1,057 lines · 31 methods · 4 constants · harnesses
 
-`ham/citybuildersim/WantedPostsCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WantedPostsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). Not part of the game.
 > 
@@ -47,20 +47,20 @@
 
 | line | section |
 |---:|---|
-| 304 | · 1. the gate's hold carries its building |
-| 392 | · 2. only the bands it is short in |
-| 416 | · 3. the market prices it |
-| 492 | · 4. never more than the band's own posts again |
-| 534 | · 5. only as far as the business can pay |
-| 618 | · 6. a working builder's laid-off crews are not a shortage |
-| 684 | · 7. it decays |
-| 717 | · 8. it brings the band's migrants |
-| 732 | · 9. the save |
-| 797 | · 10. the month's planning notes its holds |
-| 833 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
-| 905 | · 12. the cap reads the month's own posts (LD2) |
-| 964 | · 13. a band that asked nothing is priced as it was (LD2) |
-| 1010 | · 14. a band closed to migrants asks nothing (LD2) |
+| 305 | · 1. the gate's hold carries its building |
+| 393 | · 2. only the bands it is short in |
+| 417 | · 3. the market prices it |
+| 493 | · 4. never more than the band's own posts again |
+| 535 | · 5. only as far as the business can pay |
+| 619 | · 6. a working builder's laid-off crews are not a shortage |
+| 685 | · 7. it decays |
+| 718 | · 8. it brings the band's migrants |
+| 733 | · 9. the save |
+| 798 | · 10. the month's planning notes its holds |
+| 834 | · 11. an idle builder's laid-off crews are spare for the gate: XS1's trap, released (IC1) |
+| 906 | · 12. the cap reads the month's own posts (LD2) |
+| 965 | · 13. a band that asked nothing is priced as it was (LD2) |
+| 1011 | · 14. a band closed to migrants asks nothing (LD2) |
 
 ## Constants
 
@@ -82,7 +82,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 1008 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
+| 49 | 1009 | **type** `public class WantedPostsCheck` | The posts the staffing gate refused bid their band's wage up (LD1; WantedPosts). |
 | 54 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 59 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 65 | 3 | `static BuildingsTemplate template(Game g, String name)` |  |
@@ -111,7 +111,7 @@
 | 254 | 7 | `static Game reload(GameFiles files)` | A city loaded from the harness's own save slot (never a player's: the folder is the TempDirs root's). |
 | 263 | 5 | `static boolean sameBits(double[] a, double[] b)` | Whether two arrays hold the same doubles to the bit. |
 | 269 | 5 | `static double[] plus(double[] a, double[] b)` |  |
-| 278 | 7 | `static double marginOf(Game g, Sector owner, BuildingsTemplate t)` | The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. |
-| 287 | 10 | `static double primeFor(Game g, BuildingsTemplate t, double hurdle)` | The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. |
-| 298 | 758 | `public static void main(String[] args) throws Exception` |  |
+| 278 | 8 | `static double marginOf(Game g, Sector owner, BuildingsTemplate t)` | The margin Game.noteStaffingHold() works out for a building: what it earns over the interest hurdle at prime and its record. |
+| 288 | 10 | `static double primeFor(Game g, BuildingsTemplate t, double hurdle)` | The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. |
+| 299 | 758 | `public static void main(String[] args) throws Exception` |  |
 

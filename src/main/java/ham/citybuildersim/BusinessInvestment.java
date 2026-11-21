@@ -1169,7 +1169,7 @@ public class BusinessInvestment {
             if (!g.traded()) continue;
             inputs += e.getValue() * markets.get(g).getLocalPrice();
         }
-        return (gross - inputs) * operatingRateOf(sector.getOperatingRate())
+        return (gross - inputs) * sector.plannedRate(t)
                 - runningCostOf(t) - standingCostOf(sector, t.template());
     }
 

@@ -1,6 +1,6 @@
 # CoalMining.java - 503 lines · 27 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CoalMining.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Coal mines and the plants that wash their coal - Coal Mining (0.7.126,
 > batch I6; docs/studies/spec-materials.md 2.1, 2.10 and 5's I6 row; the
@@ -64,7 +64,7 @@
 > blast furnaces the thermal (I4); Cement & Concrete's kilns and cement
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (11), [Resource](Resource.md) (7), [NewUnit](NewUnit.md) (6), [Deposit](Deposit.md) (5), [Game](Game.md) (5), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (10), [Resource](Resource.md) (7), [NewUnit](NewUnit.md) (6), [Deposit](Deposit.md) (5), [Game](Game.md) (5), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (11):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [Sectors](Sectors.md)
 

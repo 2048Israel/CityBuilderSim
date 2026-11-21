@@ -1,6 +1,6 @@
 # PowerDispatch.java - 257 lines · 14 methods · 19 constants · model
 
-`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerDispatch.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > One month's merit order for the city's grid: the rows that make power, the load a month asks of them cut in six half-blocks,
 > and the price each half-block clears at.
@@ -18,7 +18,7 @@
 
 **Uses:** [Good](Good.md) (5), [PriceLevel](PriceLevel.md) (3)
 
-**Used by (8):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [HydroCheck](HydroCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [UtilitiesHandler](UtilitiesHandler.md)
+**Used by (12):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [UtilitiesHandler](UtilitiesHandler.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 

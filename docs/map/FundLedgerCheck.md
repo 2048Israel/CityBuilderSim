@@ -1,6 +1,6 @@
 # FundLedgerCheck.java - 1,093 lines · 28 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FundLedgerCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FundLedgerCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Proves the city's fund's cost basis (FundLedger, 0.7.39): average cost, what sales, maturities, write-downs and a rescue realize, income apart, through a split, a reform and a save, and that the ledger and the fund's own counters tell one story over a played run. Not part of the game.
 > 

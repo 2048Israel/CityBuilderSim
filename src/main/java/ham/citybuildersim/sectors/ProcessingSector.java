@@ -224,7 +224,7 @@ public abstract class ProcessingSector extends Sector {
     public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed) {
         BuildingsTemplate t = u.template();
-        double rate = city.rate();
+        double rate = city.rate(u);
         double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff);
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
     }
@@ -250,7 +250,7 @@ public abstract class ProcessingSector extends Sector {
                                                    double extraCost) {
         if (share == 1 && other == 0 && extraCost == 0) return estimate(u, v, city, factor, tariff, feed);
         BuildingsTemplate t = u.template();
-        double rate = city.rate() * share;
+        double rate = city.rate(u) * share;
         double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff)
                 - other;
         return SpreadPlanner.judge(t, earns, city.cost(t) + extraCost, feed, city, null);
@@ -399,7 +399,7 @@ public abstract class ProcessingSector extends Sector {
     private SpreadPlanner.Candidate weigh(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city) {
         BuildingsTemplate t = u.template();
         double share = feedShare(t);
-        double rate = share == 1 ? city.rate() : city.rate() * share;
+        double rate = share == 1 ? city.rate(u) : city.rate(u) * share;
         return estimate(u, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
                 offMarketFeed(t, rate) + freightRunning(u, v, rate, legPrice()), fleetCapital(u, v));
     }

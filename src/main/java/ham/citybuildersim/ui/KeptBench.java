@@ -2336,7 +2336,8 @@ public final class KeptBench {
     /**
      * The usual funding page's run, an offer covering the gap (REV-FB6-1): fundingRun()'s building first and then the others, each at ten
      * times the count until the model lets none of it ahead, the first with a gap whose two offers, quoted at the page's cap as runOffers()
-     * quotes them, would each still cover `coverBy` times that gap. A run covered that many times over stays covered through a month's moves
+     * quotes them, would each still cover `coverBy` times that gap, or since FS4 the largest count inside that decade whose gap they
+     * would (found by halves when the decade's own gap is more than the market covers). A run covered that many times over stays covered through a month's moves
      * in the market and the cash, so no shortfall line is on the page from its first draw to its last; {the building, the count, the gap},
      * or null when no run the model lets ahead is.
      */
@@ -2349,19 +2350,49 @@ public final class KeptBench {
         order.add((BuildingsTemplate) first[0]);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t != null && !order.contains(t)) order.add(t);
         for (BuildingsTemplate t : order) {
+            int clear = 0;
             for (int q = 1; q <= 100_000_000; q *= 10) {
-                java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildScreen.runOf(t, q);
-                int ahead = g.buildRunAhead(run);
-                if (ahead <= 0) break;
-                double gap = g.buildFundingGap(BuildScreen.firstOf(run, ahead));
-                if (!(gap > 0)) continue;
-                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap * coverBy, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
-                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap * coverBy, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
-                if (!bond.isShort() && !note.isShort()) return new Object[]{t, q, gap};
+                double gap = coveredGap(g, t, q);
+                if (Double.isNaN(gap)) break;
+                if (!(gap > 0)) {
+                    clear = q;
+                    continue;
+                }
+                if (covers(g, gap * coverBy, cap)) return new Object[]{t, q, gap};
+                // FS4: the decade's gap is more than the market covers coverBy times over (a city whose cash buys thousands of the
+                // building first has a gap of thousands of them): the largest count since the last with no gap whose gap it still
+                // covers, by halves. The gap only grows with the count and an offer only shortens with the sum, so the halves find it;
+                // the largest is the one furthest from both edges, the month's cash and the market's bids.
+                Object[] best = null;
+                int a = clear, b = q;
+                while (b - a > 1) {
+                    int m = a + (b - a) / 2;
+                    double at = coveredGap(g, t, m);
+                    if (!Double.isNaN(at) && !(at > 0)) a = m;
+                    else if (!Double.isNaN(at) && covers(g, at * coverBy, cap)) {
+                        best = new Object[]{t, m, at};
+                        a = m;
+                    } else b = m;
+                }
+                if (best != null) return best;
                 break;
             }
         }
         return null;
+    }
+
+    /** A run's funding gap as fundingRunCovered() reads it: the gap on the part the model lets ahead, or NaN when it lets none. */
+    private static double coveredGap(Game g, BuildingsTemplate t, int q) {
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildScreen.runOf(t, q);
+        int ahead = g.buildRunAhead(run);
+        return ahead <= 0 ? Double.NaN : g.buildFundingGap(BuildScreen.firstOf(run, ahead));
+    }
+
+    /** Whether both the funding page's offers, quoted at its cap as runOffers() quotes them, would raise this sum. */
+    private static boolean covers(Game g, double sum, Auction.Cap cap) {
+        ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(sum, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+        ham.citybuildersim.DebtQuote note = g.quoteTBill(sum, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
+        return !bond.isShort() && !note.isShort();
     }
 
     /** The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. */

@@ -1,6 +1,6 @@
 # GoldMining.java - 171 lines · 16 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Gold mines and their mills recover fine ounces at a geology-dependent grade.
 > 
@@ -8,7 +8,7 @@
 > ore throughput costs the same as its grade falls. Under Gold the mint
 > buys the output with new money and keeps the metal in the vault.
 
-**Uses:** [Good](Good.md) (19), [ForeignAccounts](ForeignAccounts.md) (5), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [NewUnit](NewUnit.md) (1)
+**Uses:** [Good](Good.md) (19), [ForeignAccounts](ForeignAccounts.md) (5), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [NewUnit](NewUnit.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
 
 **Used by (4):** [BuildingDataCheck](BuildingDataCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [Sectors](Sectors.md)
 

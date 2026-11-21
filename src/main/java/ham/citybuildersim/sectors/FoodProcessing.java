@@ -404,7 +404,7 @@ public final class FoodProcessing extends Sector {
             }
         }
 
-        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        double rate = plannedRate(u);
         double vat = tax == null ? 0 : Math.max(0, localSales * tax.effectiveSalesRate(this) - credited);
 
         return (revenue - inputs) * rate

@@ -1,6 +1,6 @@
-# NewUnitCheck.java - 941 lines · 30 methods · 3 constants · harnesses
+# NewUnitCheck.java - 945 lines · 30 methods · 3 constants · harnesses
 
-`ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every
 > future-building figure.
@@ -52,7 +52,7 @@
 > are said to be skipped, section 7 orders through buildStack() and says so, and the rest runs: the harness exits 0
 > without them, as KeptCheck does.
 
-**Uses:** [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Good](Good.md) (41), [Game](Game.md) (32), [BuildingsTemplate](BuildingsTemplate.md) (26), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (19), [KeptCheck](KeptCheck.md) (14), [BuildAdvice](BuildAdvice.md) (12), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [BuildingsStacks](BuildingsStacks.md) (10), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [EquipmentFit](EquipmentFit.md) (7), [BuildingManager](BuildingManager.md) (7), [Recipe](Recipe.md) (5), [Recipes](Recipes.md) (4), [Founding](Founding.md) (4), [Sector](Sector.md) (3), [Bank](Bank.md) (3), [WorksValue](WorksValue.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2), [Money](Money.md) (2), [RecipeCheck](RecipeCheck.md) (2), [FittingCheck](FittingCheck.md) (2)... and 8 more
+**Uses:** [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Good](Good.md) (41), [Game](Game.md) (32), [BuildingsTemplate](BuildingsTemplate.md) (26), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (19), [KeptCheck](KeptCheck.md) (14), [BuildAdvice](BuildAdvice.md) (13), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [BuildingsStacks](BuildingsStacks.md) (10), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [EquipmentFit](EquipmentFit.md) (7), [BuildingManager](BuildingManager.md) (7), [Recipe](Recipe.md) (5), [Recipes](Recipes.md) (4), [Founding](Founding.md) (4), [Sector](Sector.md) (3), [Bank](Bank.md) (3), [WorksValue](WorksValue.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2), [PowerDispatch](PowerDispatch.md) (2), [Money](Money.md) (2), [RecipeCheck](RecipeCheck.md) (2)... and 9 more
 
 ## Sections
 
@@ -69,7 +69,7 @@
 | 638 | · 9 |
 | 688 | · 10 |
 | 742 | · 11 |
-| 801 | · 12 |
+| 805 | · 12 |
 
 ## Constants
 
@@ -100,7 +100,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 865 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
+| 77 | 869 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
 | 84 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 91 | 1 | `static void section(String title)` |  |
 | 93 | 1 | `static boolean near(double a, double b)` |  |
@@ -181,16 +181,16 @@
 | 690 | 44 | `static void crewDemand() throws Exception` |  |
 | 736 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
 
-### 11 (lines 742-800)
+### 11 (lines 742-804)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 744 | 56 | `static void powerAhead() throws Exception` |  |
+| 744 | 60 | `static void powerAhead() throws Exception` |  |
 
-### 12 (lines 801-941)
+### 12 (lines 805-945)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 803 | 108 | `static void cardGoods() throws Exception` |  |
-| 912 | 29 | `public static void main(String[] args) throws Exception` |  |
+| 807 | 108 | `static void cardGoods() throws Exception` |  |
+| 916 | 29 | `public static void main(String[] args) throws Exception` |  |
 

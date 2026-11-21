@@ -4055,7 +4055,8 @@ public class Game {
             wantedPosts.heldForCrews();
             return;
         }
-        double earns = businessInvestment.estimatedMonthlyProfit(owner.key(), t) * n;
+        // ...a first plant weighed staffed: the hands are what the ask would pay for (OE1; Sector.staffed()).
+        double earns = owner.staffed(() -> businessInvestment.estimatedMonthlyProfit(owner.key(), t)) * n;
         double cost = businessInvestment.getCostOf(t, n);
         BusinessDebtManager credit = economyManager.getBusinessDebtManager();
         // ...on the cost grown over the order's wait, as consider() asks it (BA1; Slices.carriesAtPrime()).

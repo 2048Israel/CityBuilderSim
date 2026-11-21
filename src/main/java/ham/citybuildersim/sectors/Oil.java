@@ -1608,7 +1608,7 @@ public final class Oil extends Sector {
         double units = well.makes(Good.CRUDE);
         double room = Math.max(0, plans.forecast(this, m) - getCapacity(Good.CRUDE) - getPipeline(Good.CRUDE));
         double atHome = Math.min(units, room);
-        return atHome * shuttleFreightPerTonne() * (1 - pipedShare()) * BusinessInvestment.operatingRateOf(getOperatingRate());
+        return atHome * shuttleFreightPerTonne() * (1 - pipedShare()) * plannedRate(well);
     }
 
     /**

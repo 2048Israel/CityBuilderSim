@@ -297,7 +297,7 @@ public final class Manufacturing extends Sector {
         // The wire works subtracts its own freight below; every other works of its is weighed with its legs (Sector's).
         if (t == null || t.getId() != WIRE_CABLE_WORKS || markets == null) return super.estimatedMonthlyProfit(u, plans);
         double maker = plans.estimatedMakerProfit(this, u);
-        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        double rate = plannedRate(u);
         return maker - SpreadPlanner.ownCosts(u, rate, markets.getExchangeRate(), powerPriceFor(t))
                 - ProcessingSector.freightRunning(u, SpreadPlanner.values(markets), rate, legPrice());
     }
