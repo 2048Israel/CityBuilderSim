@@ -672,3 +672,74 @@ cells that settle and deletes the bound.
 - **The run's time.** The 1900 playtest is the slower one: 38 minutes on
   this PC for 2,400 months (the mean, 1,852,269 people) against 18 for
   today's (1,479,891). Late months run at about 80 per 9 minutes.
+
+## 7. Recovery and the reload mend (2026-11-21, R1gc2)
+
+Recovered the same `batch/R1g` worktree at af8864834, the merge of
+0.9.177 (FB15), preserving the uncommitted `Sector` and `ReloadCheck`
+mends and the generated indexes. The original launch brief is also kept
+in `C:/Users/Jerus/cbs/sessions/R1g/in-1.txt`; the old worker's last work
+is in `out-3.jsonl`. The pace experiments in section 6 stand. Jerus's
+wage-based trailing twelve-month mean and the 1900 default are accepted
+decisions, not questions reopened by recovery. The ensemble baseline is
+`docs/ensemble/0.9.177.md`; no new ensemble or dry run has been started.
+
+**The captive fault, approved in the orchestrator's 05:02 mail.**
+`Sector.produceStock()` subtracted the output row's captive use from an
+order even after a farm's horse share fell to zero. Both production paths
+now set the row's captive figure to zero when `captive(g)` is false. The
+prior trace found 4.398 tonnes retained after the last horse month, and
+ReloadCheck's reloaded farm made 4.128116 tonnes more crop, because a fresh
+row had no retained feed. The fault was also present with R1g's switches
+off. The mend changes that transition in a 1900 city; a city founded
+today's way never has horse feed to retain, so this reset does not move
+its trace. The earlier bit-for-bit comparisons of today's founding in
+sections 4–5 remain evidence for the preceding model changes; they have
+not been rerun for recovery.
+
+Village1900Check section 9 causes the transition on its existing scratch
+village: set every standing farm's tractor count unfitted, apply the
+recipes and equipment forms, produce a crop and assert positive captive
+feed; fit all those tractors, apply both model passes again, assert a zero
+horse share, then produce on the same output row and require zero captive
+feed. The first recovery fixture omitted `EquipmentForms.apply()` and
+failed its own zero-horse premise; adding the normal forms pass made all
+nine sections pass. No bound or premise was loosened. A pre-mend class
+overlay proof remains to be run, without replacing the worktree source.
+
+**ReloadCheck 3b.** FS17 has shipped, so this is repaired here, not passed
+by name. The preserved first mend buys ground as the screens do and
+removes the yard and salvaged material through their model methods. It
+still failed the by-hand assertion: an order placed immediately before
+the save has no materials on the next statement. Construction's
+`beforeBank()` snapshots the month just closed; the work in the month it
+starts is reported at the following strike. The caused order is now
+worked for one normal month before the save, before the other FS17
+conditions are placed. The order size and the by-hand assertion are
+unchanged. Verification of this completed fixture is still outstanding.
+
+**Review as a stranger.** Read the entire saved source delta against main,
+including the pay window's save/load order, exact catalogue-based home
+costs, apprentice netting, the pure advice hold and catalogue cache, and
+the new captive reset and causing fixtures. The review corrected a
+Founding javadoc that still said the screen opened on All fitted. The
+pay window is restored before `Recipes.apply()` and takes one index per
+game month; the cache is thread-local and removed in `finally`, and the
+catalogue lookup cache is concurrent. This builder pass does not replace
+the fresh stranger review the orchestrator orders for money, saves and
+threading.
+
+Recovery checks so far: `./batch-check.sh --fast` exit 0; then
+`./batch-check.sh Village1900Check` exit 0 (all nine sections, including
+the walk's save/load equality and the captive transition). Logs are
+`target/r1g/recovery---fast.txt` and
+`target/r1g/recovery-Village1900Check.txt`. TN1's box gate began before
+the remaining focused checks, so no JVM beyond `--fast` runs while it is
+active. Remaining: the negative captive proof, ReloadCheck, and the
+moved-city HousingDoorCheck/CreditCrunchCheck evidence and named rows
+(FS11/FS9 only where their faults are premises moved by the new founding).
+The approved RN2 expansion covers the caused point's two history lines
+as well as its two save lines; its unsaved owned capacity changes the
+stranded share, rent and price index. Exact current rows follow the
+focused result. No gate-run line will reuse the earlier failed dry run
+`cbs-gate-R1g-A8QKMhXJ`, whose model predates these mends.

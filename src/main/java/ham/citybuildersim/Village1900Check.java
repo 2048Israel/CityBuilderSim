@@ -37,9 +37,11 @@ import java.io.PrintStream;
  *      households' pay once (Recipes.homeScaleOfPay() as the month before ended), the window holding the last Recipes.PAY_MONTHS, and its
  *      House stands at their mean, which the village's pay has moved off homeScale(); the months are saved, so the village loaded into a
  *      fresh Game from its scratch folder stands where it stood, and a month on, where the unsaved one does, to the bit
+ *   9. THE LAST HORSE: a farm's crop feeds its horses, then fitting every tractor takes the horse share to zero and the reused output
+ *      row clears its captive feed (the 1900 played city's reload fault, mended in Sector).
  *
  * Every fixture CAUSES its condition: the cities are founded on scratch folders by the playtest's own founding and played by the
- * playtest's own advisor and automatic works; nothing in them is set by hand but the switches. Figures are asserted against the
+ * playtest's own advisor and automatic works; only the switches and section 9's fitted counts are set by hand. Figures are asserted against the
  * model's own constants and methods (RealEstate.TARGET_RENT_BURDEN, Sector.MIN_STAFFABLE_TO_ORDER, Recipes.homeScale(),
  * ArrivalMix.tradeShareAt()) and the twins' figures, with the margins below stated once.
  */
@@ -130,6 +132,7 @@ public class Village1900Check {
         Seen todayOn = play("village1900-today-on", false, true, true);
         todayUnmoved(todayOn, today);
         walk(home);
+        lastHorse(home.g);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -451,6 +454,33 @@ public class Village1900Check {
         double[] posts = new double[WageBand.values().length];
         for (JobType j : JobType.values()) posts[WageBand.of(j).ordinal()] += jobs[j.ordinal()];
         return posts;
+    }
+
+    /** R1g: the last horse leaves no feed behind on a reused output row (the played city's reload fault). */
+    static void lastHorse(Game g) {
+        out.println("\n--- 9. the last horse: fitting every farm clears the captive crop ---");
+        var farms = g.getSectors().agriculture();
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(farms.key())) {
+            BuildingsStacks st = g.getBuildingManager().getStack(t);
+            if (st != null && t.getEquipment("tractor") != null) st.setUnfitted("tractor", st.getQuantity());
+        }
+        g.getRecipes().apply(g);
+        g.getEquipmentForms().apply(g);
+        farms.produceStock(Good.CROPS, null);
+        Sector.Output crops = farms.outputRow(Good.CROPS);
+        check("fixture: unfitted farms feed their horses from the crop", farms.getHorseShare() > 0 && crops != null && crops.captive > 0,
+                crops == null ? "no crop row" : "horse share " + farms.getHorseShare() + ", feed " + crops.captive);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(farms.key())) {
+            BuildingsStacks st = g.getBuildingManager().getStack(t);
+            if (st != null && t.getEquipment("tractor") != null) st.setUnfitted("tractor", 0);
+        }
+        g.getRecipes().apply(g);
+        g.getEquipmentForms().apply(g);
+        check("fixture: every farm now has its tractor, so no crop is captive", farms.getHorseShare() == 0 && !farms.captive(Good.CROPS),
+                "horse share " + farms.getHorseShare());
+        farms.produceStock(Good.CROPS, null);
+        check("the next crop keeps none of the last horse's feed", crops != null && crops.captive == 0,
+                crops == null ? "no crop row" : "feed " + crops.captive);
     }
 
     /** How many buildings of a sector stand. */
