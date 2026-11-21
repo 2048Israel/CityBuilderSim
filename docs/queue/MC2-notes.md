@@ -295,7 +295,33 @@ REV-MC2 (money) on 207704ac8 said NOT YET: one P1 and three P2. All four are men
 Only `Bank.java` (`growthHeadroom`, `insuredHeadroom`, `bandShare`, the banner) and
 `BankFailureCheck.java` changed in the round.
 
-MENDS_CHECKS
+Main moved to e9dadb540 (FS4 shipped, and records) during the round: merged as 01ca18e1e, only
+the generated indexes conflicting (taken from main and regenerated, a7ab9dfba). Main touched no
+file of this batch's, nor `BondMarket`.
+
+The round's checks, on that merge:
+
+- `BankFailureCheck`: all 23 lines of section 9 and every other section pass. On the rule REV-MC2
+  reviewed, 12-16 FAIL; on main's, 1-11, 15 and 17 (The harness).
+- `./batch-check.sh --fast`: green; Stale 0 firm.
+- `sh tools/pick.sh origin/main HEAD`: 50 of 234 (not ALL); review: needed - money (`Bank.java`).
+  The 50 ran in one sequential call (`-Dcbs.parallel=1`, 5,744 s, 53 with the suite's own): 49
+  passed. The reds: main's known reds (BankCheck, DistressBleedCheck, CarCheck), and one NEW line
+  in KeptCheck, section 55's Bank's Profit page, "most months make no node at all (12 of 25)".
+  SaveSlotCheck's timing line timed soft; CapitalFlowCheck's 1 and ScaleCheck's 2 path lines were
+  observed.
+- `CreditCrunchCheck`: passed, its crunch as on the merge before the mends: 6 mortgages; the
+  landlords asked in 45 months, 35 with the bank short; the owners put in 6,950; homes 497 to
+  1,195. The crunch's bank stands halfway down its band, where the cap does not bind.
+- ★ **KeptCheck's line is load, not this batch: a known-reds row, FS5.** KeptCheck alone on the
+  same merged tree, with main's `Bank.java` and `BusinessDebtManager.java` put back (and the
+  `settledProjectHeadroom()` stub), gave 9 of 25, a FAIL too. KeptCheck's own note at
+  `playedCity` gives this page "6 of 25 months quiet under a loaded PC, 17 of 25 under a quiet
+  one" (KBP1). The kept gate logs on the PC give 14 to 25, each version the same on every rerun,
+  and FS4's gate on the box passed it. The ship file's row names FS5, whose range section 55 is
+  and which takes KBP1. The brief said FS1; FS1's study folded KeptCheck's rows into FS5, and FS4
+  named FS5 for section 89's row the same way. On main's rule KeptCheck also failed five lines
+  that MC2's path passes: KFP1's four (known-reds rows 47-50) and section 78's held slider.
 
 ## The ensemble
 

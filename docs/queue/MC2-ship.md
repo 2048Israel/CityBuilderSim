@@ -12,3 +12,6 @@ default takes the bank under it before its book settles; the carry trade still g
 it. BankFailureCheck section 9 causes both sides, the cap and the default with hand-built banks,
 and 13 of its 17 assertions fail on the old rule. In MC1's played crunch the landlords took 6
 mortgages, where none were written before.
+
+## known-reds
+KeptCheck | most months make no node at all (12 of 25) | FS5 | 2026-11-21 | Section 55's Bank's Profit page (KBP1's, FS5's range), on the PC under load: MC2's merged tree gave 12 of 25 quiet months, and the same tree with main's Bank.java and BusinessDebtManager.java put back gave 9 of 25, a FAIL too (MC2-notes, REV-MC2 and the mends). KeptCheck's own note at playedCity gives 6 of 25 loaded and 17 quiet; main's kept gate runs give 14 to 25, and FS4's gate on the box passed it. Load, not MC2's code.
