@@ -24,11 +24,11 @@ public final class Observation {
 
     /** Every harness with path observations, also run nightly alongside HA1's tier. */
     static final List<String> HARNESSES = List.of(
-            "ScaleCheck", "HoldersCheck", "SaveFileCheck", "CurrencyRegimeCheck",
-            "AutoBuildCheck", "MonetaryCheck", "BondCheck", "PriceLevelCheck",
+            "ScaleCheck", "HoldersCheck", "SaveFileCheck",
+            "AutoBuildCheck", "BondCheck", "PriceLevelCheck",
             "DeskCheck", "FittingCheck", "BuildAdviceCheck",
-            "ConstructionControlCheck", "MapCheck", "CentralBankCheck", "KeptCheck",
-            "PolicyPreviewCheck", "BankCheck", "HealthCheck", "ForeignCheck", "FloatLinkCheck",
+            "ConstructionControlCheck", "MapCheck", "KeptCheck",
+            "PolicyPreviewCheck", "BankCheck", "HealthCheck", "FloatLinkCheck",
             "CapitalFlowCheck", "CallCheck", "HousingCheck", "PrizeCheck");
 
     /** A path reading with no dependent laws, such as a sample share. */

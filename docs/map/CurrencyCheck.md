@@ -1,4 +1,4 @@
-# CurrencyCheck.java - 1,027 lines · 25 methods · 7 constants · harnesses
+# CurrencyCheck.java - 1,074 lines · 27 methods · 10 constants · harnesses
 
 `ham/citybuildersim/CurrencyCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -53,18 +53,18 @@
 >      exactly where they were, takes equity down by exactly what the dollars
 >      fetched at the rate they were sold at (the vault's fall), and leaves
 >      the remittance, the loss carried and the month's profit alone. In a
->      real city, the month it is defended and every month of ten years
->      after: M0 moves by the money made and nothing else, nothing is retired
+>      real city, the month it is defended (CAUSED, FS10: after WARM_MONTHS
+>      of the town's play, the last reprice's shadow put FALL_PLACED under
+>      the rate through the saved array, and hot money placed at its largest
+>      position to leave, a fall and a deficit) and every month of ten years
+>      after (played): M0 moves by the money made and nothing else, nothing is retired
 >      but what the named operations take back, the audit closes and
 >      declares nothing for the defence, the remittance is the month's
 >      profit, and equity less the vault is what the bank owes; a save keeps
 >      the sale and the equity line. And every month Game hands the currency
->      the real rate differential, struck on the same two inflations parity
->      is.
->   5. THE STOPS ARE GONE: the dial takes 60%; the autopilot sets a rule's
-> ... (13 more lines in the source)
+> ... (16 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (53), [Game](Game.md) (13), [ForeignCheck](ForeignCheck.md) (11), [DebtManager](DebtManager.md) (10), [CentralBank](CentralBank.md) (6), [CapitalFlows](CapitalFlows.md) (5), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (4), [TempDirs](TempDirs.md) (3), [PriceIndex](PriceIndex.md) (3), [Founding](Founding.md) (2), [Debt](Debt.md) (2), [PriceLevel](PriceLevel.md) (2)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (55), [Game](Game.md) (14), [ForeignCheck](ForeignCheck.md) (11), [DebtManager](DebtManager.md) (10), [CapitalFlows](CapitalFlows.md) (7), [CentralBank](CentralBank.md) (6), [MoneyAudit](MoneyAudit.md) (4), [GameFiles](GameFiles.md) (4), [TempDirs](TempDirs.md) (3), [PriceIndex](PriceIndex.md) (3), [Founding](Founding.md) (2), [Debt](Debt.md) (2), [PriceLevel](PriceLevel.md) (2)
 
 **Used by (6):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ForeignCheck](ForeignCheck.md), [InterventionCheck](InterventionCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
@@ -72,94 +72,99 @@
 
 | line | section |
 |---:|---|
-| 159 | 1. the real rate holds a level; inflation arrives through parity's trend |
-| 233 | 2. inflation moves the rate with parity's trend, and no further |
-| 275 | 3. the defence spends |
-| 496 | 4. the dollars it sells are capital, not money destroyed |
-| 741 | 5. the stops are gone |
-| 815 | 6. the currency's guards are a billion either way |
+| 162 | 1. the real rate holds a level; inflation arrives through parity's trend |
+| 236 | 2. inflation moves the rate with parity's trend, and no further |
+| 278 | 3. the defence spends |
+| 499 | 4. the dollars it sells are capital, not money destroyed |
+| 788 | 5. the stops are gone |
+| 862 | 6. the currency's guards are a billion either way |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 106 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
-| 109 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
-| 112 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
-| 115 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
-| 128 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
-| 701 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
-| 871 | `CurrencyCheck.HISTORY_CENT` | `.006` | The history keeps a month's figure to the cent, so a sum of its months is read to within half a cent of each. |
+| 109 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
+| 112 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
+| 115 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
+| 118 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
+| 131 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
+| 502 | `CurrencyCheck.WARM_MONTHS` | `12` | FS10: the months the real town of section 4 is played as it always was (its trade, its trailing output and its first year of a vault) before the month that is set up for the defence. |
+| 505 | `CurrencyCheck.FALL_PLACED` | `8 * ForeignAccounts.MARKET_SIGMA` | ...and how far under the rate the last reprice's shadow is put (logs): eight of the market's monthly swings, more than the float's news in one month can take back, so the fall the lean reads does not hang on the seede... |
+| 508 | `CurrencyCheck.SHADOW_SLOT` | `78, HELD_SLOT = 79` | ForeignAccounts.toSaveArray()'s slots for the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so; ExchangeRateCheck's SHADOW_SLOT and HELD_SLOT). |
+| 748 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 918 | `CurrencyCheck.HISTORY_CENT` | `.006` | The history keeps a month's figure to the cent, so a sum of its months is read to within half a cent of each. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 86 | `static int fails` |  |
-| 87 | `static PrintStream out` |  |
-| 88 | `static PrintStream quiet` |  |
-| 702 | `final double m0, equity, notVault, remittance, loss` |  |
+| 89 | `static int fails` |  |
+| 90 | `static PrintStream out` |  |
+| 91 | `static PrintStream quiet` |  |
+| 749 | `final double m0, equity, notVault, remittance, loss` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 84 | 944 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
-| 90 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 95 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 118 | 8 | `static MoneyAudit.Result month(double exports, double imports, double capitalIn, double capitalOut)` | A synthetic month: the trade and the financial account are all takeMonth() reads. |
-| 131 | 7 | `static ForeignAccounts settled(double exports, double imports, double gdp)` | A currency that has traded the same month, over and over, for TRADING_MONTHS: its market quiet (a bare ForeignAccounts is unseeded) and not yet repriced. |
-| 140 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): the interventions' rule (INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against,... |
-| 144 | 14 | `public static void main(String[] args) throws Exception` |  |
+| 87 | 988 | **type** `public class CurrencyCheck` | Proves the currency under a central bank (0.7.2): the rate answers to the real rate, the vault is spent defending it, and the dial and the carry appetite have lost their stops. |
+| 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 98 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 121 | 8 | `static MoneyAudit.Result month(double exports, double imports, double capitalIn, double capitalOut)` | A synthetic month: the trade and the financial account are all takeMonth() reads. |
+| 134 | 7 | `static ForeignAccounts settled(double exports, double imports, double gdp)` | A currency that has traded the same month, over and over, for TRADING_MONTHS: its market quiet (a bare ForeignAccounts is unseeded) and not yet repriced. |
+| 143 | 3 | `static double lift(ForeignAccounts fx)` | What a sale of what the defence fetched lifts the D$ by, in logs (ForeignAccounts, THE FLOAT, step 7): the interventions' rule (INTERVENTION_IMPACT x the local money over a year of the GDP the model weighs it against,... |
+| 147 | 14 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the real rate holds a level; inflation arrives through parity's trend (lines 159-232)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 160 | 72 | `static void realRate()` |  |
-
-### 2. inflation moves the rate with parity's trend, and no further (lines 233-274)
+### 1. the real rate holds a level; inflation arrives through parity's trend (lines 162-235)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 234 | 40 | `static void spiral()` |  |
+| 163 | 72 | `static void realRate()` |  |
 
-### 3. the defence spends (lines 275-495)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 282 | 4 | `static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd, double capitalOut)` | A currency past settling on a trailing deficit, a vault of this many dollars bought at 1.00, and then the month under test: the same trade and this much capital leaving. |
-| 288 | 14 | `static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd, double capitalOut, double settling...` | ...and, when `settlingOut` is more than nothing, that much capital leaving every month of the settling too: a chronic deficit, so the trailing balance is the month's own. |
-| 304 | 3 | `static double need(double absorption, double fall, double gdpTrailing, double rate)` | The dollars it takes to take back `absorption` of a fall of `fall` (logs) at INTERVENTION_IMPACT, on a GDP and a rate (ForeignAccounts, THE FLOAT, step 7): the need. |
-| 309 | 4 | `static double expectedSale(double absorption, double fall, double gdpTrailing, double rate, double deficitUsd, double vaultUsd)` | What the lean sells in a month the D$ would fall by `fall`: the need, at most absorption() x the month's deficit, at most the vault; nothing on a rise or with no deficit. |
-| 321 | 7 | `static double firstFall(ForeignAccounts fx, double gap)` | The fall the FIRST reprice of a fixture from defended() makes, from its figures alone (the rate at 1.00, nothing repriced before, the market quiet, parity at 1): the gated gap, balance and cover levels reached in one ... |
-| 329 | 166 | `static void defence()` |  |
-
-### 4. the dollars it sells are capital, not money destroyed (lines 496-740)
+### 2. inflation moves the rate with parity's trend, and no further (lines 236-277)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 497 | 197 | `static void capital() throws Exception` |  |
-| 700 | 40 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
-| 704 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
-| 712 | 27 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
+| 237 | 40 | `static void spiral()` |  |
 
-### 5. the stops are gone (lines 741-814)
+### 3. the defence spends (lines 278-498)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 742 | 72 | `static void uncapped() throws Exception` |  |
+| 285 | 4 | `static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd, double capitalOut)` | A currency past settling on a trailing deficit, a vault of this many dollars bought at 1.00, and then the month under test: the same trade and this much capital leaving. |
+| 291 | 14 | `static ForeignAccounts defended(double exports, double imports, double gdp, double vaultUsd, double capitalOut, double settling...` | ...and, when `settlingOut` is more than nothing, that much capital leaving every month of the settling too: a chronic deficit, so the trailing balance is the month's own. |
+| 307 | 3 | `static double need(double absorption, double fall, double gdpTrailing, double rate)` | The dollars it takes to take back `absorption` of a fall of `fall` (logs) at INTERVENTION_IMPACT, on a GDP and a rate (ForeignAccounts, THE FLOAT, step 7): the need. |
+| 312 | 4 | `static double expectedSale(double absorption, double fall, double gdpTrailing, double rate, double deficitUsd, double vaultUsd)` | What the lean sells in a month the D$ would fall by `fall`: the need, at most absorption() x the month's deficit, at most the vault; nothing on a rise or with no deficit. |
+| 324 | 7 | `static double firstFall(ForeignAccounts fx, double gap)` | The fall the FIRST reprice of a fixture from defended() makes, from its figures alone (the rate at 1.00, nothing repriced before, the market quiet, parity at 1): the gated gap, balance and cover levels reached in one ... |
+| 332 | 166 | `static void defence()` |  |
 
-### 6. the currency's guards are a billion either way (lines 815-1027)
+### 4. the dollars it sells are capital, not money destroyed (lines 499-787)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 818 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
-| 827 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
-| 832 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
-| 840 | 5 | `static int foreignPieces(DebtManager books)` | How many pieces the ledger carries in a foreign money. |
-| 847 | 19 | `static Game dollarCity() throws Exception` | A real city (as section 4 builds one) that owes one US$ bond, sold through Game.handleForeignLogic() as the player's Borrow abroad sells it: its books opened on what the sale raised, the piece valued at the rate of th... |
-| 868 | 1 | **type** `record Month(double start, double end, double booked, double expected, double unlearned)` | One real month of a city's: the rate it began on, the rate it ended on, the line it booked, and the line the pieces say it should be. |
-| 879 | 19 | `static Month extremeMonth(Game city, double start)` | The city's currency put at {@code start} the way a save puts it (its debt told the same rate, as the load path does: the pieces were last valued where the currency stood), one whole month played, and then read: the bo... |
-| 899 | 128 | `static void unguarded() throws Exception` |  |
+| 515 | 8 | `static void shadowUnder(ForeignAccounts fx, double gap)` | The last reprice's shadow put this log gap UNDER the rate, through the saved array put back with that slot changed (as ExchangeRateCheck.setTheShadowGap does for a peg's): the month's fall is struck from where the sha... |
+| 525 | 7 | `static void hotMoneyPlaced(Game g, double stock)` | The city's hot money placed by name up to this stock (CapitalFlows.placeArrivalForTest, as InterestAbroadCheck.setHotStock and CurrencyRegimeCheck.placeHotMoney place it), and the bank that funds it moved as Game move... |
+| 533 | 208 | `static void capital() throws Exception` |  |
+| 747 | 40 | **type** `static final class Before` | The central bank and the vault as a month opened, and the five claims section 4 holds each month against them. |
+| 751 | 7 | `Before(CentralBank cb)` _(in CurrencyCheck.Before)_ |  |
+| 759 | 27 | `void monthHeld(Game city, String named)` _(in CurrencyCheck.Before)_ |  |
+
+### 5. the stops are gone (lines 788-861)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 789 | 72 | `static void uncapped() throws Exception` |  |
+
+### 6. the currency's guards are a billion either way (lines 862-1074)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 865 | 7 | `static ForeignAccounts at(double rate)` | A settled currency, trade in balance and the vault empty, put at this rate the way a save would put it. |
+| 874 | 3 | `static void month(ForeignAccounts fx, double parityLevel, double realGap)` | One month of it: the same balanced trade, the city's price level at this (so parity at it, in founding money), and this real gap, repriced. |
+| 879 | 6 | `static void month(ForeignAccounts fx, double parityLevel, double realGap, double unit)` | ...in a unit this many of the founding's: the trade and the output are money, and a reform divides them. |
+| 887 | 5 | `static int foreignPieces(DebtManager books)` | How many pieces the ledger carries in a foreign money. |
+| 894 | 19 | `static Game dollarCity() throws Exception` | A real city (as section 4 builds one) that owes one US$ bond, sold through Game.handleForeignLogic() as the player's Borrow abroad sells it: its books opened on what the sale raised, the piece valued at the rate of th... |
+| 915 | 1 | **type** `record Month(double start, double end, double booked, double expected, double unlearned)` | One real month of a city's: the rate it began on, the rate it ended on, the line it booked, and the line the pieces say it should be. |
+| 926 | 19 | `static Month extremeMonth(Game city, double start)` | The city's currency put at {@code start} the way a save puts it (its debt told the same rate, as the load path does: the pieces were last valued where the currency stood), one whole month played, and then read: the bo... |
+| 946 | 128 | `static void unguarded() throws Exception` |  |
 

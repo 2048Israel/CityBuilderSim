@@ -80,7 +80,6 @@ stuff".
 | FS6 | Sweep: the map and the district plans (MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck); takes BQ1, LM1-R, KS1-rest's map lines (after SZ1; not beside PX2, PW1, SQ1b, HL1-M) | [FS1 study 6.5](docs/studies/flaky-suite.md#65-fs6) |
 | FS8 | Sweep: industry, research and the views' models (20 harnesses); takes FF1 item 2 (after RN1-H; not beside CL7, R3b-R) | [FS1 study 6.7](docs/studies/flaky-suite.md#67-fs8) |
 | FS9 | Sweep: the bank and its borrowers (10 harnesses); takes HP2 item 4 and HL1's DistressBleedCheck 5 rows (not beside QR1, OE1) | [FS1 study 6.8](docs/studies/flaky-suite.md#68-fs9) |
-| FS10 | Sweep: the currency, the gold and the central bank (10 harnesses); takes HP1 item 1 and MQ1 | [FS1 study 6.9](docs/studies/flaky-suite.md#69-fs10) |
 | FS11 | Sweep: health, homes and the households' shops (13 harnesses); takes HP2 item 2 (after RN1-H; not beside MR1, OX2, HS1, LQ2) | [FS1 study 6.10](docs/studies/flaky-suite.md#610-fs11) |
 | FS12 | Sweep: building, the advice, the card, the auto-builder and the roads (9 harnesses); takes HP1 item 2 and HL1's BuildAdviceCheck 7 row (after SZ1) | [FS1 study 6.11](docs/studies/flaky-suite.md#611-fs12) |
 | FS14 | Sweep: the Exchange and the bond desk (8 harnesses); takes SX2 (not beside HS1, PW1) | [FS1 study 6.13](docs/studies/flaky-suite.md#613-fs14) |

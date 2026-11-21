@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,366 constants in 609 files.**
+**6,390 constants in 609 files.**
 
 ## model (2963 constants)
 
@@ -2717,7 +2717,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 17 | `Observation.PROPERTY` | `"cbs.observations"` | Nightly's mode records every reading, including holds, for merge attribution. |
 | 20 | `Observation.TSV_PROPERTY` | `"cbs.observations.tsv"` | The shared nightly record, harness, label and REACHED or MISSED, tab-separated. |
 | 23 | `Observation.HARNESS_PROPERTY` | `"cbs.observations.harness"` | The running harness, set on its JVM even when another harness supplies a fixture. |
-| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "SaveFileCheck", "CurrencyRegimeCheck", "AutoBuil...` | Every harness with path observations, also run nightly alongside HA1's tier. |
+| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "SaveFileCheck", "AutoBuildCheck", "BondCheck", "...` | Every harness with path observations, also run nightly alongside HA1's tier. |
 
 ### OilView.java ([map](map/OilView.md))
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1909 constants)
+## harnesses (1933 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6092,20 +6092,22 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 226 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the window's i...` |  |
-| 229 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
-| 1219 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
-| 1486 | `CentralBankCheck.LINE_YEARS` | `2` | The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. |
-| 1489 | `CentralBankCheck.TAKE_ALL_MONTHS` | `14` | The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). |
-| 1526 | `CentralBankCheck.RATES_UP` | `.04` | How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). |
-| 1902 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
-| 1905 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
-| 1915 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
-| 1918 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
-| 1921 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
-| 1924 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
-| 1932 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
-| 1945 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
+| 212 | `CentralBankCheck.YEAR_RISE` | `.10` | How far a year of prices has risen in section 7's fixture: well over the rule's own target, so the rule answers it with something other than the dial it is put at. |
+| 298 | `CentralBankCheck.KINDS` | `{ "interest on reserves", "lent at the window", "repaid at the window", "the window's i...` |  |
+| 301 | `CentralBankCheck.seen` | `new boolean [ KINDS.length ]` |  |
+| 1289 | `CentralBankCheck.ROLL_SLOT` | `10` | The scratch slot this section's saves go to - the assistant's slot, in a scratch folder. |
+| 1292 | `CentralBankCheck.SERIAL_OF_SURPLUS` | `.10` | The face of section 20's serial against last year's unused surplus: a tenth of it, small against the surplus the town ran. |
+| 1559 | `CentralBankCheck.LINE_YEARS` | `2` | The term of the fixture's bonds, in years: the shortest term bond the lineup sells, so the city's own sales build the whole fixture in two years. |
+| 1562 | `CentralBankCheck.TAKE_ALL_MONTHS` | `14` | The most months the dial at all of the paper is given to take the whole of the first bond into the central bank's book (HoldersCheck 11 reaches it in a year or so). |
+| 1599 | `CentralBankCheck.RATES_UP` | `.04` | How far the policy rate is put up after the line is sold, so that the line stands at the coupon of lower rates and its reopening comes in under par (HoldersCheck 12 puts it up the same four points). |
+| 1973 | `CentralBankCheck.STRICT_BRANCH` | `600` | The month the probe city leaves Standard at: a mature city, the inflation ensemble's month for its policies. |
+| 1976 | `CentralBankCheck.STRICT_HORIZON` | `240` | How long each of its twins plays on from there: twenty years, the inflation ensemble's window after its month 600. |
+| 1986 | `CentralBankCheck.STRICT_WORLD_FALL` | `.20` | How far the world's prices fall, in the first month of the fourth game's twenty years (worldPricesFall): the cause of the very loose twin's months under its target, which the probe city's own path ... |
+| 1989 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
+| 1992 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
+| 1995 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
+| 2003 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
+| 2016 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
 
 ### ChartFitCheck.java ([map](map/ChartFitCheck.md))
 
@@ -6280,13 +6282,16 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 106 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
-| 109 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
-| 112 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
-| 115 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
-| 128 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
-| 701 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
-| 871 | `CurrencyCheck.HISTORY_CENT` | `.006` | The history keeps a month's figure to the cent, so a sum of its months is read to within half a cent of each. |
+| 109 | `CurrencyCheck.OLD_DIAL_STOP` | `.25` | The dial's stop until 0.7.2, for the assertion that it is gone. |
+| 112 | `CurrencyCheck.OLD_SPREAD_STOP` | `.06` | The hot money's old stop, likewise: six points. |
+| 115 | `CurrencyCheck.OLD_MAX_RATE` | `100` | The currency's guard above until 0.7.3, a hundred local dollars to one of theirs - for the assertions that a rate goes past it. |
+| 118 | `CurrencyCheck.OLD_MIN_RATE` | `.01` | ...and below, a hundredth. |
+| 131 | `CurrencyCheck.TRADING_MONTHS` | `24 + 12` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, and a year more for the trailing figures to settle. |
+| 502 | `CurrencyCheck.WARM_MONTHS` | `12` | FS10: the months the real town of section 4 is played as it always was (its trade, its trailing output and its first year of a vault) before the month that is set up for the defence. |
+| 505 | `CurrencyCheck.FALL_PLACED` | `8 * ForeignAccounts.MARKET_SIGMA` | ...and how far under the rate the last reprice's shadow is put (logs): eight of the market's monthly swings, more than the float's news in one month can take back, so the fall the lean reads does n... |
+| 508 | `CurrencyCheck.SHADOW_SLOT` | `78, HELD_SLOT = 79` | ForeignAccounts.toSaveArray()'s slots for the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so; ExchangeRateCheck's SHADOW_SLOT and... |
+| 748 | `CurrencyCheck.Before.broken` | `new int [ 5 ]` |  |
+| 918 | `CurrencyCheck.HISTORY_CENT` | `.006` | The history keeps a month's figure to the cent, so a sum of its months is read to within half a cent of each. |
 
 ### CurrencyRegimeCheck.java ([map](map/CurrencyRegimeCheck.md))
 
@@ -6297,15 +6302,16 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 224 | `CurrencyRegimeCheck.SEED` | `20_261_022L` | The market's seed in the sections that draw one. |
 | 227 | `CurrencyRegimeCheck.DEEP` | `1e9` | A vault no fixture of these can empty or come near the floor of, in dollars. |
 | 230 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
-| 611 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
-| 612 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
-| 629 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `600` | BF1: the first full in-band window is later than the old search cap. |
-| 651 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
-| 659 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city... |
-| 662 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
-| 1188 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = Capit...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them, FB3 the peaks; the model's own... |
-| 1469 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
-| 1486 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
+| 617 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
+| 618 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
+| 640 | `CurrencyRegimeCheck.DOUBT_GAP` | `.20` | The log gap the doubt fixtures revalue the peg under the shadow by: a fifth, past BREAK_GAP, so the reprice strikes more than the base chance. |
+| 643 | `CurrencyRegimeCheck.HOT_SHARE` | `.5` | The share of the target the dial draws its hot money toward that the doubt fixtures place as stock: below it, so money still arrives each month. |
+| 646 | `CurrencyRegimeCheck.CREDIT_START` | `.60` | The credibility the credibility fixture's cities are set to: between KMIN and KMAX, so the dent and the month's gain both have room. |
+| 649 | `CurrencyRegimeCheck.BREAK_MARGIN` | `4` | The factor over what the vault can sell above its floor that the sale a break by the vault is sized at: room for the shadow's drift in the month. |
+| 652 | `CurrencyRegimeCheck.BILL_MARGIN` | `10` | The factor over section 9's own floor (100 x PriceLevel.FACTOR of local money) that the bill its gap is sized for stands at. |
+| 1112 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = Capit...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them, FB3 the peaks; the model's own... |
+| 1235 | `CurrencyRegimeCheck.PRICE_RISE` | `.06` | The year of prices section 7 puts the index on: rising 6%, a few points over the 2% target, so the inflation rule's dial is not the neutral one. |
+| 1398 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -6612,13 +6618,20 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 144 | `ExchangeRateCheck.TRADE` | `3_000 * PriceLevel.FACTOR, GDP = 6_000 * PriceLevel.FACTOR` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
-| 147 | `ExchangeRateCheck.SEED` | `20_261_021L` | The market's seed in the sections that draw one; the others are quiet. |
-| 150 | `ExchangeRateCheck.OLD_PULL` | `.004` | The old pull toward parity, REVERSION, retired by XR1 (WHAT XR1 RETIRED): a month's share of the distance it closed. |
-| 199 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |
-| 201 | `ExchangeRateCheck.RENT_HEAVY` | `{.15,.60,.10,.05, 0 }, RENT_HEAVY_FEES = {.04,.03,.02,.01 }` | Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. |
-| 202 | `ExchangeRateCheck.RENT_LIGHT` | `{.30,.30,.20,.05, 0 }, RENT_LIGHT_FEES = {.06,.04,.03,.02 }` |  |
-| 1453 | `ExchangeRateCheck.FOURTEEN_GOLD_COVER` | `10 * ForeignAccounts.COVER_RATIO` | Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot money leaving) leave it over a full cover, where... |
+| 156 | `ExchangeRateCheck.TRADE` | `3_000 * PriceLevel.FACTOR, GDP = 6_000 * PriceLevel.FACTOR` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one. |
+| 159 | `ExchangeRateCheck.SEED` | `20_261_021L` | The market's seed in the sections that draw one; the others are quiet. |
+| 162 | `ExchangeRateCheck.OLD_PULL` | `.004` | The old pull toward parity, REVERSION, retired by XR1 (WHAT XR1 RETIRED): a month's share of the distance it closed. |
+| 211 | `ExchangeRateCheck.FEES` | `{ 1, 1, 1, 1 }` | The four fees' prices a fixture's basket is fed: all at 1. |
+| 213 | `ExchangeRateCheck.RENT_HEAVY` | `{.15,.60,.10,.05, 0 }, RENT_HEAVY_FEES = {.04,.03,.02,.01 }` | Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. |
+| 214 | `ExchangeRateCheck.RENT_LIGHT` | `{.30,.30,.20,.05, 0 }, RENT_LIGHT_FEES = {.06,.04,.03,.02 }` |  |
+| 799 | `ExchangeRateCheck.SAMPLING_SES` | `5` | FS10: standard errors of sampling a bound allows, so that a currency inside the band its dial gives fails it by chance about once in a million. |
+| 802 | `ExchangeRateCheck.SWING_LIMIT` | `6` | ...and the sigmas of a normal draw (and of the market's own spread) a path may not pass: six, a part in a billion a draw. |
+| 1084 | `ExchangeRateCheck.RUN_CHANCE` | `1e-6` | FS10 (section 8): the chance a run one way, in a path whose moves are a coin's at a month, has of passing the bound the section holds it to: a part in a million. |
+| 1184 | `ExchangeRateCheck.GOLD_HELD_VAULT_YEARS` | `2 * ForeignAccounts.INTERVENTION_LINEAR` | FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: twice INTERVENTION_LINEAR, because the hold's sale in a month is at most INTERVENTION_LINEAR of a year's GDP while the l... |
+| 1187 | `ExchangeRateCheck.RELEASED_GAP` | `8 * ForeignAccounts.MARKET_SIGMA` | ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. |
+| 1190 | `ExchangeRateCheck.RETURN_NEWS` | `6 * ForeignAccounts.MARKET_SIGMA` | ...and the lift July 1926's vault is bought for is this much past the eve's, six of the market's swings, so that a month's news cannot leave the return's sale short of it. |
+| 1193 | `ExchangeRateCheck.MARKET_SLOT` | `52, SHADOW_SLOT = 78, HELD_SLOT = 79` | ForeignAccounts.toSaveArray()'s slots for the market's level, the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so). |
+| 1654 | `ExchangeRateCheck.FOURTEEN_GOLD_COVER` | `10 * ForeignAccounts.COVER_RATIO` | Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot money leaving) leave it over a full cover, where... |
 
 ### ExpectationsCheck.java ([map](map/ExpectationsCheck.md))
 
@@ -6699,7 +6712,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `ForeignCheck.TRADED_BEFORE` | `24` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. |
+| 75 | `ForeignCheck.TRADED_BEFORE` | `24` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. |
 
 ### ForeignDebtCheck.java ([map](map/ForeignDebtCheck.md))
 
@@ -6909,9 +6922,10 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 485 | `GoldStandardCheck.LEGAL` | `ForeignAccounts.COVER_RATIO * 1.001` | The legal cover a sale does not break: just over COVER_RATIO, by more than a month's sale of this deep a vault takes off it. |
 | 616 | `GoldStandardCheck.SLOT` | `2` | The slot the shared town is saved to, in the harness's own scratch folder (GameFiles.scratch): never one of the nine. |
 | 619 | `GoldStandardCheck.GOLD_LOCAL` | `40_000` | The founders' money put into gold by name, D$ thousands: with less the cover (gold at the mint price over M0) falls under the floor on the way to 1933 and the city is off gold before the dates. |
-| 622 | `GoldStandardCheck.MIDWAY` | `(ForeignAccounts.COVER_RATIO + DebtManager.GOLD_DEFENCE_FROM) / 2` | The cover section 9 sets the town's gold to, between the floor and the defence's own: where the autopilot's spread is neither nothing nor the whole. |
-| 894 | `GoldStandardCheck.REDEEM_MONTHS` | `120` | The months section 13 plays its town on Gold, looking for the gold's sales. |
-| 959 | `GoldStandardCheck.DEEP_VAULT_USD` | `Game.FOUNDING_CASH` | A custom founding whose vault is the treasury's worth: deeper than the law's 40%, so the box keeps the rest in dollars. |
+| 622 | `GoldStandardCheck.HELD_COVER` | `1` | The cover section 7 holds the town's gold at or over at every month's end on its way to 1933 (FS10): a full one, at which doubt has no chance (ForeignAccounts.goldHazard(gap, 1) is nothing, section... |
+| 625 | `GoldStandardCheck.MIDWAY` | `(ForeignAccounts.COVER_RATIO + DebtManager.GOLD_DEFENCE_FROM) / 2` | The cover section 9 sets the town's gold to, between the floor and the defence's own: where the autopilot's spread is neither nothing nor the whole. |
+| 918 | `GoldStandardCheck.REDEEM_MONTHS` | `120` | The months section 13 plays its town on Gold, looking for the gold's sales. |
+| 983 | `GoldStandardCheck.DEEP_VAULT_USD` | `Game.FOUNDING_CASH` | A custom founding whose vault is the treasury's worth: deeper than the law's 40%, so the box keeps the rest in dollars. |
 
 ### GovernmentPlayerCheck.java ([map](map/GovernmentPlayerCheck.md))
 
@@ -7079,27 +7093,30 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 62 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
-| 63 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 66 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
-| 67 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
-| 70 | `InterestAbroadCheck.LONG` | `1_200` | The months a Random run covers: a hundred years from the calendar's first January (the last month stepped is 1,199). |
-| 73 | `InterestAbroadCheck.HISTORICAL_END` | `at(2099, 12) + 1` | The month after the last a Historical run steps: December 2099 is the last, the nations' path (the rule rules the 888 months after the table's end). |
-| 76 | `InterestAbroadCheck.RULED` | `888` | The months the rule rules on Historical after the table: January 2026 to December 2099. |
-| 79 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
-| 223 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
-| 743 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 1036 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
+| 64 | `InterestAbroadCheck.out` | `System.out` | Where the harness prints: the console. |
+| 65 | `InterestAbroadCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 68 | `InterestAbroadCheck.SEED` | `9_101` | The seed the single-world sections use, and the others the mean real rate is counted over. |
+| 69 | `InterestAbroadCheck.SEEDS` | `{ 9_101, 9_102, 9_103, 9_104, 9_105 }` |  |
+| 72 | `InterestAbroadCheck.LONG` | `1_200` | The months a Random run covers: a hundred years from the calendar's first January (the last month stepped is 1,199). |
+| 75 | `InterestAbroadCheck.HISTORICAL_END` | `at(2099, 12) + 1` | The month after the last a Historical run steps: December 2099 is the last, the nations' path (the rule rules the 888 months after the table's end). |
+| 78 | `InterestAbroadCheck.RULED` | `888` | The months the rule rules on Historical after the table: January 2026 to December 2099. |
+| 81 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
+| 225 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 }, { "USD", ...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
+| 745 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
+| 1038 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
+| 1052 | `InterestAbroadCheck.HOT_STOCK_SHARE` | `.5` | The share of the hot money's target the city is set to hold before a risk-off: under it, so the month's arrivals go on beside the risk-off (XI1's case for the audit's net law). |
+| 1055 | `InterestAbroadCheck.RISK_OFF_SLOT` | `7` | The slot of the world's risk-off level in WorldMoneys.toSaveArray(): after its four header numbers, the month, whether it is opened and the dollar cycle. |
 
 ### InterventionCheck.java ([map](map/InterventionCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 117 | `InterventionCheck.IMPACT` | `ForeignAccounts.INTERVENTION_IMPACT, LINEAR = ForeignAccounts.INTERVENTION_LINEAR` | The dials, by their short names. |
-| 120 | `InterventionCheck.SEED` | `ExchangeRateCheck.SEED` | The market's seed in the sections that draw one (ExchangeRateCheck's). |
-| 123 | `InterventionCheck.RUN_MONTHS` | `240` | Months of the real run in section 5. |
-| 126 | `InterventionCheck.YEAR` | `12` | The year a played town trades before its test month in section 4. |
-| 129 | `InterventionCheck.ROTTERDAM_YEARS` | `4.5` | What Rotterdam bought in a month, in years of the city's output (Jerus, 2026-11-02). |
+| 121 | `InterventionCheck.IMPACT` | `ForeignAccounts.INTERVENTION_IMPACT, LINEAR = ForeignAccounts.INTERVENTION_LINEAR` | The dials, by their short names. |
+| 124 | `InterventionCheck.SEED` | `ExchangeRateCheck.SEED` | The market's seed in the sections that draw one (ExchangeRateCheck's). |
+| 127 | `InterventionCheck.RUN_MONTHS` | `240` | Months of the real run in section 5. |
+| 130 | `InterventionCheck.YEAR` | `12` | The year a played town trades before its test month in section 4. |
+| 133 | `InterventionCheck.ROTTERDAM_YEARS` | `4.5` | What Rotterdam bought in a month, in years of the city's output (Jerus, 2026-11-02). |
+| 434 | `InterventionCheck.JUST` | `.1` | FS10: how far either side of the line a forced deficit of section 5 stands, as a share of the deficit whose largest sale is exactly INTERVENTION_LINEAR of a year's output. |
 
 ### InvestCheck.java ([map](map/InvestCheck.md))
 
@@ -7695,14 +7712,16 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 701 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
-| 704 | `MonetaryCheck.MEASURED_MONTHS` | `60` | How long each run is: five years, the last three of them at the held rate. |
-| 707 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
-| 719 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0065` | How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year, about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late ov... |
-| 722 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
-| 843 | `MonetaryCheck.SETTLED_STEP` | `.01` | How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. |
-| 846 | `MonetaryCheck.SETTLED_MONTHS` | `12` | How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in orde... |
-| 849 | `MonetaryCheck.MAX_SETTLE_MONTHS` | `60` | The most months the founding is played on to settle, so a town that never does is read as it stands. |
+| 762 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
+| 765 | `MonetaryCheck.MEASURED_MONTHS` | `84` | The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). |
+| 768 | `MonetaryCheck.WINDOW_YEARS` | `3` | The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. |
+| 776 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
+| 789 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0065` | How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year, about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late ov... |
+| 792 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
+| 1093 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
+| 1096 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
+| 1099 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
+| 1102 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
 
 ### MoneyDatesCheck.java ([map](map/MoneyDatesCheck.md))
 
@@ -7871,18 +7890,23 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 128 | `PassThroughCheck.K` | `EconomyManager.PASS_THROUGH` | The speed the goods follow the D$ at, as the model has it. |
-| 134 | `PassThroughCheck.MONTHS` | `240` | The months section 2 plays the real city, and the series it records; it is saved there, or the first month on from it that the D$ is apart from the goods' D$ (APART). |
-| 137 | `PassThroughCheck.APART` | `.01` | The gap, in logs, between the D$ and the goods' D$ that sections 3 and 5 need the saved city to stand at (they assert more than this). |
-| 140 | `PassThroughCheck.APART_LOOK_MONTHS` | `24` | The most months section 2 plays on past MONTHS to find the saved city apart by APART (IC1): the D$ and the goods' D$ are apart in nearly every month. |
-| 143 | `PassThroughCheck.STEP` | `1.10` | The size of the step in sections 1 and 3: the D$ 10% weaker. |
-| 228 | `PassThroughCheck.BASE_SLOT` | `1` | The slot, in this harness's own folder (TempDirs), the base city is saved to and its twins are loaded from. |
-| 273 | `PassThroughCheck.seen` | `new double [ MONTHS ], struck = new double [ MONTHS ]` | The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. |
-| 276 | `PassThroughCheck.gapEnd` | `new double [ MONTHS ]` | Game.struckFromRate() at the end of each of section 2's months (AN2), and whether it read NaN in the city before its first month: section 7 reads them. |
-| 432 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
-| 435 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
-| 438 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
-| 708 | `PassThroughCheck.LOG_NOISE` | `1e-14` | The least a month's two figures in logs may differ by before section 7 calls them different: doubles' own noise (a log of a ratio and an exp-log round trip each carry a few 1e-16), so a month whose... |
+| 145 | `PassThroughCheck.K` | `EconomyManager.PASS_THROUGH` | The speed the goods follow the D$ at, as the model has it. |
+| 151 | `PassThroughCheck.MONTHS` | `240` | The months section 2 plays the real city, and the series it records (sections 6 and 7 read it). |
+| 154 | `PassThroughCheck.APART` | `.01` | The gap, in logs, between the D$ and the goods' D$ that sections 3, 5 and 6 need a case to stand at (they assert more than this): a pin that removes it removes a real gap. |
+| 157 | `PassThroughCheck.PUSH_MONTHS` | `12` | The months section 2 reads the wiring again on a copy of the saved city whose D$ is pinned off by turns, PUSH_OFF either side of where it stood. |
+| 160 | `PassThroughCheck.PUSH_OFF` | `.08` | How far, in logs, either side of where it stood section 2 pins that copy's D$, month by month: a pin 16% from the last month's, more than BIG_GAP. |
+| 163 | `PassThroughCheck.BIG_GAP` | `.05` | The gap, in logs, section 2's D$ must move between two strikes in the pinned months for its wiring to be read against a D$ that has moved (the old fixture's 5%). |
+| 166 | `PassThroughCheck.GAP_MADE` | `.05` | How far, in logs, section 2 sets the saved city's goods' D$ from its D$ at the end of the run: the gap sections 3, 5 and 6 need (more than APART), made and not found. |
+| 169 | `PassThroughCheck.DEAR` | `2` | The multiple of the saved city's goods' D$ at which section 3's twins are struck and pinned: dear enough that the shop's cost-plus floor stands over its opening price and the clearing price under t... |
+| 172 | `PassThroughCheck.MARK_OFF` | `.05` | How far, in logs, section 6 pins the D$ from the goods' D$ (5%) to read the gap the mechanic closes. |
+| 175 | `PassThroughCheck.STEP` | `1.10` | The size of the step in sections 1 and 3: the D$ 10% weaker. |
+| 260 | `PassThroughCheck.BASE_SLOT` | `1` | The slot, in this harness's own folder (TempDirs), the base city is saved to and its twins are loaded from. |
+| 305 | `PassThroughCheck.seen` | `new double [ MONTHS ], struck = new double [ MONTHS ]` | The D$ the strike saw, and the goods' D$ it struck, for each of section 2's months: section 6 reads them. |
+| 308 | `PassThroughCheck.gapEnd` | `new double [ MONTHS ]` | Game.struckFromRate() at the end of each of section 2's months (AN2), and whether it read NaN in the city before its first month: section 7 reads them. |
+| 498 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
+| 501 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
+| 504 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
+| 789 | `PassThroughCheck.LOG_NOISE` | `1e-14` | The least a month's two figures in logs may differ by before section 7 calls them different: doubles' own noise (a log of a ratio and an exp-log round trip each carry a few 1e-16), so a month whose... |
 
 ### PegAnchorCheck.java ([map](map/PegAnchorCheck.md))
 

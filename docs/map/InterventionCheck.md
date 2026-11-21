@@ -1,4 +1,4 @@
-# InterventionCheck.java - 548 lines · 14 methods · 5 constants · harnesses
+# InterventionCheck.java - 607 lines · 15 methods · 6 constants · harnesses
 
 `ham/citybuildersim/InterventionCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -42,9 +42,13 @@
 >   4. ROTTERDAM'S CASE. Twins on one seed, one buys 4.5 years of output: the
 >      D$ moves by interventionMove(), I x s0 x (1 + ln 45), the rate x2.6 and
 >      not x8,100 - on a bare currency, and on a played town under Float.
->   5. HOW OFTEN IT FIRES IN A REAL RUN. The default town, Lean, nobody
->      dealing, played 240 months: no reprice's defence passes the bound, the
->      premise of the byte-identical claim.
+>   5. HOW OFTEN IT FIRES IN A REAL RUN. The bound by arithmetic and the
+>      lean's sale by a forced deficit (FS10, bare books): the most the rule
+>      sells is MAX_ABSORPTION x the deficit, under the bound from a deficit
+>      just under INTERVENTION_LINEAR / MAX_ABSORPTION of a year's output and
+>      past it from one just over, the lean selling in both. Then the default
+>      town, Lean, nobody dealing, played 240 months: no reprice's defence
+>      passes the bound, the premise of the byte-identical claim.
 > 
 >   6. THE MONTH'S DEALING IS ONE SUM (XI2, the model Trade's warning reads).
 >      Two pieces of 9% of a year's output each are under the bound and 18%
@@ -59,84 +63,86 @@
 > 
 > Numbering is the running order. Money is in thousands, as everywhere.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (54), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (25), [ExchangeRateCheck](ExchangeRateCheck.md) (18), [Founding](Founding.md) (3), [Game](Game.md) (3), [CurrencyCheck](CurrencyCheck.md) (2)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (65), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (25), [ExchangeRateCheck](ExchangeRateCheck.md) (18), [CurrencyCheck](CurrencyCheck.md) (4), [Founding](Founding.md) (3), [Game](Game.md) (3)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 151 | 1. below the bound nothing moves, to the bit |
-| 220 | 2. past it the rule is logarithmic |
-| 296 | 3. the inverse |
-| 361 | 4. Rotterdam's case |
-| 427 | 5. how often it fires in a real run |
-| 459 | 6. the month's dealing is one sum (XI2) |
+| 155 | 1. below the bound nothing moves, to the bit |
+| 224 | 2. past it the rule is logarithmic |
+| 300 | 3. the inverse |
+| 365 | 4. Rotterdam's case |
+| 431 | 5. how often it fires in a real run |
+| 518 | 6. the month's dealing is one sum (XI2) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 117 | `InterventionCheck.IMPACT` | `ForeignAccounts.INTERVENTION_IMPACT, LINEAR = ForeignAccounts.INTERVENTION_LI...` | The dials, by their short names. |
-| 120 | `InterventionCheck.SEED` | `ExchangeRateCheck.SEED` | The market's seed in the sections that draw one (ExchangeRateCheck's). |
-| 123 | `InterventionCheck.RUN_MONTHS` | `240` | Months of the real run in section 5. |
-| 126 | `InterventionCheck.YEAR` | `12` | The year a played town trades before its test month in section 4. |
-| 129 | `InterventionCheck.ROTTERDAM_YEARS` | `4.5` | What Rotterdam bought in a month, in years of the city's output (Jerus, 2026-11-02). |
+| 121 | `InterventionCheck.IMPACT` | `ForeignAccounts.INTERVENTION_IMPACT, LINEAR = ForeignAccounts.INTERVENTION_LI...` | The dials, by their short names. |
+| 124 | `InterventionCheck.SEED` | `ExchangeRateCheck.SEED` | The market's seed in the sections that draw one (ExchangeRateCheck's). |
+| 127 | `InterventionCheck.RUN_MONTHS` | `240` | Months of the real run in section 5. |
+| 130 | `InterventionCheck.YEAR` | `12` | The year a played town trades before its test month in section 4. |
+| 133 | `InterventionCheck.ROTTERDAM_YEARS` | `4.5` | What Rotterdam bought in a month, in years of the city's output (Jerus, 2026-11-02). |
+| 434 | `InterventionCheck.JUST` | `.1` | FS10: how far either side of the line a forced deficit of section 5 stands, as a share of the deficit whose largest sale is exactly INTERVENTION_LINEAR of a year's output. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 68 | `static int fails` |  |
-| 69 | `static PrintStream out` |  |
-| 70 | `static PrintStream quiet` |  |
+| 72 | `static int fails` |  |
+| 73 | `static PrintStream out` |  |
+| 74 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 66 | 483 | **type** `public class InterventionCheck` | Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1, 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as it always was, and logarithmic past it, INTERVENTION_IMPACT x s0 x (1 ... |
-| 72 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 77 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 88 | 9 | `static void relative(String label, double actual, double expected, double share)` | Within a share of the expected figure, for sizes that run over many orders. |
-| 99 | 9 | `static void same(String label, double actual, double expected)` | Equal to the bit. |
-| 110 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
-| 131 | 1 | `static double moveAt(double share, double annual)` |  |
-| 133 | 17 | `public static void main(String[] args) throws Exception` |  |
+| 70 | 538 | **type** `public class InterventionCheck` | Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1, 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as it always was, and logarithmic past it, INTERVENTION_IMPACT x s0 x (1 ... |
+| 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 81 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 92 | 9 | `static void relative(String label, double actual, double expected, double share)` | Within a share of the expected figure, for sizes that run over many orders. |
+| 103 | 9 | `static void same(String label, double actual, double expected)` | Equal to the bit. |
+| 114 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
+| 135 | 1 | `static double moveAt(double share, double annual)` |  |
+| 137 | 17 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. below the bound nothing moves, to the bit (lines 151-219)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 153 | 66 | `static void belowTheBoundNothingMoves()` |  |
-
-### 2. past it the rule is logarithmic (lines 220-295)
+### 1. below the bound nothing moves, to the bit (lines 155-223)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 222 | 73 | `static void pastItTheRuleIsLogarithmic()` |  |
+| 157 | 66 | `static void belowTheBoundNothingMoves()` |  |
 
-### 3. the inverse (lines 296-360)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 298 | 62 | `static void theInverse()` |  |
-
-### 4. Rotterdam's case (lines 361-426)
+### 2. past it the rule is logarithmic (lines 224-299)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 363 | 63 | `static void rotterdam()` |  |
+| 226 | 73 | `static void pastItTheRuleIsLogarithmic()` |  |
 
-### 5. how often it fires in a real run (lines 427-458)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 429 | 29 | `static void howOftenItFires()` |  |
-
-### 6. the month's dealing is one sum (XI2) (lines 459-548)
+### 3. the inverse (lines 300-364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 3 | `static ForeignAccounts held(ForeignAccounts.Regime regime)` | The standard trade a currency settles on, the regimes' fixture (CurrencyRegimeCheck.book()), in this regime, quiet, with a vault no sale empties. |
-| 466 | 82 | `static void theMonthsDealingIsOneSum()` |  |
+| 302 | 62 | `static void theInverse()` |  |
+
+### 4. Rotterdam's case (lines 365-430)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 367 | 63 | `static void rotterdam()` |  |
+
+### 5. how often it fires in a real run (lines 431-517)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 441 | 7 | `static ForeignAccounts forcedDeficit(double deficitUsd)` | FS10: a month the rule sells all it can, on bare books: CurrencyCheck.defended()'s currency with a vault at six months' cover (the capacity there is, MAX_ABSORPTION), a chronic deficit of this many US$ (so the trailin... |
+| 449 | 68 | `static void howOftenItFires()` |  |
+
+### 6. the month's dealing is one sum (XI2) (lines 518-607)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 521 | 3 | `static ForeignAccounts held(ForeignAccounts.Regime regime)` | The standard trade a currency settles on, the regimes' fixture (CurrencyRegimeCheck.book()), in this regime, quiet, with a vault no sale empties. |
+| 525 | 82 | `static void theMonthsDealingIsOneSum()` |  |
 
