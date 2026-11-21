@@ -1,7 +1,8 @@
 # FS4 notes: KeptCheck I causes what its pages read
 
 Batch FS4, built 2026-11-20 by Claude (Opus, headless) on `batch/FS4`, cut from
-origin/main 1d8a1f243 (0.9.172) and merged with ac224abf3 (FS17). The brief is `docs/studies/flaky-suite.md`,
+origin/main 1d8a1f243 (0.9.172) and merged with ac224abf3 (FS17) and 1557daaaf (FS14,
+0.9.173). The brief is `docs/studies/flaky-suite.md`,
 section 6.3. It takes KS1-rest's KeptCheck 49, KT1, KA1, KP2-N, KP3-N and
 KP4-N, and KRT1's Wood Products (50) and Construction (49) lines.
 
@@ -149,8 +150,8 @@ The FS4 rows of `docs/notes/known-reds.txt`, by their row numbers at 1d8a1f243:
 Every JVM was one of `./batch-check.sh --fast` or a named harness, one name
 a call, on the suite's default pool, with the earth and world paths set.
 
-- `./batch-check.sh --fast`: compile OK. Stale has 0 firm findings and 193
-  soft (194 at 1d8a1f243; one header sentence about KeptCheck's timing went).
+- `./batch-check.sh --fast`: compile OK. Stale has 0 firm findings (193
+  soft before the FS14 merge, 194 after; 194 at 1d8a1f243).
   The maps were regenerated; only files that changed beyond their date stamp
   are committed.
 - `./batch-check.sh TimingCheck`: exit 0. Timing.HARNESSES holds
@@ -179,6 +180,10 @@ a call, on the suite's default pool, with the earth and world paths set.
   its eight, so neither side's lines stay. Against main the file differs by
   exactly the eight FS4 rows. The generated indexes took main's version and
   were regenerated.
+- origin/main moved again to 1557daaaf (FS14) and was merged at d09e2e5ad,
+  the same way: FS14 retired its HoldersCheck rows. FS14's source is
+  harnesses and Observation.HARNESSES' list, which KeptCheck is still on
+  (FS5's sections call it), so KeptCheck was not run again.
 - `./batch-check.sh KeptCheck` after the merge (303830e24; KeptCheck has
   not changed since df1a9e78d): exit 3, known red only. The one red is 89's
   fixture, matched by the ship file's row.
