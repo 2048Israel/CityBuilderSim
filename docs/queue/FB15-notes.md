@@ -260,3 +260,32 @@ holds at about 31,000 from m800 to m2400 with unemployment at 11.5-12.7%, and en
 Its CSV has no housing column, so this run cannot say whether housing holds it. The orchestrator's test for
 the extra runs (AUTO2's or SHOCK's median more than 5% under 0.9.174's) is met by AUTO2's -6.7%. REV-FB15 asks
 for them in any case: the mended commit, and AUTO2 and SHOCK on 0.9.174, with `unplaced` and `homes` added.
+
+**The second run.** On the gate box, label FB15b, at 7c355a19f (REV-FB15's mends; REV-FB15-2's since are
+harnesses and tools only), against `docs/ensemble/0.9.174.md`, with
+`-Densemble.extra=unplaced=getFamilies.getStillUnplaced;homes=getBuildingManager.getTotalHomes`:
+- The score is the first run's: 25 of 26, 10 of 10 hard, no verdict changed, the same T1 and T2. The 66
+  columns the two runs share are byte-identical in all 80 CSVs, so REV-FB15's mends (mend 3's narrower
+  halving among them) changed nothing these runs reach.
+- `unplaced` is 0 in every month of all 80 runs. A getter this tree lacks would read NaN, not 0.
+- Committed as `docs/ensemble/FB15.md`, with the version token in its heading and first line.
+
+**0.9.174 again, for homes and unplaced.** On the gate box, label FB15-174, at 29f1e6a3f (the tag), AUTO2
+and SHOCK, seeds 0-15, with the same two extras. It reproduces `0.9.174.md`'s T1 (m853 [490 to 2,058]) and
+both T2s exactly. Medians [min to max] at the last month, 0.9.174 against FB15b:
+
+| | 0.9.174 | FB15 |
+|---|---|---|
+| AUTO2 homes | 599,425 [99,566 to 758,260] | 551,461 [12,527 to 1,203,630] |
+| AUTO2 homes per 1,000 people | 269.0 [258.2 to 273.9] | 269.4 [261.9 to 364.7] |
+| SHOCK homes | 11,739 [8,663 to 38,196] | 11,808 [7,404 to 29,624] |
+| SHOCK homes per 1,000 people | 265.6 [248.1 to 351.3] | 283.4 [258.0 to 316.1] |
+| unplaced, any month of any run | 0 | 0 |
+
+- No city on either side leaves a family unplaced in any month. Homes per person hold on AUTO2 and rise on
+  SHOCK. AUTO2's total is 8.0% lower because its population is 6.7% lower; the homes follow the people.
+- Seed by seed, the two versions are different cities, not one city moved. AUTO2 seed 2 is 2,720,143 on
+  0.9.174 and 34,353 here, and seed 8 is 382,368 there and 1,824,859 here. Each side has one low seed, so
+  a per-seed loss is no measure of HN1-A.
+- Seed 2's stall is not housing: it ends with 364.7 homes per 1,000 people, the most of any AUTO2 run, and
+  nothing unplaced. Its unemployment at 11.5-12.7% from m800 is the first run's reading.
