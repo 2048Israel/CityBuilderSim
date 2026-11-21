@@ -5,7 +5,9 @@
 > the hard two-failure negative, positive PowerView/SaveFile, stale-class proof and
 > unchanged old archives. Source is final. Historical adapter results below remain
 > labelled for `8079`. Marker retained: root authorized ONE final-model BOX-only ensemble,
-> not dry/screen/readiness/publication. Execution and results are recorded separately.
+> not dry/screen/readiness/publication. That single box ensemble is now complete and
+> verified: 80/80, hard PASS 10/10, no changed verdicts; all 80 CSVs byte-match the
+> retained published .180 artifact. ALL-238 dry ordering remains owed, without GO.
 
 PW6 implements the accepted electricity study §5 power screen after shipped PW1, from
 main `9d4467e8ae610a777f7ce445702c205f3984042c` / game 0.9.180. `moves_playtest=yes`
@@ -299,3 +301,69 @@ all 70 original PW6 evidence files before ensemble setup; its SHA256 is
 The source/proof/tools/pom trees and original proof bytes stay frozen through the one
 authorized box-only 80-run ensemble, homecopy and score. Final ALL-238 dry, screen,
 readiness and publication remain separately ordered, without GO here.
+
+## One final-model box ensemble — terminal, sealed and hard PASS
+
+The approved normal runner invocation was `PW6codex1-final180`, fresh/unused locally
+and across the box before launch. Source snapshot
+`72fa024acb7e97fb1b6d4553accf16c824a923fe` was pushed before execution and all tracked
+source/branch/records stayed frozen through remote completion, homecopy and scoring.
+No baseline replay, extra playtest, named/fast/fullpick/Kept/display run or restart was
+performed. Existing PW1/WG3 ownership and local-fallback controls were reused under
+ignored `target/pw6-final-ensemble/`; tracked ensemble/gate tools were not changed.
+
+The guard proof executed Java/javac/Maven refusal shims and the production wrapper's
+actual empty-HOST fallback. Maven was refused before any local model could start; the
+normal runner and scorer then left that guard log unchanged. Its before/after SHA256:
+`5bddbb0af187029dd609c666640d8fead4e08e8bac0e308dc801df87061afcea`.
+Remote native PATH was unaffected. Preflight found no active owners/models or held box
+locks. The normal box gate/nightly priority/yield protocol stayed in control.
+
+| provenance | actual value |
+|---|---|
+| label | PW6codex1-final180 |
+| native version | 0.9.180 |
+| baseline | docs/ensemble/0.9.180.md |
+| box/run | jerus@192.168.0.16:/home/jerus/cbs/tools/72fa024acb7e97fb1b6d4553accf16c824a923fe/target/ensemble/PW6codex1-final180 |
+| native JDK | /home/jerus/cbs/jdk, Eclipse Adoptium 21.0.13 |
+| full classes SHA256 | 6ac829c19d358b922c3580945f03c79c160a44a0f2859ac229acefa812f49e6a |
+| classes digest definition | SHA256 of sorted relative-path file SHA256 manifest, 2,445 snapshot files |
+| earth-2.bin SHA256 | c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b |
+| world-1.bin SHA256 | fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1 |
+| actual invocation UTC | 2026-11-21T23:13:29Z to 23:28:14Z |
+| execution | 80 native runs, 8 at once; native run wall 14.2 minutes; summed run time 111.985 minutes |
+| start ownership | serve PID 2696670, parent 2696669; box/ensemble lock owner 2697175 |
+| terminal ownership | no remaining owned serve/model/one-run processes; remote terminal sealed |
+
+Terminal verification counted 80 UNIQUE DONE entries, each reaching its own requested
+end month, all 80 CSV/timing pairs, no missing/short/NO DONE, and no finding rows.
+All remote sealed CSV/log/time/snapshot/dependency hashes match the homecopy; data and
+classes hashes still match the start. All 70 original pending-flow/P2/native/stale/old
+prototype evidence files match their pre-run SHA256 manifest. Raw runner, ownership,
+guard, start/terminal receipts, remote seal and validation are in
+`target/pw6-final-ensemble/`; raw copied results remain
+`target/ensemble/PW6codex1-final180/`. No kept folder or raw output was edited.
+
+Every policy (AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK, HIGH) passed M1 with `0 (0)` failed/
+unread audit months and F1 with `0/16 []` runs with findings: all ten hard scores PASS.
+Overall 25/26 active criteria passed; zero vacuous and one retired, unchanged. The
+informational AUTO2 A2 remains FAIL (longest high-inflation spell 15 months, range 4–36,
+against the below-12 threshold), as in .180. Changed verdicts: none. Timing medians in
+seconds were AUTO2 194.2, ZERO_SLACK 156.25, ZERO_HOT 18.45, SHOCK 41.25, HIGH 34.0;
+these builder timings are recorded, not a new speed gate.
+
+A read-only SHA256 comparison also matched all 80 complete CSVs byte-for-byte to the
+retained published .180 artifact `PW1c2-final` / model commit `7a06097bc`. That artifact's
+raw snapshot retains its pre-publication native version 0.9.179; .180's committed
+baseline identifies that exact label/commit. No baseline run or raw relabelling was
+done. This verifies the ensemble traces stayed identical despite the independently
+proved corrected save-continuation path; `moves_playtest=yes` remains the conservative
+declaration used for that path.
+
+`docs/ensemble/PW6.md` is the truthful producer baseline/summary, with only the normal
+heading/intro version placeholders for the publisher. Source/proof/tools/pom hashes
+remain those reviewed/frozen above. The one ensemble is discharged, every owned job
+is terminal, and no local model was run. Pick remains ALL 238, review floor
+`review    needed - saves: HistorySave.java`, covered by the recorded whole/scoped SHIP
+reviews. Ask root for ALL-238 dry ordering next; no dry, screen, readiness or publication
+is authorized by this ensemble GO. Provisional marker retained.
