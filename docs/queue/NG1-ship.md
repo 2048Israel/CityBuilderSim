@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-NG1-JaKT00P2 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — NG1, imported inputs the ground does not give are not bought — 2026-11-20, ready, see docs/queue/NG1-notes.md
 HL1's ensemble found a month (AUTO2 seed 12, m902) in which the works imported 2.6 times a month's inputs as their exports went. That month was GDP1's January stale price, closed in 0.9.97, and the seed no longer reaches it.
