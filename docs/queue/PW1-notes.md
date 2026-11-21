@@ -177,3 +177,61 @@ before 0.9.93) for its energy ratio alone. Money is the city's, in the founding'
   the bank's standing asserted before the sale (§3).
 - **Not done here**: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
   session has no way to write to the project; sections 1-4 are its matter.
+
+## 6. The takeover (PW1c, 2026-11-20 to 21)
+
+Jerus took the hold off ("Yes, un-hold PW1"); PW1c took the branch at 3d5d27519 (cut on 0.9.94) to its gate.
+
+**The merges.** Two, each one commit: 6e4112018 (main at 1557daaaf, 0.9.173) and d7f1f89d1 (main at 4f1056f11,
+OE1's 0.9.174, FS4 and after). The generated docs are main's, regenerated. The conflicts that needed thought:
+- `CallCheck` 4: FS14 rewrote the section (`saleOf`, `handBankRoom`). FS14's plays kept, with PW1's held firms
+  around them and the bank's standing asserted before the sale (the PW1 fixture of §3, restated on FS14's form).
+- `MoneyCheck`: main folded it into `LongPlaytest` (bb03a1fae). PW1's fixture, the homes drawing 50 kW so the coal
+  plant is the margin, carried into LongPlaytest's "a works making its own power and buying consumables abroad".
+- `MoneyAudit`, `EconomyManager`: PW1's utility imports (FuelImports, PlantUpkeep) beside R2c-P's city IP charges;
+  both enter the raw imports and both reset with the month.
+- `EquipmentFit`: R6d's electrolyser gain at the industry price (`getPowerPriceFor(t)`), as PW1 prices the steam.
+- `BuildAdvice`, `AdviceValueOracle`, the four sectors: QN1's `NewUnit` form carrying PW1's firm wind and price
+  a template's class; OE1's `plannedRate(u)` beside PW1's `powerPriceFor(t)` (the second merge's three conflicts).
+- `ScaleCheck`: FS2's `FREE_FIXTURE_MONTHS` 225 with `FREE_FIXTURE_SEARCH` 60 stand (§5's 177 is superseded);
+  `powerBooks` stays in the scaled fields. Main's long counts reach PW1's plant maps (`UtilitiesHandler`,
+  `ServicesManager`, `PowerDispatchCheck`, `BuildAdviceCheck` 14-15).
+
+**Old saves.** Today's floor and format are 58 and 58. PW1 adds one field, `powerBooks`; a format-58 save without it
+loads the founding book until the next month strikes one: incomplete, not wrong (spec §3). No bump.
+
+**Main's new harnesses, restated to cause their premises under PW1** (each a fixture, none a loosened bound):
+- ★ `EssentialWorksCheck.powerDrawAt(g, share)`: the draw at which the advice's own reading (the calm peak's draw
+  over the firm supply) is `share` of supply, found from two readings of `supplyDemand`. Main's fixtures set the
+  physical draw a fraction under production, which PW1's advice reads as short. Used for its "served with 5% to
+  spare" and "a fifth inside" towns and for WorksFinanceCheck's highway town.
+- `EssentialWorksCheck`: the forecast step is `PLAN_PEAK` times the mill's draw; the overdue section builds
+  `ceil(100 / WIND_FIRM)` farms where it built 100.
+- ★ The Wind Farm built `1 / WIND_FIRM` larger in `EssentialWorksCheck` interim power and `WorksFinanceCheck`'s
+  highway promise, so its firm part is the nameplate each was written against; the sections are the timing and the
+  shared site, not wind's firm price. Measured first: in the highway town (290,000 kW of utilities at a pooled
+  fill of 0.69) one farm's posts lower the pooled fill more than its firm third adds (firm supply 199,387 kW, 199,015
+  with one farm, 198,884 with two), so the advice proposed no reserve (now in PW1-P); in the interim town the auto path
+  ranked a coal plant (20-year cost $192.6M, opening at 104 months) over wind ($284.8M with 212 later farms, opening at
+  29), the prevented loss $1.5M against $1.8M (WorksValue's lost value added, small in a town of little industry).
+  That is HW1's ranking reading PW1's firm price as designed.
+- ★ `ElectrolyserCheck` 7: the grid read at the peak block (`PowerDispatch.PEAK`), the plants cleared so the
+  production written stands, and the served share summed over the half-blocks, the ratio PW1 strikes.
+- ★ `HydrogenSteelCheck`: Heavy Industry pays the industry tariff, the energy and transmission.
+- `NewUnitCheck`: the expected figure from the advice's own `supplyDemand`, the calm peak.
+- ★ `PublicLicenceCheck`, both desalination sections: the plant draws nothing. At the market's price the commerce
+  bill carries both wires (4.3 times the founding tariff in that town) and the plant's water at the water tariff, a
+  constant, no longer covers its power, so a patented plant earns no licence. Pending as PW1-W.
+
+**What each check showed** (one harness at a time, `./batch-check.sh <name>`, the merged tree): see §7 for the final
+run. Before the mends, NEW reds only in main's new harnesses above; `BuildAdviceCheck` red only on main's
+streets' card line (`docs/notes/gate.txt`, FS12's in known-reds); LongPlaytest, holding MoneyCheck's audit, green.
+
+**The review.** The merge changed what PW1-R read: R6d's electrolyser saving nets off the draw the grid is asked
+for (`ServicesManager.lessElectrolysers`), which on PW1 is the load the dispatch clears and the kWh each bill strikes
+on; the audit's scope gained the city's IP charges beside PW1's fuel and upkeep; MoneyCheck's fixture now runs inside
+LongPlaytest. Review: needed - money.
+
+**The rows.** PW1-W added (the water tariff). PW1-P gains the pooled-fill gap. MR1 (the map's rail after a load) is
+renamed ML1, MR1 being main's own batch since. AU1 dropped: FS15 rewrote AuctionCheck 10 to cause its premise. The old
+known-reds for HealthCheck and KeptCheck dropped (HX1 and KL1 shipped).
