@@ -605,3 +605,68 @@ animations as the real helper does, collect fresh-minus-kept identity sets,
 print shared top identities, and observe those fresh-only nodes after
 release/GC. Prepared `target/fs5c2-heap-probe2.sh` has not run. Model/screens,
 source measurement, bound and provisional marker remain unchanged.
+
+## Retaining-root diagnostics 2–4
+
+All are preserved under `target/FS5c2-heap-probeN.log`, with source and
+compiled classes in the correspondingly numbered target folders. Each ran
+one Monocle/SW JVM, -Xmx768m with a 45-second guard, exit 0 in about eight
+seconds. Each used only the same six-month scratch city and eight fresh
+Government comparisons. No production source, screen, dial or exclusion
+changed, and no full run replayed.
+
+Probe 2 finished animations exactly as `againstNewHeld` does, and collected
+only fresh-minus-kept node identities. Every comparison made 145 distinct
+fresh-only nodes and shared zero top nodes with the kept graph. All 1160
+nodes survived release/GC, while `comparisonRoots()` was zero. This disproves
+the shared-wrapper explanation but did not itself identify a root.
+
+Probe 3, the first of two further bounded root JVMs explicitly authorized
+at 11:47, found actual paths with weak referents excluded:
+
+```
+MonocleApplication.runnableProcessor.queue.queue[11].arg$1.arg$1 -> ScrollPane
+KeptBench.ui.governmentScreen.body -> ScrollPane
+```
+
+`UserInterface.restoreScroll` queues a callback for every new scroller.
+The eight comparisons run within one FX task, leaving their callbacks queued.
+A FIFO FX barrier before GC reduced fresh survivors from 1160 to 145.
+A kept redraw plus barrier reduced them to zero, but this was a diagnostic
+only: a redraw could heal state and is not accepted as the housekeeping mend.
+
+Probe 4 used the second/final root JVM from that authorization. It restored
+only the pre-comparison `body` reference, with no redraw. The kept signature
+and draw counters remained identical, but 145 fresh nodes still survived.
+Thus body restoration alone **failed** the conditional mend premise; no
+source edit was made under that conditional GO. Static audit found another
+specific owner: `GovernmentScreen.targets` is cleared and filled by each
+draw with rank-row Nodes (lines 184 and 1696–1700). Restoring the body does
+not restore those map entries. A Node also retains its parent graph, which
+the current canvas walker does not follow; that is a second measurement
+candidate, not a proven byte exclusion.
+
+The same negative buffer accounting holds in all three probes: eight
+synthetic canvases carry 8,388,608 unique texture bytes and no additional
+saved-pixel bytes; all eight collect after their roots are discarded.
+The small-town UI-only and UI-plus-harness walks each account for 4096 bytes,
+and the three software texture caches are empty. The full run's 80.5 MiB
+residual is still not quantitatively attributed.
+
+Prepared, not run: `target/fs5c2-heap-probe5.sh`, same size/heap/guard, to
+trace the remaining owner after body restoration, compare parent-inclusive
+canvas traversal, and restore the captured `targets` contents as well as
+`body`. It must show zero fresh survivors with unchanged kept signature and
+counters before a corresponding housekeeping mend is justified. Explicit
+GO was requested after the two-probe budget was exhausted.
+
+MC2 coordination: gate eaV6vYID stopped on main's section-92 paper premise,
+`piecesOnTheBooks` returning zero after its three auction attempts. Existing
+FS5 CD9-K code at 8511–8527 keeps those attempts and, when still empty, calls
+`booked(g, PAPER[3], ask)`. PAPER[3] is Term 10: DebtManager books 120 months
+at the current month, then updates interest; `financesPieces` copies its
+debt list, with no month/maturity step between. The identical hard premise
+at 8642 passed with one piece in this branch's full run (log line 5115).
+That run did not exercise all-auctions-refused fallback, so this is static
+coordination, not a claimed causal proof on MC2's state. FS5 owns that helper;
+MC2 was not asked to edit it or to waive the premise.
