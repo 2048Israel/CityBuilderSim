@@ -7835,9 +7835,9 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 84 | `NewUnitCheck.out` | `System.out` |  |
-| 86 | `NewUnitCheck.ROBOT` | `"welding-robot"` |  |
-| 196 | `NewUnitCheck.NO` | `JobType.NO_DIPLOMA.ordinal()` |  |
+| 86 | `NewUnitCheck.out` | `System.out` |  |
+| 88 | `NewUnitCheck.ROBOT` | `"welding-robot"` |  |
+| 198 | `NewUnitCheck.NO` | `JobType.NO_DIPLOMA.ordinal()` |  |
 
 ### OilCheck.java ([map](map/OilCheck.md))
 

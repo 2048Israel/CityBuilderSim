@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-AP1-8gllw3G8 -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — AP1, the auto-builder's month at 400,000 people — 2026-11-21, ready, see docs/queue/AP1-notes.md

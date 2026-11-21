@@ -84,6 +84,7 @@ All on the laptop, at 778376ca2. The worktree names main's data files (`JDK_JAVA
   - On a rationed grid (EssentialWorksCheck's way, 40 depots standing so that the plants open
     inside the plant's life), a Coal Power Plant's avoided loss is 14,434.51 both bare and held,
     to the bit, with one schedule built.
+  - Seven lines since REV-AP1 (section 4a): 83 of 83.
 - **AutoBuildCheck, EssentialWorksCheck, WorksFinanceCheck**: green. AutoBuildCheck observed 2
   path assertions, which are not counted.
 - **BuildAdviceCheck**: 1 red, main's own, by `docs/notes/gate.txt` line 7 ("the streets' card has
@@ -108,6 +109,37 @@ All on the laptop, at 778376ca2. The worktree names main's data files (`JDK_JAVA
 - **The pick** (`sh tools/pick.sh origin/main HEAD`) is ALL, for BuildingManager.java's 114
   readers, so the dry run applies. Its review line is "needed - threading": the scope is a
   `ThreadLocal`, with an `AtomicLong` count beside it. No money's books are touched.
+
+### 4a. The review (REV-AP1) and the dry run
+
+**The dry run** (`sh tools/gate.sh AP1 --dry-run`, on the box): exit 0, run
+`/home/jerus/cbs/runs/cbs-gate-AP1-8gllw3G8`, branch 319c45f97 on main 4f1056f11. The suite took
+645 s, exit 3: known reds only (BankCheck BuildAdviceCheck CarCheck DistressBleedCheck
+Forms1900Check PassThroughCheck ReloadCheck RoadCheck), and `unnamed.txt` is empty. Version 0.9.175.
+
+**REV-AP1: ship, after one harness gap (P1) and one taken too (P2). The code is right.** NewUnitCheck 13
+has seven lines more, and nothing else changed:
+- **P1(a)** A second city (g saved to its own scratch slot 10 and loaded, a third kiln ordered
+  there) is read inside g's scope. It reads its own bare figure to the bit, at 26 horizons (the 25
+  and `far`, where the third kiln shows), built afresh at each reading. g's scope builds nothing
+  more (`built` 1), and g still reads held.
+- **P1(b)** g is read on a second thread while g's scope is open on this one. The thread gets the
+  bare figure, from a schedule of its own (`SCHEDULES` +1), and the scope builds nothing more.
+- **P1(c)** `hold(other)` nested in `hold(g)` is g's scope one deeper. The second city reads bare
+  inside it (26 built). g's scope stays open and held past the inner close, and closes after.
+- **P2** Two stamped inputs moved inside a scope by hand, with no order: the kilns' progress half
+  done (a premise shows it moves the figure), and builders-first turned off. Each time the next
+  reading is the bare one to the bit, from a schedule built anew (`built` 2).
+
+**Each new line fails when its guard is broken.** Each break was made by hand, NewUnitCheck run alone,
+and the break reverted (`git checkout`). The clean tree was then run green.
+
+| the break | red |
+|---|---|
+| `s.game != g` dropped from `held()` | (a) and (c): "1 built for the second city's 26 readings, 3 in g's scope" |
+| a static holder in place of the `ThreadLocal` | (b): "0 built on the thread" |
+| progress dropped from `siteStamp()` | P2's progress line: "1 built" |
+| builders-first dropped from `siteStamp()` | P2's switch line: "1 built" |
 
 ## 5. The playtest and the month on slot 10
 

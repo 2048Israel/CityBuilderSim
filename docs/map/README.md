@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 611 files, 665,810 lines, 28,981 methods, 6,433 constants. `GameVersion.VERSION` is "0.9.174", `SAVE_FORMAT` 58.
+**The tree:** 611 files, 665,906 lines, 28,981 methods, 6,433 constants. `GameVersion.VERSION` is "0.9.174", `SAVE_FORMAT` 58.
 
 ## model (272 files)
 
@@ -108,7 +108,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FundLedger.java](FundLedger.md) | 789 | 94 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 13 |
 | [FundView.java](FundView.md) | 921 | 41 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 8 |
 | [Game.java](Game.md) | 22,962 | 1035 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FOUN... | 315 |
-| [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 202 |
+| [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 203 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 282 | 31 | How the player likes the window, kept between runs. | 8 |
 | [GameVersion.java](GameVersion.md) | 8,475 | 6 | What build this is, and what shape its saves are. | 25 |
@@ -530,7 +530,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MortgageCheck.java](MortgageCheck.md) | 1,245 | 26 | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. | 1 |
 | [NationsCheck.java](NationsCheck.md) | 680 | 23 | The nations beyond the city and the path they are on (batch WN1; the project's spec-nations.md 7): Nations' year - output, people, prices and the r... | 0 |
 | [NewGameCheck.java](NewGameCheck.md) | 1,477 | 18 | Does "Start New Game" actually start a new game? | 4 |
-| [NewUnitCheck.java](NewUnitCheck.md) | 1,101 | 35 | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. | 0 |
+| [NewUnitCheck.java](NewUnitCheck.md) | 1,197 | 35 | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. | 0 |
 | [ObservationCheck.java](ObservationCheck.md) | 126 | 4 | Holds the path-observation contract with a premise deliberately held off. | 0 |
 | [OilCheck.java](OilCheck.md) | 2,415 | 48 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 2 |
 | [OilViewCheck.java](OilViewCheck.md) | 706 | 20 | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own rea... | 1 |

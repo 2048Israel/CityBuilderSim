@@ -1,4 +1,4 @@
-# NewUnitCheck.java - 1,101 lines · 35 methods · 3 constants · harnesses
+# NewUnitCheck.java - 1,197 lines · 35 methods · 3 constants · harnesses
 
 `ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -49,164 +49,166 @@
 >      ground makes, where the heading's made words and stands() would read a new unit and the fleet alike.
 >  13. Held for one pass (AP1, WorksValue.hold()), on section 9's queued plants: inside a scope the power ahead at every
 >      horizon, and a power plant's avoided loss, are the bare figures to the bit; an order, a rush and a priority placed
->      inside it are read at the next call; one schedule is built for the scope with nothing changed on site (a count,
->      WorksValue.SCHEDULES); closed, nothing is held.
+>      inside it, and the progress and the builders-first switch moved by hand, are read at the next call; one schedule is
+>      built for the scope with nothing changed on site (a count, WorksValue.SCHEDULES); a second city (saved and loaded),
+>      a second thread, and the second city's hold nested in g's read their own bare figures and leave g's scope as it
+>      was; closed, nothing is held.
 > 
 > Sections 7 and 12 draw on the JavaFX toolkit (ui.KeptBench, KeptCheck's way); where it cannot start, their card parts
 > are said to be skipped, section 7 orders through buildStack() and says so, and the rest runs: the harness exits 0
 > without them, as KeptCheck does.
 
-**Uses:** [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Game](Game.md) (42), [Good](Good.md) (41), [WorksValue](WorksValue.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (31), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (20), [BuildAdvice](BuildAdvice.md) (17), [KeptCheck](KeptCheck.md) (14), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [BuildingsStacks](BuildingsStacks.md) (10), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [BuildingManager](BuildingManager.md) (9), [EquipmentFit](EquipmentFit.md) (7), [Recipe](Recipe.md) (5), [Founding](Founding.md) (5), [Sector](Sector.md) (4), [Recipes](Recipes.md) (4), [Bank](Bank.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [ConstructionControl](ConstructionControl.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2), [Money](Money.md) (2)... and 9 more
+**Uses:** [WorksValue](WorksValue.md) (58), [Game](Game.md) (46), [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Good](Good.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (32), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (20), [BuildAdvice](BuildAdvice.md) (17), [KeptCheck](KeptCheck.md) (14), [BuildingsStacks](BuildingsStacks.md) (11), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [BuildingManager](BuildingManager.md) (9), [EquipmentFit](EquipmentFit.md) (7), [Founding](Founding.md) (6), [Recipe](Recipe.md) (5), [Sector](Sector.md) (4), [Recipes](Recipes.md) (4), [RecipeCheck](RecipeCheck.md) (4), [Bank](Bank.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [ConstructionControl](ConstructionControl.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2)... and 10 more
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 102 | · the actual state a new building runs |
-| 216 | · 1 |
-| 257 | · 2 |
-| 298 | · 3 |
-| 355 | · 4 |
-| 381 | · 5 |
-| 431 | · 6 |
-| 453 | · 7 and 8 |
-| 642 | · 9 |
-| 693 | · 13 |
-| 847 | · 10 |
-| 901 | · 11 |
-| 960 | · 12 |
+| 104 | · the actual state a new building runs |
+| 218 | · 1 |
+| 259 | · 2 |
+| 300 | · 3 |
+| 357 | · 4 |
+| 383 | · 5 |
+| 433 | · 6 |
+| 455 | · 7 and 8 |
+| 644 | · 9 |
+| 695 | · 13 |
+| 943 | · 10 |
+| 997 | · 11 |
+| 1056 | · 12 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 84 | `NewUnitCheck.out` | `System.out` |  |
-| 86 | `NewUnitCheck.ROBOT` | `"welding-robot"` |  |
-| 196 | `NewUnitCheck.NO` | `JobType.NO_DIPLOMA.ordinal()` |  |
+| 86 | `NewUnitCheck.out` | `System.out` |  |
+| 88 | `NewUnitCheck.ROBOT` | `"welding-robot"` |  |
+| 198 | `NewUnitCheck.NO` | `JobType.NO_DIPLOMA.ordinal()` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 82 | `static int fails, checks` |  |
-| 83 | `static boolean quietRun` |  |
-| 106 | `final int[] jobs` |  |
-| 107 | `int total, electricity` |  |
-| 108 | `double gen, production1, estimate, running` |  |
-| 168 | `Game game` |  |
-| 169 | `BuildingsTemplate works` |  |
-| 170 | `BuildingsStacks stack` |  |
-| 171 | `Ran actual` |  |
-| 172 | `double rejectedAt` |  |
-| 199 | `static boolean toolkitTried` | Whether the toolkit has been tried, and why it is down (null: up); it starts once in a JVM, so sections 7 and 12 share it. |
-| 200 | `static String toolkitDown` |  |
+| 84 | `static int fails, checks` |  |
+| 85 | `static boolean quietRun` |  |
+| 108 | `final int[] jobs` |  |
+| 109 | `int total, electricity` |  |
+| 110 | `double gen, production1, estimate, running` |  |
+| 170 | `Game game` |  |
+| 171 | `BuildingsTemplate works` |  |
+| 172 | `BuildingsStacks stack` |  |
+| 173 | `Ran actual` |  |
+| 174 | `double rejectedAt` |  |
+| 201 | `static boolean toolkitTried` | Whether the toolkit has been tried, and why it is down (null: up); it starts once in a JVM, so sections 7 and 12 share it. |
+| 202 | `static String toolkitDown` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 81 | 1021 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
-| 88 | 6 | `static void check(String label, boolean ok, String detail)` |  |
-| 95 | 1 | `static void section(String title)` |  |
-| 97 | 1 | `static boolean near(double a, double b)` |  |
-| 100 | 1 | `static boolean apart(double a, double b)` | Whether two readings differ by more than rounding: the premise that a reader of the fleet would be told apart. |
+| 83 | 1115 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
+| 90 | 6 | `static void check(String label, boolean ok, String detail)` |  |
+| 97 | 1 | `static void section(String title)` |  |
+| 99 | 1 | `static boolean near(double a, double b)` |  |
+| 102 | 1 | `static boolean apart(double a, double b)` | Whether two readings differ by more than rounding: the premise that a reader of the fleet would be told apart. |
 
-### the actual state a new building runs (lines 102-215)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 105 | 10 | **type** `static final class Ran` | The live figures of a template, and the investors' numbers, read in one state. |
-| 110 | 4 | `public String toString()` _(in NewUnitCheck.Ran)_ |  |
-| 116 | 15 | `static Ran ranOf(Game g, BuildingsTemplate t, boolean priced)` |  |
-| 133 | 6 | `static Set<String> rejected(Game g, BuildingsTemplate t)` | The pieces a new building of t would not get now. |
-| 144 | 12 | `static<T> T whereItRuns(Game g, BuildingsTemplate t, Supplier<T> read)` | Reads where a new building of t actually runs: the standing fleet's stack set without every piece a new one would not get, the recipes applied, `read` run there, then the fitting put back and applied again. |
-| 157 | 8 | `static boolean sameFigures(NewUnit u, BuildingsTemplate t)` |  |
-| 167 | 7 | **type** `static final class Cars` | A 1900 city with one fitted Vehicle Works and every discovery known at the robot's date. |
-| 175 | 10 | `static Cars robotTown(String label) throws Exception` |  |
-| 187 | 8 | `static boolean rejectRobot(Cars c)` | Steps machinery from a cent up by half again until the verdict for a new plant drops the robot; false if it never does. |
-| 203 | 7 | `static String toolkit()` | The JavaFX toolkit, started at the first ask (KeptCheck.startJavaFx()): null when it is up, else why not. |
-| 212 | 3 | `static double fleetQuote(Game g, BuildingsTemplate t, Sector owner)` | The fitted fleet's quote: what the sector says of the fleet's figures, as a reader of the template would have quoted. |
-
-### 1 (lines 216-256)
+### the actual state a new building runs (lines 104-217)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 218 | 38 | `static void standingEverywhere() throws Exception` |  |
+| 107 | 10 | **type** `static final class Ran` | The live figures of a template, and the investors' numbers, read in one state. |
+| 112 | 4 | `public String toString()` _(in NewUnitCheck.Ran)_ |  |
+| 118 | 15 | `static Ran ranOf(Game g, BuildingsTemplate t, boolean priced)` |  |
+| 135 | 6 | `static Set<String> rejected(Game g, BuildingsTemplate t)` | The pieces a new building of t would not get now. |
+| 146 | 12 | `static<T> T whereItRuns(Game g, BuildingsTemplate t, Supplier<T> read)` | Reads where a new building of t actually runs: the standing fleet's stack set without every piece a new one would not get, the recipes applied, `read` run there, then the fitting put back and applied again. |
+| 159 | 8 | `static boolean sameFigures(NewUnit u, BuildingsTemplate t)` |  |
+| 169 | 7 | **type** `static final class Cars` | A 1900 city with one fitted Vehicle Works and every discovery known at the robot's date. |
+| 177 | 10 | `static Cars robotTown(String label) throws Exception` |  |
+| 189 | 8 | `static boolean rejectRobot(Cars c)` | Steps machinery from a cent up by half again until the verdict for a new plant drops the robot; false if it never does. |
+| 205 | 7 | `static String toolkit()` | The JavaFX toolkit, started at the first ask (KeptCheck.startJavaFx()): null when it is up, else why not. |
+| 214 | 3 | `static double fleetQuote(Game g, BuildingsTemplate t, Sector owner)` | The fitted fleet's quote: what the sector says of the fleet's figures, as a reader of the template would have quoted. |
 
-### 2 (lines 257-297)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 259 | 38 | `static void rejectedRobot(Cars c) throws Exception` |  |
-
-### 3 (lines 298-354)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 300 | 54 | `static void staffingBoundary(Cars c) throws Exception` |  |
-
-### 4 (lines 355-380)
+### 1 (lines 218-258)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 357 | 23 | `static void pulpChoice() throws Exception` |  |
+| 220 | 38 | `static void standingEverywhere() throws Exception` |  |
 
-### 5 (lines 381-430)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 383 | 47 | `static void bankClerks() throws Exception` |  |
-
-### 6 (lines 431-452)
+### 2 (lines 259-299)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 433 | 19 | `static void matching(Cars c) throws Exception` |  |
+| 261 | 38 | `static void rejectedRobot(Cars c) throws Exception` |  |
 
-### 7 and 8 (lines 453-641)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 456 | 15 | `static List<Object> siteSnapshot(Game g, BuildingsTemplate w)` | An order on site as the Build card's reads must leave it: the stack, its sites and their contracts. |
-| 472 | 139 | `static void identitiesAndSite() throws Exception` |  |
-| 613 | 1 | `static String unskilled(long posts)` | The order bar's words for this many unskilled posts (BuildScreen.refreshOrderBar(), jobPlural()). |
-| 620 | 6 | `static double latentWith(Game g, double coming)` | The landlords' head shortage with `coming` posts on site, from its parts (RealEstate.latentHeadShortfall()'s arithmetic, no home on site): every post standing, the builders' laid-off crews included, and the coming one... |
-| 628 | 13 | `static double[] loadsAhead(Game g, BuildingsTemplate t, StringBuilder said, int[] done)` | The power ahead of a queue on a stack: the readings at half the first completion, just before it, at it and past the last. |
-
-### 9 (lines 642-692)
+### 3 (lines 300-356)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 644 | 48 | `static Queued changedDraw() throws Exception` |  |
+| 302 | 54 | `static void staffingBoundary(Cars c) throws Exception` |  |
 
-### 13 (lines 693-846)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 696 | 1 | **type** `record Queued(Game g, BuildingsTemplate kiln)` | Section 9's city after it: two Cement Plants queued on the plant's own stack, their new units' draw not the fleet's. |
-| 699 | 5 | `static boolean sameBits(double[] a, double[] b)` | Every reading equal to the other to the bit (Double.doubleToLongBits). |
-| 705 | 1 | `static boolean sameBits(double a, double b)` |  |
-| 708 | 5 | `static double[] loads(Game g, double[] horizons)` | The power ahead at each horizon, read as the caller's scope (or none) has it. |
-| 715 | 9 | `static double[] horizons(Game g, BuildingsTemplate kiln, int steps)` | Horizons from now to a month past the last unit on the kilns' site, by its own quotes: every completion inside them. |
-| 725 | 121 | `static void heldForAPass(Queued q) throws Exception` |  |
-
-### 10 (lines 847-900)
+### 4 (lines 357-382)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 849 | 44 | `static void crewDemand() throws Exception` |  |
-| 895 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
+| 359 | 23 | `static void pulpChoice() throws Exception` |  |
 
-### 11 (lines 901-959)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 903 | 56 | `static void powerAhead() throws Exception` |  |
-
-### 12 (lines 960-1101)
+### 5 (lines 383-432)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 962 | 108 | `static void cardGoods() throws Exception` |  |
-| 1071 | 30 | `public static void main(String[] args) throws Exception` |  |
+| 385 | 47 | `static void bankClerks() throws Exception` |  |
+
+### 6 (lines 433-454)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 435 | 19 | `static void matching(Cars c) throws Exception` |  |
+
+### 7 and 8 (lines 455-643)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 458 | 15 | `static List<Object> siteSnapshot(Game g, BuildingsTemplate w)` | An order on site as the Build card's reads must leave it: the stack, its sites and their contracts. |
+| 474 | 139 | `static void identitiesAndSite() throws Exception` |  |
+| 615 | 1 | `static String unskilled(long posts)` | The order bar's words for this many unskilled posts (BuildScreen.refreshOrderBar(), jobPlural()). |
+| 622 | 6 | `static double latentWith(Game g, double coming)` | The landlords' head shortage with `coming` posts on site, from its parts (RealEstate.latentHeadShortfall()'s arithmetic, no home on site): every post standing, the builders' laid-off crews included, and the coming one... |
+| 630 | 13 | `static double[] loadsAhead(Game g, BuildingsTemplate t, StringBuilder said, int[] done)` | The power ahead of a queue on a stack: the readings at half the first completion, just before it, at it and past the last. |
+
+### 9 (lines 644-694)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 646 | 48 | `static Queued changedDraw() throws Exception` |  |
+
+### 13 (lines 695-942)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 698 | 1 | **type** `record Queued(Game g, BuildingsTemplate kiln)` | Section 9's city after it: two Cement Plants queued on the plant's own stack, their new units' draw not the fleet's. |
+| 701 | 5 | `static boolean sameBits(double[] a, double[] b)` | Every reading equal to the other to the bit (Double.doubleToLongBits). |
+| 707 | 1 | `static boolean sameBits(double a, double b)` |  |
+| 710 | 5 | `static double[] loads(Game g, double[] horizons)` | The power ahead at each horizon, read as the caller's scope (or none) has it. |
+| 717 | 9 | `static double[] horizons(Game g, BuildingsTemplate kiln, int steps)` | Horizons from now to a month past the last unit on the kilns' site, by its own quotes: every completion inside them. |
+| 727 | 215 | `static void heldForAPass(Queued q) throws Exception` |  |
+
+### 10 (lines 943-996)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 945 | 44 | `static void crewDemand() throws Exception` |  |
+| 991 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
+
+### 11 (lines 997-1055)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 999 | 56 | `static void powerAhead() throws Exception` |  |
+
+### 12 (lines 1056-1197)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1058 | 108 | `static void cardGoods() throws Exception` |  |
+| 1167 | 30 | `public static void main(String[] args) throws Exception` |  |
 
