@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS14 (untagged) — the Exchange and the bond desk cause their conditions — 2026-11-20, ready, see docs/queue/FS14-notes.md
 The sweep of the Exchange and the bond desk (FS1 study 6.13): FloatLink, Desk, Call, Holders, Bond, Equity, Exchange and ShortSelling (each
