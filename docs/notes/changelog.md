@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.180 — PW1, power by the merit order at the market's price — 2026-11-21, ready, see docs/queue/PW1-notes.md
+Power clears by the merit order at the market's price (Jerus: "Market price"): three load blocks, each a windy and calm half, with the works' surplus first, then wind, hydro and fuelled plants.
+Short half-blocks clear at the cap. Coal plants burn thermal coal bought from the market. Commerce pays energy and both wires; Heavy Industry and Mining pay energy and transmission.
+A saved monthly book holds the ratio, prices and fuel; the works receive their half-block prices, and licences and recipes price power at their building's class. Pre-PW1 saves seed the ratio from their loaded dispatch.
+Advice plans for the calm peak, counting a Wind Farm's firm third, and the playtest player follows it. Founded cities count the free grid immediately. Services shows prices and dispatch; Trade shows plant fuel and upkeep.
+The final gate-box ensemble on the .179 merge passes all 10 M1/F1 hard criteria, 25/26 overall, with no changed verdicts against .179 (`docs/ensemble/PW1.md`). AUTO2 T2 now passes; PW1d's .174 miss stays archived.
+New checks: PowerDispatchCheck, PowerPriceCheck and BuildAdviceCheck 14-15. Existing power fixtures, class-price licence/recipe checks and the pre-PW1 load check follow the market book.
+OilCheck establishes real fuel demand before its observed year (recovery check: first fuel month 16, limit 36); its original assertions stay hard. Named reds are traced to PW1-W, HL2 and FS9.
+PW5, PW8, the planner gaps, water tariff and remaining licence/recipe valuations stay pending.
+
 ### 0.9.179 — MC2, BF1's band share under the leverage target — 2026-11-20, ready, see docs/queue/MC2-notes.md
 A bank in its band, between its minimum and its target, lends growth again. BF1 bounded new
 buildings' loans and, while the leverage ratio binds, new mortgages by the bank's room to its

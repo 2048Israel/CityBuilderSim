@@ -286,7 +286,7 @@ final class AdviceValueOracle {
         double repairs = g.getEconomyManager().withBuildersTax(g.getBuildingManager().nonMaterialCost(t)
                 + t.getConstructionMaterials() * price) * (ConstructionControl.paves(t)
                 ? t.gravelRepairsAt(use) : t.repairsPerYear()) / 12;
-        double utilities = t.getElectricityConsumption() * g.getEconomyManager().getPricePerWatt()
+        double utilities = t.getElectricityConsumption() * g.getEconomyManager().getPowerPriceFor(t)
                 + t.getWaterConsumption() * g.getEconomyManager().getPricePerWaterUnit();
         return repairs + utilities + BuildCard.runningCost(g, t);
     }

@@ -1,4 +1,4 @@
-# RecipeCheck.java - 1,195 lines · 43 methods · 3 constants · harnesses
+# RecipeCheck.java - 1,197 lines · 43 methods · 3 constants · harnesses
 
 `ham/citybuildersim/RecipeCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 1132 | **type** `public class RecipeCheck` | Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's figures weighted by the buildings of each part of a stack, and saved. |
+| 64 | 1134 | **type** `public class RecipeCheck` | Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's figures weighted by the buildings of each part of a stack, and saved. |
 | 72 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 77 | 1 | `static void check(String label, boolean ok)` |  |
 | 80 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -169,12 +169,12 @@
 |---:|---:|---|---|
 | 930 | 29 | `static void sectionEight()` |  |
 
-### 9. the shipped rows (lines 960-1195)
+### 9. the shipped rows (lines 960-1197)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 963 | 10 | `static void stand(Game g, BuildingsTemplate t, int n, int[] direct)` | Stands at least n of the template in the town: bought without construction where the ground has room for it, else put on the books; each order that took the second way adds one to direct[0]. |
 | 975 | 4 | `static double score(Recipe r, Recipes.Prices p)` | A recipe's value for a ranking: not a number is the worst there is, as Recipes.best() reads it. |
 | 984 | 10 | `static String notBest(BuildingsTemplate t, Recipe run, boolean fitted, int month, Recipes.Prices p)` | Why a part does not run the best recipe it can, by the model's own value(), or null when it does: it cannot run it (the default is run where the part can run none), or another it can run is worth more at these prices. |
-| 995 | 200 | `static void sectionNine() throws Exception` |  |
+| 995 | 202 | `static void sectionNine() throws Exception` |  |
 

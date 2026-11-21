@@ -411,6 +411,12 @@ public class HydroCheck {
                 quiet(() -> stand.buildStack(hydroOf(stand), 2, true)) == Game.BuildResult.SUCCESS && stand.getBuildingManager().getQuantity(hydroOf(stand).getId()) == 2);
         quietly(() -> stand.simulateMonths(1));
         near("each station standing adds its production1 to the grid's generation: two add twice", grid.getBaseProduction() - before, 2 * hydroOf(stand).getProduction1());
+        // PW1: a station's month is its water (production1 x count x the month's hours), levelled under its nameplate by the merit order.
+        PowerDispatch.Row stationRow = null;
+        for (PowerDispatch.Row r : grid.getLatestRows()) if (r.kind == PowerDispatch.Kind.HYDRO) stationRow = r;
+        assertTrue("...and the month's dispatch runs them: the hydro row's kWh is positive and at most its water, production1 x 2 x " + PowerDispatch.MONTH_HOURS + " kWh",
+                stationRow != null && stationRow.kwh > 0 && stationRow.kwh <= stationRow.waterKwh + 1e-6
+                        && stationRow.waterKwh == 2 * hydroOf(stand).getProduction1() * PowerDispatch.MONTH_HOURS);
 
         // It stands on steep ground, where a coal plant is refused for want of ground it can stand on.
         Game steepCity = LandClassCheck.city("hydrocheck-steep", 0, 0, 1, 0);

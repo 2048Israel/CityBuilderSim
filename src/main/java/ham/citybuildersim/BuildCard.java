@@ -1573,7 +1573,7 @@ public final class BuildCard {
      * .getGen()), its draw, what it buys past what it makes and what it
      * sells the grid past its draw (powerBought(), powerSold()), and what
      * that sells for a month at its sector's tariff (ProcessingSector
-     * .tariff(), the price Sector.getPowerSoldValue() strikes the surplus
+     * .worksTariff(), the price Sector.getPowerSoldValue() strikes the surplus
      * at). Null for a building that makes none.
      */
     public record Power(double gen, double draw, double bought, double sold, double soldValue) { }
@@ -1586,7 +1586,7 @@ public final class BuildCard {
     public static Power power(Game game, NewUnit nu) {
         if (nu == null || !(nu.getGen() > 0)) return null;
         Sector owner = game.getSectors().ownerOf(nu.template());
-        double tariff = owner instanceof ham.citybuildersim.sectors.ProcessingSector p ? p.tariff() : Double.NaN;
+        double tariff = owner instanceof ham.citybuildersim.sectors.ProcessingSector p ? p.worksTariff() : Double.NaN;
         return new Power(nu.getGen(), nu.getElectricityConsumption(), nu.powerBought(), nu.powerSold(), nu.powerSold() * tariff);
     }
 

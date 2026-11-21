@@ -763,10 +763,14 @@ public final class WorksFinanceCheck {
         roads.setThrough(0, LandManager.SQ_FT_PER_KM2 * 100, 0);
         roads.setLoad(BuildAdvice.highwayFlow(g) * .5);
         roads.setBuiltCapacity(roads.getStreetLoad() * 2);
-        UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
-        utility.setWattsConsumption(utility.getProduction() / 1.05);
+        // ...power served with 5% to spare, as the advice reads it (PW1: the calm peak's draw over the firm supply).
+        EssentialWorksCheck.powerDrawAt(g, 1 / 1.05);
         List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
         bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.ELECTRICITY && t != wind);
+        // THE FIXTURE CAUSES IT (PW1): the advice credits a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, the calm peak), and in this
+        // town of 290,000 kW its posts pull the pooled fill down by more than that part adds, so one farm is no reserve. The fixture's farm
+        // is built 1 / WIND_FIRM larger: its firm part is the nameplate this section was written against, and one farm is a reserve again.
+        wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
         try {
             AutoBuilder auto = g.getAutoBuilder();
             BuildAdvice.Suggestion reserve = BuildAdvice.suggestFor(g, null, power, g.getCash(),

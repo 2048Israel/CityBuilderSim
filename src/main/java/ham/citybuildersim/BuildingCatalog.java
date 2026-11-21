@@ -222,7 +222,13 @@ public class BuildingCatalog {
                 // ...and when it first existed (0.7.123; R2): a year or a research.json code, absent undated.
                 .setSince(sinceText(o))
                 // ...and the raw coal a preparation plant washes, t a month (0.7.126): absent, none.
-                .setWash(number(o, "wash"));
+                .setWash(number(o, "wash"))
+                // ...and a power row's figures for the merit order (PW1; spec-electricity 2.3, 2.5): absent, none.
+                .setNameplate(number(o, "nameplate"))
+                .setFuel(string(o, "fuel"))
+                .setHeatRate(number(o, "heatRate"))
+                .setVariableUpkeep(number(o, "variableUpkeep"))
+                .setVariable(string(o, "variable"));
 
         readCare(o, template, name);
         readJobs(o, template, name);

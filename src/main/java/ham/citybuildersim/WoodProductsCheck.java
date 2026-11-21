@@ -466,25 +466,33 @@ public class WoodProductsCheck {
     /* ============================ 4. the pulp mill's power sold ============================ */
 
     static void power() {
-        out.println("\n--- 4. the pulp mill's own power: none bought, its 13,500 kW sold to the grid at the tariff, the city's utility paying ---");
+        out.println("\n--- 4. the pulp mill's own power: none bought, its 13,500 kW sold to the grid at the works' price, the city's utility paying ---");
         Game g = MaterialsCheck.town("woodproductscheck-power");
         BuildingManager b = g.getBuildingManager();
         WoodProducts wp = g.getSectors().woodProducts();
+        // ...the works' price the last month's statement is struck at: the book of the month before, read before that month runs (PW1).
+        double[] struckAt = new double[1];
         quietly(() -> {
+            // THE FIXTURE CAUSES IT (PW1): the merit order pays the works what their kWh clear at. The mill's 13,500 kW and the founding grid
+            // (10,000 kW, free) would clear a town of 400 homes at nothing, so the homes draw 70 kW each and the coal plant is the margin.
+            b.getTemplateByName("House").setElectricityConsumption(70);
             b.addStack(b.getTemplate(WoodProducts.PULP_MILL), 1, true);
             g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
-            g.simulateMonths(2);
+            // ...four months: the first two clear before the plants are staffed (at nothing, then short), and a statement is struck at the month before's book.
+            g.simulateMonths(3);
+            struckAt[0] = g.getEconomyManager().getWorksPricePerWatt();
+            g.simulateMonths(1);
         });
         BuildingsTemplate mill = b.getTemplate(WoodProducts.PULP_MILL);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        double price = g.getEconomyManager().getPricePerWatt();
-        report("fixture: a town with a pulp mill standing, two months on: it draws nothing from the grid and sells 13,500 kW",
+        double worksPrice = struckAt[0];
+        report("fixture: a town with a pulp mill standing, four months on: it draws nothing from the grid and sells 13,500 kW",
                 b.getQuantity(WoodProducts.PULP_MILL) == 1 && mill.powerBought() == 0 && mill.powerSold() == PULP_GEN
                         && wp.getPowerSurplus() == PULP_GEN,
                 String.format("Wood Products sells %,.0f kW, buys %,.0f", wp.getPowerSurplus(), mill.powerBought()));
         Sector.Statement st = wp.statement();
-        assertTrue("its statement's powerSold is the 13,500 kW at the tariff, in its revenue past its sales; its electricity bill nothing",
-                st.powerSold == PULP_GEN * price && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
+        assertTrue("its statement's powerSold is the 13,500 kW at the works' price (the struck book's), in its revenue past its sales; its electricity bill nothing",
+                st.powerSold == PULP_GEN * worksPrice && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
                         && wp.getElectricityCost() == 0);
         assertTrue("the utility pays the works what their statement booked, and the grid counts their surplus as generation",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= PULP_GEN);
