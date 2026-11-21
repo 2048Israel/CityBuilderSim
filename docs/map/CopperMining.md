@@ -1,6 +1,6 @@
-# CopperMining.java - 301 lines · 13 methods · 8 constants · sectors
+# CopperMining.java - 305 lines · 13 methods · 8 constants · sectors
 
-`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/CopperMining.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133,
 > batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the
@@ -60,7 +60,7 @@
 > cathode; the world the rest. The leach plants buy Copper Refining's acid
 > first, the world's past it.
 
-**Uses:** [Good](Good.md) (17), [LandManager](LandManager.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [Resource](Resource.md) (4), [Game](Game.md) (3), [Deposit](Deposit.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (18), [LandManager](LandManager.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [Resource](Resource.md) (4), [Game](Game.md) (3), [Deposit](Deposit.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (11):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [GroundInputCheck](GroundInputCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
@@ -69,8 +69,8 @@
 | line | section |
 |---:|---|
 | 114 | · the ground |
-| 228 | · the plan and the retirement |
-| 275 | · the page |
+| 232 | · the plan and the retirement |
+| 279 | · the page |
 
 ## Constants
 
@@ -89,33 +89,33 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 226 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
+| 76 | 230 | **type** `public final class CopperMining extends ExtractionSector` | Copper mines and the leach plants on oxide fields - Copper Mining (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.4 and 5's I8 row; the study's - materials-chains-research.md - 4): the fourth materials chain... |
 | 102 | 11 | `public CopperMining()` |  |
 
-### the ground (lines 114-227)
+### the ground (lines 114-231)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 125 | 21 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up of concentrate, as ExtractionSector's groundLimit() decides its resource's good: the month's ask split by each kind of dig's share of the nameplate (digs()), each part's field tonnes -... |
-| 154 | 18 | `double[] leached(List<Dig> kinds)` | What each kind of its leach plants makes of cathode this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - kinds on one type sharing it in proportion to the copper they ... |
-| 180 | 14 | `protected double groundShare(BuildingsTemplate t)` | The share of a leach plant's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's cathode (leached()) over its ask at the sector's rate - exactly 1 where the ore holds the whole ask, 0 once i... |
-| 196 | 5 | `public double lift()` | The month's cathode at the sector's rate, as far as the ground of the type each plant leaches holds it (pure): what the market is priced on and the month makes. |
-| 204 | 4 | `protected double madeAtRate(Good g)` | Cathode this month: the leach plants' lift, the ground's limit in it (Sector.madeAtRate()); every other good as Sector's. |
-| 216 | 11 | `public void endOfMonth(Game game)` | The month's cathode out of the ground, once every good is made: each kind's lift (leached(), the figures the month's cathode was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
+| 125 | 24 | `protected double groundLimit(Good g, double asked)` | The ground decides what comes up of concentrate, as ExtractionSector's groundLimit() decides its resource's good: the month's ask split by each kind of dig's share of the nameplate (digs()), each part's field tonnes -... |
+| 157 | 18 | `double[] leached(List<Dig> kinds)` | What each kind of its leach plants makes of cathode this month (pure): its nameplate at the sector's rate, held to what its type still has in the ground - kinds on one type sharing it in proportion to the copper they ... |
+| 183 | 15 | `protected double groundShare(BuildingsTemplate t)` | The share of a leach plant's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's cathode (leached()) over its ask at the sector's rate - exactly 1 where the ore holds the whole ask, 0 once i... |
+| 200 | 5 | `public double lift()` | The month's cathode at the sector's rate, as far as the ground of the type each plant leaches holds it (pure): what the market is priced on and the month makes. |
+| 208 | 4 | `protected double madeAtRate(Good g)` | Cathode this month: the leach plants' lift, the ground's limit in it (Sector.madeAtRate()); every other good as Sector's. |
+| 220 | 11 | `public void endOfMonth(Game game)` | The month's cathode out of the ground, once every good is made: each kind's lift (leached(), the figures the month's cathode was made of) taken out of its type's ground at its dig, so E and W hold by type to the tonne. |
 
-### the plan and the retirement (lines 228-274)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 231 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a building of its makes a month at nameplate, concentrate or cathode, in tonnes - what the plan weighs and the retirement measures. |
-| 237 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A building of its digs copper: the mines' concentrate or the leach plant's cathode (copper's pricing good is cathode, which the mines do not make). |
-| 243 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: the tonnes it makes a month at nameplate. |
-| 253 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Copper worked out leaves its mines spare, measured in the tonnes they make: all of them once the city's copper is out; while some is left, those over a type worked out (ExtractionSector's workedOut()). |
-| 265 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each makes (unitsOf()). |
-
-### the page (lines 275-301)
+### the plan and the retirement (lines 232-278)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 278 | 23 | `public List<Line> ownLines(Game game)` |  |
+| 235 | 3 | `static double tonnesOf(BuildingsTemplate t)` | What a building of its makes a month at nameplate, concentrate or cathode, in tonnes - what the plan weighs and the retirement measures. |
+| 241 | 3 | `protected boolean lifts(BuildingsTemplate t)` | A building of its digs copper: the mines' concentrate or the leach plant's cathode (copper's pricing good is cathode, which the mines do not make). |
+| 247 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings contributes to the measures it is retired on: the tonnes it makes a month at nameplate. |
+| 257 | 9 | `public double[] retirementDemandAndCapacity(Game game)` | Copper worked out leaves its mines spare, measured in the tonnes they make: all of them once the city's copper is out; while some is left, those over a type worked out (ExtractionSector's workedOut()). |
+| 269 | 9 | `double workedOutCapacity(LandManager land)` | Its nameplate standing over a type worked out, in the tonnes each makes (unitsOf()). |
+
+### the page (lines 279-305)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 282 | 23 | `public List<Line> ownLines(Game game)` |  |
 
