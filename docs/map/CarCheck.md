@@ -1,4 +1,4 @@
-# CarCheck.java - 1,196 lines · 8 methods · 1 constants · harnesses
+# CarCheck.java - 1,335 lines · 11 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CarCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      petrol on the research's wholesale ladder - since 0.7.83 at the
 > ... (13 more lines in the source)
 
-**Uses:** [HouseholdBalance](HouseholdBalance.md) (47), [InfrastructureManager](InfrastructureManager.md) (32), [Good](Good.md) (32), [Household](Household.md) (16), [Game](Game.md) (13), [FamilyStructure](FamilyStructure.md) (13), [PayTier](PayTier.md) (13), [Traffic](Traffic.md) (11), [PriceLevel](PriceLevel.md) (9), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [Sector](Sector.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Founding](Founding.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [Retail](Retail.md) (1), [NationalAccounts](NationalAccounts.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (51), [Good](Good.md) (33), [InfrastructureManager](InfrastructureManager.md) (32), [Household](Household.md) (20), [Game](Game.md) (14), [FamilyStructure](FamilyStructure.md) (13), [PayTier](PayTier.md) (13), [Traffic](Traffic.md) (11), [PriceLevel](PriceLevel.md) (9), [TaxPolicy](TaxPolicy.md) (9), [BuildingManager](BuildingManager.md) (8), [Sector](Sector.md) (8), [LongPlaytest](LongPlaytest.md) (8), [Motoring](Motoring.md) (7), [GameFiles](GameFiles.md) (6), [Founding](Founding.md) (4), [GoodsMarket](GoodsMarket.md) (4), [MoneyAudit](MoneyAudit.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Formats](Formats.md) (2), [Bank](Bank.md) (1), [Equity](Equity.md) (1), [Automotive](Automotive.md) (1), [Sectors](Sectors.md) (1), [Retail](Retail.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Markets](Markets.md) (1)
 
 **Used by (2):** [RailCheck](RailCheck.md), [VanCheck](VanCheck.md)
 
@@ -83,6 +83,7 @@
 | 860 | · 7. THE PLANTS' PAGE READS THE MONTH (B3, 0.7.47) |
 | 930 | · 8. THE BUYER WEIGHS THE FARE (0.7.49) |
 | 1085 | · THE PLAYTEST'S PLAYER ORDERS NO MORE LINES THAN ITS RIDERS FILL |
+| 1199 | A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) |
 
 ## Constants
 
@@ -100,18 +101,26 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1119 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
+| 78 | 1258 | **type** `public class CarCheck` | The cars: who buys one, what it costs them, and what it does to the road. |
 | 82 | 7 | `static void quietly(Runnable r)` |  |
 | 90 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 95 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 101 | 3 | `static boolean same(double a, double b)` | Bitwise. |
 | 105 | 8 | `static InfrastructureManager network()` |  |
 
-### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 114-1196)
+### THE VEHICLES MOVED WITH THE STEEL IN THEM (0.7.120, batch I3; Jerus's (lines 114-1198)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 133 | 4 | `static double marginOf(BuildingsTemplate t, Good vehicle, double price, double fab, double mach)` | What a plant makes of one vehicle over the parts in it (pure): the vehicle at `price`, its fabricated steel at `fab` and its machinery at `mach`, a vehicle's worth of each off its template. |
 | 139 | 19 | `static boolean marginsHeld(BuildingManager bm, Good vehicle, double wasIn, double wasOut, java.util.List<String> lines)` | The section's assertions for one vehicle and its plants, at the ends the world quotes (CarCheck, VanCheck and RailCheck call it). |
-| 159 | 1037 | `public static void main(String[] args)` |  |
+| 159 | 1039 | `public static void main(String[] args)` |  |
+
+### A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) (lines 1199-1335)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1212 | 101 | `static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket)` | Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is sized at and not at the price it is struck at, and the car market's month read once. |
+| 1315 | 8 | `static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi)` | The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). |
+| 1325 | 10 | `static boolean importAt(GoodsMarket m, double p)` | Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. |
 

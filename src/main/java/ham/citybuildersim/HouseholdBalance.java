@@ -3043,7 +3043,29 @@ public class HouseholdBalance {
      * @return cash spent
      */
     public double takeCars(double units, double price, double ceiling) {
-        if (!(units > 0) || !(price > 0)) return 0;
+        return takeCars(units, price, price, ceiling);
+    }
+
+    /**
+     * Hands out the cars a draw sized at one price brought in at another: each
+     * household's want read at {@code wantPrice}, the price the draw was sized
+     * at, and its bill at {@code price}, what the draw cost.
+     *
+     * WHY: Motoring sizes the draw at the quote's price per car and bills the
+     * take at the draw's own, and the two are one price in exact arithmetic but
+     * not in doubles. At AUTO2 seed 6 month 655 (OE1's ensemble, F1) the quote
+     * read a car a few ulps under the price a household's money stretched to,
+     * so 26 cars were drawn; the take read the want at the draw's price, where
+     * that household's money stretched to one car fewer, and placed 25. The
+     * 26th was booked to the seller and paid by nobody: $11.42 of the
+     * households' money gone off every named line. Reading the want at the
+     * price the draw was sized at makes the take's want the draw's units by
+     * construction, so every car drawn is a car placed and paid for (OE1 ★).
+     *
+     * @return cash spent
+     */
+    public double takeCars(double units, double price, double wantPrice, double ceiling) {
+        if (!(units > 0) || !(price > 0) || !(wantPrice > 0)) return 0;
         lastCarsBought = 0;
         lastCarsFinanced = 0;
         lastCarLoanFees = 0;
@@ -3051,7 +3073,7 @@ public class HouseholdBalance {
         double[] want = new double[cells.length];
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
-            want[i] = wantOf(i, price, ceiling);
+            want[i] = wantOf(i, wantPrice, ceiling);
             total += want[i];
         }
         if (total <= 0) return 0;
