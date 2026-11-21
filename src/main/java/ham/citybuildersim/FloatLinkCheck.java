@@ -86,6 +86,21 @@ import java.util.function.Supplier;
  * forgets it in one month, which the fixture lets pass first. Run with section
  * numbers (FloatLinkCheck 1 3) to run just those; 6 reads what 3-5 pressed.
  *
+ * How the played sections get theirs (FS14), so that no line reads what a played city happens to do:
+ *   2, and every section that sells in readyCity()'s town: the bank's room for the sales is capital put in its till by hand
+ *      (handBankRoom(), as BondCheck 7 hands its capital) and the sale's size against its fixed fee is the households' savings lifted
+ *      by hand (liftSpare()), each only where the town's is less and both between months; the fee's threshold is shown from both
+ *      sides against EFFECTIVE_OFF_COUPON, and a town whose tax caps the sale (SALE_OF_REVENUE of a year's, which nothing here sets)
+ *      under the least the fee needs fails as a fixture; the margin rule itself is a formula over the quote;
+ *   5. the index is the path the section hands the manager (setPriceIndexSource), no inflation is played, and each maturity is held
+ *      to the face and the ratio that path makes;
+ *   7. the dial is taken by hand after the sale has settled, the offers are held to fair worked out here from that dial and the index
+ *      the manager expects, and the sale's room and size are readyCity()'s;
+ *   8. the due pieces are set by hand (dueNextMonth()), the bank is handed its room for what the plan issues (handRolloverRoom()), and
+ *      what is asserted is the rollover's own kind rule;
+ *   and the one condition no setter pins, nobody leaving (a town with a tier in decline), is played to in playedCity(), bounded
+ *   (DECLINE_WAIT_MONTHS), and FAILS as a fixture if the bound passes; the bank's room is no longer waited for.
+ *
  * @author Jerus
  */
 public class FloatLinkCheck {
@@ -589,18 +604,18 @@ public class FloatLinkCheck {
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             city.simulateMonths(60);
-            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
-            // BA1, 2026-11-04 (numbers 2026-11-05): the sales of this harness are covered at fair by the bank's capital room (the households'
-            // bid at fair is a few points of an issue; the firms' nothing, for fair is under the world's rate). The town is played on,
-            // month by month, until the room is ROOM_FOR_SALES times the sale section 2 makes, saleOf(city, 1) (six of them in one city, each
-            // taking its face from the room until it settles); readyCity() asserts that it is. With every sector held it is from the start.
-            for (int i = 0; i < ROOM_WAIT_MONTHS && bankRoomOf(city) < ROOM_FOR_SALES * saleOf(city, 1); i++) city.simulateMonths(1);
+            // FS14: the one condition no setter pins - nobody leaving (a tier in decline sends its paper to the bank's desk on the way out) -
+            // is played to, bounded, and FAILS as a fixture just below if the bound passes. The bank's room for the sales, which this loop
+            // used to wait for (BA1, up to 60 more months), is handed by readyCity() (handBankRoom()), not waited for.
+            for (int i = 0; i < DECLINE_WAIT_MONTHS && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
         });
+        check("fixture: no pay tier in the played town is in decline, so nobody leaves while the paper is watched",
+                city.getMigration().getLastDecliningShare() == 0);
         return city;
     }
 
-    /** BA1: the most months the played city is given past its settling for the bank to have room for its sales. */
-    static final int ROOM_WAIT_MONTHS = 60;
+    /** FS14: the most months the played city is given past its settling for no tier to be in decline. */
+    static final int DECLINE_WAIT_MONTHS = 36;
 
     /** BA1: the bank's room for the sales of a section, as a multiple of the one section 2 makes (saleOf(city, 1): the households' whole spare, no more than a third of a year of tax): that section sells six of them in one city and section 3 a quarter of one more, and each takes its face from the room. */
     static final double ROOM_FOR_SALES = 8;
@@ -636,18 +651,94 @@ public class FloatLinkCheck {
         return city;
     }
 
-    /** A prepared city whose played market reaches the sale-size and capital-room premises. */
+    /**
+     * FS14: the least sale, in face, at which the fixed fee of an issue (Game.costOfIssuance(), the same whatever the face) stands within
+     * half the rate allowance on a 2-year floater: the fee's share of a year's interest, fee over face over the term, at most
+     * EFFECTIVE_OFF_COUPON / 2 (what readyCity() used to ask the played sale to have).
+     */
+    static double leastSale(Game city) {
+        return city.costOfIssuance(1) / (FloatingRateNote.MATURITIES[0] * (EFFECTIVE_OFF_COUPON / 2));
+    }
+
+    /** FS14: the fixed fee's share of a year's interest on a 2-year floater sold at this face: fee over face over the term. */
+    static double feeShareOf(Game city, double sale) {
+        return city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
+    }
+
+    /**
+     * FS14: the spare for paper readyCity() hands the households when theirs is less, as a multiple of the least sale the fee needs
+     * (leastSale()): at exactly the least sale the fee's share is the allowance to the last place of a float, and a quarter of the
+     * spare, which sections 5, 7 and 8 sell (askOf(city, .25)), still covers it.
+     */
+    static final double SPARE_OVER_LEAST_SALE = 4;
+
+    /** FS14: the room readyCity() hands the bank is this much over the sales' face, so the last place of a float never decides it. */
+    static final double ROOM_HANDED_OVER = 1.001;
+
+    /**
+     * FS14: the households' savings raised, never lowered, until what they could put into paper (HouseholdBalance.spareForPaper()) is
+     * this much: first every non-empty cell to its cushion, so that a dollar a household adds is a dollar of spare to each that may
+     * buy paper, then the gap spread over those as a dollar a household. Set between months: the audit opens each month at what the
+     * households hold, so a hand-set saving is no flow in it. Returns whether it lifted anything.
+     */
+    static boolean liftSpare(HouseholdBalance hb, double target) {
+        if (hb.spareForPaper() >= target) return false;
+        for (Household c : hb.cells()) {
+            if (!c.isEmpty()) c.savings = Math.max(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+        }
+        double before = hb.spareForPaper();
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += 1;
+        double buyers = hb.spareForPaper() - before;
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings -= 1;
+        if (!(buyers > 0)) return false;
+        double each = (target - before) / buyers;
+        for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += each;
+        return true;
+    }
+
+    /**
+     * FS14: the bank handed its room for this face of the city's paper, as the auction counts it (Game.auctionBidders(): its equity over
+     * Bank.CAPITAL_RATIO less its weighted book, over Bank.RISK_CITY), by what its equity lacks put in its till (Bank.setCash: equity
+     * is its assets less what it owes, so the cash is capital), as BondCheck's section 7 hands its capital. Between months, nothing if
+     * it has the room. Returns the cash put in.
+     */
+    static double handBankRoom(Game city, double face) {
+        Bank bank = city.getBank();
+        double lacking = Bank.CAPITAL_RATIO * (face * ROOM_HANDED_OVER * Bank.RISK_CITY + bank.getWeightedBook()) - bank.equity();
+        if (!(lacking > 0)) return 0;
+        bank.setCash(bank.getCash() + lacking);
+        return lacking;
+    }
+
+    /** Whether the fee threshold has been shown from both sides in this run (it is the fee's, not a city's, so once). */
+    static boolean feeThresholdShown;
+
+    /**
+     * A prepared city that has what a played sale needs, caused (FS14): the households' spare lifted until a sale of section 2's size
+     * covers its fixed fee, and the bank handed its room for the sales of a section, both between months and each only where the town's
+     * is less. A city whose sale, capped by SALE_OF_REVENUE of a year of tax (saleOf(): nothing in the harness sets a town's tax), is
+     * still under the least sale the fee needs, or whose bank cannot be given its room, fails as a fixture and is null.
+     */
     static Game readyCity(String label, boolean manualRollover, double centralBankShare) {
         Game city = preparedCity(label, manualRollover, centralBankShare);
+        double least = leastSale(city);
+        if (!feeThresholdShown) {
+            feeThresholdShown = true;
+            check("fixture: a sale a hundredth over the least the fee needs is within the rate allowance, and one a hundredth under it is not (" + String.format("%,.0f", least) + ")",
+                    feeShareOf(city, least * 1.01) <= EFFECTIVE_OFF_COUPON / 2 && feeShareOf(city, least * .99) > EFFECTIVE_OFF_COUPON / 2);
+        }
+        if (liftSpare(city.getHouseholdBalance(), SPARE_OVER_LEAST_SALE * least)) {
+            out.printf("   fixture: the households' savings lifted to a spare for paper of D$%,.0f (%.0f times the least sale the fee needs)%n",
+                    city.getHouseholdBalance().spareForPaper(), SPARE_OVER_LEAST_SALE);
+        }
         // BA1, 2026-11-05: the sale is the one section 2 makes (saleOf: the households' whole spare, no more than a third of a year of tax).
         double sale = saleOf(city, 1);
-        boolean roomForSales = Observation.reached("fixture: the played bank has room for section sales",
-                bankRoomOf(city) >= ROOM_FOR_SALES * sale,
-                "played-city sales and effective-rate comparisons");
-        double feeShare = city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
-        boolean saleLargeEnough = Observation.reached("fixture: the played sale covers its fixed fee within the rate allowance",
-                feeShare <= EFFECTIVE_OFF_COUPON / 2,
-                "played-city sales and effective-rate comparisons");
+        double handed = handBankRoom(city, ROOM_FOR_SALES * sale);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of %.0f sales of D$%,.0f%n", handed, ROOM_FOR_SALES, sale);
+        boolean roomForSales = bankRoomOf(city) >= ROOM_FOR_SALES * sale;
+        check("fixture: the played bank has room for section sales", roomForSales);
+        boolean saleLargeEnough = feeShareOf(city, sale) <= EFFECTIVE_OFF_COUPON / 2;
+        check("fixture: the played sale covers its fixed fee within the rate allowance", saleLargeEnough);
         return roomForSales && saleLargeEnough ? city : null;
     }
 
@@ -1740,6 +1831,7 @@ public class FloatLinkCheck {
         for (Rollover.Issue i : plan.issues()) issues.add(i.type() + " " + i.term());
         check("the plan before the press rolls each into its own kind, by the nearest term of its own: " + issues,
                 issues.contains("Float 2") && issues.contains("Float 5") && issues.contains("Linked 10") && issues.contains("Linked 30") && issues.size() == 4);
+        handRolloverRoom(g, plan);
         Set<Debt> had = piecesOf(dm);
         MoneyAudit.Result r = press(g, "the rollover: each piece into its own kind");
         List<Debt> fresh = new ArrayList<>();
@@ -1777,6 +1869,7 @@ public class FloatLinkCheck {
         Rollover.Plan bills = g.rolloverPlan();
         check("the plan under TWELVE_MONTH_BILL is bills alone: " + bills.issues(),
                 !bills.issues().isEmpty() && bills.issues().stream().allMatch(i -> i.type().equals("Note") && i.term() == Rollover.BILL_MONTHS));
+        handRolloverRoom(g, bills);
         Set<Debt> had2 = piecesOf(dm);
         MoneyAudit.Result r2 = press(g, "the rollover: everything into a bill");
         List<Debt> fresh2 = new ArrayList<>();
@@ -1829,6 +1922,18 @@ public class FloatLinkCheck {
             near("...the central bank's book of the city's paper is what the pieces say it holds", c.getCentralBank().getPaperHeld(), cdm.centralBankPrincipal(), 1e-6);
         }
         check("the audit closes the month it rolled, and the next", closes(rc) && closes(press(c, "the month after the central bank's par rolled")));
+    }
+
+    /**
+     * FS14: the bank handed its room for what the plan is about to issue (handBankRoom(): its equity by hand, between months), and the room
+     * asserted: the rollover sells the plan's issues at the auction, and the bank is what covers what the others do not bid.
+     */
+    static void handRolloverRoom(Game g, Rollover.Plan plan) {
+        double face = 0;
+        for (Rollover.Issue i : plan.issues()) face += i.face();
+        double handed = handBankRoom(g, face);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of D$%,.0f for the rollover's issues%n", handed, face);
+        check("fixture: the bank has room for what the rollover issues (D$" + String.format("%,.0f", face) + ")", bankRoomOf(g) >= face);
     }
 
     /** A fixture that falls due at the next press: its term stays what it was, its remaining months are one. */

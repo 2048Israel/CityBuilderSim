@@ -1,4 +1,4 @@
-# Haulage.java - 1,558 lines · 98 methods · 24 constants · sectors
+# Haulage.java - 1,561 lines · 99 methods · 24 constants · sectors
 
 `ham/citybuildersim/sectors/Haulage.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -58,7 +58,7 @@
 
 **Uses:** [Good](Good.md) (57), [Sector](Sector.md) (16), [Freight](Freight.md) (14), [Traffic](Traffic.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (10), [InfrastructureManager](InfrastructureManager.md) (8), [Markets](Markets.md) (7), [Sectors](Sectors.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingManager](BuildingManager.md) (3), [JobType](JobType.md) (3), [PriceLevel](PriceLevel.md) (2)
 
-**Used by (29):** [BondCheck](BondCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [Forms1900Check](Forms1900Check.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [TradeBand](TradeBand.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (30):** [BondCheck](BondCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [FoodProcessingCheck](FoodProcessingCheck.md), [Forms1900Check](Forms1900Check.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HomeRailCheck](HomeRailCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [ProcessingSector](ProcessingSector.md), [RailCheck](RailCheck.md), [RefineryView](RefineryView.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [TradeBand](TradeBand.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
@@ -72,16 +72,16 @@
 | 969 | THE HORSE FORM (R0c, 2026-11-05; research-1900 section 4, section 2.3) |
 | 1126 | · the price |
 | 1172 | · what it is doing |
-| 1274 | · the month's moves |
-| 1407 | · save, reset, reform |
+| 1277 | · the month's moves |
+| 1410 | · save, reset, reform |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 1298 | `Haulage.Way.LANDED` |  |
-| 1298 | `Haulage.Way.SHIPPED` |  |
-| 1298 | `Haulage.Way.HOME` |  |
+| 1301 | `Haulage.Way.LANDED` |  |
+| 1301 | `Haulage.Way.SHIPPED` |  |
+| 1301 | `Haulage.Way.HOME` |  |
 
 ## Constants
 
@@ -107,10 +107,10 @@
 | 1011 | `Haulage.TEAM_CAPITAL_1900` | `0.3` | Assumed capital of a pair and wagon in thousands of 1900 dollars; hired abroad rather than a new traded good (R1d, estimate). |
 | 1014 | `Haulage.TEAM_LIFE_MONTHS` | `120` | Estimated blended working life of a hired pair and wagon, in months (R1d). |
 | 1017 | `Haulage.TEAM_HIRE` | `"Horse teams hired"` | The named imported service already carried by the sector's saved statement (R1d). |
-| 1330 | `Haulage.MOVE_FIELDS` | `{ "tonnes", "rail", "sea", "lorry", "truck", "siding", "yard" }` | The seven figures of a move, in the order a save keeps them. |
-| 1333 | `Haulage.MOVE_PREFIX` | `"haul.move."` | The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. |
-| 1336 | `Haulage.SHARE_PREFIX` | `"haul.share."` | The save keys' prefix for a sector's dealt share (FR8, deal()), the sector's key after it; "share" in the name keeps the scaler's hands off a share (ScaleCheck). |
-| 1339 | `Haulage.STANDING_PREFIX` | `"haul.standing."` | ...and for the tonnes it was dealt, its next standing demand: tonnes, so scaled with the city, and so no intensive word in the name (ScaleCheck). |
+| 1333 | `Haulage.MOVE_FIELDS` | `{ "tonnes", "rail", "sea", "lorry", "truck", "siding", "yard" }` | The seven figures of a move, in the order a save keeps them. |
+| 1336 | `Haulage.MOVE_PREFIX` | `"haul.move."` | The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. |
+| 1339 | `Haulage.SHARE_PREFIX` | `"haul.share."` | The save keys' prefix for a sector's dealt share (FR8, deal()), the sector's key after it; "share" in the name keeps the scaler's hands off a share (ScaleCheck). |
+| 1342 | `Haulage.STANDING_PREFIX` | `"haul.standing."` | ...and for the tonnes it was dealt, its next standing demand: tonnes, so scaled with the city, and so no intensive word in the name (ScaleCheck). |
 
 ## Fields (state)
 
@@ -139,14 +139,14 @@
 | 931 | `private double driverShare` | The share of the depots' truck room still driven, 0 to 1: 1 until EquipmentForms (or a harness) sets it; not saved. |
 | 1033 | `private double horseShare` | The share of the city-leg tonnes carried by horse and wagon, 0 to 1: 0 until a harness or R1 sets it; not saved. |
 | 1036 | `private double truckTonnes, teamTonnes, teams, teamCapacity, feed, feedImported, feedTonnes, feedTonnesImpo...` | The month billed, for the teams: the tonnes the trucks carried and the tonnes the teams did, the teams that took them, the tonnes a month the teams hired could have carried, and the feed drawn (as the diesel's four). |
-| 1300 | `private final String direction, label` |  |
-| 1342 | `private final Map<String, Map<String, double[]>> moves` | The month billed's moves: sector key, then "GOOD.WAY", then the seven figures. |
+| 1303 | `private final String direction, label` |  |
+| 1345 | `private final Map<String, Map<String, double[]>> moves` | The month billed's moves: sector key, then "GOOD.WAY", then the seven figures. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1485 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
+| 74 | 1488 | **type** `public final class Haulage` | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 2, 3.2, 3.3). |
 | 215 | 4 | `Haulage(Freight freight)` |  |
 
 ### the legs (lines 220-249)
@@ -243,7 +243,7 @@
 | 1133 | 10 | `public double truckCapitalMonth()` | A truck's capital for a month at today's prices: its wear (a van's life, Sector.VAN_LIFE_MONTHS) and its return on what it cost (Freight.TARGET_RETURN), at the trucks' landed price, or the world's before a market has ... |
 | 1154 | 17 | `public double estimate()` | What a tonne's city leg costs at today's prices with no history behind it: the quote before the first month's carriage has struck one. |
 
-### what it is doing (lines 1172-1273)
+### what it is doing (lines 1172-1276)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -255,47 +255,48 @@
 | 1201 | 4 | `public double shareOf(String key)` | The same by sector key: the share dealt it at the last haul, the newest demand's if it was dealt none (a save from before FR8), the city's for no key. |
 | 1207 | 4 | `private double truckShareOf(String key)` | The share of the trucks' part of its legs the fleet was dealt a sector at the last haul (shareOf() before the teams, which carry theirs whole); the newest demand's if it was dealt none. |
 | 1213 | 1 | `public double getNewestShare()` | The share of the growth over the standing demand that the room left at the last haul served; 1 when the trucks sufficed. |
-| 1216 | 1 | `public double getStandingShare()` | The share of the standing demand, what the sectors were carried the month before, that the fleet covered at the last haul; 1 when all of it. |
-| 1219 | 4 | `public double getStanding(String key)` | The tonnes a month of legs the sector was dealt at the last haul, its next standing demand; 0 for a sector with none. |
-| 1225 | 1 | `public Map<String, Double> sectorShares()` | Every sector's share dealt at the last haul, by key in the sectors' order: a view, not a copy. |
-| 1228 | 1 | `public double getNeed()` | The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. |
-| 1231 | 1 | `public double getNeedOnSite()` | ...and the legs at nameplate of the works on site, struck with it: what trucksAsked() adds. |
-| 1232 | 1 | `public double getCapacityInForce()` |  |
-| 1235 | 1 | `public double getTonnes()` | the month billed |
-| 1236 | 1 | `public double getCarried()` |  |
-| 1237 | 1 | `public double getBill()` |  |
-| 1238 | 1 | `public double getDiesel()` |  |
-| 1239 | 1 | `public double getDieselImported()` |  |
-| 1242 | 1 | `public double getDieselLitres()` | The litres of diesel the last haul drew: none after a load until the next, as the railway's. |
-| 1245 | 1 | `public double getDieselLitresImported()` | ...and the litres of it the world sold (the refiners' tanks having none left): the refinery's pictogram's (RefineryView). |
-| 1248 | 1 | `public double getWorn()` | The trucks worn out in the month billed. |
-| 1251 | 1 | `public double getAllowed()` | What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. |
-| 1252 | 1 | `public double getTightness()` |  |
-| 1263 | 5 | `public double getTarget()` | The rule's target for a tonne's city leg, as the last reprice walked the quote toward it (FR4, for the Freight screen's quote strip): what the month had to bring in (getAllowed()) over what the trucks could carry (get... |
-| 1270 | 3 | `private double rawTarget()` | The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). |
+| 1216 | 1 | `public double openingShare()` | What the fleet would serve the legs of a works just opened (OE1; Sector.firstPlantFreight()): the newest demand's share, with the teams', which carry theirs whole, as shareOf() reads it for a sector dealt none. |
+| 1219 | 1 | `public double getStandingShare()` | The share of the standing demand, what the sectors were carried the month before, that the fleet covered at the last haul; 1 when all of it. |
+| 1222 | 4 | `public double getStanding(String key)` | The tonnes a month of legs the sector was dealt at the last haul, its next standing demand; 0 for a sector with none. |
+| 1228 | 1 | `public Map<String, Double> sectorShares()` | Every sector's share dealt at the last haul, by key in the sectors' order: a view, not a copy. |
+| 1231 | 1 | `public double getNeed()` | The city-leg tonnes the share is read against, and the tonnes a month the trucks could carry when the month was billed. |
+| 1234 | 1 | `public double getNeedOnSite()` | ...and the legs at nameplate of the works on site, struck with it: what trucksAsked() adds. |
+| 1235 | 1 | `public double getCapacityInForce()` |  |
+| 1238 | 1 | `public double getTonnes()` | the month billed |
+| 1239 | 1 | `public double getCarried()` |  |
+| 1240 | 1 | `public double getBill()` |  |
+| 1241 | 1 | `public double getDiesel()` |  |
+| 1242 | 1 | `public double getDieselImported()` |  |
+| 1245 | 1 | `public double getDieselLitres()` | The litres of diesel the last haul drew: none after a load until the next, as the railway's. |
+| 1248 | 1 | `public double getDieselLitresImported()` | ...and the litres of it the world sold (the refiners' tanks having none left): the refinery's pictogram's (RefineryView). |
+| 1251 | 1 | `public double getWorn()` | The trucks worn out in the month billed. |
+| 1254 | 1 | `public double getAllowed()` | What the month had to bring in (the rule's running cost plus the return on the rate base) and the scarcity it was priced at the end of. |
+| 1255 | 1 | `public double getTightness()` |  |
+| 1266 | 5 | `public double getTarget()` | The rule's target for a tonne's city leg, as the last reprice walked the quote toward it (FR4, for the Freight screen's quote strip): what the month had to bring in (getAllowed()) over what the trucks could carry (get... |
+| 1273 | 3 | `private double rawTarget()` | The rule's target a tonne before its guards: what the month had to bring in over the trucks' capacity, at the scarcity (closeMonth(), getTarget()). |
 
-### the month's moves (lines 1274-1406)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1297 | 19 | **type** `public enum Way` | Which way a sector's tonnes of a good went: landed from the world, shipped to it, or bought from a works of the city (no edge crossed). |
-| 1302 | 4 | `Way(String direction, String label)` _(in Haulage.Way)_ |  |
-| 1308 | 1 | `public String direction()` _(in Haulage.Way)_ | "in" or "out": which side of the works the tonnes were on. |
-| 1311 | 1 | `public String label()` _(in Haulage.Way)_ | How the page says it: "bought abroad", "sold abroad", "bought in the city". |
-| 1314 | 1 | `public boolean crossed()` _(in Haulage.Way)_ | Whether the tonnes crossed the city boundary (they have a long haul). |
-| 1326 | 2 | **type** `public record Move(Way way, Good good, double tonnes, double rail, double sea, double lorry, double truck, ...` | One good a sector moved in one way in the month billed, in tonnes. |
-| 1345 | 3 | `void beginMoves()` | Starts the month's tally (Freight.haul(), where truckIn and its kin are cleared). |
-| 1358 | 28 | `void tallyMoves(String sector, Good g, boolean bulk, double landed, double shipped, double bought, double railShare, double sea...` | Tallies one sector's one good of the month being billed, from the very numbers Freight.haul() weighs it with (legTonnes()'s own expression, per direction): `landed`, `shipped` and `bought` are units, `rail` the railwa... |
-| 1387 | 5 | `private void addMove(String sector, Good g, Way way, double...figures)` |  |
-| 1394 | 12 | `public List<Move> movesOf(String sector)` | A sector's moves of the month billed, by good (the Good order) and then way (landed, shipped, home); empty for a sector that moved no freight, and for one this haulage does not know. |
-
-### save, reset, reform (lines 1407-1558)
+### the month's moves (lines 1277-1409)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1410 | 41 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
-| 1453 | 42 | `public void restore(Map<String, Double> extras)` | ...and back. |
-| 1497 | 28 | `private void restoreMoves(Map<String, Double> extras)` | The month's moves back from their keys, read from the right (figure, WAY, GOOD; what is left is the sector, whose name may hold a dot); a key this build cannot place is left out. |
-| 1527 | 18 | `public void reset()` | Back to a city that has never needed a truck. |
-| 1547 | 11 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
+| 1300 | 19 | **type** `public enum Way` | Which way a sector's tonnes of a good went: landed from the world, shipped to it, or bought from a works of the city (no edge crossed). |
+| 1305 | 4 | `Way(String direction, String label)` _(in Haulage.Way)_ |  |
+| 1311 | 1 | `public String direction()` _(in Haulage.Way)_ | "in" or "out": which side of the works the tonnes were on. |
+| 1314 | 1 | `public String label()` _(in Haulage.Way)_ | How the page says it: "bought abroad", "sold abroad", "bought in the city". |
+| 1317 | 1 | `public boolean crossed()` _(in Haulage.Way)_ | Whether the tonnes crossed the city boundary (they have a long haul). |
+| 1329 | 2 | **type** `public record Move(Way way, Good good, double tonnes, double rail, double sea, double lorry, double truck, ...` | One good a sector moved in one way in the month billed, in tonnes. |
+| 1348 | 3 | `void beginMoves()` | Starts the month's tally (Freight.haul(), where truckIn and its kin are cleared). |
+| 1361 | 28 | `void tallyMoves(String sector, Good g, boolean bulk, double landed, double shipped, double bought, double railShare, double sea...` | Tallies one sector's one good of the month being billed, from the very numbers Freight.haul() weighs it with (legTonnes()'s own expression, per direction): `landed`, `shipped` and `bought` are units, `rail` the railwa... |
+| 1390 | 5 | `private void addMove(String sector, Good g, Way way, double...figures)` |  |
+| 1397 | 12 | `public List<Move> movesOf(String sector)` | A sector's moves of the month billed, by good (the Good order) and then way (landed, shipped, home); empty for a sector that moved no freight, and for one this haulage does not know. |
+
+### save, reset, reform (lines 1410-1561)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1413 | 41 | `public void save(Map<String, Double> extras)` | Haulage's state into Freight's extras (keys haul.*): the dieselLitres are not saved, as the railway's are not. |
+| 1456 | 42 | `public void restore(Map<String, Double> extras)` | ...and back. |
+| 1500 | 28 | `private void restoreMoves(Map<String, Double> extras)` | The month's moves back from their keys, read from the right (figure, WAY, GOOD; what is left is the sector, whose name may hold a dot); a key this build cannot place is left out. |
+| 1530 | 18 | `public void reset()` | Back to a city that has never needed a truck. |
+| 1550 | 11 | `public void redenominate(double scale)` | Its money in the new unit (Denomination): the quote, the bill, the diesel and what the month was allowed. |
 

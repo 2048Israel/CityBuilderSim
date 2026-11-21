@@ -48,7 +48,7 @@
 >      limestone at home, puts its cement in its silo or ships it, and the
 >      money audit closes.
 
-**Uses:** [Good](Good.md) (67), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sector](Sector.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [QuarryingCheck](QuarryingCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [GoodsMarket](GoodsMarket.md) (2), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [Good](Good.md) (67), [Sectors](Sectors.md) (20), [SpreadPlanner](SpreadPlanner.md) (20), [CementConcrete](CementConcrete.md) (9), [BuildingManager](BuildingManager.md) (8), [ProcessingSector](ProcessingSector.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sector](Sector.md) (4), [Game](Game.md) (4), [Quarrying](Quarrying.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [QuarryingCheck](QuarryingCheck.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [JobType](JobType.md) (2), [Deposit](Deposit.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [GoodsMarket](GoodsMarket.md) (2), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 ## Sections
 
@@ -116,7 +116,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 254 | 50 | `static void carriedIsExported()` |  |
-| 306 | 5 | `static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, G...` | One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
+| 306 | 5 | `static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, G...` | One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost, at the rate the frame weighs one new works at (city.rate(unit), OE1: a first plant's own in a secto... |
 | 313 | 1 | **type** `record MarketsCheckValues(double limeIn)` | What a tonne of limestone used costs the city now (the values' in()). |
 | 315 | 3 | `static MarketsCheckValues valuesOf(Game g)` |  |
 
