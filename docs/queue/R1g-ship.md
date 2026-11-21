@@ -7,7 +7,8 @@ month 60) and today's diploma posts met 1901's workers. Its homes are built to 1
 on its last twelve months' mean, capped at today's home (Jerus: "its cost moves with WAGES"; `-Dr1g.walk=off` holds it at 0.29 of today's).
 With no school, the young learn the year's trade at work as apprentices. On 0.9.174 the playtest's 1900 city held 1,852,269 people at month
 2,400, its rent .307 of take-home on average. The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
-and the walk.
+and the walk. The 1900 playtest is the slower: 38 minutes for 2,400 months on the PC against 18 for today's city, so every gate's LongPlaytest
+and the nightly take longer.
 ## pending
 | R1g-H | revisit the 1900 home once HO1 (owning a home) ships ({next}) | Jerus, 2026-11-20: "perhaps try once people mortgages exist? idk" | [R1g notes §6](docs/queue/R1g-notes.md#6-jeruss-pick-the-homes-cost-moves-with-wages-09174) |
 ## queued
