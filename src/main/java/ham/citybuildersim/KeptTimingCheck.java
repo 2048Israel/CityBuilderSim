@@ -241,8 +241,13 @@ public final class KeptTimingCheck {
      */
     static final int WARM_MONTHS = KeptCheck.MONTHS;
 
+    /** A kept redraw and its passes, which may throw as the bench's draws do. */
+    interface Redraw {
+        void run() throws Exception;
+    }
+
     /** A page's kept redraw, its CSS and layout passed, for WARM_MONTHS months on the toolkit's thread, nothing timed. */
-    private static void warm(Game g, Runnable redraw) {
+    private static void warm(Game g, Redraw redraw) throws Exception {
         for (int i = 0; i < WARM_MONTHS; i++) {
             month(g);
             redraw.run();
