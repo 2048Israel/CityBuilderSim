@@ -2155,11 +2155,11 @@ public class Exchange {
                 lifeEmigrantsPaid += cash;
             } else if (cellSells) {
                 Household h = cellOf(seller);
-                h.shares[c] = Math.max(0, h.shares[c] - q / h.households());
+                double net = households.sellShares(h, c, q / h.households(), price) * h.households();
                 if (h == selling) {
-                    raised += cash;
+                    raised += net;
                 } else {
-                    h.savings += cash / h.households();
+                    h.savings += net / h.households();
                 }
             } else if (FUND.equals(seller)) {
                 double marketBefore = register.getCityMarketShares(c);
@@ -2203,6 +2203,7 @@ public class Exchange {
             } else if (cellBuys) {
                 Household h = cellOf(buyer);
                 h.shares[c] += q / h.households();
+                h.basis[c] += cash / h.households();
                 h.savings -= cash / h.households();
                 if (h == buying) buyingBudget -= cash;
             } else if (companyBuys) {

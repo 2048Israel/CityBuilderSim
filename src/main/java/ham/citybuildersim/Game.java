@@ -307,6 +307,7 @@ public class Game {
         // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE).
         buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
+        householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
         economyManager.getMarkets().setCity(reserve);
@@ -14581,6 +14582,7 @@ public class Game {
         rateHistory[month % 12] = foreign.getRate();
         if (rateHistoryFilled < 12) rateHistoryFilled++;
 
+        economyManager.getNationalAccounts().setInvestmentTaxes(householdBalance.getCapitalGainsTax(), householdBalance.getDividendTax());
         takeTreasuryMonth();
 
         dataSave.setCash(cash);
@@ -17721,6 +17723,7 @@ public class Game {
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         // ...and the month's flows the next census carries (HS1).
         dataSave.setHouseholdFlows(householdBalance.flowsToSave());
+        dataSave.setHouseholdInvestmentTaxes(householdBalance.investmentTaxesToSave());
         dataSave.setBankCash(bank.getCash());
         // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
         dataSave.setBankSecurities(bank.getSecurities());
@@ -19631,6 +19634,13 @@ public class Game {
     /** The named non-budget movements, this month and last. See TreasuryJournal. */
     private final TreasuryJournal treasuryJournal = new TreasuryJournal();
 
+    /** The household has paid this cash already, from a fill or its dividend (HT1). */
+    private void receiveInvestmentTax(String line, double amount) {
+        cash += amount;
+        treasuryJournal.record(line, amount);
+    }
+
+
     private void takeTreasuryMonth() {
         treasuryClosing = cash;
         treasuryRaised  = treasuryRaisedSoFar;
@@ -19729,7 +19739,7 @@ public class Game {
      * above it is worse than no caret.
      */
     public java.util.List<TreasuryJournal.Entry> getTreasuryJournal() {
-        return treasuryJournal.lastMonth();
+        return treasuryJournal.bridgeLines();
     }
 
     /** The journal itself, for the harnesses that read past the getter above. */
@@ -19786,6 +19796,8 @@ public class Game {
     public java.util.List<TreasuryJournal.Entry> getEarnedToBudget() {
         NationalAccounts na = economyManager.getNationalAccounts();
         return java.util.List.of(
+                new TreasuryJournal.Entry("Capital gains tax", na.getCapitalGainsTax()),
+                new TreasuryJournal.Entry("Dividend tax", na.getDividendTax()),
                 new TreasuryJournal.Entry("Land sold", na.getLandSales()),
                 new TreasuryJournal.Entry("Land bought", -na.getLandPurchases()),
                 new TreasuryJournal.Entry("Buildings", -na.getCapitalSpending()),
@@ -21387,6 +21399,7 @@ public class Game {
                     loaded.getHouseholdCells(), loaded.getEquityKeys());
             // The owner line (BO1): which companies have a family, and their months at the floor; null on an older save.
             householdBalance.restoreOwnerLine(loaded.getOwnerFamilies());
+            householdBalance.restoreInvestmentTaxes(loaded.getHouseholdInvestmentTaxes());
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
@@ -22602,6 +22615,7 @@ public class Game {
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
             householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
+            householdBalance.restoreInvestmentTaxes(restoredFlows.getHouseholdInvestmentTaxes());
             // ...and each cell's own bonds with them, for the same reason: the
             // rebuild's census folds a cell it reads under half a household
             // into the rest, bonds and all, and the cell arrays above put

@@ -427,6 +427,12 @@ public final class FundLedger {
         l.lastIncome += amount;
     }
 
+    /** Average-cost stock released by a sale; a final fill releases the remaining rounding too (HT1). */
+    static double basisReleased(double basis, double sold, double held) {
+        if (!(sold > 0)) return 0;
+        return held <= DUST || held - sold <= DUST ? basis : basis * Math.min(1, sold / held);
+    }
+
     /**
      * ...sold `q` at `price`: `fromRescue` of them out of the rescue book
      * (the hand's sale takes the market book first), the market and rescue
@@ -442,8 +448,7 @@ public final class FundLedger {
         Activity a = fillRow(month, shareKey(company), hand, false);
         if (fromMarket > 0) {
             Lot l = shareLot(company, false, month);
-            double out = marketBefore > DUST ? l.acb * Math.min(1, fromMarket / marketBefore) : l.acb;
-            if (marketBefore - fromMarket <= DUST) out = l.acb;
+            double out = basisReleased(l.acb, fromMarket, marketBefore);
             double cash = fromMarket * price;
             l.acb -= out;
             l.acbOut += out;

@@ -2469,6 +2469,11 @@ public class DataSave implements Cloneable {
      * scales none of it.
      */
     private double[] householdFlows;
+    /** HT1's struck investment-tax transfers and actual assessment counts. */
+    private double[] householdInvestmentTaxes;
+    public void setHouseholdInvestmentTaxes(double[] state) { householdInvestmentTaxes = state == null ? null : state.clone(); }
+    public double[] getHouseholdInvestmentTaxes() { return householdInvestmentTaxes == null ? null : householdInvestmentTaxes.clone(); }
+
 
     public void setHouseholdFlows(double[] v) { this.householdFlows = v == null ? null : v.clone(); }
     public double[] getHouseholdFlows()       { return householdFlows == null ? null : householdFlows.clone(); }

@@ -219,6 +219,13 @@ public abstract class Household {
     /** What the shares paid this month, per household. Credited to savings. */
     double dividends;
 
+    /** Average acquisition cost in each company, per household (HT1); a split leaves it standing. */
+    final double[] basis = new double[Equity.COMPANIES.length];
+    /** Net capital losses available against later gains, per household. */
+    double lossCarried;
+    /** Gains taxed in the current month, eligible for a same-month loss refund. Saved, not a stock. */
+    double taxedGains;
+
     /**
      * DOLLARS held abroad by one of these households: the world's paper,
      * bought with savings past the cushion when the world pays more than the
@@ -1405,12 +1412,16 @@ public abstract class Household {
         groceriesGot = 0; groceriesAsked = 0; groceriesNeed = 0; assistance = 0;
         meansIncome = 0;
         java.util.Arrays.fill(shares, 0);
+        java.util.Arrays.fill(basis, 0);
+        lossCarried = 0; taxedGains = 0;
         clearWorking();
     }
 
     /** Everything in money, in the new unit. Rates, counts, months, SHARES and DOLLARS do not move. */
     void redenominate(double scale) {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
+        for (int k = 0; k < basis.length; k++) basis[k] *= scale;
+        lossCarried *= scale; taxedGains *= scale;
         // The bank's ceiling on it this month is money too (0.7.8); an
         // infinite one - lending freely - stays infinite.
         capitalCeiling *= scale;

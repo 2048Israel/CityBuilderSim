@@ -322,6 +322,8 @@ public class HistorySave {
     private List<Double> bankProfit = new ArrayList<>();
     private List<Double> bankBranches = new ArrayList<>();
     private List<Double> householdSavings = new ArrayList<>();
+    private List<Double> capitalGainsTax = new ArrayList<>();
+    private List<Double> dividendTax = new ArrayList<>();
 
     /* ------------------------ the price of money (0.7.7) ------------------------
 
@@ -840,6 +842,8 @@ public class HistorySave {
         bankProfit.add(round2(lender.getNetIncome()));
         bankBranches.add(round2(lender.getBranches()));
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
+        capitalGainsTax.add(round2(game.getHouseholdBalance().getCapitalGainsTax()));
+        dividendTax.add(round2(game.getHouseholdBalance().getDividendTax()));
 
         double policy = game.getDebtManager().getPolicyRate();
         policyRate.add(round4(policy));
@@ -1283,6 +1287,8 @@ public class HistorySave {
         bankProfit = copy(loaded.bankProfit);
         bankBranches = copy(loaded.bankBranches);
         householdSavings = copy(loaded.householdSavings);
+        capitalGainsTax = copy(loaded.capitalGainsTax);
+        dividendTax = copy(loaded.dividendTax);
         policyRate = copy(loaded.policyRate);
         bankPrime = copy(loaded.bankPrime);
         bankDepositRate = copy(loaded.bankDepositRate);
@@ -1911,6 +1917,8 @@ public class HistorySave {
         map.put("bankProfit", bankProfit);
         map.put("bankBranches", bankBranches);
         map.put("householdSavings", householdSavings);
+        map.put("capitalGainsTax", capitalGainsTax);
+        map.put("dividendTax", dividendTax);
         map.put("policyRate", policyRate);
         map.put("bankPrime", bankPrime);
         map.put("bankDepositRate", bankDepositRate);
@@ -2073,7 +2081,7 @@ public class HistorySave {
         scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued, publicIpCharges, publicIpAccrued,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
-                householdSavings, bankFees,
+                householdSavings, capitalGainsTax, dividendTax, bankFees,
                 bankAllowance, bankProvisions, bankDividends,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,

@@ -40,15 +40,15 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (25):** [BridgeCheck](BridgeCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (26):** [BridgeCheck](BridgeCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 7372 | `GameVersion.VERSION` | `"0.9.180"` | Bump on release. |
-| 8357 | `GameVersion.SAVE_FORMAT` | `58` | The save shape. |
-| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `58` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
+| 8357 | `GameVersion.SAVE_FORMAT` | `59` | The save shape. |
+| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `59` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ## Methods, in file order

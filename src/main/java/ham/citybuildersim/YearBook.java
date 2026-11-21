@@ -127,6 +127,8 @@ public final class YearBook {
         flow(m, "bankFees", "what the bank took in fees - accounts and new loans - in thousands");
         flow(m, "bankProvisions", "what the bank set aside for loan losses - the allowance's rise and what it wrote off beyond it - in thousands");
         flow(m, "bankDividends", "what the bank paid its owners, in thousands");
+        flow(m, "capitalGainsTax", "households' net capital gains tax paid to the treasury, in thousands (HT1)");
+        flow(m, "dividendTax", "households' integrated dividend tax paid to the treasury, in thousands (HT1)");
         flow(m, "taxWage", "wage tax collected, in thousands");
         flow(m, "taxProperty", "property tax collected, in thousands");
         flow(m, "taxSales", "sales tax collected net of input credits, in thousands");

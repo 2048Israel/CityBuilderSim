@@ -503,7 +503,7 @@ public class Equity {
             double founders = bookEquity / foundingPrice;
             // BO1: with no owner family yet, nothing is raised this month: the company waits for
             // its family (the census forms it). Only while the owner cell is empty: the first listings.
-            if (!households.grantFounders(company, founders)) return 0;
+            if (!households.grantFounders(company, founders, foundingPrice)) return 0;
             l.shares += founders;
             founded(l, bookEquity);
         }
@@ -610,7 +610,7 @@ public class Equity {
         double founders = bookEquity / foundingPrice;
         // BO1: with no owner family yet the company stays unlisted and waits for its family (the census
         // forms it); the grant has reserved it. Only while the owner cell is empty: the first listings.
-        if (!households.grantFounders(company, founders)) return false;
+        if (!households.grantFounders(company, founders, foundingPrice)) return false;
         l.shares += founders;
         l.lastPrice = foundingPrice;
         founded(l, bookEquity);

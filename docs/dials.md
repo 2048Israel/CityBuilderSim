@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,489 constants in 615 files.**
+**6,493 constants in 616 files.**
 
-## model (2990 constants)
+## model (2993 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1424,8 +1424,8 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 415 | `Exchange.FUND_HAND` | `BondMarket.FUND_HAND` | ...and by the player's hand: its own name, so the two never trade with each other and the hand's sale can reach the rescue book. |
 | 1000 | `Exchange.BOUND_CAPITAL` | `0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3` | Which of the desk's limits binds its bid: its capital, POSITION_LIMIT, BOOK_LIMIT, or the company's float. |
 | 2035 | `Exchange.BY_DESK` | `0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4, BY_OWNERS = 5` | Who sells, by class: the desk, the world, the leavers, a household cell, since 0.7.14 the city's fund, and since BO1 the owner families (their own class: a cell that sells on a rule of its own and ... |
-| 2439 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
-| 2441 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
+| 2440 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
+| 2442 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
 
 ### Expectations.java ([map](map/Expectations.md))
 
@@ -1629,38 +1629,38 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 827 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 958 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1808 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1811 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1814 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2145 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3396 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4096 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4099 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7428 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7431 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8556 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 9336 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9566 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10776 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11342 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12131 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12774 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12944 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 12988 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13148 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15065 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15077 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15080 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15108 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15119 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15159 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16960 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17367 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18010 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18013 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18016 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 828 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 959 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1809 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1812 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1815 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2146 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3397 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
+| 4097 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4100 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7429 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7432 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8557 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 9337 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9567 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10777 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11343 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12132 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12775 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 12945 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 12989 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13149 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15067 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15079 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15082 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15110 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15121 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15161 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 16962 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17369 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18013 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18016 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18019 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1702,8 +1702,8 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 7372 | `GameVersion.VERSION` | `"0.9.180"` | Bump on release. |
-| 8357 | `GameVersion.SAVE_FORMAT` | `58` | The save shape. |
-| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `58` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8357 | `GameVersion.SAVE_FORMAT` | `59` | The save shape. |
+| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `59` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
@@ -1952,11 +1952,11 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 110 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
-| 573 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 602 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
-| 605 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
-| 1122 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1144 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
+| 575 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
+| 604 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
+| 607 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
+| 1126 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1148 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
 
 ### HomeFuel.java ([map](map/HomeFuel.md))
 
@@ -1980,7 +1980,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 97 | `Household.ROWS_BEFORE_PRISON` | `RETIRED_ROW + 4` | The rows a save from before the prisons carries (pinned: ROWS has moved on). |
 | 99 | `Household.ROWS_BEFORE_OWNER` | `RETIRED_ROW + 5` | The rows a save from before the owner families carries. |
 | 108 | `Household.STUDENT_LOAN_MONTHS` | `114` | How long a graduate takes to repay a student loan, in months: nine and a half years, the Canada Student Loan standard term (Alberta Student Aid's repayment page; the six-month grace is not modelled). |
-| 1217 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle... |
+| 1224 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle... |
 
 ### HouseholdAccounts.java ([map](map/HouseholdAccounts.md))
 
@@ -2023,38 +2023,39 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 404 | `HouseholdBalance.BANKRUPT_RATE` | `.04` | Share of a stuck cell that goes under in a month. |
 | 407 | `HouseholdBalance.LOCKOUT_MONTHS` | `12` | Months a discharged household cannot borrow. |
 | 410 | `HouseholdBalance.LEAVE_ON_BANKRUPTCY` | `.25` | ...and the share of them who give up on the city entirely. |
-| 1761 | `HouseholdBalance.EMPTY_CELL` | `.5` | Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. |
-| 1932 | `HouseholdBalance.FLOW_RETIRE` | `0, FLOW_AGE_ON = 1, FLOW_DIE_ADULT = 2, FLOW_DIE_SENIOR = 3, FLOW_DIE_ELDER = 4, FLOW_L...` | Slots of the month's flows, as setFlows() strikes them and flowsToSave() writes them: the shares of a band, and the evicted who left, a share of the out of work off benefits: every slot a share, so... |
-| 1940 | `HouseholdBalance.RETIRING` | `0, AGEING_ON = 1, PARTNER_DIES = 2, DYING_ALONE = 3, LEAVING = 4, MOVING_UP = 5, FLOW_K...` | The kinds of flow, for the month's record (getFlowHouseholds(), getFlowSavings()); MOVING_UP is the young turning 35 (HS2). |
-| 2069 | `HouseholdBalance.OUT_OF_THE_CITY` | `- 1, AN_ESTATE = - 2` | A Move's destination when it leaves the city, or is an estate. |
-| 2620 | `HouseholdBalance.CAR_LIFE_MONTHS` | `180` | How long a car lasts. |
-| 2632 | `HouseholdBalance.CAR_ADOPTION` | `.02` | What share of the households who have never owned a car buy one in a month, before they are asked whether they can afford it. |
-| 2660 | `HouseholdBalance.TRANSIT_DETERRENT` | `.5` | How much of the wanting a fully-served transit system takes away. |
-| 2719 | `HouseholdBalance.CAR_DEPOSIT` | `.20` | The least of a car's price a household must find in cash before a lender will put up the rest. |
-| 2745 | `HouseholdBalance.CAR_CREDIT_SHARE` | `.5` | How much of what a household could still borrow a lender will actually advance against a car. |
-| 2804 | `HouseholdBalance.USED_CAR_FLOOR` | `.15` | What a scrapper pays, as a share of a new car. |
-| 2813 | `HouseholdBalance.USED_CAR_CEILING` | `.70` | ...and what one fetches when buyers are queueing, on the same terms. |
-| 3161 | `HouseholdBalance.CAR_SALE_HORIZON_MONTHS` | `CREDIT_LIMIT_MONTHS` | How far ahead a household looks before it decides the car has to go. |
-| 3243 | `HouseholdBalance.FOOD_ASSISTANCE_MEANS_SHARE` | `.5` | A household is eligible for food assistance when a basket a head would take more than this share of what it has after its fixed bills and its investment income over the year: half. |
-| 3257 | `HouseholdBalance.MEANS_INCOME_MONTHS` | `12` | Months the means test's investment income is smoothed over, as an exponential average - a twelfth of the gap a month, the year Expectations smooths inflation over (0.7.45; the UI spec's B16). |
-| 3958 | `HouseholdBalance.MIN_MOVE` | `PriceLevel.atFounding(1e-12)` |  |
-| 4158 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point. |
-| 4161 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and, for a BUSINESS issue, never more than this share of one: half, because a bond market with no bank in it is no longer the bank's market (BondMarket). |
-| 5029 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
-| 5032 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
-| 5352 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
-| 5355 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
-| 5358 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
-| 5361 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
-| 5364 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
-| 5374 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
-| 5384 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
-| 5393 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
-| 5405 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim ... |
-| 5419 | `HouseholdBalance.CELL_SLOTS_BEFORE_GROCERIES` | `CELL_SLOTS_BEFORE_BONDS + 1` | ...and the last sale's groceries, appended 0.7.43: the baskets each household got, the baskets it asked for at the price, the baskets it needed, and the food assistance paid on them - written at th... |
-| 5427 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEANS_INCOME` | `CELL_SLOTS_BEFORE_GROCERIES + 4` | ...and the investment income the food assistance means test reads, smoothed over MEANS_INCOME_MONTHS, appended 0.7.45. |
-| 5437 | `HouseholdBalance.CELL_SLOTS_BEFORE_AFTER_FIXED` | `CELL_SLOTS_BEFORE_MEANS_INCOME + 1` | ...and before each cell's income after its fixed bills was carried (A4). |
-| 5440 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_AFTER_FIXED + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month'... |
+| 1856 | `HouseholdBalance.EMPTY_CELL` | `.5` | Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. |
+| 2042 | `HouseholdBalance.FLOW_RETIRE` | `0, FLOW_AGE_ON = 1, FLOW_DIE_ADULT = 2, FLOW_DIE_SENIOR = 3, FLOW_DIE_ELDER = 4, FLOW_L...` | Slots of the month's flows, as setFlows() strikes them and flowsToSave() writes them: the shares of a band, and the evicted who left, a share of the out of work off benefits: every slot a share, so... |
+| 2050 | `HouseholdBalance.RETIRING` | `0, AGEING_ON = 1, PARTNER_DIES = 2, DYING_ALONE = 3, LEAVING = 4, MOVING_UP = 5, FLOW_K...` | The kinds of flow, for the month's record (getFlowHouseholds(), getFlowSavings()); MOVING_UP is the young turning 35 (HS2). |
+| 2179 | `HouseholdBalance.OUT_OF_THE_CITY` | `- 1, AN_ESTATE = - 2` | A Move's destination when it leaves the city, or is an estate. |
+| 2730 | `HouseholdBalance.CAR_LIFE_MONTHS` | `180` | How long a car lasts. |
+| 2742 | `HouseholdBalance.CAR_ADOPTION` | `.02` | What share of the households who have never owned a car buy one in a month, before they are asked whether they can afford it. |
+| 2770 | `HouseholdBalance.TRANSIT_DETERRENT` | `.5` | How much of the wanting a fully-served transit system takes away. |
+| 2829 | `HouseholdBalance.CAR_DEPOSIT` | `.20` | The least of a car's price a household must find in cash before a lender will put up the rest. |
+| 2855 | `HouseholdBalance.CAR_CREDIT_SHARE` | `.5` | How much of what a household could still borrow a lender will actually advance against a car. |
+| 2914 | `HouseholdBalance.USED_CAR_FLOOR` | `.15` | What a scrapper pays, as a share of a new car. |
+| 2923 | `HouseholdBalance.USED_CAR_CEILING` | `.70` | ...and what one fetches when buyers are queueing, on the same terms. |
+| 3271 | `HouseholdBalance.CAR_SALE_HORIZON_MONTHS` | `CREDIT_LIMIT_MONTHS` | How far ahead a household looks before it decides the car has to go. |
+| 3353 | `HouseholdBalance.FOOD_ASSISTANCE_MEANS_SHARE` | `.5` | A household is eligible for food assistance when a basket a head would take more than this share of what it has after its fixed bills and its investment income over the year: half. |
+| 3367 | `HouseholdBalance.MEANS_INCOME_MONTHS` | `12` | Months the means test's investment income is smoothed over, as an exponential average - a twelfth of the gap a month, the year Expectations smooths inflation over (0.7.45; the UI spec's B16). |
+| 4068 | `HouseholdBalance.MIN_MOVE` | `PriceLevel.atFounding(1e-12)` |  |
+| 4268 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point. |
+| 4271 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and, for a BUSINESS issue, never more than this share of one: half, because a bond market with no bank in it is no longer the bank's market (BondMarket). |
+| 5141 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
+| 5144 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
+| 5478 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
+| 5481 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
+| 5484 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
+| 5487 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
+| 5490 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
+| 5500 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
+| 5510 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
+| 5519 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
+| 5531 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim ... |
+| 5545 | `HouseholdBalance.CELL_SLOTS_BEFORE_GROCERIES` | `CELL_SLOTS_BEFORE_BONDS + 1` | ...and the last sale's groceries, appended 0.7.43: the baskets each household got, the baskets it asked for at the price, the baskets it needed, and the food assistance paid on them - written at th... |
+| 5553 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEANS_INCOME` | `CELL_SLOTS_BEFORE_GROCERIES + 4` | ...and the investment income the food assistance means test reads, smoothed over MEANS_INCOME_MONTHS, appended 0.7.45. |
+| 5563 | `HouseholdBalance.CELL_SLOTS_BEFORE_AFTER_FIXED` | `CELL_SLOTS_BEFORE_MEANS_INCOME + 1` | ...and before each cell's income after its fixed bills was carried (A4). |
+| 5566 | `HouseholdBalance.CELL_SLOTS_BEFORE_BASIS` | `CELL_SLOTS_BEFORE_AFTER_FIXED + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month'... |
+| 5568 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2` | Basis by company, loss carry and the current month's taxable gains appended by HT1. |
 
 ### HydroSites.java ([map](map/HydroSites.md))
 
@@ -2602,11 +2603,11 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 83 | `NationalAccounts.HISTORY_MONTHS` | `120` | How many months of GDP the rolling history keeps - ten years - and the most a load seeds it with (seedHistory()). |
-| 233 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.LPG, Good.N...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
-| 240 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
-| 243 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
-| 246 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
-| 1218 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
+| 238 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.LPG, Good.N...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
+| 245 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
+| 248 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
+| 251 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
+| 1223 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
 
 ### Nations.java ([map](map/Nations.md))
 
@@ -3420,17 +3421,19 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1099 | `TaxPolicy.MAX_FUEL_DUTY` | `.001 * PriceLevel.FACTOR` | The dial's top, a dollar a litre at founding prices, in thousands: past the dearest duty the research found, the Netherlands' EUR 0.789 a litre of petrol (2024; runs/research-pump.md 6 [30]) - a ce... |
 | 1138 | `TaxPolicy.DEFAULT_PORT_DUES` | `1.0` | The default due: the berths' cost recovered over their life at the city's rate (D9). |
 | 1141 | `TaxPolicy.MAX_PORT_DUES` | `2.0` | The dial's top: twice the default. |
-| 1506 | `TaxPolicy.STATE_BEFORE_EI` | `4 + WageBand.values().length` | The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. |
-| 1509 | `TaxPolicy.STATE_BEFORE_HEALTH` | `STATE_BEFORE_EI + 3 + 1 + 1` | ...and one from before the health dials of 2026-09-19: EI's three, the farmland relief and the fare on top. |
-| 1512 | `TaxPolicy.STATE_BEFORE_EDUCATION` | `STATE_BEFORE_HEALTH + 2` | ...and one from before the education dials of 2026-09-21: the two health dials on top. |
-| 1515 | `TaxPolicy.STATE_BEFORE_SPLIT` | `STATE_BEFORE_EDUCATION + 4` | ...and one from before the income rate split in three (0.7.4): the grant's basis and amount, the loan rate and the tuition scale on top. |
-| 1518 | `TaxPolicy.STATE_BEFORE_SCHOOLS` | `STATE_BEFORE_SPLIT + 3` | ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. |
-| 1521 | `TaxPolicy.STATE_BEFORE_REAL_GRANT` | `STATE_BEFORE_SCHOOLS + EducationType.values().length - 1` | ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. |
-| 1524 | `TaxPolicy.STATE_BEFORE_REAL_FARE` | `STATE_BEFORE_REAL_GRANT + 1` | ...and one from before the real fare (0.7.42): one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). |
-| 1527 | `TaxPolicy.STATE_BEFORE_FOOD_ASSISTANCE` | `STATE_BEFORE_REAL_FARE + 1` | ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). |
-| 1530 | `TaxPolicy.STATE_BEFORE_FUEL_DUTY` | `STATE_BEFORE_FOOD_ASSISTANCE + 1` | ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). |
-| 1533 | `TaxPolicy.STATE_BEFORE_PORT_DUES` | `STATE_BEFORE_FUEL_DUTY + 1` | ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). |
-| 1536 | `TaxPolicy.STATE_SLOTS` | `STATE_BEFORE_PORT_DUES + 1` | This build's array: the port dues dial on top (FR3). |
+| 1144 | `TaxPolicy.DEFAULT_CAPITAL_GAINS_INCLUSION` | `.5` | The share of a net realised gain taxed at the holder's wage rate (HT1, accepted call 4). |
+| 1525 | `TaxPolicy.STATE_BEFORE_EI` | `4 + WageBand.values().length` | The slots a save from before the EI and grant dials carried: the four rates and the wage-band offsets. |
+| 1528 | `TaxPolicy.STATE_BEFORE_HEALTH` | `STATE_BEFORE_EI + 3 + 1 + 1` | ...and one from before the health dials of 2026-09-19: EI's three, the farmland relief and the fare on top. |
+| 1531 | `TaxPolicy.STATE_BEFORE_EDUCATION` | `STATE_BEFORE_HEALTH + 2` | ...and one from before the education dials of 2026-09-21: the two health dials on top. |
+| 1534 | `TaxPolicy.STATE_BEFORE_SPLIT` | `STATE_BEFORE_EDUCATION + 4` | ...and one from before the income rate split in three (0.7.4): the grant's basis and amount, the loan rate and the tuition scale on top. |
+| 1537 | `TaxPolicy.STATE_BEFORE_SCHOOLS` | `STATE_BEFORE_SPLIT + 3` | ...and one from before the tuition scale split by school (0.7.6): the profit, sales and wage bases on top, each its own slot since 0.7.4. |
+| 1540 | `TaxPolicy.STATE_BEFORE_REAL_GRANT` | `STATE_BEFORE_SCHOOLS + EducationType.values().length - 1` | ...and one from before the real FIXED grant (0.7.19): a tuition scale per school kind on top, the nine in EducationType order bar NONE, since 0.7.6. |
+| 1543 | `TaxPolicy.STATE_BEFORE_REAL_FARE` | `STATE_BEFORE_REAL_GRANT + 1` | ...and one from before the real fare (0.7.42): one slot on top saying the FIXED amount is real, in founding money (0.7.19) - see realiseFixedGrant(). |
+| 1546 | `TaxPolicy.STATE_BEFORE_FOOD_ASSISTANCE` | `STATE_BEFORE_REAL_FARE + 1` | ...and one from before food assistance (0.7.43): one slot on top saying the fare is real, in founding money (0.7.42) - see realiseFare(). |
+| 1549 | `TaxPolicy.STATE_BEFORE_FUEL_DUTY` | `STATE_BEFORE_FOOD_ASSISTANCE + 1` | ...and one from before the fuel duty (0.7.103): the food assistance dial on top (0.7.43). |
+| 1552 | `TaxPolicy.STATE_BEFORE_PORT_DUES` | `STATE_BEFORE_FUEL_DUTY + 1` | ...and one from before the port dues dial (FR3): the fuel duty on top (0.7.103). |
+| 1555 | `TaxPolicy.STATE_BEFORE_CAPITAL_GAINS` | `STATE_BEFORE_PORT_DUES + 1` | This build's array: the port dues dial on top (FR3). |
+| 1557 | `TaxPolicy.STATE_SLOTS` | `STATE_BEFORE_CAPITAL_GAINS + 1` | The inclusion dial appended by HT1. |
 
 ### TempDirs.java ([map](map/TempDirs.md))
 
@@ -4050,21 +4053,21 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 69 | `YearBook.MONTHS_A_YEAR` | `12` |  |
 | 70 | `YearBook.MONTHS_A_DECADE` | `120` |  |
 | 101 | `YearBook.MONEY` | `"{the city's money}"` | Where a note names the city's money. |
-| 308 | `YearBook.RULES` | `rules()` |  |
-| 309 | `YearBook.PREFIXES` | `prefixRules()` |  |
-| 636 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
-| 1224 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
-| 1227 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
-| 1230 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
-| 1242 | `YearBook.FINANCIAL_EQUITY` | `0` | The bank's equity under this, in thousands, is a financial crisis: the bank has failed. |
-| 1245 | `YearBook.RECESSION_GROWTH` | `0` | Real output over a rolling year against the year before, as a fraction, under this is a recession: under zero, a fall. |
-| 1248 | `YearBook.CURRENCY_MOVE` | `2` | The exchange rate past this multiple of itself a year before is a currency crisis: the currency halved. |
-| 1251 | `YearBook.INFLATION_EPISODE` | `.25` | Prices rising faster than this a year is an inflation. |
-| 1254 | `YearBook.DEFLATION_EPISODE` | `-.10` | Prices falling faster than this a year (a negative rate) is a deflation. |
-| 1257 | `YearBook.EPIDEMIC_OUTBREAK` | `Health.OUTBREAK_FLOOR` | An epidemic is named while an outbreak runs - more of the workforce off sick than its care explains - not while a city short of care is as sick as it always is (A8). |
-| 1260 | `YearBook.TREASURY_CASH` | `0` | The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. |
-| 1263 | `YearBook.SLUMP_UNEMPLOYMENT` | `.20` | More of the labour force out of work than this is a slump. |
-| 1440 | `YearBook.CHRONIC_MONTHS` | `120` | An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). |
+| 310 | `YearBook.RULES` | `rules()` |  |
+| 311 | `YearBook.PREFIXES` | `prefixRules()` |  |
+| 638 | `YearBook.GDP_PARTS` | `{ "consumption", "investment", "government", "netExports" }` | GDP's four parts, as HistorySave names them (0.7.6): C, I, G and NX, in the order they stack. |
+| 1226 | `YearBook.EPISODE_MIN_MONTHS` | `3` | A run shorter than this many months is noise, and is not named - or shaded on the chart. |
+| 1229 | `YearBook.EPISODE_JOIN_MONTHS` | `6` | Two runs with fewer months of relief than this between them are one episode. |
+| 1232 | `YearBook.DEPRESSION_MONTHS` | `24` | A recession this many months long, or longer, is called a depression. |
+| 1244 | `YearBook.FINANCIAL_EQUITY` | `0` | The bank's equity under this, in thousands, is a financial crisis: the bank has failed. |
+| 1247 | `YearBook.RECESSION_GROWTH` | `0` | Real output over a rolling year against the year before, as a fraction, under this is a recession: under zero, a fall. |
+| 1250 | `YearBook.CURRENCY_MOVE` | `2` | The exchange rate past this multiple of itself a year before is a currency crisis: the currency halved. |
+| 1253 | `YearBook.INFLATION_EPISODE` | `.25` | Prices rising faster than this a year is an inflation. |
+| 1256 | `YearBook.DEFLATION_EPISODE` | `-.10` | Prices falling faster than this a year (a negative rate) is a deflation. |
+| 1259 | `YearBook.EPIDEMIC_OUTBREAK` | `Health.OUTBREAK_FLOOR` | An epidemic is named while an outbreak runs - more of the workforce off sick than its care explains - not while a city short of care is as sick as it always is (A8). |
+| 1262 | `YearBook.TREASURY_CASH` | `0` | The treasury's cash under this, in thousands, is a treasury crisis: it is overdrawn. |
+| 1265 | `YearBook.SLUMP_UNEMPLOYMENT` | `.20` | More of the labour force out of work than this is a slump. |
+| 1442 | `YearBook.CHRONIC_MONTHS` | `120` | An episode still running after this many months is chronic: City History lists it after the others that are running, and leads with it only when it runs alone (0.7.37). |
 
 ### YieldCurve.java ([map](map/YieldCurve.md))
 
@@ -4762,39 +4765,39 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 264 | `GovernmentScreen.HEAD_INFO` | `"What the city took in and paid out last month, and what its money did." + "EARNED is t...` | The tab's (i): what the five figures are, in a breath. |
 | 430 | `GovernmentScreen.TRAILING_MONTHS` | `12` | Every "of GDP" on this tab reads the trailing year of its line where History records it (B7, 0.7.47): the last TRAILING_MONTHS months, once the line has that many. |
 | 433 | `GovernmentScreen.LINE_KEYS` | `java.util.Map.ofEntries(java.util.Map.entry("Business tax", List.of("taxBusiness", "tax...` | The History series each budget line is, where it records one - the line's own figure each month (a series of something else, like the care's and the schools' net cost against their gross lines, is ... |
-| 450 | `GovernmentScreen.REVENUE_KEYS` | `List.of("revenue")` | What was taken in: History's revenue. |
-| 452 | `GovernmentScreen.SURPLUS_KEYS` | `List.of("surplus")` | ...the balance: History's surplus, negative for a deficit. |
-| 472 | `GovernmentScreen.RETIRED_GAIN_KEY` | `"retiredGain"` | ...the gain (loss) on debt retired, which the balance carries and spending does not (CD4, CD3's ★5). |
-| 475 | `GovernmentScreen.DEBT_EXCHANGE_KEY` | `"debtExchange"` | ...and the exchange gain (loss) on the city's foreign-currency paper, which the balance carries and spending does not (CD7). |
-| 914 | `GovernmentScreen.SURPLUS_INFO` | `"It took in more than it spent.A surplus pays down debt or buys the next " + "thing wit...` | P1's rest: what a surplus is for. |
-| 918 | `GovernmentScreen.DEFICIT_INFO` | `"It spent more than it took in.That gap is borrowed, and next month's " + "interest is ...` | ...and what a deficit costs. |
-| 1112 | `GovernmentScreen.DIALS_INFO` | `"EARNED is read at today's tax rates; the budget was struck at the month's." + "A dial ...` | The dials' step's tooltip (the spec's B7). |
-| 1117 | `GovernmentScreen.RESIDUAL_INFO` | `"What the named steps do not explain: timing between the books and the money, " + "and ...` | The "not accounted for" step's tooltip. |
-| 1123 | `GovernmentScreen.NOT_CASH_INTEREST_INFO` | `"The budget charges the discount wearing off the city's paper as " + "interest, a littl...` | The not-cash interest step's tooltip: the discount wearing off the city's paper, charged to the budget and paid to nobody yet. |
-| 1129 | `GovernmentScreen.NOT_CASH_GAIN_INFO` | `"Buying paper back for less than it is carried at books a gain, and for " + "more a los...` | The not-cash gain step's tooltip: the gain on paper bought back, booked against what it was carried at, paid by nobody. |
-| 1134 | `GovernmentScreen.NOT_CASH_UPLIFT_INFO` | `"A linked bond's principal follows the price index, and the budget " + "charges what th...` | The not-cash uplift step's tooltip (CD5): the indexation of the linked bonds, charged to the budget and paid in the bond's last month. |
-| 1141 | `GovernmentScreen.RETIRED_GAIN_INFO` | `"Paper bought back before it falls due is booked at what it was carried " + "at less th...` | The gain (loss) on debt retired: the line under the budget's operating lines, and what is in the balance. |
-| 1398 | `GovernmentScreen.ARREARS_INFO` | `"What the ceiling cut: owed, with no interest on it, and paid down out of the " + "firs...` | P6: the arrears. |
-| 1445 | `GovernmentScreen.ECONOMY_INFO` | `"A year of revenue against a year of output is the only honest way to " + "compare a bu...` | P8: why a month against a year. |
-| 1452 | `GovernmentScreen.NO_YEAR` | `"There is no output recorded yet, so nothing here can be put in " + "proportion.A month...` | P7: no month of output yet. |
-| 1636 | `GovernmentScreen.LIST_COLUMNS` | `{ 100, 60, 70 }` | The column heads' widths: a month, of the budget, of GDP. |
-| 1639 | `GovernmentScreen.LIST_DOOR` | `96` | ...and the door's at the end of a row: "set it ›", "Land office ›". |
-| 1914 | `GovernmentScreen.FUND_INFO` | `String.format("The withdrawal dial's share of everything the city's fund holds, a " + "...` | P20: the fund's transfer. |
-| 2298 | `GovernmentScreen.PRINCIPAL_INFO` | `"Not on the list above, and deliberately: repaying principal is not " + "spending.The m...` | P27: principal is not spending. |
-| 2303 | `GovernmentScreen.TERM_INFO` | `"A term loan pays its coupon every month and the whole face at the end, so the " + "mon...` | P28: term loans. |
-| 2308 | `GovernmentScreen.SERIAL_INFO` | `"Serial bonds amortise - a slice of principal falls due every anniversary, so " + "both...` | P29: serial bonds. |
-| 2312 | `GovernmentScreen.FLOATING_INFO` | `"A floating-rate note pays the policy rate of the month plus a margin fixed at " + "the...` | Floating-rate notes (CD5, spec-city-debt.md 2.4). |
-| 2318 | `GovernmentScreen.LINKED_INFO` | `"An inflation-linked bond pays a real coupon on a principal that follows the " + "price...` | Inflation-linked bonds (CD5, spec-city-debt.md 2.5). |
-| 2324 | `GovernmentScreen.NOTES_INFO` | `"A note pays no coupon.The lender's return is the discount, taken out of the " + "proce...` | P31: notes. |
-| 2330 | `GovernmentScreen.COUPON_INFO` | `"The coupons on the budget are struck from what the city actually paid over a " + "comp...` | P30: the coupon and the budget disagreeing. |
-| 2484 | `GovernmentScreen.BOTH_DEFICIT_INFO` | `"Both run at a deficit on purpose.What the deficit buys is on the " + "Services tab, in...` | P32, as it is true: both cost the city more than they charge. |
-| 2488 | `GovernmentScreen.NOT_BOTH_INFO` | `"Care and the schools are meant to run at a deficit: what it buys is on the " + "Servic...` | ...and when one does not (B16: fees with no bill). |
-| 2531 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " + "the gap...` | P33: pay-as-you-go. |
-| 2617 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + "consumpti...` | The layers' caption's (i). |
-| 2695 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts " + "the mo...` | P34: stock built up. |
-| 2709 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "care, the sc...` | P35, rewritten (B5): what G is, as the model counts it. |
-| 2748 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city " + "grow...` | P37, on the strip's month on month. |
-| 2753 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " + "nominal...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
+| 452 | `GovernmentScreen.REVENUE_KEYS` | `List.of("revenue")` | What was taken in: History's revenue. |
+| 454 | `GovernmentScreen.SURPLUS_KEYS` | `List.of("surplus")` | ...the balance: History's surplus, negative for a deficit. |
+| 474 | `GovernmentScreen.RETIRED_GAIN_KEY` | `"retiredGain"` | ...the gain (loss) on debt retired, which the balance carries and spending does not (CD4, CD3's ★5). |
+| 477 | `GovernmentScreen.DEBT_EXCHANGE_KEY` | `"debtExchange"` | ...and the exchange gain (loss) on the city's foreign-currency paper, which the balance carries and spending does not (CD7). |
+| 916 | `GovernmentScreen.SURPLUS_INFO` | `"It took in more than it spent.A surplus pays down debt or buys the next " + "thing wit...` | P1's rest: what a surplus is for. |
+| 920 | `GovernmentScreen.DEFICIT_INFO` | `"It spent more than it took in.That gap is borrowed, and next month's " + "interest is ...` | ...and what a deficit costs. |
+| 1114 | `GovernmentScreen.DIALS_INFO` | `"EARNED is read at today's tax rates; the budget was struck at the month's." + "A dial ...` | The dials' step's tooltip (the spec's B7). |
+| 1119 | `GovernmentScreen.RESIDUAL_INFO` | `"What the named steps do not explain: timing between the books and the money, " + "and ...` | The "not accounted for" step's tooltip. |
+| 1125 | `GovernmentScreen.NOT_CASH_INTEREST_INFO` | `"The budget charges the discount wearing off the city's paper as " + "interest, a littl...` | The not-cash interest step's tooltip: the discount wearing off the city's paper, charged to the budget and paid to nobody yet. |
+| 1131 | `GovernmentScreen.NOT_CASH_GAIN_INFO` | `"Buying paper back for less than it is carried at books a gain, and for " + "more a los...` | The not-cash gain step's tooltip: the gain on paper bought back, booked against what it was carried at, paid by nobody. |
+| 1136 | `GovernmentScreen.NOT_CASH_UPLIFT_INFO` | `"A linked bond's principal follows the price index, and the budget " + "charges what th...` | The not-cash uplift step's tooltip (CD5): the indexation of the linked bonds, charged to the budget and paid in the bond's last month. |
+| 1143 | `GovernmentScreen.RETIRED_GAIN_INFO` | `"Paper bought back before it falls due is booked at what it was carried " + "at less th...` | The gain (loss) on debt retired: the line under the budget's operating lines, and what is in the balance. |
+| 1400 | `GovernmentScreen.ARREARS_INFO` | `"What the ceiling cut: owed, with no interest on it, and paid down out of the " + "firs...` | P6: the arrears. |
+| 1447 | `GovernmentScreen.ECONOMY_INFO` | `"A year of revenue against a year of output is the only honest way to " + "compare a bu...` | P8: why a month against a year. |
+| 1454 | `GovernmentScreen.NO_YEAR` | `"There is no output recorded yet, so nothing here can be put in " + "proportion.A month...` | P7: no month of output yet. |
+| 1638 | `GovernmentScreen.LIST_COLUMNS` | `{ 100, 60, 70 }` | The column heads' widths: a month, of the budget, of GDP. |
+| 1641 | `GovernmentScreen.LIST_DOOR` | `96` | ...and the door's at the end of a row: "set it ›", "Land office ›". |
+| 1916 | `GovernmentScreen.FUND_INFO` | `String.format("The withdrawal dial's share of everything the city's fund holds, a " + "...` | P20: the fund's transfer. |
+| 2300 | `GovernmentScreen.PRINCIPAL_INFO` | `"Not on the list above, and deliberately: repaying principal is not " + "spending.The m...` | P27: principal is not spending. |
+| 2305 | `GovernmentScreen.TERM_INFO` | `"A term loan pays its coupon every month and the whole face at the end, so the " + "mon...` | P28: term loans. |
+| 2310 | `GovernmentScreen.SERIAL_INFO` | `"Serial bonds amortise - a slice of principal falls due every anniversary, so " + "both...` | P29: serial bonds. |
+| 2314 | `GovernmentScreen.FLOATING_INFO` | `"A floating-rate note pays the policy rate of the month plus a margin fixed at " + "the...` | Floating-rate notes (CD5, spec-city-debt.md 2.4). |
+| 2320 | `GovernmentScreen.LINKED_INFO` | `"An inflation-linked bond pays a real coupon on a principal that follows the " + "price...` | Inflation-linked bonds (CD5, spec-city-debt.md 2.5). |
+| 2326 | `GovernmentScreen.NOTES_INFO` | `"A note pays no coupon.The lender's return is the discount, taken out of the " + "proce...` | P31: notes. |
+| 2332 | `GovernmentScreen.COUPON_INFO` | `"The coupons on the budget are struck from what the city actually paid over a " + "comp...` | P30: the coupon and the budget disagreeing. |
+| 2486 | `GovernmentScreen.BOTH_DEFICIT_INFO` | `"Both run at a deficit on purpose.What the deficit buys is on the " + "Services tab, in...` | P32, as it is true: both cost the city more than they charge. |
+| 2490 | `GovernmentScreen.NOT_BOTH_INFO` | `"Care and the schools are meant to run at a deficit: what it buys is on the " + "Servic...` | ...and when one does not (B16: fees with no bill). |
+| 2533 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " + "the gap...` | P33: pay-as-you-go. |
+| 2619 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + "consumpti...` | The layers' caption's (i). |
+| 2697 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts " + "the mo...` | P34: stock built up. |
+| 2711 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "care, the sc...` | P35, rewritten (B5): what G is, as the model counts it. |
+| 2750 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city " + "grow...` | P37, on the strip's month on month. |
+| 2755 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " + "nominal...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
 
 ### HistoryScreen.java ([map](map/HistoryScreen.md))
 
@@ -5322,102 +5325,102 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 594 | `PolicyScreen.STEP_INCOME` | `.0025` | A quarter of a point - every rate that moves off the income tax. |
 | 597 | `PolicyScreen.STEP_PROPERTY` | `.0005` | A twentieth of a point - property, where a quarter is a quarter of the tax. |
 | 600 | `PolicyScreen.EVERY_TAX` | `"income"` | The staged key of "Every tax at once" on the Everything page - the one city rate's key, which is what that rate became in 0.7.4. |
-| 765 | `PolicyScreen.BUDGET_INFO` | `"Last month's surplus or deficit, and what it would be with this change: every " + "lin...` | THE BUDGET's (i). |
-| 774 | `PolicyScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press.THE BUDGET is " + "struc...` | P20, the tray's (i). |
-| 1087 | `PolicyScreen.SPLIT_OF` | `"policy.split"` | The key in a node's properties for the box and share its width is bound to (split()). |
-| 1214 | `PolicyScreen.NOTHING_BINDING_INFO` | `"Nothing is binding.Every lever has room to move, no sector is shut " + "out of credit,...` | P2: what the hub says when nothing is binding. |
-| 1259 | `PolicyScreen.TAX_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST }` | The money ramp the four taxes are drawn in, profit to property (the spec's 3.1): darker to lighter, then the rest. |
-| 1268 | `PolicyScreen.TAX_NAMES` | `{ "Profit", "Sales", "Wage", "Property" }` | The four taxes by name, profit to property: their cards, the bar's parts and their pages. |
-| 1616 | `PolicyScreen.CAVEAT` | `"Nothing here knows that the new rate changes what anybody does next month - a " + "bus...` | What every preview on the tab owes the player, in one sentence (P21, the one every preview ended with until 0.7.36): behind each card's (i), once. |
-| 1620 | `PolicyScreen.CAVEAT_LINE` | `"Struck on this month's books; behaviour is not projected."` | The caveat's line on a card. |
-| 1631 | `PolicyScreen.TAKE_INFO` | `"Last month, by tax.Each has a rate of its own, and three of the four a " + "move off i...` | P3, THE TAX TAKE's (i). |
-| 1730 | `PolicyScreen.EVERY_TAX_INFO` | `"Moves all three rates to one number.A sector or wage band you've set apart " + "keeps ...` | P5: every tax at once, its (i). |
-| 1738 | `PolicyScreen.FUEL_DUTY` | `"fuelDuty"` | The staged key of the fuel duty dial (0.7.103, batch P4; Jerus's A7). |
-| 1741 | `PolicyScreen.FUEL_DUTY_STEP` | `.00001` | One step of the fuel duty's ladder: a cent a litre at founding prices, in thousands. |
-| 1744 | `PolicyScreen.FUEL_INFO` | `"A duty a litre on the petrol the drivers buy at the pump, paid to the treasury as a li...` | The fuel duty's (i). |
-| 1751 | `PolicyScreen.FUEL_CAVEAT` | `"Struck on last month's litres at the pump: the owners who would take the bus at a" + "...` | The fuel duty's caveat, whole. |
-| 1795 | `PolicyScreen.PORT_DUES_PAGE` | `"Port dues"` | The Taxes area's page of the port dues dial (FR4; the dial and its collection are FR3's, TaxPolicy.getPortDues() and sectors.PortDivision). |
-| 1798 | `PolicyScreen.PORT_DUES` | `"portDues"` | The staged key of the port dues dial (FR4). |
-| 1801 | `PolicyScreen.PORT_DUES_STEP` | `TaxPolicy.MAX_PORT_DUES / 40` | One step of the port dues' ladder: a fortieth of the dial's top, so the default (1) and the top are both on a step. |
-| 1815 | `PolicyScreen.PORT_DUES_CAVEAT` | `"Struck on last month's tonnes across the berths.The handling charge carries a dearer d...` | The port dues' caveat, whole. |
-| 1869 | `PolicyScreen.PROPERTY_NOT` | `"Property is not on this dial: it is charged on value rather than on income, " + "and t...` | P6. |
-| 1918 | `PolicyScreen.PROFIT_INFO` | `"Charged on what each sector earned before tax.A sector that lost money " + "pays nothi...` | P8, the profit tax's head. |
-| 1923 | `PolicyScreen.LOSS_INFO` | `"A sector that lost money paid no profit tax at all, which is why the " + "first line f...` | P4. |
-| 1927 | `PolicyScreen.SALES_INFO` | `"Charged on VALUE ADDED - what a sector sells, less the tax it already " + "paid on wha...` | P10, the sales tax's head. |
-| 1933 | `PolicyScreen.WAGE_INFO` | `"Taken off every payroll in the city before the household sees it.The " + "jobs are gro...` | P12, the wage tax's head. |
-| 1938 | `PolicyScreen.PROPERTY_INFO` | `"Charged on what land and buildings are assessed at, whether or not the " + "owner earn...` | P14, the property tax's head. |
-| 1943 | `PolicyScreen.PROPERTY_STEP_INFO` | `"A twentieth of a point a step rather than the quarter the other three " + "get, becaus...` | P15. |
-| 1948 | `PolicyScreen.REFUND_INFO` | `"\"In refund\" means a sector's credits on what it bought exceed the tax " + "on what i...` | P11. |
-| 1954 | `PolicyScreen.ROLL_INFO` | `"The power and water plants are the city's own and exempt.Raising what " + "land sells ...` | P16. |
-| 1959 | `PolicyScreen.SALES_SCALED` | `"Scaled, not recomputed: each sector's net remittance moves by the ratio of its " + "ne...` | The sales tax's preview, scaled (the spec's D11, B6). |
-| 1996 | `PolicyScreen.OFFSET_INFO` | `"A move is in POINTS off the tax's own rate, so a row left at zero is taxed " + "at exa...` | P9, the offsets' note. |
-| 2066 | `PolicyScreen.BANK_INFO` | `"The commercial bank's profit is taxed at Retail's rate - a Commercial Bank is a " + "c...` | The bank's line (B5, D12). |
-| 2277 | `PolicyScreen.OPENED_CARD_ROOM` | `new javafx.geometry.Insets(2, 0, 8, 34)` | The room round a card opened in place under its row (a payer's move, a kind of school's price): one object (KP2b), set where it is not that already (Pieces.vMargin), since setMargin asks the box fo... |
-| 2323 | `PolicyScreen.PAYSLIP_INFO` | `"Only the first is a tax and only the first is set here - the other three " + "are prom...` | P13. |
-| 2354 | `PolicyScreen.FARMLAND_INFO` | `"A field is worth what a developer would pay for it and grows what a " + "farmer can gr...` | P17. |
-| 2361 | `PolicyScreen.FARMLAND_CAVEAT` | `"Exact against today's land price.What it actually decides is whether " + "the next fie...` | P19. |
-| 2530 | `PolicyScreen.FLOOR_INFO` | `"The least any job may pay.The ladder rests on the going rate - what an unskilled " + "...` | P22, the floor's (i). |
-| 2539 | `PolicyScreen.PINNED_WORDS` | `"At least one skill level is oversupplied AND cannot get any cheaper, so " + "those wor...` | P23, three forms (WG1): a band pinned with people spare AND paid the floor itself - the binding minimum wage. |
-| 2544 | `PolicyScreen.PINNED_ABOVE_WORDS` | `"At least one skill level is oversupplied and paid as little as the market " + "goes, s...` | ...a band pinned with people spare at the market's own bottom, above the floor: the floor is under them. |
-| 2548 | `PolicyScreen.FREE_WORDS` | `"No skill level is pinned against the floor, so the labour market is " + "clearing on p...` | ...no band pinned and nobody paid the floor. |
-| 2585 | `PolicyScreen.FLOOR_CAVEAT` | `"Once wages have walked there, which takes about a year.Only the floor's own move " + "...` | P24. |
-| 2592 | `PolicyScreen.FLOOR_DIAL_SHARE` | `.45` | The dial's column takes this share of the page beside the gauges' column. |
-| 2595 | `PolicyScreen.FLOOR_DIAL_LEAST` | `450` | The dial's column is not let shrink under this: its 380 px dial, or its Apply bar (240 px and 170 and the gap between), and the card's padding. |
-| 2598 | `PolicyScreen.ABOVE_GOING_NOTE` | `"What a floor above the going rate cost, measured: raising it 20% at month 240 held une...` | What the study measured of a floor over the going rate, said under the dial while the floor it shows is over it. |
-| 2603 | `PolicyScreen.GOING_INFO` | `"The floor against the going rate: what an unskilled post pays where there are exactly ...` | The gauge against the going rate, behind its (i): what the three zones are, from FloorView's constants. |
-| 2609 | `PolicyScreen.ZONE_NEVER_WORDS` | `"under " + pct0(FloorView.NEVER_UNDER) + ": never binds(the market alone stops there)"` | The first zone of the gauge against the going rate, named under it. |
-| 2612 | `PolicyScreen.ZONE_GLUT_WORDS` | `pct0(FloorView.NEVER_UNDER).replace("%", "") + "–" + pct0(FloorView.ALWAYS_OVER) + ": b...` | ...the second. |
-| 2615 | `PolicyScreen.ZONE_ALWAYS_WORDS` | `"over " + pct0(FloorView.ALWAYS_OVER) + ": binds even when hands are short"` | ...the third. |
-| 2618 | `PolicyScreen.AVERAGE_INFO` | `"The floor over the average wage, the way minimum wages are compared across nations(the...` | The gauge against the average wage, behind its (i). |
-| 2623 | `PolicyScreen.JOB_PAYS_INFO` | `"A person working full time at the floor: what the payslip leaves of it, set against wh...` | The card of what a full-time floor job pays for, behind its (i). |
-| 2627 | `PolicyScreen.COVER_WORDS` | `"Under 100% such workers share a home."` | ...the sentence under the cover figure. |
-| 2630 | `PolicyScreen.NEAR_INFO` | `"The posts filled that pay the floor itself, and those that pay a little over it, which...` | The card of who is near the floor, behind its (i). |
-| 2634 | `PolicyScreen.TIE_INFO` | `"What the floor keeps pace with.Prices: the founding figure lifted by the cost of livin...` | The card that ties the floor, behind its (i). |
-| 2639 | `PolicyScreen.FLOOR_TIE` | `"floor:tie"` | The key a staged choice of the floor's tie is kept under until its Apply. |
-| 2642 | `PolicyScreen.GAUGE_PX` | `400` | The width a gauge is taken to be when its tick names are kept apart: the narrowest it is in a page of a laptop's width. |
-| 2645 | `PolicyScreen.NAME_CHAR_PX` | `5.5` | The width of a tick's name per letter at the caption size. |
-| 2648 | `PolicyScreen.NAME_GAP_PX` | `8` | The room left between two tick names under a gauge. |
-| 2651 | `PolicyScreen.WALK_SHOWN` | `.01` | A wage's walk is marked on the ladder only when its target is this share of the wage away: nearer is the width of the bar's own end. |
-| 2654 | `PolicyScreen.FORMAT` | `Formats.INSTANCE` | The formats that write a number that may not be one as a dash. |
-| 3115 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
-| 3118 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
-| 3121 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
-| 3124 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
-| 3127 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
-| 3130 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
-| 3156 | `PolicyScreen.OVER_INFO` | `"Hot money follows this difference in, and leaves the day it closes." + "It is also wha...` | P28. |
-| 3162 | `PolicyScreen.REAL_INFO` | `"The currency follows this one: a dial under the inflation people expect is a " + "real...` | P28's second half: the real differential - against the inflation people expect since 0.7.42 (the UI spec's B9). |
-| 3168 | `PolicyScreen.REAL_DIAL_INFO` | `"The dial less the inflation people expect: what saving at the dial earns " + "in what ...` | The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. |
-| 3325 | `PolicyScreen.HAND_INFO` | `"Jerus's autopilot: the rule can hold the dial.Every month, before anything is " + "pri...` | P32. |
-| 3329 | `PolicyScreen.REPRICE_INFO` | `"This does not reprice a single bond the city has already sold - every " + "coupon on t...` | P34: the dial card's caveat. |
-| 3598 | `PolicyScreen.QE_LINE` | `"Buys term paper only: it reaches prices through what people own and through the " + "c...` | How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). |
-| 3631 | `PolicyScreen.CEILING_INFO` | `String.format("When the treasury runs dry the central bank advances the gap in money it...` | P36. |
-| 3678 | `PolicyScreen.ANCHOR_INFO` | `"What people expect prices to do decides what they do next.Wages are asked " + "for hal...` | THE ANCHOR's (i): Expectations, in a player's words. |
-| 3689 | `PolicyScreen.STRUCK_INFO` | `"Fees, build costs and upkeep, land, the shelf's floor, the pension's wage base, " + "t...` | The struck level's (i). |
-| 3694 | `PolicyScreen.GAP_INFO` | `"A real rate over the world's brings money here and holds the currency dearer than " + ...` | THE CURRENCY'S LEVEL's (i). |
-| 3832 | `PolicyScreen.BASKET_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TE...` | The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. |
-| 3878 | `PolicyScreen.SWING_INFO` | `"Prices here have more than doubled and come back at some point." + "Wages, rents and e...` | P30. |
-| 3883 | `PolicyScreen.REFORMED_INFO` | `"The index is measured against the city's first basket in founding money, " + "chained ...` | P31, once the money has been reformed. |
-| 3977 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_CENTRE = "...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the anchor's rate un... |
-| 3982 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
-| 3985 | `PolicyScreen.MINT_STEP` | `.01` | One step of the mint price, D$ an ounce: a hundredth of it, up to devalue and down to revalue. |
-| 3988 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
-| 3991 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
-| 3994 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
-| 3997 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
-| 4000 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
-| 4003 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
-| 5340 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " + "come out...` | P41 and P47. |
-| 5511 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than " + "a shor...` | P57. |
-| 5955 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
-| 5958 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
-| 5998 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "month's wag...` | P48. |
-| 6005 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is a " + "co...` | P49. |
-| 6011 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." + "The tabl...` | P50. |
-| 6019 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "price - and ...` | P51/P52: the schools' preview caveat. |
-| 6384 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " + "they st...` | P55. |
-| 6390 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + "not chang...` | P56. |
-| 6435 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " + "so it n...` | P69. |
+| 766 | `PolicyScreen.BUDGET_INFO` | `"Last month's surplus or deficit, and what it would be with this change: every " + "lin...` | THE BUDGET's (i). |
+| 775 | `PolicyScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press.THE BUDGET is " + "struc...` | P20, the tray's (i). |
+| 1088 | `PolicyScreen.SPLIT_OF` | `"policy.split"` | The key in a node's properties for the box and share its width is bound to (split()). |
+| 1215 | `PolicyScreen.NOTHING_BINDING_INFO` | `"Nothing is binding.Every lever has room to move, no sector is shut " + "out of credit,...` | P2: what the hub says when nothing is binding. |
+| 1260 | `PolicyScreen.TAX_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST }` | The money ramp the four taxes are drawn in, profit to property (the spec's 3.1): darker to lighter, then the rest. |
+| 1269 | `PolicyScreen.TAX_NAMES` | `{ "Profit", "Sales", "Wage", "Property" }` | The four taxes by name, profit to property: their cards, the bar's parts and their pages. |
+| 1617 | `PolicyScreen.CAVEAT` | `"Nothing here knows that the new rate changes what anybody does next month - a " + "bus...` | What every preview on the tab owes the player, in one sentence (P21, the one every preview ended with until 0.7.36): behind each card's (i), once. |
+| 1621 | `PolicyScreen.CAVEAT_LINE` | `"Struck on this month's books; behaviour is not projected."` | The caveat's line on a card. |
+| 1632 | `PolicyScreen.TAKE_INFO` | `"Last month, by tax.Each has a rate of its own, and three of the four a " + "move off i...` | P3, THE TAX TAKE's (i). |
+| 1731 | `PolicyScreen.EVERY_TAX_INFO` | `"Moves all three rates to one number.A sector or wage band you've set apart " + "keeps ...` | P5: every tax at once, its (i). |
+| 1739 | `PolicyScreen.FUEL_DUTY` | `"fuelDuty"` | The staged key of the fuel duty dial (0.7.103, batch P4; Jerus's A7). |
+| 1742 | `PolicyScreen.FUEL_DUTY_STEP` | `.00001` | One step of the fuel duty's ladder: a cent a litre at founding prices, in thousands. |
+| 1745 | `PolicyScreen.FUEL_INFO` | `"A duty a litre on the petrol the drivers buy at the pump, paid to the treasury as a li...` | The fuel duty's (i). |
+| 1752 | `PolicyScreen.FUEL_CAVEAT` | `"Struck on last month's litres at the pump: the owners who would take the bus at a" + "...` | The fuel duty's caveat, whole. |
+| 1796 | `PolicyScreen.PORT_DUES_PAGE` | `"Port dues"` | The Taxes area's page of the port dues dial (FR4; the dial and its collection are FR3's, TaxPolicy.getPortDues() and sectors.PortDivision). |
+| 1799 | `PolicyScreen.PORT_DUES` | `"portDues"` | The staged key of the port dues dial (FR4). |
+| 1802 | `PolicyScreen.PORT_DUES_STEP` | `TaxPolicy.MAX_PORT_DUES / 40` | One step of the port dues' ladder: a fortieth of the dial's top, so the default (1) and the top are both on a step. |
+| 1816 | `PolicyScreen.PORT_DUES_CAVEAT` | `"Struck on last month's tonnes across the berths.The handling charge carries a dearer d...` | The port dues' caveat, whole. |
+| 1870 | `PolicyScreen.PROPERTY_NOT` | `"Property is not on this dial: it is charged on value rather than on income, " + "and t...` | P6. |
+| 1919 | `PolicyScreen.PROFIT_INFO` | `"Charged on what each sector earned before tax.A sector that lost money " + "pays nothi...` | P8, the profit tax's head. |
+| 1924 | `PolicyScreen.LOSS_INFO` | `"A sector that lost money paid no profit tax at all, which is why the " + "first line f...` | P4. |
+| 1928 | `PolicyScreen.SALES_INFO` | `"Charged on VALUE ADDED - what a sector sells, less the tax it already " + "paid on wha...` | P10, the sales tax's head. |
+| 1934 | `PolicyScreen.WAGE_INFO` | `"Taken off every payroll in the city before the household sees it.The " + "jobs are gro...` | P12, the wage tax's head. |
+| 1939 | `PolicyScreen.PROPERTY_INFO` | `"Charged on what land and buildings are assessed at, whether or not the " + "owner earn...` | P14, the property tax's head. |
+| 1944 | `PolicyScreen.PROPERTY_STEP_INFO` | `"A twentieth of a point a step rather than the quarter the other three " + "get, becaus...` | P15. |
+| 1949 | `PolicyScreen.REFUND_INFO` | `"\"In refund\" means a sector's credits on what it bought exceed the tax " + "on what i...` | P11. |
+| 1955 | `PolicyScreen.ROLL_INFO` | `"The power and water plants are the city's own and exempt.Raising what " + "land sells ...` | P16. |
+| 1960 | `PolicyScreen.SALES_SCALED` | `"Scaled, not recomputed: each sector's net remittance moves by the ratio of its " + "ne...` | The sales tax's preview, scaled (the spec's D11, B6). |
+| 2014 | `PolicyScreen.OFFSET_INFO` | `"A move is in POINTS off the tax's own rate, so a row left at zero is taxed " + "at exa...` | P9, the offsets' note. |
+| 2084 | `PolicyScreen.BANK_INFO` | `"The commercial bank's profit is taxed at Retail's rate - a Commercial Bank is a " + "c...` | The bank's line (B5, D12). |
+| 2295 | `PolicyScreen.OPENED_CARD_ROOM` | `new javafx.geometry.Insets(2, 0, 8, 34)` | The room round a card opened in place under its row (a payer's move, a kind of school's price): one object (KP2b), set where it is not that already (Pieces.vMargin), since setMargin asks the box fo... |
+| 2341 | `PolicyScreen.PAYSLIP_INFO` | `"Only the first is a tax and only the first is set here - the other three " + "are prom...` | P13. |
+| 2372 | `PolicyScreen.FARMLAND_INFO` | `"A field is worth what a developer would pay for it and grows what a " + "farmer can gr...` | P17. |
+| 2379 | `PolicyScreen.FARMLAND_CAVEAT` | `"Exact against today's land price.What it actually decides is whether " + "the next fie...` | P19. |
+| 2548 | `PolicyScreen.FLOOR_INFO` | `"The least any job may pay.The ladder rests on the going rate - what an unskilled " + "...` | P22, the floor's (i). |
+| 2557 | `PolicyScreen.PINNED_WORDS` | `"At least one skill level is oversupplied AND cannot get any cheaper, so " + "those wor...` | P23, three forms (WG1): a band pinned with people spare AND paid the floor itself - the binding minimum wage. |
+| 2562 | `PolicyScreen.PINNED_ABOVE_WORDS` | `"At least one skill level is oversupplied and paid as little as the market " + "goes, s...` | ...a band pinned with people spare at the market's own bottom, above the floor: the floor is under them. |
+| 2566 | `PolicyScreen.FREE_WORDS` | `"No skill level is pinned against the floor, so the labour market is " + "clearing on p...` | ...no band pinned and nobody paid the floor. |
+| 2603 | `PolicyScreen.FLOOR_CAVEAT` | `"Once wages have walked there, which takes about a year.Only the floor's own move " + "...` | P24. |
+| 2610 | `PolicyScreen.FLOOR_DIAL_SHARE` | `.45` | The dial's column takes this share of the page beside the gauges' column. |
+| 2613 | `PolicyScreen.FLOOR_DIAL_LEAST` | `450` | The dial's column is not let shrink under this: its 380 px dial, or its Apply bar (240 px and 170 and the gap between), and the card's padding. |
+| 2616 | `PolicyScreen.ABOVE_GOING_NOTE` | `"What a floor above the going rate cost, measured: raising it 20% at month 240 held une...` | What the study measured of a floor over the going rate, said under the dial while the floor it shows is over it. |
+| 2621 | `PolicyScreen.GOING_INFO` | `"The floor against the going rate: what an unskilled post pays where there are exactly ...` | The gauge against the going rate, behind its (i): what the three zones are, from FloorView's constants. |
+| 2627 | `PolicyScreen.ZONE_NEVER_WORDS` | `"under " + pct0(FloorView.NEVER_UNDER) + ": never binds(the market alone stops there)"` | The first zone of the gauge against the going rate, named under it. |
+| 2630 | `PolicyScreen.ZONE_GLUT_WORDS` | `pct0(FloorView.NEVER_UNDER).replace("%", "") + "–" + pct0(FloorView.ALWAYS_OVER) + ": b...` | ...the second. |
+| 2633 | `PolicyScreen.ZONE_ALWAYS_WORDS` | `"over " + pct0(FloorView.ALWAYS_OVER) + ": binds even when hands are short"` | ...the third. |
+| 2636 | `PolicyScreen.AVERAGE_INFO` | `"The floor over the average wage, the way minimum wages are compared across nations(the...` | The gauge against the average wage, behind its (i). |
+| 2641 | `PolicyScreen.JOB_PAYS_INFO` | `"A person working full time at the floor: what the payslip leaves of it, set against wh...` | The card of what a full-time floor job pays for, behind its (i). |
+| 2645 | `PolicyScreen.COVER_WORDS` | `"Under 100% such workers share a home."` | ...the sentence under the cover figure. |
+| 2648 | `PolicyScreen.NEAR_INFO` | `"The posts filled that pay the floor itself, and those that pay a little over it, which...` | The card of who is near the floor, behind its (i). |
+| 2652 | `PolicyScreen.TIE_INFO` | `"What the floor keeps pace with.Prices: the founding figure lifted by the cost of livin...` | The card that ties the floor, behind its (i). |
+| 2657 | `PolicyScreen.FLOOR_TIE` | `"floor:tie"` | The key a staged choice of the floor's tie is kept under until its Apply. |
+| 2660 | `PolicyScreen.GAUGE_PX` | `400` | The width a gauge is taken to be when its tick names are kept apart: the narrowest it is in a page of a laptop's width. |
+| 2663 | `PolicyScreen.NAME_CHAR_PX` | `5.5` | The width of a tick's name per letter at the caption size. |
+| 2666 | `PolicyScreen.NAME_GAP_PX` | `8` | The room left between two tick names under a gauge. |
+| 2669 | `PolicyScreen.WALK_SHOWN` | `.01` | A wage's walk is marked on the ladder only when its target is this share of the wage away: nearer is the width of the bar's own end. |
+| 2672 | `PolicyScreen.FORMAT` | `Formats.INSTANCE` | The formats that write a number that may not be one as a dash. |
+| 3133 | `PolicyScreen.DIAL_STEPS` | `{ 0, 1, 2, 3, 5, 8, 10, 15, 20, 30, 50, 75, 100 }` | The policy rates the dial's chips stage, in percent (0.7.2): the everyday range finely, the spiral's coarsely. |
+| 3136 | `PolicyScreen.CEILING_STEPS` | `{ 3, 6, 12, 24, 36 }` | The advances ceiling's settings, in months of revenue (0.7.2), up to CentralBank.MAX_ADVANCES_CEILING. |
+| 3139 | `PolicyScreen.TARGET_STEPS` | `{ 0, 1, 2, 3, 4, 5 }` | The inflation targets the chips set at once, in percent (0.7.4): the everyday range, the ladder beside them reaching the rest. |
+| 3142 | `PolicyScreen.TARGET_STEP` | `.005` | One step of the target's ladder (0.7.4): half a point. |
+| 3145 | `PolicyScreen.HOLDINGS_STEP` | `.10` | One step of the holdings' ladder (0.7.6): ten points of the term paper, the chips' own spacing. |
+| 3148 | `PolicyScreen.CEILING_STEP` | `1` | One step of the ceiling's ladder (0.7.6): a month of revenue, the unit the chips are in. |
+| 3174 | `PolicyScreen.OVER_INFO` | `"Hot money follows this difference in, and leaves the day it closes." + "It is also wha...` | P28. |
+| 3180 | `PolicyScreen.REAL_INFO` | `"The currency follows this one: a dial under the inflation people expect is a " + "real...` | P28's second half: the real differential - against the inflation people expect since 0.7.42 (the UI spec's B9). |
+| 3186 | `PolicyScreen.REAL_DIAL_INFO` | `"The dial less the inflation people expect: what saving at the dial earns " + "in what ...` | The dial's own real rate (0.7.45): REAL_INFO's first half, for the dial alone. |
+| 3343 | `PolicyScreen.HAND_INFO` | `"Jerus's autopilot: the rule can hold the dial.Every month, before anything is " + "pri...` | P32. |
+| 3347 | `PolicyScreen.REPRICE_INFO` | `"This does not reprice a single bond the city has already sold - every " + "coupon on t...` | P34: the dial card's caveat. |
+| 3616 | `PolicyScreen.QE_LINE` | `"Buys term paper only: it reaches prices through what people own and through the " + "c...` | How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). |
+| 3649 | `PolicyScreen.CEILING_INFO` | `String.format("When the treasury runs dry the central bank advances the gap in money it...` | P36. |
+| 3696 | `PolicyScreen.ANCHOR_INFO` | `"What people expect prices to do decides what they do next.Wages are asked " + "for hal...` | THE ANCHOR's (i): Expectations, in a player's words. |
+| 3707 | `PolicyScreen.STRUCK_INFO` | `"Fees, build costs and upkeep, land, the shelf's floor, the pension's wage base, " + "t...` | The struck level's (i). |
+| 3712 | `PolicyScreen.GAP_INFO` | `"A real rate over the world's brings money here and holds the currency dearer than " + ...` | THE CURRENCY'S LEVEL's (i). |
+| 3850 | `PolicyScreen.BASKET_RAMP` | `{ Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TE...` | The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. |
+| 3896 | `PolicyScreen.SWING_INFO` | `"Prices here have more than doubled and come back at some point." + "Wages, rents and e...` | P30. |
+| 3901 | `PolicyScreen.REFORMED_INFO` | `"The index is measured against the city's first basket in founding money, " + "chained ...` | P31, once the money has been reformed. |
+| 3995 | `PolicyScreen.XR_REGIME` | `"xr:regime", XR_PAYER = "xr:payer", XR_AIM = "xr:aim", XR_PEG = "xr:peg", XR_CENTRE = "...` | The staged keys of the currency page: the regime, who pays at the strong edge and what the dial aims at by ordinal; the peg; the band's centre, slope and width; the spread over the anchor's rate un... |
+| 4000 | `PolicyScreen.PEG_STEP` | `.01` | One step of the peg's chips: a hundredth of the peg, up to devalue and down to revalue. |
+| 4003 | `PolicyScreen.MINT_STEP` | `.01` | One step of the mint price, D$ an ounce: a hundredth of it, up to devalue and down to revalue. |
+| 4006 | `PolicyScreen.CENTRE_STEP` | `.01` | One step of the band's centre: a hundredth of it. |
+| 4009 | `PolicyScreen.SLOPE_STEP` | `.005, WIDTH_STEP =.005` | One step of the band's slope and of its width: half a point. |
+| 4012 | `PolicyScreen.SPREAD_STEP` | `.0025` | One step of the spread over the US's rate: a quarter of a point. |
+| 4015 | `PolicyScreen.CURRENCY_CHART_MONTHS` | `60` | The months the currency page's charts show: five years. |
+| 4018 | `PolicyScreen.COVER_CHART_TOP` | `12` | The most months of import cover the vault's chart draws: a year. |
+| 4021 | `PolicyScreen.DEAL_SHARE` | `.01` | The size of a deal the BUY OR SELL card weighs, a share of a year's output. |
+| 5358 | `PolicyScreen.COVER_INFO` | `"The rest is general revenue - the same pot the schools and the hospitals " + "come out...` | P41 and P47. |
+| 5529 | `PolicyScreen.EI_INFO` | `"EI only pays the first twelve months, so a long bust costs less in EI than " + "a shor...` | P57. |
+| 5973 | `PolicyScreen.EVERY_SCHOOL` | `"tuitionScale"` | The staged key of "Every school at once" on the Schools page - the one tuition scale's key, which is what that scale became in 0.7.6. |
+| 5976 | `PolicyScreen.TUITION_STEP` | `.05` | One step of every price-of-a-place ladder: a twentieth of the founding table. |
+| 6016 | `PolicyScreen.SHARE_INFO` | `"The city's share of every course fee.Households pay the rest out of a " + "month's wag...` | P48. |
+| 6023 | `PolicyScreen.BURDEN_INFO` | `String.format("At %.0f%% of a month's wage nobody enrols at all: a red bar is a " + "co...` | P49. |
+| 6029 | `PolicyScreen.PRICE_INFO` | `"The founding tuition table times this, before the city's share comes off." + "The tabl...` | P50. |
+| 6037 | `PolicyScreen.SCHOOL_CAVEAT` | `"Against the courses being taken now, each kind's students at its own " + "price - and ...` | P51/P52: the schools' preview caveat. |
+| 6402 | `PolicyScreen.LOAN_INFO` | `"Charged on a graduate's balance while they repay it, and on nothing while " + "they st...` | P55. |
+| 6408 | `PolicyScreen.LOAN_CAVEAT` | `"Against the balances the graduates owe today.The instalment itself does " + "not chang...` | P56. |
+| 6453 | `PolicyScreen.SUBSIDY_INFO` | `"A protected sector is topped up to break-even every month it loses money, " + "so it n...` | P69. |
 
 ### RankingsScreen.java ([map](map/RankingsScreen.md))
 
@@ -5894,7 +5897,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2004 constants)
+## harnesses (2005 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6097,6 +6100,12 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 407 | `CallCheck.ASKS_OF_ROOM` | `4` | FS14: the asks of section 4 the bank is handed its room for: the callable sale, the non-call one, the reopening of the callable line and the 20-year quote. |
 | 410 | `CallCheck.CB_DIAL` | `.3` | FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. |
 | 413 | `CallCheck.CB_BUYS_WITHIN_MONTHS` | `1` | FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. |
+
+### CapitalGainsCheck.java ([map](map/CapitalGainsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 14 | `CapitalGainsCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### CarCheck.java ([map](map/CarCheck.md))
 
@@ -8428,7 +8437,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4152 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4153 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 
