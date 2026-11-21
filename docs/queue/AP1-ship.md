@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-AP1-8gllw3G8 -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP1, the auto-builder's month at 400,000 people — 2026-11-21, ready, see docs/queue/AP1-notes.md
 On Jerus's slot 10 (421,561 people, 57 stacks on site) the auto-builder's search asked the power ahead (`WorksValue.pendingPowerLoad`) about 1,100 times a month, and each call rebuilt the site's whole completion schedule, with the builders' staffing for every stack and every template's new-unit draw.
