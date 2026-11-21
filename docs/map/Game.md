@@ -1,4 +1,4 @@
-# Game.java - 23,017 lines · 1036 methods · 33 constants · model
+# Game.java - 23,019 lines · 1036 methods · 33 constants · model
 
 `ham/citybuildersim/Game.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -103,8 +103,8 @@
 | 20079 | BUYING YOUR OWN DEBT BACK |
 | 20371 | · the call (CD4, spec-city-debt.md section 6.4; D22, D23, D24) |
 | 20513 | WHY LAND IS NOT IN THE RENT FLOOR |
-| 20902 | · · the three the monthly path sets and this did not |
-| 22715 | THE CURRENCY REFORM |
+| 20904 | · · the three the monthly path sets and this did not |
+| 22717 | THE CURRENCY REFORM |
 
 ## Enum constants
 
@@ -454,15 +454,15 @@
 | 19828 | `private double arrearsRefusedLifetime, arrearsPaidLifetime` | Refused and paid down since founding, for the playtest's record. |
 | 19836 | `private final java.util.Map<String, Double> arrearsPaidTo` | This month's arrears paid down, by the sector whose till they reached (0.7.55): what its statement's arrears line reads (SectorBooks, arrearsPaid), struck at the settle and read when the month is recorded, both inside... |
 | 20511 | `private long pendingWorkforce` | Set by loadGame() from the save, consumed by the next rebuildSimulationState(). |
-| 22667 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
-| 22719 | `private final Denomination denomination` |  |
-| 23010 | `private boolean forcedReform` |  |
+| 22669 | `private boolean bankAllowanceToOpen` | True between reading a save from before 0.7.8 and the end of its load: its bank's allowance is set up there. |
+| 22721 | `private final Denomination denomination` |  |
+| 23012 | `private boolean forcedReform` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 22993 | **type** `public class Game` |  |
+| 20 | 22995 | **type** `public class Game` |  |
 | 69 | 1 | `public DecisionLog getDecisions()` | The player's decisions, oldest first (0.7.23): what the chart's flags are drawn from. |
 | 80 | 1 | `public AutoBuilder getAutoBuilder()` | Automatic building (0.7.73): its settings, its log and its last pass. |
 | 92 | 1 | `public StrategicReserve getReserve()` | The city's strategic reserve (0.7.85). |
@@ -1930,29 +1930,29 @@
 | 20437 | 4 | `public boolean worthCalling(Debt debt)` | True when calling this callable line is worth it (D24): the saving (callSaving()) passes CallTree.WORTH_CALLING of the face, 3%. |
 | 20464 | 40 | `public double callLine(Debt debt)` | Calls one line whole at 100 (CD4): every holder is paid its face - the bank, the households, the businesses, the world and the central bank, which has no say in it (a call is the paper's own term, not a sale a holder ... |
 
-### WHY LAND IS NOT IN THE RENT FLOOR (lines 20513-22714)
+### WHY LAND IS NOT IN THE RENT FLOOR (lines 20513-22716)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 20581 | 20 | `public double marginalHousingCost()` | What it costs to supply one more person of dwelling capacity, today. |
-| 20602 | 338 | `private void rebuildSimulationState()` |  |
-| 21004 | 31 | `private static String refusal(int slot, DataSave loaded)` | Why a save would not load, or null when it would: the three refusals below, each logged, its file untouched. |
-| 21045 | 21 | `private String refusalBeforeRebuild(int slot)` | Why loadGameSave() must not rebuild the world for this slot, or null when it may (FW1, 0.8.37). |
-| 21068 | 10 | `public void loadGame(int slot)` | Load game |
-| 21086 | 22 | `private void readTheMap(int slot, Long stamp)` | THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the save's stamp is its stamp and it was drawn on this land in this month (CityMap.readSidecar()); a save that had a map whose sidecar is missing or stale... |
-| 21118 | 11 | `private void restoreOilPools(DataSave loaded)` | THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO OIL POOLS): once the land is in place, the offshore pool's E as saved - or, on a save from before SAVE_FORMAT 35, the one pool's E charged to the ... |
-| 21130 | 35 | `private void restoreLandOnTheWorld(DataSave loaded, double owned)` |  |
-| 21167 | 1487 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
-| 22661 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
-| 22670 | 44 | `public void loadHistory(int slot)` |  |
+| 20602 | 340 | `private void rebuildSimulationState()` |  |
+| 21006 | 31 | `private static String refusal(int slot, DataSave loaded)` | Why a save would not load, or null when it would: the three refusals below, each logged, its file untouched. |
+| 21047 | 21 | `private String refusalBeforeRebuild(int slot)` | Why loadGameSave() must not rebuild the world for this slot, or null when it may (FW1, 0.8.37). |
+| 21070 | 10 | `public void loadGame(int slot)` | Load game |
+| 21088 | 22 | `private void readTheMap(int slot, Long stamp)` | THE CITY MAP, READ BACK (0.7.60): from the slot's sidecar when the save's stamp is its stamp and it was drawn on this land in this month (CityMap.readSidecar()); a save that had a map whose sidecar is missing or stale... |
+| 21120 | 11 | `private void restoreOilPools(DataSave loaded)` | THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO OIL POOLS): once the land is in place, the offshore pool's E as saved - or, on a save from before SAVE_FORMAT 35, the one pool's E charged to the ... |
+| 21132 | 35 | `private void restoreLandOnTheWorld(DataSave loaded, double owned)` |  |
+| 21169 | 1487 | `private void readTheSave(int slot)` | The load itself; see loadGame(). |
+| 22663 | 4 | `void seedFundLedger()` | THE FUND'S COST BASIS FOR A SAVE FROM BEFORE IT (0.7.39; the project's spec-fund-0739.md, 3.5): each market lot and bond at its market value this month, flagged as such, the rescue lot exact from the counters, one TRA... |
+| 22672 | 44 | `public void loadHistory(int slot)` |  |
 
-### THE CURRENCY REFORM (lines 22715-23017)
+### THE CURRENCY REFORM (lines 22717-23019)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22726 | 18 | `private void seedMoneyConstants(double unit)` | Seeds every money constant struck in founding dollars at a unit: the load path's list since the reform, and since FX4 also buildWorld()'s at 1, so a new city does not keep the last loaded city's unit. |
-| 22745 | 1 | `public Denomination getDenomination()` |  |
-| 22748 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
-| 22779 | 215 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
-| 23005 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the player's eligibility gates (price level and dated Bank of Canada), for a harness. |
+| 22728 | 18 | `private void seedMoneyConstants(double unit)` | Seeds every money constant struck in founding dollars at a unit: the load path's list since the reform, and since FX4 also buildWorld()'s at 1, so a new city does not keep the last loaded city's unit. |
+| 22747 | 1 | `public Denomination getDenomination()` |  |
+| 22750 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
+| 22781 | 215 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
+| 23007 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the player's eligibility gates (price level and dated Bank of Canada), for a harness. |
 

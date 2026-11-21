@@ -1,4 +1,4 @@
-# UtilitiesHandler.java - 1,048 lines · 102 methods · 7 constants · model
+# UtilitiesHandler.java - 1,064 lines · 103 methods · 7 constants · model
 
 `ham/citybuildersim/UtilitiesHandler.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -18,9 +18,9 @@
 | 271 | · Split books. The two utilities share one workforce and one fill rate, but |
 | 331 | THE POWER THE WORKS MAKE (0.7.112, batch I2; |
 | 462 | THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price") |
-| 920 | · · ELECTRIC POWER |
-| 951 | · · WATER |
-| 991 | · · CONSOLIDATED |
+| 936 | · · ELECTRIC POWER |
+| 967 | · · WATER |
+| 1007 | · · CONSOLIDATED |
 
 ## Constants
 
@@ -32,7 +32,7 @@
 | 129 | `UtilitiesHandler.FRESH_UNITS_PER_KM2` | `121_600` | Units of fresh water a month one square kilometre of owned lake or river yields: the world's renewable river runoff (about 42,700 km3 a year, Shiklomanov) over the world's river and stream area (773,000 km2, Allen & P... |
 | 487 | `UtilitiesHandler.FOUNDING_TARIFF` | `.01 * PriceLevel.FACTOR` | The founding tariff a kW a month, D$10 at the founding's level, held by the struck book until a month has cleared (the tariff the game had before PW1). |
 | 489 | `UtilitiesHandler.WORKS_ROW` | `"works", GRID_ROW = "grid"` |  |
-| 1018 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 1034 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ## Fields (state)
 
@@ -87,12 +87,13 @@
 | 692 | `public Book struck` |  |
 | 693 | `public double fuelLocal, fuelImported, upkeepPaid` |  |
 | 694 | `public Map<String, Double> fuelImportedByGood` |  |
+| 706 | `private boolean seedOnLoad` | True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1027 | **type** `public class UtilitiesHandler` |  |
+| 22 | 1043 | **type** `public class UtilitiesHandler` |  |
 
 ### WATER SUPPLY (lines 37-95)
 
@@ -173,7 +174,7 @@
 | 454 | 3 | `public double getUtilityPayroll()` |  |
 | 458 | 3 | `public double getUtilityRevenue()` |  |
 
-### THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price") (lines 462-1048)
+### THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price") (lines 462-1064)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -210,22 +211,23 @@
 | 688 | 1 | `public double getFuelBill()` |  |
 | 691 | 5 | **type** `public static final class PowerState` | What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). |
 | 697 | 7 | `public PowerState toPowerState()` |  |
-| 706 | 5 | `public void restorePowerState(PowerState s)` | Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. |
-| 713 | 3 | `public void setWattsProduction(double watts)` | setters |
-| 717 | 4 | `public void setWattsConsumption(double watts)` |  |
-| 722 | 3 | `public void setWaterProduction(double water)` |  |
-| 727 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
-| 733 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
-| 738 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
-| 743 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
-| 752 | 3 | `public void setPopulation(long population)` | The people. |
-| 756 | 3 | `public void setPricePerWaterUnit(double price)` |  |
-| 766 | 43 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
-| 810 | 31 | `public void updateWaterRatio()` |  |
-| 846 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
-| 857 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
-| 910 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 916 | 100 | `public void printUtilitiesInfo()` | printers |
-| 1020 | 4 | `static { ... }` |  |
-| 1027 | 20 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
+| 714 | 5 | `public void seedLoadedRatio()` | A save from before PW1 carries no book (REV-PW1c): it loads the founding book, and here, on the load path after updateServices() has dispatched the loaded city, that book takes the ratio just computed, the one the loa... |
+| 721 | 6 | `public void restorePowerState(PowerState s)` | Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. |
+| 729 | 3 | `public void setWattsProduction(double watts)` | setters |
+| 733 | 4 | `public void setWattsConsumption(double watts)` |  |
+| 738 | 3 | `public void setWaterProduction(double water)` |  |
+| 743 | 4 | `public void setWaterSources(double fresh, double desal)` | The two parts of that nameplate (0.7.59): the fresh plants' and the desalination plants'. |
+| 749 | 3 | `public void setFreshCap(double cap)` | The fresh water limit, from the city's land and rights (Game.getFreshCap()); infinite for none. |
+| 754 | 3 | `public void setBuildingWaterDraw(double water)` | Summed draw of every building standing, from the templates. |
+| 759 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
+| 768 | 3 | `public void setPopulation(long population)` | The people. |
+| 772 | 3 | `public void setPricePerWaterUnit(double price)` |  |
+| 782 | 43 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
+| 826 | 31 | `public void updateWaterRatio()` |  |
+| 862 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
+| 873 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
+| 926 | 4 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 932 | 100 | `public void printUtilitiesInfo()` | printers |
+| 1036 | 4 | `static { ... }` |  |
+| 1043 | 20 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
 
