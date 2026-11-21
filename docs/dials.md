@@ -6062,8 +6062,8 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 70 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
 | 73 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
-| 448 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
-| 454 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury ... |
+| 449 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
+| 455 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury ... |
 
 ### BusinessServicesCheck.java ([map](map/BusinessServicesCheck.md))
 

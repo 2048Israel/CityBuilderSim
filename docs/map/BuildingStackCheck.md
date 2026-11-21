@@ -1,4 +1,4 @@
-# BuildingStackCheck.java - 669 lines · 14 methods · 4 constants · harnesses
+# BuildingStackCheck.java - 670 lines · 14 methods · 4 constants · harnesses
 
 `ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -68,9 +68,9 @@
 | 257 | · 5. the same from a save written with an order on site |
 | 277 | · 6. an order carries the loaded copy past 2^31 - 1, and its save reads back whole |
 | 315 | · 7. Game.buildStack on a copy just under the ceiling: its quote, its ground and its invoice (SQ1b) |
-| 387 | · 8. a month's draw past 2^31 units: the books it feeds read it whole |
-| 441 | · 10. a template has one stack, and a shed takes what it asks of it (SB1) |
-| 445 | 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) |
+| 388 | · 8. a month's draw past 2^31 units: the books it feeds read it whole |
+| 442 | · 10. a template has one stack, and a shed takes what it asks of it (SB1) |
+| 446 | 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) |
 
 ## Constants
 
@@ -78,8 +78,8 @@
 |---:|---|---|---|
 | 70 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
 | 73 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
-| 448 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
-| 454 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury of millions lost the... |
+| 449 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
+| 455 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury of millions lost the... |
 
 ## Fields (state)
 
@@ -93,24 +93,24 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 607 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
+| 63 | 608 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
 | 75 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 87 | 5 | `static void near(String label, double actual, double expected, double tolerance)` | A figure read against the one it should be, relative to the larger of the two or to one; both printed (SB1). |
 | 94 | 3 | `static DemolitionLog.Entry newest(Game g)` | The newest line of a city's demolition log (the log lists newest first). |
 | 98 | 5 | `static void quietly(Runnable r)` |  |
 | 104 | 13 | `public static void main(String[] args) throws Exception` |  |
-| 118 | 326 | `static void run(Path root) throws Exception` |  |
+| 118 | 327 | `static void run(Path root) throws Exception` |  |
 
-### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 445-669)
+### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 446-670)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 457 | 6 | `static int mostPerId(java.util.List<Integer> ids)` | The most stacks any one id has among these (SB1): the tripwire's own reading, proved on lists it can tell apart. |
-| 465 | 5 | `static int mostStacksOfOne(BuildingManager bm)` | The most stacks any one template has in this manager. |
-| 472 | 5 | `static long postsOf(BuildingManager bm)` | Every post the buildings offer, over every kind of job (BuildingManager.getTotalJobs(JobType)). |
-| 479 | 5 | `static Game cityOn(Path root, String label)` | A fixture city on a folder of its own, founded the way the playtest's is. |
-| 486 | 11 | `static long shed(Game g, java.lang.reflect.Method retire, java.lang.reflect.Method investor, BuildingsTemplate t, long count) t...` | Game's own shedding path, called as Game calls it: a decision of the sector's template and a count, the sector's investor selling, the distress rule not the one deciding. |
-| 498 | 164 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
-| 664 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
+| 458 | 6 | `static int mostPerId(java.util.List<Integer> ids)` | The most stacks any one id has among these (SB1): the tripwire's own reading, proved on lists it can tell apart. |
+| 466 | 5 | `static int mostStacksOfOne(BuildingManager bm)` | The most stacks any one template has in this manager. |
+| 473 | 5 | `static long postsOf(BuildingManager bm)` | Every post the buildings offer, over every kind of job (BuildingManager.getTotalJobs(JobType)). |
+| 480 | 5 | `static Game cityOn(Path root, String label)` | A fixture city on a folder of its own, founded the way the playtest's is. |
+| 487 | 11 | `static long shed(Game g, java.lang.reflect.Method retire, java.lang.reflect.Method investor, BuildingsTemplate t, long count) t...` | Game's own shedding path, called as Game calls it: a decision of the sector's template and a count, the sector's investor selling, the distress rule not the one deciding. |
+| 499 | 164 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
+| 665 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
 

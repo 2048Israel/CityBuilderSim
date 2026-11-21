@@ -3172,88 +3172,88 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L322 fixture: the copy loads
   - L328 fixture: its House stack stands under the ceiling, as section 6's does
   - L332 fixture: the order's material (
-  - L335 fixture: the yard holds its own small stock, which the order's material dwarfs
-  - L341 the quote is for the order's Houses
-  - L342 ...its material is the units each House takes times the order, not an int's wrap of them
-  - L343 ...the yard covers its own stock and the plant and the world the rest, which is past what an int holds
-  - L346 ...its ground is the square feet each House takes times the order
-  - L347 ...and its price is a finite sum past 2^31 dollars
-  - L359 fixture: the yard's stock changes the first order's price (
-  - L360 the run's invoice moves with the yard by exactly the first order's share: the second is quoted on the yard the first emptied, in both
-  - L362 ...and a run's first order is quoted as it is alone
-  - L367 fixture: the ground is there for the order
-  - L373 buildStack takes the order (
-  - L374 ...and charges what the quote said, in full
-  - L375 ...the receipt reads the quote's total and its material
-  - L376 ...and the order's Houses
-  - L377 ...the ground it took is the quote's: the free ground fell by the square feet of every House
-  - L380 ...the order stands on site beside the copy's own sites
-  - L381 ...which with what stands is past 2^31 - 1
-  - L382 ...the yard's whole stock went to the sites the day it was placed
-  - L383 ...and the books took it, as the yard's share of the units
-  - L384 ...the sites owe the rest of the order's material, past what an int holds
-- **L387 8. a month's draw past 2^31 units: the books it feeds read it whole**
-  - L396 the month after the order runs, and the crews drew on the market for it (
-  - L405 the sites' draw is booked whole: materialsConsumed rose by the units drawn
-  - L406 ...the builders' own stock of scrapped plant's material went first, whole (
-  - L408 ...and the materials market was drawn on for the rest, past what an int holds
-  - L410 ...and the books stand past what an int holds
-  - L413 the city with a draw past 2^31 booked saves
-  - L416 ...and the save loads
-  - L417 ...materialsConsumed came back whole
-  - L423 a repair draw past 2^31 units takes the yard first: the yard is emptied
-  - L424 ...the books took the whole draw, the yard's share and the rest
-  - L425 ...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)
-  - L436 a draw of infinitely many units takes nothing: the yard keeps its stock, nothing is booked and the market is not drawn on
-  - L439 ...and neither does one of not a number
-- **L441 10. a template has one stack, and a shed takes what it asks of it (SB1)**
-- **L499 a template has one stack, ordered, played, saved and loaded; and a shed takes what it asks of it, through Game's own paths**
-  - L501 the tripwire counts a second stack of one id, none among distinct ids, and nothing in an empty list
-  - L518 every template, ordered finished, on site and finished again, has one stack: as many stacks as templates
-  - L520 ...each holding the three orders' buildings (8 standing, 4 on site), and no template has two
-  - L521 fixture: the catalogue is not one template
-  - L549 fixture: every order of the played city was placed
-  - L550 the played city's stack count was read at the end of every month
-  - L551 fixture: the city stood more than a handful of kinds of building, so the reading is not of an empty city
-  - L552 ...and in none of them did a template have more than one stack
-  - L558 the played city saves
-  - L561 ...and its save loads
-  - L563 the loaded city has the saved city's stacks, as many
-  - L570 ...in the same order, each of the saved quantity and on-site count (an emptied stack stands again where it stood)
-  - L571 ...and no template has two
-  - L573 ...nor after two more months
-  - L584 fixture: the city holds the Police Stations it demolishes, and they are the city's to demolish
-  - L585 the city orders two demolished
-  - L586 ...they stand until the month starts
-  - L588 the month closes the two, off the stack they stood on, and no others
-  - L589 ...no stack has left the list
-  - L590 ...and the closing is in the log, two of them
-  - L593 ...with their steel in the city's old metal
-  - L595 the city orders the rest demolished
-  - L597 the next month closes them: none stand
-  - L598 ...and their steel, in the old metal, is the two's times as many as the two's (
-  - L600 ...and the emptied stack stays in place, where a save indexes it, and no stack has left the list
-  - L602 retiring more of an emptied stack scraps none
-  - L613 fixture: the ground of the eight new shops is taken from the land office
-  - L620 fixture: the city's shops are its founding's and the eight
-  - L627 a shed of three scraps three
-  - L628 ...off the stack: three fewer stand
-  - L629 ...the two on site are not touched
-  - L630 ...and the stack count is what it was
-  - L631 ...the ground of the three goes back to the land office
-  - L632 ...the posts of the three are gone
-  - L633 ...the treasury paid the plot back at the zone's price, priced before the release
-  - L634 ...the log has the three
-  - L635 ...and what was paid for the plot
-  - L637 ...and the material of the three, a share of it, is sold to the builders: three buildings, units to the share
-  - L647 a shed asked for fifty more than stand scraps what stands
-  - L648 ...none stand, and the two on site are still on site
-  - L649 ...the stack is left in place, emptied
-  - L650 ...its posts are the standing's, not the asking's
-  - L651 ...its ground is no more than the standing's
-  - L652 ...the log has what stood
-  - L657 a shed of an emptied stack scraps none
-  - L658 ...and books nothing: no cash, no ground, no log line and no salvage
+  - L336 fixture: the yard holds its own small stock, which the order's material dwarfs
+  - L342 the quote is for the order's Houses
+  - L343 ...its material is the units each House takes times the order, not an int's wrap of them
+  - L344 ...the yard covers its own stock and the plant and the world the rest, which is past what an int holds
+  - L347 ...its ground is the square feet each House takes times the order
+  - L348 ...and its price is a finite sum past 2^31 dollars
+  - L360 fixture: the yard's stock changes the first order's price (
+  - L361 the run's invoice moves with the yard by exactly the first order's share: the second is quoted on the yard the first emptied, in both
+  - L363 ...and a run's first order is quoted as it is alone
+  - L368 fixture: the ground is there for the order
+  - L374 buildStack takes the order (
+  - L375 ...and charges what the quote said, in full
+  - L376 ...the receipt reads the quote's total and its material
+  - L377 ...and the order's Houses
+  - L378 ...the ground it took is the quote's: the free ground fell by the square feet of every House
+  - L381 ...the order stands on site beside the copy's own sites
+  - L382 ...which with what stands is past 2^31 - 1
+  - L383 ...the yard's whole stock went to the sites the day it was placed
+  - L384 ...and the books took it, as the yard's share of the units
+  - L385 ...the sites owe the rest of the order's material, past what an int holds
+- **L388 8. a month's draw past 2^31 units: the books it feeds read it whole**
+  - L397 the month after the order runs, and the crews drew on the market for it (
+  - L406 the sites' draw is booked whole: materialsConsumed rose by the units drawn
+  - L407 ...the builders' own stock of scrapped plant's material went first, whole (
+  - L409 ...and the materials market was drawn on for the rest, past what an int holds
+  - L411 ...and the books stand past what an int holds
+  - L414 the city with a draw past 2^31 booked saves
+  - L417 ...and the save loads
+  - L418 ...materialsConsumed came back whole
+  - L424 a repair draw past 2^31 units takes the yard first: the yard is emptied
+  - L425 ...the books took the whole draw, the yard's share and the rest
+  - L426 ...and the market was drawn on for the units less the yard's, past what an int holds (the salvage is spent)
+  - L437 a draw of infinitely many units takes nothing: the yard keeps its stock, nothing is booked and the market is not drawn on
+  - L440 ...and neither does one of not a number
+- **L442 10. a template has one stack, and a shed takes what it asks of it (SB1)**
+- **L500 a template has one stack, ordered, played, saved and loaded; and a shed takes what it asks of it, through Game's own paths**
+  - L502 the tripwire counts a second stack of one id, none among distinct ids, and nothing in an empty list
+  - L519 every template, ordered finished, on site and finished again, has one stack: as many stacks as templates
+  - L521 ...each holding the three orders' buildings (8 standing, 4 on site), and no template has two
+  - L522 fixture: the catalogue is not one template
+  - L550 fixture: every order of the played city was placed
+  - L551 the played city's stack count was read at the end of every month
+  - L552 fixture: the city stood more than a handful of kinds of building, so the reading is not of an empty city
+  - L553 ...and in none of them did a template have more than one stack
+  - L559 the played city saves
+  - L562 ...and its save loads
+  - L564 the loaded city has the saved city's stacks, as many
+  - L571 ...in the same order, each of the saved quantity and on-site count (an emptied stack stands again where it stood)
+  - L572 ...and no template has two
+  - L574 ...nor after two more months
+  - L585 fixture: the city holds the Police Stations it demolishes, and they are the city's to demolish
+  - L586 the city orders two demolished
+  - L587 ...they stand until the month starts
+  - L589 the month closes the two, off the stack they stood on, and no others
+  - L590 ...no stack has left the list
+  - L591 ...and the closing is in the log, two of them
+  - L594 ...with their steel in the city's old metal
+  - L596 the city orders the rest demolished
+  - L598 the next month closes them: none stand
+  - L599 ...and their steel, in the old metal, is the two's times as many as the two's (
+  - L601 ...and the emptied stack stays in place, where a save indexes it, and no stack has left the list
+  - L603 retiring more of an emptied stack scraps none
+  - L614 fixture: the ground of the eight new shops is taken from the land office
+  - L621 fixture: the city's shops are its founding's and the eight
+  - L628 a shed of three scraps three
+  - L629 ...off the stack: three fewer stand
+  - L630 ...the two on site are not touched
+  - L631 ...and the stack count is what it was
+  - L632 ...the ground of the three goes back to the land office
+  - L633 ...the posts of the three are gone
+  - L634 ...the treasury paid the plot back at the zone's price, priced before the release
+  - L635 ...the log has the three
+  - L636 ...and what was paid for the plot
+  - L638 ...and the material of the three, a share of it, is sold to the builders: three buildings, units to the share
+  - L648 a shed asked for fifty more than stand scraps what stands
+  - L649 ...none stand, and the two on site are still on site
+  - L650 ...the stack is left in place, emptied
+  - L651 ...its posts are the standing's, not the asking's
+  - L652 ...its ground is no more than the standing's
+  - L653 ...the log has what stood
+  - L658 a shed of an emptied stack scraps none
+  - L659 ...and books nothing: no cash, no ground, no log line and no salvage
 
 ## BusinessServicesCheck.java - 67 labelled assertions
 

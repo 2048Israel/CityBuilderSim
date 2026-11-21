@@ -331,6 +331,7 @@ public class BuildingStackCheck {
         double needed = (double) bh.getConstructionMaterials() * orderB;
         assertTrue("fixture: the order's material (" + orderB + " Houses at " + bh.getConstructionMaterials() + " units each) is past what an int holds, and the order itself fits one",
                 needed > Integer.MAX_VALUE && orderB < Integer.MAX_VALUE);
+        gb.getBuildingManager().setConstructionMaterials(bh.getConstructionMaterials());
         long yard0 = gb.getConstructionMaterials();
         assertTrue("fixture: the yard holds its own small stock, which the order's material dwarfs", yard0 > 0 && yard0 < needed / 1_000_000);
         long onBeforeB = bb.getStack(bh) == null ? 0 : bb.getStack(bh).getUnderConstruction();
