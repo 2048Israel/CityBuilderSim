@@ -1,8 +1,8 @@
-# gate of Merge batch/OE1: the order's estimate for a sector with nothing running, after SQ1 (its files): BankCheck 19's young town ordered a Lime Kiln weighed at an operating rate of 0.97 that ran at 0.52-0.61 (staff 0.80-0.89 x health 0.86 x freight 0.68-0.80), and AUTO2's Fabrication Shop was weighed at 0.81 and ran at 0.51-0.81, its steel at the band's middle (0.005, landed 0.0077). Read what a first plant's estimate rests on (`BusinessInvestment.operatingRateOf()`, `Sector.estimatedMonthlyProfit()`, the readers in `sectors/`) and mend it; the measure is YoungBankCheck's spell begun by a lone plant's write-off (month 58, 0.0187 on 0.9.128), and the AUTO2 bank's months under to m600, 0.9.174
+# gate of Merge batch/AP1: (Jerus, 2026-11-20: "next definitly"; his city is unplayable at 1x) The auto-builder's month at 400,000 people: `WorksValue.pendingPowerLoad` rebuilds the site's completion schedule (`BuildingManager.siteUnitMonths`, whose `firstOn` -> `buildersOwnOnSite` runs the builders' staffing for every stack on site) and every template's `NewUnit` power draw at each of ~1,100 calls a month, from `BuildAdvice.figure` and `supplyDemand` inside `BuildAdvice.count`'s search. Jerus's slot 10 (m1204, 421,561 people, 57 stacks and 6,188 units on site) took 7.5-17 s a month against 1x's 5 s (`AutoBuilder.pass` 95% of it). Hold the schedule and the draws for one pass, and for one Build-screen draw, cleared by any order; to the bit, the playtest unmoved, 0.9.175
 # date: 2026-11-21
 # earth-2.bin: named
-# nightly: 2026-11-20 22:02 0.9.172 ac224abf3 4,000 months: OK in 363 s; nightly tier OK; observations: 6 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-20-ac224abf3-qgxpSQry
-# suite: 228 harnesses run in 1213s: 218 passed, 10 failed
+# nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
+# suite: 223 harnesses run in 612s: 215 passed, 8 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -26,13 +26,13 @@ DistressBleedCheck | ...and the rule is not dead: the centres go when the operat
 CarCheck | exit 1
 CarCheck | a month of car sales is a month of real money                        FAIL  11 cars for $13k, $13k of it imported
 CarCheck | 1 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.3, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.154134 != 378.194773
 Forms1900Check | 2 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 PrizeCheck | exit 1
 PrizeCheck | FAIL ...and its till (at most 166) never stood above the six months of costs it keeps (at least 133), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 1 FAILED of 286

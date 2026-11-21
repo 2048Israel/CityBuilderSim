@@ -47,7 +47,7 @@ public class AllChecks {
         "DenominationCheck", "PriceLevelCheck", "DeterminismCheck", "StepsCheck",
         "HouseholdCheck", "HouseholdFlowCheck", "HouseholdStageCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
-        "SaveSlotCheck", "ScaleCheck", "BuildingStackCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
+        "SaveSlotCheck", "ScaleCheck", "BuildingStackCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "KeptTimingCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
         "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "MedicineCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "DistressBleedCheck", "ManufacturingCheck", "AgricultureCheck", "FoodIndustryCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "LuxuryRetailCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "HydrogenSteelCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "SulphideLeachCheck", "GoldMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "ObservationCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "DriverlessTruckCheck", "FieldOperatorsCheck", "ElectrolyserCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "PublicLicenceCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck", "Village1900Check",
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
@@ -85,7 +85,7 @@ public class AllChecks {
     static final int CPU_SAMPLES = 3;
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
-    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");
+    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "KeptTimingCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");
 
     /** Runs nightly, and at the gate only when a direct pick names it (HA1). */
     static final List<String> NIGHTLY = List.of(
@@ -157,7 +157,7 @@ public class AllChecks {
             if (observations && !Observation.HARNESSES.contains(name) && (!nightly || !NIGHTLY.contains(name))) continue;
             if (!selected(name, timingOnly, gate, nightly && !observations, only)) continue;
             picked.add(name);
-                if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("StepsCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
+                if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("KeptTimingCheck") || name.equals("StepsCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
         }
         int atOnce = parallel(logged, timingOnly);
         if (atOnce > 1) order.sort(longestFirst(TIMES, Path.of(System.getProperty("user.home"), ".cbs-gate-times.tsv")));
