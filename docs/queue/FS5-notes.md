@@ -1,20 +1,19 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
-Latest full-run result: frozen source 0446cec5e on MC2 main .179 completed
-its one authorized final software run with two hard failures: recurring
-Healthcare layout and objects heap 1589.6 MiB against 1536. The full-model
-Government release regression passes (1832 fresh nodes, zero survivors).
-The subsequent parent-edge-only accounting mend at 4e65bd86b passed --fast
-and one bounded production-helper proof. No subsequent full measurement
-is authorized; the 53.6 MiB residual remains unattributed. No readiness
-is claimed, and bounds and vetoes remain unchanged.
-The later bounded Healthcare diagnostic has two hard failures and fixture
-age/expansion premise limits, recorded below; it establishes no source mend.
+Latest full-run result: frozen source aa570ab45 on .180 completed its
+ONE authorized final native-software run with exit0/ALL OK. Live1521.3MiB
+minus actual18.5MiB render targets gives objects1502.8MiB, below the
+unchanged1536MiB bound by33.2MiB. Government hard release1832->0 passed.
+The exact Healthcare choice's two original primary pairs were equal,
+252 rows each; no held looks were called. Actual73 reshape calls and their
+exclusions are recorded below. Source/classes/JDK/data stayed frozen.
 
-GO2c73 adds an optional, default-off Healthcare signature observer in
-KeptCheck only, for a separately authorized future full software/heap run.
-Its --fast is green; capture has NOT executed and supplies no new layout or
-heap result. The marker remains provisional pending the orchestrator's review.
+Historical full6 remains two hard failures at source0446/.179, including
+objects1589.6MiB/53.6MiB excess and Healthcare's four repeating held looks.
+The86.8MiB lower current object reading is not attributed to cleanup or
+parent traversal, and no historical leaf cause is proved. All FOUR own
+vetoes remain byte-for-byte; registry/ship/source are unchanged after the
+run. Marker stays provisional pending the orchestrator's next decision.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -1633,3 +1632,257 @@ the1832->0 Government hard release regression and68 reshape-call exclusions
 remain its actual results. Parent/cache/original-leaf causality limits and
 all raw probes/history stay intact. Provisional checkpoint for review;
 waiting for a separate explicit full-software slot/execution GO.
+
+
+## FS5c2 GOed03: final-source software run 7 green, still provisional
+
+Root accepted observer aa570ab455ec902dfbb3594fd77ab78722236e55, then
+explicitly authorized ONE final-source native Windows software run after
+parent-edge4e65 and the .180 model merge. This was that independently owed
+measurement, not a replay to find the historical Healthcare leaf. No other
+compile, fast, diagnostic JVM, probe, pick, baseline, ensemble, dry run,
+source mend or readiness check ran. No source/records edit or push occurred
+while the job was alive. The ship marker and all four vetoes remain unchanged.
+
+Actual direct KeptCheck result: exit0, ALL OK, 2026-11-21
+16:03:46-16:19:34 Atlantic, monotonic947.758s (15m47.758s). Owned JVM16348
+exited normally; the2400s resource/hang guard did not fire. The foreground
+Python runner completed its post-exit sealing at16:19:39 and also exited0.
+No owned process remains. The full5308-line cp1252 log was scanned, not
+only its tail: zero FAILs, observer-disable errors or uncaught-exception
+lines;4128 OK-terminated lines. Existing continuation reached102 and103.
+
+### Frozen inputs and actual host
+
+The prelaunch slot receipt records zero Java processes and13,153,228KiB
+free physical memory. Configuration: direct native JDK21.0.4+8-LTS-274,
+`-Xmx2048m -Dprism.order=sw`, original unstaged bench, scratch GameFiles,
+absolute C:/ main earth-2.bin/world-1.bin paths, no Glass/Monocle override,
+added Stage, viewport/constraint adjustment or fixture/prefix alteration.
+Only the accepted observer's output/source/base/data-hash properties were
+added. The same frozen command and JDK_JAVA_OPTIONS are in the pre receipt.
+
+Source aa570ab455ec902dfbb3594fd77ab78722236e55;
+tree85593ac35c36946a93088db7dee646938402fae2;
+origin/main da43868fb86115c2ce41ca669915609f79704170;
+merge-base d1d70f0aee8312bb86c888f8cf9831c71322754b (.180).
+Before launch, target/FS5c2-kept7-pre.json sealed all2894 tracked files,
+2438 class/resource files,11 classpath files, five JDK/launcher files,
+the JDK release text and both data files. After exit,
+target/FS5c2-kept7-post.json independently recomputed these manifests:
+HEAD/tree/base/merge-base/status/tracked/classes/classpath/JDK/release/data
+and prior-raw categories ALL unchanged. All26 prior hash receipts
+(25 distinct files, including raw2620/db9d/old5 and wrong-inner-exit0 receipt)
+still match. No source/class/data correspondence is inferred from names alone.
+
+| Actual input | SHA256 |
+|---|---|
+| earth-2.bin,281761695 bytes | c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b |
+| world-1.bin,8712947 bytes | fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1 |
+| KeptCheck.class | a6db535c87ded57be62c44591a7584710a1265099f3552b98076c1b816fd49ed |
+| KeptBench.class | bb9cd132a67f2aea696ea250c8132432312113dc1e9ad5ac03e42455dcfb1922 |
+| KeptCheck$HealthcareCapture.class | b475a55715c829f0fc25a789eb242025381304e3ed0c54247e76a51cc74c45e5 |
+
+Read-only native module inspection of the owned process confirmed the
+expected jvm.dll/java.exe21.0.4, glass.dll and prism_sw.dll, with no D3D
+module in the selected native inventory. The accepted observer then
+recorded actual com.sun.glass.ui.win.WinApplication and
+com.sun.prism.sw.SWPipeline with window=null in both captured pairs.
+No inspection/model JVM or attach diagnostic was launched.
+
+### Full-run premises and heap
+
+The watched city actually began at month605/population4903, unlike full6's
+3365. Government entered at month2369 (full6:2364); the exact target primary
+captures were at2629/2630, population35973/35946. These are current measured
+states, not reconstructed historical fault months.
+
+Government's hard release regression:1832 distinct fresh nodes, zero alive;
+signature, counters, kept-node identity, roots cleared and aborted restore
+all true, all four assertions green. Fund63 settled ONE actual new holding
+through its real book; B:3102 ran116 months beyond the three watched,
+and the rule was restored with17->18 lots. All three Household grid holds
+passed with0 closed; the unheld month would also have closed0 in this run,
+so this does not newly exercise a would-close negative control.
+
+Bank55 Profit printed25/25 quiet redraws, maximum0 new nodes. The old
+`most months make no node at all (12 of25)` label was already retired by
+the common caused law; no new assertion with that name is invented.
+Section92 started without paper, then sold Term10 through the real model
+(LongTermBond due month4458). Its unchanged hard premise found ONE paper
+and passed. The all-sales-refused booked fallback was NOT exercised.
+
+| Full current heap reading | MiB/count |
+|---|---:|
+| Live after release | 1521.3 MiB |
+| Canvases found | 45 |
+| Actual render targets / on heap | 10 / 10 |
+| Measured heap render-target payload | 18.5 MiB |
+| Objects, live minus measured targets | 1502.8 MiB |
+| Unchanged hard bound | 1536 MiB |
+| Current margin | 33.2 MiB |
+
+The heap assertion passed strictly, without cache/effect/snapshot exclusions
+or a bound/dial change. Full6's live1608.1/targets18.5/objects1589.6 and
+historical53.6MiB excess remain their actual recorded result. The current
+live/object arithmetic is86.8MiB lower, with the same18.5MiB target payload.
+This is not a controlled attribution to cleanup or parent traversal: model
+base, played population, reachable funding states, choices and retained
+graph differ. Parent traversal's earlier backing-array proof remains valid;
+it does not assign these86.8MiB or the old53.6MiB to a root. Cache payload
+root/lifetime and historical Healthcare ownership remain unproved.
+
+### Original-choice capture: current equality, no historical leaf cause
+
+The observer executed successfully at the EXACT first
+governmentChoices(false)/section71/Spending: Healthcare opened choice.
+It wrote only its two existing primary pairs, after restore:
+
+| Pair file under target/FS5c2-kept7-capture | Month | Population | Kept/fresh rows | Differing rows |
+|---|---:|---:|---:|---:|
+| primaryA-primary.json | 2629 | 35973 | 252/252 | 0 |
+| primaryB-primary.json | 2630 | 35946 | 252/252 | 0 |
+
+Each array preserves eight rows containing embedded newlines, along with
+every other original string and logical index. No held pair is missing:
+both existing primary comparisons were equal, so the original code made
+NO held look. There was no added comparison or later-label capture retry.
+All configured source/base/data hashes, actual class hashes, actual data
+sizes, display metadata and untouched arrays match the sealed receipts.
+Both captures' restored-kept metadata reports govPageSpending, body1456x698, content1454x682,
+viewport1454x696, with both scrollbars invisible; window=null. Open keys,
+full original signatures and other allowlisted metadata remain in raw JSON.
+
+target/FS5c2-kept7-row-diffs.json records empty differing-row/path lists for
+both pairs. There is NO differing leaf to name on this current provenance.
+The old full6 four-look fault/1454x684-vs1446x700 container report remains
+historically valid and its leaf remains unavailable. Current equality does
+not assign its cause, prove a UI-versus-bench owner or justify a waiver.
+Metadata/reflection/JSON writes now have execution evidence; a byte footprint
+or separate weak-release proof for observer payloads was not measured.
+
+### Readings, actual reshape calls and every excluded month count
+
+KRT1 accepted0 layout readings and printed0 held content looks. KBP1 traced
+FOUR blocks, all making0 nodes on the held redraw, with0 recurring faults:
+Build Overview twice72/414 (78 new/80 dropped, then80 new/78 dropped), and
+Policy currency twice22/201 (22 new/134 dropped, then22 new/114 dropped).
+Both Build blocks remain in the full25-month kept watch. Only the two
+Policy Money > The currency choice-month blocks are excluded as permitted
+content readings (89.1% handed back; section77 calls8 and9 each count10/11).
+
+Actual share summaries:73 calls, not full6's68. One additional Land33
+funding call and four Build44 funding/fell-short calls were exercised by
+this played state, each with one choice/month. Household84 also had72
+choices versus68 in full6. These account for all nine additional reported
+choices:1237 versus1228. No harness call or model month was inserted for
+the observer. The extra page labels and all totals are recorded in
+target/FS5c2-kept7-audit.json. Initial parser's assumed68 failed; its only
+correction was to count/check ALL raw summary lines, not change software.
+
+Totals:1087 counted of1237 choices, two content readings excluded,
+148 acting choices excluded,0 refused/no-month choices. Every call follows;
+there is no new exclusion, hidden held-still difference or repeated-fault pass.
+
+| Section/call | Counted | Choices | Readings excluded | Acted excluded | Refused |
+|---|---:|---:|---:|---:|---:|
+| 23: what reshapes Infrastructure / 1 | 14 | 14 | 0 | 0 | 0 |
+| 27: what reshapes Services / 1 | 54 | 54 | 0 | 0 | 0 |
+| 31: what reshapes the land office / 1 | 20 | 20 | 0 | 0 | 0 |
+| 33: what reshapes the funding page / 1 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (a bond) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (the vault's dollars) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 38: what reshapes the Build screen / 1 | 40 | 42 | 0 | 2 | 0 |
+| 42: what reshapes the construction page / 1 | 10 | 10 | 0 | 0 | 0 |
+| 44: what reshapes the no-deposit page (1 x Iron Mine) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-coast page (1 x Desalination Plant) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-river page (1 x Hydro Station) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-bridge page (1 x Highway Bridge) / 4 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-licence page (1 x Engineering Services Office) / 5 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-land page (10000 x House) / 6 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build funding page (1000 x Metro Line) / 7 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build fell-short page (2 x Gravel Road built, 1000 x Metro Line left) / 8 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build fell-short page (none built, 1000 x Metro Line left) / 9 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the build funding page (532 x Studio Apartments) / 10 | 1 | 1 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors list / 1 | 2 | 2 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 2 | 25 | 25 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 3 | 45 | 45 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 4 | 5 | 5 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 5 | 18 | 18 | 0 | 0 | 0 |
+| 96: what reshapes Agriculture's Investors page / 1 | 3 | 3 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 1 | 10 | 10 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 2 | 22 | 22 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 1 | 11 | 11 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 2 | 9 | 9 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 3 | 33 | 33 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 4 | 36 | 36 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 5 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 6 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 7 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 8 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 9 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 10 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 11 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 12 | 1 | 1 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 1 | 14 | 17 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 2 | 6 | 13 | 0 | 7 | 0 |
+| 63: what reshapes the city's fund / 3 | 8 | 8 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 4 | 0 | 3 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 5 | 18 | 28 | 0 | 10 | 0 |
+| 63: what reshapes the city's fund / 6 | 4 | 5 | 0 | 1 | 0 |
+| 71: what reshapes the Government Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 2 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 3 | 11 | 11 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 4 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 5 | 19 | 19 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 6 | 0 | 86 | 0 | 86 | 0 |
+| 71: what reshapes the Government Overview / 7 | 4 | 10 | 0 | 6 | 0 |
+| 74: what reshapes the Trade Overview / 1 | 7 | 7 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 2 | 21 | 26 | 0 | 5 | 0 |
+| 74: what reshapes the Trade Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 4 | 0 | 25 | 0 | 25 | 0 |
+| 74: what reshapes the Trade Overview / 5 | 27 | 27 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 6 | 9 | 9 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 1 | 24 | 24 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 2 | 39 | 39 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 3 | 44 | 44 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 4 | 55 | 55 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 5 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 6 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 7 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 8 | 10 | 11 | 1 | 0 | 0 |
+| 77: what reshapes the Policy hub / 9 | 10 | 11 | 1 | 0 | 0 |
+| 84: what reshapes Household money / 1 | 72 | 72 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 1 | 44 | 44 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 2 | 15 | 15 | 0 | 0 | 0 |
+| 95: what reshapes Policy, Research's Found page / 1 | 4 | 4 | 0 | 0 | 0 |
+| 99: what reshapes Policy, Research's Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 100: what reshapes Policy, Research's Funding / 1 | 9 | 9 | 0 | 0 | 0 |
+| Total | 1087 | 1237 | 2 | 148 | 0 |
+
+Accepted process counts remain Java+819/-809, including registry+819/-829,
+generated maps/notes/ship excluded. The accepted aa570 pick24/237 and review
+"not needed - no money, saves or threading in the diff" are carried forward;
+neither was rerun, per GO. Only these notes change after terminal.
+
+Preserved receipts: target/FS5c2-kept7-{slot,pre,pid,native,post,audit}.json,
+FS5c2-kept7-sw.log, FS5c2-kept7-row-diffs.json,
+FS5c2-kept7-exclusions.md and the two unmodified capture JSON files.
+Raw log SHA256:
+84c7dcd566794d8a9d1b9ed46db3c103d75cacc20c3b94a61bfd72a16d982e80.
+Pre receipt SHA256:
+8d122a7d167001f2906933959809c67d0049cf3815d164ac830822f511724f85.
+Post receipt SHA256:
+3249c1d760638d616a21a8ba4242a85a6eab84e1642cec0e3c22f0fc5fe63c04.
+Capture A SHA256:
+3567455a79227c372549e8fac0961b2d0b605e28883b3d456f5e898051708a79.
+Capture B SHA256:
+f458ad1499f01778826fcd72cdfd971ae6dd4c8963938b4295c0db0755fdbdee.
+All other per-input/receipt hashes are in the sealed manifests/audit.
+
+No registry removal/reclassification, new waiver, source mend, readiness
+or publication follows this green current run. KHL1 remains provisional
+ownership work. All old raw evidence/history and four vetoes are retained.
+Notes-only provisional checkpoint; no owned job remains. Waiting for the
+orchestrator's next explicit GO/decision.
