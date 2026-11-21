@@ -31,8 +31,11 @@ import java.util.Locale;
  * those months and continues to m900 (eight capital trims), with the households' cash identity checked every played month too.
  *
  * What this has to prove:
- *   1. the fixture: the plan passes the landlords orders the door does not
- *      write whole, while their homes' segment is short of doors;
+ *   1. the fixture: the plan passes the landlords orders while their homes'
+ *      segment is short of doors; before FB15 the door cut nine of them for a
+ *      down payment raised at the plan's price (m600-m706), and since FB15
+ *      (HN1-A, the order at the door's own price) it cuts or holds none for
+ *      its down payment (OrderDoorCheck 2 causes the case in one month);
  *   2. in no month is a landlord whose till holds the door's price of one of
  *      the homes the plan passed, on ground free for one, while that
  *      segment's households have no door of their own, left with none
@@ -153,11 +156,15 @@ public final class HousingDoorCheck {
                 g.getPopulationManager().getPopulation(), g.getBuildingManager().getTotalHomes(),
                 java.util.Arrays.toString(g.getBuildingManager().homesBySize()));
 
-        out.println("\n--- 1. the fixture: orders the plan passed that the door did not write whole, the segment short ---");
-        int cut = 0, held = 0;
+        out.println("\n--- 1. the fixture: orders the plan passed, the segment short; none cut for its down payment ---");
+        int shortWhole = 0, cut = 0, held = 0, forDown = 0;
         for (Ask a : asks) {
-            if (a.passed < 1 || a.built >= a.passed || a.shortfall <= 0) continue;
-            if (a.built > 0) cut++; else held++;
+            if (a.passed < 1 || a.shortfall <= 0) continue;
+            if (a.built >= a.passed) shortWhole++; else if (a.built > 0) cut++; else held++;
+            // Game.doorTrimmed()'s and the door's hold's words for the down payment the till lacked there, on an order the door
+            // did not write whole (Mortgage.Decision's own trim, inside the plan, says the same of what the till buys).
+            if (a.built < a.passed && a.line != null
+                    && (a.line.contains("its own funds put the") || a.line.contains("down payment on"))) forDown++;
         }
         for (Ask a : asks) {
             if (a.passed >= 1 && a.built < a.passed) {
@@ -166,9 +173,11 @@ public final class HousingDoorCheck {
                         a.family ? "family" : "studio", a.shortfall, a.line);
             }
         }
-        out.printf("   %d month(s) watched with an order at the door; %d cut, %d held whole%n", asks.size(), cut, held);
-        check("fixture: the plan passed the landlords an order the door did not write whole, their segment short of doors",
-                cut + held > 0);
+        out.printf("   %d month(s) watched with an order at the door; with the segment short %d written whole, %d cut, %d held"
+                + " whole, %d of them for the down payment%n", asks.size(), shortWhole, cut, held, forDown);
+        check("fixture: the plan passed the landlords orders while their segment was short of doors", shortWhole + cut + held > 0);
+        check("...and the door cut or held none of them for its down payment, raised at the door's own price (FB15, HN1-A)",
+                forDown == 0);
 
         out.println("\n--- 2. no landlord with the door's price of one in its till, on ground for one, is left with none ---");
         int stranded = 0;
