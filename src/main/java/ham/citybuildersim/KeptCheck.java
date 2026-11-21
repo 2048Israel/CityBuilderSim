@@ -28,8 +28,9 @@ import java.util.concurrent.TimeUnit;
  * twice, a picture told only half its new figures. None of it shows on the month it is written;
  * all of it shows as a page that is not the page the city would draw. So this draws the page both
  * ways at every month of a played stretch and compares them - every node's words, style, the
- * values code set, handlers, tooltip and place, and at some months every pixel - and only then
- * times the kept month.
+ * values code set, handlers, tooltip and place, and at some months every pixel. What it costs is
+ * KeptTimingCheck's since FS4, so that this harness is correctness alone (its sections 5, 10, 13, 20,
+ * 24, 28, 32, 39, 43, 52, 68, 81 and 90 are there, under their numbers, on this harness's city).
  *
  * It needs the JavaFX toolkit but no window: the page is laid out on a scene of its own
  * (ui.KeptBench). Where the toolkit cannot start (the cloud has no display) it says so in one line
@@ -48,8 +49,7 @@ import java.util.concurrent.TimeUnit;
  *      same pixels is printed);
  *   4. what reshapes the page keeps it right: a details fold opened and closed, the month card's
  *      year view on and off - each redraw after the change equals a page built new;
- *   5. it is cheap: the kept page's month (its draw, then the CSS and layout after it) is within
- *      KEPT_MONTH_MS through Timing, and below the same month built new (both printed).
+ *   5. (its cost: KeptTimingCheck's, FS4)
  *
  * Since UP2 the window's chrome too - the header and the tab rail, drawn by the real
  * refreshHeader() and refreshTabRail() on scenes of their own (the header at the window's width,
@@ -70,8 +70,7 @@ import java.util.concurrent.TimeUnit;
  *      drawn again under the pointer keeps its hover look and loses it when the pointer goes;
  *   9. a city opened forgets the chrome: the next draw makes every node new; and a draw of one pool
  *      inside a draw of another (the envelope inside the header) gives each its own nodes;
- *  10. it is cheap: the kept chrome's month (its draw, then the CSS and layout of both scenes) is
- *      within KEPT_CHROME_MS through Timing, the same month built new printed beside it.
+ *  10. (its cost: KeptTimingCheck's, FS4)
  *
  * ...and the three panels (slice 2b), each on a scene of its own: the city panel, the construction
  * panel and the inbox's list, drawn by refreshCityPanel(), refreshConstructionPanel() and
@@ -86,8 +85,7 @@ import java.util.concurrent.TimeUnit;
  *      a building opened and one demolished; the same pictures at three months; one figure spoiled
  *      by hand is seen and set right; the city panel's scroller stays where it was put; a summary
  *      row keeps its hover look under a still pointer; an inbox button loses the focus;
- *  13. the whole chrome kept (header, rail and the three panels) in one month is within
- *      KEPT_ALL_CHROME_MS through Timing, the same month built new printed beside it.
+ *  13. (the whole chrome's cost: KeptTimingCheck's, FS4)
  *
  * ...and City History (KP1), its page drawn kept from a pool of its own, the big chart and the two pins'
  * charts the screen's own and shared by the kept page and the one built new (the bench puts them back):
@@ -111,8 +109,7 @@ import java.util.concurrent.TimeUnit;
  *      People starts LIVING HERE's count-up, and on City History the left pin's, exactly at the rungs
  *      UserInterface.countsUp() allows (COUNT_UP_TOP) and always when the clock is paused; a count-up still
  *      running when a month lands past COUNT_UP_TOP is stopped;
- *  20. it is cheap: the kept City History month (its draw, then the pulse's CSS and layout) is within
- *      KEPT_HISTORY_MS through Timing, the same month built new printed beside it.
+ *  20. (its cost: KeptTimingCheck's, FS4)
  *
  * ...and Infrastructure, Services and the land office (KP2), each page drawn kept from the screen's own pool and built
  * new from an empty one (the land office's map, which both hold, put back after), four sections each - the kept page, what
@@ -125,10 +122,10 @@ import java.util.concurrent.TimeUnit;
  *  23. what reshapes it keeps it right: every page, the Freight divisions, the roads', transit, freight and railway folds
  *      opened (each has to add to the page) and closed - the redraw after each and the one after a month lands equal a
  *      page built new, and the month's redraw hands back nine in ten of the page;
- *  24. it is cheap: the kept month within KEPT_INFRASTRUCTURE_MS through Timing, the month built new printed beside it;
- *  25 to 28. the same four for Services, on every sub-page of the four systems and every fold on them (the Health overview's
+ *  24. (its cost: KeptTimingCheck's, FS4);
+ *  25 to 28. the same three for Services (28, the cost, KeptTimingCheck's), on every sub-page of the four systems and every fold on them (the Health overview's
  *      sick rate to the safety books);
- *  29 to 32. the same four for the land office, on its sides and places, the best-N count, its fold, the way of paying, and
+ *  29 to 32. the same three for the land office (32, the cost, KeptTimingCheck's), on its sides and places, the best-N count, its fold, the way of paying, and
  *      a plot bought (the receipt, the offers that came onto the shelf: all from the model); the page says if the city
  *      owns ground on a second landmass, whose table is kept since KP4 (SectorScreen.oilTable: its rows are scopes), and how many sectors wait on ground;
  *  33. the land office's other pages: the city is brought to the end of its cash by buying through the model, so that the
@@ -147,16 +144,16 @@ import java.util.concurrent.TimeUnit;
  *      mouse-entered gives it, and with the pointer off, the look its mouse-exited gives it.
  *
  * ...and Build and the construction page (KP3), each page drawn kept from the screen's own pool and built new from an
- * empty one, the same four sections as KP2's and the stopped pages, the controls and the hover:
+ * empty one, the same sections as KP2's and the stopped pages, the controls and the hover:
  *  36 to 39. the Build screen: kept on the Overview and on a city category with two orders dialled up (so that its order bar
  *      shows); shown as a page built new shows it for MONTHS months, the pixels at three and the spoil proof; reshaped by
  *      every category in turn, every ring of the two city categories with the most of them, an order dialled and cleared
  *      with a card's own steppers on a city and on a market category, a card's stats pinned and unpinned, automatic
  *      building on and off (the Overview's cards; a category's head chip) - the redraw after each and the one after a
- *      month equal a page built new; the kept month within KEPT_BUILD_MS on both pages;
- *  40 to 43. the same four for the construction page, with the city's sites held on through the months (SITE_ROWS: a
+ *      month equal a page built new (39, the cost on both pages, is KeptTimingCheck's since FS4);
+ *  40 to 43. the same three for the construction page, with the city's sites held on through the months (SITE_ROWS: a
  *      row each, a bar each on the timeline): its three tabs in turn, a building picked to demolish and a business's to buy
- *      out, two of it, a word typed in the find box and emptied; the kept month on Sites within KEPT_CONSTRUCTION_MS;
+ *      out, two of it, a word typed in the find box and emptied (43, the cost on Sites, is KeptTimingCheck's since FS4);
  *  44. the pages a build is stopped on (no deposit, coast, river, bridge, licence, land) and the run's funding and
  *      fell-short pages: each caused where the model can cause it (Game.buildRunStop() refuses the count; a run larger than
  *      the cash) and else drawn for a building that merely names the page - the line says which - drawn as an arrival and a
@@ -187,8 +184,7 @@ import java.util.concurrent.TimeUnit;
  *      the list's KEPT figure and its cards', a business's KEPT, the Income page's waterfall and the Operations page's ring exactly at
  *      the rungs UserInterface.countsUp() allows (COUNT_UP_TOP); past it nothing counts, the page is the page the month's figures
  *      draw, and a count still running from the month before is stopped;
- *  52. it is cheap: the kept list month within KEPT_SECTORS_MS and the kept month on the three business pages that weigh most within
- *      KEPT_SECTOR_MS through Timing, the same months built new printed beside them;
+ *  52. (the list's and the business pages' cost: KeptTimingCheck's, FS4);
  *  53. the controls keep the player's hand: the oil reserve's FILL and RELEASE dials (in OilViewCheck's sea town), pressed and held
  *      across a month (the same node, its thumb, its reading and its ladder's shown value), released and equal to a page built new;
  *  54. the hover: a list card, a door and the crumb under a still pointer keep their look across a kept redraw.
@@ -216,7 +212,7 @@ import java.util.concurrent.TimeUnit;
  *      focus and typed into, a month landed through the real show method - the same node, text, caret and focus - and a chip pressed under the focus; and
  *      (KP2b) Enter fired in each yield box with "4.5" typed: the same node, the text a page built new shows ("4.500"), the caret at the end, the focus kept;
  *  67. the hover: a Bank door card, a rung's name on the ladder, a Finances card and a row of the book, a fund holding's row;
- *  68. it is cheap: the kept month on the heaviest page of each within KEPT_BANK_MS, KEPT_FINANCES_MS and KEPT_FUND_MS through Timing, built new beside it.
+ *  68. (their cost: KeptTimingCheck's, FS4).
  *
  * ...and the Government tab, Trade & the World with its partners page and Policy with zoning's pages (KP6), each page drawn kept from the
  * screen's pool and built new from an empty one, the clock paused so that every month counts up:
@@ -251,8 +247,7 @@ import java.util.concurrent.TimeUnit;
  *      row's ground and a status cell; on Policy an area card and the tall rows of a payer, a course and a zone - each keeps the look its own mouse-entered
  *      gives it under a still pointer across a kept redraw, and loses it with the pointer; and the tooltips are kept: a node a month's redraw keeps keeps
  *      its own Tooltip (Kept.tip) on every page of the three screens;
- *  81. it is cheap: the kept month on Government's Overview within KEPT_GOVERNMENT_MS, on Trade's Overview and its heaviest page within KEPT_TRADE_MS and
- *      on Policy's hub and its dial-heavy pages within KEPT_POLICY_MS through Timing, built new beside it.
+ *  81. (their cost: KeptTimingCheck's, FS4).
  *
  * ...and Household money and the Rankings tab (KP7), the last two screens on the rail, so that no screen on it is rebuilt by the clock; each page drawn kept
  * from the screen's pool and built new from an empty one, the clock paused so that every month counts up:
@@ -272,8 +267,7 @@ import java.util.concurrent.TimeUnit;
  *  89. the hover and the tooltips: on Household money a vitals cell that is a door; on the Rankings tab a measure line, which keeps its hover look under a
  *      still pointer across a redraw and loses it with the pointer, and the table's picture, which lights the row under a pointer that has not moved and none
  *      once it has gone; and a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a cell open, a drawer open and every measure open;
- *  90. it is cheap: the kept month on Household money (as it opens and with a cell's books open) within KEPT_HOUSEHOLD_MS and on the Rankings tab (as it opens
- *      and with every measure unfolded) within KEPT_RANKINGS_MS through Timing, built new beside it;
+ *  90. (their cost: KeptTimingCheck's, FS4);
  *  91. (KP2b) a slider greyed while held lets go: the policy rate's dial pressed (and, the second time, dragged a step), then greyed, is not held; ungreyed,
  *      a draw with another value staged under it puts the thumb on that value and the page equals a page built new, and dropped the thumb is back;
  *      and a door card's style is set once a draw: on the Policy hub and the Taxes page, a draw with nothing changed hears no change of it;
@@ -360,9 +354,6 @@ public class KeptCheck {
 
     /** The months watched, kept against new: two years and a month, so a January and a year's turn are among them. */
     static final int MONTHS = 25;
-
-    /** The budget for the kept People page's month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC. */
-    static final double KEPT_MONTH_MS = 12;
 
     /** Where a month's log goes while month() runs it: nowhere. */
     private static final PrintStream QUIET = new PrintStream(OutputStream.nullOutputStream());
@@ -504,9 +495,6 @@ public class KeptCheck {
         Collections.sort(s);
         return s.isEmpty() ? Double.NaN : s.get(s.size() / 2);
     }
-
-    /** The budget for the kept chrome's month - the header's and the rail's draw, then the pulse's CSS and layout over both - at CITY_MONTHS, on the PC. */
-    static final double KEPT_CHROME_MS = 4;
 
     /** The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). */
     static final String[] CHROME_SCREENS = {"showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu",
@@ -744,35 +732,7 @@ public class KeptCheck {
 
         boolean nested = fx(KeptBench::nestedDrawsKeepEach);
         check("a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)", nested);
-        if (!Timing.skip("KeptCheck.chrome timing")) {
-            System.out.println("\n--- 10: what the kept chrome costs ---");
-            double[] cost = fx(() -> {
-                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double draw = bench.drawChromeKept();
-                    double[] p = bench.chromePasses();
-                    kept.add(draw + p[0] + p[1]);
-                }
-                // The same month built new: every node made again in the header and the rail, as the redraw was before UP2.
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double[] f = bench.showFreshChrome();
-                    fresh.add(f[0] + f[1] + f[2]);
-                    bench.restoreKeptChrome();
-                }
-                return new double[]{median(kept), median(fresh)};
-            });
-            System.out.printf("  the chrome's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-            boolean ok = Timing.within(cost[0], KEPT_CHROME_MS);
-            String timed = "the kept chrome's month is within KEPT_CHROME_MS (" + KEPT_CHROME_MS + " ms)";
-            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-            if (!ok) fails++;
-        }
     }
-
-    /** The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. */
-    static final double KEPT_ALL_CHROME_MS = 8;
 
     /** The panels' states, month by month: the city panel's mode, and which of its sections are open. */
     static void panelStates(KeptBench bench, int at) {
@@ -1019,52 +979,7 @@ public class KeptCheck {
         });
         if (!(boolean) hand[0]) System.out.println("  the inbox list has no action button to take the focus here: the focus check is skipped");
         else check("an inbox button that had the focus loses it at the next kept draw, as the rebuild took it", !(boolean) hand[1]);
-
-        if (!Timing.skip("KeptCheck.panels timing")) {
-            System.out.println("\n--- 13: what the whole chrome costs, kept ---");
-            double[] cost = fx(() -> {
-                bench.cityMode(true, false);
-                bench.sectionsAll(false);
-                bench.section("econ", true);
-                bench.inboxList(true, "");
-                bench.clock(true, null);
-                bench.speed(3);
-                bench.screen(CHROME_SCREENS[0]);
-                bench.drawChromeKept();
-                bench.drawPanelsKept();
-                bench.chromePasses();
-                bench.panelPasses();
-                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double draw = bench.drawChromeKept() + bench.drawPanelsKept();
-                    double[] c = bench.chromePasses(), p = bench.panelPasses();
-                    kept.add(draw + c[0] + c[1] + p[0] + p[1]);
-                }
-                // The same month built new: every node of the header, the rail and the three panels made again.
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double[] a = bench.showFreshChrome(), b = bench.showFreshPanels();
-                    fresh.add(a[0] + a[1] + a[2] + b[0] + b[1] + b[2]);
-                    bench.restoreKeptChrome();
-                    bench.restoreKeptPanels();
-                }
-                return new double[]{median(kept), median(fresh)};
-            });
-            System.out.printf("  the whole chrome's month (its draws, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-            boolean ok = Timing.within(cost[0], KEPT_ALL_CHROME_MS);
-            String timed = "the whole kept chrome's month is within KEPT_ALL_CHROME_MS (" + KEPT_ALL_CHROME_MS + " ms)";
-            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-            if (!ok) fails++;
-        }
     }
-
-    /**
-     * The budget for the kept City History month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC:
-     * twice the kept month's median, rounded up (5.0 to 8.2 ms in five runs, 6.2 between them; the same month built new
-     * 20.6 to 26.3 ms).
-     */
-    static final double KEPT_HISTORY_MS = 13;
 
     /** A hand on City History's choices: what it does to the bench, and why it cannot be shown (null when it can). */
     @FunctionalInterface
@@ -1320,7 +1235,6 @@ public class KeptCheck {
 
         crosshair(g, bench);
         countUp(g, bench);
-        historyCost(g, bench);
     }
 
     /** Months landed until the figure has moved (at most twelve): whether it did. */
@@ -1524,42 +1438,9 @@ public class KeptCheck {
         check("a count-up running when a month lands past COUNT_UP_TOP is stopped, and the figure is the month's", stopped == null);
     }
 
-    /** Section 20: what the kept City History month costs, against the same month built new. */
-    static void historyCost(Game g, KeptBench bench) throws Exception {
-        if (Timing.skip("KeptCheck.historyCost")) return;
-        System.out.println("\n--- 20: what the kept City History month costs ---");
-        double[] cost = fx(() -> {
-            // The page as it opens: the first preset, the default range, nothing folded open.
-            bench.historyPreset(0);
-            bench.historyRange(ham.citybuildersim.ChartModel.DEFAULT_RANGE);
-            bench.drawHistoryKept();
-            for (int i = 0; i < 3; i++) bench.passes();
-            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double draw = bench.drawHistoryKept();
-                double[] p = bench.passes();
-                kept.add(draw + p[0] + p[1]);
-            }
-            // The same month built new: a page made from nothing in the column, as the redraw was before KP1.
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double[] f = bench.showFreshHistory();
-                fresh.add(f[0] + f[1] + f[2]);
-                bench.restoreKeptHistory();
-            }
-            return new double[]{median(kept), median(fresh)};
-        });
-        System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-        boolean ok = Timing.within(cost[0], KEPT_HISTORY_MS);
-        String timed = "the kept City History month is within KEPT_HISTORY_MS (" + KEPT_HISTORY_MS + " ms)";
-        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-        if (!ok) fails++;
-    }
-
     /* =====================================================================
        INFRASTRUCTURE, SERVICES AND THE LAND OFFICE (KP2), sections 21 to 35: each page kept, shown as a page
-       built new shows it, kept right through what reshapes it, and cheap; then the controls and the hover.
+       built new shows it, kept right through what reshapes it (its cost KeptTimingCheck's); then the controls and the hover.
        ===================================================================== */
 
     /** The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). */
@@ -1939,67 +1820,10 @@ public class KeptCheck {
                 worst >= share);
     }
 
-    /** Section n: what the kept month on the page's home costs, against the same month built new. */
-    static void pageCost(Game g, KeptBench bench, KeptBench.Page page, int n, double budget, String dial) throws Exception {
-        pageCost(g, bench, page, n, budget, dial, 9);
-    }
-
-    /** ...the median of `samples` months, also used to calibrate the fund's two list pages. */
-    static void pageCost(Game g, KeptBench bench, KeptBench.Page page, int n, double budget, String dial, int samples) throws Exception {
-        if (Timing.skip("KeptCheck.pageCost " + page.name())) return;
-        System.out.println("\n--- " + n + ": what the kept month on " + page.name() + " costs ---");
-        double[] cost = fx(() -> {
-            bench.home(page);
-            bench.drawKept(page);
-            for (int i = 0; i < 3; i++) bench.passes();
-            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-            for (int i = 0; i < samples; i++) {
-                month(g);
-                double draw = bench.drawKept(page);
-                double[] p = bench.passes();
-                kept.add(draw + p[0] + p[1]);
-            }
-            // The same month built new: a page made from nothing in the column, as the redraw was before KP2.
-            for (int i = 0; i < samples; i++) {
-                month(g);
-                double[] f = bench.showFresh(page);
-                fresh.add(f[0] + f[1] + f[2]);
-                bench.restoreKeptPage();
-            }
-            return new double[]{median(kept), median(fresh)};
-        });
-        System.out.printf("  the page's month (its draw, CSS and layout), median of %d: kept %.1f ms, built new %.1f ms%n", samples, cost[0], cost[1]);
-        boolean ok = Timing.within(cost[0], budget);
-        String timed = "the kept month on " + page.name() + " is within " + dial + " (" + budget + " ms)";
-        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-        if (!ok) fails++;
-    }
-
     /** A choice with no side effect on the model: a hand that changes the screen's state only. */
     static Choice choice(String name, Hand hand) {
         return new Choice(name, hand);
     }
-
-    /**
-     * The budget for the kept Infrastructure month - its draw, then the pulse's CSS and layout, on the Roads page - at CITY_MONTHS, on
-     * the PC: twice the kept month's median, rounded up (2.7 to 6.3 ms in five runs, 4.4 between them; the same month built new
-     * 10.2 to 19.1 ms).
-     */
-    static final double KEPT_INFRASTRUCTURE_MS = 9;
-
-    /**
-     * The budget for the kept Services month - its draw, then the pulse's CSS and layout, on the Health overview - at CITY_MONTHS, on
-     * the PC: twice the kept month's median, rounded up (4.8 to 10.5 ms in five runs, 6.5 between them; the same month built new
-     * 9.9 to 19.5 ms).
-     */
-    static final double KEPT_SERVICES_MS = 13;
-
-    /**
-     * The budget for the kept land office month - its draw, then the pulse's CSS and layout, on the office as it opens - at CITY_MONTHS,
-     * on the PC: twice the kept month's median, rounded up (2.1 to 3.3 ms in five runs, 2.4 between them; the same month built new
-     * 9.1 to 16.0 ms).
-     */
-    static final double KEPT_LAND_MS = 5;
 
     /** Transit built from the model's own types: a Bus Network ordered if the city has none, a month played; what it found. */
     static String ensureTransit(Game g) throws Exception {
@@ -2035,7 +1859,6 @@ public class KeptCheck {
                 choice("the Ports page", b -> { b.infraOpen("Ports", "All"); return null; }),
                 choice("the Roads page again", b -> { b.infraOpen("Roads", "All"); return null; }));
         pageReshapedCaused(g, bench, page, 23, choices);
-        pageCost(g, bench, page, 24, KEPT_INFRASTRUCTURE_MS, "KEPT_INFRASTRUCTURE_MS");
     }
 
     /** The folds each sub-page of Services has, by "system/page" (a page not named has none). */
@@ -2070,7 +1893,6 @@ public class KeptCheck {
             }
         }
         pageReshapedCaused(g, bench, page, 27, choices);
-        pageCost(g, bench, page, 28, KEPT_SERVICES_MS, "KEPT_SERVICES_MS");
     }
 
     /* ============ FB12: the landmass table reached and kept (KP2b-N) ============ */
@@ -2205,7 +2027,6 @@ public class KeptCheck {
         choices.add(choice("the way of paying put back", b -> { b.landPay(vault); return null; }));
         choices.add(choice("a plot bought (its receipt, the plots that came onto the shelf)", b -> quietly(b::landBuy)));
         pageReshapedCaused(g, bench, page, 31, choices);
-        pageCost(g, bench, page, 32, KEPT_LAND_MS, "KEPT_LAND_MS");
 
         // The two other pages of the office, each an arrival that forgets the pool: drawn, then a month later. The funding page
         // needs a city that cannot pay for the best offer: the city is brought there by buying through the model (the last
@@ -2438,23 +2259,8 @@ public class KeptCheck {
 
     /* =====================================================================
        BUILD AND THE CONSTRUCTION PAGE (KP3), sections 36 to 46: each page kept, shown as a page built new shows it,
-       kept right through what reshapes it, and cheap; then the stopped pages, the controls and the hover.
+       kept right through what reshapes it (its cost KeptTimingCheck's); then the stopped pages, the controls and the hover.
        ===================================================================== */
-
-    /**
-     * The budget for the kept Build month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, on the Overview and on a
-     * city category with two orders dialled up and a card's stats pinned (the heavier of the two is the figure): twice the kept month's median,
-     * rounded up (3.8 to 6.3 ms in five runs on the Overview, 4.3 between them; 3.7 to 9.0 ms on the category, 6.0 between them; the same
-     * months built new 11.6 to 23.7 and 15.0 to 30.0 ms).
-     */
-    static final double KEPT_BUILD_MS = 12;
-
-    /**
-     * The budget for the kept construction page's month - its draw, then the pulse's CSS and layout, on the Sites tab with the city's
-     * sites on - at CITY_MONTHS, on the PC: twice the kept month's median, rounded up (1.4 to 1.9 ms in five runs, 1.7 between them; the
-     * same month built new 8.5 to 16.5 ms).
-     */
-    static final double KEPT_CONSTRUCTION_MS = 4;
 
     /** The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. */
     static final int SITE_ROWS = 6;
@@ -2659,8 +2465,6 @@ public class KeptCheck {
             return null;
         });
 
-        pageCost(g, bench, overview, 39, KEPT_BUILD_MS, "KEPT_BUILD_MS");
-        pageCost(g, bench, ordered, 39, KEPT_BUILD_MS, "KEPT_BUILD_MS");
         int heldBuild = fx(bench::sitesOn);
         check("the sites were held through the months: " + heldBuild + " on at the end (SITE_ROWS " + SITE_ROWS + ")", heldBuild >= SITE_ROWS);
     }
@@ -2728,7 +2532,6 @@ public class KeptCheck {
         }));
         choices.add(choice("the Sites tab again", b -> { b.constructionTab("Sites"); return null; }));
         pageReshapedCaused(g, bench, page, 42, choices);
-        pageCost(g, bench, page, 43, KEPT_CONSTRUCTION_MS, "KEPT_CONSTRUCTION_MS");
         int heldRows = fx(bench::sitesOn);
         check("the sites were held through the months: " + heldRows + " on at the end (SITE_ROWS " + SITE_ROWS + ")", heldRows >= SITE_ROWS);
         stopSites();
@@ -3132,21 +2935,6 @@ public class KeptCheck {
        pictures on them (the refinery's, a materials industry's, a leg's bar), the count-up the clock allows, what it costs, the
        oil reserve's dials, and the hover.
        ===================================================================== */
-
-    /**
-     * The budget for the kept Sectors list month - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC: twice the
-     * kept month's median, rounded up (8.3 to 9.2 ms in five runs, 8.8 between them; the same month built new 23.8 to 26.0 ms).
-     */
-    static final double KEPT_SECTORS_MS = 18;
-
-    /**
-     * The budget for the kept month on a business's page - its draw, then the pulse's CSS and layout - at CITY_MONTHS, on the PC, the
-     * heaviest of the three pages costed (the shops' Operations; a plain business's Income statement and wood products' Operations
-     * weigh less): twice the kept month's median, rounded up (the shops' Operations 5.1 to 7.8 ms in five runs, 7.1 between them, the
-     * same month built new 25.3 to 41.0 ms; the Income statement 2.7 to 3.9 ms, 2.9 between them, built new 10.1 to 11.5; wood products'
-     * 5.4 to 9.3 ms, 5.5 between them, built new 19.0 to 25.1).
-     */
-    static final double KEPT_SECTOR_MS = 15;
 
     /** The months the pictures are watched through (section 50): each month a repaint or not, and a page built new beside it. */
     static final int PICTURE_MONTHS = 6;
@@ -3622,17 +3410,6 @@ public class KeptCheck {
 
         sectorsPictures(g, bench, works, worksName);
         sectorsCountUp(g, bench, plain);
-
-        // 52: what the kept month costs: the list, and the three business pages that weigh most.
-        arrive(bench, list);
-        pageCost(g, bench, list, 52, KEPT_SECTORS_MS, "KEPT_SECTORS_MS");
-        for (KeptBench.Page p : List.of(
-                fx(() -> bench.sectors(possessive(shopsName) + " Operations page", Sectors.RETAIL, ops, false)),
-                fx(() -> bench.sectors(possessive(plainName) + " Income page as a statement", plain, "Income", true)),
-                fx(() -> bench.sectors(possessive(worksName) + " Operations page", works, ops, false)))) {
-            pageCost(g, bench, p, 52, KEPT_SECTOR_MS, "KEPT_SECTOR_MS");
-        }
-
         for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
         sectorsControls();
         sectorsHover(g, bench, plain);
@@ -4152,27 +3929,6 @@ public class KeptCheck {
        screen's pool and built new from an empty one - kept, shown as a page built new shows it, kept right through what reshapes
        it - then the pictures on them, the count-up the clock allows, the boxes a player types in, the hover, and what it costs.
        ===================================================================== */
-
-    /**
-     * The budget for the kept Bank month - its draw, then the pulse's CSS and layout - on the Bank's heaviest page (the Overview), on the PC: twice the
-     * kept month's median, rounded up (5.2 to 8.3 ms in five runs of the money sections alone, in a city played to month 2,100 as KeptCheck's is when
-     * it comes to them, 5.6 between them; the same month built new 15.9 to 19.2 ms).
-     */
-    static final double KEPT_BANK_MS = 12;
-
-    /**
-     * The budget for the kept Finances month on the heaviest of the two pages costed (Borrow at home, the page the auction draws, and the page with the
-     * most nodes), on the PC: twice the kept month's median, rounded up (the same five runs: Borrow 7.6 to 10.2 ms, 8.6 between them, built new 16.7 to
-     * 23.8; The book 7.2 to 9.0 ms, 8.6 between them, built new 16.0 to 21.9).
-     */
-    static final double KEPT_FINANCES_MS = 18;
-
-    /**
-     * The PC's budget for the kept month on the fund's heaviest page is twice the median in five sequential money-section runs, rounded up
-     * (FP1's Activity 41.7 to 47.1 ms, 45.8 between them, built new 93.5 to 129.7, and Search 10.1 to 10.7 ms, 10.5 between them, built new 20.3 to 23.7).
-     * Search starts with SEARCH_ROWS results and Activity with its latest twelve months and the older years shut. The five readings are in FP1-notes.md.
-     */
-    static final double KEPT_FUND_MS = 92;
 
     /** The Bank tab's pages that have two views, a Summary and a Statement. */
     private static boolean twoViews(String page) {
@@ -5995,82 +5751,7 @@ public class KeptCheck {
         }
     }
 
-    /** The page of a tab that weighs most (the nodes its first draw makes), by name: printed with the others. */
-    static KeptBench.Page heaviest(KeptBench bench, String tab, List<KeptBench.Page> pages) throws Exception {
-        KeptBench.Page best = null;
-        int most = -1;
-        StringBuilder line = new StringBuilder();
-        for (KeptBench.Page p : pages) {
-            int nodes = fx(() -> {
-                bench.home(p);
-                bench.drawKept(p);
-                bench.passes();
-                return bench.counts(p)[0];
-            });
-            line.append(line.length() == 0 ? "" : "; ").append(p.name()).append(" ").append(String.format("%,d", nodes));
-            if (nodes > most) {
-                most = nodes;
-                best = p;
-            }
-        }
-        System.out.println("  " + tab + ", nodes a page makes: " + line + " -> the heaviest is " + best.name());
-        return best;
-    }
-
-    /** Section 68: what the kept month costs on the heaviest page of the Bank, of Finances and of the fund (and the fund's Activity and Search). */
-    static void moneyCost(Game g, KeptBench bench) throws Exception {
-        KeptBench.Page bankOverview = fx(bench::bank);
-        List<KeptBench.Page> bankPages = new ArrayList<>();
-        bankPages.add(bankOverview);
-        for (String p : KeptBench.bankPages()) bankPages.add(fx(() -> bench.bank("the Bank's " + p + " page", "pages", p, false)));
-        bankPages.add(fx(() -> bench.bank("the Bank's Profit page as a statement", "pages", "Profit", true)));
-        bankPages.add(fx(() -> bench.bank("the Bank's Balance sheet as a statement", "pages", "Balance sheet", true)));
-        pageCost(g, bench, heaviest(bench, "the Bank", bankPages), 68, KEPT_BANK_MS, "KEPT_BANK_MS");
-
-        KeptBench.Page financesHub = fx(bench::finances);
-        List<KeptBench.Page> financePages = new ArrayList<>();
-        financePages.add(financesHub);
-        for (String area : KeptBench.financeAreas()) {
-            if (area.equals("The city's fund")) continue;
-            for (String p : KeptBench.financePages(area)) {
-                if (p.equals("A bond's book")) continue;
-                financePages.add(fx(() -> bench.finances(area + ", " + p, area, p)));
-            }
-        }
-        pageCost(g, bench, heaviest(bench, "Finances", financePages), 68, KEPT_FINANCES_MS, "KEPT_FINANCES_MS");
-        // ...and Borrow with an ask, which draws the auction and its picture besides.
-        KeptBench.Page borrow = fx(() -> bench.finances("Borrow at home, asking for a sixth of the cash", "Borrow", "At home"));
-        double ask = fx(() -> Math.max(g.minimumIssueSize() * 4, g.getCash() / 6));
-        fx(() -> {
-            bench.financesBorrow("Term", 10, KeptBench.borrowMoneys().get(0), ask, false, false);
-            return null;
-        });
-        pageCost(g, bench, borrow, 68, KEPT_FINANCES_MS, "KEPT_FINANCES_MS");
-
-        fx(() -> {
-            bench.fundSearch("", "All");
-            bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
-            bench.fundFoldsClosed();
-            return null;
-        });
-        List<KeptBench.Page> fundPages = new ArrayList<>();
-        for (String p : KeptBench.financePages("The city's fund")) fundPages.add(fx(() -> bench.finances("the fund's " + p, "The city's fund", p)));
-        fx(() -> {
-            bench.fundOnShow(true);
-            return null;
-        });
-        KeptBench.Page heavy = heaviest(bench, "the fund", fundPages);
-        for (KeptBench.Page p : List.of(fundPages.get(1), fundPages.get(2))) {
-            pageCost(g, bench, p, 68, KEPT_FUND_MS, "KEPT_FUND_MS", 5);
-        }
-        check("the fund's heaviest page is Search or Activity, the two costed (" + heavy.name() + ")", heavy == fundPages.get(1) || heavy == fundPages.get(2));
-        fx(() -> {
-            bench.fundOnShow(false);
-            return null;
-        });
-    }
-
-    /** Sections 55 to 68: the money screens kept. */
+    /** Sections 55 to 67: the money screens kept (68, their cost, is KeptTimingCheck's since FS4). */
     static void money(Game g, KeptBench bench) throws Exception {
         long t = System.nanoTime();
         bank(g, bench);
@@ -6087,8 +5768,6 @@ public class KeptCheck {
         moneyControls(g, bench);
         moneyHover(g, bench);
         t = took("the boxes and the hover (66, 67)", t);
-        moneyCost(g, bench);
-        took("the cost (68)", t);
     }
 
     /** What a stretch of the money sections took, in a line; the clock's reading for the next. */
@@ -6103,29 +5782,6 @@ public class KeptCheck {
        screen's pool and built new from an empty one - kept, shown as a page built new shows it, kept right through what reshapes it -
        then the controls on Policy, the count-up the clock allows, the hover, and what it costs.
        ===================================================================== */
-
-    /**
-     * The budget for the kept Government month - its draw, then the pulse's CSS and layout - on the Overview, at month 3,500 of a played city (about
-     * where KeptCheck is when it comes to the Government tab), on the PC: twice the kept month's median, rounded up (3.1 to 4.9 ms in five runs of the
-     * KP6 sections alone, 3.4 between them; the same month built new 12.0 to 20.6 ms).
-     */
-    static final double KEPT_GOVERNMENT_MS = 7;
-
-    /**
-     * The budget for the kept Trade month - its draw, then the pulse's CSS and layout - on the Overview and on the heaviest of its pages (the reserves),
-     * the larger of the two being the figure, at month 3,500 of a played city, on the PC: twice the kept month's median, rounded up (the Overview 4.3
-     * to 9.0 ms in five runs of the KP6 sections alone, 4.7 between them, the same month built new 8.3 to 14.8 ms; the reserves page 2.7 to 4.3 ms,
-     * 3.0 between them, built new 10.6 to 13.8).
-     */
-    static final double KEPT_TRADE_MS = 10;
-
-    /**
-     * The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit
-     * page and the policy rate's), the largest of them being the figure, at month 3,500 of a played city, on the PC: twice the kept month's median,
-     * rounded up (the hub 4.3 to 5.2 ms in five runs of the KP6 sections alone, 4.6 between them, built new 9.7 to 14.9 ms; Profit 2.0 to 3.3 ms, 2.1
-     * between them, built new 6.9 to 8.9; the policy rate 4.2 to 7.2 ms, 4.5 between them, built new 15.9 to 26.5).
-     */
-    static final double KEPT_POLICY_MS = 10;
 
     /**
      * The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. The pages of these screens rank what the
@@ -7609,27 +7265,7 @@ public class KeptCheck {
         }
     }
 
-    /** Section 81: what the kept month costs on the Government Overview, on Trade's Overview and its heaviest page, and on Policy's hub and its dial-heavy pages. */
-    static void kp6Cost(Game g, KeptBench bench) throws Exception {
-        fx(() -> {
-            bench.clock(false, null);
-            bench.speed(0);
-            return null;
-        });
-        pageCost(g, bench, fx(bench::government), 81, KEPT_GOVERNMENT_MS, "KEPT_GOVERNMENT_MS");
-
-        List<KeptBench.Page> tradePages = new ArrayList<>();
-        for (String p : KeptBench.tradePages()) tradePages.add(fx(() -> bench.trade("the Trade tab's " + p + " page", p)));
-        pageCost(g, bench, tradePages.get(0), 81, KEPT_TRADE_MS, "KEPT_TRADE_MS");
-        KeptBench.Page heavy = heaviest(bench, "Trade", tradePages);
-        if (heavy != tradePages.get(0)) pageCost(g, bench, heavy, 81, KEPT_TRADE_MS, "KEPT_TRADE_MS");
-
-        pageCost(g, bench, fx(bench::policy), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
-        pageCost(g, bench, fx(() -> bench.policy("Policy, Taxes' Profit page", "Taxes", "Profit")), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
-        pageCost(g, bench, fx(() -> bench.policy("Policy, Money's policy rate page", "Money", "The policy rate")), 81, KEPT_POLICY_MS, "KEPT_POLICY_MS");
-    }
-
-    /** Sections 69 to 81: Government, Trade & the World and Policy kept. */
+    /** Sections 69 to 80: Government, Trade & the World and Policy kept (81, their cost, is KeptTimingCheck's since FS4). */
     static void screensKP6(Game g, KeptBench bench) throws Exception {
         System.out.printf("%n=== Government, Trade & the World and Policy (KP6): a city at month %d ===%n", g.getMonth());
         long t = System.nanoTime();
@@ -7652,9 +7288,6 @@ public class KeptCheck {
         kp6Hover(g, bench);
         kp6Tips(g, bench);
         t = tookWith("the hover and the tooltips (80)", t, c);
-        c = checks;
-        kp6Cost(g, bench);
-        tookWith("the cost (81)", t, c);
         // What the sections put in the city is taken out: the zones.
         fx(() -> {
             for (String s : bench.policyZoned()) bench.policyUnzone(s);
@@ -8550,22 +8183,6 @@ public class KeptCheck {
        clock on every rail screen (88, above), the hover and the tooltips, and what the kept month costs.
        ===================================================================== */
 
-    /**
-     * The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family
-     * cell's books open (the larger of the two being the figure), at month 3,400 to 4,000 of a played city (about where KeptCheck is when it comes to
-     * this page), on the PC: twice the kept month's median, rounded up (the page as it opens 2.7 to 3.1 ms in five runs of the KP7 sections alone, 2.8
-     * between them, the same month built new 15.9 to 17.7 ms; with a cell open 3.6 to 7.0 ms, 3.8 between them, built new 19.2 to 29.7).
-     */
-    static final double KEPT_HOUSEHOLD_MS = 8;
-
-    /**
-     * The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded
-     * (Browse all: a line a measure; the larger of the two being the figure), at month 3,400 to 4,000 of a played city, on the PC: twice the kept
-     * month's median, rounded up (the tab as it opens 2.6 to 3.0 ms in five runs of the KP7 sections alone, 2.8 between them, the same month built new
-     * 9.0 to 10.9 ms; unfolded 3.1 to 3.5 ms, 3.3 between them, built new 16.8 to 20.3).
-     */
-    static final double KEPT_RANKINGS_MS = 7;
-
     /** Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. */
     static void kp7Household(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== Household money (KP7) ===");
@@ -8853,33 +8470,7 @@ public class KeptCheck {
         }
     }
 
-    /**
-     * Section 90: what the kept month costs on Household money - as it opens and with the first family cell's books open - and on the Rankings tab - as
-     * it opens and with every measure unfolded - against the same month built new.
-     */
-    static void kp7Cost(Game g, KeptBench bench) throws Exception {
-        fx(() -> {
-            bench.clock(false, null);
-            bench.speed(0);
-            return null;
-        });
-        String cell = fx(bench::householdCells).get(0);
-        KeptBench.Page money = fx(bench::householdMoney);
-        KeptBench.Page open = fx(() -> bench.withHome(money, "Household money with the cell " + cell + " open", () -> bench.householdCell(cell)));
-        pageCost(g, bench, money, 90, KEPT_HOUSEHOLD_MS, "KEPT_HOUSEHOLD_MS");
-        pageCost(g, bench, open, 90, KEPT_HOUSEHOLD_MS, "KEPT_HOUSEHOLD_MS");
-        KeptBench.Page rankings = fx(bench::rankings);
-        KeptBench.Page unfolded = fx(() -> bench.withHome(rankings, "the Rankings tab with every measure open", () -> bench.rankingsBrowseAll(true)));
-        pageCost(g, bench, rankings, 90, KEPT_RANKINGS_MS, "KEPT_RANKINGS_MS");
-        pageCost(g, bench, unfolded, 90, KEPT_RANKINGS_MS, "KEPT_RANKINGS_MS");
-        fx(() -> {
-            bench.home(money);
-            bench.home(rankings);
-            return null;
-        });
-    }
-
-    /** Sections 82 to 90: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88). */
+    /** Sections 82 to 89: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88); 90, their cost, is KeptTimingCheck's since FS4. */
     static void screensKP7(Game g, KeptBench bench) throws Exception {
         System.out.printf("%n=== Household money, the Rankings tab and the clock on every rail screen (KP7): a city at month %d ===%n", g.getMonth());
         long t = System.nanoTime();
@@ -8896,9 +8487,6 @@ public class KeptCheck {
         kp7Hover(g, bench);
         kp7Tips(g, bench);
         t = tookWith("the hover and the tooltips (89)", t, c);
-        c = checks;
-        kp7Cost(g, bench);
-        tookWith("the cost (90)", t, c);
     }
 
     /* ----- a slider greyed while held (91) ----- */
@@ -10054,7 +9642,14 @@ public class KeptCheck {
             System.out.println("skipped: the JavaFX toolkit cannot start here (" + down + "); the page needs it to be laid out");
             System.exit(0);
         }
-        GameFiles files = GameFiles.scratch("keptcheck");
+        Game g = playedCity(GameFiles.scratch("keptcheck"));
+        KeptBench bench = fx(() -> new KeptBench(g));
+        System.out.printf("a city played to month %d: %,d people%n", g.getMonth(), g.getPopulationManager().getPopulation());
+        mainSections(g, bench);
+    }
+
+    /** KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor. KeptTimingCheck costs its pages on the same city. */
+    static Game playedCity(GameFiles files) throws Exception {
         Game g = fx(() -> LongPlaytest.probeCity(files, null));
         // WG1-D (2026-11-10) set this city's floor at the going rate for section 64's desk, and WG1-R (2026-11-18) found 64 needs no pin: on the default floor
         // (.85 of the going rate, a new city's) the desk's DeskBars, PathChart, BuybackLadder and Columns redraw in 6 of 6 months and the DeskCurve hands back 6 of
@@ -10071,9 +9666,11 @@ public class KeptCheck {
             LongPlaytest.probePlay(g, CITY_MONTHS);
             return null;
         });
-        KeptBench bench = fx(() -> new KeptBench(g));
-        System.out.printf("a city played to month %d: %,d people%n", g.getMonth(), g.getPopulationManager().getPopulation());
+        return g;
+    }
 
+    /** Every section, in order, on the played city. */
+    static void mainSections(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 1 and 2: the kept page, month after month, against a page built new ---");
         // The first draw makes the page; it is laid out before the months start.
         int firstMade = fx(() -> {
@@ -10212,32 +9809,6 @@ public class KeptCheck {
             });
             if (d != null) System.out.println("  " + c[0] + ": " + d);
             check(c[0] + ": the redraw and the next equal a page built new", d == null);
-        }
-
-        if (!Timing.skip("KeptCheck people month")) {
-            System.out.println("\n--- 5: what the kept month costs ---");
-            double[] cost = fx(() -> {
-                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double draw = bench.drawKept();
-                    double[] p = bench.passes();
-                    kept.add(draw + p[0] + p[1]);
-                }
-                // The same month built new: a page made from nothing in the column, as the redraw was before UP4.
-                for (int i = 0; i < 9; i++) {
-                    month(g);
-                    double[] f = bench.showFresh();
-                    fresh.add(f[0] + f[1] + f[2]);
-                    bench.restoreKept();
-                }
-                return new double[]{median(kept), median(fresh)};
-            });
-            System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-            boolean ok = Timing.within(cost[0], KEPT_MONTH_MS);
-            String timed = "the kept month is within KEPT_MONTH_MS (" + KEPT_MONTH_MS + " ms)";
-            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-            if (!ok) fails++;
         }
 
         chrome(g, bench);
