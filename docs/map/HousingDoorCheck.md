@@ -1,4 +1,4 @@
-# HousingDoorCheck.java - 389 lines · 6 methods · 5 constants · harnesses
+# HousingDoorCheck.java - 393 lines · 6 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 
 | line | section |
 |---:|---|
-| 301 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
+| 305 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
 
 ## Constants
 
@@ -83,23 +83,23 @@
 | 86 | `boolean shortBeforeOwners` |  |
 | 88 | `boolean quoteShut` | The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). |
 | 91 | `static Ask pending` |  |
-| 306 | `static boolean stuck` |  |
+| 310 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 336 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
+| 54 | 340 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
 | 67 | 4 | `static void check(String label, boolean ok)` |  |
 | 73 | 17 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
 | 94 | 167 | `public static void main(String[] args) throws Exception` |  |
-| 263 | 30 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
-| 295 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
+| 263 | 34 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
+| 299 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 301-389)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 305-393)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 308 | 11 | `static void run(Game g, int months, Runnable after)` |  |
-| 320 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
+| 312 | 11 | `static void run(Game g, int months, Runnable after)` |  |
+| 324 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
 

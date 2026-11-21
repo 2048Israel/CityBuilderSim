@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**235 harness files, 26,878 labelled assertions.** AllChecks runs 235 of them.
+**235 harness files, 26,882 labelled assertions.** AllChecks runs 235 of them.
 
 ## Which harnesses read which class
 
@@ -100,13 +100,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck, RecipeCheck |
@@ -180,7 +180,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [InputTimeline](map/InputTimeline.md) | ReplayCheck |
 | [InterchangeGround](map/InterchangeGround.md) | JunctionCheck, MapCheck |
 | [InterimLoan](map/InterimLoan.md) | BankFailureCheck, CreditCheck, LongPlaytest |
-| [Investor](map/Investor.md) | BankFailureCheck, BuildingStackCheck, CreditCheck, ER1Check, FittingCheck, OrderDoorCheck, ResearchCheck |
+| [Investor](map/Investor.md) | BankFailureCheck, BuildingStackCheck, CreditCheck, CreditCrunchCheck, ER1Check, FittingCheck, OrderDoorCheck, ResearchCheck |
 | [IslandChip](map/IslandChip.md) | **none** |
 | [IslandRailRenders](map/IslandRailRenders.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
@@ -6142,7 +6142,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2011 the issue and the fair buyback value read the same curve
   - L2015 ...and the buyback takes it off the books at that price
 
-## CreditCrunchCheck.java - 28 labelled assertions
+## CreditCrunchCheck.java - 31 labelled assertions
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
@@ -6158,38 +6158,42 @@ _(this harness does not label its checks through a helper - it prints its findin
 > for the down payment, which buys nothing when the bank lends nothing; HN1's
 > ...
 
-- **L120 1. the door's capital test asked first says what the door says, and records nothing**
-  - L126 fixture: the bank's leverage requirement is the larger and it stands in its band
-  - L130 in the band the test asked first says the bank has no capital for the mortgage
-  - L131 ...and records no refusal
-  - L132 ...where the door refuses the same mortgage for the bank's capital
-  - L138 fixture: over its target the bank has finite room for insured growth (BF1)
-  - L140 over the target a mortgage within the room: the test says no shortage, and the door writes it
-  - L142 ...one past the room: the test says short, and the door refuses it for the bank's capital
-  - L148 while the risk weights bind, the insured mortgage is not rationed: no shortage
-  - L152 ...and with the lender shut the door's no is not the capital's: no shortage
-  - L155 ...and nothing to borrow is no shortage
-  - L159 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
-  - L165 ...nor one past its default point: no shortage
-- **L169 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
-  - L171 in the band the owners are asked for what the till lacks on the whole order
-  - L173 ...and a banned landlord's owners for what it lacks on the down payment, as before
-  - L175 ...as are the owners of a landlord the risk weights leave unrationed
-  - L188 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
-  - L191 ...so the owners are asked for the down payment only
-  - L193 ...and the door writes the mortgage on the rest
-- **L308 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
-  - L319 fixture: the city played every month of the crunch
-  - L320 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
-  - L322 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
-  - L324 fixture: the landlords asked for homes the bank had no capital to lend on
-  - L326 fixture: the homes cut left the placement room for MARGIN households and less than one house more
-- **L329 3. the owners put in what the till lacked, homes are built, nobody is left with no home**
-  - L340 the landlords' owners were asked, and put money in, while the bank was short
-  - L341 ...and homes were built in the crunch
-  - L342 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
-  - L356 the door trimmed an order the owners' issue did not cover, first refused for the bank's capital
-  - L357 ...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
+- **L123 1. the door's capital test asked first says what the door says, and records nothing**
+  - L129 fixture: the bank's leverage requirement is the larger and it stands in its band
+  - L133 in the band the test asked first says the bank has no capital for the mortgage
+  - L134 ...and records no refusal
+  - L135 ...where the door refuses the same mortgage for the bank's capital
+  - L141 fixture: over its target the bank has finite room for insured growth (BF1)
+  - L143 over the target a mortgage within the room: the test says no shortage, and the door writes it
+  - L145 ...one past the room: the test says short, and the door refuses it for the bank's capital
+  - L151 while the risk weights bind, the insured mortgage is not rationed: no shortage
+  - L155 ...and with the lender shut the door's no is not the capital's: no shortage
+  - L158 ...and nothing to borrow is no shortage
+  - L162 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
+  - L168 ...nor one past its default point: no shortage
+- **L172 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
+  - L174 in the band the owners are asked for what the till lacks on the whole order
+  - L176 ...and a banned landlord's owners for what it lacks on the down payment, as before
+  - L178 ...as are the owners of a landlord the risk weights leave unrationed
+  - L191 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
+  - L194 ...so the owners are asked for the down payment only
+  - L196 ...and the door writes the mortgage on the rest
+- **L311 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
+  - L322 fixture: the city played every month of the crunch
+  - L323 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
+  - L325 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+  - L327 fixture: the landlords asked for homes the bank had no capital to lend on
+  - L329 fixture: the homes cut left the placement room for MARGIN households and less than one house more
+- **L332 3. the owners put in what the till lacked, homes are built, nobody is left with no home**
+  - L343 the landlords' owners were asked, and put money in, while the bank was short
+  - L344 ...and homes were built in the crunch
+  - L345 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
+  - L356 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
+- **L382 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
+  - L406 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
+  - L408 fixture: the owners were asked for what the till lacked on the order, and their issue fell short of it
+  - L410 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
+  - L412 ...and is not left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
@@ -23247,7 +23251,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L347 an order posted after the reload queues behind the saved ones at its price
   - L350 a book saved with nothing on it loads empty, with no last price
 
-## OrderDoorCheck.java - 11 labelled assertions
+## OrderDoorCheck.java - 12 labelled assertions
 
 > An order at the door (FB15, 2026-11-20): a landlord's order sized, and its
 > owners asked, at the price buildFor() charges; a project's order the lender
@@ -23263,20 +23267,21 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the door on the bank's capital, where HN1 had made the landlords' a halving.
 > ...
 
-- **L196 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper**
-  - L207 the planner's price of one is under the door's: the yard is short, the materials bought in
-  - L209 ...by more than the door's tolerance on the down payment
-- **L211 2. HN1-A: a landlord's order at the door's own price**
-  - L222 fixture: the owners put in the order's down payment, all the till held at the order (
-  - L225 the order's price of one is the door's
-  - L226 the order's price of two is the door's
-  - L234 the build card's lender test reads the door's price of one, as the order does
-- **L237 3. HN1-B: a project's order the lender says no to, asked again of half**
-  - L257 fixture: ground for six, the slice carried all six, and the till at the door held one at the door's price but not six
-  - L259 fixture: the bank's capital rule lets no borrower's debt grow this month
-  - L264 ...paid from the till at the door's price, with no loan
-  - L265 ...and the shopkeeper is not left marked as refused for capital, which the playtest counts
-  - L273 from the other side, a till short of one at the door is held whole, in the bank's words
+- **L199 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper**
+  - L210 the planner's price of one is under the door's: the yard is short, the materials bought in
+  - L212 ...by more than the door's tolerance on the down payment
+- **L214 2. HN1-A: a landlord's order at the door's own price**
+  - L225 fixture: the owners put in the order's down payment, all the till held at the order (
+  - L228 the order's price of one is the door's
+  - L229 the order's price of two is the door's
+  - L237 the build card's lender test reads the door's price of one, as the order does
+- **L240 3. HN1-B: a project's order the lender says no to, asked again of half**
+  - L260 fixture: ground for six, the slice carried all six, and the till at the door held one at the door's price but not six
+  - L262 fixture: the bank's capital rule lets no borrower's debt grow this month
+  - L267 ...paid from the till at the door's price, with no loan
+  - L268 ...and the shopkeeper is not left marked as refused for capital, which the playtest counts
+  - L281 with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)
+  - L289 from the other side, a till short of one at the door is held whole, in the bank's words
 
 ## OrderSearchCheck.java - 45 labelled assertions
 
@@ -23341,9 +23346,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L739 a gap past the int range is the plots, not a wrapped order
   - L740 ...and a building with no capacity to count is one (or none where there is no ground)
   - L742 a building the city has no ground for is none, whatever the gap
-  - L853 every trim and refusal in
-  - L854 every mortgage in
-  - L855 no order in
+  - L856 every trim and refusal in
+  - L857 every mortgage in
+  - L858 no order in
 
 ## OutsideCheck.java - 105 labelled assertions
 
