@@ -1,8 +1,8 @@
-# gate of Merge batch/GB5: the gate box runs the harnesses that need a display (FS4's finding, 2026-11-20): the box is headless, so KeptCheck skips there and no gate since GB1 has judged it; Xvfb (recommended) around the box's suite, timing and nightly, and a check that no display harness skips there, 0.9.177
+# gate of Merge batch/TN1: the trains run again (Jerus, 2026-11-20: "trains no longer show up ... sometimes only briefly for a few years and then disappear forever"): print the railed tonnes, the routes and the fit on slot 10's copy and a playtest by decade, then mend the cause (not beside FS6, PX2), 0.9.178
 # date: 2026-11-21
 # earth-2.bin: named
 # nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
-# suite: 222 harnesses run in 867s: 211 passed, 11 failed
+# suite: 225 harnesses run in 638s: 215 passed, 10 failed
 MortgageCheck | exit 1
 MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
 MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
@@ -28,9 +28,6 @@ ReloadCheck | 2 FAILED
 MapCheck | exit 1
 MapCheck | ...and every building drawn, one for one                                       FAIL
 MapCheck | 1 FAILED
-KeptCheck | exit 1
-KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
 DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL
@@ -41,6 +38,9 @@ Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.3, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.154134 != 378.194773
 Forms1900Check | 2 FAILED
+KeptCheck | exit 1
+KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
+KeptCheck | 1 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED

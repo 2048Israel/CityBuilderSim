@@ -5107,7 +5107,8 @@ public final class CityMap {
      * @param y       the point's y in plots where the line leaves the city's ground
      * @param bearing the gateway's bearing in degrees
      * @param arm     the index in its net's arms of the arm the line leaves the city's ground from (FX2)
-     * @param way     the degrees the line runs out along (x = cos, y = sin): the gateway's bearing, or the arm's heading times 45
+     * @param way     the degrees the line runs out along (x = cos, y = sin): the gateway's bearing, or the arm's heading times 45 - for the
+     *                railway, failing both, that heading turned CityRuns.RAIL_CORNER 45-degree steps either side (TN1)
      * @param reach   the plots of dry ground along way from (x, y), at most WORLD_REACH
      */
     public record WorldLine(int net, double x, double y, int bearing, int arm, int way, double reach) { }
@@ -5151,7 +5152,7 @@ public final class CityMap {
         return out;
     }
 
-    /** One way out of the city from an arm at its edge: the score it is tried by, the arm, 0 for the gateway's bearing or 1 for the arm's heading, the degrees, and the edge plot. */
+    /** One way out of the city from an arm at its edge: the score it is tried by, the arm, 0 for the gateway's bearing, 1 for the arm's heading, 2 and 3 for that heading turned a railway corner one way and the other (TN1), the degrees, and the edge plot. */
     private record WayOut(double score, int arm, int which, int way, long ex, long ey) { }
 
     /**
@@ -5164,7 +5165,8 @@ public final class CityMap {
      * lies within 90 degrees of the arm's heading, scored 1, and the arm's own heading, scored by how near it lies to
      * the bearing - tried best score first (then the lower arm, then the bearing before the heading); the first that
      * runs TrainSchedule.WORLD_PLOTS plots over dry ground wins, and its line starts in the middle of the edge plot
-     * and runs on over dry ground (dryRun()) up to WORLD_REACH.
+     * and runs on over dry ground (dryRun()) up to WORLD_REACH. A railway's arm (TN1) offers too its heading turned
+     * CityRuns.RAIL_CORNER 45-degree steps either side, tried after every way above.
      */
     private WorldLine worldLine(CityRuns.Net n, int gateway, List<WorldLine> out) {
         if (!n.started || (n.kind == CityRuns.HIGHWAYS && !runs.highwaysReach())) return null;
@@ -5198,6 +5200,20 @@ public final class CityMap {
             if (apart > 180) apart = 360 - apart;
             if (apart < 90) offers.add(new WayOut(1, i, 0, gateway, ex, ey));
             offers.add(new WayOut(Math.cos(Math.toRadians(apart)), i, 1, heading, ex, ey));
+            // (TN1) The railway's arm also offers its heading turned a corner of its own (CityRuns.RAIL_CORNER 45-degree steps) either side, scored
+            // by how near each lies to the bearing less 3 - below every offer above, whose scores are never under -1 - so a line found before is
+            // found again, and these are tried only where no arm's bearing or heading runs over dry ground: a fjord city's arm at its edge, the
+            // land beyond broken by water within WORLD_PLOTS straight on and toward the gateway, had no line and no train (Bergen, from its
+            // first station to month 1,322: 37 plots dry straight on, 48 toward the gateway, 107 a corner to the side).
+            if (n.kind == CityRuns.RAILWAY) {
+                for (int turn = 1; turn <= CityRuns.RAIL_CORNER; turn++) {
+                    for (int side = -1; side <= 1; side += 2) {
+                        int way = Math.floorMod(heading + side * 45 * turn, 360), off = Math.floorMod(way - gateway, 360);
+                        if (off > 180) off = 360 - off;
+                        offers.add(new WayOut(Math.cos(Math.toRadians(off)) - 3, i, side < 0 ? 2 : 3, way, ex, ey));
+                    }
+                }
+            }
         }
         offers.sort((p, q) -> p.score() != q.score() ? Double.compare(q.score(), p.score())
                 : p.arm() != q.arm() ? Integer.compare(p.arm(), q.arm()) : Integer.compare(p.which(), q.which()));
@@ -5277,7 +5293,9 @@ public final class CityMap {
      * YARD_TRACKS, and each of the works' sidings (CityRuns.sidings()) has one
      * more route, TrainSchedule.Route.toWorks(): the world line, the main line
      * and straight into the siding's end, no yard - a bulk unit train's alone.
-     * None without the railway's world line. Since FX5 (0.8.18) each route is
+     * Without the railway's world line (TN1) each route starts instead at the
+     * portal where the main line ends (portal()), faded in over PORTAL_FADE
+     * plots of its track; none with no main arm laid. Since FX5 (0.8.18) each route is
      * rounded at its turns (TrackCurves.round(), TrackCurves.RADIUS plots, the
      * world line's part ending where the rounded route leaves its first
      * straight) and each siding's ladder is TrackCurves.ladder()'s S, so no
@@ -5301,9 +5319,20 @@ public final class CityMap {
         java.util.Set<Long> sidingPlots = new java.util.HashSet<>();
         WorldLine line = null;
         for (WorldLine l : worldLines()) if (l.net() == CityRuns.RAILWAY) line = l;
-        if (line != null) {
-            double r = Math.toRadians(line.way());
-            double fx = line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS, fy = line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS;
+        // (TN1) With no line to the world, the trains come out of the ground at the main line's end (portal()): every route starts there.
+        long[] portal = line == null ? portal() : null;
+        if (line != null || portal != null) {
+            double fx, fy, wx, wy;
+            if (line != null) {
+                double r = Math.toRadians(line.way());
+                fx = line.x() + Math.cos(r) * TrainSchedule.WORLD_PLOTS;
+                fy = line.y() + Math.sin(r) * TrainSchedule.WORLD_PLOTS;
+                wx = line.x();
+                wy = line.y();
+            } else {
+                fx = wx = portal[0] + 0.5;
+                fy = wy = portal[1] + 0.5;
+            }
             long[] station = runs.freightStation();
             List<long[]> yards = runs.yards();
             // (MF1) A yard idle (its building gone, YARD_IDLE_MONTHS) gets no trains: the routes are the yards the model asks for.
@@ -5314,7 +5343,7 @@ public final class CityMap {
                 boolean isStation = station != null && Arrays.equals(station, yard);
                 int ty = yardTypeOf(i);
                 int tracks = ty < 0 ? TileRaster.YARD_TRACKS : TileRaster.tracksOf(types[ty]);
-                trainRoutesInto(out, i, isStation, yard, way, fx, fy, line.x(), line.y(), yardRail(runs, yard), tracks, found,
+                trainRoutesInto(out, i, isStation, yard, way, fx, fy, wx, wy, yardRail(runs, yard), tracks, found,
                         TileRaster.wagonTracksOn(wagons, tracks));
             }
             // A bulk unit train runs from the world line along the main line straight into a works' siding, no yard (FR7 slice 3).
@@ -5323,14 +5352,16 @@ public final class CityMap {
                 if (way == null) continue;
                 List<double[]> pts = new ArrayList<>();
                 pts.add(new double[] { fx, fy });
-                pts.add(new double[] { line.x(), line.y() });
+                addNew(pts, wx, wy);
                 for (int k = 0; k < way[0].length; k++) addNew(pts, way[0][k], way[1][k]);
                 // The siding holds what it is long, from where it leaves the main line to its end (siding[5] plots, FX5 slice T).
                 out.add(routeToWorks(pts, found, siding[5]));
             }
             // ...and into each works' siding a district's plan laid (MF1): the same way, the main line to the railway plot the siding meets, then the
             // siding's corners to its shed, rounded as every route is, so a train rides the arcs the tiles draw.
-            planSidingRoutes(out, found, sidingPlots, fx, fy, line.x(), line.y());
+            planSidingRoutes(out, found, sidingPlots, fx, fy, wx, wy);
+            // ...a train fades in over PORTAL_FADE plots of track from the portal, not over the first straight of the way, as it does over a world line.
+            if (portal != null) for (int k = 0; k < out.size(); k++) out.set(k, fromPortal(out.get(k)));
         }
         trainBends = drawnBends(found, sidingPlots);
         trainRoutesCache = out;
@@ -5338,6 +5369,37 @@ public final class CityMap {
         trainRoutesWagons = wagons;
         trainRoutesSidings = sidingsNow;
         return out;
+    }
+
+    /** How far a train fades in from the portal at the main line's end, where the railway has no line to the world (TN1), in plots: 2, about 60 m - a locomotive and a wagon or two out of the tunnel's mouth. */
+    public static final double PORTAL_FADE = 2;
+
+    /**
+     * The portal (TN1): the plot where the main line ends - the main arm's end
+     * (CityRuns.mainArm(): the gate arm while no line leaves the city), where
+     * that arm has steps - which the trains come out of and go back into when
+     * the railway has no line to the world; null with no main arm, or none
+     * laid. WHY. A line to the world needs an arm of the railway's spine at
+     * the city's edge with dry ground beyond it, and a city that buys the land
+     * round its line can lose it for good: on Jerus's city at month 1,204
+     * (0.9.172, 14 km from Bergen) every heading from the railway's hub
+     * crosses the city's own fjords before its edge, the gate arm and the next
+     * wait at that water and the third joined the net, and a station and 29
+     * trains of tonnes a month had no route, every train unfit, from the month
+     * the line went. Bergen's own railway leaves the city it hems in through
+     * tunnels; so do these trains, where the main line ends.
+     */
+    long[] portal() {
+        int arm = runs.mainArm();
+        if (arm < 0) return null;
+        CityRuns.Arm a = runs.rail().arms.get(arm);
+        return a.steps > 0 ? new long[] { a.x, a.y } : null;
+    }
+
+    /** A route from the portal (TN1): the route itself, faded in over PORTAL_FADE plots of its track (no more than its length) rather than over the first straight of its way. */
+    private static TrainSchedule.Route fromPortal(TrainSchedule.Route r) {
+        return new TrainSchedule.Route(r.yard(), r.station(), r.siding(), r.works(), r.xs(), r.ys(), r.along(), Math.min(PORTAL_FADE, r.length()),
+                r.holds(), r.enters());
     }
 
     /**
@@ -5532,8 +5594,9 @@ public final class CityMap {
         if (j < 0 || j == n - 1) return;
         List<double[]> pts = new ArrayList<>();
         pts.add(new double[] { fx, fy });
-        pts.add(new double[] { wx, wy });
-        for (int i = 0; i <= j; i++) pts.add(new double[] { xs[i], ys[i] });
+        // addNew (TN1): a portal's route (trainRoutes()) starts at the way's first point itself, which a world line's two points never are.
+        addNew(pts, wx, wy);
+        for (int i = 0; i <= j; i++) addNew(pts, xs[i], ys[i]);
         double ux = Math.signum(xs[j + 1] - xs[j]), uy = Math.signum(ys[j + 1] - ys[j]);
         if (ux != 0 && uy != 0) {
             // A 45-degree way in: on to the anchor, no siding.
@@ -5702,7 +5765,7 @@ public final class CityMap {
                 if (to == null) continue;
                 List<double[]> pts = new ArrayList<>();
                 pts.add(new double[] { fx, fy });
-                pts.add(new double[] { lx, ly });
+                addNew(pts, lx, ly);
                 for (int k = 0; k < to[0].length; k++) addNew(pts, to[0][k], to[1][k]);
                 double holds = 0;
                 for (int k = 1; k < way.length; k++) {

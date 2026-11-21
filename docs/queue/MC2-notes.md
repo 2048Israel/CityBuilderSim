@@ -370,8 +370,8 @@ No R1g/PW1 hunks or KeptCheck rows were edited.
 
 The merged model includes FB15's trace changes, so MC2m is historical evidence.
 A final ensemble must compare the merged final model with the newest baseline,
-currently `docs/ensemble/0.9.177.md`, on the orchestrator's GO. No ensemble or
-dry run has been started during recovery.
+currently `docs/ensemble/0.9.177.md`, on the orchestrator's GO. Before final-ensemble GO, no ensemble or
+dry run had been started during recovery.
 
 
 ### Recovery checks and handoff
@@ -421,9 +421,44 @@ YoungBankCheck
 ```
 
 The orchestrator authorized only `--fast` and sequential focused checks while
-TN1's full gate runs on the gate box. No full pick, LongPlaytest, ensemble or
+TN1's full gate runs on the gate box. Before final-ensemble GO, no full pick, LongPlaytest, ensemble or
 dry run was run during recovery; the historical full pick is not presented
 as a fresh verdict on .177. The current pick is not ALL and MC2 changes no
 publisher file relative to main, so contract 5.5 requires no dry run. The
 provisional marker remains; final ensemble GO and then readiness GO are
 requested from the orchestrator, with TN1's gate first.
+
+
+## Final ensemble (MC2c2-final)
+
+The orchestrator authorized the final merged model at `fe42a4567`, fresh label
+`MC2c2-final`, against `docs/ensemble/0.9.177.md`. It ran on **gatebox**, eight
+at once under the normal gate/nightly priority and yield rules, with empty
+JAVA_OPTS. No fallback or restart occurred. The owned launcher stayed alive
+until its normal exit 0; no other JVM was run by this session meanwhile.
+
+**80/80 runs in 14.1 minutes; 25/26 counted criteria; M1/F1 hard 10/10 PASS;
+no changed verdicts versus .177; no missing or short runs.** All five policies
+had zero failed or unread money audits and zero runs with a LongPlaytest
+finding; pairing was 64/64. The informational A2 inflation-spell criterion
+remains FAIL: longest spells have median 20 months [5 to 39], against the
+baseline's 15 [5 to 39]. H1 remains retired and excluded from the count. All
+other counted criteria pass. The full score table and raw summary are in
+the committed `docs/ensemble/MC2.md`; its publication version is `{next}`,
+while its source snapshot and comparison retain their actual .177 provenance.
+
+Remote evidence folder:
+`/home/jerus/cbs/tools/fe42a4567b200f98e1e4fcceee63ced7afbd4dbd/target/ensemble/MC2c2-final`.
+The copied baseline, score, snapshot, 80 CSVs, logs and timings are retained at
+`target/ensemble/MC2c2-final/`; launcher log `target/MC2c2-final-ensemble.txt`.
+The snapshot names the box's `/home/jerus/cbs/main/data/earth-2.bin` and
+`world-1.bin`, OpenJDK 21.0.13. Historical MC2m and its .174 comparison remain
+untouched, as recorded above; they are not substituted for this result.
+
+After the ensemble exited, merged latest main `5790d0506` (0.9.178, TN1).
+There were no source conflicts and no changes to MC2's Bank,
+BusinessDebtManager or BankFailureCheck from the ensemble snapshot. TN1
+changes CityMap/CityRuns display, GatewayCheck/MainLineCheck and the version;
+the orchestrator confirmed that it changes no model trace and does not require
+a repeat ensemble. Conflicts were only `docs/dials.md`, `docs/harnesses.md`
+and `docs/map/README.md`, taken from main for regeneration on the merged tree.
