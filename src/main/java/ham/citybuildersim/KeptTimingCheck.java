@@ -18,7 +18,7 @@ import static ham.citybuildersim.KeptCheck.month;
  * page slow under a loaded PC was a red in the harness whose verdict is that the pages are right (KEPT_ALL_CHROME_MS, KS1-rest).
  * Split, KeptCheck is correctness alone and this is the clocks alone. In a soft run it does nothing at all (HA1: no rounds whose only
  * verdict is time); hard, it builds KeptCheck's city (KeptCheck.playedCity()), plays it on without drawing to the month each budget
- * was measured at, and costs each page there with the premise its section in KeptCheck causes, the page first drawn kept for
+ * was measured at, and costs each page there with the premise its section in KeptCheck causes, the page first drawn kept and new for
  * WARM_MONTHS months untimed, as KeptCheck's correctness sections drew it before its cost was taken. The budgets, the sentences
  * above them and the lines' labels are KeptCheck's as they were, and the sections keep KeptCheck's numbers.
  *
@@ -234,23 +234,24 @@ public final class KeptTimingCheck {
     }
 
     /**
-     * The months a page is drawn kept, untimed, before its rounds are timed: KeptCheck's MONTHS, the months its correctness section
-     * drew the page across before the cost was taken there. The budgets were measured on pages the JIT had compiled; timed cold, after
-     * one draw, the first pages cost several times their budgets (FS4's first hard run here: the People month 60.6 ms against
-     * KEPT_MONTH_MS's 12, the Sectors list 43.1 against 18), and the pages after them, whose code was compiled by then, did not.
+     * The months a page is drawn, untimed, before its rounds are timed: KeptCheck's MONTHS, the months its correctness section drew
+     * the page across, kept and then built new to compare, before the cost was taken there. The budgets were measured on pages the
+     * JIT had compiled; timed cold, after one draw, the first pages cost several times their budgets (FS4's first hard run here: the
+     * People month 60.6 ms against KEPT_MONTH_MS's 12, the Sectors list 43.1 against 18), and the pages after them did not.
      */
     static final int WARM_MONTHS = KeptCheck.MONTHS;
 
-    /** A kept redraw and its passes, which may throw as the bench's draws do. */
+    /** A redraw and its passes, which may throw as the bench's draws do. */
     interface Redraw {
         void run() throws Exception;
     }
 
-    /** A page's kept redraw, its CSS and layout passed, for WARM_MONTHS months on the toolkit's thread, nothing timed. */
-    private static void warm(Game g, Redraw redraw) throws Exception {
+    /** WARM_MONTHS months on the toolkit's thread, nothing timed: each the page's kept redraw, its CSS and layout passed, then the page built new and the kept one put back, as a correctness section compares them. */
+    private static void warm(Game g, Redraw kept, Redraw fresh) throws Exception {
         for (int i = 0; i < WARM_MONTHS; i++) {
             month(g);
-            redraw.run();
+            kept.run();
+            fresh.run();
         }
     }
 
@@ -270,6 +271,9 @@ public final class KeptTimingCheck {
             warm(g, () -> {
                 bench.drawKept();
                 bench.passes();
+            }, () -> {
+                bench.showFresh();
+                bench.restoreKept();
             });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
@@ -303,6 +307,9 @@ public final class KeptTimingCheck {
             warm(g, () -> {
                 bench.drawChromeKept();
                 bench.chromePasses();
+            }, () -> {
+                bench.showFreshChrome();
+                bench.restoreKeptChrome();
             });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
@@ -344,6 +351,11 @@ public final class KeptTimingCheck {
                 bench.drawPanelsKept();
                 bench.chromePasses();
                 bench.panelPasses();
+            }, () -> {
+                bench.showFreshChrome();
+                bench.showFreshPanels();
+                bench.restoreKeptChrome();
+                bench.restoreKeptPanels();
             });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
@@ -378,6 +390,9 @@ public final class KeptTimingCheck {
             warm(g, () -> {
                 bench.drawHistoryKept();
                 bench.passes();
+            }, () -> {
+                bench.showFreshHistory();
+                bench.restoreKeptHistory();
             });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
@@ -641,6 +656,9 @@ public final class KeptTimingCheck {
             warm(g, () -> {
                 bench.drawKept(page);
                 bench.passes();
+            }, () -> {
+                bench.showFresh(page);
+                bench.restoreKeptPage();
             });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < samples; i++) {

@@ -18187,22 +18187,22 @@ _(this harness does not label its checks through a helper - it prints its findin
 > page slow under a loaded PC was a red in the harness whose verdict is that the pages are right (KEPT_ALL_CHROME_MS, KS1-rest).
 > Split, KeptCheck is correctness alone and this is the clocks alone. In a soft run it does nothing at all (HA1: no rounds whose only
 > verdict is time); hard, it builds KeptCheck's city (KeptCheck.playedCity()), plays it on without drawing to the month each budget
-> was measured at, and costs each page there with the premise its section in KeptCheck causes, the page first drawn kept for
+> was measured at, and costs each page there with the premise its section in KeptCheck causes, the page first drawn kept and new for
 > WARM_MONTHS months untimed, as KeptCheck's correctness sections drew it before its cost was taken. The budgets, the sentences
 > above them and the lines' labels are KeptCheck's as they were, and the sections keep KeptCheck's numbers.
 > 
 > ...
 
 - **L194 KeptTimingCheck: what the kept pages cost, each against the same month built new (KeptCheck's timed sections, FS4)**
-- **L266 5: what the kept month costs**
-- **L296 10: what the kept chrome costs**
-- **L329 13: what the whole chrome costs, kept**
-- **L371 20: what the kept City History month costs**
-  - L417 the city has
-  - L427 a city category has cards to dial an order on (
-  - L448 the city has a plain business with a plant standing (
-  - L449 ...and a materials industry with works standing (
-  - L576 the fund's heaviest page is Search or Activity, the two costed (
+- **L267 5: what the kept month costs**
+- **L300 10: what the kept chrome costs**
+- **L336 13: what the whole chrome costs, kept**
+- **L383 20: what the kept City History month costs**
+  - L432 the city has
+  - L442 a city category has cards to dial an order on (
+  - L463 the city has a plain business with a plant standing (
+  - L464 ...and a materials industry with works standing (
+  - L591 the fund's heaviest page is Search or Activity, the two costed (
 
 ## KnownRedsCheck.java - 60 labelled assertions
 

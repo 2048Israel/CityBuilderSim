@@ -7242,7 +7242,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 175 | `KeptTimingCheck.KEPT_POLICY_MS` | `10` | The budget for the kept Policy month - its draw, then the pulse's CSS and layout - on the hub and on the pages heavy with dials (Taxes' Profit page and the policy rate's), the largest of them being... |
 | 183 | `KeptTimingCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
 | 191 | `KeptTimingCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
-| 242 | `KeptTimingCheck.WARM_MONTHS` | `KeptCheck.MONTHS` | The months a page is drawn kept, untimed, before its rounds are timed: KeptCheck's MONTHS, the months its correctness section drew the page across before the cost was taken there. |
+| 242 | `KeptTimingCheck.WARM_MONTHS` | `KeptCheck.MONTHS` | The months a page is drawn, untimed, before its rounds are timed: KeptCheck's MONTHS, the months its correctness section drew the page across, kept and then built new to compare, before the cost wa... |
 
 ### KnownRedsCheck.java ([map](map/KnownRedsCheck.md))
 
