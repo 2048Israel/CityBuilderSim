@@ -1,6 +1,6 @@
-# HousingDoorCheck.java - 380 lines · 6 methods · 5 constants · harnesses
+# HousingDoorCheck.java - 389 lines · 6 methods · 5 constants · harnesses
 
-`ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingDoorCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed
@@ -26,8 +26,11 @@
 > those months and continues to m900 (eight capital trims), with the households' cash identity checked every played month too.
 > 
 > What this has to prove:
->   1. the fixture: the plan passes the landlords orders the door does not
->      write whole, while their homes' segment is short of doors;
+>   1. the fixture: the plan passes the landlords orders while their homes'
+>      segment is short of doors; before FB15 the door cut nine of them for a
+>      down payment raised at the plan's price (m600-m706), and since FB15
+>      (HN1-A, the order at the door's own price) it cuts or holds none for
+>      its down payment (OrderDoorCheck 2 causes the case in one month);
 >   2. in no month is a landlord whose till holds the door's price of one of
 >      the homes the plan passed, on ground free for one, while that
 >      segment's households have no door of their own, left with none
@@ -49,54 +52,54 @@
 
 | line | section |
 |---:|---|
-| 292 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
+| 301 | THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 57 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
-| 59 | `HousingDoorCheck.FROM` | `430, TO = 900` | The months watched, months already run: HL1 retains m431-500 and continues to m900; its first capital trim is m502, eight fire by m900. |
-| 61 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 62 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 89 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
+| 60 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
+| 62 | `HousingDoorCheck.FROM` | `430, TO = 900` | The months watched, months already run: HL1 retains m431-500 and continues to m900; its first capital trim is m502, eight fire by m900. |
+| 64 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 65 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 92 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 53 | `static PrintStream out` |  |
-| 54 | `static int fails` |  |
-| 71 | `int month` |  |
-| 72 | `String building` |  |
-| 73 | `boolean family` |  |
-| 74 | `long asked, passed` |  |
-| 75 | `double till, doorOne, shortfall` |  |
-| 76 | `boolean groundForOne` |  |
-| 77 | `String line` |  |
-| 78 | `long built` |  |
-| 80 | `boolean markedForCapital` | The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). |
-| 82 | `double cost, held, offered, raised` | The order's cost, the till before the owners' issue, what consider() offered the owners this month and what they put in, and whether the door would have refused the order's mortgage for the bank's capital on that till... |
-| 83 | `boolean shortBeforeOwners` |  |
-| 85 | `boolean quoteShut` | The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). |
-| 88 | `static Ask pending` |  |
-| 297 | `static boolean stuck` |  |
+| 56 | `static PrintStream out` |  |
+| 57 | `static int fails` |  |
+| 74 | `int month` |  |
+| 75 | `String building` |  |
+| 76 | `boolean family` |  |
+| 77 | `long asked, passed` |  |
+| 78 | `double till, doorOne, shortfall` |  |
+| 79 | `boolean groundForOne` |  |
+| 80 | `String line` |  |
+| 81 | `long built` |  |
+| 83 | `boolean markedForCapital` | The month ended with the landlords marked as refused a mortgage for the bank's capital (what LongPlaytest counts). |
+| 85 | `double cost, held, offered, raised` | The order's cost, the till before the owners' issue, what consider() offered the owners this month and what they put in, and whether the door would have refused the order's mortgage for the bank's capital on that till... |
+| 86 | `boolean shortBeforeOwners` |  |
+| 88 | `boolean quoteShut` | The landlord's quote supported no issue this month, so consider() offered nothing (Exchange.quoteSupportsIssue()). |
+| 91 | `static Ask pending` |  |
+| 306 | `static boolean stuck` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 51 | 330 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
-| 64 | 4 | `static void check(String label, boolean ok)` |  |
-| 70 | 17 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
-| 91 | 161 | `public static void main(String[] args) throws Exception` |  |
-| 254 | 30 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
-| 286 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
+| 54 | 336 | **type** `public final class HousingDoorCheck` | The landlords' order at the lender's door (HN1, 2026-11-18): a played city's households held from the homes that fit them while the plan passed those homes and the door would not write the whole order. |
+| 67 | 4 | `static void check(String label, boolean ok)` |  |
+| 73 | 17 | **type** `static final class Ask` | One month's order at the door: what the plan passed, the till it was judged on, and the door's price of one. |
+| 94 | 167 | `public static void main(String[] args) throws Exception` |  |
+| 263 | 30 | `static Ask ask(Game g, long asked, java.util.function.LongToDoubleFunction costOf, double cash, Mortgage.Decision found)` | The door's own facts for one of the homes Mortgage.decide() was asked about, read at the moment it was asked. |
+| 295 | 5 | `static long builtIn(String line)` | How many the advisor's line says were built: "Built 4 Low-Rise Apartments ...", or none. |
 
-### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 292-380)
+### THE FOUNDING AND THE RHYTHM - the ensemble's foundAndPlay(), line for (lines 301-389)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 299 | 11 | `static void run(Game g, int months, Runnable after)` |  |
-| 311 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
+| 308 | 11 | `static void run(Game g, int months, Runnable after)` |  |
+| 320 | 69 | `static void foundAndPlay(Game g, Runnable after)` |  |
 
