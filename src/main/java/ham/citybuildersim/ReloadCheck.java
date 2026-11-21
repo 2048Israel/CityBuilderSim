@@ -83,6 +83,14 @@ import java.util.function.Function;
  * (probePlay's skips are fixed by its stop count), so they do not move unless
  * LongPlaytest does; a fixture line says each cause was seen at work.
  *
+ * FS17 (the flaky-suite sweep): section 3's causes are no longer only found. The caused point (the live city as it stands after
+ * its last checkpoint) has, by hand, a market's tally set (GoodsMarket.restoreTally), the good the hand order draws re-priced
+ * (setLocalPrice), a build order placed (Game.buildStack, so the crews draw materials in the month on), the sudden stop started
+ * and the carry placed every time (not only when no checkpoint had one); and a "by hand" fixture line asserts that the caused
+ * point's OWN city showed each of the causes it set, whatever the checkpoints showed. What stays played, and is found in the
+ * checkpoints (the shares, the index's weights, the notes, the skips' outbreaks and months sick, the hot money's peaks, the
+ * seller-priced markets' sales): no model setter puts them there between the presses.
+ *
  * @author Jerus
  */
 public class ReloadCheck {
@@ -104,11 +112,23 @@ public class ReloadCheck {
     /** The share of what the makers of one good hold that the harness's hand order between the presses takes (FB3, FW6-C): part of it, so the order is all filled at home and none imported. */
     static final double HAND_ORDER_SHARE = .5;
 
-    /** What the carry's fixture counts (FB3, FW6-C): also how main() asks whether any checkpoint carried limestone before it places one. */
+    /** What the carry's fixture counts (FB3, FW6-C). */
     static final String CARRY_SAW = "cities that carried limestone into aggregate";
 
-    /** The tonnes of limestone the harness places as a carry when no checkpoint's city had one (FB3, FW6-C). */
+    /** The tonnes of limestone the harness places as a carry on the caused point (FB3, FW6-C; every time since FS17, not only when no checkpoint's city had one). */
     static final double CAUSED_CARRY = 100;
+
+    /** The month's tally the harness puts on one market of the caused point (FS17): the goods imported, exported, filled at home, offered, bid for and drawn since the strike, each above zero and none the same. */
+    static final double[] CAUSED_TALLY = { 120, 80, 300, 700, 650, 40 };
+
+    /** How far the harness moves the price of the good its hand order draws, between the month's close and the next (FS17): so the makers' stock of it is revalued by a figure that is not zero. */
+    static final double CAUSED_PRICE_MOVE = 1.25;
+
+    /** The Houses the harness orders on the caused point (FS17): the crews draw materials for them in the month on. */
+    static final int CAUSED_ORDER = 5;
+
+    /** The name of the caused point's city, which the by-hand fixtures look it up by (FS17). */
+    static final String CAUSED_CITY = "Danzik, caused";
 
     /** The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. */
     static final Set<Good> NEVER_FILLED = Set.of(Good.BUILDING_WORK);
@@ -301,6 +321,28 @@ public class ReloadCheck {
             for (Sector s : g.getSectors().all()) if (s.isMaker(good)) held += s.getStock(good);
             if (held > mostHeld) { most = good; mostHeld = held; }
         }
+        /*
+         * FS17: THE CAUSES THE CHECKPOINTS ONLY SHOWED, SET BY HAND. A market's month tally (all six figures above zero: the checkpoints'
+         * markets showed imports, exports and units drawn only where the city's month happened to leave them), the price of the good the
+         * order draws moved (the makers' stock of it is then revalued by a figure that is not zero), and a build order placed (the crews
+         * draw materials for it in the month on).
+         */
+        if (most != null) {
+            GoodsMarket priced = g.getMarkets().get(most);
+            priced.setLocalPrice(priced.getLocalPrice() * CAUSED_PRICE_MOVE);
+        }
+        for (GoodsMarket m : g.getMarkets().all()) {
+            if (!m.good().traded() || m.good() == most) continue;
+            m.restoreTally(CAUSED_TALLY[0], CAUSED_TALLY[1], CAUSED_TALLY[2], CAUSED_TALLY[3], CAUSED_TALLY[4], CAUSED_TALLY[5]);
+            break;
+        }
+        BuildingsTemplate house = null;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getName().equals("House")) house = t;
+        if (house != null) {
+            PrintStream real = System.out;
+            System.setOut(QUIET);
+            try { g.buildStack(house, CAUSED_ORDER, false); } finally { System.setOut(real); }
+        }
         if (most == null) return null;
         GoodsMarket market = g.getMarkets().get(most);
         int before = market.monthsDraws().size();
@@ -380,6 +422,10 @@ public class ReloadCheck {
             p.tally.compare(good + ": bid", live.getBid(), re == null ? Double.NaN : re.getBid());
             // FB3 (FW6-C): the units drawn on demand since the strike, which the next strike counts as demand; no harness compared them.
             p.tally.saw("markets with units drawn since the strike", live.getDrawn() > 0 ? 1 : 0);
+            // FS17: ...and the one market that carries exactly the tally the harness set on the caused point, which no played month leaves: the cause by hand, told from the found ones.
+            p.tally.saw("markets carrying the tally the harness set", live.getImported() == CAUSED_TALLY[0] && live.getExported() == CAUSED_TALLY[1]
+                    && live.getLocalFilled() == CAUSED_TALLY[2] && live.getOffered() == CAUSED_TALLY[3] && live.getBid() == CAUSED_TALLY[4]
+                    && live.getDrawn() == CAUSED_TALLY[5] ? 1 : 0);
             p.tally.compare(good + ": drawn since the strike", live.getDrawn(), re == null ? Double.NaN : re.getDrawn());
             compareDraws(p.draws, good, live.monthsDraws(), re == null ? List.of() : re.monthsDraws());
         }
@@ -607,10 +653,15 @@ public class ReloadCheck {
 
     static void section3(List<Point> points) {
         System.out.println("--- 3. the causes, one by one ---");
+        Point caused = causedPoint(points);
         cause(points, p -> p.revalued, "3a", "a month on", "every sector's stock revaluation is counted in the reload's first month and equals the live city's");
+        onCausedPoint(caused, "3a", p -> p.revalued, "sectors that counted a revaluation", "...of them one not zero");
         cause(points, p -> p.drawn, "3b", "a month on", "Construction's materials drawn at home and imported equal the live city's");
+        onCausedPoint(caused, "3b", p -> p.drawn, "crews that drew materials");
         cause(points, p -> p.tally, "3c, the tally", "right after the load",
                 "every market's month tally (imported, exported, filled at home, offered, bid, drawn since the strike) is the live city's");
+        onCausedPoint(caused, "3c, the tally", p -> p.tally, "markets that imported", "markets that exported", "markets with units drawn since the strike",
+                "markets carrying the tally the harness set");
         cause(points, p -> p.notes, "3c, the notes", "a month on", "each sector's lastInvestment note is the live city's");
         cause(points, p -> p.shares, "3d", "right after the load", "each sector book's shares month, this and last, is the live city's");
         cause(points, p -> p.weights, "3e", "right after the load", "the price index's rent and food weights are the live city's");
@@ -629,11 +680,35 @@ public class ReloadCheck {
         // FB3 (FW6-C): the restores no checkpoint's save caused the case of, each one's fixture passing on the caused point (the detail says what the checkpoints alone showed).
         causedCause(points, p -> p.stop, "3g", "right after the load",
                 "the sudden stop's words, whether it runs and the months left, and the hot money's peaks, are the live city's");
+        onCausedPoint(caused, "3g", p -> p.stop, "cities in a sudden stop", "...of them with the stop's words");
         causedCause(points, p -> p.carry, "3h", "right after the load", "Quarrying's limestone carried into aggregate is the live city's");
+        onCausedPoint(caused, "3h", p -> p.carry, CARRY_SAW);
         causedCause(points, p -> p.draws, "3i", "right after the load and a month on",
                 "every market's draws since the month closed (seller, buyer, units, price) and the seller rows a hand order lifts are the live city's");
+        onCausedPoint(caused, "3i", p -> p.draws, "markets with draws since the month closed", "hand-ordered seller rows that hold the order a month on");
         cause(points, p -> p.sellerPriced, "3j", "two months on",
                 "a seller-priced market's trades of the first month on are off its list a month later, as a traded good's are");
+    }
+
+    /** The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. */
+    static Point causedPoint(List<Point> points) {
+        for (Point p : points) if (p.problem == null && CAUSED_CITY.equals(p.city)) return p;
+        return null;
+    }
+
+    /**
+     * FS17: the fixture of a cause the harness sets by hand: the caused point's OWN city showed each of the named figures above zero,
+     * whatever the checkpoints showed (a figure the checkpoints alone could supply would be found in the played city, not caused).
+     */
+    static void onCausedPoint(Point caused, String id, Function<Point, Cause> which, String... keys) {
+        boolean ok = caused != null;
+        StringBuilder detail = new StringBuilder();
+        for (String key : keys) {
+            int n = ok ? which.apply(caused).saw.getOrDefault(key, 0) : 0;
+            ok &= n > 0;
+            detail.append(detail.length() == 0 ? "" : ", ").append(n).append(' ').append(key);
+        }
+        check("fixture " + id + ", by hand: the caused point's own city exercised it", ok, detail + (caused == null ? " (no caused point)" : ""));
     }
 
     /** A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. */
@@ -777,12 +852,11 @@ public class ReloadCheck {
         }
         // FB3 (FW6-C): the live city as it stands, with the three conditions no checkpoint's save had caused: a sudden stop, a hand order between the
         // presses and, only if no checkpoint carried limestone, a carry; reloaded through the same path, and counted with the rest.
-        boolean carried = false;
-        for (Point q : points) carried |= q.problem == null && q.carry.saw.getOrDefault(CARRY_SAW, 0) > 0;
+        // FS17: and a carry every time, a market's tally, a price moved and a build order (causeTheConditions).
         long c0 = System.nanoTime();
-        HandOrder order = causeTheConditions(g, !carried);
-        points.add(reload(files, g, "Danzik, caused", order));
-        System.out.printf("  caused (a sudden stop, a hand order%s), saved, reloaded and compared at month %d (%.0f s)%n", carried ? "" : ", a carry", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
+        HandOrder order = causeTheConditions(g, true);
+        points.add(reload(files, g, CAUSED_CITY, order));
+        System.out.printf("  caused (a sudden stop, a hand order, a carry, a tally, a price moved, a build order), saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
         // FB3 (REV-FB3-1): the live city on to its own autosave, written by the game at the month's end, and loaded from that slot.
         long a0 = System.nanoTime();
         Autosaved autosaved = autosaveAndReload(files, g);
