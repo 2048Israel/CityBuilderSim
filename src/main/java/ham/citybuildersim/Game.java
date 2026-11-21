@@ -17478,6 +17478,8 @@ public class Game {
         dataSave.setLotsById(buildingManager.getLotsById());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        // ...and the 1900 home's walk, its months of the households' pay (R1g; none in a city founded the default way).
+        dataSave.setHomePay(recipes.payIndicesForSave(), recipes.payIndexMonth());
         dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the licence the city's own patented works accrued and last paid (R2c-P).
         dataSave.setPublicIpPending(publicIpPending);
@@ -21655,6 +21657,8 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            // ...and the 1900 home's walk, its saved months (R1g), before the apply() below dates the fresh templates at the scale they were saved at.
+            recipes.restorePayIndices(loaded.getHomePayIndices(), loaded.getHomePayMonth());
             restoreLicenceFees(loaded.getLicenceFees());
             restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);

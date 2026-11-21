@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**234 harness files, 26,888 labelled assertions.** AllChecks runs 234 of them.
+**234 harness files, 26,894 labelled assertions.** AllChecks runs 234 of them.
 
 ## Which harnesses read which class
 
@@ -32254,7 +32254,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1077 ...and puts spend / rate / price in ounces in the vault
   - L1078 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
-## Village1900Check.java - 35 labelled assertions
+## Village1900Check.java - 41 labelled assertions
 
 > Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
 > playtest's way for five years beside its twin founded today's way. Not part of the game.
@@ -32267,51 +32267,58 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
 >   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
 >      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
->      twin pays no more than the target
+>      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, under the target on 0.9.161)
 > ...
 
-- **L106 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
-  - L107 the 1900 village is founded the 1900 way
-  - L108 today's twin is founded today's way
-  - L109 both are played to month
-- **L132 2. the rent: 1901's wages pay for today's homes**
-  - L141 the 1900 village's households pay over
-  - L143 today's twin's households pay no more than TARGET_RENT_BURDEN
-  - L144 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
-  - L147 and the city the 1900 village's conditions support is smaller than the people already in it
-  - L150 while today's twin's supports more than its people
-- **L157 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
-  - L163 the 1900 village's diploma posts outnumber its diploma workers over
-  - L165 today's twin's diploma workers cover its diploma posts
-  - L170 the 1900
-  - L173 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
-  - L175 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
-- **L182 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
-  - L188 the 1900 village draws under
-  - L191 while people still arrive in today's twin
-  - L192 no
-  - L193 and its
-  - L198 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
-  - L202 and it holds more cash a head than today's twin, which grows on less
-- **L209 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
-  - L215 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
-  - L217 the village's
-  - L220 its materials and its points are today's times the scale, rounded
-  - L224 and its plot is today's
-  - L225 the city knows the home is dated
-  - L232 the 1900 home's households pay at most
-  - L234 and it draws at least
-- **L241 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
-  - L246 the young learn trades in the 1900 village
-  - L247 as many as came of age times the year's trade share, there being no school
-  - L250 so the village holds more diploma workers than the stalled one
-  - L252 and the stalled village, the switch off, made none
-- **L258 7. today's city does not move: both switches on and both off, the same city to the bit**
-  - L260 the same people
-  - L262 the same cash and the same month's GDP
-  - L265 the same rent burden and the same workers by band
-  - L267 the same
-  - L270 and no apprentice
+- **L114 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
+  - L115 the 1900 village is founded the 1900 way
+  - L116 today's twin is founded today's way
+  - L117 both are played to month
+- **L141 2. the rent: 1901's wages pay for today's homes**
+  - L150 the 1900 village's households pay over
+  - L152 today's twin's households pay under
+  - L154 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
+  - L157 and the city the 1900 village's conditions support is smaller than the people already in it
+  - L160 while today's twin's supports more than its people
+- **L167 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
+  - L173 the 1900 village's diploma posts outnumber its diploma workers over
+  - L175 today's twin's diploma workers cover its diploma posts
+  - L180 the 1900
+  - L183 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
+  - L185 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
+- **L192 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
+  - L198 the 1900 village draws under
+  - L201 while people still arrive in today's twin
+  - L202 no
+  - L203 and its
+  - L208 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
+  - L212 and it holds more cash a head than today's twin, which grows on less
+- **L219 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
+  - L225 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
+  - L227 the village's
+  - L230 its materials and its points are today's times the scale, rounded
+  - L234 and its plot is today's
+  - L235 the city knows the home is dated
+  - L242 the 1900 home's households pay at most
+  - L244 and it draws at least
+- **L251 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
+  - L256 the young learn trades in the 1900 village
+  - L257 as many as came of age times the year's trade share, there being no school
+  - L260 so the village holds more diploma workers than the stalled one
+  - L262 and the stalled village, the switch off, made none
+- **L268 7. today's city does not move: both switches on and both off, the same city to the bit**
+  - L270 the same people
+  - L272 the same cash and the same month's GDP
+  - L275 the same rent burden and the same workers by band
+  - L277 the same
+  - L280 and no apprentice
+- **L287 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
+  - L298 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
+  - L302 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
+  - L307 the
+  - L309 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
+  - L318 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
+  - L324 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
 
 ## WageLadderCheck.java - 63 labelled assertions
 

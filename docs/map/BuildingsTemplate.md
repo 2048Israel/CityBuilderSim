@@ -1,4 +1,4 @@
-# BuildingsTemplate.java - 1,579 lines · 166 methods · 2 constants · model
+# BuildingsTemplate.java - 1,598 lines · 168 methods · 2 constants · model
 
 `ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -46,8 +46,8 @@
 | 580 | · THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) |
 | 782 | · WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) |
 | 844 | · THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) |
-| 1165 | WHAT A MODE IS GOOD AT (2026-09-16) |
-| 1325 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
+| 1184 | WHAT A MODE IS GOOD AT (2026-09-16) |
+| 1344 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
 
 ## Enum constants
 
@@ -63,8 +63,8 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1366 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1369 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1385 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1388 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ## Fields (state)
 
@@ -126,23 +126,23 @@
 | 855 | `private double wash` |  |
 | 869 | `int[] jobsByEducation` | enums |
 | 870 | `private BuildingType category` |  |
-| 1174 | `private double freightGrade` |  |
-| 1175 | `private double transitCapacity` |  |
-| 1221 | `private double railCapacity` |  |
-| 1238 | `private double stationTonnes` |  |
-| 1262 | `private boolean siding` |  |
-| 1277 | `private boolean hydro` |  |
-| 1292 | `private BridgeWorks.Kind bridge` |  |
-| 1312 | `private double truckRoom` |  |
-| 1536 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
-| 1537 | `private double foundingUpkeep` |  |
-| 1553 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
+| 1193 | `private double freightGrade` |  |
+| 1194 | `private double transitCapacity` |  |
+| 1240 | `private double railCapacity` |  |
+| 1257 | `private double stationTonnes` |  |
+| 1281 | `private boolean siding` |  |
+| 1296 | `private boolean hydro` |  |
+| 1311 | `private BridgeWorks.Kind bridge` |  |
+| 1331 | `private double truckRoom` |  |
+| 1555 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
+| 1556 | `private double foundingUpkeep` |  |
+| 1572 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 1553 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
+| 27 | 1572 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
 
 ### WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3) (lines 111-129)
 
@@ -300,7 +300,7 @@
 | 832 | 3 | `public boolean knownAt(int gameMonth)` | Whether it is known at a game month (month 1 = January 1900): an undated row always; a dated one from the month its year or its code's entry gives (ResearchCatalog.knownFrom()). |
 | 840 | 3 | `public boolean knownAt(int gameMonth, Research found)` | Whether it is known at a game month in a city whose research may have found its code first (R3): knownAt(int), or from the month the city found the code (Research.knownFrom()). |
 
-### THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) (lines 844-1164)
+### THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) (lines 844-1183)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -313,90 +313,92 @@
 | 956 | 4 | `public BuildingsTemplate setConstructionPoints(int constructionPoints)` |  |
 | 961 | 4 | `public BuildingsTemplate setCapacity(int capacity)` |  |
 | 966 | 6 | `public BuildingsTemplate setUpkeep(double upkeep)` |  |
-| 973 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
-| 978 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
-| 983 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
-| 988 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
-| 993 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
-| 998 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
-| 1003 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
-| 1008 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
-| 1013 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
-| 1018 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
-| 1023 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
-| 1028 | 4 | `public BuildingsTemplate setId(int id)` |  |
-| 1033 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
-| 1038 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
-| 1043 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
-| 1049 | 4 | `public BuildingsTemplate setResearches(ResearchCatalog.Field field)` | The field this Research Lab researches (R4); null clears it. |
-| 1054 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
-| 1060 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
-| 1065 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
-| 1070 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
-| 1075 | 3 | `public double getCashCost()` | getters |
-| 1085 | 3 | `public double getFoundingCashCost()` | The cash cost as the catalogue states it (ET2): buildings.json's figure, in thousands of founding dollars, before the unit and the expected price level it is struck at (seedConstants()) - which the price level and a c... |
-| 1089 | 3 | `public int getConstructionPoints()` |  |
-| 1093 | 3 | `public int getDwellings()` |  |
-| 1097 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
-| 1118 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
-| 1132 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
-| 1137 | 3 | `public int getCapacity()` |  |
-| 1141 | 3 | `public double getUpkeep()` |  |
-| 1145 | 3 | `public int getConstructionMaterials()` |  |
-| 1149 | 3 | `public int getElectricityConsumption()` |  |
-| 1153 | 3 | `public double getWaterConsumption()` |  |
-| 1157 | 3 | `public double getLandSqFt()` |  |
-| 1161 | 3 | `public double getRoadLoad()` |  |
+| 978 | 8 | `public BuildingsTemplate setFoundingCosts(double cash, double upkeep)` | Sets the cash cost and the upkeep from figures in founding money (R1g's dated home, Recipes.dateHomes()): the founding figures exactly these, today's struck from them at the unit the template was last struck at, as se... |
+| 987 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
+| 992 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
+| 997 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
+| 1002 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
+| 1007 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
+| 1012 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
+| 1017 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
+| 1022 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
+| 1027 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
+| 1032 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
+| 1037 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
+| 1042 | 4 | `public BuildingsTemplate setId(int id)` |  |
+| 1047 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
+| 1052 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
+| 1057 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
+| 1063 | 4 | `public BuildingsTemplate setResearches(ResearchCatalog.Field field)` | The field this Research Lab researches (R4); null clears it. |
+| 1068 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
+| 1074 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
+| 1079 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
+| 1084 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
+| 1089 | 3 | `public double getCashCost()` | getters |
+| 1099 | 3 | `public double getFoundingCashCost()` | The cash cost as the catalogue states it (ET2): buildings.json's figure, in thousands of founding dollars, before the unit and the expected price level it is struck at (seedConstants()) - which the price level and a c... |
+| 1104 | 3 | `public double getFoundingUpkeep()` | The upkeep as the catalogue states it, in founding money, as getFoundingCashCost() states the cash cost; the upkeep itself where none was struck. |
+| 1108 | 3 | `public int getConstructionPoints()` |  |
+| 1112 | 3 | `public int getDwellings()` |  |
+| 1116 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
+| 1137 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
+| 1151 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
+| 1156 | 3 | `public int getCapacity()` |  |
+| 1160 | 3 | `public double getUpkeep()` |  |
+| 1164 | 3 | `public int getConstructionMaterials()` |  |
+| 1168 | 3 | `public int getElectricityConsumption()` |  |
+| 1172 | 3 | `public double getWaterConsumption()` |  |
+| 1176 | 3 | `public double getLandSqFt()` |  |
+| 1180 | 3 | `public double getRoadLoad()` |  |
 
-### WHAT A MODE IS GOOD AT (2026-09-16) (lines 1165-1324)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1187 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
-| 1192 | 1 | `public double getFreightGrade()` |  |
-| 1201 | 1 | `public boolean isHighway()` | Whether this is a highway (FR7, 2026-10-18): a road that is fully grade-separated, a freight grade of 1. |
-| 1211 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
-| 1216 | 1 | `public double getTransitCapacity()` |  |
-| 1219 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
-| 1231 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
-| 1236 | 1 | `public double getRailCapacity()` |  |
-| 1252 | 4 | `public BuildingsTemplate setStationTonnes(double tonnes)` | Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's 50,000 and the Rail Terminal's 500,000; none for every other building. |
-| 1257 | 1 | `public double getStationTonnes()` |  |
-| 1260 | 1 | `public boolean isStation()` | True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). |
-| 1270 | 4 | `public BuildingsTemplate setSiding(boolean siding)` | Whether this track is a siding into one works (FR7): the Rail Spur, and no other. |
-| 1275 | 1 | `public boolean isSiding()` |  |
-| 1285 | 4 | `public BuildingsTemplate setHydro(boolean hydro)` | Whether this power station needs a river with a drop on the ground the city owns (HY1): the Hydro Station, and no other. |
-| 1290 | 1 | `public boolean isHydro()` |  |
-| 1301 | 4 | `public BuildingsTemplate setBridge(BridgeWorks.Kind kind)` | Which long bridge this is (ET6): the Highway Bridge, the Rail Bridge and the Road Bridge, and no other building. |
-| 1307 | 1 | `public BridgeWorks.Kind bridgeKind()` | The kind of long bridge this is, or null for every other building. |
-| 1310 | 1 | `public boolean isBridge()` | Whether this is a long bridge (ET6). |
-| 1318 | 4 | `public BuildingsTemplate setTruckRoom(double trucks)` | Trucks a Truck Depot keeps (FR2): Freight's Haulage division's room; none for every other building. |
-| 1323 | 1 | `public double getTruckRoom()` |  |
-
-### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 1325-1579)
+### WHAT A MODE IS GOOD AT (2026-09-16) (lines 1184-1343)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1379 | 45 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
-| 1425 | 3 | `public int getCoverage()` |  |
-| 1429 | 3 | `public double getProduction1()` |  |
-| 1433 | 3 | `public double getProduction2()` |  |
-| 1437 | 3 | `public double getProductionModifier1()` |  |
-| 1441 | 3 | `public double getProductionModifier2()` |  |
-| 1445 | 3 | `public boolean getNationalized()` |  |
-| 1448 | 3 | `public int getJobs(JobType type)` |  |
-| 1452 | 3 | `public String getName()` |  |
-| 1456 | 3 | `public BuildingType getCategory()` |  |
-| 1460 | 3 | `public int getId()` |  |
-| 1464 | 3 | `public CareType getCare()` |  |
-| 1469 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
-| 1475 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
-| 1478 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
-| 1482 | 3 | `public SafetyType getSafety()` |  |
-| 1486 | 3 | `public EducationType getTeaches()` |  |
-| 1491 | 3 | `public ResearchCatalog.Field getResearches()` | The field this building is a Research Lab of (R4), or null for every other building. |
-| 1499 | 5 | `public int getTotalJobs()` | sum of all jobs |
-| 1518 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
-| 1556 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
-| 1572 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
+| 1206 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
+| 1211 | 1 | `public double getFreightGrade()` |  |
+| 1220 | 1 | `public boolean isHighway()` | Whether this is a highway (FR7, 2026-10-18): a road that is fully grade-separated, a freight grade of 1. |
+| 1230 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
+| 1235 | 1 | `public double getTransitCapacity()` |  |
+| 1238 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
+| 1250 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
+| 1255 | 1 | `public double getRailCapacity()` |  |
+| 1271 | 4 | `public BuildingsTemplate setStationTonnes(double tonnes)` | Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's 50,000 and the Rail Terminal's 500,000; none for every other building. |
+| 1276 | 1 | `public double getStationTonnes()` |  |
+| 1279 | 1 | `public boolean isStation()` | True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). |
+| 1289 | 4 | `public BuildingsTemplate setSiding(boolean siding)` | Whether this track is a siding into one works (FR7): the Rail Spur, and no other. |
+| 1294 | 1 | `public boolean isSiding()` |  |
+| 1304 | 4 | `public BuildingsTemplate setHydro(boolean hydro)` | Whether this power station needs a river with a drop on the ground the city owns (HY1): the Hydro Station, and no other. |
+| 1309 | 1 | `public boolean isHydro()` |  |
+| 1320 | 4 | `public BuildingsTemplate setBridge(BridgeWorks.Kind kind)` | Which long bridge this is (ET6): the Highway Bridge, the Rail Bridge and the Road Bridge, and no other building. |
+| 1326 | 1 | `public BridgeWorks.Kind bridgeKind()` | The kind of long bridge this is, or null for every other building. |
+| 1329 | 1 | `public boolean isBridge()` | Whether this is a long bridge (ET6). |
+| 1337 | 4 | `public BuildingsTemplate setTruckRoom(double trucks)` | Trucks a Truck Depot keeps (FR2): Freight's Haulage division's room; none for every other building. |
+| 1342 | 1 | `public double getTruckRoom()` |  |
+
+### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 1344-1598)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1398 | 45 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
+| 1444 | 3 | `public int getCoverage()` |  |
+| 1448 | 3 | `public double getProduction1()` |  |
+| 1452 | 3 | `public double getProduction2()` |  |
+| 1456 | 3 | `public double getProductionModifier1()` |  |
+| 1460 | 3 | `public double getProductionModifier2()` |  |
+| 1464 | 3 | `public boolean getNationalized()` |  |
+| 1467 | 3 | `public int getJobs(JobType type)` |  |
+| 1471 | 3 | `public String getName()` |  |
+| 1475 | 3 | `public BuildingType getCategory()` |  |
+| 1479 | 3 | `public int getId()` |  |
+| 1483 | 3 | `public CareType getCare()` |  |
+| 1488 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
+| 1494 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
+| 1497 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
+| 1501 | 3 | `public SafetyType getSafety()` |  |
+| 1505 | 3 | `public EducationType getTeaches()` |  |
+| 1510 | 3 | `public ResearchCatalog.Field getResearches()` | The field this building is a Research Lab of (R4), or null for every other building. |
+| 1518 | 5 | `public int getTotalJobs()` | sum of all jobs |
+| 1537 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
+| 1575 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
+| 1591 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
 

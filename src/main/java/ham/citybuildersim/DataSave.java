@@ -1253,6 +1253,26 @@ public class DataSave implements Cloneable {
     }
 
     /**
+     * The 1900 home's walk (R1g; Recipes, THE HOME'S COST MOVES WITH WAGES): the last Recipes.PAY_MONTHS months' pay index, oldest first, and the
+     * game month of the newest, written only for a city founded the 1900 way with the walk on. A save without them, every save from before R1g
+     * and every city founded the default way, starts the walk afresh at the loaded month, its window that month's pay index alone, filled over
+     * the next eleven: Gson leaves a missing key alone, so no format bump (a 1900 city saved before R1g had no dated homes to read wrongly).
+     */
+    private double[] homePayIndices;
+    private Integer homePayMonth;
+
+    /** Stores the walk's months and the month of the newest; null (no key in the file) with none. */
+    public void setHomePay(double[] months, int month) {
+        homePayIndices = months == null || months.length == 0 ? null : months.clone();
+        homePayMonth = homePayIndices == null ? null : month;
+    }
+
+    /** The walk's saved months, oldest first, or null for a save with none. */
+    public double[] getHomePayIndices() { return homePayIndices == null ? null : homePayIndices.clone(); }
+
+    /** The game month of the newest of getHomePayIndices(), 0 for a save with none. */
+    public int getHomePayMonth() { return homePayMonth == null ? 0 : homePayMonth; }
+    /**
      * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
      * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a
      * missing key alone, and a city saved before R1b had none.

@@ -243,17 +243,21 @@ public final class Recipes {
        the 1900 family's rent as a quarter of its staple budget, in a home with no running water, bathroom, electricity or central heat.
 
        WHAT. In a city founded the 1900 way, each home (a Real Estate template with households to house, as EconomyManager.repriceHousingCosts()
-       picks them) is built to 1900's standard once, where the city's templates are first set (apply()): its cash cost, upkeep, materials and
+       picks them) is built to 1900's standard where the city's templates are first set (apply()): its cash cost, upkeep, materials and
        points times homeScale(), the 1901 household's wage over the same household's on today's ladder. Its land is not moved: the plot is the
-       plot. A price set this way is today's price to the month's re-strike (BuildingsTemplate.setCashCost()), so it holds; the templates of a
+       plot. A price set this way is a founding figure the month's re-strike strikes (BuildingsTemplate.setFoundingCosts()), so it holds; the templates of a
        loaded city are read afresh and dated the same way in the load path's apply(). A city founded the default way never comes here.
 
-       THE WALK BACK (R1g, 2026-11-20; HOME_WALK, off unless -Dr1g.walk=on, Jerus's call: the notes, 5). Held at homeScale() for the city's
-       life, the home stays 1900's while the city's wages climb to today's, and a grown 1900 city outbuilt today's twin (the notes, 5). With
-       the walk, each month's apply() sets every home again to homeScaleAt() the month: homeScale() to the first knot's January, 1 (today's
-       home) from the last knot's, linear by month between, WageLadder having no ladder between 1901's and today's. The cash cost and upkeep go
-       by the ratio of the new scale to the one the home stands at, through the same setters, and the materials and points from the
-       catalogue's own figures; a loaded city's fresh templates are dated at the loaded month's scale.
+       THE HOME'S COST MOVES WITH WAGES (R1g, 2026-11-21; HOME_WALK, on unless -Dr1g.walk=off; Jerus, 2026-11-20: "its cost moves with
+       WAGES", the notes, 6). Held at homeScale() for the city's life, the home stays 1900's while the city's pay climbs. With the walk, each
+       month's apply() sets every home again to the mean of the last PAY_MONTHS months' homeScaleOfPay(): what a filled job paid its household,
+       in founding money, over homeScale()'s household on today's ladder, capped at 1. The mean, because a month's pay jumps, and a home
+       re-priced by every jump churned the landlords: on 0.9.174 the playtest's 1900 city, its homes set each month from the month's pay, held
+       6,037 people at month 2,400, set each January 150,677, and on the twelve months' mean 1,852,269, beside the held home's 1,989,152, its
+       rent the nearest TARGET_RENT_BURDEN of take-home of them all (the notes, 6). The cash cost, upkeep, materials and points are set again
+       from the catalogue's own figures times the new scale (the money in founding money, BuildingsTemplate.setFoundingCosts()), never from
+       last month's, and the months are saved (DataSave's homePayIndices), so a loaded city's fresh templates stand where the unsaved city's
+       do, to the bit.
        ===================================================================== */
 
     /**
@@ -263,41 +267,23 @@ public final class Recipes {
     public static boolean HOMES_1900 = !"off".equalsIgnoreCase(System.getProperty("r1g.home", "on").trim());
 
     /**
-     * R1g's switch for the walk back (THE WALK BACK, above), off unless -Dr1g.walk=on: each month's apply() sets the homes to homeScaleAt() the
-     * month rather than holding them at homeScale().
+     * R1g's switch for the walk (THE HOME'S COST MOVES WITH WAGES, above), on unless -Dr1g.walk=off: each month's apply() sets the homes to the
+     * mean of the last PAY_MONTHS months' homeScaleOfPay() rather than holding them at homeScale(), the fallback (Jerus's call).
      */
-    public static boolean HOME_WALK = "on".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+    public static boolean HOME_WALK = !"off".equalsIgnoreCase(System.getProperty("r1g.walk", "on").trim());
 
-    /**
-     * R1g's switch for the walk paced by the city's own wages (the orchestrator's (c)), off unless -Dr1g.walk=wage: each month's apply() sets
-     * the homes to homeScaleOfWages() rather than the calendar's homeScaleAt().
-     */
-    public static boolean HOME_WAGE_WALK = "wage".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
+    /** How many months of the households' pay the walk's mean takes: a year, so a month's jump in the pay moves the home by a twelfth of it. */
+    public static final int PAY_MONTHS = 12;
 
-    /**
-     * R1g's switch for the walk paced by the households' pay ((3) on its second index), off unless -Dr1g.walk=pay: each month's apply() sets the
-     * homes to homeScaleOfPay().
-     */
-    public static boolean HOME_PAY_WALK = System.getProperty("r1g.walk", "off").trim().toLowerCase(java.util.Locale.ROOT).startsWith("pay");
-
-    /**
-     * R1g's test of the pay walk set again only each January (-Dr1g.walk=payyear), off by default: whether the month-to-month re-pricing is
-     * what stalls the walks' cities on 0.9.174 (docs/queue/R1g-notes.md).
-     */
-    public static boolean HOME_PAY_YEARLY = "payyear".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
-
-    /**
-     * R1g's test of the pay walk on a trailing 12-month mean of homeScaleOfPay(), set again monthly (-Dr1g.walk=paymean), off by default: the
-     * orchestrator's second remedy if the January steps still churn the landlords (docs/queue/R1g-notes.md).
-     */
-    public static boolean HOME_PAY_MEAN = "paymean".equalsIgnoreCase(System.getProperty("r1g.walk", "off").trim());
-
-    /** The pay index of each of the last twelve months the walk on its mean has read, and the month it last read. */
+    /** The walk's pay index of each of the last PAY_MONTHS months, oldest first, and the game month of the newest (saved; DataSave). */
     private final java.util.ArrayDeque<Double> payIndices = new java.util.ArrayDeque<>();
     private int payIndexMonth = Integer.MIN_VALUE;
 
-    /** A dated home's scale as it stands, and its materials and points as the catalogue stated them (the walk sets them again from these). */
-    private record Dated(double scale, int materials, int points) { }
+    /**
+     * A dated home's scale as it stands, and its materials, points, cash cost and upkeep as the catalogue stated them, the money in founding
+     * money (the walk sets them again from these, never from the last month's, so a loaded city's fresh templates stand where they stood).
+     */
+    private record Dated(double scale, int materials, int points, double cash, double upkeep) { }
 
     /** The homes this has dated, by identity, a city's templates being its own (weak, so a finished city's templates go with it). */
     private final java.util.Map<BuildingsTemplate, Dated> datedHomes = new java.util.WeakHashMap<>();
@@ -328,53 +314,10 @@ public final class Recipes {
     }
 
     /**
-     * What a 1900 home costs of today's in a game month, walked (THE WALK BACK, above): homeScale() to the first knot's January
-     * (ArrivalMix.KNOTS), 1 from the last knot's on, linear by month between.
-     */
-    public static double homeScaleAt(int month) {
-        int start = ArrivalMix.januaryOf(ArrivalMix.KNOTS.get(0).year());
-        int end = ArrivalMix.januaryOf(ArrivalMix.KNOTS.get(ArrivalMix.KNOTS.size() - 1).year());
-        double from = homeScale();
-        if (month <= start) return from;
-        if (month >= end) return 1;
-        return from + (1 - from) * (month - start) / (double) (end - start);
-    }
-
-    /**
-     * What a 1900 home costs of today's at the city's own wages ((c)): homeScale()'s household, 1901's working arrivals by band, paid the
-     * market's wages this month in founding money (each job's wage over the cost of living, at the ladder's anchor over the going rate, which a
-     * reform moves together), over the same household on today's ladder, capped at 1. At the founding it is homeScale() to the market's
-     * multiples; it rises only as the city's real wages do.
-     */
-    public static double homeScaleOfWages(Game game) {
-        LabourMarket market = game.getLabourMarket();
-        double living = market.getCostOfLiving(), going = market.getGoingRate();
-        if (!(living > 0) || !(going > 0)) return homeScale();
-        double unit = market.getLadder().anchor() / going;
-        ArrivalMix.Knot first = ArrivalMix.KNOTS.get(0);
-        double[] share = { first.none(), first.diploma(), first.college(), first.university() };
-        double then = 0, now = 0;
-        for (WageBand band : WageBand.values()) {
-            double city = 0, today = 0;
-            int jobs = 0;
-            for (JobType job : JobType.values()) {
-                if (WageBand.of(job) != band) continue;
-                city += market.getWage(job) / living * unit;
-                today += WageLadder.TODAY.monthlyWage(PayTier.of(job));
-                jobs++;
-            }
-            if (jobs == 0) continue;
-            then += share[band.ordinal()] * city / jobs;
-            now += share[band.ordinal()] * today / jobs;
-        }
-        return now > 0 && then > 0 ? Math.min(1, then / now) : homeScale();
-    }
-
-    /**
-     * What a 1900 home costs of today's at the households' pay ((3), the second index): what a filled job paid its household last month on
-     * average (HouseholdAccounts.getAverageWage()), in founding money as homeScaleOfWages() reads a wage, over homeScale()'s household on
-     * today's ladder, capped at 1. What the city takes off a wage is taken as coming off both alike, so the ratio stands for the take-home's.
-     * homeScale() before a job is filled.
+     * What a 1900 home costs of today's at the households' pay (the walk's index, Jerus's (3)): what a filled job paid its household last month on
+     * average (HouseholdAccounts.getAverageWage()), in founding money (over the cost of living, at the ladder's anchor over the going rate, which a
+     * reform moves together), over homeScale()'s household on today's ladder, capped at 1. What the city takes off a wage is taken as coming
+     * off both alike, so the ratio stands for the take-home's. homeScale() before a job is filled.
      */
     public static double homeScaleOfPay(Game game) {
         LabourMarket market = game.getLabourMarket();
@@ -405,36 +348,64 @@ public final class Recipes {
     }
 
     /**
-     * Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): once at homeScale(), or with the walk at homeScaleAt() the
-     * month, set again whenever that differs from the scale the home stands at. Nothing with the switch off.
+     * Builds each of the city's homes to 1900's standard (THE 1900 HOME, above): at homeScale() once with the walk off, or with it at payMean(),
+     * set again whenever that differs from the scale the home stands at. Nothing with the switch off.
      */
     private void dateHomes(Game game) {
         if (!HOMES_1900 || game.getSectors() == null) return;
         String homes = game.getSectors().realEstate().key();
-        double scale = HOME_PAY_WALK ? homeScaleOfPay(game) : HOME_WAGE_WALK ? homeScaleOfWages(game) : HOME_WALK ? homeScaleAt(game.getMonth()) : homeScale();
-        if (HOME_PAY_MEAN) {
-            if (game.getMonth() != payIndexMonth) {
-                payIndexMonth = game.getMonth();
-                payIndices.addLast(scale);
-                while (payIndices.size() > 12) payIndices.removeFirst();
-            }
-            double sum = 0;
-            for (double s : payIndices) sum += s;
-            scale = sum / payIndices.size();
-        }
+        double scale = HOME_WALK ? payMean(game) : homeScale();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (t == null || !homes.equals(t.getSector()) || t.getCapacity() <= 0) continue;
             Dated was = datedHomes.get(t);
-            if (was != null && (was.scale() == scale || HOME_PAY_YEARLY && game.getMonth() % 12 != 1)) continue;
-            double by = was == null ? scale : scale / was.scale();
-            int materials = was == null ? t.getConstructionMaterials() : was.materials();
-            int points = was == null ? t.getConstructionPoints() : was.points();
-            t.setCashCost(t.getCashCost() * by);
-            t.setUpkeep(t.getUpkeep() * by);
-            t.setConstructionMaterials((int) Math.max(1, Math.round(materials * scale)));
-            t.setConstructionPoints((int) Math.max(1, Math.round(points * scale)));
-            datedHomes.put(t, new Dated(scale, materials, points));
+            if (was != null && was.scale() == scale) continue;
+            Dated base = was != null ? was : new Dated(1, t.getConstructionMaterials(), t.getConstructionPoints(), t.getFoundingCashCost(),
+                    t.getFoundingUpkeep());
+            t.setFoundingCosts(base.cash() * scale, base.upkeep() * scale);
+            t.setConstructionMaterials((int) Math.max(1, Math.round(base.materials() * scale)));
+            t.setConstructionPoints((int) Math.max(1, Math.round(base.points() * scale)));
+            datedHomes.put(t, new Dated(scale, base.materials(), base.points(), base.cash(), base.upkeep()));
         }
+    }
+
+    /**
+     * The walk's scale: the month's homeScaleOfPay() taken once a game month (the founding's second apply() and a load's, which reads the month
+     * the save was taken in, take nothing more), the mean of the last PAY_MONTHS taken.
+     */
+    private double payMean(Game game) {
+        if (game.getMonth() != payIndexMonth || payIndices.isEmpty()) {
+            payIndexMonth = game.getMonth();
+            payIndices.addLast(homeScaleOfPay(game));
+            while (payIndices.size() > PAY_MONTHS) payIndices.removeFirst();
+        }
+        double sum = 0;
+        for (double s : payIndices) sum += s;
+        return sum / payIndices.size();
+    }
+
+    /** The walk's months of the pay index, oldest first, for DataSave: null with none (a city founded the default way, or the walk off). */
+    public double[] payIndicesForSave() {
+        if (payIndices.isEmpty()) return null;
+        double[] months = new double[payIndices.size()];
+        int i = 0;
+        for (double s : payIndices) months[i++] = s;
+        return months;
+    }
+
+    /** The game month of the newest of payIndicesForSave(), for DataSave. */
+    public int payIndexMonth() { return payIndexMonth; }
+
+    /**
+     * Puts back the walk's saved months, before the load path's apply(): none (a save from before R1g's walk, or a city founded the default
+     * way) leaves the walk to start afresh at the loaded month. A figure not finite or not above 0 is dropped, and only the newest PAY_MONTHS kept.
+     */
+    public void restorePayIndices(double[] months, int month) {
+        payIndices.clear();
+        payIndexMonth = Integer.MIN_VALUE;
+        if (months == null) return;
+        for (double s : months) if (Double.isFinite(s) && s > 0) payIndices.addLast(s);
+        while (payIndices.size() > PAY_MONTHS) payIndices.removeFirst();
+        if (!payIndices.isEmpty()) payIndexMonth = month;
     }
 
     /** Whether this city's homes are built to 1900's standard: for the harnesses. */
@@ -442,18 +413,20 @@ public final class Recipes {
         return datedHomes.containsKey(t);
     }
 
-    /** The scale a dated home stands at (homeScale(), or the walk's month's); 1 for a home this has not dated: for the harnesses. */
+    /** The scale a dated home stands at (homeScale(), or the walk's mean); 1 for a home this has not dated: for the harnesses. */
     public double datedScale(BuildingsTemplate t) {
         Dated d = datedHomes.get(t);
         return d == null ? 1 : d.scale();
     }
 
     /**
-     * Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. The
-     * dated homes are kept: a new city's templates are new objects, and a template dated twice would be built to a 1900 standard of a 1900 home.
+     * Forgets the choices and the walk's months: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a
+     * fresh process does. The dated homes are kept: a new city's templates are new objects, and a template dated twice would be built to a 1900
+     * standard of a 1900 home.
      */
     public void clear() {
         chosen.clear();
+        restorePayIndices(null, 0);
     }
 
     /**

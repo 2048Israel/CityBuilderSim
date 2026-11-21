@@ -15,7 +15,7 @@ import java.io.PrintStream;
  *      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
  *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
  *      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
- *      twin pays no more than the target
+ *      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, under the target on 0.9.161)
  *   3. THE SKILLS: posts drawn for today's diploma-holders meet 1901's workers, who mostly hold none: the 1900 village's diploma posts
  *      outnumber its diploma workers many times over while today's twin's are covered, and the exporters' first plant (the
  *      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) cannot pass the staffing gate,
@@ -24,17 +24,22 @@ import java.io.PrintStream;
  *      exporter stands there, its manufacturing held at the staffing gate; and the 1900 village's treasury holds its cash and owes
  *      nothing, more cash a head than today's growing twin holds, so the dated money (no central bank until 1935) is not what holds it
  *
- * ...and the fix, each half alone, at its switch (on unless -Dr1g.home=off or -Dr1g.apprentices=off; each section fails with its own off):
+ * ...and the fix, at its switches (on unless -Dr1g.home=off, -Dr1g.apprentices=off or -Dr1g.walk=off; each section fails with its own off):
  *
- *   5. THE 1900 HOME (Recipes.HOMES_1900): each of the 1900 village's homes is built at Recipes.homeScale() of today's twin's (the cash cost
- *      as the catalogue states it, the materials and the points; the land not moved), its households pay under the stalled village's
- *      rent, at most DEAR_RENT times the target, and it draws at least STALLED of today's twin's arrivals at the end of the five years
+ *   5. THE 1900 HOME (Recipes.HOMES_1900): each of the 1900 village's homes is built at the scale it stands at (Recipes.datedScale();
+ *      homeScale() with the walk off) of today's twin's (the cash cost as the catalogue states it, the materials and the points; the land not
+ *      moved), its households pay under the stalled village's rent, at most DEAR_RENT times the target, and it draws at least STALLED of
+ *      today's twin's arrivals at the end of the five years
  *   6. THE APPRENTICES (PopulationManager.APPRENTICES_1900): the five years' apprentices are the teens who came of age times the year's
  *      trade share (ArrivalMix.tradeShareAt()), there being no school, and the village holds more diploma workers than the stalled one
  *   7. TODAY'S CITY DOES NOT MOVE: today's twin played with both switches on is today's twin played with both off, to the bit
+ *   8. THE WALK (Recipes.HOME_WALK; Jerus, 2026-11-20: the home's "cost moves with WAGES"): each month of the 1900 home's village takes the
+ *      households' pay once (Recipes.homeScaleOfPay() as the month before ended), the window holding the last Recipes.PAY_MONTHS, and its
+ *      House stands at their mean, which the village's pay has moved off homeScale(); the months are saved, so the village loaded into a
+ *      fresh Game from its scratch folder stands where it stood, and a month on, where the unsaved one does, to the bit
  *
  * Every fixture CAUSES its condition: the cities are founded on scratch folders by the playtest's own founding and played by the
- * playtest's own advisor and automatic works; nothing in them is set by hand but the two switches. Figures are asserted against the
+ * playtest's own advisor and automatic works; nothing in them is set by hand but the switches. Figures are asserted against the
  * model's own constants and methods (RealEstate.TARGET_RENT_BURDEN, Sector.MIN_STAFFABLE_TO_ORDER, Recipes.homeScale(),
  * ArrivalMix.tradeShareAt()) and the twins' figures, with the margins below stated once.
  */
@@ -91,6 +96,9 @@ public class Village1900Check {
         double arrivalsLate;
         /** The apprentices of every month, and the coming-of-age teens times the year's trade share less the schools' diploma-holders. */
         double apprentices, apprenticesExpected;
+        /** Each month played, the pay the walk took at its top (NaN with none), its window's length, and homeScaleOfPay() as the month ended. */
+        final java.util.List<Double> took = new java.util.ArrayList<>(), after = new java.util.ArrayList<>();
+        final java.util.List<Integer> windowed = new java.util.ArrayList<>();
         Game g;
         Seen(boolean the1900Way) { this.the1900Way = the1900Way; }
     }
@@ -121,6 +129,7 @@ public class Village1900Check {
         apprentices(taught, y1900);
         Seen todayOn = play("village1900-today-on", false, true, true);
         todayUnmoved(todayOn, today);
+        walk(home);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -140,7 +149,8 @@ public class Village1900Check {
                 mToday.getLastTarget(), today.g.getPopulationManager().getPopulation());
         check("the 1900 village's households pay over " + DEAR_RENT + " times TARGET_RENT_BURDEN of their take-home in rent",
                 b1900 > DEAR_RENT * target, String.format("%.3f", b1900));
-        check("today's twin's households pay no more than TARGET_RENT_BURDEN", bToday <= target, String.format("%.3f", bToday));
+        check("today's twin's households pay under " + DEAR_RENT + " times TARGET_RENT_BURDEN, the line the 1900 village's are over",
+                bToday < DEAR_RENT * target, String.format("%.3f", bToday));
         check("so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it",
                 m1900.getLastAffordabilityPull() < 1 && m1900.getLastAffordabilityPull() < mToday.getLastAffordabilityPull(),
                 String.format("%.3f against %.3f", m1900.getLastAffordabilityPull(), mToday.getLastAffordabilityPull()));
@@ -207,19 +217,19 @@ public class Village1900Check {
 
     static void home(Seen home, Seen stalled, Seen today) {
         out.println("\n--- 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays ---");
-        double scale = Recipes.homeScale();
+        double scale = Recipes.homeScale(), dated = home.g.getRecipes().datedScale(home.g.getBuildingManager().getTemplateByName(HOUSE));
         BuildingsTemplate h = home.g.getBuildingManager().getTemplateByName(HOUSE), t = today.g.getBuildingManager().getTemplateByName(HOUSE);
-        out.printf("   the %s: cash %.4f of today's (the scale %.4f), materials %d for %d, points %d for %d, land %.0f for %.0f sq ft%n", HOUSE,
-                h.getFoundingCashCost() / t.getFoundingCashCost(), scale, h.getConstructionMaterials(), t.getConstructionMaterials(),
+        out.printf("   the %s: cash %.4f of today's (the scale it stands at %.4f, homeScale() %.4f), materials %d for %d, points %d for %d, land %.0f for %.0f sq ft%n", HOUSE,
+                h.getFoundingCashCost() / t.getFoundingCashCost(), dated, scale, h.getConstructionMaterials(), t.getConstructionMaterials(),
                 h.getConstructionPoints(), t.getConstructionPoints(), h.getLandSqFt(), t.getLandSqFt());
         check("the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths", scale > .2 && scale < .4,
                 String.format("%.4f", scale));
-        check("the village's " + HOUSE + " is struck at homeScale() of today's twin's (the cash cost as the catalogue states it)",
-                Math.abs(h.getFoundingCashCost() / t.getFoundingCashCost() - scale) < 1e-9,
-                String.format("%.6f against %.6f", h.getFoundingCashCost() / t.getFoundingCashCost(), scale));
+        check("the village's " + HOUSE + " is struck at the scale it stands at (Recipes.datedScale(); homeScale() with the walk off) of today's twin's",
+                Math.abs(h.getFoundingCashCost() / t.getFoundingCashCost() - dated) < 1e-9 && (Recipes.HOME_WALK || dated == scale),
+                String.format("%.6f against %.6f", h.getFoundingCashCost() / t.getFoundingCashCost(), dated));
         check("its materials and its points are today's times the scale, rounded",
-                h.getConstructionMaterials() == Math.max(1, Math.round(t.getConstructionMaterials() * scale))
-                        && h.getConstructionPoints() == Math.max(1, Math.round(t.getConstructionPoints() * scale)),
+                h.getConstructionMaterials() == Math.max(1, Math.round(t.getConstructionMaterials() * dated))
+                        && h.getConstructionPoints() == Math.max(1, Math.round(t.getConstructionPoints() * dated)),
                 h.getConstructionMaterials() + " and " + h.getConstructionPoints());
         check("and its plot is today's", h.getLandSqFt() == t.getLandSqFt(), h.getLandSqFt() + " for " + t.getLandSqFt());
         check("the city knows the home is dated", home.g.getRecipes().datedHome(h) && !stalled.g.getRecipes().datedHome(
@@ -270,6 +280,65 @@ public class Village1900Check {
         check("and no apprentice", on.apprentices == 0, String.format("%.3f", on.apprentices));
     }
 
+
+    /* ---------------------------------------------------------------- 8 */
+
+    static void walk(Seen home) {
+        out.println("\n--- 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean ---");
+        Game g = home.g;
+        BuildingsTemplate h = g.getBuildingManager().getTemplateByName(HOUSE);
+        Recipes recipes = g.getRecipes();
+        int played = home.took.size();
+        double[] window = recipes.payIndicesForSave();
+        out.printf("   at month %d: the %s stands at %.4f of today's (homeScale() %.4f); the window %s%n", g.getMonth(), HOUSE,
+                recipes.datedScale(h), Recipes.homeScale(), window == null ? "empty" : window.length + " months, " + String.format("%.4f to %.4f",
+                        java.util.Arrays.stream(window).min().orElse(0), java.util.Arrays.stream(window).max().orElse(0)));
+        boolean once = played > Recipes.PAY_MONTHS;
+        for (int m = 0; m < played && once; m++) once = home.windowed.get(m) == Math.min(Recipes.PAY_MONTHS, home.windowed.get(0) + m);
+        check("each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there", once,
+                home.windowed.toString());
+        double worst = 0;
+        for (int m = 1; m < played; m++) worst = Math.max(worst, Math.abs(home.took.get(m) - home.after.get(m - 1)));
+        check("the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)",
+                played > 1 && worst < 1e-12, String.format("worst %.3g", worst));
+        double sum = 0;
+        for (int m = Math.max(0, played - Recipes.PAY_MONTHS); m < played; m++) sum += home.took.get(m);
+        double mean = played == 0 ? Double.NaN : sum / Math.min(played, Recipes.PAY_MONTHS);
+        check("the " + HOUSE + " stands at the mean of the last PAY_MONTHS months taken", Math.abs(recipes.datedScale(h) - mean) < 1e-12,
+                String.format("%.6f against %.6f", recipes.datedScale(h), mean));
+        check("...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth",
+                Math.abs(recipes.datedScale(h) - Recipes.homeScale()) > .01, String.format("%.4f against %.4f", recipes.datedScale(h), Recipes.homeScale()));
+
+        // The months are saved: the village saved on its scratch folder and loaded into a fresh Game stands where it stood, and a month on, where it does.
+        GameFiles files = g.getGameFiles();
+        quietly(() -> g.saveGame(10, "village1900-walk"));
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        BuildingsTemplate hb = back.getBuildingManager().getTemplateByName(HOUSE);
+        check("the village saved and loaded into a fresh Game holds the same months, to the bit, and its " + HOUSE + " the same scale and cost",
+                java.util.Arrays.equals(back.getRecipes().payIndicesForSave(), window) && back.getRecipes().datedScale(hb) == recipes.datedScale(h)
+                        && hb.getCashCost() == h.getCashCost(),
+                String.format("%.6f against %.6f, cost %.6f against %.6f", back.getRecipes().datedScale(hb), recipes.datedScale(h), hb.getCashCost(), h.getCashCost()));
+        quietly(() -> LongPlaytest.runPlayer(g, 1));
+        quietly(() -> LongPlaytest.runPlayer(back, 1));
+        check("...and a month on, both have taken the same month's pay and stand at the same scale, to the bit",
+                java.util.Arrays.equals(back.getRecipes().payIndicesForSave(), recipes.payIndicesForSave())
+                        && back.getRecipes().datedScale(hb) == recipes.datedScale(h),
+                String.format("%.9f against %.9f", back.getRecipes().datedScale(hb), recipes.datedScale(h)));
+    }
+
+    /** Runs a step with the console quiet, the model's chatter left out of the report. */
+    static void quietly(Runnable step) {
+        PrintStream real = System.out, report = LongPlaytest.out;
+        System.setOut(QUIET);
+        LongPlaytest.out = QUIET;
+        try {
+            step.run();
+        } finally {
+            LongPlaytest.out = report;
+            System.setOut(real);
+        }
+    }
     /* ---------------------------------------------------------------- the fixture */
 
     /**
@@ -351,6 +420,10 @@ public class Village1900Check {
         Game g = seen.g;
         for (int i = 0; i < n && g.getMonth() < MONTHS; i++) {
             LongPlaytest.runPlayer(g, 1);
+            double[] window = g.getRecipes().payIndicesForSave();
+            seen.took.add(window == null ? Double.NaN : window[window.length - 1]);
+            seen.windowed.add(window == null ? 0 : window.length);
+            seen.after.add(Recipes.homeScaleOfPay(g));
             seen.apprentices += g.getPopulationManager().getLastApprentices();
             if (seen.the1900Way && PopulationManager.APPRENTICES_1900) seen.apprenticesExpected += Math.max(0,
                     g.getCohorts().getPromoted(AgeBand.TEEN) * ArrivalMix.tradeShareAt(g.getMonth())
