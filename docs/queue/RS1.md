@@ -26,11 +26,12 @@ its the rescue book? idk worth noting tho". Screenshots: `C:\Users\Jerus\AppData
 3. **The order card shows "Last kr0.000259"** (fair kr14.14): a dust trade setting the last price,
    maybe DK1's class; check it against DK1.
 
-## ★ For Jerus (the builder recommends)
+## ★ Answered by Jerus
 
 May the world and the households buy the rescue book's shares, as a government sells a rescued bank in
-share offerings (RBS, Citi), rather than only the bank's own buyback at a tenth a year? The builder
-states the recommended way with why; Jerus answers, or the orchestrator settles it as recommended.
+share offerings (RBS, Citi), rather than only the bank's own buyback at a tenth a year? Jerus,
+2026-11-20 23:32 (by phone): "Yes they may rs1". So the world and the households may buy them; the
+builder designs how (an offering, the book's ask open to them, or both) and says why in the notes.
 
 ## Done
 
