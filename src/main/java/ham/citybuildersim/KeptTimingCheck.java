@@ -18,8 +18,9 @@ import static ham.citybuildersim.KeptCheck.month;
  * page slow under a loaded PC was a red in the harness whose verdict is that the pages are right (KEPT_ALL_CHROME_MS, KS1-rest).
  * Split, KeptCheck is correctness alone and this is the clocks alone. In a soft run it does nothing at all (HA1: no rounds whose only
  * verdict is time); hard, it builds KeptCheck's city (KeptCheck.playedCity()), plays it on without drawing to the month each budget
- * was measured at, and costs each page there with the premise its section in KeptCheck causes. The budgets, the sentences above
- * them and the lines' labels are KeptCheck's as they were, and the sections keep KeptCheck's numbers.
+ * was measured at, and costs each page there with the premise its section in KeptCheck causes, the page first drawn kept for
+ * WARM_MONTHS months untimed, as KeptCheck's correctness sections drew it before its cost was taken. The budgets, the sentences
+ * above them and the lines' labels are KeptCheck's as they were, and the sections keep KeptCheck's numbers.
  *
  * What it has to prove, each figure through Timing with the same month built new printed beside it:
  *   5. the kept People month is within KEPT_MONTH_MS;
@@ -232,6 +233,22 @@ public final class KeptTimingCheck {
         System.out.printf("%nplayed on from month %d to month %d, no page drawn: %,d people%n", from, g.getMonth(), g.getPopulationManager().getPopulation());
     }
 
+    /**
+     * The months a page is drawn kept, untimed, before its rounds are timed: KeptCheck's MONTHS, the months its correctness section
+     * drew the page across before the cost was taken there. The budgets were measured on pages the JIT had compiled; timed cold, after
+     * one draw, the first pages cost several times their budgets (FS4's first hard run here: the People month 60.6 ms against
+     * KEPT_MONTH_MS's 12, the Sectors list 43.1 against 18), and the pages after them, whose code was compiled by then, did not.
+     */
+    static final int WARM_MONTHS = KeptCheck.MONTHS;
+
+    /** A page's kept redraw, its CSS and layout passed, for WARM_MONTHS months on the toolkit's thread, nothing timed. */
+    private static void warm(Game g, Runnable redraw) {
+        for (int i = 0; i < WARM_MONTHS; i++) {
+            month(g);
+            redraw.run();
+        }
+    }
+
     /** One timed line: the figure against its budget through Timing, printed with its verdict, counted when it fails. */
     private static void timed(double figure, double budget, String label) {
         boolean ok = Timing.within(figure, budget);
@@ -245,6 +262,10 @@ public final class KeptTimingCheck {
         double[] cost = fx(() -> {
             bench.drawKept();
             for (int i = 0; i < 3; i++) bench.passes();
+            warm(g, () -> {
+                bench.drawKept();
+                bench.passes();
+            });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
                 month(g);
@@ -274,6 +295,10 @@ public final class KeptTimingCheck {
             bench.screen(KeptCheck.CHROME_SCREENS[0]);
             bench.drawChromeKept();
             bench.chromePasses();
+            warm(g, () -> {
+                bench.drawChromeKept();
+                bench.chromePasses();
+            });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
                 month(g);
@@ -309,6 +334,12 @@ public final class KeptTimingCheck {
             bench.drawPanelsKept();
             bench.chromePasses();
             bench.panelPasses();
+            warm(g, () -> {
+                bench.drawChromeKept();
+                bench.drawPanelsKept();
+                bench.chromePasses();
+                bench.panelPasses();
+            });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
                 month(g);
@@ -339,6 +370,10 @@ public final class KeptTimingCheck {
             bench.historyRange(ham.citybuildersim.ChartModel.DEFAULT_RANGE);
             bench.drawHistoryKept();
             for (int i = 0; i < 3; i++) bench.passes();
+            warm(g, () -> {
+                bench.drawHistoryKept();
+                bench.passes();
+            });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < 9; i++) {
                 month(g);
@@ -598,6 +633,10 @@ public final class KeptTimingCheck {
             bench.home(page);
             bench.drawKept(page);
             for (int i = 0; i < 3; i++) bench.passes();
+            warm(g, () -> {
+                bench.drawKept(page);
+                bench.passes();
+            });
             List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
             for (int i = 0; i < samples; i++) {
                 month(g);
