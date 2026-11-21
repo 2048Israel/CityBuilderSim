@@ -31,15 +31,24 @@ import java.nio.file.Path;
  *      city that has to live with it? And since 0.7.4, does the rule aim
  *      where the player's target says, and only move its intercept?
  *
- *   5. Does all of it hold in a real city, and survive a reload?
+ *   5. Does all of it hold in a real city, and survive a reload? (FS10: a city
+ *      played 132 months for the identity; its three premises - the basket
+ *      based, the world's prices moved, the currency off its bounds - set on
+ *      it by PriceIndex.restore(), WorldEconomy.shockLevel() and pinRate().)
  *
  *   6. And does INFLATION FALL WITH THE RATE? One founding held at 3%, 10%,
- *      20% and 40% from month 25 to 60: each higher dial's inflation no
+ *      20% and 40% from month 25 to 84: each higher dial's inflation no
  *      higher than the lower one's, within the noise a month's delay in the
  *      hand makes, and the 3% row at least a point above the 40% row. A
  *      measurement from 0.6.11 to 0.7.2, the baseline 7.0 had to turn; an
  *      assertion since 0.7.3, with the households' saving answering the real
  *      deposit rate - and the columns that say which channel carried it.
+ *      (FS10, MQ1: the D$ held by ForeignAccounts.pinRate() from month 25,
+ *      so a month's delay in the hand cannot move the currency the rows
+ *      ride on; read over three whole calendar years, months 49 to 84, the
+ *      world market's yearly solves in the same months of every run; the
+ *      builders' crews and the month's delay, in each year and over the
+ *      three, asserted hard, not waited for.)
  */
 public class MonetaryCheck {
 
@@ -537,10 +546,26 @@ public class MonetaryCheck {
         }
 
         PriceIndex lived = city.getPriceIndex();
+        // FS10: THE THREE PREMISES CAUSED, NOT READ OFF WHAT 132 PLAYED MONTHS HAPPENED TO REACH (the basket based, the world's prices moved by a
+        // point, the currency off its bounds were found at the end of the run). The months stay played: the reload identity below is on a lived
+        // city. Each premise is then set by the model's own door on that city, after its last month and before the save, so no month runs on them:
+        // (1) a basket based by PriceIndex.takeMonth() on a fixture shelf and put in through PriceIndex.restore(); (2) the world's price level set
+        // by WorldEconomy.shockLevel(); (3) the rate held where ForeignAccounts.pinRate() puts it.
+        assertTrue("fixture: a basket one shopping month short of PriceIndex.SETTLING_MONTHS is not based",
+                !basedBasket(PriceIndex.SETTLING_MONTHS - 1).isBased());
+        assertTrue("fixture: PriceIndex.SETTLING_MONTHS shopping months base it", basedBasket(PriceIndex.SETTLING_MONTHS).isBased());
+        PriceIndex struck = basedBasket(PriceIndex.SETTLING_MONTHS + PriceIndex.WINDOW);
+        lived.restore(struck.toSaveArray());
+        city.getWorldEconomy().shockLevel(WORLD_LEVEL_SET / city.getWorldEconomy().getPriceLevel());
+        city.getForeignAccounts().pinRate(PINNED_RATE);
         out.printf("   ten years: index %.3f, world %.3f, rate %.4f, parity %.4f, policy %.2f%%%n",
                 lived.getIndex(), city.getWorldEconomy().getPriceLevel(),
                 city.getForeignAccounts().getRate(), city.getForeignAccounts().getParity(),
                 city.getDebtManager().getPolicyRate() * 100);
+        close("fixture: the index stands where the restored basket struck it", lived.getIndex(), struck.getIndex(), 1e-12);
+        assertTrue("fixture: the restored basket's year of readings reads a rise", lived.hasRate() && lived.inflation() > 0);
+        close("fixture: the world's price level stands where it was set", city.getWorldEconomy().getPriceLevel(), WORLD_LEVEL_SET, 1e-9);
+        close("fixture: the rate stands where it was pinned", city.getForeignAccounts().getRate(), PINNED_RATE, 1e-12);
 
         assertTrue("the city based its basket", lived.isBased());
         assertTrue("...and the world's prices moved",
@@ -676,11 +701,11 @@ public class MonetaryCheck {
        One founding - the playtest's own, borrowed the way the ensemble
        probes borrow it - run to month 24 and then once for each held rate
        from there: the dial set at month 25, the first month the currency is
-       allowed to move, and held to month 60. Nothing else touches the city
+       allowed to move, and held to month 84. Nothing else touches the city
        after the founding, so the dial is the only hand on it; the runs are
        asserted to differ by the dial and by nothing else. Each row prints
-       inflation averaged over the last 36 months (struck on the index,
-       month 24 to month 60, as an annual rate), the price index, the
+       inflation over the window (struck on the index, from the January
+       month 49 to the December month 84, as an annual rate), the price index, the
        exchange rate, the bank's rate to a good credit (Bank.lendingRate()
        on the policy rate, as the month prices the carry trade) and its
        strain, what the businesses owe, the city's own rate, M2, and - since
@@ -691,6 +716,42 @@ public class MonetaryCheck {
        the households' savings, the sectors' cash in credit, the world's
        deposits at the bank and currency, the treasury left out. Until 0.7.3
        this section summed its own, without the world's deposits.
+
+       THE WINDOW, AND WHAT IS CAUSED (FS10, MQ1). The rows were read over
+       36 months after a settle test on the groceries shelf (GW1), and the
+       month's delay moved them by where the world's repricings fell: the
+       world market solves once a year (Game.strikeTheWorldMarket(): the
+       market's solvedYear() changes in a January), the border prices the
+       shelves follow step then, and the shelf takes the rest of the year to
+       follow them (Retail.stickyPrice(), CLEAR_SPEED a month). A town read
+       through those steps was not steady, and no test on the price index
+       made it so (FB1-notes, MQ1). The solves are the calendar's, so a
+       month's delay cannot move one; what it moved was the currency. A
+       window between two solves (months 49 to 60) read the late rows within
+       the allowance, but a window further on (months 73 to 84) read the 10%
+       row 1.292 points from its late twin, the floating D$ having fallen
+       to 1.78 on the 10% row and 2.57 on the 3% one by month 84.
+       SO THE CURRENCY IS HELD (FS10, MQ1's own remedy): every run pins the
+       D$ (ForeignAccounts.pinRate()) at the founding's rate in month 25,
+       the on-time dial's first, on time and a month late alike. The rows are read
+       over three whole calendar years (WINDOW_YEARS), from the January
+       month 49 to the December month 84, 24 months
+       (PriceIndex.SETTLING_MONTHS) after the dial is held. The world
+       market's yearly solves fall in the same months of every run. The
+       month's delay is asserted inside the allowance in each of the three
+       years and over the whole window. Measured at FS10, the late rows
+       differ by at most 0.203, 0.105 and 0.105 points in the three years
+       (1.292 unpinned in the third), and by 0.138 over all three.
+       What the pin gives up is the currency's channel, which carried most
+       of the point while the D$ floated. The rows measure the domestic
+       channels alone, and those take their time: the first year held reads
+       10.93 / 11.01 / 12.13 / 12.13%, no fall yet. The second year reads
+       12.09 / 9.83 / 8.95 / 8.94, and the third 12.42 / 10.19 / 6.30 /
+       6.29. Over the three years the rows are 11.50 / 10.30 / 9.11 / 9.10,
+       a spread of 2.40 points against the one-point floor. The currency's
+       answer to the real rate is CurrencyCheck's (section 1) and
+       PassThroughCheck's. The builders' crews (the General Hospital the
+       founding orders) are asserted hard as a fixture, with the pin.
        ================================================================= */
 
     /**
@@ -700,8 +761,16 @@ public class MonetaryCheck {
      */
     static final double[] HELD_RATES = { .03, .10, .20, .40 };
 
-    /** How long each run is: five years, the last three of them at the held rate. */
-    static final int MEASURED_MONTHS = 60;
+    /** The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). */
+    static final int MEASURED_MONTHS = 84;
+
+    /** The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. */
+    static final int WINDOW_YEARS = 3;
+
+    /** The months a window is, from its first January to its last December: the years before the last whole, and the eleven of the last after its January's own solve, from the model's calendar (CityCalendar.monthOfYear(MEASURED_MONTHS) is 12). */
+    static int windowMonths() {
+        return 12 * (WINDOW_YEARS - 1) + CityCalendar.monthOfYear(MEASURED_MONTHS) - 1;
+    }
 
     /** The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. */
     static final int HELD_FROM = LongPlaytest.HELD_AFTER + 1;
@@ -712,7 +781,8 @@ public class MonetaryCheck {
      * On the harness's own setup (buildersShortOn false), the 3% / 10% / 20% / 40% rows differed by
      * 0.000 / 0.276 / 0.322 / 0.320 points; the 20% row is now largest.
      * At 40%, lags of 1 / 2 / 3 / 4 / 5 / 6 months move inflation by 0.320 / 0.365 / 0.435 / 0.568 / 0.574 / 0.665
-     * points: six months misses this premise, five does not; a miss is observed and skips ordering (PO1), not a failed law.
+     * points: six months misses this premise, five does not (measured over the 36 months the rows were read on before FS10, the D$ floating; held since FS10, a month late moves them 0.138 at most);
+     * a miss fails the delay fixture, which is asserted hard since FS10 (it was an Observation that skipped the ordering, PO1).
      * Re-measured as at 0.7.11 (Jerus: "re-measure it"): the hand's timing fixes a mortgage's rate for its term,
      * so this allows timing variation, while TRANSMISSION_FLOOR still requires a full point across the dial's range.
      */
@@ -839,38 +909,6 @@ public class MonetaryCheck {
         return g;
     }
 
-    /** How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. */
-    static final double SETTLED_STEP = .01;
-
-    /** How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in order, but the month-late rows differed by 0.109 / 0.092 / 0.156 points against 0.100: the town was still building; a year, month 59: 14.02 / 9.26 / 7.40 / 7.47%, late rows 0.028 / 0.042 / 0.077; on the draw of the batch's last commit the year settles the shelf only at month 46, 21 months of run-on, 503 people, rows 22.95 / 20.68 / 17.90 / 16.19% and late rows 0.000 / 0.275 / 0.369 / 0.189 points against 0.100 - the count is not what moves them, and with every sector held through the window they are 0.000 / 0.255 / 0.331 / 0.123, so the businesses' orders are not either). */
-    static final int SETTLED_MONTHS = 12;
-
-    /** The most months the founding is played on to settle, so a town that never does is read as it stands. */
-    static final int MAX_SETTLE_MONTHS = 60;
-
-    /** The months the last heldRun() played its founding on to settle (settle()): the log's figure. */
-    static int settledAfter;
-
-    /**
-     * GW1: plays the founding on at its own dial, a month at a time, until the basket is based and the groceries shelf has moved by no more than SETTLED_STEP a
-     * month for SETTLED_MONTHS running, at most MAX_SETTLE_MONTHS; returns the months played. With the draw in the staffing gate the town builds earlier and its
-     * supply (food first) arrives ahead of its people, so the shelf the basket was based on at month 38 is dearer than the cost it settles at: the groceries
-     * component falls 20 to 28% in the ten months after (0.77 by month 48 at 3%, 0.72 by month 60 at 40%), a one-off the dial times and does not set. The
-     * rows' window caught it: inflation -1.23 / -0.89 / -0.78 / -0.68% a year at 3 / 10 / 20 / 40% (main: 7.37 / 6.20 / 5.14 / 4.92%).
-     */
-    static int settle(Game g) {
-        int months = 0, calm = 0;
-        double was = g.getPriceIndex().getComponentLevel(PriceIndex.GROCERIES);
-        while (months < MAX_SETTLE_MONTHS && calm < SETTLED_MONTHS) {
-            step(g, Double.NaN, Integer.MAX_VALUE);
-            months++;
-            double now = g.getPriceIndex().getComponentLevel(PriceIndex.GROCERIES);
-            calm = g.getPriceIndex().isBased() && Math.abs(now / was - 1) <= SETTLED_STEP ? calm + 1 : 0;
-            was = now;
-        }
-        return months;
-    }
-
     /** The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). */
     static double fewestCrews = 1;
 
@@ -884,29 +922,65 @@ public class MonetaryCheck {
                 g.getHouseholdBalance().totalSavings(), g.getDebtManager().getPolicyRate() };
     }
 
+    /** Whether, in every month of every run's window so far (heldRun()), the world market had solved in that month's own calendar year: its yearly repricings fall on each January of the window, the same months in every run, on time or a month late. */
+    static boolean solvesOnTheCalendar = true;
+
+    /** Whether the basket was based before the window opened in every run so far (heldRun()): an index not yet based reads 0% over it. */
+    static boolean basedBeforeWindow = true;
+
+    /** The rate every run's D$ is pinned at (heldRun()): the founding's in the month the dial is first held, NaN until the first run sets it. */
+    static double heldAt = Double.NaN;
+
+    /** Whether every run's D$ stood at heldAt, pinned, in every month from the hold to the window's close (heldRun()). */
+    static boolean currencyHeld = true;
+
     /**
-     * One run of the founding at a held rate: the dial held from heldFrom to
-     * MEASURED_MONTHS, and inflation over the held months as an annual rate.
+     * One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate
+     * in its own last month, HELD_FROM, on time and late alike, and inflation over the window - the index at the January month MEASURED_MONTHS - windowMonths()
+     * to its value at MEASURED_MONTHS, as an annual rate; each of its WINDOW_YEARS calendar years, its January to its December, into `years`
+     * where asked. FS10 (MQ1): the pin is what keeps a month's delay in the hand off the currency the rows ride on; every month of the window
+     * the world market is read to have solved in that month's own year (solvesOnTheCalendar), and the D$ to stand at heldAt (currencyHeld).
      * The city is handed back through `city` for its columns.
      */
-    static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city) {
+    static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years) {
         System.setOut(quiet);
         try {
             // WN3-R: on the world's band, see founding().
             Game g = founding(root, label, false, true, Sectors.AGRICULTURE);
-            // GW1: the founding is played on at its own dial until the town's shelf has settled (settle()), and the dial is held from the month after that: the rows'
-            // window is the same length, from a settled town. The run-on is the founding's, so it is the same in every row and in the rows held a month late.
-            int runOn = settle(g);
             if (print != null) System.arraycopy(fingerprint(g), 0, print, 0, print.length);
-            double indexFrom = g.getPriceIndex().getIndex();
-            while (g.getMonth() <= MEASURED_MONTHS + runOn) {
-                step(g, rate, heldFrom + runOn);
+            ForeignAccounts fx = g.getForeignAccounts();
+            if (Double.isNaN(heldAt)) heldAt = fx.getRate();
+            fx.pinRate(fx.getRate());
+            currencyHeld &= fx.getRate() == heldAt;
+            int opens = MEASURED_MONTHS - windowMonths();
+            WorldMarket market = g.getWorldMarket();
+            while (g.getMonth() < opens) {
+                step(g, rate, heldFrom);
                 fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
+                currencyHeld &= fx.getRate() == heldAt;
             }
+            double indexFrom = g.getPriceIndex().getIndex();
+            basedBeforeWindow &= g.getPriceIndex().isBased() && g.getPriceIndex().getLinkedMonth() < opens;
+            // The window opens on a January and closes on a December, and each month of it the market has solved in its own year.
+            solvesOnTheCalendar &= market != null && CityCalendar.monthOfYear(g.getMonth()) == 1
+                    && market.solvedYear() == CityCalendar.yearOf(g.getMonth())
+                    && CityCalendar.monthOfYear(MEASURED_MONTHS + 1) == 1;
+            double yearFrom = indexFrom;
+            int year = 0;
+            while (g.getMonth() < MEASURED_MONTHS) {
+                step(g, rate, heldFrom);
+                fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
+                currencyHeld &= fx.getRate() == heldAt;
+                solvesOnTheCalendar &= market != null && market.solvedYear() == CityCalendar.yearOf(g.getMonth());
+                if (CityCalendar.monthOfYear(g.getMonth()) == 1) yearFrom = g.getPriceIndex().getIndex();
+                if (CityCalendar.monthOfYear(g.getMonth()) == 12) {
+                    if (years != null) years[year] = Math.pow(g.getPriceIndex().getIndex() / yearFrom, 12.0 / (CityCalendar.monthOfYear(MEASURED_MONTHS) - 1)) - 1;
+                    year++;
+                }
+            }
+            solvesOnTheCalendar &= year == WINDOW_YEARS;
             if (city != null) city[0] = g;
-            settledAfter = runOn;
-            return Math.pow(g.getPriceIndex().getIndex() / indexFrom,
-                    12.0 / (MEASURED_MONTHS - HELD_FROM + 1)) - 1;
+            return Math.pow(g.getPriceIndex().getIndex() / indexFrom, 12.0 / windowMonths()) - 1;
         } finally {
             System.setOut(out);
         }
@@ -920,9 +994,14 @@ public class MonetaryCheck {
         double[] inflation = new double[n];
         boolean dialsHeld = true;
         fewestCrews = 1;
+        solvesOnTheCalendar = true;
+        heldAt = Double.NaN;
+        currencyHeld = true;
+        double[][] years = new double[n][WINDOW_YEARS];
+        basedBeforeWindow = true;
         for (int r = 0; r < n; r++) {
             Game[] held = new Game[1];
-            inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held);
+            inflation[r] = heldRun(root, "rate-" + r, HELD_RATES[r], HELD_FROM, prints[r], held, years[r]);
             Game g = held[0];
             dialsHeld &= Math.abs(g.getDebtManager().getPolicyRate() - HELD_RATES[r]) < 1e-12;
             if (r == 0) {
@@ -949,8 +1028,14 @@ public class MonetaryCheck {
             rates.append(r == 0 ? "" : " / ").append(String.format("%.0f%%", HELD_RATES[r] * 100));
             rows.append(r == 0 ? "" : " / ").append(String.format("%.2f%%", inflation[r] * 100));
         }
-        out.printf("   inflation at %s: %s a year, months %d-%d (the founding played on %d months to a settled shelf); %.3f points from the lowest dial to the highest%n",
-                rates, rows, HELD_FROM + settledAfter, MEASURED_MONTHS + settledAfter, settledAfter, (inflation[0] - inflation[n - 1]) * 100);
+        out.printf("   inflation at %s: %s a year, months %d-%d (the %d months from a January's solve to the December %d years on, the D$ held at %.4f); %.3f points from the lowest dial to the highest%n",
+                rates, rows, MEASURED_MONTHS - windowMonths(), MEASURED_MONTHS, windowMonths(), WINDOW_YEARS, heldAt, (inflation[0] - inflation[n - 1]) * 100);
+        for (int y = 0; y < WINDOW_YEARS; y++) {
+            StringBuilder yearRows = new StringBuilder();
+            for (int r = 0; r < n; r++) yearRows.append(r == 0 ? "" : " / ").append(String.format("%.2f%%", years[r][y] * 100));
+            out.printf("     its calendar year %d (months %d-%d): %s%n", y + 1, MEASURED_MONTHS - windowMonths() + 12 * y,
+                    MEASURED_MONTHS - windowMonths() + 12 * y + CityCalendar.monthOfYear(MEASURED_MONTHS) - 1, yearRows);
+        }
 
         /*
          * THE NOISE, MEASURED AND NOT ASSUMED: every row again with its dial
@@ -962,37 +1047,75 @@ public class MonetaryCheck {
          * changes no month.
          */
         double noise = 0;
+        double[] yearNoise = new double[WINDOW_YEARS];
         StringBuilder offsets = new StringBuilder();
         for (int r = 0; r < n; r++) {
-            double late = heldRun(root, "late-" + r, HELD_RATES[r], HELD_FROM + 1, null, null);
+            double[] lateYears = new double[WINDOW_YEARS];
+            double late = heldRun(root, "late-" + r, HELD_RATES[r], HELD_FROM + 1, null, null, lateYears);
             noise = Math.max(noise, Math.abs(late - inflation[r]));
+            for (int y = 0; y < WINDOW_YEARS; y++) yearNoise[y] = Math.max(yearNoise[y], Math.abs(lateYears[y] - years[r][y]));
             offsets.append(r == 0 ? "" : " / ").append(String.format("%.3f", Math.abs(late - inflation[r]) * 100));
         }
-        out.printf("   the same rows held a month late differ by %s points; the allowance is %.3f%n",
-                offsets, MEASUREMENT_NOISE * 100);
+        StringBuilder yearOffsets = new StringBuilder();
+        for (int y = 0; y < WINDOW_YEARS; y++) yearOffsets.append(y == 0 ? "" : " / ").append(String.format("%.3f", yearNoise[y] * 100));
+        out.printf("   the same rows held a month late differ by %s points (at most %s in its calendar years); the allowance is %.3f%n",
+                offsets, yearOffsets, MEASUREMENT_NOISE * 100);
 
+        out.printf("   the builders offered at least %.3f of their posts in every month the dial was held%n", fewestCrews);
         boolean oneFounding = true;
         for (int r = 1; r < n; r++) {
             oneFounding &= java.util.Arrays.equals(prints[r], prints[0]);
         }
         assertTrue("the runs differ by the dial and by nothing else",
                 oneFounding && dialsHeld);
-        boolean crewsPresent = Observation.reached("fixture: the builders kept every crew on through every run's window",
-                fewestCrews == 1,
-                "held-rate inflation ordering");
-        boolean delayWithinAllowance = Observation.reached("...and a month's delay in the hand moves them less than the allowance",
-                noise <= MEASUREMENT_NOISE,
-                "held-rate inflation ordering");
-        if (crewsPresent && delayWithinAllowance) {
-            for (int r = 1; r < n; r++) {
-                assertTrue(String.format("inflation at %.0f%% is no higher than at %.0f%%, within the noise",
-                                HELD_RATES[r] * 100, HELD_RATES[r - 1] * 100),
-                        inflation[r] <= inflation[r - 1] + MEASUREMENT_NOISE);
-            }
-            assertTrue(String.format("...and a dial of %.0f%% holds it at least a point under %.0f%%",
-                            HELD_RATES[n - 1] * 100, HELD_RATES[0] * 100),
-                    inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
+        // FS10: the premises asserted hard, and the laws below run whatever they read (they were Observations that skipped the ordering).
+        assertTrue(String.format("fixture: the D$ is held, pinned at the founding's rate (%.4f), in every month of every run, on time or a month late", heldAt),
+                currencyHeld);
+        assertTrue("fixture: the builders kept every crew on through every run's window", fewestCrews == 1);
+        assertTrue("fixture: the window is " + WINDOW_YEARS + " whole calendar years, and the world's yearly repricings fall on each of its Januaries in every run, on time or a month late",
+                solvesOnTheCalendar);
+        assertTrue("fixture: the basket was based before every run's window opened", basedBeforeWindow);
+        assertTrue("...and a month's delay in the hand moves them less than the allowance", noise <= MEASUREMENT_NOISE);
+        boolean everyYear = true;
+        for (double y : yearNoise) everyYear &= y <= MEASUREMENT_NOISE;
+        assertTrue("...in each of the window's calendar years too (" + yearOffsets + " points)", everyYear);
+        for (int r = 1; r < n; r++) {
+            assertTrue(String.format("inflation at %.0f%% is no higher than at %.0f%%, within the noise",
+                            HELD_RATES[r] * 100, HELD_RATES[r - 1] * 100),
+                    inflation[r] <= inflation[r - 1] + MEASUREMENT_NOISE);
         }
+        assertTrue(String.format("...and a dial of %.0f%% holds it at least a point under %.0f%%",
+                        HELD_RATES[n - 1] * 100, HELD_RATES[0] * 100),
+                inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
+    }
+
+    /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */
+    static final double WORLD_LEVEL_SET = 1.5;
+
+    /** The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. */
+    static final double PINNED_RATE = 1.0;
+
+    /** What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. */
+    static final double FIXTURE_SHELF_RISE = .01;
+
+    /** ...and what its rent rises a month: half of that, so the two components part. */
+    static final double FIXTURE_RENT_RISE = .005;
+
+    /**
+     * FS10: a price index put through the model's own door, PriceIndex.takeMonth(): a shelf and a rent, each month with spending on both in it
+     * (the households' 40 on food and 60 on rent, the weights the basket is struck on), for this many months. PriceIndex.SETTLING_MONTHS
+     * of them base it; a month more is a month read on the basket. Its toSaveArray() is what section 5 puts back on the played city
+     * (PriceIndex.restore()), a basket whose chain and year of readings are the model's own.
+     */
+    static PriceIndex basedBasket(int shoppingMonths) {
+        PriceIndex index = new PriceIndex();
+        double shelf = 1, rent = 10;
+        for (int month = 1; month <= shoppingMonths; month++) {
+            index.takeMonth(shelf, rent, 40, 60, month);
+            shelf *= 1 + FIXTURE_SHELF_RISE;
+            rent *= 1 + FIXTURE_RENT_RISE;
+        }
+        return index;
     }
 
     static BuildingsTemplate template(Game game, String name) {

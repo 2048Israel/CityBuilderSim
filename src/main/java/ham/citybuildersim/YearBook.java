@@ -525,6 +525,46 @@ public final class YearBook {
     }
 
     /**
+     * NOMINAL GDP, a rolling year of it (GY1): what the graph's "GDP (yr)" line draws, so it sits on
+     * the same axis as the public debt, a stock the size of a year or more of output.
+     *
+     * Jerus, 2026-11-20: "in the graph, gdp can be shown yearly not monthly, sure real is yearly, but
+     * not normal, basically i want to be able to compare gdp with public debt". The month's GDP is
+     * a flow of twelve months to the year and the debt is a level, so the two lines sat a factor of
+     * twelve (and more) apart and said nothing to each other. This is realGdpYear() without the price
+     * index - the same twelve months summed by the same rollingYear(), NaN until there are twelve
+     * behind each month for the same reason (a "year" of seven months is not a year) - so the nominal
+     * line and the real one are the same measure in two moneys. The monthly line is still there as
+     * "GDP (month)".
+     */
+    public static double[] gdpYear(HistorySave h) {
+        return rollingYear(h.aligned("gdp"), h);
+    }
+
+    /**
+     * The city's public debt over a year of its output, a month at a time (GY1): the graph's "Debt to
+     * GDP". A fraction - 1.5 is 150% - as every other "percent" line the graph draws is, so the screen
+     * prints it the way it prints unemployment.
+     *
+     * Jerus, 2026-11-20: "perhaps a debt to gdp ratio on the graph options". The debt series (the
+     * city's own borrowing outstanding, as that month ended) over gdpYear() at the same month: the
+     * measure the debt limit reads (AutoBuilder.ratio(), 0.7.81: debt over a year of output) and the
+     * rankings' "debt" share (CityMeasures), drawn as a line. NaN where there is no year of output
+     * behind the month yet or the year's GDP is not positive - no figure, never a division by zero -
+     * and where the debt itself was not recorded; owing nothing against a year of output is 0.
+     * Before the first twelve months the debt limit scales the output up from fewer months and this
+     * line draws nothing: the graph does not draw a year it has not lived (realGdpYear()).
+     */
+    public static double[] debtToGdp(HistorySave h) {
+        double[] debt = h.aligned("debt"), year = gdpYear(h);
+        double[] out = new double[debt.length];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = year[i] > 0 ? debt[i] / year[i] : Double.NaN;
+        }
+        return out;
+    }
+
+    /**
      * Twelve months summed, ending at each month; NaN before the twelfth, and wherever the window holds a NaN.
      *
      * Twelve MONTHS, not entries (0.7.55): a folded year is all twelve of

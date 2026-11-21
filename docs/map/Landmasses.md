@@ -1,6 +1,6 @@
 # Landmasses.java - 1,268 lines · 101 methods · 11 constants · model
 
-`ham/citybuildersim/Landmasses.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Landmasses.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The city's ground counted by landmass, and which landmasses the city's buildings may stand on: its books by landmass
 > (each landmass's owned dry ground by relief and forest, its shore, the holding it was first owned by), the linked set
@@ -35,7 +35,7 @@
 
 **Uses:** [World](World.md) (63), [LandGrid](LandGrid.md) (15), [CityLand](CityLand.md) (8), [EarthData](EarthData.md) (4), [LandManager](LandManager.md) (1), [EarthTerrain](EarthTerrain.md) (1), [EarthProj](EarthProj.md) (1), [LandParcel](LandParcel.md) (1), [LandMarket](LandMarket.md) (1), [Ports](Ports.md) (1)
 
-**Used by (33):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityMap](CityMap.md), [DataSave](DataSave.md), [FB13Check](FB13Check.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HydroSites](HydroSites.md), [Inbox](Inbox.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (34):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BridgeGround](BridgeGround.md), [BridgeView](BridgeView.md), [Bridges](Bridges.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityMap](CityMap.md), [DataSave](DataSave.md), [FB13Check](FB13Check.md), [FittingCheck](FittingCheck.md), [ForeignCheck](ForeignCheck.md), [Game](Game.md), [HydroSites](HydroSites.md), [Inbox](Inbox.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 

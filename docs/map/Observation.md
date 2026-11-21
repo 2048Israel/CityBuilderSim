@@ -1,6 +1,6 @@
 # Observation.java - 71 lines · 5 methods · 4 constants · model
 
-`ham/citybuildersim/Observation.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Observation.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The played city's path premises, reported without counting a failure.
 > 
@@ -10,7 +10,7 @@
 
 **Uses:** [Timing](Timing.md) (1)
 
-**Used by (28):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DeskCheck](DeskCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCheck](ForeignCheck.md), [FundCheck](FundCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [MonetaryCheck](MonetaryCheck.md), [ObservationCheck](ObservationCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (22):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [DeskCheck](DeskCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [HealthCheck](HealthCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [ObservationCheck](ObservationCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 
@@ -19,7 +19,7 @@
 | 17 | `Observation.PROPERTY` | `"cbs.observations"` | Nightly's mode records every reading, including holds, for merge attribution. |
 | 20 | `Observation.TSV_PROPERTY` | `"cbs.observations.tsv"` | The shared nightly record, harness, label and REACHED or MISSED, tab-separated. |
 | 23 | `Observation.HARNESS_PROPERTY` | `"cbs.observations.harness"` | The running harness, set on its JVM even when another harness supplies a fixture. |
-| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "SaveFileCheck", "CurrencyRegimeCheck",...` | Every harness with path observations, also run nightly alongside HA1's tier. |
+| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "SaveFileCheck", "AutoBuildCheck", "Bon...` | Every harness with path observations, also run nightly alongside HA1's tier. |
 
 ## Methods, in file order
 

@@ -56,8 +56,11 @@ import java.nio.file.Path;
  *      exactly where they were, takes equity down by exactly what the dollars
  *      fetched at the rate they were sold at (the vault's fall), and leaves
  *      the remittance, the loss carried and the month's profit alone. In a
- *      real city, the month it is defended and every month of ten years
- *      after: M0 moves by the money made and nothing else, nothing is retired
+ *      real city, the month it is defended (CAUSED, FS10: after WARM_MONTHS
+ *      of the town's play, the last reprice's shadow put FALL_PLACED under
+ *      the rate through the saved array, and hot money placed at its largest
+ *      position to leave, a fall and a deficit) and every month of ten years
+ *      after (played): M0 moves by the money made and nothing else, nothing is retired
  *      but what the named operations take back, the audit closes and
  *      declares nothing for the defence, the remittance is the month's
  *      profit, and equity less the vault is what the bank owes; a save keeps
@@ -494,6 +497,39 @@ public class CurrencyCheck {
     }
 
     /* ================= 4. the dollars it sells are capital, not money destroyed ================= */
+
+    /** FS10: the months the real town of section 4 is played as it always was (its trade, its trailing output and its first year of a vault) before the month that is set up for the defence. */
+    static final int WARM_MONTHS = 12;
+
+    /** ...and how far under the rate the last reprice's shadow is put (logs): eight of the market's monthly swings, more than the float's news in one month can take back, so the fall the lean reads does not hang on the seeded draw. */
+    static final double FALL_PLACED = 8 * ForeignAccounts.MARKET_SIGMA;
+
+    /** ForeignAccounts.toSaveArray()'s slots for the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so; ExchangeRateCheck's SHADOW_SLOT and HELD_SLOT). */
+    static final int SHADOW_SLOT = 78, HELD_SLOT = 79;
+
+    /**
+     * The last reprice's shadow put this log gap UNDER the rate, through the saved array put back with that slot changed (as
+     * ExchangeRateCheck.setTheShadowGap does for a peg's): the month's fall is struck from where the shadow stood, so the next
+     * reprice reads a fall of the gap and whatever the levels add, and the lean sells against it. Nothing else of the state moves.
+     */
+    static void shadowUnder(ForeignAccounts fx, double gap) {
+        double[] saved = fx.toSaveArray();
+        close("fixture: SHADOW_SLOT holds the log of the last reprice's shadow, which under Lean is the rate's", saved[SHADOW_SLOT], Math.log(fx.getRate()), 1e-12);
+        saved[SHADOW_SLOT] = Math.log(fx.getRate()) - gap;
+        saved[HELD_SLOT] = 1;
+        fx.restore(saved);
+        close("fixture: the shadow stands the gap under the rate", Math.log(fx.getRate()) - Math.log(fx.getShadowRate()), gap, 1e-12);
+    }
+
+    /** The city's hot money placed by name up to this stock (CapitalFlows.placeArrivalForTest, as InterestAbroadCheck.setHotStock and CurrencyRegimeCheck.placeHotMoney place it), and the bank that funds it moved as Game moves it when the stock grows: cash in, the deposits told the stock. */
+    static void hotMoneyPlaced(Game g, double stock) {
+        CapitalFlows hot = g.getCapitalFlows();
+        double placed = Math.max(0, stock - hot.getStock());
+        hot.placeArrivalForTest(placed);
+        g.getBank().receiveHotMoney(placed);
+        g.getBank().setForeignDeposits(hot.getStock());
+    }
+
     static void capital() throws Exception {
         out.println("\n--- 4. and what the dollars fetch is the central bank's capital spent, not money destroyed ---");
 
@@ -575,11 +611,19 @@ public class CurrencyCheck {
          * the world's base rate less the world's realised inflation.
          */
         double worstWiring = 0;
-        int defendedAt = 0, played = 0;
         double vaultBefore = 0, rateBefore = 0;
         Before was = null;
-        final int most = 240;
-        for (; played < most; played++) {
+        double soldRun = 0, fetchedRun = 0;
+        // FS10: THE DEFENCE IS CAUSED, in the month after WARM_MONTHS of the town's own play, not waited for. The warm-up months
+        // are played as they always were (the wiring read each one; a sale in one is counted into the since-founding sums below);
+        // the last month is the one the fixture sets up: a fall placed under the rate and a deficit placed by hot money leaving.
+        for (int played = 0; played <= WARM_MONTHS; played++) {
+            boolean placed = played == WARM_MONTHS;
+            if (placed) {
+                shadowUnder(fx, FALL_PLACED);
+                hotMoneyPlaced(city, CapitalFlows.maxStockInMonthsOfOutput() * fx.getGdpTrailing());
+                assertTrue("fixture: the hot money placed stands over what the dial draws, so it leaves", city.getCapitalFlows().getStock() > city.getCapitalFlows().getTarget());
+            }
             // EX ANTE SINCE 0.7.42: the city's side is the dial less the
             // inflation it EXPECTS, as the month opened (Expectations; the
             // anchor is taken after the reprice) - it was the year's inflation.
@@ -593,14 +637,16 @@ public class CurrencyCheck {
             double handed = (dial.getPolicyRate() - cityInflation)
                     - (dial.worldRate() - city.getWorldEconomy().realisedInflation());
             worstWiring = Math.max(worstWiring, Math.abs(fx.getRealRateDifferential() - handed));
-            if (fx.getDefenceUsd() > 0) { defendedAt = city.getMonth(); played++; break; }
+            if (!placed && fx.getDefenceUsd() > 0) { soldRun += fx.getDefenceUsd(); fetchedRun += fx.getDefenceLocal(); }
         }
-        out.printf("   first defended at month %d: sold US$%,.2fk of US$%,.2fk, fetching $%,.2fk at %.6f%n",
-                defendedAt, fx.getDefenceUsd(), vaultBefore, fx.getDefenceLocal(), rateBefore);
+        final int defendedAt = city.getMonth();
+        out.printf("   defence caused at month %d (a fall of %.3f under the rate, hot money leaving): the month ran a deficit of US$%,.2fk, sold US$%,.2fk of US$%,.2fk, fetching $%,.2fk at %.6f%n",
+                defendedAt, FALL_PLACED, fx.monthDeficitUsd(), fx.getDefenceUsd(), vaultBefore, fx.getDefenceLocal(), rateBefore);
         close("every month, Game handed the currency the real rate differential",
                 worstWiring, 0, 1e-12);
-        assertTrue("fixture: the currency was defended in a real city", defendedAt > 0);
-        if (defendedAt == 0) return;
+        assertTrue("fixture: the month ran a deficit (the hot money's leaving)", fx.monthDeficitUsd() > 0);
+        assertTrue("fixture: the currency was defended in a real city", fx.getDefenceUsd() > 0);
+        if (!(fx.getDefenceUsd() > 0)) return;
 
         double sold = fx.getDefenceUsd();
         fetched = fx.getDefenceLocal();
@@ -665,7 +711,8 @@ public class CurrencyCheck {
          * defence, the remittance the month's profit.
          */
         int monthsDefended = 1;
-        double soldRun = sold, fetchedRun = fetched;
+        soldRun += sold;
+        fetchedRun += fetched;
         int more = 0;
         for (; more < 120; more++) {
             Before month = new Before(cb);
@@ -680,7 +727,7 @@ public class CurrencyCheck {
         }
         out.printf("   over %d months the central bank defended the currency in %d, selling US$%,.0fk;"
                 + " the vault holds US$%,.0fk; spent defending it since founding $%,.0fk; M0 $%,.0fk%n",
-                played + more, monthsDefended, soldRun, fx.getReservesUsd(), cb.vaultSpent(), cb.m0());
+                WARM_MONTHS + 1 + more, monthsDefended, soldRun, fx.getReservesUsd(), cb.vaultSpent(), cb.m0());
         assertTrue("the defence fires in a real city more than once", monthsDefended > 1);
         close("...and the equity line is every month's sale at its own month's rate", cb.vaultSpent(),
                 fetchedRun, 1e-6 * Math.max(1, fetchedRun));
