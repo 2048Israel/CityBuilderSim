@@ -207,57 +207,57 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
   fa889c423 under them): `--fast` exit 0; the pick ALL 230 (BusinessInvestment.java, 61 readers), review not
   needed; each alone, exit 0: WantedPostsCheck, DenominationCheck, EquityCheck, PassThroughCheck, AuctionCheck,
   YoungBankCheck, AutoBuildCheck, CopperRefiningCheck and HousingCheck.
+- The car mend (b16fd8a5d, §11): `--fast` exit 0 (and again on 02e7138d7, the review's comments); CarCheck alone,
+  its one red CI1's (`## known-reds`) and its new section green, and that section red on the old call (§5). Review
+  needed (money): REV-OE1-M, SHIP (§11).
 
 ## 8. The ensemble
 
-**Due again**: §9's two mends move the trace (the staffing hold's asks set wages; the landlords may now sell where
-the match's rounding held them). The orchestrator's order: after CPB2 ships, merge main, the 80 on the box
-against `docs/ensemble/0.9.167.md`, then the dry run. The figures below are OE1c's, on the model before them.
+`docs/ensemble/OE1.md`: OE1e, 80 of 80 runs on the gate box (classes of 398057923: OE1 with the car mend, merged
+with 0.9.171; the baseline's `JAVA_OPTS` extra columns; the box's data files). Scored against the newest baseline,
+`docs/ensemble/0.9.171.md` (the orchestrator's correction; the committed baseline is this scoring): **25 of 26**
+criteria (H1 retired, not counted), hard 10 of 10 (M1 0 months and F1 0 runs in every policy), batch verdict
+PASS. Changed: AUTO2 A1, inflation from m240, FAIL to PASS (2.91% [2.58% to 3.50%], 13 of 16 in band, against
+2.86%, 10 of 16). Against `docs/ensemble/0.9.167.md`, as first ordered (`target/ensemble/OE1e`'s own scoring): 25 of
+26, hard 10 of 10, PASS; changed AUTO2 T2 and ZERO_SLACK T2, FAIL to PASS (final population 2,226,328 against
+1,820,652, and 1,467,861 against 1,308,226). Still failing on both, as on both baselines: AUTO2 A2, the longest
+spell of inflation over 10% from m240, 16 months [10 to 39] against 18 [6 to 33] and 20 [7 to 33].
 
-`docs/ensemble/OE1.md`: 80 of 80 runs on the gate box (label OE1c, classes of d15352526, 0.9.167; the baseline's
-`JAVA_OPTS` extra columns, all 86 of its columns; the box's data files, md5-equal to the laptop's), against
-`docs/ensemble/0.9.167.md`: **25 of 26** criteria (main 23; H1 retired, not counted), hard 10 of 10 (M1 0 months
-and F1 0 runs in every policy), batch verdict PASS. Changed: AUTO2 T2 and ZERO_SLACK T2, FAIL to PASS (the final
-population's median 2,584,466 against main's 1,820,652, and 1,657,203 against 1,308,226). Still failing, as on
-main: AUTO2 A2, the longest spell of inflation over 10% from m240, 14 months [9 to 35] against 20 [7 to 33].
-Two earlier starts are not scored: label OE1 on 0.9.165, stopped at 13 of 80 when HS2 shipped 0.9.167 and moved
-the trace (contract 4: the second to ship redoes it), and OE1b on the laptop, stopped at the orchestrator's word
-when GB3 brought the box.
+Against OE1d, its run before the car mend (§11), 72 of the 80 runs are the same to the byte. AUTO2 6 moves from
+m341, 12 from m1356 and 3 from m1612, with their ZERO_SLACK twins, and SHOCK 6 and HIGH 6 from m341: the shelf
+running short or a household on the whole-car edge, the two cases where the take now differs (§2; which, not traced).
+Earlier labels, not the shipped figures: OE1 (0.9.165, stopped at 13 of 80), OE1b (the laptop, stopped),
+OE1c (0.9.167, before §9's mends: 25 of 26, PASS), OE1d (0.9.171, before the car mend: 23 of 26, F1 FAIL, §11).
 
 **The AUTO2 bank, months under `CAPITAL_RATIO` to m600:**
 
 | | median [min to max] | seeds with any | months in all (spells) |
 |---|---|---|---|
-| main 0.9.167 (the baseline's own runs, HS2's kept CSVs) | 0.5 [0 to 9] | 8 of 16 | 35 (19) |
-| OE1 | 1.5 [0 to 15] | 11 of 16 | 52 (28) |
+| main 0.9.171 (MC1's runs, copied from the box) | 0 [0 to 8] | 5 of 16 | 20 (11) |
+| main 0.9.167 (HS2's kept CSVs) | 0.5 [0 to 9] | 8 of 16 | 35 (19) |
+| OE1e | 0.5 [0 to 15] | 8 of 16 | 49 (19) |
+| OE1c (§9's mends not yet in) | 1.5 [0 to 15] | 11 of 16 | 52 (28) |
 | DQ1's, on 0.9.128 | 2 [0 to 17] | 11 of 16 | 65 (20) |
 
-The measure is worse than main's. Both halves were split DQ1 §1's way: each spell read against the six months
-before it, the bank's write-offs against the trading desk's losses, $100k the least either counts at. The
-sixteen AUTO2 seeds were replayed to m600 with the two flows as columns (`-Densemble.months=600`,
-`bank_writeoffs` and `bank_trading`, on the laptop): OE1's from aae63d76c's model (label OE1-bank), main's from
-64ec45fbe (label main-bank, a throwaway worktree, removed; no game code differs from bf048eb69, 0.9.167). Each
-replay gives its ensemble's months under seed for seed: OE1c's 52, and the 35 of HS2's kept CSVs.
+OE1e's months are OE1d's seed for seed: the car mend first moves AUTO2 at m341 in seed 6, which has no spell. The
+measure is worse than main's on both baselines. The split is DQ1 §1's: each spell read against the six months
+before it, the bank's write-offs against the trading desk's losses, $100k the least either counts at. The sixteen
+AUTO2 seeds were replayed to m600 on the box with the two flows as columns (`-Densemble.months=600`,
+`bank_writeoffs` and `bank_trading`): OE1's on 398057923 (label OE1e-bank), main's on b2f27a7bd, 0.9.171 (label
+main171-bank, a throwaway worktree, removed). Each replay gives its ensemble's months under, seed for seed.
 
-| spells to m600 | main 0.9.167 | OE1 |
-|---|---|---|
-| desk (the trading desk's losses) | 23 months in 12 | 47 months in 24 |
-| write-off (the bank's write-offs) | 5 months in 3 | 2 months in 2 |
-| neither, under $100k both | 7 months in 4 | 3 months in 2 |
+| spells to m600 | main 0.9.171 | main 0.9.167 | OE1e |
+|---|---|---|---|
+| desk (the trading desk's losses) | 17 months in 9 | 23 months in 12 | 25 months in 9 |
+| write-off (the bank's write-offs) | none | 5 months in 3 | 14 months in 4 |
+| neither, under $100k both | 3 months in 2 | 7 months in 4 | 10 months in 6 |
 
-Main's months are mostly desk spells too, and the write-offs, the mend's own field, are fewer on OE1. Main's
-are seed 0 m400 ($283k), seed 14 m400 and m404 ($155k, $386k); OE1's are seed 2 m491 ($407k) and seed 13 m361
-($1,192k). None falls in months 81-89, where DQ1 found six of its eight (the young town's Fabrication Shop).
-The desk spells doubled, 17 of OE1's 24 in months 177-245.
-
-**The larger city does not explain them.** OE1's AUTO2 cities end larger (a median of 2,584,466 people at
-m2400 against 1,820,652), but over the spells they are smaller than main's: a median of 2,744 people against
-2,996 at m180, 3,412 against 4,162 at m240, and 20,498 against 27,274 at m600. The likely path, not traced: a first plant weighed
-at the rate it will run at is ordered later, or not at all, where the empty sector's rate passed it, and the
-young city grows slower until about m600. Whether its bank's smaller book or fewer listed companies is what turns the desk's marks
-into spells is not traced here. DQ1 §8 leaves the desk unqueued (`RISK_EQUITY` light against a trading book's
-weights for small listed shares); this is a second reading for whoever takes it. The orchestrator's rule for
-this split (main's mostly desk spells too) closes it: not a stop, and no row.
+The desk is near main's (9 spells each on 0.9.171, 25 months against 17). **The write-offs are OE1's**: seed 4
+m438 (3 months, $2,349k in the six months to it), seed 12 m317 and m319 (1 and 4 months, $920k and $1,051k) and
+seed 15 m393 (6 months, $1,399k). Main 0.9.171 has none, and 0.9.167 had three smaller ones ($155k-$386k). The
+borrowers behind them are not traced. None falls in DQ1's months 81-89 (the young town's lone Fabrication Shop,
+the write-off this batch's mend is for). Seed 10's m83 and m88 spells there are "neither": write-offs $0-1k and
+the desk up. Main 0.9.171 has seed 10's m83 spell too, 2 months, the same kind.
 
 ## 9. The first dry run (8f1466249, main fa889c423)
 
@@ -372,3 +372,6 @@ take spread the cars pro rata and the new one gives whole cars to the households
 the mend changes who gets the cars in every month a car plant's shelf runs short, not only on the edge (§2). Both
 comments corrected (comments only, so OE1e stands on 398057923's classes); the ensemble's shift in car ownership
 is expected from it.
+
+**The rerun** (OE1e on 398057923, §8): F1 0 of 16 in every policy, against both baselines. AUTO2 6 and its
+ZERO_SLACK twin no longer flag m655.
