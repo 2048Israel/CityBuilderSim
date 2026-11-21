@@ -1,6 +1,6 @@
 # HouseholdAccounts.java - 1,451 lines · 109 methods · 13 constants · model
 
-`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdAccounts.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's residents, treated as one household.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Household](Household.md) (21), [PayTier](PayTier.md) (10), [FamilyModel](FamilyModel.md) (7), [FamilyStructure](FamilyStructure.md) (5), [Statement](Statement.md) (3), [AgeBand](AgeBand.md) (2), [SocialSecurity](SocialSecurity.md) (1)
 
-**Used by (19):** [BankCheck](BankCheck.md), [FloorView](FloorView.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ShadowBasket](ShadowBasket.md)
+**Used by (20):** [BankCheck](BankCheck.md), [FloorView](FloorView.md), [Forms1900Check](Forms1900Check.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HealthCheck](HealthCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [Recipes](Recipes.md), [ShadowBasket](ShadowBasket.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # MoneyAudit.java - 1,699 lines · 42 methods · 8 constants · model
 
-`ham/citybuildersim/MoneyAudit.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyAudit.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Where the money went this month, and whether it all went somewhere.
 > 

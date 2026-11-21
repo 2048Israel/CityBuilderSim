@@ -1,6 +1,6 @@
 # Formats.java - 165 lines · 12 methods · 3 constants · model
 
-`ham/citybuildersim/Formats.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Formats.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The few formats a sector needs to describe itself, without the toolkit.
 > 

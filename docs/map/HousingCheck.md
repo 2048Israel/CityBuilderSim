@@ -1,6 +1,6 @@
 # HousingCheck.java - 1,099 lines · 11 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HousingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Audits the three subsystems that describe the same housing, every month, and
 > makes them agree. Not part of the game.
