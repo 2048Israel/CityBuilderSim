@@ -258,3 +258,10 @@ known-reds for HealthCheck and KeptCheck dropped (HX1 and KL1 shipped).
 - Not before the gate: `LicenceFees.powerDelivered()` still the flat rule, PW1-L beside PW1-W.
 - REV-PW1c-2: SHIP, all four closed; its P2, a recipe's surplus generation credited at the industry price where PW1 pays the works
   price (`Recipes.value()`), is PW1-G, not before the gate.
+
+**The ensemble** (`docs/ensemble/PW1.md`): PW1d on the box, the classes of eacfd6d37 (the REV-PW1c mends; 5806f5200's
+bytes), against 0.9.174, `JAVA_OPTS` empty, 80 of 80. PASS, hard criteria 10 of 10, 24 of 26. One verdict changed:
+AUTO2 T2 (info, the final population), PASS to FAIL, a median of 1,666,304 against at least 75% of 0.9.174's
+2,226,328 (1,669,746). R2, PW1's earlier R2 row (§4), passes against 0.9.174: 2.30 points. PW1-E restated. The
+first run, PW1c on 39c5b7819 before the mends, gave the same verdicts (24 of 26, the same change); the mends move the
+playtest's bytes (the Pulp Mill's recipe, Heavy Industry's and Mining's licences), so PW1d is the record.
