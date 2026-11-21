@@ -6,11 +6,20 @@ command -v powershell.exe > /dev/null 2>&1 || { echo "stop-selftest: no PowerShe
 fails=0
 check() { if [ "$2" = 0 ]; then echo "ok   $1"; else echo "FAIL $1"; fails=$((fails + 1)); fi; }
 mkdir -p target; RUN=$(mktemp -d "$(pwd)/target/stop-selftest.XXXXXX") || exit 1   # where a run is, target/; /tmp shows as /tmp
-stop() {
-    ENS_LABEL=stop-selftest ENS_B="$(cd "$RUN" && pwd -W)" powershell.exe -NoProfile \
+stop() {   # as ensemble.sh --stop calls it, ENS_A too (main's caller set it; unset, main's pattern matched every line)
+    ENS_LABEL=stop-selftest ENS_A="$RUN" ENS_B="$(cd "$RUN" && pwd -W)" powershell.exe -NoProfile \
         -ExecutionPolicy Bypass -File "$(pwd -W)/tools/ensemble/stop.ps1" | tr -d '\r' > "$RUN.out"
     echo "${PIPESTATUS[0]}"
 }
+# An empty run folder stops nothing (REV-FB15), read on a copy whose Stop-Process only says what it would stop.
+DRY="target/$(basename "$RUN").dry.ps1"
+sed 's/Stop-Process -Id \$_.ProcessId -Force -ErrorAction SilentlyContinue/Write-Output "WOULD-STOP $($_.ProcessId)"/' \
+    tools/ensemble/stop.ps1 > "$DRY"
+if ! grep -q Stop-Process "$DRY"; then
+    code=$(ENS_LABEL=stop-selftest ENS_A= ENS_B= powershell.exe -NoProfile -ExecutionPolicy Bypass \
+        -File "$(pwd -W)/$DRY" | tr -d '\r' > "$RUN.out"; echo "${PIPESTATUS[0]}")
+    ! grep -q WOULD-STOP "$RUN.out"; check "an empty run folder stops nothing, exit 2 (exit $code)" $(($? + (code != 2)))
+fi
 : > "$RUN/one.log"; : > "$RUN/again.log"
 tail -f "$RUN/one.log" & one=$!
 sleep 1
@@ -24,6 +33,6 @@ sleep 1
 code=$(stop)
 grep -q "^left: .*again.log" "$RUN.out"; check "a process back after both passes is named as left, exit 1 (exit $code)" $(($? + (code != 1)))
 touch "$RUN.done"; wait "$parent"; stop > /dev/null
-rm -rf "$RUN" "$RUN.out" "$RUN.done"
+rm -rf "$RUN" "$RUN.out" "$RUN.done" "$DRY"
 [ "$fails" = 0 ] && echo "stop-selftest: all passed" || echo "stop-selftest: $fails failed"
 exit "$fails"

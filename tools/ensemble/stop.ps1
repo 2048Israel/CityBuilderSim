@@ -7,6 +7,8 @@
 # WHY (HN1-C): Git Bash hands a Windows program /c/... as C:/..., so no shell or xargs matched, and HN1's xargs
 # outlived the stop and started five runs unsaid. tools/ensemble/stop-selftest.sh tests it.
 $label = $env:ENS_LABEL
+# An empty folder or label would match every command line on the machine (REV-FB15): refuse it, exit 2.
+if (-not $label -or $env:ENS_B -notmatch '^[A-Za-z]:[\\/]\S') { "stop.ps1: no ENS_LABEL or no ENS_B (C:/...): nothing stopped"; exit 2 }
 $w = $env:ENS_B -replace '\\', '/'
 $bash = if ($w -match '^([A-Za-z]):(/.*)$') { '/' + $matches[1].ToLower() + $matches[2] } else { $w }
 $pats = @($w, $bash) | ForEach-Object { [regex]::Escape($_) + '(?=[/\\\s"]|$)' }
