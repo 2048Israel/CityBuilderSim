@@ -207,9 +207,11 @@ final class HistoryScreen {
     record Trace(String key, String label, String group, String unit) { }
 
     static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheSectors(withTheMarket(new Trace[] {
-        new Trace("gdp",            "GDP",                "MONEY",      "money"),
+        // GDP is a rolling year since GY1 (the key "gdp" kept, so a pin or a door that names it draws the year); the month is "gdpMonth".
+        new Trace("gdp",            "GDP (yr)",           "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
         new Trace("realGdp",        "GDP, real (yr)",     "MONEY",      "money"),
+        new Trace("gdpMonth",       "GDP (month)",        "MONEY",      "money"),
         // GDP's four parts, a month each in its own money (0.7.37: kept since 0.7.6 for the layers, never offered).
         new Trace("consumption",    "GDP: consumption",   "MONEY",      "money"),
         new Trace("investment",     "GDP: investment",    "MONEY",      "money"),
@@ -217,6 +219,8 @@ final class HistoryScreen {
         new Trace("netExports",     "GDP: net exports",   "MONEY",      "money"),
         new Trace("cash",           "Treasury",           "MONEY",      "money"),
         new Trace("debt",           "Public debt",        "MONEY",      "money"),
+        // The debt over a year of GDP (GY1): the measure the debt limit reads, as a fraction the "percent" unit prints.
+        new Trace("debtToGdp",      "Debt to GDP",        "MONEY",      "percent"),
         new Trace("revenue",        "Revenue",            "MONEY",      "money"),
         new Trace("surplus",        "Surplus / deficit",  "MONEY",      "money"),
         new Trace("interestRate",   "Borrowing rate",     "MONEY",      "percent"),
@@ -489,7 +493,7 @@ final class HistoryScreen {
      */
     static String areaOf(Trace t) {
         switch (t.key()) {
-            case "gdp": case "gdpPerCapita": case "realGdp":        return Palette.BUSINESS;
+            case "gdp": case "gdpMonth": case "gdpPerCapita": case "realGdp": return Palette.BUSINESS;
             case "consumption": case "investment": case "government": case "netExports": return Palette.BUSINESS;
             case "constructionCapacity": case "landUse": case "landPrice": return Palette.BUILDING;
             case "foodPrice": case "materialsPrice": case "orePrice": return Palette.BUSINESS;
@@ -1961,7 +1965,7 @@ final class HistoryScreen {
             empty = "Nothing picked: a preset above the chart, or a line below.";
         } else if (!recorded) {
             boolean yearly = true;
-            for (String key : keys) yearly &= traceFor(key).label().endsWith("(yr)");
+            for (String key : keys) yearly &= traceFor(key).label().endsWith("(yr)") || key.equals("debtToGdp");
             empty = yearly ? "from the end of the first year" : "nothing recorded yet";
         }
 
@@ -2637,7 +2641,9 @@ final class HistoryScreen {
      * (UP2) The header's five tiles do not come through here: UserInterface.sparkSeries()
      * reads their last SPARK_MONTHS straight off HistorySave.alignedTail() and
      * YearBook.unemploymentTail() - what this returns for those keys, cut to the tail. A case
-     * added below for population, gdp, priceIndex, unemployment or policyRate must be added there.
+     * added below for population, priceIndex, unemployment or policyRate must be added there. Not
+     * "gdp" (GY1): the chart's "gdp" is a year, the tile's sparkline is the month's output, which is
+     * the chart's "gdpMonth".
      */
     double[] historyValues(HistorySave h, String key) {
         switch (key) {
@@ -2672,6 +2678,17 @@ final class HistoryScreen {
              * is left alone for now.
              */
             case "realGdp":         return YearBook.realGdpYear(h);
+            /*
+             * GDP, NOMINAL, A ROLLING YEAR (GY1) - realGdp's twelve months summed without the price
+             * index, so it sits beside the public debt, a stock. Jerus, 2026-11-20: "in the graph,
+             * gdp can be shown yearly not monthly ... i want to be able to compare gdp with public
+             * debt, and also perhaps a debt to gdp ratio". The key stays "gdp": a pin, a preset or a
+             * door that names it draws the year; the month it used to draw is "gdpMonth".
+             */
+            case "gdp":             return YearBook.gdpYear(h);
+            case "gdpMonth":        return h.aligned("gdp");
+            /* The public debt over that year (GY1): YearBook.debtToGdp(), the debt limit's measure. */
+            case "debtToGdp":       return YearBook.debtToGdp(h);
             case "gdpPerCapita": {
                 double[] g = h.aligned("gdp"), p = h.aligned("population");
                 double[] out = new double[g.length];
