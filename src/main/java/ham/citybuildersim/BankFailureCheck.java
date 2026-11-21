@@ -13,7 +13,8 @@ import java.util.Arrays;
  * disappearance of shares which must be distinguished from a consolidation.
  * MC2 (section 9): BF1's room to the target is none under it, so a bank in
  * its band lent no growth; under the target the growth limit's share now
- * is the room, over it the room to the target.
+ * is the room, never past the room to the minimum; over it the room to the
+ * target, and none while a default takes it under before the settle.
  */
 public final class BankFailureCheck {
     static final PrintStream out = System.out;
@@ -348,7 +349,10 @@ public final class BankFailureCheck {
        target, wrote no building's loan and, while its leverage ratio binds, no
        mortgage, though its growth limit allows each borrower a share. Banks by
        hand at the minimum, halfway down the band, just under the target and
-       just over it; a landlord owing a mortgage and a works owing a loan. */
+       just over it; a landlord owing a mortgage and a works owing a loan.
+       REV-MC2 added a default that takes a bank over its target under it
+       (none until the settle, its bond bid too), the cap at the room to the
+       minimum near the target, and a bank whose risk weights bind. */
 
     /** What the landlords and the works owe before the month, what each owns, and the hand-built banks' exposure. */
     static final double BAND_OWED = 1_000_000, BAND_OWNED = 100_000_000, BAND_EXPOSURE = 10_000_000;
@@ -475,6 +479,101 @@ public final class BankFailureCheck {
                 && mortgage(overDesk, toTarget * .25) && !mortgage(overDesk, toTarget * 2)
                 && BusinessDebtManager.MORTGAGE_CAPITAL.equals(overDesk.getMortgageRefusal())
                 && mortgage(sideDesk, sideDesk.capitalRoom(re) * .25) && !mortgage(sideDesk, sideDesk.capitalRoom(re) * 2));
+
+        // REV-MC2 P1: a bank over its target when the month's rule is struck, its
+        // growth limit none, that the month's default takes just under the target
+        // before its book settles: BF1's room, none, never the band's share.
+        Bank within = leverageBankAt(1.1, BAND_EXPOSURE), past = leverageBankAt(1.1, BAND_EXPOSURE);
+        double cushion = within.equity() - within.targetEquity();
+        BusinessDebtManager pastDesk = deskOn(past);
+        within.writeOffSector(re, cushion * .5);
+        past.writeOffSector(re, cushion * 1.05);
+        pastDesk.setProjectBudget(past);
+        check("fixture: two banks over their target and lending freely, the month's default leaving one over it and taking the other just under it",
+                cushion > 0 && Double.isInfinite(within.lendingGrowthLimit()) && Double.isInfinite(past.lendingGrowthLimit())
+                && Double.isInfinite(pastDesk.getCapitalGrowth())
+                && within.equity() - cushion * .5 > within.targetEquity() && past.equity() - cushion * 1.05 < past.targetEquity());
+        check("a default never raises the room: one within the bank's cushion leaves the room to the target, one past it none, insured and not",
+                within.projectHeadroom() > 0 && within.projectLeverageHeadroom() > 0
+                && near(past.projectHeadroom(), 0) && near(past.projectLeverageHeadroom(), 0));
+        check("...so a bank the default takes under its target writes no building's loan and no mortgage before its book settles",
+                !pastDesk.canFundProject(works, cushion * .1) && !mortgage(pastDesk, cushion * .1)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(pastDesk.getMortgageRefusal()));
+
+        // REV-MC2 P3: ...and its bond bid, which reads the same room (BondMarket.bankClaimRoom()).
+        double face = within.projectHeadroom() * .25;
+        double boughtWithin = bankBuysOf(within, face), boughtPast = bankBuysOf(past, face);
+        check("fixture: the bank its default leaves over the target buys part of a works' issue",
+                boughtWithin > 0);
+        check("...and the bank its default takes under the target bids nothing for the same issue before its book settles",
+                near(boughtPast, 0));
+
+        // REV-MC2 P2: near the target the curve rises without bound; the share stops at the minimum.
+        Bank edge = leverageBankAt(.99, BAND_EXPOSURE);
+        double toMinimum = edge.equity() / Bank.LEVERAGE_RATIO_MIN - edge.exposure();
+        double room = edge.leverageHeadroom();
+        Bank lent = new Bank();
+        lent.refresh(1, 0, 0, 0, 0, 0);
+        lent.setCash(edge.exposure() + room);
+        lent.setForeignDeposits(edge.exposure() + room - edge.equity());
+        out.printf("   at x = .99 the growth limit %.4f a month, %.0f of the exposure; the room to the minimum %.0f; lent, the leverage ratio %.6f%n",
+                edge.lendingGrowthLimit(), edge.lendingGrowthLimit() * edge.exposure(), toMinimum, lent.leverageRatio());
+        check("at x = .99, where the growth limit's share would pass the bank's minimum, the room is the room to the minimum, insured and not",
+                edge.lendingGrowthLimit() * edge.exposure() > toMinimum && toMinimum > 0
+                && near(room, toMinimum) && near(edge.projectHeadroom(), toMinimum));
+        check("...so the bank lent the whole of it stands at its minimum, not under it: the next month is not one of keeping borrowers going",
+                near(lent.equity(), edge.equity()) && !lent.isInsolvent() && !lent.lendsOnlyToKeepBorrowersGoing());
+
+        // REV-MC2 P4: a bank whose risk weights bind reads the band on the weighted book.
+        Bank risk = riskBankAt(.5, BAND_EXPOSURE);
+        BusinessDebtManager riskDesk = deskOn(risk);
+        double riskShare = risk.lendingGrowthLimit() * risk.getWeightedBook();
+        check("fixture: a bank whose risk weights bind, halfway down its band on them and over its leverage target",
+                !risk.leverageBinds() && risk.getWeightedBook() > 0
+                && risk.capitalRatio() < risk.capitalTarget() && risk.leverageRatio() > risk.leverageTarget()
+                && near(risk.lendingGrowthLimit(), Bank.RATIONED_GROWTH) && !riskDesk.isInsuredRationed());
+        check("its uninsured room is RATIONED_GROWTH of its weighted book, and a works' loan within the works' share is lent",
+                near(risk.projectHeadroom(), riskShare) && near(risk.settledProjectHeadroom(), riskShare)
+                && riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * .5)
+                && !riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * 2));
+    }
+
+    /**
+     * A bank whose whole exposure is a business book weighing in full, funded
+     * from abroad: its risk weights bind, and its capital ratio stands x of
+     * the way from CAPITAL_RATIO to its capital target.
+     */
+    static Bank riskBankAt(double x, double book) {
+        Bank bank = new Bank();
+        bank.refresh(1, 0, 0, book, 0, 0);
+        bank.setCash(0);
+        double ratio = Bank.CAPITAL_RATIO + x * (bank.capitalTarget() - Bank.CAPITAL_RATIO);
+        bank.setForeignDeposits(book * (1 - ratio));
+        return bank;
+    }
+
+    /** What this bank buys of a works' issue of this face, its desk's allowance struck on the bank as Game strikes it after the month's defaults. */
+    static double bankBuysOf(Bank bank, double face) {
+        EconomyManager economy = new EconomyManager(new BuildingManager());
+        BusinessDebtManager desk = economy.getBusinessDebtManager();
+        desk.setAssets(Sectors.MANUFACTURING, BAND_OWNED);
+        desk.setProjectBudget(bank);
+        BondMarket bonds = new BondMarket();
+        bonds.attach(new BondMarket.Readings() {
+            public int month() { return 1; }
+            public double curve(int months) { return .04; }
+            public double policyRate() { return .04; }
+            public double depositRate() { return .02; }
+            public double worldRate() { return .04; }
+            public double countryPremium() { return 0; }
+            public double monthlyGdp() { return 0; }
+            public double localPerUsd() { return 1; }
+            public boolean worldRunning() { return false; }
+            public double unit() { return 1; }
+        }, null, bank, economy, null);
+        bonds.issue(new BusinessDebtManager.Plan(Sectors.MANUFACTURING, face, face, 1, 1,
+                0, 1, 1, bonds.issueCost(face), 1, BAND_OWNED, face, face), 1);
+        return bonds.faceHeldByBank();
     }
 
     static double issueAfterSettlement(BusinessDebtManager claims, double room, int month) {

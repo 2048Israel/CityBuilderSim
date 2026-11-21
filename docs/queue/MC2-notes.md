@@ -46,11 +46,21 @@ REBUILDING stance, where `lendingGrowthLimit()` is finite and above 0. (Bank's p
   measure counts (the exposure, or the weighted book). This is what `lendingLimit()` takes, on
   the equity left once the month's known losses are taken off (`unsettledCreditLoss()`). Loans
   pending this month come off it, as over the target.
+- It stops at the room to the minimum, `(equity − loss) / minimum − book` on each measure: BF1's
+  construct, read at the minimum in place of the target (REV-MC2 P2). It binds from x ≈ .97, where
+  the curve's share would take the bank past its minimum; at x = .99 the curve allows 99% of the
+  exposure, and the room to the minimum is 31% of it.
 - At or under the minimum: none (`keepGoingOnly`, and the curve's 0).
 
 **At or over the target: BF1's room to the target, unchanged.** That is `equity / target −
 exposure` on each measure, net of the month's known losses before the settle and of pending loans,
 and for the uninsured within `headroom()`. `capitalRoom()` is unlimited there.
+
+A bank whose month was struck over its target, its growth limit none, that the month's known
+losses take under it before its book settles, reads BF1's room too: none (REV-MC2 P1). The band's
+share is read only while the bank's growth limit, on its books before the settle, rations, so a
+default never raises the room. After the settle nothing writes a growth loan until the next
+month's rule is struck on the settled equity; under the target, that is the band's share.
 
 **Why.** BF1's note and its comment both put the bound over the target, where nothing else limits
 growth; under it, the capital rule's growth limit is the bank's rationing (WHAT IT LENDS, 0.7.8),
@@ -64,6 +74,8 @@ and a bound of 0 there made the band a stop.
   - `projectHeadroom()` and the new `settledProjectHeadroom()` share `growthHeadroom(loss)`. That
     is the room to the target when the bank is at or over it on both measures, and
     `bandShare(equity − loss)` when it is under.
+  - `bandShare()` stops at the room to the minimum, and is none while the bank's growth limit is
+    none (REV-MC2 P2 and P1).
   - `leverageHeadroom()` and `projectLeverageHeadroom()` share `insuredHeadroom(loss)` in the
     same way, on the leverage measure.
   - The banner comment UNDER THE TARGET, THE BAND'S SHARE says why.
@@ -77,8 +89,11 @@ and a bound of 0 there made the band a stop.
 Not changed:
 
 - `headroom()`, the carry trade's room. Under the target it is still none: "domestic first".
-- The bank's bond purchases. `BondMarket` bounds them by `spareCapital()`, which is negative under
-  the target, so `bankClaimRoom()` reading the share moves nothing.
+- The bank's bond purchases, in the end. `BondMarket.bankBuys()` asks for equity at the target on
+  the books before the settle, and `bankClaimRoom()` reads `projectHeadroom()`. A bank under its
+  target buys nothing, as before. A bank over it that the month's default takes under it bid up to
+  the band's share on the rule REV-MC2 reviewed (P3: the notes then said "moves nothing", which
+  was wrong); since P1's guard its room there is none, as on main. Section 9's line 14 shows it.
 - `lendingGrowthLimit()`'s curve, and the households' rule.
 
 No saved field, no save format.
@@ -97,12 +112,16 @@ The section causes its condition with hand-built banks, held by their restore se
 The borrowers are a landlord owing an insured mortgage and a works owing a loan, under the bank's
 rule as Game hands it to them.
 
-It has 14 lines: 3 fixture lines and 11 assertions.
+It had 14 lines at the mends, 3 fixture lines and 11 assertions. REV-MC2 added 9, 3 fixture
+lines and 6 assertions (12-17 below): 23 lines.
 
-- With the mend: all pass.
-- On main's rule (main's `Bank.java` and `BusinessDebtManager.java` put back, with
-  `settledProjectHeadroom()` returning `headroom()` as main's settled branch reads): **all 11
-  assertions FAIL**, and the 3 fixture lines pass.
+- With the mend: all 23 pass.
+- On main's rule (main's `Bank.java` and `BusinessDebtManager.java` of 0.9.174 put back, with
+  `settledProjectHeadroom()` returning `headroom()` as main's settled branch reads): **13 of the
+  17 assertions FAIL**, 1-11, 15 and 17, and the 6 fixture lines pass. 12-14 and 16 pass on main,
+  which gives none there: they hold the mend to it against the rule REV-MC2 reviewed.
+- On that rule (`Bank.java` at f5452977d, 207704ac8's merged with 0.9.174): **12-16 FAIL**. 17
+  passes on it: it is the risk-weighted cover the review asked for.
 
 What the 11 assertions prove:
 
@@ -126,6 +145,24 @@ What the 11 assertions prove:
 11. On both sides of the target the door writes what the rule allows and refuses past it: the
     room to the target just over it (BF1's bound, kept), the band's share just under it.
 
+What REV-MC2's lines prove:
+
+12. A default never raises the room: of two banks over their target, struck lending freely, the
+    one whose loss stays within its cushion keeps room to the target, and the one whose loss goes
+    5% past it has none, insured and not (P1).
+13. ...so the bank the default takes under its target writes no building's loan and no mortgage
+    before its book settles; the mortgage is refused for the bank's capital.
+14. ...and bids nothing for a works' issue that the other bank buys part of (P3, through
+    `BondMarket.issue()` with fixed readings, as in section 3).
+15. At x = .99, where the growth limit's share (99% of the exposure) passes the bank's minimum, the
+    room is the room to the minimum (31%), insured and not (P2).
+16. ...so the bank lent the whole of it stands at its minimum, not under it: the next month is not
+    one of keeping borrowers going.
+17. A bank whose risk weights bind, halfway down its band on them and over its leverage target:
+    its uninsured room is `RATIONED_GROWTH` of its weighted book, and a works' loan within the
+    works' share is lent, one past it refused (P4: `growthLimitOn()`'s weighted branch and
+    `bandShare()`'s weighted book).
+
 Line 11's over-target half passes on main too, because the rule over the target is BF1's and
 unchanged. The line fails on main by its band half. It is one line because the claim is about the
 two sides at once. BF1's over-target lines in section 3 are untouched and pass.
@@ -135,7 +172,9 @@ Figures the section prints:
 - the leverage ratio is .030000, .034688, .038438 and .040313, against a target of .039375;
 - the growth limit is .010000 a month halfway and .090000 just under;
 - just under, the landlords' share is 96,192 of the bank's 900,000;
-- just over, the room to the target is 238,095.
+- just over, the room to the target is 238,095;
+- at x = .99 the growth limit is .99 a month, 9,900,000 of the exposure; the room to the minimum
+  is 3,093,750; lent it, the bank's leverage ratio is .030000.
 
 ## Checks
 
@@ -161,11 +200,13 @@ gate run of ac224abf3:
 | households at m270 / doubled up | 1,519 / 114 | 1,172 / 37 |
 | the most households with no home | 0.00 | 0.00 |
 
+On the merge with 0.9.174 (f5452977d) MC2's crunch reads: 6 mortgages; the landlords asked in 45 months, 35 of them with the bank short; the owners put in 6,950; homes 497 to 1,195; at m270, 1,179 households and 47 doubled up; nobody with no home. Main 0.9.174's own run of it is not at hand here (OE1's kept run is of an earlier dry run).
+
 The paths split at m154, where MC2 wrote its first mortgage in the band (main's m160 has 949 households, MC2's 956). From m196 to m248 MC2's landlords ordered nothing. That was a hold for land, not credit: their decision line read "Holding: no land - needs 5,570 m², 3,280 m² free" (a probe print in the harness, run once and reverted). Once ground came free (m252) they built again, on owners' money and 3 mortgages (m254, m256, m259; the other 3 were m154, m166 and m195). Every assertion of the harness's sections 1-3 passes. Nobody is left with no home on either path; the smaller city is the smaller placement room the land hold left.
 
 **The trace moves.** `LongPlaytest` on the branch, against the same gate's `LongPlaytest.log`,
 first differs at m600 (the market line, then the power and works decisions from m608): the change acts only under the target (at or over it
-the room is the same expressions, bit for bit), so the default city's bank stood under its target by then. So the 80-run ensemble is owed, against `docs/ensemble/0.9.171.md`; asked for in the mends mail.
+the room is the same expressions, bit for bit), so the default city's bank stood under its target by then. So the 80-run ensemble is owed (below).
 
 ## Calls
 
@@ -175,6 +216,21 @@ the room is the same expressions, bit for bit), so the default city's bank stood
   room, and so that losses known before the settle reach it. The band's share in money keeps both.
   In a played month each borrower's `capitalRoom()` binds first: the sum of each debt's share is
   at most the share of the exposure.
+- ★ **The band's share stops at the room to the minimum** (REV-MC2 P2, the reviewer's recommended
+  mend). The curve x/(1−x) was shaped in 0.7.8 to meet "no limit" at the target, and from x ≈ .97
+  its share would take the bank past its minimum in one month, to lending nothing but to keep
+  borrowers going the next. BF1's construct, the distance to a ratio on the equity the month's
+  losses leave, read at the minimum, bounds it there and nowhere else. The other readings: a cap on
+  the curve's top (Jerus's 0-1% a month for a bank short of capital), which would move the
+  households' rule and every borrower's `capitalRoom()` too; or the distance to a point inside the
+  band, which no rule names. Lent the whole of it, the bank stands at its minimum and lends no
+  growth the next month until its earnings raise its ratio.
+- ★ **A bank its month's rule found over its target reads none when the month's losses take it
+  under, until its book settles** (REV-MC2 P1, the reviewer's mend). The band's share is read only
+  while the bank's growth limit, on its books before the settle, is finite. The month's rule for
+  such a bank left every borrower's `capitalRoom()` unlimited, so the shared allowance was the only
+  bound: on the reviewed rule a 9,000 loss left 9,500 of room and a 10,000 loss 14.9M. With the cap
+  at the minimum alone it would still have been the room to the minimum, opened by a loss.
 - ★ **Under the target the share is not capped by `headroom()`'s strain term.** `capacity() ×
   EASY_STRAIN − weighted book` is the carry trade's room. EASY_STRAIN's own javadoc: "the carry
   trade is lent only the room below it". For a leverage-binding bank with a business book that
@@ -185,27 +241,63 @@ the room is the same expressions, bit for bit), so the default city's bank stood
   was struck on the equity at the top of the month; the shared allowance tightens after a default
   as BF1 meant ("the loss just booked must reach the growth desk", Game).
 - ★ **"Just under" and "just over" are a tenth of the band either side of the target** (x = .9
-  and 1.1). Nearer the target the curve rises without bound (below), so a closer point would
-  assert a share larger than any played month's.
+  and 1.1). Nearer the target the share stops at the room to the minimum, which line 15 asserts
+  at x = .99.
 - **The harness is `BankFailureCheck`'s, not a new `MortgageBandCheck`.** The bank's harness holds
   BF1's insured lines, and the brief preferred it if it fit. FS9's sweep of its other sections is
   left to FS9.
 
-## A finding left as it is: the room across the target is not monotone
+## A finding mended: the room across the target
 
-Toward the target from below, the share rises without bound: x/(1−x), shaped in 0.7.8 to meet "no
-limit" over the target. Just over the target, BF1's room starts from none.
+Toward the target from below the curve's share rose without bound: x/(1−x), shaped in 0.7.8 to
+meet "no limit" over the target. Just over the target BF1's room starts from none. At x = .99 a
+borrower could grow its debt 99% in the month, where at x = 1.01 the bank's room is 0.24% of its
+exposure, (x − 1)(target − minimum)/target. The notes at 207704ac8 recommended leaving it. The
+orchestrator and REV-MC2 (P2) said it is this batch's own behaviour, since main wrote nothing
+there, and to mend it.
 
-At x = .99 a borrower may grow its debt 99% in the month. At x = 1.01 the bank's room is 0.24% of
-its exposure: (x − 1)(target − minimum)/target. The game played the curve this way from 0.7.8 to
-BF1, with no bound over the target at all.
-
-A bank that lends a large share near its target lowers its own ratio, and so its share the next
-month. Recommended: leave it. The other choice would be a cap on the curve's top, which is Jerus's
-brief's (0-1% a month a bank short of capital, `RATIONED_GROWTH`) and the households' rule too. So
-it is not queued. If the orchestrator wants it decided, it is a question for Jerus with those two
-options.
+Mended by the cap at the minimum (Calls). The shared allowance now rises through the band with x
+to at most the room to the minimum, 31% of the exposure just under the target. The step down at
+the target remains, bounded: 31% at x = .99, 0.24% at x = 1.01, BF1's room over it. Each
+borrower's own share (`capitalRoom()`, the curve on its debt) is not capped; where the cap binds,
+the shared allowance holds them all to it together.
 
 ## For Jerus
 
-Nothing beyond the finding above.
+Nothing: the finding above is mended, as REV-MC2 asked.
+
+## The merge and the ensemble
+
+Main moved to 29f1e6a3f (0.9.174, OE1) after the mends at 207704ac8. Merged as 3d90ab50d. Only the
+generated indexes conflicted, and they were regenerated (f5452977d). Main touched none of this
+batch's files.
+
+On the merged tree:
+
+- `./batch-check.sh --fast`: green;
+- `BankFailureCheck`, `CreditCrunchCheck` and `MortgageCheck`, one at a time: all passed.
+
+The ensemble begun on the gate box at f5452977d was stopped at REV-MC2's word (`ensemble.sh --stop
+MC2`, 5 processes), before any result: it runs after the mends.
+
+## REV-MC2 and the mends
+
+REV-MC2 (money) on 207704ac8 said NOT YET: one P1 and three P2. All four are mended:
+
+- **P1**, a loss raised the room: `bandShare()` is none while `lendingGrowthLimit()` is none
+  (Calls). Lines 12-13.
+- **P2**, the share past the minimum near the target: the cap at the room to the minimum (Calls,
+  and the finding above). Lines 15-16.
+- **P3**, the bond bid in the loss window: mended by P1, shown by line 14, and the notes' "moves
+  nothing" corrected (What changed).
+- **P4**, no bank bound on its risk weights: line 17.
+
+Only `Bank.java` (`growthHeadroom`, `insuredHeadroom`, `bandShare`, the banner) and
+`BankFailureCheck.java` changed in the round.
+
+MENDS_CHECKS
+
+## The ensemble
+
+The 80-run ensemble on the final model, on the gate box, label MC2, against
+`docs/ensemble/0.9.174.md` (OE1's, the newest), JAVA_OPTS empty: ENSEMBLE_RESULT.

@@ -5602,9 +5602,18 @@ public class Bank {
      *     headroom();
      *   - under it, the band's share (bandShare()): what the growth limit lets
      *     the book grow this month, on the equity the month's known losses
-     *     leave. Each borrower's own share (BusinessDebtManager.capitalRoom())
-     *     still binds beside it, and this is the allowance they share; at or
-     *     under the minimum it is none, as the growth limit is.
+     *     leave, and never past the growth that takes the bank to its minimum
+     *     (REV-MC2 P2: near the target the curve rises without bound, and a
+     *     bank lent its whole share there would fall under its minimum, to
+     *     lend only to keep borrowers going the next month). Each borrower's
+     *     own share (BusinessDebtManager.capitalRoom()) still binds beside it,
+     *     and this is the allowance they share; at or under the minimum it is
+     *     none, as the growth limit is.
+     * A bank over its target on its books - its growth limit none, as the
+     * month's rule was struck - that a default not yet on them takes under the
+     * target reads BF1's room, none (REV-MC2 P1: the band's share there would
+     * grow as the loss did, beside a rule struck unlimited). Its bond bid (BondMarket) reads
+     * the same room.
      * Not headroom()'s strain cap under the target: that is the carry trade's
      * room (EASY_STRAIN), which a bank in its band lends nothing.
      */
@@ -5618,7 +5627,9 @@ public class Bank {
         double equityLeft = equity() - loss;
         double toTarget = Math.min(equityLeft / capitalTarget() - getWeightedBook(),
                 equityLeft / leverageTarget() - exposure());
-        return toTarget >= 0 ? Math.min(headroom(), toTarget) : bandShare(equityLeft);
+        if (toTarget >= 0) return Math.min(headroom(), toTarget);
+        return bandShare(equityLeft, Math.min(equityLeft / CAPITAL_RATIO - getWeightedBook(),
+                equityLeft / LEVERAGE_RATIO_MIN - exposure()));
     }
 
     /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix: the room to the leverage target over it, the band's share under it (MC2, projectHeadroom()). */
@@ -5631,22 +5642,26 @@ public class Bank {
         if (branches <= 0) return Double.POSITIVE_INFINITY;
         double equityLeft = equity() - loss;
         double toTarget = equityLeft / leverageTarget() - exposure();
-        return toTarget >= 0 ? toTarget : bandShare(equityLeft);
+        if (toTarget >= 0) return toTarget;
+        return bandShare(equityLeft, equityLeft / LEVERAGE_RATIO_MIN - exposure());
     }
 
     /**
      * THE BAND'S SHARE IN MONEY (MC2): the growth limit's share of the book the
      * binding measure counts, as lendingLimit() takes it, on this much equity -
      * RATIONED_GROWTH x x/(1-x) of the exposure while the leverage ratio binds,
-     * of the weighted book otherwise. None failed or at the minimum; none if
-     * the curve reads the bank at its target, where the room to it is what is
-     * left (projectHeadroom()).
+     * of the weighted book otherwise - and no more than toMinimum, the room to
+     * the minimum on the same measures (BF1's room to the target, at the
+     * minimum's ratios). None failed or at the minimum; none while the bank is over
+     * its target on its books, its growth limit none, and under it only by
+     * the known losses (projectHeadroom()); none if the curve reads the bank at
+     * its target, where the room to it is what is left.
      */
-    private double bandShare(double equityLeft) {
-        if (isInsolvent()) return 0;
+    private double bandShare(double equityLeft, double toMinimum) {
+        if (isInsolvent() || Double.isInfinite(lendingGrowthLimit())) return 0;
         double g = growthLimitOn(equityLeft);
         if (!(g > 0) || Double.isInfinite(g)) return 0;
-        return g * (leverageBinds() ? exposure() : getWeightedBook());
+        return Math.max(0, Math.min(toMinimum, g * (leverageBinds() ? exposure() : getWeightedBook())));
     }
 
     private double unsettledCreditLoss() {
