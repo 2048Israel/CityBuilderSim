@@ -12,6 +12,14 @@ that dependency rather than reuse a shipped study's ID.
 
 ## 1. The recommendation
 
+**Aggregation is a requirement throughout.** Jerus clarified on 2026-11-21:
+"everything should be handled in aggregates no?" Buildings, dwelling types,
+household occupancy, ownership, mortgages, listings, parking and common-cost
+accounts are counts, shares and money stocks/flows in bounded cohorts. There
+are no individual building, dwelling, household or parking-space identities.
+The earlier draft's stable building keys and per-building account splits
+were too granular and are replaced below.
+
 Separate a physical building from its homes, and a home's owner from its
 occupant. Offer houses, attached homes, walk-ups and taller apartments, with
 several layouts and quality levels. Some apartment forms have a mix of homes;
@@ -24,9 +32,9 @@ First establish that inventory, then fit households and price the actual
 homes, then account for parking. HO1 must buy and sell those homes and fund
 their common costs from its first apartment sale. After HO1, intentional
 disposal lists standing homes for sale and progressively lowers unsold asks.
-It never scraps housing to leave an investment. Keep tenants housed while
-their homes are marketed. Give the common building an account that survives
-the landlord selling its last unit.
+It never scraps housing to leave an investment. Keep tenant occupancy counts
+while the stock is marketed. Keep the cohort's shared-cost pool after RE's
+owned quantity reaches zero.
 
 This changes the interfaces in HO1 substantially, but keeps its accepted
 credit rules and rate experiment. It does not solve the builders' backlog by
@@ -188,33 +196,44 @@ for redistributing tables or plans.
 
 ## 4. The proposed housing model
 
-### 4.1 Buildings, homes, ownership and occupancy
+### 4.1 Aggregate buildings, homes, ownership and occupancy
 
-Use a housing registry beside `BuildingManager`, with the physical stacks
-remaining authoritative for completed structures and construction. A holding
-has a stable key, template, completed quantity/vintage, land, shared facilities
-and its schedule of dwelling types. A dwelling type carries bedroom/layout
-category, normal capacity, internal area, quality/amenities and included
-parking rights. Height belongs to the building; penthouse/floor band belongs
-to eligible homes within it.
+Extend the current aggregate stacks with a housing stock table.
+`BuildingManager` remains authoritative for quantities of completed structures
+and construction. A building cohort groups a template/form, a bounded vintage
+or cost band and shared-service regime. Its building count times the template's
+unit-mix vector gives dwelling counts by layout, capacity, area/quality and
+included-parking category. Height describes the form; a penthouse is a limited
+category in its mix. Catalogue geometry does not create runtime floor objects.
 
-Keep identical all-rental buildings compact. Split a holding when ownership,
-fees or a unit mix require a distinct common-cost account; partially sold
-buildings must retain a stable building key through the last sale. Keep
-counts of identical homes in lots and sparse household-cell assignments,
-rather than one Java object for every person or front door. A fractional
-household count is the existing aggregate model's expected count, not a
-proposal for several unrelated households to co-own each apartment.
+Use sparse counts connecting household cells (shape, tier, stage and a small
+preference/eligibility band where needed) with housing categories and tenure.
+Keep RE-owned, household-owned, occupied, vacant and listed quantities, plus
+the associated cost/debt values. Ownership and occupancy remain distinct
+aggregate dimensions. A listed rental is still owned and may still be
+occupied; listing it never adds another home. Before HO1, ordinary housing
+is RE-owned; business-owner families are occupants, not homeowners.
 
-For every physical dwelling lot, ownership, occupancy and listing status are
-separate fields. A listed rental is still owned and may still be occupied;
-a listing never adds another home. Owned vacant units and estate listings
-still have owners and bills. Before HO1, all ordinary homes are RE-owned;
-business-owner families are occupants, not homeowners.
+A sale transfers a quantity from RE's ownership bucket to household ownership,
+with matching money/debt flows. It does not allocate an address, a serial
+number or an apartment object. "Sell individual apartment units" describes
+the economic unit of sale, not the storage model: a cohort can contain 1,000
+identical apartments, 600 household-owned and 400 RE-owned. Partial ownership
+does not split that into 1,000 records or require locating each owner in a
+particular physical building. Fractional counts keep the current aggregate
+model's interpretation as expected household/unit quantities.
+
+Use fixed, bounded category definitions and coalesce equivalent state. Do not
+let a unique closing date, exact quote or account identifier create a new
+per-transaction/per-building cohort indefinitely. Mortgage/arrears and listing
+age/ask bands may retain relevant distributions; save their counts and money
+sums, with controlled banding. A matching flow is between cohorts, not a loop
+over their represented households. Incumbent retention preserves occupied
+counts and their housing category; no resident's identity is required.
 
 Required invariants, also asserted after save/load:
 
-- Sum of homes by type equals each building's dwelling schedule; capacity is
+- Sum of homes by type equals building count times the cohort's mix; capacity is
   the sum of each type's count times its normal capacity. The founding
   endowment remains a separately named, non-saleable capacity adjustment.
 - RE-owned plus household/estate-owned homes equals physical homes. Occupied
@@ -222,10 +241,14 @@ Required invariants, also asserted after save/load:
 - Assignments consume one home per household, apart from the explicitly
   recorded sharing/crowding valves. A home or parking right cannot be used
   by two matches.
-- A unit sale changes title, the allocated asset/debt books and the relevant
-  fee payer. It changes no building quantity, capacity, land or material.
-- Building common shares are fixed and sum to one across ALL its units;
-  selling a unit never enlarges the remaining units' shares.
+- A sale changes owner counts/shares, allocated asset/debt books and fee
+  contributions. It changes no building quantity, capacity, land or material.
+- Common-cost weights cover all units in a cohort, including RE's unsold
+  quantity. A sale transfers the relevant weight between owner groups; it
+  never enlarges the remaining units' per-unit weight.
+- Splitting then merging otherwise equivalent aggregate records preserves
+  counts, rights, carrying costs, debt and settlement flows. State size and
+  work scale with the bounded categories/occupied cells, not represented homes.
 
 The existing two size totals become derived compatibility/reporting views.
 Do not keep an independently mutable owned-capacity total beside a registry
@@ -305,18 +328,19 @@ a garden. A penthouse preference can fall back to a luxury apartment or
 ordinary home. Profile shares, utility weights and voluntary move pace are
 open parameters; none has been fitted here.
 
-Owners keep their homes when their tier or stage changes. A household change
-may make a move desirable; it does not automatically sell a fraction of
-capacity and credit cash. HO2 carries the actual ownership and mortgage lots
-and closes a trade only when another party buys. Keep the current home
-until a feasible move or the existing forced-sale process resolves it.
+Owner-occupier counts retain their housing category when their tier or stage
+changes. A household change may create mover demand; it does not automatically
+sell capacity and credit cash. HO2 carries aggregate ownership and mortgage
+stocks with the household flows and closes a sold quantity only against
+funded buying demand. The unsold quantity keeps its carrying obligations.
 
-At death or departure, put an unsold home's title, mortgage and carrying cash
-in an estate/outbound-seller holding until closing. Do not leave those stocks
+At death or departure, transfer unsold quantities, debt and carrying cash to
+estate/outbound-seller cohorts until settlement. Do not leave those stocks
 in an empty household cell where normal folding would hand them to unrelated
-residents. An outbound seller receives the actual net across the border when
-paid. A holding without cash accrues the proper arrears/default claim; its
-fees are not invented income for the common account.
+residents. Actual net proceeds flow to heirs or across the border when paid.
+A cohort without cash accrues the proper arrears/default claim; its unpaid
+fees are not invented income for the common-cost pool. No separate record
+for each deceased or departing household is introduced.
 
 Measure unmatched demand separately as no suitable layout, no affordable
 offer, no physical vacancy, or a home still on site. Also show crowding,
@@ -353,11 +377,12 @@ investment and its rate sensitivity. Separate optional parking cash flows
 from the dwelling unless the relevant space/right is transferred with it.
 Keep HO1's chosen cap-rate pass-through of 0.4 as its experiment baseline.
 
-Recommend offer-level settlement first: allocate eligible buyers to actual
-listed homes at their posted asks, respecting credit, budgets, preferences,
-incumbency and parking rights. Unmatched offers stay listed; allocation must
-not count one buyer against several classes. Every closing price is the
-accepted offer, and the transaction index is calculated only from closures.
+Recommend settlement between aggregated buyer cells and listed quantities
+in housing/ask bands, respecting credit, budgets, preferences, incumbency and
+parking rights. Unmatched quantities stay listed; allocation must not count
+the same buyer demand against several classes. Each matched flow settles at
+its accepted class offer; the transaction index uses traded quantity and
+value. There is no individual bid or contract object for every buyer/home.
 HO1's supply/demand calculation can guide normal offer formation, but must
 not force all offered stock to sell. Its estimated twelve-month price lag
 belongs to normal quote updates, not to changing an agreed closing price or
@@ -420,6 +445,11 @@ space and construction/repair inputs. A shared garage/lot also has access,
 operating costs and a payer. Neither building height nor a car automatically
 creates a parking space.
 
+All these are aggregate capacities and occupied/reserved quantities by
+housing/parking category. Move the corresponding entitlement counts with
+household flows. There are no bay IDs, per-car parking records or lease
+objects per space.
+
 | Provision | Housing/parking bill | Capacity treatment |
 |---|---|---|
 | Private driveway/garage belonging to a home | Included in rent or purchase price; owner bears its ownership costs | Attached to that home; cannot also be let from the shared pool |
@@ -460,9 +490,12 @@ additional-car market would be further scope, not free overflow capacity.
 
 ### 6.1 The common account from the first apartment sale
 
-Recommend a ring-fenced building account, owned by its unit owners. It is a
-book in the housing model, not a new sector in `Sectors.KEYS`. RE can manage
-it for a disclosed fee. Common expense receipts are not all RE's income;
+Recommend a ring-fenced common-cost pool per building/service cohort,
+representing all equivalent buildings and their owners together. It is an
+aggregate book in the housing model, not an account per physical building
+and not a new sector in `Sectors.KEYS`. Scale expenses, facilities and
+management work by the cohort's physical building count. RE can manage it
+for a disclosed fee. Common expense receipts are not all RE's income;
 only the management service paid to RE is its management revenue.
 
 Allocate common cost with fixed declared shares, initially based on unit
@@ -476,11 +509,21 @@ has one assessed asset and one payment path, with common land allocated once.
 The account pays shared repair orders, common utilities and the contracted
 management service. Dedicated variable parking costs can be assigned to the
 parking cost group. Other shared parking receipts reduce the remaining
-common call. For shares alpha_i summing to 1, a simple first version is:
+common call. For dwelling category t, let N_t be its physical count, w_t its
+per-unit cost weight and W = sum(N_t * w_t). A simple first version is:
 
 `total owner fees = max(0, shared expense budget + management - parking receipts)`
 
-`unit fee_i = alpha_i * total owner fees`.
+`per-unit fee_t = w_t / W * total owner fees`.
+
+`owner-group contribution = sum(ownedCount[group,t] * per-unit fee_t)`.
+
+For example, 100 equivalent four-unit buildings have 400 homes, a common
+budget for 100 buildings and ownership counts by unit category. Their fees
+can be computed without knowing which physical building contains each sold
+unit. Different physical/service cost regimes use different bounded cohorts;
+sales alone do not create accounts. Identical cohorts can be merged while
+preserving all cost weights, balances and contributions.
 
 Show gross expenses, parking receipts, fees and account cash separately.
 If receipts exceed the call, retain the surplus in the account and lower
@@ -490,27 +533,31 @@ accumulation. Existing monthly repairs are not a second reserve contribution.
 Start management remuneration from the actual service/staffing cost; a profit
 markup is an open calibration, not an invented permanent fraction of value.
 
-Every title holder pays its share, including RE for **all unsold units**, vacant
-or rented. A renter pays RE the agreed gross rent; RE pays that unit's common
-fee. An apartment owner pays their common fee, unit-specific tax/private work,
-mortgage and applicable optional parking, with zero rent. A house buyer owns
-the house/plot/private provision and pays its actual owner bills.
+Every ownership group pays its weighted contribution, including RE for
+**all unsold quantities**, vacant or rented. Renter cells pay RE gross rent;
+RE pays the common contribution for its rented stock. Owner cells pay their
+common fees, category-specific tax/private work, mortgage and applicable
+optional parking, with zero rent. House ownership includes the corresponding
+plot/private provision and its owner costs.
 
-After the last unit sells the account still exists, every common bill remains
-funded, and its manager is still paid for the agreed service. RE loses the
-last owner's obligation and any rent on it; it does not demolish or erase
-the building, its common fund, shared parking, staffing requirement or bills.
+"The last unit sold" becomes the aggregate boundary where RE's owned count
+in a cohort reaches zero. The common-cost pool and its physical building/
+parking stock remain; owner groups fund the whole call and management work
+still has a payer. RE's owner contribution and rent for that stock reach zero.
+No building account or individually identified last apartment is required.
 If RE ceases managing, obligations transfer to another explicit payer/operator
 before removing its management payroll. Unpaid common fees remain receivables
 and cash shortfalls; do not pretend an unpaid assessment funded a repair.
 
 ### 6.2 Sale instead of scrapping
 
-Give financial retirement a distinct disposal action. It creates or maintains
-a listing for a house or individual apartment lot, with seller, title key,
-occupancy status, reason, initial/current ask, listing age and exit intent.
-Ordinary and distressed exits go through it. Neither an asking reduction nor
-an unsuccessful sale releases land, produces salvage or changes homes.
+Give financial retirement a distinct disposal action. It moves housing
+quantities into listing cohorts by housing category, seller group, occupancy,
+reason, age/ask band and exit intent. Track offered quantity and value,
+new inflows, markdowns and cleared quantity/value, without a list of individual
+properties. Ordinary and distressed exits go through it. Neither an asking
+reduction nor an unsuccessful sale releases land, produces salvage or changes
+physical homes.
 
 Initialize an ask from comparable offers/trades and the home's attributes,
 not a mandatory rental-value floor. Reduce an unsold ask on successive
@@ -529,18 +576,27 @@ An ask markdown alone cannot lower every homeowner's cleared price, increase
 an estate's cash, or pay a bank. Use an explicit stale-price indicator rather
 than inventing a trade in a thin segment.
 
+New listings and sales can change a band's average ask through composition.
+Record markdowns on continuing listed stock separately from inflow/outflow
+value. Test that its ask falls with no inflow or trades; an aggregate mean
+changing because dearer new supply entered is not a reversal of old markdowns.
+
 Keep HO1's normal landlord buying below net rental value and selling above it
 for investment decisions. An **intentional exit** may accept less than that
-value; it must not then bid against its own listing. Freeze acquisitions of
-that exiting holding, including a round trip through a household in the same
-clearing. Keep its exit intent until the holding has been disposed of or a
-separate, explained strategy decision changes it. A later genuine investment
-in other homes remains possible; no automatic buyback undoes the disposal.
+value; it must not bid against its own disposal flow. Suppress acquisitions
+from an active exit cohort and same-clearing round trips. Keep the exit
+quantity's intent until cleared or a separate, explained strategy decision
+changes it. Other-category investment remains possible. A cohort acquisition
+rule and gross sell/buy flow checks enforce this without property identities.
+This deliberately pauses purchases of the whole exit category while its
+exit intent remains in force. A narrower ban on only previously sold
+addresses would require identities and is not proposed.
 
-Seller proceeds pay the released secured debt first. Selling a unit requires
-the lender to release that unit's collateral and the allocated land/common
-interest. Allocate book value and outstanding building debt coherently, then
-remove the seller's corresponding asset/liability once. A short sale needs
+Seller proceeds pay the released secured debt first. A sold quantity releases
+its allocated collateral/book value and corresponding secured debt from the
+seller's aggregate book. Group loans by the relevant product/rate/term/risk
+bands and retain balances/weighted sums, rather than a mortgage per apartment.
+Remove the seller's corresponding asset/liability once. A short sale needs
 seller cash or the lender's agreed loss/default resolution. **A voluntary
 markdown is not automatically a city insurance claim.** Existing insured-loss
 eligibility must be checked. Remaining RE debt cannot become a condo fee or
@@ -555,13 +611,15 @@ housing sales total unchanged.
 
 ### 6.3 Occupied homes and monthly timing
 
-Recommended initial scope: the sitting tenant can buy at the current offer
-if eligible; otherwise the tenancy continues at its rental terms. External
-owner-occupier buyers use vacant units. An occupied listing can keep marking
-down while its tenant cannot buy. RE keeps its carrying bills. Marketing or
-a change of title must never silently evict a tenant or let two households
-consume the same unit. Selling tenanted homes to new private landlords would
-require a separate rental-owner model; HO1 does not already provide it.
+Recommended initial scope: eligible incumbent renter counts can convert to
+ownership in their current housing category. Other renter counts retain their
+tenancy; external owner-occupier demand uses vacant quantities. Occupied
+listing cohorts can keep marking down while incumbent demand cannot buy.
+RE keeps the carrying bills. Occupancy/tenure flow constraints prevent a sale
+from silently evicting renters or consuming housing twice. Selling tenanted
+stock to new private landlords would require another ownership category;
+HO1 does not already provide it. These outcomes require aggregate occupancy
+links, not a named tenant or unit record.
 
 For monthly accounting, bill the opening tenure/parking positions for that
 period. Close purchases/moves at the housing-market seam after Motoring and
@@ -623,6 +681,9 @@ management service 28 and separate shared-parking receipts 16; no reserve is
 accumulated. The fee call is 292, divided by fixed area shares. The same
 users' 16 parking payment is not also billed as an included-space charge.
 
+This is one aggregate mix: two 40-area units, one 80 and one 120. The rows
+transfer owned counts by category, not four identified apartment records.
+
 | Homes sold, in that order | Household owner fees | RE fees for unsold homes | Parking receipts | Paid to manager | Common-account net after 280 expenses |
 |---:|---:|---:|---:|---:|---:|
 | 0 | 0 | 292 | 16 | 28 | 0 |
@@ -631,10 +692,20 @@ users' 16 parking payment is not also billed as an included-space charge.
 | 3 | 166.857143 | 125.142857 | 16 | 28 | 0 |
 | 4 | 292 | 0 | 16 | 28 | 0 |
 
-The last unit's sale shifts its 125.142857 fee to its buyer; other units'
-fees do not jump. The manager's 28 remains a service receipt, not 292 of
+The final RE-owned quantity shifts its 125.142857 contribution to household
+ownership; other categories' per-unit fees do not jump. The manager's 28
+remains a service receipt, not 292 of
 rent. If it costs the manager 28 to provide the service, that receipt is not
 28 of profit. The common account pays each underlying bill once.
+
+Repeating the mix across 100 equivalent buildings uses the same three
+dwelling-category rows: physical counts 200, 100 and 100, a 29,200 fee call,
+1,600 parking receipts, 28,000 expenses and 2,800 management cost. Counts and
+values scale; the number of building/common-account records does not. An
+additional exact-rational arithmetic check splits this cohort into 40 and
+60 buildings with different ownership mixes and then merges it: owner fees,
+RE fees, cost weights and total cash remain identical. When RE-owned counts
+all reach zero, the fee call still totals 29,200 and the pool balances.
 
 An illustrative unit sale at 120, buyer cash 6, new loan 114, released seller
 loan 100 and book value 80 gives buyer cash -6, bank cash -14 and seller cash
@@ -710,8 +781,9 @@ on RE's books for a long time. A private buy-to-let buyer would require more
 ownership scope than HO1 currently has.
 
 **★9 Common-fee recipient and last sale — open; recommended common account.**
-Owners, including RE on unsold units, fund fixed shares of the building's
-common account. It pays costs and an explicit RE management service. Owners
+Owners, including RE on unsold quantities, fund fixed weighted shares of a
+common-cost pool for equivalent buildings. It pays costs and an explicit RE
+management service. Owners
 do not keep paying rent after purchase; the manager does not take the whole
 common fee as profit. Start from actual service cost and make any profit
 markup a separately justified parameter. Section 7 proves the bookkeeping,
@@ -724,6 +796,15 @@ disposal/markdown policy; HO2 uses its real listing/closing outcomes. This
 honors the later "after HO" instruction. Review this order with the design,
 including the proposed posted-offer closing rule in section 4.4; these are
 not instructions to start HO1 or implementation tonight.
+
+**★11 Aggregate simulation — confirmed requirement.** Jerus: "everything
+should be handled in aggregates no?" Yes: use building/form stock cohorts,
+dwelling-type counts, household-cell occupancy/ownership shares, aggregate
+mortgage/listing bands, parking capacities and common-cost pools. No per-person,
+per-building, per-apartment or per-bay identities/accounts. Partial sales
+and the last RE-owned quantity are count/weight boundaries. Split/merge
+invariance and bounded state growth are required proofs, not optional
+optimizations. The earlier stable-building-key proposal is superseded.
 
 For morning review, the main new choices are ★8 tenant retention, ★9 the
 common account/manager, and the candidate form/layout direction in ★2/★7.
@@ -740,12 +821,12 @@ the applicable baseline, and resolve overlaps by the contract.
 | Order / batch | Scope and likely source changes | What its caused harness must prove |
 |---|---|---|
 | **RES1, this study** | This file and `docs/studies/README.md`; docs only, no trace change | Source/probe provenance, physical/accounting examples, dependency and acceptance consistency; docs fast checks |
-| **RES2, physical housing foundations** | `BuildingsTemplate`, `BuildingCatalog`, `BuildingManager`/`BuildingsStacks`; new housing registry/lot definitions; `DataSave`/load; `RealEstate` compatibility getters | Existing three schedules reproduce their exact door/capacity censuses including the separate founding adjustment; an explicitly mixed fixture preserves every type through completion, splitting and save/load; sale/title primitives move no structure/land/material; owned totals and RN2's first-month debt share cannot diverge |
-| **RES3, home choice, typed rents and forms** | `FamilyModel`, `HouseholdBalance`/accounts, `RealEstate`, `EconomyManager`, finite new `buildings.json` recipes and their actual builder/utility inputs; registry assignments | Same headcount/different layout outcomes; scarce family stock with empty compact homes; unaffordable premium vacancy; a high-resource household choosing quality and compromising when unavailable; incumbent stability; fair ties; no demand counted across alternatives twice; per-class rent differs where justified and falls in glut; an empty premium project does not earn full rent; mixed project's inputs/area/floor limits reconcile |
+| **RES2, aggregate housing foundations** | `BuildingsTemplate`, `BuildingCatalog`, `BuildingManager`/`BuildingsStacks`; housing stock/cell cohorts; `DataSave`/load; `RealEstate` compatibility getters | Existing three schedules reproduce exact door/capacity censuses including the separate founding adjustment; mixed-type counts survive completion and save/load; ownership transfers move no structure/land/material; equivalent cohort split/merge preserves all quantities/values; scaling represented buildings does not create building/unit records; RN2's first-month debt share cannot diverge |
+| **RES3, home choice, typed rents and forms** | `FamilyModel`, `HouseholdBalance`/accounts, `RealEstate`, `EconomyManager`, finite new `buildings.json` recipes and their actual builder/utility inputs; aggregate cell assignments | Same headcount/different layout outcomes; scarce family stock with empty compact homes; unaffordable premium vacancy; a high-resource household choosing quality and compromising when unavailable; incumbent stability; fair ties; no demand counted across alternatives twice; per-class rent differs where justified and falls in glut; an empty premium project does not earn full rent; mixed project's inputs/area/floor limits reconcile |
 | **RES4, parking supply and bills** | Housing registry/templates/recipes; `HouseholdBalance`, `Motoring` budget inputs, shared-parking quote/leases, saved flows and audit | Private/included/shared/extra cases charge once; unused included rights cannot also be rented; exact S=I+L+V; full lot refuses another lease; bay acquisition/release on move or sale is atomic; construction consumes land/work/cash; recurring parking reaches budgets and optional receipts the owner; existing car stock is conserved and the one-car cap unchanged; low/high car demand and no-car households |
-| **HO1, owning these homes** | Existing HO1 classes plus title/assignment/common-account interfaces described below | Canadian credit tests on actual unit price and bills; owners pay zero rent and all owner/common obligations; normal landlord buys/sells around unit-specific net rental value; first/partial/last unit sales; lender collateral release and gain/loss; common costs still paid; no financial housing demolition; exact money and save/reload |
-| **RES5, deliberate disposal after HO1** | `RealEstate` exit decisions, `HomeMarket` listings/clearing, central financial-disposal paths in `Game`/credit, fee/parking/title books and history | Ordinary and distressed exits preserve buildings/land/capacity and produce no salvage; unsold asks fall without fictitious trades; tenant purchase/refusal/vacancy outcomes; no own-listing bid/buyback loop; a sale below rental value still closes when funded; a short sale cannot silently use insurance or pass RE debt to owners; last-unit costs and management survive; reload during unsold marketing gives the same next markdown and transaction |
-| **HO4, HO2, LP1** | Existing credit levers, owner life transitions/screens, then loan packages | Keep their accepted order constraints; HO2 trades/estates/leavers wait for actual closing and pay mortgage first; failed sale leaves title/carry with its owner; LP1 packages the actual resulting loans after those prerequisites |
+| **HO1, owning these homes** | Existing HO1 classes plus aggregate ownership/occupancy, loan bands and common-cost pool interfaces | Canadian credit tests on category prices and bills; owners pay zero rent and all owner/common obligations; normal landlord trades around category net rental value; first/partial/zero-RE-owned quantity boundaries; aggregate collateral release and gain/loss; common costs still paid; no financial housing demolition; exact money/save-reload and split/merge invariance |
+| **RES5, deliberate disposal after HO1** | `RealEstate` exit decisions, `HomeMarket` listings/clearing, central financial-disposal paths in `Game`/credit, aggregate fee/parking/ownership books and history | Ordinary and distressed exits preserve buildings/land/capacity and produce no salvage; unsold asks fall without fictitious trades; tenant purchase/refusal/vacancy outcomes; no own-listing bid/buyback loop; a sale below rental value still closes when funded; a short sale cannot silently use insurance or pass RE debt to owners; last-unit costs and management survive; reload during unsold marketing gives the same next markdown and transaction |
+| **HO4, HO2, LP1** | Existing credit levers, aggregate owner life transitions/screens, then loan packages | Keep accepted order constraints; HO2 estate/outbound cohorts wait for funded clearing and pay mortgage first; uncleared quantities retain owner/carry obligations; moving/folding household cells preserves associated counts and loan sums without individual records; LP1 packages the resulting loan cohorts |
 | **REU1, housing pictogram** | Pure housing view/picture and `ui/SectorScreen` kept Real Estate card/pane, using `IndustryView`/`IndustryPicture` and `industryCard`/`IndustryPane` as references | Public model figures reconcile to registry, cash statements and saved flows; empty, mixed, parking-short and fully sold fixtures; kept nodes/scroll survive month redraw; render/page adds no simulation changes |
 
 RES2 builds data/compatibility first; activate new forms only with RES3's
@@ -763,10 +844,13 @@ constants. Include `HousingCheck`, `HousingDoorCheck`, `BuildingDataCheck`,
 actual picks and nightly requirements follow the final diff. A 142-building
 proposal is not a replacement for proving funded completion through OG1.
 
-Use sparse assignments and compact identical holdings. Measure allocation,
-pricing, fee settlement, save size and reload on a small and a large model
-city before choosing a flow solver or expanding preference profiles. No
-runtime or memory improvement is claimed by the arithmetic prototypes.
+Use sparse aggregate assignments and a bounded number of stock/service and
+financial bands. Splitting/merging identical cohorts must preserve the outcome;
+multiply represented counts by 1,000 and verify no individual records appear
+and bookkeeping scales correctly. Measure allocation, pricing, fee settlement,
+save size and reload on small and large model cities before choosing a solver
+or more preference profiles. Do not add a loop per represented dwelling or
+resident. No runtime improvement is claimed by the arithmetic prototypes.
 
 ### REU1's concrete replacement brief
 
@@ -797,17 +881,17 @@ to that brief or an implementation in this docs branch.
 
 | Existing HO1 assumption | Required replacement / ownership of the change |
 |---|---|
-| An owned home is a studio/family segment capacity share; physical doors stay solely the landlord's portfolio | RES2 supplies physical identity/mix; HO1 records title and household assignment by dwelling lot. All homes remain in physical totals, but only RE-owned assets/cash flows remain its investment portfolio. Segment capacity is a derived summary. |
+| An owned home is a studio/family segment capacity share; physical doors stay solely the landlord's portfolio | Keep aggregation, with richer bounded categories: RES2 supplies building counts and dwelling-mix vectors; HO1 carries ownership and occupancy quantities by housing class and household cell. All homes remain in physical totals; only RE-owned shares/cash flows remain its investment portfolio. No building or dwelling IDs. |
 | One home price per capacity in each of two segments | RES3 supplies comparable dwelling classes; HO1 offers/clears actual homes with their included rights and common obligations. Preserve a city transaction index only as an observed summary, not another independently traded price. |
 | P* makes buyers' capacity equal everything offered; the price lags toward it | Recommend matched posted offers: only eligible, funded buyers close, at accepted asks. The old equilibrium calculation can guide ordinary quotes; its lag is not a fictitious transaction and does not make every listing sell. Actual transactions alone update the cleared-price index. Re-measure the rate response. |
-| Household cells gain seven averaged owner slots | Carry owner counts and mortgage balance/rate-weight/month-weight/arrears by the assigned ownership lots, aggregate to cells for reporting, and move them with the right people. Seven slots alone cannot distinguish two homes' fees/rights or collateral. Choose the saved schema with the registry; do not duplicate authoritative debt. |
-| Owners pay `.01 * home value` upkeep, and landlord bills fall by owned capacity | Partition physical private/common repairs and shared payroll/utilities once. HO1 creates/funds the common account on the first apartment sale; RE pays unsold shares and renters pay gross rent only. RES5 extends the exit/listing policy, not the first existence of condo fees. |
+| Household cells gain seven averaged owner slots | Keep count/balance/rate-weight/month-weight/arrears sums, disaggregated into bounded housing/loan categories where fees/rights/credit differ. Move aggregate quantities and sums with household flows, then sum for cell reporting. Overall cell averages alone can hide differences between housing classes; that does not require individual mortgages or titles. Do not duplicate authoritative debt. |
+| Owners pay `.01 * home value` upkeep, and landlord bills fall by owned capacity | Partition aggregate private/common repair and payroll/utility costs once. HO1 funds a shared-cost pool per equivalent building/service cohort; contribution weights follow RE/household ownership counts. No account per building. Renters pay gross rent only; RES5 extends exit/listing policy, not the first existence of common fees. |
 | `V_L = net monthly rent * 12 / cap rate` | Keep the formula and chosen pass-through, but use the actual comparable home's net operating income, correctly allocated expenses/tax and transferable included parking rights. Do not capitalize a free common-cost liability or subtract financing interest twice. |
 | Landlord sells above and buys below V_L | HO1 keeps normal investment behavior; add an explicit exit-intent interface. RES5 allows intentional exits below V_L and suppresses self-bidding/reacquisition of that exiting holding. |
 | Builders sell beyond cheapest cost plus BUILD_MARGIN, finishing in 18 months | Use the actual mix/parking quote and profit test with the existing margin as the baseline; completed, funded physical pipeline only. The 18-month estimate is superseded by real builder work/queue completion, coordinated with OG1/FB15. Never create a second set of finished homes by a timer. |
 | GDS/TDS on payment, tax and heat | Keep accepted 5% down, insurance under 20%, 39%/44%, +2 stress and the agreed term rules. Add 50% of the actual condo fee to qualifying ratios per CMHC; the household CASH budget pays 100%, plus full applicable optional parking/private costs. Identify heat included in a fee so the same heat is not also billed separately. Do not reinterpret gross income as take-home. |
-| Selling a home credits the landlord's till / estate cash at the month's price | Close an identified title against a real buyer; release seller collateral, pay secured debt first, allocate book gain/loss, transfer common/parking rights and then pay net proceeds. A listing or markdown pays nobody. |
-| Owners' exits trade capacity immediately on ageing, death or leaving | HO2 lists/trades their actual homes and carries title/costs until closing; estates pay the mortgage first, leavers take actual net proceeds. No cash is invented for an unsold listing. |
+| Selling a home credits the landlord's till / estate cash at the month's price | Clear matched quantities between seller cohorts and eligible buyer cells; release the allocated collateral/debt, settle gain/loss and move ownership/parking quantities and net money once. Keep traded quantity/value totals; there is no individual title record. A listing or markdown pays nobody. |
+| Owners' exits trade capacity immediately on ageing, death or leaving | HO2 carries unsold counts, loans and costs in estate/outbound cohorts until funded clearing; aggregate proceeds repay debt before heirs/leavers receive net cash. No per-estate object or invented cash for unsold stock. |
 | HO1 requires no save bump because old owners are zero | Reassess against the new inventory, assignments, common/parking accounts and saved monthly flows. Zero owners alone no longer proves correct reading. Follow the existing rule: bump SAVE_FORMAT and OLDEST_LOADABLE_FORMAT if the new schema would read an old save wrongly; no conversion code. |
 | After `motoring.month()` at the old Game.nextMonth step 34; also add the action to SimulationEngine | Settle once inside `startOfMonthUpdate()`, after cars and before luxury. `nextMonth()` then runs `SimulationEngine`, which must synchronize derived housing data without a second trade. Save/rebuild only restore state. Opening-period bills and closing transfers follow section 6.3. |
 
@@ -999,6 +1083,47 @@ for rate in (D('.005'), D('.01'), D('.02')):
 assert -D(6)+(D(100)-D(114))+(D(120)-D(100)) == 0
 ```
 
+### Aggregate accounting check
+
+This exact-rational prototype checks cohort conservation and split/merge
+invariance; it does not measure a new game implementation.
+
+```python
+"""Aggregate arithmetic only; no model changes or per-property records."""
+from fractions import Fraction as F
+
+MIX = (2, 1, 1)
+WEIGHTS = (40, 80, 120)
+
+def fees(buildings, owner_counts):
+    stock = tuple(buildings * count for count in MIX)
+    assert all(0 <= owned <= count for owned, count in zip(owner_counts, stock))
+    weight = sum(count * w for count, w in zip(stock, WEIGHTS))
+    call = 292 * buildings
+    per_unit = tuple(F(call * w, weight) for w in WEIGHTS)
+    household = sum(n * fee for n, fee in zip(owner_counts, per_unit))
+    landlord = sum((n - owned) * fee for n, owned, fee in zip(stock, owner_counts, per_unit))
+    assert household + landlord + 16 * buildings - 280 * buildings - 28 * buildings == 0
+    return household, landlord, per_unit
+
+a = fees(40, (40, 20, 10))
+b = fees(60, (90, 40, 25))
+merged = fees(100, (130, 60, 35))
+assert merged[0] == a[0] + b[0]
+assert merged[1] == a[1] + b[1]
+assert merged[2] == a[2] == b[2]
+all_owned = fees(100, (200, 100, 100))
+assert all_owned[:2] == (29200, 0)
+scaled = fees(100000, (130000, 60000, 35000))
+assert scaled[0] == 1000 * merged[0] and scaled[1] == 1000 * merged[1]
+assert len(scaled[2]) == len(merged[2]) == 3
+fees(1, (F(1, 2), 0, 0))
+print('PASS: aggregate common-cost cash conservation')
+print('PASS: split/merge with different ownership mixes')
+print('PASS: zero RE ownership preserves shared costs')
+print('PASS: 1000x represented stock uses the same three category rows')
+```
+
 Validation completed for this draft: both model probe modes exited 0; the
 separate arithmetic prototype balances the common account for 0-4 sales and
 the sale cash flows; new IDs passed the repository checker. Review checks
@@ -1008,4 +1133,6 @@ Stale scan exited 0 with zero firm findings at `-Xmx1024m`; its first 256 MB
 attempts exhausted heap while parsing the source tree, so it was rerun after
 checking committed memory (64.2%) with the larger permitted heap. Whitespace
 and LF checks passed. No ensemble was owed by this docs-only change. Shipping
-awaits Jerus's review.
+awaits Jerus's review. The subsequent aggregate-only amendment passed the
+exact-rational split/merge, zero-RE-ownership and 1,000x quantity checks above;
+no model code changed and the model probes were not rerun.
