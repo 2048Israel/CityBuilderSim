@@ -8,5 +8,5 @@ PassThroughCheck's shelf is traced to its floor, and a dear goods' D$ makes its 
 CentralBankCheck's towns are stood whole so their cells shop, 7 restores a year of prices, and 21's rule is shown half by half on bare objects.
 CurrencyRegimeCheck's six Observations go: pegs struck at their gaps, hot money and doubt placed, a year of prices restored; the seed searches are removed.
 ForeignCheck reads its trade in the months its cause stands; CurrencyCheck 4 and InterventionCheck 5 cause the defence's sale; InterestAbroadCheck 9 sets the hot stock.
-MonetaryCheck (MQ1) reads one calendar year between the world market's yearly solves, its premises hard; four harnesses leave Observation.HARNESSES.
+MonetaryCheck (MQ1) holds the D$ so a month's delay cannot move its rows, read over three calendar years with its premises hard; four harnesses leave Observation.HARNESSES.
 The twenty FS10 known reds are retired, none a model fault. The batch is harness-only: the model and the trace do not move.

@@ -123,14 +123,18 @@ at 865a7171c.
     set before the save: a based basket put in by `PriceIndex.restore`, the
     world level by `WorldEconomy.shockLevel` (1.5), the rate by `pinRate`
     (1.0).
-  - 8: see the MQ1 call below; its two Observations are hard. The rows read
-    3/10/20/40%: 13.65 / 11.66 / 11.91 / 11.43% (main's window: 20.27 / 17.76
-    / 15.42 / 14.80). The late rows differ by 0.000 / 0.227 / 0.041 / 0.069
-    against the unchanged allowance of 0.650. The spread is 2.23 points
-    against the floor of 1.
-  - *Fault lines:* a window opened at month 45 straddles the solve, and the
-    repricing fixture fails. A founding without the General Hospital has
-    fewest crews 0.250, and the crews fixture fails.
+  - 8: see the MQ1 call below; its two Observations are hard. The D$ is held
+    at the founding's rate (0.6949) in every run, and the rows are read over
+    months 49-84. At 3/10/20/40% they are 11.50 / 10.30 / 9.11 / 9.10% (main's
+    window: 20.27 / 17.76 / 15.42 / 14.80). The late rows differ by 0.000 /
+    0.138 / 0.015 / 0.017 over the window, and by at most 0.203 / 0.105 /
+    0.105 in its three years, against the unchanged allowance of 0.650. The
+    spread is 2.40 points against the floor of 1.
+  - *Fault lines:* with the pin off, the held fixture fails and so does the
+    delay in each year (0.227 / 0.127 / **1.292**). A founding without the
+    General Hospital has fewest crews 0.250, and the crews fixture fails. In
+    the first build, one year's window, a window opened at month 45 straddled
+    the solve and its repricing fixture failed.
 - **Observation.HARNESSES** loses CurrencyRegimeCheck, MonetaryCheck,
   CentralBankCheck and ForeignCheck, which have no calls left. The merge with
   FS15 and FS7 took their AuctionCheck and HomeRailCheck out of the same list
@@ -160,14 +164,32 @@ GoldStandard 9's label is extended after the row's fragment. InterventionCheck
 - ★ CurrencyRegime 3: the break is caused by the vault, on a peg struck at a gap
   that empties it, where it waited 40 seeds for a break by doubt. Doubt's break
   is the market's chance, and the dent law is the same for either cause.
-- ★ MQ1, one window between the world market's yearly solves, not a held
-  currency. The shelf reprices every month at `CLEAR_SPEED`; the yearly step is
-  `Game.strikeTheWorldMarket()` each January (months 49, 61, 73, 85), fixed by
-  the calendar. Each row is read over months 49-60, the first calendar year
-  `PriceIndex.SETTLING_MONTHS` after the hold. Fixtures: the market's solved
-  year constant through the window, a January-to-December window, the basket
-  based before it opens. The settle search is gone. A held currency was not
-  tried, given CentralBank 21's design A.
+- ★ MQ1: the currency is held. Every run pins the D$ at the founding's rate in
+  month 25, on time and a month late alike. The rows are read over three whole
+  calendar years (`WINDOW_YEARS`, months 49-84), the 36 months the section
+  read before FS10.
+  - **First build:** one year between two solves (months 49-60). The
+    orchestrator asked for the pin, because the delay premise still rested
+    on the window: 73-84 read 1.292.
+  - **The yearly step:** the shelf reprices every month at `CLEAR_SPEED`.
+    The yearly step is `Game.strikeTheWorldMarket()` each January, fixed by
+    the calendar, so a month's delay cannot move it. What it moved was the
+    floating D$: by month 84 it is 2.57 on the 3% row and 1.78 on the 10%.
+  - **Fixtures:** the D$ at the pinned rate in every month of every run;
+    the window whole calendar years, with the market solved in each month's
+    own year; the basket based before the window; the crews kept on; the
+    delay inside the allowance over the window and in each year.
+  - **The settle search is gone.**
+  - **What the pin gives up:** the currency's channel, which carried most
+    of the point while the D$ floated. That channel is CurrencyCheck 1's
+    and PassThroughCheck's. Pinned, the domestic channels alone carry 2.40
+    points over the three years, against the floor of 1.
+  - **The first year alone does not fall:** 10.93 / 11.01 / 12.13 / 12.13.
+    The second year (12.09 / 9.83 / 8.95 / 8.94) and the third (12.42 /
+    10.19 / 6.30 / 6.29) do. The laws read the three years together.
+  - **Not like CentralBank 21's design A,** where a pin destroyed the sign
+    in 11 of 24 cities: here, over three years, the sign and the floor
+    hold.
 - ★ Some setters work by a slot index in a saved array:
   - CurrencyCheck 4 sets slots 78 and 79, the reprice's shadow. A fixture
     checks that slot 78 reads the log of the rate.
@@ -191,11 +213,14 @@ GoldStandard 9's label is extended after the row's fragment. InterventionCheck
 - **A gold town at a full cover:** it rules out doubt, not a large single sale.
   At `GOLD_LOCAL = 400` the lowest cover was 1.48 and the town still came off
   gold at world month 74.
-- **MQ1, the delay premise is the window's, not the calendar's:** months 61-72
-  also hold (late rows at most 0.126), but 73-84 reads 1.292 on the 10% row
-  (the town's growth from 469 to 566). The 10-40% rows read nearly flat, and
-  the floor (3% against 40%) carries the transmission. FB1's account (a delay
-  moves the repricings) is corrected: the solves are calendar-fixed.
+- **MQ1, floating, the delay premise was a window's:** in the years 49-60 and
+  61-72 the late rows are at most 0.227 and 0.127, but in 73-84 they read
+  1.292 on the 10% row (the town's growth from 469 to 566). Held, the three
+  years read 0.203 / 0.105 / 0.105. FB1's account (a delay moves the
+  repricings) is corrected: the solves are calendar-fixed, and the delay
+  moves the currency.
+- **The domestic channels lag a year:** with the D$ held, the first year
+  read shows no fall with the dial (10.93 / 11.01 / 12.13 / 12.13%).
 - **InterventionCheck 5:** `MAX_ABSORPTION` x the deficit is a necessary bound
   only. The played run's worst month's deficit is 41% of a year's output,
   against the line's 11.76%, and its largest sale is 3.79%, because the need
@@ -240,3 +265,12 @@ GoldStandard 9's label is extended after the row's fragment. InterventionCheck
   - The ten were not rerun: the merge moved no model class and none of their
     files.
 - **The maps** were regenerated and committed with the merge (12526fe48).
+- **The pin (406f99d74, the orchestrator's ask after the mends):**
+  - The probe first ran outside the tree (`target/`): unpinned it
+    reproduced the harness's rows to the digit.
+  - MonetaryCheck: exit 0 directly. With the pin taken off it fails 2 lines,
+    the held fixture and the delay in each year (0.227 / 0.127 / 1.292).
+  - `./batch-check.sh MonetaryCheck`: exit 0, suite OK.
+  - `./batch-check.sh --fast`: exit 0, 0 firm Stale findings.
+  - The maps were regenerated and committed.
+  - Main had not moved (3294dde04).
