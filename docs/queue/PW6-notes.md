@@ -1,11 +1,11 @@
 # PW6 — the recorded power month (2026-11-21)
 
-> Corrected P2 provisional mends after scoped review turn 2: the adapter/prototype
-> conversion has been removed for the contract. The new native-only negative control
-> reproduced exactly two intended failures with all hard premises held. Correctly rebuilt
-> positive PowerViewCheck and SaveFileCheck each exited 0. Earlier adapter results below
-> are historical for `8079445ee`. Scoped delta review remains owed; source is not SHIP.
-> The provisional ship marker remains; no ensemble/dry/screen/readiness GO was used.
+> Independent reviewer 8541: SHIP for `8079445ee..8b8e565eb`; both P2s closed, original
+> whole-batch money/save/phase conclusions retained. Root's native receipt pins `8b8`,
+> the hard two-failure negative, positive PowerView/SaveFile, stale-class proof and
+> unchanged old archives. Source is final. Historical adapter results below remain
+> labelled for `8079`. Marker retained: root authorized ONE final-model BOX-only ensemble,
+> not dry/screen/readiness/publication. Execution and results are recorded separately.
 
 PW6 implements the accepted electricity study §5 power screen after shipped PW1, from
 main `9d4467e8ae610a777f7ce445702c205f3984042c` / game 0.9.180. `moves_playtest=yes`
@@ -264,3 +264,38 @@ omission and the native history/fold proof in PowerViewCheck.java. No slim/readK
 pending restore, planner, money, Services or YearBook rule was reopened. Scoped source
 review, final-model ensemble against .180 and ALL-238 dry ordering remain owed. No
 ensemble/dry/fullpick/Kept/screen/readiness/publication GO was used. Marker retained.
+
+## Final source review and record-only main integration
+
+Root instruction `20261121-190619-534-orchestrator-d48c` records independent reviewer
+8541 SHIP for `8079445eee57007712f5f102104b7ac09b937241..8b8e565eb31d7f24b74460bcdd7601bab5f00c8b`:
+both P2s closed; the original whole money/save/phase conclusions remain. Root verified
+the exact hard native negatives, positive wrappers, stale-class evidence and old archives.
+No prototype/slim/native-proof or other source path was reopened after that verdict.
+
+Fetched main `6b52db7a2` differed from the launch base `9d4467e8` only in QUEUE.md.
+Merged it normally, without hand-editing any publisher-owned record, from branch
+`8b8e565eb31d7f24b74460bcdd7601bab5f00c8b` to merge commit
+`96bdb84b9edfcf5759483c1be6cf72d18ca74dd6`. Exact pre/post tree/blob hashes matched:
+
+| protected path | identical Git tree/blob |
+|---|---|
+| src | fcd87bdfd0023c9314a7b1e254020aafd722adb7 |
+| src/main/java (source and native proofs) | f9e9344408e95d8cf681d99eaeed62e18a6fefbb |
+| src/main/resources | 4b4ecb83ff60907b3e2ab5f9025328db59570b3a |
+| tools | 4acc0fee245d73633717373a18e78e9daee58210 |
+| pom.xml | 299d33b1324a0397d7d4f83b5c1237da3493925d |
+| batch-check.sh | bdd6cb5ca999fc6d25b4b673d716b8125406b228 |
+| docs/harnesses.md | 762fc1a010c9339c78d5768a1338b33272950832 |
+| docs/dials.md | effe5d4a9a4b9678f02ef150e783a89f69638cc3 |
+| docs/month-order.md | ee8efe4b5078b962089477d7a192fa7433544c66 |
+| docs/studies/spec-electricity.md | dda74c27bfff393c77689b5b61598d0a9a916871 |
+| docs/queue/PW6-ship.md | 7dfdc6bc86f6e297aa349d5a18c66bc0a9daf377 |
+
+No semantic integration, fast or focused replay was needed or run for that Queue-only
+merge. Exact pre/post records are under `target/pw6-final-ensemble/`. A manifest pins
+all 70 original PW6 evidence files before ensemble setup; its SHA256 is
+`280bb50da6ba26d0801673acbc28d4ed2c2ad827c2a7e884ba52465fa9a40113`.
+The source/proof/tools/pom trees and original proof bytes stay frozen through the one
+authorized box-only 80-run ensemble, homecopy and score. Final ALL-238 dry, screen,
+readiness and publication remain separately ordered, without GO here.
