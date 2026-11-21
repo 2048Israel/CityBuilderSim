@@ -17,7 +17,7 @@ import java.util.function.Predicate;
  * were jobless: the gate asked what the city could staff today, and the workers a new works would draw were not there until it opened.
  * The gate now counts a year's draw. Each fixture below causes its case: a village with room whose spare workers are few, a city
  * whose crowding reads 0, a month struck on a pull, a town without its graduate bands, a refusal worded, a saved city and its twin, and
- * a played city counted ask by ask. Nothing here moves a premise to get green.
+ * every order of a village counted ask by ask. Nothing here moves a premise to get green.
  *
  * WHAT THE DRAW COUNTS (Migration.drawFor(), after the gate's review): only the part of migration's gap that the order makes positive
  * (max(0, gap + the order's addition to the target) - max(0, gap), the gap being the target less the population), closed over the
@@ -36,9 +36,11 @@ import java.util.function.Predicate;
  *   5. The hold's words name both counts.
  *   6. A loaded city's gate is its twin's, to the bit, in a city founded the default way and one founded the 1900 way, and the last
  *      month's room it reads rides the save.
- *   7. How often the draw opens an order in a played city, and that it never does in a month of no room.
+ *   7. How often the draw opens an order, in a village seated by hand (seat()) and asked every order in a month struck with room and
+ *      in one struck with none (roomMonth(), noRoomMonth()): it opens some with room, and never does in a month of no room.
  *   8. The gap's positive part: where the population stands above migration's target even with the order, the draw is nothing, to the
  *      bit; where the order takes the gap from negative to positive, it is that positive part's, and less than the whole addition's.
+ *      The population is set over the target by hand (setPopulation()), by the mean of two orders' additions, so both sides of the zero gap are asked.
  *   9. Within the room: where the doors last month left free are fewer than the draw would be, the draw is the room left.
  *  10. The brake and the pull rule of WG2 turn the draw down as they turn arrivals: full senior care draws the same workers as none, to
  *      the bit; the draw is the unbraked draw x Migration.arrivalBrake() of the village's out-of-work share, the brake acting from
@@ -80,8 +82,8 @@ public class StaffingDrawCheck {
     /** Rent at ten times the target: the affordability pull is a tenth, and the draw with it. */
     static final double RUINOUS_RENT = 10;
 
-    /** The months the twin cities are played before they are saved, and the months the played city is asked about. */
-    static final int MONTHS_BEFORE_SAVE = 24, MONTHS_PLAYED = 120;
+    /** The months the twin cities are played before they are saved. */
+    static final int MONTHS_BEFORE_SAVE = 24;
 
     static final int NONE = WageBand.NONE.ordinal();
     static final int DIPLOMA = WageBand.DIPLOMA.ordinal();
@@ -824,52 +826,62 @@ public class StaffingDrawCheck {
         assertTrue("...and read back by a Migration that held a room it is no census again", Double.isNaN(readerOfNone.getLastRoom()));
     }
 
-    /* ============ 7. how often the draw opens an order in a played city ============ */
+    /* ============ 7. how often the draw opens an order ============ */
 
-    static void sectionSeven(Path root) {
-        System.out.println("\n--- 7. how often the draw opens an order in a played city ---");
-        Game g = town(root, "played", Founding.defaults());
-        int asks = 0, opened = 0, spareAlone = 0, refused = 0, noRoomMonths = 0, openedWithNoRoom = 0;
-        for (int m = 0; m < MONTHS_PLAYED; m++) {
-            month(g);
-            boolean noRoom = g.getMigration().getLastCrowding() == 0;
-            if (noRoom) noRoomMonths++;
-            for (Sector s : g.getSectors().all()) {
-                for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(s.key())) {
-                    Sector.Staffing st = s.staffing(t);
-                    if (st.template() == null) continue;      // the always-staffable answer: no posts, nobody to ask
-                    asks++;
-                    boolean drawOpened = st.shareNow < Sector.MIN_STAFFABLE_TO_ORDER && st.passes();
-                    if (drawOpened) opened++;
-                    if (st.shareNow >= Sector.MIN_STAFFABLE_TO_ORDER) spareAlone++;
-                    if (!st.passes()) refused++;
-                    if (noRoom && drawOpened) openedWithNoRoom++;
-                }
-            }
-        }
-        System.out.printf("   %d months: %,d asks; %,d opened by the draw, %,d where the spare alone passes, %,d refused; "
-                        + "%d months with crowding 0, %d asks the draw opened in them%n",
-                MONTHS_PLAYED, asks, opened, spareAlone, refused, noRoomMonths, openedWithNoRoom);
-        assertTrue("fixture: the played city was asked questions", asks > 0);
-        assertTrue("the draw opened at least one ask", opened > 0);
-        assertTrue("none opened in a month of no room", openedWithNoRoom == 0);
-
-        // The months of the played city may have none with crowding 0, so one is struck here: every sector's and template's ask, in a month of no room.
-        noRoomMonth(g.getMigration());
-        int spareRefused = 0, openedNow = 0;
+    /** What the gate says of every order of a city: {asks, opened by the draw, passed on the spare alone, refused, refused by the spare alone}. */
+    static int[] drawCounts(Game g) {
+        int asks = 0, opened = 0, spareAlone = 0, refused = 0, spareRefused = 0;
         for (Sector s : g.getSectors().all()) {
             for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(s.key())) {
                 Sector.Staffing st = s.staffing(t);
-                if (st.template() == null) continue;
+                if (st.template() == null) continue;      // the always-staffable answer: no posts, nobody to ask
+                asks++;
+                if (st.shareNow < Sector.MIN_STAFFABLE_TO_ORDER && st.passes()) opened++;
+                if (st.shareNow >= Sector.MIN_STAFFABLE_TO_ORDER) spareAlone++;
+                if (!st.passes()) refused++;
                 if (st.shareNow < Sector.MIN_STAFFABLE_TO_ORDER) spareRefused++;
-                if (st.shareNow < Sector.MIN_STAFFABLE_TO_ORDER && st.passes()) openedNow++;
             }
         }
-        System.out.printf("   one more month struck on crowding %.2f: %,d asks the spare refuses, %d of them opened by the draw%n",
-                g.getMigration().getLastCrowding(), spareRefused, openedNow);
-        assertTrue("fixture: the last month struck reads no room", g.getMigration().getLastCrowding() == 0);
-        assertTrue("fixture: there are asks the spare refuses in it", spareRefused > 0);
-        assertTrue("none of them is opened by the draw in a month of no room", openedNow == 0);
+        return new int[] { asks, opened, spareAlone, refused, spareRefused };
+    }
+
+    static void sectionSeven(Path root) {
+        System.out.println("\n--- 7. how often the draw opens an order: in a village with room it does, in a month of no room never ---");
+        // CAUSED. A village seated by hand (seat(): the spare workers fill SPARE_SHARE of the sawmill), asked every order in a month struck
+        // with room (roomMonth()) and in one struck with none (noRoomMonth()); the one order, the sawmill, is asked in each as well.
+        Game g = city(root, "opened");
+        Migration mig = g.getMigration();
+        PopulationManager people = g.getPopulationManager();
+        BuildingsTemplate sawmill = template(g, "Sawmill");
+        Sector owner = BuildCard.ownerOf(g, sawmill);
+
+        roomMonth(mig);
+        long workers = seatFor(people, owner, sawmill, ask -> ask.shareNow >= SPARE_SHARE);
+        assertTrue("fixture: a month with room was struck: crowding reads 1", mig.getLastCrowding() == 1);
+        assertTrue("fixture: a workforce was found whose spare workers fill " + pct(SPARE_SHARE) + " of the sawmill", workers > 0);
+        drawIsClear("a month with room", g, sawmill);
+        Sector.Staffing withRoom = owner.staffing(sawmill);
+        assertTrue("fixture: the spare workers alone fall short of " + pct(Sector.MIN_STAFFABLE_TO_ORDER) + ", and there are some",
+                withRoom.shareNow > 0 && withRoom.shareNow < Sector.MIN_STAFFABLE_TO_ORDER);
+        assertTrue("the draw opens the order the spare refuses, in a month with room", withRoom.passes() && withRoom.share >= Sector.MIN_STAFFABLE_TO_ORDER);
+        int[] room = drawCounts(g);
+        System.out.printf("   %d workers of %,d people, a month with room (crowding %.2f): %,d asks; %,d opened by the draw, %,d where the spare alone passes, %,d refused%n",
+                workers, people.getPopulation(), mig.getLastCrowding(), room[0], room[1], room[2], room[3]);
+        assertTrue("fixture: the village was asked questions", room[0] > 0);
+        assertTrue("the draw opened at least one ask", room[1] > 0);
+
+        // The same village, its month struck again on no door at all: the spare is the same, the draw nothing.
+        noRoomMonth(mig);
+        Sector.Staffing noRoom = owner.staffing(sawmill);
+        int[] none = drawCounts(g);
+        System.out.printf("   one more month struck on crowding %.2f: %,d asks the spare refuses, %d of them opened by the draw; the sawmill %s staffable now, %s with %s%n",
+                mig.getLastCrowding(), none[4], none[1], pct(noRoom.shareNow), pct(noRoom.share), Sector.Staffing.arrivalsWords());
+        assertTrue("fixture: the last month struck reads no room", mig.getLastCrowding() == 0);
+        assertTrue("fixture: the spare is what it was: the sawmill's spare share is the same", noRoom.shareNow == withRoom.shareNow);
+        assertTrue("fixture: there are asks the spare refuses in it", none[4] > 0);
+        assertTrue("none opened in a month of no room", none[1] == 0);
+        assertTrue("none of them is opened by the draw in a month of no room: the sawmill the draw opened is refused, its share the spare's alone",
+                !noRoom.passes() && allZero(noRoom.drawn()) && Double.doubleToLongBits(noRoom.share) == Double.doubleToLongBits(noRoom.shareNow));
     }
 
     /* ============ 8. the gap's positive part: only what the order makes positive is drawn ============ */
@@ -879,43 +891,43 @@ public class StaffingDrawCheck {
 
     static void sectionEight(Path root) {
         System.out.println("\n--- 8. the gap's positive part: only what the order makes positive is drawn ---");
-        // A city founded the 1900 way, played: its people grow past what its jobs and homes hold (the month's target falls under them),
-        // as a city that has outgrown its work does. The month is the first one with the population over the target, a census to
-        // cut the room by, and orders on both sides of the gap: some that add less than the gap is short, and one that bridges it.
+        // CAUSED. A city founded the 1900 way, its month struck by hand with a census (roomMonth(): migration's target and the room), and its
+        // population set over that target (setPopulation(), the workforce its half): as a city that has outgrown its work stands. The
+        // population is the target and the mean of the additions of two orders, the smaller quarter's and the larger quarter's of the orders'
+        // posts, over it: the gap is that mean short, so the smaller order adds less than the gap is short and the larger takes it positive.
         Game g = town(root, "gap", Founding.defaults().withUnfitted(true));
         Migration mig = g.getMigration();
         PopulationManager people = g.getPopulationManager();
+        roomMonth(mig);
+        java.util.List<Ask> orderedBySize = new java.util.ArrayList<>(asksOf(g));
+        orderedBySize.sort(java.util.Comparator.comparingDouble(a -> a.posts));
+        int orders = orderedBySize.size();
+        assertTrue("fixture: the city has orders to ask, of more than one size", orders >= 4 && orderedBySize.get(orders / 4).posts < orderedBySize.get(3 * orders / 4).posts);
+        double stands = (addition(g, orderedBySize.get(orders / 4).posts) + addition(g, orderedBySize.get(3 * orders / 4).posts)) / 2;
+        long overTarget = Math.round(mig.getLastTarget() + stands);
+        seatWith(people, 0, Math.round(overTarget * WORKFORCE_SHARE));
+        people.setPopulation(overTarget);
         java.util.List<Ask> under = new java.util.ArrayList<>();
         Ask bridge = null;
-        int orders = 0;
-        for (int m = 0; m < MOST_PLAYED_MONTHS; m++) {
-            step(g);
-            double gap = gapNow(g);
-            if (gap >= 0 || Double.isNaN(mig.getLastRoom()) || brake(g) <= 0) continue;
-            under.clear();
-            bridge = null;
-            java.util.List<Ask> asks = asksOf(g);
-            orders = asks.size();
-            for (Ask a : asks) {
-                if (gap + addition(g, a.posts) < 0) under.add(a);
-                else if (uncappedPeople(g, a.posts) <= roomLeft(mig) && (bridge == null || a.posts < bridge.posts)) bridge = a;   // the smallest that bridges: the positive part is least of its addition
-            }
-            if (!under.isEmpty() && bridge != null) break;
-        }
-        assertTrue("fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap",
-                gapNow(g) < 0 && !under.isEmpty() && bridge != null);
-        assertTrue("fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that",
-                brake(g) > 0);
         double gap = gapNow(g);
-        System.out.printf("   month %d: %,d people against a target of %,.0f (the gap %,.1f), a census with %,.0f of room left; "
+        for (Ask a : asksOf(g)) {
+            if (gap + addition(g, a.posts) < 0) under.add(a);
+            else if (uncappedPeople(g, a.posts) <= roomLeft(mig) && (bridge == null || a.posts < bridge.posts)) bridge = a;   // the smallest that bridges: the positive part is least of its addition
+        }
+        assertTrue("fixture: a population set over migration's target, with orders on both sides of the gap",
+                gapNow(g) < 0 && !under.isEmpty() && bridge != null);
+        assertTrue("fixture: the month struck has a census (a room to cut by), and the brake lets some through (the city is out of work under the stop), so the bridge's draw is not nothing for that",
+                !Double.isNaN(mig.getLastRoom()) && brake(g) > 0);
+        System.out.printf("   %,d people against a target of %,.0f (the gap %,.1f), a census with %,.0f of room left; "
                         + "%d of %d orders add less than the gap is short (the largest %,.1f), the %s adds %,.1f%n",
-                g.getMonth(), people.getPopulation(), mig.getLastTarget(), gap, roomLeft(mig), under.size(), orders,
+                people.getPopulation(), mig.getLastTarget(), gap, roomLeft(mig), under.size(), orders,
                 addition(g, under.stream().mapToDouble(a -> a.posts).max().orElse(0)), bridge.template.getName(), addition(g, bridge.posts));
 
         // (a) The population stands over the target even with the order: migration brings nobody for it, and the draw is nothing.
-        boolean nothing = true, shareIsSpares = true, countedBefore = true, formula = true;
+        boolean nothing = true, shareIsSpares = true, countedBefore = true, formula = true, positiveIsNothing = true;
         for (Ask a : under) {
             Sector.Staffing st = a.staffing();
+            positiveIsNothing &= Double.doubleToLongBits(Math.max(0, gap + addition(g, a.posts)) - Math.max(0, gap)) == 0L;
             nothing &= zeroToTheBit(st.drawn());
             shareIsSpares &= Double.doubleToLongBits(st.share) == Double.doubleToLongBits(st.shareNow);
             countedBefore &= addition(g, a.posts) * closed(mig) > 0;
@@ -925,6 +937,7 @@ public class StaffingDrawCheck {
                 gap < 0 && under.stream().allMatch(a -> gap + addition(g, a.posts) < 0));
         assertTrue("fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing", mig.getLastCrowding() > 0);
         assertTrue("fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them", countedBefore);
+        assertTrue("the order's positive part, max(0, gap + addition) - max(0, gap), is nothing to the bit for every one of them", positiveIsNothing);
         assertTrue("the draw is nothing, to the bit, in every band, for every one of them", nothing);
         assertTrue("...as the formula has it", formula);
         assertTrue("...so the share is the spare's alone, to the bit", shareIsSpares);
@@ -940,6 +953,9 @@ public class StaffingDrawCheck {
         assertTrue("fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw",
                 roomLeft(mig) > uncappedPeople(g, bridge.posts));
         assertTrue("fixture: the crowding is over 0", mig.getLastCrowding() > 0);
+        assertTrue("the order's positive part, max(0, gap + addition) - max(0, gap), is the gap and the addition's sum to the bit (the gap's own positive part is 0), and the people it draws are it, closed",
+                Double.doubleToLongBits(Math.max(0, gap + addition) - Math.max(0, gap)) == Double.doubleToLongBits(positivePart)
+                        && Double.doubleToLongBits(uncappedPeople(g, bridge.posts)) == Double.doubleToLongBits(positivePart * closed(mig)));
         near("the draw is the positive part of the gap, closed over the window, cut by the brake, in workers",
                 drawn, workersOf(g, positivePart * closed(mig)) * brake(g));
         near("...the formula's", drawn, expectedDraw(g, bridge.template));
