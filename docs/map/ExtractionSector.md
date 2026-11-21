@@ -64,7 +64,7 @@
 > the flow goods. A good the sector stocks - Coal Mining's two coals, Copper
 > ... (9 more lines in the source)
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (29), [LandManager](LandManager.md) (15), [BusinessInvestment](BusinessInvestment.md) (13), [Deposit](Deposit.md) (12), [SpreadPlanner](SpreadPlanner.md) (8), [NewUnit](NewUnit.md) (8), [Resource](Resource.md) (5), [ProcessingSector](ProcessingSector.md) (5), [Good](Good.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (29), [LandManager](LandManager.md) (15), [Deposit](Deposit.md) (12), [BusinessInvestment](BusinessInvestment.md) (12), [SpreadPlanner](SpreadPlanner.md) (8), [NewUnit](NewUnit.md) (8), [Resource](Resource.md) (5), [ProcessingSector](ProcessingSector.md) (5), [Good](Good.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [Sector](Sector.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (20):** [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [GoldMining](GoldMining.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [OreView](OreView.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RecipeCheck](RecipeCheck.md)
 

@@ -64,7 +64,7 @@
 > blast furnaces the thermal (I4); Cement & Concrete's kilns and cement
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (11), [Resource](Resource.md) (7), [NewUnit](NewUnit.md) (6), [Deposit](Deposit.md) (5), [Game](Game.md) (5), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [Good](Good.md) (30), [BuildingsTemplate](BuildingsTemplate.md) (14), [BusinessInvestment](BusinessInvestment.md) (10), [Resource](Resource.md) (7), [NewUnit](NewUnit.md) (6), [Deposit](Deposit.md) (5), [Game](Game.md) (5), [LandManager](LandManager.md) (2), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (11):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [Sectors](Sectors.md)
 

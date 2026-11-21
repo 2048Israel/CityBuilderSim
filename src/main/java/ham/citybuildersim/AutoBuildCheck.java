@@ -806,6 +806,16 @@ public class AutoBuildCheck {
         out.println("\n--- 4. a saved city plays on as the one it was saved from ---");
         int slot = 10;
         boolean[] saved = new boolean[1];
+        // OE1 (2026-11-20): the decades' city on the first-plant estimate let everybody it had a bed for pay (affordability 1 at
+        // month 600), and the general care asserted below to turn people away for its fee (SZ1) rested on the city's own path. The
+        // fixture causes it before the save: a month at the most the clinic fees can be (TaxPolicy.MAX_HEALTH_FEE_SCALE), the fees
+        // then put back, so that the saved month turned people away and the 36 months after are played at the city's own fees.
+        TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
+        double fees = tax.getHealthFeeScale();
+        tax.setHealthFeeScale(TaxPolicy.MAX_HEALTH_FEE_SCALE);
+        quietly(() -> g.simulateMonths(1));
+        tax.setHealthFeeScale(fees);
+        g.getHealthcare().setFeeScale(fees);   // told now, as each month tells it: the twin loads at the policy's
         quietly(() -> saved[0] = g.saveGame(slot, "autobuildcheck").ok);
         assertTrue("fixture: the decades' city, auto-build on, saved", saved[0] && g.getAutoBuilder().isOn());
         GameFiles files = new GameFiles(root.resolve("decades").resolve("data"), root.resolve("decades").resolve("no-legacy"));
@@ -1327,9 +1337,17 @@ public class AutoBuildCheck {
              * at a year), and turned on again before the city is retired of its care and saved: the pass the section measures is the
              * one that finds the need unmet.
              */
+            /*
+             * ...AND PAST ITS FOUNDING CARE, CAUSED (OE1, 2026-11-20). Retired of its clinics the city keeps the founding's general
+             * care (Healthcare.foundingCapacity() for each founding, 1,200 places), and at month 60 it had outgrown that by 6 people
+             * on main (1,206) and fell 7 short of it on OE1's first-plant estimate (1,193): a threshold the city's path crossed by
+             * chance. The loop plays on, the pass off, until it has also outgrown the founding's care (within the same year).
+             */
+            double founded = Healthcare.foundingCapacity(CareType.GENERAL) * g.getBuildingManager().getFoundingEndowments();
             quietly(() -> {
                 ab.setOn(false, g.getDecisions());
-                for (int i = 0; i < 12 && onSite(g, care) > 0; i++) youngMonths(g, 1);
+                for (int i = 0; i < 12 && (onSite(g, care) > 0
+                        || !(BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>())[1] > founded)); i++) youngMonths(g, 1);
                 ab.setOn(true, g.getDecisions());
             });
             quietly(() -> retireServing(g, care));
