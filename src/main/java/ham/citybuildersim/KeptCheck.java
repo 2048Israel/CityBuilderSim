@@ -50,44 +50,31 @@ import java.util.concurrent.TimeUnit;
  *
  * Sections (each method gives its fixture and each assertion gives the complete law):
  *   1-4. People: retention, signatures, pictures and reshaping.
- *   5. Cost: KeptTimingCheck.
  *   6-9. Chrome: header and rail retention, signatures, pictures and changing screens.
- *  10. Cost: KeptTimingCheck.
  *  11-12. The header and the three panels kept and equal to freshly built panels.
- *  13. Cost: KeptTimingCheck.
  *  14-19. City History: kept pages, signatures, pictures, charts, controls and changing views.
- *  20. Cost: KeptTimingCheck.
  *  21-23. Infrastructure: kept pages, equality and reshaping.
- *  24. Cost: KeptTimingCheck.
  *  25-27. Services: kept pages, equality and reshaping.
- *  28. Cost: KeptTimingCheck.
  *  29-31. Land: kept pages, equality and reshaping.
- *  32. Cost: KeptTimingCheck.
  *  33-34. Land's shortfall pages and controls keep the player's hand.
  *  35-38. Build: kept pages, equality, pictures and changing choices on caused building states.
- *  39. Cost: KeptTimingCheck.
  *  40-42. Construction: kept pages, equality and reshaping, with works deliberately on site.
- *  43. Cost: KeptTimingCheck.
  *  44-45. Build's refused orders, funding pages and held controls.
  *  46-49. Sectors: kept pages, signatures, pictures and reshaping of the businesses and statements.
  *  50-51. Industry pictures retain identity, repaint only changed figures, and count up by speed.
- *  52. Cost: KeptTimingCheck.
  *  53-54. Sectors' controls and hover; the clock redraws the screen shown.
  *  55-57. Bank: kept pages, signatures, pictures, statements, folds and views; KBP1 traced held still.
  *  58-60. Finances: kept pages, equality and choices; the fixture books every kind of paper.
  *  61-63. Fund: kept pages, equality, portfolios, lots, tickets, search and activity.
  *         A new lot settles through the book; its page and both reviews are watched past settlement.
  *  64-67. Money pictures, count-up, held boxes, hover and tooltips.
- *  68. Cost: KeptTimingCheck.
  *  69-71. Government: kept pages, equality, folds, lines and policy doors.
  *  72-74. Trade: kept pages, equality, nations, folds, controls and the currency warning's bound.
  *  75-77. Policy: kept pages, equality and all choices, with a zone caused when needed.
  *  78-80. Policy's held dials, Trade's count-up, and the three screens' hover and tooltip identity.
- *  81. Cost: KeptTimingCheck.
  *  82-84. Household money: kept pages, pictures, signatures, cells, folds and views.
  *  85-87. Rankings: kept pages, pictures, signatures and every choice; the read awaits its worker.
  *  88-89. The clock never rebuilds a rail screen; Household money and Rankings keep hover and tooltips.
- *  90. Cost: KeptTimingCheck.
  *  91. Door cards set their hand style once per draw, whole.
  *  92-93. Unchanged pages set no property twice; real show methods retain their page and pool.
  *  94-96. Research equipment and grants: kept pages, signatures, pictures, folds and choices.
@@ -1263,12 +1250,9 @@ public class KeptCheck {
     }
 
     /**
-     * The page against the same page built new, as againstNew(), with a difference looked at again with the model and the clock held still
-     * (KRT1, FS4): no month and no kept draw, the kept page only laid out again as it stands and the new page built again, HELD_STILL times.
-     * A difference of words, style, values, handlers or tooltip is the page's at once. A difference only of place or size (a Text 15.0 high
-     * kept and 16.0 built new on Wood Products' Residues; a statement row 836x24 kept and 836x16 new on Construction) that repeats each time
-     * is a kept fault, and returned; one that does not repeat was a reading of the moment (a font read under load), printed and not returned,
-     * the content having been the same.
+     * FS4/KRT1: compare kept and fresh signatures/pixels, retrying layout-only differences HELD_STILL times.
+     * Unchanged content with a nonrepeating bounds difference is printed/counted as a reading; a repeat fails.
+     * Content differences stay hard and receive diagnostic retries only. No kept redraw or month occurs.
      */
     static String againstNewHeld(KeptBench bench, KeptBench.Page page, boolean pixels) throws Exception {
         bench.passes();
@@ -1357,10 +1341,8 @@ public class KeptCheck {
     }
 
     /**
-     * KBP1, traced held still (FS5) as KRT1 is: a redraw that made a block, more than a tenth of what it drew again, is drawn again with the
-     * model and the clock held still. A block the pool dropped and made anew repeats there (the draw makes nodes again: a kept fault, and the
-     * line fails); one the month's content made does not (the draw makes none: the page changed, and the share's law judges it). Prints what
-     * the block made and dropped, in words, for the first BLOCKS_TRACED of a section. Returns whether it repeated.
+     * FS5/KBP1: redraw a new block unchanged. A repeated allocation is a kept fault; otherwise content changed.
+     * Print made/dropped words for BLOCKS_TRACED blocks and every repeat; return whether allocation repeated.
      */
     static boolean blockHeldStill(KeptBench bench, KeptBench.Page page, java.util.Set<javafx.scene.Node> before, int made, long drawnAgain) throws Exception {
         java.util.Set<javafx.scene.Node> after = bench.nodesOnPage();
@@ -1382,9 +1364,8 @@ public class KeptCheck {
     }
 
     /**
-     * Section n: the page is kept (FS4's law, every section's since FS5) - a month's redraw keeps its top nodes, makes no node when drawn again
-     * unchanged, and hands back HANDED_BACK of the nodes it draws again (Redraws), whatever the month did to the page; a redraw that made a
-     * block is looked at again held still (blockHeldStill, KBP1).
+     * The common kept law: same top nodes, no unchanged allocation, HANDED_BACK of what each month draws again.
+     * Keep every month in Redraws; trace any newly made block through blockHeldStill.
      */
     static void pageKeptCaused(Game g, KeptBench bench, KeptBench.Page page, int n) throws Exception {
         System.out.println("\n--- " + n + ": " + page.name() + " is kept ---");
@@ -1499,13 +1480,9 @@ public class KeptCheck {
     }
 
     /**
-     * Section n (FS4's law, every section's since FS5): every choice made in turn, the redraw after it and the one after a month lands each
-     * equal to a page built new, a difference looked at again held still (againstNewHeld, KRT1), and the month's redraw handing back
-     * HANDED_BACK of the nodes it draws again (what the choice or the month added or took away is the page's own change). A month's redraw
-     * under the share is looked at again held still (blockHeldStill, KBP1), as KRT1 looks at a difference: a block that repeats is a kept
-     * fault and fails; one that does not is the month's content (FS5's run: 71's Government Overview made 46 of 399, the deficit's lines
-     * "Advanced by the central bank" in and "Raised by issuing paper" out), a reading printed, counted and left out of the share, which
-     * judges one month here where pageKeptCaused sums twenty-five. A fold opened has to add to the page (the premise: the fold is on it).
+     * Each choice and its following month equal a page built new; opened folds add to it.
+     * KBP1: recurring new blocks fail. Nonrepeating content blocks are printed/countable readings out of the
+     * single-month share, while pageKeptCaused retains all 25 months. Every exclusion/refusal is reported.
      */
     static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices) throws Exception {
         pageReshapedCaused(g, bench, page, n, choices, false);
@@ -4240,11 +4217,8 @@ public class KeptCheck {
     static int fundShortMonths;
 
     /**
-     * KF63: the fund's rule held still while 63's choices are watched, and what puts it back. The rule spends the fund's cash on every live
-     * bond each month (BondMarket's and the Exchange's postFund), so in the month the bond issuers' folds are open on Portfolio its buys are
-     * new rows (FB6's city: 511 nodes made of 2,755, a page that was not reshaped). A withdrawal over the default sells to pay and buys
-     * nothing, and cash kept over FUND_HELD_DUES months' transfer (topped up to twice that after any month that leaves it under) leaves the
-     * withdrawal nothing to sell: the lots the fund holds are the ones it held.
+     * KF63: hold the rule over its default withdrawal and keep cash over FUND_HELD_DUES transfers.
+     * It then neither buys new lots nor sells to meet the transfer; return the hand that restores it.
      */
     static Runnable fundHeld(Game g) throws Exception {
         Runnable before = afterMonth;
@@ -5763,6 +5737,21 @@ public class KeptCheck {
         });
     }
 
+    /** FS5: drain callbacks from the non-FX driver, then judge the fresh graph's lifetime without another draw. */
+    static void governmentComparisonsReleased(KeptBench bench) throws Exception {
+        if (Platform.isFxApplicationThread()) throw new IllegalStateException("release check needs the non-FX driver");
+        KeptBench.ReleasedComparison r = fx(bench::retiredGovernmentComparisons);
+        fx(() -> null); // FIFO: restoreScroll callbacks queued by the fresh draws finish before GC.
+        System.gc();
+        long alive = r.fresh().stream().filter(w -> w.get() != null).count();
+        System.out.printf("  Government comparison release: %d distinct fresh nodes, %d alive; signature %s, counters %s, kept nodes %s, roots cleared %s, abort restored %s%n",
+                r.fresh().size(), alive, r.signature(), r.counters(), r.nodes(), r.roots(), r.aborted());
+        check("fixture: Government comparisons made distinct fresh nodes and exercised an aborted draw", !r.fresh().isEmpty() && r.aborted());
+        check("Government comparison restore keeps the same nodes, signature and draw counters", r.signature() && r.counters() && r.nodes());
+        check("Government comparison captures clear on normal and exceptional restore", r.roots());
+        check("restored Government fresh nodes release after queued callbacks finish (" + alive + " alive)", alive == 0);
+    }
+
     /** Sections 69 to 71: the Government tab kept. */
     static void kp6Government(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The Government tab (KP6) ===");
@@ -5794,6 +5783,7 @@ public class KeptCheck {
         for (String page : List.of("Revenue", "Spending")) {
             int[] r = linesThatAdd(bench, tab, page);
             check(page + ": the lines that open into who pays add to the page when opened (" + r[0] + " of " + r[1] + ")", r[0] >= 1);
+            if (page.equals("Spending")) governmentComparisonsReleased(bench);
         }
         pageReshapedCaused(g, bench, tab, 71, governmentChoices(false));
         List<Choice> doors = new ArrayList<>();
@@ -8190,14 +8180,9 @@ public class KeptCheck {
     }
 
     /**
-     * The tooltips on a page across a month's kept redraw (setup made first): {tooltips before, on a node that has one after, the same Tooltip,
-     * on a node kept without one, cells the grid opens before and not after, cells the month alone would have closed}. KHT1: the families
-     * are held through the month. The family model is rebuilt from the pyramid and the jobs every month, and a cash-grid cell of under half
-     * a household (HouseholdAccounts.statementFor's households, as KeptBench.householdCells reads the grid) draws its dash and no tooltip
-     * (FB6's city: Couple, no children, Senior professional, at .5 one month and under it the next), so a cell that empties is the month's
-     * doing and not the page's. The model is put back as it stood before the month, through its save array, and that acts as a load does:
-     * the next month's rebuild starts from what it carries (FamilyModel.rebuild's adults at home and with them), so the city goes on from
-     * the held families.
+     * KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open.
+     * Return {tips before, surviving, same Tooltip, lost on kept nodes, cells closed, closures without hold}.
+     * The month's monetary stocks remain; only the grid's population premise is held.
      */
     static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception {
         return fx(() -> {
@@ -9510,6 +9495,7 @@ public class KeptCheck {
         java.lang.ref.WeakReference<javafx.scene.layout.Pane> retired = fx(bench::retiredPicture);
         java.lang.ref.WeakReference<javafx.scene.Node> chrome = fx(bench::retiredChrome);
         fx(() -> { bench.release(); return null; });
+        fx(() -> null); // FS5: complete queued restoreScroll work before measuring live ownership.
         System.gc();
         check("the repaint counter does not keep a retired picture alive", retired.get() == null);
         check("a no-stage chrome scene releases the fresh header after restore", chrome.get() == null);

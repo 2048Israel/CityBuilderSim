@@ -45,26 +45,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The People page on a scene of its own - no stage, no window - drawn kept and built new, for
- * KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui
- * package's own. Since UP2 the window's chrome too: the header at the window's width and the rail
- * at its height, each on a scene of its own, drawn by the real refreshHeader() and
- * refreshTabRail() - kept, or with every node new (the pools swapped for empty ones, as a rebuild
- * made them). Since KP1 City History too, on the same scene: its page drawn kept and built new, the
- * hands on what reshapes it, the pointer on its big chart, and the real show methods for what the clock decides.
- * Since KP2 Infrastructure, Services and the land office too, as {@link Page}s: one small shape for the three, each drawn
- * kept from its screen's pool and built new from an empty one, with the hands on what reshapes them, on the fare dial and
- * City History's filter box (the controls) and on the nodes a pointer styles (the hover).
- * Since KP3 the Build screen (the Overview and every category, with the hands on a ring, an order dialled by a card's
- * stepper, a stat card pinned and automatic building), the pages a build is stopped on, the funding and fell-short pages,
- * and the construction page (its tabs, a building picked to demolish, the find box), as Pages of the same shape.
- * Since KP4 the Sectors tab: the list and a business's five pages in both views as Pages, with the hands on a business, a page,
- * the view, Show more, Freight's divisions, the folds and a statement's notes and columns, the pictures the pages hold (the refinery's,
- * a materials industry's, a leg's bar), the figures that count up and the waterfall and ring that grow and sweep, the oil reserve's
- * dials, and the card, the door and the crumb the pointer rests on.
- * Since UP7 the drawer's pinned bar and the construction tab too, each a box made once on a scene of its own and drawn by the real
- * refreshDrawerBar() and refreshConstructionTab() (kept, and built new), and the header's speed reading, its pace swapped for one on a
- * clock the harness moves by hand.
+ * The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck.
+ * Each Page draws the real screen code from its retained pool or an empty pool. The methods below
+ * expose controls, hover, charts, chrome and comparison state to the model-package harnesses.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -744,8 +727,7 @@ public final class KeptBench {
     }
 
     /**
-     * The page laid out again, as the next frames would, until a pass moves nothing (at most SETTLE_PASSES): a wrapped
-     * label's height settles over a pass or two, and the scroller's under the frame a pass after that.
+     * Repeat layout until quiet, including a scroller whose changed content invalidated its bars.
      */
     public void settle() throws Exception {
         settlePasses();
@@ -802,9 +784,7 @@ public final class KeptBench {
     }
 
     /**
-     * Every animation a draw started on the page run to its end, as a pulse would have: a scene with no window has none. Its
-     * on-finished handler runs too (a pulse that reaches the end calls it; a jump and a stop do not): the glow a built tag flashes
-     * is taken off by it, and a count-up's last word set. The page is laid out again after this, not before (see KeptCheck.againstNew).
+     * Finish page animations and their handlers before layout, as a real pulse does on a window.
      */
     public void finishPageAnimations() {
         each(column, KeptBench::finishOne);
@@ -1112,10 +1092,7 @@ public final class KeptBench {
        ===================================================================== */
 
     /**
-     * One of the three pages on the bench: the name the window shows it under, the screen's own pool, how it is
-     * drawn from a pool (what the screen's show method works out first, then the page's code as a kept draw) and how
-     * it goes back to the page it opens on. Drawn from the screen's pool it is the kept page; from an empty one, the
-     * page built new, as every redraw was before KP2.
+     * A screen, its retained pool, its drawing code and the hand that opens its home.
      */
     public final class Page {
         private final String name, screen;
@@ -1435,7 +1412,8 @@ public final class KeptBench {
                 + (keptPools == null ? 0 : keptPools.length) + (keptPanelPools == null ? 0 : keptPanelPools.length)
                 + (keptFramePools == null ? 0 : keptFramePools.length) + (keptHistoryPool == null ? 0 : 1)
                 + (keptChipPools == null ? 0 : keptChipPools.length) + keptLegend.size() + keptRanges.size()
-                + (chartParents == null ? 0 : chartParents.length);
+                + (chartParents == null ? 0 : chartParents.length) + (keptGovernmentBody == null ? 0 : 1)
+                + (keptGovernmentTargets == null ? 0 : 1 + keptGovernmentTargets.size());
     }
 
     /** An unattached picture counted by the bench: only the diagnostic map could keep it alive. */
@@ -1578,11 +1556,32 @@ public final class KeptBench {
     /** What the kept page held when a page was built new in its place: its top nodes, and what every box under it held. */
     private List<Node> keptPage = List.of();
     private java.util.Map<Pane, List<Node>> keptBoxes = new java.util.IdentityHashMap<>();
+    private Object keptGovernmentBody;
+    private java.util.Map<String, Node> keptGovernmentTargets;
+
+    /** FS5: a comparison overwrites these proven owners of its temporary Government graph. Restore ownership, without drawing. */
+    @SuppressWarnings("unchecked")
+    private void governmentReferences(boolean save) throws ReflectiveOperationException {
+        var body = GovernmentScreen.class.getDeclaredField("body");
+        var targets = GovernmentScreen.class.getDeclaredField("targets");
+        body.setAccessible(true);
+        targets.setAccessible(true);
+        var live = (java.util.Map<String, Node>) targets.get(ui.governmentScreen);
+        if (save) {
+            Object originalBody = body.get(ui.governmentScreen);
+            var originalTargets = new java.util.HashMap<>(live);
+            keptGovernmentBody = originalBody;
+            keptGovernmentTargets = originalTargets;
+        } else {
+            body.set(ui.governmentScreen, keptGovernmentBody);
+            live.clear();
+            live.putAll(keptGovernmentTargets);
+        }
+    }
+
 
     /**
-     * The page built new in place of the kept one (an empty pool, every node new) and laid out, as every redraw was
-     * before KP2: {its draw ms, CSS ms, layout ms}. What the page shares with the kept one - the land office's map - is
-     * taken into the new page, so every box under the kept page is noted for restoreKeptPage() to put its children back.
+     * Draw with an empty pool, saving the kept boxes and proven Government owners for exact restore.
      */
     public double[] showFresh(Page p) throws Exception {
         ensureWindow();
@@ -1590,29 +1589,91 @@ public final class KeptBench {
         keptPage = new ArrayList<>(column.getChildren());
         keptBoxes = new java.util.IdentityHashMap<>();
         for (Node n : keptPage) boxesOf(n, keptBoxes);
-        double ms = p.draw.applyAsDouble(new Kept.Pool());
-        double[] pass = passes();
-        return new double[]{ms, pass[0], pass[1]};
+        boolean government = p.screen.equals("showGovernmentMenu");
+        try {
+            if (government) governmentReferences(true);
+            double ms = p.draw.applyAsDouble(new Kept.Pool());
+            double[] pass = passes();
+            return new double[]{ms, pass[0], pass[1]};
+        } catch (Exception | Error failure) {
+            if (government) {
+                try { restoreKeptPage(); }
+                catch (Exception | Error cleanup) { failure.addSuppressed(cleanup); }
+            }
+            throw failure;
+        }
     }
 
-    /** The kept page back in the column, every box holding what it held, and laid out. */
+    /** The kept page and its captured owners back, without a redraw that could heal a faulty kept value. */
     public void restoreKeptPage() throws Exception {
-        ui.setPage(keptPage.toArray(new Node[0]));
-        for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
-        passes();
-        keptPage = List.of();
-        keptBoxes.clear();
-        release(scene);
+        try {
+            ui.setPage(keptPage.toArray(new Node[0]));
+            for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
+            passes();
+        } finally {
+            try {
+                if (keptGovernmentTargets != null) governmentReferences(false);
+            } finally {
+                keptGovernmentBody = null;
+                keptGovernmentTargets = null;
+                keptPage = List.of();
+                keptBoxes.clear();
+                release(scene);
+            }
+        }
+    }
+
+    public record ReleasedComparison(List<java.lang.ref.WeakReference<Node>> fresh, boolean signature,
+                                     boolean counters, boolean nodes, boolean roots, boolean aborted) { }
+
+    /** Eight comparisons of an already active Government page; the last deliberately aborts after making its fresh graph. */
+    public ReleasedComparison retiredGovernmentComparisons() throws Exception {
+        if (!"showGovernmentMenu".equals(ui.currentScreen)) throw new IllegalStateException("Government must already be active");
+        Page page = government();
+        finishPageAnimations();
+        settle();
+        var keptNodes = nodesOnPage();
+        var signature = signature();
+        int[] counts = counts(page);
+        List<java.lang.ref.WeakReference<Node>> fresh = new ArrayList<>();
+        Runnable remember = () -> {
+            for (Node n : nodesOnPage()) if (!keptNodes.contains(n)) fresh.add(new java.lang.ref.WeakReference<>(n));
+        };
+        boolean sameSignature = true, sameCounters = true, sameNodes = true, cleared = true, aborted = false;
+        for (int i = 0; i < 8; i++) {
+            if (i == 7) {
+                Page failing = new Page(page.name, page.screen, page.pool, pool -> {
+                    page.draw.applyAsDouble(pool);
+                    finishPageAnimations();
+                    remember.run();
+                    throw new IllegalStateException("FS5 comparison abort fixture");
+                }, page.home);
+                try { showFresh(failing); }
+                catch (IllegalStateException expected) {
+                    if (!"FS5 comparison abort fixture".equals(expected.getMessage())) throw expected;
+                    aborted = true;
+                }
+            } else {
+                showFresh(page);
+                finishPageAnimations();
+                settle();
+                remember.run();
+                restoreKeptPage();
+            }
+            sameSignature &= signature.equals(signature());
+            sameCounters &= java.util.Arrays.equals(counts, counts(page));
+            sameNodes &= keptNodes.equals(nodesOnPage());
+            cleared &= comparisonRoots() == 0;
+        }
+        release();
+        return new ReleasedComparison(fresh, sameSignature, sameCounters, sameNodes, cleared, aborted);
     }
 
     private final WritableImage tiny = new WritableImage(1, 1);
     private final javafx.scene.SnapshotParameters tinyView = new javafx.scene.SnapshotParameters();
 
     /**
-     * What a scene with no window never lets go: a scene is synchronised to its renderer by a pulse, and the nodes that changed wait in its dirty list
-     * (strongly held) until one comes - so every page built new and taken off the scene again stayed in memory, about 5 MB a page, until the next
-     * snapshot (KP5, slice D: the Bank's reshaping alone built 200 and took the 2 GB a harness JVM has). A snapshot of one pixel does the
-     * synchronising and costs nothing to draw.
+     * KP5: one-pixel snapshots drain dirty-node lists on scenes that have no window to pulse them.
      */
     public void release() {
         release(scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene);
@@ -1624,13 +1685,9 @@ public final class KeptBench {
     }
 
     /**
-     * FS5 (102, GB5's star 5): the render targets of the canvases the kept screens hold, as the renderer keeps them. {canvases found, canvases
-     * holding a render target, of them on the Java heap, bytes on the heap}. Direct3D and ES2 keep a canvas's target in video memory; Prism's
-     * software renderer (the gate box's Monocle) keeps its pixels on the heap, int[] at the render scale (GB5: forty 800x450 canvases held
-     * 241 MiB there and none on Direct3D). The canvases are found by walking what the window, its scenes and every interface object they
-     * reach hold - nodes, their graphics, contents, clips and properties, the interface's own fields and statics, and the lists, maps and
-     * arrays among them - and each one's target is read on its peer (NGCanvas's render buffers), so that 102 can weigh the objects the kept
-     * pages hold, not where a renderer puts their pixels.
+     * FS5/GB5: {canvases, targets, heap targets, heap bytes} reachable from the UI and its scenes.
+     * Read NGCanvas texture buffers; software stores pixels on heap while D3D/ES2 use video memory.
+     * This measures found buffers only; unexplained residual bytes remain subject to the hard heap bound.
      */
     public long[] canvasTargets() {
         java.util.Set<Object> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
