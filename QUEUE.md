@@ -103,6 +103,7 @@ stuff".
 | RR1 | The map's roads and rails (Jerus, 2026-11-20: "rail still has dead ends and random 90 degree turns ... dont worry about sea/lake"): the corners TrackCurves skips, ends that lead nowhere, a jagged S-bend, stubs where a highway cuts streets; drawing only (not beside FS6, PX2) | [RR1](docs/queue/RR1.md) |
 | OG1 | A planner orders to the gap, not one building a month (Jerus, 2026-11-20: "one a month is simply not enough in big cities"): the builders' backlog past 9 months brings no depot, and 12 makers order one building a month; measure on slot 10's copy, then size the order to the gap, rationed as BA1 meant (not beside R1g, CY1) | [OG1](docs/queue/OG1.md) |
 | GB5 | The gate box runs the harnesses that need a display (FS4's finding, 2026-11-20): the box is headless, so KeptCheck skips there and no gate since GB1 has judged it; Xvfb (recommended) around the box's suite, timing and nightly, and a check that no display harness skips there | [GB5](docs/queue/GB5.md) |
+| SD1 | A scrapped building's line says it was scrapped, not "Sold": Game.retire (Game.java:6780) logs "Sold N <building>" for buildings it demolishes; the word and BuildCard.wordKind follow, a compulsory purchase keeps "Sold" (the real-estate study, 2026-11-21) | [SD1](docs/queue/SD1.md) |
 
 ## Pending
 
