@@ -161,3 +161,15 @@ Validation in this turn: first authorized --fast compiled in 40s and regenerated
 Actual source files in this turn: Household.java, HouseholdBalance.java, Equity.java, Exchange.java, Game.java, DataSave.java, HistorySave.java, MoneyAudit.java, NationalAccounts.java, YearBook.java, ui/GovernmentScreen.java, CapitalGainsCheck.java. FundLedger and all extra custody owners were not edited this turn. Game edits are the tax-register attachment, audit-window opening/close, tax disclosures and two load/capture paths; no power, Services, dated-home, ladder, Kept or Map section changed. Generated maps/dials/month-order/harnesses follow the source checkpoint. No process/check machinery changed; no fabricated one-in/one-out removal is claimed.
 
 The next custody extension has not been authorized or implemented. Its exact stock/coupon/issuer/cash map and 5-6 additional-builder-unit conservative planning allowance are in HT1-custody-proposal.md; the existing reserved fresh review is separate. No extra allocation or model slot is assumed. Core source plus this static proposal is a provisional checkpoint, not complete mends/SHIP/readiness. Named verification and its ensuing model mends, no-heir custody, stranger money/saves review, final-model ensemble and any ordered full gate remain owed. No owned job remains running.
+
+## Current source/pick floor
+
+Source checkpoint `1c0b5324a028e415cf70b1128f0f0fbaa19958fa`, source subtree `54e70a0bb693f2c27497b3cc93231cfb805d69db`, after final --fast exit 0. Classification only (`tools/pick.sh`, no picked suite run):
+
+```
+ALL
+pick      ALL 238 harnesses - src/main/java/ham/citybuildersim/AllChecks.java runs the suite (61 files changed since f2dba242)
+review    needed - money: FundLedger.java, TreasuryJournal.java; saves: DataSave.java, HistorySave.java, +SAVE_FORMAT, +OLDEST_LOADABLE_FORMAT
+```
+
+That review line is a floor; the new limited-claim, foreign attribution, issuer and cash-flow wiring also needs the fresh stranger review. No old green named result is borrowed for the new source. The no-heir custody receiver is not implemented. Provisional marker stays and the batch is not complete mends or ready to ship.
