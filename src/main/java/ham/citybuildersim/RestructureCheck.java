@@ -17,6 +17,10 @@ import java.nio.file.Path;
  * The rest is the property that makes the button worth having at all: market
  * value is not face value, and which side of face it lands on says something
  * true about the city's credit.
+ *
+ * THE DOLLAR CITY (FS13, 2026-11-20): section 5's dollar case is ForeignDebtCheck's trading city, played 60 months, handed the exports the
+ * world prices it on (ForeignDebtCheck.earnsAbroad(), sized to DOLLAR_ASK) and its dial held over the world's quote for the ask, so the
+ * world lends it for less than it lends itself by cause and not by what its depots earned.
  */
 public class RestructureCheck {
 
@@ -210,15 +214,13 @@ public class RestructureCheck {
          */
         for (String kind : new String[]{"medium", "long", "bill", "dollar"}) {
 
-            // The dollar case on ForeignDebtCheck's trading city: one that earns
-            // abroad and has a credit record, the fixture that file proves the
-            // world's pricing on.
+            // The dollar case on ForeignDebtCheck's trading city: one that has a credit
+            // record, the fixture that file proves the world's pricing on, and that is
+            // handed what it earns abroad below (FS13).
             Game pump;
             if ("dollar".equals(kind)) {
                 System.setOut(quiet);
-                // Two depots stand beside the plant's (PT1-M4): see ForeignDebtCheck.tradingCity(); without them the
-                // city is too small and too thinly traded for the world to lend it cheaper than it lends itself.
-                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind), 2); }
+                try { pump = ForeignDebtCheck.tradingCity(root.resolve("pump-" + kind)); }
                 finally { System.setOut(out); }
             } else {
                 pump = founded(root, "pump-" + kind);
@@ -228,7 +230,11 @@ public class RestructureCheck {
                 // floor, and the world lends it at the world's rate and a spread, so the world is the cheaper only where the dial is over the world's rate.
                 // The default 3% was over a world rate of 2.25%, and is under 5.5% in the draws of 1900 (the world's quote 5.89%, the city's own 3.00%).
                 DebtManager dial = pump.getDebtManager();
-                dial.takeTheDial(dial.worldRate() + FloatLinkCheck.HELD_OVER_THE_WORLD);
+                // FS13, 2026-11-20: the city is handed its exports, sized to the ask (ForeignDebtCheck.earnsAbroad()), so the premium the world
+                // adds to the ask is the fixture's and not whatever the depots earned by month 60 (41 a month on four, 962 on six); and the dial
+                // is held over the world's QUOTE for the ask, premium and all, rather than over its bare rate, so the world is the cheaper by cause.
+                ForeignDebtCheck.earnsAbroad(dial, DOLLAR_ASK * dial.rateOf("USD"), DOLLAR_STRESS_SHARE);
+                dial.takeTheDial(dial.quoteForeignRate(DOLLAR_ASK) + FloatLinkCheck.HELD_OVER_THE_WORLD);
                 dial.updateInterest();
                 assertTrue("  fixture: the dollar city earns abroad, and the world lends it for less than it lends itself",
                         pump.getDebtManager().getMonthlyExports() > 0
@@ -398,6 +404,9 @@ public class RestructureCheck {
 
     /** What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. */
     static final double DOLLAR_ASK = 5_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
+
+    /** The share of a full solvency stress (DebtManager.FULL_STRESS_EXPORT_YEARS of exports owed) the dollar ask is sized to: a sixteenth, a premium of a point or two. */
+    static final double DOLLAR_STRESS_SHARE = 1.0 / 16;
 
     static void cleanUp(Path root) {
         try (var walk = Files.walk(root)) {

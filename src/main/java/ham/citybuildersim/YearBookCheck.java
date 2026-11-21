@@ -74,6 +74,7 @@ public class YearBookCheck {
         theEpisodesAreTheOnesTheFixtureCaused();
         anEpidemicIsAnOutbreak();
         theCsvIsTheTextsTables();
+        theGraphsGdpIsAYearAndDebtIsOverIt();
 
         System.out.printf("%n%d assertions: %s%n", checks,
                 fails == 0 ? "the year book folds every series by its own rule." : fails + " FAILED");
@@ -1094,6 +1095,113 @@ public class YearBookCheck {
             fails++;
             return "";
         }
+    }
+
+    /* ==================================================================
+       16 - THE GRAPH'S GDP IS A YEAR, AND THE DEBT IS OVER IT (GY1)
+
+       Jerus, 2026-11-20: "in the graph, gdp can be shown yearly not
+       monthly ... i want to be able to compare gdp with public debt, and
+       also perhaps a debt to gdp ratio". The graph's GDP line is
+       YearBook.gdpYear(), the twelve months summed the way realGdpYear()
+       sums them, and its "Debt to GDP" is YearBook.debtToGdp(), the debt
+       series over that year, a fraction (1.5 is 150%) like every percent
+       line the graph draws.
+
+       The history is built by hand so that every month's GDP and debt is a
+       number a reader can add up: GDP 10 a month more each month, debt
+       1,000 and 50 more each month. Every assertion is on the getter's
+       figure at a month it names, against the sum or the quotient written
+       out here, so a getter that handed back the MONTH instead (780 against
+       the 120 of the twelfth month; 1,500 against the 180 of the
+       eighteenth) fails each line it stands under.
+       ================================================================== */
+    private static void theGraphsGdpIsAYearAndDebtIsOverIt() {
+        System.out.println("--- the graph's GDP is a year, and the debt is over it ---");
+        int months = 24;
+        double[] gdp = new double[months], debt = new double[months];
+        for (int i = 0; i < months; i++) {
+            gdp[i] = 10 * (i + 1);
+            debt[i] = 1000 + 50 * (i + 1);
+        }
+        HistorySave h = built(months, new String[] {"gdp", "debt"}, gdp, debt);
+        double[] year = YearBook.gdpYear(h), ratio = YearBook.debtToGdp(h);
+        same("the year of GDP has an entry for each month", year.length, months);
+        same("so has the ratio", ratio.length, months);
+
+        /* ---- the year is the twelve months summed, oldest first ---- */
+        boolean firstYear = true, ratioFirstYear = true;
+        for (int i = 0; i < 11; i++) {
+            firstYear &= Double.isNaN(year[i]);
+            ratioFirstYear &= Double.isNaN(ratio[i]);
+        }
+        yes("the first eleven months have no year of GDP behind them: NaN, not a year scaled up from fewer", firstYear);
+        yes("...and so no ratio", ratioFirstYear);
+        same("the twelfth month is the twelve months 1-12 summed (10 x 78, not the month's 120)", year[11], 10 * sum(1, 12));
+        same("the thirteenth is months 2-13: the oldest month leaves as the newest arrives", year[12], 10 * sum(2, 13));
+        same("the eighteenth is months 7-18 (1,500, not the month's 180)", year[17], 10 * sum(7, 18));
+        same("the last is months 13-24 (2,220, not the month's 240)", year[23], 10 * sum(13, 24));
+        yes("a month's figure is not a year's: the twelfth month alone is 120", Math.abs(year[11] - gdp[11]) > 1);
+
+        /* ---- it is the same sum realGdpYear() makes, with the price index left in ---- */
+        HistorySave real1 = built(months, new String[] {"gdp", "priceIndex"}, gdp, flat(months, 1));
+        HistorySave real2 = built(months, new String[] {"gdp", "priceIndex"}, gdp, flat(months, 2));
+        double[] r1 = YearBook.realGdpYear(real1), r2 = YearBook.realGdpYear(real2);
+        boolean same1 = true, half = true, nanTogether = true;
+        for (int i = 0; i < months; i++) {
+            nanTogether &= Double.isNaN(r1[i]) == Double.isNaN(year[i]);
+            if (Double.isNaN(year[i])) continue;
+            same1 &= Math.abs(r1[i] - year[i]) < 1e-9;
+            half &= Math.abs(r2[i] * 2 - year[i]) < 1e-9;
+        }
+        yes("real GDP's year and this one are NaN at the same months (the one first-year rule)", nanTogether);
+        yes("at a price index of 1 the real year is this year, month for month", same1);
+        yes("at a price index of 2 the real year is half of it: this one is the nominal line", half);
+
+        /* ---- the ratio is the debt over the year, a fraction ---- */
+        same("the twelfth month's ratio is its debt 1,600 over the 780 of its year", ratio[11], debt[11] / year[11]);
+        same("...which the graph prints as a per cent: 205.1...% (x 100)", ratio[11] * 100, 1600.0 / 780.0 * 100);
+        same("the eighteenth: 1,900 over 1,500", ratio[17], 1900.0 / 1500.0);
+        same("the last: 2,200 over 2,220, under one year of output", ratio[23], 2200.0 / 2220.0);
+        yes("the ratio is not the debt over the MONTH (1,600 over 120 would read 13.3 times)", ratio[11] < 3);
+
+        /* ---- no figure where the year's GDP is nothing or the debt was not recorded ---- */
+        double[] late = new double[months];
+        for (int i = 0; i < months; i++) late[i] = i < 18 ? 0 : 10;
+        HistorySave dead = built(months, new String[] {"gdp", "debt"}, late, debt);
+        double[] deadYear = YearBook.gdpYear(dead), deadRatio = YearBook.debtToGdp(dead);
+        boolean nothing = true, noFigure = true;
+        for (int i = 11; i < 18; i++) {
+            nothing &= deadYear[i] == 0;
+            noFigure &= Double.isNaN(deadRatio[i]);
+        }
+        yes("a city that made nothing for eighteen months has a year of nothing from the twelfth month on", nothing);
+        yes("...and no ratio at any of them: a year of GDP of 0 gives no figure, not infinity and not 0", noFigure);
+        yes("the first month the year is above nothing (the nineteenth, 10) the ratio is back: debt / 10",
+                Math.abs(deadRatio[18] - debt[18] / 10) < 1e-9);
+        yes("a single month of nothing inside a year of output is not a year of nothing: the figure stays",
+                oneDeadMonthStillHasAFigure());
+
+        double[] shortDebt = flat(12, 700);
+        HistorySave started = built(months, new String[] {"gdp", "debt"}, gdp, shortDebt);
+        double[] startedRatio = YearBook.debtToGdp(started);
+        boolean blank = true;
+        for (int i = 0; i < 12; i++) blank &= Double.isNaN(startedRatio[i]);
+        yes("a debt recorded only from the thirteenth month has no ratio before it, though the year of GDP is there from the twelfth", blank);
+        same("...and from it, the debt over the year", startedRatio[12], 700 / year[12]);
+
+        /* ---- no debt against a year of output is 0 ---- */
+        HistorySave clear = built(months, new String[] {"gdp", "debt"}, gdp, flat(months, 0));
+        same("owing nothing against a year of output is 0, not blank", YearBook.debtToGdp(clear)[20], 0);
+    }
+
+    /** GDP 10 a month with the sixth month 0: the twelfth month's year is 110, and its ratio the 330 debt over it. */
+    private static boolean oneDeadMonthStillHasAFigure() {
+        double[] gdp = flat(24, 10);
+        gdp[5] = 0;
+        HistorySave h = built(24, new String[] {"gdp", "debt"}, gdp, flat(24, 330));
+        double year = YearBook.gdpYear(h)[11], ratio = YearBook.debtToGdp(h)[11];
+        return Math.abs(year - 110) < 1e-9 && Math.abs(ratio - 3) < 1e-9;
     }
 
     /* ----------------------------- assertions ----------------------------- */

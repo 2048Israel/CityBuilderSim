@@ -65,7 +65,10 @@ import java.io.PrintStream;
  *      treasury's sale of the same amount does.
  *   6. ONE SEED, ONE PATH. The same seed and months are the same rates to the
  *      bit, a different seed parts; two cities on the default founding play
- *      the same rates, one on another world seed does not.
+ *      the same rates, one on another world seed does not. The path's size is
+ *      the dial's, read off the market's own draws (MARKET_SIGMA, to the sampling
+ *      error), and "parts" is caused: another seed's first draw differs and every
+ *      market after it (FS10).
  *   7. A SAVE MID-SWING CONTINUES EXACTLY. A seeded currency saved with its
  *      market moving, an intervention fading and a purchase pending plays on
  *      to the bit as the one it came from; a city saved and loaded keeps its
@@ -75,9 +78,18 @@ import java.io.PrintStream;
  *      default playtest's city, 360 months: the six moves add to the month's
  *      move every month; the defence sells, the treasury deals, the market
  *      moves the rate, and the counts are printed against the old rule's;
- *      the volatility a year is a float's (3% to 20%, where the old rule's
- *      was 1.2%) and no run one way is as long as the old rule's 78 months.
- *      The playtest's own counts of the same agree with the harness's.
+ *      the volatility a year is a float's (where the old rule's was 1.2%) and
+ *      no run one way is as long as the old rule's 78 months, both caused (FS10)
+ *      on a bare seeded float against the market's dials, from both sides within
+ *      the sampling error of its months, with the months the market moves the
+ *      rate by over 2% at the share the dial gives. The playtest's own counts of
+ *      the same agree with the harness's, on the played city.
+ *  8b. THE 1900 CITY'S GOLD. Canada's dated peg (ForeignAccounts.hearMoneyMonth)
+ *      suspended in August 1914 and returned in July 1926, on the playtest's 1900
+ *      city: its vault held between months by dollars bought by name (FS10), so
+ *      the peg is solvent to the eve, and again to the return, bought for the
+ *      sale the model's own intervention law prices; the peg's shadow set at the
+ *      eve to a chosen gap, so the released hold is larger than the month's news.
  *   9. THE GAME SURVIVES THE SPIRAL (Jerus, 2026-10-21: "ship it as is, im
  *      going to test it to see if player led behaviour can prevent
  *      hyperinflation"). The default city hyperinflates under XR1, so it must
@@ -771,6 +783,38 @@ public class ExchangeRateCheck {
         return rates;
     }
 
+    /** The town's rate and the market's level, month by month, for this many months ([0] the rates, [1] the market's levels). */
+    static double[][] playMarket(Game city, int months) {
+        double[] rates = new double[months], markets = new double[months];
+        for (int m = 0; m < months; m++) {
+            quietly(() -> city.simulateMonths(1));
+            ForeignAccounts fx = city.getForeignAccounts();
+            rates[m] = fx.getRate();
+            markets[m] = fx.getMarket();
+        }
+        return new double[][] { rates, markets };
+    }
+
+    /** FS10: standard errors of sampling a bound allows, so that a currency inside the band its dial gives fails it by chance about once in a million. */
+    static final double SAMPLING_SES = 5;
+
+    /** ...and the sigmas of a normal draw (and of the market's own spread) a path may not pass: six, a part in a billion a draw. */
+    static final double SWING_LIMIT = 6;
+
+    /** The market's monthly move's standard deviation, as section 2 derives it: MARKET_SIGMA x sqrt(1 + (1 - rho) / (1 + rho)), the swing fading as well as arriving. */
+    static double marketMoveSd() {
+        double rho = Math.pow(.5, 1 / ForeignAccounts.MARKET_HALF_LIFE);
+        return ForeignAccounts.MARKET_SIGMA * Math.sqrt(1 + (1 - rho) / (1 + rho));
+    }
+
+    /** The market's innovations read back off a path of its levels: m(t) - rho m(t-1), each MARKET_SIGMA times a standard normal draw (the first from a market of nothing). */
+    static double[] innovations(double[] market) {
+        double rho = Math.pow(.5, 1 / ForeignAccounts.MARKET_HALF_LIFE);
+        double[] e = new double[market.length];
+        for (int t = 0; t < e.length; t++) e[t] = market[t] - (t == 0 ? 0 : rho * market[t - 1]);
+        return e;
+    }
+
     static void oneSeedOnePath() {
         out.println("\n--- 6. one seed, one path ---");
 
@@ -779,15 +823,38 @@ public class ExchangeRateCheck {
         drive(a, 0, 240, one);
         drive(b, 0, 240, again);
         drive(c, 0, 240, other);
-        double marketReach = 0;
+        // FS10: the path's size is the dial's, not what this seed happens to reach. The market is m(t) = rho m(t-1) + MARKET_SIGMA e(t), e a
+        // standard normal draw: read back off the path, the draws have MARKET_SIGMA's standard deviation (to the sampling error of 240 of them,
+        // 1 / sqrt(2 x 240)), none is past SWING_LIMIT sigmas, and the market's level stays within SWING_LIMIT of its own spread.
+        double[] market = new double[one.size()], otherMarket = new double[other.size()];
+        for (int t = 0; t < market.length; t++) { market[t] = one.get(t)[1]; otherMarket[t] = other.get(t)[1]; }
+        double[] draws = innovations(market);
+        double drawSd = sd(draws, 0), allowance = SAMPLING_SES / Math.sqrt(2.0 * draws.length), widest = 0, reach = 0;
+        for (int t = 0; t < draws.length; t++) { widest = Math.max(widest, Math.abs(draws[t])); reach = Math.max(reach, Math.abs(market[t])); }
+        double rho = Math.pow(.5, 1 / ForeignAccounts.MARKET_HALF_LIFE), spread = ForeignAccounts.MARKET_SIGMA / Math.sqrt(1 - rho * rho);
         int defended = 0;
-        for (double[] row : one) { marketReach = Math.max(marketReach, Math.abs(row[1])); if (row[9] > 0) defended++; }
-        assertTrue("fixture: the path moves - the market swings (widest " + String.format("%.3f", marketReach) + ") and the defence sold in "
-                + defended + " months", marketReach > .02 && defended > 0);
+        boolean leansOnAFall = true;
+        for (double[] row : one) { if (row[9] > 0) { defended++; leansOnAFall &= row[10] > 0; } }
+        out.printf("   the draws' s.d. %.5f against MARKET_SIGMA %.3f (allowed %.1f%%), the widest %.1f sigmas; the market reaches %.3f of its own spread %.3f;"
+                + " the defence sold in %d of %d months%n", drawSd, ForeignAccounts.MARKET_SIGMA, allowance * 100, widest / ForeignAccounts.MARKET_SIGMA,
+                reach, spread, defended, one.size());
+        assertTrue("fixture: the path moves - the market swings by MARKET_SIGMA a month (the draws' s.d. within the sampling error of it, none past "
+                + (int) SWING_LIMIT + " sigmas), inside " + (int) SWING_LIMIT + " of its own spread",
+                Math.abs(drawSd / ForeignAccounts.MARKET_SIGMA - 1) < allowance && widest < SWING_LIMIT * ForeignAccounts.MARKET_SIGMA
+                        && reach < SWING_LIMIT * spread);
+        // The defence's cause is the deficit and the fall: a quiet currency on this drive's first month (imports a third over exports, a full
+        // vault, nothing in the market to soften the fall) sells, and a seeded month sells only against a fall it would have made.
+        java.util.List<double[]> quietFirst = new java.util.ArrayList<>();
+        drive(calm(), 0, 1, quietFirst);
+        assertTrue("fixture: the defence sells on this drive's deficit (a quiet currency's first month sells US$"
+                + String.format("%.1fk", quietFirst.get(0)[9]) + ") and no seeded month sells without a fall to lean against", quietFirst.get(0)[9] > 0 && leansOnAFall);
         assertTrue("two currencies with one seed and the same 240 months: every figure of every month equal to the bit", differences(one, again) == 0);
         int parted = differences(one, other);
-        out.printf("   a different seed parts in %d of 240 months%n", parted);
-        assertTrue("...a different seed parts from the first: the rates differ in nearly every month", parted > 200);
+        boolean everyMarketParts = true;
+        for (int t = 0; t < market.length; t++) everyMarketParts &= Double.compare(market[t], otherMarket[t]) != 0;
+        out.printf("   a different seed parts in %d of 240 months; its first draw %+.5f against %+.5f%n", parted, otherMarket[0], market[0]);
+        assertTrue("...a different seed parts from the first: its first draw differs, and so does the market in every month after it (a chain of draws)",
+                Double.compare(market[0], otherMarket[0]) != 0 && everyMarketParts && parted > 0);
         assertTrue("...and the seeds are the seeds", a.getMarketSeed() == b.getMarketSeed() && a.getMarketSeed() != c.getMarketSeed());
 
         // Two cities on the default founding, and one on another world.
@@ -798,7 +865,8 @@ public class ExchangeRateCheck {
                 first.getForeignAccounts().getMarketSeed() == second.getForeignAccounts().getMarketSeed()
                         && first.getForeignAccounts().getMarketSeed()
                                 == (Game.marketSeedFor(standard.getWorldSeed()) & ((1L << 52) - 1)));
-        double[] ratesOne = play(first, 60), ratesTwo = play(second, 60);
+        double[][] runOne = playMarket(first, 60), runTwo = playMarket(second, 60);
+        double[] ratesOne = runOne[0], ratesTwo = runTwo[0];
         int unequal = 0;
         for (int m = 0; m < 60; m++) if (Double.compare(ratesOne[m], ratesTwo[m]) != 0) unequal++;
         out.printf("   two cities on the default founding, 60 months: the rate %.6f -> %.6f in both; %d months apart%n", 1.0, ratesOne[59], unequal);
@@ -808,11 +876,20 @@ public class ExchangeRateCheck {
         Game elsewhere = town("exchange-rate-world", standard.withWorldSeed(standard.getWorldSeed() + 1));
         assertTrue("fixture: a founding on another world seed has another market seed",
                 elsewhere.getForeignAccounts().getMarketSeed() != first.getForeignAccounts().getMarketSeed());
-        double[] ratesElsewhere = play(elsewhere, 60);
+        double[][] runElsewhere = playMarket(elsewhere, 60);
+        double[] ratesElsewhere = runElsewhere[0];
         int parts = 0;
-        for (int m = 0; m < 60; m++) if (Double.compare(ratesOne[m], ratesElsewhere[m]) != 0) parts++;
-        out.printf("   a founding on another world seed: %d of 60 months differ, the rate %.6f against %.6f at month 60%n", parts, ratesElsewhere[59], ratesOne[59]);
-        assertTrue("a founding on another world seed plays a different path", parts > 30);
+        boolean everyTownMarketParts = true;
+        for (int m = 0; m < 60; m++) {
+            if (Double.compare(ratesOne[m], ratesElsewhere[m]) != 0) parts++;
+            everyTownMarketParts &= Double.compare(runOne[1][m], runElsewhere[1][m]) != 0;
+        }
+        out.printf("   a founding on another world seed: its first draw %+.5f against %+.5f; %d of 60 months' rates differ, the rate %.6f against %.6f at month 60%n",
+                runElsewhere[1][0], runOne[1][0], parts, ratesElsewhere[59], ratesOne[59]);
+        assertTrue("fixture: both towns trade enough for the market to reach the rate (gate " + String.format("%.2f", first.getForeignAccounts().gate())
+                + ", " + String.format("%.2f", elsewhere.getForeignAccounts().gate()) + ")", first.getForeignAccounts().gate() > 0 && elsewhere.getForeignAccounts().gate() > 0);
+        assertTrue("a founding on another world seed plays a different path: another first draw, another market in every month after it, and a rate that parts",
+                Double.compare(runOne[1][0], runElsewhere[1][0]) != 0 && everyTownMarketParts && parts > 0);
     }
 
     /* ================= 7. a save mid-swing continues exactly ================= */
@@ -880,8 +957,38 @@ public class ExchangeRateCheck {
         int months, fromMonth60, longest, run, sign, far, defended, dealt, marketOver2, gateShut;
         double sum, sum2, worstAdd, biggest, gateSum, defendedUsd;
 
-        /** Plays one month as the playtest plays it and counts it. */
+        /** FS10 (section 8b): the dollars the dated gold peg's vault is held at or over, between months, in years of GDP (bought by name; 0: nothing held, as on main). */
+        double heldYears;
+        /** The months the vault was topped up in, and the dollars (US$ thousands) bought to do it. */
+        int toppedUp;
+        double toppedUpUsd;
+
+        /** Plays one month as the playtest plays it and counts it, then holds the vault where the section asked. */
         void step(Game g) {
+            count(g);
+            if (heldYears > 0) {
+                ForeignAccounts fx = g.getForeignAccounts();
+                topUpTo(g, heldYears * 12 * fx.getGdpTrailing() / fx.getRate());
+            }
+        }
+
+        /** The vault brought up to this many dollars by dollars bought by name (the treasury handed the cash it is short, as section 8's deal does), the purchase forgotten as a set-up and not the month's dealing; what it took, in dollars. */
+        double topUpTo(Game g, double wantUsd) {
+            ForeignAccounts fx = g.getForeignAccounts();
+            double usd = wantUsd - fx.getReservesUsd(), local = usd * fx.getRate();
+            if (!(usd > 0) || !(local > 0)) return 0;
+            quietly(() -> {
+                if (g.getCash() < local) g.setCashForTest(Math.max(0, g.getCash()) + local);   // the cash it has (none if overdrawn) and what the purchase takes
+                g.buyForeignCurrency(local);
+            });
+            fx.forgetDealing();
+            toppedUp++;
+            toppedUpUsd += usd;
+            return usd;
+        }
+
+        /** Counts one month as the playtest counts it. */
+        void count(Game g) {
             ForeignAccounts fx = g.getForeignAccounts();
             double before = fx.getRate(), dealtBefore = fx.getDealtSinceReprice();
             int was = g.getMonth();
@@ -973,6 +1080,33 @@ public class ExchangeRateCheck {
         }
     }
 
+    /** FS10 (section 8): the chance a run one way, in a path whose moves are a coin's at a month, has of passing the bound the section holds it to: a part in a million. */
+    static final double RUN_CHANCE = 1e-6;
+
+    /** The longest run of months one way in these moves, counted as the playtest counts it (a move under a billionth of a log goes neither way). */
+    static int longestRun(double[] moves) {
+        int longest = 0, run = 0, sign = 0;
+        for (double move : moves) {
+            int s = move > 1e-9 ? 1 : move < -1e-9 ? -1 : 0;
+            run = s != 0 && s == sign ? run + 1 : s != 0 ? 1 : 0;
+            sign = s;
+            longest = Math.max(longest, run);
+        }
+        return longest;
+    }
+
+    /** A run of L months one way from a given month has the chance 2^(1-L) in coin-flip moves, so n months have n x 2^(1-L): the L where that is RUN_CHANCE, a run must be shorter. */
+    static int runBound(int months) {
+        return (int) Math.ceil(1 + Math.log(months / RUN_CHANCE) / Math.log(2));
+    }
+
+    /** The chance a standard normal draw is past z in size, either way (Abramowitz and Stegun 7.1.26: the error is under 1.5e-7). */
+    static double beyond(double z) {
+        double x = Math.abs(z) / Math.sqrt(2), t = 1 / (1 + .3275911 * x);
+        double poly = (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t;
+        return poly * Math.exp(-x * x);
+    }
+
     static void inARealCity() {
         out.println("\n--- 8. in a real city the D$ moves like a float, and the mechanics fire ---");
 
@@ -995,10 +1129,30 @@ public class ExchangeRateCheck {
         assertTrue("fixture: the city played its " + target + " months", g.getMonth() >= target && t.months >= target - 10);
         assertTrue("fixture: the market took a draw every month it was not pinned", fx.getMarketDraws() >= g.getMonth() - 3 && fx.isMarketSeeded());
         close("the float's moves, the world's line and the hold add to the month's move, every month", t.worstAdd, 0, 1e-12);
-        assertTrue("the volatility a year is a float's: between 3% and 20% (today's rule: 1.2%)", vol >= .03 && vol <= .20);
-        assertTrue("the longest run one way is under 36 months (today's: 78)", t.longest < 36);
-        // The mechanics fire, and the playtest counts what the harness counts.
-        assertTrue("the market moves the rate in a real city: some month, by more than 2%", t.marketOver2 > 0);
+        // FS10: the float's size is the market dials', caused on a bare seeded float (section 2's fixture, the fundamentals still) played
+        // the same months and read where the playtest reads it, volatility from month 60; the played city's own path, which a rule or
+        // a founding can move, is no part of what the three lines hold. The volatility is MARKET_SIGMA's, to the sampling error of the
+        // months it is read over (1 / sqrt(2n) of it); the runs are a random walk's at a month (section 2) and so a coin's; and the share
+        // of months the market moves the rate by more than 2% is the normal tail past 2% over the move's own s.d.
+        ForeignAccounts bare = still(TRADE, TRADE, GDP, SEED);
+        double[][] barePath = swing(bare, TRADE, TRADE, GDP, target);
+        double[] bareMoves = moves(barePath[0]), bareMarketMoves = moves(barePath[1]);
+        final int window = target - 60;
+        double expectedVol = marketMoveSd() * Math.sqrt(12), volAllow = SAMPLING_SES / Math.sqrt(2.0 * window), bareVol = sd(bareMoves, 60) * Math.sqrt(12);
+        int bareRun = longestRun(bareMoves), runLimit = runBound(target), bareBig = 0;
+        for (double d : bareMarketMoves) if (Math.abs(d) > .02) bareBig++;
+        double share = beyond(.02 / marketMoveSd()), expectedBig = share * target, bigAllow = SAMPLING_SES * Math.sqrt(target * share * (1 - share));
+        out.printf("   a bare seeded float, %d months: volatility %.1f%% a year from month 60 against %.1f%% (MARKET_SIGMA, within %.1f%%); the longest run one way %d months"
+                + " (under %d); the market moved the rate over 2%% in %d months against %.0f (within %.0f)%n", target, bareVol * 100, expectedVol * 100,
+                volAllow * 100, bareRun, runLimit, bareBig, expectedBig, bigAllow);
+        assertTrue("fixture: the bare float is seeded, its gate open, and the market took a draw every month",
+                bare.isMarketSeeded() && Math.abs(bare.gate() - 1) < 1e-12 && bare.getMarketDraws() == target);
+        assertTrue("the volatility a year is a float's: the market dial's, MARKET_SIGMA's 8%, within the sampling error of its months (today's rule: 1.2%)",
+                Math.abs(bareVol / expectedVol - 1) < volAllow);
+        assertTrue("the longest run one way is under " + runLimit + " months, a random walk's at a month (today's: 78)", bareRun < runLimit);
+        assertTrue("the market moves the rate: by more than 2% in the share of months the dial gives, within the sampling error of it",
+                Math.abs(bareBig - expectedBig) < bigAllow);
+        // The playtest counts what the harness counts.
         assertTrue("the playtest's own counts of the same agree: the longest run, the months far from parity, the market's big months, the treasury's deals",
                 LongPlaytest.floatRunLongest == t.longest && LongPlaytest.floatFarFromParity == t.far
                         && LongPlaytest.floatMarketOver2 == t.marketOver2 && LongPlaytest.floatDealt == t.dealt);
@@ -1022,16 +1176,56 @@ public class ExchangeRateCheck {
                 t.dealt == dealtRun + 1 && LongPlaytest.floatDealt == playtestDealt + 1);
     }
 
+    /**
+     * FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: twice INTERVENTION_LINEAR, because the hold's sale in a
+     * month is at most INTERVENTION_LINEAR of a year's GDP while the lift it makes stays inside the linear part of the intervention law
+     * (interventionLocalFor()), and the peg gives way the month its sale would take the vault to nothing.
+     */
+    static final double GOLD_HELD_VAULT_YEARS = 2 * ForeignAccounts.INTERVENTION_LINEAR;
+
+    /** ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. */
+    static final double RELEASED_GAP = 8 * ForeignAccounts.MARKET_SIGMA;
+
+    /** ...and the lift July 1926's vault is bought for is this much past the eve's, six of the market's swings, so that a month's news cannot leave the return's sale short of it. */
+    static final double RETURN_NEWS = 6 * ForeignAccounts.MARKET_SIGMA;
+
+    /** ForeignAccounts.toSaveArray()'s slots for the market's level, the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so). */
+    static final int MARKET_SLOT = 52, SHADOW_SLOT = 78, HELD_SLOT = 79;
+
+    /**
+     * The peg's shadow set to stand this log gap over the rate, through the saved array: the last reprice's shadow, and the market's level
+     * moved the same distance (over the gate, which weighs it) so the float's rule - the shadow is where that rule has the D$, and the next
+     * month's rate is struck from the levels, not from the old shadow - agrees with it. Not fx.repeg(), which takes the city off Canada's gold.
+     */
+    static void setTheShadowGap(ForeignAccounts fx, double gap) {
+        double[] saved = fx.toSaveArray();
+        double shift = Math.log(fx.getRate()) + gap - saved[SHADOW_SLOT];
+        saved[SHADOW_SLOT] += shift;
+        saved[HELD_SLOT] = 1;
+        saved[MARKET_SLOT] += shift / fx.gate();
+        fx.restore(saved);
+    }
+
     /** R1f: the dated peg's release is a hold move, already recorded by the model, not unexplained market noise. */
     static void inThe1900City() {
         out.println("\n--- 8b. the 1900 city's D$: gold, the August 1914 suspension and the 1926 return ---");
         Tally t = new Tally();
+        // FS10: the dated peg is solvent by cause. The vault is held at GOLD_HELD_VAULT_YEARS of a year's GDP between months, up to the eve
+        // and from it to the return, by dollars bought by name; without it (heldYears 0, as on main) the city's vault is spent by month
+        // 78 to 175 and the peg breaks of the vault.
+        t.heldYears = GOLD_HELD_VAULT_YEARS;
         int suspension = PolicyDates.GOLD_SUSPENDED;
         Game g = playtestCity("exchange-rate-1900", suspension - 1, t,
                 LongPlaytest.founding().withUnfitted(true));
         ForeignAccounts fx = g.getForeignAccounts();
+        out.printf("   to the eve (month %d): the vault held at %.0f%% of a year's GDP, topped up in %d months (US$%,.0fk bought); %d breaks, the vault US$%,.0fk%n",
+                g.getMonth(), GOLD_HELD_VAULT_YEARS * 100, t.toppedUp, t.toppedUpUsd, fx.getBreaks(), fx.getReservesUsd());
         assertTrue("fixture: the dated gold peg survives to the eve of suspension", fx.isCanadaGold());
+        // The hold released is a gap the model's float rule has opened, set at the eve to the chosen size.
+        assertTrue("fixture: the market reaches the rate, so the shadow can be moved by it (the gate is open: " + String.format("%.2f", fx.gate()) + ")", fx.gate() > 0);
+        setTheShadowGap(fx, RELEASED_GAP);
         double before = fx.getRate(), shadowBefore = fx.getShadowRate();
+        close("fixture: the peg's shadow stands RELEASED_GAP over the peg at the eve", Math.log(shadowBefore / before), RELEASED_GAP, 1e-9);
         stepQuietly(t, g);
         double move = Math.log(fx.getRate() / before);
         double shadowMove = Math.log(fx.getShadowRate() / shadowBefore);
@@ -1043,10 +1237,17 @@ public class ExchangeRateCheck {
         close("the float starts at the shadow, with only this month's shadow move added", move, shadowMove + fx.getMoveHeld(), 1e-12);
         assertTrue("fixture: the released hold is larger than the month's float news", Math.abs(fx.getMoveHeld()) > Math.abs(shadowMove));
         while (g.getMonth() < PolicyDates.GOLD_RETURN - 1) stepQuietly(t, g);
+        // The return is a lift of the float's rate down to par in one month, and the model's own law prices it (interventionLocalFor()):
+        // the vault is brought, by dollars bought by name, to the sale a lift RETURN_NEWS past the eve's would take.
+        double lift = Math.log(fx.getPegRate() / fx.getRate()) - RETURN_NEWS;
+        double sale = -ForeignAccounts.interventionLocalFor(lift, 12 * fx.getGdpTrailing()) / fx.getRate();
+        double bought = t.heldYears > 0 ? t.topUpTo(g, sale) : 0;
+        out.printf("   the eve of July 1926: the D$ floats at %.4f against par %.4f; a lift to par sells US$%,.0fk (a year's GDP is US$%,.0fk); the vault US$%,.0fk after buying US$%,.0fk%n",
+                fx.getRate(), fx.getPegRate(), Math.max(0, sale), 12 * fx.getGdpTrailing() / fx.getRate(), fx.getReservesUsd(), bought);
         before = fx.getRate();
         stepQuietly(t, g);
-        out.printf("   July 1926: %.4f -> %.4f; hold log move %+.6f; %d months counted, worst decomposition %.2e%n",
-                before, fx.getRate(), fx.getMoveHeld(), t.months, t.worstAdd);
+        out.printf("   July 1926: %.4f -> %.4f; hold log move %+.6f; the hold sold US$%,.0fk; %d months counted, worst decomposition %.2e%n",
+                before, fx.getRate(), fx.getMoveHeld(), fx.getDefenceUsd(), t.months, t.worstAdd);
         assertTrue("the model's return date restores Canada's gold peg", g.getMonth() == PolicyDates.GOLD_RETURN && fx.isCanadaGold());
         close("the return holds the model's par", fx.getRate(), fx.getPegRate(), 1e-12);
         close("all named moves include the suspension and the return, every month", t.worstAdd, 0, 1e-12);

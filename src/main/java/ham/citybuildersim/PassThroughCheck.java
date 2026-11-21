@@ -5,6 +5,8 @@ import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+import ham.citybuildersim.sectors.Retail;
+
 /**
  * Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1,
  * 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of
@@ -39,7 +41,11 @@ import java.util.Arrays;
  *      founding, 240 months: the first strike is at the D$ itself; each month
  *      the struck rate is passThrough() of the last month's, moved toward the
  *      D$ the strike saw (the one read between months), and the markets' rate
- *      is the struck rate times the world's price level, to the bit.
+ *      is the struck rate times the world's price level, to the bit. The city
+ *      ends with its goods' D$ set GAP_MADE from the D$ (setStruckRate) and is
+ *      saved so, the gap sections 3, 5 and 6 need; and the wiring is read again
+ *      for PUSH_MONTHS on a copy of it whose D$ is pinned by turns PUSH_OFF
+ *      either side of where it stood, so the strikes close real gaps (caused).
  *   3. A STEP IN THE D$ REACHES THE GOODS AT PASS_THROUGH A MONTH. Twins of
  *      that city, both pinned at the struck rate so no gap is pending, one's
  *      D$ then pinned 10% weaker: for 36 months the weak twin's struck rate
@@ -47,32 +53,43 @@ import java.util.Arrays;
  *      price indices part by a share of the step - the city's own consumer
  *      pass-through, and its five components at 12 months, printed and not
  *      asserted, for the index holds rent and land, which the goods' rate does
- *      not set. The groceries component's share at 12 months, the shelf cost-
- *      plus on the goods, is positive and under the share the goods' rate
- *      itself has reached.
- *   4. THE RING SETTLES. Twins of that city on the float, each first given a
- *      vault of twice THIN_COVER months of imports so the vault's cover is
- *      flat (a thin vault parts the twins by that road, not by the ring): the
- *      treasury of one buys dollars worth 5% of a year's GDP and sells the same
- *      dollars back twelve months later, a swing of the D$ that moves the
+ *      not set. The groceries component's share at 12 months is positive and
+ *      under the share the goods' rate itself has reached - on a shelf the
+ *      imported cost sets, caused: both twins' goods' D$ and D$ set at DEAR
+ *      times the saved city's, so the shop's cost-plus floor stands over its
+ *      opening price and the clearing price under the floor (see the section
+ *      for the shelf's rule, traced).
+ *   4. THE RING SETTLES. Twins of that city on the float, each first given
+ *      the cash for the whole of what its treasury buys and a vault of twice
+ *      THIN_COVER months of imports so the vault's cover is flat (a thin vault
+ *      parts the twins by that road, not by the ring), and neither leaning on
+ *      the D$ (the FLOAT regime: the defence sells none, so what the treasury
+ *      sells back is what it bought and the vault earned): the treasury of one
+ *      buys dollars worth 5% of a year's GDP and sells the same dollars back
+ *      twelve months later, a swing of the D$ that moves the
  *      city's prices and so its parity. Played ten years at PASS_THROUGH and
  *      again with both twins at speed one (the rule before AN1): the D$'s
  *      widest gap between the twins, the goods' widest gap and the price
  *      index's gap at the end are printed for each, not asserted: ten years on
  *      a gap is the economy amplifying a small difference. The purchase moves
  *      the D$ by what INTERVENTION_IMPACT says; at PASS_THROUGH the goods' gap
- *      never exceeds the D$'s widest gap so far times 1-(1-k)^n; and over the
+ *      never exceeds the D$'s widest gap so far times 1-(1-k)^n (one for one,
+ *      the goods' widest gap is the D$'s over the months before the last, a
+ *      month behind it); and over the
  *      swing's own horizon - the round trip and the goods' half-life, from
  *      the constants - the mean gap of the goods' rate and of the price index
  *      is smaller at PASS_THROUGH than one for one (the D$'s is printed).
  *   5. A SAVE CARRIES IT. A city saved and loaded keeps the struck rate to
  *      the bit and strikes the next month as the live city does; a loaded city
  *      whose struck rate is cleared (a save without the key) strikes at the
- *      D$ itself; a currency reform scales the struck rate with the D$.
- *   6. HOW OFTEN IT MATTERS IN A REAL CITY. Over section 2's 240 months: the
- *      goods' D$ against the D$ the strike saw - median and widest gap, the
- *      months more than 5% apart - and the months in which the mechanic moved
- *      the goods at all.
+ *      D$ itself; a currency reform scales the struck rate with the D$. The
+ *      saved city's goods' D$ is apart from its D$ by cause (section 2's end).
+ *   6. HOW OFTEN IT MATTERS IN A REAL CITY. A D$ pinned MARK_OFF from the
+ *      goods' D$ is read as a gap of more than APART at the strike's month,
+ *      and the goods' D$ moves for it - caused. Over section 2's 240 months,
+ *      printed and not asserted: the goods' D$ against the D$ the strike saw -
+ *      median and widest gap, the months more than 5% apart - and the months in
+ *      which the mechanic moved the goods at all.
  *   7. THE SCREEN'S READING (AN2, 2026-11-06). Game.struckFromRate(), the line
  *      on Trade > The currency: NaN while nothing is struck; and over section
  *      2's months, the gap it reads at a month's end is the one the next
@@ -130,14 +147,29 @@ public class PassThroughCheck {
     /** The share of a step in the D$ that has reached the goods after n months. */
     static double reached(double speed, int n) { return 1 - Math.pow(1 - speed, n); }
 
-    /** The months section 2 plays the real city, and the series it records; it is saved there, or the first month on from it that the D$ is apart from the goods' D$ (APART). */
+    /** The months section 2 plays the real city, and the series it records (sections 6 and 7 read it). */
     static final int MONTHS = 240;
 
-    /** The gap, in logs, between the D$ and the goods' D$ that sections 3 and 5 need the saved city to stand at (they assert more than this). */
+    /** The gap, in logs, between the D$ and the goods' D$ that sections 3, 5 and 6 need a case to stand at (they assert more than this): a pin that removes it removes a real gap. */
     static final double APART = .01;
 
-    /** The most months section 2 plays on past MONTHS to find the saved city apart by APART (IC1): the D$ and the goods' D$ are apart in nearly every month. */
-    static final int APART_LOOK_MONTHS = 24;
+    /** The months section 2 reads the wiring again on a copy of the saved city whose D$ is pinned off by turns, PUSH_OFF either side of where it stood. */
+    static final int PUSH_MONTHS = 12;
+
+    /** How far, in logs, either side of where it stood section 2 pins that copy's D$, month by month: a pin 16% from the last month's, more than BIG_GAP. */
+    static final double PUSH_OFF = .08;
+
+    /** The gap, in logs, section 2's D$ must move between two strikes in the pinned months for its wiring to be read against a D$ that has moved (the old fixture's 5%). */
+    static final double BIG_GAP = .05;
+
+    /** How far, in logs, section 2 sets the saved city's goods' D$ from its D$ at the end of the run: the gap sections 3, 5 and 6 need (more than APART), made and not found. */
+    static final double GAP_MADE = .05;
+
+    /** The multiple of the saved city's goods' D$ at which section 3's twins are struck and pinned: dear enough that the shop's cost-plus floor stands over its opening price and the clearing price under the floor (the section asserts both). */
+    static final double DEAR = 2;
+
+    /** How far, in logs, section 6 pins the D$ from the goods' D$ (5%) to read the gap the mechanic closes. */
+    static final double MARK_OFF = .05;
 
     /** The size of the step in sections 1 and 3: the D$ 10% weaker. */
     static final double STEP = 1.10;
@@ -290,23 +322,23 @@ public class PassThroughCheck {
         for (int m = 0; m < MONTHS; m++) {
             double dollar = fx.getRate(), before = em.getStruckRate();
             month(city);
-            seen[m] = dollar;
-            struck[m] = em.getStruckRate();
-            gapEnd[m] = city.struckFromRate();
+            double strike = em.getStruckRate();
             double expected = m == 0 ? dollar : EconomyManager.passThrough(before, dollar, K);
             // The D$ the strike saw is the one read between months: the reprice is late in the month and nothing but it (and a
             // reform) moves the rate, so what the last month left is what the next one's strike finds.
-            if (Double.compare(struck[m], expected) != 0) wrongStrike++;
+            if (Double.compare(strike, expected) != 0) wrongStrike++;
             double level = city.getWorldEconomy().getPriceLevel();
-            if (Double.compare(city.getMarkets().getExchangeRate(), struck[m] * level) != 0) wrongMarkets++;
-            if (Double.compare(em.getExchangeRate(), struck[m] * level) != 0) wrongBuildings++;
-            if (m == 0 && Double.compare(struck[m], dollar) != 0) wrongStart++;
+            if (Double.compare(city.getMarkets().getExchangeRate(), strike * level) != 0) wrongMarkets++;
+            if (Double.compare(em.getExchangeRate(), strike * level) != 0) wrongBuildings++;
+            if (m == 0 && Double.compare(strike, dollar) != 0) wrongStart++;
             widestDollar = Math.max(widestDollar, Math.abs(Math.log(dollar / firstSeen)));
+            seen[m] = dollar;
+            struck[m] = strike;
+            gapEnd[m] = city.struckFromRate();
         }
         out.printf("   240 months played: the D$ from %.4f to %.4f (widest %.1f%% from its start), the goods' D$ ends at %.4f%n",
                 firstSeen, fx.getRate(), 100 * widestDollar, em.getStruckRate());
         assertTrue("fixture: the city played its " + MONTHS + " months", city.getMonth() >= MONTHS);
-        assertTrue("fixture: the D$ moved in the run, by more than 5% from its start - the strikes below are not a rate held still", widestDollar > .05);
         assertTrue("the city's first strike is at the D$ itself (the D$ the first month saw), to the bit", wrongStart == 0);
         assertTrue("every month the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit (wrong in "
                 + wrongStrike + " of " + MONTHS + ")", wrongStrike == 0);
@@ -315,44 +347,45 @@ public class PassThroughCheck {
         assertTrue("...and so is the rate the economy manager prices the building materials at (wrong in " + wrongBuildings + " of " + MONTHS + ")",
                 wrongBuildings == 0);
 
-        /*
-         * ...AND ON UNTIL THE D$ AND THE GOODS' D$ ARE APART (IC1, 2026-11-01). Sections 3 and 5 pin and compare at the saved city's gap
-         * (more than APART in logs): the premise that the pin removes a real gap. The D$ and the goods' D$ are apart in 229 of the 240 months
-         * on IC1's path (a median of 15%), but month 240 is not one of them: the city ends it with the D$ at 0.7437, 0.7% from the goods'
-         * D$ at 0.7491, where on main's path (0.8695 against 0.9667) they stand 10.6% apart. An idle builder's laid-off crews are spare
-         * for the staffing gate since IC1, so the town is built by other months than main's, and where the D$ stands against the goods'
-         * D$ in the month it stops is the path's. It plays on, a month at a time, until the gap is more than APART (at most APART_LOOK_MONTHS),
-         * and the city is saved there; the 240 months of the series (section 6) are those played above. On main's path the gap is
-         * apart at month 240 and it plays none.
-         */
-        /*
-         * ...AND ON UNTIL THE DEFENCE LETS THE SWING'S SELL-BACK BE WHAT THE TREASURY BOUGHT (BA1, 2026-11-04). Section 4's treasury sells back
-         * the dollars its vault holds over its twin's, and its fixture is that these are the dollars it bought less what the defence sold
-         * (never more). Since BA1 uncapped the businesses' orders the town's trade runs another course (a deficit all through, the D$
-         * ending at 3.97 for 1.00 where main's ends near 0.77) and the defence sells in lumps (months 4, 8 and 9 of the 12): from the city
-         * at month 241 the shock twin, whose weaker D$ left it the smaller deficit (measured), sold US$0.198k LESS than its twin over the 12
-         * months, so its vault held US$22.71k over its twin's for US$22.52k bought, one for one. From months 242 to 252 the sell-back is what
-         * was bought, both speeds. The base city plays on, a month at a time, until the D$ is apart (APART) AND a trial of the swing's first HELD months
-         * at both speeds leaves the vault holding no more than was bought (vaultHoldsNoMoreThanBought()), at most APART_LOOK_MONTHS; the
-         * swing's own assertion stands as it was, and still says whether the state arose.
-         */
-        int past = 0;
+        // THE SAVED CITY STANDS APART, MADE. Sections 3, 5 and 6 load the city with the goods' D$ GAP_MADE from the D$ (its struck rate set,
+        // as a save from a city whose D$ had moved leaves it); where the played D$ stood against the goods' D$ at month 240 is the
+        // path's, and on one path it ended 0.7% from it. Section 4's twins are loaded from it too: they part by the swing alone.
+        em.setStruckRate(fx.getRate() * Math.exp(GAP_MADE));
+        double apart = Math.abs(Math.log(fx.getRate() / em.getStruckRate()));
+        out.printf("   the city stands with the D$ %.1f%% from the goods' D$ (set; more than %.0f%%, as sections 3, 5 and 6 need)%n",
+                100 * apart, 100 * APART);
+        assertTrue("fixture: the saved city's goods' D$ is set apart from its D$ by more than " + String.format("%.0f%%", 100 * APART), apart > APART);
         boolean[] saved = new boolean[1];
-        while (true) {
-            boolean apart = Math.abs(Math.log(fx.getRate() / em.getStruckRate())) > APART;
-            if (apart) {
-                quietly(() -> saved[0] = city.saveGame(BASE_SLOT, "the pass-through city").ok);
-                if (vaultHoldsNoMoreThanBought(K) && vaultHoldsNoMoreThanBought(1)) break;
-            }
-            if (past >= APART_LOOK_MONTHS) break;
-            month(city);
-            past++;
-        }
-        out.printf("   the city plays %d month(s) past the %d to stand with the D$ %.1f%% from the goods' D$ (more than %.0f%%, as sections 3 and 5 need)%n",
-                past, MONTHS, 100 * Math.abs(Math.log(fx.getRate() / em.getStruckRate())), 100 * APART);
-
         quietly(() -> saved[0] = city.saveGame(BASE_SLOT, "the pass-through city").ok);
         assertTrue("the city is saved at its end, for the twins of the sections after", saved[0]);
+
+        // THE WIRING THROUGH A D$ THAT MOVES, CAUSED. Whether the played D$ ever moved far between two strikes is the path's, and a strike that
+        // finds the D$ where the last left it has nothing to close, so its wiring would read as trivially as a rate held still. A copy of the
+        // saved city has its D$ pinned PUSH_OFF above where it stood, then below, and so on for PUSH_MONTHS (a pin holds the D$ for the rest of
+        // a city's life and is not saved, so it is not the live city that is pinned): each strike is handed a D$ 8% or 16% from the last, and
+        // the same wiring is read through it, month by month, to the bit.
+        Game pushed = load(city);
+        EconomyManager pem = pushed.getEconomyManager();
+        ForeignAccounts pfx = pushed.getForeignAccounts();
+        double centre = pfx.getRate(), widestMove = 0;
+        int pushWrongStrike = 0, pushWrongMarkets = 0, pushWrongBuildings = 0;
+        for (int j = 0; j < PUSH_MONTHS; j++) {
+            double was = pfx.getRate();
+            pfx.pinRate(centre * Math.exp(j % 2 == 0 ? PUSH_OFF : -PUSH_OFF));
+            double dollar = pfx.getRate(), before = pem.getStruckRate();
+            widestMove = Math.max(widestMove, Math.abs(Math.log(dollar / was)));
+            month(pushed);
+            double strike = pem.getStruckRate(), level = pushed.getWorldEconomy().getPriceLevel();
+            if (Double.compare(strike, EconomyManager.passThrough(before, dollar, K)) != 0) pushWrongStrike++;
+            if (Double.compare(pushed.getMarkets().getExchangeRate(), strike * level) != 0) pushWrongMarkets++;
+            if (Double.compare(pem.getExchangeRate(), strike * level) != 0) pushWrongBuildings++;
+        }
+        assertTrue("fixture: the D$ is pinned by turns " + String.format("%.0f%%", 100 * PUSH_OFF) + " either side and the strikes find it moved by more than "
+                + String.format("%.0f%%", 100 * BIG_GAP) + " (widest " + String.format("%.1f%%", 100 * widestMove) + ")", pfx.isPinned() && widestMove > BIG_GAP);
+        assertTrue("...and through them, every month, the struck rate is the last month's moved PASS_THROUGH of the way to the D$ the strike saw, to the bit"
+                + " (wrong in " + pushWrongStrike + " of " + PUSH_MONTHS + ")", pushWrongStrike == 0);
+        assertTrue("...the markets' rate is the struck rate times the world's price level, and so is the building materials' (wrong in "
+                + pushWrongMarkets + " and " + pushWrongBuildings + " of " + PUSH_MONTHS + ")", pushWrongMarkets == 0 && pushWrongBuildings == 0);
     }
 
     /* ================= 3. a step in the D$ reaches the goods at PASS_THROUGH a month ================= */
@@ -373,16 +406,24 @@ public class PassThroughCheck {
         assertTrue("fixture: the twins are one city before the pin: one month, one struck rate, one price index, to the bit",
                 steady.getMonth() == weak.getMonth() && Double.compare(steadyEm.getStruckRate(), weakEm.getStruckRate()) == 0
                         && Double.compare(steady.getPriceIndex().getIndex(), weak.getPriceIndex().getIndex()) == 0);
-        double base = steadyEm.getStruckRate();
+        double saved = steadyEm.getStruckRate();
         assertTrue("fixture: the D$ and the goods' D$ are apart when the pin comes (the D$ is "
-                + String.format("%.1f%%", 100 * Math.log(steady.getForeignAccounts().getRate() / base)) + " from it): pinning at the struck rate removes a real gap",
-                Math.abs(Math.log(steady.getForeignAccounts().getRate() / base)) > .01);
+                + String.format("%.1f%%", 100 * Math.log(steady.getForeignAccounts().getRate() / saved)) + " from it): pinning at the struck rate removes a real gap",
+                Math.abs(Math.log(steady.getForeignAccounts().getRate() / saved)) > APART);
+        // THE GAP MADE, NOT INHERITED, AND DEAR (see the shelf's rule below): both twins' goods' D$ set at DEAR times the saved city's, and
+        // the D$ pinned at it, the weak twin's STEP weaker. No gap is pending between the goods' D$ and the steady twin's D$.
+        double base = DEAR * saved;
+        steadyEm.setStruckRate(base);
+        weakEm.setStruckRate(base);
         steady.getForeignAccounts().pinRate(base);
         weak.getForeignAccounts().pinRate(base * STEP);
         assertTrue("fixture: both D$ are pinned, the steady one at the goods' D$ (no gap pending) and the other's 10% weaker",
                 steady.getForeignAccounts().isPinned() && weak.getForeignAccounts().isPinned()
                         && Double.compare(steady.getForeignAccounts().getRate(), base) == 0
+                        && Double.compare(steadyEm.getStruckRate(), base) == 0 && Double.compare(weakEm.getStruckRate(), base) == 0
                         && Math.abs(weak.getForeignAccounts().getRate() / steady.getForeignAccounts().getRate() - STEP) < 1e-12);
+        Retail steadyShop = steady.getSectors().retail(), weakShop = weak.getSectors().retail();
+        int costMonths = 0;
 
         double worstGoods = 0, worstMarkets = 0;
         double[] share = new double[37], goods = new double[37], component12 = new double[PriceIndex.COMPONENTS];
@@ -395,6 +436,7 @@ public class PassThroughCheck {
             worstMarkets = Math.max(worstMarkets,
                     Math.abs(Math.log(weak.getMarkets().getExchangeRate() / steady.getMarkets().getExchangeRate()) - expected));
             share[n] = Math.log(weak.getPriceIndex().getIndex() / steady.getPriceIndex().getIndex()) / Math.log(STEP);
+            if (n <= 12 && costSets(steadyShop) && costSets(weakShop)) costMonths++;
             if (n == 12) {
                 for (int c = 0; c < PriceIndex.COMPONENTS; c++) {
                     component12[c] = Math.log(weak.getPriceIndex().getComponentLevel(c) / steady.getPriceIndex().getComponentLevel(c)) / Math.log(STEP);
@@ -418,12 +460,36 @@ public class PassThroughCheck {
         // the cost of a home per person - its structure, at the construction material price (struck rate) - plus its ground
         // (EconomyManager.repriceHousingCosts(), groundPriceFor()), and the ground's price comes from LandManager, built with
         // `() -> foreign.getRate()`: US$ land at the D$ itself, so rent leads the goods (46% of the step at 12 months, measured).
-        // The shelf is cost-plus on the goods (the brief's reading, not traced), so it is what the goods' D$ bounds.
+        /*
+         * THE SHELF, TRACED. The groceries component is the shops' shelf price (Game.indexPrices(): sectors().retail().getStoreSellPrice()).
+         * Retail.endOfMonth() prices the basket at what the shops paid for it - for each good on the shelf, the kilograms in a basket times the
+         * blend of the local price (what they bought locally) and the net import price (what they imported: GoodsMarket.importPrice(), the world's
+         * price and freight times the markets' rate - the struck rate times the world's level - plus the domestic freight) - and
+         * Retail.repriceShelf() reads it so: the FLOOR is
+         * the larger of the opening price (at the expected level) and that cost times RETAIL_MARKUP; the TARGET is the clearing price (where the
+         * households' money and appetite meet what the shops can hand over: nothing in it reads a cost) held between the floor and CLEARING_CAP
+         * over it; and the shelf closes CLEAR_SPEED of the way to the target in logs a month (FLOOR_CATCH_UP of the way to the floor, under it).
+         * So the shelf is cost-plus on the goods only where the floor binds and the clearing price is not above it (Retail.isSlack(): the target
+         * is the floor); on a shelf standing between its floor and its cap, as the saved city's does, it follows the clearing price, which parts
+         * two twins by whatever parts their households and shops. Played so (the saved city's goods' D$ left where its strike put it, as this
+         * section did until FS10), the weak twin's shelf had passed 42.7% of the step at 12 months against the goods' own 28.7%, its floor
+         * 18.3%: the clearing price moved, not the cost. Nothing in the shelf reads rent, land or wages; only the goods' prices.
+         * The law is the floor's, and it is caused: twins struck and pinned at DEAR times the saved city's goods' D$, so the imported basket's
+         * cost times RETAIL_MARKUP stands over the opening price and the clearing price falls under the floor (the fixture counts both, over the
+         * twelve months, and asserts them). Withdrawn - DEAR 1 - the shelf sits at its clearing price and the cost does not set it.
+         */
+        assertTrue("fixture: the imported cost sets the shelf in both twins in each of the 12 months: the floor over the opening price and the"
+                + " clearing price not over the floor (" + costMonths + " of 12)", costMonths == 12);
         assertTrue("the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (" + String.format("%.1f%%", 100 * component12[PriceIndex.GROCERIES])
                 + " of the step)", component12[PriceIndex.GROCERIES] > 0);
         assertTrue("...and under the goods' own share at 12 months: the shelf follows the goods' D$ with a lag of its own, not ahead of it ("
                 + String.format("%.1f%% against %.1f%%", 100 * component12[PriceIndex.GROCERIES], 100 * reached(K, 12)) + ")",
                 component12[PriceIndex.GROCERIES] < reached(K, 12));
+    }
+
+    /** Whether the imported cost sets the shop's shelf this month: its cost-plus floor stands over the opening price, and the clearing price is not over the floor (so the target is the floor). */
+    static boolean costSets(Retail shop) {
+        return shop.getFloorPrice() > shop.getOpeningSellPrice() && shop.isSlack();
     }
 
     /* ================= 4. the ring settles ================= */
@@ -442,36 +508,10 @@ public class PassThroughCheck {
         double dollarWidest, goodsWidest, indexWidest, dollarEnd, goodsEnd, indexEnd, boughtLocal, boughtUsd, soldLocal, soldUsd, worstExcess;
         int widestAt, excessMonths;
         boolean purchaseMoved;
+        /** The D$'s widest gap over months 0 to FOLLOWED-1 (the gap of month 0 is none): the most the goods, a month behind it one for one, can have seen by month FOLLOWED. */
+        double dollarWidestSeen;
         /** The gaps, in logs, month by month after the purchase (index 0 is the day of it: none): the D$, the goods' D$ and the price index. */
         final double[] dollarSeries = new double[FOLLOWED + 1], goodsSeries = new double[FOLLOWED + 1], indexSeries = new double[FOLLOWED + 1];
-    }
-
-    /**
-     * BA1, 2026-11-04: whether, from the base city in its slot, a twin that buys dollars worth SWING of a year's GDP holds HELD months on no
-     * more dollars over its twin's than it bought (and some): the premise of swing()'s sell-back, played on the same twins as swing() sets
-     * them (the vault of twice THIN_COVER months of imports, the goods following the D$ at `speed`), HELD months and no further.
-     */
-    static boolean vaultHoldsNoMoreThanBought(double speed) {
-        Game calm = load(city), shock = load(city);
-        if (speed != K) {
-            calm.getEconomyManager().setPassThroughForTest(speed);
-            shock.getEconomyManager().setPassThroughForTest(speed);
-        }
-        ForeignAccounts calmFx = calm.getForeignAccounts(), shockFx = shock.getForeignAccounts();
-        double vaultBill = 2 * ForeignAccounts.THIN_COVER * calmFx.monthlyImports();
-        quietly(() -> { calm.buyForeignCurrency(vaultBill); shock.buyForeignCurrency(vaultBill); });
-        calmFx.forgetDealing();
-        shockFx.forgetDealing();
-        double bill = SWING * 12 * shockFx.getGdpTrailing();
-        double vaultBefore = shockFx.getReservesUsd();
-        quietly(() -> shock.buyForeignCurrency(bill));
-        double boughtUsd = shockFx.getReservesUsd() - vaultBefore;
-        for (int n = 1; n <= HELD; n++) {
-            month(calm);
-            month(shock);
-        }
-        double extra = shockFx.getReservesUsd() - calmFx.getReservesUsd();
-        return extra > 0 && extra <= boughtUsd;
     }
 
     /** The twins of the base city, one buying dollars worth SWING of a year's GDP and selling them back HELD months later, played FOLLOWED months, goods following the D$ at `speed`. */
@@ -482,6 +522,14 @@ public class PassThroughCheck {
             shock.getEconomyManager().setPassThroughForTest(speed);
         }
         ForeignAccounts calmFx = calm.getForeignAccounts(), shockFx = shock.getForeignAccounts();
+        // NEITHER TWIN LEANS ON THE D$. The base city is on Lean, whose defence sells dollars from the vault against a month's fall, in lumps and in
+        // proportion to what each twin's vault holds, so what the shock twin's vault holds over its twin's after a year is the dollars it bought
+        // plus or minus the difference between what the two defences sold - a figure the path sets, which this section once searched months
+        // for. On the float (FLOAT: "nothing is sold and nothing leaned on") the defence sells none and the sell-back is what it bought, by cause.
+        calm.setCurrencyRegime(ForeignAccounts.Regime.FLOAT);
+        shock.setCurrencyRegime(ForeignAccounts.Regime.FLOAT);
+        assertTrue("fixture (" + name + "): both twins are on the float regime, the defence selling nothing",
+                calmFx.getRegime() == ForeignAccounts.Regime.FLOAT && shockFx.getRegime() == ForeignAccounts.Regime.FLOAT);
         assertTrue("fixture (" + name + "): the twins are one city before the purchase: the month, the D$, the goods' D$ and the price index, to the bit",
                 calm.getMonth() == shock.getMonth() && Double.compare(calmFx.getRate(), shockFx.getRate()) == 0
                         && Double.compare(calm.getEconomyManager().getStruckRate(), shock.getEconomyManager().getStruckRate()) == 0
@@ -492,17 +540,25 @@ public class PassThroughCheck {
         // the swing's dollars would lift it past THIN_COVER and the premium on an empty vault (RISK_PREMIUM) would fall away, a
         // stronger D$ that has nothing to do with prices. Both twins first hold a vault of twice THIN_COVER months of imports,
         // bought by the treasury and forgotten by the rate (a set-up, as ExchangeRateCheck's still() does), so the cover is flat.
+        // The treasury buys no more than the cash it holds (buyForeignCurrency()), so both twins are first GIVEN the cash for the vault
+        // and for the swing's whole bill, twice over: what the city's treasury happens to hold at month 240 is the path's.
         double vaultBill = 2 * ForeignAccounts.THIN_COVER * calmFx.monthlyImports();
-        quietly(() -> { calm.buyForeignCurrency(vaultBill); shock.buyForeignCurrency(vaultBill); });
+        double swingBill = SWING * 12 * shockFx.getGdpTrailing();
+        double cash = Math.max(calm.getCash(), 2 * (vaultBill + swingBill));
+        calm.setCashForTest(cash);
+        shock.setCashForTest(cash);
+        double[] vaultSpent = new double[2];
+        quietly(() -> { vaultSpent[0] = calm.buyForeignCurrency(vaultBill); vaultSpent[1] = shock.buyForeignCurrency(vaultBill); });
         calmFx.forgetDealing();
         shockFx.forgetDealing();
         assertTrue("fixture (" + name + "): both twins hold a vault of at least THIN_COVER months of imports (cover "
                 + String.format("%.1f", calmFx.importCover()) + "), the same, and the rate has forgotten the set-up",
                 calmFx.importCover() >= ForeignAccounts.THIN_COVER && Double.compare(calmFx.getReservesUsd(), shockFx.getReservesUsd()) == 0
+                        && Math.abs(vaultSpent[0] - vaultBill) <= 1e-9 * vaultBill && Math.abs(vaultSpent[1] - vaultBill) <= 1e-9 * vaultBill
                         && calmFx.getDealtSinceReprice() == 0 && shockFx.getDealtSinceReprice() == 0);
 
         Swing s = new Swing();
-        s.boughtLocal = SWING * 12 * shockFx.getGdpTrailing();
+        s.boughtLocal = swingBill;
         double vaultBefore = shockFx.getReservesUsd();
         double[] spent = new double[1];
         quietly(() -> spent[0] = shock.buyForeignCurrency(s.boughtLocal));
@@ -511,6 +567,7 @@ public class PassThroughCheck {
                 + " of a year's GDP, the whole bill: D$" + String.format("%,.0fk for US$%,.0fk", spent[0], s.boughtUsd),
                 Math.abs(spent[0] - s.boughtLocal) <= 1e-9 * s.boughtLocal && s.boughtUsd > 0 && shockFx.getDealtSinceReprice() > 0);
 
+        double calmEarned0 = calmFx.getVaultInterestUsdLifetime(), shockEarned0 = shockFx.getVaultInterestUsdLifetime();
         for (int n = 1; n <= FOLLOWED; n++) {
             month(calm);
             month(shock);
@@ -528,18 +585,19 @@ public class PassThroughCheck {
                         + String.format("%+.2f%%", 100 * Math.log(shockFx.getRate() / calmFx.getRate())), s.purchaseMoved);
             }
             if (n == HELD) {
-                // The same dollars back: the defence sold some of the fuller vault's dollars in the year (it sells in proportion to
-                // what it holds), so the vault no longer holds all that was bought; the treasury sells back what is left of them,
-                // which is what the vault holds over its twin's.
+                // The same dollars back: neither twin's defence has sold any (the float), so the vault holds over its twin's all that was
+                // bought and what those dollars earned in the year (the interest stays in the vault, ForeignAccounts.earnVaultInterest());
+                // the treasury sells back what it holds over its twin's.
                 double extra = shockFx.getReservesUsd() - calmFx.getReservesUsd();
+                double earned = (shockFx.getVaultInterestUsdLifetime() - shockEarned0) - (calmFx.getVaultInterestUsdLifetime() - calmEarned0);
                 double want = extra * shockFx.getRate();
                 double[] sold = new double[1];
                 quietly(() -> sold[0] = shock.sellForeignCurrency(want));
                 s.soldLocal = sold[0];
                 s.soldUsd = extra;
-                assertTrue("fixture (" + name + "): " + HELD + " months on the treasury sold back the dollars it bought that the defence had not sold"
-                        + String.format(" (US$%,.0fk of US$%,.0fk), leaving the two vaults equal", extra, s.boughtUsd),
-                        extra > 0 && extra <= s.boughtUsd && Math.abs(sold[0] - want) <= 1e-9 * want
+                assertTrue("fixture (" + name + "): " + HELD + " months on the treasury sold back the dollars it bought and what they earned, the defence having sold none"
+                        + String.format(" (US$%,.0fk of US$%,.0fk bought, US$%,.1fk earned), leaving the two vaults equal", extra, s.boughtUsd, earned),
+                        extra > 0 && Math.abs(extra - s.boughtUsd - earned) <= 1e-9 * s.boughtUsd && Math.abs(sold[0] - want) <= 1e-9 * want
                                 && Math.abs(shockFx.getReservesUsd() - calmFx.getReservesUsd()) <= 1e-9 * s.boughtUsd);
             }
             double dollarGap = Math.log(shockFx.getRate() / calmFx.getRate());
@@ -549,6 +607,7 @@ public class PassThroughCheck {
             s.goodsSeries[n] = goodsGap;
             s.indexSeries[n] = indexGap;
             if (Math.abs(dollarGap) > s.dollarWidest) { s.dollarWidest = Math.abs(dollarGap); s.widestAt = n; }
+            if (n < FOLLOWED) s.dollarWidestSeen = Math.max(s.dollarWidestSeen, Math.abs(dollarGap));
             s.goodsWidest = Math.max(s.goodsWidest, Math.abs(goodsGap));
             s.indexWidest = Math.max(s.indexWidest, Math.abs(indexGap));
             // The goods' gap is a weighted sum of the D$'s gaps of the months before, the weights k(1-k)^(n-j): it cannot pass the
@@ -605,9 +664,12 @@ public class PassThroughCheck {
 
         assertTrue("at PASS_THROUGH the goods' gap never exceeds the D$'s widest gap so far times 1-(1-k)^n, in any of the "
                 + FOLLOWED + " months (over in " + slow.excessMonths + ", worst by " + String.format("%.1e", slow.worstExcess) + ")", slow.excessMonths == 0);
+        // A COMPLETE HORIZON. One for one the goods' gap of month n is the D$'s of month n-1 (the strike reads the D$ the last month left), so the goods'
+        // widest over months 1 to FOLLOWED is the D$'s widest over months 0 to FOLLOWED-1: the D$'s own widest over 1 to FOLLOWED would compare a
+        // peak on the last sample with a goods' series that has no later sample to follow it (the D$'s widest gap fell on month 120 on one path).
         assertTrue("...while one for one the goods go as far as the D$ does, a month behind it (its widest "
-                + String.format("%.2f%%", 100 * fast.goodsWidest) + " against the D$'s " + String.format("%.2f%%", 100 * fast.dollarWidest)
-                + ") and never past it", fast.excessMonths == 0 && fast.goodsWidest >= fast.dollarWidest - 1e-9);
+                + String.format("%.2f%%", 100 * fast.goodsWidest) + " against the D$'s " + String.format("%.2f%%", 100 * fast.dollarWidestSeen)
+                + ") and never past it", fast.excessMonths == 0 && Math.abs(fast.goodsWidest - fast.dollarWidestSeen) <= 1e-9);
         assertTrue("...and at PASS_THROUGH they never do (the goods' widest " + String.format("%.2f%% against the D$'s %.2f%%", 100 * slow.goodsWidest,
                 100 * slow.dollarWidest) + ")", slow.goodsWidest < slow.dollarWidest);
         // THE PREMISE IS READ OVER THE SWING'S OWN HORIZON (AN1-notes), and its history is plain. The first wording asserted the ten-year
@@ -636,7 +698,7 @@ public class PassThroughCheck {
         double saved = liveEm.getStruckRate();
         assertTrue("fixture: the live city has struck its goods (" + String.format("%.6f", saved) + ") and the D$ is apart from it ("
                 + String.format("%.6f", live.getForeignAccounts().getRate()) + ")",
-                saved > 0 && Math.abs(Math.log(live.getForeignAccounts().getRate() / saved)) > .01);
+                saved > 0 && Math.abs(Math.log(live.getForeignAccounts().getRate() / saved)) > APART);
         assertTrue("a loaded city has the struck rate of the city saved, to the bit", Double.compare(loadedEm.getStruckRate(), saved) == 0);
         assertTrue("...and the rate its markets were priced at", Double.compare(loaded.getMarkets().getExchangeRate(), live.getMarkets().getExchangeRate()) == 0);
 
@@ -680,6 +742,26 @@ public class PassThroughCheck {
     static void howOftenItMatters() {
         out.println("\n--- 6. how often it matters in a real city ---");
 
+        // THE GAP IS READ, CAUSED. A copy of the saved city has its D$ pinned MARK_OFF from the goods' D$ (the one the saved city's strike last
+        // set), and one month is played: the strike sees a D$ that far from the goods' and closes PASS_THROUGH of the gap, so what is left of
+        // it is read by the line the player is shown (Game.struckFromRate()) as more than APART. How often the real city's months stand so is
+        // printed below, a finding of its path and not a law.
+        Game marked = load(city);
+        EconomyManager mem = marked.getEconomyManager();
+        double goods = mem.getStruckRate();
+        marked.getForeignAccounts().pinRate(goods * Math.exp(MARK_OFF));
+        double dollar = marked.getForeignAccounts().getRate();
+        assertTrue("fixture: the D$ is pinned " + String.format("%.0f%%", 100 * MARK_OFF) + " from the goods' D$ (it stands "
+                + String.format("%.2f%%", 100 * Math.log(dollar / goods)) + " off it)",
+                marked.getForeignAccounts().isPinned() && Math.abs(Math.log(dollar / goods) - MARK_OFF) <= 1e-9);
+        month(marked);
+        double left = Math.abs(Math.log(mem.getStruckRate() / dollar)), movedBy = Math.abs(Math.log(mem.getStruckRate() / goods));
+        assertTrue("the mechanic fires in a real city: the goods' D$ was more than " + String.format("%.0f%%", 100 * APART)
+                + " from the D$ the strike saw, the month after a D$ pinned " + String.format("%.0f%%", 100 * MARK_OFF) + " off it (gap "
+                + String.format("%.2f%%", 100 * left) + ", the line reads " + String.format("%+.2f%%", 100 * marked.struckFromRate()) + ")",
+                left > APART && Math.abs(Math.log(1 + marked.struckFromRate())) > APART);
+        close("...and the strike moved the goods' D$ toward it by PASS_THROUGH of the gap, in logs", movedBy, K * MARK_OFF, 1e-9);
+
         double[] gap = new double[MONTHS];
         int moved = 0, over1 = 0, over5 = 0, over10 = 0;
         for (int m = 0; m < MONTHS; m++) {
@@ -692,11 +774,10 @@ public class PassThroughCheck {
         double[] sorted = gap.clone();
         Arrays.sort(sorted);
         double median = (sorted[MONTHS / 2 - 1] + sorted[MONTHS / 2]) / 2, widest = sorted[MONTHS - 1];
+        // Played, printed and not asserted: the frequency is the path's.
         out.printf("   %d months of the real city: the goods' D$ against the D$ the strike saw - median gap %.2f%%, widest %.2f%%;"
                 + " more than 1%% apart in %d months, more than 5%% in %d, more than 10%% in %d; the goods' D$ moved in %d of %d%n",
                 MONTHS, 100 * median, 100 * widest, over1, over5, over10, moved, MONTHS - 1);
-        assertTrue("the mechanic fires in a real city: the goods' D$ was more than 1% from the D$ in some month (widest "
-                + String.format("%.1f%%", 100 * widest) + ")", widest > .01);
     }
 
     /* ================= 7. the screen's reading ================= */

@@ -18,6 +18,47 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS10 (untagged) — the currency, the gold and the central bank cause their conditions — 2026-11-20, ready, see docs/queue/FS10-notes.md
+The sweep for the currency, the gold and the central bank (the FS1 study): ten harnesses now cause the premises they had read off played cities.
+GoldStandardCheck 9 asserts the dial at the cover the month's top holds still (HP1 item 1), and 7 holds its town's cover by gold bought by name.
+ExchangeRateCheck 8b's dated peg is held solvent by dollars bought by name, its shadow gap set at the eve of August 1914; 6 and 8 read the market's dials on a bare float.
+PassThroughCheck's shelf is traced to its floor, and a dear goods' D$ makes its input cost bind; the base gap is struck, not inherited.
+CentralBankCheck's towns are stood whole so their cells shop, 7 restores a year of prices, and 21's rule is shown half by half on bare objects.
+CurrencyRegimeCheck's six Observations go: pegs struck at their gaps, hot money and doubt placed, a year of prices restored; the seed searches are removed.
+ForeignCheck reads its trade in the months its cause stands; CurrencyCheck 4 and InterventionCheck 5 cause the defence's sale; InterestAbroadCheck 9 sets the hot stock.
+MonetaryCheck (MQ1) holds the D$ so a month's delay cannot move its rows, read over three calendar years with its premises hard; four harnesses leave Observation.HARNESSES.
+The twenty FS10 known reds are retired, none a model fault. The batch is harness-only: the model and the trace do not move.
+
+### 0.9.172 — GY1, the graph's GDP by the year, and debt to GDP — 2026-11-20, ready, see docs/queue/GY1-notes.md
+The graph's "GDP" line is now a rolling year of output ("GDP (yr)", nominal, the twelve months summed the way real GDP's
+year is, drawn from the end of the first year), so it reads on the same axis as the public debt; the month it used to
+draw is still there as "GDP (month)" under the real and per-capita lines. A new line, "Debt to GDP", is the public debt
+over that year of output as a per cent (205% is a debt of two years of output), the measure the debt limit reads,
+blank where there is no year of output behind the month. A pin, a preset or the header GDP tile's door that named GDP now
+draws the year. Both figures come from `YearBook` (`gdpYear`, `debtToGdp`) and are derived from the history already kept:
+no saved field, no save format change. `YearBookCheck`'s new section builds the history by hand and asserts the
+twelve-month sum, the first-year rule, and the ratio at chosen months with a year of nothing giving no figure; each
+fails with the getter swapped for the month. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
+### FS13 (untagged) — the fund, the treasury and the trading city cause their conditions — 2026-11-20, ready, see docs/queue/FS13-notes.md
+The sweep for the fund, the treasury and the trading city (the FS1 study, 6.12, with PK1's FundCheck half): seven harnesses now cause the premises they had read off played cities.
+TreasuryCheck's rollovers set the year's surplus by the tax and take the notes' due months from the pieces issued. The window is set by the share of exports on both sides of WINDOW_SHUT_SERVICE_SHARE, with no press to month 60.
+ForeignDebtCheck, RestructureCheck and BuybackCheck set the exports, the dial over the world and the auction's holders (the savers' rate, the bank's room, the sale's size). Their guard and borrowing loops are gone.
+CurveCheck sets the inflation and the expectation through their save arrays, and its one-ulp line states MoneyAudit.tolerance (row 114 retired).
+FundCheck and FundLedgerCheck build their bank at the founding and play a named 72 months, and are green at 60 and 84 too. The desk's room, the holders and the split unit are caused. Row 82 is retired: the town's sellers used up the desk's bid before the fund's ask.
+CurveCheck and FundCheck leave Observation.HARNESSES. Queued: RB3, the fund's limit ask at fair resting when a company trades under fair. The batch is harness-only: the model and the trace do not move.
+
+### FS16 (untagged) — schools, work and the households' books cause their conditions — 2026-11-20, ready, see docs/queue/FS16-notes.md
+The nine schools, work and household-books harnesses cause what they used to find by playing (the flaky-suite study's FS16
+rows), harness-only: no model class moves. EducationCheck's fourteen played sections set the licensed heads, posts and
+students directly and seed the courses (seeded, finishing); LabourCheck's staffing, rent, arrivals and doctor sections run
+on hand-fed people and markets priced by the labour market's own months, and LabourCheck leaves Observation. The ties
+and the staffing draw are seated by hand in a month, not waited 328 months for; the flatshares, the real deposit rate and
+the commute are struck on set books, rates and cars; the EI city is handed its adults, the college town its students;
+the 1900 arrivals are drawn by hand; the owners' listing is read at the month the founding causes it. LabourCheck's
+known red ("...and not the whole mix") goes green: a departures-dominated month, not a model fault. The nine run in 96 s
+where they took 267.
+
 ### 0.9.171 — MC1, a crunch no longer leaves households without a home — 2026-11-20, ready, see docs/queue/MC1-notes.md
 While the bank's leverage ratio binds and it stands in its band, the mortgage desk has no capital room for a landlord's block, so it refuses the mortgage. The landlord's owners had been asked only for the down payment, which buys nothing once the loan is refused: on CU2's SHOCK seed 13, Real Estate built one block in 70 months while up to 174 households had no home. Now, while the desk would refuse the order's mortgage for the bank's capital and for nothing else (`BusinessDebtManager.mortgageShortOfCapital`, the door asked first on its own loan, recording nothing; never for a landlord banned or past its default point), `Game.consider()` asks the owners for all the till lacks on the order (`ownersAskOnMortgage`). The shares are sold households first and the world for the rest, as before. HN1's halving then finds an order the till covers outright. The bank's books and rules are untouched. `CreditCrunchCheck` plays the ensemble's seed 13, cuts the landlords' homes at m150 to the doubling valve's last 12 households, and holds the bank halfway up its leverage band for 120 months through its restore setters. With the mend the owners put in 13,431, homes go 497 to 1,522 and nobody is left with no home. Without it homes stand at 497 for a hundred months and 5.45 households are left with no home (m252). BF1's room to the leverage target, which leaves the band no insured share at all, is queued as MC2.
 

@@ -1,6 +1,6 @@
 # BusinessServices.java - 405 lines · 16 methods · 3 constants · sectors
 
-`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/BusinessServices.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Somebody else's work, done here, paid for from outside.
 > 

@@ -1,6 +1,6 @@
 # UndemandedFeedCheck.java - 383 lines · 15 methods · 2 constants · harnesses
 
-`ham/citybuildersim/UndemandedFeedCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/UndemandedFeedCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > No feed is bought for undemanded output that cannot cover it (CPB2).
 > 
