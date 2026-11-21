@@ -1573,8 +1573,12 @@ public class KeptCheck {
     /** The months a block a redraw made new is traced in (KBP1), at the most each section: what it made and what it dropped, in words. */
     static final int BLOCKS_TRACED = 3;
 
-    /** The redraws that made a block (more than a tenth of what they drew again), and how many of them made a node again drawn unchanged, held still (KBP1). */
-    static int blocks, blocksRepeated;
+    /**
+     * The redraws that made a block (more than a tenth of what they drew again), how many of them made a node again drawn unchanged, held
+     * still (KBP1), and how many a choice's month made that did not: the month's content, readings out of its share. sectionBlocks is the
+     * section's own count, for BLOCKS_TRACED.
+     */
+    static int blocks, blocksRepeated, blockReadings, sectionBlocks;
 
     /** The words of these nodes (a Labeled's text, a Text's), sorted, the first `most` of them: what a block a month made or dropped said (KBP1). */
     static List<String> wordsOf(java.util.Collection<javafx.scene.Node> nodes, int most) {
@@ -1602,8 +1606,9 @@ public class KeptCheck {
         bench.passes();
         int again = bench.counts(page)[0];
         blocks++;
+        sectionBlocks++;
         if (again > 0) blocksRepeated++;
-        if (blocks <= BLOCKS_TRACED || again > 0) {
+        if (sectionBlocks <= BLOCKS_TRACED || again > 0) {
             System.out.printf("  %s: a month's redraw made a block, %d of the %d nodes it drew again (%d new on the page, %d gone from it); drawn again held still it made %d%s%n"
                             + "    made: %s%n    dropped: %s%n", page.name(), made, drawnAgain, madeNodes.size(), dropped.size(), again,
                     again > 0 ? " (the block repeated: a kept fault)" : " (the month's content, not the pool)", wordsOf(madeNodes, 12), wordsOf(dropped, 12));
@@ -1618,6 +1623,7 @@ public class KeptCheck {
      */
     static void pageKeptCaused(Game g, KeptBench bench, KeptBench.Page page, int n) throws Exception {
         System.out.println("\n--- " + n + ": " + page.name() + " is kept ---");
+        sectionBlocks = 0;
         int[] first = fx(() -> {
             bench.home(page);
             bench.drawKept(page);
@@ -1730,9 +1736,11 @@ public class KeptCheck {
     /**
      * Section n (FS4's law, every section's since FS5): every choice made in turn, the redraw after it and the one after a month lands each
      * equal to a page built new, a difference looked at again held still (againstNewHeld, KRT1), and the month's redraw handing back
-     * HANDED_BACK of the nodes it draws again (what the choice or the month added or took away is the page's own change); a month's redraw
-     * under the share is looked at again held still (blockHeldStill, KBP1). A fold opened has to add to the page (the premise: the fold is
-     * on it).
+     * HANDED_BACK of the nodes it draws again (what the choice or the month added or took away is the page's own change). A month's redraw
+     * under the share is looked at again held still (blockHeldStill, KBP1), as KRT1 looks at a difference: a block that repeats is a kept
+     * fault and fails; one that does not is the month's content (FS5's run: 71's Government Overview made 46 of 399, the deficit's lines
+     * "Advanced by the central bank" in and "Raised by issuing paper" out), a reading printed, counted and left out of the share, which
+     * judges one month here where pageKeptCaused sums twenty-five. A fold opened has to add to the page (the premise: the fold is on it).
      */
     static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices) throws Exception {
         pageReshapedCaused(g, bench, page, n, choices, false);
@@ -1741,6 +1749,7 @@ public class KeptCheck {
     /** ...and, with `pixels`, each redraw's picture against the page built new's as well (KP7: the Rankings table is painted, and no signature holds it). */
     static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, boolean pixels) throws Exception {
         System.out.println("\n--- " + n + ": what reshapes " + page.name() + (pixels ? ", to the pixel" : "") + " ---");
+        sectionBlocks = 0;
         int size = fx(() -> {
             bench.home(page);
             bench.drawKept(page);
@@ -1754,7 +1763,7 @@ public class KeptCheck {
         for (Choice c : choices) {
             Object[] r = fx(() -> {
                 String premise = c.hand().on(bench);
-                if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, 1.0, 0, 0, false};
+                if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, 1.0, 0, 0, false, false};
                 bench.drawKept(page);
                 int[] chosen = bench.counts(page);
                 String a = againstNewHeld(bench, page, pixels);
@@ -1765,9 +1774,9 @@ public class KeptCheck {
                 int[] counts = bench.counts(page);
                 long drawnAgain = Math.max(1, Math.min(chosen[0] + (long) chosen[1], counts[0] + (long) counts[1]));
                 double handedBack = counts[1] / (double) drawnAgain;
-                boolean block = !c.acts() && handedBack < HANDED_BACK && blockHeldStill(bench, page, nodesBefore, counts[0], drawnAgain);
+                boolean block = !c.acts() && handedBack < HANDED_BACK, again = block && blockHeldStill(bench, page, nodesBefore, counts[0], drawnAgain);
                 String b = againstNewHeld(bench, page, pixels);
-                return new Object[]{a != null ? a : b, grown, handedBack, counts[0], counts[1], block};
+                return new Object[]{a != null ? a : b, grown, handedBack, counts[0], counts[1], again, block && !again};
             });
             String d = (String) r[0];
             if (d != null) System.out.println("  " + c.name() + ": " + d);
@@ -1779,6 +1788,10 @@ public class KeptCheck {
             if ((boolean) r[5]) repeated++;
             if (c.acts()) {
                 System.out.printf("  %s: the month after handed back %.1f%% of the page's nodes (the model acted: not counted below)%n", c.name(), (double) r[2] * 100);
+            } else if ((boolean) r[6]) {
+                blockReadings++;
+                System.out.printf("  %s: the month after handed back %.1f%% of the nodes it drew again, a block of the month's content (a reading: not counted below)%n",
+                        c.name(), (double) r[2] * 100);
             } else if ((double) r[2] < worst) {
                 worst = (double) r[2];
                 worstAt = c.name();
@@ -1786,7 +1799,8 @@ public class KeptCheck {
                 worstKept = (int) r[4];
             }
         }
-        System.out.printf("  the month's redraw after a choice handed back %.1f%% of the nodes it drew again at the fewest (after \"%s\": %d made, %d handed back)%n",
+        if (worst == Double.MAX_VALUE) System.out.println("  no choice's month was counted (each acted, or made a block of the month's content)");
+        else System.out.printf("  the month's redraw after a choice handed back %.1f%% of the nodes it drew again at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
         check("a month's redraw after each choice hands back nine in ten of the nodes it draws again, or more", worst >= HANDED_BACK);
         check("...and no block a month made new after a choice repeats drawn again held still (KBP1: " + repeated + " did)", repeated == 0);
@@ -4441,6 +4455,12 @@ public class KeptCheck {
     /** The months a lot the let-go month settled is watched through in 63: its page and its two reviews, a month landing after each. */
     static final int SETTLED_WATCH = 3;
 
+    /**
+     * The most months 63's let-go hand plays, ordering a bond and a share the fund does not hold each month, until one of them settles (KFP1):
+     * a hand bid rests on the book until a seller comes (BondCheck's fixture), and on FS5's first run one month's bid settled none.
+     */
+    static final int SETTLE_MONTHS = 6;
+
     /** What 61 pays into a fund that holds nothing, in the city's smallest bond issues: a fund with something to buy whatever the treasury holds (FS5). */
     static final int FUND_PAY_IN_ISSUES = 200;
 
@@ -4706,7 +4726,7 @@ public class KeptCheck {
         // while its page was watched): the rule let go for one month, on Portfolio with every row that folds open, so that its buys settle
         // holdings the fund did not hold; then held again, and the months after it counted - Portfolio with the rows it settled, a settled
         // lot's page, and its ticket at its buy and sell review.
-        List<String> letGoFrom = new ArrayList<>(), settled = new ArrayList<>();
+        List<String> letGoFrom = new ArrayList<>(), settled = new ArrayList<>(), handOrdered = new ArrayList<>();
         String[] watched = {null};
         int[] watchedLeft = {0};
         List<Choice> settles = new ArrayList<>();
@@ -4714,27 +4734,38 @@ public class KeptCheck {
             letGoFrom.clear();
             letGoFrom.addAll(b.fundHoldings());
             fundRule(g, true);
-            // FS5 (KFP1): the month's settlement caused - a lot the fund does not hold, bought through the model as the ticket's button buys, in
-            // the month the rule is let go: the bond in its reach that runs the longest past the watch (a share when none does), so a holding the
-            // fund did not hold settles whatever the rule finds to buy (on AP1's city it settled none, and the watch had no lot).
-            String free = null;
-            int most = SETTLED_WATCH + 1;
-            for (String key : b.fundSecurities()) {
-                if (!key.startsWith("B:") || key.contains(":rescue") || letGoFrom.contains(key)) continue;
-                CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
-                int left = cb == null ? 0 : cb.remainingMonths(g.getMonth());
-                if (left > most) {
-                    most = left;
-                    free = key;
+            // FS5 (KFP1): the settlement caused - lots the fund does not hold, bought through the model as the ticket's button buys, while the rule
+            // is let go: the bond in its reach that runs the longest past the watch and a share it does not hold, ordered again each month until one
+            // settles, SETTLE_MONTHS at the most (on AP1's city the rule's own buys settled none; on FS5's first run one month's bid settled none).
+            String bondOrdered = null, shareOrdered = null;
+            int months = 0;
+            while (months < SETTLE_MONTHS) {
+                bondOrdered = null;
+                int most = SETTLED_WATCH + 1;
+                for (String key : b.fundSecurities()) {
+                    if (!key.startsWith("B:") || key.contains(":rescue") || letGoFrom.contains(key)) continue;
+                    CorporateBond cb = g.getBondMarket().bond(Integer.parseInt(key.substring(2)));
+                    int left = cb == null ? 0 : cb.remainingMonths(g.getMonth());
+                    if (left > most) {
+                        most = left;
+                        bondOrdered = key;
+                    }
                 }
+                shareOrdered = lotOf(b.fundSecurities(), "S:", letGoFrom, false);
+                if (bondOrdered == null && shareOrdered == null) return "the fund's reach has no lot it does not hold";
+                if (bondOrdered != null) g.fundBuyBond(Integer.parseInt(bondOrdered.substring(2)), g.fundCashFree() / 10, 0);
+                if (shareOrdered != null) g.fundBuyShares(FundView.companyOf(shareOrdered), g.fundCashFree() / 10, 0);
+                for (String k : new String[]{bondOrdered, shareOrdered}) if (k != null && !handOrdered.contains(k)) handOrdered.add(k);
+                month(g);
+                months++;
+                List<String> now = new ArrayList<>(b.fundHoldings());
+                now.removeAll(letGoFrom);
+                if (!now.isEmpty()) break;
             }
-            if (free != null) {
-                g.fundBuyBond(Integer.parseInt(free.substring(2)), g.fundCashFree() / 10, 0);
-            } else {
-                String notHeld = lotOf(b.fundSecurities(), "S:", letGoFrom, false);
-                if (notHeld == null) return "the fund's reach has no lot it does not hold";
-                g.fundBuyShares(FundView.companyOf(notHeld), g.fundCashFree() / 10, 0);
-            }
+            List<String> came = new ArrayList<>(b.fundHoldings());
+            came.removeAll(letGoFrom);
+            System.out.println("  the rule let go, " + bondOrdered + " and " + shareOrdered + " ordered each month: " + months + " months played, "
+                    + (came.isEmpty() ? "nothing settled" : came.size() + " lots it did not hold settled " + (came.size() > 4 ? came.subList(0, 4) + "..." : came)));
             b.fundPage("Portfolio");
             b.fundUnfold();
             return null;
@@ -4779,6 +4810,8 @@ public class KeptCheck {
         List<String> other = new ArrayList<>(lotsLast);
         other.removeAll(lotsAfter);
         other.removeAll(settled);
+        // (The hand's own orders are good for a month on the book, and may fill after the rule is held again: the rule's are what is held.)
+        other.removeAll(handOrdered);
         check("fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it ("
                 + settled.size() + " settled)", !settled.isEmpty());
         // (Its page and its two reviews: choice i is drawn and then a month lands, so the lot is held through the month after the third.)
@@ -9616,7 +9649,11 @@ public class KeptCheck {
                 govDiffer == 0, govFirst);
     }
 
-    /** A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). */
+    /**
+     * A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the
+     * render targets the software renderer keeps on it (FS5, GB5's star 5: the box's Monocle draws in software, where a canvas's pixels are
+     * int[] on the heap, 1,554-1,719 MiB live there against the PC's 1,379 with the same objects; Direct3D keeps them in video memory).
+     */
     static final double KEPT_HEAP_SHARE = .75;
 
     /** Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
@@ -9690,8 +9727,17 @@ public class KeptCheck {
         check("the repaint counter does not keep a retired picture alive", retired.get() == null);
         check("a no-stage chrome scene releases the fresh header after restore", chrome.get() == null);
         long used = java.lang.management.ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
-        System.out.printf("  KeptCheck live heap after release: %.1f MiB of %d MiB%n", used / 1048576.0, AllChecks.HEAP_MB);
-        check("the full kept check leaves a quarter of AllChecks.HEAP_MB free", used < AllChecks.HEAP_MB * 1048576L * KEPT_HEAP_SHARE);
+        // FS5 (GB5's star 5): what the kept pages hold, on either renderer - the live heap less the canvases' render targets where the renderer
+        // keeps them on it (software: the box), weighed on the canvases the kept screens hold (KeptBench.canvasTargets()).
+        long[] targets = fx(bench::canvasTargets);
+        String renderer = fx(KeptBench::renderer);
+        long onHeap = Math.max(0, targets[3]);
+        System.out.printf("  KeptCheck live heap after release: %.1f MiB of %d MiB; the renderer %s; %d canvases held, %d with a render target, %d of them on the heap, %.1f MiB;"
+                + " the objects %.1f MiB%n", used / 1048576.0, AllChecks.HEAP_MB, renderer, targets[0], targets[1], targets[2], onHeap / 1048576.0, (used - onHeap) / 1048576.0);
+        check("fixture: the canvases the kept screens hold are found and their render targets read (" + targets[0] + " found, " + targets[1] + " with a target)",
+                targets[1] > 0);
+        check("the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it)",
+                used - onHeap < AllChecks.HEAP_MB * 1048576L * KEPT_HEAP_SHARE);
     }
 
     public static void main(String[] args) throws Exception {
@@ -9900,6 +9946,8 @@ public class KeptCheck {
         fb2Repairs(g, bench);
 
         System.out.println("\nKRT1, held still: " + heldReadings + " differences only of place or size did not repeat with the model and the clock held still (each printed above, none failed)");
+        System.out.println("KBP1, held still: " + blocks + " month's redraws made a block; " + blocksRepeated + " repeated drawn again with the clock held (each failed above), "
+                + blockReadings + " after a choice did not and were the month's content (readings, out of the share)");
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
         System.exit(fails);

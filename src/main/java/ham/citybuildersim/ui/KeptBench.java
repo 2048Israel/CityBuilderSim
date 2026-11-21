@@ -1623,6 +1623,106 @@ public final class KeptBench {
         for (Scene s : scenes) s.getRoot().snapshot(tinyView, tiny);
     }
 
+    /**
+     * FS5 (102, GB5's star 5): the render targets of the canvases the kept screens hold, as the renderer keeps them. {canvases found, canvases
+     * holding a render target, of them on the Java heap, bytes on the heap}. Direct3D and ES2 keep a canvas's target in video memory; Prism's
+     * software renderer (the gate box's Monocle) keeps its pixels on the heap, int[] at the render scale (GB5: forty 800x450 canvases held
+     * 241 MiB there and none on Direct3D). The canvases are found by walking what the window, its scenes and every interface object they
+     * reach hold - nodes, their graphics, contents, clips and properties, the interface's own fields and statics, and the lists, maps and
+     * arrays among them - and each one's target is read on its peer (NGCanvas's render buffers), so that 102 can weigh the objects the kept
+     * pages hold, not where a renderer puts their pixels.
+     */
+    public long[] canvasTargets() {
+        java.util.Set<Object> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        java.util.Set<Class<?>> classes = new java.util.HashSet<>();
+        java.util.ArrayDeque<Object> todo = new java.util.ArrayDeque<>();
+        java.util.function.Consumer<Object> push = o -> { if (o != null) todo.push(o); };
+        push.accept(ui);
+        for (Scene sc : new Scene[]{scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene}) if (sc != null) push.accept(sc.getRoot());
+        List<javafx.scene.canvas.Canvas> canvases = new ArrayList<>();
+        while (!todo.isEmpty()) {
+            Object o = todo.pop();
+            if (!seen.add(o)) continue;
+            if (o instanceof javafx.scene.canvas.Canvas c) canvases.add(c);
+            if (o instanceof Node n) {
+                if (n instanceof javafx.scene.Parent pa) for (Node k : pa.getChildrenUnmodifiable()) push.accept(k);
+                if (n instanceof Labeled l) push.accept(l.getGraphic());
+                if (n instanceof ScrollPane sp) push.accept(sp.getContent());
+                push.accept(n.getClip());
+                if (n.hasProperties()) for (Object v : n.getProperties().values()) push.accept(v);
+            }
+            if (o instanceof java.util.Collection<?> c) { for (Object v : c) push.accept(v); continue; }
+            if (o instanceof java.util.Map<?, ?> m) { for (java.util.Map.Entry<?, ?> e : m.entrySet()) { push.accept(e.getKey()); push.accept(e.getValue()); } continue; }
+            if (o instanceof Object[] a) { for (Object v : a) push.accept(v); continue; }
+            for (Class<?> k = o.getClass(); k != null && k.getName().startsWith("ham.citybuildersim.ui."); k = k.getSuperclass()) {
+                boolean first = classes.add(k);
+                for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                    if (f.getType().isPrimitive()) continue;
+                    boolean isStatic = java.lang.reflect.Modifier.isStatic(f.getModifiers());
+                    if (isStatic && !first) continue;
+                    try {
+                        f.setAccessible(true);
+                        push.accept(f.get(isStatic ? null : o));
+                    } catch (ReflectiveOperationException | RuntimeException skip) {
+                        // a field the walk may not read (a hidden class's): what it holds is not counted
+                    }
+                }
+            }
+        }
+        long holding = 0, onHeap = 0, bytes = 0;
+        try {
+            java.lang.reflect.Field peerField = Node.class.getDeclaredField("peer");
+            peerField.setAccessible(true);
+            Class<?> texture = Class.forName("com.sun.prism.Texture");
+            java.lang.reflect.Method w = texture.getMethod("getPhysicalWidth"), h = texture.getMethod("getPhysicalHeight");
+            for (javafx.scene.canvas.Canvas c : canvases) {
+                Object peer = peerField.get(c);
+                if (peer == null) continue;
+                boolean any = false, heap = false;
+                for (Class<?> k = peer.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+                    for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                        if (f.getType().isPrimitive() || java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                        f.setAccessible(true);
+                        Object buf = f.get(peer);
+                        if (buf == null) continue;
+                        List<Object> targets = new ArrayList<>();
+                        if (texture.isInstance(buf)) targets.add(buf);
+                        else if (buf.getClass().getName().startsWith("com.sun.javafx.sg.prism.NGCanvas$")) {
+                            for (java.lang.reflect.Field g : buf.getClass().getDeclaredFields()) {
+                                if (g.getType().isPrimitive() || java.lang.reflect.Modifier.isStatic(g.getModifiers())) continue;
+                                g.setAccessible(true);
+                                Object t = g.get(buf);
+                                if (texture.isInstance(t)) targets.add(t);
+                            }
+                        }
+                        for (Object t : targets) {
+                            any = true;
+                            if (t.getClass().getName().startsWith("com.sun.prism.sw.")) {
+                                heap = true;
+                                bytes += 4L * ((Number) w.invoke(t)).longValue() * ((Number) h.invoke(t)).longValue();
+                            }
+                        }
+                    }
+                }
+                if (any) holding++;
+                if (heap) onHeap++;
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return new long[]{canvases.size(), -1, -1, -1};
+        }
+        return new long[]{canvases.size(), holding, onHeap, bytes};
+    }
+
+    /** The renderer Prism draws with (its pipeline's class: SWPipeline in software, D3DPipeline on Direct3D, ES2Pipeline), or why it could not be asked. */
+    public static String renderer() {
+        try {
+            Object p = Class.forName("com.sun.prism.GraphicsPipeline").getMethod("getPipeline").invoke(null);
+            return p == null ? "none" : p.getClass().getSimpleName();
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return "not asked (" + e.getClass().getSimpleName() + ")";
+        }
+    }
+
     /** Every box (Pane) under a node and the children it holds now. */
     private static void boxesOf(Node n, java.util.Map<Pane, List<Node>> out) {
         if (n instanceof Pane p) out.put(p, new ArrayList<>(p.getChildren()));
