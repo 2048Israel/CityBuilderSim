@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
 The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
