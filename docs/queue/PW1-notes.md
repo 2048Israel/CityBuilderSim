@@ -256,3 +256,5 @@ known-reds for HealthCheck and KeptCheck dropped (HX1 and KL1 shipped).
   format-58 power-short town, stock templates only (a fixture's template draws are not in a save: the first
   attempt, section 3's short town, loaded unshort), and asserts both; on the old line its book read 1.
 - Not before the gate: `LicenceFees.powerDelivered()` still the flat rule, PW1-L beside PW1-W.
+- REV-PW1c-2: SHIP, all four closed; its P2, a recipe's surplus generation credited at the industry price where PW1 pays the works
+  price (`Recipes.value()`), is PW1-G, not before the gate.
