@@ -279,8 +279,9 @@ public class WantedPostsCheck {
         BusinessInvestment bi = g.getBusinessInvestment();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         double prime = credit.getPrimeRate() + credit.getRecordSurcharge(owner.key());
+        // ...a first plant weighed staffed, as the hold weighs it (OE1; Sector.staffed()),
         // ...on the cost grown over its wait, as Game.noteStaffingHold() asks it (BA1; 1 with no wait read, noWait()).
-        return bi.estimatedMonthlyProfit(owner.key(), t) - bi.interestHurdle(bi.getCostOf(t, 1) * bi.carryOf(t, 1, prime), prime);
+        return owner.staffed(() -> bi.estimatedMonthlyProfit(owner.key(), t)) - bi.interestHurdle(bi.getCostOf(t, 1) * bi.carryOf(t, 1, prime), prime);
     }
 
     /** The prime rate at which the interest hurdle on a building's cost is {@code hurdle}, found with the model's own hurdle. */
@@ -580,7 +581,7 @@ public class WantedPostsCheck {
         BuildingsTemplate mw5 = template(g5, MACHINE_WORKS);
         BusinessDebtManager credit5 = g5.getEconomyManager().getBusinessDebtManager();
         BusinessInvestment bi5 = g5.getBusinessInvestment();
-        double earns5 = bi5.estimatedMonthlyProfit(man5.key(), mw5);
+        double earns5 = man5.staffed(() -> bi5.estimatedMonthlyProfit(man5.key(), mw5));   // as the hold weighs it (OE1)
         double[] rates5 = g5.getEconomyManager().getWageRates();
         double shortBill = postsIn(mw5, WageBand.COLLEGE) * rates5[JobType.COLLEGE_ENGINEERING.ordinal()]
                 + postsIn(mw5, WageBand.UNIVERSITY) * rates5[JobType.UNIV_SCIENCE.ordinal()];

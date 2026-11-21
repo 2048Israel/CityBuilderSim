@@ -253,7 +253,7 @@ public abstract class ExtractionSector extends Sector {
         // The maker's estimate itself (not Sector's, which would weigh the legs a second time): its freight below.
         if (t == null) return super.estimatedMonthlyProfit(u, plans);
         double maker = plans.estimatedMakerProfit(this, u);
-        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        double rate = plannedRate(u);
         return maker - SpreadPlanner.ownCosts(u, rate, exchangeFactor(), pricePerWatt) - freightRunning(u, rate);
     }
 

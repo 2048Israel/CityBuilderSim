@@ -1541,6 +1541,21 @@ public class FamilyModel implements HouseholdBalance.Census {
     }
 
     /**
+     * What the packing's own arithmetic may leave of households it placed
+     * exactly, at a size of `households` (OE1): MoneyAudit's rule in
+     * households for dollars, RELATIVE_TOLERANCE of the size and never under
+     * ULP_STEPS of a double's steps at it. A city that migration parks on its
+     * doors sums its households to the door count and a few steps over, and
+     * the match booked the steps as households with nowhere: a doubled-up
+     * 7.1e-15 that kept one twin's landlords from selling and not the
+     * other's (DenominationCheck; HousingCheck, the dust of an exact packing).
+     */
+    static double packingRounding(double households) {
+        double size = Math.abs(households);
+        return Math.max(MoneyAudit.ULP_STEPS * Math.ulp(size), MoneyAudit.RELATIVE_TOLERANCE * size);
+    }
+
+    /**
      * The match itself: house() when it records, and the room the placement
      * has left when it does not (roomLeft(), 0.7.17) - one loop, so the two
      * cannot come to disagree about who fits where.
@@ -1552,7 +1567,8 @@ public class FamilyModel implements HouseholdBalance.Census {
      *         were the matrix's, then the seekers' (as doors count them)
      */
     private double[] match(long[] homesBySize, double[] free, boolean record) {
-        for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
+        double doors = 0;
+        for (int s = 1; s < homesBySize.length; s++) { free[s] = homesBySize[s]; doors += homesBySize[s]; }
         int widest = homesBySize.length - 1;
 
         // Largest households first.
@@ -1627,6 +1643,12 @@ public class FamilyModel implements HouseholdBalance.Census {
                 crowdedHouseholds += take;
                 bill(s, take);
             }
+
+            // ...and what the takes leave of a pass the doors held whole is their rounding, not a household (OE1): under
+            // packingRounding() at the doors' size or the pass's it is nobody, so nobody doubles up for it and no landlord
+            // is kept from selling by it (getDoubledUpHouseholds(), RealEstate.mayRetire(); DenominationCheck's twins
+            // parted on 7.1e-15 of one).
+            if (need <= packingRounding(Math.max(asked, doors))) need = 0;
 
             if (need > 0 && !record) {
                 unplaced += need;
@@ -1827,6 +1849,8 @@ public class FamilyModel implements HouseholdBalance.Census {
             seekersStill += seekersUnhoused[g];
         }
         left = Math.max(0, left - seekersLeft);
+        // ...the seekers' part of the same passes taken off their whole: their rounding is no family (OE1).
+        if (left <= packingRounding(left + seekersLeft)) left = 0;
 
         if (left <= 0) { stillUnplaced = seekersStill; return; }
 

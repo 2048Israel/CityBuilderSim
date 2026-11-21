@@ -784,6 +784,7 @@ public class HousingCheck {
         heldRateRentsItsGlutAtNoLift();
         aClosedHomesDebtIsTheLandlordsLoss();
         homesKeepHeadroomOverDemand();
+        anExactPackingLeavesNobody();
 
         System.out.println(fails == 0
                 ? "\nEvery door, every household and every dollar of rent is accounted for."
@@ -1051,6 +1052,38 @@ public class HousingCheck {
     }
 
     /** assertTrue, said as an equality within TOLERANCE, so a figure that is right prints its line. */
+    /*
+     * AN EXACT PACKING LEAVES NOBODY (OE1, 2026-11-20). A city that migration
+     * parks on its doors sums its households to the door count and a few of a
+     * double's steps over, and the match booked the steps as households with
+     * nowhere: on OE1's path DenominationCheck's twins read 0.0 and 7.1e-15
+     * doubled up before a month, and RealEstate.mayRetire() let only the first
+     * twin's landlords sell. The cause here is that mix by hand: 301.6 adults
+     * and 0.8 out of work, whose households the model sums to 227 and three
+     * steps over, matched on the load path (house(), then noteUnplaced(), as
+     * Game's reload runs it) against 227 doors that fit any of them.
+     */
+    static void anExactPackingLeavesNobody() {
+        System.out.println("\n--- an exact packing leaves nobody doubled up ---");
+        PopulationCohorts c = new PopulationCohorts();
+        double[] pyramid = new double[AgeBand.values().length + 3];
+        pyramid[AgeBand.ADULT.ordinal()] = 301.6;
+        c.restore(PopulationCohorts.saveBands(), pyramid);
+        double[] jobs = new double[PayTier.values().length];
+        jobs[0] = 301.6 * .8;
+        FamilyModel f = new FamilyModel();
+        f.rebuild(c, jobs, 0);
+        f.setSeekers(.8, 0);
+        double households = f.householdsSeekingDoors();
+        long[] doors = new long[7];
+        doors[6] = Math.round(households);
+        assertTrue(String.format("fixture: the households sum to the %d doors and a step of a double over (%s), within the packing's rounding", doors[6], Double.toString(households)),
+                households > doors[6] && households - doors[6] <= FamilyModel.packingRounding(households));
+        f.noteUnplaced(f.house(doors));
+        assertTrue("...and the match places them all: nobody doubled up (" + f.getDoubledUpHouseholds() + ") and nobody without a door (" + f.getStillUnplaced() + ")",
+                f.getDoubledUpHouseholds() == 0 && f.getStillUnplaced() == 0);
+    }
+
     static void isNear(String label, double actual, double expected) {
         assertTrue(label, Math.abs(actual - expected) <= TOLERANCE);
     }

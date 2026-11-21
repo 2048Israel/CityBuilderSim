@@ -18,6 +18,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS4 (untagged) — KeptCheck I causes what its pages read — 2026-11-20, ready, see docs/queue/FS4-notes.md
+KeptCheck's sections below 55 (the city, the chrome, People, History and the KP2-KP4 pages) cause what they read on its scratch city, not what Danzik's months happen to hold.
+Each page's kept rule is the identity, its share taken against what each redraw draws again, at HANDED_BACK: a page that grows or shrinks loses nothing it did not draw.
+KRT1 traced held still: a difference only of place or size is drawn again twice with the model and the clock held; repeated it fails as a kept fault, gone it is a reading (none arose).
+The hovers of 35, 46 and 54 are checks, and 35 records a decision so History has its row; 11's panels show a building's opening and a notice, caused.
+44's covered run is found by halves inside the decade; 51's swing is sized again each month, and a business page waits on its own figure.
+KT1: the timed sections (5, 10, 13, 20, 24, 28, 32, 39, 43, 52, 68, 81, 90) move whole to KeptTimingCheck, in Timing.HARNESSES, budgets and labels as they were, each page drawn first as KeptCheck drew it.
+KeptCheck is correctness alone. The eight FS4 known reds retire, none a kept fault; 89's premise, moved with the city, is FS5's, whose range it is.
+The batch is harness-only: the model, the screens and the trace do not move.
+
+### 0.9.174 — OE1, a first plant weighed at the rate it will run at — 2026-11-20, ready, see docs/queue/OE1-notes.md
+An order for a sector with nothing running weighed its first plant at the empty sector's rate, its staffing at 1:
+BankCheck 19's Lime Kiln at 0.97, which ran at 0.52-0.61, and AUTO2's Fabrication Shop at 0.81 (0.51-0.81).
+`Sector.plannedRate()` now weighs it at the rate the month will give it (`firstPlantRate()`): the city's fill over its
+own posts, the roads for its own traffic, its freight at Haulage's opening share. A running sector weighs its own rate,
+as before; every reader of the estimate takes it, and YoungBankCheck section 3 fails on the old one. The young town's
+spell under the bank's minimum, begun by a lone plant's write-off, is gone. A staffing hold weighs a first plant
+staffed (`Sector.staffed()`), so it still asks for the wage that would staff it. The household match no longer books
+its own rounding as households doubled up (`FamilyModel.packingRounding()`; HousingCheck), which had let one of
+DenominationCheck's twins' landlords sell and not the other's. BuildAdvice's field earnings stay on the mines' own
+rate (OE1-A). A car drawn is a car paid for: the take reads each household's want at the price the draw was
+sized at (`HouseholdBalance.takeCars()`), where a household on the whole-car edge had had a car drawn, booked to
+its seller and never placed (the ensemble's F1, AUTO2 seed 6 m655; CarCheck).
+
 ### FS14 (untagged) — the Exchange and the bond desk cause their conditions — 2026-11-20, ready, see docs/queue/FS14-notes.md
 The sweep of the Exchange and the bond desk (FS1 study 6.13): FloatLink, Desk, Call, Holders, Bond, Equity, Exchange and ShortSelling (each
 ...Check) now cause the premises they used to read off a played city. The households' savings, the bank's room, the tills, the dials and the

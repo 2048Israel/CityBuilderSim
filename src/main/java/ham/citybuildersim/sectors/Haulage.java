@@ -1212,6 +1212,9 @@ public final class Haulage {
     /** The share of the growth over the standing demand that the room left at the last haul served; 1 when the trucks sufficed. */
     public double getNewestShare() { return newestShare; }
 
+    /** What the fleet would serve the legs of a works just opened (OE1; Sector.firstPlantFreight()): the newest demand's share, with the teams', which carry theirs whole, as shareOf() reads it for a sector dealt none. */
+    public double openingShare() { return withTeams(newestShare); }
+
     /** The share of the standing demand, what the sectors were carried the month before, that the fleet covered at the last haul; 1 when all of it. */
     public double getStandingShare() { return standingShare; }
 
