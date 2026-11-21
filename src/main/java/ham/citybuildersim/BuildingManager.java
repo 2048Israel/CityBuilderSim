@@ -6563,6 +6563,43 @@ public class BuildingManager {
         return wait == Double.MAX_VALUE ? Double.NaN : priorityWait(wait, siteOutput);
     }
 
+    /**
+     * What siteUnitMonths() reads that can be read cheaply, as values a later stamp equals only if none of it has moved
+     * (AP1: WorksValue holds the site's completion schedule while the stamp holds): each stack on site, its buildings,
+     * progress, points and whose order it is; the player's hand (the order, the rushes and their months, the cancels,
+     * the demolitions, the pavings); the builders-first switch, the dead waiting and the priority work. The output on
+     * site is the caller's argument, and the caller stamps it. What it cannot read cheaply, the builders' staffing
+     * behind goesFirst(), moves inside one pass only through what is on site, which it holds.
+     */
+    java.util.List<Object> siteStamp() {
+        java.util.List<Object> s = new java.util.ArrayList<>();
+        for (BuildingsStacks st : stacks) {
+            if (st.getUnderConstruction() <= 0) continue;
+            s.add(st.getBuilding());
+            s.add(st.getUnderConstruction());
+            s.add(st.getConstructionProgress());
+            s.add(st.pointsOnSite());
+            s.add(st.isCitysOwn());
+        }
+        s.add(control.isPrioritySet());
+        s.add(new java.util.ArrayList<>(control.savedOrder()));
+        for (ConstructionControl.Rush r : control.rushes()) {
+            s.add(r.key);
+            s.add(r.on);
+            s.add(r.months);
+        }
+        s.add(new java.util.ArrayList<>(control.cancelling()));
+        for (ConstructionControl.Demolition d : control.demolitions()) {
+            s.add(d.key());
+            s.add(d.owed());
+        }
+        s.add(control.paving());
+        s.add(buildersFirstOn);
+        s.add(unburiedNow());
+        s.add(priorityPoints());
+        return s;
+    }
+
     /** Completion of currently pending units after one additional city order, with its full preparation points. */
     public double siteUnitMonthsAfter(BuildingsTemplate t, long units, double siteOutput,
                                       BuildingsTemplate additional, long quantity, double additionalPoints) {
