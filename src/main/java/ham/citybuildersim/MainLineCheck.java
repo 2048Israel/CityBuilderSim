@@ -122,9 +122,11 @@ import java.util.Set;
  *
  * 17. THE STATION'S YARD LAID SHORT IS LAID AGAIN LONGER (batch TN1, 2026-11-21,
  *      Jerus: "trains no longer show up"): a station's yard laid short of
- *      YARD_LONG by water in the cells is kept while the water stands, is not
- *      weighed again within YARD_REWEIGH_MONTHS, and is laid YARD_LONG along its
- *      line once the ground allows, keeping its ask, and then stays; a station
+ *      YARD_LONG by water in the cells is kept while the water stands, is
+ *      weighed only in January (a multiple of YARD_REWEIGH_MONTHS), and the next
+ *      January after the ground allows is laid YARD_LONG along its line - the
+ *      railway laid for it though nothing it is stamped by moved - keeping its
+ *      ask, and then stays; a station
  *      laid at its footprint, which holds no train, on a main line that runs
  *      off the quarter line (salt water on it) is laid again YARD_LONG along
  *      that stretch, the track its whole length, where the trains' way reaches it.
@@ -1771,22 +1773,24 @@ public class MainLineCheck {
         System.out.printf("  with water in the cells: the station's box %s%n", laid == null ? "none" : Arrays.toString(laid));
         check("fixture: with water 28 plots into every cell the station's yard is laid, short of YARD_LONG", laid != null && alongOf(laid) < CityRuns.YARD_LONG);
         if (laid == null) return;
-        r.setMonth(1);
+        int jan = CityRuns.YARD_REWEIGH_MONTHS;
+        r.setMonth(jan);
         layYards(r, within, sizes, 1);
-        check("weighed the next month on the same ground, it stays where it is: the same box (no longer box fits)", r.yards().size() == 1 && r.yards().get(0) == laid);
-        r.setMonth(1 + CityRuns.YARD_REWEIGH_MONTHS - 1);
-        layYards(r, g, sizes, 2);
-        check("the water gone, less than YARD_REWEIGH_MONTHS (" + CityRuns.YARD_REWEIGH_MONTHS + ") after it was weighed, it is not weighed again: the same box",
+        check("weighed in January (month " + jan + ", a multiple of YARD_REWEIGH_MONTHS) on the same ground, it stays where it is: the same box (no longer box fits)",
                 r.yards().size() == 1 && r.yards().get(0) == laid);
-        r.setMonth(1 + CityRuns.YARD_REWEIGH_MONTHS);
-        layYards(r, g, sizes, 3);
+        r.setMonth(jan + 1);
+        layYards(r, g, sizes, 2);
+        check("the water gone, in a month that is no multiple of YARD_REWEIGH_MONTHS it is not weighed: the same box", r.yards().size() == 1 && r.yards().get(0) == laid);
+        // The next January the railway is laid with nothing it is stamped by moved (the same ground, track and sizes): it runs for the weighing.
+        r.setMonth(2 * jan);
+        layYards(r, g, sizes, 2);
         long[] longer = r.yards().get(0);
         int[] ln = lineOf(r, longer);
-        System.out.printf("  the water gone, a year on: the station's box %s%n", Arrays.toString(longer));
-        check("...YARD_REWEIGH_MONTHS on it is laid again YARD_LONG along its line, on the main line (red before TN1: a yard was kept at the box it was first laid at)",
+        System.out.printf("  the water gone, the next January: the station's box %s%n", Arrays.toString(longer));
+        check("...the next January it is laid again YARD_LONG along its line, on the main line, though nothing the railway is stamped by moved (red before TN1: a yard was kept at the box it was first laid at)",
                 r.yards().size() == 1 && ln != null && ln[0] == CityRuns.YARD_LONG);
         check("...and keeps the footprint it was asked for, " + Arrays.toString(depot), Arrays.equals(r.yardAsked(0), depot));
-        r.setMonth(10 * CityRuns.YARD_REWEIGH_MONTHS);
+        r.setMonth(10 * jan);
         layYards(r, g, sizes, 4);
         check("...and, YARD_LONG, it stays: laid again years later it is the same box object", r.yards().size() == 1 && r.yards().get(0) == longer);
 
@@ -1814,8 +1818,8 @@ public class MainLineCheck {
         check("fixture: the station's yard is laid at its footprint, shorter than the shortest train's tier (" + shortest + "): it holds no train",
                 first != null && alongOf(first) < shortest);
         if (first == null) return;
-        c.setMonth(1);
-        layYards(c, canal, sizes, 1);
+        c.setMonth(CityRuns.YARD_REWEIGH_MONTHS);
+        layYards(c, canal, sizes, 0);
         long[] beside = c.yards().get(0);
         System.out.printf("  weighed: the station's box %s%n", Arrays.toString(beside));
         long by = -1;
@@ -1827,7 +1831,7 @@ public class MainLineCheck {
                 if (all) by = y;
             }
         }
-        check("weighed, the station's yard is laid again YARD_LONG along the stretch off the quarter line, the track its whole length (red before TN1)",
+        check("weighed in January, the station's yard is laid again YARD_LONG along the stretch off the quarter line, the track its whole length (red before TN1)",
                 whole && by >= 0 && Math.floorMod(by, CityRuns.CELL) != CityRuns.RAIL_AT);
         check("...on owned dry ground, off every highway: it fits", c.yardFits(beside, canal, new ArrayList<>(), new ArrayList<>()));
         check("...and the trains' way reaches it (wayTo())", c.wayTo(beside) != null);

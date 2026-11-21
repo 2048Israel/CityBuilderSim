@@ -1,4 +1,4 @@
-# CityRuns.java - 5,280 lines · 263 methods · 57 constants · model
+# CityRuns.java - 5,280 lines · 264 methods · 57 constants · model
 
 `ham/citybuildersim/CityRuns.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -85,7 +85,7 @@
 | 2225 | THE RAILWAY'S YARDS |
 | 2318 | · a yard whose building left stays laid, idle (MF1, 2026-10-28) |
 | 2407 | · the station's yard laid short is laid again longer (TN1, 2026-11-21) |
-| 2681 | THE RAILWAY'S WAYS: THE MAIN LINE, ITS SIDINGS AND ITS BRANCHES |
+| 2680 | THE RAILWAY'S WAYS: THE MAIN LINE, ITS SIDINGS AND ITS BRANCHES |
 | 3251 | · boxes: a grid of them, the works merged where they touch, the works in groups |
 | 3434 | · the sidings |
 | 3598 | · the quay spur (HB2, 2026-11-09) |
@@ -143,14 +143,14 @@
 | 2263 | `CityRuns.TIER_LENGTHS` | `tierLengths()` | The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of train's length rounded up and its two ladders - a unit train's YARD_LONG (48), an intermodal ... |
 | 2266 | `CityRuns.TIERS` | `TIER_LENGTHS.length + 1` | ...how many: one for each length and one for the footprint's own. |
 | 2323 | `CityRuns.YARD_IDLE_MONTHS` | `120` | How many months a yard whose building has left stays laid, idle, before it is taken up: 120, ten years - the default playtest's Freight sector sold its only Rail Depot and bought another 3 to 93 months later, sixteen ... |
-| 2413 | `CityRuns.YARD_REWEIGH_MONTHS` | `12` | How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, once a year, not each month the railway is laid, since each box is weighed against every mine. |
-| 2741 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
-| 2744 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
-| 2747 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the city's edge and not a... |
-| 2750 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
-| 2753 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
-| 2756 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
-| 2759 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
+| 2414 | `CityRuns.YARD_REWEIGH_MONTHS` | `12` | How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, each January (a month that is a multiple of it), not each month the railway is laid, since e... |
+| 2740 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
+| 2743 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
+| 2746 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the city's edge and not a... |
+| 2749 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
+| 2752 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
+| 2755 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
+| 2758 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
 | 3254 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
 | 3487 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
 | 3611 | `CityRuns.QUAY` | `Integer.MAX_VALUE` | The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading sheds, the sidecar'... |
@@ -236,19 +236,17 @@
 | 2308 | `private final List<int[]> yardAsked` | The footprints the yards were laid for, in the order of `yards` (the first yardAsked.size() of them; the rest were added by hand and were asked for their boxes' own). |
 | 2336 | `private int month` | WHY (MF1 item 6; Jerus, "Into MF1"): the founding district's yard was "taken up and laid again on the same spot eleven times" over the playtest's run. |
 | 2342 | `private final List<Integer> idleSince` | The month each idle yard went idle, for the trailing yards of `yards` past the first yardsActive() of them, in order. |
-| 2416 | `private boolean reweighed` | Whether the station's yard has been weighed for a longer box since the runs were made or read (TN1); not saved: a loaded city weighs at once. |
-| 2419 | `private int reweighedAt` | The month the station's yard was last weighed for a longer box (TN1), where reweighed. |
-| 2768 | `private long railStamp` | layRail()'s last stamp, and whether it has one: everything it reads, so it lays nothing twice for the same inputs. |
-| 2769 | `private boolean railStampSet` |  |
-| 2777 | `private long[][] railMiss` | (RI1) Each map piece whose rail hub search found no crossing: {the ground's version, the anchor's x, y} it was searched at; it is not searched again till one of them moves. |
-| 2786 | `final List<long[]> mines, works` |  |
-| 2787 | `private List<long[]> bulk, line` |  |
-| 2788 | `private BoxGrid blocked` |  |
-| 2789 | `private Groups groups` |  |
-| 2790 | `private final Map<Long, List<long[]>> spots` |  |
-| 2791 | `private final Map<Long, Integer> spotAt` |  |
-| 2793 | `private final Map<Long, List<List<long[]>>> spotTiers` | Each size's boxes by tier, unsorted (spotsOnTrack()), and how many tiers are sorted into `spots` so far: a tier is sorted - each box weighed against every mine - only once every box before it failed to fit (FX5: five ... |
-| 2794 | `private final Map<Long, Integer> tiersSorted` |  |
+| 2767 | `private long railStamp` | layRail()'s last stamp, and whether it has one: everything it reads, so it lays nothing twice for the same inputs. |
+| 2768 | `private boolean railStampSet` |  |
+| 2776 | `private long[][] railMiss` | (RI1) Each map piece whose rail hub search found no crossing: {the ground's version, the anchor's x, y} it was searched at; it is not searched again till one of them moves. |
+| 2785 | `final List<long[]> mines, works` |  |
+| 2786 | `private List<long[]> bulk, line` |  |
+| 2787 | `private BoxGrid blocked` |  |
+| 2788 | `private Groups groups` |  |
+| 2789 | `private final Map<Long, List<long[]>> spots` |  |
+| 2790 | `private final Map<Long, Integer> spotAt` |  |
+| 2792 | `private final Map<Long, List<List<long[]>>> spotTiers` | Each size's boxes by tier, unsorted (spotsOnTrack()), and how many tiers are sorted into `spots` so far: a tier is sorted - each box weighed against every mine - only once every box before it failed to fit (FX5: five ... |
+| 2793 | `private final Map<Long, Integer> tiersSorted` |  |
 | 3258 | `private final Map<Long, List<long[]>> cells` |  |
 | 3362 | `final double[][] g` |  |
 | 3363 | `final boolean[] served` |  |
@@ -481,37 +479,38 @@
 | 2377 | 20 | `private void keepYards(List<int[]> sizes)` | Takes the yards back to the longest run, from the first, that were laid for the sizes the model now asks (FR7 slice 3, 2026-10-18): a Rail Terminal's box and a Rail Depot's are not one size, and until now every yard w... |
 | 2399 | 7 | `private void takeYards(int from)` | Takes the yards from index `from` on (the newest last), the witness told of each box first, and the idle months of those that were idle. |
 
-### the station's yard laid short is laid again longer (TN1, 2026-11-21) (lines 2407-2680)
+### the station's yard laid short is laid again longer (TN1, 2026-11-21) (lines 2407-2679)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2434 | 29 | `private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces)` | (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fi... |
-| 2465 | 5 | `List<long[]> yardSpots(int w, int h, List<long[]> mines)` | Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through... |
-| 2472 | 11 | `private List<long[]> nearestMineFirst(List<long[]> tier, List<long[]> mines)` | One tier's boxes, the nearest a mine first (the hub with no mine): yardSpots()'s order within a tier. |
-| 2485 | 12 | `List<long[]> yardSpotsNear(int w, int h, double gx, double gy)` | ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub), the tiers in order as above. |
-| 2499 | 9 | `private static List<long[]> sortedBy(List<long[]> out, double[] key)` | The boxes by key, the least first; on a tie the northern, then the western. |
-| 2514 | 71 | `private List<List<long[]>> spotsOnTrack(int w, int h)` | Every box a yard of footprint w x h could take on the track, unsorted, by tier (TIERS lists, the longest first): two a cell the track runs straight through on its line, one at either end of it; a siding is no line for... |
-| 2591 | 3 | `static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along)` | A cell's yard boxes across its quarter line (a row's, or a column's), `along` plots long (boxSize()): covering the line across, inside the interior across, at either end of the cell along - from the interior's first p... |
-| 2603 | 36 | `List<List<long[]>> spotsOffLine(int w, int h)` | (TN1) The boxes a yard of footprint w x h could take on the spine's straight stretches that run off a cell's quarter line, by tier (TIER_LENGTHS, the longest first; not the footprint's own): spotsOnTrack()'s boxes, ac... |
-| 2645 | 17 | `static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along, int at, boolean far)` | ...across a line `at` plots into the cell (TN1: a stretch of the spine off the quarter line, spotsOffLine()); RAIL_AT is the quarter line. |
-| 2664 | 16 | `boolean yardFits(long[] b, Ground g, List<long[]> mines, List<long[]> laid)` | Whether a yard's box is free, the yards `laid` before it: owned dry ground, off the highways and their verges, no other yard's, no mine's site, and (FR7) no siding laid across it. |
+| 2417 | 5 | `private boolean reweighDue()` | Whether this is a month the station's yard, short of YARD_LONG, is weighed (lengthenStation()): layRail() runs for it though nothing it is stamped by moved. |
+| 2436 | 26 | `private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces)` | (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fi... |
+| 2464 | 5 | `List<long[]> yardSpots(int w, int h, List<long[]> mines)` | Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through... |
+| 2471 | 11 | `private List<long[]> nearestMineFirst(List<long[]> tier, List<long[]> mines)` | One tier's boxes, the nearest a mine first (the hub with no mine): yardSpots()'s order within a tier. |
+| 2484 | 12 | `List<long[]> yardSpotsNear(int w, int h, double gx, double gy)` | ...the nearest the point (gx, gy) first (FR7 slice 3: a further yard goes beside a group of works, not beside the mine nearest the hub), the tiers in order as above. |
+| 2498 | 9 | `private static List<long[]> sortedBy(List<long[]> out, double[] key)` | The boxes by key, the least first; on a tie the northern, then the western. |
+| 2513 | 71 | `private List<List<long[]>> spotsOnTrack(int w, int h)` | Every box a yard of footprint w x h could take on the track, unsorted, by tier (TIERS lists, the longest first): two a cell the track runs straight through on its line, one at either end of it; a siding is no line for... |
+| 2590 | 3 | `static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along)` | A cell's yard boxes across its quarter line (a row's, or a column's), `along` plots long (boxSize()): covering the line across, inside the interior across, at either end of the cell along - from the interior's first p... |
+| 2602 | 36 | `List<List<long[]>> spotsOffLine(int w, int h)` | (TN1) The boxes a yard of footprint w x h could take on the spine's straight stretches that run off a cell's quarter line, by tier (TIER_LENGTHS, the longest first; not the footprint's own): spotsOnTrack()'s boxes, ac... |
+| 2644 | 17 | `static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along, int at, boolean far)` | ...across a line `at` plots into the cell (TN1: a stretch of the spine off the quarter line, spotsOffLine()); RAIL_AT is the quarter line. |
+| 2663 | 16 | `boolean yardFits(long[] b, Ground g, List<long[]> mines, List<long[]> laid)` | Whether a yard's box is free, the yards `laid` before it: owned dry ground, off the highways and their verges, no other yard's, no mine's site, and (FR7) no siding laid across it. |
 
-### THE RAILWAY'S WAYS: THE MAIN LINE, ITS SIDINGS AND ITS BRANCHES (lines 2681-3250)
+### THE RAILWAY'S WAYS: THE MAIN LINE, ITS SIDINGS AND ITS BRANCHES (lines 2680-3250)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2762 | 1 | **type** `private record Way(long sx, long sy, int[][] legs, int plots)` | A way laid for a train: its start plot on the net, its legs {heading, steps}, and the plots it lays. |
-| 2765 | 1 | **type** `private record Branch(long px, long py, int heading, int steps, long[] box)` | A branch to a yard: where it leaves the main line, its heading, its steps, and the yard's box. |
-| 2785 | 92 | **type** `private final class Ctx` | What one layRail() run builds on demand and its steps share: the bulk works merged where they touch, a grid of every box a way must keep clear of (a city of billions has some two hundred thousand mined sites), the mai... |
-| 2796 | 4 | `Ctx(List<long[]> mines, List<long[]> works)` _(in CityRuns.Ctx)_ |  |
-| 2802 | 4 | `List<long[]> bulk()` _(in CityRuns.Ctx)_ | The bulk works' boxes, merged where they touch (mergeTouching()). |
-| 2808 | 4 | `BoxGrid blocked()` _(in CityRuns.Ctx)_ | Every mine's and works' box, in a grid. |
-| 2814 | 4 | `List<long[]> line()` _(in CityRuns.Ctx)_ | The main line's plots a siding or a branch may leave from (linePlots()), as the yards stand now. |
-| 2820 | 7 | `Groups groups()` _(in CityRuns.Ctx)_ | The works' groups, served as the yards laid are. |
-| 2829 | 4 | `void yardLaid(long[] y)` _(in CityRuns.Ctx)_ | Another yard laid: the line has a box on it, and the groups beside it are served. |
-| 2835 | 18 | `long[] nearestMineSpot(int w, int h, Ground g)` _(in CityRuns.Ctx)_ | The next yard box of w x h on the track nearest a mine that fits (yardSpots(), kept for the run: the old rule, each size's list gone through once); null for none. |
-| 2860 | 16 | `long[] homeFirstSpot(int w, int h, Ground g, Pieces pieces)` _(in CityRuns.Ctx)_ | (RI1) The first yard's box with the railway on more than one piece: nearestMineSpot()'s order, but the first that fits on home's ground (map piece 0) before any on an island's line; an island's only where home's track... |
-| 2893 | 58 | `private void layRail(long trackPlots, List<int[]> sizes, long spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[...` | Lays the railway to the model's track plots, yards and spurs (layTo()'s rail half; each yard YARD_LONG along its line, or as short as the ground allows, THE RAILWAY'S YARDS): the derived arms off, the main line grown ... |
+| 2761 | 1 | **type** `private record Way(long sx, long sy, int[][] legs, int plots)` | A way laid for a train: its start plot on the net, its legs {heading, steps}, and the plots it lays. |
+| 2764 | 1 | **type** `private record Branch(long px, long py, int heading, int steps, long[] box)` | A branch to a yard: where it leaves the main line, its heading, its steps, and the yard's box. |
+| 2784 | 92 | **type** `private final class Ctx` | What one layRail() run builds on demand and its steps share: the bulk works merged where they touch, a grid of every box a way must keep clear of (a city of billions has some two hundred thousand mined sites), the mai... |
+| 2795 | 4 | `Ctx(List<long[]> mines, List<long[]> works)` _(in CityRuns.Ctx)_ |  |
+| 2801 | 4 | `List<long[]> bulk()` _(in CityRuns.Ctx)_ | The bulk works' boxes, merged where they touch (mergeTouching()). |
+| 2807 | 4 | `BoxGrid blocked()` _(in CityRuns.Ctx)_ | Every mine's and works' box, in a grid. |
+| 2813 | 4 | `List<long[]> line()` _(in CityRuns.Ctx)_ | The main line's plots a siding or a branch may leave from (linePlots()), as the yards stand now. |
+| 2819 | 7 | `Groups groups()` _(in CityRuns.Ctx)_ | The works' groups, served as the yards laid are. |
+| 2828 | 4 | `void yardLaid(long[] y)` _(in CityRuns.Ctx)_ | Another yard laid: the line has a box on it, and the groups beside it are served. |
+| 2834 | 18 | `long[] nearestMineSpot(int w, int h, Ground g)` _(in CityRuns.Ctx)_ | The next yard box of w x h on the track nearest a mine that fits (yardSpots(), kept for the run: the old rule, each size's list gone through once); null for none. |
+| 2859 | 16 | `long[] homeFirstSpot(int w, int h, Ground g, Pieces pieces)` _(in CityRuns.Ctx)_ | (RI1) The first yard's box with the railway on more than one piece: nearestMineSpot()'s order, but the first that fits on home's ground (map piece 0) before any on an island's line; an island's only where home's track... |
+| 2892 | 59 | `private void layRail(long trackPlots, List<int[]> sizes, long spurs, Ground g, long rx, long ry, List<long[]> mines, List<long[...` | Lays the railway to the model's track plots, yards and spurs (layTo()'s rail half; each yard YARD_LONG along its line, or as short as the ground allows, THE RAILWAY'S YARDS): the derived arms off, the main line grown ... |
 | 2959 | 25 | `private void openRailPieces(Ground g, Pieces pieces, long rx, long ry)` | (RI1) Opens the railway on each map piece but the home piece that has weight and no rail net's hub on it yet (as openPieces() finds that for the highways): its RAIL HUB is the railway line crossing nearest pieces.anch... |
 | 2997 | 43 | `private Deal layPieces(long trackPlots, List<int[]> sizes, boolean idle, Ground g, long rx, long ry, Pieces pieces)` | (RI1) The railway's lines on its pieces (the net has more than the home piece), the model's track dealt between them as layHighways() deals the highways (deal(): owners, frozen nets, shares by built weight, the home p... |
 | 3042 | 5 | `private boolean[] piecesWithYards(Pieces pieces)` | The map pieces a yard stands on, by the yard box's middle (RI1). |

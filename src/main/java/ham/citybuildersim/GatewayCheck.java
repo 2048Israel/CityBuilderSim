@@ -1193,9 +1193,9 @@ public class GatewayCheck {
         in[Ports.Cargo.DRY_BULK.ordinal()] = TN1_DRY_IN;
         out[Ports.Cargo.GENERAL.ordinal()] = TN1_GENERAL_OUT;
         TrainSchedule sched = TrainSchedule.of(1, in, out, routes);
-        int drawn = sched.calls().size();
-        System.out.printf("  the month's schedule: %d train(s) drawn, %d unfit%n", drawn, sched.unfit());
-        check("the month's schedule draws trains on them (red before TN1: no route, no train)", drawn > 0);
+        int drawn = sched.calls().size(), unfit = sched.unfit();
+        System.out.printf("  the month's schedule: %d train(s) drawn, %d of them unfit (no route's siding holds them, or none is free)%n", drawn, unfit);
+        check("the month's schedule runs trains on them, " + (drawn - unfit) + " of " + drawn + " (red before TN1: no route, every train unfit)", drawn > unfit);
 
         // (b) Haugesund on the Earth.
         Path file = EarthData.locate();

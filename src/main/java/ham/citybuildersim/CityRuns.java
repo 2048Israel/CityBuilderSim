@@ -2407,22 +2407,24 @@ public final class CityRuns {
     /* ----- the station's yard laid short is laid again longer (TN1, 2026-11-21) ----- */
 
     /**
-     * How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, once a
-     * year, not each month the railway is laid, since each box is weighed against every mine.
+     * How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, each
+     * January (a month that is a multiple of it), not each month the railway is laid, since each box is weighed against every mine. By
+     * the calendar, not by the last weighing, so a city read from its sidecar weighs in the months the city played on would have.
      */
     public static final int YARD_REWEIGH_MONTHS = 12;
 
-    /** Whether the station's yard has been weighed for a longer box since the runs were made or read (TN1); not saved: a loaded city weighs at once. */
-    private boolean reweighed;
-
-    /** The month the station's yard was last weighed for a longer box (TN1), where reweighed. */
-    private int reweighedAt;
+    /** Whether this is a month the station's yard, short of YARD_LONG, is weighed (lengthenStation()): layRail() runs for it though nothing it is stamped by moved. */
+    private boolean reweighDue() {
+        if (Math.floorMod(month, YARD_REWEIGH_MONTHS) != 0 || yards.isEmpty() || yardsActive() == 0) return false;
+        long[] y = yards.get(0);
+        return Math.max(y[2], y[3]) < YARD_LONG;
+    }
 
     /**
      * (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track
      * longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fits (on home's ground with the railway in
      * pieces), off every other yard; it keeps its ask. A station that holds no train (shorter than every tier's length) may go too, after
-     * every box on the quarter line, where the spine runs straight beside it (spotsOffLine()). Weighed once every YARD_REWEIGH_MONTHS while
+     * every box on the quarter line, where the spine runs straight beside it (spotsOffLine()). Weighed in each month reweighDue() names while
      * it is short of YARD_LONG.
      * WHY: a yard is laid at the longest tier the ground allows the month it is laid and kept at its box after (keepYards()), so a young
      * city's station, laid where its ground ran short of a train's length, or one read from a sidecar before FORMAT 10, laid at its
@@ -2432,12 +2434,9 @@ public final class CityRuns {
      * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave.
      */
     private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces) {
-        if (sizes.isEmpty() || yards.isEmpty() || yardsActive() == 0) return;
+        if (sizes.isEmpty() || !reweighDue()) return;
         long[] y = yards.get(0);
         long had = Math.max(y[2], y[3]);
-        if (had >= YARD_LONG || (reweighed && month - reweighedAt < YARD_REWEIGH_MONTHS)) return;
-        reweighed = true;
-        reweighedAt = month;
         int[] asked = yardAsked(0);
         List<long[]> others = yards.subList(1, yards.size());
         List<List<long[]>> tiers = spotsOnTrack(asked[0], asked[1]);
@@ -2894,7 +2893,8 @@ public final class CityRuns {
                          List<long[]> mines, List<long[]> works, Pieces pieces) {
         long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works, pieces);
         // (MF1) An idle yard whose time is up is taken up this month, though nothing the stamp holds has moved.
-        if (railStampSet && stamp == railStamp && !idleExpired()) return;
+        // (TN1) ...and a station laid short is weighed for a longer box each January (reweighDue()).
+        if (railStampSet && stamp == railStamp && !idleExpired() && !reweighDue()) return;
         dropWays();
         keepYards(sizes);
         // (RI1) The railway's other pieces open now, right after the ways are off, so a piece's arms always come before the run's way arms in rail.arms.

@@ -767,14 +767,14 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2263 | `CityRuns.TIER_LENGTHS` | `tierLengths()` | The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of train's length rounded up and its two ladders - a unit train's YARD_LONG ... |
 | 2266 | `CityRuns.TIERS` | `TIER_LENGTHS.length + 1` | ...how many: one for each length and one for the footprint's own. |
 | 2323 | `CityRuns.YARD_IDLE_MONTHS` | `120` | How many months a yard whose building has left stays laid, idle, before it is taken up: 120, ten years - the default playtest's Freight sector sold its only Rail Depot and bought another 3 to 93 mo... |
-| 2413 | `CityRuns.YARD_REWEIGH_MONTHS` | `12` | How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, once a year, not each month the railway is laid, since each box is weigh... |
-| 2741 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
-| 2744 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
-| 2747 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
-| 2750 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
-| 2753 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
-| 2756 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
-| 2759 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
+| 2414 | `CityRuns.YARD_REWEIGH_MONTHS` | `12` | How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, each January (a month that is a multiple of it), not each month the rail... |
+| 2740 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
+| 2743 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
+| 2746 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
+| 2749 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
+| 2752 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
+| 2755 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
+| 2758 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
 | 3254 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
 | 3487 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
 | 3611 | `CityRuns.QUAY` | `Integer.MAX_VALUE` | The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading... |
@@ -7524,10 +7524,10 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 727 | `MainLineCheck.YARD_SIDE` | `24` | Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). |
-| 1581 | `MainLineCheck.COAST_AT` | `60, COAST_BAY = 125, COAST_SUM = 214, COAST_TIP = 40` | MF2, 2026-11-08. |
-| 1638 | `MainLineCheck.HIGHWAYS_GOLDEN` | `900` | What the highways' 900 plots on the coast above laid on main at 0.9.49 (MF2, 2026-11-08), before the railway's rules changed: their count and the hash of their stretches. |
-| 1639 | `MainLineCheck.HIGHWAYS_SHAPE` | `- 1584424669` |  |
+| 729 | `MainLineCheck.YARD_SIDE` | `24` | Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). |
+| 1583 | `MainLineCheck.COAST_AT` | `60, COAST_BAY = 125, COAST_SUM = 214, COAST_TIP = 40` | MF2, 2026-11-08. |
+| 1640 | `MainLineCheck.HIGHWAYS_GOLDEN` | `900` | What the highways' 900 plots on the coast above laid on main at 0.9.49 (MF2, 2026-11-08), before the railway's rules changed: their count and the hash of their stretches. |
+| 1641 | `MainLineCheck.HIGHWAYS_SHAPE` | `- 1584424669` |  |
 
 ### ManufacturingCheck.java ([map](map/ManufacturingCheck.md))
 
