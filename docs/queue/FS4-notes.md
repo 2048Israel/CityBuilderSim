@@ -224,10 +224,34 @@ a call, on the suite's default pool, with the earth and world paths set.
     moved; the 29 labels are KeptCheck's. The misses above were expected
     on this PC under load (the orchestrator, 2026-11-20).
   - In the gate's soft suite the harness skips at once. Its hard verdict is
-    the nightly's, on the gate box, as KeptCheck's was.
+    the nightly timing step's, as KeptCheck's was. On the headless box
+    that step cannot start the toolkit either (see the dry run).
 - `./batch-check.sh TimingCheck` after the merge and the warm-up: OK, and
   KeptTimingCheck soft prints its one SKIPPED line.
 - The pick: `sh tools/pick.sh origin/main HEAD` is ALL (233 harnesses),
   since AllChecks.java changed. The batch has a dry run.
 - Review: not needed. There is no money, no save and no threading in the
   diff.
+
+## The dry run
+
+- `sh tools/gate.sh FS4 --dry-run --no-tag` ran on the gate box at
+  e168bb73c (FS4) over 1557daaaf (main, 0.9.173), the whole suite (pick
+  ALL). Gate exit 0.
+  - The run is the box's `/home/jerus/cbs/runs/cbs-gate-FS4-b5UPc72W`. It
+    is copied home to `C:\Users\Jerus\AppData\Local\Temp\cbs-gate-FS4-b5UPc72W`,
+    with its two commits in `branch.commit` (e168bb73c) and `main.commit`
+    (1557daaaf).
+  - The log here is `target/FS4-dry.txt`.
+- The suite finished in 972 s with exit 3, known red only: BankCheck,
+  BuildAdviceCheck, Forms1900Check, RoadCheck and YoungBankCheck, all on
+  main's rows.
+- KeptCheck did not run there. The box is headless, and KeptCheck skips
+  where the JavaFX toolkit cannot start, as it did on main; three other
+  JavaFX harnesses skip with it. KeptTimingCheck skipped at its soft check.
+  - 89's row in the ship file was neither matched nor needed there. It stays
+    for the runs on the PC, where the line is red, and for FS5.
+- Found: the box cannot judge KeptTimingCheck's budgets hard either, since
+  they need the toolkit. That was as true of KeptCheck's timed sections on
+  main, so FS4 takes no coverage away. They are judged only where there is
+  a display, this PC. Mailed to the orchestrator; nothing is changed here.

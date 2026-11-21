@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-FS4-b5UPc72W -->
 <!-- readiness: provisional -->
 ## changelog
 ### FS4 (untagged) — KeptCheck I causes what its pages read — 2026-11-20, ready, see docs/queue/FS4-notes.md
