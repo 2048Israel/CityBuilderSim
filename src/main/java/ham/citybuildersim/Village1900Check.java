@@ -15,7 +15,7 @@ import java.io.PrintStream;
  *      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
  *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
  *      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
- *      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, under the target on 0.9.161)
+ *      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
  *   3. THE SKILLS: posts drawn for today's diploma-holders meet 1901's workers, who mostly hold none: the 1900 village's diploma posts
  *      outnumber its diploma workers many times over while today's twin's are covered, and the exporters' first plant (the
  *      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) cannot pass the staffing gate,

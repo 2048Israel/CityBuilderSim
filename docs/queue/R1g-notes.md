@@ -534,3 +534,107 @@ farms' and the mills'. A held sector skips the whole round, building,
 fitting and retiring (`Game`'s investment loop). The harness passes with both
 halves on, and with both off. KeptCheck, the other borrower of
 `researchTown()`, shows only main's known reds (exit 3).
+
+## 6. Jerus's pick: the home's cost moves with wages (0.9.174)
+
+Jerus, 2026-11-20 (the orchestrator's 23:25 mail): the 1900 home stays, and
+"its cost moves with WAGES", option (3): not held, and not by the calendar.
+Measure it on the wage index and on the households' take-home pay, and take
+whichever keeps rent nearer .30. His other words, "perhaps try once people
+mortgages exist? idk", are the ship file's Pending row R1g-H: revisit the 1900
+home once HO1 (owning a home) ships.
+
+### The six rows (0.9.174, merge ec7bf996a; the playtest's 1900 city, 2,400 months)
+
+The rent is the households' rent over their take-home
+(`HouseholdAccounts.getRentBurden()`), read each month from a measuring copy
+of LongPlaytest that stays in `target/`, out of the branch.
+
+| the home | pop m240 / m900 / m1200 / m2400 | rent: mean, mean \|b−.30\|, peak |
+|---|---|---|
+| ★ pay, trailing 12-month mean, set monthly | 1,228 / 14,805 / 51,439 / 1,852,269 | .307, .034, .450 (m529) |
+| pay, set each January | 1,259 / 3,456 / 5,656 / 150,677 | .300, .050, .444 |
+| pay, set monthly | 1,230 / 2,567 / 5,281 / 6,037 | .308, .047, .421 |
+| wage index, set monthly | 1,140 / 4,486 / 6,027 / 7,105 | .315, .048, .460 |
+| held (`homeScale()`, .289) | 1,603 / 8,573 / 32,280 / 1,989,152 | .243, .058, .339 |
+| today's city | 1,647 / 5,663 / 31,921 / 1,479,891 | .283, .048, .459 |
+
+- **★ The trailing mean.** It grows like the held home (ahead of it from
+  m900 to m1500: 237,274 against 233,580 at m1500), and its rent is the
+  nearest .30 of every row. A month's pay jumps. A home re-priced by every
+  jump (or by a year's jumps in one January step) churned the landlords: on
+  the monthly walks their mortgages passed their assets (pay, m600: 3,456
+  against 3,129) and Real Estate lost over a fifth of its posts in a
+  trailing year eight times.
+- **The pay index over the wage index.** Set monthly, the pay's rent is the
+  nearer .30 (mean .308 against .315, mean |b−.30| .047 against .048): the
+  take-home a rent is paid from, where the wage index weighs the posts'
+  wages by 1901's household. Both indexes stall the city set monthly.
+- **My 00:15 guess, the level, was half wrong.** Both indexes climb from
+  .289 to about .52 by m13 (the young village's tight market bids pay up)
+  and stay near .37 to m240, so the walk's homes cost more than the held
+  home's for twenty years. But the mean's scale is higher still (.350 over
+  m240–1440 against .289 held, .329 for the monthly pay walk), and it
+  grows. The churn is what stalls the city, not the level.
+- **Exits.** The mean's one red, households' UnsettledFees at m2405, is the
+  held home's too (69.3 ppm held, 86.1 the mean, against a bound of 30):
+  the trace is below. The January walk adds the CL7 finding (industry
+  farther out than the homes) and UnsettledIncome.
+
+### What was built (8eaf2dc1e)
+
+- `Recipes.HOME_WALK`, on unless `-Dr1g.walk=off` (the held home, the
+  fallback): each month's `apply()` sets every home to the mean of the last
+  `PAY_MONTHS` (12) months' `homeScaleOfPay()`, capped at 1. A game month
+  takes the pay once; the founding's second `apply()` and a load's take
+  nothing more.
+- **The dating set from the catalogue's figures, never from last month's**
+  (`BuildingsTemplate.setFoundingCosts()`, a new setter, and
+  `getFoundingUpkeep()`): each re-pricing sets the founding cash cost and
+  upkeep to the undated figures times the scale. Times a ratio each month,
+  as the measuring runs did it, the cost drifted a bit a month, and a
+  loaded city's fresh templates stood a bit off the unsaved city's
+  (Village1900Check 8 caught it).
+- **The months saved.** `DataSave`'s `homePayIndices` and `homePayMonth`,
+  written in the save path beside the recipes' choices and put back before
+  the load path's `apply()`. The old-saves rule: a save without them (every
+  save from before R1g, and every city founded the default way) starts the
+  walk afresh at the loaded month, its window that month's pay alone, filled
+  over the next eleven months. A 1900 city saved before R1g had no dated
+  homes, so nothing in it reads wrongly; no format bump. SaveFileCheck
+  passes.
+- **The variants out.** The calendar walk (5bb95f367), the wage index
+  (36dc96a82), the monthly pay walk (866f23d4b) and the January and mean
+  tests (9241667a1) are measured above and live in those commits.
+  `homeScaleOfPay()` and `todaysHousehold()` stay; `homeScaleAt()` and
+  `homeScaleOfWages()` go.
+
+### Village1900Check (sections 1–8)
+
+| check | result |
+|---|---|
+| `./batch-check.sh Village1900Check` on 8eaf2dc1e | All checks passed |
+| the same, `-Dr1g.walk=off` | 4 FAILED, all section 8's: the window is empty, no pay taken, the House at homeScale() (0.2892 against 0.2892); sections 1–7 pass |
+| `./batch-check.sh SaveFileCheck` | All checks passed |
+
+- **Section 8, the walk:**
+  - each month takes the households' pay once, the window growing to
+    `PAY_MONTHS` and holding there;
+  - the pay it takes is `homeScaleOfPay()` as the month before ended;
+  - the House stands at the mean of the last twelve, off `homeScale()` by
+    more than a hundredth;
+  - saved on its scratch folder (slot 10, never a player's) and loaded
+    into a fresh Game, the village holds the same months, scale and cost to
+    the bit, and a month on it stands where the unsaved village does.
+- **Section 5** asserts the House at the scale it stands at
+  (`Recipes.datedScale()`), `homeScale()` with the walk off.
+- **Section 2's control restated.** Today's twin paid 0.232 of take-home
+  at m60 on 0.9.159 and pays 0.331 on 0.9.174, over the .30 target. That
+  is main's move, not R1g's (today's city is never dated). The check that
+  it pays no more than the target became "under `DEAR_RENT` times the
+  target, the line the 1900 village's households are over". The finding,
+  that 1901's wages pay for today's homes, is what it was.
+- **The harness found one of mine.** My first build reset the window in
+  `choose()` every month (a sed that matched twice). Section 8 read a
+  window of one month, every month, and failed; the measured runs above
+  came from a snapshot of the classes before it.

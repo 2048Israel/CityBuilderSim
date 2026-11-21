@@ -32267,7 +32267,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
 >   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
 >      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
->      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, under the target on 0.9.161)
+>      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
 > ...
 
 - **L114 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
