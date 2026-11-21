@@ -38,9 +38,10 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
   Five lines are red on main (`target/fb15/odc-main.txt` on the PC): main's order of one is held "for the
   15% down payment", and its order of two is trimmed to one.
 - **In a played city.** In HousingDoorCheck's seed 12 window (m431-900), main's door cut nine orders for
-  the down payment (m600-m706, the family segment 341-963 doors short). FB15's door cuts none.
+  the down payment (m600-m706, the family segment 341-963 doors short). FB15's door cuts none of the 68 it
+  passes with the segment short (section 4).
 
-## 2. HN1-B: a project's order the lender says no to, asked again of half
+## 2. HN1-B: a project's order refused for the bank's capital or a ban, asked again of half
 
 - **Found.** On main, `consider()`'s project path ran `largestSliceThatCarries`, then `buildFor(payer)`,
   then the lender's `canBorrow`/`credit.canFundProject` (all or nothing). It held the whole order on the
@@ -50,21 +51,36 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 - **Built.** The banner is "THE DOOR'S NO IS TO THE ORDER HERE TOO" (`Game.java:7175`).
   - `lenderWatched()` (`:7993`) wraps the payer. It records the lender's no, and whether the part built
     borrowed.
-  - The order is halved while the lender says no. A part built takes back the capital marks: the project
-    form of `takeBackCapitalRefusal` (`BusinessDebtManager.java:2684`, five lines, approved by mail; MC2's
-    parts of the file untouched), so the playtest's "refused a building's loan" count is not inflated.
+  - The order is halved while the lender's no is a ban or the bank's capital rule (`halfMayPass()`), and
+    each try's no is read again. A ban is sized to the till already (the slice, `Game.java:7510`), so the
+    halving catches only the door's wedge over the plan. Past the default point or with the bank shut the
+    order holds, as on main (REV-FB15, mend 3): there the till is the sector's last money. The shortfall
+    desk lends nothing then either, and an order in flight blocks the distress sale.
+  - A part built takes back the capital marks: the project form of `takeBackCapitalRefusal`
+    (`BusinessDebtManager.java:2684`, five lines, approved by mail; MC2's parts of the file untouched), so
+    the playtest's "refused a building's loan" count is not inflated. The default point's mark
+    (`refusedProjectAtDefaultPoint`, read by `LongPlaytest.java:698`) is never left beside a part built. A
+    ban is tested before the default point. A capital no means the default point passed, and a smaller try
+    reads the same till against it (`buildFor()` asks the lender before it spends).
   - The line says why the order was trimmed (`projectDoorTrimmed()`, `:8020`), as `doorTrimmed()` does
     for the landlord.
 - **The fixture**, OrderDoorCheck 3. The bank's capital rule is at 0% growth, and the shopkeeper's till at
   the door holds 1.5 stores. The order of six is now built at one, paid from the till at the door's price,
   says "(trimmed from 6 - the bank is short of capital for a loan, so what its own funds buy outright)",
   and is not left marked. The control, a till of half a store, is still held, in the bank's words. Three
-  lines are red on main. The take-back line alone is red with the 3-argument take-back (`odc-tb.txt`).
+  lines are red on main. The take-back line alone is red with the 3-argument take-back (`odc-tb.txt`). Since
+  mend 3, a third case: with the bank shut and the till holding 1.5 stores, the order is held whole, the till
+  untouched, as on main. Its line is main's too: "Could not build Convenience Store - needs 2,790 m², 0.0127
+  km² free". A shut bank leaves no mark, so the hold falls through to the land's words with the ground
+  there. That was so before FB15, and it is a finding for the queue, not mended here.
 - **How often it fires** (contract: count it in a real run). Seed 12 to m900, counting month-ends whose
   last line says so:
   - FB15: 15 month-ends show a project order built in part outright (Retail 7, Restaurants 6, Materials
     2), and 3 one trimmed while borrowing;
   - main: none.
+
+  All 18 were trimmed for the bank's capital (`target/fb15/p12-fix.txt`), so mend 3 leaves the count as it
+  is.
 
   "Holding: the bank is rebuilding its capital" still stands where even one is beyond the till (Automotive
   81 month-ends, Freight 57).
@@ -82,24 +98,54 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
     again before a resume", exit 1.
 
   `ensemble.sh --stop` passes the exit through, and the README says so.
+- **Guarded (REV-FB15, mend 2).** Main's script with `ENS_A` empty matched every command line on the PC: in
+  PowerShell 5.1, `[regex]::Escape($null)` is the empty pattern. `stop.ps1` now refuses an empty `ENS_LABEL`
+  or an `ENS_B` that is not `C:/...`: it stops nothing and exits 2. The selftest sets `ENS_A` as main's
+  caller does, and it reads the empty case on a copy whose `Stop-Process` only prints what it would stop.
 - **The fixture**, `sh tools/ensemble/stop-selftest.sh`. A `tail -f` in a run folder under `target/` (a
   /tmp folder shows as /tmp) must be stopped and the stop must say nothing is left. A parent outside the
-  folder that restarts it must leave a survivor that is named, exit 1. Main's `stop.ps1` gives three
-  FAILs, the new one none.
-- **One in, one out.** `git diff --numstat origin/main -- tools/ensemble/`: +55 -15. The two headers are
-  back to their old length. The 29 lines of `stop-selftest.sh` are HN1-C's fixture (a harness is the
+  folder that restarts it must leave a survivor that is named, exit 1. An empty run folder must stop
+  nothing, exit 2. Main's `stop.ps1` gives four FAILs, the new one none.
+- **One in, one out.** `git diff --numstat origin/main -- tools/ensemble/`: +66 -15. The two headers are
+  back to their old length. The 38 lines of `stop-selftest.sh` are HN1-C's fixture (a harness is the
   finding), and nothing in the ensemble's tools was stale to take out against them.
 
 ## 4. Harnesses the change moved
 
 - **BuildCardCheck** priced the card's down payment at the planner's price. The card reads the door's
   since HN1-A, so the fixture now does too (`BuildCardCheck.java:2209`). Green.
-- **HousingDoorCheck 1.** Its fixture was HN1-A's bug: on main, its nine cut orders were all "its own
-  funds put the 15% down on N". The section now counts the segment-short orders, and asserts the door cut
-  or held none of them for the down payment (red on main, nine). On the branch, seed 12's city has no
-  month in the window with the segment short, so the fixture line is red: a known red under FS11, whose
-  sweep holds it.
-- **CreditCrunchCheck 2-3 and MortgageCheck 12** are played cities that moved.
+- **HousingDoorCheck 1-2** (REV-FB15, mend 1). On main, the section's nine cut orders were all "its own
+  funds put the 15% down on N": HN1-A's bug. The section counts the orders passed while the segment is
+  short, and asserts the door cut or held none of them for the down payment (red on main, nine). On the
+  branch the fixture line was red, and the harness caused it, not the city:
+  - `ask()` named the ordered building by matching the lender's price of one against the planner's.
+  - Since HN1-A that price is the door's, so on the branch every order read as no building: no segment
+    short and no door price. That also left section 2 watching nothing.
+
+  It now matches either price (`HousingDoorCheck.java:285`). Seed 12's window then holds 68 orders with
+  the segment short: 57 written whole, 9 cut and 2 held, all for the bank's capital, none for the down
+  payment. Both lines are green, so no row is filed.
+
+  The review asked for homes retired as `cutToTheValve()` retires them, and two tries show why that went
+  unused:
+  - cut at m430, seed 12's city fell to 7,279 people by m900, with 4 orders in the window;
+  - cut at m900, with twelve months more, it placed no order in them.
+
+  The same fix went into OrderSearchCheck's `carryOfTheOrder()`, where an unnamed order fails its fixture.
+- **CreditCrunchCheck 3-4** (mend 1). The trim line watched the played crunch. Since HN1-A, that crunch
+  asks for one block at a time while the bank is short, and an order of one has no half to trim to. Main's
+  seed 13 asked for up to 6 then (m190-194: 6, 6, 5, 5, 4). Its 7 trims, the three the log lists (m181,
+  m191, m217), were orders of 2, 6 and 5 blocks of about 600 each, whose issue (243, 149, 882) covered a
+  fraction of the cost.
+
+  Section 4 (`theShortIssue()`, `CreditCrunchCheck.java:381`) now causes the case at the crunch's end, at
+  m270 with the bank still in its band: an order of six blocks, a till of 1.5 blocks, and ground for six.
+  - The owners were asked for 2,222.7 and put in 211.4.
+  - The door's first no was for the bank's capital. It built 1 outright, "(trimmed from 6 - the bank is
+    short of capital for a mortgage, so what its own funds buy outright)", and left it unmarked.
+
+  Green. The played crunch's trims are still printed, and its "left marked" line still holds.
+- **CreditCrunchCheck 2 and MortgageCheck 12** are played cities that moved.
   - Traced on seed 13 (`target/fb15/p13-*.txt`): the two runs are identical to m33. From m34 the lender
     tests a House at the door's price (+4.9%), and the down payment passes 6 where main's passed 7. At
     m40, main's door cut 4 to 2 while FB15 built 5.
@@ -107,20 +153,21 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
     holds 1,363 materials against 930, and its wave of blocks at m122-126 (+127 homes) never comes on
     the branch.
   - At m150: 930 households against 483. HN1-A alone does it: the output is identical with HN1-B's
-    halving switched off, and MortgageCheck's and HousingDoorCheck's reds stay with it off too.
+    halving switched off, and MortgageCheck's reds stay with it off too.
 
-  Path chaos, not a trend, is the reading: the ensemble is the measure (section 7). MortgageCheck 12's two
-  lines are known reds under FS9 (the bank and its borrowers, queued). CreditCrunchCheck's three are held
-  out of the ship file: they assert MC1's landlords' equity raise, which HN1-A re-prices directly, so REV-FB15
-  says whether they are the change's own effect (then mended here) or a moved city (then a queued row of
-  their own; the orchestrator, 2026-11-21).
+  Path chaos, not a trend, is the reading: the ensemble is the measure (section 7). These four lines are
+  known reds under FS9, the bank and its borrowers, queued (`docs/studies/flaky-suite/by-harness.md:53`):
+  - MortgageCheck 12's two;
+  - CreditCrunchCheck 2's two. The bank rations in 111 of the 120 crunch months, against main's 120, and
+    stands in its band in 119.
 
 ## 5. The calls
 
-- ★1 **The halving follows any lender's no on the project path**, not only the bank's capital. A ban, a
-  failed bank or the default point now build what the till buys outright, and the line names the reason
-  ("it may not borrow", "the bank has failed", "a loan would leave it owing past ..."). Before, these read
-  "Could not build - needs land" or similar. Recommended: keep. The till's own money breaks no lender's rule.
+- ★1 **The halving follows a ban and the bank's capital rule only** (REV-FB15, mend 3; first built for
+  any lender's no). Past the default point or with the bank shut the order holds whole, as on main:
+  nothing else stops the till going there (`buildFor()`, the shortfall desk, the order in flight blocking
+  the distress sale). The line names the reason: "the bank is short of capital for a loan" or "it may not
+  borrow".
 - ★2 **The take-back covers the project mark**, a new 4-argument form beside the 3-argument one (the
   orchestrator's yes).
 - ★3 **The build card prices a landlord's home at the door** (`financingOf()`, `lenderTest()`), so the
@@ -130,21 +177,62 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 - ★5 **OrderDoorCheck drives `consider()` by reflection between months**, after the month's settle,
   with the hooks of `BusinessInvestment.OrderWatch`. It buys its ground (`buyLandBlock()`), so it causes
   the edge rather than waiting for a played month that has the ground too.
-- ★6 **The moved fixtures go under the sweeps that hold them** (FS9, FS11; FS1, which the brief named,
-  has shipped), rather than re-seeded here.
+- ★6 **The moved fixtures go under the sweep that holds them**, FS9 (FS1, which the brief named, has
+  shipped), rather than re-seeded here. FB15's own premises are caused instead (REV-FB15): CreditCrunchCheck
+  4's order, OrderDoorCheck's edge. HousingDoorCheck's needed only its harness to read the door's price.
+- ★7 **CreditCrunchCheck 4's order is six blocks on a till of 1.5** (`ORDER`, `TILL`), main's largest ask
+  while its bank was short; the till buys one whatever the issue brings, so the trim has a part to build.
 
 ## 6. The checks
 
-- `./batch-check.sh --fast`: exit 0, on the branch and on the merge.
-- Named harnesses, one per call, on the branch:
+- `./batch-check.sh --fast`: exit 0, on the branch, on the merge, and on the mends.
+- Named harnesses, one per call. Before the mends:
   - green: OrderDoorCheck, BuildCardCheck, CreditCheck, InvestCheck, BondCheck, BuildersFirstCheck,
     ConstructionTrapCheck, DenominationCheck, FittingCheck, PrizeCheck, RefineryCheck, ReloadCheck,
     SaveFileCheck;
-  - main's known red only: BankCheck, YoungBankCheck;
-  - the six moved lines above: CreditCrunchCheck, MortgageCheck, HousingDoorCheck.
+  - main's known red only: BankCheck, YoungBankCheck.
 
-  On the merge: OrderDoorCheck and BuildCardCheck green; CreditCrunchCheck, MortgageCheck and
-  HousingDoorCheck red on the rows filed only.
-- `sh tools/ensemble/stop-selftest.sh`: all passed.
+  On the mends: OrderDoorCheck and HousingDoorCheck green; CreditCrunchCheck and MortgageCheck red on the
+  FS9 rows only.
+- `sh tools/ensemble/stop-selftest.sh`: all passed (five).
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed). Review: needed - money (the brief).
-- The ensemble and the dry run: below, when run.
+- The second ensemble and the dry run: below, when run.
+
+## 7. The ensemble: HN1-A's measure
+
+**The first run.** On the gate box, label FB15, at e478638e3 (HN1-A and HN1-B as first built), against
+`docs/ensemble/0.9.174.md`:
+- 25 of 26 criteria pass, 10 of 10 hard, no verdict changed. The one red is AUTO2 A2 (info), which fails on
+  0.9.174 too. M1 is 0, and F1 is 0/16 on AUTO2 and SHOCK alike.
+- T1: AUTO2's 16 seeds all reach 40,000 people, at m749 [634 to 1,508] against m853 [490 to 2,058].
+- AUTO2 T2, the final population: 2,077,789 [34,353 to 4,471,796] against 2,226,328 [382,368 to 2,768,537].
+  The median is 6.7% under 0.9.174's, past the 5% line, and the spread is wider at both ends.
+- AUTO2 A3, final over peak: 100% [77.00% to 100%] against [99.15% to 100%].
+- SHOCK T2: 40,291 [28,677 to 109,823] against 38,260 [32,485 to 144,607], 5.3% over.
+
+Per-seed final populations (0.9.174's baseline has none):
+
+| seed | AUTO2 | SHOCK |
+|---|---|---|
+| 0 | 4,471,796 | 61,763 |
+| 1 | 2,534,748 | 38,904 |
+| 2 | 34,353 | 40,043 |
+| 3 | 1,510,970 | 43,542 |
+| 4 | 3,804,049 | 109,823 |
+| 5 | 3,731,744 | 45,451 |
+| 6 | 2,057,015 | 31,333 |
+| 7 | 1,947,424 | 40,539 |
+| 8 | 1,824,859 | 28,677 |
+| 9 | 2,850,968 | 44,543 |
+| 10 | 2,857,661 | 57,127 |
+| 11 | 3,640,517 | 49,346 |
+| 12 | 1,143,487 | 35,948 |
+| 13 | 2,098,563 | 30,440 |
+| 14 | 1,836,939 | 34,849 |
+| 15 | 1,691,978 | 36,769 |
+
+AUTO2 seed 2 is the low end, and it is far under 0.9.174's lowest (382,368). It peaks at 44,616 near m800, then
+holds at about 31,000 from m800 to m2400 with unemployment at 11.5-12.7%, and ends at 34,353 (A3's 77%).
+Its CSV has no housing column, so this run cannot say whether housing holds it. The orchestrator's test for
+the extra runs (AUTO2's or SHOCK's median more than 5% under 0.9.174's) is met by AUTO2's -6.7%. REV-FB15 asks
+for them in any case: the mended commit, and AUTO2 and SHOCK on 0.9.174, with `unplaced` and `homes` added.
