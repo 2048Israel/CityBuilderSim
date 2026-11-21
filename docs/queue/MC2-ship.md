@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — MC2, BF1's band share under the leverage target — 2026-11-20, ready, see docs/queue/MC2-notes.md
 A bank in its band, between its minimum and its target, lends growth again. BF1 bounded new
