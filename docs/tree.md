@@ -302,6 +302,10 @@ adds its line here, not in `CLAUDE.md`.
                                    the three existing policy doors (GV1); GovernmentViewCheck holds the bridge and previews
         GovernmentPlayer.java      the test player's January response to that band (GV1/GV2), shared by LongPlaytest,
                                    the ensemble and WealthRun; never called by a live city; GovernmentPlayerCheck holds it
+        SchoolingLadder.java       WG3/WS2's qualification pay after course fees, wages forgone and waiting,
+                                   over HS2's expected remaining working stages; historical WageLadder is unchanged;
+                                   SchoolingLadderCheck's independent monthly ledgers and EducationCheck hold it,
+                                   SchoolingPageCheck through ui/SchoolingProbe holds Policy's actual bar inputs
         PolicyPreview.java         what a staged set of the Policy tab's dials would do (0.7.36): the tax take
                                    under another policy line by line, and THE BUDGET before and after, each
                                    line its owner's read of a detached TaxPolicy.copy() - since 0.7.48

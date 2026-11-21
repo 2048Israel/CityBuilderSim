@@ -63,6 +63,28 @@ package ham.citybuildersim;
  */
 public class Education {
 
+    /** Live city context, never saved: policy and stages already have their own owners (WG3). */
+    private transient TaxPolicy studyTax;
+    private transient java.util.function.DoubleSupplier studyPolicyRate;
+    private transient PopulationCohorts studyStages;
+
+    /** Game wires the live rates beside tuition prices, including after a load. */
+    public void setStudyFinance(TaxPolicy tax, java.util.function.DoubleSupplier policyRate,
+                                PopulationCohorts stages) {
+        studyTax = tax;
+        studyPolicyRate = policyRate;
+        studyStages = stages;
+    }
+
+    /** Both HS2 adult stages may study; their remaining working lives differ. */
+    public void setStudyStages(PopulationCohorts stages) { studyStages = stages; }
+
+    /** The same pure comparison the ladder page draws, for one adult stage. */
+    public SchoolingLadder.View schoolingLadder(LabourMarket market, AdultStage stage) {
+        return SchoolingLadder.of(market, this, studyTax,
+                studyPolicyRate == null ? 0 : studyPolicyRate.getAsDouble(), stage);
+    }
+
     /** Where the player's change to the city's share of tuition is written (DecisionLog, 0.7.23); null for one no city holds. Never saved: the city wires it. */
     private transient DecisionLog decisions;
 
@@ -416,6 +438,8 @@ public class Education {
                              double staffedPayroll, double schoolUpkeep,
                              double attrition) {
 
+        if (pyramid != null) setStudyStages(pyramid);
+
         java.util.Arrays.fill(graduates, 0);
         java.util.Arrays.fill(licences, 0);
         finished = 0;
@@ -671,7 +695,7 @@ public class Education {
     /**
      * How much better off somebody is for having done it.
      *
-     * Read off the LIVE wages, so a city short of engineers is a city whose
+     * Read off LIVE wages after the course's cost, so a city short of engineers is a city whose
      * people are choosing engineering - the labour market's scarcity signal
      * arriving in the classroom without anything having to connect them
      * deliberately. At parity it returns zero: nobody studies for four years to
@@ -679,31 +703,17 @@ public class Education {
      */
     private double returnOn(EducationType type, LabourMarket market, WageBand from) {
         if (market == null || from == null) return .5;
-
-        /*
-         * WHAT THEY EARN WITHOUT THE LICENCE, and this is the whole difference
-         * between the two kinds of school.
-         *
-         * A medical student is already a university graduate, so their "before"
-         * is the best UNGATED university job - research, policy - and not the
-         * doctor's salary they are studying to be allowed to earn. The first
-         * version compared the band's best wage against the doctor's wage, and
-         * the band's best wage IS the doctor's wage, so the return came out at
-         * exactly 1.00, nobody ever enrolled, and a medical school produced
-         * zero doctors in three hundred and sixty months while costing $78M.
-         */
-        double now = type.isProfessional()
-                ? ungatedWage(market, from)
-                : bandWage(market, from);
-        double after = type.isProfessional()
-                ? market.getWage(type.licenses())
-                : bandWage(market, type.produces());
-
-        if (now <= 0 || after <= now) return 0;
-        double ratio = after / now;
-        // Normalised so a 2x return is full participation and anything beyond
-        // it is capped: past a point the answer is already yes.
-        return Math.min(1, Math.pow(ratio - 1, RETURN_ELASTICITY));
+        if (!type.isAdult()) return .5; // The basic ladder's coverage/affordability rule is unchanged.
+        if (studyStages == null) return studyReturn(type, market, AdultStage.YOUNG);
+        double adults = studyStages.get(AgeBand.ADULT);
+        if (adults <= 0) return 0;
+        double willing = 0;
+        // HS2 has no skill-by-stage inventory: FamilyModel also splits bands pro rata.
+        // Average the decisions, not the wages: the participation curve is nonlinear.
+        for (AdultStage stage : AdultStage.values()) {
+            willing += studyStages.get(stage) / adults * studyReturn(type, market, stage);
+        }
+        return willing;
     }
 
     /** The best-paid job in a band, which is what a student is aiming at. */
@@ -714,22 +724,6 @@ public class Education {
             if (WageBand.of(job) == band) best = Math.max(best, market.getWage(job));
         }
         return best;
-    }
-
-    /** The best a graduate can earn WITHOUT a professional licence. */
-    private double ungatedWage(LabourMarket market, WageBand band) {
-        if (band == null) return 0;
-        double best = 0;
-        for (JobType job : JobType.values()) {
-            if (WageBand.of(job) != band) continue;
-            if (PopulationManager.isGated(job)) continue;
-            best = Math.max(best, market.getWage(job));
-        }
-        // A band where every job is gated has no unlicensed fallback, so the
-        // comparison is against the band below - which is what such a person
-        // would actually be doing.
-        return best > 0 ? best : bandWage(market,
-                band.ordinal() > 0 ? WageBand.values()[band.ordinal() - 1] : band);
     }
 
     /**
@@ -926,6 +920,12 @@ public class Education {
     /** How much better off somebody is for doing it - 0 means not worth it. */
     public double studyReturn(EducationType type, LabourMarket market) {
         return returnOn(type, market, type.requires());
+    }
+
+    /** One stage's after-cost gain through the original return curve, with the original cap. */
+    public double studyReturn(EducationType type, LabourMarket market, AdultStage stage) {
+        double gain = schoolingLadder(market, stage).gain(type);
+        return gain <= 0 ? 0 : Math.min(1, Math.pow(gain, RETURN_ELASTICITY));
     }
 
     /** What share of the eligible could pay the un-subsidised part. */

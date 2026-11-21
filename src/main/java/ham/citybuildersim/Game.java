@@ -505,6 +505,7 @@ public class Game {
         migration = new Migration();
         labourMarket = new LabourMarket();
         education = new Education();
+        education.setStudyFinance(economyManager.getTaxPolicy(), debtManager::getPolicyRate, cohorts);
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         householdBalance.reset();
