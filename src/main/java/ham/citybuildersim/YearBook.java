@@ -127,6 +127,10 @@ public final class YearBook {
         flow(m, "bankFees", "what the bank took in fees - accounts and new loans - in thousands");
         flow(m, "bankProvisions", "what the bank set aside for loan losses - the allowance's rise and what it wrote off beyond it - in thousands");
         flow(m, "bankDividends", "what the bank paid its owners, in thousands");
+        flow(m, "capitalTaxAssessed", "capital gains tax assessed, cash and deferred, in thousands (HT1)");
+        level(m, "capitalTaxOutstanding", "secured capital gains tax still unpaid, in thousands (HT1)");
+        flow(m, "capitalTaxWrittenOff", "genuinely extinguished secured claims, noncash, in thousands (HT1)");
+        flow(m, "capitalTaxConsolidated", "own-treasury claims consolidated without cash, in thousands (HT1)");
         flow(m, "capitalGainsTax", "households' net capital gains tax paid to the treasury, in thousands (HT1)");
         flow(m, "dividendTax", "households' integrated dividend tax paid to the treasury, in thousands (HT1)");
         flow(m, "taxWage", "wage tax collected, in thousands");

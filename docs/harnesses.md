@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,198 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,261 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -4034,76 +4034,141 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L707 ...and a load puts it back
   - L721 every month of it is conserved: the money audit closes
 
-## CapitalGainsCheck.java - 59 labelled assertions
+## CapitalGainsCheck.java - 122 labelled assertions
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.
 
-  - L66 the real order book fills
-- **L71 average-cost purchases, partial and full sales, loss carry**
-  - L76 two purchases add the actual 600 paid to basis
-  - L77 the buyer has paid exactly its basis
-  - L80 a partial sale leaves 450 of average cost
-  - L81 the 100 realised gain reaches the treasury
-  - L82 cash held plus tax is the actual purchase and sale money
-  - L84 the month's loss refunds its earlier gain tax
-  - L85 only the net loss carries
-  - L88 the final sale releases all remaining basis
-  - L89 the loss offsets the later 150 gain, leaving 50 taxable
-  - L90 the carried loss is consumed
-  - L91 a full sale leaves no share
-  - L92 all proceeds and actual taxes conserve the money
-- **L96 a loss before the gain in the same month**
-  - L100 the first sale carries its actual loss
-  - L102 the later gain uses the earlier loss
-  - L103 fill order leaves the month's net gain untaxed
-- **L107 founders, offerings, splits and integration**
-  - L114 the actual quote crosses the model's split trigger
-  - L116 a share split leaves total basis standing
-  - L117 a share split changes the units
-  - L120 default integration transfers no dividend tax
-  - L121 investment income receives the whole default dividend
-  - L126 the raised band actually pays integrated dividend tax
-  - L127 the raised-band investment income is net
-  - L132 the bank integrates the Retail profit rate it actually pays
-  - L134 the inclusion dial stops at the whole gain
-  - L136 the inclusion dial stops at zero
-  - L138 a staged policy copy keeps the inclusion
-  - L144 founders receive their actual founding book as cost
-  - L148 offerings add only the actual paid amount to basis
-- **L152 the spending waterfall receives proceeds after the actual tax**
-  - L161 the waterfall actually sells shares and pays tax
-  - L162 its released cost has the purchased average
-  - L163 net spending, surplus banked and tax equal buyer payment
-- **L167 census and stage stocks**
-  - L176 stage ageing carries the original average basis
-  - L177 stage ageing carries the original loss stock
-  - L178 stage ageing conserves basis
-  - L186 the census conserves shares
-  - L187 basis follows the shares through the pool
-  - L188 loss carry is a census stock
-  - L189 the receiving cell takes the average basis
-- **L193 real months: actual assessments and both money identities**
-  - L207 the live city actually assesses sales
-  - L208 the live city actually assesses dividends
-  - L209 the default city actually transfers gain tax
-  - L210 every played month's pool audit holds
-  - L211 every played month's household identity holds
-  - L212 the budget and journal account for the actual transfers
-  - L232 both investment receipts are declared monthly flows
-  - L243 basis survives
-  - L244 loss carry survives
-  - L245 the current month's taxable gain survives
-  - L246 every appended cell slot survives
-  - L247 the inclusion policy survives
-  - L248 the struck transfers and call counts survive
-  - L250 budget gain revenue survives
-  - L251 budget dividend revenue survives
-  - L252 the recorded gain-tax history survives
-  - L254 the recorded dividend-tax history survives
-  - L258 the save floor rises past the last zero-basis format
-  - L266 an old zero-basis save is actually refused before rebuild
-  - L269 the scratch save can be read for the incompatible-format proof
+  - L67 the real order book fills
+- **L72 average-cost purchases, partial and full sales, loss carry**
+  - L77 two purchases add the actual 600 paid to basis
+  - L78 the buyer has paid exactly its basis
+  - L81 a partial sale leaves 450 of average cost
+  - L82 the 100 realised gain reaches the treasury
+  - L83 cash held plus tax is the actual purchase and sale money
+  - L85 the month's loss refunds its earlier gain tax
+  - L86 only the net loss carries
+  - L89 the final sale releases all remaining basis
+  - L90 the loss offsets the later 150 gain, leaving 50 taxable
+  - L91 the carried loss is consumed
+  - L92 a full sale leaves no share
+  - L93 all proceeds and actual taxes conserve the money
+- **L97 a loss before the gain in the same month**
+  - L101 the first sale carries its actual loss
+  - L103 the later gain uses the earlier loss
+  - L104 fill order leaves the month's net gain untaxed
+- **L108 founders, offerings, splits and integration**
+  - L115 the actual quote crosses the model's split trigger
+  - L117 a share split leaves total basis standing
+  - L118 a share split changes the units
+  - L121 default integration transfers no dividend tax
+  - L122 investment income receives the whole default dividend
+  - L127 the raised band actually pays integrated dividend tax
+  - L128 the raised-band investment income is net
+  - L133 the bank integrates the Retail profit rate it actually pays
+  - L135 the inclusion dial stops at the whole gain
+  - L137 the inclusion dial stops at zero
+  - L139 a staged policy copy keeps the inclusion
+  - L145 founders receive their actual founding book as cost
+  - L149 offerings add only the actual paid amount to basis
+- **L153 the spending waterfall receives proceeds after the actual tax**
+  - L162 the waterfall actually sells shares and pays tax
+  - L163 its released cost has the purchased average
+  - L164 net spending, surplus banked and tax equal buyer payment
+- **L168 census and stage stocks**
+  - L177 stage ageing carries the original average basis
+  - L178 stage ageing carries the original loss stock
+  - L179 stage ageing conserves basis
+  - L187 the census conserves shares
+  - L188 basis follows the shares through the pool
+  - L189 loss carry is a census stock
+  - L190 the receiving cell takes the average basis
+- **L194 real months: actual assessments and both money identities**
+  - L210 the live city actually assesses sales
+  - L211 the live city actually assesses dividends
+  - L212 the default city actually transfers gain tax
+  - L213 every played month's pool audit holds
+  - L214 every played month's household identity holds
+  - L215 the budget and journal account for the actual transfers
+  - L216 every actual government claim has a debtor or unhanded transit counterpart
+  - L233 the save fixture actually transfers its foreign collateral
+  - L249 the nonzero saved domestic and foreign claims match their government asset
+  - L256 both investment receipts are declared monthly flows
+  - L267 basis survives
+  - L268 tagged units survive
+  - L269 secured liability survives
+  - L270 matching government/transit snapshot survives
+  - L272 foreign attribution snapshot survives
+  - L274 loss carry survives
+  - L275 the current month's taxable gain survives
+  - L276 every appended cell slot survives
+  - L277 the inclusion policy survives
+  - L278 the struck transfers and call counts survive
+  - L280 restored claims retain matching government and debtor stocks
+  - L282 budget gain revenue survives
+  - L283 budget dividend revenue survives
+  - L284 the recorded gain-tax history survives
+  - L286 the recorded dividend-tax history survives
+  - L290 the save floor rises past the last zero-basis format
+  - L298 an old zero-basis save is actually refused before rebuild
+  - L301 the scratch save can be read for the incompatible-format proof
+- **L329 cash-first secured estate: assessment is distinct from collection**
+  - L331 the accepted 1000 value / 400 basis estate assesses 45
+  - L332 only the actual ten cash is collected
+  - L333 the remaining 35 is a saved government claim
+  - L334 the heirs carry the claim with their tagged shares
+  - L335 the stepped-up inherited basis is 1000
+  - L336 the surviving source households keep their 400 basis
+  - L337 matching receivable equals domestic and transit liabilities
+  - L339 a real attributable net dividend of twenty pays twenty old tax
+  - L340 fifteen remains, without repeating the assessment
+  - L341 assessment is still the original 45
+  - L343 collection caps at the old claim
+  - L344 paid security is released
+  - L346 a later unencumbered receipt cannot pay the cleared claim
+  - L348 cash-sufficient estate pays the actual 45
+  - L349 cash-sufficient heirs get the remaining 55
+  - L350 a fully paid estate creates no claim
+  - L352 the existing revolving debt gets its fifteen first
+  - L353 tax takes only the five remaining cash
+  - L354 the rest is secured, not written off for cash shortage
+  - L358 between-press common extinction saves its pending noncash claim loss
+  - L359 common extinction never receives tax cash
+  - L361 the next window records the saved pending loss once
+  - L363 the transferred loss reduces the assessed gain
+  - L364 the inherited loss stock is consumed only in that fraction
+  - L365 the living source keeps its own loss carry
+  - L375 a survivor rolls the original basis untaxed
+  - L376 a survivor carries the secured liability
+  - L377 survivor rollover does not assess a deemed gain
+  - L378 survivor claims conserve exactly
+- **L382 persistent foreign security through actual unfilled and filled orders**
+  - L387 departure is assessed once before cash leaves
+  - L388 departure cash first collects ten
+  - L389 no negative departing savings is created
+  - L393 a repeated handoff cannot add gross foreign holdings again
+  - L394 all hundred unpaid tagged units remain attributed
+  - L395 the 35 is foreign, not erased with the cell
+  - L397 the tagged order really rests with no bid
+  - L401 the actual monthly reset preserves the unfilled tagged holding
+  - L402 the actual monthly reset preserves the unpaid claim
+  - L403 unfilled is not a tax receipt
+  - L406 an unrelated WORLD purchase does not pay old foreign tax
+  - L412 the ordinary new leaver actually sells ten units
+  - L413 ordinary new-leaver proceeds do not pay the older tagged claim
+  - L416 a real partial tagged fill delivers twenty units
+  - L417 the partial receipt collects twenty and leaves fifteen
+  - L418 native tagged gross settlement is twenty
+  - L419 retained tax is a separate actual amount
+  - L420 the tagged holder has no net cash from that fill
+  - L424 partial foreign attribution is copied by value
+  - L426 split multiplies foreign tagged units
+  - L427 split preserves the nominal claim
+  - L429 currency scales the foreign claim
+  - L430 government claim still matches the debtor after currency reform
+  - L432 genuine old-common extinction writes off the unpaid claim
+  - L433 extinction never collects invented cash
+  - L434 a saved government snapshot contains the outstanding claim
 
 ## CarCheck.java - 70 labelled assertions
 

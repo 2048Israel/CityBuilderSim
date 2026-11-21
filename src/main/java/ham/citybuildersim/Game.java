@@ -308,6 +308,7 @@ public class Game {
         buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
+        householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
         economyManager.getMarkets().setCity(reserve);
@@ -13870,6 +13871,7 @@ public class Game {
         salvageThisMonth.clear();
         salvageBySector.clear();
         salvageUsedThisMonth = 0;
+        householdBalance.beginTaxMonth();
         double[] poolsBefore = MoneyAudit.pools(this);
         double householdsBefore = MoneyAudit.householdsHeld(this);
         double pooledBefore = 0;
@@ -14583,7 +14585,10 @@ public class Game {
         if (rateHistoryFilled < 12) rateHistoryFilled++;
 
         economyManager.getNationalAccounts().setInvestmentTaxes(householdBalance.getCapitalGainsTax(), householdBalance.getDividendTax());
+        economyManager.getNationalAccounts().setCapitalTaxClaims(householdBalance.getCapitalTaxAssessed(),
+                householdBalance.getCapitalTaxOutstanding(), householdBalance.getCapitalTaxWrittenOff(), householdBalance.getCapitalTaxConsolidated());
         takeTreasuryMonth();
+        householdBalance.closeTaxMonth();
 
         dataSave.setCash(cash);
 
@@ -17724,6 +17729,8 @@ public class Game {
         // ...and the month's flows the next census carries (HS1).
         dataSave.setHouseholdFlows(householdBalance.flowsToSave());
         dataSave.setHouseholdInvestmentTaxes(householdBalance.investmentTaxesToSave());
+        dataSave.setSecuredHouseholdTaxes(householdBalance.securedTaxesToSave());
+        dataSave.setSecuredForeignTaxes(equity.foreignTaxesToSave());
         dataSave.setBankCash(bank.getCash());
         // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
         dataSave.setBankSecurities(bank.getSecurities());
@@ -21400,6 +21407,7 @@ public class Game {
             // The owner line (BO1): which companies have a family, and their months at the floor; null on an older save.
             householdBalance.restoreOwnerLine(loaded.getOwnerFamilies());
             householdBalance.restoreInvestmentTaxes(loaded.getHouseholdInvestmentTaxes());
+            householdBalance.restoreSecuredTaxes(loaded.getSecuredHouseholdTaxes());
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
@@ -21599,6 +21607,7 @@ public class Game {
             outward.restore(loaded.getOutwardInvestment());
             // ...or whose companies had no owners yet.
             equity.restore(loaded.getEquityKeys(), loaded.getEquity());
+            equity.restoreForeignTaxes(loaded.getEquityKeys(), loaded.getSecuredForeignTaxes());
             // ...or no market. The desk's mark is put back from the quote and
             // the inventory, without calling the difference income.
             // ...on its books since 0.7.12 round 2; a save from before them
@@ -22616,6 +22625,8 @@ public class Game {
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
             householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
             householdBalance.restoreInvestmentTaxes(restoredFlows.getHouseholdInvestmentTaxes());
+            householdBalance.restoreSecuredTaxes(restoredFlows.getSecuredHouseholdTaxes());
+            equity.restoreForeignTaxes(restoredFlows.getEquityKeys(), restoredFlows.getSecuredForeignTaxes());
             // ...and each cell's own bonds with them, for the same reason: the
             // rebuild's census folds a cell it reads under half a household
             // into the rest, bonds and all, and the cell arrays above put

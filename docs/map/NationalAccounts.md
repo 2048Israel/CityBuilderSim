@@ -1,4 +1,4 @@
-# NationalAccounts.java - 1,619 lines · 129 methods · 6 constants · model
+# NationalAccounts.java - 1,632 lines · 134 methods · 6 constants · model
 
 `ham/citybuildersim/NationalAccounts.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -74,28 +74,28 @@
 |---:|---|
 | 85 | · GDP components |
 | 119 | · government income |
-| 153 | EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM (0.7.58, batch J1c) |
-| 542 | · AND THE BOUTIQUE'S STOCKROOM IS THE FOURTH TERM (2026-09-17) |
-| 576 | · A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (0.7.133, |
-| 601 | · EVERY TERM ADDS ITS WRITE-OFF BACK (0.7.136, batch FX1) |
-| 994 | · THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5) |
-| 1032 | · THE INFLATION UPLIFT ON LINKED BONDS (CD5, spec-city-debt.md 5.3-5.4) |
-| 1077 | · THE EXCHANGE ON FOREIGN DEBT (CD7) |
-| 1195 | THE MONTH THE GOVERNMENT ACTUALLY HAD |
-| 1334 | · GDP |
-| 1375 | · growth |
-| 1446 | · government |
+| 162 | EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM (0.7.58, batch J1c) |
+| 551 | · AND THE BOUTIQUE'S STOCKROOM IS THE FOURTH TERM (2026-09-17) |
+| 585 | · A YARD SOLD BACK FULL IS WRITTEN OFF, NOT UNPRODUCED (0.7.133, |
+| 610 | · EVERY TERM ADDS ITS WRITE-OFF BACK (0.7.136, batch FX1) |
+| 1003 | · THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5) |
+| 1041 | · THE INFLATION UPLIFT ON LINKED BONDS (CD5, spec-city-debt.md 5.3-5.4) |
+| 1086 | · THE EXCHANGE ON FOREIGN DEBT (CD7) |
+| 1204 | THE MONTH THE GOVERNMENT ACTUALLY HAD |
+| 1345 | · GDP |
+| 1386 | · growth |
+| 1457 | · government |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 83 | `NationalAccounts.HISTORY_MONTHS` | `120` | How many months of GDP the rolling history keeps - ten years - and the most a load seeds it with (seedHistory()). |
-| 238 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.L...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
-| 245 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
-| 248 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
-| 251 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
-| 1223 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
+| 247 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.L...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
+| 254 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
+| 257 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
+| 260 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
+| 1232 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
 
 ## Fields (state)
 
@@ -118,231 +118,237 @@
 | 123 | `private double taxSales` |  |
 | 124 | `private double taxWage` |  |
 | 126 | `private double capitalGainsTax, dividendTax` | HT1 cash receipts, reported separately from the wage and company taxes. |
-| 130 | `private double utilityIncome` |  |
-| 131 | `private double landSales` |  |
-| 139 | `private double propertyTax` | Property tax. |
-| 141 | `private double interestExpense` |  |
-| 142 | `private double capitalSpending` |  |
-| 143 | `private double landPurchases` |  |
-| 149 | `private double lastFoodVolume` | Stock held at the end of last month, in UNITS, so the change can be measured as a volume rather than as a value. |
-| 150 | `private double lastMaterialUnits` |  |
-| 151 | `private double lastLuxuryUnits` |  |
-| 253 | `private final double[] lastHeldUnits` |  |
-| 256 | `private final double[] heldWrittenOffUnits` | The month's units of each good in HELD written off with the yard that held them (0.7.133): a flow, read in the month it is handed in. |
-| 259 | `private double foodWrittenOffVolume, materialsWrittenOffUnits, luxuriesWrittenOffUnits` | ...and the first three terms' (0.7.136, batch FX1): the food written off, as the fixed-weight volume foodUnits is; the materials and the luxuries, in units. |
-| 262 | `private final double[] writtenOffAddedBack` | What each term added back of the month's write-offs, at the price it measured the change at: food, materials, luxuries, HELD's goods (0.7.136). |
-| 265 | `private boolean heldBaselineKnown` | Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. |
-| 287 | `private double invFood` | The three parts of the inventory term, kept so a diagnostic can say which one moved rather than leaving the reader to infer it from the total. |
-| 288 | `private double invMaterials` |  |
-| 289 | `private double invLuxuries` |  |
-| 290 | `private double invHeld` |  |
-| 305 | `private boolean inventoryBaselineKnown` | Whether last month's stock is actually known. |
-| 825 | `private double contributions` | Pension contributions in, pensions out. |
-| 826 | `private double pensions` |  |
-| 829 | `private double eiPremiums` | EI premiums in; EI benefits and student grants out. |
-| 830 | `private double eiBenefits` |  |
-| 831 | `private double studentGrants` |  |
-| 834 | `private double healthPremiums` | The health premium off every wage, in; a revenue line beside the EI premium (2026-09-19). |
-| 837 | `private double studentLoanInterest` | Interest the graduates paid on their student loans, in; a revenue line beside the premiums (2026-09-21). |
-| 867 | `private double centralBankRemittance, centralBankInterest` | THE CENTRAL BANK'S TWO LINES (0.7.0): its profit remitted to the treasury, in; the interest the treasury paid it on its advances, out. |
-| 888 | `private double mortgagePremiums, mortgageClaims` | THE CITY'S MORTGAGE INSURANCE (0.7.11): the premiums the landlords paid on the mortgages written this month, in; what the insurance paid the bank on insured mortgages the month's defaults wrote down, out. |
-| 909 | `private double fundTransfer` | THE TRANSFER FROM THE CITY'S FUND (0.7.14): the withdrawal dial's share of the fund's value (0.7.48; by default a twelfth of TreasuryFund.TRANSFER_RATE, Norway's fiscal rule), paid from its cash and over the default f... |
-| 922 | `private double foodAssistance` | FOOD ASSISTANCE (0.7.43): the vouchers the treasury paid toward the households' groceries, a transfer like EI - a spending line, with its own setter for the fund transfer's reason: Game moves the cash where it is paid... |
-| 965 | `private double cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold` | EVERY MONTHLY TREASURY FLOW INSIDE THE BUDGET'S TOTALS (0.7.102, Jerus's A15: "rec plus maintenance ... |
-| 987 | `private double publicIpCharges` | The licence the city's own patented works paid abroad at the month's strike (R2c-P; Game.settlePublicLicences()) - a spending line, saved on the government block's end. |
-| 1018 | `private double interestNotCash, retiredGain` |  |
-| 1060 | `private double inflationUplift, upliftPaid` |  |
-| 1101 | `private double debtExchangeGain` |  |
-| 1119 | `private double fuelDuty` | THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue line of its own - in the cash through the tax take, as the fares are, and set besi... |
-| 1134 | `private double portDues` | THE PORT DUES (FR3, docs/queue/FR3.md; D9): what Freight's Ports division paid the city on the tonnes across its berths, a revenue line of its own - in the cash through the tax take, as the fuel duty is, from the divi... |
-| 1152 | `private double safetySpending` | The police and the prisons: payroll and upkeep. |
-| 1157 | `private double researchSpending` | The research grants' posts and laboratories (R3): the pay of the posts and the labs' other costs. |
-| 1173 | `private double transitFares, transitSpending` | Fares in, the buses' and trams' wage bill out. |
-| 1184 | `private double healthFees` | Patient and funeral fees in, the health service's bill out. |
-| 1185 | `private double healthSpending` |  |
-| 1188 | `private double educationFees` | Tuition in, and what the schools cost. |
-| 1189 | `private double educationSpending` |  |
-| 1192 | `private double subsidies` | What the city paid to hold a loss-making sector at break-even. |
+| 127 | `private double capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated` |  |
+| 139 | `private double utilityIncome` |  |
+| 140 | `private double landSales` |  |
+| 148 | `private double propertyTax` | Property tax. |
+| 150 | `private double interestExpense` |  |
+| 151 | `private double capitalSpending` |  |
+| 152 | `private double landPurchases` |  |
+| 158 | `private double lastFoodVolume` | Stock held at the end of last month, in UNITS, so the change can be measured as a volume rather than as a value. |
+| 159 | `private double lastMaterialUnits` |  |
+| 160 | `private double lastLuxuryUnits` |  |
+| 262 | `private final double[] lastHeldUnits` |  |
+| 265 | `private final double[] heldWrittenOffUnits` | The month's units of each good in HELD written off with the yard that held them (0.7.133): a flow, read in the month it is handed in. |
+| 268 | `private double foodWrittenOffVolume, materialsWrittenOffUnits, luxuriesWrittenOffUnits` | ...and the first three terms' (0.7.136, batch FX1): the food written off, as the fixed-weight volume foodUnits is; the materials and the luxuries, in units. |
+| 271 | `private final double[] writtenOffAddedBack` | What each term added back of the month's write-offs, at the price it measured the change at: food, materials, luxuries, HELD's goods (0.7.136). |
+| 274 | `private boolean heldBaselineKnown` | Whether lastHeldUnits is a real baseline: false only after loading a save from before 0.7.58, whose first month books no change in these goods. |
+| 296 | `private double invFood` | The three parts of the inventory term, kept so a diagnostic can say which one moved rather than leaving the reader to infer it from the total. |
+| 297 | `private double invMaterials` |  |
+| 298 | `private double invLuxuries` |  |
+| 299 | `private double invHeld` |  |
+| 314 | `private boolean inventoryBaselineKnown` | Whether last month's stock is actually known. |
+| 834 | `private double contributions` | Pension contributions in, pensions out. |
+| 835 | `private double pensions` |  |
+| 838 | `private double eiPremiums` | EI premiums in; EI benefits and student grants out. |
+| 839 | `private double eiBenefits` |  |
+| 840 | `private double studentGrants` |  |
+| 843 | `private double healthPremiums` | The health premium off every wage, in; a revenue line beside the EI premium (2026-09-19). |
+| 846 | `private double studentLoanInterest` | Interest the graduates paid on their student loans, in; a revenue line beside the premiums (2026-09-21). |
+| 876 | `private double centralBankRemittance, centralBankInterest` | THE CENTRAL BANK'S TWO LINES (0.7.0): its profit remitted to the treasury, in; the interest the treasury paid it on its advances, out. |
+| 897 | `private double mortgagePremiums, mortgageClaims` | THE CITY'S MORTGAGE INSURANCE (0.7.11): the premiums the landlords paid on the mortgages written this month, in; what the insurance paid the bank on insured mortgages the month's defaults wrote down, out. |
+| 918 | `private double fundTransfer` | THE TRANSFER FROM THE CITY'S FUND (0.7.14): the withdrawal dial's share of the fund's value (0.7.48; by default a twelfth of TreasuryFund.TRANSFER_RATE, Norway's fiscal rule), paid from its cash and over the default f... |
+| 931 | `private double foodAssistance` | FOOD ASSISTANCE (0.7.43): the vouchers the treasury paid toward the households' groceries, a transfer like EI - a spending line, with its own setter for the fund transfer's reason: Game moves the cash where it is paid... |
+| 974 | `private double cityRepairs, arrearsPaid, reserveCrudeBought, reserveCrudeSold` | EVERY MONTHLY TREASURY FLOW INSIDE THE BUDGET'S TOTALS (0.7.102, Jerus's A15: "rec plus maintenance ... |
+| 996 | `private double publicIpCharges` | The licence the city's own patented works paid abroad at the month's strike (R2c-P; Game.settlePublicLicences()) - a spending line, saved on the government block's end. |
+| 1027 | `private double interestNotCash, retiredGain` |  |
+| 1069 | `private double inflationUplift, upliftPaid` |  |
+| 1110 | `private double debtExchangeGain` |  |
+| 1128 | `private double fuelDuty` | THE FUEL DUTY (0.7.103, batch P4; Jerus's A7): a duty a litre on the drivers' petrol at the pump (TaxPolicy, THE FUEL DUTY), a revenue line of its own - in the cash through the tax take, as the fares are, and set besi... |
+| 1143 | `private double portDues` | THE PORT DUES (FR3, docs/queue/FR3.md; D9): what Freight's Ports division paid the city on the tonnes across its berths, a revenue line of its own - in the cash through the tax take, as the fuel duty is, from the divi... |
+| 1161 | `private double safetySpending` | The police and the prisons: payroll and upkeep. |
+| 1166 | `private double researchSpending` | The research grants' posts and laboratories (R3): the pay of the posts and the labs' other costs. |
+| 1182 | `private double transitFares, transitSpending` | Fares in, the buses' and trams' wage bill out. |
+| 1193 | `private double healthFees` | Patient and funeral fees in, the health service's bill out. |
+| 1194 | `private double healthSpending` |  |
+| 1197 | `private double educationFees` | Tuition in, and what the schools cost. |
+| 1198 | `private double educationSpending` |  |
+| 1201 | `private double subsidies` | What the city paid to hold a loss-making sector at break-even. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 80 | 1540 | **type** `public class NationalAccounts` | The city's GDP, measured properly, plus the government's own books. |
+| 80 | 1553 | **type** `public class NationalAccounts` | The city's GDP, measured properly, plus the government's own books. |
 
 ### GDP components (lines 85-118)
 
-### government income (lines 119-152)
+### government income (lines 119-161)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 127 | 1 | `public void setInvestmentTaxes(double gains, double dividends)` |  |
-| 128 | 1 | `public double getCapitalGainsTax()` |  |
-| 129 | 1 | `public double getDividendTax()` |  |
+| 128 | 4 | `public void setCapitalTaxClaims(double assessed, double outstanding, double writtenOff, double consolidated)` |  |
+| 132 | 1 | `public double getCapitalTaxAssessed()` |  |
+| 133 | 1 | `public double getCapitalTaxOutstanding()` |  |
+| 134 | 1 | `public double getCapitalTaxWrittenOff()` |  |
+| 135 | 1 | `public double getCapitalTaxConsolidated()` |  |
+| 136 | 1 | `public void setInvestmentTaxes(double gains, double dividends)` |  |
+| 137 | 1 | `public double getCapitalGainsTax()` |  |
+| 138 | 1 | `public double getDividendTax()` |  |
 
-### EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM (0.7.58, batch J1c) (lines 153-993)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 322 | 29 | `public void restore(double gdp, double lastFoodVolume, double consumptionGoods, double consumptionHousing, double investmentCon...` | Puts back the month a save was taken in. |
-| 362 | 1 | `public double getLastFoodVolume()` | Last month's food inventory, as a VOLUME. |
-| 363 | 1 | `public double getLastMaterialUnits()` |  |
-| 364 | 1 | `public double getLastLuxuryUnits()` |  |
-| 365 | 1 | `public double getInvFood()` |  |
-| 366 | 1 | `public double getInventoryFood()` |  |
-| 367 | 1 | `public double getInventoryMaterials()` |  |
-| 368 | 1 | `public double getInventoryLuxuries()` |  |
-| 370 | 1 | `public double getInventoryHeld()` | The fifth term: the change in every good in HELD that the sectors hold, priced at what one costs to bring in (0.7.58). |
-| 372 | 1 | `public double[] getLastHeldUnits()` | Last month's units of each good in HELD, in its order (0.7.58). |
-| 374 | 1 | `public double[] getHeldWrittenOff()` | The month's units of each good in HELD destroyed with the yard that held them, in its order, added back before the change was measured (0.7.133). |
-| 376 | 1 | `public double getFoodWrittenOff()` | The month's food destroyed with the warehouse that held it, as a volume at fixed weights, added back before the change was measured (live since 0.7.136). |
-| 378 | 1 | `public double getMaterialsWrittenOff()` | ...the materials plants' units (0.7.136). |
-| 380 | 1 | `public double getLuxuriesWrittenOff()` | ...the luxuries' pieces (0.7.136). |
-| 382 | 1 | `public double[] getWrittenOffAddedBack()` | What the month's terms added back of what was written off, at the price each measured the change at - {food, materials, luxuries, HELD's goods} (0.7.136): none in a month that books no change. |
-| 383 | 1 | `public boolean isBaselineKnown()` |  |
-| 390 | 9 | `public void restoreHeld(double[] lastHeld)` | ...and the units of HELD's goods last month (0.7.58), or null for a save from before them: then the first month books no change in them, rather than booking every fleet in the city as that month's output. |
-| 412 | 12 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | Measures the month. |
-| 431 | 13 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with every other good the sectors hold (0.7.58): heldUnits and heldPrices in HELD's order - the units held, every sector's stock and pantry together, and what one costs to bring in today. |
-| 452 | 13 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with the units of HELD's goods written off this month (0.7.133), in HELD's order, or null for none: stock destroyed with the yard that held it, added back before the change is measured as food's write-off is - ... |
-| 472 | 14 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with the materials and the luxuries written off this month (0.7.136, batch FX1), each in its own units beside its stock, as food's is: every term adds its write-off back - see EVERY TERM ADDS ITS WRITE-OFF BACK. |
-| 487 | 217 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` |  |
-| 706 | 4 | `private static double held(double[] values, int i)` | One good's figure from an array in HELD's order: 0 past its end, for null, or for anything not a finite number. |
-| 721 | 7 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The city's own budget for the month. |
-| 741 | 8 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same, with the pension flows. |
-| 751 | 10 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again with healthcare but no schools, for the older callers. |
-| 774 | 11 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again, with healthcare. |
-| 797 | 26 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | ...and with what the city paid to keep a sector alive. |
-| 839 | 3 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants)` |  |
-| 844 | 4 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums)` | ...and with the health premium beside them (2026-09-19). |
-| 850 | 8 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums, double studentLo...` | ...and the student loan interest beside those (2026-09-21). |
-| 869 | 4 | `public void setCentralBankLines(double remittance, double interest)` |  |
-| 875 | 1 | `public double getCentralBankRemittance()` | What the central bank remitted: its profit, which is the interest the city paid itself less what reserves cost. |
-| 877 | 1 | `public double getCentralBankInterest()` | What the treasury paid the central bank on its advances. |
-| 890 | 4 | `public void setMortgageInsuranceLines(double premiums, double claims)` |  |
-| 896 | 1 | `public double getMortgagePremiums()` | The premiums the landlords paid the city's insurance this month - a revenue line. |
-| 911 | 1 | `public void setFundTransfer(double transfer)` |  |
-| 914 | 1 | `public double getFundTransfer()` | What the city's fund paid the budget this month - a revenue line. |
-| 924 | 1 | `public void setFoodAssistance(double paid)` |  |
-| 927 | 1 | `public double getFoodAssistance()` | What the treasury paid toward the households' groceries this month - a spending line. |
-| 968 | 1 | `public void setCityRepairs(double paid)` | The month's repairs to the city's own buildings, as paid - a spending line (0.7.102). |
-| 970 | 1 | `public void setArrearsPaid(double paid)` | What the treasury paid down of what it owed the businesses this month - a spending line (0.7.102). |
-| 972 | 4 | `public void setReserveCrude(double bought, double sold)` | The strategic reserve's crude bought and sold at the month's strike - a spending line and a revenue line (0.7.102). |
-| 978 | 1 | `public double getCityRepairs()` | What the treasury paid this month to keep the city's own buildings up - a spending line since 0.7.102. |
-| 980 | 1 | `public double getArrearsPaid()` | What the treasury paid down this month of what it owed the businesses - a spending line since 0.7.102. |
-| 982 | 1 | `public double getReserveCrudeBought()` | The crude the treasury paid for at the month's strike, for the strategic reserve - a spending line since 0.7.102. |
-| 984 | 1 | `public double getReserveCrudeSold()` | ...and what the reserve's crude sold for - a revenue line since 0.7.102. |
-| 990 | 1 | `public void setPublicIpCharges(double charges)` | Sets the month's public works' licence (R2c-P), a spending line; a figure below 0 is 0. |
-| 992 | 1 | `public double getPublicIpCharges()` | The licence the city's own patented works paid abroad this month - a spending line (R2c-P). |
-
-### THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5) (lines 994-1031)
+### EVERY OTHER GOOD A SECTOR HOLDS IS THE FIFTH TERM (0.7.58, batch J1c) (lines 162-1002)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1021 | 4 | `public void setDebtBooks(double interestNotCash, double retiredGain)` | The month's amortisation and the gain on paper retired in its window, as the strike hands them over. |
-| 1027 | 1 | `public double getInterestNotCash()` | The discount the month amortised on the city's paper: the non-cash part of its interest (below nothing for a premium). |
-| 1030 | 1 | `public double getRetiredGain()` | The gain (below nothing, a loss) on the paper the city retired in the window: the carrying value less the price. |
+| 331 | 29 | `public void restore(double gdp, double lastFoodVolume, double consumptionGoods, double consumptionHousing, double investmentCon...` | Puts back the month a save was taken in. |
+| 371 | 1 | `public double getLastFoodVolume()` | Last month's food inventory, as a VOLUME. |
+| 372 | 1 | `public double getLastMaterialUnits()` |  |
+| 373 | 1 | `public double getLastLuxuryUnits()` |  |
+| 374 | 1 | `public double getInvFood()` |  |
+| 375 | 1 | `public double getInventoryFood()` |  |
+| 376 | 1 | `public double getInventoryMaterials()` |  |
+| 377 | 1 | `public double getInventoryLuxuries()` |  |
+| 379 | 1 | `public double getInventoryHeld()` | The fifth term: the change in every good in HELD that the sectors hold, priced at what one costs to bring in (0.7.58). |
+| 381 | 1 | `public double[] getLastHeldUnits()` | Last month's units of each good in HELD, in its order (0.7.58). |
+| 383 | 1 | `public double[] getHeldWrittenOff()` | The month's units of each good in HELD destroyed with the yard that held them, in its order, added back before the change was measured (0.7.133). |
+| 385 | 1 | `public double getFoodWrittenOff()` | The month's food destroyed with the warehouse that held it, as a volume at fixed weights, added back before the change was measured (live since 0.7.136). |
+| 387 | 1 | `public double getMaterialsWrittenOff()` | ...the materials plants' units (0.7.136). |
+| 389 | 1 | `public double getLuxuriesWrittenOff()` | ...the luxuries' pieces (0.7.136). |
+| 391 | 1 | `public double[] getWrittenOffAddedBack()` | What the month's terms added back of what was written off, at the price each measured the change at - {food, materials, luxuries, HELD's goods} (0.7.136): none in a month that books no change. |
+| 392 | 1 | `public boolean isBaselineKnown()` |  |
+| 399 | 9 | `public void restoreHeld(double[] lastHeld)` | ...and the units of HELD's goods last month (0.7.58), or null for a save from before them: then the first month books no change in them, rather than booking every fleet in the city as that month's output. |
+| 421 | 12 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | Measures the month. |
+| 440 | 13 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with every other good the sectors hold (0.7.58): heldUnits and heldPrices in HELD's order - the units held, every sector's stock and pantry together, and what one costs to bring in today. |
+| 461 | 13 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with the units of HELD's goods written off this month (0.7.133), in HELD's order, or null for none: stock destroyed with the yard that held it, added back before the change is measured as food's write-off is - ... |
+| 481 | 14 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` | ...and with the materials and the luxuries written off this month (0.7.136, batch FX1), each in its own units beside its stock, as food's is: every term adds its write-off back - see EVERY TERM ADDS ITS WRITE-OFF BACK. |
+| 496 | 217 | `public void update(double retailSales, double rentPaid, double constructionWorkDone, double foodUnits, double foodStockWrittenO...` |  |
+| 715 | 4 | `private static double held(double[] values, int i)` | One good's figure from an array in HELD's order: 0 past its end, for null, or for anything not a finite number. |
+| 730 | 7 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The city's own budget for the month. |
+| 750 | 8 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same, with the pension flows. |
+| 760 | 10 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again with healthcare but no schools, for the older callers. |
+| 783 | 11 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | The same again, with healthcare. |
+| 806 | 26 | `public void updateGovernment(double business, double industrial, double sales, double wage, double utilities, double land, doub...` | ...and with what the city paid to keep a sector alive. |
+| 848 | 3 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants)` |  |
+| 853 | 4 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums)` | ...and with the health premium beside them (2026-09-19). |
+| 859 | 8 | `public void setOutsideLines(double eiPremiums, double eiBenefits, double studentGrants, double healthPremiums, double studentLo...` | ...and the student loan interest beside those (2026-09-21). |
+| 878 | 4 | `public void setCentralBankLines(double remittance, double interest)` |  |
+| 884 | 1 | `public double getCentralBankRemittance()` | What the central bank remitted: its profit, which is the interest the city paid itself less what reserves cost. |
+| 886 | 1 | `public double getCentralBankInterest()` | What the treasury paid the central bank on its advances. |
+| 899 | 4 | `public void setMortgageInsuranceLines(double premiums, double claims)` |  |
+| 905 | 1 | `public double getMortgagePremiums()` | The premiums the landlords paid the city's insurance this month - a revenue line. |
+| 920 | 1 | `public void setFundTransfer(double transfer)` |  |
+| 923 | 1 | `public double getFundTransfer()` | What the city's fund paid the budget this month - a revenue line. |
+| 933 | 1 | `public void setFoodAssistance(double paid)` |  |
+| 936 | 1 | `public double getFoodAssistance()` | What the treasury paid toward the households' groceries this month - a spending line. |
+| 977 | 1 | `public void setCityRepairs(double paid)` | The month's repairs to the city's own buildings, as paid - a spending line (0.7.102). |
+| 979 | 1 | `public void setArrearsPaid(double paid)` | What the treasury paid down of what it owed the businesses this month - a spending line (0.7.102). |
+| 981 | 4 | `public void setReserveCrude(double bought, double sold)` | The strategic reserve's crude bought and sold at the month's strike - a spending line and a revenue line (0.7.102). |
+| 987 | 1 | `public double getCityRepairs()` | What the treasury paid this month to keep the city's own buildings up - a spending line since 0.7.102. |
+| 989 | 1 | `public double getArrearsPaid()` | What the treasury paid down this month of what it owed the businesses - a spending line since 0.7.102. |
+| 991 | 1 | `public double getReserveCrudeBought()` | The crude the treasury paid for at the month's strike, for the strategic reserve - a spending line since 0.7.102. |
+| 993 | 1 | `public double getReserveCrudeSold()` | ...and what the reserve's crude sold for - a revenue line since 0.7.102. |
+| 999 | 1 | `public void setPublicIpCharges(double charges)` | Sets the month's public works' licence (R2c-P), a spending line; a figure below 0 is 0. |
+| 1001 | 1 | `public double getPublicIpCharges()` | The licence the city's own patented works paid abroad this month - a spending line (R2c-P). |
 
-### THE INFLATION UPLIFT ON LINKED BONDS (CD5, spec-city-debt.md 5.3-5.4) (lines 1032-1076)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1063 | 4 | `public void setInflationUplift(double inflationUplift, double upliftPaid)` | The month's indexation booked and the uplift paid in cash, as the strike hands them over. |
-| 1069 | 1 | `public double getInflationUplift()` | The month's inflation uplift on the linked bonds, booked: an expense of the budget, not cash; below nothing in a deflation month. |
-| 1072 | 1 | `public double getUpliftPaidInCash()` | The uplift the month paid in cash: a linker's last month, the indexed principal over its face. |
-| 1075 | 1 | `public double getUpliftNotCash()` | The part of the uplift that is not cash: what was booked less what was paid. |
-
-### THE EXCHANGE ON FOREIGN DEBT (CD7) (lines 1077-1194)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1104 | 3 | `public void setDebtExchangeGain(double gain)` | The month's exchange gain (a loss below nothing) on the city's foreign-currency debt, as the reprice hands it over. |
-| 1109 | 1 | `public double getDebtExchangeGain()` | The exchange gain (below nothing, a loss) on the city's foreign-currency debt this month: in the result, not in the totals, not cash. |
-| 1121 | 1 | `public void setFuelDuty(double duty)` |  |
-| 1124 | 1 | `public double getFuelDuty()` | The fuel duty the drivers paid on their petrol this month - a revenue line (0.7.103). |
-| 1136 | 1 | `public void setPortDues(double dues)` |  |
-| 1139 | 1 | `public double getPortDues()` | The port dues Freight paid on its berths' tonnes this month - a revenue line (FR3). |
-| 1141 | 1 | `public double getMortgageClaims()` | What the city's insurance paid the bank this month on insured mortgages written down - a spending line. |
-| 1143 | 1 | `public double getEiPremiums()` |  |
-| 1145 | 1 | `public double getHealthPremiums()` | What the health premium raised this month - a government revenue line, against the health service's cost. |
-| 1147 | 1 | `public double getStudentLoanInterest()` | What the graduates paid in interest on their student loans this month - a government revenue line; the principal is not one. |
-| 1148 | 1 | `public double getEiBenefits()` |  |
-| 1149 | 1 | `public double getStudentGrants()` |  |
-| 1153 | 1 | `public void setSafetySpending(double spending)` |  |
-| 1154 | 1 | `public double getSafetySpending()` |  |
-| 1158 | 1 | `public void setResearchSpending(double spending)` |  |
-| 1159 | 1 | `public double getResearchSpending()` |  |
-| 1175 | 4 | `public void setTransitLines(double spending, double fares)` |  |
-| 1180 | 1 | `public double getTransitSpending()` |  |
-| 1181 | 1 | `public double getTransitFares()` |  |
-| 1193 | 1 | `public double getSubsidies()` |  |
-
-### THE MONTH THE GOVERNMENT ACTUALLY HAD (lines 1195-1333)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1225 | 52 | `double[] governmentToSave()` |  |
-| 1278 | 48 | `void restoreGovernment(double[] saved)` |  |
-| 1327 | 1 | `public double getContributions()` |  |
-| 1328 | 1 | `public double getPensions()` |  |
-| 1329 | 1 | `public double getHealthFees()` |  |
-| 1330 | 1 | `public double getHealthSpending()` |  |
-| 1331 | 1 | `public double getEducationFees()` |  |
-| 1332 | 1 | `public double getEducationSpending()` |  |
-
-### GDP (lines 1334-1374)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1336 | 1 | `public double getConsumption()` |  |
-| 1337 | 1 | `public double getInvestment()` |  |
-| 1338 | 3 | `public double getNetExports()` |  |
-| 1342 | 1 | `public double getConsumptionGoods()` |  |
-| 1343 | 1 | `public double getConsumptionHousing()` |  |
-| 1344 | 1 | `public double getInvestmentConstruction()` |  |
-| 1345 | 1 | `public double getInvestmentInventories()` |  |
-| 1346 | 1 | `public double getInvestmentValuables()` |  |
-| 1349 | 1 | `void restoreValuables(double value)` | The saved month's valuables acquisition, alongside its other restored GDP components. |
-| 1350 | 1 | `public double getGovernment()` |  |
-| 1351 | 1 | `public double getImportsFood()` |  |
-| 1352 | 1 | `public double getImportsMaterials()` |  |
-| 1353 | 1 | `public double getImportsRawMaterial()` |  |
-| 1354 | 1 | `public double getExports()` |  |
-| 1355 | 3 | `public double getTotalImports()` |  |
-| 1359 | 1 | `public double getGdp()` |  |
-| 1362 | 8 | `public double getAnnualGdp()` | The last twelve months, or as many as there are - not gdp * 12. |
-| 1371 | 3 | `public double getGdpPerCapita(long population)` |  |
-
-### growth (lines 1375-1445)
+### THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5) (lines 1003-1040)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1383 | 9 | `public double getMonthlyGrowthAnnualised()` | Month on month, as an annual rate. |
-| 1394 | 8 | `public double getYearOnYearGrowth()` | This month against the same month a year ago. |
-| 1404 | 5 | `public double getTrendGdp()` | Average monthly GDP over the last twelve, to smooth a lumpy month. |
-| 1410 | 1 | `public int getMonthsRecorded()` |  |
-| 1412 | 1 | `public List<Double> getHistory()` |  |
-| 1436 | 9 | `public void seedHistory(List<Double> monthly)` | The rolling history put back after a load (0.7.31, the Government spec's B1): the last HISTORY_MONTHS of the graph history's GDP series (HistorySave.getGdp(), a month's GDP kept every month and saved), in place of the... |
+| 1030 | 4 | `public void setDebtBooks(double interestNotCash, double retiredGain)` | The month's amortisation and the gain on paper retired in its window, as the strike hands them over. |
+| 1036 | 1 | `public double getInterestNotCash()` | The discount the month amortised on the city's paper: the non-cash part of its interest (below nothing for a premium). |
+| 1039 | 1 | `public double getRetiredGain()` | The gain (below nothing, a loss) on the paper the city retired in the window: the carrying value less the price. |
 
-### government (lines 1446-1619)
+### THE INFLATION UPLIFT ON LINKED BONDS (CD5, spec-city-debt.md 5.3-5.4) (lines 1041-1085)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1448 | 1 | `public double getTaxBusiness()` |  |
-| 1449 | 1 | `public double getTaxIndustrial()` |  |
-| 1450 | 1 | `public double getTaxSales()` |  |
-| 1451 | 1 | `public double getTaxWage()` |  |
-| 1452 | 1 | `public double getUtilityIncome()` |  |
-| 1453 | 1 | `public double getLandSales()` |  |
-| 1454 | 1 | `public double getPropertyTax()` |  |
-| 1456 | 24 | `public double getTotalRevenue()` |  |
-| 1487 | 1 | `public double getInterestExpense()` | The budget's "Interest on the city's paper" (CD3): the effective interest - the cash coupons the month paid (interestExpense) and the discount it amortised (interestNotCash) together. |
-| 1490 | 1 | `public double getInterestPaidInCash()` | The cash part of it: the coupons the month paid, every holder's, the dollar paper's at the month's rate. |
-| 1491 | 1 | `public double getCapitalSpending()` |  |
-| 1492 | 1 | `public double getLandPurchases()` |  |
-| 1494 | 22 | `public double getTotalExpenses()` |  |
-| 1526 | 4 | `public double getBalance()` | Surplus or deficit - the month's result. |
-| 1532 | 4 | `public double getRevenueToGdp()` | Revenue as a share of output. |
-| 1537 | 4 | `public double getDebtToGdp(double debt)` |  |
-| 1542 | 12 | `public void reset()` |  |
-| 1575 | 43 | `public void redenominate(double scale)` | The month's national accounts, in the new unit. |
+| 1072 | 4 | `public void setInflationUplift(double inflationUplift, double upliftPaid)` | The month's indexation booked and the uplift paid in cash, as the strike hands them over. |
+| 1078 | 1 | `public double getInflationUplift()` | The month's inflation uplift on the linked bonds, booked: an expense of the budget, not cash; below nothing in a deflation month. |
+| 1081 | 1 | `public double getUpliftPaidInCash()` | The uplift the month paid in cash: a linker's last month, the indexed principal over its face. |
+| 1084 | 1 | `public double getUpliftNotCash()` | The part of the uplift that is not cash: what was booked less what was paid. |
+
+### THE EXCHANGE ON FOREIGN DEBT (CD7) (lines 1086-1203)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1113 | 3 | `public void setDebtExchangeGain(double gain)` | The month's exchange gain (a loss below nothing) on the city's foreign-currency debt, as the reprice hands it over. |
+| 1118 | 1 | `public double getDebtExchangeGain()` | The exchange gain (below nothing, a loss) on the city's foreign-currency debt this month: in the result, not in the totals, not cash. |
+| 1130 | 1 | `public void setFuelDuty(double duty)` |  |
+| 1133 | 1 | `public double getFuelDuty()` | The fuel duty the drivers paid on their petrol this month - a revenue line (0.7.103). |
+| 1145 | 1 | `public void setPortDues(double dues)` |  |
+| 1148 | 1 | `public double getPortDues()` | The port dues Freight paid on its berths' tonnes this month - a revenue line (FR3). |
+| 1150 | 1 | `public double getMortgageClaims()` | What the city's insurance paid the bank this month on insured mortgages written down - a spending line. |
+| 1152 | 1 | `public double getEiPremiums()` |  |
+| 1154 | 1 | `public double getHealthPremiums()` | What the health premium raised this month - a government revenue line, against the health service's cost. |
+| 1156 | 1 | `public double getStudentLoanInterest()` | What the graduates paid in interest on their student loans this month - a government revenue line; the principal is not one. |
+| 1157 | 1 | `public double getEiBenefits()` |  |
+| 1158 | 1 | `public double getStudentGrants()` |  |
+| 1162 | 1 | `public void setSafetySpending(double spending)` |  |
+| 1163 | 1 | `public double getSafetySpending()` |  |
+| 1167 | 1 | `public void setResearchSpending(double spending)` |  |
+| 1168 | 1 | `public double getResearchSpending()` |  |
+| 1184 | 4 | `public void setTransitLines(double spending, double fares)` |  |
+| 1189 | 1 | `public double getTransitSpending()` |  |
+| 1190 | 1 | `public double getTransitFares()` |  |
+| 1202 | 1 | `public double getSubsidies()` |  |
+
+### THE MONTH THE GOVERNMENT ACTUALLY HAD (lines 1204-1344)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1234 | 52 | `double[] governmentToSave()` |  |
+| 1287 | 50 | `void restoreGovernment(double[] saved)` |  |
+| 1338 | 1 | `public double getContributions()` |  |
+| 1339 | 1 | `public double getPensions()` |  |
+| 1340 | 1 | `public double getHealthFees()` |  |
+| 1341 | 1 | `public double getHealthSpending()` |  |
+| 1342 | 1 | `public double getEducationFees()` |  |
+| 1343 | 1 | `public double getEducationSpending()` |  |
+
+### GDP (lines 1345-1385)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1347 | 1 | `public double getConsumption()` |  |
+| 1348 | 1 | `public double getInvestment()` |  |
+| 1349 | 3 | `public double getNetExports()` |  |
+| 1353 | 1 | `public double getConsumptionGoods()` |  |
+| 1354 | 1 | `public double getConsumptionHousing()` |  |
+| 1355 | 1 | `public double getInvestmentConstruction()` |  |
+| 1356 | 1 | `public double getInvestmentInventories()` |  |
+| 1357 | 1 | `public double getInvestmentValuables()` |  |
+| 1360 | 1 | `void restoreValuables(double value)` | The saved month's valuables acquisition, alongside its other restored GDP components. |
+| 1361 | 1 | `public double getGovernment()` |  |
+| 1362 | 1 | `public double getImportsFood()` |  |
+| 1363 | 1 | `public double getImportsMaterials()` |  |
+| 1364 | 1 | `public double getImportsRawMaterial()` |  |
+| 1365 | 1 | `public double getExports()` |  |
+| 1366 | 3 | `public double getTotalImports()` |  |
+| 1370 | 1 | `public double getGdp()` |  |
+| 1373 | 8 | `public double getAnnualGdp()` | The last twelve months, or as many as there are - not gdp * 12. |
+| 1382 | 3 | `public double getGdpPerCapita(long population)` |  |
+
+### growth (lines 1386-1456)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1394 | 9 | `public double getMonthlyGrowthAnnualised()` | Month on month, as an annual rate. |
+| 1405 | 8 | `public double getYearOnYearGrowth()` | This month against the same month a year ago. |
+| 1415 | 5 | `public double getTrendGdp()` | Average monthly GDP over the last twelve, to smooth a lumpy month. |
+| 1421 | 1 | `public int getMonthsRecorded()` |  |
+| 1423 | 1 | `public List<Double> getHistory()` |  |
+| 1447 | 9 | `public void seedHistory(List<Double> monthly)` | The rolling history put back after a load (0.7.31, the Government spec's B1): the last HISTORY_MONTHS of the graph history's GDP series (HistorySave.getGdp(), a month's GDP kept every month and saved), in place of the... |
+
+### government (lines 1457-1632)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1459 | 1 | `public double getTaxBusiness()` |  |
+| 1460 | 1 | `public double getTaxIndustrial()` |  |
+| 1461 | 1 | `public double getTaxSales()` |  |
+| 1462 | 1 | `public double getTaxWage()` |  |
+| 1463 | 1 | `public double getUtilityIncome()` |  |
+| 1464 | 1 | `public double getLandSales()` |  |
+| 1465 | 1 | `public double getPropertyTax()` |  |
+| 1467 | 24 | `public double getTotalRevenue()` |  |
+| 1498 | 1 | `public double getInterestExpense()` | The budget's "Interest on the city's paper" (CD3): the effective interest - the cash coupons the month paid (interestExpense) and the discount it amortised (interestNotCash) together. |
+| 1501 | 1 | `public double getInterestPaidInCash()` | The cash part of it: the coupons the month paid, every holder's, the dollar paper's at the month's rate. |
+| 1502 | 1 | `public double getCapitalSpending()` |  |
+| 1503 | 1 | `public double getLandPurchases()` |  |
+| 1505 | 22 | `public double getTotalExpenses()` |  |
+| 1537 | 4 | `public double getBalance()` | Surplus or deficit - the month's result. |
+| 1543 | 4 | `public double getRevenueToGdp()` | Revenue as a share of output. |
+| 1548 | 4 | `public double getDebtToGdp(double debt)` |  |
+| 1553 | 13 | `public void reset()` |  |
+| 1587 | 44 | `public void redenominate(double scale)` | The month's national accounts, in the new unit. |
 

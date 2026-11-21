@@ -1047,7 +1047,8 @@ public final class MoneyAudit {
          * carries migrants' transfers, as a real one does (spec-wealth 3.4, item 4).
          */
         in += credit.apply("+ households ArrivedWith", g.getHouseholdBalance().getArrivedWith(), Scope.FINANCIAL);
-        in += credit.apply("+ households CapitalGainsTax", g.getHouseholdBalance().getCapitalGainsTax(), Scope.DOMESTIC);
+        in += credit.apply("+ households CapitalGainsTax", g.getHouseholdBalance().getDomesticCapitalGainsTax(), Scope.DOMESTIC);
+        in += credit.apply("+ foreign SecuredCapitalTaxCollected", g.getHouseholdBalance().getForeignCapitalGainsTax(), Scope.FINANCIAL);
         in += credit.apply("+ households DividendTax", g.getHouseholdBalance().getDividendTax(), Scope.DOMESTIC);
         in += credit.apply("+ households LeftWith (from their savings)", g.getHouseholdBalance().getTakenAway(), Scope.DOMESTIC);
         /*

@@ -55,6 +55,7 @@ public final class CapitalGainsCheck {
             for (Household c : balance.cells()) { c.shares[company] = 0; c.basis[company] = 0; }
             holder.savings = 20_000;
             balance.setInvestmentTaxes(policy, exchange::price, (line, amount) -> received += amount);
+            balance.attachInvestmentRegister(equity, exchange::shortShares);
         }
 
         void trade(boolean buy, double price, double shares) {
@@ -194,12 +195,14 @@ public final class CapitalGainsCheck {
         Game g = LongPlaytest.probeCity(GameFiles.scratch("ht1-live"), null);
         long gains = 0, dividends = 0;
         double tax = 0;
-        boolean pools = true, households = true, budget = true;
+        boolean pools = true, households = true, budget = true, claims = true;
         for (int month = 0; month < 120; month++) {
             quietly(g::toggleNextMonth);
             HouseholdBalance b = g.getHouseholdBalance();
             gains += b.getGainAssessments(); dividends += b.getDividendAssessments();
             tax += b.getCapitalGainsTax();
+            claims &= Math.abs(b.getCapitalTaxOutstanding() - b.securedClaimCounterpart())
+                    <= MoneyAudit.tolerance(MoneyAudit.CENT, b.getCapitalTaxOutstanding());
             pools &= Math.abs(g.getLastMoneyAudit().residual) <= MoneyAudit.tolerance(MoneyAudit.CENT, g.getLastMoneyAudit().moved());
             households &= Math.abs(g.getLastHouseholdsAudit().residual) <= MoneyAudit.tolerance(MoneyAudit.CENT, g.getLastHouseholdsAudit().moved());
             budget &= Math.abs(g.getTreasuryResidual()) <= MoneyAudit.CENT;
@@ -210,6 +213,7 @@ public final class CapitalGainsCheck {
         check("every played month's pool audit holds", pools);
         check("every played month's household identity holds", households);
         check("the budget and journal account for the actual transfers", budget);
+        check("every actual government claim has a debtor or unhanded transit counterpart", claims);
         out.println("Observed: " + gains + " gain assessments, " + dividends + " dividend assessments, tax " + tax);
         g.awaitSaves();
     }
@@ -220,10 +224,30 @@ public final class CapitalGainsCheck {
         GameFiles files = GameFiles.scratch("ht1-save");
         Game g = LongPlaytest.probeCity(files, null);
         HouseholdBalance b = g.getHouseholdBalance();
-        Household h = b.cells().stream().filter(c -> !c.isEmpty()).findFirst().orElseThrow();
+        Household h = b.cells().stream().filter(c -> !c.isEmpty() && c.shares[0] > 0).findFirst().orElseThrow();
+        // Cause actual foreign ownership before seeding an already-assessed secured snapshot for the loader proof.
+        double foreignUnits = h.shares[0] * h.households() * .1;
+        double price = g.getEquity().foundingPrice();
+        g.getExchange().bookOf(0).withdrawAll();
+        g.getExchange().tradeForCheck(0, Exchange.CELL + h.key(), OrderBook.Side.SELL, price, foreignUnits);
+        close("the save fixture actually transfers its foreign collateral", FundLedgerCheck.filled(
+                g.getExchange().tradeForCheck(0, Exchange.WORLD, OrderBook.Side.BUY, price, foreignUnits)), foreignUnits);
         h.basis[0] = 123.5; h.lossCarried = 17.25; h.taxedGains = 9.5;
         g.getEconomyManager().getTaxPolicy().setCapitalGainsInclusion(.75);
-        b.restoreInvestmentTaxes(new double[] {12.5, 3.25, 7, 4});
+        double[] taxState = new double[2 * HouseholdBalance.TAX_FLOW_SLOTS + 1];
+        taxState[0] = 12.5; taxState[1] = 3.25; taxState[2] = 7; taxState[3] = 4;
+        taxState[4] = 12.5; taxState[6] = 12.5;
+        taxState[HouseholdBalance.TAX_FLOW_SLOTS + 7] = 1.25; // saved between-press noncash write-off
+        taxState[taxState.length - 1] = 0;
+        b.restoreInvestmentTaxes(taxState);
+        h.taxShares[0] = h.shares[0] * .5; h.taxClaim[0] = 2.5;
+        double[] secured = b.securedTaxesToSave(); secured[0] = 2.5 * h.households();
+        double[] foreign = g.getEquity().foreignTaxesToSave();
+        foreign[0] = foreignUnits; foreign[Equity.COMPANIES.length] = 3.5;
+        g.getEquity().restoreForeignTaxes(g.getEquity().keys(), foreign);
+        secured[0] += 3.5; b.restoreSecuredTaxes(secured);
+        close("the nonzero saved domestic and foreign claims match their government asset",
+                b.securedClaimCounterpart(), b.getCapitalTaxOutstanding());
         g.getEconomyManager().getNationalAccounts().setInvestmentTaxes(12.5, 3.25);
         double[] cells = b.toCellSaveArray();
         g.getHistorySave().recordMonth(g);
@@ -241,12 +265,20 @@ public final class CapitalGainsCheck {
             });
             Household restored = loaded.getHouseholdBalance().cellByKey(h.key());
             close("basis survives " + rebuild, restored.basis[0], 123.5);
+            close("tagged units survive " + rebuild, restored.taxShares[0], h.taxShares[0]);
+            close("secured liability survives " + rebuild, restored.taxClaim[0], 2.5);
+            check("matching government/transit snapshot survives " + rebuild,
+                    Arrays.equals(secured, loaded.getHouseholdBalance().securedTaxesToSave()));
+            check("foreign attribution snapshot survives " + rebuild,
+                    Arrays.equals(foreign, loaded.getEquity().foreignTaxesToSave()));
             close("loss carry survives " + rebuild, restored.lossCarried, 17.25);
             close("the current month's taxable gain survives " + rebuild, restored.taxedGains, 9.5);
             check("every appended cell slot survives " + rebuild, Arrays.equals(cells, loaded.getHouseholdBalance().toCellSaveArray()));
             close("the inclusion policy survives " + rebuild, loaded.getEconomyManager().getTaxPolicy().getCapitalGainsInclusion(), .75);
             check("the struck transfers and call counts survive " + rebuild,
                     Arrays.equals(b.investmentTaxesToSave(), loaded.getHouseholdBalance().investmentTaxesToSave()));
+            close("restored claims retain matching government and debtor stocks " + rebuild,
+                    loaded.getHouseholdBalance().getCapitalTaxOutstanding(), loaded.getHouseholdBalance().securedClaimCounterpart());
             close("budget gain revenue survives " + rebuild, loaded.getEconomyManager().getNationalAccounts().getCapitalGainsTax(), 12.5);
             close("budget dividend revenue survives " + rebuild, loaded.getEconomyManager().getNationalAccounts().getDividendTax(), 3.25);
             check("the recorded gain-tax history survives " + rebuild,
@@ -271,7 +303,140 @@ public final class CapitalGainsCheck {
         return fails == before;
     }
 
+    /** A real census estate transfers one of ten senior households to twenty established heirs. */
+    static final class Estate {
+        final HouseholdFlowCheck.Town town = new HouseholdFlowCheck.Town();
+        final HouseholdBalance balance = town.bal;
+        final Household deceased = town.cell(FamilyStructure.SENIOR_ALONE, PayTier.SKILLED, 10);
+        final Household heirs = town.cell(FamilyStructure.SINGLE_ADULT, PayTier.SKILLED, 20);
+        final TaxPolicy policy = new TaxPolicy();
+        final Equity equity = ExchangeCheck.equity();
+        double received;
+        Estate(double cash, double debt) {
+            equity.listIfUnlisted(0, 1000, balance);
+            for (Household c : balance.cells()) { Arrays.fill(c.shares, 0); Arrays.fill(c.basis, 0); }
+            deceased.shares[0] = 100; deceased.basis[0] = 400;
+            deceased.savings = cash; deceased.debt = debt;
+            balance.setInvestmentTaxes(policy, c -> 10, (line, amount) -> received += amount);
+            balance.attachInvestmentRegister(equity, c -> 0);
+            town.expectRetired(FamilyStructure.SENIOR_ALONE, 9);
+            balance.setFlows(0, 0, 0, .1, 0, 0, 0);
+        }
+        void run() { town.run(); }
+    }
+
+    static void securedEstates() {
+        out.println("--- cash-first secured estate: assessment is distinct from collection ---");
+        Estate shortCash = new Estate(10, 0); shortCash.run();
+        close("the accepted 1000 value / 400 basis estate assesses 45", shortCash.balance.getCapitalTaxAssessed(), 45);
+        close("only the actual ten cash is collected", shortCash.received, 10);
+        close("the remaining 35 is a saved government claim", shortCash.balance.getCapitalTaxOutstanding(), 35);
+        close("the heirs carry the claim with their tagged shares", shortCash.heirs.taxClaim[0] * 20, 35);
+        close("the stepped-up inherited basis is 1000", shortCash.heirs.basis[0] * 20, 1000);
+        close("the surviving source households keep their 400 basis", shortCash.deceased.basis[0], 400);
+        close("matching receivable equals domestic and transit liabilities", shortCash.balance.securedClaimCounterpart(), 35);
+        shortCash.balance.creditDividend(0, .2);
+        close("a real attributable net dividend of twenty pays twenty old tax", shortCash.received, 30);
+        close("fifteen remains, without repeating the assessment", shortCash.balance.getCapitalTaxOutstanding(), 15);
+        close("assessment is still the original 45", shortCash.balance.getCapitalTaxAssessed(), 45);
+        shortCash.balance.creditDividend(0, 1);
+        close("collection caps at the old claim", shortCash.received, 45);
+        close("paid security is released", shortCash.heirs.taxShares[0], 0);
+        double before = shortCash.received; shortCash.balance.creditDividend(0, 1);
+        close("a later unencumbered receipt cannot pay the cleared claim", shortCash.received, before);
+        Estate ample = new Estate(100, 0); ample.run();
+        close("cash-sufficient estate pays the actual 45", ample.received, 45);
+        close("cash-sufficient heirs get the remaining 55", ample.heirs.savings * 20, 55);
+        close("a fully paid estate creates no claim", ample.balance.getCapitalTaxOutstanding(), 0);
+        Estate priority = new Estate(20, 15); priority.run();
+        close("the existing revolving debt gets its fifteen first", priority.balance.getEstateRepaid(), 15);
+        close("tax takes only the five remaining cash", priority.received, 5);
+        close("the rest is secured, not written off for cash shortage", priority.balance.getCapitalTaxOutstanding(), 40);
+        priority.balance.closeTaxMonth();
+        priority.balance.surrenderShares(0); priority.equity.takeAllForCity(0, 0);
+        double[] pending = priority.balance.investmentTaxesToSave();
+        close("between-press common extinction saves its pending noncash claim loss", pending[HouseholdBalance.TAX_FLOW_SLOTS + 7], 40);
+        close("common extinction never receives tax cash", priority.received, 5);
+        priority.balance.beginTaxMonth();
+        close("the next window records the saved pending loss once", priority.balance.getCapitalTaxWrittenOff(), 40);
+        Estate losses = new Estate(10, 0); losses.deceased.lossCarried = 200; losses.run();
+        close("the transferred loss reduces the assessed gain", losses.balance.getCapitalTaxAssessed(), 30);
+        close("the inherited loss stock is consumed only in that fraction", losses.heirs.lossCarried, 0);
+        close("the living source keeps its own loss carry", losses.deceased.lossCarried, 200);
+
+        HouseholdFlowCheck.Town widows = new HouseholdFlowCheck.Town();
+        Household couple = widows.cell(FamilyStructure.SENIOR_COUPLE, PayTier.SKILLED, 10);
+        couple.shares[0] = couple.taxShares[0] = 100; couple.basis[0] = 400; couple.taxClaim[0] = 35;
+        double[] claims = widows.bal.securedTaxesToSave(); claims[0] = 350; widows.bal.restoreSecuredTaxes(claims);
+        widows.bal.setInvestmentTaxes(new TaxPolicy(), c -> 10, (line, amount) -> {});
+        widows.expectRetired(FamilyStructure.SENIOR_COUPLE, 8).expectRetired(FamilyStructure.SENIOR_ALONE, 2);
+        widows.bal.setFlows(0, 0, 0, .1, 0, 0, 0); widows.run();
+        Household survivor = widows.bal.cell(FamilyStructure.SENIOR_ALONE, PayTier.SKILLED);
+        close("a survivor rolls the original basis untaxed", survivor.basis[0], 400);
+        close("a survivor carries the secured liability", survivor.taxClaim[0], 35);
+        close("survivor rollover does not assess a deemed gain", widows.bal.getCapitalTaxAssessed(), 0);
+        close("survivor claims conserve exactly", widows.bal.securedClaimCounterpart(), 350);
+    }
+
+    static void securedDepartures() {
+        out.println("--- persistent foreign security through actual unfilled and filled orders ---");
+        Market m = new Market(); m.trade(true, 4, 100); m.holder.savings = 10;
+        m.balance.setInvestmentTaxes(m.policy, c -> 10, (line, amount) -> m.received += amount);
+        m.town.expect(FamilyStructure.SINGLE_ADULT, PayTier.ELITE, 0);
+        m.balance.setFlows(0, 0, 0, 0, 0, 1, 0); m.town.run();
+        close("departure is assessed once before cash leaves", m.balance.getCapitalTaxAssessed(), 45);
+        close("departure cash first collects ten", m.received, 10);
+        close("no negative departing savings is created", m.balance.getTakenAway(), 0);
+        m.equity.followEmigrants(m.balance, m.exchange::shortShares);
+        double foreignBefore = m.equity.getForeignShares(0);
+        m.equity.followEmigrants(m.balance, m.exchange::shortShares);
+        close("a repeated handoff cannot add gross foreign holdings again", m.equity.getForeignShares(0), foreignBefore);
+        close("all hundred unpaid tagged units remain attributed", m.equity.foreignTaxShares(0), 100);
+        close("the 35 is foreign, not erased with the cell", m.equity.foreignTaxClaim(0), 35);
+        m.exchange.bookOf(0).withdrawAll();
+        check("the tagged order really rests with no bid", m.exchange.tradeForCheck(0, Exchange.TAX_EMIGRANTS, OrderBook.Side.SELL, 10, 100).isEmpty());
+        double[] books = ExchangeCheck.bookOf(0, 1000);
+        // A very high required return puts fair at the model's floor, so the ordinary world posts no bid.
+        quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 2));
+        close("the actual monthly reset preserves the unfilled tagged holding", m.equity.foreignTaxShares(0), 100);
+        close("the actual monthly reset preserves the unpaid claim", m.equity.foreignTaxClaim(0), 35);
+        close("unfilled is not a tax receipt", m.received, 10);
+        m.holder.households = 1; m.holder.savings = 100;
+        m.trade(true, 1, 10);
+        close("an unrelated WORLD purchase does not pay old foreign tax", m.equity.foreignTaxClaim(0), 35);
+        m.balance.setFlows(0, 0, 0, 0, 0, 1, 0); m.town.run();
+        m.equity.followEmigrants(m.balance, m.exchange::shortShares);
+        quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 3));
+        m.exchange.bookOf(0).withdrawAll();
+        m.exchange.tradeForCheck(0, Exchange.EMIGRANTS, OrderBook.Side.SELL, 1, 10);
+        close("the ordinary new leaver actually sells ten units", FundLedgerCheck.filled(m.exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.BUY, 1, 10)), 10);
+        close("ordinary new-leaver proceeds do not pay the older tagged claim", m.equity.foreignTaxClaim(0), 35);
+        m.exchange.bookOf(0).withdrawAll();
+        m.exchange.tradeForCheck(0, Exchange.TAX_EMIGRANTS, OrderBook.Side.SELL, 1, 20);
+        close("a real partial tagged fill delivers twenty units", FundLedgerCheck.filled(m.exchange.tradeForCheck(0, Exchange.WORLD, OrderBook.Side.BUY, 1, 20)), 20);
+        close("the partial receipt collects twenty and leaves fifteen", m.equity.foreignTaxClaim(0), 15);
+        close("native tagged gross settlement is twenty", m.exchange.getTaxEmigrantsGross(0), 20);
+        close("retained tax is a separate actual amount", m.exchange.getTaxEmigrantsRetained(0), 20);
+        close("the tagged holder has no net cash from that fill", m.exchange.getTaxEmigrantsNet(0), 0);
+        double[] foreignState = m.equity.foreignTaxesToSave(), government = m.balance.securedTaxesToSave();
+        Equity copy = ExchangeCheck.equity(); copy.restore(m.equity.keys(), m.equity.toSaveArray());
+        copy.restoreForeignTaxes(m.equity.keys(), foreignState);
+        check("partial foreign attribution is copied by value", Arrays.equals(foreignState, copy.foreignTaxesToSave()));
+        m.equity.split(0, 10); m.balance.splitShares(0, 10);
+        close("split multiplies foreign tagged units", m.equity.foreignTaxShares(0), 800);
+        close("split preserves the nominal claim", m.equity.foreignTaxClaim(0), 15);
+        m.equity.redenominate(.1); m.balance.redenominate(.1);
+        close("currency scales the foreign claim", m.equity.foreignTaxClaim(0), 1.5);
+        close("government claim still matches the debtor after currency reform", m.balance.getCapitalTaxOutstanding(), m.balance.securedClaimCounterpart());
+        m.equity.takeAllForCity(0, 0);
+        close("genuine old-common extinction writes off the unpaid claim", m.balance.getCapitalTaxOutstanding(), 0);
+        close("extinction never collects invented cash", m.exchange.getTaxEmigrantsRetained(0), 20);
+        check("a saved government snapshot contains the outstanding claim", government[0] > 0);
+    }
+
     public static void main(String[] args) throws Exception {
+        securedEstates();
+        securedDepartures();
         costAndLoss();
         lossesFirst();
         foundersSplitsAndDividends();

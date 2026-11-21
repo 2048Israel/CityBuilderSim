@@ -223,6 +223,9 @@ public abstract class Household {
     final double[] basis = new double[Equity.COMPANIES.length];
     /** Net capital losses available against later gains, per household. */
     double lossCarried;
+    /** Encumbered subset of shares, and its limited, interest-free unpaid gains tax (HT1). */
+    final double[] taxShares = new double[Equity.COMPANIES.length];
+    final double[] taxClaim = new double[Equity.COMPANIES.length];
     /** Gains taxed in the current month, eligible for a same-month loss refund. Saved, not a stock. */
     double taxedGains;
 
@@ -1414,6 +1417,7 @@ public abstract class Household {
         java.util.Arrays.fill(shares, 0);
         java.util.Arrays.fill(basis, 0);
         lossCarried = 0; taxedGains = 0;
+        java.util.Arrays.fill(taxShares, 0); java.util.Arrays.fill(taxClaim, 0);
         clearWorking();
     }
 
@@ -1422,6 +1426,7 @@ public abstract class Household {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
         for (int k = 0; k < basis.length; k++) basis[k] *= scale;
         lossCarried *= scale; taxedGains *= scale;
+        for (int k = 0; k < taxClaim.length; k++) taxClaim[k] *= scale;
         // The bank's ceiling on it this month is money too (0.7.8); an
         // infinite one - lending freely - stays infinite.
         capitalCeiling *= scale;

@@ -1,4 +1,4 @@
-# MoneyAudit.java - 1,706 lines · 42 methods · 8 constants · model
+# MoneyAudit.java - 1,707 lines · 42 methods · 8 constants · model
 
 `ham/citybuildersim/MoneyAudit.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -142,7 +142,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 1612 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 95 | 1613 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 98 | 198 | **type** `public static final class Result` | One month's strike. |
 | 174 | 1 | `public double moneyMade()` _(in MoneyAudit.Result)_ | What the month did to M0, as the audit saw it cross the edge. |
 | 177 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
@@ -183,7 +183,7 @@
 | 603 | 9 | `private static String[] poolNames()` |  |
 | 614 | 68 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 
-### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 683-1706)
+### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 683-1707)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -191,7 +191,7 @@
 | 770 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
 | 782 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
 | 796 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 801 | 888 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
-| 1691 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
-| 1701 | 5 | `static double oldMetalInTransit(Sectors sectors)` | What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. |
+| 801 | 889 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 1692 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
+| 1702 | 5 | `static double oldMetalInTransit(Sectors sectors)` | What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. |
 

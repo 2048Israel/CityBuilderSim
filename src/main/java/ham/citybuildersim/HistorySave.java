@@ -324,6 +324,10 @@ public class HistorySave {
     private List<Double> householdSavings = new ArrayList<>();
     private List<Double> capitalGainsTax = new ArrayList<>();
     private List<Double> dividendTax = new ArrayList<>();
+    private List<Double> capitalTaxConsolidated = new ArrayList<>();
+    private List<Double> capitalTaxWrittenOff = new ArrayList<>();
+    private List<Double> capitalTaxOutstanding = new ArrayList<>();
+    private List<Double> capitalTaxAssessed = new ArrayList<>();
 
     /* ------------------------ the price of money (0.7.7) ------------------------
 
@@ -844,6 +848,10 @@ public class HistorySave {
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
         capitalGainsTax.add(round2(game.getHouseholdBalance().getCapitalGainsTax()));
         dividendTax.add(round2(game.getHouseholdBalance().getDividendTax()));
+        capitalTaxConsolidated.add(round2(game.getHouseholdBalance().getCapitalTaxConsolidated()));
+        capitalTaxWrittenOff.add(round2(game.getHouseholdBalance().getCapitalTaxWrittenOff()));
+        capitalTaxOutstanding.add(round2(game.getHouseholdBalance().getCapitalTaxOutstanding()));
+        capitalTaxAssessed.add(round2(game.getHouseholdBalance().getCapitalTaxAssessed()));
 
         double policy = game.getDebtManager().getPolicyRate();
         policyRate.add(round4(policy));
@@ -1289,6 +1297,10 @@ public class HistorySave {
         householdSavings = copy(loaded.householdSavings);
         capitalGainsTax = copy(loaded.capitalGainsTax);
         dividendTax = copy(loaded.dividendTax);
+        capitalTaxConsolidated = copy(loaded.capitalTaxConsolidated);
+        capitalTaxWrittenOff = copy(loaded.capitalTaxWrittenOff);
+        capitalTaxOutstanding = copy(loaded.capitalTaxOutstanding);
+        capitalTaxAssessed = copy(loaded.capitalTaxAssessed);
         policyRate = copy(loaded.policyRate);
         bankPrime = copy(loaded.bankPrime);
         bankDepositRate = copy(loaded.bankDepositRate);
@@ -1919,6 +1931,10 @@ public class HistorySave {
         map.put("householdSavings", householdSavings);
         map.put("capitalGainsTax", capitalGainsTax);
         map.put("dividendTax", dividendTax);
+        map.put("capitalTaxConsolidated", capitalTaxConsolidated);
+        map.put("capitalTaxWrittenOff", capitalTaxWrittenOff);
+        map.put("capitalTaxOutstanding", capitalTaxOutstanding);
+        map.put("capitalTaxAssessed", capitalTaxAssessed);
         map.put("policyRate", policyRate);
         map.put("bankPrime", bankPrime);
         map.put("bankDepositRate", bankDepositRate);
@@ -2081,7 +2097,7 @@ public class HistorySave {
         scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued, publicIpCharges, publicIpAccrued,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
-                householdSavings, capitalGainsTax, dividendTax, bankFees,
+                householdSavings, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated, bankFees,
                 bankAllowance, bankProvisions, bankDividends,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,

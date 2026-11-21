@@ -1,4 +1,4 @@
-# HistorySave.java - 2,469 lines · 94 methods · 6 constants · model
+# HistorySave.java - 2,485 lines · 94 methods · 6 constants · model
 
 `ham/citybuildersim/HistorySave.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -70,53 +70,53 @@
 | 197 | · the edge |
 | 260 | · money and credit |
 | 305 | · what the bank could carry, and how hard |
-| 328 | · the price of money (0.7.7) |
-| 343 | · the bank's capital (0.7.8) |
-| 372 | · the budget |
-| 388 | · housing |
-| 398 | · school and care |
-| 404 | · outside the families |
-| 433 | · THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: |
-| 447 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
-| 455 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
-| 465 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
-| 481 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
-| 505 | · what runs out |
-| 509 | · the market |
-| 533 | · the sectors (0.7.4) |
-| 553 | · the world's moneys (WN4, 2026-10-30) |
-| 577 | · the research (R5, 2026-11-06) |
-| 609 | · the trade by partner (WN3, 2026-10-28) |
-| 628 | · GDP in layers (0.7.6) |
-| 645 | · the city's fund (0.7.39) |
-| 661 | · the new price model, read (0.7.45) |
-| 713 | RECORDING |
-| 791 | · · the edge |
-| 823 | · · money and credit |
-| 872 | · · the budget |
-| 882 | · · housing |
-| 887 | · · school and care |
-| 894 | · · outside the families |
-| 942 | · · what runs out |
-| 946 | · · the market |
-| 959 | · · the sectors |
-| 967 | · · the new price model, read (0.7.45) |
-| 989 | · · the research (R5) |
-| 1005 | · · the city's fund (0.7.39) |
-| 1017 | THE FOLD (0.7.55) |
-| 1556 | READING |
-| 1684 | · a series' record, counted (0.7.9) |
+| 332 | · the price of money (0.7.7) |
+| 347 | · the bank's capital (0.7.8) |
+| 376 | · the budget |
+| 392 | · housing |
+| 402 | · school and care |
+| 408 | · outside the families |
+| 437 | · THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: |
+| 451 | · THE LONG SICK, 2026-09-11. How many have been sick more than two |
+| 459 | · THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many |
+| 469 | · WHO DIED, 2026-09-11. The month's dead by age band, and how many of |
+| 485 | · CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a |
+| 509 | · what runs out |
+| 513 | · the market |
+| 537 | · the sectors (0.7.4) |
+| 557 | · the world's moneys (WN4, 2026-10-30) |
+| 581 | · the research (R5, 2026-11-06) |
+| 613 | · the trade by partner (WN3, 2026-10-28) |
+| 632 | · GDP in layers (0.7.6) |
+| 649 | · the city's fund (0.7.39) |
+| 665 | · the new price model, read (0.7.45) |
+| 717 | RECORDING |
+| 795 | · · the edge |
+| 827 | · · money and credit |
+| 880 | · · the budget |
+| 890 | · · housing |
+| 895 | · · school and care |
+| 902 | · · outside the families |
+| 950 | · · what runs out |
+| 954 | · · the market |
+| 967 | · · the sectors |
+| 975 | · · the new price model, read (0.7.45) |
+| 997 | · · the research (R5) |
+| 1013 | · · the city's fund (0.7.39) |
+| 1025 | THE FOLD (0.7.55) |
+| 1568 | READING |
+| 1696 | · a series' record, counted (0.7.9) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 110 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
-| 575 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 604 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
-| 607 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
-| 1126 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "d...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1148 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices of food, materials, ... |
+| 579 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
+| 608 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
+| 611 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
+| 1134 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "d...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1156 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices of food, materials, ... |
 
 ## Fields (state)
 
@@ -188,124 +188,128 @@
 | 324 | `private List<Double> householdSavings` |  |
 | 325 | `private List<Double> capitalGainsTax` |  |
 | 326 | `private List<Double> dividendTax` |  |
-| 338 | `private List<Double> policyRate` |  |
-| 339 | `private List<Double> bankPrime` |  |
-| 340 | `private List<Double> bankDepositRate` |  |
-| 341 | `private List<Double> bankFees` |  |
-| 353 | `private List<Double> bankCapitalRatio` |  |
-| 354 | `private List<Double> bankCapitalTarget` |  |
-| 355 | `private List<Double> bankAllowance` |  |
-| 356 | `private List<Double> bankProvisions` |  |
-| 357 | `private List<Double> bankDividends` |  |
-| 358 | `private List<Double> bankReturnOnEquity` |  |
-| 369 | `private List<Double> bankLeverageRatio` | ...AND THE OTHER MEASURE (A7, 0.7.46; the Bank spec's D11): its equity over everything on its sheet (Bank.leverageRatio()) and the target it holds on that measure (leverageTarget()). |
-| 370 | `private List<Double> bankLeverageTarget` |  |
-| 379 | `private List<Double> taxWage` |  |
-| 380 | `private List<Double> taxProperty` |  |
-| 381 | `private List<Double> taxSales` |  |
-| 382 | `private List<Double> taxBusiness` |  |
-| 383 | `private List<Double> taxIndustrial` |  |
-| 384 | `private List<Double> contributions` |  |
-| 385 | `private List<Double> pensionBill` |  |
-| 386 | `private List<Double> healthBill` |  |
-| 394 | `private List<Double> rentPrice` |  |
-| 395 | `private List<Long> homes` |  |
-| 396 | `private List<Double> households` |  |
-| 399 | `private List<Double> students` |  |
-| 400 | `private List<Double> graduates` |  |
-| 401 | `private List<Double> licences` |  |
-| 402 | `private List<Double> unburied` |  |
-| 411 | `private List<Double> outOfWorkOnEi` |  |
-| 412 | `private List<Double> outOfWorkOffEi` |  |
-| 413 | `private List<Double> unhoused` |  |
-| 414 | `private List<Double> orphans` |  |
-| 415 | `private List<Double> evicted` |  |
-| 416 | `private List<Double> eiPaid` |  |
-| 417 | `private List<Double> eiPremiums` |  |
-| 419 | `private List<Double> healthPremiums` | The health premium collected, a month at a time - the EI premium's shape (2026-09-19). |
-| 420 | `private List<Double> studentGrants` |  |
-| 427 | `private List<Double> foodAssistance` | FOOD ASSISTANCE (0.7.43): what the treasury paid toward the households' groceries a month, and the baskets that bought at the price charged. |
-| 428 | `private List<Double> fedByAssistance` |  |
-| 429 | `private List<Double> studentLoansOwed` |  |
-| 431 | `private List<Double> studentLoanInterest` | Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). |
-| 441 | `private List<Double> m0` |  |
-| 442 | `private List<Double> m2` |  |
-| 443 | `private List<Double> advancesToTreasury` |  |
-| 444 | `private List<Double> reserves` |  |
-| 445 | `private List<Double> remittance` |  |
-| 451 | `private List<Double> sickPastTwoMonths` |  |
-| 452 | `private List<Double> diedOfIllness` |  |
-| 453 | `private List<Double> sickRecovery` |  |
-| 463 | `private Map<String, List<Double>> householdsByShape` |  |
-| 471 | `private List<Double> deathsBabies` |  |
-| 472 | `private List<Double> deathsChildren` |  |
-| 473 | `private List<Double> deathsTeens` |  |
-| 474 | `private List<Double> deathsAdults` |  |
-| 475 | `private List<Double> deathsSeniors` |  |
-| 477 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
-| 478 | `private List<Double> deathsOrphans` |  |
-| 479 | `private List<Double> deathsUnhoused` |  |
-| 488 | `private List<Double> crimeRate` |  |
-| 489 | `private List<Double> policeCoverage` |  |
-| 490 | `private List<Double> prisoners` |  |
-| 492 | `private List<Double> owners` | The owner families' adults, off the labour force (PopulationManager.getOwners()): YearBook.labourForce() takes them off as the model does (BO1-S). |
-| 493 | `private List<Double> caughtNotHeld` |  |
-| 494 | `private List<Double> stolen` |  |
-| 495 | `private List<Double> deathsKilled` |  |
-| 496 | `private List<Double> safetyBill` |  |
-| 497 | `private Map<String, List<Double>> crimeByCause` |  |
-| 506 | `private List<Long> constructionCapacity` |  |
-| 507 | `private List<Double> landUse` |  |
-| 526 | `private Map<String, List<Double>> sharePrice` |  |
-| 527 | `private Map<String, List<Double>> shareValue` |  |
-| 550 | `private Map<String, List<Double>> sectorNetIncome` |  |
-| 551 | `private Map<String, List<Double>> sectorWorkers` |  |
-| 566 | `private Map<String, List<Double>> worldMoney` |  |
-| 596 | `private Map<String, List<Double>> researchSeries` |  |
-| 621 | `private List<PartnerTrade.Table> tradeByPartner` |  |
-| 640 | `private List<Double> consumption` |  |
-| 641 | `private List<Double> investment` |  |
-| 642 | `private List<Double> government` |  |
-| 643 | `private List<Double> netExports` |  |
-| 657 | `private List<Double> fundValue` |  |
-| 658 | `private List<Double> fundPutIn` |  |
-| 659 | `private List<Double> fundTakenOut` |  |
-| 677 | `private List<Double> expectedLevel` |  |
-| 678 | `private List<Double> indexGroceries` |  |
-| 679 | `private List<Double> indexRent` |  |
-| 680 | `private List<Double> indexMeals` |  |
-| 681 | `private List<Double> indexLuxury` |  |
-| 682 | `private List<Double> indexServices` |  |
-| 683 | `private List<Double> weightGroceries` |  |
-| 684 | `private List<Double> weightRent` |  |
-| 685 | `private List<Double> weightMeals` |  |
-| 686 | `private List<Double> weightLuxury` |  |
-| 687 | `private List<Double> weightServices` |  |
-| 688 | `private List<Double> basketLinkedAt` |  |
-| 689 | `private List<Double> shelfPrice` |  |
-| 690 | `private List<Double> shelfFloor` |  |
-| 691 | `private List<Double> basketsAsked` |  |
-| 692 | `private List<Double> basketsHanded` |  |
-| 693 | `private List<Double> hunger` |  |
-| 694 | `private List<Double> hungerPricedOut` |  |
-| 695 | `private List<Double> householdsAssisted` |  |
-| 696 | `private List<Double> mealMargin` |  |
-| 697 | `private List<Double> mealTargetMargin` |  |
-| 698 | `private List<Double> luxuryMargin` |  |
-| 699 | `private List<Double> luxuryTargetMargin` |  |
-| 1463 | `private transient List<Later> owed` | The snapshots taken with snapshotLater() and not yet copied; guarded by this object's monitor. |
-| 1466 | `private transient volatile boolean anyOwed` | True while {@link #owed} holds a snapshot: read by every mutator without the lock, so a city that is not being saved pays a field read. |
-| 1490 | `private HistorySave copy` |  |
-| 2425 | `private final double[] values` |  |
-| 2426 | `private final BitSet nulls` |  |
-| 2448 | `private final long[] values` |  |
-| 2449 | `private final BitSet nulls` |  |
+| 327 | `private List<Double> capitalTaxConsolidated` |  |
+| 328 | `private List<Double> capitalTaxWrittenOff` |  |
+| 329 | `private List<Double> capitalTaxOutstanding` |  |
+| 330 | `private List<Double> capitalTaxAssessed` |  |
+| 342 | `private List<Double> policyRate` |  |
+| 343 | `private List<Double> bankPrime` |  |
+| 344 | `private List<Double> bankDepositRate` |  |
+| 345 | `private List<Double> bankFees` |  |
+| 357 | `private List<Double> bankCapitalRatio` |  |
+| 358 | `private List<Double> bankCapitalTarget` |  |
+| 359 | `private List<Double> bankAllowance` |  |
+| 360 | `private List<Double> bankProvisions` |  |
+| 361 | `private List<Double> bankDividends` |  |
+| 362 | `private List<Double> bankReturnOnEquity` |  |
+| 373 | `private List<Double> bankLeverageRatio` | ...AND THE OTHER MEASURE (A7, 0.7.46; the Bank spec's D11): its equity over everything on its sheet (Bank.leverageRatio()) and the target it holds on that measure (leverageTarget()). |
+| 374 | `private List<Double> bankLeverageTarget` |  |
+| 383 | `private List<Double> taxWage` |  |
+| 384 | `private List<Double> taxProperty` |  |
+| 385 | `private List<Double> taxSales` |  |
+| 386 | `private List<Double> taxBusiness` |  |
+| 387 | `private List<Double> taxIndustrial` |  |
+| 388 | `private List<Double> contributions` |  |
+| 389 | `private List<Double> pensionBill` |  |
+| 390 | `private List<Double> healthBill` |  |
+| 398 | `private List<Double> rentPrice` |  |
+| 399 | `private List<Long> homes` |  |
+| 400 | `private List<Double> households` |  |
+| 403 | `private List<Double> students` |  |
+| 404 | `private List<Double> graduates` |  |
+| 405 | `private List<Double> licences` |  |
+| 406 | `private List<Double> unburied` |  |
+| 415 | `private List<Double> outOfWorkOnEi` |  |
+| 416 | `private List<Double> outOfWorkOffEi` |  |
+| 417 | `private List<Double> unhoused` |  |
+| 418 | `private List<Double> orphans` |  |
+| 419 | `private List<Double> evicted` |  |
+| 420 | `private List<Double> eiPaid` |  |
+| 421 | `private List<Double> eiPremiums` |  |
+| 423 | `private List<Double> healthPremiums` | The health premium collected, a month at a time - the EI premium's shape (2026-09-19). |
+| 424 | `private List<Double> studentGrants` |  |
+| 431 | `private List<Double> foodAssistance` | FOOD ASSISTANCE (0.7.43): what the treasury paid toward the households' groceries a month, and the baskets that bought at the price charged. |
+| 432 | `private List<Double> fedByAssistance` |  |
+| 433 | `private List<Double> studentLoansOwed` |  |
+| 435 | `private List<Double> studentLoanInterest` | Interest the graduates paid on their student loans, a month at a time - the premiums' shape (2026-09-21). |
+| 445 | `private List<Double> m0` |  |
+| 446 | `private List<Double> m2` |  |
+| 447 | `private List<Double> advancesToTreasury` |  |
+| 448 | `private List<Double> reserves` |  |
+| 449 | `private List<Double> remittance` |  |
+| 455 | `private List<Double> sickPastTwoMonths` |  |
+| 456 | `private List<Double> diedOfIllness` |  |
+| 457 | `private List<Double> sickRecovery` |  |
+| 467 | `private Map<String, List<Double>> householdsByShape` |  |
+| 475 | `private List<Double> deathsBabies` |  |
+| 476 | `private List<Double> deathsChildren` |  |
+| 477 | `private List<Double> deathsTeens` |  |
+| 478 | `private List<Double> deathsAdults` |  |
+| 479 | `private List<Double> deathsSeniors` |  |
+| 481 | `private List<Double> deathsElders` | The over-85s, since the band was split on 2026-09-15. |
+| 482 | `private List<Double> deathsOrphans` |  |
+| 483 | `private List<Double> deathsUnhoused` |  |
+| 492 | `private List<Double> crimeRate` |  |
+| 493 | `private List<Double> policeCoverage` |  |
+| 494 | `private List<Double> prisoners` |  |
+| 496 | `private List<Double> owners` | The owner families' adults, off the labour force (PopulationManager.getOwners()): YearBook.labourForce() takes them off as the model does (BO1-S). |
+| 497 | `private List<Double> caughtNotHeld` |  |
+| 498 | `private List<Double> stolen` |  |
+| 499 | `private List<Double> deathsKilled` |  |
+| 500 | `private List<Double> safetyBill` |  |
+| 501 | `private Map<String, List<Double>> crimeByCause` |  |
+| 510 | `private List<Long> constructionCapacity` |  |
+| 511 | `private List<Double> landUse` |  |
+| 530 | `private Map<String, List<Double>> sharePrice` |  |
+| 531 | `private Map<String, List<Double>> shareValue` |  |
+| 554 | `private Map<String, List<Double>> sectorNetIncome` |  |
+| 555 | `private Map<String, List<Double>> sectorWorkers` |  |
+| 570 | `private Map<String, List<Double>> worldMoney` |  |
+| 600 | `private Map<String, List<Double>> researchSeries` |  |
+| 625 | `private List<PartnerTrade.Table> tradeByPartner` |  |
+| 644 | `private List<Double> consumption` |  |
+| 645 | `private List<Double> investment` |  |
+| 646 | `private List<Double> government` |  |
+| 647 | `private List<Double> netExports` |  |
+| 661 | `private List<Double> fundValue` |  |
+| 662 | `private List<Double> fundPutIn` |  |
+| 663 | `private List<Double> fundTakenOut` |  |
+| 681 | `private List<Double> expectedLevel` |  |
+| 682 | `private List<Double> indexGroceries` |  |
+| 683 | `private List<Double> indexRent` |  |
+| 684 | `private List<Double> indexMeals` |  |
+| 685 | `private List<Double> indexLuxury` |  |
+| 686 | `private List<Double> indexServices` |  |
+| 687 | `private List<Double> weightGroceries` |  |
+| 688 | `private List<Double> weightRent` |  |
+| 689 | `private List<Double> weightMeals` |  |
+| 690 | `private List<Double> weightLuxury` |  |
+| 691 | `private List<Double> weightServices` |  |
+| 692 | `private List<Double> basketLinkedAt` |  |
+| 693 | `private List<Double> shelfPrice` |  |
+| 694 | `private List<Double> shelfFloor` |  |
+| 695 | `private List<Double> basketsAsked` |  |
+| 696 | `private List<Double> basketsHanded` |  |
+| 697 | `private List<Double> hunger` |  |
+| 698 | `private List<Double> hungerPricedOut` |  |
+| 699 | `private List<Double> householdsAssisted` |  |
+| 700 | `private List<Double> mealMargin` |  |
+| 701 | `private List<Double> mealTargetMargin` |  |
+| 702 | `private List<Double> luxuryMargin` |  |
+| 703 | `private List<Double> luxuryTargetMargin` |  |
+| 1475 | `private transient List<Later> owed` | The snapshots taken with snapshotLater() and not yet copied; guarded by this object's monitor. |
+| 1478 | `private transient volatile boolean anyOwed` | True while {@link #owed} holds a snapshot: read by every mutator without the lock, so a city that is not being saved pays a field read. |
+| 1502 | `private HistorySave copy` |  |
+| 2441 | `private final double[] values` |  |
+| 2442 | `private final BitSet nulls` |  |
+| 2464 | `private final long[] values` |  |
+| 2465 | `private final BitSet nulls` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 2383 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
+| 87 | 2399 | **type** `public class HistorySave` | Every month the city has ever lived, one number at a time. |
 
 ### THE AXIS (lines 89-111)
 
@@ -321,184 +325,184 @@
 
 ### money and credit (lines 260-304)
 
-### what the bank could carry, and how hard (lines 305-327)
+### what the bank could carry, and how hard (lines 305-331)
 
-### the price of money (0.7.7) (lines 328-342)
+### the price of money (0.7.7) (lines 332-346)
 
-### the bank's capital (0.7.8) (lines 343-371)
+### the bank's capital (0.7.8) (lines 347-375)
 
-### the budget (lines 372-387)
+### the budget (lines 376-391)
 
-### housing (lines 388-397)
+### housing (lines 392-401)
 
-### school and care (lines 398-403)
+### school and care (lines 402-407)
 
-### outside the families (lines 404-432)
+### outside the families (lines 408-436)
 
-### THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: (lines 433-446)
+### THE CENTRAL BANK, 0.7.0. The Money page's year and the year book's: (lines 437-450)
 
-### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 447-454)
+### THE LONG SICK, 2026-09-11. How many have been sick more than two (lines 451-458)
 
-### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 455-464)
+### THE HOUSEHOLDS, BY SHAPE, 2026-09-11. Jerus: a record of how many (lines 459-468)
 
-### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 465-480)
+### WHO DIED, 2026-09-11. The month's dead by age band, and how many of (lines 469-484)
 
-### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 481-504)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 500 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
-| 503 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
-
-### what runs out (lines 505-508)
-
-### the market (lines 509-532)
+### CRIME, THE POLICE AND THE PRISONS, 2026-09-11 (night). The rate a (lines 485-508)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 530 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
-| 531 | 1 | `public static String valueKey(String company)` |  |
+| 504 | 1 | `public static String crimeKey(Crime.Cause cause)` | The series name the screens ask for, per reason for crime. |
+| 507 | 1 | `public static String householdKey(FamilyStructure shape)` | The series name the screens ask for, per household shape. |
 
-### the sectors (0.7.4) (lines 533-552)
+### what runs out (lines 509-512)
 
-### the world's moneys (WN4, 2026-10-30) (lines 553-576)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 569 | 1 | `public static String worldRateKey(String code)` | The series of a major's units to the US dollar: "fxEUR". |
-| 572 | 1 | `public static String policyRateKey(String code)` | The series of a central bank's policy rate, a fraction a year (XR4): "policyUSD", for each of the eight, the dollar's too. |
-
-### the research (R5, 2026-11-06) (lines 577-608)
+### the market (lines 513-536)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 599 | 3 | `public static String researchersKey(ResearchCatalog.Field field)` | The series of a field's researchers (the city's and the labs'): "researchersEngineering", "researchersMedicine", "researchersBusiness", "researchersLaw". |
+| 534 | 1 | `public static String priceKey(String company)` | The series name the screens ask for, per company. |
+| 535 | 1 | `public static String valueKey(String company)` |  |
 
-### the trade by partner (WN3, 2026-10-28) (lines 609-627)
+### the sectors (0.7.4) (lines 537-556)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 624 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
-| 626 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
-
-### GDP in layers (0.7.6) (lines 628-644)
-
-### the city's fund (0.7.39) (lines 645-660)
-
-### the new price model, read (0.7.45) (lines 661-712)
+### the world's moneys (WN4, 2026-10-30) (lines 557-580)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 702 | 1 | `public static String indexKey(int component)` | The name each component's chained level is kept under (PriceIndex.COMPONENTS order): "indexGroceries" and so on. |
-| 705 | 1 | `public static String weightKey(int component)` | ...and its weight in the basket in force: "weightGroceries" and so on. |
-| 707 | 1 | `private static String capitalised(String s)` |  |
-| 710 | 1 | `private List<List<Double>> indexLists()` | The component lists in COMPONENTS order, for the recording and the reform. |
-| 711 | 1 | `private List<List<Double>> weightLists()` |  |
+| 573 | 1 | `public static String worldRateKey(String code)` | The series of a major's units to the US dollar: "fxEUR". |
+| 576 | 1 | `public static String policyRateKey(String code)` | The series of a central bank's policy rate, a fraction a year (XR4): "policyUSD", for each of the eight, the dollar's too. |
 
-### RECORDING (lines 713-1016)
+### the research (R5, 2026-11-06) (lines 581-612)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 728 | 288 | `public void recordMonth(Game game)` | One month, read off the city itself. |
+| 603 | 3 | `public static String researchersKey(ResearchCatalog.Field field)` | The series of a field's researchers (the city's and the labs'): "researchersEngineering", "researchersMedicine", "researchersBusiness", "researchersLaw". |
 
-### THE FOLD (0.7.55) (lines 1017-1555)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1034 | 13 | `public void foldOldYears()` | Folds every calendar year whose months are all older than the newest MONTHLY_KEPT, oldest first; nothing in a history of MONTHLY_KEPT months or fewer. |
-| 1049 | 10 | `private void foldYear(int from, int to)` | Axis entries [from, to) - one calendar year's months - into one entry at the year's last month, every series by its rule. |
-| 1069 | 36 | `private static void foldSeries(String name, List<? extends Number> raw, int axis, int from, int to)` | One series' months for axis entries [from, to), folded in place by its rule (YearBook.kindOf()): FLOW added, RATE averaged, LEVEL - and a series nobody has given a rule, as the year book folds it - the last. |
-| 1113 | 11 | `void appendMonth(int m, java.util.function.ToDoubleFunction<String> value)` | Harnesses only (0.7.55): one more month on every series this history has, each value asked of `value` by the series' name, then the fold recordMonth() ends with - so a history can be grown past MONTHLY_KEPT without a ... |
-| 1137 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
-| 1144 | 1 | `private static double round2(double v)` |  |
-| 1145 | 1 | `private static double round4(double v)` |  |
-| 1151 | 5 | `static double roundSig(double v)` | A price per founding share to SHARE_PRICE_DIGITS significant figures; 0 stays 0, and a figure that is not a number is kept as 0, as finite() keeps the rest (JSON holds no NaN). |
-| 1158 | 4 | `static double atTodaysPrices(double d)` | The value at today's prices to SHARE_PRICE_DIGITS significant figures, before roundSig scales it back by FACTOR; a zero (and a negative one) stays itself. |
-| 1164 | 3 | `static boolean onTodaysGrid(double d)` | True if d is a figure roundSig could have recorded: its six figures at today's prices, times FACTOR, give these very bits back; a figure that is not finite, or that a reform or a fold moved off the grid, is not. |
-| 1168 | 1 | `private static double round6(double v)` | Six places, for a price in thousands that four would round to a dime - and to nothing after a reform (0.7.45: the shelf). |
-| 1170 | 1 | `private static double finite(double v)` | A reading the file can hold: JSON has no NaN, so a figure not struck yet is kept as 0 (0.7.45's series). |
-| 1183 | 198 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
-| 1383 | 1 | `public List<PartnerTrade.Table> getTradeByPartner()` | The finished years of the city's trade by partner (WN3), oldest first; empty on a city with no world market or a history from before it. |
-| 1386 | 1 | `public int tradeYears()` | How many finished years of trade by partner the history holds. |
-| 1389 | 4 | `public void setTradeByPartner(List<PartnerTrade.Table> years)` | Sets the finished years (Game, when a year finishes): a copy of the list; the tables are immutable. |
-| 1395 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
-| 1412 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
-| 1426 | 12 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
-| 1445 | 5 | `public HistorySave snapshot()` | A copy of this history for the writer thread (UP1, 2026-10-22): every series copied into new lists, whose entries are immutable numbers, by restoreFrom() - the one place every series is listed, so a series added later... |
-| 1469 | 9 | `public Later snapshotLater()` | A snapshot of this history that is copied by whoever asks for it first (the save writer), or by the next change of the history. |
-| 1480 | 6 | `private void settle()` | Makes every copy still owed, before the series change. |
-| 1488 | 20 | **type** `public final class Later` | One snapshotLater(): the copy, made once, on the first get(). |
-| 1492 | 1 | `private Later()` _(in HistorySave.Later)_ |  |
-| 1495 | 12 | `public HistorySave get()` _(in HistorySave.Later)_ | The snapshot: this history as it stood when it was asked for, copied now if nobody has yet. |
-| 1518 | 32 | `public HistorySave cutAt(int lastMonth)` | A copy of this history as it stood at {@code lastMonth} (TR1, 2026-10-31): only the axis entries whose month is at most it, and what every series held for them. |
-| 1552 | 3 | `private static void dropEmpty(Map<String, List<Double>> series)` | The series of a keyed map that a cut left with no point, gone with their names (cutAt()). |
-
-### READING (lines 1556-1683)
+### the trade by partner (WN3, 2026-10-28) (lines 613-631)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1565 | 1 | `public int months()` | How many entries the axis has - a month each, and since 0.7.55 a year each for the oldest yearlyPoints() of a history past MONTHLY_KEPT. |
-| 1568 | 1 | `public List<Integer> getMonth()` | The axis: each entry's month, and a folded year's last month (0.7.55). |
-| 1571 | 1 | `public int yearlyPoints()` | How many of the axis's entries, from the first, are folded years (0.7.55); 0 in a history of MONTHLY_KEPT months or fewer. |
-| 1574 | 3 | `public int monthsIn(int i)` | The months axis entry i holds: 1 for a month, and a folded year's months (0.7.55). |
-| 1579 | 3 | `public int firstMonthOf(int i)` | The first month axis entry i holds: its own month for a month, a folded year's first (0.7.55). |
-| 1584 | 5 | `public int monthsLived()` | How many months the city has lived: every entry's months together (0.7.55) - months() until a year folds. |
-| 1598 | 9 | `public int back(int i, int months)` | The entry `months` months before entry i (0.7.55): the month that far back, or the folded year that holds it - so "a year before" a folded year is the year before it, and before a month in the first year after the fol... |
-| 1627 | 8 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
-| 1646 | 21 | `public double[] alignedTail(String name, int n)` | The last {@code n} entries of aligned(name), and no more of it (UP2): the same figures as aligned(name)'s tail, value for value - the front padding as NaN, a folded year's flow as its monthly average where the tail re... |
-| 1669 | 14 | `public double[] raw(String name)` | A series as it is stored, padded at the front as aligned() is: a folded year's flow is the year's sum (0.7.55). |
+| 628 | 1 | `public static String netIncomeKey(String sector)` | The series name the screens ask for, per sector: the month's net income after tax. |
+| 630 | 1 | `public static String workersKey(String sector)` | ...and its posts filled. |
 
-### a series' record, counted (0.7.9) (lines 1684-2469)
+### GDP in layers (0.7.6) (lines 632-648)
+
+### the city's fund (0.7.39) (lines 649-664)
+
+### the new price model, read (0.7.45) (lines 665-716)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1697 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
-| 1707 | 6 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
-| 1715 | 6 | `public int monthsRecorded(String series)` | Months a series was recorded in - a folded year's months each (0.7.55). |
-| 1723 | 5 | `public double total(String series)` | A flow added up over the months it was recorded: the stored figures, so a folded year adds its sum (0.7.55). |
-| 1736 | 7 | `public double changeOver(String series, int months)` | How far a series has moved over the last `months` months, as a share of where it stood then: the last recorded value over the one `months` entries before it, less one (0.7.35: the Trade tab's rate this month and over ... |
-| 1749 | 12 | `public double recentTotal(String series, int months)` | A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). |
-| 1767 | 16 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
-| 1785 | 13 | `private static double worstYear(double[] a)` | worstYear()'s twelve months in a row, over a run of months. |
-| 1805 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
-| 1826 | 3 | `public double[] runningTotal(String series)` | ...and a series of this history summed from its first recorded entry (0.7.55): off the stored figures, so a folded year adds its sum - what City History's running totals read. |
-| 1831 | 193 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
-| 2026 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
-| 2027 | 1 | `public List<Double> getGdp()` |  |
-| 2028 | 1 | `public List<Double> getDebt()` |  |
-| 2029 | 1 | `public List<Double> getInterestRate()` |  |
-| 2030 | 1 | `public List<Long> getJobs()` |  |
-| 2031 | 1 | `public List<Long> getWorkforce()` |  |
-| 2032 | 1 | `public List<Long> getOutOfWork()` |  |
-| 2033 | 1 | `public List<Long> getPopulation()` |  |
-| 2046 | 57 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
-| 2105 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
-| 2121 | 12 | `public HistorySave slim(java.util.Set<String> keep)` | A history with this one's axis and only the named series (LB3): every other series empty, so it reads as not recorded, a name this history has no series of ignored. |
-| 2135 | 3 | `private void trimFoldedMonths()` | foldedMonths cut to the axis's length: a history can never hold more folded years than it has months (slim and readKept). |
-| 2146 | 31 | `static HistorySave readKept(Reader in, Set<String> keep)` | What slim(keep) gives on the history in `in`, without the whole parse (LB4): every series but the kept ones is skipped as the JSON is read (Gson skips the key of a field the exclusion strategy drops, building nothing ... |
-| 2179 | 16 | `private static List<Double> packed(List<Double> list)` | A series as a PackedDoubles, null entries kept; a null series is an empty one. |
-| 2197 | 21 | `private static Set<String> keptFields(Set<String> keep)` | The names of the fields readKept reads: the axis and foldedMonths (all slim copies besides the series) and the field behind each kept series, found as slim finds it, through seriesByName(). |
-| 2220 | 40 | **type** `private static final class PackedDoublesAdapter extends TypeAdapter<List<Double>>` | The Gson adapter of a kept List<Double> series: a PackedDoubles, null entries kept, a null list read as an empty one. |
-| 2222 | 23 | `public List<Double> read(JsonReader in) throws IOException` _(in HistorySave.PackedDoublesAdapter)_ |  |
-| 2247 | 12 | `public void write(JsonWriter out, List<Double> list) throws IOException` _(in HistorySave.PackedDoublesAdapter)_ |  |
-| 2268 | 11 | **type** `private static final class TodaysSeries extends TypeAdapter<List<Double>>` | CU2 (REV-CU2-1): the file's form of the eight prices roundSig records (the wage, the rent, food, materials, ore, ground and each company's two share prices): six figures at today's prices write short, {"todays":[1.234... |
-| 2270 | 3 | `public List<Double> read(JsonReader in) throws IOException` _(in HistorySave.TodaysSeries)_ |  |
-| 2275 | 3 | `public void write(JsonWriter out, List<Double> list) throws IOException` _(in HistorySave.TodaysSeries)_ |  |
-| 2281 | 31 | **type** `private static final class TodaysSeriesByCompany extends TypeAdapter<Map<String, List<Double>>>` | CU2 (REV-CU2-1): the same form for a company's series, an object of company to series, in the map's order, each series by the rule of TodaysSeries. |
-| 2283 | 14 | `public Map<String, List<Double>> read(JsonReader in) throws IOException` _(in HistorySave.TodaysSeriesByCompany)_ |  |
-| 2299 | 12 | `public void write(JsonWriter out, Map<String, List<Double>> byCompany) throws IOException` _(in HistorySave.TodaysSeriesByCompany)_ |  |
-| 2314 | 27 | `private static void writeTodaysSeries(JsonWriter out, List<Double> list) throws IOException` | A series as {"todays":[...]} if it has a value and every value is on roundSig's grid, else as the plain array Gson writes a List<Double>; null stays null. |
-| 2343 | 18 | `private static List<Double> readTodaysSeries(JsonReader in) throws IOException` | A series from either form: the plain array as written, or "todays" times FACTOR (the product roundSig makes); null entries stay where they were, a null series is null. |
-| 2363 | 13 | `private static void readDoublesInto(JsonReader in, List<Double> into, boolean todays) throws IOException` | The array at the reader as boxed doubles, nulls kept; the entries of a "todays" array are multiplied by FACTOR, as roundSig multiplies, the others are the file's own doubles. |
-| 2378 | 44 | **type** `private static final class PackedLongsAdapter extends TypeAdapter<List<Long>>` | The Gson adapter of a kept List<Long> series: a PackedLongs, null entries kept, a null list read as an empty one. |
-| 2380 | 27 | `public List<Long> read(JsonReader in) throws IOException` _(in HistorySave.PackedLongsAdapter)_ |  |
-| 2409 | 12 | `public void write(JsonWriter out, List<Long> list) throws IOException` _(in HistorySave.PackedLongsAdapter)_ |  |
-| 2424 | 21 | **type** `static final class PackedDoubles extends AbstractList<Double> implements RandomAccess` | A kept List<Double> series as a double[] (LB4): read only, a null entry (a BitSet, allocated only when one is met) reads back as null, so equals and hashCode are the boxed list's. |
-| 2428 | 4 | `PackedDoubles(double[] values, BitSet nulls)` _(in HistorySave.PackedDoubles)_ |  |
-| 2434 | 3 | `public int size()` _(in HistorySave.PackedDoubles)_ |  |
-| 2439 | 5 | `public Double get(int index)` _(in HistorySave.PackedDoubles)_ |  |
-| 2447 | 21 | **type** `static final class PackedLongs extends AbstractList<Long> implements RandomAccess` | A kept List<Long> series as a long[] (LB4): read only, a null entry reads back as null, as PackedDoubles. |
-| 2451 | 4 | `PackedLongs(long[] values, BitSet nulls)` _(in HistorySave.PackedLongs)_ |  |
-| 2457 | 3 | `public int size()` _(in HistorySave.PackedLongs)_ |  |
-| 2462 | 5 | `public Long get(int index)` _(in HistorySave.PackedLongs)_ |  |
+| 706 | 1 | `public static String indexKey(int component)` | The name each component's chained level is kept under (PriceIndex.COMPONENTS order): "indexGroceries" and so on. |
+| 709 | 1 | `public static String weightKey(int component)` | ...and its weight in the basket in force: "weightGroceries" and so on. |
+| 711 | 1 | `private static String capitalised(String s)` |  |
+| 714 | 1 | `private List<List<Double>> indexLists()` | The component lists in COMPONENTS order, for the recording and the reform. |
+| 715 | 1 | `private List<List<Double>> weightLists()` |  |
+
+### RECORDING (lines 717-1024)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 732 | 292 | `public void recordMonth(Game game)` | One month, read off the city itself. |
+
+### THE FOLD (0.7.55) (lines 1025-1567)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1042 | 13 | `public void foldOldYears()` | Folds every calendar year whose months are all older than the newest MONTHLY_KEPT, oldest first; nothing in a history of MONTHLY_KEPT months or fewer. |
+| 1057 | 10 | `private void foldYear(int from, int to)` | Axis entries [from, to) - one calendar year's months - into one entry at the year's last month, every series by its rule. |
+| 1077 | 36 | `private static void foldSeries(String name, List<? extends Number> raw, int axis, int from, int to)` | One series' months for axis entries [from, to), folded in place by its rule (YearBook.kindOf()): FLOW added, RATE averaged, LEVEL - and a series nobody has given a rule, as the year book folds it - the last. |
+| 1121 | 11 | `void appendMonth(int m, java.util.function.ToDoubleFunction<String> value)` | Harnesses only (0.7.55): one more month on every series this history has, each value asked of `value` by the series' name, then the fold recordMonth() ends with - so a history can be grown past MONTHLY_KEPT without a ... |
+| 1145 | 6 | `private static double sum(double[] values)` | A whole array in one figure. |
+| 1152 | 1 | `private static double round2(double v)` |  |
+| 1153 | 1 | `private static double round4(double v)` |  |
+| 1159 | 5 | `static double roundSig(double v)` | A price per founding share to SHARE_PRICE_DIGITS significant figures; 0 stays 0, and a figure that is not a number is kept as 0, as finite() keeps the rest (JSON holds no NaN). |
+| 1166 | 4 | `static double atTodaysPrices(double d)` | The value at today's prices to SHARE_PRICE_DIGITS significant figures, before roundSig scales it back by FACTOR; a zero (and a negative one) stays itself. |
+| 1172 | 3 | `static boolean onTodaysGrid(double d)` | True if d is a figure roundSig could have recorded: its six figures at today's prices, times FACTOR, give these very bits back; a figure that is not finite, or that a reform or a fold moved off the grid, is not. |
+| 1176 | 1 | `private static double round6(double v)` | Six places, for a price in thousands that four would round to a dime - and to nothing after a reform (0.7.45: the shelf). |
+| 1178 | 1 | `private static double finite(double v)` | A reading the file can hold: JSON has no NaN, so a figure not struck yet is kept as 0 (0.7.45's series). |
+| 1191 | 202 | `public void restoreFrom(HistorySave loaded)` | Takes over another history wholesale - the load path. |
+| 1395 | 1 | `public List<PartnerTrade.Table> getTradeByPartner()` | The finished years of the city's trade by partner (WN3), oldest first; empty on a city with no world market or a history from before it. |
+| 1398 | 1 | `public int tradeYears()` | How many finished years of trade by partner the history holds. |
+| 1401 | 4 | `public void setTradeByPartner(List<PartnerTrade.Table> years)` | Sets the finished years (Game, when a year finishes): a copy of the list; the tables are immutable. |
+| 1407 | 6 | `private static Map<String, List<Double>> copyMap(Map<String, List<Double>> from)` | A map of series, copied list by list, and never null - see copy(). |
+| 1424 | 3 | `private static<T> List<T> copy(List<T> from)` | A copy, and never null. |
+| 1438 | 12 | `public GameFiles.Result saveHistory(GameFiles files, int slot)` | The graph history. |
+| 1457 | 5 | `public HistorySave snapshot()` | A copy of this history for the writer thread (UP1, 2026-10-22): every series copied into new lists, whose entries are immutable numbers, by restoreFrom() - the one place every series is listed, so a series added later... |
+| 1481 | 9 | `public Later snapshotLater()` | A snapshot of this history that is copied by whoever asks for it first (the save writer), or by the next change of the history. |
+| 1492 | 6 | `private void settle()` | Makes every copy still owed, before the series change. |
+| 1500 | 20 | **type** `public final class Later` | One snapshotLater(): the copy, made once, on the first get(). |
+| 1504 | 1 | `private Later()` _(in HistorySave.Later)_ |  |
+| 1507 | 12 | `public HistorySave get()` _(in HistorySave.Later)_ | The snapshot: this history as it stood when it was asked for, copied now if nobody has yet. |
+| 1530 | 32 | `public HistorySave cutAt(int lastMonth)` | A copy of this history as it stood at {@code lastMonth} (TR1, 2026-10-31): only the axis entries whose month is at most it, and what every series held for them. |
+| 1564 | 3 | `private static void dropEmpty(Map<String, List<Double>> series)` | The series of a keyed map that a cut left with no point, gone with their names (cutAt()). |
+
+### READING (lines 1568-1695)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1577 | 1 | `public int months()` | How many entries the axis has - a month each, and since 0.7.55 a year each for the oldest yearlyPoints() of a history past MONTHLY_KEPT. |
+| 1580 | 1 | `public List<Integer> getMonth()` | The axis: each entry's month, and a folded year's last month (0.7.55). |
+| 1583 | 1 | `public int yearlyPoints()` | How many of the axis's entries, from the first, are folded years (0.7.55); 0 in a history of MONTHLY_KEPT months or fewer. |
+| 1586 | 3 | `public int monthsIn(int i)` | The months axis entry i holds: 1 for a month, and a folded year's months (0.7.55). |
+| 1591 | 3 | `public int firstMonthOf(int i)` | The first month axis entry i holds: its own month for a month, a folded year's first (0.7.55). |
+| 1596 | 5 | `public int monthsLived()` | How many months the city has lived: every entry's months together (0.7.55) - months() until a year folds. |
+| 1610 | 9 | `public int back(int i, int months)` | The entry `months` months before entry i (0.7.55): the month that far back, or the folded year that holds it - so "a year before" a folded year is the year before it, and before a month in the first year after the fol... |
+| 1639 | 8 | `public double[] aligned(String name)` | A series as doubles, padded at the FRONT to the full month axis. |
+| 1658 | 21 | `public double[] alignedTail(String name, int n)` | The last {@code n} entries of aligned(name), and no more of it (UP2): the same figures as aligned(name)'s tail, value for value - the front padding as NaN, a folded year's flow as its monthly average where the tail re... |
+| 1681 | 14 | `public double[] raw(String name)` | A series as it is stored, padded at the front as aligned() is: a folded year's flow is the year's sum (0.7.55). |
+
+### a series' record, counted (0.7.9) (lines 1696-2485)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1709 | 8 | `public int monthsUnder(String series, String line)` | Months in which both series were recorded and the first stood under the second: the bank's months under its capital target (bankCapitalRatio against bankCapitalTarget). |
+| 1719 | 6 | `public int monthsUnder(String series, double level)` | ...and under a fixed level: its months under the city's minimum. |
+| 1727 | 6 | `public int monthsRecorded(String series)` | Months a series was recorded in - a folded year's months each (0.7.55). |
+| 1735 | 5 | `public double total(String series)` | A flow added up over the months it was recorded: the stored figures, so a folded year adds its sum (0.7.55). |
+| 1748 | 7 | `public double changeOver(String series, int months)` | How far a series has moved over the last `months` months, as a share of where it stood then: the last recorded value over the one `months` entries before it, less one (0.7.35: the Trade tab's rate this month and over ... |
+| 1761 | 12 | `public double recentTotal(String series, int months)` | A flow added up over the last `months` months only, those recorded among them (0.7.35: the Trade tab's year of exports and imports). |
+| 1779 | 16 | `public double worstYear(String series)` | A flow's worst year: the largest sum of any twelve months in a row since it was first recorded - over fewer than twelve, what there is. |
+| 1797 | 13 | `private static double worstYear(double[] a)` | worstYear()'s twelve months in a row, over a run of months. |
+| 1817 | 15 | `public static double[] runningTotal(double[] monthly)` | A monthly series summed from its first recorded month, for the running totals of the dead. |
+| 1838 | 3 | `public double[] runningTotal(String series)` | ...and a series of this history summed from its first recorded entry (0.7.55): off the stored figures, so a folded year adds its sum - what City History's running totals read. |
+| 1843 | 197 | `public Map<String, List<? extends Number>> seriesByName()` | Every stored series, by the name the screen asks for. |
+| 2042 | 1 | `public List<Double> getCash()` | The originals, still here because other code and the harnesses read them. |
+| 2043 | 1 | `public List<Double> getGdp()` |  |
+| 2044 | 1 | `public List<Double> getDebt()` |  |
+| 2045 | 1 | `public List<Double> getInterestRate()` |  |
+| 2046 | 1 | `public List<Long> getJobs()` |  |
+| 2047 | 1 | `public List<Long> getWorkforce()` |  |
+| 2048 | 1 | `public List<Long> getOutOfWork()` |  |
+| 2049 | 1 | `public List<Long> getPopulation()` |  |
+| 2062 | 57 | `public void redenominate(double scale)` | Redraws the city's whole history in the new unit. |
+| 2121 | 9 | `private static void scaleAll(double scale, List<Double>...series)` |  |
+| 2137 | 12 | `public HistorySave slim(java.util.Set<String> keep)` | A history with this one's axis and only the named series (LB3): every other series empty, so it reads as not recorded, a name this history has no series of ignored. |
+| 2151 | 3 | `private void trimFoldedMonths()` | foldedMonths cut to the axis's length: a history can never hold more folded years than it has months (slim and readKept). |
+| 2162 | 31 | `static HistorySave readKept(Reader in, Set<String> keep)` | What slim(keep) gives on the history in `in`, without the whole parse (LB4): every series but the kept ones is skipped as the JSON is read (Gson skips the key of a field the exclusion strategy drops, building nothing ... |
+| 2195 | 16 | `private static List<Double> packed(List<Double> list)` | A series as a PackedDoubles, null entries kept; a null series is an empty one. |
+| 2213 | 21 | `private static Set<String> keptFields(Set<String> keep)` | The names of the fields readKept reads: the axis and foldedMonths (all slim copies besides the series) and the field behind each kept series, found as slim finds it, through seriesByName(). |
+| 2236 | 40 | **type** `private static final class PackedDoublesAdapter extends TypeAdapter<List<Double>>` | The Gson adapter of a kept List<Double> series: a PackedDoubles, null entries kept, a null list read as an empty one. |
+| 2238 | 23 | `public List<Double> read(JsonReader in) throws IOException` _(in HistorySave.PackedDoublesAdapter)_ |  |
+| 2263 | 12 | `public void write(JsonWriter out, List<Double> list) throws IOException` _(in HistorySave.PackedDoublesAdapter)_ |  |
+| 2284 | 11 | **type** `private static final class TodaysSeries extends TypeAdapter<List<Double>>` | CU2 (REV-CU2-1): the file's form of the eight prices roundSig records (the wage, the rent, food, materials, ore, ground and each company's two share prices): six figures at today's prices write short, {"todays":[1.234... |
+| 2286 | 3 | `public List<Double> read(JsonReader in) throws IOException` _(in HistorySave.TodaysSeries)_ |  |
+| 2291 | 3 | `public void write(JsonWriter out, List<Double> list) throws IOException` _(in HistorySave.TodaysSeries)_ |  |
+| 2297 | 31 | **type** `private static final class TodaysSeriesByCompany extends TypeAdapter<Map<String, List<Double>>>` | CU2 (REV-CU2-1): the same form for a company's series, an object of company to series, in the map's order, each series by the rule of TodaysSeries. |
+| 2299 | 14 | `public Map<String, List<Double>> read(JsonReader in) throws IOException` _(in HistorySave.TodaysSeriesByCompany)_ |  |
+| 2315 | 12 | `public void write(JsonWriter out, Map<String, List<Double>> byCompany) throws IOException` _(in HistorySave.TodaysSeriesByCompany)_ |  |
+| 2330 | 27 | `private static void writeTodaysSeries(JsonWriter out, List<Double> list) throws IOException` | A series as {"todays":[...]} if it has a value and every value is on roundSig's grid, else as the plain array Gson writes a List<Double>; null stays null. |
+| 2359 | 18 | `private static List<Double> readTodaysSeries(JsonReader in) throws IOException` | A series from either form: the plain array as written, or "todays" times FACTOR (the product roundSig makes); null entries stay where they were, a null series is null. |
+| 2379 | 13 | `private static void readDoublesInto(JsonReader in, List<Double> into, boolean todays) throws IOException` | The array at the reader as boxed doubles, nulls kept; the entries of a "todays" array are multiplied by FACTOR, as roundSig multiplies, the others are the file's own doubles. |
+| 2394 | 44 | **type** `private static final class PackedLongsAdapter extends TypeAdapter<List<Long>>` | The Gson adapter of a kept List<Long> series: a PackedLongs, null entries kept, a null list read as an empty one. |
+| 2396 | 27 | `public List<Long> read(JsonReader in) throws IOException` _(in HistorySave.PackedLongsAdapter)_ |  |
+| 2425 | 12 | `public void write(JsonWriter out, List<Long> list) throws IOException` _(in HistorySave.PackedLongsAdapter)_ |  |
+| 2440 | 21 | **type** `static final class PackedDoubles extends AbstractList<Double> implements RandomAccess` | A kept List<Double> series as a double[] (LB4): read only, a null entry (a BitSet, allocated only when one is met) reads back as null, so equals and hashCode are the boxed list's. |
+| 2444 | 4 | `PackedDoubles(double[] values, BitSet nulls)` _(in HistorySave.PackedDoubles)_ |  |
+| 2450 | 3 | `public int size()` _(in HistorySave.PackedDoubles)_ |  |
+| 2455 | 5 | `public Double get(int index)` _(in HistorySave.PackedDoubles)_ |  |
+| 2463 | 21 | **type** `static final class PackedLongs extends AbstractList<Long> implements RandomAccess` | A kept List<Long> series as a long[] (LB4): read only, a null entry reads back as null, as PackedDoubles. |
+| 2467 | 4 | `PackedLongs(long[] values, BitSet nulls)` _(in HistorySave.PackedLongs)_ |  |
+| 2473 | 3 | `public int size()` _(in HistorySave.PackedLongs)_ |  |
+| 2478 | 5 | `public Long get(int index)` _(in HistorySave.PackedLongs)_ |  |
 

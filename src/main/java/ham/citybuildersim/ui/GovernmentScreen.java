@@ -2254,7 +2254,13 @@ final class GovernmentScreen {
                         default                      -> null;
                     };
                 },
-                name -> "who", "Taken in altogether", null);
+                name -> "who", "Taken in altogether", Kept.scope("capital-tax-claims", () -> {
+                    javafx.scene.control.Label claims = new javafx.scene.control.Label("Capital gains: assessed " + money(na.getCapitalTaxAssessed())
+                            + "; cash collected " + money(na.getCapitalGainsTax()) + "; secured unpaid " + money(na.getCapitalTaxOutstanding())
+                            + "; noncash claim losses " + money(na.getCapitalTaxWrittenOff())
+                            + "; noncash consolidations " + money(na.getCapitalTaxConsolidated()) + ". Only cash collected is revenue.");
+                    claims.setWrapText(true); return claims;
+                }));
     }
 
     void spendingPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all) {

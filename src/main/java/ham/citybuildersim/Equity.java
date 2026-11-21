@@ -326,6 +326,51 @@ public class Equity {
     }
 
     private final Listing[] listings = new Listing[COMPANIES.length];
+    private final double[] foreignTaxShares = new double[COMPANIES.length], foreignTaxClaim = new double[COMPANIES.length];
+    private HouseholdBalance taxBook;
+    void attachTaxBook(HouseholdBalance book) { taxBook = book; }
+    public double foreignTaxShares(int c) { return foreignTaxShares[c]; }
+    public double foreignTaxClaim(int c) { return foreignTaxClaim[c]; }
+    public double foreignTaxOutstanding() { return java.util.Arrays.stream(foreignTaxClaim).sum(); }
+    private double collectForeignClaim(int c, double receipt) {
+        double paid = Math.min(foreignTaxClaim[c], Math.max(0, receipt));
+        if (paid > 0) {
+            if (taxBook == null) throw new IllegalStateException("Secured foreign holding has no tax counterparty");
+            foreignTaxClaim[c] -= paid; taxBook.collectForeignTax(c, paid);
+        }
+        if (foreignTaxClaim[c] == 0) foreignTaxShares[c] = 0;
+        return paid;
+    }
+    private void extinguishForeignClaim(int c) {
+        if (foreignTaxClaim[c] > 0) {
+            if (taxBook == null) throw new IllegalStateException("Secured foreign holding has no tax counterparty");
+            taxBook.extinguishForeignTax(c, foreignTaxClaim[c]);
+        }
+        foreignTaxClaim[c] = foreignTaxShares[c] = 0;
+    }
+    /** Only a real fill can turn the old claim into tax cash. */
+    double sellForeignTaxShares(int c, double quantity, double cash) {
+        double was = foreignTaxShares[c];
+        double paid = collectForeignClaim(c, cash);
+        if (foreignTaxClaim[c] > 0) {
+            foreignTaxShares[c] = Math.max(0, was - quantity);
+            if (quantity == was) extinguishForeignClaim(c);
+        }
+        return paid;
+    }
+    public double[] foreignTaxesToSave() {
+        int n = COMPANIES.length; double[] state = new double[2*n];
+        System.arraycopy(foreignTaxShares, 0, state, 0, n); System.arraycopy(foreignTaxClaim, 0, state, n, n); return state;
+    }
+    public void restoreForeignTaxes(String[] keys, double[] state) {
+        java.util.Arrays.fill(foreignTaxShares, 0); java.util.Arrays.fill(foreignTaxClaim, 0);
+        int n = keys == null ? COMPANIES.length : keys.length;
+        if (state == null || state.length != 2*n) return;
+        for (int j = 0; j < n; j++) for (int c = 0; c < COMPANIES.length; c++)
+            if (COMPANIES[c].equals(keys == null ? COMPANIES[j] : keys[j])) {
+                foreignTaxShares[c] = state[j]; foreignTaxClaim[c] = state[n+j]; break;
+            }
+    }
 
     public Equity() {
         for (int i = 0; i < COMPANIES.length; i++) listings[i] = new Listing(COMPANIES[i]);
@@ -723,14 +768,17 @@ public class Equity {
      * company whose other holders hold less than what is short had their shares dropped, and the register was not whole.
      */
     public void followEmigrants(HouseholdBalance households, java.util.function.IntToDoubleFunction shortOf) {
-        if (households == null) return;
+        if (households == null || households.departuresHandedOff()) return;
         for (int c = 0; c < listings.length; c++) {
             double gone = households.getSharesTakenAway(c);
             if (gone > 0) {
                 Listing l = listings[c];
                 l.foreignShares = Math.min(l.shares + Math.max(0, shortOf.applyAsDouble(c)), l.foreignShares + gone);
+                foreignTaxShares[c] += households.departingTaxShares(c);
+                foreignTaxClaim[c] += households.departingTaxClaim(c);
             }
         }
+        households.departuresHandedOff(true);
     }
 
     /**
@@ -791,6 +839,7 @@ public class Equity {
         l.dividendDesk += desk;
         l.dividendCity += city;
         l.lifetimeDividendsCity += city;
+        collectForeignClaim(company, Math.min(abroad, foreignTaxShares[company] * perShare));
         l.dividendAbroad += abroad;
         l.lifetimeDividendsHome += home;
         l.lifetimeDividendsAbroad += abroad;
@@ -891,6 +940,7 @@ public class Equity {
      * @return {the world's shares, the fund's market book's} before
      */
     double[] takeAllForCity(int company, double ifNone) {
+        extinguishForeignClaim(company);
         Listing l = listings[company];
         double world = l.foreignShares, market = Math.max(0, l.cityShares - l.cityRescue);
         if (!(l.shares > 0) && ifNone > 0) l.shares = ifNone;
@@ -910,6 +960,7 @@ public class Equity {
      * @return the fund's market book's shares before
      */
     double cancelHeld(int company) {
+        extinguishForeignClaim(company);
         Listing l = listings[company];
         double market = Math.max(0, l.cityShares - l.cityRescue);
         l.dealerShares = 0;
@@ -976,6 +1027,7 @@ public class Equity {
         Listing l = listings[company];
         l.shares *= k;
         l.foreignShares *= k;
+        foreignTaxShares[company] *= k;
         l.dealerShares *= k;
         l.cityShares *= k;
         l.cityRescue *= k;
@@ -1273,6 +1325,7 @@ public class Equity {
     }
 
     public void reset() {
+        java.util.Arrays.fill(foreignTaxShares, 0); java.util.Arrays.fill(foreignTaxClaim, 0);
         for (int i = 0; i < listings.length; i++) listings[i] = new Listing(COMPANIES[i]);
     }
 
@@ -1282,6 +1335,7 @@ public class Equity {
      */
     public void redenominate(double scale) {
         foundingPrice *= scale;
+        for (int c = 0; c < foreignTaxClaim.length; c++) foreignTaxClaim[c] *= scale;
         for (Listing l : listings) {
             for (int k = 0; k < RECORD_MONTHS; k++) { l.income[k] *= scale; l.spent[k] *= scale; l.paid[k] *= scale; }
             l.paidThisMonth *= scale;
