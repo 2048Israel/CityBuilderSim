@@ -912,6 +912,81 @@ accessor, phase, command/classpath and required receipt. No runtime wrapper
 or execution started. Production/harness source, accepted university proof,
 valid ensemble and provisional marker remain unchanged; housing is unresolved.
 
+## Planner execution: hard ample-arm LIMIT, no narrow arm
+
+Mail `20261121-170843-048-orchestrator-89b2` authorized exactly one bounded
+box execution of the reviewed driver, with no edits or tuning. The original
+driver `0fe69a94…` and diff `4b1fc364…` matched before compilation and remain
+unchanged. The unique run is
+`/home/jerus/cbs/runs/WG3codex1-planner01`; all partial evidence is retained
+locally in `target/wg3-planner/runs/WG3codex1-planner01`.
+
+Isolated target compilation exited **0**, producing only three driver class
+files. One fresh model JVM ran. Actual model/job/controller/client receipts
+each report **2**; the outer PowerShell tool reported 1. The raw events are
+**START → AMPLE → LIMIT → CLEANUP_COMPLETE**, with no NARROW or COMPLETE.
+The exact hard premise that stopped it is
+`ample native plan is not exactly one Low-Rise`.
+
+At the ample 60,000-ft² planner view, native House plots are **7**, Low-Rise
+plots **1**, but the real plan chooses **three Houses**, `build=true`,
+`landBlocked=false`, with reason
+`16 capacity needed for demand plus headroom against 100 units`.
+The ample-order finance check, second area's assignment and all subsequent
+narrow/parity guards were **not executed**. No scenario or threshold changed
+and no retry ran.
+The proposed two-arm mechanism was therefore **not isolated**; this is a
+LIMIT/INCONCLUSIVE result, not evidence for a mend or a housing-law pass.
+
+The preceding strict controls did hold: native family seekers/door shortfall
+**238.521384**, studio seekers **295.408873**, family/studio heads
+**585.548570 / 393.878498**, both adult stages present, no queued
+construction. Native unit land price is **0.000011776976048555181**, rents
+are the declared 10, native jobs **49**, housing capacity **100**, and actual
+landlord principal/mortgage rate are zero. Declared cash is **498,095.440223**,
+covering the native one-unit costs/quotes and clearing the native default
+guard before the ample plan.
+
+| Alternative | Native expected rental receipts | Native positive housing hurdle | Native planner cost | Native Game build quote |
+|---|---:|---:|---:|---:|
+| House | 60 | 0.034244444 | 8.194217435 | 8.100001626 |
+| Low-Rise | 2,520 | 1.303899449 | 498.095440223 | 497.388821660 |
+
+The receipts column is exactly RealEstate's `estimatedMonthlyProfit`
+accessor output: expected rental receipts, **not net earnings** and not the
+planner's separate full-capacity comparison. Its stricter existing guard
+was preserved. The Game quote's physical-land-free view is separately
+**2,982,568.603137 ft²**; only the declared planner availability was 60,000.
+These controlled values do not establish original-month House profitability,
+finance, past public-look outcomes or student-to-family flows.
+
+Local foreground timestamps are **2026-11-21 21:16:05–21:16:08 UTC**. The
+remote preflight begins 21:16:06; its after-home-copy bound receipt records
+**3 seconds**, within 30 remote/60 total. Job/controller and compile run
+21:16:07–08; model start/end both read 21:16:08 at one-second precision.
+No deadline/priority/provenance guard failed. Actual job/controller/model
+PIDs **2375348 / 2375343 / 2375498** are gone, active is absent and box lock
+released. The explicit scratch child and PID directory are absent; only
+the empty TempDirs namespace remains.
+
+All **57/57** remote/home retained file hashes match. Before/after checks
+match **2,444 cached classes**, **660 source files**, **10 dependency jars**,
+both data files and three JDK release/launcher files; the base copy and
+three compiled-target hashes verify too. The class/dependency-list/data pins
+match the retained frozen 6ede inputs, and native gate.env selected strict
+Temurin **21.0.13+9-LTS**. Jar byte manifests were acquired in this run and
+prove **current before/current after** equality only; no historical jar-byte
+identity is claimed. Remote/controller/compiler/model logs, raw JSONL,
+source/class/dependency/data/JDK manifests, actual exit files and terminal/
+copy/bound receipts are preserved. `planner01-copy-receipt.json` is local
+verification; the original partial result was not changed or rejudged.
+
+No driver, model, player or harness mend follows this failed control. No
+new run is authorized. The original played-city 5570/3060 land refusal and
+373→397 public skip remain separate evidence with their existing limits.
+The hard housing red, Pending status, university proof, valid 80-run
+baseline and provisional marker remain unchanged. End for root review.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
