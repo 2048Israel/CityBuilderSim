@@ -1,7 +1,9 @@
 # Real Estate: buildings, dwellings and the households choosing them
 
-RES1, opened 2026-11-20; completed study draft 2026-11-21, **ready for
-Jerus's review, not implementation or shipping approval**. Branch
+RES1, opened 2026-11-20; extended during review on 2026-11-21. **Design
+study and numerical proposal; catalogue calibration remains unfinished.**
+The earlier completed-study label overstated that work. Section 12 now puts
+the complete numerical proposal, assumptions and reproducer together. Branch
 `study/real-estate`, model base `a9bfcd070`; fetched `origin/main` through
 `e9dadb540` before measuring. The later queue clarification at `4f1056f11`
 records RES1 as docs only and carries the planner finding into OG1. Only
@@ -1172,3 +1174,533 @@ and LF checks passed. No ensemble was owed by this docs-only change. Shipping
 awaits Jerus's review. The subsequent aggregate-only amendment passed the
 exact-rational split/merge, zero-RE-ownership and 1,000x quantity checks above;
 no model code changed and the model probes were not rerun.
+
+## 12. Complete numerical catalogue proposal
+
+The earlier sections established the existing model, aggregate architecture,
+accounting rules and dependency split. They did not calibrate a complete
+building catalogue. The tables below are a new explicit numerical draft,
+not measurements of implemented buildings or a finished balance pass.
+
+
+**Status: numerical design draft for review; not calibrated game outcomes.**
+All prices below are present-day benchmark model dollars. Land is $50/sq ft; material is $18,000/unit; ordinary demand pressure is 1. No inflation, finance, scarcity or rebate is added to the reference rents.
+
+C01-C14 are comparison labels, not permanent game building IDs or batch IDs. Existing catalogue IDs remain unchanged.
+
+The existing templates anchor the cost calculation. New area, height, layout, quality, parking, staff and work budgets are proposals. A cost-derived reference quote is not an observed rent or a promised transaction price.
+
+### Dwelling types
+
+| Code | Internal m² | Bedrooms | Normal places | Finish factor |
+|---|---:|---:|---:|---:|
+| H55 | 55 | 1 | 2 | 1.00 |
+| H120 | 120 | 3 | 6 | 1.00 |
+| H240 | 240 | 4 | 6 | 1.25 |
+| D90 | 90 | 2 | 4 | 1.00 |
+| T100 | 100 | 3 | 6 | 1.00 |
+| S | 40 | 0 | 2 | 1.00 |
+| F | 75 | 2 | 4 | 1.00 |
+| L | 110 | 3 | 6 | 1.00 |
+| A | 160 | 3 | 6 | 1.25 |
+| V | 240 | 4 | 6 | 1.40 |
+| X | 600 | 5 | 6 | 1.60 |
+| P140 | 140 | 3 | 6 | 1.40 |
+| P180 | 180 | 3 | 6 | 1.50 |
+| P360 | 360 | 4 | 6 | 1.60 |
+| P600 | 600 | 5 | 6 | 1.75 |
+
+### Full building list
+
+| ID | Form | Floors | Homes | Normal capacity | Unit mix | Residential gross m² | Plot sq ft |
+|---|---|---:|---:|---:|---|---:|---:|
+| C01 | Compact house | 1 | 1 | 2 | 1 H55 | 69 | 4,000 |
+| C02 | Family house | 2 | 1 | 6 | 1 H120 | 150 | 8,000 |
+| C03 | Large house | 2 | 1 | 6 | 1 H240 | 300 | 12,000 |
+| C04 | Duplex | 2 | 2 | 8 | 2 D90 | 200 | 10,000 |
+| C05 | Terrace | 3 | 6 | 36 | 6 T100 | 667 | 18,000 |
+| C06 | Studio block | 4 | 80 | 160 | 80 S | 4,000 | 25,000 |
+| C07 | Mixed walk-up | 3 | 24 | 88 | 8 S + 12 F + 4 L | 2,160 | 22,000 |
+| C08 | Family low-rise | 3 | 63 | 252 | 63 F | 5,906 | 60,000 |
+| C09 | Mixed mid-rise | 8 | 64 | 240 | 16 S + 40 F + 8 L | 5,650 | 24,000 |
+| C10 | Mixed tower | 20 | 160 | 576 | 48 S + 96 F + 12 L + 4 P140 | 15,200 | 24,000 |
+| C11 | Large apartment block | 12 | 360 | 1248 | 120 S + 216 F + 24 L | 29,550 | 100,000 |
+| C12 | Large high-rise | 40 | 400 | 1456 | 120 S + 232 F + 44 L + 4 P180 | 40,000 | 40,000 |
+| C13 | Very tall tower | 80 | 800 | 2880 | 240 S + 480 F + 76 L + 4 P360 | 80,000 | 50,000 |
+| C14 | Large-home luxury tower | 36 | 120 | 720 | 61 A + 48 V + 8 X + 3 P600 | 43,200 | 30,000 |
+
+### Capital and reference rents
+
+| ID | Whole project incl. land/parking $m | Cost per home equivalent $k | Average reference home rent $/month | Reference rent range $/month | Repair budget/home/month | Default tax/home/month |
+|---|---:|---:|---:|---:|---:|---:|
+| C01 | 0.44 | 439.8 | 2,126 | 2,126–2,126 | 200 | 550 |
+| C02 | 0.85 | 846.0 | 4,089 | 4,089–4,089 | 372 | 1,058 |
+| C03 | 1.59 | 1,586.5 | 7,668 | 7,668–7,668 | 822 | 1,983 |
+| C04 | 1.11 | 557.4 | 2,694 | 2,694–2,694 | 256 | 697 |
+| C05 | 2.76 | 460.2 | 2,224 | 2,224–2,224 | 258 | 575 |
+| C06 | 15.74 | 196.7 | 924 | 924–924 | 151 | 246 |
+| C07 | 7.44 | 310.2 | 1,463 | 993–2,186 | 220 | 388 |
+| C08 | 20.14 | 319.7 | 1,490 | 1,490–1,490 | 227 | 400 |
+| C09 | 18.26 | 285.4 | 1,339 | 913–1,964 | 222 | 357 |
+| C10 | 54.79 | 342.4 | 1,520 | 1,013–3,503 | 279 | 428 |
+| C11 | 98.21 | 272.8 | 1,271 | 916–1,974 | 216 | 341 |
+| C12 | 157.79 | 394.5 | 1,728 | 1,123–5,011 | 325 | 493 |
+| C13 | 373.58 | 467.0 | 2,037 | 1,303–11,317 | 387 | 584 |
+| C14 | 153.56 | 1,279.6 | 6,185 | 4,236–16,900 | 1,056 | 1,600 |
+
+### Capital breakdown
+
+| ID | Building structure/fitout $m | Parking construction $m | Land $m | Nonmaterial construction cash $m |
+|---|---:|---:|---:|---:|
+| C01 | 0.235 | 0.005 | 0.200 | 0.150 |
+| C02 | 0.421 | 0.025 | 0.400 | 0.266 |
+| C03 | 0.937 | 0.050 | 0.600 | 0.627 |
+| C04 | 0.565 | 0.050 | 0.500 | 0.345 |
+| C05 | 1.831 | 0.030 | 0.900 | 1.069 |
+| C06 | 14.388 | 0.100 | 1.250 | 8.692 |
+| C07 | 6.285 | 0.060 | 1.100 | 3.825 |
+| C08 | 16.982 | 0.160 | 3.000 | 10.284 |
+| C09 | 16.905 | 0.160 | 1.200 | 10.297 |
+| C10 | 47.988 | 5.600 | 1.200 | 30.998 |
+| C11 | 92.306 | 0.900 | 5.000 | 56.756 |
+| C12 | 137.307 | 18.480 | 2.000 | 87.945 |
+| C13 | 327.400 | 43.680 | 2.500 | 205.984 |
+| C14 | 143.658 | 8.400 | 1.500 | 85.386 |
+
+Cost per home equivalent includes the whole physical project divided by homes; it is not the sale price. Reference home rent excludes capital allocated to separately rented parking. Private/included parking is in home rent; separately let capacity has its own quote below. Owner sale values depend on HO1 actual prices/credit and transferred common interests.
+
+### Reference rent by apartment type
+
+| ID | S 40 m² | F 75 m² | L 110 m² | Penthouse variant / monthly rent |
+|---|---:|---:|---:|---:|
+| C06 | 924 | — | — | — |
+| C07 | 993 | 1,535 | 2,186 | — |
+| C08 | — | 1,490 | — | — |
+| C09 | 913 | 1,384 | 1,964 | — |
+| C10 | 1,013 | 1,572 | 2,469 | 140 m² / 3,503 |
+| C11 | 916 | 1,391 | 1,974 | — |
+| C12 | 1,123 | 1,779 | 2,807 | 180 m² / 5,011 |
+| C13 | 1,303 | 2,116 | 3,369 | 360 m² / 11,317 |
+
+C14 luxury-tower rents: A, 160 m²: 4,236/month (61 homes); V, 240 m²: 6,355/month (48 homes); X, 600 m²: 16,008/month (8 homes); P600, 600 m²: 16,900/month (3 homes).
+
+### Parking
+
+| ID | Private included | Shared physical | Included shared rights | Separately rentable capacity | Type / basement levels | Separate reference $/space/month |
+|---|---:|---:|---:|---:|---|---:|
+| C01 | 1 | 0 | 0 | 0 | driveway | — |
+| C02 | 1 | 0 | 0 | 0 | garage | — |
+| C03 | 2 | 0 | 0 | 0 | garage | — |
+| C04 | 2 | 0 | 0 | 0 | garage | — |
+| C05 | 6 | 0 | 0 | 0 | driveway | — |
+| C06 | 0 | 20 | 0 | 20 | surface | 109 |
+| C07 | 0 | 12 | 4 | 8 | surface | 109 |
+| C08 | 0 | 32 | 0 | 32 | surface | 109 |
+| C09 | 0 | 32 | 8 | 24 | surface | 109 |
+| C10 | 0 | 80 | 16 | 64 | underground / 2 levels | 338 |
+| C11 | 0 | 180 | 24 | 156 | surface | 109 |
+| C12 | 0 | 240 | 48 | 192 | underground / 3 levels | 372 |
+| C13 | 0 | 480 | 80 | 400 | underground / 5 levels | 440 |
+| C14 | 0 | 120 | 120 | 0 | underground / 2 levels | — |
+
+Rentable capacity is not occupied leases or income. No lease receipts are recognized until someone actually rents a bay. Large-house two-bay supply does not change the current one-car household cap.
+
+### Work, materials, staff and utilities
+
+| ID | Proposed work points | Materials units | Skilled posts | Building power units | Building water units | Building utility bill/month |
+|---|---:|---:|---:|---:|---:|---:|
+| C01 | 5 | 5 | 0 | 1 | 0.09 | 15 |
+| C02 | 10 | 10 | 0 | 1 | 0.20 | 20 |
+| C03 | 24 | 20 | 0 | 3 | 0.40 | 50 |
+| C04 | 86 | 15 | 0 | 1 | 0.23 | 21 |
+| C05 | 277 | 44 | 0 | 4 | 0.76 | 78 |
+| C06 | 700 | 322 | 2 | 8 | 2.00 | 180 |
+| C07 | 890 | 140 | 1 | 9 | 2.11 | 195 |
+| C08 | 2,432 | 381 | 2 | 25 | 6.00 | 550 |
+| C09 | 2,402 | 376 | 2 | 26 | 5.74 | 547 |
+| C10 | 7,768 | 1,255 | 6 | 69 | 13.97 | 1,388 |
+| C11 | 12,957 | 2,025 | 12 | 135 | 30.02 | 2,851 |
+| C12 | 23,336 | 3,769 | 14 | 199 | 35.25 | 3,753 |
+| C13 | 57,073 | 9,172 | 28 | 503 | 70.35 | 8,547 |
+| C14 | 23,249 | 3,704 | 12 | 263 | 35.40 | 4,400 |
+
+Water unit = 10,000 gallons/month. Power is the model template/grid unit; this prototype does not claim an engineering energy audit. Building draws exclude residents' separate direct demand. Work points become duration through funded builder throughput and backlog, not a fixed finish timer. The legacy work differences are not independently calibrated by fitting the capital costs.
+
+### Illustrative apartment common-fee budget
+
+| ID | Average common call: no optional parking receipts | Average common call: every optional bay let at reference quote | Private repairs outside fee/home/month |
+|---|---:|---:|---:|
+| C01 | — | — | 200 |
+| C02 | — | — | 372 |
+| C03 | — | — | 822 |
+| C04 | — | — | 256 |
+| C05 | — | — | 258 |
+| C06 | 221 | 194 | 45 |
+| C07 | 350 | 314 | 65 |
+| C08 | 311 | 256 | 67 |
+| C09 | 305 | 265 | 66 |
+| C10 | 382 | 246 | 75 |
+| C11 | 310 | 262 | 64 |
+| C12 | 406 | 227 | 86 |
+| C13 | 452 | 232 | 102 |
+| C14 | 1,243 | 1,243 | 299 |
+
+These are fee BUDGET SCENARIOS, not final condo charges or a forecast that all parking rents. They allocate 70% of bare apartment repair cost to common costs and 30% to private costs, plus shared parking repairs, building utilities and skilled staffing at $4,500/post/month. That 70/30 split is an uncalibrated accounting assumption. Actual fees use fixed category weights, not equal charges in a mixed building. RE pays unsold shares. Property tax, mortgage payments and private repairs are outside this common call. Employer payroll additions, reserves/insurance not yet represented, management profit and household-specific bills are not included. Parking surplus remains common cash; it is not fictitious manager profit.
+
+### Financing sensitivity
+
+The reference rents are gross capital-return anchors for a neutral, unlevered comparison. They are not a forecast for a debt-funded landlord. The following is the mean monthly home rent needed merely to meet repairs, base staff pay, building utilities, default property tax and INTEREST if 85% of the whole project were borrowed at an assumed 6%, with no optional parking receipts. Principal repayments, tax relief and profit are excluded. This is an accounting sensitivity, not the game's calibrated rent target; glut behavior may allow losses.
+
+| ID | Reference mean rent | Mean cash-cost-plus-interest requirement, assumed 85% loan at 6% |
+|---|---:|---:|
+| C01 | 2,126 | 2,634 |
+| C02 | 4,089 | 5,045 |
+| C03 | 7,668 | 9,598 |
+| C04 | 2,694 | 3,332 |
+| C05 | 2,224 | 2,802 |
+| C06 | 924 | 1,348 |
+| C07 | 1,463 | 2,122 |
+| C08 | 1,490 | 2,137 |
+| C09 | 1,339 | 1,941 |
+| C10 | 1,520 | 2,340 |
+| C11 | 1,271 | 1,874 |
+| C12 | 1,728 | 2,661 |
+| C13 | 2,037 | 3,123 |
+| C14 | 6,185 | 8,581 |
+
+### Inputs and reproducibility
+
+The benchmark price level is normalized to the catalogue's present-day figures, not the simulated city's current nominal money. The read-only base-model getter probe returned factor 0.025883463843, wage SKILLED 4,500/month, power tariff 10/unit and water tariff 50/unit after normalization. It ran with -Xmx128m after committed-memory checks (51.7% before compilation).
+
+1. Shipped structural anchors before land: House 446,000, Studio block 14,388,000, Low-Rise 16,982,000. The House budget is provisionally decomposed into 421,000 nonparking structure and 25,000 garage; that decomposition is a design assumption, not an observed garage in the current model.
+2. Assign the existing apartment comparators 40/75 m² homes and 80% net/gross efficiency. Solving their two cost totals gives a fixed service cost per home of 77,329.365079 and 2,050.412698 per gross m². Those areas are assumptions; fitting two costs does not independently validate them.
+3. Above four storeys, the area-based height multiplier is H = 1 + 0.008 × (floors - 4). It is a proposed cost slope, not a new measured constant. Quality factors apply to private fitout; common floor area is charged once.
+4. Apartment bare cost = 77329.365079 × homes + 2050.412698 × [gross area × H + sum(unit count × private area × (finish factor - 1))]. Detached-house area cost is 2,863.921958/private m² plus the same fixed service cost and included parking.
+5. Private driveway capital 5,000/bay; private garage 25,000/bay; surface shared parking 5,000/bay; underground 70,000/bay through two levels, plus 10% for each deeper level. These are explicit draft budgets. Each surface/private bay reserves 350 sq ft including access. Basement floor area/levels are checked independently.
+6. Land is paid once. Surface-parking land value is allocated to parking; underground parking does not buy the same overlapping plot again. Included bay capital/land goes into the relevant home quote; optional bay capital/land stays in the separately rented asset pool. An assertion checks home capital plus optional-parking capital equals total project capital.
+7. Reference home rent = allocated home capital × 0.058 / 12; separate bay rent uses its allocated parking capital with the same anchor. Final class prices, scarcity, carrying debt and lease lag still require market calibration. Sale prices and mortgage payments are not construction costs and cannot be fixed by this table.
+8. Materials/work: retain the existing House/Studio/Low-Rise budgets as anchors, with explicit added surface-parking inputs for the latter two. Other apartment budgets scale the Low-Rise materials and work by gross area and H; detached houses scale the House. Private driveway/garage/underground draft work budgets are 1/2/10 points per bay. These are proposed recipes, especially the extrapolated work points; real construction-path calibration is unfinished.
+9. New ordinary apartment utility budgets scale the Low-Rise's building draws by private area; power also uses H/finish and a garage allowance. Existing three utility budgets are retained. Water units are 10,000 gallons/month. Skilled post counts are explicit proposals at the measured base wage, not a staffing study.
+10. The 70/30 common/private repair split is a provisional allocation, not another repair charge. Total common + private repairs equal 1% of structure/parking cost per year. All fees remain aggregate cohort flows.
+
+Checks establish template counts, stated floor/site/garage area limits and financial allocation. Funding, actual construction completion, household affordability, occupancy and class-price clearing have not yet been tested in the full game. The two measured apartment cost anchors are reproduced before parking; materials/cash/land allocations conserve the capital budget.
+
+### Affordability and parking limits visible in this draft
+
+At the measured base-model wage ladder, monthly gross pay per worker is 3,460 unskilled, 4,500 skilled, 5,500 college, 8,200 professional, 9,600 senior professional and 15,600 elite. Household earners, tax, benefits, investment income and savings still matter. A P600 reference quote of about 16,900 exceeds even one elite worker's gross wage: those homes cannot be assumed occupied merely because they were built. Wealth and other income, a lower price or vacancy must resolve that.
+
+The earlier scratch city had about 19 cars per 100 door-seeking households at month 605. This proposal supplies around 25-100 shared bays per 100 apartment homes, depending on form. That is not evidence they would all rent. Mature-city demand and alternative parking ratios remain calibration work; the fee table deliberately shows zero/all optional leases as scenarios.
+
+The model's existing low-rise construction workload is much higher per door than the House/Studio budgets. New point budgets borrowed from it are exposed here as draft inputs, not validated build durations. They need a caused builder-path comparison alongside OG1.
+
+### Reproducing the complete numerical proposal
+
+Save this standard-library Python prototype under `target/res1/` and run
+it with the study worktree's source inputs. It writes a report and its
+input/result JSON beside itself. It does not instantiate a game or write
+saves. Its small offline floor-packing check verifies static templates;
+the proposed simulation still stores only aggregate stock/cell cohorts.
+
+```python
+"""Complete candidate catalogue, a benchmark prototype, NOT game implementation.
+
+Anchor ordinary building costs to the two shipped apartment templates, after
+explicitly ASSUMING 40/75 m2 homes and 80% net efficiency. All new geometry,
+parking, quality, staff and height budgets are proposals for review.
+"""
+from pathlib import Path
+from math import ceil
+from collections import Counter
+import json
+
+HERE = Path(__file__).resolve().parent
+REPO = Path(r'C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-real-estate-study')
+raw = json.loads((REPO/'src/main/resources/buildings.json').read_text())['buildings']
+old = {b['id']: b for b in raw if b['id'] in (0, 1, 6)}
+KSTUDIO = (old[1]['cashCost'] + 18*old[1]['constructionMaterials'])*1000
+KLOW = (old[6]['cashCost'] + 18*old[6]['constructionMaterials'])*1000
+KHOUSE = (old[0]['cashCost'] + 18*old[0]['constructionMaterials'])*1000
+G_STUDIO, G_LOW = 80*40/.8, 63*75/.8
+AREA_RATE = (KLOW - 63/80*KSTUDIO)/(G_LOW-63/80*G_STUDIO)
+FIXED = (KSTUDIO-AREA_RATE*G_STUDIO)/80
+HOUSE_RATE = (KHOUSE-25000-FIXED)/120
+LAND = 50                 # benchmark model dollars per square foot, not a forecast
+YIELD = .058              # existing RealEstate.LANDLORD_YIELD, gross anchor
+PROPERTY_TAX = .015       # model default; no special relief in this comparison
+REPAIR = .01              # existing MAINTENANCE_PER_YEAR
+WAGE, POWER_PRICE, WATER_PRICE = 4500, 10, 50 # actual base-model getters
+SF_PER_M2, STALL_SF = 10.7639104167, 350
+
+# key: area, bedrooms, normal capacity, private-finish factor
+U = {
+ 'H55':(55,1,2,1), 'H120':(120,3,6,1), 'H240':(240,4,6,1.25),
+ 'D90':(90,2,4,1), 'T100':(100,3,6,1),
+ 'S':(40,0,2,1), 'F':(75,2,4,1), 'L':(110,3,6,1),
+ 'A':(160,3,6,1.25), 'V':(240,4,6,1.4), 'X':(600,5,6,1.6),
+ 'P140':(140,3,6,1.4), 'P180':(180,3,6,1.5),
+ 'P360':(360,4,6,1.6), 'P600':(600,5,6,1.75),
+}
+
+def b(code, name, floors, mix, lot, *, efficiency=.8, gross=None,
+      house=False, private=0, private_kind='garage', shared=0,
+      park_kind='surface', included=None, basement_levels=0, basement_sf=0,
+      staff=0, legacy=None, floor_plan=None):
+    return dict(code=code,name=name,floors=floors,mix=mix,lot=lot,
+      efficiency=efficiency,gross=gross,house=house,private=private,
+      private_kind=private_kind,shared=shared,park_kind=park_kind,
+      included=included or {},basement_levels=basement_levels,
+      basement_sf=basement_sf,staff=staff,legacy=legacy,floor_plan=floor_plan)
+
+BUILDINGS = [
+ b('C01','Compact house',1,{'H55':1},4000,house=True,private=1,private_kind='driveway'),
+ b('C02','Family house',2,{'H120':1},8000,house=True,private=1,legacy=0),
+ b('C03','Large house',2,{'H240':1},12000,house=True,private=2),
+ b('C04','Duplex',2,{'D90':2},10000,efficiency=.9,private=2),
+ b('C05','Terrace',3,{'T100':6},18000,efficiency=.9,private=6,private_kind='driveway'),
+ b('C06','Studio block',4,{'S':80},25000,shared=20,staff=2,legacy=1),
+ b('C07','Mixed walk-up',3,{'S':8,'F':12,'L':4},22000,gross=2160,
+   shared=12,included={'L':1},staff=1,
+   floor_plan=[(1,{'L':2,'F':3,'S':3}),(1,{'L':1,'F':5,'S':2}),(1,{'L':1,'F':4,'S':3})]),
+ b('C08','Family low-rise',3,{'F':63},60000,shared=32,staff=2,legacy=6,
+   floor_plan=[(3,{'F':21})]),
+ b('C09','Mixed mid-rise',8,{'S':16,'F':40,'L':8},24000,shared=32,included={'L':1},staff=2,
+   floor_plan=[(8,{'S':2,'F':5,'L':1})]),
+ b('C10','Mixed tower',20,{'S':48,'F':96,'L':12,'P140':4},24000,gross=760*20,
+   shared=80,park_kind='underground',included={'L':1,'P140':1},
+   basement_levels=2,basement_sf=15000,staff=6,
+   floor_plan=[(2,{'L':5}),(13,{'S':1,'F':7}),(1,{'S':1,'F':4,'L':2}),
+               (1,{'S':12,'F':1}),(1,{'S':14}),(1,{'S':8}),(1,{'P140':4})]),
+ b('C11','Large apartment block',12,{'S':120,'F':216,'L':24},100000,
+   shared=180,included={'L':1},staff=12,
+   floor_plan=[(12,{'S':10,'F':18,'L':2})]),
+ b('C12','Large high-rise',40,{'S':120,'F':232,'L':44,'P180':4},40000,gross=1000*40,
+   shared=240,park_kind='underground',included={'L':1,'P180':1},
+   basement_levels=3,basement_sf=30000,staff=14),
+ b('C13','Very tall tower',80,{'S':240,'F':480,'L':76,'P360':4},50000,gross=1000*80,
+   shared=480,park_kind='underground',included={'L':1,'P360':1},
+   basement_levels=5,basement_sf=40000,staff=28),
+ b('C14','Large-home luxury tower',36,{'A':61,'V':48,'X':8,'P600':3},30000,gross=1200*36,
+   shared=120,park_kind='underground',included={'A':1,'V':1,'X':1,'P600':1},
+   basement_levels=2,basement_sf=22000,staff=12,
+   floor_plan=[(9,{'A':4,'V':1}),(13,{'A':1,'V':3}),(3,{'A':4}),(8,{'X':1}),
+               (2,{'P600':1.5}),(1,{})]),
+]
+
+def pack(items, capacity):
+    """Offline recipe area check only. Not simulation state per home/floor."""
+    bins=[]
+    for key, count in sorted(items.items(), key=lambda p: -U[p[0]][0]):
+        for _ in range(count):
+            a=U[key][0]
+            for z in bins:
+                if sum(U[k][0]*n for k,n in z.items())+a<=capacity+1e-6:
+                    z[key]+=1; break
+            else: bins.append(Counter({key:1}))
+    return bins
+
+results=[]
+for z in BUILDINGS:
+    mix=z['mix']; n=sum(mix.values()); net=sum(U[k][0]*v for k,v in mix.items())
+    gross=z['gross'] or net/z['efficiency']; footprint=gross/z['floors']*SF_PER_M2
+    height=1+.008*max(0,z['floors']-4)
+    quality_extra=sum(U[k][0]*(U[k][3]-1)*v for k,v in mix.items())
+    q_area=sum(U[k][0]*U[k][3]*v for k,v in mix.items())/net
+    if z['house']:
+        bare=FIXED*n + HOUSE_RATE*sum(U[k][0]*U[k][3]*v for k,v in mix.items())
+    else: bare=FIXED*n+AREA_RATE*(gross*height+quality_extra)
+    if z['legacy']==1: assert abs(bare-KSTUDIO)<.01
+    if z['legacy']==6: assert abs(bare-KLOW)<.01
+    private_price=5000 if z['private_kind']=='driveway' else 25000
+    private_cost=z['private']*private_price
+    if z['park_kind']=='surface': bay=5000; parking_land=STALL_SF*LAND
+    else:
+        bay=70000*(1+.1*max(0,z['basement_levels']-2)); parking_land=0
+    shared_cost=z['shared']*bay
+    inc=sum(mix[k]*p for k,p in z['included'].items()); optional=z['shared']-inc
+    assert optional>=0
+    surface=z['shared'] if z['park_kind']=='surface' else 0
+    assert footprint+(z['private']+surface)*STALL_SF<=z['lot']+1e-6,(z['code'],'site')
+    if z['basement_levels']:
+        assert z['basement_sf']<=z['lot']
+        assert z['basement_levels']*z['basement_sf']>=z['shared']*STALL_SF
+    land_all=z['lot']*LAND
+    land_housing=land_all-z['shared']*parking_land
+    cost=bare+private_cost+shared_cost+land_all
+    park_asset=bay+parking_land
+    unit_quotes={}
+    for key, count in mix.items():
+        a, bedrooms, capacity, q=U[key]
+        if z['house']: private_bare=FIXED+HOUSE_RATE*a*q
+        else:
+            common_bare=bare-sum((FIXED+AREA_RATE*U[k][0]*U[k][3])*v for k,v in mix.items())
+            private_bare=FIXED+AREA_RATE*a*q+common_bare*a/net
+        home_asset=private_bare+land_housing*a/net+private_cost*a/net+z['included'].get(key,0)*park_asset
+        unit_quotes[key]=dict(count=count,asset=home_asset,rent=home_asset*YIELD/12)
+    housing_asset=sum(x['count']*x['asset'] for x in unit_quotes.values())
+    assert abs(housing_asset+optional*park_asset-cost)<.01,(z['code'],'capital double count')
+    rent=sum(x['count']*x['rent'] for x in unit_quotes.values())/n
+    if z['legacy'] is not None:
+        omat=old[z['legacy']]['constructionMaterials']; work=old[z['legacy']]['constructionPoints']
+        if z['legacy']==0:
+            mats=omat; work=work
+        else:
+            mats=ceil(omat+surface*.1);work+=surface
+    elif z['house']:
+        mats=ceil(net*9/120+z['private']*(.1 if z['private_kind']=='driveway' else 1))
+        work=ceil(net*8/120*q_area+z['private']*(1 if z['private_kind']=='driveway' else 2))
+    else:
+        mats=ceil(gross*height*377/G_LOW+surface*.1+(z['shared']-surface)*2+
+                  z['private']*(.1 if z['private_kind']=='driveway' else 1))
+        work=ceil(gross*height*2400/G_LOW+surface+(z['shared']-surface)*10+
+                  z['private']*(1 if z['private_kind']=='driveway' else 2))
+    cash=bare+private_cost+shared_cost-mats*18000
+    assert cash>=0
+    if z['legacy']==0: assert abs(bare+private_cost-KHOUSE)<.01
+    if z['legacy'] is not None:
+        power=old[z['legacy']]['electricity'];water=old[z['legacy']]['water']
+    elif z['house']:
+        power=max(1,ceil(net/120*q_area));water=.2*net/120
+    else:
+        power=max(1,ceil(25*net/(63*75)*height*q_area+
+                         .01*z['shared']*max(1,z['basement_levels'])))
+        water=6*net/(63*75)
+    util=POWER_PRICE*power+WATER_PRICE*water
+    repair_total=REPAIR*(bare+private_cost+shared_cost)/12
+    common_repair=REPAIR*(.7*bare+shared_cost)/12 if z['shared'] or z['staff'] else 0
+    private_repair=repair_total-common_repair
+    fee_zero_park=(common_repair+z['staff']*WAGE+util)/n if common_repair else 0
+    fee_full_park=max(0,(common_repair+z['staff']*WAGE+util-optional*park_asset*YIELD/12)/n) if common_repair else 0
+    operating=repair_total+z['staff']*WAGE+util+cost*PROPERTY_TAX/12
+    # An explicitly hypothetical financing sensitivity, not a measured loan rate.
+    carry_85_at_6=(operating+cost*.85*.06/12)/n
+    item={**z,'N':n,'net':net,'gross_actual':gross,'footprint_sf':footprint,
+        'capacity':sum(U[k][2]*v for k,v in mix.items()),'height_factor':height,
+        'bare':bare,'private_cost':private_cost,'shared_cost':shared_cost,
+        'cost':cost,'cost_home':cost/n,'rent':rent,
+        'rent_min':min(x['rent'] for x in unit_quotes.values()),
+        'rent_max':max(x['rent'] for x in unit_quotes.values()),
+        'included':inc,'optional':optional,'park_rent':park_asset*YIELD/12,
+        'mats':mats,'cash':cash,'work':work,'power':power,'water':water,
+        'utility_bill':util,'upkeep_home':repair_total/n,
+        'private_upkeep_home':private_repair/n,'tax_home':cost*PROPERTY_TAX/12/n,
+        'fee_zero_park':fee_zero_park,'fee_full_park':fee_full_park,'quotes':unit_quotes}
+    item['carry_85_at_6']=carry_85_at_6
+    # Floor area checks for explicit schedules; fractional P rows represent
+    # a duplex's share on each of two floors in the static template only.
+    if z['floor_plan']:
+        total=Counter(); levels=0
+        for count, level_mix in z['floor_plan']:
+            floor_net_limit=.75 if z['code'] in ('C10','C12','C13','C14') else .9 if z['code'] in ('C04','C05') else .8
+            assert sum(U[k][0]*v for k,v in level_mix.items())<=gross/z['floors']*floor_net_limit+1e-6
+            total.update({k:count*v for k,v in level_mix.items()});levels+=count
+        assert total==Counter(mix) and levels==z['floors'],z['code']
+    elif z['code']=='C12':
+        normal=Counter(mix);normal.pop('P180')
+        assert len(pack(normal,750))<=39
+        assert 4*180<=750
+    elif z['code']=='C13':
+        normal=Counter(mix);normal.pop('P360')
+        assert len(pack(normal,750))<=78
+        assert 4*360/2<=750
+    elif z['code']=='C11':
+        assert len(pack(mix,gross/z['floors']*.8))<=z['floors']
+    results.append(item)
+
+data={'status':'UNCALIBRATED NUMERICAL PROPOSAL, not observed game outcomes',
+      'assumptions':dict(land_per_sf=LAND,area_rate=AREA_RATE,fixed_per_home=FIXED,
+       house_area_rate=HOUSE_RATE,gross_yield=YIELD,property_tax=PROPERTY_TAX,
+       maintenance=REPAIR,skilled_wage=WAGE,power_price=POWER_PRICE,water_price=WATER_PRICE),
+      'unit_types':U,'buildings':results}
+(HERE/'catalogue-data.json').write_text(json.dumps(data,indent=2),encoding='utf-8')
+
+def money(x):return f'{x:,.0f}'
+def mix_str(z):return ' + '.join(f'{n} {k}' for k,n in z['mix'].items())
+out=[]
+out += ['# Complete numerical catalogue proposal','',
+ '**Status: numerical design draft for review; not calibrated game outcomes.**',
+ 'All prices below are present-day benchmark model dollars. Land is $50/sq ft; material is $18,000/unit; ordinary demand pressure is 1. No inflation, finance, scarcity or rebate is added to the reference rents.', '',
+ 'C01-C14 are comparison labels, not permanent game building IDs or batch IDs. Existing catalogue IDs remain unchanged.', '',
+ 'The existing templates anchor the cost calculation. New area, height, layout, quality, parking, staff and work budgets are proposals. A cost-derived reference quote is not an observed rent or a promised transaction price.','']
+out+=['## Dwelling types','', '| Code | Internal m² | Bedrooms | Normal places | Finish factor |', '|---|---:|---:|---:|---:|']
+for k,(a,bd,cap,q) in U.items():out.append(f'| {k} | {a} | {bd} | {cap} | {q:.2f} |')
+out+=['','## Full building list','', '| ID | Form | Floors | Homes | Normal capacity | Unit mix | Residential gross m² | Plot sq ft |', '|---|---|---:|---:|---:|---|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {z['name']} | {z['floors']} | {z['N']} | {z['capacity']} | {mix_str(z)} | {money(z['gross_actual'])} | {money(z['lot'])} |")
+out+=['','## Capital and reference rents','', '| ID | Whole project incl. land/parking $m | Cost per home equivalent $k | Average reference home rent $/month | Reference rent range $/month | Repair budget/home/month | Default tax/home/month |', '|---|---:|---:|---:|---:|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {z['cost']/1e6:.2f} | {z['cost_home']/1000:,.1f} | {money(z['rent'])} | {money(z['rent_min'])}–{money(z['rent_max'])} | {money(z['upkeep_home'])} | {money(z['tax_home'])} |")
+out+=['','## Capital breakdown','', '| ID | Building structure/fitout $m | Parking construction $m | Land $m | Nonmaterial construction cash $m |', '|---|---:|---:|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {z['bare']/1e6:.3f} | {(z['private_cost']+z['shared_cost'])/1e6:.3f} | {z['lot']*LAND/1e6:.3f} | {z['cash']/1e6:.3f} |")
+out+=['','Cost per home equivalent includes the whole physical project divided by homes; it is not the sale price. Reference home rent excludes capital allocated to separately rented parking. Private/included parking is in home rent; separately let capacity has its own quote below. Owner sale values depend on HO1 actual prices/credit and transferred common interests.','',
+ '## Reference rent by apartment type','',
+ '| ID | S 40 m² | F 75 m² | L 110 m² | Penthouse variant / monthly rent |', '|---|---:|---:|---:|---:|']
+for z in results:
+    if z['code'] in ('C06','C07','C08','C09','C10','C11','C12','C13'):
+        vals=[money(z['quotes'][k]['rent']) if k in z['quotes'] else '—' for k in ('S','F','L')]
+        p=[f"{k[1:]} m² / {money(v['rent'])}" for k,v in z['quotes'].items() if k.startswith('P')]
+        out.append(f"| {z['code']} | {vals[0]} | {vals[1]} | {vals[2]} | {', '.join(p) or '—'} |")
+z=next(x for x in results if x['code']=='C14')
+out+=['','C14 luxury-tower rents: '+ '; '.join(f"{k}, {U[k][0]} m²: {money(v['rent'])}/month ({v['count']} homes)" for k,v in z['quotes'].items())+'.','',
+ '## Parking','', '| ID | Private included | Shared physical | Included shared rights | Separately rentable capacity | Type / basement levels | Separate reference $/space/month |', '|---|---:|---:|---:|---:|---|---:|']
+for z in results:
+    kind=('driveway' if z['private_kind']=='driveway' else 'garage') if z['private'] else (f"underground / {z['basement_levels']} levels" if z['basement_levels'] else 'surface')
+    out.append(f"| {z['code']} | {z['private']} | {z['shared']} | {z['included']} | {z['optional']} | {kind} | {money(z['park_rent']) if z['optional'] else '—'} |")
+out+=['','Rentable capacity is not occupied leases or income. No lease receipts are recognized until someone actually rents a bay. Large-house two-bay supply does not change the current one-car household cap.','',
+ '## Work, materials, staff and utilities','', '| ID | Proposed work points | Materials units | Skilled posts | Building power units | Building water units | Building utility bill/month |', '|---|---:|---:|---:|---:|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {z['work']:,} | {z['mats']:,} | {z['staff']} | {z['power']} | {z['water']:.2f} | {money(z['utility_bill'])} |")
+out+=['','Water unit = 10,000 gallons/month. Power is the model template/grid unit; this prototype does not claim an engineering energy audit. Building draws exclude residents\' separate direct demand. Work points become duration through funded builder throughput and backlog, not a fixed finish timer. The legacy work differences are not independently calibrated by fitting the capital costs.','',
+ '## Illustrative apartment common-fee budget','', '| ID | Average common call: no optional parking receipts | Average common call: every optional bay let at reference quote | Private repairs outside fee/home/month |', '|---|---:|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {money(z['fee_zero_park']) if z['fee_zero_park'] else '—'} | {money(z['fee_full_park']) if z['fee_zero_park'] else '—'} | {money(z['private_upkeep_home'])} |")
+out+=['','These are fee BUDGET SCENARIOS, not final condo charges or a forecast that all parking rents. They allocate 70% of bare apartment repair cost to common costs and 30% to private costs, plus shared parking repairs, building utilities and skilled staffing at $4,500/post/month. That 70/30 split is an uncalibrated accounting assumption. Actual fees use fixed category weights, not equal charges in a mixed building. RE pays unsold shares. Property tax, mortgage payments and private repairs are outside this common call. Employer payroll additions, reserves/insurance not yet represented, management profit and household-specific bills are not included. Parking surplus remains common cash; it is not fictitious manager profit.','']
+out+=['## Financing sensitivity','',
+ 'The reference rents are gross capital-return anchors for a neutral, unlevered comparison. They are not a forecast for a debt-funded landlord. The following is the mean monthly home rent needed merely to meet repairs, base staff pay, building utilities, default property tax and INTEREST if 85% of the whole project were borrowed at an assumed 6%, with no optional parking receipts. Principal repayments, tax relief and profit are excluded. This is an accounting sensitivity, not the game\'s calibrated rent target; glut behavior may allow losses.','',
+ '| ID | Reference mean rent | Mean cash-cost-plus-interest requirement, assumed 85% loan at 6% |', '|---|---:|---:|']
+for z in results:out.append(f"| {z['code']} | {money(z['rent'])} | {money(z['carry_85_at_6'])} |")
+out+=['','## Inputs and reproducibility','',
+ 'The benchmark price level is normalized to the catalogue\'s present-day figures, not the simulated city\'s current nominal money. The read-only base-model getter probe returned factor 0.025883463843, wage SKILLED 4,500/month, power tariff 10/unit and water tariff 50/unit after normalization. It ran with -Xmx128m after committed-memory checks (51.7% before compilation).', '',
+ f'1. Shipped structural anchors before land: House {KHOUSE:,.0f}, Studio block {KSTUDIO:,.0f}, Low-Rise {KLOW:,.0f}. The House budget is provisionally decomposed into 421,000 nonparking structure and 25,000 garage; that decomposition is a design assumption, not an observed garage in the current model.',
+ f'2. Assign the existing apartment comparators 40/75 m² homes and 80% net/gross efficiency. Solving their two cost totals gives a fixed service cost per home of {FIXED:,.6f} and {AREA_RATE:,.6f} per gross m². Those areas are assumptions; fitting two costs does not independently validate them.',
+ '3. Above four storeys, the area-based height multiplier is H = 1 + 0.008 × (floors - 4). It is a proposed cost slope, not a new measured constant. Quality factors apply to private fitout; common floor area is charged once.',
+ f'4. Apartment bare cost = {FIXED:.6f} × homes + {AREA_RATE:.6f} × [gross area × H + sum(unit count × private area × (finish factor - 1))]. Detached-house area cost is {HOUSE_RATE:,.6f}/private m² plus the same fixed service cost and included parking.',
+ '5. Private driveway capital 5,000/bay; private garage 25,000/bay; surface shared parking 5,000/bay; underground 70,000/bay through two levels, plus 10% for each deeper level. These are explicit draft budgets. Each surface/private bay reserves 350 sq ft including access. Basement floor area/levels are checked independently.',
+ '6. Land is paid once. Surface-parking land value is allocated to parking; underground parking does not buy the same overlapping plot again. Included bay capital/land goes into the relevant home quote; optional bay capital/land stays in the separately rented asset pool. An assertion checks home capital plus optional-parking capital equals total project capital.',
+ '7. Reference home rent = allocated home capital × 0.058 / 12; separate bay rent uses its allocated parking capital with the same anchor. Final class prices, scarcity, carrying debt and lease lag still require market calibration. Sale prices and mortgage payments are not construction costs and cannot be fixed by this table.',
+ '8. Materials/work: retain the existing House/Studio/Low-Rise budgets as anchors, with explicit added surface-parking inputs for the latter two. Other apartment budgets scale the Low-Rise materials and work by gross area and H; detached houses scale the House. Private driveway/garage/underground draft work budgets are 1/2/10 points per bay. These are proposed recipes, especially the extrapolated work points; real construction-path calibration is unfinished.',
+ '9. New ordinary apartment utility budgets scale the Low-Rise\'s building draws by private area; power also uses H/finish and a garage allowance. Existing three utility budgets are retained. Water units are 10,000 gallons/month. Skilled post counts are explicit proposals at the measured base wage, not a staffing study.',
+ '10. The 70/30 common/private repair split is a provisional allocation, not another repair charge. Total common + private repairs equal 1% of structure/parking cost per year. All fees remain aggregate cohort flows.', '',
+ 'Checks establish template counts, stated floor/site/garage area limits and financial allocation. Funding, actual construction completion, household affordability, occupancy and class-price clearing have not yet been tested in the full game. The two measured apartment cost anchors are reproduced before parking; materials/cash/land allocations conserve the capital budget.','',
+ '## Affordability and parking limits visible in this draft','',
+ 'At the measured base-model wage ladder, monthly gross pay per worker is 3,460 unskilled, 4,500 skilled, 5,500 college, 8,200 professional, 9,600 senior professional and 15,600 elite. Household earners, tax, benefits, investment income and savings still matter. A P600 reference quote of about 16,900 exceeds even one elite worker\'s gross wage: those homes cannot be assumed occupied merely because they were built. Wealth and other income, a lower price or vacancy must resolve that.', '',
+ 'The earlier scratch city had about 19 cars per 100 door-seeking households at month 605. This proposal supplies around 25-100 shared bays per 100 apartment homes, depending on form. That is not evidence they would all rent. Mature-city demand and alternative parking ratios remain calibration work; the fee table deliberately shows zero/all optional leases as scenarios.', '',
+ 'The model\'s existing low-rise construction workload is much higher per door than the House/Studio budgets. New point budgets borrowed from it are exposed here as draft inputs, not validated build durations. They need a caused builder-path comparison alongside OG1.','']
+(HERE/'numerical-catalogue.md').write_text('\n'.join(out),encoding='utf-8',newline='\n')
+print(f'PASS: {len(results)} building candidates; cost allocation, counts, site/garage area and specified floor schedules')
+print(f'ANCHORS: fixed/home={FIXED:.6f}, apartment gross-m2 rate={AREA_RATE:.6f}, detached private-m2 rate={HOUSE_RATE:.6f}')
+for z in results: print(z['code'],z['name'],f"cost={z['cost']/1e6:.3f}m avgRent={z['rent']:.0f} fee(noPark)={z['fee_zero_park']:.0f}")
+```
+
+The small read-only getter probe for the wage/utility reference inputs
+is below. Compile/run with section 11's classpath and memory guard, one
+JVM at a time (`-Xmx128m`). It exited 0; no game or user save is opened.
+
+```java
+package ham.citybuildersim;
+import java.util.Locale;
+public class ReferenceInputs {
+  public static void main(String[] args) {
+    UtilitiesHandler u = new UtilitiesHandler();
+    double scale = Good.MATERIALS.worldImportPrice() / Good.MATERIALS.todaysImportPrice();
+    System.out.printf(Locale.ROOT, "scale=%.12f%n", scale);
+    for (PayTier tier : PayTier.values())
+      System.out.printf(Locale.ROOT, "wage.%s=%.6f%n", tier.name(), tier.getTodaysWage()*1000);
+    System.out.printf(Locale.ROOT, "power.price=%.6f%nwater.price=%.6f%n", u.getPricerPerWatt()*1000/scale, u.getPricePerWaterUnit()*1000/scale);
+  }
+}
+```
+
+Validation: fourteen template counts and capacities, nonnegative cash
+components, exact capital allocation without double-counted parking,
+plot/basement capacity and specified floor schedules pass the prototype.
+Existing cost anchors are reproduced before new parking. Cohort
+split/merge checks remain green. Full-game funding, completions,
+household budget/tenure behavior, actual prices/parking use and historical
+availability still require calibration. No model/UI implementation or
+shipping approval is implied by this numerical draft.
