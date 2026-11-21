@@ -159,15 +159,29 @@ public final class Recipes {
                 economy.getPricePerWatt(), economy.getPricePerWaterUnit(), markets == null ? 1 : markets.getExchangeRate());
     }
 
+    /**
+     * ...as the template's owner pays for its power (PW1, REV-PW1c): Heavy Industry and Mining the energy and transmission, every other class
+     * both wires (EconomyManager.getPowerPriceFor(), the price the month's bills strike). A recipe is weighed at what its works would be billed.
+     */
+    public static Prices pricesOf(Game game, BuildingsTemplate t) {
+        return forTemplate(pricesOf(game), game, t);
+    }
+
+    /** The same prices with the power at the template's class (pricesOf(Game, BuildingsTemplate)); the same object where the two agree. */
+    static Prices forTemplate(Prices p, Game game, BuildingsTemplate t) {
+        double watt = game.getEconomyManager().getPowerPriceFor(t);
+        return watt == p.pricePerWatt() ? p : new Prices(p.good(), p.wages(), watt, p.pricePerWaterUnit(), p.exchange());
+    }
+
     /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */
     public static double gainOf(Game game, BuildingsTemplate t) {
         if (!game.foundedUnfitted()) {
             if (t.recipePieceId() == null) return 0;
-            Prices p = pricesOf(game);
+            Prices p = pricesOf(game, t);
             return value(bestGross(t, true, game.getMonth(), p, game.getResearch()), p)
                     - value(bestGross(t, false, game.getMonth(), p, game.getResearch()), p);
         }
-        return recipeGain(t, game.getMonth(), pricesOf(game), game.getResearch());
+        return recipeGain(t, game.getMonth(), pricesOf(game, t), game.getResearch());
     }
 
     /** The recipes each template's two parts run, by template id: [the fitted part's, the unfitted part's]. Only a template where a part runs a recipe other than the default has one. */
@@ -186,9 +200,10 @@ public final class Recipes {
         Research found = game.getResearch();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
-            String fitted = best(t, true, month, prices, found).getId(), unfitted = best(t, false, month, prices, found).getId();
-            fitted = RecipeChanges.choose(t, fitted, month, found, prices);
-            unfitted = RecipeChanges.choose(t, unfitted, month, found, prices);
+            Prices own = forTemplate(prices, game, t);   // the power at what this template's works are billed (PW1)
+            String fitted = best(t, true, month, own, found).getId(), unfitted = best(t, false, month, own, found).getId();
+            fitted = RecipeChanges.choose(t, fitted, month, found, own);
+            unfitted = RecipeChanges.choose(t, unfitted, month, found, own);
             String dflt = t.defaultRecipe().getId();
             if (!fitted.equals(dflt) || !unfitted.equals(dflt)) chosen.put(t.getId(), new String[] { fitted, unfitted });
         }

@@ -1,4 +1,4 @@
-# NewUnitCheck.java - 1,197 lines · 35 methods · 3 constants · harnesses
+# NewUnitCheck.java - 1,201 lines · 35 methods · 3 constants · harnesses
 
 `ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -58,7 +58,7 @@
 > are said to be skipped, section 7 orders through buildStack() and says so, and the rest runs: the harness exits 0
 > without them, as KeptCheck does.
 
-**Uses:** [WorksValue](WorksValue.md) (58), [Game](Game.md) (46), [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Good](Good.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (32), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (20), [BuildAdvice](BuildAdvice.md) (17), [KeptCheck](KeptCheck.md) (14), [BuildingsStacks](BuildingsStacks.md) (11), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [BuildingManager](BuildingManager.md) (9), [EquipmentFit](EquipmentFit.md) (7), [Founding](Founding.md) (6), [Recipe](Recipe.md) (5), [Sector](Sector.md) (4), [Recipes](Recipes.md) (4), [RecipeCheck](RecipeCheck.md) (4), [Bank](Bank.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [ConstructionControl](ConstructionControl.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2)... and 10 more
+**Uses:** [WorksValue](WorksValue.md) (58), [Game](Game.md) (46), [BuildCard](BuildCard.md) (46), [JobType](JobType.md) (44), [Good](Good.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (32), [NewUnit](NewUnit.md) (21), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (20), [BuildAdvice](BuildAdvice.md) (18), [KeptCheck](KeptCheck.md) (14), [BuildingsStacks](BuildingsStacks.md) (11), [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (11), [ResearchCatalog](ResearchCatalog.md) (10), [KeptBench](KeptBench.md) (10), [WageBand](WageBand.md) (9), [BuildingManager](BuildingManager.md) (9), [EquipmentFit](EquipmentFit.md) (7), [Founding](Founding.md) (6), [Recipe](Recipe.md) (5), [Sector](Sector.md) (4), [Recipes](Recipes.md) (4), [RecipeCheck](RecipeCheck.md) (4), [Bank](Bank.md) (3), [BuildingType](BuildingType.md) (3), [RecipeChange](RecipeChange.md) (2), [PopulationManager](PopulationManager.md) (2), [ConstructionControl](ConstructionControl.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [CityNeeds](CityNeeds.md) (2), [EducationType](EducationType.md) (2)... and 11 more
 
 ## Sections
 
@@ -76,7 +76,7 @@
 | 695 | · 13 |
 | 943 | · 10 |
 | 997 | · 11 |
-| 1056 | · 12 |
+| 1060 | · 12 |
 
 ## Constants
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 1115 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
+| 83 | 1119 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
 | 90 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 97 | 1 | `static void section(String title)` |  |
 | 99 | 1 | `static boolean near(double a, double b)` |  |
@@ -199,16 +199,16 @@
 | 945 | 44 | `static void crewDemand() throws Exception` |  |
 | 991 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
 
-### 11 (lines 997-1055)
+### 11 (lines 997-1059)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 999 | 56 | `static void powerAhead() throws Exception` |  |
+| 999 | 60 | `static void powerAhead() throws Exception` |  |
 
-### 12 (lines 1056-1197)
+### 12 (lines 1060-1201)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1058 | 108 | `static void cardGoods() throws Exception` |  |
-| 1167 | 30 | `public static void main(String[] args) throws Exception` |  |
+| 1062 | 108 | `static void cardGoods() throws Exception` |  |
+| 1171 | 30 | `public static void main(String[] args) throws Exception` |  |
 

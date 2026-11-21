@@ -1,4 +1,4 @@
-# BuildingsTemplate.java - 1,598 lines · 168 methods · 2 constants · model
+# BuildingsTemplate.java - 1,656 lines · 180 methods · 2 constants · model
 
 `ham/citybuildersim/BuildingsTemplate.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -22,9 +22,9 @@
 > claude/reading-the-numbers.md carries every building's price in real dollars
 > next to what the real thing costs, which is the table to balance against.
 
-**Uses:** [Good](Good.md) (27), [Recipe](Recipe.md) (20), [JobType](JobType.md) (12), [BuildingType](BuildingType.md) (9), [Equipment](Equipment.md) (7), [ResearchCatalog](ResearchCatalog.md) (6), [Ports](Ports.md) (6), [CareType](CareType.md) (5), [EducationType](EducationType.md) (5), [SafetyType](SafetyType.md) (5), [PriceLevel](PriceLevel.md) (5), [RecipeChange](RecipeChange.md) (4), [Traffic](Traffic.md) (4), [RefineryFlow](RefineryFlow.md) (3), [Deposit](Deposit.md) (3), [BridgeWorks](BridgeWorks.md) (3), [Resource](Resource.md) (2), [Sectors](Sectors.md) (1), [RealEstate](RealEstate.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [ConstructionControl](ConstructionControl.md) (1), [RecipeChanges](RecipeChanges.md) (1), [Research](Research.md) (1)
+**Uses:** [Good](Good.md) (29), [Recipe](Recipe.md) (20), [JobType](JobType.md) (12), [BuildingType](BuildingType.md) (11), [Equipment](Equipment.md) (7), [ResearchCatalog](ResearchCatalog.md) (6), [Ports](Ports.md) (6), [CareType](CareType.md) (5), [EducationType](EducationType.md) (5), [SafetyType](SafetyType.md) (5), [PriceLevel](PriceLevel.md) (5), [RecipeChange](RecipeChange.md) (4), [Traffic](Traffic.md) (4), [RefineryFlow](RefineryFlow.md) (3), [Deposit](Deposit.md) (3), [BridgeWorks](BridgeWorks.md) (3), [Resource](Resource.md) (2), [PowerDispatch](PowerDispatch.md) (2), [Sectors](Sectors.md) (1), [RealEstate](RealEstate.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [ConstructionControl](ConstructionControl.md) (1), [RecipeChanges](RecipeChanges.md) (1), [Research](Research.md) (1)
 
-**Used by (226):** [AdviceValueOracle](AdviceValueOracle.md), [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingInstance](BuildingInstance.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BuildingVisual](BuildingVisual.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [BuybackCheck](BuybackCheck.md), [CalendarCheck](CalendarCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [Construction](Construction.md), [ConstructionControl](ConstructionControl.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [CrimeCheck](CrimeCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DenominationCheck](DenominationCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ER1Check](ER1Check.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ExtractionSector](ExtractionSector.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [Founding](Founding.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [GdpCheck](GdpCheck.md), [GoldMining](GoldMining.md), [GoldMiningCheck](GoldMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [HarbourRenders](HarbourRenders.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandScreen](LandScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [LuxuryRetailCheck](LuxuryRetailCheck.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MedicineCheck](MedicineCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OldMetal](OldMetal.md), [OrderDoorCheck](OrderDoorCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutsideCheck](OutsideCheck.md), [PlanCheck](PlanCheck.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PopulationCheck](PopulationCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ProcessingSector](ProcessingSector.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [SlopeCheck](SlopeCheck.md), [SpreadPlanner](SpreadPlanner.md), [StaffingDrawCheck](StaffingDrawCheck.md), [StaffingTieCheck](StaffingTieCheck.md), [StrategicReserve](StrategicReserve.md), [SulphideLeachCheck](SulphideLeachCheck.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [UndemandedFeedCheck](UndemandedFeedCheck.md), [UserInterface](UserInterface.md), [Village1900Check](Village1900Check.md), [WantedPostsCheck](WantedPostsCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md), [WorldMarketCheck](WorldMarketCheck.md), [YearBookCheck](YearBookCheck.md), [YoungBankCheck](YoungBankCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (229):** [AdviceValueOracle](AdviceValueOracle.md), [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingInstance](BuildingInstance.md), [BuildingManager](BuildingManager.md), [BuildingStackCheck](BuildingStackCheck.md), [BuildingVisual](BuildingVisual.md), [BuildingsStacks](BuildingsStacks.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [BuybackCheck](BuybackCheck.md), [CalendarCheck](CalendarCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [Construction](Construction.md), [ConstructionControl](ConstructionControl.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [CrimeCheck](CrimeCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DenominationCheck](DenominationCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ER1Check](ER1Check.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [ExtractionSector](ExtractionSector.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [FoodProcessing](FoodProcessing.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignCheck](ForeignCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [Founding](Founding.md), [FoundingYardCheck](FoundingYardCheck.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GatewayCheck](GatewayCheck.md), [GdpCheck](GdpCheck.md), [GoldMining](GoldMining.md), [GoldMiningCheck](GoldMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [HarbourRenders](HarbourRenders.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HealthCheck](HealthCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandScreen](LandScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [LuxuryRetailCheck](LuxuryRetailCheck.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [MedicineCheck](MedicineCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OldMetal](OldMetal.md), [OrderDoorCheck](OrderDoorCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [OutsideCheck](OutsideCheck.md), [PlanCheck](PlanCheck.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PopulationCheck](PopulationCheck.md), [PortCheck](PortCheck.md), [Ports](Ports.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PowerDispatchCheck](PowerDispatchCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ProcessingSector](ProcessingSector.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [RobustnessCheck](RobustnessCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [ServicesManager](ServicesManager.md), [ServicesScreen](ServicesScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [SlopeCheck](SlopeCheck.md), [SpreadPlanner](SpreadPlanner.md), [StaffingDrawCheck](StaffingDrawCheck.md), [StaffingTieCheck](StaffingTieCheck.md), [StrategicReserve](StrategicReserve.md), [SulphideLeachCheck](SulphideLeachCheck.md), [SummaryScreen](SummaryScreen.md), [TradeCostCheck](TradeCostCheck.md), [TreasuryCheck](TreasuryCheck.md), [UndemandedFeedCheck](UndemandedFeedCheck.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [Village1900Check](Village1900Check.md), [WantedPostsCheck](WantedPostsCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md), [WorldMarketCheck](WorldMarketCheck.md), [YearBookCheck](YearBookCheck.md), [YoungBankCheck](YoungBankCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -33,21 +33,22 @@
 | 111 | WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3) |
 | 130 | A BUILDING THE CITY CANNOT STAFF SHOULD NOT BE BUILDABLE (2026-09-12) |
 | 155 | WHO OWNS IT, AND WHAT IT MAKES (2026-09-11, the sector template). |
-| 250 | · A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; docs/studies/spec-oil.md 2.3) |
-| 275 | · A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) |
-| 292 | · A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) |
-| 348 | · A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) |
-| 394 | · THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7, 2.11) |
-| 441 | · THE SITE IT STANDS ON (0.7.110, batch I1; docs/studies/spec-materials.md 2.4, 2.5) |
-| 476 | · THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8) |
-| 510 | · WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5) |
-| 532 | · THE OLD METAL A YARD TAKES (0.7.123, batch I4; docs/studies/spec-materials.md 2.5, 2.9) |
-| 556 | · THE EQUIPMENT IT CAN BE FITTED WITH (R1, 2026-11-05; research-design.md 2.1-2.2) |
-| 580 | · THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) |
-| 782 | · WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) |
-| 844 | · THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) |
-| 1184 | WHAT A MODE IS GOOD AT (2026-09-16) |
-| 1344 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
+| 258 | · A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; docs/studies/spec-oil.md 2.3) |
+| 283 | · A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) |
+| 300 | · A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) |
+| 356 | · A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) |
+| 402 | · THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7, 2.11) |
+| 449 | · THE SITE IT STANDS ON (0.7.110, batch I1; docs/studies/spec-materials.md 2.4, 2.5) |
+| 484 | · THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8) |
+| 518 | · WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5) |
+| 540 | · THE OLD METAL A YARD TAKES (0.7.123, batch I4; docs/studies/spec-materials.md 2.5, 2.9) |
+| 564 | · THE EQUIPMENT IT CAN BE FITTED WITH (R1, 2026-11-05; research-design.md 2.1-2.2) |
+| 588 | · THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) |
+| 790 | · WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) |
+| 852 | · THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) |
+| 1192 | WHAT A MODE IS GOOD AT (2026-09-16) |
+| 1319 | THE POWER ROWS (PW1; spec-electricity 2.3, 2.5) |
+| 1402 | WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) |
 
 ## Enum constants
 
@@ -55,16 +56,16 @@
 |---:|---|---|
 | 126 | `BuildingsTemplate.Source.FRESH` |  |
 | 126 | `BuildingsTemplate.Source.SEA` |  |
-| 406 | `BuildingsTemplate.Offshore.PLATFORM` |  |
-| 406 | `BuildingsTemplate.Offshore.WELL` |  |
-| 406 | `BuildingsTemplate.Offshore.PIPELINE` |  |
+| 414 | `BuildingsTemplate.Offshore.PLATFORM` |  |
+| 414 | `BuildingsTemplate.Offshore.WELL` |  |
+| 414 | `BuildingsTemplate.Offshore.PIPELINE` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1385 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1388 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1443 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1446 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ## Fields (state)
 
@@ -98,51 +99,56 @@
 | 178 | `private volatile java.util.Map<Good, Double> makes` | Not final since R1c: runRecipes() swaps in whole new maps (a screen's thread iterating goodsMade() keeps the map it was given), where a clear-and-fill would break its iteration. |
 | 179 | `private volatile java.util.Map<Good, Double> uses` |  |
 | 180 | `private double stock` |  |
-| 259 | `private ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit` |  |
-| 260 | `private double feedPerMonth` |  |
-| 281 | `private double pumpLitres` |  |
-| 307 | `private double repairsPerYear` |  |
-| 354 | `private Ports.Cargo berthCargo` |  |
-| 355 | `private double berthTonnesAYear` |  |
-| 377 | `private java.util.List<Ports.Ship> berthShips` | Which classes call (FR3 2026-10-19, docs/queue/FR3.md 2 and call 6): a berth may take only some of the classes of its kind ("port": {... |
-| 408 | `private Offshore offshore` |  |
-| 409 | `private int platformSlots` |  |
-| 410 | `private double onshoreCashPerKm` |  |
-| 460 | `private Site site` |  |
-| 489 | `private double gen` |  |
-| 521 | `private double consumables` |  |
-| 540 | `private final java.util.Map<Good, Double> oldMetal` |  |
-| 563 | `private java.util.List<Equipment> equipment` |  |
-| 597 | `private java.util.List<Recipe> recipes` |  |
-| 598 | `private String recipePieceId` |  |
-| 599 | `private java.util.List<RecipeChange> recipeChanges` |  |
-| 600 | `private double recipeProduction, recipeLand` |  |
-| 601 | `private Site recipeSite` |  |
-| 602 | `private double steamRailShare` |  |
-| 603 | `private double crackerPetrol` |  |
-| 647 | `private volatile String runsFitted, runsUnfitted` |  |
-| 799 | `private int since` |  |
-| 800 | `private String sinceText` |  |
-| 855 | `private double wash` |  |
-| 869 | `int[] jobsByEducation` | enums |
-| 870 | `private BuildingType category` |  |
-| 1193 | `private double freightGrade` |  |
-| 1194 | `private double transitCapacity` |  |
-| 1240 | `private double railCapacity` |  |
-| 1257 | `private double stationTonnes` |  |
-| 1281 | `private boolean siding` |  |
-| 1296 | `private boolean hydro` |  |
-| 1311 | `private BridgeWorks.Kind bridge` |  |
-| 1331 | `private double truckRoom` |  |
-| 1555 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
-| 1556 | `private double foundingUpkeep` |  |
-| 1572 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
+| 267 | `private ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit` |  |
+| 268 | `private double feedPerMonth` |  |
+| 289 | `private double pumpLitres` |  |
+| 315 | `private double repairsPerYear` |  |
+| 362 | `private Ports.Cargo berthCargo` |  |
+| 363 | `private double berthTonnesAYear` |  |
+| 385 | `private java.util.List<Ports.Ship> berthShips` | Which classes call (FR3 2026-10-19, docs/queue/FR3.md 2 and call 6): a berth may take only some of the classes of its kind ("port": {... |
+| 416 | `private Offshore offshore` |  |
+| 417 | `private int platformSlots` |  |
+| 418 | `private double onshoreCashPerKm` |  |
+| 468 | `private Site site` |  |
+| 497 | `private double gen` |  |
+| 529 | `private double consumables` |  |
+| 548 | `private final java.util.Map<Good, Double> oldMetal` |  |
+| 571 | `private java.util.List<Equipment> equipment` |  |
+| 605 | `private java.util.List<Recipe> recipes` |  |
+| 606 | `private String recipePieceId` |  |
+| 607 | `private java.util.List<RecipeChange> recipeChanges` |  |
+| 608 | `private double recipeProduction, recipeLand` |  |
+| 609 | `private Site recipeSite` |  |
+| 610 | `private double steamRailShare` |  |
+| 611 | `private double crackerPetrol` |  |
+| 655 | `private volatile String runsFitted, runsUnfitted` |  |
+| 807 | `private int since` |  |
+| 808 | `private String sinceText` |  |
+| 863 | `private double wash` |  |
+| 877 | `int[] jobsByEducation` | enums |
+| 878 | `private BuildingType category` |  |
+| 1201 | `private double freightGrade` |  |
+| 1202 | `private double transitCapacity` |  |
+| 1248 | `private double railCapacity` |  |
+| 1265 | `private double stationTonnes` |  |
+| 1289 | `private boolean siding` |  |
+| 1304 | `private boolean hydro` |  |
+| 1322 | `private double nameplate` | A power station's nameplate, kW: what it can put out in an hour, past its average (production1). |
+| 1325 | `private String fuel` | The good a fuelled station burns, by its Good name ("THERMAL_COAL"); blank for one that burns none (buildings.json "fuel"). |
+| 1328 | `private double heatRate` | A fuelled station's heat rate, Btu of fuel a kWh, as the sources state it (buildings.json "heatRate"). |
+| 1331 | `private double variableUpkeep` | A station's variable upkeep, US$ a MWh at today's level (buildings.json "variableUpkeep"). |
+| 1334 | `private String variable` | What kind of weather-bound output a station makes: "wind" for the Wind Farm, blank for the rest (buildings.json "variable"). |
+| 1369 | `private BridgeWorks.Kind bridge` |  |
+| 1389 | `private double truckRoom` |  |
+| 1613 | `private double foundingCashCost` | What this building cost when the catalogue was read, before any currency reform - so a reformed city that reloads can divide it again. |
+| 1614 | `private double foundingUpkeep` |  |
+| 1630 | `private double struckAt` | What the founding figures were last divided by to give today's: the unit over the expected price level at the last re-seed, over any reform since. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 27 | 1572 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
+| 27 | 1630 | **type** `public class BuildingsTemplate` | One kind of building, and what it costs to put up. |
 
 ### WHERE A WATER WORKS DRAWS FROM (0.7.59, batch J2; spec-land 2.3) (lines 111-129)
 
@@ -152,7 +158,7 @@
 
 ### A BUILDING THE CITY CANNOT STAFF SHOULD NOT BE BUILDABLE (2026-09-12) (lines 130-154)
 
-### WHO OWNS IT, AND WHAT IT MAKES (2026-09-11, the sector template). (lines 155-249)
+### WHO OWNS IT, AND WHAT IT MAKES (2026-09-11, the sector template). (lines 155-257)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -164,241 +170,258 @@
 | 205 | 1 | `public boolean isOwnedBySector()` |  |
 | 220 | 3 | `public String getOperator()` | The key of the sector that WORKS the building and pays its posts: Freight for a sea terminal (BuildingType.PORTS), getSector() for every other building. |
 | 231 | 3 | `public static boolean isBilledForUtilities(BuildingsTemplate t)` | Whether a building's power and water are invoiced to anybody: the business buildings a sector owns. |
-| 236 | 1 | `public double makes(Good good)` | Units of a good this building makes a month at nameplate. |
-| 239 | 1 | `public double uses(Good good)` | Units of a good this building uses a month at nameplate. |
-| 241 | 1 | `public java.util.Map<Good, Double> goodsMade()` |  |
-| 242 | 1 | `public java.util.Map<Good, Double> goodsUsed()` |  |
-| 245 | 1 | `public double getStock()` | Room for what it holds, in units. |
-| 248 | 1 | `public double stocks(Good good)` | The same, asked per good: a building has one warehouse and it holds whatever the building holds. |
+| 239 | 3 | `public static boolean isHighVoltage(BuildingsTemplate t)` | Whether a building takes its power at high voltage (spec-electricity 2.6): Heavy Industry and Mining are the two classes that pay the energy and the long wires alone, not the street's, so the utility bills them at the... |
+| 244 | 1 | `public double makes(Good good)` | Units of a good this building makes a month at nameplate. |
+| 247 | 1 | `public double uses(Good good)` | Units of a good this building uses a month at nameplate. |
+| 249 | 1 | `public java.util.Map<Good, Double> goodsMade()` |  |
+| 250 | 1 | `public java.util.Map<Good, Double> goodsUsed()` |  |
+| 253 | 1 | `public double getStock()` | Room for what it holds, in units. |
+| 256 | 1 | `public double stocks(Good good)` | The same, asked per good: a building has one warehouse and it holds whatever the building holds. |
 
-### A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; docs/studies/spec-oil.md 2.3) (lines 250-274)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 263 | 5 | `public BuildingsTemplate setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind unit, double litresAMonth)` | Makes this a refinery's conversion unit of a kind, taking `litresAMonth` of its feed stream at nameplate. |
-| 270 | 1 | `public ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit()` | The kind of conversion unit this is, or null for every building that is not one. |
-| 273 | 1 | `public double feedPerMonth()` | Litres a month of its feed stream a conversion unit takes at nameplate; 0 for every other building. |
-
-### A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) (lines 275-291)
+### A REFINERY'S CONVERSION UNIT (0.7.80, batch O4; docs/studies/spec-oil.md 2.3) (lines 258-282)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 284 | 4 | `public BuildingsTemplate setPumpLitres(double litresAMonth)` | Makes this a filling station that sells `litresAMonth` at its typical throughput. |
-| 290 | 1 | `public double pumpLitres()` | Litres a month a filling station sells at its typical throughput; 0 for every other building. |
+| 271 | 5 | `public BuildingsTemplate setRefineryUnit(ham.citybuildersim.sectors.RefineryFlow.Kind unit, double litresAMonth)` | Makes this a refinery's conversion unit of a kind, taking `litresAMonth` of its feed stream at nameplate. |
+| 278 | 1 | `public ham.citybuildersim.sectors.RefineryFlow.Kind refineryUnit()` | The kind of conversion unit this is, or null for every building that is not one. |
+| 281 | 1 | `public double feedPerMonth()` | Litres a month of its feed stream a conversion unit takes at nameplate; 0 for every other building. |
 
-### A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) (lines 292-347)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 310 | 4 | `public BuildingsTemplate setRepairsPerYear(double shareAYear)` | Gives this building its own repairs a year, a share of what it cost to put up; 0 or less is none (the house rate). |
-| 316 | 1 | `public boolean hasOwnRepairs()` | Whether this building has a repairs share of its own (0.7.103: the three road kinds). |
-| 319 | 3 | `public double repairsPerYear()` | Its repairs a year, a share of what it cost to put up: its own, or RealEstate.MAINTENANCE_PER_YEAR. |
-| 334 | 4 | `public double gravelRepairsAt(double streetUtilisation)` | A GRAVEL ROAD'S REPAIRS AT THE TRAFFIC ON ITS STREET (FR7 2.2, Jerus's star 5, 2026-10-18): its share a year, repairsPerYear(), up to the load of InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY, and past it that sha... |
-| 344 | 3 | `public double repairsPerYearAt(double streetUtilisation)` | ...and any building's repairs a year at the traffic on the streets: the Gravel Road's rise with it (gravelRepairsAt()), the Paved Road's, the highway's and every other building's are flat (repairsPerYear()). |
-
-### A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) (lines 348-393)
+### A FILLING STATION'S PUMPS (0.7.83, batch O6; runs/research-pump.md 7) (lines 283-299)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 358 | 5 | `public BuildingsTemplate setBerth(Ports.Cargo cargo, double tonnesAYear)` | Makes this a berth of a kind of cargo, handling `tonnesAYear` of it. |
-| 365 | 1 | `public Ports.Cargo berthCargo()` | The kind of cargo a terminal's berth handles, or null for every building that is not a berth. |
-| 368 | 1 | `public double berthTonnesAYear()` | Tonnes a year a terminal's berth handles; 0 for every other building. |
-| 380 | 4 | `public BuildingsTemplate setBerthShips(java.util.List<Ports.Ship> ships)` | Limits this berth to these classes of its cargo; an empty list lifts the limit. |
-| 386 | 1 | `public java.util.List<Ports.Ship> berthShips()` | The classes this berth takes, smallest first as the list gives them; empty when it takes every class of its kind (Ports.shipsOf() answers either way). |
-| 389 | 1 | `public boolean isPort()` | Whether this is a sea terminal (0.7.86): a PORTS building with a berth. |
-| 392 | 1 | `public boolean needsCoast()` | Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). |
+| 292 | 4 | `public BuildingsTemplate setPumpLitres(double litresAMonth)` | Makes this a filling station that sells `litresAMonth` at its typical throughput. |
+| 298 | 1 | `public double pumpLitres()` | Litres a month a filling station sells at its typical throughput; 0 for every other building. |
 
-### THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7, 2.11) (lines 394-440)
+### A ROAD'S OWN REPAIRS (0.7.103, batch P4; Jerus's A11, 2026-10-10) (lines 300-355)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 406 | 1 | **type** `public enum Offshore` | What a building at sea is: a platform's jacket, a well in one of its slots, or a kilometre of crude pipeline. |
-| 413 | 6 | `public BuildingsTemplate setOffshore(Offshore kind, int slots, double onshoreCash)` | Makes this one of the oil buildings at sea: a PLATFORM with `slots` for wells, a WELL, or a PIPELINE whose kilometre on land costs `onshoreCash` (thousands). |
-| 421 | 1 | `public Offshore offshore()` | Which of the buildings at sea this is, or null for every building on the ground. |
-| 424 | 1 | `public boolean standsAtSea()` | Whether this stands at sea (an Offshore Platform, a Platform Well, a Crude Pipeline): not on the city's dry ground, nor drawn on its land. |
-| 427 | 1 | `public boolean isPlatform()` | Whether this is an offshore platform's jacket. |
-| 430 | 1 | `public boolean isPlatformWell()` | Whether this is a well in a platform's slot. |
-| 433 | 1 | `public boolean isPipeline()` | Whether this is a kilometre of crude pipeline. |
-| 436 | 1 | `public int platformSlots()` | The wells a platform's jacket holds: 12 for the Offshore Platform; 0 for every other building. |
-| 439 | 1 | `public double onshoreCashPerKm()` | A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. |
+| 318 | 4 | `public BuildingsTemplate setRepairsPerYear(double shareAYear)` | Gives this building its own repairs a year, a share of what it cost to put up; 0 or less is none (the house rate). |
+| 324 | 1 | `public boolean hasOwnRepairs()` | Whether this building has a repairs share of its own (0.7.103: the three road kinds). |
+| 327 | 3 | `public double repairsPerYear()` | Its repairs a year, a share of what it cost to put up: its own, or RealEstate.MAINTENANCE_PER_YEAR. |
+| 342 | 4 | `public double gravelRepairsAt(double streetUtilisation)` | A GRAVEL ROAD'S REPAIRS AT THE TRAFFIC ON ITS STREET (FR7 2.2, Jerus's star 5, 2026-10-18): its share a year, repairsPerYear(), up to the load of InfrastructureManager.GRAVEL_QUIET_VEHICLES_A_DAY, and past it that sha... |
+| 352 | 3 | `public double repairsPerYearAt(double streetUtilisation)` | ...and any building's repairs a year at the traffic on the streets: the Gravel Road's rise with it (gravelRepairsAt()), the Paved Road's, the highway's and every other building's are flat (repairsPerYear()). |
 
-### THE SITE IT STANDS ON (0.7.110, batch I1; docs/studies/spec-materials.md 2.4, 2.5) (lines 441-475)
+### A SEA TERMINAL'S BERTH (0.7.86, batch O9; docs/studies/spec-oil.md 2.9) (lines 356-401)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 455 | 4 | **type** `public record Site(Resource resource, Deposit.FieldType type, int sites, double dig)` | The site a building stands on: its resource, the type of field it needs (null for ANY), the sites it takes and the tonnes of field a unit it makes takes out. |
-| 457 | 1 | `public boolean any()` _(in BuildingsTemplate.Site)_ | Whether it stands on a field of any type. |
-| 463 | 9 | `public BuildingsTemplate setSite(Resource resource, Deposit.FieldType type, int sites, double dig)` | Makes this stand on `sites` of a resource's sites of a type (null for ANY), taking `dig` of the field a unit it makes; a type not the resource's reads as ANY. |
-| 474 | 1 | `public Site site()` | The site it stands on, or null for a building that stands on no resource's sites. |
+| 366 | 5 | `public BuildingsTemplate setBerth(Ports.Cargo cargo, double tonnesAYear)` | Makes this a berth of a kind of cargo, handling `tonnesAYear` of it. |
+| 373 | 1 | `public Ports.Cargo berthCargo()` | The kind of cargo a terminal's berth handles, or null for every building that is not a berth. |
+| 376 | 1 | `public double berthTonnesAYear()` | Tonnes a year a terminal's berth handles; 0 for every other building. |
+| 388 | 4 | `public BuildingsTemplate setBerthShips(java.util.List<Ports.Ship> ships)` | Limits this berth to these classes of its cargo; an empty list lifts the limit. |
+| 394 | 1 | `public java.util.List<Ports.Ship> berthShips()` | The classes this berth takes, smallest first as the list gives them; empty when it takes every class of its kind (Ports.shipsOf() answers either way). |
+| 397 | 1 | `public boolean isPort()` | Whether this is a sea terminal (0.7.86): a PORTS building with a berth. |
+| 400 | 1 | `public boolean needsCoast()` | Whether an order for this has to stand on owned sea: a desalination plant (0.7.59) and a sea terminal (0.7.86). |
 
-### THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8) (lines 476-509)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 492 | 4 | `public BuildingsTemplate setGen(double kw)` | Makes this building make `kw` of power a month itself; 0 or less is none. |
-| 498 | 1 | `public double getGen()` | kW of power it makes itself; 0 for every building but the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop (0.7.123). |
-| 501 | 3 | `public double powerBought()` | kW it buys from the grid: its draw past what it makes - its whole draw, exactly, when it makes none. |
-| 506 | 3 | `public double powerSold()` | kW it sells the grid: what it makes past its draw; nothing when it makes none. |
-
-### WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5) (lines 510-531)
+### THE OIL AT SEA (0.7.91, batch O10; docs/studies/spec-oil.md 2.7, 2.11) (lines 402-448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 524 | 4 | `public BuildingsTemplate setConsumables(double worldThousands)` | Gives this building `worldThousands` a month of consumables at nameplate, in the world's money; 0 or less is none. |
-| 530 | 1 | `public double getConsumables()` | Its consumables a month at nameplate, thousands of the world's money; 0 for every building but the materials chains' rows (the iron rows since 0.7.120, the integrated route's since 0.7.123). |
+| 414 | 1 | **type** `public enum Offshore` | What a building at sea is: a platform's jacket, a well in one of its slots, or a kilometre of crude pipeline. |
+| 421 | 6 | `public BuildingsTemplate setOffshore(Offshore kind, int slots, double onshoreCash)` | Makes this one of the oil buildings at sea: a PLATFORM with `slots` for wells, a WELL, or a PIPELINE whose kilometre on land costs `onshoreCash` (thousands). |
+| 429 | 1 | `public Offshore offshore()` | Which of the buildings at sea this is, or null for every building on the ground. |
+| 432 | 1 | `public boolean standsAtSea()` | Whether this stands at sea (an Offshore Platform, a Platform Well, a Crude Pipeline): not on the city's dry ground, nor drawn on its land. |
+| 435 | 1 | `public boolean isPlatform()` | Whether this is an offshore platform's jacket. |
+| 438 | 1 | `public boolean isPlatformWell()` | Whether this is a well in a platform's slot. |
+| 441 | 1 | `public boolean isPipeline()` | Whether this is a kilometre of crude pipeline. |
+| 444 | 1 | `public int platformSlots()` | The wells a platform's jacket holds: 12 for the Offshore Platform; 0 for every other building. |
+| 447 | 1 | `public double onshoreCashPerKm()` | A pipeline's kilometre on land, in thousands (its own cash is a kilometre at sea); 0 for every other building. |
 
-### THE OLD METAL A YARD TAKES (0.7.123, batch I4; docs/studies/spec-materials.md 2.5, 2.9) (lines 532-555)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 543 | 6 | `public BuildingsTemplate setOldMetal(Good metal, double tonnesAMonth)` | Makes this building take `tonnesAMonth` of the city's old metal of a kind at nameplate; 0 or less is none. |
-| 551 | 1 | `public double oldMetal(Good metal)` | Tonnes of the city's old metal of this kind it takes a month at nameplate; 0 for every building but a yard. |
-| 554 | 1 | `public java.util.Map<Good, Double> oldMetalTaken()` | Every kind of old metal it takes, tonnes a month at nameplate; empty for every building but a yard. |
-
-### THE EQUIPMENT IT CAN BE FITTED WITH (R1, 2026-11-05; research-design.md 2.1-2.2) (lines 556-579)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 566 | 4 | `public BuildingsTemplate setEquipment(java.util.List<Equipment> pieces)` | Gives this building its equipment, in the order given; a copy, and null or empty is none. |
-| 572 | 1 | `public java.util.List<Equipment> getEquipment()` | The pieces of equipment it can be fitted with, in the file's order; unmodifiable, empty for most buildings. |
-| 575 | 4 | `public Equipment getEquipment(String id)` | The piece of this id, or null if the building carries none of it. |
-
-### THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) (lines 580-781)
+### THE SITE IT STANDS ON (0.7.110, batch I1; docs/studies/spec-materials.md 2.4, 2.5) (lines 449-483)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 606 | 1 | `public java.util.List<RecipeChange> getRecipeChanges()` | Independent discovery undos, in code order, anchored to the immutable default. |
-| 609 | 8 | `public BuildingsTemplate setRecipeChanges(java.util.List<RecipeChange> changes)` | Installs independent changes before the template first runs. |
-| 619 | 3 | `public boolean changeNeeds(String piece)` | Whether an independent recipe change needs this piece. |
-| 624 | 1 | `double recipeProduction()` | Utility output before any undo. |
-| 627 | 1 | `double recipeLand()` | Ground before any undo. |
-| 630 | 1 | `Site recipeSite()` | The immutable modern extraction coefficient and site identity. |
-| 633 | 1 | `public double steamRailShare()` | Share of rail engines on steam, for the actual fuel invoice. |
-| 636 | 1 | `public double crackerPetrol()` | Petrol per litre fed to this cracking unit after the chosen process. |
-| 639 | 7 | `void runRecipeExtras(double production, double land, double steamRail, double petrol, double dig)` | Sets the non-goods figures of the independent changes. |
-| 657 | 26 | `public BuildingsTemplate setRecipes(java.util.List<Recipe> list)` | Gives this building its recipes, in the order given; a copy, and null or empty is none (the one implicit default, its top level). |
-| 685 | 3 | `public java.util.List<Recipe> getRecipes()` | Its recipes in the file's order; unmodifiable. |
-| 690 | 6 | `public Recipe getRecipe(String id)` | The recipe of this id, or null if the building knows none of it. |
-| 698 | 4 | `public Recipe defaultRecipe()` | The default recipe: its top level, today's way (the one entry of a list that states no figure). |
-| 704 | 1 | `public boolean hasRecipeChoice()` | Whether it has a choice of ways to run: a list with more than the default in it. |
-| 707 | 1 | `public String recipePieceId()` | The id of the piece of equipment its recipes need (at most one per template), or null where none does. |
-| 710 | 1 | `public Equipment recipePiece()` | The piece of equipment its recipes need, the template's "recipe piece": the buildings that have it run the recipes that need it, those that have not the ones that need nothing; null where no recipe needs one. |
-| 719 | 33 | `public void runRecipes(Recipe fitted, long fittedBuildings, Recipe unfitted, long unfittedBuildings)` | Sets this building's live figures to the recipes its two parts run, weighted by their buildings: `fitted` for `fittedBuildings` and `unfitted` for `unfittedBuildings` (a part with no building weighs nothing; with none... |
-| 754 | 12 | `private void setFigures(Recipe r)` | Sets the live figures to one recipe's, to the bit. |
-| 768 | 4 | `void setRunningRecipeIds(String[] ids)` | Retains the saved process decisions when independent equipment changes live figures. |
-| 774 | 4 | `public String[] runningRecipeIds()` | The ids of the recipes the fitted part and the unfitted part last ran (runRecipes()), in that order; the default's where it has run none. |
-| 780 | 1 | `boolean hasRunningRecipes()` | Whether this recipe list has reached production since it was installed. |
+| 463 | 4 | **type** `public record Site(Resource resource, Deposit.FieldType type, int sites, double dig)` | The site a building stands on: its resource, the type of field it needs (null for ANY), the sites it takes and the tonnes of field a unit it makes takes out. |
+| 465 | 1 | `public boolean any()` _(in BuildingsTemplate.Site)_ | Whether it stands on a field of any type. |
+| 471 | 9 | `public BuildingsTemplate setSite(Resource resource, Deposit.FieldType type, int sites, double dig)` | Makes this stand on `sites` of a resource's sites of a type (null for ANY), taking `dig` of the field a unit it makes; a type not the resource's reads as ANY. |
+| 482 | 1 | `public Site site()` | The site it stands on, or null for a building that stands on no resource's sites. |
 
-### WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) (lines 782-843)
+### THE POWER A WORKS MAKES ITSELF (0.7.112, batch I2; docs/studies/spec-materials.md 2.5, 2.8) (lines 484-517)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 803 | 3 | `public BuildingsTemplate setSince(int year)` | Dates this building by a year: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. |
-| 811 | 13 | `public BuildingsTemplate setSince(String text)` | Dates this building by a year ("1902") or a research catalogue code ("PE4"): blank, null or a year of 0 or less is undated. |
-| 826 | 1 | `public int getSince()` | The year it first existed (a code's entry's year; 0 for a code that is not in the catalogue), or 0 for a row not yet dated. |
-| 829 | 1 | `public String getSinceText()` | What the row says, as written: "" undated, "1902" a year, "PE4" a catalogue code. |
-| 832 | 3 | `public boolean knownAt(int gameMonth)` | Whether it is known at a game month (month 1 = January 1900): an undated row always; a dated one from the month its year or its code's entry gives (ResearchCatalog.knownFrom()). |
-| 840 | 3 | `public boolean knownAt(int gameMonth, Research found)` | Whether it is known at a game month in a city whose research may have found its code first (R3): knownAt(int), or from the month the city found the code (Research.knownFrom()). |
+| 500 | 4 | `public BuildingsTemplate setGen(double kw)` | Makes this building make `kw` of power a month itself; 0 or less is none. |
+| 506 | 1 | `public double getGen()` | kW of power it makes itself; 0 for every building but the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop (0.7.123). |
+| 509 | 3 | `public double powerBought()` | kW it buys from the grid: its draw past what it makes - its whole draw, exactly, when it makes none. |
+| 514 | 3 | `public double powerSold()` | kW it sells the grid: what it makes past its draw; nothing when it makes none. |
 
-### THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) (lines 844-1183)
+### WHAT A WORKS BUYS ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; docs/studies/spec-materials.md 2.5) (lines 518-539)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 858 | 4 | `public BuildingsTemplate setWash(double tonnesAMonth)` | Makes this a preparation plant washing `tonnesAMonth` of raw coal a month at nameplate; 0 or less is none. |
-| 864 | 1 | `public double getWash()` | Tonnes of raw coal it washes a month at nameplate; 0 for every building but the Coal Preparation Plant (0.7.126). |
-| 873 | 4 | `public BuildingsTemplate(String name, BuildingType category)` | barebones constructor |
-| 921 | 4 | `public BuildingsTemplate setJobs(JobType type, int number)` | setters (method chaining) |
-| 926 | 7 | `public BuildingsTemplate setCashCost(double cashCost)` |  |
-| 942 | 13 | `BuildingsTemplate pricedAtFoundingLevel()` | THE FUNNEL FOR THE BUILDINGS' MONEY (EP1, Jerus 2026-10-30: "1900 price level"). |
-| 956 | 4 | `public BuildingsTemplate setConstructionPoints(int constructionPoints)` |  |
-| 961 | 4 | `public BuildingsTemplate setCapacity(int capacity)` |  |
-| 966 | 6 | `public BuildingsTemplate setUpkeep(double upkeep)` |  |
-| 978 | 8 | `public BuildingsTemplate setFoundingCosts(double cash, double upkeep)` | Sets the cash cost and the upkeep from figures in founding money (R1g's dated home, Recipes.dateHomes()): the founding figures exactly these, today's struck from them at the unit the template was last struck at, as se... |
-| 987 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
-| 992 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
-| 997 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
-| 1002 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
-| 1007 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
-| 1012 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
-| 1017 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
-| 1022 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
-| 1027 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
-| 1032 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
-| 1037 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
-| 1042 | 4 | `public BuildingsTemplate setId(int id)` |  |
-| 1047 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
-| 1052 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
-| 1057 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
-| 1063 | 4 | `public BuildingsTemplate setResearches(ResearchCatalog.Field field)` | The field this Research Lab researches (R4); null clears it. |
-| 1068 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
-| 1074 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
-| 1079 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
-| 1084 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
-| 1089 | 3 | `public double getCashCost()` | getters |
-| 1099 | 3 | `public double getFoundingCashCost()` | The cash cost as the catalogue states it (ET2): buildings.json's figure, in thousands of founding dollars, before the unit and the expected price level it is struck at (seedConstants()) - which the price level and a c... |
-| 1104 | 3 | `public double getFoundingUpkeep()` | The upkeep as the catalogue states it, in founding money, as getFoundingCashCost() states the cash cost; the upkeep itself where none was struck. |
-| 1108 | 3 | `public int getConstructionPoints()` |  |
-| 1112 | 3 | `public int getDwellings()` |  |
-| 1116 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
-| 1137 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
-| 1151 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
-| 1156 | 3 | `public int getCapacity()` |  |
-| 1160 | 3 | `public double getUpkeep()` |  |
-| 1164 | 3 | `public int getConstructionMaterials()` |  |
-| 1168 | 3 | `public int getElectricityConsumption()` |  |
-| 1172 | 3 | `public double getWaterConsumption()` |  |
-| 1176 | 3 | `public double getLandSqFt()` |  |
-| 1180 | 3 | `public double getRoadLoad()` |  |
+| 532 | 4 | `public BuildingsTemplate setConsumables(double worldThousands)` | Gives this building `worldThousands` a month of consumables at nameplate, in the world's money; 0 or less is none. |
+| 538 | 1 | `public double getConsumables()` | Its consumables a month at nameplate, thousands of the world's money; 0 for every building but the materials chains' rows (the iron rows since 0.7.120, the integrated route's since 0.7.123). |
 
-### WHAT A MODE IS GOOD AT (2026-09-16) (lines 1184-1343)
+### THE OLD METAL A YARD TAKES (0.7.123, batch I4; docs/studies/spec-materials.md 2.5, 2.9) (lines 540-563)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1206 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
-| 1211 | 1 | `public double getFreightGrade()` |  |
-| 1220 | 1 | `public boolean isHighway()` | Whether this is a highway (FR7, 2026-10-18): a road that is fully grade-separated, a freight grade of 1. |
-| 1230 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
-| 1235 | 1 | `public double getTransitCapacity()` |  |
-| 1238 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
-| 1250 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
-| 1255 | 1 | `public double getRailCapacity()` |  |
-| 1271 | 4 | `public BuildingsTemplate setStationTonnes(double tonnes)` | Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's 50,000 and the Rail Terminal's 500,000; none for every other building. |
-| 1276 | 1 | `public double getStationTonnes()` |  |
-| 1279 | 1 | `public boolean isStation()` | True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). |
-| 1289 | 4 | `public BuildingsTemplate setSiding(boolean siding)` | Whether this track is a siding into one works (FR7): the Rail Spur, and no other. |
-| 1294 | 1 | `public boolean isSiding()` |  |
-| 1304 | 4 | `public BuildingsTemplate setHydro(boolean hydro)` | Whether this power station needs a river with a drop on the ground the city owns (HY1): the Hydro Station, and no other. |
-| 1309 | 1 | `public boolean isHydro()` |  |
-| 1320 | 4 | `public BuildingsTemplate setBridge(BridgeWorks.Kind kind)` | Which long bridge this is (ET6): the Highway Bridge, the Rail Bridge and the Road Bridge, and no other building. |
-| 1326 | 1 | `public BridgeWorks.Kind bridgeKind()` | The kind of long bridge this is, or null for every other building. |
-| 1329 | 1 | `public boolean isBridge()` | Whether this is a long bridge (ET6). |
-| 1337 | 4 | `public BuildingsTemplate setTruckRoom(double trucks)` | Trucks a Truck Depot keeps (FR2): Freight's Haulage division's room; none for every other building. |
-| 1342 | 1 | `public double getTruckRoom()` |  |
+| 551 | 6 | `public BuildingsTemplate setOldMetal(Good metal, double tonnesAMonth)` | Makes this building take `tonnesAMonth` of the city's old metal of a kind at nameplate; 0 or less is none. |
+| 559 | 1 | `public double oldMetal(Good metal)` | Tonnes of the city's old metal of this kind it takes a month at nameplate; 0 for every building but a yard. |
+| 562 | 1 | `public java.util.Map<Good, Double> oldMetalTaken()` | Every kind of old metal it takes, tonnes a month at nameplate; empty for every building but a yard. |
 
-### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 1344-1598)
+### THE EQUIPMENT IT CAN BE FITTED WITH (R1, 2026-11-05; research-design.md 2.1-2.2) (lines 564-587)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1398 | 45 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
-| 1444 | 3 | `public int getCoverage()` |  |
-| 1448 | 3 | `public double getProduction1()` |  |
-| 1452 | 3 | `public double getProduction2()` |  |
-| 1456 | 3 | `public double getProductionModifier1()` |  |
-| 1460 | 3 | `public double getProductionModifier2()` |  |
-| 1464 | 3 | `public boolean getNationalized()` |  |
-| 1467 | 3 | `public int getJobs(JobType type)` |  |
-| 1471 | 3 | `public String getName()` |  |
-| 1475 | 3 | `public BuildingType getCategory()` |  |
-| 1479 | 3 | `public int getId()` |  |
-| 1483 | 3 | `public CareType getCare()` |  |
-| 1488 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
-| 1494 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
-| 1497 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
-| 1501 | 3 | `public SafetyType getSafety()` |  |
-| 1505 | 3 | `public EducationType getTeaches()` |  |
-| 1510 | 3 | `public ResearchCatalog.Field getResearches()` | The field this building is a Research Lab of (R4), or null for every other building. |
-| 1518 | 5 | `public int getTotalJobs()` | sum of all jobs |
-| 1537 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
-| 1575 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
-| 1591 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
+| 574 | 4 | `public BuildingsTemplate setEquipment(java.util.List<Equipment> pieces)` | Gives this building its equipment, in the order given; a copy, and null or empty is none. |
+| 580 | 1 | `public java.util.List<Equipment> getEquipment()` | The pieces of equipment it can be fitted with, in the file's order; unmodifiable, empty for most buildings. |
+| 583 | 4 | `public Equipment getEquipment(String id)` | The piece of this id, or null if the building carries none of it. |
+
+### THE WAYS IT RUNS (R1c, 2026-11-05; research-design.md 2.1) (lines 588-789)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 614 | 1 | `public java.util.List<RecipeChange> getRecipeChanges()` | Independent discovery undos, in code order, anchored to the immutable default. |
+| 617 | 8 | `public BuildingsTemplate setRecipeChanges(java.util.List<RecipeChange> changes)` | Installs independent changes before the template first runs. |
+| 627 | 3 | `public boolean changeNeeds(String piece)` | Whether an independent recipe change needs this piece. |
+| 632 | 1 | `double recipeProduction()` | Utility output before any undo. |
+| 635 | 1 | `double recipeLand()` | Ground before any undo. |
+| 638 | 1 | `Site recipeSite()` | The immutable modern extraction coefficient and site identity. |
+| 641 | 1 | `public double steamRailShare()` | Share of rail engines on steam, for the actual fuel invoice. |
+| 644 | 1 | `public double crackerPetrol()` | Petrol per litre fed to this cracking unit after the chosen process. |
+| 647 | 7 | `void runRecipeExtras(double production, double land, double steamRail, double petrol, double dig)` | Sets the non-goods figures of the independent changes. |
+| 665 | 26 | `public BuildingsTemplate setRecipes(java.util.List<Recipe> list)` | Gives this building its recipes, in the order given; a copy, and null or empty is none (the one implicit default, its top level). |
+| 693 | 3 | `public java.util.List<Recipe> getRecipes()` | Its recipes in the file's order; unmodifiable. |
+| 698 | 6 | `public Recipe getRecipe(String id)` | The recipe of this id, or null if the building knows none of it. |
+| 706 | 4 | `public Recipe defaultRecipe()` | The default recipe: its top level, today's way (the one entry of a list that states no figure). |
+| 712 | 1 | `public boolean hasRecipeChoice()` | Whether it has a choice of ways to run: a list with more than the default in it. |
+| 715 | 1 | `public String recipePieceId()` | The id of the piece of equipment its recipes need (at most one per template), or null where none does. |
+| 718 | 1 | `public Equipment recipePiece()` | The piece of equipment its recipes need, the template's "recipe piece": the buildings that have it run the recipes that need it, those that have not the ones that need nothing; null where no recipe needs one. |
+| 727 | 33 | `public void runRecipes(Recipe fitted, long fittedBuildings, Recipe unfitted, long unfittedBuildings)` | Sets this building's live figures to the recipes its two parts run, weighted by their buildings: `fitted` for `fittedBuildings` and `unfitted` for `unfittedBuildings` (a part with no building weighs nothing; with none... |
+| 762 | 12 | `private void setFigures(Recipe r)` | Sets the live figures to one recipe's, to the bit. |
+| 776 | 4 | `void setRunningRecipeIds(String[] ids)` | Retains the saved process decisions when independent equipment changes live figures. |
+| 782 | 4 | `public String[] runningRecipeIds()` | The ids of the recipes the fitted part and the unfitted part last ran (runRecipes()), in that order; the default's where it has run none. |
+| 788 | 1 | `boolean hasRunningRecipes()` | Whether this recipe list has reached production since it was installed. |
+
+### WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) (lines 790-851)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 811 | 3 | `public BuildingsTemplate setSince(int year)` | Dates this building by a year: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. |
+| 819 | 13 | `public BuildingsTemplate setSince(String text)` | Dates this building by a year ("1902") or a research catalogue code ("PE4"): blank, null or a year of 0 or less is undated. |
+| 834 | 1 | `public int getSince()` | The year it first existed (a code's entry's year; 0 for a code that is not in the catalogue), or 0 for a row not yet dated. |
+| 837 | 1 | `public String getSinceText()` | What the row says, as written: "" undated, "1902" a year, "PE4" a catalogue code. |
+| 840 | 3 | `public boolean knownAt(int gameMonth)` | Whether it is known at a game month (month 1 = January 1900): an undated row always; a dated one from the month its year or its code's entry gives (ResearchCatalog.knownFrom()). |
+| 848 | 3 | `public boolean knownAt(int gameMonth, Research found)` | Whether it is known at a game month in a city whose research may have found its code first (R3): knownAt(int), or from the month the city found the code (Research.knownFrom()). |
+
+### THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) (lines 852-1191)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 866 | 4 | `public BuildingsTemplate setWash(double tonnesAMonth)` | Makes this a preparation plant washing `tonnesAMonth` of raw coal a month at nameplate; 0 or less is none. |
+| 872 | 1 | `public double getWash()` | Tonnes of raw coal it washes a month at nameplate; 0 for every building but the Coal Preparation Plant (0.7.126). |
+| 881 | 4 | `public BuildingsTemplate(String name, BuildingType category)` | barebones constructor |
+| 929 | 4 | `public BuildingsTemplate setJobs(JobType type, int number)` | setters (method chaining) |
+| 934 | 7 | `public BuildingsTemplate setCashCost(double cashCost)` |  |
+| 950 | 13 | `BuildingsTemplate pricedAtFoundingLevel()` | THE FUNNEL FOR THE BUILDINGS' MONEY (EP1, Jerus 2026-10-30: "1900 price level"). |
+| 964 | 4 | `public BuildingsTemplate setConstructionPoints(int constructionPoints)` |  |
+| 969 | 4 | `public BuildingsTemplate setCapacity(int capacity)` |  |
+| 974 | 6 | `public BuildingsTemplate setUpkeep(double upkeep)` |  |
+| 986 | 8 | `public BuildingsTemplate setFoundingCosts(double cash, double upkeep)` | Sets the cash cost and the upkeep from figures in founding money (R1g's dated home, Recipes.dateHomes()): the founding figures exactly these, today's struck from them at the unit the template was last struck at, as se... |
+| 995 | 4 | `public BuildingsTemplate setConstructionMaterials(int constructionMaterials)` |  |
+| 1000 | 4 | `public BuildingsTemplate setElectricityConsumption(int electricityConsumption)` |  |
+| 1005 | 4 | `public BuildingsTemplate setWaterConsumption(double waterConsumption)` |  |
+| 1010 | 4 | `public BuildingsTemplate setLandSqFt(double landSqFt)` |  |
+| 1015 | 4 | `public BuildingsTemplate setRoadLoad(double roadLoad)` |  |
+| 1020 | 4 | `public BuildingsTemplate setCoverage(int coverage)` |  |
+| 1025 | 4 | `public BuildingsTemplate setProduction1(double production1)` |  |
+| 1030 | 4 | `public BuildingsTemplate setProduction2(double production2)` |  |
+| 1035 | 4 | `public BuildingsTemplate setProductionModifier1(double productionModifier1)` |  |
+| 1040 | 4 | `public BuildingsTemplate setProductionModifier2(double productionModifier2)` |  |
+| 1045 | 4 | `public BuildingsTemplate setNationalized(boolean nationalized)` |  |
+| 1050 | 4 | `public BuildingsTemplate setId(int id)` |  |
+| 1055 | 4 | `public BuildingsTemplate setCare(CareType care)` |  |
+| 1060 | 4 | `public BuildingsTemplate setSafety(SafetyType safety)` |  |
+| 1065 | 4 | `public BuildingsTemplate setTeaches(EducationType teaches)` |  |
+| 1071 | 4 | `public BuildingsTemplate setResearches(ResearchCatalog.Field field)` | The field this Research Lab researches (R4); null clears it. |
+| 1076 | 4 | `public BuildingsTemplate setSource(Source source)` |  |
+| 1082 | 3 | `public Source getSource()` | What it draws from: FRESH for every building but a desalination plant (see the field's note). |
+| 1087 | 3 | `public boolean isSeaWater()` | A water works that draws the sea: a Desalination Plant (0.7.59). |
+| 1092 | 3 | `public boolean isFreshWater()` | A water works that draws fresh water, held to the city's limit: a Water Treatment Plant. |
+| 1097 | 3 | `public double getCashCost()` | getters |
+| 1107 | 3 | `public double getFoundingCashCost()` | The cash cost as the catalogue states it (ET2): buildings.json's figure, in thousands of founding dollars, before the unit and the expected price level it is struck at (seedConstants()) - which the price level and a c... |
+| 1112 | 3 | `public double getFoundingUpkeep()` | The upkeep as the catalogue states it, in founding money, as getFoundingCashCost() states the cash cost; the upkeep itself where none was struck. |
+| 1116 | 3 | `public int getConstructionPoints()` |  |
+| 1120 | 3 | `public int getDwellings()` |  |
+| 1124 | 4 | `public BuildingsTemplate setDwellings(int dwellings)` |  |
+| 1145 | 5 | `public int homeSize()` | How big a household one of these units takes, in people. |
+| 1159 | 4 | `public boolean adultsOnly()` | True for a flat too small to put a child in. |
+| 1164 | 3 | `public int getCapacity()` |  |
+| 1168 | 3 | `public double getUpkeep()` |  |
+| 1172 | 3 | `public int getConstructionMaterials()` |  |
+| 1176 | 3 | `public int getElectricityConsumption()` |  |
+| 1180 | 3 | `public double getWaterConsumption()` |  |
+| 1184 | 3 | `public double getLandSqFt()` |  |
+| 1188 | 3 | `public double getRoadLoad()` |  |
+
+### WHAT A MODE IS GOOD AT (2026-09-16) (lines 1192-1318)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1214 | 4 | `public BuildingsTemplate setFreightGrade(double grade)` | How much of this road is built for lorries, 0 to 1. |
+| 1219 | 1 | `public double getFreightGrade()` |  |
+| 1228 | 1 | `public boolean isHighway()` | Whether this is a highway (FR7, 2026-10-18): a road that is fully grade-separated, a freight grade of 1. |
+| 1238 | 4 | `public BuildingsTemplate setTransitCapacity(double riders)` | Commuter journeys a month this carries OFF the road, if it is transit. |
+| 1243 | 1 | `public double getTransitCapacity()` |  |
+| 1246 | 1 | `public boolean isTransit()` | True for a building whose whole purpose is carrying people. |
+| 1258 | 4 | `public BuildingsTemplate setRailCapacity(double tonnes)` | Tonnes a month this can haul across the city boundary, if it is rail. |
+| 1263 | 1 | `public double getRailCapacity()` |  |
+| 1279 | 4 | `public BuildingsTemplate setStationTonnes(double tonnes)` | Tonnes a month a station sorts (FR7, 2026-10-18): the Rail Depot's 50,000 and the Rail Terminal's 500,000; none for every other building. |
+| 1284 | 1 | `public double getStationTonnes()` |  |
+| 1287 | 1 | `public boolean isStation()` | True for a building that is a station: it sorts tonnes (getStationTonnes() &gt; 0). |
+| 1297 | 4 | `public BuildingsTemplate setSiding(boolean siding)` | Whether this track is a siding into one works (FR7): the Rail Spur, and no other. |
+| 1302 | 1 | `public boolean isSiding()` |  |
+| 1312 | 4 | `public BuildingsTemplate setHydro(boolean hydro)` | Whether this power station needs a river with a drop on the ground the city owns (HY1): the Hydro Station, and no other. |
+| 1317 | 1 | `public boolean isHydro()` |  |
+
+### THE POWER ROWS (PW1; spec-electricity 2.3, 2.5) (lines 1319-1401)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1336 | 1 | `public BuildingsTemplate setNameplate(double kw)` |  |
+| 1337 | 1 | `public BuildingsTemplate setFuel(String good)` |  |
+| 1338 | 1 | `public BuildingsTemplate setHeatRate(double btuPerKwh)` |  |
+| 1339 | 1 | `public BuildingsTemplate setVariableUpkeep(double usdPerMwh)` |  |
+| 1340 | 1 | `public BuildingsTemplate setVariable(String kind)` |  |
+| 1343 | 1 | `public double getNameplate()` | The station's nameplate, kW: the row's, or with none its production1. |
+| 1346 | 8 | `public Good getFuel()` | The good the station burns; null when it burns none or names one the game does not have. |
+| 1355 | 1 | `public double getHeatRate()` |  |
+| 1357 | 1 | `public double getVariableUpkeep()` |  |
+| 1360 | 1 | `public boolean isWind()` | Whether this station's output is the wind's, shaped by the weather (PowerDispatch.windAt()). |
+| 1363 | 5 | `public double fuelPerKwh()` | Units of fuel the station burns a kWh: its heat rate over the fuel's heat content; 0 with no fuel, no heat rate or no heat content. |
+| 1378 | 4 | `public BuildingsTemplate setBridge(BridgeWorks.Kind kind)` | Which long bridge this is (ET6): the Highway Bridge, the Rail Bridge and the Road Bridge, and no other building. |
+| 1384 | 1 | `public BridgeWorks.Kind bridgeKind()` | The kind of long bridge this is, or null for every other building. |
+| 1387 | 1 | `public boolean isBridge()` | Whether this is a long bridge (ET6). |
+| 1395 | 4 | `public BuildingsTemplate setTruckRoom(double trucks)` | Trucks a Truck Depot keeps (FR2): Freight's Haulage division's room; none for every other building. |
+| 1400 | 1 | `public double getTruckRoom()` |  |
+
+### WHAT KIND OF TRAFFIC THIS BUILDING MAKES (2026-09-16) (lines 1402-1656)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1456 | 45 | `public double loadOf(Traffic stream)` | This building's road load, split by what is actually moving. |
+| 1502 | 3 | `public int getCoverage()` |  |
+| 1506 | 3 | `public double getProduction1()` |  |
+| 1510 | 3 | `public double getProduction2()` |  |
+| 1514 | 3 | `public double getProductionModifier1()` |  |
+| 1518 | 3 | `public double getProductionModifier2()` |  |
+| 1522 | 3 | `public boolean getNationalized()` |  |
+| 1525 | 3 | `public int getJobs(JobType type)` |  |
+| 1529 | 3 | `public String getName()` |  |
+| 1533 | 3 | `public BuildingType getCategory()` |  |
+| 1537 | 3 | `public int getId()` |  |
+| 1541 | 3 | `public CareType getCare()` |  |
+| 1546 | 4 | `public BuildingsTemplate setRequiresLicence(JobType licence)` | The licence this building's practice needs, or null. |
+| 1552 | 1 | `public JobType getRequiresLicence()` | The licence this building's practice needs, or null if it needs none. |
+| 1555 | 3 | `public int getLicensedPosts()` | How many posts here need that licence - what the gate is measured against. |
+| 1559 | 3 | `public SafetyType getSafety()` |  |
+| 1563 | 3 | `public EducationType getTeaches()` |  |
+| 1568 | 3 | `public ResearchCatalog.Field getResearches()` | The field this building is a Research Lab of (R4), or null for every other building. |
+| 1576 | 5 | `public int getTotalJobs()` | sum of all jobs |
+| 1595 | 6 | `public void redenominate(double scale)` | What a building costs and what it costs to run, in the new unit. |
+| 1633 | 9 | `public void seedConstants(double unit)` | Re-seeds this template's price at a given unit (since 0.7.42, the unit over the expected price level). |
+| 1649 | 6 | `private void rememberFounding()` | ...and a reform moves the founding figure with it, so that a LATER re-seed at the new unit lands in the same place. |
 

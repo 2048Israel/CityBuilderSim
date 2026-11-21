@@ -290,6 +290,9 @@ public final class CityNeeds {
     /** The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. */
     public static final String SERVED = "served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough";
 
+    /** What the POWER row's share is read at (PW1): the firm supply against the calm peak's draw, not the month's average, so "48% served at the calm peak". */
+    public static final String AT_THE_CALM_PEAK = " at the calm peak";
+
     /**
      * One gauge, read the one way (0.7.41): its share served - supply over
      * demand, unclamped, +∞ when nothing is asked of it - its verdict's level
@@ -433,8 +436,13 @@ public final class CityNeeds {
 
         /* ---------------------------- the networks ---------------------------- */
         int at = out.size();
-        network(out, "POWER", Kind.POWER, utilities.getConsumption(), utilities.getProduction(),
-                utilities.getEnergyRatio());
+        // PW1, 2026-11-11: power is read on the firm supply against the calm peak's draw, the pair the advice plans by
+        // (BuildAdvice.supplyDemand()), not on the average (consumption over production, which counts a wind farm at its
+        // average and read a city of wind farms clear while its calm half-blocks were half served). A city drawing nothing
+        // keeps the average's pair: its row is the green "—" it always was.
+        double[] peak = BuildAdvice.supplyDemand(game, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
+        if (!(peak[1] > 0)) peak = new double[] {utilities.getProduction(), 0};
+        network(out, "POWER", Kind.POWER, peak[1], peak[0], utilities.getEnergyRatio(), AT_THE_CALM_PEAK);
         onTheWay(game, w, out, at, t -> t.getCategory() == BuildingType.ELECTRICITY);
         at = out.size();
         network(out, "WATER", Kind.WATER, utilities.getWaterConsumption(),
@@ -924,6 +932,12 @@ public final class CityNeeds {
      */
     static void network(List<Need> out, String label, Kind kind,
                         double demand, double supply, double ratio) {
+        network(out, label, kind, demand, supply, ratio, "");
+    }
+
+    /** ...with the words that say what the share is read at after "served" (POWER: AT_THE_CALM_PEAK); water's are none. */
+    static void network(List<Need> out, String label, Kind kind,
+                        double demand, double supply, double ratio, String at) {
         if (supply <= 0) {
             // Nothing built: a city drawing nothing is not short of anything;
             // one drawing something with no plant is very short indeed.
@@ -937,7 +951,7 @@ public final class CityNeeds {
         // Read as served (0.7.41): it was the load, "75% of capacity", or
         // "only 92% supplied" once short; listed on the load still.
         double load = demand / supply;
-        over(out, label, servedPct(servedShare(supply, demand)) + " " + SERVED,
+        over(out, label, servedPct(servedShare(supply, demand)) + " " + SERVED + at,
                 load, NETWORK_YELLOW, NETWORK_RED, kind, Go.UTILITIES, CareType.NONE, EducationType.NONE,
                 supply, demand);
     }

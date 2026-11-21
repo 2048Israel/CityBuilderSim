@@ -5,8 +5,15 @@
 package ham.citybuildersim;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
+import java.util.function.ToDoubleFunction;
 
 /**
  *
@@ -15,7 +22,15 @@ import java.util.Locale;
 public class UtilitiesHandler {
 
     public double production;
-    public double baseProduction;
+    /**
+     * The kilowatts on site, plants and the founding grid. A new city starts
+     * with the grid (PW1, 2026-11-11): the founding month's build step runs
+     * before the first services update, and at 0 the advice read power as
+     * short with no draw at all and ordered a plant - on PW1's ranking a
+     * Coal Power Plant, 27.7k of an island's 64k, 125.7 months to build, so
+     * the island's link waited (IslandLinkCheck 9, LandmassCheck 12).
+     */
+    public double baseProduction = BASE_GRID_KW;
     public double consumption;
     public double energyRatio;
 
@@ -148,9 +163,6 @@ public class UtilitiesHandler {
 
     private double averageUtilityFill = 1;
 
-    //temporary; today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1)
-    private double pricePerWatt = .01 * PriceLevel.FACTOR;
-
     public UtilitiesHandler() {
 
     }
@@ -166,8 +178,9 @@ public class UtilitiesHandler {
         return energyRatio;
     }
 
+    /** What commerce and light industry pay a kW a month: the struck book's commerce price (THE MERIT ORDER, PW1); the founding tariff until a month is struck. */
     public double getPricerPerWatt() {
-        return pricePerWatt;
+        return struck.commercePrice;
     }
 
     /* -----------------------------------------------------------------------
@@ -283,7 +296,7 @@ public class UtilitiesHandler {
      */
     public double getElectricityRevenue() {
         if (billedByStatement) return billedElectricityRevenue;
-        return Math.min(billedElectricityDraw * energyRatio, production) * pricePerWatt;
+        return Math.min(billedElectricityDraw * energyRatio, production) * getPricePerWatt();
     }
 
     /*
@@ -351,7 +364,7 @@ public class UtilitiesHandler {
     /** What the utility pays the works for their power this month: the statements' figure, or with none handed in the surplus at the tariff. */
     public double getPowerBought() {
         if (billedByStatement) return billedPowerBought;
-        return worksPower > 0 ? worksPower * pricePerWatt : 0;
+        return worksPower > 0 ? worksPower * getWorksPricePerWatt() : 0;
     }
 
     /** What the four charged categories draw. Set by ServicesManager. */
@@ -422,7 +435,10 @@ public class UtilitiesHandler {
         double income = getElectricityRevenue() - getElectricityPayroll();
         // ...less the power it bought from the works (0.7.112): taken only when there is some, so a month without is struck as it was.
         double bought = getPowerBought();
-        return bought != 0 ? income - bought : income;
+        if (bought != 0) income -= bought;
+        // ...and the fuel and the upkeep its plants burned abroad and at home (PW1), taken only when there is some, so a month without is struck as it was.
+        double fuelBill = getFuelBill();
+        return fuelBill != 0 ? income - fuelBill : income;
     }
 
     public double getWaterIncome() {
@@ -441,6 +457,272 @@ public class UtilitiesHandler {
 
     public double getUtilityRevenue() {
         return getElectricityRevenue() + getWaterRevenue();
+    }
+
+    /* =====================================================================
+       THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price")
+
+       The month's power is dispatched (PowerDispatch) rather than summed: the works' surplus
+       first, the wind at its weather, the hydro stations levelling the load with their water,
+       the fuelled plants by marginal cost, and each half-block of the month clears at the last
+       plant it ran. What the month cost to make is the price the customers pay.
+
+       THE STRUCK BOOK is that price, kept. updateEnergyRatio() dispatches twice a month and its
+       price moves with the fleet and the fuel; the sectors are billed at the START of the month,
+       against a price that must not move under them, and the utility pays the works at the END at
+       the price their statements were booked at. So the month's clearing is struck once
+       (strikePower()) into a Book, and the book is what every bill, the advice and the screens
+       read until the next strike: the commerce price (the energy and all the wires), the industry
+       price (the energy and the long wires alone: Heavy Industry and Mining take power at high
+       voltage, spec 2.6), the price of a kW of the works' surplus, and the month's kWh by kind
+       and fuel by good, for the fuel to be drawn from the market (setFuelPaid(), a later slice).
+       Until a month is struck the book holds the founding tariff, "still at founding: no month
+       has cleared".
+
+       Nothing calls strikePower(), seedConstants() or setFuelPaid() yet; the money constants
+       are re-struck by Game.restrikeMoneyConstants() in the slice that wires them.
+       ===================================================================== */
+
+    /** The founding tariff a kW a month, D$10 at the founding's level, held by the struck book until a month has cleared (the tariff the game had before PW1). */
+    public static final double FOUNDING_TARIFF = .01 * PriceLevel.FACTOR;
+
+    private static final String WORKS_ROW = "works", GRID_ROW = "grid";
+
+    /** What a short half-block clears at, and what the long and the street wires charge a kWh delivered: city money, struck by seedConstants(). */
+    private double voll = PowerDispatch.VOLL_A_KWH, transmission = PowerDispatch.TRANSMISSION_A_KWH, distribution = PowerDispatch.DISTRIBUTION_A_KWH;
+
+    /** The power plants standing and how many of each (ServicesManager); null until handed in. */
+    private Map<BuildingsTemplate, Long> plants;
+
+    /** Where the month's fuel price, the exchange rate and the calendar month come from; null for a bare fixture (the world's price, at par, no season). */
+    private ToDoubleFunction<Good> fuelPriceSource;
+    private DoubleSupplier exchangeRateSource;
+    private IntSupplier calendarMonth;
+
+    /** The month last dispatched, and the rows it ran. */
+    private PowerDispatch.Month latest = new PowerDispatch.Month();
+    private List<PowerDispatch.Row> latestRows = new ArrayList<>();
+
+    /** The month last struck: the founding tariff until one is. */
+    private Book struck = Book.founding();
+
+    /** The fuel the plants burned and the upkeep they paid, in city money: at home, abroad, and the upkeep (set by setFuelPaid()). */
+    private double fuelLocal, fuelImported, upkeepPaid;
+
+    /** ...and the imported part good by good, for the Trade tab (Sectors.tradeByGood(); its sum is fuelImported). */
+    private Map<String, Double> fuelImportedByGood = new LinkedHashMap<>();
+
+    /** The power plants standing and how many of each. */
+    public void setPlants(Map<BuildingsTemplate, Long> standing) {
+        this.plants = standing == null ? null : new LinkedHashMap<>(standing);
+    }
+
+    /** The city's price of a unit of a fuel; null: the world's price (which already carries PriceLevel.FACTOR). */
+    public void setFuelPrice(ToDoubleFunction<Good> cityPrice) { this.fuelPriceSource = cityPrice; }
+
+    /** City money per world thousand of the founding's dollars (Markets.getExchangeRate(): city money a dollar times the world's price level, the D$ the goods are struck at); null: 1, at par. */
+    public void setExchangeRate(DoubleSupplier rate) { this.exchangeRateSource = rate; }
+
+    /** The calendar month, 1 to 12, for the season; null: no season. */
+    public void setCalendarMonth(IntSupplier month) { this.calendarMonth = month; }
+
+    private double fuelPrice(Good g) {
+        return fuelPriceSource != null ? fuelPriceSource.applyAsDouble(g) : g.worldImportPrice();
+    }
+
+    private double exchangeRate() {
+        return exchangeRateSource != null ? exchangeRateSource.getAsDouble() : 1;
+    }
+
+    /** Re-seeds the money constants at a given unit: the dial over the unit, as Bank.seedConstants() does (the later slice calls it from Game.restrikeMoneyConstants()). */
+    public void seedConstants(double unit) {
+        if (!(unit > 0) || !Double.isFinite(unit)) return;
+        voll         = PowerDispatch.VOLL_A_KWH / unit;
+        transmission = PowerDispatch.TRANSMISSION_A_KWH / unit;
+        distribution = PowerDispatch.DISTRIBUTION_A_KWH / unit;
+    }
+
+    public PowerDispatch.Month getLatestMonth() { return latest; }
+
+    public List<PowerDispatch.Row> getLatestRows() { return latestRows; }
+
+    /** A month's price and what it was made of: what the bills and the screens read. Public fields, for the save. */
+    public static final class Book {
+        /** The month's ratio served, and its energy price a kWh delivered. */
+        public double ratio, energyPrice;
+        /** City money a kW a month: commerce and light industry (the energy and all the wires), Heavy Industry and Mining (the energy and transmission), and the works' surplus. */
+        public double commercePrice, industryPrice, worksPrice;
+        /** Per half-block: the price a kWh, the load, and what was left unserved, kW. */
+        public double[] price = new double[PowerDispatch.HALVES], load = new double[PowerDispatch.HALVES], unserved = new double[PowerDispatch.HALVES];
+        /** The month's kWh asked, served and curtailed, and made by the fuelled plants, the wind, the hydro, the works and the founding grid. */
+        public double askedKwh, servedKwh, curtailedKwh, fuelledKwh, windKwh, hydroKwh, worksKwh, gridKwh;
+        /** The variable upkeep the plants ran up, thousands of the WORLD's money. */
+        public double upkeepWorld;
+        /** Fuel burned: good name to units. */
+        public LinkedHashMap<String, Double> fuel = new LinkedHashMap<>();
+        /** True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". */
+        public boolean cleared;
+
+        /** The book before any month has cleared: the founding tariff, ratio 1, nothing made. */
+        public static Book founding() {
+            Book b = new Book();
+            b.ratio = 1;
+            b.commercePrice = b.industryPrice = b.worksPrice = FOUNDING_TARIFF;
+            return b;
+        }
+
+        Book copy() {
+            Book b = new Book();
+            b.ratio = ratio; b.energyPrice = energyPrice;
+            b.commercePrice = commercePrice; b.industryPrice = industryPrice; b.worksPrice = worksPrice;
+            b.price = price.clone(); b.load = load.clone(); b.unserved = unserved.clone();
+            b.askedKwh = askedKwh; b.servedKwh = servedKwh; b.curtailedKwh = curtailedKwh;
+            b.fuelledKwh = fuelledKwh; b.windKwh = windKwh; b.hydroKwh = hydroKwh; b.worksKwh = worksKwh; b.gridKwh = gridKwh;
+            b.upkeepWorld = upkeepWorld;
+            b.fuel = new LinkedHashMap<>(fuel);
+            b.cleared = cleared;
+            return b;
+        }
+    }
+
+    private static void scale(Book b, double scale) {
+        b.energyPrice *= scale; b.commercePrice *= scale; b.industryPrice *= scale; b.worksPrice *= scale;
+        for (int s = 0; s < b.price.length; s++) b.price[s] *= scale;
+    }
+
+    /** Strikes the month last dispatched into the book: a new object each time, sharing nothing with the dispatch. */
+    public void strikePower() {
+        PowerDispatch.Month m = latest;
+        Book b = new Book();
+        b.ratio = m.ratio;
+        b.energyPrice = m.energyPrice;
+        // Commerce and light industry pay the energy and all the wires; Heavy Industry and Mining take power at high voltage and pay the energy and the long wires alone (spec 2.6).
+        b.commercePrice = (m.energyPrice + transmission + distribution) * PowerDispatch.MONTH_HOURS;
+        b.industryPrice = (m.energyPrice + transmission) * PowerDispatch.MONTH_HOURS;
+        // The works are paid what their kWh cleared at; with none standing, the generation price (the energy less the losses it carries).
+        PowerDispatch.Row works = null;
+        for (PowerDispatch.Row r : latestRows) if (r.kind == PowerDispatch.Kind.MUST_RUN && WORKS_ROW.equals(r.name)) works = r;
+        b.worksPrice = works != null && works.kw > 0 ? works.earned / works.kw
+                : m.energyPrice * (1 - PowerDispatch.GRID_LOSSES) * PowerDispatch.MONTH_HOURS;
+        b.price = m.price.clone(); b.load = m.load.clone(); b.unserved = m.unserved.clone();
+        b.askedKwh = m.askedKwh; b.servedKwh = m.servedKwh; b.curtailedKwh = m.curtailedKwh;
+        for (PowerDispatch.Row r : latestRows) {
+            switch (r.kind) {
+                case MUST_RUN -> b.worksKwh += r.kwh;
+                case WIND -> b.windKwh += r.kwh;
+                case HYDRO -> b.hydroKwh += r.kwh;
+                case FUELLED -> { if (GRID_ROW.equals(r.name)) b.gridKwh += r.kwh; else b.fuelledKwh += r.kwh; }
+            }
+            if (r.fuel != null && r.fuelUnits > 0) b.fuel.merge(r.fuel.name(), r.fuelUnits, Double::sum);
+            b.upkeepWorld += r.kwh * r.upkeepPerKwh;
+        }
+        b.cleared = true;
+        struck = b;
+    }
+
+    public Book getStruckBook() { return struck; }
+
+    /** True while no month has been struck: the prices are the founding tariff (the book's own flag, so a load keeps it). */
+    public boolean isFoundingBook() { return !struck.cleared; }
+
+    /** What the month's energy cleared at, city money (thousands) a MWh delivered. */
+    public double getEnergyPricePerMwh() { return struck.energyPrice * 1000; }
+
+    /** Units of a good the plants burned in the month last struck (tonnes, for coal). */
+    public double getFuelBurned(Good g) { return struck.fuel.getOrDefault(g.name(), 0.0); }
+
+    /** kWh of the wind and the works' surplus turned away in the month last struck, for want of a load. */
+    public double getCurtailedKwh() { return struck.curtailedKwh; }
+
+    /** kWh of the load left unserved in the month last struck, summed over its six half-blocks. */
+    public double getUnservedKwh() {
+        double kwh = 0;
+        for (int s = 0; s < struck.unserved.length; s++) kwh += struck.unserved[s] * PowerDispatch.halfHours(s);
+        return kwh;
+    }
+
+    /** How many of the month's six half-blocks left some load unserved. */
+    public int getHalfBlocksShort() {
+        int n = 0;
+        for (double u : struck.unserved) if (u > 0) n++;
+        return n;
+    }
+
+    /** What commerce and light industry pay a kW a month (the struck commerce price). */
+    public double getPricePerWatt() { return struck.commercePrice; }
+
+    /** What Heavy Industry and Mining pay a kW a month (the energy and the long wires). */
+    public double getIndustryPricePerWatt() { return struck.industryPrice; }
+
+    /** What the utility pays the works a kW of surplus a month. */
+    public double getWorksPricePerWatt() { return struck.worksPrice; }
+
+    /**
+     * The fuel the plants burned this month and the upkeep they ran up, in city money: at home, abroad, and the upkeep (a later
+     * slice draws them from the market at the top of the month). The utility's income is taken by their sum.
+     */
+    public void setFuelPaid(double local, double imported, double upkeep) {
+        setFuelPaid(local, imported, upkeep, Map.of());
+    }
+
+    /** ...with the imported part good by good (Game.buyPowerFuel()). */
+    public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood) {
+        this.fuelLocal = Double.isFinite(local) ? local : 0;
+        this.fuelImported = Double.isFinite(imported) ? imported : 0;
+        this.upkeepPaid = Double.isFinite(upkeep) ? upkeep : 0;
+        this.fuelImportedByGood = new LinkedHashMap<>();
+        if (importedByGood != null) {
+            for (Map.Entry<String, Double> e : importedByGood.entrySet()) {
+                Double v = e.getValue();
+                if (v != null && Double.isFinite(v) && v > 0) fuelImportedByGood.put(e.getKey(), v);
+            }
+        }
+    }
+
+    /** The fuel bought from the world this month, good by good (the Good's name), in city money. */
+    public Map<String, Double> getFuelImportedByGood() { return java.util.Collections.unmodifiableMap(fuelImportedByGood); }
+
+    public double getFuelLocal() { return fuelLocal; }
+    public double getFuelImported() { return fuelImported; }
+    public double getUpkeepPaid() { return upkeepPaid; }
+    public double getFuelBill() { return fuelLocal + fuelImported + upkeepPaid; }
+
+    /** What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). */
+    public static final class PowerState {
+        public Book struck;
+        public double fuelLocal, fuelImported, upkeepPaid;
+        public Map<String, Double> fuelImportedByGood;
+    }
+
+    public PowerState toPowerState() {
+        PowerState s = new PowerState();
+        s.struck = struck.copy();
+        s.fuelLocal = fuelLocal; s.fuelImported = fuelImported; s.upkeepPaid = upkeepPaid;
+        s.fuelImportedByGood = new LinkedHashMap<>(fuelImportedByGood);
+        return s;
+    }
+
+    /** True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. */
+    private boolean seedOnLoad;
+
+    /**
+     * A save from before PW1 carries no book (REV-PW1c): it loads the founding book, and here, on the load path after updateServices() has
+     * dispatched the loaded city, that book takes the ratio just computed, the one the load handed the sectors before PW1 (they then take back
+     * the ratios their month ran at, Sector.restoreBills(), and bill the first month at them and the founding tariff, as before PW1); the next
+     * month strikes its own book. Does nothing after a save that carried one, or once done.
+     */
+    public void seedLoadedRatio() {
+        if (!seedOnLoad) return;
+        seedOnLoad = false;
+        struck.ratio = energyRatio;
+    }
+
+    /** Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. */
+    public void restorePowerState(PowerState s) {
+        struck = s == null || s.struck == null ? Book.founding() : s.struck.copy();
+        seedOnLoad = s == null || s.struck == null;
+        if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; return; }
+        setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
     }
 
     //setters
@@ -493,13 +775,52 @@ public class UtilitiesHandler {
 
     //passers
     //calculators
+    /**
+     * The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch;
+     * energyRatio is the energy served over the energy asked, and production the power offered, as the screens have read it.
+     */
     public void updateEnergyRatio() {
-        production = baseProduction * averageUtilityFill;
-        if(averageUtilityFill == 0) production = baseGrid();
+        double fill = averageUtilityFill;
+        production = baseProduction * fill;
+        if(fill == 0) production = baseGrid();
         // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
         if (worksPower > 0) production += worksPower;
-        energyRatio = Math.min(production / consumption, 1);
 
+        List<PowerDispatch.Row> rows = new ArrayList<>();
+        if (worksPower > 0) rows.add(PowerDispatch.Row.mustRun(WORKS_ROW, worksPower));
+        // ...the grid the city was founded with: free, as it has always been, and at the founding's size whatever the staffing.
+        rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid() * (fill > 0 ? fill : 1), 0, null, 0, 0));
+        if (plants == null) {
+            // A handler nobody has told of its plants (a bare fixture): what setWattsProduction() was given, free to run, as it was.
+            double watts = (baseProduction - baseGrid()) * fill;
+            if (watts > 0) rows.add(PowerDispatch.Row.fuelled("plants", watts, 0, null, 0, 0));
+        } else {
+            for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet()) {
+                BuildingsTemplate t = e.getKey();
+                long n = e.getValue() == null ? 0 : e.getValue();
+                if (n <= 0) continue;
+                // The upkeep is US$ a MWh at today's level (buildings.json): over 1e6 thousands a kWh, times FACTOR the founding's dollars, as
+                // a good's world price is struck; the exchange rate (the world's price level in it) then makes it the month's city money, as it
+                // does the fuel's. PW1: read as today's dollars it was 38.6 times too dear, nine-tenths of a coal plant's marginal.
+                double kw = t.getProduction1() * n * fill, upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR, perKwh = t.fuelPerKwh();
+                if (t.isHydro()) {
+                    // A station's month is its water (its production1 over the month), levelled under its nameplate and its staffing.
+                    double average = t.getProduction1() * n * (fill > 0 ? 1 : 0);
+                    rows.add(PowerDispatch.Row.hydro(t.getName(), t.getNameplate() * n * fill, average * PowerDispatch.MONTH_HOURS, upkeep));
+                    production += average - kw;
+                } else if (t.isWind()) {
+                    rows.add(PowerDispatch.Row.wind(t.getName(), kw));
+                } else if (perKwh > 0) {
+                    rows.add(PowerDispatch.Row.fuelled(t.getName(), kw, fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate(),
+                            t.getFuel(), perKwh, upkeep));
+                } else {
+                    rows.add(PowerDispatch.Row.fuelled(t.getName(), kw, 0, null, 0, 0));
+                }
+            }
+        }
+        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll);
+        latestRows = rows;
+        energyRatio = latest.ratio;
     }
 
     public void updateWaterRatio() {
@@ -720,7 +1041,17 @@ public class UtilitiesHandler {
 
     /** The utilities' prices and this month's bills, in the new unit. */
     public void redenominate(double scale) {
-        pricePerWatt      *= scale;
+        voll         *= scale;
+        transmission *= scale;
+        distribution *= scale;
+        scale(struck, scale);
+        // ...and the month last dispatched, which strikePower() would read in the old unit.
+        latest.energyPrice *= scale;
+        for (int s = 0; s < latest.price.length; s++) latest.price[s] *= scale;
+        for (PowerDispatch.Row r : latestRows) r.earned *= scale;
+        fuelLocal    *= scale;
+        fuelImported *= scale;
+        upkeepPaid   *= scale;
         pricePerWaterUnit *= scale;
         billedElectricityRevenue *= scale;
         billedWaterRevenue       *= scale;

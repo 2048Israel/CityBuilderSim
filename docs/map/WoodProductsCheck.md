@@ -1,4 +1,4 @@
-# WoodProductsCheck.java - 642 lines · 16 methods · 30 constants · harnesses
+# WoodProductsCheck.java - 650 lines · 16 methods · 30 constants · harnesses
 
 `ham/citybuildersim/WoodProductsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -74,9 +74,9 @@
 | 214 | 2. the six rows against the study |
 | 410 | 3. the chain, captive |
 | 466 | 4. the pulp mill's power sold |
-| 495 | 5. feed from Forestry before imports |
-| 545 | 6. the plan at founding |
-| 574 | 7. a played city, saved and reloaded |
+| 503 | 5. feed from Forestry before imports |
+| 553 | 6. the plan at founding |
+| 582 | 7. a played city, saved and reloaded |
 
 ## Constants
 
@@ -110,8 +110,8 @@
 | 265 | `WoodProductsCheck.HOURS` | `730` | The study's month in hours (its 2.2: the Steel Mini-Mill's 3,700 kW for 6,000 t is 450 kWh a tonne). |
 | 268 | `WoodProductsCheck.HEAVY` | `{ 54, 35, 9, 2 }, PULP_AND_PAPER = { 42, 37, 17, 4 }` | The posts' families (spec 2.2), no diploma / diploma / college / university, %: the heavy plants' and pulp and paper's. |
 | 271 | `WoodProductsCheck.SQ_FT_A_HA` | `107_639.104` | Square feet in a hectare. |
-| 634 | `WoodProductsCheck.RELOAD_RESIDUAL_K` | `.01` | A reloaded city's known residual a month on in money, D$ thousands (QUEUE.md's FW6): ten dollars, past the 2.8 measured. |
-| 637 | `WoodProductsCheck.RELOAD_RESIDUAL` | `1e-6` | ...and in what a yard holds, a share of it: a millionth. |
+| 642 | `WoodProductsCheck.RELOAD_RESIDUAL_K` | `.01` | A reloaded city's known residual a month on in money, D$ thousands (QUEUE.md's FW6): ten dollars, past the 2.8 measured. |
+| 645 | `WoodProductsCheck.RELOAD_RESIDUAL` | `1e-6` | ...and in what a yard holds, a share of it: a millionth. |
 
 ## Fields (state)
 
@@ -123,7 +123,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 566 | **type** `public class WoodProductsCheck` | Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's - materials-chains-research.md - 1.2, 1.6 and 5.3 to 5.6): wood's processing ind... |
+| 77 | 574 | **type** `public class WoodProductsCheck` | Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's - materials-chains-research.md - 1.2, 1.6 and 5.3 to 5.6): wood's processing ind... |
 | 85 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 90 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 95 | 5 | `static void quietly(Runnable r)` |  |
@@ -151,28 +151,28 @@
 |---:|---:|---|---|
 | 412 | 53 | `static void chain()` |  |
 
-### 4. the pulp mill's power sold (lines 466-494)
+### 4. the pulp mill's power sold (lines 466-502)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 468 | 26 | `static void power()` |  |
+| 468 | 34 | `static void power()` |  |
 
-### 5. feed from Forestry before imports (lines 495-544)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 497 | 47 | `static void feed()` |  |
-
-### 6. the plan at founding (lines 545-573)
+### 5. feed from Forestry before imports (lines 503-552)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 547 | 26 | `static void planAtFounding()` |  |
+| 505 | 47 | `static void feed()` |  |
 
-### 7. a played city, saved and reloaded (lines 574-642)
+### 6. the plan at founding (lines 553-581)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 576 | 56 | `static void played()` |  |
-| 639 | 3 | `static boolean close(double a, double b)` |  |
+| 555 | 26 | `static void planAtFounding()` |  |
+
+### 7. a played city, saved and reloaded (lines 582-650)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 584 | 56 | `static void played()` |  |
+| 647 | 3 | `static boolean close(double a, double b)` |  |
 

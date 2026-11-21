@@ -1174,7 +1174,9 @@ public class RecipeCheck {
             late.getRecipes().choose(late);
             late.getRecipes().apply(late);
         });
-        Recipes.Prices december = frozen(Recipes.pricesOf(late));
+        // ...at the prices the mill's recipes are chosen at: its power at what its class is billed (PW1, REV-PW1c: Heavy Industry and Mining the
+        // energy and transmission), as Recipes.choose() scores them.
+        Recipes.Prices december = frozen(Recipes.pricesOf(late, lp));
         Recipe runDecember = Recipes.best(lp, false, late.getMonth(), december);
         check("fixture: pressed to the December before kraft's year, the mill cannot run kraft and runs the better of the other two, its figures that recipe's",
                 year(late) == kraftYear - 1 && CityCalendar.monthOfYear(late.getMonth()) == 12 && !Recipes.canRun(lp, lateKraft, false, late.getMonth()) && runDecember != lateKraft
@@ -1184,7 +1186,7 @@ public class RecipeCheck {
             late.getRecipes().choose(late);
             late.getRecipes().apply(late);
         });
-        Recipes.Prices january = frozen(Recipes.pricesOf(late));
+        Recipes.Prices january = frozen(Recipes.pricesOf(late, lp));
         Recipe runJanuary = Recipes.best(lp, false, late.getMonth(), january);
         List<String> expectedChoice = runJanuary.isDefault() ? null : List.of(runJanuary.getId(), runJanuary.getId());
         check("from January of kraft's year kraft is among what the mill can run", year(late) == kraftYear && Recipes.canRun(lp, lateKraft, false, late.getMonth()) && Recipes.canRun(lp, lateKraft, true, late.getMonth()));

@@ -458,18 +458,26 @@ public class MaterialsCheck {
 
     /* ============================ 4. the works' own power ============================ */
 
+    /** The works' price the last month of powerTown() was struck at: the book of the month before, read before that month ran (PW1; a statement is struck at the top of its month, at the book the month before struck). */
+    static double powerTownWorksPrice;
+
     /** The power town: section 4's and 5's, bakeries handed power of their own and consumables, run `months`. */
     static Game powerTown(GameFiles files, int months) {
         Game g = town(files);
         BuildingManager b = g.getBuildingManager();
         BuildingsTemplate big = b.getTemplateByName("Industrial Bakery"), small = b.getTemplateByName("Bakery");
         quietly(() -> {
+            // THE FIXTURE CAUSES IT (PW1): the merit order pays the works what their kWh clear at, and the founding grid (10,000 kW, free)
+            // clears a town of 400 homes at nothing. The homes draw 50 kW each, so the town outruns the grid and the coal plant is the margin.
+            b.getTemplateByName("House").setElectricityConsumption(50);
             big.setGen(3.0 * big.getElectricityConsumption());
             small.setGen(.5 * small.getElectricityConsumption());
             big.setConsumables(.001 * big.getCashCost());
             g.buildStack(big, 3, true);
             g.buildStack(small, 2, true);
-            g.simulateMonths(months);
+            g.simulateMonths(months - 1);
+            powerTownWorksPrice = g.getEconomyManager().getWorksPricePerWatt();
+            g.simulateMonths(1);
         });
         return g;
     }
@@ -488,7 +496,7 @@ public class MaterialsCheck {
         BuildingManager b = g.getBuildingManager();
         Sector industry = g.getSectors().byKey(Sectors.INDUSTRY);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        double price = g.getEconomyManager().getPricePerWatt();
+        double price = g.getEconomyManager().getPricePerWatt(), worksPrice = powerTownWorksPrice;
         double surplus = b.totalBySector(Sectors.INDUSTRY, x -> BuildingsTemplate.isBilledForUtilities(x) ? x.powerSold() : 0);
         double net = b.totalBySector(Sectors.INDUSTRY, x -> BuildingsTemplate.isBilledForUtilities(x) ? x.powerBought() : 0);
         double gross = b.totalBySector(Sectors.INDUSTRY, x -> BuildingsTemplate.isBilledForUtilities(x) ? x.getElectricityConsumption() : 0);
@@ -498,8 +506,8 @@ public class MaterialsCheck {
                 industry.getPowerSurplus() == surplus
                         && industry.getElectricityCost() == net * industry.getEnergyRatio() * price);
         Sector.Statement st = industry.statement();
-        assertTrue("its statement's powerSold is the surplus at the tariff, undimmed by the grid, and in its revenue past its sales",
-                st.powerSold == surplus * price && st.powerSold > 0
+        assertTrue("its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales",
+                st.powerSold == surplus * worksPrice && st.powerSold > 0
                         && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold);
         assertTrue("...and in its operating income, every cost taken off the revenue it is in",
                 st.operatingIncome == st.revenue - st.inputs - st.payroll - st.electricity - st.water - st.maintenance);
@@ -1212,26 +1220,31 @@ public class MaterialsCheck {
         GameFiles files = GameFiles.scratch("materialscheck-routepower");
         Game g = town(files);
         BuildingManager b = g.getBuildingManager();
+        // ...the works' price the last month's statement is struck at: the book of the month before, read before that month runs (PW1).
+        double[] struckAt = new double[1];
         quietly(() -> {
             b.addStack(b.getTemplate(HeavyIndustry.COKE_OVENS), 1, true);
             b.addStack(b.getTemplate(HeavyIndustry.BLAST_FURNACE), 1, true);
             b.addStack(b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP), 1, true);
             g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
-            g.simulateMonths(2);
+            // ...four months: the first two clear before the plants are staffed (at nothing, then short), and a statement is struck at the month before's book.
+            g.simulateMonths(3);
+            struckAt[0] = g.getEconomyManager().getWorksPricePerWatt();
+            g.simulateMonths(1);
         });
         Sector heavy = g.getSectors().heavyIndustry();
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
-        double price = g.getEconomyManager().getPricePerWatt();
+        double industryPrice = g.getEconomyManager().getIndustryPricePerWatt(), worksPrice = struckAt[0];
         double sold = 5_800 + 8_600, bought = b.getTemplate(HeavyIndustry.COKE_OVENS).powerBought()
                 + b.getTemplate(HeavyIndustry.BLAST_FURNACE).powerBought() + b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP).powerBought();
-        report("fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, two months on",
+        report("fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, four months on",
                 b.getQuantity(HeavyIndustry.BLAST_FURNACE) == 1 && heavy.getPowerSurplus() == sold && bought == 26_600,
                 String.format("Iron & Steel sells %,.0f kW, buys %,.0f", heavy.getPowerSurplus(), bought));
         Sector.Statement st = heavy.statement();
-        assertTrue("its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the tariff, in its revenue past its sales;"
-                        + " its bill the shop's 26,600 at the ratio and the tariff",
-                st.powerSold == sold * price && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
-                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * price);
+        assertTrue("its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;"
+                        + " its bill the shop's 26,600 at the ratio and the industry price (Heavy Industry takes power at high voltage)",
+                st.powerSold == sold * worksPrice && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
+                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * industryPrice);
         assertTrue("the utility pays the works what their statement booked, and the grid counts their surplus as generation",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= sold);
         MoneyAudit.Result audit = g.getLastMoneyAudit();

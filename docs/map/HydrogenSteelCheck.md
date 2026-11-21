@@ -1,4 +1,4 @@
-# HydrogenSteelCheck.java - 509 lines · 22 methods · 5 constants · harnesses
+# HydrogenSteelCheck.java - 510 lines · 22 methods · 5 constants · harnesses
 
 `ham/citybuildersim/HydrogenSteelCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -51,8 +51,8 @@
 | 167 | 2. known by the research |
 | 216 | 3. where it pays, and where it does not |
 | 322 | 4. captive pellets |
-| 410 | 5. nothing moves without the works |
-| 459 | 6. a played count |
+| 411 | 5. nothing moves without the works |
+| 460 | 6. a played count |
 
 ## Constants
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 460 | **type** `public class HydrogenSteelCheck` | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from pellets and the grid's power alone, no coke, no limestone, no scrap, i... |
+| 50 | 461 | **type** `public class HydrogenSteelCheck` | The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from pellets and the grid's power alone, no coke, no limestone, no scrap, i... |
 | 58 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 63 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 68 | 5 | `static void quietly(Runnable r)` |  |
@@ -109,23 +109,23 @@
 | 251 | 6 | `static String ranked(List<SpreadPlanner.Candidate> all)` | The candidates the planner ranks, best earnings on the whole cost first, as text. |
 | 258 | 63 | `static void wherePays()` |  |
 
-### 4. captive pellets (lines 322-409)
+### 4. captive pellets (lines 322-410)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 324 | 85 | `static void capturedPellets()` |  |
+| 324 | 86 | `static void capturedPellets()` |  |
 
-### 5. nothing moves without the works (lines 410-458)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 412 | 46 | `static void nothingMoves()` |  |
-
-### 6. a played count (lines 459-509)
+### 5. nothing moves without the works (lines 411-459)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 462 | 5 | `static double dearest(Game g)` | The dearest of Heavy Industry's candidates' whole cost: what the sector's till is topped to when its money gate is set aside. |
-| 469 | 15 | `static long played(Game g, boolean freed)` | The 154s held (built and ordered) after the played months, with the money gate its own or set aside (RefineryCheck's lever: ON_ITS_BORROWING and the dearest cost in the till). |
-| 485 | 24 | `static void aPlayedCount()` |  |
+| 413 | 46 | `static void nothingMoves()` |  |
+
+### 6. a played count (lines 460-510)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 463 | 5 | `static double dearest(Game g)` | The dearest of Heavy Industry's candidates' whole cost: what the sector's till is topped to when its money gate is set aside. |
+| 470 | 15 | `static long played(Game g, boolean freed)` | The 154s held (built and ordered) after the played months, with the money gate its own or set aside (RefineryCheck's lever: ON_ITS_BORROWING and the dearest cost in the till). |
+| 486 | 24 | `static void aPlayedCount()` |  |
 
