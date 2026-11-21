@@ -1,9 +1,10 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
-Current result: the precise Government ownership mend passes its hard isolated
-regression on MC2 main 2b049188b (.179). Its final full-software measurement
-awaits explicit GO. The earlier full run's heap failure remains hard and
-unresolved; no readiness is claimed. Every run and exclusion count is below.
+Current result: frozen source 0446cec5e on MC2 main .179 completed its one
+authorized final software run with two hard failures: recurring Healthcare
+layout and objects heap 1589.6 MiB against 1536. The full-model Government
+release regression passes (1832 fresh nodes, zero survivors). No readiness
+is claimed; source and bounds remain unchanged after this result.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -759,3 +760,175 @@ MC2 merge: heap 102 and the two incoming rows. The previous full run is
 evidence for its recorded commits only; it does not establish the new
 merged model's heap or claim the entire 80.5 MiB is explained. Awaiting
 explicit full-software GO after this provisional mends report.
+
+
+## Final frozen software run 6: two hard failures remain
+
+On the 12:20 explicit GO, one direct run used frozen source
+0446cec5e3d43e35b0f4a7a84be03e12aee3e1fe and main
+2b049188bcc8ba1b693beef9303409826936487e (.179). It ran 2026-11-21
+12:23:04–12:44:38 (21 min 34 s), **KeptCheck exit 2**, and the foreground
+runner was owned through exit. The outer PowerShell execution reported 1
+for the failed native command; the direct log records exit 2 and two FAILs.
+Log `target/FS5c2-kept6-sw.log` is preserved raw (Windows cp1252 output);
+parsed evidence: `target/FS5c2-kept6-audit.json` and
+`target/FS5c2-kept6-exclusions.md`.
+
+Configuration exactly matched the preceding direct software run:
+`-Xmx2048m -Dprism.order=sw`, C:/ main earth-2.bin/world-1.bin paths, scratch
+game files, no Glass/Monocle override. A read-only native jcmd query of owned
+JVM 27100 confirmed loaded `com.sun.glass.ui.win.WinApplication`; evidence
+`target/FS5c2-kept6-display.txt`. The heap line confirmed SWPipeline. This
+was native Windows Glass, not the isolated probes' Monocle. The orchestrator
+cleared the laptop slot (13.3 GiB free, no test JVM); Jerus's game stayed
+open, PW1's ensemble was on the separate box, and R1g's fast run had ended.
+Source/marker were clean and frozen through exit. No other check, replay,
+full pick, ensemble, dry run or source edit was started.
+
+The full played-city Government regression passed all four hard assertions:
+**1832 distinct fresh nodes, zero alive; signature, counters, kept-node
+identity, cleared captures and aborted-draw restore all true**. Fund 63
+settled nine new lots through the real book, watching B:2645 for 116 months
+against three. Its world-to-hand fill was 4.1935250918588996e7 face at
+0.373341462955 (the bid posted 2.428e11); no holding was written in. All
+three grid premises passed with zero cells closed, and section 92's identical
+paper premise passed with one piece. This run did not print the all-sales-
+refused fallback message, so it does not claim that fallback branch ran.
+
+| Hard failure | Actual evidence and disposition |
+|---|---|
+| Section 71, Spending: Healthcare opened, log line 2586 | Kept content 1454x684; fresh 1446x700. Inner preferred width is 1454 vs 1446; inner height 660 vs 676. Both comparisons around the choice's month printed two held-still diagnostic looks each, all repeating the difference. This is not a nonrepeating KRT1 reading. The original failure is retained. |
+| Section 102 objects heap, log line 5273 | Live 1608.1 MiB; 32 canvases, ten heap render targets; measured target payload 18.5 MiB; reported objects 1589.6 MiB, **53.6 MiB over the unchanged 1536 MiB bound**. It remains hard and unexplained. |
+
+The prior run reported 1635.0/18.5/1616.5 MiB; the current run reports
+1608.1/18.5/1589.6. The 26.9 MiB arithmetic delta is **not** wholly attributed
+to the Government cleanup. The model base changed from .178 to .179 and
+the played state demonstrably differs (nine settlements/B:2645 rather than
+thirteen/B:3071; one fewer household choice). The lifetime regression proves
+release and unchanged state, not a byte allocation for the entire former
+80.5 MiB miss. No guessed buffer exclusion or dial change is justified.
+
+Some intermediate milestone-only tails missed the Healthcare failure after
+it scrolled out of the selected last lines. That status was corrected before
+the final report. The complete scan and four hard held-still traces above
+govern this result; no difference is hidden by the zero accepted KRT1 count.
+
+KBP1 traced two blocks, none recurring held still. Both were choice-month
+content readings, excluded under the standing law. KRT1 accepted zero layout
+readings; Healthcare's four repeated content/width looks stayed hard. Every
+one of the **68** reshape calls follows. Totals: **1078 counted of 1228
+choices; two content readings, 148 acting choices, zero refused**. No line
+lost most of its months to the held-still rule.
+
+| Section/call | Counted | Choices | Readings excluded | Acted excluded | Refused |
+|---|---:|---:|---:|---:|---:|
+| 23: what reshapes Infrastructure / 1 | 14 | 14 | 0 | 0 | 0 |
+| 27: what reshapes Services / 1 | 54 | 54 | 0 | 0 | 0 |
+| 31: what reshapes the land office / 1 | 20 | 20 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (a bond) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 33: what reshapes the fell-short page (the vault's dollars) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 38: what reshapes the Build screen / 1 | 40 | 42 | 0 | 2 | 0 |
+| 42: what reshapes the construction page / 1 | 10 | 10 | 0 | 0 | 0 |
+| 44: what reshapes the no-deposit page (1 x Iron Mine) / 1 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-coast page (1 x Desalination Plant) / 2 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-river page (1 x Hydro Station) / 3 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-bridge page (1 x Highway Bridge) / 4 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-licence page (1 x Engineering Services Office) / 5 | 1 | 1 | 0 | 0 | 0 |
+| 44: what reshapes the no-land page (1 x House) / 6 | 1 | 1 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors list / 1 | 2 | 2 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 2 | 25 | 25 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 3 | 45 | 45 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 4 | 5 | 5 | 0 | 0 | 0 |
+| 49: what reshapes the Sectors tab / 5 | 18 | 18 | 0 | 0 | 0 |
+| 96: what reshapes Agriculture's Investors page / 1 | 3 | 3 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 1 | 10 | 10 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 2 | 22 | 22 | 0 | 0 | 0 |
+| 57: what reshapes the Bank Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 1 | 11 | 11 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 2 | 9 | 9 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 3 | 33 | 33 | 0 | 0 | 0 |
+| 60: what reshapes the Finances hub / 4 | 36 | 36 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 5 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the foreign default menu / 6 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 7 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 8 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 9 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 10 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 11 | 1 | 1 | 0 | 0 | 0 |
+| 60: what reshapes the debt result menu / 12 | 1 | 1 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 1 | 14 | 17 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 2 | 6 | 13 | 0 | 7 | 0 |
+| 63: what reshapes the city's fund / 3 | 8 | 8 | 0 | 0 | 0 |
+| 63: what reshapes the city's fund / 4 | 0 | 3 | 0 | 3 | 0 |
+| 63: what reshapes the city's fund / 5 | 18 | 28 | 0 | 10 | 0 |
+| 63: what reshapes the city's fund / 6 | 4 | 5 | 0 | 1 | 0 |
+| 71: what reshapes the Government Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 2 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 3 | 11 | 11 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 4 | 86 | 86 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 5 | 19 | 19 | 0 | 0 | 0 |
+| 71: what reshapes the Government Overview / 6 | 0 | 86 | 0 | 86 | 0 |
+| 71: what reshapes the Government Overview / 7 | 4 | 10 | 0 | 6 | 0 |
+| 74: what reshapes the Trade Overview / 1 | 7 | 7 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 2 | 21 | 26 | 0 | 5 | 0 |
+| 74: what reshapes the Trade Overview / 3 | 10 | 10 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 4 | 0 | 25 | 0 | 25 | 0 |
+| 74: what reshapes the Trade Overview / 5 | 27 | 27 | 0 | 0 | 0 |
+| 74: what reshapes the Trade Overview / 6 | 9 | 9 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 1 | 24 | 24 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 2 | 39 | 39 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 3 | 44 | 44 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 4 | 55 | 55 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 5 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 6 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 7 | 11 | 11 | 0 | 0 | 0 |
+| 77: what reshapes the Policy hub / 8 | 10 | 11 | 1 | 0 | 0 |
+| 77: what reshapes the Policy hub / 9 | 10 | 11 | 1 | 0 | 0 |
+| 84: what reshapes Household money / 1 | 68 | 68 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 1 | 44 | 44 | 0 | 0 | 0 |
+| 87: what reshapes the Rankings tab, to the pixel / 2 | 15 | 15 | 0 | 0 | 0 |
+| 95: what reshapes Policy, Research's Found page / 1 | 4 | 4 | 0 | 0 | 0 |
+| 99: what reshapes Policy, Research's Overview / 1 | 5 | 5 | 0 | 0 | 0 |
+| 100: what reshapes Policy, Research's Funding / 1 | 9 | 9 | 0 | 0 | 0 |
+| Total | 1078 | 1228 | 2 | 148 | 0 |
+
+The Healthcare registry row removed after run 5's green result is restored
+verbatim from main as FS5's own veto because it recurred in this final run.
+The earlier green result remains historical evidence, not a current waiver.
+All three existing own vetoes also remain: heap, MC2's quiet-month label and
+its section-92 paper premise. **Four own vetoes, no new exemption**. Current
+registry removals are therefore 20, not the earlier checkpoint's 21.
+
+Exact process counts, generated indexes/notes/ship excluded, are now:
+
+| File | Added | Removed |
+|---|---:|---:|
+| src/main/java/ham/citybuildersim/KeptCheck.java | 447 | 559 |
+| src/main/java/ham/citybuildersim/Observation.java | 1 | 1 |
+| src/main/java/ham/citybuildersim/ui/KeptBench.java | 204 | 47 |
+| docs/notes/known-reds.txt | 0 | 20 |
+| Java code | 652 | 607 |
+| Registry-inclusive total | 652 | 627 |
+
+The read-only pick remains 24/235 with the named list already recorded;
+review not needed (no money, saves or threading in the diff). The only
+post-run edits are records. No source mend, substantial diagnostic or replay
+is assumed authorized. The provisional marker remains.
+
+## KHL1: repeating Healthcare kept-layout fault
+
+Provisional queued trace/fix, not a named-pass exemption. `tools/batch-id.sh
+KHL1` passed on .179. The defect is the repeating kept/fresh law violation
+above, also present on HS2's earlier path and FS5's earlier software run.
+The next work must identify whether the retaining/layout owner is actual UI
+or the comparison machinery before moving a fix outside FS5. Relevant
+methods are GovernmentScreen.frameOver, UserInterface.scrolled and
+KeptBench.settle/showFresh/restoreKeptPage. Trace the actual scroller viewport,
+bar visibility, bound page width and layout invalidation across the Healthcare
+open; cause the threshold in a small scratch fixture and compare both sides.
+Preserve the original style, geometry and equality assertions. Do not strip
+preferred width from signatures, waive the repeated difference as load, or
+use a redraw to conceal it. If the cause is FS5's fixture/measurement, mend it
+here; a demonstrated actual UI defect gets its own fix. FS5 keeps the hard
+veto until that causal disposition is complete. The 53.6 MiB heap miss remains
+a separate, unclassified responsibility and is not passed by KHL1 or FS1.
