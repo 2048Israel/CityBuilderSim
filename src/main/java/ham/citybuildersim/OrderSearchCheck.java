@@ -825,8 +825,11 @@ public class OrderSearchCheck {
             double one = costOf.applyAsDouble(1), two = costOf.applyAsDouble(2), all = costOf.applyAsDouble(asked);
             BuildingsTemplate named = null;
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-                if (Double.compare(plans.getCostOf(t, 1), one) != 0 || Double.compare(plans.getCostOf(t, 2), two) != 0
-                        || Double.compare(plans.getCostOf(t, asked), all) != 0) continue;
+                // A landlord's home is priced at the door since FB15 (HN1-A, Game.doorPriceOf()); the planner's price otherwise.
+                boolean planner = Double.compare(plans.getCostOf(t, 1), one) == 0 && Double.compare(plans.getCostOf(t, 2), two) == 0
+                        && Double.compare(plans.getCostOf(t, asked), all) == 0;
+                if (!planner && (Double.compare(g.doorPriceOf(t, 1), one) != 0 || Double.compare(g.doorPriceOf(t, 2), two) != 0
+                        || Double.compare(g.doorPriceOf(t, asked), all) != 0)) continue;
                 if (named != null && Double.compare(plans.carryOf(named, asked, insured), plans.carryOf(t, asked, insured)) != 0) return null;
                 if (named == null) named = t;
             }

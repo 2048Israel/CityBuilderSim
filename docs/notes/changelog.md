@@ -18,6 +18,21 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
+A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
+`buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised
+to the plan's figure no longer fails at the door (HousingDoorCheck's seed 12 window: nine such cuts on main, none
+now). A project's order the lender refuses for the bank's capital or a ban is asked again of half (HN1-B): the till
+builds what it buys, the line says why it was trimmed, and the capital marks are taken back (seed 12 to m900: 18
+such month-ends, none on main); past the default point or with the bank shut it holds, as before.
+`tools/ensemble/stop.ps1` makes the Git Bash form of the run's folder itself, since Git Bash hands it C:/..., then
+looks once more and names what outlived the stop, exit 1; with no folder or label it stops nothing, exit 2 (HN1-C,
+its selftest). The new OrderDoorCheck causes HN1-A and HN1-B, eight lines red on main. HousingDoorCheck names the
+landlords' homes by the door's price too (68 orders with the segment short, none cut for the down payment), and
+CreditCrunchCheck 4 causes an order the owners' issue falls short of. The played cities of MortgageCheck 12 and
+CreditCrunchCheck 2 moved, their fixtures known reds under FS9. ForeignDebtCheck 7 asserts a reloaded city's first
+month against its twin's, not 5% of the principal, which a month's own move crossed in the moved city.
+
 ### 0.9.176 — RB3, the fund's over-limit sale and the fixed point — 2026-11-20, ready, see docs/queue/RB3-notes.md
 FS13 found FundCheck 9e's town holding 11.17% of Construction against the fixed point of 10.92%. The book had last traded under fair value,
 the leavers asked 230 to 400 shares a month at the desk's bid, a buyback buying 200 took theirs first, and the fund's over-limit ask at fair
