@@ -1,8 +1,9 @@
 # FS5 notes: KeptCheck II causes what its pages read
 
-Current result: the final-source software run completed with one hard heap
-failure; the other six former failures passed. No readiness is claimed.
-The completed run and every exclusion count are recorded at the end.
+Current result: the precise Government ownership mend passes its hard isolated
+regression on MC2 main 2b049188b (.179). Its final full-software measurement
+awaits explicit GO. The earlier full run's heap failure remains hard and
+unresolved; no readiness is claimed. Every run and exclusion count is below.
 
 Batch FS5, begun 2026-11-21 by Claude (Opus, headless), recovered by
 FS5c2 (Codex, headless) on `batch/FS5`, cut from
@@ -670,3 +671,91 @@ at 8642 passed with one piece in this branch's full run (log line 5115).
 That run did not exercise all-auctions-refused fallback, so this is static
 coordination, not a claimed causal proof on MC2's state. FS5 owns that helper;
 MC2 was not asked to edit it or to waive the premise.
+
+## Probe 5 and the precise Government housekeeping mend
+
+Explicitly authorized probe 5 completed exit 0 in about eight seconds
+(`target/FS5c2-heap-probe5.log`). After body-only restoration it found the
+remaining actual path:
+
+```
+KeptBench.ui.governmentScreen.targets.value[0] -> Row
+```
+
+The same 1160 fresh-only nodes fell to 145 after the FIFO barrier, remained
+145 after body-only restoration, then fell to zero after restoring the
+captured targets-map contents too and draining callbacks. Both pure restores
+left the kept signature and draw counters identical; there was no redraw.
+Parent-inclusive canvas traversal found two canvases where the current walk
+found one, but both measured the same 4096 unique texture bytes. No additional
+saved-pixel/cache payload appeared. The full run's 80.5 MiB is still not
+quantitatively attributed, and no buffer exclusion was added from this result.
+
+The 12:02 explicit MEND GO authorized only those proven owners and callback
+housekeeping. Source commit 5215aa357:
+
+- `KeptBench.showFresh` captures the existing Government `body` reference and
+  a copy of its existing final `targets` map contents. Restore puts exactly
+  those owners back, without drawing, forgetting a pool, clearing unrelated
+  fields, or modifying a node's displayed value. Saved references clear in
+  finally; a failed Government draw also restores before propagating its
+  exception, preserving any cleanup error as suppressed evidence.
+- `comparisonRoots` includes the new saved owners, so forgotten captures
+  cannot pass its zero-root assertion.
+- A hard regression runs while the Government Spending page is already
+  active: seven normal fresh comparisons and one deliberately aborted draw.
+  It records only distinct fresh-minus-kept nodes and verifies unchanged
+  signatures, counters and node identities plus cleared captures. The non-FX
+  driver drains queued callbacks and asserts every fresh node collects.
+- Before section 102's original GC/heap check, the non-FX driver also uses a
+  FIFO FX barrier. It never waits for itself on the FX thread. All original
+  heap, pixel, identity and retention bounds remain intact.
+
+The duplicated method/header descriptions were shortened to pay for this
+machinery; each complete premise remains at its method and assertion. No
+assertion was removed to meet one-in-one-out. No model/screen source changed,
+and the default trace still does not move; no ensemble is owed.
+
+MC2 shipped during the mend. Merge 22a789e8e includes main 2b049188b (.179),
+takes its generated indexes before regeneration and preserves both incoming
+FS5 known-red rows (12/25 quiet Bank months and section 92's no-paper premise).
+They are not silently retired on the earlier .178 run. Main's published Bank
+and BusinessDebtManager are accepted only through that merge.
+
+Final merged `--fast`: exit 0, compile 51 s, maps regenerated, zero firm stale
+findings (193 soft), `target/FS5c2-fast1.log`. One authorized isolated mend
+proof then ran on the same merged source, exit 0 in about eight seconds,
+-Xmx768m, 45-second guard not reached. Log:
+`target/FS5c2-government-mend-proof.log`; fixture source:
+`target/FS5c2GovernmentMendProof.java`. It starts an already active Spending
+page on a six-month scratch city and calls the actual new hard regression:
+**1160 distinct fresh nodes, zero alive; signature, counters, kept-node
+identities and cleared captures all true; aborted draw restored true**.
+All four assertions passed. The preserved old-source probes 2/4 retained
+1160/145 nodes respectively; the complete owner+barrier operation in probe 5
+and the actual source mend collect them without a healing draw.
+
+The current read-only pick remains 24/235 (the same named list above), not
+ALL. Review: not needed, no money, saves or threading in the diff. No full
+pick, ensemble, dry run, new full-software replay or readiness was authorized.
+The marker remains. The actual fresh gate will judge flakes; no dry run is
+owed while this pick and publisher scope remain unchanged.
+
+Exact final process numstat against MC2 main, generated indexes, notes and
+ship file excluded:
+
+| File | Added | Removed |
+|---|---:|---:|
+| src/main/java/ham/citybuildersim/KeptCheck.java | 447 | 559 |
+| src/main/java/ham/citybuildersim/Observation.java | 1 | 1 |
+| src/main/java/ham/citybuildersim/ui/KeptBench.java | 204 | 47 |
+| docs/notes/known-reds.txt | 0 | 21 |
+| Java code | 652 | 607 |
+| Registry-inclusive total | 652 | 628 |
+
+The 21 historical removals still have their individual green/retired-law
+rows above. Three FS5 registry responsibilities remain hard/vetoed after the
+MC2 merge: heap 102 and the two incoming rows. The previous full run is
+evidence for its recorded commits only; it does not establish the new
+merged model's heap or claim the entire 80.5 MiB is explained. Awaiting
+explicit full-software GO after this provisional mends report.
