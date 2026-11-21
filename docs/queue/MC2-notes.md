@@ -492,3 +492,82 @@ the existing prose files under `claude/`; no `claude/index.md` exists in this
 checkout to update. This publication-record completion changes docs only;
 the existing checks, final ensemble and review were retained without reruns,
 and the provisional marker remains pending readiness GO.
+
+
+## Stopped gate and section 92 trace (2026-11-21)
+
+The gate of ready `9533081e6f9512248cf8e7ae2f831fe4d1713e91` against main
+`5790d0506e431b74be7db1010607fe2dc20bef50` stopped without publication.
+The box kept `/home/jerus/cbs/runs/cbs-gate-MC2-eaV6vYID`, copied home as
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-MC2-eaV6vYID`. The check stage
+took 868 seconds and exited 4; the suite reported 224 harnesses in 852
+seconds, 213 passed and 11 failed. Gate exit 1. Main remains .178.
+
+Per contract, the provisional marker was restored and pushed FIRST, at
+`9b485c4ce`, and verified on origin. The former ready commit, completed
+final ensemble and review are preserved. The kept run has not been modified
+or run in. Read-only copies of its ship log, suite, KeptCheck/AuctionCheck
+logs, unnamed lines, commit identities and integrity records are under
+`target/MC2c2-gate-stop/`. The copied KeptCheck log's SHA-256 matches its
+kept original. No JVM, unchanged suite, ensemble or source change was made
+for this investigation.
+
+The three unnamed lines are KeptCheck's exit 3, one actual assertion and
+the aggregate `3 FAILED`. The actual new assertion is section 92's
+`the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now: 0)`.
+The other two assertions are the already-recorded Spending/Healthcare
+opened-page comparison and the software-renderer heap bound (1,778.2 MiB
+live of 2,048). They are not three new fixture defects.
+
+Concrete path on the kept run: section 92 begins at month 4327 (KeptCheck
+log line 4797). `kp2bSets` calls `piecesOnTheBooks` (source 8645-8657), which
+first reads the city's debt book. If empty, it computes
+`max(minimumIssueSize() * 3, cash / 40)` and tries Term 10, Note 12, Serial
+10, without playing a month. Log lines 4914-4916 record `Nothing issued.`
+for all three; line 4917 fails the book-count premise. Consequently the
+two subsequent Finances line/Close-it-now `nothingSet` watches are skipped.
+This is not a failed redraw equality: those pages lack their fixture.
+
+`KeptBench.financesSell` (3154) calls
+`FinancesScreen.executeDebtLogic` (7109), using the real Game handlers and
+the default auction cap. Each handler returns `Nothing issued.` on an
+empty DebtQuote. The unchanged quote paths run Auction and either retain
+zero sold face or turn a sub-minimum partial sale into an empty quote.
+The actual kept log does not record the quote/bidders, so it does not
+establish which rejection branch occurred at month 4327.
+
+`Game.auctionBidders` (11952-11992) computes the bank's city-paper bid from
+insolvency, equity, weighted book, pending allotments and deposit rate;
+it does not call MC2's project room, growth headroom or band share. Its
+other bidders use household spare savings, firms' idle wealth/paper and
+hot-money holdings/return. Those methods and all issuance/helper files
+compare unchanged with main. MC2 can move the played city's state, but
+does not change this auction's valid refusal rule on fixed inputs.
+
+There is retained negative-case evidence without another JVM: the same
+gate's AuctionCheck passed `a city nobody bids on sells nothing, and says
+short` and `...raises nothing, and pays no fee for it`, using
+`Auction.Bidders.none()` (source 523-525). Thus expecting at least one
+piece after three market-dependent offers is an uncaused fixture premise,
+consistent with FS5's CD9-K class. This does not reconstruct the actual
+month-4327 bidder breakdown or claim that the main played path also failed.
+
+At fetched FS5 `d5f9cf8c6`, the exact `piecesOnTheBooks` helper already has
+a fallback calling `booked(g, PAPER[3], ask)` when all three offers fail
+(diff hunk main 8653, FS5 8518 onward), in addition to `sellPaper`'s
+separate fallback. FS5's retained completed software run reached section
+92 at month 4329 and sold a Term successfully; it did not exercise this
+empty-three-sales fallback. Its eight-second isolated fixture proof covers
+fund settlement/grid/renderer, not this paper helper. Neither is claimed
+as proof of the exact new failing path. Coordination is through the
+orchestrator; KeptCheck and KeptBench remain FS5-owned.
+
+The proposed smallest fresh proof, if the orchestrator requires one, is a
+single zero-month scratch-game/Monocle software-renderer probe (768 MiB,
+45-second guard), fixing all auction bidders to zero through Game's
+bidder test seam, then invoking the REAL `piecesOnTheBooks` helper and
+checking that all three real handlers refuse and the helper returns no
+paper. FS5's owner can separately validate its own fallback against that
+same condition. It would prove the fixture gap, not replay month 4327.
+The scope was sent for GO; it has not run. No known-red row, rejudge,
+red override or renewed readiness was added pending that decision.
