@@ -259,7 +259,7 @@ known-reds for HealthCheck and KeptCheck dropped (HX1 and KL1 shipped).
 - REV-PW1c-2: SHIP, all four closed; its P2, a recipe's surplus generation credited at the industry price where PW1 pays the works
   price (`Recipes.value()`), is PW1-G, not before the gate.
 
-**The ensemble** (`docs/ensemble/PW1.md`): PW1d on the box, the classes of eacfd6d37 (the REV-PW1c mends; 5806f5200's
+**The historical ensemble** (`docs/ensemble/PW1d-historical.md`): PW1d on the box, the classes of eacfd6d37 (the REV-PW1c mends; 5806f5200's
 bytes), against 0.9.174, `JAVA_OPTS` empty, 80 of 80. PASS, hard criteria 10 of 10, 24 of 26. One verdict changed:
 AUTO2 T2 (info, the final population), PASS to FAIL, a median of 1,666,304 against at least 75% of 0.9.174's
 2,226,328 (1,669,746). R2, PW1's earlier R2 row (§4), passes against 0.9.174: 2.30 points. PW1-E restated. The
@@ -349,3 +349,28 @@ for the dry run. PW1d's 80-run pass against .174 remains the historical record; 
 On the final merged tree, `./batch-check.sh OilCheck` exits 0 (first fuel month 16; all original assertions and
 the added premise pass), and `./batch-check.sh --fast` exits 0 (maps regenerated, Stale 0 firm / 194 soft).
 The final ship-row validator passes. The provisional marker stays; this is mends, not ready for publication.
+
+## 8. The final model after MC2 (PW1c2, 2026-11-21)
+
+The orchestrator's 12:08 go follows MC2's verified 0.9.179 publication. `df8585122` merges main
+`2b049188bcc8ba1b693beef9303409826936487e` into the same branch. Only generated indexes conflicted
+(`dials`, `harnesses`, `map/README`, `month-order`); main's copies were taken and regenerated. Bank,
+BusinessDebtManager, CityMap and CityRuns merged without source conflicts; no money, save or threading path
+needed semantic resolution, and no Sector, Recipes or BuildAdvice code was edited. Local `089769665` and the
+recovery mends `f60033e9c` remain ancestors. The pick is ALL 237 harnesses, review floor
+`needed - saves: DataSave.java`; the power/save/money review remains REV-PW1c-2's accepted SHIP, with MC2's
+independently reviewed bank changes arriving from main. No already-passed focused check was replayed.
+
+PW1d's historical report is preserved byte-for-byte as
+[PW1d-historical.md](../ensemble/PW1d-historical.md): classes of `eacfd6d37`, label PW1d, 80 unique completed
+runs and 80 CSVs, against [0.9.174](../ensemble/0.9.174.md), PASS 10/10 hard and 24/26 overall, AUTO2 T2 newly
+red. Its original `target/ensemble/PW1d/` is untouched; its report, score, summary, snapshot and progress, plus
+the exact compared .174 baseline, are copied separately under `target/PW1c2-recovery/PW1d-history/`.
+This historical run is not the final merged model's verdict.
+
+The authorized final ensemble is `PW1c2-final`, on the gate box, against
+[0.9.179](../ensemble/0.9.179.md), with `JAVA_OPTS` empty as on that baseline and the box's own named data files.
+Its source snapshot must be pushed before launch. A local PATH guard refuses the runner's laptop fallback
+before any local compile or simulation; a busy or unavailable box requires reporting and waiting, not overflow.
+Gates and the nightly keep priority. There is no dry-run, full-pick or separate playtest go; the marker remains.
+After the .179 merge, `./batch-check.sh --fast` exits 0 (maps regenerated, Stale 0 firm / 194 soft).

@@ -12,7 +12,7 @@ peak (a Wind Farm counts a third) and the playtest's player buys it as the advic
 grid from the first month, so it orders no plant before it draws. The probe city was short at every turn from month 600
 on main, at 31 turns and none after month 607 on PW1. The Services screen shows the prices, the coal, the wind turned
 away and the load not served; the Trade tab the power plants' coal and upkeep. The ensemble scores 24 of 26
-(`docs/ensemble/PW1.md`, against 0.9.174), the final population (AUTO2 T2, info) newly red (PW1-E). New: PowerDispatchCheck, PowerPriceCheck, BuildAdviceCheck
+(`docs/ensemble/PW1d-historical.md`, against 0.9.174), the final population (AUTO2 T2, info) newly red (PW1-E); the final .179 ensemble follows before gating. New: PowerDispatchCheck, PowerPriceCheck, BuildAdviceCheck
 14-15; CallCheck 4's sale on a bank that stands; main's new harnesses read power as PW1 plans and bills it
 (EssentialWorksCheck, WorksFinanceCheck, ElectrolyserCheck, HydrogenSteelCheck, NewUnitCheck); LicenceFeesCheck and
 RecipeCheck price a works' power at its class's, SaveFileCheck loads a power-short save from before PW1;
