@@ -16,6 +16,10 @@ import java.util.Arrays;
  * on it, is put back at par in July 1926 if floating, and floats in September 1931; a player who leaves gold leaves it for the episode, and the
  * Bank's date of March 1935 passes as data. These towns actually cross every boundary; no fixture moves a boundary. The empty-vault town causes exhaustion, then receives reserves to distinguish remembering an exit from rechecking
  * today's balance. Save files belong only to GameFiles.scratch(), never a player's folder.
+ *
+ * FS17: the exhausted-gold town's shops are CAUSED to want nothing in the month it is saved - Retail's wantedSpend and spendingCapacity are set to
+ * zero by hand before the save - where the section used to read the played founding's second month as one they want nothing in. The audit
+ * of every played month across both gold and floating months stays as played: it is the identity under test, and every month it audits is one the city lived.
  */
 public final class MoneyDatesCheck {
     private static int fails;
@@ -76,13 +80,18 @@ public final class MoneyDatesCheck {
             // An endowment is fixture setup, not a player intervention: the empty vault already caused its exit above.
             g.getForeignAccounts().buyReserves(Founding.WEALTHY_RESERVE_USD);
             g.getForeignAccounts().forgetDealing();
+            // FB3 (R0f-S): the load's rebuild strikes a want of its own, and the load put the saved one back only when it was over zero.
+            // FS17: this read the founding's second month as a month its shops want nothing in (wantedSpend 0), a fact of the played founding
+            // that the city's first month could move; the shops are set by hand to a want of nothing and a capacity of nothing now (Retail's
+            // own setters, after the month and before the save, both zero as the zero-guard's case was), and the fixture reads what it set.
+            ham.citybuildersim.sectors.Retail shopsSaved = g.getSectors().retail(), shopsBack;
+            shopsSaved.setWantedSpend(0);
+            shopsSaved.setSpendingCapacity(0);
             DataSave stock = g.prepareSaveForChecks(0, "exhausted gold").data();
             Game back = reload(g, "exhausted gold");
             boolean sameStock = Arrays.equals(stock.getForeignAccounts(), back.getForeignAccounts().toSaveArray());
-            // FB3 (R0f-S): the second month of a founding is one its shops want nothing in (wantedSpend 0); the load's rebuild strikes a
-            // want of its own, and the load put the saved one back only when it was over zero.
-            ham.citybuildersim.sectors.Retail shopsSaved = g.getSectors().retail(), shopsBack = back.getSectors().retail();
-            exhaustedWantedNothing = shopsSaved.getWantedSpend() == 0;
+            shopsBack = back.getSectors().retail();
+            exhaustedWantedNothing = shopsSaved.getWantedSpend() == 0 && shopsSaved.getSpendingCapacity() == 0;
             exhaustedSeamCarried = Double.doubleToLongBits(shopsSaved.getWantedSpend()) == Double.doubleToLongBits(shopsBack.getWantedSpend())
                     && Double.doubleToLongBits(shopsSaved.getSpendingCapacity()) == Double.doubleToLongBits(shopsBack.getSpendingCapacity());
             if (!exhaustedSeamCarried) OUT.printf("after load: Retail wantedSpend %.17g != %.17g, spendingCapacity %.17g != %.17g%n",

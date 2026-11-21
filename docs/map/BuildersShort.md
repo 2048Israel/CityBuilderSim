@@ -24,7 +24,7 @@
 
 **Uses:** [BusinessInvestment](BusinessInvestment.md) (1)
 
-**Used by (7):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [Game](Game.md)
+**Used by (8):** [BuildScreen](BuildScreen.md), [BuildingManager](BuildingManager.md), [CityNeeds](CityNeeds.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [FitoutCheck](FitoutCheck.md), [Game](Game.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Constants
 
