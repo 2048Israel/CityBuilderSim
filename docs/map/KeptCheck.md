@@ -1,4 +1,4 @@
-# KeptCheck.java - 9,902 lines · 234 methods · 33 constants · harnesses
+# KeptCheck.java - 9,907 lines · 234 methods · 33 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -162,7 +162,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 336 | 9567 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 336 | 9572 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 340 | 5 | `static void check(String label, boolean ok)` |  |
 | 347 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 361 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -512,7 +512,7 @@
 | 8931 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8961 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9015-9902)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9015-9907)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -526,6 +526,6 @@
 | 9498 | 120 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): the kept screens' geometry and retention, each repair caused on its own. |
 | 9623 | 73 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
 | 9697 | 12 | `public static void main(String[] args) throws Exception` |  |
-| 9716 | 8 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city played CITY_MONTHS by the advisor, on its own floor. |
-| 9726 | 176 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
+| 9717 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor. |
+| 9731 | 176 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
 

@@ -18216,18 +18216,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L9691 a no-stage chrome scene releases the fresh header after restore
   - L9694 the full kept check leaves a quarter of AllChecks.HEAP_MB free
 - **L9698 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L9727 1 and 2: the kept page, month after month, against a page built new**
-  - L9752 an unchanged People draw creates no node
-  - L9787 each month's redraw keeps the page it drew (the same top node,
-  - L9789 each month hands back nine in ten of the nodes it draws again, or more (
-  - L9800 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
-  - L9803 the kept page's signature equals the new page's at every month (
-- **L9805 3: and its pixels**
-  - L9807 the kept page and the new page are the same picture at
-  - L9827 one figure made wrong on the kept page (\"
-  - L9829 ...and its picture
-  - L9830 ...and the next kept draw sets it right again
-- **L9832 4: what reshapes the page**
+- **L9732 1 and 2: the kept page, month after month, against a page built new**
+  - L9757 an unchanged People draw creates no node
+  - L9792 each month's redraw keeps the page it drew (the same top node,
+  - L9794 each month hands back nine in ten of the nodes it draws again, or more (
+  - L9805 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
+  - L9808 the kept page's signature equals the new page's at every month (
+- **L9810 3: and its pixels**
+  - L9812 the kept page and the new page are the same picture at
+  - L9832 one figure made wrong on the kept page (\"
+  - L9834 ...and its picture
+  - L9835 ...and the next kept draw sets it right again
+- **L9837 4: what reshapes the page**
 
 ## KeptTimingCheck.java - 5 labelled assertions
 
