@@ -438,13 +438,95 @@ does not authorize a retry. The university zero component and home-law
 cause both remain **INCONCLUSIVE**. No mend or classification is selected
 from this setup failure.
 
+## Second diagnostic: housing captured; university setup incomplete
+
+Mail `20261121-155723-324-orchestrator-31c6` explicitly authorized a new
+unused `cause02` label and the setup-only gate-environment correction.
+The one job is `/home/jerus/cbs/runs/WG3codex1-cause02`; its complete retained
+copy is `target/wg3-cause/runs/WG3codex1-cause02`. Local foreground ownership
+was 2026-11-21 **19:58:22–19:58:36 UTC**, 14 seconds including preflight,
+upload, isolated compilation, both sequential processes and home copy.
+The job/controller actually exited **1**, with no complete-job marker.
+This is an **INCONCLUSIVE diagnostic**, not a gate pass or classification.
+
+The JDK guard selected Temurin **21.0.13+9**, native named earth/world files
+and the pinned frozen 6ede2fa3a snapshot. Only the driver/overlay compiled;
+17 isolated class files are retained and hash-verified. All three source
+pins match. Cached-class before/after manifests are identical, SHA256
+`29134c44400431e4025953b675a7e21f76b1390340c7238b282e4576da445792`:
+**2,444/2,444** cached classes remain unchanged, including a terminal
+read-only recheck. Both data hashes still match. All **67/67** remote/home
+retained file hashes match. Receipts are `cause02-terminal-receipt.txt` and
+`cause02-copy-receipt.json`; raw CSV/JSONL/logs and compiled classes remain
+beside the attempted sources. Job/controller/housing/fixture PIDs
+2141165/2141162/2141289/2141787 are gone, active is absent, the box lock is
+released and both scratch namespaces are empty. No source or records were
+changed while the actual remote job was live.
+
+**Housing observations.** The original main reached the planned complete
+month **400**, retained `TARGET_MONTHS=2400` and exited **1** for the raw
+home law. There are 399 contiguous completed monthly rows, months 2–400.
+All **12** retained served/works milestone rows at 120/240/360 match. The
+actual round trip at month **373** logged before, loaded copy and after,
+with no load failure. Exact raw failures remain **380–394**, worst **386**,
+**4.92236852101189** households, **644** doors/six sizes. These anchors do
+not establish a complete byte-identical prefix.
+
+At 386 the stored match stock and current stock both contain 80 size-2,
+63 size-4 and 501 size-6 doors. Stored unplaced-shape entries sum to
+**630.484471323489** family households. The native
+[half-households-plus-one allowance](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1882)
+is **625.562102802477** and is exhausted; their difference is the recorded
+**4.922368521012** residual to floating-point precision. Neither student nor
+unemployed seekers have an unhoused residual. Owners are 14, recorded
+separately and excluded from the native match. The isolated **CURRENT-fit
+query** also leaves 630.484 family households unmatched before doubling,
+with 16.254 size-2 doors free and no size-4/6 capacity free. Its native-input
+and live-census-unchanged assertions held. It remains a current hypothetical,
+not a replacement for the stored placement or a reconstructed migration.
+
+Across 370–400 the stock remains 644. The native build trace records no
+remaining construction points or real-estate sites/owed work in that
+window. At 370 the census has 204.590 students; at 386 it has 45.530, while
+current students are 39.428. Households rise from 1,145.954 to 1,249.124.
+At 380–394 recorded arrivals and room are zero, but births, deaths,
+departures, returning adults/children and family reformation still occur.
+These observations and the native allowance ledger narrow the trace to
+family demand beyond available matching/doubling capacity. They do not
+establish which production or player premise should change, nor attribute
+the finding to R1g, HO1 or a known class. The raw law stays hard.
+
+**University setup failure.** The separate fresh JVM used the untouched
+BuildAdviceCheck/LongPlaytest classes, but threw before `founded` completed:
+`System.out` was null at BuildingCatalog:101 through
+BuildAdviceCheck.quietly:129/founded:1253 and WG3CauseTrace:173. The fixture
+JSONL contains only START, no month or complete row. Its exit **1** is this
+exception, not the original university demand assertion. The checker
+correctly stopped on the absent `FIXTURE_COMPLETE`; no second attempt or
+automatic extension ran.
+
+The diagnostic directly called `founded` without the initialization in
+[BuildAdviceCheck.main](../../src/main/java/ham/citybuildersim/BuildAdviceCheck.java#L226):
+`out` and `quiet` are otherwise null, and
+[quietly](../../src/main/java/ham/citybuildersim/BuildAdviceCheck.java#L126)
+installs that null quiet stream. Smallest proposed diagnostic correction:
+copy the original main's Locale.CANADA/out/quiet initialization into the
+target driver before calling the untouched fixture. The exact five-line
+proposal is `target/wg3-cause/proposed-fixture-init.diff`, **not applied**.
+No model, fixture condition, fee, wage, pool, policy, month bound or assertion
+would change. Recommend a separately authorized, uniquely labelled,
+university-only fresh JVM and isolated target-driver compile; the valid
+housing capture needs no replay. New driver bytes/pin and execution scope
+need review/GO before editing or running. No production/harness mend,
+reclassification, waiver, kept rejudge, dry restart or readiness is implied.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
 full pick or separate LongPlaytest replay was run. The one authorized ensemble
-and the failed dry run are recorded above. The authorized diagnostic stopped
-at preflight; no dry restart, kept rejudge, model/harness mend or diagnostic
-retry is authorized.
+and the failed dry run are recorded above. Both diagnostic attempts and their
+limits are recorded above; no dry restart, kept rejudge, model/harness mend
+or further diagnostic execution is authorized.
 The ship file remains provisional until the orchestrator's readiness GO.
 
 For the optional PC eye check: open Policy → Wages → The ladder, switch both
