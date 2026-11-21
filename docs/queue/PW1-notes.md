@@ -416,3 +416,27 @@ returns 125 for the fallback, and the JVM proof also returns 125; no real gate o
 The box's own PATH is unaffected. The normal command is `sh tools/gate.sh PW1 --dry-run`, gate-box-only, with a
 7,200-second foreground timeout and unique log `target/PW1c2-dry.txt`. No source change or push is allowed while
 it runs. Only notes/ship may change afterward; the provisional marker stays until a separate readiness go.
+
+**Stopped by transport; no suite verdict.** The fresh launcher used branch `16e3ae4d0` and main `2b049188b`,
+model bytes unchanged from `7a06097bc`, in `/home/jerus/cbs/runs/cbs-gate-PW1-0qipiwLf`. The last successfully
+read `ship.log` records the uncommitted merge, the ALL-237 pick, publication records prepared for 0.9.180 with
+six Pending rows, suite start at 16:42:47Z and compilation OK in 9 seconds. While the suite was running, a
+read-only progress connection timed out; the original SSH connection then reset by peer. The launcher received
+no remote completion code, its attempt to retrieve the retained files timed out during banner exchange, and it
+exited 1. The configured `gatebox.local` alias also timed out. Both local foreground sessions have exited.
+
+This is not a judged harness/model failure: the suite verdict and new-red count are unknown. The kept final
+`ship.log`, `unnamed.txt` and manifests could not be retrieved while the box was unavailable. No source or push
+occurred during the run, no laptop compile/suite fallback ran, no other session was stopped, and no gate,
+ensemble, full pick or playtest was replayed. The provisional marker remains; no passing `gate-run` comment
+is inserted and no readiness is claimed. Recover the kept logs/manifests first when the box returns; inspect
+their actual verdict before the orchestrator decides any further ordering or renewed dry go.
+
+The fresh clone's source was preserved before the connection loss, without editing the gate run or clone:
+`/home/jerus/cbs/archives/cbs-gate-PW1-0qipiwLf-fresh-clone.tgz`, copied to
+`target/PW1c2-recovery/cbs-gate-PW1-0qipiwLf-fresh-clone.tgz` (534,905,958 bytes), SHA-256
+`53a5d692e4ee22259fc9bdbe2a6dae85cddfdab874266133e16087795ac82edd`, verified equal on both sides.
+It excludes transient `target/` and `data/`; the authoritative check outputs and manifest remain in the retained
+remote run, not in this source archive. The owner log is `target/PW1c2-dry.txt`, with the guard proof and archive
+hash receipts under `target/PW1c2-recovery/`. The attempted local retained-run directory is empty because the
+transfer failed. The accepted final ensemble, historical PW1d evidence and adopted PW1-E closure are unchanged.
