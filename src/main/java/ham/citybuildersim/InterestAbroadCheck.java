@@ -50,7 +50,9 @@ import java.util.function.Supplier;
  *   9. IN A CITY: the vault's interest each month is the sum over the eight of the balance before x that bank's rate / 12 at the month's cross
  *      rates, to the cent; a forced risk-off in a city that holds hot money sends some home the month it starts, the audit sees it cross the edge
  *      and closes, the log says so; a city quieted for the D$ earns nothing and unwinds nothing though its own moneys are in a risk-off; a save
- *      carries the lot and the loaded city does not earn the saved month twice.
+ *      carries the lot and the loaded city does not earn the saved month twice. The 24 months are played; the hot money the risk-off unwinds is
+ *      set on the city at the month it is forced (HOT_STOCK_SHARE of the target its dial draws, the bank funded as Game funds it) and the world
+ *      calmed through its own save array, so the unwinding reads the fixture and not what the path left.
  *
  * Every fixture causes its condition: a Historical moneys for the table's replay, a Random one for the rule from month 1, a town for the city's
  * reading, and a table with one line wrong for each refusal.
@@ -1046,6 +1048,38 @@ public class InterestAbroadCheck {
         return city;
     }
 
+    /** The share of the hot money's target the city is set to hold before a risk-off: under it, so the month's arrivals go on beside the risk-off (XI1's case for the audit's net law). */
+    static final double HOT_STOCK_SHARE = .5;
+
+    /** The slot of the world's risk-off level in WorldMoneys.toSaveArray(): after its four header numbers, the month, whether it is opened and the dollar cycle. */
+    static final int RISK_OFF_SLOT = 7;
+
+    /**
+     * The city's hot money set by name (CapitalFlows.placeArrivalForTest / setStockForTest, as CurrencyRegimeCheck.placeHotMoney places it) to this stock, and the bank
+     * that funds it moved as Game moves it when a month's stock changes: cash in or out, and the deposits told the stock. Returns the stock it now holds.
+     */
+    static double setHotStock(Game g, double stock) {
+        CapitalFlows hot = g.getCapitalFlows();
+        double move = stock - hot.getStock();
+        if (move > 0) {
+            hot.placeArrivalForTest(move);
+            g.getBank().receiveHotMoney(move);
+        } else if (move < 0) {
+            hot.setStockForTest(stock);
+            g.getBank().returnHotMoney(-move);
+        }
+        g.getBank().setForeignDeposits(hot.getStock());
+        return hot.getStock();
+    }
+
+    /** The world calm: its risk-off level put to nothing through its own save array, as a load puts a state back (what the draws left of an earlier one is gone). */
+    static void calmTheWorld(WorldMoneys w) {
+        double[] saved = w.toSaveArray();
+        assertTrue("fixture: RISK_OFF_SLOT holds the world's risk-off level (" + saved[RISK_OFF_SLOT] + " against " + w.riskOff() + ")", same(saved[RISK_OFF_SLOT], w.riskOff()));
+        saved[RISK_OFF_SLOT] = 0;
+        w.restore(saved);
+    }
+
     /** One month of a city with what it printed captured. */
     static String playCaptured(Game city) {
         java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
@@ -1106,21 +1140,28 @@ public class InterestAbroadCheck {
         close("...the yield is the interest times twelve over the US$ it was earned on", fx.getVaultYield(), yield, 1e-9);
         assertTrue("...and the audit closed every month of it (worst residual " + String.format("%.2e", worst) + ")", worst < 1e-9);
 
+        // The hot money the risk-off unwinds is set on the city, a share of the target the dial draws it toward, and the world calmed: the reading is the fixture's.
         CapitalFlows hot = g.getCapitalFlows();
+        double playedStock = hot.getStock(), setStock = HOT_STOCK_SHARE * hot.getTarget(), playedLevel = g.getWorldMoneys().riskOff();
+        setHotStock(g, setStock);
+        calmTheWorld(g.getWorldMoneys());
         double stockNow = hot.getStock();
-        out.printf("   after %d months at a %.0f%% dial: hot money D$%,.0fk here (target D$%,.0fk, a %.2f-point spread), the carry D$%,.0fk, the world's risk-off %.2f%n", months + 2,
-                HOT_DIAL * 100, stockNow, hot.getTarget(), hot.getSpread() * 100, hot.getCarryStock(), g.getWorldMoneys().riskOff());
-        assertTrue("fixture: the city holds hot money to unwind (D$" + String.format("%,.0fk", stockNow) + ") and the world is calm", stockNow > 1000 * PriceLevel.FACTOR && g.getWorldMoneys().riskOff() < .5);
+        out.printf("   after %d months at a %.0f%% dial: the played stock D$%,.0fk, the target D$%,.0fk (a %.2f-point spread), set to %.0f%% of it, D$%,.0fk; the carry D$%,.0fk, the world's risk-off %.2f (the path's %.2f)%n",
+                months + 2, HOT_DIAL * 100, playedStock, hot.getTarget(), hot.getSpread() * 100, HOT_STOCK_SHARE * 100, stockNow, hot.getCarryStock(), g.getWorldMoneys().riskOff(), playedLevel);
+        assertTrue("fixture: the city holds hot money to unwind (D$" + String.format("%,.0fk", stockNow) + ") and the world is calm",
+                stockNow == setStock && stockNow * (1 - CapitalFlows.RISK_OFF_HOT_UNWIND) > CapitalFlows.MIN_STOCK && g.getBank().getForeignDeposits() == stockNow && g.getWorldMoneys().riskOff() == 0);
 
         // A risk-off of size one starts at the next step.
         g.getWorldMoneys().forceRiskOff(1);
         String log = playCaptured(g);
         double level = g.getWorldMoneys().riskOff(), ranHome = hot.getRiskOffDeparted();
         assertTrue("the world is in a risk-off of at least the size forced (" + String.format("%.2f", level) + ")", level >= 1 - 1e-9 && g.getWorldMoneys().riskOffStarted());
+        close("...and of no more, the calm world having none of its own left", level, 1, 1e-9);
         assertTrue("the hot money's risk-off departure the month is over zero (D$" + String.format("%,.1fk", ranHome) + ")", ranHome > 0);
         close("...the share of the stock it took is the dial times the level (capped at the whole): " + CapitalFlows.RISK_OFF_HOT_UNWIND + " x " + String.format("%.2f", level),
                 ranHome / (hot.getStock() + ranHome), Math.min(1, CapitalFlows.RISK_OFF_HOT_UNWIND * level), 1e-9);
         assertTrue("...inside the month's departures", hot.getDeparted() >= ranHome - 1e-9);
+        assertTrue("...and the stock under its target, the month's arrivals go on beside the risk-off (D$" + String.format("%,.1fk", hot.getArrived()) + " came)", hot.getArrived() > 0);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         // The audit sees the hot money's NET move: Game books the stock's change (bank.returnHotMoney / receiveHotMoney), so in a
         // month whose arrivals go on beside the risk-off it declares what left less what came. XI1: this read the gross departure,
@@ -1149,11 +1190,15 @@ public class InterestAbroadCheck {
         qdm.setAutopilot(false);
         qdm.setPolicyRate(HOT_DIAL);
         for (int m = 1; m <= months; m++) play(q);
+        CapitalFlows qHot = q.getCapitalFlows();
+        double qSet = HOT_STOCK_SHARE * qHot.getTarget();
+        setHotStock(q, qSet);
+        assertTrue("fixture: the quieted city's hot money is set to the same share of its target (D$" + String.format("%,.0fk", qHot.getStock()) + ")",
+                qHot.getStock() == qSet && qSet * (1 - CapitalFlows.RISK_OFF_HOT_UNWIND) > CapitalFlows.MIN_STOCK && q.getBank().getForeignDeposits() == qSet);
         q.getWorldMoneys().forceRiskOff(1);
         play(q);
-        CapitalFlows qHot = q.getCapitalFlows();
         assertTrue("fixture: the quieted city holds hot money (D$" + String.format("%,.0fk", qHot.getStock()) + ") and its own moneys are in a risk-off (" + String.format("%.2f", q.getWorldMoneys().riskOff()) + ")",
-                qHot.getStock() > 1000 * PriceLevel.FACTOR && q.getWorldMoneys().riskOff() >= 1 - 1e-9);
+                qHot.getStock() > CapitalFlows.MIN_STOCK && q.getWorldMoneys().riskOff() >= 1 - 1e-9);
         ForeignAccounts qFx = q.getForeignAccounts();
         assertTrue("the quieted city's vault earned nothing, month or lifetime", qFx.getVaultInterestUsd() == 0 && qFx.getVaultInterestUsdLifetime() == 0 && qFx.getVaultYield() == 0);
         assertTrue("...and the risk-off unwound none of its hot money or its carry", qHot.getRiskOffDeparted() == 0 && qHot.getRiskOffDepartedLifetime() == 0 && qHot.getCarryRiskRepaidLifetime() == 0
