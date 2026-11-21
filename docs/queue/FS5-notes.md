@@ -1406,3 +1406,58 @@ looks, 1536MiB bound,53.6MiB residual and cache-root uncertainty stay hard.
 Process counts +653/-607 Java, +653/-627 registry-inclusive, pick24/237 and
 review line are unchanged. The provisional marker stays; awaiting the
 orchestrator's decision and any NEW scoped/slot GO.
+
+## Actual-page mechanism attempt: UNCAUSED at actual width response
+
+GO `20261121-145602-061-orchestrator-db9d` authorized only the corrected
+target calibrator and one mechanism-only diagnostic. Target-only compile
+passed. ONE native WinApplication/SW Xmx768m foreground JVM ran on frozen
+a81bcdee5/main .180. Java/Bash exit2 LIMIT and inner2 agree; the PowerShell
+generic native-command failure1 is retained separately. Monotonic4.722s,
+wrapper15:03:27--15:03:33. Total45s guard did not fire. The sole opacity0,
+nonmax/non-always-on-top Stage preceded first kept CSS/layout, scale1.25,
+made no focus request and closed in finally. No owned JVM or repeat remained.
+
+All unchanged real fixture premises passed again: actual Centre+40 Houses
+affordable/successful, capacity+12000, doors0->40; exactly six monthly calls
+returned1/delta1, month1->7, same population/workforce rows as the2620 table
+above, ending130/66. Payroll6.091950603069947, upkeep4.917858130165899 and
+NAhealth11.009808733235847 positive, visible Healthcare, actual by-kind
+detail and closed/open full-signature change passed. No model state injection,
+changed founding, synthetic text/node, tooltip, fallback or extra month.
+
+The same existing347-character Label retained actual text/font/parent and
+passed initial actual viewport-width response. Existing Label.prefHeight only,
+16 bounded bisection steps, predicted32/48 at widths835.80388184/827.80388184.
+Captured NEVER chrome1.6 plus actual page offset36.8 produced candidate
+stage874.20388184, actually snapped874.4. Actual calibration then was:
+
+| Sample | Viewport | Page width | Label | Content height |
+|---|---|---:|---|---:|
+| Initial NEVER | 1454.4x694.4 | 1454.4 | 1417.6x32 | 502.4 |
+| Initial ALWAYS | 1446.4x694.4 | 1446.4 | 1409.6x32 | 502.4 |
+| Derived NEVER | 873.6x686.4 | 1028 | 991.2x32 | 502.4 |
+| Derived ALWAYS | 865.6x686.4 | 1028 | 991.2x32 | 502.4 |
+
+The page's preferred width followed the viewport, but actual page width
+remained1028 and the actual Label remained991.2 at both derived widths.
+It never reached the predicted wrapping transition. This observes overflow
+at those widths, not a proved absolute minimum or its individual owner.
+The actual-label-narrows guard stopped LIMIT; no constraint, preferred width
+or signature was stripped to force it through. Label/content height delta
+was absent. Font prefHeight prediction is not an actual layout cause.
+
+Mechanism UNCAUSED, ZERO fresh comparisons. Midpoint positive, taller negative,
+held/restored equalities and final post-comparison model-held check were
+unreached, not passing. There were106 geometry events. The six complete
+premise/calibration signatures, source, script, classes, compile and raw log
+remain under target/FS5c2-healthcare-mechanism*. The actual result and audit
+JSON preserve samples/hashes plus all six monthly rows; earlier2620 and all
+five original raw hashes were checked unchanged. No duplicate execution.
+
+No original full Healthcare leaf/owner attribution, production/source MEND,
+new row or exemption, full SW, heap/cache measurement, ensemble, dryrun or
+readiness follows. Four vetoes, full four Healthcare hard looks,1536MiB bound,
+53.6MiB unattributed residual and cache-root uncertainty remain unchanged.
+Process counts/pick/review are unchanged. The provisional marker stays.
+Awaiting the orchestrator's next scoped decision; no further JVM is owned.
