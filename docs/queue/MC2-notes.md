@@ -335,5 +335,40 @@ on main's too (main's room is none, so a hair past it is still over the minimum)
 
 ## The ensemble
 
-The 80-run ensemble on the final model, on the gate box, label MC2, against
-`docs/ensemble/0.9.174.md` (OE1's, the newest), JAVA_OPTS empty: ENSEMBLE_RESULT.
+The completed pre-integration ensemble is **MC2m**, classes of `3599c9d15`
+(0.9.174), against `docs/ensemble/0.9.174.md`, JAVA_OPTS empty. It ran on the
+laptop (Jerusalem): the gate box already held ensemble FB15-174 and the nightly,
+so the runner used the contract's overflow rule. `target/mc2-ensemble.txt` records
+**80/80 runs, 194.3 minutes; 25/26 criteria, hard 10/10 PASS; no changed verdicts**.
+No runs were missing or short. The informational A2 inflation-spell criterion
+remained FAIL, as on the baseline; retired H1 is excluded from the count.
+
+The retained baseline, including its data paths and raw summary, is archived at
+`docs/queue/MC2m-ensemble.md`. The original baseline, score, snapshot, 80 CSVs,
+per-run logs and timings remain untouched in `target/ensemble/MC2m/`. This is the
+completed result of the old worker despite its later provider-limit failure;
+it is not a reason to replay that snapshot. It predates FB15's 0.9.177 model and
+does not establish the final merged model's ensemble verdict.
+
+## Recovery and integration (MC2c2, 2026-11-21)
+
+Recovered the same clean `batch/MC2` at `3599c9d15`; no branch recreation or
+reset. Read the original MC2 brief retained as the launcher's `in-1.txt` and
+the `out-3.jsonl` / `out-4.jsonl` final reports. The latter stopped at a provider
+limit while the ensemble was still owned by its runner; the retained result
+above establishes that it completed. REV-MC2-2's SHIP on `e204cbb5a` and
+`6abca724a` remains settled, with its margin note already fixed at `3599c9d15`.
+
+Merged main `cdd4a2a09` (0.9.177, FB15 plus OB1 and GB5). There were no source
+conflicts: FB15's four-argument `BusinessDebtManager.takeBackCapitalRefusal()`
+overload merged separately from MC2's `projectRoom()` change. `Bank.java` and
+`BankFailureCheck.java` were unchanged by main. Conflicts were confined to
+`docs/dials.md`, `docs/harnesses.md`, `docs/month-order.md`,
+`docs/map/BusinessDebtManager.md` and `docs/map/README.md`; generated indexes
+were taken from main and are regenerated on the merged source by `--fast`.
+No R1g/PW1 hunks or KeptCheck rows were edited.
+
+The merged model includes FB15's trace changes, so MC2m is historical evidence.
+A final ensemble must compare the merged final model with the newest baseline,
+currently `docs/ensemble/0.9.177.md`, on the orchestrator's GO. No ensemble or
+dry run has been started during recovery.

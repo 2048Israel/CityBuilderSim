@@ -1,4 +1,4 @@
-# OrderSearchCheck.java - 944 lines · 23 methods · 17 constants · harnesses
+# OrderSearchCheck.java - 947 lines · 23 methods · 17 constants · harnesses
 
 `ham/citybuildersim/OrderSearchCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -75,7 +75,7 @@
 | 540 | 5. a window a bond opens, caused (OS1) |
 | 669 | 6. the order's size is the gap and the plots (BA1) |
 | 745 | THE WATCH: every order the game decides, asked of the countdown too |
-| 859 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) |
+| 862 | THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) |
 
 ## Constants
 
@@ -122,7 +122,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 876 | **type** `public class OrderSearchCheck` | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). |
+| 69 | 879 | **type** `public class OrderSearchCheck` | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). |
 | 157 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 162 | 5 | `static void same(String label, long actual, long expected)` |  |
 | 168 | 5 | `static void quietly(Runnable r)` |  |
@@ -157,24 +157,24 @@
 |---:|---:|---|---|
 | 679 | 65 | `static void orderSizes(Game g)` | ORDER SIZE, A FORMULA (BA1). |
 
-### THE WATCH: every order the game decides, asked of the countdown too (lines 745-858)
+### THE WATCH: every order the game decides, asked of the countdown too (lines 745-861)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 749 | 109 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
+| 749 | 112 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
 | 763 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
 | 766 | 27 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
 | 795 | 20 | `public void mortgaged(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Deci...` _(in OrderSearchCheck.Watch)_ |  |
-| 822 | 15 | `LongToDoubleFunction carryOfTheOrder(long asked, LongToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
-| 838 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
-| 840 | 11 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
-| 852 | 5 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
+| 822 | 18 | `LongToDoubleFunction carryOfTheOrder(long asked, LongToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
+| 841 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
+| 843 | 11 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
+| 855 | 5 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
 
-### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) (lines 859-944)
+### THE COUNTDOWNS, AS THEY STOOD IN 0.7.53 (and the size's, as BA1's formula counts it) (lines 862-947)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 868 | 7 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit)` | BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the shortfall, never more than the plots, and one for a building with no capacity to count. |
-| 877 | 23 | `static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualR...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
-| 909 | 35 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
+| 871 | 7 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit)` | BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the shortfall, never more than the plots, and one for a building with no capacity to count. |
+| 880 | 23 | `static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualR...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
+| 912 | 35 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
 

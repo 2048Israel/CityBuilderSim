@@ -594,7 +594,10 @@ boxlaunch() { HOSTS=$1; shift; rm -f "$BUS_LOG"; mk "batch/$1"; shipf "$1"; jv "
 boxsaid() { grep -q -F -- "$2" "$TA/box-$1.out"; }
 merged() { git -C "$TA/origin.git" log -1 --format="$1" main | grep -q -F -- "$2"; }
 printf 'The body line.\nSecond: it'"'"'s kept.\n' > "$TA/box-body.txt"
-CBS_BUS="$TA/bus-stub" boxlaunch "nobox box" BX1 -m "the box's \"title\"  kept" -F "$TA/box-body.txt"
+# GB5: the box's ldconfig, stubbed: one that lists libpangoft2, one that lists nothing
+for l in pango nopango; do mkdir -p "$TA/$l"; printf '#!/bin/sh\n' > "$TA/$l/ldconfig"; chmod +x "$TA/$l/ldconfig"; done
+printf 'echo "\tlibpangoft2-1.0.so.0 (libc6,x86-64) => /usr/lib/libpangoft2-1.0.so.0"\n' >> "$TA/pango/ldconfig"
+PATH="$TA/pango:$PATH" CBS_BUS="$TA/bus-stub" boxlaunch "nobox box" BX1 -m "the box's \"title\"  kept" -F "$TA/box-body.txt"
 LABEL="GB1 a gate tries each gate box in order and runs on the first that answers"; ok boxsaid BX1 'gate: on the gate box box, tools at'
 LABEL="...ships as it does here"; ok shipped BX1
 LABEL="...with its title and its body file whole"; ok merged %s "Merge batch/BX1: the box's \"title\"  kept, "
@@ -603,6 +606,7 @@ LABEL="...its steps posted here in order, from the box's run"
 ok test "$(sed -n 's/^gate BX1 \([a-z]*\) .*/\1/p' "$BUS_LOG" | uniq | tr '\n' ' ')" = "merge suite maps tag push done "
 ok grep -q "^gate BX1 merge .* log=[^ ]*boxhome/cbs/runs/bus-BX1/ship.log " "$BUS_LOG"
 LABEL="...and the run's files copied home"; ok sh -c "test -f '$RUNDIR/ship.log' && grep -q -F 'is copied to $TA/laptop/bus-BX1' '$TA/box-BX1.out'"
+LABEL="GB5 a box with Pango says nothing of it"; ok sh -c "! grep -q -F 'display:' '$TA/box-BX1.out'"
 STUB_EXIT=4 STUB_REDS="$REDS;ZzCheck | 14 FAILED" CBS_BUS="$TA/bus-stub" boxlaunch box BX2
 LABEL="GB1 a box gate's stop exits as there, one urgent mail to the batch here"; ok test "$RC" = 1
 ok one_send 'send BX2 --kind instruction --urgent -'
@@ -617,6 +621,7 @@ NB=$TA/nbox/tools; mkdir -p "$NB" "$TA/nhome"; cp "$SRC/tools/gate-box.sh" "$SRC
 cat > "$NB/nightly.sh" <<'STUB'
 #!/bin/sh
 [ -n "${CBS_GATE_ON_BOX:-}" ] || { echo here > "$TA/night-here"; exit 0; }
+printf '%s\n' "${JDK_JAVA_OPTIONS:-}" > "$TA/night-jdk"
 [ "$(pwd)" = "$(cd "$(dirname "$0")/.." && pwd)" ] || exit 9
 date +%z > "$TA/night-zone"; mkdir -p "$HOME/.cbs-observations"; echo held > "$HOME/.cbs-observations/held.tsv"; echo green > "$HOME/.cbs-nightly-tier-green"
 echo 'the night in full' > "$HOME/.cbs-nightly.log"
@@ -627,13 +632,17 @@ exit 1
 STUB
 nightrun() { NT=$1; shift; ( cd "$SRC" && HOME=$TA/nhome CBS_ME= GBOX_SERVE=$NB/gate-box.sh CBS_GATE_SSH="$TA/fake-ssh" CBS_GATE_HOST="$1" \
     CBS_BUS="$TA/bus-stub" TA=$TA sh "${2:-tools/nightly.sh}" ${3:-} ) > "$TA/night-$NT.out" 2>&1; }
-rm -f "$BUS_LOG"; ( TZ=UTC-09:00; export TZ; nightrun n1 box ); RC=$?
+rm -f "$BUS_LOG"; ( TZ=UTC-09:00; PATH="$TA/nopango:$PATH"; export TZ PATH; nightrun n1 box ); RC=$?
 LABEL="GB2 tools/nightly.sh hands its night to the gate box, its checkout the night's, and keeps the night's exit"; ok test "$RC" = 1
 LABEL="...its dates in the caller's zone, not the box's UTC"; ok grep -q -x -F '+0900' "$TA/night-zone"
 LABEL="...the verdict, log and records copied home, paths named from here"
 ok grep -q -x -F "2026-11-21 02:00 0.0.0 abc1234 4,000 months: RED; $TA/nhome/.cbs-observations/misses.tsv; timing: loaded=0; box:.cbs-timing/box/n1" "$TA/nhome/.cbs-nightly.txt"
 ok sh -c "grep -q -x 'the night in full' '$TA/nhome/.cbs-nightly.log' && test -s '$TA/nhome/.cbs-nightly-tier-green' && test -s '$TA/nhome/.cbs-observations/held.tsv'"
 LABEL="...and its red mail posted here through the relay"; ok one_send 'send jerus --kind info -'; ok grep -q -x -F '| nightly RED: the playtest' "$BUS_LOG"
+LABEL="GB5 the box's night names its display, Monocle, to every JVM it starts"
+ok grep -q -F -- '-Dcbs.display=monocle -Dglass.platform=Monocle -Dmonocle.platform=Headless -Dprism.order=sw' "$TA/night-jdk"
+LABEL="...and a box without Pango says so in one line"
+ok grep -q -x -F 'display: the box lacks libpangoft2: sudo apt install libpangoft2-1.0-0 (GB5: every display harness fails without it)' "$TA/night-n1.out"
 rm -f "$BUS_LOG"; nightrun n2 nobox "$NB/gate-box.sh" --nightly
 LABEL="GB2 with no gate box answering, the nightly mails jerus and runs here"; ok test -f "$TA/night-here"
 ok one_send "send jerus --kind info --urgent --body The gate box cannot be reached (nobox): the nightly runs on the laptop."

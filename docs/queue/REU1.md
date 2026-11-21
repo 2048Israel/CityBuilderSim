@@ -6,10 +6,11 @@ would be good to implement one for real estate as well, but thats later after th
 
 ## Waits on
 
-- **The real-estate study** (`docs/studies/spec-real-estate.md`, on the study/real-estate branch, in
-  scope discussion with Jerus on 2026-11-20 and not yet committed) and **RES1**, the housing model batch
-  it will specify. REU1 draws RES1's figures, so it starts only after RES1 ships and the study says
-  what to show. Its working brief is the study's section 3 (★4) and section 4.
+- **The real-estate study, RES1** (`docs/studies/spec-real-estate.md`, on the study/real-estate branch,
+  in scope discussion with Jerus since 2026-11-20), a study only, and **the housing model batches it
+  specifies** (tentatively RES2 the dwellings and the catalogue, RES3 matching, prices and preferences,
+  RES4 parking, HO1 ownership, RES5 the sale and condo disposal after HO1). REU1 draws their figures, so
+  it starts after them, when the study says what to show. Its working brief is the study's section 3 (★4) and section 4.
 
 ## Scope as recorded
 

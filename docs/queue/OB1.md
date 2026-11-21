@@ -1,0 +1,9 @@
+# OB1 - Reserve provider usage for orchestration
+
+Jerus, 2026-11-21: "never reach 100%, project to reach 99%, but not below 98%"; "20% left for four days" is fine when the orchestrator can keep running purely Codex batches. Recovery instructions in orchestrator turn748 supersede stale budget/deadline paragraphs.
+
+Update docs/orchestrator.md dispatch rules: read live usage.txt and headroom.txt every turn and immediately before each launch, budget-consuming resume or substantial orchestration; readings older than15 minutes/missing forbid uncertain-provider work. Target98-99% at each window reset without waste; reserve conservative controller cost through reset, running commitments, pending resumes/reviews, lag and uncertainty before allocation below99%. Follow current MemWatch advice within that ceiling; route elsewhere or defer if unsafe. Reassess after reset. Checkpoint and arrange alternate-provider handoff before controller exhaustion; historical handoffs and API-equivalent dollar estimates are not dispatch/spend authority.
+
+All new builders/reviewers now Codex gpt-6.1-sol xhigh while Claude exhausted; no Claude revival before reset. Record reading timestamp, provider used%, reset, runtime/reason and forecast commitments/reserve alongside every dispatch in compact state log. This is an operational rule; MemWatch has no hard launcher budget admission guard. Adapt session continuity text for Codex without claiming Claude hooks/settings are portable. Retain three builders plus fourth study/docs/process only when behind pace, file-overlap and heavy-slot rules.
+
+Process batch, untagged; expected file docs/orchestrator.md only plus OB1 notes/ship file. No model/playtest move, no stranger review. One-in-one-out: remove redundant/obsolete prose and record exact git diff --numstat origin/main over process files excluding notes/ship. Gate normally with --no-tag; docs-only --fast, no dry run owed.

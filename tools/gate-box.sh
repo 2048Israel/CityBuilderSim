@@ -74,6 +74,10 @@ if [ "${1:-}" = --serve ]; then   # on the box: the call's words on stdin; gate.
         e*) V=$(dec "$w"); case ${V%%=*} in SEEDS|POLICIES|RESUME|JAVA_OPTS) export "$V" ;; esac ;;   # an ensemble's settings
     esac; done   # z: a night's or an ensemble's caller's UTC offset, its verdict dated as day.sh asks (GB2: the box's UTC put a night after 20:00 tomorrow)
     case $P in gate.sh) ;; nightly.sh|ensemble.sh) cd "$HERE/.." || exit 1 ;; *) exit 2 ;; esac   # the night's checkout is its cwd
+    # GB5: the box has no screen. Its gates and nights draw the display harnesses on Monocle (pom.xml), headless and in software,
+    # where one that cannot start the toolkit fails, never skips (ui/FollowBench.startJavaFx); Linux lays text out through Pango.
+    case $P in gate.sh|nightly.sh) export JDK_JAVA_OPTIONS="${JDK_JAVA_OPTIONS:+$JDK_JAVA_OPTIONS }-Dcbs.display=monocle -Dglass.platform=Monocle -Dmonocle.platform=Headless -Dprism.order=sw"
+        PATH=$PATH:/sbin ldconfig -p 2> /dev/null | grep -q 'libpangoft2-1\.0\.so' || echo 'O display: the box lacks libpangoft2: sudo apt install libpangoft2-1.0-0 (GB5: every display harness fails without it)' ;; esac
     if [ "$P" = ensemble.sh ] && command -v flock > /dev/null; then   # GB3: counted under a lock, so two ensembles count each other once
         exec 6>> "$HOME/cbs/heavy.lock"; flock 6; B=$(heavy)
         [ "$(printf '%s' "$B" | grep -c .)" -lt "$FULL" ] || { echo "@@cbs-full $(printf '%s\n' "$B" | list)"; echo '@@cbs-exit 0'; exit 0; }

@@ -2205,7 +2205,8 @@ public class BuildCardCheck {
         g.getExchange().bookOf(company).withdrawAll();
         g.getExchange().bookOf(company).seedLastPrice(.5 * g.getExchange().fair(company));
         double insured = credit.getInsuredMortgageRate(), till = economy.getSectorCash(re);
-        double cost = plans.getCostOf(house, 1), down = Mortgage.ownFundsFor(cost);
+        // FB15 (HN1-A): a landlord's home is priced at the door's own price, on the card as at the order.
+        double cost = g.doorPriceOf(house, 1), down = Mortgage.ownFundsFor(cost);
         String slot = BuildCard.slot(house);
         BuildCard.Gate gate;
         try {

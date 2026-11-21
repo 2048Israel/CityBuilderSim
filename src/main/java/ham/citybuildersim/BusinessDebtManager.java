@@ -2680,6 +2680,13 @@ public class BusinessDebtManager {
         if (!mortgageRefusedBefore) refusedMortgageForCapital.remove(sector);
     }
 
+    /** ...and a project's order trimmed at the door the same way (FB15, HN1-B): its project mark too, which the playtest counts. */
+    public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore,
+                                       boolean projectRefusedBefore) {
+        takeBackCapitalRefusal(sector, refusedBefore, mortgageRefusedBefore);
+        if (!projectRefusedBefore) refusedProjectForCapital.remove(sector);
+    }
+
     /* =====================================================================
        THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3)
 
