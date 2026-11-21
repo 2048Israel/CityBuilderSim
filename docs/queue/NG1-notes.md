@@ -231,4 +231,12 @@ buying inputs that nothing used.
 
 ## The dry run
 
-{DRY}
+`sh tools/gate.sh NG1 --dry-run` ran on the gate box on bfc08e647, with main at
+1d8a1f243 (FS10). The run is kept as `/home/jerus/cbs/runs/cbs-gate-NG1-JaKT00P2`
+and copied home to `%TEMP%/cbs-gate-NG1-JaKT00P2`. Gate exit 0. The pick was
+ALL, 233 harnesses. The suite finished in 1,032 s with exit 3, meaning main's
+known reds only, in 8 harnesses: BankCheck, BasketYearCheck, BuildAdviceCheck,
+CopperRefiningCheck, Forms1900Check, HoldersCheck, RoadCheck and
+YoungBankCheck. GroundInputCheck passed. The dry run kept nothing and left the
+tree as it was.
+

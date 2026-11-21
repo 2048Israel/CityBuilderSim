@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-NG1-JaKT00P2 -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — NG1, imported inputs the ground does not give are not bought — 2026-11-20, ready, see docs/queue/NG1-notes.md
