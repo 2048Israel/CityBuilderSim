@@ -97,7 +97,8 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 - **HousingDoorCheck 1.** Its fixture was HN1-A's bug: on main, its nine cut orders were all "its own
   funds put the 15% down on N". The section now counts the segment-short orders, and asserts the door cut
   or held none of them for the down payment (red on main, nine). On the branch, seed 12's city has no
-  month in the window with the segment short, so the fixture line is red: a known red under FS1.
+  month in the window with the segment short, so the fixture line is red: a known red under FS11, whose
+  sweep holds it.
 - **CreditCrunchCheck 2-3 and MortgageCheck 12** are played cities that moved.
   - Traced on seed 13 (`target/fb15/p13-*.txt`): the two runs are identical to m33. From m34 the lender
     tests a House at the door's price (+4.9%), and the down payment passes 6 where main's passed 7. At
@@ -108,8 +109,11 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
   - At m150: 930 households against 483. HN1-A alone does it: the output is identical with HN1-B's
     halving switched off, and MortgageCheck's and HousingDoorCheck's reds stay with it off too.
 
-  Path chaos, not a trend: the ensemble is the measure. Six lines, known reds under FS1 (the brief's rule
-  for a moved played city).
+  Path chaos, not a trend, is the reading: the ensemble is the measure (section 7). MortgageCheck 12's two
+  lines are known reds under FS9 (the bank and its borrowers, queued). CreditCrunchCheck's three are held
+  out of the ship file: they assert MC1's landlords' equity raise, which HN1-A re-prices directly, so REV-FB15
+  says whether they are the change's own effect (then mended here) or a moved city (then a queued row of
+  their own; the orchestrator, 2026-11-21).
 
 ## 5. The calls
 
@@ -126,7 +130,8 @@ session (Opus 5.5) on `batch/FB15`, cut from origin/main ac224abf3 (0.9.172), me
 - ★5 **OrderDoorCheck drives `consider()` by reflection between months**, after the month's settle,
   with the hooks of `BusinessInvestment.OrderWatch`. It buys its ground (`buyLandBlock()`), so it causes
   the edge rather than waiting for a played month that has the ground too.
-- ★6 **The moved fixtures go under FS1**, as the brief says, rather than re-seeded here.
+- ★6 **The moved fixtures go under the sweeps that hold them** (FS9, FS11; FS1, which the brief named,
+  has shipped), rather than re-seeded here.
 
 ## 6. The checks
 
