@@ -23,7 +23,8 @@ import java.util.List;
  *      same volume, bit for bit or not, said below); at the going rate in 1913 no graduate arrives and the arrivals without a diploma
  *      outnumber the diploma-holders; with the graduate bands bid up, 1953 brings a larger graduate share than 1913
  *   5. PLAYED: a city founded the 1900 way plays 24 months drawing on the year's mix each month, its arrivals by band summing to the
- *      month's and more of them without a diploma than with one; a city founded the default way holds no mix in any of them
+ *      month's; a draw at the 1900 point brings people and more of them without a diploma than with one (caused by hand, FS16: the
+ *      village's own arrivals were the premise once); a city founded the default way holds no mix in any of them
  *
  * Every fixture CAUSES its condition: the markets are priced by the labour market's own months (a market at base, and one whose posts
  * outrun its supply for 200 months, with every licence in short supply too), the draw is a fresh Migration into a city with room, jobs and
@@ -335,6 +336,30 @@ public class ArrivalMixCheck {
         check("fixture: one village founded the 1900 way, the other the default way", g.foundedUnfitted() && !plain.foundedUnfitted());
         check("a new city holds no mix before its first month", g.getMigration().getYearMix() == null && plain.getMigration().getYearMix() == null);
 
+        /*
+         * THE PREMISES THE PLAYED CITY ONCE SUPPLIED, CAUSED (FS16): that people arrive in a city founded the 1900 way, and that more arrive
+         * without a diploma than with one. The village was played 24 months and the sum of its arrivals read; here they are drawn by hand
+         * at the 1900 point (section 4's draw: a fresh Migration into a city with room, jobs and homes), at the going rate and in a market
+         * bid up so that the labourers are bought as well, and the other side of it is today's mix at the going rate, which brings nobody
+         * without a diploma. The played months below keep the every-month identities.
+         */
+        ArrivalMix.Point y1900 = ArrivalMix.at(ArrivalMix.januaryOf(1900));
+        check("fixture: the 1900 point has more arrivals without a diploma per diploma arrival than one", y1900.ordinaryNone() > 1,
+                String.valueOf(y1900.ordinaryNone()));
+        LabourMarket base = atBase(), bid = bidUp();
+        for (LabourMarket market : new LabourMarket[] {base, bid}) {
+            String at = market == base ? " at the going rate" : " in a market bid up";
+            Migration at1900 = draw(y1900, market);
+            double[] who = at1900.getLastArrivalMix();
+            check("fixture: people arrive in a draw at the 1900 point" + at, at1900.getLastArrivals() > 0, String.valueOf(at1900.getLastArrivals()));
+            check("...and more arrive without a diploma than with one" + at, who[NONE] > who[DIPLOMA], who[NONE] + " vs " + who[DIPLOMA]);
+        }
+        double[] atRate = draw(y1900, base).getLastArrivalMix();
+        near("...at the going rate by the year's figure: no-diploma arrivals per diploma arrival", atRate[NONE] / atRate[DIPLOMA], y1900.ordinaryNone(), 1e-9);
+        double[] todays = draw(ArrivalMix.TODAY, base).getLastArrivalMix();
+        check("...where today's mix at the going rate brings nobody without a diploma, so fewer arrive without one than with one",
+                todays[NONE] == 0 && todays[NONE] < todays[DIPLOMA], todays[NONE] + " vs " + todays[DIPLOMA]);
+
         boolean advanced = true, mixed = true, sums = true, none = true;
         double noDiploma = 0, diploma = 0, arrived = 0, plainNone = 0, plainDiploma = 0;
         String bad = null;
@@ -363,10 +388,8 @@ public class ArrivalMixCheck {
         }
         check("24 months played: the clock moved one month a press", advanced);
         check("...each month the 1900 city's Migration holds the year's mix, ArrivalMix.at() of the month played", mixed, bad);
-        check("fixture: people arrived in the 1900 city over the 24 months", arrived > 0, String.valueOf(arrived));
         check("...its arrivals by band sum to the month's arrivals, every month", sums, bad);
         System.out.printf("   24 months: %.1f arrived without a diploma, %.1f with one (a default village: %.1f and %.1f)%n", noDiploma, diploma, plainNone, plainDiploma);
-        check("...and over the 24 months more arrive without a diploma than with one", noDiploma > diploma, noDiploma + " vs " + diploma);
         check("a city founded the default way holds no mix in any of its 24 months", none);
         check("...and the same village founded the default way draws a smaller share of its arrivals without a diploma",
                 plainNone / Math.max(plainNone + plainDiploma, 1e-12) < noDiploma / Math.max(noDiploma + diploma, 1e-12),

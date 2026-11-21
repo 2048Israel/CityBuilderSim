@@ -1,8 +1,8 @@
 # The dials
 
-Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,300 constants in 609 files.**
+**6,366 constants in 609 files.**
 
 ## model (2963 constants)
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1843 constants)
+## harnesses (1909 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5899,13 +5899,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `ArrivalMixCheck.DEFAULT` | `Founding.defaults()` |  |
-| 76 | `ArrivalMixCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
-| 78 | `ArrivalMixCheck.NONE` | `WageBand.NONE.ordinal()` |  |
-| 79 | `ArrivalMixCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
-| 80 | `ArrivalMixCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
-| 81 | `ArrivalMixCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 217 | `ArrivalMixCheck.ADULT_SHARE` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share the fixtures run at (PopulationCheck's). |
+| 76 | `ArrivalMixCheck.DEFAULT` | `Founding.defaults()` |  |
+| 77 | `ArrivalMixCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
+| 79 | `ArrivalMixCheck.NONE` | `WageBand.NONE.ordinal()` |  |
+| 80 | `ArrivalMixCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
+| 81 | `ArrivalMixCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
+| 82 | `ArrivalMixCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
+| 218 | `ArrivalMixCheck.ADULT_SHARE` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share the fixtures run at (PopulationCheck's). |
 
 ### AuctionCheck.java ([map](map/AuctionCheck.md))
 
@@ -6036,12 +6036,15 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 123 | `BuybackCheck.PRINCIPAL` | `1_000` |  |
-| 124 | `BuybackCheck.COUPON` | `.04` |  |
-| 125 | `BuybackCheck.MARKET_YIELD` | `.05` |  |
-| 1001 | `BuybackCheck.COUPON_OVER_ASKS` | `.045` | A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. |
-| 1003 | `BuybackCheck.COUPON_OVER_FAIR` | `.08` | A coupon so far over the market's yield that the line's fair is itself over the call price. |
-| 1475 | `BuybackCheck.SerialTerms.DOLLAR_ASK` | `5_000 * PriceLevel.FACTOR` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
+| 130 | `BuybackCheck.PRINCIPAL` | `1_000` |  |
+| 131 | `BuybackCheck.COUPON` | `.04` |  |
+| 132 | `BuybackCheck.MARKET_YIELD` | `.05` |  |
+| 491 | `BuybackCheck.A_PART` | `.02` | A part of a line is a real one when it is this share of it: a fiftieth, against the world's 0.09k of 3,807k on main's path. |
+| 494 | `BuybackCheck.HOUSEHOLDS_SHARE` | `.25` | The share of the sale the households take: the savers' rate is set so their bid at the stop is this much of the issue (HOUSEHOLD_PAPER_APPETITE of it for each unit over the rate). |
+| 497 | `BuybackCheck.BANK_SHARE` | `.55` | The share of the sale the bank takes: its room is set to this much of the issue, the largest part, as the half of a line is the bank's at fair. |
+| 1093 | `BuybackCheck.COUPON_OVER_ASKS` | `.045` | A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. |
+| 1095 | `BuybackCheck.COUPON_OVER_FAIR` | `.08` | A coupon so far over the market's yield that the line's fair is itself over the call price. |
+| 1566 | `BuybackCheck.SerialTerms.DOLLAR_ASK` | `5_000 * PriceLevel.FACTOR` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
 
 ### CallCheck.java ([map](map/CallCheck.md))
 
@@ -6308,19 +6311,24 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 148 | `CurveCheck.TARGET` | `.02` | The target the study's cities aim at: the game's default, the figure the rule's neutral rate is struck on. |
-| 151 | `CurveCheck.GDP_YEAR` | `5.4e9, TAX_YEAR = 1.1e9, DEBT = 3.4e9` | The study's economy and debt (spec section 3.3, debt-model.py): a year's output and a year's tax, in local money, and the term paper outstanding. |
-| 154 | `CurveCheck.MONTHS` | `{ 3, 12, 24, 60, 120, 240, 360, 600 }` | The maturities section 1 asserts at, in months. |
-| 157 | `CurveCheck.ROW` | `{ 1, 12, 24, 60, 120, 240, 360, 600 }` | Section 3.3's columns: 1 month, 1, 2, 5, 10, 20, 30 and 50 years. |
-| 163 | `CurveCheck.CALM` | `new Study("calm",.03,.02,.80, 0, new double[] { 3.12, 3.12, 3.18, 3.35, 3.62, 4.02, 4.2...` | The calm city: the dial at 3%, inflation at 2%, credibility .80, no holdings. |
-| 166 | `CurveCheck.HIKING` | `new Study("hiking",.07,.06,.65, 0, new double[] { 7.12, 6.85, 6.50, 6.04, 6.02, 6.27, 6...` | ...the hiking city: the dial at 7% against inflation at 6%, credibility .65. |
-| 169 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
-| 172 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
-| 175 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
-| 502 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
-| 505 | `CurveCheck.STEEP_GAP` | `.02` | How far under the dial the market expects to settle at the steep city's dial is held. |
-| 508 | `CurveCheck.STEEP_10Y` | `.02` | How far over the 1-month the 10-year of the steep city's curve must stand, as a fraction a year (section 7 asks two points). |
-| 599 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 154 | `CurveCheck.TARGET` | `.02` | The target the study's cities aim at: the game's default, the figure the rule's neutral rate is struck on. |
+| 157 | `CurveCheck.GDP_YEAR` | `5.4e9, TAX_YEAR = 1.1e9, DEBT = 3.4e9` | The study's economy and debt (spec section 3.3, debt-model.py): a year's output and a year's tax, in local money, and the term paper outstanding. |
+| 160 | `CurveCheck.MONTHS` | `{ 3, 12, 24, 60, 120, 240, 360, 600 }` | The maturities section 1 asserts at, in months. |
+| 163 | `CurveCheck.ROW` | `{ 1, 12, 24, 60, 120, 240, 360, 600 }` | Section 3.3's columns: 1 month, 1, 2, 5, 10, 20, 30 and 50 years. |
+| 169 | `CurveCheck.CALM` | `new Study("calm",.03,.02,.80, 0, new double[] { 3.12, 3.12, 3.18, 3.35, 3.62, 4.02, 4.2...` | The calm city: the dial at 3%, inflation at 2%, credibility .80, no holdings. |
+| 172 | `CurveCheck.HIKING` | `new Study("hiking",.07,.06,.65, 0, new double[] { 7.12, 6.85, 6.50, 6.04, 6.02, 6.27, 6...` | ...the hiking city: the dial at 7% against inflation at 6%, credibility .65. |
+| 175 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
+| 178 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
+| 181 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
+| 283 | `CurveCheck.SEEN` | `4, RING = 5` | What the price index's save array carries of its ring (PriceIndex.toSaveArray()): the months it has seen at SEEN, then the WINDOW readings of the index from RING on, the last at (seen - 1) % WINDOW... |
+| 286 | `CurveCheck.SHOCK` | `4 * Expectations.TOLERANCE` | How far over where the city expects to settle the inflation is set where a section needs the rule off its floor and Strict apart from Standard: the tolerance four times, past Strict's half point un... |
+| 479 | `CurveCheck.RULE_FALLS_BY` | `.005` | The least the rule is expected to fall by, a fraction a year: half a point, which the shock (SHOCK over the target, at the rule's weight over one) is far over. |
+| 566 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 569 | `CurveCheck.STEEP_GAP` | `.02` | How far under the dial the market expects to settle at the steep city's dial is held. |
+| 572 | `CurveCheck.STEEP_10Y` | `.02` | How far over the 1-month the 10-year of the steep city's curve must stand, as a fraction a year (section 7 asks two points). |
+| 575 | `CurveCheck.STEEP_CASH` | `10 * ASK` | What the steep city holds in cash, and what it can pay a buyback of any one piece it borrows out of: ten asks, over the three the fixture wants (FS13: set, as the played city's cash was a path's). |
+| 686 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 843 | `CurveCheck.SHOCKED_AT` | `60` | The press of the run (counting from its first, 0) before which the smoothed inflation is set over the target: halfway through its 120 months. |
 
 ### DeathCareFirstCheck.java ([map](map/DeathCareFirstCheck.md))
 
@@ -6525,8 +6533,29 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 63 | `EducationCheck.OUT` | `System.out` |  |
-| 64 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 70 | `EducationCheck.OUT` | `System.out` |  |
+| 71 | `EducationCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 164 | `EducationCheck.TOWN_MONTHS` | `6` | Months a school town is lived before its section reads it (FS16): the first has no workforce and the second no staffed school, so by the sixth the schools teach and every band has people. |
+| 167 | `EducationCheck.DIPLOMA_SHARE` | `.15` | The diploma band a school town is set to, as a share of its workforce (FS16): the pool the colleges and the universities draw on, kept small enough that a drained band shows. |
+| 170 | `EducationCheck.COLLEGE_SHARE` | `.15` | The college band a school town is set to, as a share of its workforce (FS16): the people the universities' graduates join and the professional schools draw on. |
+| 173 | `EducationCheck.UNIVERSITY_SHARE` | `.20` | The university band a school town is set to, as a share of its workforce (FS16): the pool the medical school draws its doctors from, wider than the doctor posts. |
+| 176 | `EducationCheck.DOCTORS_OVER_POSTS` | `1.1` | The medical students finishing in the town that has enough doctors, as a multiple of its doctor posts (FS16): just over what the hospitals can seat. |
+| 179 | `EducationCheck.DOCTORS_UNDER_POSTS` | `.9` | The medical students finishing in the town that is short of doctors, as a multiple of its doctor posts (FS16): just under what the hospitals can seat. |
+| 182 | `EducationCheck.FINISHING_SHARE` | `.01` | The college and university students seeded to finish in each of the town's first two months, as a share of its workforce (FS16): enough to move the bands, few enough to leave the diploma band stand... |
+| 185 | `EducationCheck.PLENTY_OF_PLACES` | `.9` | The share of the children's need the primary seats must clear to be plenty (FS16): the pinched town's "plenty of primary places" law is coverage over this. |
+| 188 | `EducationCheck.SEATS_MARGIN` | `.05` | How far either side of PLENTY_OF_PLACES the seats of the coverage threshold are put, as a share of the need (FS16): just over and just under. |
+| 231 | `EducationCheck.PRICE_POOL_SHARE` | `.15` | The diploma band the price section's towns are set to, as a share of the first town's workforce (FS16): the same pool in all three, small enough that three universities never fill on it. |
+| 234 | `EducationCheck.GRANT_STUDENTS` | `400` | The students the grant's towns are put through a university with (FS16): enough that the bill is a sum of people and not a rounding. |
+| 237 | `EducationCheck.GRANT_EXPECTED_LEVEL` | `1.25` | The expected price level the grant's town is put at (FS16): off founding by a quarter, so the bill's level is a factor and not a one. |
+| 240 | `EducationCheck.LOAN_STAYING_STUDENTS` | `300` | The university students put into the lender town with their whole course before them (FS16): the ones who stay in the students' cell and keep borrowing. |
+| 243 | `EducationCheck.LOAN_FINISHING_STUDENTS` | `100` | The university students put into the lender town in their last month (FS16): the ones who graduate in its first month and carry their loans to the working families in its second. |
+| 246 | `EducationCheck.SURPLUS_CONTRIBUTION_RATE` | `.3` | The pension contribution rate the grant's town is put at to show a surplus (FS16): with the income tax at .5 and the property tax at its ceiling, enough that a town six months old closes its bridge. |
+| 249 | `EducationCheck.SURPLUS_HEALTH_PREMIUM` | `.1` | The health premium rate the grant's town is put at to show a surplus (FS16): with the contributions above, the last of what a town six months old needs to close its bridge. |
+| 265 | `EducationCheck.PLENTY_OF_LABOURERS` | `6_000` | The workforce of the hand-fed town whose labourers outnumber its labouring posts (FS16): over the 3,300 posts the section puts up, so the unskilled wage cannot rise over the going rate. |
+| 268 | `EducationCheck.SCARCE_OF_LABOURERS` | `2_400` | The workforce of the hand-fed town whose labouring posts outnumber its labourers (FS16): under the 3,300 posts less its skilled heads, so the unskilled wage climbs over the going rate. |
+| 271 | `EducationCheck.WAIT_POOL_SHARE` | `.5` | The diploma band the wait's town is set to, as a share of its workforce (FS16): a university's pool wide enough that its first month's intake is well over the ten students the section asks for. |
+| 276 | `EducationCheck.PRICE_TOWN_WORKFORCE` | `4_000` | The workforce of the hand-fed poor town the price section reads (FS16): large enough that its pool of diploma-holders is hundreds. |
+| 279 | `EducationCheck.PRICE_TOWN_DIPLOMAS` | `1_500` | The diploma-holders of the hand-fed poor town (FS16): three times its 500 diploma posts, so the diploma wage is a surplus's and sits near the table the fees were struck against. |
 
 ### ElectrolyserCheck.java ([map](map/ElectrolyserCheck.md))
 
@@ -6672,6 +6701,14 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 62 | `ForeignCheck.TRADED_BEFORE` | `24` | The months a fixture trades before its test month: 24, the currency's settling months until XR1, kept so the fixtures are the cities they always were. |
 
+### ForeignDebtCheck.java ([map](map/ForeignDebtCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 167 | `ForeignDebtCheck.DIAL_OVER_THE_WORLD` | `.01` | How far over the world's rate a fixture holds the city's dial to make its own paper the dearer: a point, over the floor the paper stands on. |
+| 170 | `ForeignDebtCheck.BOND_STRESS_SHARE` | `1.0 / 8` | The share of a full solvency stress (DebtManager.FULL_STRESS_EXPORT_YEARS of exports owed) section 8's bond is sized to: an eighth, a few points of premium with room above it for a quarter of the e... |
+| 173 | `ForeignDebtCheck.BIG_SALE_STRESS_SHARE` | `1.0 / 2` | ...and the share section 10's big sale (two years of tax) is sized to: half, so the world prices the big sale dear and the small one a twenty-fourth of it near nothing. |
+
 ### ForestryCheck.java ([map](map/ForestryCheck.md))
 
 | line | constant | value | says |
@@ -6730,14 +6767,17 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1415 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more... |
-| 1418 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
+| 153 | `FundCheck.FOUNDING_MONTHS` | `72` | The months the fixture town is played before it is saved: a stage of the founding, never a month picked because the town's path passes at it (PK1). |
+| 1578 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more... |
+| 1581 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
 
 ### FundLedgerCheck.java ([map](map/FundLedgerCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 318 | `FundLedgerCheck.ISSUER` | `"Mining"` | The issuer of section 3's one bond: a sector's name, which BondMarket.writeDown() finds an issuer's bonds by. |
+| 106 | `FundLedgerCheck.FOUNDING_MONTHS` | `72` | The months the fixture town is played before it is saved: a stage of the founding, never a month picked because the town's path passes at it (PK1). |
+| 112 | `FundLedgerCheck.HOUSEHOLD_HOLDING` | `2 * TreasuryFund.OWNERSHIP_LIMIT` | The share of the company the sections trade in, and of the bank, that the base hands the households: twice the fund's cap on a company, so the households can sell the fund the whole of the room und... |
+| 384 | `FundLedgerCheck.ISSUER` | `"Mining"` | The issuer of section 3's one bond: a sector's name, which BondMarket.writeDown() finds an issuer's bonds by. |
 
 ### GatewayCheck.java ([map](map/GatewayCheck.md))
 
@@ -6943,6 +6983,21 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 101 | `HomeRailCheck.BASE_MONTHS` | `14` | Months a fixture city is played before a railway is handed to it: HaulageCheck's, long enough for the trucks to be seeded and the books settled. |
 | 104 | `HomeRailCheck.REAL_RUN_MONTHS` | `1250` | Months of a real run section 9 plays, for the breadth of its identity: about half a minute; the advisor lays its first station at about month 990 in this city on one trace (the run's own count prin... |
 | 150 | `HomeRailCheck.FRACTIONAL_MONTHS` | `60` | (GW1) The most months untilFractional() plays on: the staffing gate's city fills a depot and four spurs with the boundary's tonnes only after some two years. |
+
+### HouseholdCheck.java ([map](map/HouseholdCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 56 | `HouseholdCheck.FLATSHARE_ADULTS` | `600` | Adults in the flatshare fixture's town, all in the unskilled tier: enough that its singles divide into fives. |
+| 59 | `HouseholdCheck.FLATSHARE_RENT` | `400` | The rent a door pays in the flatshare fixture's books, in the game's thousands. |
+| 62 | `HouseholdCheck.FLATSHARE_BASKET` | `300` | ...and the basket a head buys: living alone costs FLATSHARE_RENT + FLATSHARE_BASKET. |
+| 65 | `HouseholdCheck.FLATSHARE_TAX` | `.60` | The income tax of the flatshare fixture, 60% as the town this replaced had it. |
+| 68 | `HouseholdCheck.FLATSHARE_TAKE_HOME` | `500` | What one earner takes home in the flatshare fixture: a basket paid and not a home, so a single adult is priced out of living alone and five of them are not. |
+| 1504 | `HouseholdCheck.HAND_REAL_RETURN` | `.03` | The real return the rate fixture hands savers: three points above nought, so the factor is one less SAVING_RESPONSE of it, well inside the floor and the ceiling. |
+| 1507 | `HouseholdCheck.RATE_MONTHS` | `3` | Months the rate fixture's city is stepped with savers handed their return before the month it is read at: the audit's months. |
+| 1702 | `HouseholdCheck.HAND_CARS_PER_HOME` | `1` | Cars the commute fixture hands every home: one, the ceiling of ownership a month's buyers meet (Motoring.getOwnershipCeiling() starts at 1). |
+| 1705 | `HouseholdCheck.COMMUTE_MONTHS_BEFORE_CARS` | `2` | Months the commute town is played before its homes are handed cars: enough for the households to exist and the buses to be riding (fares read from the second month). |
+| 1708 | `HouseholdCheck.COMMUTE_MONTHS_AFTER_CARS` | `2` | ...and the months after, before it is read: the first strikes the drivers' fuel and the second reaches the books, which carry the month before's. |
 
 ### HouseholdFlowCheck.java ([map](map/HouseholdFlowCheck.md))
 
@@ -7166,10 +7221,20 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 46 | `LabourCheck.OUT` | `System.out` |  |
-| 47 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 1255 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
-| 1258 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 56 | `LabourCheck.OUT` | `System.out` |  |
+| 57 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 1281 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
+| 1284 | `LabourCheck.BASING_GRACE_MONTHS` | `120` | The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. |
+| 1287 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 1526 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
+| 1529 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
+| 1532 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
+| 1761 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 1783 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 1786 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 1798 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 1816 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 1818 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ### LandCheck.java ([map](map/LandCheck.md))
 
@@ -7751,16 +7816,28 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 551 | `OrderSearchCheck.WINDOW_PROFIT_TO` | `1` | ...ends at... |
 | 553 | `OrderSearchCheck.WINDOW_PROFIT_STEP` | `1.04` | ...and steps by. |
 
+### OutsideCheck.java ([map](map/OutsideCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 51 | `OutsideCheck.COLLEGE_STAYERS` | `EducationCheck.LOAN_STAYING_STUDENTS` | The university students put into the college town with their whole course before them (FS16): the ones who stay in the students' cell and borrow at the dial's shortfall. |
+| 54 | `OutsideCheck.COLLEGE_FIRST_FINISHERS` | `2 * EducationCheck.LOAN_FINISHING_STUDENTS` | The university students put into the college town in their last month (FS16): more than the hundred graduates the section asks for, who finish in its first month and carry their loans to the workin... |
+| 57 | `OutsideCheck.COLLEGE_LAST_FINISHERS` | `EducationCheck.LOAN_FINISHING_STUDENTS` | The university students put into the college town to finish in the last month it is read at (FS16), so somebody finished that month. |
+| 60 | `OutsideCheck.COLLEGE_MONTHS` | `5` | Months the college town is read over once its students are put in (FS16): the first finishers graduate in the first, are carried to the working families in the second and repay from the third, and ... |
+| 63 | `OutsideCheck.CITY_MONTHS` | `6` | Months the EI city is lived before its adults are handed over (FS16): enough for the buildings put up at once to be crewed, where it was played fifty-nine. |
+| 66 | `OutsideCheck.OVERSUPPLY` | `1.5` | The adults the EI city is handed, as a multiple of the posts it offers (FS16): half as many again, so every post is filled and a pool is left over. |
+
 ### OwnerCheck.java ([map](map/OwnerCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 67 | `OwnerCheck.owners` | `new double [ 1 ]` | The owners the fixture's census names: set by a section, read by the balance's outside census. |
-| 381 | `OwnerCheck.ALL_LISTED` | `c -> true` | Every company in issue, for the fixtures whose families were reserved by a grant alone: the floor is all they are tallied on. |
-| 523 | `OwnerCheck.CRUMB` | `1e-3` | The most of a company with no family the owner cell may hold, as a part of the shares in issue: the line's stakes come with a family, and what is over is the crumbs of the pool a growing cell claim... |
-| 526 | `OwnerCheck.LOG` | `new java.io.ByteArrayOutputStream()` | The game's log while a city runs: kept, and read for the families that rejoin the population and why. |
-| 600 | `OwnerCheck.PROBE_MONTHS` | `{ 1, 13, 37, 61, 121 }` | The months the probe prints: BO1's table's, with the founding month. |
-| 666 | `OwnerCheck.PROBE_HEADER` | `" line month people retired disp/hh pension paid careAff(SENIOR) senior pull owners' ba...` | The probe's header, above its rows. |
+| 72 | `OwnerCheck.owners` | `new double [ 1 ]` | The owners the fixture's census names: set by a section, read by the balance's outside census. |
+| 386 | `OwnerCheck.ALL_LISTED` | `c -> true` | Every company in issue, for the fixtures whose families were reserved by a grant alone: the floor is all they are tallied on. |
+| 528 | `OwnerCheck.CRUMB` | `1e-3` | The most of a company with no family the owner cell may hold, as a part of the shares in issue: the line's stakes come with a family, and what is over is the crumbs of the pool a growing cell claim... |
+| 535 | `OwnerCheck.MONTHS_TO_THE_LISTING` | `2` | The month played, counting from one, in which a company of the founding lists: the first month's dividends read no sheet (none is recorded before it: Game.recordMonth runs after payDividends), and ... |
+| 538 | `OwnerCheck.LOG` | `new java.io.ByteArrayOutputStream()` | The game's log while a city runs: kept, and read for the families that rejoin the population and why. |
+| 621 | `OwnerCheck.PROBE_MONTHS` | `{ 1, 13, 37, 61, 121 }` | The months the probe prints: BO1's table's, with the founding month. |
+| 687 | `OwnerCheck.PROBE_HEADER` | `" line month people retired disp/hh pension paid careAff(SENIOR) senior pull owners' ba...` | The probe's header, above its rows. |
 
 ### PackagingCheck.java ([map](map/PackagingCheck.md))
 
@@ -8159,7 +8236,8 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 400 | `RestructureCheck.DOLLAR_ASK` | `5_000 * PriceLevel.FACTOR` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
+| 406 | `RestructureCheck.DOLLAR_ASK` | `5_000 * PriceLevel.FACTOR` | What the dollar round trip borrows: small against what its city earns, so the world's premium stays low. |
+| 409 | `RestructureCheck.DOLLAR_STRESS_SHARE` | `1.0 / 16` | The share of a full solvency stress (DebtManager.FULL_STRESS_EXPORT_YEARS of exports owed) the dollar ask is sized to: a sixteenth, a premium of a point or two. |
 
 ### RoadCheck.java ([map](map/RoadCheck.md))
 
@@ -8288,32 +8366,33 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 54 | `StaffingDrawCheck.SPARE_SHARE` | `.40` | The share of the works the village's spare workers alone fill: well under MIN_STAFFABLE_TO_ORDER, so only the draw can take it over the line. |
-| 57 | `StaffingDrawCheck.WORKFORCE_SHARE` | `.5` | The workforce as a share of the people: what Migration.drawFor() turns a draw of residents into workers by (workforce over population). |
-| 60 | `StaffingDrawCheck.MOST_WORKERS` | `5_000` | The most workers a fixture searches for a share. |
-| 63 | `StaffingDrawCheck.TOWN_WORKERS` | `100` | The workers of the town whose graduate bands are empty, half of them with a diploma: few enough that the draw, not the spare, fills the centre's diploma posts. |
-| 66 | `StaffingDrawCheck.NO_CENSUS_SPARE` | `4` | The spare workers of the city that has no census (section 9): few, so that with the workers it employs its people are fewer than the centre's addition. |
-| 69 | `StaffingDrawCheck.HOUSEHOLD_PEOPLE` | `4_000, MONTH_JOBS = 6_000, MONTH_CAPACITY = 12_000, ROOMY_DOORS = 9_000` | The people Migration's month is struck on in the fixtures that put its crowding at 1 or at 0 (ArrivalMixCheck.draw()'s figures). |
-| 72 | `StaffingDrawCheck.CENSUS_SIZES` | `6` | The household sizes a month's door census holds in the fixtures that give it one (ROOMY_DOORS split evenly over 1 to this). |
-| 75 | `StaffingDrawCheck.EQUILIBRIUM_ADULTS` | `0` | The adult share Migration's month is struck on: 0 reads the equilibrium share, the one the fresh city's residents a job already use. |
-| 78 | `StaffingDrawCheck.DEAR_RENT` | `2, DEAR_CRIME = 3` | Rent as a multiple of the target burden in section 3's dear month, and crime as a multiple of Canada's: affordabilityPull() 1/2, crimePull() 1/1.2. |
-| 81 | `StaffingDrawCheck.RUINOUS_RENT` | `10` | Rent at ten times the target: the affordability pull is a tenth, and the draw with it. |
-| 84 | `StaffingDrawCheck.MONTHS_BEFORE_SAVE` | `24, MONTHS_PLAYED = 120` | The months the twin cities are played before they are saved, and the months the played city is asked about. |
-| 86 | `StaffingDrawCheck.NONE` | `WageBand.NONE.ordinal()` |  |
-| 87 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
-| 88 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
-| 89 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 878 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
+| 56 | `StaffingDrawCheck.SPARE_SHARE` | `.40` | The share of the works the village's spare workers alone fill: well under MIN_STAFFABLE_TO_ORDER, so only the draw can take it over the line. |
+| 59 | `StaffingDrawCheck.WORKFORCE_SHARE` | `.5` | The workforce as a share of the people: what Migration.drawFor() turns a draw of residents into workers by (workforce over population). |
+| 62 | `StaffingDrawCheck.MOST_WORKERS` | `5_000` | The most workers a fixture searches for a share. |
+| 65 | `StaffingDrawCheck.TOWN_WORKERS` | `100` | The workers of the town whose graduate bands are empty, half of them with a diploma: few enough that the draw, not the spare, fills the centre's diploma posts. |
+| 68 | `StaffingDrawCheck.NO_CENSUS_SPARE` | `4` | The spare workers of the city that has no census (section 9): few, so that with the workers it employs its people are fewer than the centre's addition. |
+| 71 | `StaffingDrawCheck.HOUSEHOLD_PEOPLE` | `4_000, MONTH_JOBS = 6_000, MONTH_CAPACITY = 12_000, ROOMY_DOORS = 9_000` | The people Migration's month is struck on in the fixtures that put its crowding at 1 or at 0 (ArrivalMixCheck.draw()'s figures). |
+| 74 | `StaffingDrawCheck.CENSUS_SIZES` | `6` | The household sizes a month's door census holds in the fixtures that give it one (ROOMY_DOORS split evenly over 1 to this). |
+| 77 | `StaffingDrawCheck.EQUILIBRIUM_ADULTS` | `0` | The adult share Migration's month is struck on: 0 reads the equilibrium share, the one the fresh city's residents a job already use. |
+| 80 | `StaffingDrawCheck.DEAR_RENT` | `2, DEAR_CRIME = 3` | Rent as a multiple of the target burden in section 3's dear month, and crime as a multiple of Canada's: affordabilityPull() 1/2, crimePull() 1/1.2. |
+| 83 | `StaffingDrawCheck.RUINOUS_RENT` | `10` | Rent at ten times the target: the affordability pull is a tenth, and the draw with it. |
+| 86 | `StaffingDrawCheck.MONTHS_BEFORE_SAVE` | `24` | The months the twin cities are played before they are saved. |
+| 88 | `StaffingDrawCheck.NONE` | `WageBand.NONE.ordinal()` |  |
+| 89 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
+| 90 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
+| 91 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
+| 890 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
 
 ### StaffingTieCheck.java ([map](map/StaffingTieCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 54 | `StaffingTieCheck.MONTHS_TO_A_TIE` | `360` | The most months a fresh city is played to find a tie a planner hands in (section 1): thirty years. |
-| 57 | `StaffingTieCheck.PLAYED_MONTHS` | `120` | The months of the city section 4 plays, ten years as WantedPostsCheck's. |
-| 60 | `StaffingTieCheck.TIED_WAYS` | `2` | How many buildings share a tie that section 3 finds: the two of the fixture. |
-| 169 | `StaffingTieCheck.ANY_SHARE` | `share -> true` | The shares a tie may stand at: any (the founding's), or above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (a share the draw filled part of). |
-| 170 | `StaffingTieCheck.A_SHARE_THE_DRAW_FILLED_PART_OF` | `share -> share> 0 & & share<Sector.MIN_STAFFABLE_TO_ORDER` |  |
+| 57 | `StaffingTieCheck.SPARE_WORKERS` | `0` | The spare workers section 1 seats in the fresh city: none, so every template's share is the draw's alone (drawn over its posts, on the grid), the same at any posts, and two templates of a sector th... |
+| 63 | `StaffingTieCheck.EMPLOYED_WORKERS` | `200` | The workers the fresh city employs in posts of its own beside them: enough that the latent posts a wage is priced on (WantedPosts.settle() keeps them within the posts the city has) differ from one ... |
+| 66 | `StaffingTieCheck.PLAYED_MONTHS` | `120` | The months of the city section 4 plays for the every-month identities, ten years as WantedPostsCheck's. |
+| 69 | `StaffingTieCheck.TIED_WAYS` | `2` | How many buildings share a tie that section 3 finds: the two of the fixture. |
+| 185 | `StaffingTieCheck.NO_SHARE` | `share -> share = = 0` | The shares a tie may stand at: none (the founding's), or above 0 and under Sector.MIN_STAFFABLE_TO_ORDER (a share the draw filled part of). |
+| 186 | `StaffingTieCheck.A_SHARE_THE_DRAW_FILLED_PART_OF` | `share -> share> 0 & & share<Sector.MIN_STAFFABLE_TO_ORDER` |  |
 
 ### StaleCheck.java ([map](map/StaleCheck.md))
 
@@ -8386,9 +8465,11 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 115 | `TreasuryCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
-| 1113 | `TreasuryCheck.OPEN_SHARE` | `.5` | The share of a year's exports the six-month dollar note is sized to in the city whose window must be open: well under the one the window shuts at. |
-| 1116 | `TreasuryCheck.SHUT_SHARE` | `2` | ...and in its twin, whose window must be shut: well over it. |
+| 121 | `TreasuryCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a tenth of a cent is plenty. |
+| 1177 | `TreasuryCheck.OPEN_SHARE` | `.9` | The share of the share the window shuts at that the six-month dollar note's next year of service is, in the city whose window must be open: just under it (FS13: the exports are set by hand, so the ... |
+| 1180 | `TreasuryCheck.SHUT_SHARE` | `1.1` | ...and in its twin, whose window must be shut by that share alone: just over it. |
+| 1183 | `TreasuryCheck.DOLLAR_NOTE_IN_MINIMUMS` | `10` | The dollar note's size, in times the smallest issue the rollover makes (Game.minimumIssueSize()), so that what falls due abroad is an issue it can make. |
+| 1186 | `TreasuryCheck.NOTE_IN_SURPLUSES` | `3` | Each of the two notes falling due in the city in surplus has a cash of this many of the year's surplus, so that a surplus netted against it is part of it. |
 
 ### TruckRouteCheck.java ([map](map/TruckRouteCheck.md))
 
