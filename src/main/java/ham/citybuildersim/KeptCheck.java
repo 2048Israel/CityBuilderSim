@@ -191,7 +191,8 @@ import java.util.concurrent.TimeUnit;
  *
  * ...and the money screens (KP5), the Bank tab, the Finances tab and the city's fund, each page drawn kept from the screen's pool and built new from an
  * empty one, the clock paused so that every month counts up, a city that has paper of every kind on its books and a fund that holds:
- *  55. the Bank is kept: the Overview and the Profit page - the top nodes stay, nine in ten handed back, most months make none;
+ *  55. the Bank is kept: the Overview and the Profit page - the top nodes stay, an unchanged draw makes none, and nine in ten of what each month's
+ *      redraw draws again is handed back (FS5: a block a month makes is drawn again held still, KBP1);
  *  56. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof: the Overview, Profit in both views, the
  *      Balance sheet as a statement;
  *  57. what reshapes it keeps it right: every page in both views, a statement fold and the lines inside it opened and closed, the waterfall's year, the
@@ -201,8 +202,9 @@ import java.util.concurrent.TimeUnit;
  *  60. what reshapes it: every area and page, the bond market's fold and the book of two bonds, Borrow's every kind and term and ask, callable, the highest
  *      yield, the typed ask and every money abroad, paper sold of every kind and its line's page and Close it now from each (the boxes typed in), and the
  *      foreign default and debt result menus, each an arrival and a month later;
- *  61 to 63. the same three for the city's fund: Portfolio kept (its months make the month's events, so no month may make more than a tenth of the page)
- *      and shown; its four pages, the rows that fold, a security opened with the ticket's every choice, Search's words and chips, Activity's groups and months;
+ *  61 to 63. the same three for the city's fund, paid into when it holds nothing (FS5): Portfolio kept (its months make the month's events) and shown;
+ *      its four pages, the rows that fold, a security opened with the ticket's every choice, Search's words and chips, Activity's groups and months, and
+ *      a holding the let-go months settle, ordered by hand until one does (KFP1);
  *  64. the pictures are kept: CurveChart, DeskCurve, DeskBars, PathChart, BuybackLadder, AuctionChart, Columns, RankBar and the TimeCharts stay the nodes they
  *      were, draw again only where the month's figures moved, draw nothing on a second redraw in the same month (a TimeChart: no more than the two frames it is
  *      told), and equal a page built new;
@@ -216,8 +218,8 @@ import java.util.concurrent.TimeUnit;
  *
  * ...and the Government tab, Trade & the World with its partners page and Policy with zoning's pages (KP6), each page drawn kept from the
  * screen's pool and built new from an empty one, the clock paused so that every month counts up:
- *  69. Government is kept: each of its four pages, the top nodes stay, nine in ten handed back, most months make none (the Overview's lists show a line in
- *      the months it took in or paid out something, so there no month may make more than a tenth of the page);
+ *  69. Government is kept: each of its four pages, the top nodes stay, nine in ten of what each redraw draws again handed back (the Overview's lists show
+ *      a line in the months it took in or paid out something: a block of the month's content, traced held still);
  *  70. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof, on every page;
  *  71. what reshapes it keeps it right: every page, every fold (the treasury's month, the paper, the output's months, the bridge's two columns' "N more")
  *      and every line that opens into who pays, each opened and closed, and a door's target - each redraw, and the one after a month lands, equal to a page
@@ -251,7 +253,7 @@ import java.util.concurrent.TimeUnit;
  *
  * ...and Household money and the Rankings tab (KP7), the last two screens on the rail, so that no screen on it is rebuilt by the clock; each page drawn kept
  * from the screen's pool and built new from an empty one, the clock paused so that every month counts up:
- *  82. Household money is kept: the top nodes stay, nine in ten of the nodes handed back, most months make none;
+ *  82. Household money is kept: the top nodes stay, nine in ten of what each redraw draws again handed back;
  *  83. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof;
  *  84. what reshapes it keeps it right: each view, every cell of the grid opened (a family cell of each shape and tier with anybody in it, and every row below
  *      the rule), none, the city's month as a statement opened and closed, the books stacked under the grid (the page 1000 wide) and beside it again, and the
@@ -326,7 +328,8 @@ import java.util.concurrent.TimeUnit;
  * 102. unchanged optional state and grid constraints stay put; omitted state resets once; a foreign vitals cell gets the bar's look;
  *      real Rankings and History redraws keep their handlers and cursors; equal raw size and margin setters are counted, guarded ones skipped;
  *      a policy thumb holds across greying, ungreying and temporary reparenting in one drag, and releases at the player's snapped value;
- *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free.
+ *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free by the objects
+ *      (the live heap less the canvases' render targets a software renderer keeps on it, FS5).
  * ...and the geometry and retention repairs of FB2, each caused on its own whatever the played city does:
  * 103. the buyback ladder stays the same picture while its quote moves under the picture's resolution and draws again when it moves past it (KL1); a header
  *      tile's hidden wordings and sparkline stand where a tile built new leaves them, and a bar's tick name that comes and goes leaves no label behind it
@@ -1759,7 +1762,7 @@ public class KeptCheck {
         });
         double worst = Double.MAX_VALUE;
         String worstAt = "";
-        int worstMade = 0, worstKept = 0, repeated = 0;
+        int worstMade = 0, worstKept = 0, repeated = 0, counted = 0, readings = 0, acted = 0;
         for (Choice c : choices) {
             Object[] r = fx(() -> {
                 String premise = c.hand().on(bench);
@@ -1787,18 +1790,25 @@ public class KeptCheck {
             size = (int) r[1] == 0 ? size : (int) r[1];
             if ((boolean) r[5]) repeated++;
             if (c.acts()) {
+                acted++;
                 System.out.printf("  %s: the month after handed back %.1f%% of the page's nodes (the model acted: not counted below)%n", c.name(), (double) r[2] * 100);
             } else if ((boolean) r[6]) {
+                readings++;
                 blockReadings++;
                 System.out.printf("  %s: the month after handed back %.1f%% of the nodes it drew again, a block of the month's content (a reading: not counted below)%n",
                         c.name(), (double) r[2] * 100);
-            } else if ((double) r[2] < worst) {
-                worst = (double) r[2];
-                worstAt = c.name();
-                worstMade = (int) r[3];
-                worstKept = (int) r[4];
+            } else {
+                counted++;
+                if ((double) r[2] < worst) {
+                    worst = (double) r[2];
+                    worstAt = c.name();
+                    worstMade = (int) r[3];
+                    worstKept = (int) r[4];
+                }
             }
         }
+        System.out.printf("  the share counts %d of the %d choices' months (%d a block of the month's content, a reading; %d the model acted)%n",
+                counted, choices.size(), readings, acted);
         if (worst == Double.MAX_VALUE) System.out.println("  no choice's month was counted (each acted, or made a block of the month's content)");
         else System.out.printf("  the month's redraw after a choice handed back %.1f%% of the nodes it drew again at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
