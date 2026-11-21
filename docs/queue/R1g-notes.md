@@ -1340,3 +1340,145 @@ recognized/fitting values into Game.startOfMonthUpdate and the builders'
 material-import ledger, including repair work, to explain the 1134/1135
 split. No further JVM or source mend is authorized by this completed GO;
 report the component evidence and await the orchestrator's next instruction.
+
+## 15. Static construction/import ledger trace on frozen 627174320
+
+On the 14:51 GO, traced production source and retained matched components
+only. No JVM, compiler, scorer, monthly run or box access was started;
+WG3's dry run owns the box. Source links below pin the diagnostic's
+immutable commit, not newer main. R1g remains Pending and return to Queued
+still needs Jerus. This is a notes-only update.
+
+**What the observed zero means.** Game reads
+`construction.getRecognisedThisMonth() + getFittingThisMonth()` before
+banking, and passes that sum to NA as constructionWorkDone. Thus m1135's
+Iconst=0 is that sum, not the builders' entire sales or work/cost account.
+Recognised work includes a capped draw on the order book, signed material
+escalation, and overtime; fitting receipts are nonnegative but escalation
+refunds can be negative. Zero does not prove zero site points, no fitting
+order, or an empty order book: signed cancellation remains possible.
+
+**What the observed 3474.95812 means.** The NA getter named
+importsMaterials receives **Construction.statement().imports**, the
+builder's entire import money line. Sector.bookPurchase adds every imported
+good and bookImportedService adds imported services. It is not a measurement
+of imported Good.MATERIALS alone. Section 14's shorthand "material imports
+continue" means this NA line; it cannot assign those costs to repairs,
+sites, bitumen, equipment or foreign crews. The separate Game material
+unit/bill counters do not supply this NA argument in current source.
+
+### Source-linked flow table
+
+| channel | add/order and consumption boundary | reset/strike boundary | GDP treatment and implication |
+|---|---|---|---|
+| Site order | [Construction.bill:271][r1g-bill] adds cash to unearnedRevenue and points to backlog, not earned revenue. Game books each owner's contract and delivers any free yard material at the order. | No whole-book monthly reset; work, cancellations and refunds consume the book. | The order's cash/budget capital spending is not itself NA investment. Contract value is earned as delivered. |
+| Site work | [BuildingsStacks.advanceConstruction:489][r1g-stack] apportions materialsDue and revenueDue by applied/owed points, or takes the remainder at completion. [BuildingManager:5571][r1g-advance] sums them. | Both stack and manager clear their due accumulators at each advance; takeMaterialsDue/takeRevenueDue/takeContractsDue consume them once. | Physical site progress and the contract slice share an advance; no stack receives more points than it owes. No-work/empty-book/refund cases need their actual values to distinguish. |
+| Site purchase and recognition | [SimulationEngine:101][r1g-sim] draws the due materials, settles foreign work, calls recogniseSiteWork, then settles material escalation and control events. | drawSiteMaterials first clears siteDrawBillable; [Construction.recogniseWork:385][r1g-recognise] clears recognised/escalation/overtime/salvage-cut counters, takes max(0,min(earned,unearned)), then adds the contract revenue. | Contract work plus signed escalation plus paid overtime becomes the next strike's Iconst. Local/imported material is an intermediate input embodied in that work, not a second final purchase. |
+| Draw routing | [Game.drawMaterials:9706][r1g-draw] rounds units, takes yard only when yardFirst, then salvage, then Markets.draw for the balance. Maintenance uses yardFirst=true; sites use false because their yard share was delivered at order. | It adds materialsConsumed and the physical MATERIALS import counters; those counters are cleared after NA at 14969-70, and materialsConsumed at finalUpdateEconomy 15438. | Salvage already paid for is an input/cost without another current import; local and world purchases are recorded by the market. These Game counters are narrower than NA importsMaterials and their later values belong to another window. |
+| Goods and services ledger | [Markets.draw:483][r1g-market] calls buyer.bookPurchase for each local/world fill. [Sector:2186][r1g-purchase] puts world cost in pending.imports and bought[good].abroad. bookImportedService at 2570 adds import money and a named otherInputs entry. | [Sector.strike:2674][r1g-strike] copies pending imports, per-good splits and named inputs into Statement. bank at 2744 calls beforeBank, then clears pending and input rows. Statement maps remain the struck window. | Construction's total includes physical materials, bitumen/equipment/fuel where bought, and imported service charges. Summing all otherInputs as imports would be wrong: some names are local services or stock paid earlier. |
+| Repairs | [EconomyManager.chargeMaintenance:1175][r1g-maint] recomputes sector, city and bank bills/materials/points from the standing templates. [Game:8664][r1g-charge] draws all repair materials before the strike, pays the city's available share and records the unpaid part as owed. | chargeMaintenance clears and replaces its totals. receiveMaintenance resets repairsThisMonth on invocation and books bill minus unpaid city repairs; Game's nonpositive-bill early return bypasses that call. | [Construction.receiveMaintenance:505][r1g-repairs] explicitly excludes repairs from Iconst as intermediate upkeep of existing assets. Positive repair imports can therefore persist with Iconst=0. Amount, owner and purpose are absent from the saved components. |
+| Crew priority | [Game:1686][r1g-fitwork] computes round(max(0,gross construction output minus maintenance points)), then gives fitting jobs priority over sites. Foreign crews have their own bounded offer/settlement at 8565/8586. | Points, due work and crew needs are refreshed during the simulation pass, after the current GDP strike. | Maintenance/fittings can leave no domestic site points; this is a source-permitted route, not a measured explanation of m1134. Month-end capacity getters would describe the next advance rather than prove the points available to the previous one. |
+| Equipment fitting | [Game.fit:1619][r1g-fit] draws goods through the builder's ledger, pays goods plus work/tax, calls earnFitting and queues the fitting job. | earnFitting accumulates fittingThisMonth. NA reads it before [Construction.beforeBank:597][r1g-beforebank] clears it; Statement.otherParts already freezes "Equipment fitted". Working the job later consumes points without earning that capital twice. | The model books the fitting as capital at the order, once. Its later physical labour need not create another Iconst amount. A month-end getFittingThisMonth may already be a new window and is unsuitable for splitting the old NA sum. |
+| Foreign contractor | Construction.payForeignCrews at 320 books FOREIGN_CREWS through bookImportedService after the site advance. | Each settlement replaces its points/bill, including zero for no contractor; the service amount banks with the same ledger. | An intermediate imported service embedded in site output. It is included in the NA line called materials imports, despite having no material units. |
+| Road bitumen | [Game.drawBitumen:9605][r1g-bitumen] books Good.BITUMEN as the order is placed; [processBuildOrder:10705][r1g-order] includes it in the quoted contract, whose cash goes to bill/unearnedRevenue. | The imported cost enters the ledger immediately; contract recognition follows site delivery. | This is a source-permitted timing candidate: ordinary material is drawn with progress, bitumen is drawn at order. The NA inventory loop measures sector stock/pantry, not a separate site-material account. The retained data cannot say this seed's builder imported bitumen. |
+| NA read | [Game:14877][r1g-na-read] reads recognised+fitting, then strikes/banks sectors, then [EconomyManager:2344][r1g-na-import] reads Construction.statement.imports and passes the saved work sum to NA. | NA.update at 482 stores Iconst and appends GDP; simulation later replaces live construction work for the next strike. Private investment/orders run at 15010 after the GDP measurement. | The read-before-bank ordering preserves fitting investment. No reset between these reads explains the zero by itself. Struck Statement.otherParts is the existing safe decomposition; current live construction getters would be one window later. |
+| Inventory and government | [NationalAccounts:517][r1g-inventory] measures producer materials and all HELD stock/pantry changes, explicitly excluding the construction yard. [Game:14921][r1g-g] supplies G from service payroll/gross costs, research/transit and public IP. | City repair spending is separately set on the government budget block and counted by [NA.getTotalExpenses:1487][r1g-budget]. It is not added by that G expression. | Producer inventory is unsold output; a builder's intermediate repair bill is not new investment. A public-repair GDP coverage gap is a candidate because its budget expense is separate from G, not proof that any part of this seed's 3474.95812 is that flow. C/G and budget expense must not be conflated. |
+
+The ordering is therefore: the month/policy prices the templates; current
+repair bills/draws are added to the pending window; the prior simulation's
+work and intervening fitting receipts are read; the ledger is struck and
+banked (fitting clears); NA takes the held work sum and struck imports;
+private orders follow; simulation advances sites and resets/earns the next
+work sum, then finalUpdateEconomy clears its material-use counter. Neither
+zero inventoryMaterials (the producer's stock change) nor zero later
+utility/trade input copies tells which builder purchase made the import line.
+
+### Comparison with inherited .180
+
+Static byte/body comparison against d1d70f0aee8312bb86c888f8cf9831c71322754b
+found seven whole files unchanged: Construction, EconomyManager,
+NationalAccounts, SimulationEngine, Markets, BuildingManager and
+BuildingsStacks. Twenty selected Game/Sector methods, including their
+overloads, also match exactly: the table's main order/draw/repair/fitting/
+recognition/strike/bank methods. Evidence:
+`target/r1g/ledger-static-compare.py` and `ledger-static-compare.json`.
+The JSON SHA-256 is
+`c2eab129b57476ccf05d1943ccf7061e9ad850df0fec2ccfd996acb8b970bd84`.
+
+R1g does change inputs to that inherited machinery. Its
+[Recipes.dateHomes:369][r1g-date] reprices residential template cash/upkeep,
+material units and construction points from the saved twelve-month pay
+mean. Those current template figures feed new quotes, maintenance sums
+and loose-site point calculations. The apprentice call changes available
+trade skills; the default playtest founding changes from today to 1900;
+the captive reset changes production after a good stops being captive.
+R1g's Game diff adds the apprenticeship and save/load pay-window wiring,
+not a construction-ledger reset or NA argument change. There is no static
+merge adaptation in the traced methods. This does not establish a latent
+fault: changed inputs and a different population/stock path are not a
+counterfactual control and cannot justify a waiver.
+
+### Missing evidence and one smallest additional capture proposal
+
+The 22 struck NA readings prove the aggregate identity and crossing, but
+not the builder's signed work components or import composition. The
+seven end-state zeros still cannot prove absence of strike flows. Missing
+are (a) the struck Building work recognised/Material escalation/Overtime/
+Equipment fitted/Repairs billed parts, (b) the struck imported money by
+good and by imported-service name, and (c) the point/queue/credit cause if
+the work parts really are all zero. No current data establishes repair
+crowding, a refund cancellation, a bitumen order, or omitted public upkeep
+as the cause at 1135.
+
+Propose **one read-only Statement sidecar capture**, not a model change or
+a second policy/control town. A separately compiled diagnostic copy of
+the driver would serialize, after each completed step at **1133, 1134 and
+1135 only**, Construction.statement's imports, otherRevenue, **otherParts**,
+**bought** (Good -> atHome/abroad) and **otherInputs**, plus the retained
+struck getDrawnLocal/getDrawnImported units. These maps are already frozen
+at strike; their direct serialization needs no reconstructed flow or new
+Game field. Preserve the original cached model and four driver classes;
+compile only the diagnostic driver into a separate target directory if
+that future compile/run GO is explicitly granted. The existing scalar
+EXTRA adapter cannot address map keys, so more dotted scalar paths alone
+would not capture these categories.
+
+Keep the identical original CSV plus existing 29 extras and pinned prefix
+checker, one AUTO2 seed 1 from the same frozen model/JDK/data, ending at
+1145 or exception/stuck/180 seconds total, with no retry or fallback.
+End 1145 retains the already validated checker/annual premises; the new
+observations themselves are only three sidecar rows. Proposed fresh label
+R1gc2-ledger1-1145 would be checked unused on a future released box slot,
+after WG3's dry run. Require the full original prefix first, then reconcile
+the four named capital parts to NA Iconst, per-good abroad amounts plus
+explicit imported-service names to the builder's import total, and the
+revenue parts to its otherRevenue. Keep unclassified residuals explicit;
+do not call all otherInputs imported. If any premise or identity fails,
+return INCONCLUSIVE. Even a matched capture would classify the crossing's
+ledger channel before assigning a missing-flow fault; it would not prove
+the earlier point/credit cause. This is the sole proposed next execution,
+not prepared or run under the present static-only GO.
+
+[r1g-bill]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/sectors/Construction.java#L271
+[r1g-stack]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingsStacks.java#L489
+[r1g-advance]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/BuildingManager.java#L5571
+[r1g-sim]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/SimulationEngine.java#L101
+[r1g-recognise]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/sectors/Construction.java#L385
+[r1g-draw]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L9706
+[r1g-market]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Markets.java#L483
+[r1g-purchase]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Sector.java#L2186
+[r1g-strike]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Sector.java#L2674
+[r1g-maint]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L1175
+[r1g-charge]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L8664
+[r1g-repairs]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/sectors/Construction.java#L505
+[r1g-fitwork]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L1686
+[r1g-fit]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L1619
+[r1g-beforebank]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/sectors/Construction.java#L597
+[r1g-bitumen]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L9605
+[r1g-order]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L10705
+[r1g-na-read]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L14877
+[r1g-na-import]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/EconomyManager.java#L2344
+[r1g-inventory]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L517
+[r1g-g]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Game.java#L14921
+[r1g-budget]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L1487
+[r1g-date]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Recipes.java#L369
