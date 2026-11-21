@@ -787,9 +787,13 @@ public final class NewUnitCheck {
             filled += actual.jobs[j.ordinal()] * fill[j.ordinal()];
         }
         double fill1 = (fill0 * jobs0 + filled) / (jobs0 + posts);
-        double demand0 = f0 * base * fill0;
-        double expected = (demand0 + actual.electricity) / ((base + actual.production1) * fill1);
-        double fleetReading = (demand0 + fleet.electricity) / ((base + fleet.production1) * fill1);
+        // PW1, 2026-11-20: power is planned for the calm peak, the draw x PowerDispatch.PLAN_PEAK over the FIRM supply (the base less the wind's
+        // non-firm part): the advice's own supply and demand today (BuildAdvice.supplyDemand()) give the firm base and the peak's draw, and the
+        // added plant's draw counts at the peak as the city's does (a Coal Power Plant: its generation all firm).
+        double[] today = BuildAdvice.supplyDemand(g, power, Map.of());
+        double firm = today[0] / fill0, demand0 = today[1];
+        double expected = (demand0 + PowerDispatch.PLAN_PEAK * actual.electricity) / ((firm + actual.production1) * fill1);
+        double fleetReading = (demand0 + PowerDispatch.PLAN_PEAK * fleet.electricity) / ((firm + fleet.production1) * fill1);
         check("fixture: the utilities have posts and a fill, and a base to supply from",
                 jobs0 > 0 && fill0 > 0 && base > 0 && f0 > 0 && posts > 0, "jobs " + jobs0 + ", fill " + fill0 + " -> " + fill1 + ", base " + base + ", figure " + f0);
         check("premise: the fleet's generation would read a different figure than the actual new plant's",

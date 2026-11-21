@@ -342,12 +342,17 @@ public class ElectrolyserCheck {
     /** The works section 7 stands: enough that the saving of all of them is a good part of a Coal Power Plant. */
     static final int GRID_WORKS = 6;
 
-    /** The city's demand, the draw invoiced, the grid's ratio and the sector's own draw, as a counted state leaves them. */
-    record Grid(double demand, double billed, double ratio, double drawn) { }
+    /** The city's demand, the draw invoiced, the grid's ratio and the sector's own draw, as a counted state leaves them; and the merit order's month (PW1), its half-blocks' loads. */
+    record Grid(double demand, double billed, double ratio, double drawn, PowerDispatch.Month month) {
+        /** The peak block's load, the losses in: what a grid must carry to serve the month whole (PW1, PowerDispatch). */
+        double peak() { return month.load[2 * PowerDispatch.PEAK]; }
+    }
 
     /**
      * The city with `fitted` of the works carrying the piece: the counts set, the forms said, the services updated and, where `supply` is a number, the grid's
-     * production written over the buildings' so that it is exactly that (the utility's own division then gives the ratio: never forced here).
+     * production written over the buildings' so that it is exactly that (the merit order then gives the ratio: never forced here).
+     * PW1, 2026-11-20: the dispatch reads the plants standing, not the production written, so the grid is handed no plants (the bare fixture's
+     * path, UtilitiesHandler.updateEnergyRatio()): the production written runs as one free row of exactly that size.
      */
     static Grid grid(Game g, long fitted, double supply) {
         BuildingsStacks stack = works(g);
@@ -359,13 +364,14 @@ public class ElectrolyserCheck {
         });
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         if (!Double.isNaN(supply)) {
+            u.setPlants(null);
             u.setWattsProduction(0);
             u.updateEnergyRatio();
             double base = u.getProduction(), fill = u.getAverageUtilityFill();
             u.setWattsProduction((supply - base) / fill);
             u.updateEnergyRatio();
         }
-        return new Grid(u.getConsumption(), u.getBilledElectricityDraw(), u.getEnergyRatio(), draw(g));
+        return new Grid(u.getConsumption(), u.getBilledElectricityDraw(), u.getEnergyRatio(), draw(g), u.getLatestMonth());
     }
 
     static void seven() {
@@ -384,14 +390,21 @@ public class ElectrolyserCheck {
         near("half of them fitted, half the saving comes off the demand", off.demand() - some.demand(), (GRID_WORKS / 2) * saved, 1e-6);
         double fill = g.getServicesManager().getUtilitiesHandler().getAverageUtilityFill();
         check("fixture: the utility has staff, so its supply scales with its fill and can be written to a number", fill > 0, "" + fill);
-        double supply = (off.demand() + on.demand()) / 2;
+        // PW1, 2026-11-20: the ratio is the merit order's, by half-blocks, so the grid is sized between the two demands' peak blocks (the dispatch's own loads).
+        double supply = (off.peak() + on.peak()) / 2;
         Grid served = grid(g, GRID_WORKS, supply);
         Grid rationed = grid(g, 0, supply);
-        System.out.printf("  a grid of %,.0f units against demands of %,.0f (works fitted) and %,.0f (not): the ratio %.4f and %.4f%n", supply, on.demand(), off.demand(), served.ratio(), rationed.ratio());
-        check("a grid sized between the two demands serves the city whose works have the piece in full: the energy ratio is 1", served.ratio() == 1 && served.demand() < supply, "" + served.ratio());
-        check("...and rations the same city with the piece off its works: the ratio is under 1, the supply under the demand it has", rationed.ratio() < 1 && rationed.demand() > supply,
-                rationed.ratio() + " at demand " + rationed.demand());
-        near("...at exactly the supply over the demand (the utility's own division)", rationed.ratio(), supply / rationed.demand(), 1e-12);
+        System.out.printf("  a grid of %,.0f units against peak blocks of %,.0f (works fitted) and %,.0f (not): the ratio %.4f and %.4f%n", supply, on.peak(), off.peak(), served.ratio(), rationed.ratio());
+        check("a grid sized between the two demands' peak blocks serves the city whose works have the piece in full: the energy ratio is 1", served.ratio() == 1 && served.peak() < supply, "" + served.ratio());
+        check("...and rations the same city with the piece off its works: the ratio is under 1, the supply under the peak block it has", rationed.ratio() < 1 && rationed.peak() > supply,
+                rationed.ratio() + " at peak " + rationed.peak());
+        // ...the supply's share of what the half-blocks asked, each served up to the grid's size (PW1: the merit order's served over asked).
+        double asked = 0, met = 0;
+        for (int s = 0; s < PowerDispatch.HALVES; s++) {
+            asked += rationed.month().load[s] * PowerDispatch.halfHours(s);
+            met += Math.min(supply, rationed.month().load[s]) * PowerDispatch.halfHours(s);
+        }
+        near("...at exactly what the supply serves of the half-blocks' loads (the merit order's served over asked)", rationed.ratio(), met / asked, 1e-12);
         Grid again = grid(g, GRID_WORKS, Double.NaN);
         near("the count that comes back takes the saving off the demand again", again.demand(), on.demand(), 1e-6);
         Grid none = grid(g, 0, Double.NaN);
