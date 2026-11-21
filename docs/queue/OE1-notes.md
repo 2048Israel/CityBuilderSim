@@ -331,6 +331,12 @@ line: `householdCarImports` feeds MoneyAudit's domestic and trade scopes and `tr
 by name to FS16, which is in flight and whose sweep owns it; the orchestrator gives FS16 the pool's figures.
 Both rows are in the ship file's `## known-reds` (known-reds.sh exit 0).
 
+**The OutsideCheck row dropped** (the orchestrator, after the fourth dry run). FS16 shipped at 19:45 and its
+sweep took OutsideCheck (its notes: "OutsideCheck (2 rows, CAUSE)"). OutsideCheck passed in the fourth dry run
+on 6ac3def8a (`checks/times.tsv`: OutsideCheck exit 0). A row naming FS16 would add a known red for a green
+harness and point at a batch that has shipped, so the ship file's `## known-reds` no longer has it. CarCheck's
+row (CI1) stands.
+
 ## 11. The ensemble on 0.9.171 (OE1d) and its one finding
 
 OE1d: 80 of 80 runs on the gate box (classes of cdb8b15b3, OE1 merged with 0.9.171; the baseline's `JAVA_OPTS`
