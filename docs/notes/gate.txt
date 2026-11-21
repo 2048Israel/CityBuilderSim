@@ -1,8 +1,8 @@
-# gate of Merge batch/NG1: a month's imported inputs with no stock built read GDP negative: HL1's 2026-11-11 ensemble, seed 12 month 902, GDP -263.06 between 4,271.91 and 2,104.81 (Manufacturing imports 12,608 against 4,876 the month before, builds no stock, its exports 670 the month after; the upkeep's import 242.52 of it, -20.5 without). Find why the works import 2.6 times a month's inputs the month their exports go, book imported inputs not used as stock built, and cause the month in a harness; verify the class on the merged model and leave no new F1 finding, 0.9.173
+# gate of Merge batch/FS14: sweep: the Exchange and the bond desk (8 harnesses); takes SX2 (not beside HS1, PW1), 0.9.173
 # date: 2026-11-21
 # earth-2.bin: named
 # nightly: 2026-11-20 22:02 0.9.172 ac224abf3 4,000 months: OK in 363 s; nightly tier OK; observations: 6 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-20-ac224abf3-qgxpSQry
-# suite: 219 harnesses run in 969s: 212 passed, 7 failed
+# suite: 223 harnesses run in 737s: 218 passed, 5 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -13,18 +13,6 @@ RoadCheck | 2 FAILED
 BankCheck | exit 1
 BankCheck | it pays its savers something                               FAIL
 BankCheck | 1 FAILED
-HoldersCheck | exit 7
-HoldersCheck | the bank's share is on the month's interest bill, which it takes at the next settle FAIL  0.194501 != 0.194488
-HoldersCheck | while the bank has term paper to sell, it is all the central bank buys   FAIL
-HoldersCheck | ...onto its own book, at face                                            FAIL  353.309281 != 353.021166
-HoldersCheck | ...its gain against face in the month's profit                           FAIL  -37.764817 != -38.052933
-HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
-HoldersCheck | fixture: every till could pay its share, so nothing was cut              FAIL
-HoldersCheck | fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's FAIL
-HoldersCheck | 7 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 Forms1900Check | exit 1
 Forms1900Check | fixture: the month had homes to light and the shop sold them lamp oil                            FAIL  homes 378.2, litres 7450.3, petrol duty 0.000000
 Forms1900Check | ...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on) FAIL  404.154134 != 378.194773
@@ -32,7 +20,6 @@ Forms1900Check | 2 FAILED
 YoungBankCheck | exit 1
 YoungBankCheck | FAIL a spell under Bank.CAPITAL_RATIO begins with the write-off of a sector of one plant
 YoungBankCheck | YoungBankCheck: 1 FAILED
-ShortSellingCheck | exit 1
-ShortSellingCheck | fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on FAIL
-ShortSellingCheck | fixture: the state carries a short before the fields are taken out of it                         FAIL
-ShortSellingCheck | 2 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
