@@ -54,6 +54,9 @@ public class PowerPriceCheck {
     /** How many times the coal plant's production the short town's homes ask of the grid: past the plant and the founding grid in every season. */
     static final double SHORT_ASK = 2;
 
+    /** How many desalination plants the old save's town stands on the founding grid alone: their draw, 10,880 kW each, is past its 10,000 kW in every month. */
+    static final int OLD_SAVE_DESAL = 2;
+
     /** How many times the coal's price the shocked city's dispatch is told. */
     static final double SHOCK = 3;
 
@@ -241,6 +244,59 @@ public class PowerPriceCheck {
         double level = g.getExpectations().getStruckLevel();
         if (!(level > 0)) level = 1;
         return (unit > 0 ? unit : 1) / level;
+    }
+
+    /* ---------- the old save, for SaveFileCheck (REV-PW1c) ---------- */
+
+    /**
+     * A save from before PW1 (format 58, no powerBooks) of a city short of power loads with the ratio its load dispatched in its book, as the
+     * load handed the sectors before PW1, not the founding book's 1, and its first month runs at the ratio the save carried (Sector.restoreBills(),
+     * 0.7.63) and bills it at the founding tariff, the flat price the game billed before PW1 (REV-PW1c). THE FIXTURE CAUSES IT: HOMES homes and
+     * four grocers on the founding grid alone, with OLD_SAVE_DESAL desalination plants drawing past it, saved in its scratch folder's slot 10
+     * with the book struck out of the file. Stock templates only: town() sets the homes' draw on its game's templates, which a save does not
+     * carry, so its short town loads drawing 1 kW a home and is not short.
+     */
+    static boolean saveChecks() throws Exception {
+        Game g = new Game(GameFiles.scratch("powerprice-old-save"));
+        StringBuilder failed = new StringBuilder();
+        quietly(() -> {
+            g.newGame();
+            g.setCashForTest(Founding.WEALTHY_CASH);
+            LandManager land = g.getLandManager();
+            land.setOwnedSqFt(land.getOwnedSqFt() + 400_000_000L);
+            BuildingManager b = g.getBuildingManager();
+            String[][] orders = { { "House", "" + HOMES }, { "Small Grocery Store", "4" }, { "Paved Road", "10" } };
+            for (String[] o : orders) {
+                Game.BuildResult r = g.buildStack(b.getTemplateByName(o[0]), Integer.parseInt(o[1]), true);
+                if (r != Game.BuildResult.SUCCESS) failed.append(o[0]).append(' ').append(r).append("; ");
+            }
+        });
+        BuildingsTemplate desal = HistoricalLicenceCheck.stand(g, "Desalination Plant", OLD_SAVE_DESAL);
+        boolean stood = failed.length() == 0 && g.getBuildingManager().getStack(desal).getQuantity() == OLD_SAVE_DESAL;
+        check("fixture: the old-save town's orders and its desalination plants all stand", stood, "refused: " + failed);
+        City c = play(new City("old-save", g, false), WARM);
+        GameFiles files = c.g.getGameFiles();
+        boolean written = c.g.saveGame(10, "power before PW1").ok;
+        java.nio.file.Path file = files.saveFile(10);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonObject();
+        boolean hadBook = json.has("powerBooks");
+        json.remove("powerBooks");
+        java.nio.file.Files.writeString(file, new com.google.gson.Gson().toJson(json));
+        double savedRatio = c.u.getStruckBook().ratio;
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        UtilitiesHandler u = back.getServicesManager().getUtilitiesHandler();
+        Sector retail = back.getSectors().byKey(Sectors.RETAIL);
+        // What the load dispatched (updateServices() on the load path, the ratio the sectors were handed before PW1), the book, and what Retail runs at.
+        double computed = u.getEnergyRatio(), held = retail.getEnergyRatio(), book = u.getStruckBook().ratio;
+        double draw = retail.electricity, price = retail.pricePerWatt;
+        boolean founding = u.isFoundingBook() && price == UtilitiesHandler.FOUNDING_TARIFF;
+        quietly(() -> back.simulateMonths(1));
+        double bill = retail.statement().electricity, want = draw * savedRatio * UtilitiesHandler.FOUNDING_TARIFF;
+        System.out.printf("   saved short at %.6f; loaded without its book: dispatched %.6f, the book %.6f, Retail runs at %.6f; its first bill %s against %s%n",
+                savedRatio, computed, book, held, f(bill), f(want));
+        return stood && written && hadBook && savedRatio < 1 && founding && book < 1 && near(book, computed, 1e-9)
+                && near(held, savedRatio, 1e-12) && draw > 0 && near(bill, want, 1e-9);
     }
 
     /* =====================================================================

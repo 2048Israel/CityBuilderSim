@@ -702,9 +702,25 @@ public class UtilitiesHandler {
         return s;
     }
 
+    /** True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. */
+    private boolean seedOnLoad;
+
+    /**
+     * A save from before PW1 carries no book (REV-PW1c): it loads the founding book, and here, on the load path after updateServices() has
+     * dispatched the loaded city, that book takes the ratio just computed, the one the load handed the sectors before PW1 (they then take back
+     * the ratios their month ran at, Sector.restoreBills(), and bill the first month at them and the founding tariff, as before PW1); the next
+     * month strikes its own book. Does nothing after a save that carried one, or once done.
+     */
+    public void seedLoadedRatio() {
+        if (!seedOnLoad) return;
+        seedOnLoad = false;
+        struck.ratio = energyRatio;
+    }
+
     /** Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. */
     public void restorePowerState(PowerState s) {
         struck = s == null || s.struck == null ? Book.founding() : s.struck.copy();
+        seedOnLoad = s == null || s.struck == null;
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; return; }
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
     }

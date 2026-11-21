@@ -20739,6 +20739,8 @@ public class Game {
     // The split behind that total, because the wage tax is banded now and a
     // single figure cannot be charged at four different rates.
     economyManager.setWageDetail(populationManager.getStaffedWagePerType());
+    // ...a save from before PW1 carries no book: the founding book takes the ratio updateServices() computed above (REV-PW1c), as before PW1.
+    servicesManager.getUtilitiesHandler().seedLoadedRatio();
     // ...the struck book's ratio, as the month path hands the sectors (PW1; SimulationEngine.updateEconomy() strikes the book before it reads this).
     economyManager.setEnergyRatio(servicesManager.getUtilitiesHandler().getStruckBook().ratio);
     economyManager.setWaterRatio(servicesManager.getWaterRatio());
