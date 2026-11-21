@@ -107,9 +107,34 @@ standing-rule, spending or unresolved premise decision is left for Jerus.
   an empty diff against origin/main. Changed source and record files have
   no whitespace errors; LF is retained. Generated map/index descriptions
   were regenerated, not hand merged.
-- Merge of R1g's published main and the final-model ensemble are still
-  owed, followed by a coordinated dry run because the pick is ALL.
-  Both require the orchestrator's GO; no readiness claim is made now.
+- Mends `f431daddef4e77fef429b4ccd2642f62f29465d1` were pushed with the
+  provisional marker, and the orchestrator independently reviewed source,
+  notes, ship file, exact Game call and pick.
+
+## Final snapshot and ensemble authorization
+
+The orchestrator changed the order on 2026-11-21 (mail 370b): R1g's final
+ensemble has a hard F1 negative-GDP finding and is now Pending. WG3 proceeds
+first, without any of R1g's unpublished model. Origin/main `df12d7ae3` is a
+QUEUE-only update of .180 and was merged as `d923521c0`. Source/proofs,
+pom.xml and ensemble tools are byte-identical before/after that merge:
+src tree `792d396543a62a90cbfacfc563db1cc47d5608a5`, tools/ensemble tree
+`cd39e3ed647106973569168278d7ade6eda065d0`, pom blob
+`299d33b1324a0397d7d4f83b5c1237da3493925d`. No compile or green harness
+was replayed for this records merge. The stale binding javadoc was then
+corrected, with its generated description refreshed; no executable line or
+proof changed.
+
+GO is for one unique final-model ensemble, 80 runs (16 seeds, five policies),
+eight at once on the box, against `docs/ensemble/0.9.180.md`. Gates and the
+nightly keep priority. The local Java/javac/Maven PATH guard and a production
+box-wrapper fallback proof are required before invoking it. The laptop belongs
+to FS5: an unavailable or full box must stop, never overflow to the laptop.
+The final source snapshot is committed/pushed with the provisional marker,
+then frozen through completion, home copy and scoring. All 80 results and the
+complete baseline must be committed and hard M1/F1 reported. No dry run,
+full pick, separate playtest or readiness GO is implied by this authorization.
+R1g rebases its future work on WG3 later, rather than holding WG3 now.
 
 All worktree JVMs name main's absolute earth-2.bin and world-1.bin through
 JDK_JAVA_OPTIONS. Game checks use scratch saves only. No baseline suite of main,

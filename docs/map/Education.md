@@ -125,7 +125,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 64 | 1035 | **type** `public class Education` | Who the city teaches, what it costs, and why anybody bothers. |
-| 72 | 6 | `public void setStudyFinance(TaxPolicy tax, java.util.function.DoubleSupplier policyRate, PopulationCohorts stages)` | Game wires the live rates beside tuition prices, including after a load. |
+| 72 | 6 | `public void setStudyFinance(TaxPolicy tax, java.util.function.DoubleSupplier policyRate, PopulationCohorts stages)` | Game binds these live owners when it constructs Education, including on a load. |
 | 80 | 1 | `public void setStudyStages(PopulationCohorts stages)` | Both HS2 adult stages may study; their remaining working lives differ. |
 | 83 | 4 | `public SchoolingLadder.View schoolingLadder(LabourMarket market, AdultStage stage)` | The same pure comparison the ladder page draws, for one adult stage. |
 | 92 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |

@@ -68,7 +68,7 @@ public class Education {
     private transient java.util.function.DoubleSupplier studyPolicyRate;
     private transient PopulationCohorts studyStages;
 
-    /** Game wires the live rates beside tuition prices, including after a load. */
+    /** Game binds these live owners when it constructs Education, including on a load. */
     public void setStudyFinance(TaxPolicy tax, java.util.function.DoubleSupplier policyRate,
                                 PopulationCohorts stages) {
         studyTax = tax;
