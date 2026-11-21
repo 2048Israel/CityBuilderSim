@@ -120,6 +120,17 @@ import java.util.Set;
  *      each arm ends is printed: a 45-degree run along a shore past the last
  *      yard is left (MF2's notes, star 7).
  *
+ * 17. THE STATION'S YARD LAID SHORT IS LAID AGAIN LONGER (batch TN1, 2026-11-21,
+ *      Jerus: "trains no longer show up"): a station's yard laid short of
+ *      YARD_LONG by water in the cells is kept while the water stands, is
+ *      weighed only in January (a multiple of YARD_REWEIGH_MONTHS), and the next
+ *      January after the ground allows is laid YARD_LONG along its line - the
+ *      railway laid for it though nothing it is stamped by moved - keeping its
+ *      ask, and then stays; a station
+ *      laid at its footprint, which holds no train, on a main line that runs
+ *      off the quarter line (salt water on it) is laid again YARD_LONG along
+ *      that stretch, the track its whole length, where the trains' way reaches it.
+ *
  * WHY THIS EXISTS: batch FR0 slice M sets the main-line marks that the painter
  * already draws. A fixture CAUSES each condition, and every assertion is
  * against the model's own constants, never a bare number.
@@ -487,6 +498,7 @@ public class MainLineCheck {
         stationAlone(siteX, siteY);
         longYards(m);
         railCorner();
+        stationLengthened();
 
         System.out.println();
         System.out.println(fails == 0 ? "The main line runs to the freight station." : fails + " FAILED");
@@ -1724,6 +1736,105 @@ public class MainLineCheck {
         check("a highway's arm may still turn 90 degrees at the sea (its rules are as they were): the sharpest of its corners is " + hworst * 45, hworst == 2);
         check("...and lays the plots it laid before: " + hw.highways.plots + " of " + HIGHWAYS_GOLDEN + " (recorded on main, 0.9.49)",
                 hw.highways.plots == HIGHWAYS_GOLDEN && Arrays.hashCode(flat(hw.highways)) == HIGHWAYS_SHAPE);
+    }
+
+    /** A yard's length along its line: the longer side of its box (a box laid at a tier is longer along than across; at its footprint's own, either). */
+    static long alongOf(long[] y) { return Math.max(y[2], y[3]); }
+
+    /** Section 17: the station's yard laid short is laid again longer, once a year, where the ground now allows it (batch TN1). */
+    static void stationLengthened() {
+        System.out.println("\n--- the station's yard laid short is laid again longer (TN1) ---");
+        int[] depot = depotYard();
+        List<int[]> sizes = List.of(depot);
+        int shortest = Integer.MAX_VALUE;
+        for (int l : CityRuns.TIER_LENGTHS) shortest = Math.min(shortest, l);
+        BoxGround g = longGround();
+        CityRuns open = yardsRun(g, sizes, 0);
+        check("fixture: on open ground the station's Rail Depot is laid YARD_LONG along its line, " + CityRuns.YARD_LONG,
+                open.yards().size() == 1 && alongOf(open.yards().get(0)) == CityRuns.YARD_LONG);
+        if (open.yards().size() != 1) return;
+        long lineY = open.rail.hub()[1], hubX = open.rail.hub()[0];
+
+        // (a) Water on every cell's ring and 28 plots in (longYards()'s): the yard is laid at the mixed train's tier and kept there while the water stands.
+        int f = DistrictPlan.FRAME;
+        JunctionCheck.PatchGround within = longGround();
+        for (long x = 0; x <= f; x += CityRuns.CELL) {
+            for (long y = within.y0; y <= within.y1; y++) {
+                if (y == lineY) continue;
+                within.with(x, y, World.SALT);
+                within.with(x + 28, y, World.SALT);
+            }
+        }
+        CityRuns r = new CityRuns();
+        r.setGateway(0);
+        r.setMonth(0);
+        layYards(r, within, sizes, 0);
+        long[] laid = r.yards().isEmpty() ? null : r.yards().get(0);
+        System.out.printf("  with water in the cells: the station's box %s%n", laid == null ? "none" : Arrays.toString(laid));
+        check("fixture: with water 28 plots into every cell the station's yard is laid, short of YARD_LONG", laid != null && alongOf(laid) < CityRuns.YARD_LONG);
+        if (laid == null) return;
+        int jan = CityRuns.YARD_REWEIGH_MONTHS;
+        r.setMonth(jan);
+        layYards(r, within, sizes, 1);
+        check("weighed in January (month " + jan + ", a multiple of YARD_REWEIGH_MONTHS) on the same ground, it stays where it is: the same box (no longer box fits)",
+                r.yards().size() == 1 && r.yards().get(0) == laid);
+        r.setMonth(jan + 1);
+        layYards(r, g, sizes, 2);
+        check("the water gone, in a month that is no multiple of YARD_REWEIGH_MONTHS it is not weighed: the same box", r.yards().size() == 1 && r.yards().get(0) == laid);
+        // The next January the railway is laid with nothing it is stamped by moved (the same ground, track and sizes): it runs for the weighing.
+        r.setMonth(2 * jan);
+        layYards(r, g, sizes, 2);
+        long[] longer = r.yards().get(0);
+        int[] ln = lineOf(r, longer);
+        System.out.printf("  the water gone, the next January: the station's box %s%n", Arrays.toString(longer));
+        check("...the next January it is laid again YARD_LONG along its line, on the main line, though nothing the railway is stamped by moved (red before TN1: a yard was kept at the box it was first laid at)",
+                r.yards().size() == 1 && ln != null && ln[0] == CityRuns.YARD_LONG);
+        check("...and keeps the footprint it was asked for, " + Arrays.toString(depot), Arrays.equals(r.yardAsked(0), depot));
+        r.setMonth(10 * jan);
+        layYards(r, g, sizes, 4);
+        check("...and, YARD_LONG, it stays: laid again years later it is the same box object", r.yards().size() == 1 && r.yards().get(0) == longer);
+
+        // (b) The main line off the quarter line, as Jerus's city's ran (TN1): salt water on the quarter line's row and the row south of it, from
+        // 10 plots east of the hub to the ground's edge, so the gate arm turns a corner off the row before the water and runs on east beside it.
+        JunctionCheck.PatchGround canal = longGround();
+        for (long x = hubX + 10; x <= canal.x1; x++) {
+            canal.with(x, lineY, World.SALT);
+            canal.with(x, lineY + 1, World.SALT);
+        }
+        CityRuns c = new CityRuns();
+        c.setGateway(0);
+        c.setMonth(0);
+        layYards(c, canal, sizes, 0);
+        System.out.println("  the canal's railway: " + shape(c.rail));
+        long[] first = c.yards().isEmpty() ? null : c.yards().get(0);
+        System.out.printf("  the canal's station: %s%n", first == null ? "none" : Arrays.toString(first));
+        boolean offLine = false;
+        for (CityRuns.Arm a : c.rail.arms) {
+            for (int s = 0; s < a.segs; s++) {
+                if (CityRuns.DY[a.segHead[s]] == 0 && a.segSteps[s] >= CityRuns.YARD_LONG && Math.floorMod(a.segY[s], CityRuns.CELL) != CityRuns.RAIL_AT) offLine = true;
+            }
+        }
+        check("fixture: the main line runs east off the quarter line, a straight stretch longer than YARD_LONG", offLine);
+        check("fixture: the station's yard is laid at its footprint, shorter than the shortest train's tier (" + shortest + "): it holds no train",
+                first != null && alongOf(first) < shortest);
+        if (first == null) return;
+        c.setMonth(CityRuns.YARD_REWEIGH_MONTHS);
+        layYards(c, canal, sizes, 0);
+        long[] beside = c.yards().get(0);
+        System.out.printf("  weighed: the station's box %s%n", Arrays.toString(beside));
+        long by = -1;
+        boolean whole = alongOf(beside) == CityRuns.YARD_LONG && beside[2] == CityRuns.YARD_LONG;
+        if (whole) {
+            for (long y = beside[1]; y < beside[1] + beside[3]; y++) {
+                boolean all = true;
+                for (long x = beside[0]; x < beside[0] + beside[2]; x++) all &= CityRuns.covered(c.rail, x, y);
+                if (all) by = y;
+            }
+        }
+        check("weighed in January, the station's yard is laid again YARD_LONG along the stretch off the quarter line, the track its whole length (red before TN1)",
+                whole && by >= 0 && Math.floorMod(by, CityRuns.CELL) != CityRuns.RAIL_AT);
+        check("...on owned dry ground, off every highway: it fits", c.yardFits(beside, canal, new ArrayList<>(), new ArrayList<>()));
+        check("...and the trains' way reaches it (wayTo())", c.wayTo(beside) != null);
     }
 
     static boolean marksCarry(CityMap m, int bits) {

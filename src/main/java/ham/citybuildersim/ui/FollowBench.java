@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
@@ -40,6 +41,7 @@ import javafx.scene.input.PickResult;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -95,13 +97,28 @@ public final class FollowBench {
         System.exit(failures);
     }
 
+    /** GB5: set on the runs of a machine with no screen (the gate box's, tools/gate-box.sh), it names the display they draw on. */
+    public static final String DISPLAY_PROPERTY = "cbs.display";
+
     /**
-     * Why JavaFX cannot start here, in a few words, or null when it is up. It starts the toolkit if no check before this one has
-     * (ReplayMoveProbe's way: a second start is told the toolkit is already there, and that is an answer of yes).
+     * Why JavaFX cannot start here, in a few words, or null when it is up; every display harness starts the toolkit here. It starts
+     * it if no check before this one has (ReplayMoveProbe's way: a second start is told the toolkit is already there, and that is
+     * an answer of yes). Where -Dcbs.display names a display (the gate box's Monocle, GB5), AWT's headless says nothing of it, and
+     * a toolkit that does not come up is a FAIL and exit 1, never a skip: the box's gates judge every display harness.
      */
     public static String startJavaFx() {
+        String display = System.getProperty(DISPLAY_PROPERTY, "");
+        String down = start(display.isEmpty());
+        if (down == null || display.isEmpty()) return down;
+        String pango = down.contains("pango") ? "; the box lacks libpangoft2: sudo apt install libpangoft2-1.0-0" : "";
+        System.out.println("FAIL: the JavaFX toolkit cannot start here (" + down + "), where -D" + DISPLAY_PROPERTY + "=" + display + " names a display (GB5)" + pango);
+        System.exit(1);
+        return down;
+    }
+
+    private static String start(boolean askAwt) {
         try {
-            if (GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
+            if (askAwt && GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
             Platform.setImplicitExit(false);
             CountDownLatch up = new CountDownLatch(1);
             try {
@@ -110,10 +127,16 @@ public final class FollowBench {
                 Platform.runLater(up::countDown);
             }
             if (!up.await(60, TimeUnit.SECONDS)) return "the toolkit did not come up in 60 s";
+            // GB5: up is not yet drawing. Linux lays a line of text out through Pango, and without it a page throws at its first
+            // label and the harness hangs on the FX thread (the gate box, 2026-11-20); asked here, it is a reason in a second.
+            FutureTask<Double> line = new FutureTask<>(() -> new Text("Civic Ledger").getLayoutBounds().getWidth());
+            Platform.runLater(line);
+            line.get(60, TimeUnit.SECONDS);
             return null;
         } catch (Throwable t) {
+            while ((t instanceof ExecutionException || t.getMessage() == null) && t.getCause() != null) t = t.getCause();
             String why = t.getMessage() == null ? "" : ": " + t.getMessage().replaceAll("\\s+", " ").trim();
-            return t.getClass().getSimpleName() + why;
+            return (t.getClass().getSimpleName() + why).substring(0, Math.min(200, t.getClass().getSimpleName().length() + why.length()));
         }
     }
 

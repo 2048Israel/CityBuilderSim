@@ -18,6 +18,32 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.178 — TN1, the trains run again — 2026-11-21, ready, see docs/queue/TN1-notes.md
+Jerus: "trains no longer show up... sometimes only briefly for a few years and then disappear forever". The tonnes were railed; the
+trains had no way in. As a fjord city grows, every railway arm comes to wait at its own water, or the land past its edge is water
+within 64 plots toward the gateway and straight on, the only two ways a line to the world was tried: no line, no route, every train
+unfit. And a station laid early at its 8-plot footprint is kept at that box for good, and since FX5 holds no train. Now a railway arm
+at the edge also tries its heading turned a 45-degree corner; with no line the trains come out of a portal at the main line's end;
+and a station laid short is laid again longer each January where the ground allows, beside the quarter line for one that holds no
+train. Jerus's city (month 1,204: 29 trains, none run) runs 4 a month from the next January; the Bergen playtest 5 to 7 from its first
+station at month 840, where main ran none. MainLineCheck 17 and GatewayCheck 22 cause each and fail on main. Map only:
+the default playtest's eight trace files are byte-identical to main's.
+
+### GB5 (untagged) — the gate box runs the harnesses that need a display — 2026-11-21, ready, see docs/queue/GB5-notes.md
+The gate box has no screen, so since GB1 every gate skipped the nine harnesses that start the JavaFX toolkit, KeptCheck and KeptTimingCheck among them.
+Its gates and nights now draw them on JavaFX's Monocle, headless and in software (pom.xml, test scope), which tools/gate-box.sh names to every JVM they
+start; Linux lays text out through Pango (libpangoft2-1.0-0, which Jerus installed), and a box without it says so in one line.
+Every display harness starts the toolkit through ui.FollowBench.startJavaFx. With no display named it skips as it did, on the PC and in the cloud;
+with one named (-Dcbs.display) a toolkit that cannot start is a FAIL and exit 1, never a skip. The summary's display line lists those a run started
+(AllChecks.DISPLAY), and TimingCheck 10 guards the one start, the list and the skip. On the box KeptCheck prints the PC's 4,034 lines but its heap
+line, and KeptTimingCheck meets all 29 budgets, the worst at 0.42 of its own. The PC's runs are as they were.
+
+### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
+The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
+and targets projected subscription use of 98-99% at reset without intentionally exhausting a plan. Stale readings forbid uncertain-provider launches;
+current MemWatch advice routes within the ceiling, with explicit Codex workers while Claude is exhausted and reassessment after reset. Dispatches
+record readings and reserve forecasts, and controller handoff precedes exhaustion. This is operational policy, not a hard MemWatch launcher guard.
+
 ### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
 A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
 `buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised

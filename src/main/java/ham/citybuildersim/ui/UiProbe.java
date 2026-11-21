@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -295,20 +294,8 @@ public final class UiProbe {
         try { return Files.getLastModifiedTime(p).toMillis(); } catch (Exception e) { return -1; }
     }
 
-    /** Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up. */
-    private static String startJavaFx() {
-        try {
-            if (java.awt.GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
-            Platform.setImplicitExit(false);
-            CountDownLatch up = new CountDownLatch(1);
-            Platform.startup(up::countDown);
-            if (!up.await(60, TimeUnit.SECONDS)) return "the toolkit did not come up in 60 s";
-            return null;
-        } catch (Throwable t) {
-            String why = t.getMessage() == null ? "" : ": " + t.getMessage().replaceAll("\\s+", " ").trim();
-            return t.getClass().getSimpleName() + why;
-        }
-    }
+    /** Why JavaFX cannot start here, in a few words, or null when it is up: the one start, FollowBench's (GB5). */
+    private static String startJavaFx() { return FollowBench.startJavaFx(); }
 
     public static void main(String[] args) throws Exception {
 

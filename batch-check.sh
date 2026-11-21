@@ -168,6 +168,7 @@ if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
     grep ' OBSERVED, not counted: ' "$SUITE" | sed 's/^/observed  /'
     grep '^memory: ' "$SUITE" | sed 's/^memory: /memory    /'   # the starts the commit charge held (SP1)
+    grep '^display: ' "$SUITE" | sed 's/^display: /display   /'   # GB5: the gate box's, where none of them skips
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
     find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \
         && echo "    note: no earth-2.bin here, so the Earth harnesses' full-file sections did not run"
