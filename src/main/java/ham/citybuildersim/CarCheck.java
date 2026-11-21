@@ -1184,6 +1184,8 @@ public class CarCheck {
         report("...so each car plant makes of a car over the parts in it what it did, landed and shipped, to the cent",
                 marginsHeld(catalogue, Good.CARS, CARS_WAS_IN, CARS_WAS_OUT, carLines), String.join("; ", carLines));
 
+        drawnIsPaid(game, homes, carMarket);
+
         System.out.println();
         if (fails == 0) {
             System.out.println("The cars work: an unmotorised city is untouched, a motorised one"
@@ -1192,5 +1194,143 @@ public class CarCheck {
             System.out.println(fails + " FAILED");
         }
         System.exit(fails);
+    }
+
+    /* ===== A CAR DRAWN IS A CAR PAID FOR (OE1, 2026-11-20) ============================================================== */
+
+    /**
+     * Causes a draw the take refuses: one household's money on the whole-car edge, a car within it at the price the draw is
+     * sized at and not at the price it is struck at, and the car market's month read once.
+     *
+     * WHY: OE1's ensemble on 0.9.171 found F1 at AUTO2 seed 6 month 655, $11.42 of the households' money on no named line.
+     * Motoring sizes the draw at the quote's price per car (the cost of the cars wanted at the shelf's price, over them) and
+     * billed the take at the draw's own (the cost of the cars drawn, over them), and HouseholdBalance.takeCars read each
+     * household's want at that second price. In exact arithmetic the second is never the dearer (it is cheaper by real money
+     * when a short shelf holds the cars afforded but not the cars wanted); in doubles it can be a few bits dearer, and the
+     * household whose money stretched to a car at the one and not the other had the car drawn, booked to its seller, and
+     * never placed or paid for. This city is the buying city above, at the end of the harness, so nothing after it reads it.
+     */
+    static void drawnIsPaid(Game game, HouseholdBalance homes, GoodsMarket carMarket) {
+        System.out.println("\n--- and a car drawn is a car placed and paid for, on the whole-car edge (OE1) ---");
+        // Every household at its cushion, so none wants a car, and none holds one, so none is scrapped or offered second-hand.
+        java.util.List<Household> buyers = new java.util.ArrayList<>();
+        for (Household c : homes.cells()) {
+            if (c.isEmpty()) continue;
+            c.cars = 0;
+            c.debt = 0;
+            c.lockout = 0;
+            c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            if (c.canInvest() && !c.isGoingShort()) buyers.add(c);
+        }
+        buyers.sort((a, b) -> Double.compare(b.households, a.households));
+        /*
+         * The price the edge is put at: a hundredth under the power of two below the world's price. A price whose leading binary
+         * digits are near two is one whose product with a few cars rounds by most of a bit, which is what the quote's price per
+         * car has to do to miss the draw's; at a mantissa near one a handful of cars, all from the world, never rounds so.
+         */
+        double target = .99 * Math.pow(2, Math.floor(Math.log(carMarket.importPrice()) / Math.log(2)));
+        double[] ceiling = new double[1];
+        Runnable probe = () -> quietly(() -> {
+            // ...the month's own ceiling, read from two months nobody buys in (the second reads the road the first told).
+            game.getMotoring().month(game);
+            game.getMotoring().month(game);
+            ceiling[0] = game.getMotoring().getOwnershipCeiling();
+        });
+        Household edge = null;
+        double edgePrice = Double.NaN, shelf = Double.NaN, sizedAt = Double.NaN, wanted = 0;
+        int trials = 0;
+        search:
+        for (Household c : buyers.subList(0, Math.min(3, buyers.size()))) {
+            double cushion = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            for (double cut : new double[] {3.5, 5.5, 6.5, 7.5}) {
+                c.savings = cushion;
+                // The shelf a cut of the edge's price, so the households size the draw for several cars at it and can buy one at the world's.
+                carMarket.setLocalPrice(target / cut);
+                probe.run();
+                // ...a household of a size that wants a whole car at the ceiling, given the money (CAR_ADOPTION of its room).
+                c.savings = cushion + target / c.households;
+                if (!(homes.carsWanted(1e-9, ceiling[0]) >= 1)) {
+                    c.savings = cushion;
+                    continue;
+                }
+                // ...the spare money whose last car's price is the target: the price a household can last buy at rises with its money.
+                double lo = 0, hi = target;
+                for (int k = 0; k < 60; k++) {
+                    double mid = (lo + hi) / 2;
+                    c.savings = cushion + mid / c.households;
+                    if (firstPriceWithout(homes, ceiling[0], 1e-9, 1e12) < target) lo = mid; else hi = mid;
+                }
+                for (int t = 0; t < 400; t++) {
+                    trials++;
+                    c.savings = cushion + hi * (1 + t * 2.3e-8) / c.households;
+                    double p = firstPriceWithout(homes, ceiling[0], 1e-9, 1e12);
+                    if (!importAt(carMarket, p)) continue;
+                    double w = homes.carsWanted(carMarket.getLocalPrice(), ceiling[0]);
+                    if (!(w >= 1)) continue;
+                    Markets.Draw quote = game.getMarkets().quote(Good.CARS, w, game.getSectors());
+                    double perCar = quote.cost() / w;
+                    if (quote.local() == 0 && homes.carsWanted(perCar, ceiling[0]) >= 1) {
+                        edge = c;
+                        edgePrice = p;
+                        shelf = carMarket.getLocalPrice();
+                        sizedAt = perCar;
+                        wanted = w;
+                        break search;
+                    }
+                }
+                c.savings = cushion;
+            }
+        }
+        report("the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at",
+                edge != null && sizedAt < edgePrice && homes.carsWanted(edgePrice, ceiling[0]) == 0,
+                edge == null ? trials + " trials, no edge found"
+                        : String.format("%.0f households; %.0f cars wanted at the shelf's %.4f, a car sized at %.17g, struck at %.17g; %d trials",
+                                edge.households, wanted, shelf, sizedAt, edgePrice, trials));
+        if (edge == null) return;
+        double heldBefore = MoneyAudit.householdsHeld(game);
+        double ceilingThen = ceiling[0];
+        double[] drawn = new double[1], spend = new double[1], imports = new double[1], credit = new double[1], read = new double[1];
+        quietly(() -> {
+            game.getMotoring().month(game);
+            drawn[0] = game.getHouseholdCarsBought();
+            spend[0] = game.getHouseholdCarSpend();
+            imports[0] = game.getHouseholdCarImports();
+            credit[0] = game.getMotoring().getHouseholdCarCredit() + game.getMotoring().getUsedCarCredit();
+            read[0] = game.getMotoring().getOwnershipCeiling();
+        });
+        double moved = MoneyAudit.householdsHeld(game) - heldBefore;
+        report("...and the month is the one found: its ceiling the probe's, one car drawn from the world at the edge's price",
+                read[0] == ceilingThen && drawn[0] == 1 && imports[0] == edgePrice,
+                String.format("ceiling %.6f against %.6f, %.0f drawn, $%.4f imported", read[0], ceilingThen, drawn[0], imports[0]));
+        report("every car drawn is a car placed: the take places the car the draw was sized for",
+                homes.getCarsBought() == drawn[0] && homes.totalCars() > 0,
+                String.format("%.6f placed of %.0f drawn", homes.getCarsBought(), drawn[0]));
+        report("...and paid for: the households' money moves by what the world was paid less what the bank lent them, to the cent",
+                Math.abs(moved - (credit[0] - imports[0])) <= MoneyAudit.tolerance(imports[0])
+                        && Math.abs(spend[0] - imports[0]) <= MoneyAudit.tolerance(imports[0]),
+                String.format("held %+.6f against %+.6f (lent %.6f, imported %.6f), spent %.6f", moved, credit[0] - imports[0],
+                        credit[0], imports[0], spend[0]));
+    }
+
+    /** The cheapest price, to the bit, at which the households want no car, given one they want a car at (lo) and one they want none at (hi). */
+    static double firstPriceWithout(HouseholdBalance homes, double ceiling, double lo, double hi) {
+        long a = Double.doubleToLongBits(lo), b = Double.doubleToLongBits(hi);
+        while (b - a > 1) {
+            long mid = a + (b - a) / 2;
+            if (homes.carsWanted(Double.longBitsToDouble(mid), ceiling) >= 1) a = mid; else b = mid;
+        }
+        return Double.longBitsToDouble(b);
+    }
+
+    /** Sets the world's price of a car so the city's import price is p to the bit, if its exchange rate and freight let it be; true when it is. */
+    static boolean importAt(GoodsMarket m, double p) {
+        double x = p / m.getExchangeRate() - m.freightChange();
+        for (int k = 0; k < 64; k++) {
+            m.setWorldPrices(x, Double.NaN);
+            double got = m.importPrice();
+            if (got == p) return true;
+            x = got < p ? Math.nextUp(x) : Math.nextDown(x);
+        }
+        return false;
     }
 }

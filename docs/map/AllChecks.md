@@ -17,7 +17,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `AllChecks.HARNESSES` | `{ "CopperBufferCheck", "UndemandedFeedCheck", "BuildingDataCheck", "BrandingC...` | Every harness: the gate and nightly selections together cover this registry. |
+| 40 | `AllChecks.HARNESSES` | `{ "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDa...` | Every harness: the gate and nightly selections together cover this registry. |
 | 58 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
 | 61 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
 | 64 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (MapCheck), so 2 GB cha... |

@@ -613,11 +613,11 @@ public class CopperRefiningCheck {
         };
     }
 
-    /** One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. */
+    /** One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost, at the rate the frame weighs one new works at (city.rate(unit), OE1: a first plant's own in a sector with nothing running). */
     static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, Game g) {
         SpreadPlanner.City city = cr.planner().city(cr, plans, g);
         return ProcessingSector.estimate(t, v, city, cr.exchangeFactor(), cr.tariff(), null, 1,
-                ProcessingSector.freightRunning(t, v, city.rate(), cr.legPrice()), ProcessingSector.fleetCapital(t, v));
+                ProcessingSector.freightRunning(t, v, city.rate(city.unit(t)), cr.legPrice()), ProcessingSector.fleetCapital(t, v));
     }
 
     /* ============================ 7. the wire works' estimate ============================ */

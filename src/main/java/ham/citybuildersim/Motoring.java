@@ -351,7 +351,9 @@ public final class Motoring {
                             Good.CARS, null, Trade.HOUSEHOLDS, affordable, game.getSectors());
                     double paid = took.units() > 0 ? took.cost() / took.units() : 0;
                     householdCarsBought = took.units();
-                    householdCarSpend = householdBalance.takeCars(took.units(), paid, ceiling);
+                    // ...each household's want read at the price the draw was sized at, so the cars
+                    // placed are the cars drawn, every one paid for (OE1: AUTO2 seed 6 m655 drew 26, placed 25).
+                    householdCarSpend = householdBalance.takeCars(took.units(), paid, perCar, ceiling);
                     householdCarImports = took.importCost();
                     /*
                      * AND THE BANK FINDS THE REST OF IT (2026-09-17).

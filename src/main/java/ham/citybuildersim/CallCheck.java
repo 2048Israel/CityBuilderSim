@@ -49,6 +49,16 @@ import java.util.function.IntToDoubleFunction;
  * Each fixture causes its condition rather than finding a city in it. Run with
  * section numbers (CallCheck 1 2 3) to run just those.
  *
+ * How the played sections get theirs (FS14), one clause each:
+ *
+ * 4. both auctions clear at fair because the sale is one of saleOf()'s size and the bank is handed its room for the section's sales
+ *    (FloatLinkCheck.handBankRoom(), ASKS_OF_ROOM of them), not because an ask was found by halving it until both quotes filled; the
+ *    tails and the coupon gap are then asserted against Auction.COUPON_STEP and the tree's option spread.
+ * 5. the callable line is sold the same way (one saleOf(), the bank handed its room), and the central bank holds part of it by its dial
+ *    (CB_DIAL, set) and the months its holdings step takes (at most CB_BUYS_WITHIN_MONTHS pressed, a fixture failing past them), not by
+ *    waiting up to 24 months; the call month is moved by hand (moveFirstCallForTest()).
+ * 7. the callable line it saves is section 4's, or, run alone, one sold as section 5's is.
+ *
  * @author Jerus
  */
 public class CallCheck {
@@ -393,6 +403,28 @@ public class CallCheck {
         return n;
     }
 
+    /** FS14: the asks of section 4 the bank is handed its room for: the callable sale, the non-call one, the reopening of the callable line and the 20-year quote. */
+    static final int ASKS_OF_ROOM = 4;
+
+    /** FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. */
+    static final double CB_DIAL = .3;
+
+    /** FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. */
+    static final int CB_BUYS_WITHIN_MONTHS = 1;
+
+    /** FS14: a fixture assertion that counts its failure and says whether it held, so a section stops where what follows would read nonsense. */
+    static boolean fixture(String label, boolean ok) {
+        check(label, ok);
+        return ok;
+    }
+
+    /** FS14: the bank handed its room for this face of the city's paper (FloatLinkCheck.handBankRoom(): capital put in its till, between months), and the room asserted. */
+    static void roomFor(Game city, double face, String what) {
+        double handed = FloatLinkCheck.handBankRoom(city, face);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of D$%,.0f for %s%n", handed, face, what);
+        check("fixture: the bank has room for " + what + " (D$" + String.format("%,.0f", face) + ")", FloatLinkCheck.bankRoomOf(city) >= face);
+    }
+
     /* =====================================================================
        4. THE SALE
        ===================================================================== */
@@ -434,20 +466,22 @@ public class CallCheck {
         city.setCashForTest(Founding.WEALTHY_CASH);
         check("fixture: the city has a year of prices before it sells, so the curve it sells on already reads an inflation",
                 city.getPriceIndex().hasRate());
-        double ask = askTheMarketTakes(city);
+        // FS14: the ask is caused to be taken whole at fair, not found by halving it until both quotes filled (askTheMarketTakes(), gone): one sale
+        // of the section's size (EM1's saleOf(): the households' spare, no more than a third of a year of tax), and the bank handed its room for
+        // ASKS_OF_ROOM of them (FloatLinkCheck.handBankRoom()), which it bids at fair where the others do not, whatever the town's bidders would take.
+        double ask = saleOf(city, 1);
         double face = Math.ceil(ask / 100) * 100;
+        roomFor(city, ASKS_OF_ROOM * ask, "the section's sales");
 
         DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
         DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
-        if (!Observation.reached("fixture: both sales are quoted, for the same face",
-                !plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort(),
-                "section 4 callable-sale comparison")) return;
+        if (!fixture("fixture: both sales are quoted, for the same face",
+                !plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort())) return;
         check("the callable and plain quotes use the same requested face", plain.faceValue() == call.faceValue());
         // BA1, 2026-11-05: the section's premise is a sale the market takes at fair, and not stopping short is not it: in the 1900 town (no tax to 1916-20) the plain
         // quote stopped 16 to 28 bp over its fair yield and the callable one at it, so the coupons' gap (12.5 bp) was not the option's (31.1). The tails are asserted.
-        boolean fairTails = Observation.reached("fixture: both callable-sale auction tails are within a coupon step of fair",
-                Math.abs(plain.auction().tail()) <= Auction.COUPON_STEP + 1e-9 && Math.abs(call.auction().tail()) <= Auction.COUPON_STEP + 1e-9,
-                "coupon gap equals option spread");
+        check("fixture: both callable-sale auction tails are within a coupon step of fair",
+                Math.abs(plain.auction().tail()) <= Auction.COUPON_STEP + 1e-9 && Math.abs(call.auction().tail()) <= Auction.COUPON_STEP + 1e-9);
         check("the quote says it is callable, and the plain one not", call.callable() && !plain.callable() && plain.firstCallMonth() == -1);
         check("...and when: " + CallTree.FIRST_CALL_10Y + " years on", call.firstCallMonth() == city.getMonth() + CallTree.FIRST_CALL_10Y * 12);
         double vol = city.rateVolatility();
@@ -459,7 +493,7 @@ public class CallCheck {
                 call.auction().ask().fair() - plain.auction().ask().fair(), spread, 1e-9);
         check("the spread is positive", spread > 0);
         double gap = call.coupon() - plain.coupon();
-        if (fairTails) check("the callable coupon is over the non-call one by the spread, to within a coupon step (" + String.format("%.1f bp against %.1f", gap * 1e4, spread * 1e4) + ")",
+        check("the callable coupon is over the non-call one by the spread, to within a coupon step (" + String.format("%.1f bp against %.1f", gap * 1e4, spread * 1e4) + ")",
                 gap >= spread - Auction.COUPON_STEP - 1e-9 && gap <= spread + Auction.COUPON_STEP + 1e-9);
 
         // Sold.
@@ -537,25 +571,6 @@ public class CallCheck {
         check("the audit still closes", closes(play(city)));
     }
 
-    /**
-     * The ask the market takes whole: EM1's sale of three spares (saleOf: no more than a third of a year of tax), or the largest half of
-     * it (a half, a quarter, ...) that both the plain and the callable quote fill without stopping short at the cap. WN3: on the world's
-     * band the town's bidders take at the fair yield about half of the households' spare (the spare 302,000 of face, the bank's
-     * room 187,000): an ask of three spares sold short in both quotes (459,000 and 508,000 of face, not one face) at the cap's tail,
-     * a coupon 88 basis points over the callable's fair yield, and the line worth 106.7 per 100 and not about its face. Section 4's
-     * assertions are about a sale the market takes at fair, so the sale is sized to cause that; where the market takes three spares
-     * (the literals, the Historical path) the ask is EM1's.
-     */
-    static double askTheMarketTakes(Game city) {
-        for (double share = 3; share > 1e-3; share /= 2) {
-            double ask = saleOf(city, share);
-            DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
-            DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
-            if (!plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort() && plain.faceValue() == call.faceValue()) return ask;
-        }
-        return saleOf(city, 1e-3);
-    }
-
     /** A callable line built with another first call date is not the line a standard callable sale reopens. */
     static boolean differentCallDateIsAnotherLine(Game city) {
         DebtManager ledger = city.getDebtManager();
@@ -584,21 +599,26 @@ public class CallCheck {
 
         worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
-        quietly(() -> city.handleLongBondLogic(Math.max(100, hb.spareForPaper() * 3), 10, 100, Auction.Cap.DEFAULT, true));
+        // FS14: the sale is caused to be taken whole: one sale of the section's size (saleOf(), as section 4's) and the bank handed its room for it,
+        // where it was three of the households' spares that the town's bidders might not cover.
+        double ask = saleOf(city, 1);
+        roomFor(city, ask, "the callable sale");
+        quietly(() -> city.handleLongBondLogic(ask, 10, 100, Auction.Cap.DEFAULT, true));
         List<LongTermBond> made = callables(city);
-        if (!Observation.reached("fixture: the treasury sold a callable ten-year line",
-                made.size() == 1,
-                "section 5 call, holder waterfall and audit")) return;
-        if (made.isEmpty()) return;
+        if (!fixture("fixture: the treasury sold a callable ten-year line", made.size() == 1)) return;
         LongTermBond bond = made.get(0);
         check("fixture: ...unsettled until the month turns, and a call of it is refused", bond.unsettledFace() > 0 && !city.canCall(bond));
         play(city);
-        cb.setTargetShare(.3);
-        int guard = 0;
-        while (bond.centralBankPrincipal() <= 0 && guard++ < 24) play(city);
-        if (!Observation.reached("fixture: the central bank, on its dial, holds part of the line",
-                bond.centralBankPrincipal() > 0 && guard < 24,
-                "section 5 central-bank and market call waterfall")) return;
+        // FS14: the central bank holds part of the line by its dial and the month's holdings step (Game's holdings dial), not by waiting up to 24
+        // months for it: the dial set, and the months pressed counted, the most CB_BUYS_WITHIN_MONTHS before the fixture fails.
+        cb.setTargetShare(CB_DIAL);
+        int months = 0;
+        while (bond.centralBankPrincipal() <= 0 && months < CB_BUYS_WITHIN_MONTHS) {
+            play(city);
+            months++;
+        }
+        if (!fixture("fixture: the central bank, on its dial, holds part of the line", bond.centralBankPrincipal() > 0)) return;
+        out.printf("   the central bank, on its dial of %.0f%%, held part of the line after %d month(s)%n", CB_DIAL * 100, months);
         check("fixture: ...and the bank, the households, the businesses or the world hold the rest",
                 bond.bankPrincipal() + bond.householdPrincipal() + bond.firmPrincipal() + bond.worldPrincipal() > 0);
         city.setCashForTest(Founding.WEALTHY_CASH);
@@ -781,7 +801,10 @@ public class CallCheck {
         DebtManager ledger = city.getDebtManager();
         city.setCashForTest(Founding.WEALTHY_CASH);
         if (callables(city).isEmpty()) {
-            quietly(() -> city.handleLongBondLogic(Math.max(100, city.getHouseholdBalance().spareForPaper() * 3), 10, 100, Auction.Cap.DEFAULT, true));
+            // FS14: the sale this section falls back to when it runs alone is caused as section 5's is: one sale of saleOf()'s size, the bank handed its room.
+            double ask = saleOf(city, 1);
+            roomFor(city, ask, "the callable sale");
+            quietly(() -> city.handleLongBondLogic(ask, 10, 100, Auction.Cap.DEFAULT, true));
             play(city);
         }
         List<LongTermBond> lines = callables(city);

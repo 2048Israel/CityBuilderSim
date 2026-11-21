@@ -282,7 +282,7 @@ public class CementConcreteCheck {
                         + " its limestone at the export price for as much as was carried, to the bit",
                 carried > 0 && lime.getExported() == 0 && earns == byHand && earns > asBefore,
                 String.format("%,.0f t carried: D$%,.1fk a month, D$%,.1fk had it been priced at import", carried, earns, asBefore));
-        double kilnLime = kiln.uses(Good.LIMESTONE) * BusinessInvestment.operatingRateOf(c.getOperatingRate());
+        double kilnLime = kiln.uses(Good.LIMESTONE) * c.plannedRate(plans.newUnit(kiln));
         report("...the kiln's limestone worth D$10 a tonne at parity's export price for as much as was carried, D$40 past it",
                 Math.abs(carriedV.in(Good.LIMESTONE, kilnLime) - (Math.min(kilnLime, carried) * lime.netExportPrice()
                         + Math.max(0, kilnLime - carried) * lime.netImportPrice())) < 1e-6,
@@ -302,11 +302,11 @@ public class CementConcreteCheck {
                 before.limeIn > 0);
     }
 
-    /** One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. */
+    /** One works of `c` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost, at the rate the frame weighs one new works at (city.rate(unit), OE1: a first plant's own in a sector with nothing running). */
     static SpreadPlanner.Candidate weigh(CementConcrete c, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, Game g) {
         SpreadPlanner.City city = c.planner().city(c, plans, g);
         return ProcessingSector.estimate(t, v, city, c.exchangeFactor(), c.tariff(), null, 1,
-                ProcessingSector.freightRunning(t, v, city.rate(), c.legPrice()), ProcessingSector.fleetCapital(t, v));
+                ProcessingSector.freightRunning(t, v, city.rate(city.unit(t)), c.legPrice()), ProcessingSector.fleetCapital(t, v));
     }
 
     /** What a tonne of limestone used costs the city now (the values' in()). */

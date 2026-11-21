@@ -18,6 +18,37 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.174 — OE1, a first plant weighed at the rate it will run at — 2026-11-20, ready, see docs/queue/OE1-notes.md
+An order for a sector with nothing running weighed its first plant at the empty sector's rate, its staffing at 1:
+BankCheck 19's Lime Kiln at 0.97, which ran at 0.52-0.61, and AUTO2's Fabrication Shop at 0.81 (0.51-0.81).
+`Sector.plannedRate()` now weighs it at the rate the month will give it (`firstPlantRate()`): the city's fill over its
+own posts, the roads for its own traffic, its freight at Haulage's opening share. A running sector weighs its own rate,
+as before; every reader of the estimate takes it, and YoungBankCheck section 3 fails on the old one. The young town's
+spell under the bank's minimum, begun by a lone plant's write-off, is gone. A staffing hold weighs a first plant
+staffed (`Sector.staffed()`), so it still asks for the wage that would staff it. The household match no longer books
+its own rounding as households doubled up (`FamilyModel.packingRounding()`; HousingCheck), which had let one of
+DenominationCheck's twins' landlords sell and not the other's. BuildAdvice's field earnings stay on the mines' own
+rate (OE1-A). A car drawn is a car paid for: the take reads each household's want at the price the draw was
+sized at (`HouseholdBalance.takeCars()`), where a household on the whole-car edge had had a car drawn, booked to
+its seller and never placed (the ensemble's F1, AUTO2 seed 6 m655; CarCheck).
+
+### FS14 (untagged) — the Exchange and the bond desk cause their conditions — 2026-11-20, ready, see docs/queue/FS14-notes.md
+The sweep of the Exchange and the bond desk (FS1 study 6.13): FloatLink, Desk, Call, Holders, Bond, Equity, Exchange and ShortSelling (each
+...Check) now cause the premises they used to read off a played city. The households' savings, the bank's room, the tills, the dials and the
+due dates are set by hand between months; the waits go (FloatLink's 60 months for room, Call's 24 for the central bank, Desk's loop of rate
+rises, Bond's year of steps). SX2: ShortSelling 7's city sells the world shares and buys half back in month 61, caused as section 9 causes it,
+and the 2,000 months' audit, register and shorts-off identities stay played. Holders, Bond, Desk, FloatLink and Call drop 29 Observations and
+leave Observation.HARNESSES; Equity 9 and Exchange 10 count every holder and print their found counts. All twelve FS14 known-reds rows go
+green. Harness-only: the model and the trace do not move.
+
+### 0.9.173 — NG1, imported inputs the ground does not give are not bought — 2026-11-20, ready, see docs/queue/NG1-notes.md
+HL1's ensemble found a month (AUTO2 seed 12, m902) in which the works imported 2.6 times a month's inputs as their exports went. That month was GDP1's January stale price, closed in 0.9.97, and the seed no longer reaches it.
+The class still live was the ground: a works the ground limits ordered its inputs for its whole plant. An Iron Mine on a worked-out field bid a month's diesel after the dig had given it no ore. A surface coal mine's diesel,
+a leach plant's acid and a gold mill's acid and diesel went the same way, because an empty lift reads an order share of 1. What nothing made was imported and became nothing, and GDP fell by its value. Each building's
+inputs are now ordered for the share of its run its ground gives (Sector.groundShare). The share is exactly 1 wherever the ground holds the month, so the default playtest's eight trace files are byte-identical to main's.
+The inputs are not bought rather than held as stock: acid is a flow good nothing holds, and diesel kept by a worked-out mine would never be burned. Kept: a falling gold grade still mills its whole ore, the fleet's diesel and
+the consumables are standing bills, and inputs held over the month's end are counted in GDP's inventory term. GroundInputCheck proves the mends and what is kept.
+
 ### FS17 (untagged) — the saves, the history and the previews cause their conditions — 2026-11-20, ready, see docs/queue/FS17-notes.md
 The sweep of the saves, the history and the previews (FS1 study 6.16): SaveFile, ReadPath, Reload, History, Gdp, NewGame, PolicyPreview,
 MoneyDates, Calendar and BasketYear (each ...Check) now cause the premises they used to read off a played city; SkipReport's one section is an

@@ -51,7 +51,7 @@
 > dumps above the shed's line, and ships spare nameplate abroad when the
 > world's price clears the power it costs.
 
-**Uses:** [Good](Good.md) (23), [BusinessInvestment](BusinessInvestment.md) (11), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [NewUnit](NewUnit.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Good](Good.md) (23), [BusinessInvestment](BusinessInvestment.md) (10), [Sector](Sector.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [NewUnit](NewUnit.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 **Used by (2):** [FoodProcessingCheck](FoodProcessingCheck.md), [Sectors](Sectors.md)
 

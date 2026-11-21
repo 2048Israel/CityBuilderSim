@@ -1,4 +1,4 @@
-# SpreadPlanner.java - 650 lines · 56 methods · 6 constants · sectors
+# SpreadPlanner.java - 656 lines · 57 methods · 6 constants · sectors
 
 `ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (4 more lines in the source)
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (24), [Good](Good.md) (14), [BusinessInvestment](BusinessInvestment.md) (9), [NewUnit](NewUnit.md) (8), [Sector](Sector.md) (7), [GoodsMarket](GoodsMarket.md) (6), [Game](Game.md) (6), [Currency](Currency.md) (4), [Freight](Freight.md) (1), [Markets](Markets.md) (1), [OldMetal](OldMetal.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Refining](Refining.md) (1)
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (24), [Good](Good.md) (14), [NewUnit](NewUnit.md) (10), [BusinessInvestment](BusinessInvestment.md) (9), [Sector](Sector.md) (7), [GoodsMarket](GoodsMarket.md) (6), [Game](Game.md) (6), [Currency](Currency.md) (4), [Refining](Refining.md) (2), [Freight](Freight.md) (1), [Markets](Markets.md) (1), [OldMetal](OldMetal.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1)
 
 **Used by (43):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [ExtractionSector](ExtractionSector.md), [FittingCheck](FittingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
@@ -75,9 +75,9 @@
 | 98 | · 1. the city's own price (spec-oil 2.4, cityValue) |
 | 274 | · the study's four cases (materials-chains-research.md 2.5) |
 | 328 | · 2. and 3. a candidate, and the gates |
-| 428 | · 5. the order |
-| 460 | · 4. the money gate, one replaceable piece |
-| 600 | · 6. idle, then shed |
+| 430 | · 5. the order |
+| 462 | · 4. the money gate, one replaceable piece |
+| 606 | · 6. idle, then shed |
 
 ## Enum constants
 
@@ -99,23 +99,23 @@
 | 90 | `SpreadPlanner.FEED_GATE` | `Freight.MIN_LINE_UTILISATION` | The least share of one building's feed the spare stream must cover for it to be weighed at all: the railway's MIN_LINE_UTILISATION, nothing built to stand idle (spec-oil 2.4). |
 | 93 | `SpreadPlanner.IDLE_MONTHS` | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | Months a kind must stand idle running before its sector may sell it back (spec-oil 2.4): six, RETIREMENT_LOSS_MONTHS - as long as the spare-capacity rule waits on losses. |
 | 96 | `SpreadPlanner.IDLE_KEY` | `"idleMonths."` | The prefix of each kind's idle months in a client's saved extras. |
-| 479 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterf... |
-| 494 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessInvestment.getCostOf(... |
-| 501 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
+| 481 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterf... |
+| 496 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessInvestment.getCostOf(... |
+| 503 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 287 | `private final boolean feedAtImport, outputAtImport` |  |
-| 503 | `private MoneyGate moneyGate` |  |
-| 603 | `private final Map<String, Integer> idle` | Months each kind has stood idle running, by its name. |
+| 505 | `private MoneyGate moneyGate` |  |
+| 609 | `private final Map<String, Integer> idle` | Months each kind has stood idle running, by its name. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 564 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
+| 87 | 570 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
 
 ### 1. the city's own price (spec-oil 2.4, cityValue) (lines 98-273)
 
@@ -145,7 +145,7 @@
 | 297 | 1 | `public boolean outputAtImport()` _(in SpreadPlanner.Case)_ | Whether its output is priced at the import price (else the export price). |
 | 309 | 18 | `public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice, ToDoubleFunction<Good> exportPr...` | What a works earns a month at nameplate in one of the study's cases (pure; the study's 2.5, at parity with `factor` 1): each good it makes at the case's price for its output, less each it uses at the case's price for ... |
 
-### 2. and 3. a candidate, and the gates (lines 328-427)
+### 2. and 3. a candidate, and the gates (lines 328-429)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -155,57 +155,58 @@
 | 360 | 1 | `public boolean passes()` _(in SpreadPlanner.Candidate)_ | Whether it passes every gate. |
 | 363 | 1 | `public boolean onlyLand()` _(in SpreadPlanner.Candidate)_ | Whether ground is the one gate it fails - the refusal the player can clear, by buying ground. |
 | 366 | 1 | `public String refusal(Gate g)` _(in SpreadPlanner.Candidate)_ | A gate's refusal in words; null when it passes that gate. |
-| 370 | 27 | **type** `public interface City` | What the planner asks of the city about one building: its costs and its gates - the game's (city()) or a check's own frame. |
+| 370 | 29 | **type** `public interface City` | What the planner asks of the city about one building: its costs and its gates - the game's (city()) or a check's own frame. |
 | 372 | 1 | `double cost(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | What one costs to order, its ground with it. |
 | 374 | 1 | `double running(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's wages, power and water for one, at today's prices. |
 | 376 | 1 | `default double running(NewUnit u)` _(in SpreadPlanner.City)_ | ...for one new building already resolved (QN1): a frame that knows no unit answers running() of its template. |
 | 378 | 1 | `default NewUnit unit(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | One new building of `t` as this frame values it (QN1): the game's resolves the new unit (BusinessInvestment.newUnit()); a frame that knows none, the template as it stands. |
 | 380 | 1 | `double standing(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's repairs and property tax on one. |
 | 382 | 1 | `double rate()` _(in SpreadPlanner.City)_ | The share of nameplate the sector's buildings run at. |
-| 384 | 1 | `String land(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when there is ground for one, else why not. |
-| 386 | 1 | `String staff(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when the city could staff one, else why not. |
-| 388 | 1 | `String money(double earns, double cost)` _(in SpreadPlanner.City)_ | Null when an order earning `earns` a month and costing `cost` passes the money gate, else why not. |
-| 395 | 1 | `default String money(BuildingsTemplate t, double earns, double cost)` _(in SpreadPlanner.City)_ | ...for an order of one `t` (BA1, 2026-11-02): the gate also strikes the interest on the wait for it, which depends on the building ordered (the points it owes the builders). |
-| 399 | 3 | `public static double earns(BuildingsTemplate t, double gross, City city)` | What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. |
-| 404 | 3 | `public static double earns(NewUnit t, double gross, City city)` | ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. |
-| 415 | 12 | `public static Candidate judge(BuildingsTemplate t, double earns, double cost, String feed, City city, List<BuildingsTemplate> w...` | Asks a building every gate (pure in `city`): its feed (`feed`, the client's refusal, or null when it has the feed), the ground and the staff for `t`, and the money for `earns` on `cost`. |
+| 384 | 1 | `default double rate(NewUnit u)` _(in SpreadPlanner.City)_ | ...as an order weighs one new building at it (OE1; Sector.plannedRate()): the game's reads a first plant's own rate in a sector with nothing running; a frame that knows none, rate(). |
+| 386 | 1 | `String land(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when there is ground for one, else why not. |
+| 388 | 1 | `String staff(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when the city could staff one, else why not. |
+| 390 | 1 | `String money(double earns, double cost)` _(in SpreadPlanner.City)_ | Null when an order earning `earns` a month and costing `cost` passes the money gate, else why not. |
+| 397 | 1 | `default String money(BuildingsTemplate t, double earns, double cost)` _(in SpreadPlanner.City)_ | ...for an order of one `t` (BA1, 2026-11-02): the gate also strikes the interest on the wait for it, which depends on the building ordered (the points it owes the builders). |
+| 401 | 3 | `public static double earns(BuildingsTemplate t, double gross, City city)` | What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. |
+| 406 | 3 | `public static double earns(NewUnit t, double gross, City city)` | ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. |
+| 417 | 12 | `public static Candidate judge(BuildingsTemplate t, double earns, double cost, String feed, City city, List<BuildingsTemplate> w...` | Asks a building every gate (pure in `city`): its feed (`feed`, the client's refusal, or null when it has the feed), the ground and the staff for `t`, and the money for `earns` on `cost`. |
 
-### 5. the order (lines 428-459)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 431 | 8 | `public static Candidate best(List<Candidate> all)` | The candidate that passes every gate and earns most on its cost (the first on a tie, in the order weighed); null for none. |
-| 441 | 8 | `public static Candidate bestBlockedByLand(List<Candidate> all)` | Of the candidates whose only refusal is the ground, the one that earns most on its cost; null for none - the land office's case. |
-| 451 | 8 | `public static Candidate bestFed(List<Candidate> all)` | Of the candidates that had their feed, the one that earns most on its cost, gates or not; null when none had - what a refusal is worded by. |
-
-### 4. the money gate, one replaceable piece (lines 460-599)
+### 5. the order (lines 430-461)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 471 | 6 | **type** `public interface MoneyGate` | What the money gate tests an order on (spec-materials A): the amount the interest is struck on. |
-| 473 | 1 | `double testedOn(double cost, double cash)` _(in SpreadPlanner.MoneyGate)_ | The amount the interest is struck on, for an order costing `cost` by a sector holding `cash`. |
-| 475 | 1 | `String words()` _(in SpreadPlanner.MoneyGate)_ | The rule in a phrase, for the words. |
-| 506 | 1 | `public MoneyGate moneyGate()` | The money gate this sector's orders are tested by: DEFAULT_MONEY_GATE unless a check or a probe set another. |
-| 509 | 1 | `public void setMoneyGate(MoneyGate gate)` | A check's or a probe's: tests this sector's orders by another rule (the counterfactual); null puts the default back. |
-| 517 | 3 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, double cost)` | What a month's earnings must reach for an order of `cost` by `sector` to pass the money gate: PROFIT_OVER_INTEREST times a month's interest at the real rate on what the gate tests, as servicesItsOwnDebt() strikes it; ... |
-| 527 | 6 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double cost)` | ...for an order of `n` of `t` (BA1, 2026-11-02): what the gate tests carries the interest on the order's wait (BusinessInvestment.carryOf()), so an order years out must earn it. |
-| 535 | 3 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, double earns, double cost)` | Whether an order earning `earns` a month and costing `cost` passes the money gate: it earns something, and servicesItsOwnDebt() on what the gate tests. |
-| 547 | 7 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double earns, double...` | ...for an order of `n` of `t` (BA1, 2026-11-02): servicesItsOwnDebt() on what the gate tests grown by the wait for the building (BusinessInvestment.carryOf(), >= 1) at the rate a loan of it would be written at - an or... |
-| 556 | 3 | `private static double carryOf(BusinessInvestment plans, BuildingsTemplate t, int n, double rate)` | The factor an order's cost grows by over its wait (BusinessInvestment.carryOf()); 1 for no building. |
-| 561 | 5 | `private static double rateFor(Sector sector, Game game, double amount)` | The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. |
-| 568 | 31 | `public City city(Sector sector, BusinessInvestment plans, Game game)` | The game's answers for `sector`'s orders this month: BusinessInvestment's costs, ground and staffing, and this planner's money gate. |
+| 433 | 8 | `public static Candidate best(List<Candidate> all)` | The candidate that passes every gate and earns most on its cost (the first on a tie, in the order weighed); null for none. |
+| 443 | 8 | `public static Candidate bestBlockedByLand(List<Candidate> all)` | Of the candidates whose only refusal is the ground, the one that earns most on its cost; null for none - the land office's case. |
+| 453 | 8 | `public static Candidate bestFed(List<Candidate> all)` | Of the candidates that had their feed, the one that earns most on its cost, gates or not; null when none had - what a refusal is worded by. |
 
-### 6. idle, then shed (lines 600-650)
+### 4. the money gate, one replaceable piece (lines 462-605)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 606 | 4 | `public void noteMonth(String kind, boolean standing, boolean idleThisMonth)` | The month's end for one kind: none standing clears its count; standing and idle adds a month; standing and working starts it again. |
-| 612 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
-| 615 | 1 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running: the one its sector may sell back. |
-| 618 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
-| 623 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
-| 628 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
-| 637 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
-| 640 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
-| 647 | 3 | `public void reset()` | A founding sector: no kind idle. |
+| 473 | 6 | **type** `public interface MoneyGate` | What the money gate tests an order on (spec-materials A): the amount the interest is struck on. |
+| 475 | 1 | `double testedOn(double cost, double cash)` _(in SpreadPlanner.MoneyGate)_ | The amount the interest is struck on, for an order costing `cost` by a sector holding `cash`. |
+| 477 | 1 | `String words()` _(in SpreadPlanner.MoneyGate)_ | The rule in a phrase, for the words. |
+| 508 | 1 | `public MoneyGate moneyGate()` | The money gate this sector's orders are tested by: DEFAULT_MONEY_GATE unless a check or a probe set another. |
+| 511 | 1 | `public void setMoneyGate(MoneyGate gate)` | A check's or a probe's: tests this sector's orders by another rule (the counterfactual); null puts the default back. |
+| 519 | 3 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, double cost)` | What a month's earnings must reach for an order of `cost` by `sector` to pass the money gate: PROFIT_OVER_INTEREST times a month's interest at the real rate on what the gate tests, as servicesItsOwnDebt() strikes it; ... |
+| 529 | 6 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double cost)` | ...for an order of `n` of `t` (BA1, 2026-11-02): what the gate tests carries the interest on the order's wait (BusinessInvestment.carryOf()), so an order years out must earn it. |
+| 537 | 3 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, double earns, double cost)` | Whether an order earning `earns` a month and costing `cost` passes the money gate: it earns something, and servicesItsOwnDebt() on what the gate tests. |
+| 549 | 7 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double earns, double...` | ...for an order of `n` of `t` (BA1, 2026-11-02): servicesItsOwnDebt() on what the gate tests grown by the wait for the building (BusinessInvestment.carryOf(), >= 1) at the rate a loan of it would be written at - an or... |
+| 558 | 3 | `private static double carryOf(BusinessInvestment plans, BuildingsTemplate t, int n, double rate)` | The factor an order's cost grows by over its wait (BusinessInvestment.carryOf()); 1 for no building. |
+| 563 | 5 | `private static double rateFor(Sector sector, Game game, double amount)` | The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. |
+| 570 | 35 | `public City city(Sector sector, BusinessInvestment plans, Game game)` | The game's answers for `sector`'s orders this month: BusinessInvestment's costs, ground and staffing, and this planner's money gate. |
+
+### 6. idle, then shed (lines 606-656)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 612 | 4 | `public void noteMonth(String kind, boolean standing, boolean idleThisMonth)` | The month's end for one kind: none standing clears its count; standing and idle adds a month; standing and working starts it again. |
+| 618 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
+| 621 | 1 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running: the one its sector may sell back. |
+| 624 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
+| 629 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
+| 634 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
+| 643 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
+| 646 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
+| 653 | 3 | `public void reset()` | A founding sector: no kind idle. |
 
