@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,392 constants in 609 files.**
+**6,409 constants in 609 files.**
 
 ## model (2963 constants)
 
@@ -2717,7 +2717,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 17 | `Observation.PROPERTY` | `"cbs.observations"` | Nightly's mode records every reading, including holds, for merge attribution. |
 | 20 | `Observation.TSV_PROPERTY` | `"cbs.observations.tsv"` | The shared nightly record, harness, label and REACHED or MISSED, tab-separated. |
 | 23 | `Observation.HARNESS_PROPERTY` | `"cbs.observations.harness"` | The running harness, set on its JVM even when another harness supplies a fixture. |
-| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "SaveFileCheck", "AutoBuildCheck", "BondCheck", "...` | Every harness with path observations, also run nightly alongside HA1's tier. |
+| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "AutoBuildCheck", "BondCheck", "PriceLevelCheck",...` | Every harness with path observations, also run nightly alongside HA1's tier. |
 
 ### OilView.java ([map](map/OilView.md))
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1935 constants)
+## harnesses (1952 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5949,12 +5949,12 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 103 | `BasketYearCheck.DEFAULT` | `Founding.defaults()` |  |
-| 104 | `BasketYearCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
-| 107 | `BasketYearCheck.SETTLE` | `Forms1900Check.SETTLE` | The months a village is played before anything is asked of its shops and homes (Forms1900Check.SETTLE). |
-| 255 | `BasketYearCheck.Y1` | `1910, Y2 = 1920, Y3 = 1930` | The synthetic file's three knots, a decade apart (the harness's own figures, not the packaged file's): lamp share, coal share, cars. |
-| 256 | `BasketYearCheck.LAMP` | `{.8,.4, 0 }, COAL = {.6,.2, 0 }, CARS = { 0,.5, 1 }` |  |
-| 258 | `BasketYearCheck.LOAF_1` | `.2, LOAF_2 =.6, FLOUR_2 =.4` | LOAF is named by the first two knots, FLOUR by the second alone; a knot that does not name a good buys it whole. |
+| 104 | `BasketYearCheck.DEFAULT` | `Founding.defaults()` |  |
+| 105 | `BasketYearCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
+| 108 | `BasketYearCheck.SETTLE` | `Forms1900Check.SETTLE` | The months a village is played before anything is asked of its shops and homes (Forms1900Check.SETTLE). |
+| 256 | `BasketYearCheck.Y1` | `1910, Y2 = 1920, Y3 = 1930` | The synthetic file's three knots, a decade apart (the harness's own figures, not the packaged file's): lamp share, coal share, cars. |
+| 257 | `BasketYearCheck.LAMP` | `{.8,.4, 0 }, COAL = {.6,.2, 0 }, CARS = { 0,.5, 1 }` |  |
+| 259 | `BasketYearCheck.LOAF_1` | `.2, LOAF_2 =.6, FLOUR_2 =.4` | LOAF is named by the first two knots, FLOUR by the second alone; a knot that does not name a good buys it whole. |
 
 ### BondCheck.java ([map](map/BondCheck.md))
 
@@ -6806,6 +6806,12 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 860 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
 | 922 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
 
+### GdpCheck.java ([map](map/GdpCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 20 | `GdpCheck.MONTHS_OF_OUTPUT` | `3` | FS17: how many months of the town's last GDP a fixture's fleet, yard or shed is sized to be worth, so the month that loses it reads negative if the accounts book the loss as a fall. |
+
 ### GlobeCheck.java ([map](map/GlobeCheck.md))
 
 | line | constant | value | says |
@@ -6974,9 +6980,9 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 54 | `HistoryCheck.OUT` | `System.out` | The game narrates every month to stdout; the findings are the output here. |
-| 55 | `HistoryCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 876 | `HistoryCheck.PRICES` | `{ "minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice" }` |  |
+| 59 | `HistoryCheck.OUT` | `System.out` | The game narrates every month to stdout; the findings are the output here. |
+| 60 | `HistoryCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 936 | `HistoryCheck.PRICES` | `{ "minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice" }` |  |
 
 ### HoldersCheck.java ([map](map/HoldersCheck.md))
 
@@ -7727,8 +7733,8 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 26 | `MoneyDatesCheck.OUT` | `System.out` |  |
-| 27 | `MoneyDatesCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 30 | `MoneyDatesCheck.OUT` | `System.out` |  |
+| 31 | `MoneyDatesCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### MoneySignCheck.java ([map](map/MoneySignCheck.md))
 
@@ -7776,11 +7782,11 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 267 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1315 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1316 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1342 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1344 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 275 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
+| 1340 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1341 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1367 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1369 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ### NewUnitCheck.java ([map](map/NewUnitCheck.md))
 
@@ -7999,9 +8005,17 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 91 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 177 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
-| 249 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 99 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 185 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 281 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 481 | `PolicyPreviewCheck.BANK_PROFIT` | `10_000` | FS17: the profit the bank is given to be taxed on in section 6 (D$ thousands, founding money): the month just closed's, as Bank.chargeTax() reads it at the top of the next. |
+| 546 | `PolicyPreviewCheck.BUDGET_FUEL_DUTY` | `.0000215 * PriceLevel.FACTOR` | FS17: the fuel duty the budget twin's city charges, a dial set by hand (a tenth of the 21.5 cents the section stages over it), so the month's duty is a line with something in it. |
+| 549 | `PolicyPreviewCheck.BUDGET_SLOT` | `12, FLOORS_SLOT = 13, WAGES_SLOT = 11` | FS17: the slot of the scratch folder a twin is saved to (slots 1-9 are never written; these are the scratch folder's own). |
+| 638 | `PolicyPreviewCheck.HAND_DEPOSITS` | `1_000` | FS17: the deposits the bank is given by hand where a section needs depositors, each book's share (D$ thousands, founding money). |
+| 681 | `PolicyPreviewCheck.LADDER_POSTS` | `100` | FS17: the posts every job has on the hand-made ladder (the city's workforce is thousands, so every post is filled), and the one job the ladder gives none. |
+| 682 | `PolicyPreviewCheck.LADDER_NO_POSTS` | `JobType.UNIV_POLICY` |  |
+| 1320 | `PolicyPreviewCheck.PORT_SEA_SHARE` | `.5` | FS17: the share of the chain's dry bulk the berths are handed (LandlordPortCheck.handShares()), and the most months the berth is worked for a crew to be hired and a quote struck. |
+| 1321 | `PolicyPreviewCheck.PORT_MONTHS` | `6` |  |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 
@@ -8195,20 +8209,28 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 93 | `ReloadCheck.CHECKPOINTS` | `{ 30, 120, 360, 1200 }` | The months the live city is saved at; LongPlaytest.probePlay overshoots by a few, so a point reads g.getMonth(). |
-| 96 | `ReloadCheck.EARTH_CHECKPOINT` | `120` | The month the Earth city is saved at (section 4). |
-| 99 | `ReloadCheck.EARTH_SPOT` | `"rotterdam"` | Where section 4's city is founded: the real Earth round Rotterdam, as LongPlaytest --earth rotterdam plays it. |
-| 102 | `ReloadCheck.CAUSED_STOP` | `"the reload check's own sudden stop"` | The words of the sudden stop the harness starts on the live city before its caused point (FB3, FW6-C): no checkpoint of the probe city is in a stop, and the words ride in a String no array carries. |
-| 105 | `ReloadCheck.HAND_ORDER_SHARE` | `.5` | The share of what the makers of one good hold that the harness's hand order between the presses takes (FB3, FW6-C): part of it, so the order is all filled at home and none imported. |
-| 108 | `ReloadCheck.CARRY_SAW` | `"cities that carried limestone into aggregate"` | What the carry's fixture counts (FB3, FW6-C): also how main() asks whether any checkpoint carried limestone before it places one. |
-| 111 | `ReloadCheck.CAUSED_CARRY` | `100` | The tonnes of limestone the harness places as a carry when no checkpoint's city had one (FB3, FW6-C). |
-| 114 | `ReloadCheck.NEVER_FILLED` | `Set.of(Good.BUILDING_WORK)` | The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. |
-| 117 | `ReloadCheck.SKIP_MONTHS` | `2` | A time skip of section 3f: two months, so it is a skip (the game autosaves before one), and two are run on each city. |
-| 120 | `ReloadCheck.CENT` | `0.005` | Two numbers are the same when they differ by no more than a cent... |
-| 123 | `ReloadCheck.RELATIVE` | `1e-9` | ...and by no more than a billionth of the larger (or of 1, for the tiny). |
-| 131 | `ReloadCheck.EXEMPT` | `Set.of("slotName", "savedAt")` | The keys no two saves of one city share, whatever it did: the slot's name and the time it was written. |
-| 134 | `ReloadCheck.SHOWN` | `12` | How many differing paths a failing line lists, each with both values; the rest is counted. |
-| 136 | `ReloadCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 108 | `ReloadCheck.CHECKPOINTS` | `{ 30, 120, 360, 1200 }` | The months the live city is saved at; LongPlaytest.probePlay overshoots by a few, so a point reads g.getMonth(). |
+| 111 | `ReloadCheck.EARTH_CHECKPOINT` | `120` | The month the Earth city is saved at (section 4). |
+| 114 | `ReloadCheck.EARTH_SPOT` | `"rotterdam"` | Where section 4's city is founded: the real Earth round Rotterdam, as LongPlaytest --earth rotterdam plays it. |
+| 117 | `ReloadCheck.CAUSED_STOP` | `"the reload check's own sudden stop"` | The words of the sudden stop the harness starts on the live city before its caused point (FB3, FW6-C): no checkpoint of the probe city is in a stop, and the words ride in a String no array carries. |
+| 120 | `ReloadCheck.HAND_ORDER_SHARE` | `.5` | The share of what the makers of one good hold that the harness's hand order between the presses takes (FB3, FW6-C): part of it, so the order is all filled at home and none imported. |
+| 123 | `ReloadCheck.CARRY_SAW` | `"cities that carried limestone into aggregate"` | What the carry's fixture counts (FB3, FW6-C). |
+| 126 | `ReloadCheck.CAUSED_CARRY` | `100` | The tonnes of limestone the harness places as a carry on the caused point (FB3, FW6-C; every time since FS17, not only when no checkpoint's city had one). |
+| 129 | `ReloadCheck.CAUSED_TALLY` | `{ 120, 80, 300, 700, 650, 40 }` | The month's tally the harness puts on one market of the caused point (FS17): the goods imported, exported, filled at home, offered, bid for and drawn since the strike, each above zero and none the ... |
+| 132 | `ReloadCheck.CAUSED_PRICE_MOVE` | `1.25` | How far the harness moves the price of the good its hand order draws, between the month's close and the next (FS17): so the makers' stock of it is revalued by a figure that is not zero. |
+| 135 | `ReloadCheck.CAUSED_ORDER` | `5` | The Houses the harness orders on the caused point (FS17): the crews draw materials for them in the month on. |
+| 138 | `ReloadCheck.CAUSED_CITY` | `"Danzik, caused"` | The name of the caused point's city, which the by-hand fixtures look it up by (FS17). |
+| 141 | `ReloadCheck.NEVER_FILLED` | `Set.of(Good.BUILDING_WORK)` | The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. |
+| 144 | `ReloadCheck.SKIP_MONTHS` | `2` | A time skip of section 3f: two months, so it is a skip (the game autosaves before one), and two are run on each city. |
+| 147 | `ReloadCheck.CAUSED_OUTBREAK` | `(Health.OUTBREAK_MIN_PEAK + Health.OUTBREAK_MAX_PEAK) / 2` | The outbreak the harness puts in force on both twins of the caused point before their skips (FS17): the middle of the model's peaks, which Health's decay leaves over its floor through both skips, s... |
+| 150 | `ReloadCheck.CAUSED_SHARES` | `{ 1200, 480, 13.5, 15.25, 1,.75, 3.25 }` | The shares the harness puts on one sector's book of the caused point for this month (FS17): each slot of SectorBooks.SHARES_SLOTS a figure of its own (shares, outstanding, price, fair value, traded... |
+| 153 | `ReloadCheck.CAUSED_SHARES_BEFORE` | `{ 1100, 450, 12.5, 14.25, 0,.5, 3 }` | ...and for last month, every slot different from this month's, and not traded (FS17). |
+| 156 | `ReloadCheck.CAUSED_TRADE_UNITS` | `1, CAUSED_TRADE_PRICE = 1` | The units and the price of the trade the harness places by hand on each seller-priced market's list after the first month on (FS17), so the second month has a trade of the first to clear. |
+| 159 | `ReloadCheck.CENT` | `0.005` | Two numbers are the same when they differ by no more than a cent... |
+| 162 | `ReloadCheck.RELATIVE` | `1e-9` | ...and by no more than a billionth of the larger (or of 1, for the tiny). |
+| 170 | `ReloadCheck.EXEMPT` | `Set.of("slotName", "savedAt")` | The keys no two saves of one city share, whatever it did: the slot's name and the time it was written. |
+| 173 | `ReloadCheck.SHOWN` | `12` | How many differing paths a failing line lists, each with both values; the rest is counted. |
+| 175 | `ReloadCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### ReplayCheck.java ([map](map/ReplayCheck.md))
 
@@ -8288,7 +8310,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4120 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4149 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 

@@ -8,6 +8,9 @@ import java.nio.file.Path;
 /**
  * The date on the status bar, and the log of what the city has finished.
  *
+ * FS17: section 6 CAUSES its premise - it plays until the six houses it orders are in the log, inside the months the model's own queue gives
+ * them (the points owed on site over the capacity a month), where it used to play a fixed 24 months and read the log.
+ *
  * Both are new and both are the kind of thing that looks obviously right and is
  * quietly off by one. The calendar in particular has two independent chances to
  * be wrong - the epoch and the modulo - and they cancel out at exactly the point
@@ -216,22 +219,41 @@ public class CalendarCheck {
         /* ==================== 6. through a real month ==================== */
         System.out.println("\n--- a city actually finishing something ---");
 
+        /*
+         * FS17: this played a fixed 24 months "long enough for six houses to
+         * top out" and read the log - a number of months that was the played
+         * city's, not the model's. It plays until the stack is complete: a
+         * month at a time while fewer than the six ordered are in the log, no
+         * more months than the model's own queue gives them - the points owed
+         * on site over what the city turns out a month (the queue length in
+         * months, BuildingManager.getRemainingConstructionPoints()'s doc) -
+         * and that bound is a fixture: if the houses are not in the log inside
+         * it the fixture fails, not the log.
+         */
+        final int ordered = 6;
+        long housesBefore = housesLogged(g);
+        int queue, played = 0;
         System.setOut(quiet);
         try {
-            BuildingsTemplate house = g.getBuildingManager().getTemplateByName("House");
-            g.buildStack(house, 6, false);
-            // Long enough for six houses to actually top out.
-            g.simulateMonths(24);
+            BuildingManager works = g.getBuildingManager();
+            BuildingsTemplate house = works.getTemplateByName("House");
+            g.buildStack(house, ordered, false);
+            long capacity = works.getTotalConstructionCapacity();
+            queue = capacity > 0 ? (int) Math.ceil(works.pointsOwedOnSite() / capacity) : 0;
+            while (housesLogged(g) - housesBefore < ordered && played < queue) {
+                g.simulateMonths(1);
+                played++;
+            }
         } finally { System.setOut(out); }
+        System.out.println("   " + ordered + " houses ordered, the model's queue for them " + queue + " months, finished after " + played);
+        assertTrue("fixture: the six houses are finished inside the months the model's own queue gives them",
+                housesLogged(g) - housesBefore >= ordered);
 
         java.util.List<BuildLog.Entry> live = g.getBuildLog().recent(g.getMonth());
         assertTrue("the city logged what it finished", !live.isEmpty());
 
-        long houses = 0;
-        for (BuildLog.Entry e : live) {
-            if ("House".equals(e.building)) houses += e.quantity;
-        }
-        assertTrue("...and the houses are in it (" + houses + ")", houses >= 6);
+        long houses = housesLogged(g);
+        assertTrue("...and the houses are in it (" + houses + ")", houses - housesBefore >= ordered);
 
         // Every entry must be stamped with a month that actually happened.
         boolean sane = true;
@@ -270,6 +292,15 @@ public class CalendarCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
+    }
+
+    /** FS17: the houses the city's own log holds, every month it kept. */
+    static long housesLogged(Game g) {
+        long houses = 0;
+        for (BuildLog.Entry e : g.getBuildLog().recent(g.getMonth())) {
+            if ("House".equals(e.building)) houses += e.quantity;
+        }
+        return houses;
     }
 
     static void cleanUp(Path root) {
