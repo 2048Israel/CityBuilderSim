@@ -2353,3 +2353,122 @@ Only these notes change in the versioned tree. No compile/JVM/BOXaccess/
 poll/measurement/dump/run/fast/pick/rejudge/ensemble/dry/readiness/publication
 or registry edit, no other process stopped. Notes-only provisional
 checkpoint; no owned job. Await root review/separate GO.
+
+
+## Root GO89ae: ONE isolated BOX compile, no model/runtime GO
+
+Root accepted ignored v2 sources/pins for this compile stage only. FS5
+remains blocked/Pending with provisional marker, four unchanged vetoes and
+KHL1Pending. Versioned KeptCheck/Observation/KeptBench/source tree remains
+aa570/c518908bbc58374df1b680830be6990f7067aa63. No model/harness mend or
+shipped machinery change. Different overlay bytecode/JIT/VM and NEW
+diagnostic provenance remain explicit; no stopped-heap byte attribution.
+
+ONE compile job label: FS5c2-heap-compile-89ae-0a4e20cf7164642c.
+New BOX run /home/jerus/cbs/runs/FS5c2-heap-compile-89ae-0a4e20cf7164642c;
+verified homecopy at target/FS5c2-heap-compile-89ae-0a4e20cf7164642c.
+No original gate clone/run was touched. gate.env was sourced before java/
+javac resolution; selected BOTH from /home/jerus/cbs/jdk-21.0.13+9/bin,
+actual release Eclipse Adoptium/Temurin-21.0.13+9. Exact gate.env file bytes
+were not sealed; selected paths/release and five JDK file hashes were.
+No java/version-probe/local javac/Maven fallback occurred; local dispatch
+allows SSH only and explicitly refuses local Java/javac/Maven fallback.
+
+The accepted2438-file native-built base class/resource capsule was verified
+before packing, with exact relative paths and SHA256, then all2438 files
+verified on BOX after copy and after compile, and original local capsule
+verified again after homecopy. No replacement base/model/source/Maven
+compile fallback. Source/src tree and reviewed overlay/helper/patch pins
+match. Input archive15902650 bytes, SHA256:
+c3419ae296b93f68cc617d81fc3232a4d3581dd7da7ce17fb284069af327628a.
+
+Remote preflight checked gate/nightly priority once and took box.lock
+exclusive/nonblocking; no competing owner polling/wait. One javac phase
+only, exit0: --release21 --add-modules jdk.management -proc:none
+-implicit:none, explicit EMPTY sourcepath/NEW empty output, encodingUTF-8,
+explicit reviewed overlay KeptCheck.java and FS5PostHeapCapture.java ONLY.
+Base classes plus ten current Linux JavaFX21/Monocle21.0.2/Gson2.10.1 jars
+formed the pinned classpath. No processor, model compilation or helper/path
+smoke test. No Java mainSections/model month/display/GC/dump run occurred;
+the only JVM was the authorized javac compiler JVM.
+
+Linux dependencies, five selected JDK files/release and two actual data
+files match byte-for-byte before/after compile. Current Linux data SHA256:
+earth c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b;
+world fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1.
+These match kept7's hashed data but do NOT recover historical pcPZSnVc
+input bytes or class/JDK identity. The current compiled base is explicitly
+the accepted native-built capsule, not recovered old BOX binaries.
+
+Remote javac PID/group2478403 was waited/reaped and group gone; remote
+owner2478399 actually exited with SSH0, own box lock released, all29 copied
+artifacts verified. Total elapsed7.088s includes local capsule verification/
+packing, preflight/upload/compile/homecopy/postverification; remote3.312s.
+This is within the300s total/no extension, not a model performance result.
+Compiler log empty, no source change/retry. Homecopy archive SHA256:
+7f198b2c18608a6e1d1cb34d75b1c3ff3ba6d463d38c68d338313d84a2fa2893.
+No owned process/lock remains. Only after real terminal/copy verification
+were these notes edited. Exactly19 allowed output classes follow; complete
+manifests/argv/JDK/dependency/data hashes and before/after receipts are under
+the homecopy result directory and compile-stage-audit.json.
+
+| Emitted class under ham/citybuildersim | SHA256 |
+|---|---|
+| FS5PostHeapCapture.class | be366a3cf2e7e23ab4af610cfd5b236d16c44c21abb4b2b9995d19304e66fee8 |
+| KeptCheck$1.class | a20fce6b28ce0e346ff5fc276ad7f8ad2620e0f8310bb7c282fa4cdbd331b05f |
+| KeptCheck$1Quiet.class | 065072734b6a07cc29dba9053c0a7f6eae95b2abe47b835f1d4cbd7b72c00c8d |
+| KeptCheck$1Where.class | e5510b95fb78a9e3bd2bddc4eea57029840bc983fc88a5d3bf0faa0482ccd95a |
+| KeptCheck$2.class | 9a748394558c4e36e74c62026cf27c94346f3445178f551a022089fabda15472 |
+| KeptCheck$2Where.class | b489ec31b950c0abd258087a8c802ef71e13a6da006c4c8db158d1c1e1fbf5e9 |
+| KeptCheck$AtOnce.class | ec7861afb0ffc474521f39a50b1efe7c4b03fe8f450da431619ac719f230f504 |
+| KeptCheck$Choice.class | ee625b1503bb1e5d98e0344f98ca72cf5def96107af6c73d0325c8692b0e26a8 |
+| KeptCheck$Greyed.class | 8afa87dcf94acd33e00ec6cab9313c32955cbc0a477eee18079f90a48b7fb9dd |
+| KeptCheck$Hand.class | a02917082c32f454eb9a0ba9838f6dbb745fb226d66bd6ce28305c2203bfec95 |
+| KeptCheck$HealthcareCapture.class | 10ad956edcd1a1f428594f658e482efdba51679c94a14cdc1c7c2ae8330ffaaf |
+| KeptCheck$Held.class | f289edb6d9c44bbe47494a2d932a324b5c7038ef5112d96b22d7ab0baca27ace |
+| KeptCheck$MonthHand.class | 434a618c2e60bc1ef8100a9559aaf560768a38ca326de26e7aeeacb0e8aa7182 |
+| KeptCheck$RailScreen.class | 45bd7471d2ffc124ad06c836f58e44f6357fb76382e83866f34ef15398042081 |
+| KeptCheck$Redraws.class | 79c1ae971fdfd9bd9107dbad3bee3e32f2102828796c1e735f94baa80799f1f9 |
+| KeptCheck$SectorKinds.class | 75ff9d796028810cdfb007054e66a0a795325b0c53cfc7827fc77ac882d8b5b8 |
+| KeptCheck$Spot.class | a2ea64e8e89ecdbfbf91059fd29d9cfe72e1d52b763e51357f9045898a121648 |
+| KeptCheck$Verify.class | 0e736c12e1ac0e02c85bbe202a2e02336672f8790585fe8edc1e5cb1c0ffc0ac |
+| KeptCheck.class | bd5205cb494098c7bfc0446b55d5c59d7711a862127f32b9b7547e44fc1666ea |
+
+Future preparation ONLY is under future-runtime-PROPOSAL/: runtime-plan.json,
+future-supervisor.DRAFT.py, launch.properties.template, JDK/deps/data hash
+manifests, proposal-manifest.json and REVIEW.md. No runtime source was
+executed or syntax/typechecked, no capture parent or dump was created and
+runtime disk checks have NOT run. Draft supervisor has no executable entry
+point. Proposed nonce/absolute parent, fixed leaves,0700/umask077 ownership,
+reviewed argv/pins, before/after/terminal receipt and both-end>=12GiB
+requirements are explicit. Proposed limits:1800s total INCLUDING homecopy,
+180s after dump-begin, copy up to600s WITHIN total. None is accepted or
+finalized without separate root runtime/disk/deadline review/GO.
+
+Runtime plan SHA256:
+a7cf7631aa0408058dd2a96f54010c70aa8acce52037ecb09259cf382265ee68.
+The local foreground runtime/copy driver remains a REVIEW ITEM: it must
+seal relocated plan/template/pins, source gate.env, enforce both-end space
+and exact selected JDK, stream multi-GiB homecopy instead of in-memory tar,
+verify all output hashes/sizes, and preserve originals/partials on failure.
+Remote draft alone does not implement or prove cross-machine copy. Its
+template path is local now and must be relocated/pinned before runtime.
+No end-to-end lifecycle test/ready-to-launch claim is made.
+
+Dump/copy cost is unknown:~2GiB heap plus potentially substantial HPROF
+object-ID/record overhead. This15.9MB/7.09s compile transfer does not predict
+multi-GiB dump/copy speed and is no45s promise. Foreground ownership must
+continue through actual owned JVM/group/supervisor exit and verified copy,
+with own-only PID/start-tick recovery on SSH loss, terminal lock release,
+partial preservation, no retries/extension/competing-owner stop. A deadline
+stop is INCOMPLETE nonzero. Normal PASS=>NOT_TRIGGERED/no retry/fishing/
+waiver/old-fault attribution; FAIL remains FAIL even if a dump succeeds.
+
+Reviewed ignored source pins remain overlaya1fd6e15334e6a4d842f3dcf0be9c4106cd1bdaef4e49fd852ce4258677af5cb,
+helper8d901ec8c78d10cbd1f2b7ae016aa2a2a0142bde64f16383700ab655c680f22e,
+manifestfc825bfa7b455685076e6d51ad4c4223da0bd53fe9a4c33f48fc52341670ff10.
+Versioned process counts819/809 and registry819/829 remain unchanged.
+Only notes change; source/classes/registry/ship/old evidence remain intact.
+No model/helper JVM, dump, version probe, wrapper/fast/pick/rejudge/ensemble/
+dry/gate/readiness/waiver/publication run. Notes-only provisional checkpoint;
+no owned job. Await separate root runtime/disk/deadline review/GO.
