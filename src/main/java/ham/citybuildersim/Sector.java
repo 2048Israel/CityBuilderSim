@@ -3530,11 +3530,40 @@ public abstract class Sector {
     /** Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. */
     protected double committedInput(Good g) { return 0; }
 
-    /** Units of an input its buildings use a month at the shares they run at (THE ORDER): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass. */
+    /* ----- THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) -----
+       A works the ground limits orders its inputs for what the ground gives
+       it this month, not for its plant. WHY: an Iron Mine on a worked-out
+       field still bid the diesel of a whole month's ore after groundLimit()
+       had dug it none, and a Surface Coal Mine's diesel, a leach plant's acid
+       and a gold mill's acid and diesel went the same way, their lift the
+       nameplate the order was struck on (an empty lift reads order share 1)
+       while inputToMake() asked the whole plant's recipe. What nothing made
+       was bought, landed in the imports and became nothing: no output, no
+       stock, a fall in GDP of its value with nothing on the other side. The
+       ground is known before the inputs clear (a flow good's dig comes out
+       of produceFlow(), ahead of the market; a stockable good's lift is
+       madeAtRate()), so the order follows it, and no input is bought that
+       the month's run does not use (★ NG1: not held as stock: acid is a flow
+       good nothing holds, and diesel kept by a worked-out mine would never
+       be burned). Consumables and the fleet's diesel are not in it: they are
+       the plant's standing bills at its rate, as an idle plant's are (THE
+       ORDER leaves them out for the same reason). */
+
+    /**
+     * The share of a building's run at the rate that its ground lets it make this month (NG1): exactly 1 for a building no ground
+     * limits and wherever the ground holds its whole ask, so the order is what it was to the bit; under 1 only where the ground ran short.
+     * The ground-limited sectors say it (ExtractionSector's dig, Coal Mining's lift, Copper Mining's leach, Gold Mining's ore).
+     */
+    protected double groundShare(BuildingsTemplate t) { return 1; }
+
+    /**
+     * Units of an input its buildings use a month at the shares they run at (THE ORDER), each held to what its ground gives it
+     * (groundShare(), NG1): getInputAtCapacity(), to the bit, while every share is 1 and outside the market pass.
+     */
     protected double inputToMake(Good g) {
         if (!ordering) return getInputAtCapacity(g);
         if (buildings == null) return 0;
-        double base = buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t));
+        double base = buildings.totalBySector(key, t -> t.uses(g) * buildingOrder(t) * groundShare(t));
         // ...and a form's use of it past its buildings (R0c): this branch does not go through getInputAtCapacity(), so it adds the form itself.
         double form = formInput(g, true);
         return form > 0 ? base + form : base;

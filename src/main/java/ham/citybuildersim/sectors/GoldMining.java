@@ -50,6 +50,18 @@ public final class GoldMining extends ExtractionSector {
         return game.getLandManager().goldOutput(getCapacity(g) * getOperatingRate());
     }
 
+    /**
+     * The share of the mill's ore throughput its ground still gives it this month (Sector.groundShare(), NG1;
+     * LandManager.goldOreShare(), the walk madeAtRate() reads): exactly 1 while the fields hold the month's ore, whatever their
+     * grade - a falling grade mills the same ore for fewer ounces, and its acid and diesel are used - and 0 once they are worked
+     * out, so a mill with no ore under it buys none. ExtractionSector's for a building that mills no gold.
+     */
+    @Override
+    protected double groundShare(BuildingsTemplate t) {
+        if (game == null || !(t.makes(Good.GOLD) > 0)) return super.groundShare(t);
+        return game.getLandManager().goldOreShare(getCapacity(Good.GOLD) * getOperatingRate());
+    }
+
     /** Bullion is offered straight from the mill to its buyer. */
     @Override
     public double getPlannedOutput(Good g) {

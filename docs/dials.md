@@ -2,7 +2,7 @@
 
 Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,409 constants in 609 files.**
+**6,426 constants in 610 files.**
 
 ## model (2963 constants)
 
@@ -1698,7 +1698,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.172"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.173"` | Bump on release. |
 | 8357 | `GameVersion.SAVE_FORMAT` | `58` | The save shape. |
 | 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `58` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2288,8 +2288,8 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 246 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001 * PriceLevel.FACTOR` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
 | 333 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
 | 1051 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2600 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 3121 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2617 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 3138 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -2717,7 +2717,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 17 | `Observation.PROPERTY` | `"cbs.observations"` | Nightly's mode records every reading, including holds, for merge attribution. |
 | 20 | `Observation.TSV_PROPERTY` | `"cbs.observations.tsv"` | The shared nightly record, harness, label and REACHED or MISSED, tab-separated. |
 | 23 | `Observation.HARNESS_PROPERTY` | `"cbs.observations.harness"` | The running harness, set on its JVM even when another harness supplies a fixture. |
-| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "HoldersCheck", "AutoBuildCheck", "BondCheck", "PriceLevelCheck",...` | Every harness with path observations, also run nightly alongside HA1's tier. |
+| 26 | `Observation.HARNESSES` | `List.of("ScaleCheck", "AutoBuildCheck", "PriceLevelCheck", "FittingCheck", "BuildAdvice...` | Every harness with path observations, also run nightly alongside HA1's tier. |
 
 ### OilView.java ([map](map/OilView.md))
 
@@ -3225,7 +3225,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2824 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
 | 2827 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
 | 3257 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not... |
-| 3559 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
+| 3588 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
 
 ### SectorBooks.java ([map](map/SectorBooks.md))
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1952 constants)
+## harnesses (1969 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5870,7 +5870,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `AllChecks.HARNESSES` | `{ "CopperBufferCheck", "UndemandedFeedCheck", "BuildingDataCheck", "BrandingCheck", "Cr...` | Every harness: the gate and nightly selections together cover this registry. |
+| 40 | `AllChecks.HARNESSES` | `{ "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", ...` | Every harness: the gate and nightly selections together cover this registry. |
 | 58 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
 | 61 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
 | 64 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (Ma... |
@@ -5960,7 +5960,7 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 120 | `BondCheck.ISSUER` | `Sectors.CONSTRUCTION` | The sector every played fixture's bond is issued by: sound, owing nothing, with plant to borrow against. |
+| 144 | `BondCheck.ISSUER` | `Sectors.CONSTRUCTION` | The sector every played fixture's bond is issued by: sound, owing nothing, with plant to borrow against. |
 
 ### BridgeCheck.java ([map](map/BridgeCheck.md))
 
@@ -6050,8 +6050,11 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 127 | `CallCheck.ROW_MONTHS` | `{ 12, 24, 60, 120, 240, 360, 600 }` | The study's calm city (spec section 3.3): the 1-year zero rate and the zero rate at 2, 5, 10, 20, 30 and 50 years. |
-| 128 | `CallCheck.ROW_ZERO` | `{.0312,.0318,.0335,.0362,.0402,.0427,.0462 }` |  |
+| 137 | `CallCheck.ROW_MONTHS` | `{ 12, 24, 60, 120, 240, 360, 600 }` | The study's calm city (spec section 3.3): the 1-year zero rate and the zero rate at 2, 5, 10, 20, 30 and 50 years. |
+| 138 | `CallCheck.ROW_ZERO` | `{.0312,.0318,.0335,.0362,.0402,.0427,.0462 }` |  |
+| 407 | `CallCheck.ASKS_OF_ROOM` | `4` | FS14: the asks of section 4 the bank is handed its room for: the callable sale, the non-call one, the reopening of the callable line and the 20-year quote. |
+| 410 | `CallCheck.CB_DIAL` | `.3` | FS14: the central bank's dial in section 5: a share of the city's term paper to hold, 30%. |
+| 413 | `CallCheck.CB_BUYS_WITHIN_MONTHS` | `1` | FS14: the most months section 5 presses, after the dial is set, for the central bank to hold part of the line: its holdings step moves it in the first. |
 
 ### CarCheck.java ([map](map/CarCheck.md))
 
@@ -6381,6 +6384,17 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1087 | `DenominationCheck.LANES_FROM_LAT` | `44.65, LANES_FROM_LON = - 63.57` | Where the lanes of cardAndLanes() are drawn from: Halifax, as GlobeCheck's city. |
 | 1090 | `DenominationCheck.GIVEN_FLOORS` | `2` | How many times the plain city's floor a partner is given in the month the card and the lanes read (FS2, givePartner()). |
 
+### DeskCheck.java ([map](map/DeskCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 129 | `DeskCheck.DIAL_RISE` | `5 * DebtManager.A_POINT` | FS14: the rise of the dial that puts a line sold near par under what it is carried at: five points, the model's A_POINT five times (sections 3, 4 and 6). |
+| 1094 | `DeskCheck.DIAL_UP` | `.07` | FS14: the dial put up in month DIAL_UP_MONTH of the 26 pressed: seven per cent, five points over DIAL_DOWN. |
+| 1097 | `DeskCheck.DIAL_DOWN` | `.02` | FS14: the dial put down in month DIAL_DOWN_MONTH: two per cent, under the three the played city holds it at. |
+| 1100 | `DeskCheck.PAST_TOLD_APART` | `2 * DebtManager.A_POINT` | FS14: the least the shortest tenor of the curve a year before the last month must stand over the last's for the past to be told from the present: two points, of the five the dial moved between them. |
+| 1103 | `DeskCheck.DIAL_UP_MONTH` | `9` | FS14: the month of the 26 pressed at which the dial is put up, before its press. |
+| 1106 | `DeskCheck.DIAL_DOWN_MONTH` | `17` | FS14: the month of the 26 pressed at which the dial is put down, before its press. |
+
 ### DeterminismCheck.java ([map](map/DeterminismCheck.md))
 
 | line | constant | value | says |
@@ -6608,11 +6622,11 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 95 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
-| 96 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
-| 106 | `ExchangeCheck.TODAYS_DOLLAR` | `PriceLevel.FACTOR` | THE FIXTURES' DOLLAR IS TODAY'S (EP1). |
-| 113 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
-| 115 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
+| 99 | `ExchangeCheck.W` | `DebtManager.WORLD_BASE_RATE` |  |
+| 100 | `ExchangeCheck.N` | `Equity.COMPANIES.length` |  |
+| 110 | `ExchangeCheck.TODAYS_DOLLAR` | `PriceLevel.FACTOR` | THE FIXTURES' DOLLAR IS TODAY'S (EP1). |
+| 117 | `ExchangeCheck.HURDLE` | `W + Equity.FOREIGN_PREMIUM` |  |
+| 119 | `ExchangeCheck.DEPOSIT_AT_HURDLE` | `HURDLE - Exchange.HOUSEHOLD_PREMIUM` | A deposit rate at which a cell neither buys nor sells a share returning the required return (EM1): the best alternative plus the premium is that return, and it is inside the band either side. |
 
 ### ExchangeRateCheck.java ([map](map/ExchangeRateCheck.md))
 
@@ -6673,26 +6687,28 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 189 | `FloatLinkCheck.audits` | `new Tally()` |  |
-| 192 | `FloatLinkCheck.ran` | `new boolean [ 10 ]` | Which of sections 3-5 have run, for section 6 to know what it can ask of the months they pressed. |
-| 208 | `FloatLinkCheck.X_HOLDERS` | `new Worst()` | Each holder was paid its share of every coupon: households, businesses, the world, the central bank. |
-| 210 | `FloatLinkCheck.X_TREASURY` | `new Worst()` | The cash coupons the pieces paid are what the treasury paid on its interest line, the uplift paid beside it. |
-| 212 | `FloatLinkCheck.X_BOOKS` | `new Worst()` | The debt manager's month and the statements' lines are the sums of the pieces' months. |
-| 214 | `FloatLinkCheck.X_NOTCASH` | `new Worst()` | The bridge's not-cash row is the expense the cash never paid. |
-| 216 | `FloatLinkCheck.X_FOOTS` | `new Worst()` | The bridge foots through its journal and its residual. |
-| 218 | `FloatLinkCheck.X_BRIDGE` | `new Worst()` | The bridge's residual is the bank's coupon timing and nothing else: the uplift is not in it. |
-| 220 | `FloatLinkCheck.X_EARNED` | `new Worst()` | The walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and nothing of the uplift. |
-| 603 | `FloatLinkCheck.ROOM_WAIT_MONTHS` | `60` | BA1: the most months the played city is given past its settling for the bank to have room for its sales. |
-| 606 | `FloatLinkCheck.ROOM_FOR_SALES` | `8` | BA1: the bank's room for the sales of a section, as a multiple of the one section 2 makes (saleOf(city, 1): the households' whole spare, no more than a third of a year of tax): that section sells s... |
-| 609 | `FloatLinkCheck.EFFECTIVE_OFF_COUPON` | `5e-4` | BA1: the most a floater's effective rate may stand off its coupon, the fixed fee of the sale's share of it included (5 basis points): SALE_EFF's and section 3's bound, and what readyCity() sizes th... |
-| 678 | `FloatLinkCheck.SALE_OF_REVENUE` | `1./ 3` | The most one sale of section 2 and 3's fixture is, of a year's tax revenue (EM1, 2026-10-29). |
-| 807 | `FloatLinkCheck.floaters` | `new ArrayList<>()` |  |
-| 808 | `FloatLinkCheck.linkers` | `new ArrayList<>()` |  |
-| 815 | `FloatLinkCheck.CAP_TAIL` | `.0025` | A tail the harness caps the sale at, to cause one: a sale far past the bids stops at the cap. |
-| 817 | `FloatLinkCheck.SALE_MARGIN` | `new Worst(), SALE_INDEX = new Worst(), SALE_CASH = new Worst(), SALE_BOOKS = new Worst(...` |  |
-| 1033 | `FloatLinkCheck.HELD_OVER_THE_WORLD` | `.0075, DIAL_MOVE =.015` | How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. |
-| 1279 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
-| 1280 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
+| 204 | `FloatLinkCheck.audits` | `new Tally()` |  |
+| 207 | `FloatLinkCheck.ran` | `new boolean [ 10 ]` | Which of sections 3-5 have run, for section 6 to know what it can ask of the months they pressed. |
+| 223 | `FloatLinkCheck.X_HOLDERS` | `new Worst()` | Each holder was paid its share of every coupon: households, businesses, the world, the central bank. |
+| 225 | `FloatLinkCheck.X_TREASURY` | `new Worst()` | The cash coupons the pieces paid are what the treasury paid on its interest line, the uplift paid beside it. |
+| 227 | `FloatLinkCheck.X_BOOKS` | `new Worst()` | The debt manager's month and the statements' lines are the sums of the pieces' months. |
+| 229 | `FloatLinkCheck.X_NOTCASH` | `new Worst()` | The bridge's not-cash row is the expense the cash never paid. |
+| 231 | `FloatLinkCheck.X_FOOTS` | `new Worst()` | The bridge foots through its journal and its residual. |
+| 233 | `FloatLinkCheck.X_BRIDGE` | `new Worst()` | The bridge's residual is the bank's coupon timing and nothing else: the uplift is not in it. |
+| 235 | `FloatLinkCheck.X_EARNED` | `new Worst()` | The walk from EARNED to the budget leaves what EARNED never counted - the coupons paid beyond the bank - and nothing of the uplift. |
+| 618 | `FloatLinkCheck.DECLINE_WAIT_MONTHS` | `36` | FS14: the most months the played city is given past its settling for no tier to be in decline. |
+| 621 | `FloatLinkCheck.ROOM_FOR_SALES` | `8` | BA1: the bank's room for the sales of a section, as a multiple of the one section 2 makes (saleOf(city, 1): the households' whole spare, no more than a third of a year of tax): that section sells s... |
+| 624 | `FloatLinkCheck.EFFECTIVE_OFF_COUPON` | `5e-4` | BA1: the most a floater's effective rate may stand off its coupon, the fixed fee of the sale's share of it included (5 basis points): SALE_EFF's and section 3's bound, and what readyCity() sizes th... |
+| 673 | `FloatLinkCheck.SPARE_OVER_LEAST_SALE` | `4` | FS14: the spare for paper readyCity() hands the households when theirs is less, as a multiple of the least sale the fee needs (leastSale()): at exactly the least sale the fee's share is the allowan... |
+| 676 | `FloatLinkCheck.ROOM_HANDED_OVER` | `1.001` | FS14: the room readyCity() hands the bank is this much over the sales' face, so the last place of a float never decides it. |
+| 769 | `FloatLinkCheck.SALE_OF_REVENUE` | `1./ 3` | The most one sale of section 2 and 3's fixture is, of a year's tax revenue (EM1, 2026-10-29). |
+| 898 | `FloatLinkCheck.floaters` | `new ArrayList<>()` |  |
+| 899 | `FloatLinkCheck.linkers` | `new ArrayList<>()` |  |
+| 906 | `FloatLinkCheck.CAP_TAIL` | `.0025` | A tail the harness caps the sale at, to cause one: a sale far past the bids stops at the cap. |
+| 908 | `FloatLinkCheck.SALE_MARGIN` | `new Worst(), SALE_INDEX = new Worst(), SALE_CASH = new Worst(), SALE_BOOKS = new Worst(...` |  |
+| 1124 | `FloatLinkCheck.HELD_OVER_THE_WORLD` | `.0075, DIAL_MOVE =.015` | How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. |
+| 1370 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
+| 1371 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
 
 ### FoodIndustryCheck.java ([map](map/FoodIndustryCheck.md))
 
@@ -6951,6 +6967,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 73 | `GridCheck.TIMING_RUNS` | `7` | Runs owner()'s timing takes the median of: seven, as the spec's benchmarks did. |
 | 76 | `GridCheck.TIMED_PLOTS` | `2_000_000` | Random plots owner() is timed on in each run: 2,000,000, as the spec's benchmark. |
 
+### GroundInputCheck.java ([map](map/GroundInputCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 45 | `GroundInputCheck.out` | `System.out` |  |
+| 46 | `GroundInputCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+
 ### HaulageCheck.java ([map](map/HaulageCheck.md))
 
 | line | constant | value | says |
@@ -6988,10 +7011,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1277 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
-| 1688 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on n... |
-| 1833 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
-| 2007 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
+| 195 | `HoldersCheck.SPARE_MONTHS` | `12` | How many months of its disposable income past its cushion every household is given to put into paper, so what they can spend on it is set, not found. |
+| 1364 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
+| 1775 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on n... |
+| 1781 | `HoldersCheck.HOUSEHOLDS_AT_FAIR` | `.75` | The households' share of an issue at the curve's fair yield, which splitTheSale() sets the deposit rate to give them: three quarters, so the bank, the step bidder at fair and the residual buyer, is... |
+| 1797 | `HoldersCheck.BILL_FLOORS_CARRIED` | `2` | How many times the least discount a bill can carry the bank is made to carry on 13c's first sale, so the bill it sells back is not bigger than what the bank carries (the accretion of the month in b... |
+| 1979 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
+| 2148 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
 
 ### HomeRailCheck.java ([map](map/HomeRailCheck.md))
 
@@ -8379,12 +8405,13 @@ Generated 2026-11-20 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 91 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
-| 151 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
-| 152 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
-| 235 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
-| 350 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1051 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 94 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
+| 154 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
+| 155 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
+| 238 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
+| 353 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
+| 1060 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 1068 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold mo... |
 
 ### SlopeCheck.java ([map](map/SlopeCheck.md))
 
