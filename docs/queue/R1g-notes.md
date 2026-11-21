@@ -911,3 +911,42 @@ mover and has its ensemble go on that baseline. R1g's final ensemble stays
 held until PW1 publishes; then merge its new main and compare the newest
 baseline on the orchestrator's explicit ordering go. Dry run, full pick,
 playtest and other long JVMs remain held. No foreground wait is started.
+
+## 10. Main 0.9.180 merged; the final box ensemble
+
+On the orchestrator's 13:36 go, main d1d70f0aee8312bb86c888f8cf9831c71322754b
+(PW1, 0.9.180) merged at bb34ad4b5e9a533ddc929a59458c8601d56a49bf. All
+conflicts were generated indexes and were regenerated. No source conflict
+or manual semantic money/save/thread integration edit was needed. A
+normalized source-delta comparison preserves every approved R1g addition
+and removal relative to the new main; AllChecks' Village1900Check insertion
+is checked structurally alongside PW1's new harnesses. The existing proof
+files, review records and ship file were preserved, including the marker.
+Evidence is `target/r1g/main180-preserve.json` and `main180-verify.py`.
+
+PW1's struck power book, class-specific tariff reads and fuel settlement
+are inherited as published. R1g's saved pay window still restores before
+Recipes.apply, and its captive reset and gross-diploma wiring remain in
+place. Recipe/fit pricing reads the published class tariff without widening
+the advice cache's lifetime or changing its pure reading. No new save
+conversion or threading change is introduced by this integration.
+`./batch-check.sh --fast` exited 0: compile 40 seconds, indexes regenerated,
+Stale zero firm findings (`target/r1g/main180-fast.txt`, `.exit`). No
+Village/Reload or other standalone long check was replayed.
+
+The authorized final-model ensemble uses the unused label R1gc2-final180,
+80 runs (sixteen seeds under AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK and HIGH),
+eight at once on the gate box, against `docs/ensemble/0.9.180.md`. The label
+was checked unused both locally and across the box's cbs folders; the
+run/copy destinations resolve inside this worktree's target/ensemble.
+The published helper retains gate/nightly priority. Local Java, javac and
+Maven commands are guarded in this invocation, so an automatic box-down or
+box-full fallback cannot start a laptop-heavy run while FS5 is pending.
+The source is frozen and pushed before the snapshot; results and actual
+snapshot provenance are recorded after completion and home scoring.
+
+WG3's separate request for a future Game education-finance hook was routed
+to the orchestrator, not added to this frozen model; its unmerged Education
+API and policy work are outside this run. The marker stays in place. The
+final baseline must be committed as docs/ensemble/R1g.md before asking for
+dry-run go; no dry run, full pick or standalone playtest is authorized yet.
