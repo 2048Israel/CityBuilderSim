@@ -1007,3 +1007,149 @@ new harness, standalone playtest or dry run has started.
 Shipping is blocked on F1. Request the orchestrator's GO and slot for the
 smallest seed-1 GDP component trace around month 1135 before any new run
 or model change. Dry-run GO is not requested while the hard failures stand.
+
+## 12. Saved-evidence GDP trace and one proposed bounded diagnostic
+
+On the orchestrator's 14:12 instruction, inspected saved files and source
+only. No JVM, model mend or new run was started. The orchestrator owns
+R1g's move to Pending. The source, SHIP review, proofs, failed final
+baseline and provisional marker remain frozen.
+
+### What the saved run proves
+
+AUTO2 seed 1 and ZERO_SLACK seed 1 have 1,799 identical rows in all 67
+non-phase columns, months 2 through 1800 inclusive. Their phase labels
+are `auto` and `pre`; the held-rate switch has not happened at either
+finding. This is one shared failing path, not two independent policy
+failures. The retained CSVs have 68 columns and no GDP components or
+annual GDP column. Selected actual readings are:
+
+| month | monthly GDP | trailing 12 monthly GDPs, summed from CSV | population |
+|---|---:|---:|---:|
+| 1133 | 2548.959930 | 28260.247870 | 11394 |
+| 1134 | 1308.731190 | 27292.729880 | 11387 |
+| 1135 | -360.892347 | 24690.692113 | 11379 |
+| 1144 | -382.774105 | 112.829002 | 11318 |
+| 1145 | -268.652449 | -2704.783377 | 11304 |
+
+The first monthly flag is at 1135. The monthly readings from 1135 through
+1145 are all negative; the annual flag at 1145 is consistent with their
+trailing sum becoming negative. These are sums of serialized nine-digit
+readings, not recovered full-precision annual values; their distance from
+zero makes the two annual signs unambiguous. The annual flag does not
+require a separate annual-calculation fault to explain it. Both saved
+finding months have audit_ok 1 and audit_residual 0.
+
+The saved state also shows stress before the first negative GDP: Retail's
+coverage and delivered-share columns are zero at 1131 already, hunger is
+about .998, and served power alternates between 1 and about .058-.070 in
+this window. At 1135 power is 1; at 1145 it is .0584890373. These are
+correlations and month-end readings, not GDP components or proof of which
+flow went missing. Works remains on with 38 cumulative orders at both
+finding months. No causal attribution follows from those counters.
+
+The two retained seed-1 logs contain only 120-month progress lines and
+DONE, with no GDP details or exception. `Ensemble.step()` calls the
+actual `LongPlaytest.runPlayer(g, 1)`, then writes the CSV
+(`tools/ensemble/Ensemble.java:228`). It silences both System.out and
+LongPlaytest.out. `LongPlaytest.flag()` keeps the first detail in its
+in-memory Finding (worstSize starts at negative infinity), but the driver
+writes only new finding names and counts, not that detail. Thus the
+formatted GDP breakdown at `LongPlaytest.java:1689` was not retained on
+disk. `findings_new` counts flags in that month; `finding` contains names
+newly seen that month. Filtering the latter gives the four first-name
+rows across these twins. The ensemble omits the playtest's periodic
+save/reload (`Ensemble.java:390`); the copied evidence has no checkpoint
+at the failing month from which the missing flows can be reconstructed.
+
+### Formula and month order
+
+`EconomyManager.getMonthGdp()` returns NationalAccounts.getGdp directly
+(line 2554). NationalAccounts.update at lines 482-698 strikes:
+
+    GDP = Cgoods + Chousing + Iconstruction + Ivaluables
+          + Ifood + Imaterials + Iluxuries + Iheld + G
+          + exports - importsFood - importsMaterials - importsRaw
+
+Cgoods sums household sales at Retail, Luxury Retail, Restaurants and
+Refining; Chousing is Real Estate's household sales. G includes utility
+payroll, gross care/safety/school costs, research, transit and public IP.
+Each inventory term is (current units + written-off units - previous
+units) times the price supplied for this strike. Food uses a volume
+index at fixed world weights and a current local-price deflator;
+materials use stock units and the local price; luxuries use landed cost;
+HELD sums stock and pantry by its 25 goods at heldPrice. The construction
+yard is excluded from that inventory term because construction work is
+recognized at contract value. NationalAccounts updates its unit baselines
+and appends this GDP to its rolling history; getAnnualGdp (line 1355)
+sums its last twelve entries. Its existing relative cancellation guard
+does not floor negative output. No guard or threshold is changed here.
+
+The month counter advances first (Game.java:13769). At line 14016,
+startOfMonthUpdate advances the world and exchange prices, reads the
+previous ledger's recognized construction and fitting work, buys the
+struck power book's fuel, strikes sector statements, and hands actual
+stocks, write-offs, imports and exports to updateNationalAccounts
+(14877-14950). SimulationEngine then advances sites, recognizes their
+work for the next strike, moves people and updates the economy/services;
+finalUpdateEconomy follows (14017-14018). CSV rows and the audit are read
+after this sequence. Consequently an arbitrary end-of-month market price
+or current production row cannot substitute for the inputs at the GDP
+strike. The NationalAccounts component getters retain the actual struck
+values and are the right first diagnostic.
+
+One concrete candidate to measure is the inherited PW1 channel:
+utilityImports is fuel bought abroad plus variable upkeep
+(Game.java:14910), and EconomyManager adds it to raw imports (2341).
+The utilities' explicit contribution to G is payroll (14921); other
+final spending and inventories may embody the utility's intermediate
+inputs. Static inspection establishes these entries, not the amounts or
+whether output is omitted. Other candidates include negative inventory
+investment and construction/import matching. The saved totals cannot
+choose among them, identify a good/sector, or assign the fault to R1g,
+MC2, PW1 or a latent path. Main's zero-F1 aggregate baseline is not a
+component-level counterfactual for this 1900 path.
+
+### One proposed run, awaiting GO
+
+Use **one AUTO2 seed-1 JVM on gatebox**, from the retained immutable
+`R1gc2-final180` classes and driver (snapshot 627174320), OpenJDK 21.0.13,
+with the same box-main earth/world paths. No recompilation, model change,
+second policy, main run or scorer is needed. Use the existing driver's
+`-Densemble.months=1145` and `-Densemble.extra=...` support with a fresh
+diagnostic output label `R1gc2-gdp1-1145` checked unused before launch.
+Run from the original founding; retain the complete prefix for identity
+checking, and extract diagnostic months **1122-1145 inclusive** (24 rows).
+The hard end is month **1145**, sufficient for both findings and their
+annual window. This is a targeted diagnostic, not a replacement ensemble.
+
+The 29 extra scalar fields are: annual GDP; C goods/housing; construction
+and valuables investment; total inventory investment and its food,
+materials, luxuries and HELD parts; G; NX; food/material/raw imports and
+exports; the measured food/material/luxury unit baselines and their
+write-off quantities; utilityImports as passed to the accounts; utility
+fuel paid abroad/locally and upkeep paid; city crude imports/exports; and
+public IP imports. They use existing no-argument getters, except the
+three retained EconomyManager scalar inputs read by the driver's existing
+field adapter. Exact paths are prepared in
+`target/r1g/gdp-proposed-extra.txt` (not executed). The normal 68 columns,
+money audits and finding names remain present. Array-valued HELD units,
+per-good prices and each sector's import decomposition are not supported
+by that scalar adapter and are outside this smallest first trace.
+
+Gate/nightly priority must be clear on the orchestrator's GO; no laptop
+fallback, since FS5 owns the next laptop diagnostic. Own the single
+foreground process to exit, with a **180-second wall limit** including
+founding. Stop at 1145, an exception/stuck month, or that limit; preserve
+output and report, with no retry, extension or second run. Compare all
+original columns with saved AUTO2 seed 1 through 1145 before attributing
+any component; a mismatch or missing/nonfinite extra value makes the
+diagnostic inconclusive. If identical, reconcile the component identity
+within CSV serialization precision, locate the term causing the
+1133-1135 fall, and reconcile annual GDP at 1144/1145. Return those
+readings for the next decision without a model mend, waiver or dry run.
+
+Static evidence and extraction code are `target/r1g/gdp-static-evidence.py`,
+`gdp-static-evidence.json` and `gdp-static-window.csv`. Read-only Python
+comparison and source inspection were the only work beyond recording
+these notes. This bounded run remains a proposal pending explicit GO.
