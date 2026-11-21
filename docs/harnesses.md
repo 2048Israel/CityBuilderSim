@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**235 harness files, 26,928 labelled assertions.** AllChecks runs 235 of them.
+**235 harness files, 26,952 labelled assertions.** AllChecks runs 235 of them.
 
 ## Which harnesses read which class
 
@@ -262,7 +262,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, StaffingDrawCheck, WorksFinanceCheck |
 | [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
-| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
+| [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, ScaleCheck, StepsCheck |
 | [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, StepsCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
@@ -12551,7 +12551,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1066 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L1068 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
-## GatewayCheck.java - 133 labelled assertions
+## GatewayCheck.java - 145 labelled assertions
 
 > A city's gateway is the way the world is.
 > 
@@ -12567,161 +12567,174 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
 > ...
 
-  - L264 with gateway
-  - L265 ...and only the
-  - L280 ...laid past the edge, the
-  - L283 ...and no highway plot lies outside the box
-  - L295 ...and taking back fewer plots takes from the
-- **L305 1. a strip of land east**
-  - L310 a strip east gives a gateway
-  - L311 ...whose bearing is east (0)
-  - L312 ...and whose bearing is a multiple of the step
-  - L315 ...and whose point lies on the city's edge on that bearing
-  - L318 ...and is the city's radius out
-- **L321 2. an island founding**
-  - L328 land only within a small disc round the site has no gateway
-- **L331 3. a tie**
-  - L338 equal arms east and south tie, and the gateway is one of the two lone tied bearings
-  - L340 ...and the tied bearing is a multiple of the step
-  - L343 ...and its point lies on the city's edge on that bearing
-  - L354 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
-  - L355 ...one picks east
-  - L356 ...and the other picks south
-  - L358 no two offsets in the cell pick differently; the site's own pick is one of the two
-- **L361 4. a half-plane of land west**
-  - L365 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
-- **L368 5. the threshold**
-  - L372 a strip one cell short of the reach has no gateway
-  - L376 a strip that just reaches has one
-  - L377 ...on the east bearing
-- **L379 6. the default world**
-  - L385 the default world's gateway is deterministic
-  - L388 ...its point lies on the city's edge on that bearing
-  - L392 ...and the cell at its point is land
-  - L400 ...with none, its best land run is short of the reach
-- **L405 7. twelve real generated worlds**
-  - L414 at least one of the twelve worlds has a gateway
-- **L416 8. a full tie is not due east for everyone**
-  - L428 an all-land ground finds a gateway at each of 24 founding sites
-  - L429 ...and every full tie's bearing is a multiple of the step
-  - L430 ...with at least 6 distinct bearings among them
-- **L433 9. the Earth's rule**
-  - L437 one larger place due north wins the north bearing (270)
-  - L443 a nearer place whose way is sea is passed over for the farther clear one (east)
-  - L447 an empty Earth list falls back to the land rule's own answer
-  - L449 ...and a null list does too
-- **L451 10. the spine is laid toward the gateway**
-- **L456 11. no gateway lays as before**
-  - L471 with no gateway the row's two arms both grow first
-  - L472 ...and no column arm has grown yet
-- **L474 12. the sidecar keeps it**
-  - L483 the catalog has a highway type
-  - L487 a square city's runs have found a gateway (or found none)
-  - L490 the current sidecar writes the gateway and reads it back the same
-  - L493 a FORMAT 7 sidecar is refused: it lacks the required dated history
-  - L495 ...and the current sidecar's next layRuns keeps the same gateway and runs
-- **L498 13. what finding one costs**
-- **L507 14. the world line**
-  - L511 the catalog has a highway and a track type
-  - L514 the fixture has a gateway
-  - L522 a world line's net is a highway or the railway
-  - L524 ...its bearing is the gateway
-  - L526 ...its point is ground the city does not own
-  - L531 ...and the plot one step back along the gate arm's heading is owned
-  - L534 worldLines() has one line for the highway, whose gate arm is laid
-  - L535 ...and one for the railway, whose gate arm is laid
-  - L538 with NO_GATEWAY set there are no world lines
-- **L540 15. the cache**
-  - L547 two calls with nothing changed return equal lists
-  - L553 a month's runs move changes()
-  - L555 after the runs move, the world lines are recomputed equal to a fresh map's
-  - L690 ...and on dry ground
-  - L691 ...at the end of a laid arm's track
-  - L692 ...within WORLD_GAP plots of it along its heading
-  - L693 ...every plot between the arm's end and the point owned and dry
-  - L694 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
-  - L695 ...every point along its way, every WORLD_STEP, on dry ground
-  - L696 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
-  - L721 ...every route's first point is WORLD_PLOTS out along the line's way
-  - L722 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
-  - L723 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
-  - L724 ...no point of any leg on water off the track
-- **L740 the line to the world leaves on land, on a generated coast**
-  - L747 fixture: the coast city has a gateway and a railway whose gate arm is laid
-  - L753 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
-  - L755 the coast
-  - L769 the coast's world line stands on a work of the shore (the plot the walk calls the city's edge is one a work blocks), and the same coast with no works has none
-  - L771 ...the coast laid by the harbour rule has works and no line (none stands on an arm's walk, so none is made the city's edge), as the coast with no works
-  - L775 the coast: the railway has a line, so the checks above are not vacuous
-  - L776 ...and its main arm is not the gate arm
-- **L787 the coast's months: the line on land as the city grows**
-  - L807 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
-  - L808 ...and no month has a line's point or a train position on water off the track
-- **L813 Halifax on the Earth, when earth-2.bin is named**
-  - L817 the file -D
-  - L840 fixture: Halifax has a gateway and a railway whose gate arm is laid
-  - L846 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
-  - L848 Halifax
-  - L851 Halifax: the railway has a line, so the checks above are not vacuous
-  - L853 the Earth's file opens:
-  - L881 ...the label is placed
-  - L884 ...its box lies inside the view by WORLD_LABEL_PAD on every side
-  - L885 ...its baseline's left end on the line's part
-  - L888 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
-- **L894 the label stays in view**
-  - L895 a line leaving the right edge
-  - L896 a line leaving the top edge
-  - L897 a line leaving the bottom edge
-  - L898 a line leaving the top right corner
-  - L901 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
-  - L910 a part of
-  - L912 ...the label still lies inside the view
-  - L914 a part of no length has no label
-  - L915 a view smaller than the label and its pads has none either
-- **L932 two lines leaving together get labels apart, or one**
-  - L937 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
-  - L938 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
-  - L944 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
-  - L949 worldLabels() gives each of two parts leaving together a label
-  - L953 ...the first keeps worldLabelAt()'s place to the pixel
-  - L954 ...the boxes are clear of each other by WORLD_LABEL_PAD
-  - L955 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
-  - L957 ...and each names its own line: neither is shared
-  - L961 ...the five-argument form reads the shared words' width off the characters and places the same
-  - L966 two parts with no clear place anywhere have one label between them: the first names both, the second has none
-  - L972 ...and, the shared words being wider, it lies whole inside the view
-  - L980 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
-  - L983 ...and neither is shared
-  - L988 a part of no length has no label, nor has a line with no part
-  - L989 ...and the line after them keeps worldLabelAt()'s place
-  - L990 a call with no parts returns no labels
-  - L1083 ...the highways are drawn: there is a piece
-  - L1084 ...every highway plot drawn lies in a piece holding a ramp on a cell line
-  - L1085 ...the drawn plots and highwayUndrawn() are the model's highway plots
-  - L1086 ...none is undrawn but what the runs could not lay
-- **L1091 a highway that reaches no street is not drawn**
-  - L1095 fixture: with one Elevated Highway the runs laid it
-  - L1096 ...it reaches no arterial's ramp: highwaysReach() is false
-  - L1098 ...a fill over the city's whole box holds no highway plot
-  - L1099 ...highwayUndrawn() is the model's highway plots
-  - L1100 ...highwayShort() stays what the runs could not lay: none here
-  - L1101 ...fixture: the city has a gateway, so the line's absence is the rule's
-  - L1102 ...and the world lines hold no highway line
-  - L1107 some count of at most
-  - L1111 ...one fewer does not (
-  - L1112 ...and has no highway plot in a whole-box fill
-  - L1113 at
-  - L1115 at 100 Elevated Highways and 10 Freight Lines
-- **L1142 the coast across a save: the map after a load is the map before it**
-  - L1161 fixture: at the month saved the railway's gate arm waits at the sea
-  - L1162 ...and the main line runs on past it: an arm after the gate arm in the spine's order is laid
-  - L1167 the sidecar written then reads back
-  - L1168 ...a FORMAT 12 sidecar is refused: its stops and required dated history are absent
-  - L1170 ...the map read back is the live map: same()
-  - L1171 ...every arm of both nets holds what last stopped it, as the live arm does
-  - L1172 ...written again at once, it is the same file as the live map's, byte for byte
-  - L1191 every month after the load is compared:
-  - L1192 ...and in none the map read back, or the sidecar it writes, differs from the live map's
+  - L272 with gateway
+  - L273 ...and only the
+  - L288 ...laid past the edge, the
+  - L291 ...and no highway plot lies outside the box
+  - L303 ...and taking back fewer plots takes from the
+- **L313 1. a strip of land east**
+  - L318 a strip east gives a gateway
+  - L319 ...whose bearing is east (0)
+  - L320 ...and whose bearing is a multiple of the step
+  - L323 ...and whose point lies on the city's edge on that bearing
+  - L326 ...and is the city's radius out
+- **L329 2. an island founding**
+  - L336 land only within a small disc round the site has no gateway
+- **L339 3. a tie**
+  - L346 equal arms east and south tie, and the gateway is one of the two lone tied bearings
+  - L348 ...and the tied bearing is a multiple of the step
+  - L351 ...and its point lies on the city's edge on that bearing
+  - L362 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
+  - L363 ...one picks east
+  - L364 ...and the other picks south
+  - L366 no two offsets in the cell pick differently; the site's own pick is one of the two
+- **L369 4. a half-plane of land west**
+  - L373 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
+- **L376 5. the threshold**
+  - L380 a strip one cell short of the reach has no gateway
+  - L384 a strip that just reaches has one
+  - L385 ...on the east bearing
+- **L387 6. the default world**
+  - L393 the default world's gateway is deterministic
+  - L396 ...its point lies on the city's edge on that bearing
+  - L400 ...and the cell at its point is land
+  - L408 ...with none, its best land run is short of the reach
+- **L413 7. twelve real generated worlds**
+  - L422 at least one of the twelve worlds has a gateway
+- **L424 8. a full tie is not due east for everyone**
+  - L436 an all-land ground finds a gateway at each of 24 founding sites
+  - L437 ...and every full tie's bearing is a multiple of the step
+  - L438 ...with at least 6 distinct bearings among them
+- **L441 9. the Earth's rule**
+  - L445 one larger place due north wins the north bearing (270)
+  - L451 a nearer place whose way is sea is passed over for the farther clear one (east)
+  - L455 an empty Earth list falls back to the land rule's own answer
+  - L457 ...and a null list does too
+- **L459 10. the spine is laid toward the gateway**
+- **L464 11. no gateway lays as before**
+  - L479 with no gateway the row's two arms both grow first
+  - L480 ...and no column arm has grown yet
+- **L482 12. the sidecar keeps it**
+  - L491 the catalog has a highway type
+  - L495 a square city's runs have found a gateway (or found none)
+  - L498 the current sidecar writes the gateway and reads it back the same
+  - L501 a FORMAT 7 sidecar is refused: it lacks the required dated history
+  - L503 ...and the current sidecar's next layRuns keeps the same gateway and runs
+- **L506 13. what finding one costs**
+- **L515 14. the world line**
+  - L519 the catalog has a highway and a track type
+  - L522 the fixture has a gateway
+  - L530 a world line's net is a highway or the railway
+  - L532 ...its bearing is the gateway
+  - L534 ...its point is ground the city does not own
+  - L539 ...and the plot one step back along the gate arm's heading is owned
+  - L542 worldLines() has one line for the highway, whose gate arm is laid
+  - L543 ...and one for the railway, whose gate arm is laid
+  - L546 with NO_GATEWAY set there are no world lines
+- **L548 15. the cache**
+  - L555 two calls with nothing changed return equal lists
+  - L561 a month's runs move changes()
+  - L563 after the runs move, the world lines are recomputed equal to a fresh map's
+  - L699 ...and on dry ground
+  - L700 ...at the end of a laid arm's track
+  - L701 ...within WORLD_GAP plots of it along its heading
+  - L702 ...every plot between the arm's end and the point owned and dry
+  - L703 ...its reach from TrainSchedule.WORLD_PLOTS to CityMap.WORLD_REACH
+  - L704 ...every point along its way, every WORLD_STEP, on dry ground
+  - L705 ...and it runs as far as the land does: the next point is not dry, or the reach is the most
+  - L730 ...every route's first point is WORLD_PLOTS out along the line's way
+  - L731 ...it passes the line's point, within the curve's radius (FX5: its turns are rounded)
+  - L732 ...and the main arm's end plot's middle, within the radius: the train meets the line where the track ends
+  - L733 ...no point of any leg on water off the track
+- **L749 the line to the world leaves on land, on a generated coast**
+  - L756 fixture: the coast city has a gateway and a railway whose gate arm is laid
+  - L762 fixture: the railway's gate arm waits at the sea, FR0's walk crossing the city's own water
+  - L764 the coast
+  - L778 the coast's world line stands on a work of the shore (the plot the walk calls the city's edge is one a work blocks), and the same coast with no works has none
+  - L780 ...the coast laid by the harbour rule has works and no line (none stands on an arm's walk, so none is made the city's edge), as the coast with no works
+  - L784 the coast: the railway has a line, so the checks above are not vacuous
+  - L785 ...and its main arm is not the gate arm
+- **L796 the coast's months: the line on land as the city grows**
+  - L816 the coast's months: some months have a world line and trains' routes, so the run exercised the rule
+  - L817 ...and no month has a line's point or a train position on water off the track
+- **L822 Halifax on the Earth, when earth-2.bin is named**
+  - L826 the file -D
+  - L849 fixture: Halifax has a gateway and a railway whose gate arm is laid
+  - L855 fixture (ET6): Halifax's railway gate arm no longer waits at the harbour - it bridges the shallow water to the city's edge, so FR0's walk crosses none of the...
+  - L857 Halifax
+  - L860 Halifax: the railway has a line, so the checks above are not vacuous
+  - L862 the Earth's file opens:
+  - L890 ...the label is placed
+  - L893 ...its box lies inside the view by WORLD_LABEL_PAD on every side
+  - L894 ...its baseline's left end on the line's part
+  - L897 ...at the first place from FR0's spot that fits: a pixel nearer the far end does not
+- **L903 the label stays in view**
+  - L904 a line leaving the right edge
+  - L905 a line leaving the top edge
+  - L906 a line leaving the bottom edge
+  - L907 a line leaving the top right corner
+  - L910 a line ending well inside the view keeps FR0's spot, WORLD_LABEL_BACK from its far end
+  - L919 a part of
+  - L921 ...the label still lies inside the view
+  - L923 a part of no length has no label
+  - L924 a view smaller than the label and its pads has none either
+- **L941 two lines leaving together get labels apart, or one**
+  - L946 fixture: two parts three pixels apart on one bearing are both placed by worldLabelAt() alone
+  - L947 ...and, drawn so (as MapView did), their boxes overlap: the words print over each other
+  - L953 fixture: two parts of 100 px, three apart, fit no label anywhere on them, and worldLabelAt() puts both on one spot
+  - L958 worldLabels() gives each of two parts leaving together a label
+  - L962 ...the first keeps worldLabelAt()'s place to the pixel
+  - L963 ...the boxes are clear of each other by WORLD_LABEL_PAD
+  - L964 ...each lies inside the view by WORLD_LABEL_PAD, on its own part
+  - L966 ...and each names its own line: neither is shared
+  - L970 ...the five-argument form reads the shared words' width off the characters and places the same
+  - L975 two parts with no clear place anywhere have one label between them: the first names both, the second has none
+  - L981 ...and, the shared words being wider, it lies whole inside the view
+  - L989 lines on opposite sides of the view keep worldLabelAt()'s places to the pixel
+  - L992 ...and neither is shared
+  - L997 a part of no length has no label, nor has a line with no part
+  - L998 ...and the line after them keeps worldLabelAt()'s place
+  - L999 a call with no parts returns no labels
+  - L1092 ...the highways are drawn: there is a piece
+  - L1093 ...every highway plot drawn lies in a piece holding a ramp on a cell line
+  - L1094 ...the drawn plots and highwayUndrawn() are the model's highway plots
+  - L1095 ...none is undrawn but what the runs could not lay
+- **L1100 a highway that reaches no street is not drawn**
+  - L1104 fixture: with one Elevated Highway the runs laid it
+  - L1105 ...it reaches no arterial's ramp: highwaysReach() is false
+  - L1107 ...a fill over the city's whole box holds no highway plot
+  - L1108 ...highwayUndrawn() is the model's highway plots
+  - L1109 ...highwayShort() stays what the runs could not lay: none here
+  - L1110 ...fixture: the city has a gateway, so the line's absence is the rule's
+  - L1111 ...and the world lines hold no highway line
+  - L1116 some count of at most
+  - L1120 ...one fewer does not (
+  - L1121 ...and has no highway plot in a whole-box fill
+  - L1122 at
+  - L1124 at 100 Elevated Highways and 10 Freight Lines
+- **L1162 the trains run where the railway's line to the world is hard to find (TN1)**
+  - L1171 fixture: the coast with no works (section 16's) has a gateway, yards and no railway line to the world
+  - L1178 the portal is the main arm's end, where the main line stops
+  - L1179 the trains have routes though the railway has no line to the world (red before TN1: none without the line)
+  - L1187 ...every one starts at the portal, in the middle of its plot
+  - L1188 ...and fades in over PORTAL_FADE (
+  - L1189 ...and they reach the railway's yards:
+  - L1191 ...over the railway's ground: every quarter plot of every route dry or the railway's (MapCheck.worldWaysOk())
+  - L1198 the month's schedule runs trains on them,
+  - L1226 Haugesund: the railway has a line to the world (red before TN1: water within WORLD_PLOTS toward the gateway and straight on, so none)
+  - L1227 ...leaving on its arm's heading turned a corner, at most RAIL_CORNER 45-degree steps (neither the bearing nor the heading)
+  - L1229 Haugesund
+  - L1231 the Earth's file opens:
+- **L1242 the coast across a save: the map after a load is the map before it**
+  - L1261 fixture: at the month saved the railway's gate arm waits at the sea
+  - L1262 ...and the main line runs on past it: an arm after the gate arm in the spine's order is laid
+  - L1267 the sidecar written then reads back
+  - L1268 ...a FORMAT 12 sidecar is refused: its stops and required dated history are absent
+  - L1270 ...the map read back is the live map: same()
+  - L1271 ...every arm of both nets holds what last stopped it, as the live arm does
+  - L1272 ...written again at once, it is the same file as the live map's, byte for byte
+  - L1291 every month after the load is compared:
+  - L1292 ...and in none the map read back, or the sidecar it writes, differs from the live map's
 
 ## GdpCheck.java - 151 labelled assertions
 
@@ -20275,7 +20288,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L236 fixture: the queue past the counters standing is a whole Boutique's coverage, so the estimate reads it
   - L242 the investor's estimate of one more Boutique's month is a profit, after its payroll, power and water
 
-## MainLineCheck.java - 160 labelled assertions
+## MainLineCheck.java - 172 labelled assertions
 
 > The main line is the railway's run from its gateway to the freight station,
 > the yard nearest the gate arm's end, and it is drawn double where the city
@@ -20291,182 +20304,195 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      arm's end, not between the hub and the yard.
 > ...
 
-- **L206 1. no yard**
-  - L214 the fixture lays a railway with an east gate arm
-  - L215 ...and no yard, so freightStation() is null
-  - L236 every plot of the gate arm (the hub and the row east of it) is M_MAIN
-  - L237 ...and no other plot of the track is M_MAIN
-- **L239 2. a yard on the gate arm**
-  - L249 the gate arm is long enough for a yard part way out
-  - L268 M_MAIN runs from the yard's anchor out to the gate arm's end
-  - L269 ...and not between the hub and the yard
-- **L271 3. a yard on the opposite arm**
-  - L280 the fixture lays the opposite (west) arm
-  - L282 ...far enough to put a yard before its end
-  - L308 the whole gate arm and the hub are M_MAIN
-  - L309 ...the opposite arm from the hub to the yard is M_MAIN
-  - L310 ...the opposite arm beyond the yard is not
-  - L311 ...and no other arm is M_MAIN
-- **L313 4. a yard on a later corridor**
-  - L327 a third corridor opens and one of its arms has steps
-  - L332 ...its interchange lies on an earlier arm
-  - L342 ...the earlier arm's plot at the interchange is M_MAIN
-  - L351 ...the later arm from its start to the yard is M_MAIN
-  - L352 ...the later arm beyond the yard is not
-- **L355 5. two yards**
-  - L368 of two yards on the gate arm, the one nearer its end is the freight station
-- **L371 6. no gateway**
-  - L382 with NO_GATEWAY nothing is marked M_MAIN
-  - L383 ...and freightStation() is null
-- **L385 7. double track**
-  - L402 setDoubleMain(true) marks M_DOUBLE on exactly the M_MAIN plots
-  - L409 ...false marks no M_DOUBLE
-  - L410 ...and signature() differs between the two
-- **L412 8. the hashes**
-  - L431 a nearer yard moving the station changes fill()'s hash with marks
-  - L432 ...with marks == null it does not
-  - L433 ...and frameHash() does not
-- **L435 9. on a real map**
-  - L439 yardCity's runs have a Freight Line, so the main line is double
-  - L443 ...with no gateway its freight station is null
-  - L444 ...and no tile's marks carry M_MAIN \| M_DOUBLE
-  - L446 ...its freight station is not null
-  - L447 ...and some tile's marks carry M_MAIN \| M_DOUBLE
-- **L450 10. a gate arm that bends**
-  - L455 the fixture starts a railway whose gate arm heads east
-  - L466 ...and bends it by hand into three stretches
-  - L480 every step of the bent gate arm, past its first stretch too, is M_MAIN
-  - L481 ...and each 45-degree step's corner with it
-  - L482 ...and no other plot: as many marked as the arm's steps, its start and its corners
-- **L584 the main arm (FX2)**
-  - L591 the fixture lays a railway with an east gate arm and the arm opposite it, both with track
-  - L597 the gate arm waits at the sea the city owns: its end is fewer than LOOK plots short of it
-  - L598 ...and the arm opposite it runs to the box's west edge, within LOOK plots of it
-  - L603 with no main arm set, mainArm() is the gate arm
-  - L604 ...mainLine() is the gate arm whole, from its start to its end
-  - L605 ...and fill() marks M_MAIN on every step of the gate arm and on no plot of any other arm
-  - L613 fixture: both arms are long enough for a yard part way along them
-  - L618 with no main arm set, the freight station is the yard nearest the gate arm's end: the gate arm's
-  - L620 setMainArm(west): mainArm() is the west arm
-  - L621 ...the freight station is the yard nearest the west arm's end: the west arm's, with a yard on the gate arm too
-  - L625 ...fill() marks M_MAIN from that yard's anchor out to the west arm's end
-  - L626 ...on no plot of the gate arm past the hub
-  - L627 ...and on no plot of any other arm, or off the arms
-  - L629 ...wayTo(the station) starts at the west arm's end plot's middle
-  - L634 ...runs along the west arm to the yard and goes no nearer the hub than it
-  - L643 fixture: a shorter railway has track on its gate and west arms and an arm with no steps
-  - L646 an arm with steps set as the main arm is the main arm
-  - L648 setMainArm(-1): the main arm is the gate arm
-  - L650 setMainArm(an arm with no steps): the main arm is the gate arm
-  - L652 ...and so is an index past the net's arms
-  - L654 ...and the main line is the gate arm whole
-  - L669 a corridor opens on the west arm, and its arm has track
-  - L680 ...the yard on it is the freight station, with the west arm the main arm
-  - L682 ...fill() marks M_MAIN on the west arm whole and on the corridor's arm to the yard
-  - L683 ...and on no plot of the gate arm, nor anywhere else but the hub
-  - L685 wayTo() reaches the corridor's yard
-  - L692 ...it starts at the west arm's end plot's middle
-  - L693 ...it turns at the corridor's start and never comes in to the hub's column
-  - L694 ...it has no plot twice: no doubling back
-  - L695 ...and every quarter plot of it is a plot the railway covers
-- **L730 two yards stacked on a corridor (FX3)**
-  - L758 the fixture lays a north-south corridor whose interchange is on the spine and whose track runs clear through both boxes
-  - L779 wayTo() reaches yard
-  - L785 each yard has a route to every one of its TileRaster.YARD_TRACKS sidings
-  - L814 each yard's every route ends on a north-south siding: its last leg has the same x at both ends
-  - L815 ...and enters the fan at an apex on the corridor's column: its last point on x = ix + 0.5 is no more than YARD_LADDER
-  - L838 no train runs across a siding: no leg of any route crosses another route's siding strictly inside both
-- **L903 the railway's ways: a main line, sidings, branches and the plots left over (FR7 slice 3)**
-  - L932 the railway is the gate arm, branches and sidings: no opposite arm, no perpendicular pair, no corridor
-  - L933 the main line waits at the city's ground, fewer than LOOK plots short of the box's east edge
-  - L939 the plots drawn are the main line's, the sidings' and the branches'
-  - L940 the surplus is the model's track less those drawn, and there is one (the fixture lays more track than the ways use)
-  - L943 the legend's words carry it: \"
-  - L958 the trains' way reaches every yard and every siding
-  - L970 every drawn track plot lies on a yard's way, a siding's way, or in a yard's box
-  - L982 no arm ends in country: each branch ends in a yard's box, each siding beside a works' box
-  - L989 each yard keeps its own size: the first asked 24 x 24, the second 8 x 7, each laid YARD_LONG along its line and its footprint's
-  - L996 the first yard stands on the main line
-  - L1004 the further yard stands beside the largest group of works: within YARD_APART of its middle
-  - L1005 ...and not beside the mine by the hub: farther from it than BRANCH_FROM
-  - L1006 ...it is more than a district from the line, so a branch reaches it: one
-  - L1012 ...a straight arm off the main line (its first plot on the gate arm, one stretch)
-  - L1013 ...as long as it needs: it ends on the yard's far edge, no farther
-  - L1017 two spurs, two sidings
-  - L1019 the first goes to the largest bulk works within a district of the line (w3), the second to the next (w1)
-  - L1021 ...each straight from the line: its plots are the distance to the works' edge
-  - L1033 ...leaving the main line, and ending in a loading shed (M_SHED), the only sheds there are
-  - L1038 ...none to the works a district away (the largest of all), to a well, nor to a smaller one: only two spurs
-  - L1043 laid again to the same counts, nothing moves
-  - L1049 the net reads back from its sidecar as it was (the branches and sidings are arms)
-  - L1051 ...and laying it again to the same counts moves nothing
-  - L1053 the sidecar round trip:
-  - L1063 two yards bundled stay where the works are bundled: no group a district from the first, so the second stands beside it, with no branch
-  - L1074 a short track (72 plots, a spur's) beside a station: the line runs to the city's edge anyway (FX5), so the 72 plots
-  - L1081 ...and with no station the 72 plots are the whole line, short of the city's edge, and no siding is laid
-  - L1090 with no gateway the main line is the hub alone: one plot, no arm, no siding, no branch, the rest the surplus
-  - L1092 ...and the yard still stands, in the hub's cell
-  - L1102 a gate arm that waits at the sea the city owns: the arm opposite it runs to the city's edge as the main line, the perpendicular pair has no track
-  - L1104 ...and the rest of the track is the surplus
-  - L1117 a railway grown as before (
-  - L1130 fixture: a highway runs across the works' column, so the straight way south is across it
-  - L1131 ...yet the works has its siding
-  - L1134 ...which turns once (two stretches) and has no plot on a highway or beside one
-  - L1148 a siding's route is a works' route: yard -1, not the station, no yard siding
-  - L1165 a bulk unit train (hoppers) runs to a siding too, and to the yards; no tank, mixed or container train goes to a siding
-  - L1170 with only a siding's route, only hopper trains run on it: the others have no route
-  - L1217 the yard city's spur is laid as a siding into the works beside its line: one, ending beside the works' box
-  - L1258 ...and every other route belongs to a yard, as before
-- **L1279 a station alone lays its main line (FX5)**
-  - L1283 fixture: the Rail Depot's yard is smaller than the district's interior, so a spot on the line takes it
-  - L1292 a city with one Rail Depot and no track lays the main line: the gate arm has steps
-  - L1293 ...and it waits at the city's ground, fewer than LOOK plots short of the box's east edge
-  - L1295 ...the model has no track, so none is a siding's or a branch's, and there is no surplus
-  - L1298 ...the depot's yard is laid, asked for its own footprint, YARD_LONG along its line (FX5)
-  - L1300 ...and its box covers the main line: the yard's whole length along the east gate arm,
-  - L1307 control: the same ground with no station and no track lays no line
-  - L1316 a station with
-  - L1318 ...and lays no siding (the track is short of the line) and shows no surplus
-  - L1324 with the station gone and no track, its yard stands idle and the main line is held, not taken back (MF1)
-  - L1328 ...and with its idle time up, no station and no track, the line is taken back
-- **L1393 a yard is as long as a unit train along its line (FX5)**
-  - L1399 fixture: a unit train's length rounded up and two ladders (YARD_LONG) is longer than a cell's interior, so its yard must run on into the next cell
-  - L1406 fixture: both yards are laid on open ground
-  - L1415 ...it is YARD_LONG plots along its line,
-  - L1416 ...and min(w, h) of its footprint across,
-  - L1417 ...it covers a ring plot, the street between two cells
-  - L1418 ...and keeps the footprint it was asked for,
-  - L1434 a plan is given every plot of both long boxes as yard ground
-  - L1435 ...and lays no street on any of them: the ring street stops at the yard on both sides
-  - L1436 ...which the fixture causes: without the yards' ground the same plan lays a street across them
-  - L1443 water on every ring plot but the line's: both yards are still laid
-  - L1451 ...inside one cell, over no ring plot
-  - L1452 ...and it was asked for
-  - L1464 water on the rings and 28 plots into every cell: both yards are still laid
-  - L1481 laid again the next month, the long yards are the same boxes
-  - L1482 ...kept, not taken up and laid anew: the same box objects
-  - L1485 a yard laid short by the ground is kept short the next month too, the same box
-  - L1489 a yard asked for at another footprint is laid again, long where the ground allows, and keeps the new ask
-  - L1498 the long yards read back from the sidecar: the same runs
-  - L1501 ...each with the footprint it was asked for, not its box's size
-  - L1504 ...and laid again to the same asks it moves nothing: the yards are not laid anew
-  - L1511 a sidecar of FORMAT 9 reads each yard's footprint as its box's own width and height, and does not fail
-  - L1513 the sidecar round trip:
-  - L1531 the yard city's yards, laid by the map, are each asked for their type's footprint
-  - L1532 ...each stands on its line, YARD_LONG, the cell's interior or its footprint's length along it
-  - L1553 a long yard across a district's edge is one district's work, once
-  - L1554 ...clipped to the plots that district's frame holds as its own, 1 to DISTRICT - 1
-  - L1555 ...the district that holds more of its plots
-  - L1557 a yard wholly inside one district is that district's work as it was, its own box
-- **L1652 the railway's corner and its dead end (MF2)**
-  - L1663 fixture: the railway and the highways each have a hub, on rows of their own
-  - L1675 fixture: the gate arm heads east, the arm opposite it west, and both have track, with one yard
-  - L1679 fixture: the gate arm waits at the sea and the west arm runs on to the city's edge, where the world line leaves
-  - L1687 no corner of the railway turns more than 45 degrees (a stretch to the next, over every arm): the sharpest is
-  - L1695 ...nor any corner of the trains' way to a yard (wayTo()): the sharpest is
-  - L1715 the yard's way from the main arm's end walks plots the railway covers, no plot twice
-  - L1724 a highway's arm may still turn 90 degrees at the sea (its rules are as they were): the sharpest of its corners is
-  - L1725 ...and lays the plots it laid before:
+- **L217 1. no yard**
+  - L225 the fixture lays a railway with an east gate arm
+  - L226 ...and no yard, so freightStation() is null
+  - L247 every plot of the gate arm (the hub and the row east of it) is M_MAIN
+  - L248 ...and no other plot of the track is M_MAIN
+- **L250 2. a yard on the gate arm**
+  - L260 the gate arm is long enough for a yard part way out
+  - L279 M_MAIN runs from the yard's anchor out to the gate arm's end
+  - L280 ...and not between the hub and the yard
+- **L282 3. a yard on the opposite arm**
+  - L291 the fixture lays the opposite (west) arm
+  - L293 ...far enough to put a yard before its end
+  - L319 the whole gate arm and the hub are M_MAIN
+  - L320 ...the opposite arm from the hub to the yard is M_MAIN
+  - L321 ...the opposite arm beyond the yard is not
+  - L322 ...and no other arm is M_MAIN
+- **L324 4. a yard on a later corridor**
+  - L338 a third corridor opens and one of its arms has steps
+  - L343 ...its interchange lies on an earlier arm
+  - L353 ...the earlier arm's plot at the interchange is M_MAIN
+  - L362 ...the later arm from its start to the yard is M_MAIN
+  - L363 ...the later arm beyond the yard is not
+- **L366 5. two yards**
+  - L379 of two yards on the gate arm, the one nearer its end is the freight station
+- **L382 6. no gateway**
+  - L393 with NO_GATEWAY nothing is marked M_MAIN
+  - L394 ...and freightStation() is null
+- **L396 7. double track**
+  - L413 setDoubleMain(true) marks M_DOUBLE on exactly the M_MAIN plots
+  - L420 ...false marks no M_DOUBLE
+  - L421 ...and signature() differs between the two
+- **L423 8. the hashes**
+  - L442 a nearer yard moving the station changes fill()'s hash with marks
+  - L443 ...with marks == null it does not
+  - L444 ...and frameHash() does not
+- **L446 9. on a real map**
+  - L450 yardCity's runs have a Freight Line, so the main line is double
+  - L454 ...with no gateway its freight station is null
+  - L455 ...and no tile's marks carry M_MAIN \| M_DOUBLE
+  - L457 ...its freight station is not null
+  - L458 ...and some tile's marks carry M_MAIN \| M_DOUBLE
+- **L461 10. a gate arm that bends**
+  - L466 the fixture starts a railway whose gate arm heads east
+  - L477 ...and bends it by hand into three stretches
+  - L491 every step of the bent gate arm, past its first stretch too, is M_MAIN
+  - L492 ...and each 45-degree step's corner with it
+  - L493 ...and no other plot: as many marked as the arm's steps, its start and its corners
+- **L596 the main arm (FX2)**
+  - L603 the fixture lays a railway with an east gate arm and the arm opposite it, both with track
+  - L609 the gate arm waits at the sea the city owns: its end is fewer than LOOK plots short of it
+  - L610 ...and the arm opposite it runs to the box's west edge, within LOOK plots of it
+  - L615 with no main arm set, mainArm() is the gate arm
+  - L616 ...mainLine() is the gate arm whole, from its start to its end
+  - L617 ...and fill() marks M_MAIN on every step of the gate arm and on no plot of any other arm
+  - L625 fixture: both arms are long enough for a yard part way along them
+  - L630 with no main arm set, the freight station is the yard nearest the gate arm's end: the gate arm's
+  - L632 setMainArm(west): mainArm() is the west arm
+  - L633 ...the freight station is the yard nearest the west arm's end: the west arm's, with a yard on the gate arm too
+  - L637 ...fill() marks M_MAIN from that yard's anchor out to the west arm's end
+  - L638 ...on no plot of the gate arm past the hub
+  - L639 ...and on no plot of any other arm, or off the arms
+  - L641 ...wayTo(the station) starts at the west arm's end plot's middle
+  - L646 ...runs along the west arm to the yard and goes no nearer the hub than it
+  - L655 fixture: a shorter railway has track on its gate and west arms and an arm with no steps
+  - L658 an arm with steps set as the main arm is the main arm
+  - L660 setMainArm(-1): the main arm is the gate arm
+  - L662 setMainArm(an arm with no steps): the main arm is the gate arm
+  - L664 ...and so is an index past the net's arms
+  - L666 ...and the main line is the gate arm whole
+  - L681 a corridor opens on the west arm, and its arm has track
+  - L692 ...the yard on it is the freight station, with the west arm the main arm
+  - L694 ...fill() marks M_MAIN on the west arm whole and on the corridor's arm to the yard
+  - L695 ...and on no plot of the gate arm, nor anywhere else but the hub
+  - L697 wayTo() reaches the corridor's yard
+  - L704 ...it starts at the west arm's end plot's middle
+  - L705 ...it turns at the corridor's start and never comes in to the hub's column
+  - L706 ...it has no plot twice: no doubling back
+  - L707 ...and every quarter plot of it is a plot the railway covers
+- **L742 two yards stacked on a corridor (FX3)**
+  - L770 the fixture lays a north-south corridor whose interchange is on the spine and whose track runs clear through both boxes
+  - L791 wayTo() reaches yard
+  - L797 each yard has a route to every one of its TileRaster.YARD_TRACKS sidings
+  - L826 each yard's every route ends on a north-south siding: its last leg has the same x at both ends
+  - L827 ...and enters the fan at an apex on the corridor's column: its last point on x = ix + 0.5 is no more than YARD_LADDER
+  - L850 no train runs across a siding: no leg of any route crosses another route's siding strictly inside both
+- **L915 the railway's ways: a main line, sidings, branches and the plots left over (FR7 slice 3)**
+  - L944 the railway is the gate arm, branches and sidings: no opposite arm, no perpendicular pair, no corridor
+  - L945 the main line waits at the city's ground, fewer than LOOK plots short of the box's east edge
+  - L951 the plots drawn are the main line's, the sidings' and the branches'
+  - L952 the surplus is the model's track less those drawn, and there is one (the fixture lays more track than the ways use)
+  - L955 the legend's words carry it: \"
+  - L970 the trains' way reaches every yard and every siding
+  - L982 every drawn track plot lies on a yard's way, a siding's way, or in a yard's box
+  - L994 no arm ends in country: each branch ends in a yard's box, each siding beside a works' box
+  - L1001 each yard keeps its own size: the first asked 24 x 24, the second 8 x 7, each laid YARD_LONG along its line and its footprint's
+  - L1008 the first yard stands on the main line
+  - L1016 the further yard stands beside the largest group of works: within YARD_APART of its middle
+  - L1017 ...and not beside the mine by the hub: farther from it than BRANCH_FROM
+  - L1018 ...it is more than a district from the line, so a branch reaches it: one
+  - L1024 ...a straight arm off the main line (its first plot on the gate arm, one stretch)
+  - L1025 ...as long as it needs: it ends on the yard's far edge, no farther
+  - L1029 two spurs, two sidings
+  - L1031 the first goes to the largest bulk works within a district of the line (w3), the second to the next (w1)
+  - L1033 ...each straight from the line: its plots are the distance to the works' edge
+  - L1045 ...leaving the main line, and ending in a loading shed (M_SHED), the only sheds there are
+  - L1050 ...none to the works a district away (the largest of all), to a well, nor to a smaller one: only two spurs
+  - L1055 laid again to the same counts, nothing moves
+  - L1061 the net reads back from its sidecar as it was (the branches and sidings are arms)
+  - L1063 ...and laying it again to the same counts moves nothing
+  - L1065 the sidecar round trip:
+  - L1075 two yards bundled stay where the works are bundled: no group a district from the first, so the second stands beside it, with no branch
+  - L1086 a short track (72 plots, a spur's) beside a station: the line runs to the city's edge anyway (FX5), so the 72 plots
+  - L1093 ...and with no station the 72 plots are the whole line, short of the city's edge, and no siding is laid
+  - L1102 with no gateway the main line is the hub alone: one plot, no arm, no siding, no branch, the rest the surplus
+  - L1104 ...and the yard still stands, in the hub's cell
+  - L1114 a gate arm that waits at the sea the city owns: the arm opposite it runs to the city's edge as the main line, the perpendicular pair has no track
+  - L1116 ...and the rest of the track is the surplus
+  - L1129 a railway grown as before (
+  - L1142 fixture: a highway runs across the works' column, so the straight way south is across it
+  - L1143 ...yet the works has its siding
+  - L1146 ...which turns once (two stretches) and has no plot on a highway or beside one
+  - L1160 a siding's route is a works' route: yard -1, not the station, no yard siding
+  - L1177 a bulk unit train (hoppers) runs to a siding too, and to the yards; no tank, mixed or container train goes to a siding
+  - L1182 with only a siding's route, only hopper trains run on it: the others have no route
+  - L1229 the yard city's spur is laid as a siding into the works beside its line: one, ending beside the works' box
+  - L1270 ...and every other route belongs to a yard, as before
+- **L1291 a station alone lays its main line (FX5)**
+  - L1295 fixture: the Rail Depot's yard is smaller than the district's interior, so a spot on the line takes it
+  - L1304 a city with one Rail Depot and no track lays the main line: the gate arm has steps
+  - L1305 ...and it waits at the city's ground, fewer than LOOK plots short of the box's east edge
+  - L1307 ...the model has no track, so none is a siding's or a branch's, and there is no surplus
+  - L1310 ...the depot's yard is laid, asked for its own footprint, YARD_LONG along its line (FX5)
+  - L1312 ...and its box covers the main line: the yard's whole length along the east gate arm,
+  - L1319 control: the same ground with no station and no track lays no line
+  - L1328 a station with
+  - L1330 ...and lays no siding (the track is short of the line) and shows no surplus
+  - L1336 with the station gone and no track, its yard stands idle and the main line is held, not taken back (MF1)
+  - L1340 ...and with its idle time up, no station and no track, the line is taken back
+- **L1405 a yard is as long as a unit train along its line (FX5)**
+  - L1411 fixture: a unit train's length rounded up and two ladders (YARD_LONG) is longer than a cell's interior, so its yard must run on into the next cell
+  - L1418 fixture: both yards are laid on open ground
+  - L1427 ...it is YARD_LONG plots along its line,
+  - L1428 ...and min(w, h) of its footprint across,
+  - L1429 ...it covers a ring plot, the street between two cells
+  - L1430 ...and keeps the footprint it was asked for,
+  - L1446 a plan is given every plot of both long boxes as yard ground
+  - L1447 ...and lays no street on any of them: the ring street stops at the yard on both sides
+  - L1448 ...which the fixture causes: without the yards' ground the same plan lays a street across them
+  - L1455 water on every ring plot but the line's: both yards are still laid
+  - L1463 ...inside one cell, over no ring plot
+  - L1464 ...and it was asked for
+  - L1476 water on the rings and 28 plots into every cell: both yards are still laid
+  - L1493 laid again the next month, the long yards are the same boxes
+  - L1494 ...kept, not taken up and laid anew: the same box objects
+  - L1497 a yard laid short by the ground is kept short the next month too, the same box
+  - L1501 a yard asked for at another footprint is laid again, long where the ground allows, and keeps the new ask
+  - L1510 the long yards read back from the sidecar: the same runs
+  - L1513 ...each with the footprint it was asked for, not its box's size
+  - L1516 ...and laid again to the same asks it moves nothing: the yards are not laid anew
+  - L1523 a sidecar of FORMAT 9 reads each yard's footprint as its box's own width and height, and does not fail
+  - L1525 the sidecar round trip:
+  - L1543 the yard city's yards, laid by the map, are each asked for their type's footprint
+  - L1544 ...each stands on its line, YARD_LONG, the cell's interior or its footprint's length along it
+  - L1565 a long yard across a district's edge is one district's work, once
+  - L1566 ...clipped to the plots that district's frame holds as its own, 1 to DISTRICT - 1
+  - L1567 ...the district that holds more of its plots
+  - L1569 a yard wholly inside one district is that district's work as it was, its own box
+- **L1664 the railway's corner and its dead end (MF2)**
+  - L1675 fixture: the railway and the highways each have a hub, on rows of their own
+  - L1687 fixture: the gate arm heads east, the arm opposite it west, and both have track, with one yard
+  - L1691 fixture: the gate arm waits at the sea and the west arm runs on to the city's edge, where the world line leaves
+  - L1699 no corner of the railway turns more than 45 degrees (a stretch to the next, over every arm): the sharpest is
+  - L1707 ...nor any corner of the trains' way to a yard (wayTo()): the sharpest is
+  - L1727 the yard's way from the main arm's end walks plots the railway covers, no plot twice
+  - L1736 a highway's arm may still turn 90 degrees at the sea (its rules are as they were): the sharpest of its corners is
+  - L1737 ...and lays the plots it laid before:
+- **L1746 the station's yard laid short is laid again longer (TN1)**
+  - L1753 fixture: on open ground the station's Rail Depot is laid YARD_LONG along its line,
+  - L1774 fixture: with water 28 plots into every cell the station's yard is laid, short of YARD_LONG
+  - L1779 weighed in January (month
+  - L1783 the water gone, in a month that is no multiple of YARD_REWEIGH_MONTHS it is not weighed: the same box
+  - L1790 ...the next January it is laid again YARD_LONG along its line, on the main line, though nothing the railway is stamped by moved (red before TN1: a yard was k...
+  - L1792 ...and keeps the footprint it was asked for,
+  - L1795 ...and, YARD_LONG, it stays: laid again years later it is the same box object
+  - L1817 fixture: the main line runs east off the quarter line, a straight stretch longer than YARD_LONG
+  - L1818 fixture: the station's yard is laid at its footprint, shorter than the shortest train's tier (
+  - L1834 weighed in January, the station's yard is laid again YARD_LONG along the stretch off the quarter line, the track its whole length (red before TN1)
+  - L1836 ...on owned dry ground, off every highway: it fits
+  - L1837 ...and the trains' way reaches it (wayTo())
 
 ## ManufacturingCheck.java - 61 labelled assertions
 
