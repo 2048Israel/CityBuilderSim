@@ -396,12 +396,55 @@ education production or the home law is proposed. Housing needs its evidence
 before a precise mend can be selected. Any model mend would need a new
 final-model ensemble; a harness-only mend retains the current valid ensemble.
 
+## Authorized diagnostic stopped before compilation
+
+Mail `20261121-153912-395-orchestrator-4eaa` approved exactly one box job:
+isolated target compilation and two sequential fresh JVMs, housing then
+university, within 300 seconds. It retained all pinned sources, original
+laws and matching-anchor requirements. The single attempt was
+`/home/jerus/cbs/runs/WG3codex1-cause01`, with its complete home copy in
+`target/wg3-cause/runs/WG3codex1-cause01`. The local foreground owner ran
+2026-11-21 19:50:28–19:50:29 UTC; both actual remote job and controller
+exited **1**. No retry was made.
+
+The strict JDK provenance guard stopped the job **before compilation**.
+The wrapper selected SSH's default `/usr/bin/java`, whose release metadata
+says Ubuntu `21.0.13.1`; the required frozen run used `21.0.13`. No `javac`
+or model JVM was started, no compile log or compiled target classes exist,
+and no diagnostic observations were produced. Source hashes of all three
+uploaded/home-copied pinned files still match. Cached-class before/after
+checks were not reached, so this attempt does not claim those receipts.
+The recorded job/controller PIDs, 2119263/2119260, are gone, the remote active
+file is absent and the box lock is released. `one-job.log`, the actual exit
+files, `stopped-inspection.txt` and all uploaded inputs are preserved under
+`target/wg3-cause`; no original kept gate evidence was changed.
+
+Read-only metadata identified the setup error: the normal
+[gate-box server](../../tools/gate-box.sh#L62) first sources
+`$HOME/cbs/gate.env`. Its third line selects `$HOME/cbs/jdk` and prepends
+that JDK's bin directory to PATH. This wrapper omitted that step. The
+configured symlink resolves to `jdk-21.0.13+9`; its release file says
+Eclipse Adoptium, `JAVA_VERSION="21.0.13"` and
+`JAVA_RUNTIME_VERSION="21.0.13+9-LTS"`, matching the retained run's JDK
+version. This inspection executed neither Java nor javac.
+
+Smallest setup proposal: source that same existing gate environment before
+resolving Java/javac, keeping the strict version/provenance guards. The
+two-line proposal is saved as `target/wg3-cause/proposed-gate-env.diff`;
+it is not applied to the attempted wrapper. Driver, overlay, original
+harness and frozen model remain unchanged. A new, uniquely labelled
+attempt needs fresh execution GO; unused time from the stopped attempt
+does not authorize a retry. The university zero component and home-law
+cause both remain **INCONCLUSIVE**. No mend or classification is selected
+from this setup failure.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
 full pick or separate LongPlaytest replay was run. The one authorized ensemble
-and the failed dry run are recorded above; no dry restart, kept rejudge,
-model/harness mend or diagnostic execution is authorized yet.
+and the failed dry run are recorded above. The authorized diagnostic stopped
+at preflight; no dry restart, kept rejudge, model/harness mend or diagnostic
+retry is authorized.
 The ship file remains provisional until the orchestrator's readiness GO.
 
 For the optional PC eye check: open Policy → Wages → The ladder, switch both
