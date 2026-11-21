@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
 A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
