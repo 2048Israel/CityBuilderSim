@@ -61,5 +61,6 @@ they do not promise that every city builds more homes.
 
 The adopted calls, fixtures, historical comparisons and retained evidence
 are recorded in [MC2's notes](../docs/queue/MC2-notes.md), with the final
-score table and raw summary in [its ensemble baseline](../docs/ensemble/MC2.md).
+score table and raw summary for `MC2c2-final` in
+[the ensemble records](../docs/ensemble/).
 No further call is left for Jerus by this batch.
