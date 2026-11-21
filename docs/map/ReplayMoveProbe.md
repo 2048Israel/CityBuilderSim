@@ -1,4 +1,4 @@
-# ReplayMoveProbe.java - 1,181 lines · 39 methods · 12 constants · interface
+# ReplayMoveProbe.java - 1,165 lines · 39 methods · 12 constants · interface
 
 `ham/citybuildersim/ui/ReplayMoveProbe.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -47,7 +47,7 @@
 > check() is the public entry ReplayCheck 5d runs (CM1): the same window off screen on a generated world's recording, a short glide
 > loaded and run by a click, one across months run by a key, and Esc while one loads, returned as figures (Checked) for it to assert on.
 
-**Uses:** [MapView](MapView.md) (55), [CameraPath](CameraPath.md) (18), [GlobeFrame](GlobeFrame.md) (17), [ReplayMode](ReplayMode.md) (13), [MapFrame](MapFrame.md) (12), [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (7), [Recording](Recording.md) (7), [Game](Game.md) (6), [ReplayCamera](ReplayCamera.md) (5), [GamePrefs](GamePrefs.md) (4), [LongPlaytest](LongPlaytest.md) (4), [MiniMap](MiniMap.md) (2), [ReplayCity](ReplayCity.md) (2), [CityMap](CityMap.md) (2), [World](World.md) (1)
+**Uses:** [MapView](MapView.md) (55), [CameraPath](CameraPath.md) (18), [GlobeFrame](GlobeFrame.md) (17), [ReplayMode](ReplayMode.md) (13), [MapFrame](MapFrame.md) (12), [GameFiles](GameFiles.md) (8), [UserInterface](UserInterface.md) (7), [Recording](Recording.md) (7), [Game](Game.md) (6), [ReplayCamera](ReplayCamera.md) (5), [GamePrefs](GamePrefs.md) (4), [LongPlaytest](LongPlaytest.md) (4), [MiniMap](MiniMap.md) (2), [ReplayCity](ReplayCity.md) (2), [CityMap](CityMap.md) (2), [World](World.md) (1), [FollowBench](FollowBench.md) (1)
 
 **Used by (1):** [ReplayCheck](ReplayCheck.md)
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1097 | **type** `public final class ReplayMoveProbe` | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves a trailer makes (the fly out and back, the glide from the street to t... |
+| 85 | 1081 | **type** `public final class ReplayMoveProbe` | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves a trailer makes (the fly out and back, the glide from the street to t... |
 | 87 | 1 | `private ReplayMoveProbe()` |  |
 | 133 | 11 | `private static void offScreen(Stage s)` | The window moved off every screen at the primary screen's size, then made visible: drawn as full screen would be, seen by nobody. |
 | 145 | 8 | `private static void bind()` |  |
@@ -160,14 +160,14 @@
 | 1065 | 27 | `private static Left leaveWhileReady() throws Exception` | Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. |
 | 1094 | 21 | `private static Cancelled cancelWhileLoading() throws Exception` | A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. |
 
-### the toolkit and reflection (lines 1116-1181)
+### the toolkit and reflection (lines 1116-1165)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1119 | 17 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up (UiProbe's). |
-| 1138 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | Runs on the FX thread and waits for the answer; an exception in it comes back here. |
-| 1144 | 9 | `private static Field field(Class<?> c, String name)` |  |
-| 1154 | 9 | `private static Method method(Class<?> c, String name, Class<?>...parameters)` |  |
-| 1164 | 7 | `private static Object get(Field f, Object on)` |  |
-| 1172 | 9 | `private static Object call(Method m, Object on, Object...arguments)` |  |
+| 1119 | 1 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it is up: the one start, FollowBench's (GB5). |
+| 1122 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | Runs on the FX thread and waits for the answer; an exception in it comes back here. |
+| 1128 | 9 | `private static Field field(Class<?> c, String name)` |  |
+| 1138 | 9 | `private static Method method(Class<?> c, String name, Class<?>...parameters)` |  |
+| 1148 | 7 | `private static Object get(Field f, Object on)` |  |
+| 1156 | 9 | `private static Object call(Method m, Object on, Object...arguments)` |  |
 

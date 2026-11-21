@@ -18,6 +18,47 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GB5 (untagged) — the gate box runs the harnesses that need a display — 2026-11-21, ready, see docs/queue/GB5-notes.md
+The gate box has no screen, so since GB1 every gate skipped the nine harnesses that start the JavaFX toolkit, KeptCheck and KeptTimingCheck among them.
+Its gates and nights now draw them on JavaFX's Monocle, headless and in software (pom.xml, test scope), which tools/gate-box.sh names to every JVM they
+start; Linux lays text out through Pango (libpangoft2-1.0-0, which Jerus installed), and a box without it says so in one line.
+Every display harness starts the toolkit through ui.FollowBench.startJavaFx. With no display named it skips as it did, on the PC and in the cloud;
+with one named (-Dcbs.display) a toolkit that cannot start is a FAIL and exit 1, never a skip. The summary's display line lists those a run started
+(AllChecks.DISPLAY), and TimingCheck 10 guards the one start, the list and the skip. On the box KeptCheck prints the PC's 4,034 lines but its heap
+line, and KeptTimingCheck meets all 29 budgets, the worst at 0.42 of its own. The PC's runs are as they were.
+
+### OB1 — live provider budget and orchestration reserve — 2026-11-21, ready, see docs/queue/OB1-notes.md
+The orchestrator reads live usage and warnings every turn and before dispatch, reserves its cost through reset plus running and pending commitments,
+and targets projected subscription use of 98-99% at reset without intentionally exhausting a plan. Stale readings forbid uncertain-provider launches;
+current MemWatch advice routes within the ceiling, with explicit Codex workers while Claude is exhausted and reassessment after reset. Dispatches
+record readings and reserve forecasts, and controller handoff precedes exhaustion. This is operational policy, not a hard MemWatch launcher guard.
+
+### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
+A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
+`buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised
+to the plan's figure no longer fails at the door (HousingDoorCheck's seed 12 window: nine such cuts on main, none
+now). A project's order the lender refuses for the bank's capital or a ban is asked again of half (HN1-B): the till
+builds what it buys, the line says why it was trimmed, and the capital marks are taken back (seed 12 to m900: 18
+such month-ends, none on main); past the default point or with the bank shut it holds, as before.
+`tools/ensemble/stop.ps1` makes the Git Bash form of the run's folder itself, since Git Bash hands it C:/..., then
+looks once more and names what outlived the stop, exit 1; with no folder or label it stops nothing, exit 2 (HN1-C,
+its selftest). The new OrderDoorCheck causes HN1-A and HN1-B, eight lines red on main. HousingDoorCheck names the
+landlords' homes by the door's price too (68 orders with the segment short, none cut for the down payment), and
+CreditCrunchCheck 4 causes an order the owners' issue falls short of. The played cities of MortgageCheck 12 and
+CreditCrunchCheck 2 moved, their fixtures known reds under FS9. ForeignDebtCheck 7 asserts a reloaded city's first
+month against its twin's, not 5% of the principal, which a month's own move crossed in the moved city.
+
+### 0.9.176 — RB3, the fund's over-limit sale and the fixed point — 2026-11-20, ready, see docs/queue/RB3-notes.md
+FS13 found FundCheck 9e's town holding 11.17% of Construction against the fixed point of 10.92%. The book had last traded under fair value,
+the leavers asked 230 to 400 shares a month at the desk's bid, a buyback buying 200 took theirs first, and the fund's over-limit ask at fair
+value rested 34 months running. That ask is now the market's (Exchange.limitAsk()): the last trade held between the desk's bid and fair value,
+so fair value while the book trades at or over it or on a trade older than the fund's stale mark, and it is posted before the leavers, so
+a buyback meets it first at its price. The fixed
+point does not bend, since an unsold tenth has no rest. ExchangeCheck 7c causes the month (20 owners leaving with 2,000 shares, the fund at the
+fixed point, the last trade under fair value), and each of its lines but the other sides fails on main's rule. FundCheck 9e drops FS13's
+world bid and holds 10.28% on the town's own sale (10.31% and 10.30% on 60 and 84 months of founding, where main reached 11.17% and 11.14%).
+The default playtest never puts the fund over its cap, and its eight trace files are byte-identical to main's, at the base and merged.
+
 ### 0.9.175 — AP1, the auto-builder's month at 400,000 people — 2026-11-21, ready, see docs/queue/AP1-notes.md
 On Jerus's slot 10 (421,561 people, 57 stacks on site) the auto-builder's search asked the power ahead (`WorksValue.pendingPowerLoad`) about 1,100 times a month, and each call rebuilt the site's whole completion schedule, with the builders' staffing for every stack and every template's new-unit draw.
 `WorksValue.hold()` holds the schedule and the draws in a scope, for one city on its own thread, opened by `AutoBuilder.pass` around its loop and by the Build screen's Overview around its draw.

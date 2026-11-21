@@ -86,8 +86,8 @@ import java.util.List;
  *   value, the desk's own rule for an excess. The limit is read on the
  *   holding too: the companies' buybacks retire shares under the fund and
  *   lift it past the limit, and past it a tenth of the excess
- *   (LIMIT_SALE_SHARE) is offered a month at fair value, posted before the
- *   buybacks bid (RB1, Exchange.postFundOverLimit()) so one cannot outrun it.
+ *   (LIMIT_SALE_SHARE) is offered a month at the market, posted before the
+ *   buybacks bid (RB1, RB3: Exchange.postFundOverLimit()) so one cannot outrun it.
  *
  *   MONEY OUT: the withdrawal dial's share of its value a month, to the
  *   budget as a revenue line - by default TRANSFER_RATE a year, a twelfth a

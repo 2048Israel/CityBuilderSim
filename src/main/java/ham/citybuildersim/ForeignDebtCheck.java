@@ -608,7 +608,8 @@ public class ForeignDebtCheck {
             // world's band this trading city earns a good deal less than on the literals (ore, copper and crude at a half to a third of them), and
             // US$8,000k was 45% of a year's GDP: the D$ stood at 2.5 against a parity of 0.9, and the first month after the reload moved it 10% as the
             // purchase faded - the reload's twin, not yet reloaded, books the same -1,948 that month, so it is no phantom, but a month's move over
-            // the 5% the assertion below allows. No more than 5% of a year's GDP is bought, as before wherever the city is large enough for 8,000.
+            // the 5% the assertion below then allowed (the twin's own month since FB15). No more than 5% of a year's GDP is bought, as before
+            // wherever the city is large enough for 8,000.
             double bondUsd = Math.min(8_000, .05 * 12 * fx.getGdpTrailing() / fx.getRate());
             city.handleForeignLogic("Term", bondUsd, 10, 100 * PriceLevel.FACTOR, true);   // a dollar bond; there is no dollar serial since CD2
             city.getDebtManager().restoreForeignStanding(new double[] { .04, 12 });
@@ -686,8 +687,21 @@ public class ForeignDebtCheck {
         }
         double firstMonthLine = reloaded.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
         out.printf("   first month after a reload revalues by %,.2f%n", firstMonthLine);
-        assertTrue("a reloaded city does not book its whole history as one month",
-                Math.abs(firstMonthLine) < Math.max(1, back.getForeignPrincipal() * .05));
+        // What the reload must book is what its twin books: the city saved and not reloaded, the same month (FB15). 5% of the principal
+        // stood in for it, and a month's own move crossed it: WN3's purchase fading, and FB15's city, whose twin books the same 35.58 of 704.90.
+        double history = city.debtExchangeSinceFounding();
+        System.setOut(quiet);
+        try {
+            city.simulateMonths(1);
+        } finally {
+            System.setOut(out);
+        }
+        double twinLine = city.getEconomyManager().getNationalAccounts().getDebtExchangeGain();
+        out.printf("   ...its twin, not reloaded, by %,.2f; the history since founding is %,.2f%n", twinLine, history);
+        assertTrue("fixture: the history since founding is more than twice the twin's month, so booking it shows",
+                Math.abs(history) > 2 * Math.abs(twinLine));
+        close("a reloaded city does not book its whole history as one month: it books its twin's month",
+                firstMonthLine, twinLine, .005);
 
         theWorldsCurve(root.resolve("curve"));
         theLadder(root.resolve("ladder"));

@@ -166,13 +166,10 @@ public final class StepsCheck {
         }
 
         out.println("--- 4. actual building-card and fund-step presses at large figures ---");
-        if (java.awt.GraphicsEnvironment.isHeadless()) {
-            out.println("UI presses skipped: no display");
+        String down = KeptCheck.startJavaFx();
+        if (down != null) {
+            out.println("UI presses skipped: " + down);
         } else {
-            java.util.concurrent.CountDownLatch started = new java.util.concurrent.CountDownLatch(1);
-            Platform.setImplicitExit(false);
-            Platform.startup(started::countDown);
-            if (!started.await(60, TimeUnit.SECONDS)) throw new IllegalStateException("JavaFX startup timed out");
             try {
                 fx(() -> {
                     KeptBench bench = new KeptBench(game);
