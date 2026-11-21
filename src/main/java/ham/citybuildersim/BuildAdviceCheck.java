@@ -1123,16 +1123,7 @@ public class BuildAdviceCheck {
 
     /* ============================ 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE ============================ */
 
-    /**
-     * NO HIGHER EDUCATION WITHOUT ITS PIPELINE (0.7.51). Every college or
-     * university row wants no more than would come and no more than would
-     * be hired, to the bit, and with no seats of its kind at least half the
-     * smallest school. The short city without its university has students
-     * for one and too few posts for its graduates: no row and no card; the
-     * posts brought in - Engineering Services Offices, standing - and the
-     * row is there. And the playtest's founding at month 9, which the old
-     * rule told to build a university, gets none.
-     */
+    /** Pipeline caps: the short city adds graduate posts; the controlled-return founding still has too few. */
     static void thePipeline(Path root, Game g, List<CityNeeds.Need> all) {
         out.println("\n--- 9. no higher education without its pipeline: no more wanted than would come or be hired;"
                 + " a first school half full ---");
@@ -1170,8 +1161,11 @@ public class BuildAdviceCheck {
         assertTrue("fixture: the rows above held a school with seats and one with none", rows[0] > 0 && rows[1] > 0);
 
         Game f = founded(root, "founded", 9);
+        Education school = f.getEducation();
+        LabourMarket market = f.getLabourMarket();
+        // Controlled offer: an existing ungated degree job pays three diploma wages; its posts stay unchanged.
+        market.getWages()[JobType.UNIV_SCIENCE.ordinal()] = 3 * market.getWage(JobType.DIPLOMA);
         double come9 = CityNeeds.wouldCome(f, uni);
-        // ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31).
         while (come9 < CityNeeds.SEATS_FLOOR && f.getMonth() < 36) {
             quietly(() -> f.simulateMonths(1));
             come9 = CityNeeds.wouldCome(f, uni);
@@ -1179,9 +1173,20 @@ public class BuildAdviceCheck {
         long uniPosts = 0;
         long[] jobs = f.getBuildingManager().getTotalJobs();
         for (JobType j : JobType.values()) if (WageBand.of(j) == uni.produces()) uniPosts += jobs[j.ordinal()];
-        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
+        double hires9 = CityNeeds.hires(f, uni, 1);
+        assertTrue("controlled return: eligible adults and native affordability are positive",
+                school.eligibleFor(uni, f.getPopulationManager()) > 0 && school.studyAffordability(uni, market) > 0);
+        for (AdultStage stage : AdultStage.values())
+            assertTrue("controlled return: positive native after-cost return for " + stage,
+                    school.studyReturn(uni, market, stage) > 0);
+        assertTrue("controlled return: genuine graduate posts and hires both stay below a class",
+                uniPosts > 0 && uniPosts < CityNeeds.SEATS_FLOOR && hires9 > 0 && hires9 < CityNeeds.SEATS_FLOOR);
+        out.printf("      controlled-return founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
                 f.getMonth(), f.getPopulationManager().getPopulation(), come9, uniPosts);
-        assertTrue("fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university",
+        out.printf("      native cause: eligible %.6f, affordability %.6f, returns young %.6f established %.6f, hires %.6f%n",
+                school.eligibleFor(uni, f.getPopulationManager()), school.studyAffordability(uni, market),
+                school.studyReturn(uni, market, AdultStage.YOUNG), school.studyReturn(uni, market, AdultStage.ESTABLISHED), hires9);
+        assertTrue("fixture: controlled return from the ninth month brings at least a university class by month 36",
                 f.getMonth() >= 9 && f.getMonth() <= 36 && come9 >= CityNeeds.SEATS_FLOOR);
         List<CityNeeds.Need> f9 = CityNeeds.measure(f, CityNeeds.PLAIN);
         assertTrue("no university row there", schoolRow(f9, uni) == null);

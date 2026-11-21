@@ -593,6 +593,39 @@ limits arrivals, while household reformation and study completion can still
 change demand. This phase trace and the recorded residual do not select a
 housing mend or establish a known unrelated cause; that finding remains open.
 
+## Controlled university fixture mend
+
+Mail `20261121-161024-305-orchestrator-09ea` authorizes a harness-only mend
+to the founding case in `BuildAdviceCheck.thePipeline`. The source now
+explicitly controls one existing ungated degree job's wage at **three
+diploma wages**, through the existing LabourMarket wage-array API. In game
+terms this is a well-paid graduate offer with the same few graduate posts,
+not a claim about default Standard wages. The fixed input was chosen once;
+no return formula, threshold search, fee/pool/post changes or extended
+waiting window was introduced. The original default negative capture,
+all 28 rows and its native inputs remain preserved above and in cause03.
+
+New hard guards read native eligibility, affordability and each current
+adult stage's after-cost return, and require genuine posts and hires both
+positive and below `CityNeeds.SEATS_FLOOR`. The original demand assertion
+still requires at least that floor in months 9–36; original no-row and
+no-card assertions remain, with controlled-return labels. Earlier section-9
+positive-post cases are unchanged. Incremental harness machinery numstat is
+**18 additions / 13 removals**, net **+5** lines. The removed lines compress
+the adjacent old pipeline narration and replace the obsolete default-wage
+description; no test logic or finding assertion was removed.
+
+Production model, save, UI, pom and ensemble-driver bytes remain identical
+to frozen 6ede2fa3a. This harness-only change retains the valid 80-run WG3
+ensemble. The authorized box verification will use one normal
+`batch-check.sh BuildAdviceCheck` call: its compile, maps and Stale supply
+the same checks as `--fast`, without a separate unchanged replay. No local
+JVM is permitted for this check. Results are not yet claimed.
+
+The housing evidence remains read-only and its hard red still blocks WG3.
+No housing mend, red classification, waiver, kept rejudge, full pick,
+playtest, ensemble replay, dry restart or readiness is authorized.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
