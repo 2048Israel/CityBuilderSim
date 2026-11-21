@@ -292,7 +292,8 @@ month's trade table, outside the old twelve-month window. Retail's sale and Moto
 main; this was a town that had not yet begun to drive, not missing petrol money. The fixture now waits at most
 36 months for an actual fuel sale before ordering its road and starting the same year of observations, as
 OilCheck 20 already establishes its drivers. A new hard assertion proves it drives before that year (0.097 L at
-the pump). The original petrol, diesel, lubricants, bitumen, goods-footing and money-audit assertions are unchanged.
+the pump, first fuel at game month 16 on the final merged tree; warm-up limit 36 months). The original petrol,
+diesel, lubricants, bitumen, goods-footing and money-audit assertions are unchanged.
 Named `./batch-check.sh OilCheck`: exit 0, every assertion green, including the new premise. No model change.
 
 **CreditCrunchCheck 4: the forced order meets a bank that is not short of capital.** A temporary read-only print
@@ -334,3 +335,17 @@ held sector or named approval for PW1 code. Read-only diagnostic logs are retain
 Both named diagnostic runs reproduced YoungBankCheck's same two failures, with section 1 and section 3's total
 improvement green. CreditCrunchCheck's four added assertion rows are accepted by the orchestrator (10:55); a
 rejudge of a copy of the stopped suite with `CBS_REJUDGE=1` confirms its exit and tally need no extra rows.
+The orchestrator accepted both YoungBank rows at 10:58; the copied-suite rejudge then leaves only the old OilCheck
+lines, for which no named row is added: the mended source is green and a fresh gate must judge it.
+
+**Final integration and remaining work.** `61c023fdd` merges main `cdd4a2a09` (OB1's docs and GB5's display checks),
+with only generated-index conflicts, taken from main and regenerated. This recovery changes only OilCheck's
+fixture and output, plus notes, known-red rows and generated maps; no new money, save or threading path, and the
+default model is unchanged. `pick.sh origin/main HEAD` selects ALL 237 harnesses, review floor
+`needed - saves: DataSave.java`; REV-PW1c-2's accepted SHIP remains the review of the power/save/money changes.
+The orchestrator's 10:58 go authorizes this provisional mends push after the final fast check. Ensemble and dry
+run have no go: wait for MC2 to ship, merge it, then rerun the final ensemble against the newest baseline and ask
+for the dry run. PW1d's 80-run pass against .174 remains the historical record; no baseline was rerun here.
+On the final merged tree, `./batch-check.sh OilCheck` exits 0 (first fuel month 16; all original assertions and
+the added premise pass), and `./batch-check.sh --fast` exits 0 (maps regenerated, Stale 0 firm / 194 soft).
+The final ship-row validator passes. The provisional marker stays; this is mends, not ready for publication.
