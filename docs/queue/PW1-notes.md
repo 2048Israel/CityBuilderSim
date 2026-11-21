@@ -276,3 +276,61 @@ those cells settle, and from month 5 households are discharged and leave (`Migra
 2.29 a copy at month 5, 24.0 at month 6; none at K = 10), the departures 31.4 a copy against 7.4. HL1's open fault,
 named in `HouseholdBalance` for HL2, whose queue row mends both (income and rent split over the cells that settle; a
 household whose savings cover its debt not bankrupt). Passed by name to HL2 in the ship file's known-reds.
+
+## 7. Recovery (PW1c2, 2026-11-21)
+
+Recovered the same `cl-PW1c`, `batch/PW1` at local `089769665`, preserving that commit and the stopped dry run
+`cbs-gate-PW1-IzRXJ3ps` (branch `4c52c2623`, main `fb64f5c7d`). The former worker's final OilCheck change was a
+diagnostic print only. Its source and output are retained under `target/PW1c2-recovery/OilCheck-old-diag.*`;
+the diagnostic is removed from the shipping source. The accepted REV-PW1c-2 review and PW1d ensemble above stand
+as historical evidence; neither was repeated in this recovery. No Sector, Recipes or BuildAdvice edits.
+
+**OilCheck 13: cause the drivers before observing their imports.** In the saved diagnostic, the first eleven
+observed months had no pump sale, queue sale, imported petrol or household fuel. The twelfth had its first pump
+sale (0.2 L); `Sectors.tradeByGood()` reads the settled `Sector.Statement`, so that sale belongs to the next
+month's trade table, outside the old twelve-month window. Retail's sale and Motoring's draw are unchanged from
+main; this was a town that had not yet begun to drive, not missing petrol money. The fixture now waits at most
+36 months for an actual fuel sale before ordering its road and starting the same year of observations, as
+OilCheck 20 already establishes its drivers. A new hard assertion proves it drives before that year (0.097 L at
+the pump). The original petrol, diesel, lubricants, bitumen, goods-footing and money-audit assertions are unchanged.
+Named `./batch-check.sh OilCheck`: exit 0, every assertion green, including the new premise. No model change.
+
+**CreditCrunchCheck 4: the forced order meets a bank that is not short of capital.** A temporary read-only print
+at m270, before `consider()`, reads leverage 0.040505819 against target 0.039375, risk ratio 0.093150336,
+`isInsuredRationed=false`, `isKeepGoingOnly=true`, growth 0. The six blocks cost 4,796.478965 at the door (plan
+4,737.3), the till plus foreign assets 1,179.450350, the model's down payment 762.586195 and the mortgage principal
+3,617.028616. `mortgageShortOfCapital()` says false. `ownersAskOnMortgage()` is byte-unchanged from main: on that
+false branch it returns `min(down, down-held)`, here -416.864154; the caller correctly offers no negative issue.
+The lender reads exactly the door's 4,796.478965 and trims six to four for its lending test, not for capital.
+Thus the two section-4 fixture assertions and their two dependent assertions are red because the bank-short
+premise no longer holds, the same played-bank class as its two existing FS9 rows. No PW1 price enters the owners'
+arithmetic and no mortgage code changed. Named CreditCrunchCheck reproduced six failures; the read-only diagnostic
+is retained in `target/PW1c2-recovery/CreditCrunch-diag.log` and removed from source before commit.
+
+**PublicLicenceCheck's tally.** The stopped run's `exit 1` and `64 passed, 4 FAILED` are now named alongside the
+four already traced PW1-W assertions. Their passed-and-failed tally is not the runner's plain `N FAILED` form.
+
+**YoungBankCheck 2-3: trading losses and recovering freight, not a power-planner fault.** The Blast Furnace at
+m2 in the old report was considered, not ordered: its reason holds for staffing 0%; m3 holds because the whole
+cost's interest is infinite. The bank's equity falls from 2,732.125 at m50 to -500.597 at m55. Trading income in
+those six months is -160.658, -657.684, -631.267, -440.347, -670.508 and -751.390. At the crossing, m55, net income
+is -748.151, provisions -0.297, write-offs 0.065 and operating costs 4.219; the grid ratio is 1 throughout. This
+is the unchanged bank's trading risk on the moved town, not a first plant's loan sinking it. The old bank minimum
+and no-lone-plant-write-off assertions still pass; the bank nevertheless spends 42 months in resolution.
+
+Only Food Processing's Bottling Plant fails section 3's per-plant comparison: weighed at 0.458090 at the start
+of its order month (m108), versus its empty sector's 0.803, then runs at 0.742 on average. A read-only probe at
+the end of m108 reads planned rate 0.475014, staffed rate 0.500867, health 0.825333, first-plant freight 0.606866,
+power and water 1. The plant runs alone at m110-121: freight rises from 0.65 to 1, health stays near 0.848 and
+staffing rises from 0.98 to 1; its rate grows from 0.540182 to 0.844159. The static opening forecast does not
+predict that freight recovery, and the old estimate happens to be nearer the later mean. Automotive's Vehicle
+Works improves (0.721 weighed versus 0.886 own, 0.396 run) and is not a failing comparison. `Sector.plannedRate`,
+`firstPlantRate`, `rateOf` and the freight forecast are unchanged from main; the rate product never reads a power
+price, and the power ratio in every Bottling Plant sample is exactly 1. No PW1 price arithmetic fault was found.
+Recommended: the two narrowly scoped assertions under the existing FS9 bank/borrower sweep; no changed bound,
+held sector or named approval for PW1 code. Read-only diagnostic logs are retained as
+`target/PW1c2-recovery/YoungBank-diag.log` and `YoungBank-rate-diag.log`; all prints are removed from source.
+
+Both named diagnostic runs reproduced YoungBankCheck's same two failures, with section 1 and section 3's total
+improvement green. CreditCrunchCheck's four added assertion rows are accepted by the orchestrator (10:55); a
+rejudge of a copy of the stopped suite with `CBS_REJUDGE=1` confirms its exit and tally need no extra rows.

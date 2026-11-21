@@ -956,10 +956,16 @@ public class OilCheck {
                 g.buildStack(b.getTemplateByName(w[0]), Integer.parseInt(w[1]), true);
             }
             g.simulateMonths(2);
+            // Establish the drivers before observing their imports: the pump's sale enters the next month's statement.
+            // On PW1 its first fuel sale was at the old window's last month, so all twelve statements preceded it.
+            for (int warm = 2; warm < 36 && !(g.getMotoring().getFuelBill() > 0); warm++) g.simulateMonths(1);
             bitumen[0] = g.getBitumenTonnes();
             g.buildStack(paved, 1, false);
             bitumen[1] = g.getBitumenTonnes();
         });
+        report("fixture: the town drives before its year of fuel imports is observed",
+                g.getMotoring().getFuelBill() > 0, String.format("month %d, %,.3f L bought at the pump (warm-up limit 36 months)",
+                        g.getMonth(), g.getSectors().retail().getPumpLitres()));
         report("a Paved Road ordered draws its bitumen as it is placed: 64.25 t, bought by the builders",
                 bitumen[1] - bitumen[0] == g.bitumenFor(paved) && g.bitumenFor(paved) == 64.25
                         && g.getSectors().construction().pending().boughtOf(Good.BITUMEN).abroad > 0,
