@@ -1,5 +1,10 @@
 # PW6 — the recorded power month (2026-11-21)
 
+> CHECKPOINT after REV-PW6c1-1, based on `215d3a39cb5997fed7f7dd96444503f2a98fea0e`.
+> The P2 source/fixture delta below has compile/maps/Stale verification only. Its new
+> runtime proof is UNEXECUTED, awaiting the orchestrator's local named-slot release.
+> The source is not SHIP. The provisional ship marker remains; no ensemble/dry/screen GO.
+
 PW6 implements the accepted electricity study §5 power screen after shipped PW1, from
 main `9d4467e8ae610a777f7ce445702c205f3984042c` / game 0.9.180. `moves_playtest=yes`
 conservatively for the completed-flow save/load continuation mend below.
@@ -129,3 +134,51 @@ one-in/one-out does not apply. No publisher-owned records were edited.
 Ask root for a separate screen-check session: inspect narrow/wide wrapping, all six
 stack ticks and row colours, dates versus billing/payment periods, empty/founding and
 old-save messages, month updates and scroll position. An eye check is not a Pending row.
+
+## REV-PW6c1-1 P2 checkpoint — optional marginal-cost history omitted
+
+The review found that `recordPower()` filled an absent row's optional marginal-price
+RATE with zero, reducing its annual mean. Zero is correct for absent energy, fuel and
+receipt FLOWs. Root chose to omit the optional per-row marginal series entirely. The
+accepted study §3 requires tariff, fuel bill, block prices and energy by row in history;
+it does not require marginal-cost history. Current retained row marginal cost and its
+Services display are unchanged, as are global tariffs and six clearing prices.
+
+The bounded source delta is `PowerView.java` (omit the one metric), `HistorySave.java`
+(a Gson adapter on `powerSeries` only, dropping exactly `powerPrice:row:*:marginal` on
+read/write, including unpublished optional prototype content), and `PowerViewCheck.java`
+(new native leave/gap/rejoin and actual fold proof). Existing plain-array JSON values,
+shared folding rules, null/NaN encoding, pending state, money/physical scaling, load
+restore phases and screen code are untouched. No compatibility conversion is added.
+
+The proposed proof uses a real coal row with nonzero generation, fuel, clearing receipts
+and marginal cost. Native retirement removes its full quantity; fixed native months
+retain the already-completed final run, then cause its absence. The same permanent id
+rejoins through the native stack API. The proof checks three absent strikes and the
+rejoin at exact history positions against retained row facts, while checking actual
+tariff and retained current cost. It then ages the actual native power arrays by the
+existing `MONTHLY_KEPT` constant, calls `foldOldYears()`, and compares yearly FLOW sums
+and the global price's true mean. Optional prototype JSON must not export, snapshot,
+resave or fold a row marginal RATE. This is a static proof design, not a runtime result.
+
+Before any later proof wrapper can overwrite evidence, pre-mend production source from
+`215d` and proposed fixture snapshots are retained in `target/PW6-P2-proof-checkpoint/`.
+No new runtime negative/positive control has run. The earlier immutable
+`target/PW6-negative-20261121/` archive is untouched. Once root releases the slot, proposed
+focused coverage is the new PowerViewCheck against the pre-mend writer/series (archive
+raw source/log before restoration), positive PowerViewCheck, YearBookCheck and actual
+save coverage via SaveFileCheck, sequential normal wrappers as ordered. Prior green
+runtime results elsewhere in these notes belong to the earlier source checkpoint.
+
+A static read while preparing the fold proof found that `HistorySave.slim()` does not
+seed optional dynamic power-series keys in its empty destination map. This is not changed
+in the P2 delta; root was told. The new fold proof directly preserves native power-array
+content and does not depend on that separate path. If a consumer needs those slim/kept
+keys, the narrow recommendation is to seed only the requested power keys in that path.
+
+Scoped source-delta review against `215d` remains owed after the changed runtime proof.
+Final-model ensemble against .180 and ALL-238 dry ordering remain owed, without GO.
+Checkpoint validation: changed-source `batch-check.sh --fast` exited 0 (compile,
+regenerated maps and Stale: zero firm findings). No named/model/display JVM ran in this
+resume. New negative/positive leave/rejoin, prototype JSON and fold assertions remain
+UNEXECUTED; the FS6-owned named slot has not been used or waited on.

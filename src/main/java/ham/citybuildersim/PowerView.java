@@ -89,7 +89,6 @@ public final class PowerView {
             m.put("powerFlow:row:" + r.id() + ":kwh", r.kwh());
             m.put("powerFlow:row:" + r.id() + ":fuel", r.fuelUnits());
             m.put("powerMoney:row:" + r.id() + ":receipts", r.receipts());
-            m.put("powerPrice:row:" + r.id() + ":marginal", r.marginal());
         }
         return m;
     }

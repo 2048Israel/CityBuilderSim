@@ -1,4 +1,4 @@
-# PowerView.java - 96 lines · 4 methods · 0 constants · model
+# PowerView.java - 95 lines · 4 methods · 0 constants · model
 
 `ham/citybuildersim/PowerView.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -15,7 +15,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 82 | **type** `public final class PowerView` | The power screen's pure projection of a retained dispatch and its struck tariff. |
+| 15 | 81 | **type** `public final class PowerView` | The power screen's pure projection of a retained dispatch and its struck tariff. |
 | 16 | 1 | `private PowerView()` |  |
 | 18 | 1 | **type** `public record Half(String name, double hours, double askedKw, double unservedKw, double price)` |  |
 | 19 | 1 | **type** `public record Row(String name, UtilitiesHandler.RowRecord record)` |  |
@@ -25,5 +25,5 @@
 | 25 | 1 | `{ ... }` _(in PowerView.View)_ |  |
 | 28 | 6 | `public static View of(Game game)` |  |
 | 36 | 28 | `public static View of(UtilitiesHandler utility, IntFunction<String> names)` | The same public observation path, with catalogue names supplied separately for native dispatch fixtures. |
-| 66 | 30 | `public static Map<String, Double> series(View v)` | Bounded series keyed by permanent catalogue id, never by building or mutable title. |
+| 66 | 29 | `public static Map<String, Double> series(View v)` | Bounded series keyed by permanent catalogue id, never by building or mutable title. |
 

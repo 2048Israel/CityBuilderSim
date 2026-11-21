@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**238 harness files, 27,166 labelled assertions.** AllChecks runs 238 of them.
+**238 harness files, 27,179 labelled assertions.** AllChecks runs 238 of them.
 
 ## Which harnesses read which class
 
@@ -64,7 +64,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -25778,7 +25778,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L611 both are in TRADE: the month's imports (tradeOut) hold the two lines
   - L612 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
 
-## PowerViewCheck.java - 27 labelled assertions
+## PowerViewCheck.java - 40 labelled assertions
 
 > Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves.
 > WHY. A screen can look plausible while showing next month's fleet or calling row receipts profit. The fixtures cause
@@ -25812,9 +25812,23 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L264 monthly-to-year folds actually occur
   - L270 prices fold as rates, not annual bills
   - L276 currency reform scales only money/prices, and snapshots share no mutable lists
-- **L284 actual save/load and missing old observations**
-  - L285 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
-  - L286 the saved closing dispatch feeds the next native month without being rebuilt from ending state
+- **L284 a permanent row leaves, stays absent and rejoins without a fabricated cost rate**
+  - L293 fixture starts with observed native coal generation, fuel, receipts and nonzero marginal cost
+  - L297 the entire observed catalogue row departs through the native retirement API
+  - L304 the same permanent row rejoins through the native stack API
+  - L312 observed running cost remains in the retained row at event step
+  - L314 actual tariff remains the retained model tariff at event step
+  - L318 the original completed dispatch precedes three absent strikes, then the rejoin dispatch
+  - L329 row marginal cost is omitted from current history exports and series projection
+  - L334 an optional prototype marginal-rate key cannot leak through load, snapshot or JSON
+  - L337 prototype omission preserves actual
+  - L343 all actual departure/rejoin events lie in the first calendar year to be folded
+  - L360 the native departure/rejoin year actually folds
+  - L366 the real global energy price retains its own annual RATE mean
+  - L367 no omitted marginal RATE is exposed by folds or folded JSON
+- **L373 actual save/load and missing old observations**
+  - L374 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
+  - L375 the saved closing dispatch feeds the next native month without being rebuilt from ending state
 
 ## PriceLevelCheck.java - 93 labelled assertions
 

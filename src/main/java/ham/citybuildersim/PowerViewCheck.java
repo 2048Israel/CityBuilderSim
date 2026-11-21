@@ -279,8 +279,97 @@ public final class PowerViewCheck {
                 && snapshot.raw("powerPrice:energy")[snapshot.raw("powerPrice:energy").length - 1] == price);
     }
 
+    /** Fixed native months cause departure and rejoin; synthetic tail aging only puts that actual history through its yearly fold. */
+    static void rowLeaveRejoinHistory() {
+        System.out.println("--- a permanent row leaves, stays absent and rejoins without a fabricated cost rate ---");
+        PowerPriceCheck.City c = PowerPriceCheck.town("view-row-gap", false, 0);
+        Game g = c.g;
+        PowerPriceCheck.quietly(() -> g.simulateMonths(3));
+        BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
+        int id = coal.getId();
+        String energy = "powerFlow:row:" + id + ":kwh", fuel = "powerFlow:row:" + id + ":fuel";
+        String receipts = "powerMoney:row:" + id + ":receipts", marginal = "powerPrice:row:" + id + ":marginal";
+        PowerView.Row observed = PowerView.of(g).rows().stream().filter(r -> r.record().id() == id).findFirst().orElseThrow();
+        check("fixture starts with observed native coal generation, fuel, receipts and nonzero marginal cost",
+                observed.record().kwh() > 0 && observed.record().fuelUnits() > 0 && observed.record().receipts() > 0 && observed.record().marginal() > 0);
+        int first = g.getHistorySave().getMonth().size();
+        long quantity = g.getBuildingManager().getQuantity(id);
+        check("the entire observed catalogue row departs through the native retirement API",
+                quantity > 0 && g.getBuildingManager().retire(coal, quantity) == quantity && g.getBuildingManager().getQuantity(id) == 0);
+        double[][] expected = new double[5][3];
+        boolean[] present = new boolean[5];
+        for (int step = 0; step < 5; step++) {
+            if (step == 3) {
+                g.getBuildingManager().addStack(coal, quantity, true);
+                check("the same permanent row rejoins through the native stack API", g.getBuildingManager().getQuantity(id) == quantity);
+            }
+            PowerPriceCheck.quietly(() -> g.simulateMonths(1));
+            PowerView.View v = PowerView.of(g);
+            PowerView.Row row = v.rows().stream().filter(r -> r.record().id() == id).findFirst().orElse(null);
+            present[step] = row != null;
+            if (row != null) {
+                expected[step] = new double[] {row.record().kwh(), row.record().fuelUnits(), row.record().receipts()};
+                check("observed running cost remains in the retained row at event step " + step, row.record().marginal() > 0);
+            }
+            check("actual tariff remains the retained model tariff at event step " + step,
+                    v.bill().commerce() == c.u.getPricePerWatt() / PowerDispatch.MONTH_HOURS
+                    && v.bill().energy() == c.u.getStruckBook().energyPrice);
+        }
+        check("the original completed dispatch precedes three absent strikes, then the rejoin dispatch",
+                present[0] && !present[1] && !present[2] && !present[3] && present[4]
+                && expected[0][0] > 0 && expected[4][0] > 0 && expected[4][1] > 0 && expected[4][2] > 0);
+        HistorySave h = g.getHistorySave();
+        String[] flows = {energy, fuel, receipts};
+        for (int column = 0; column < flows.length; column++) {
+            double[] actual = h.raw(flows[column]);
+            boolean aligned = true;
+            for (int step = 0; step < expected.length; step++) aligned &= actual[first + step] == expected[step][column];
+            check(flows[column] + " records zero in the actual absent positions and aligns the rejoining flow", aligned);
+        }
+        check("row marginal cost is omitted from current history exports and series projection",
+                !h.seriesByName().containsKey(marginal) && !PowerView.series(PowerView.of(g)).containsKey(marginal));
+        com.google.gson.JsonObject prototype = JSON.toJsonTree(h).getAsJsonObject();
+        prototype.getAsJsonObject("powerSeries").add(marginal, JSON.toJsonTree(List.of(observed.record().marginal(), 0.0)));
+        HistorySave read = JSON.fromJson(prototype, HistorySave.class);
+        check("an optional prototype marginal-rate key cannot leak through load, snapshot or JSON",
+                !read.seriesByName().containsKey(marginal) && !JSON.toJson(read).contains(marginal)
+                && !JSON.toJson(read.snapshot()).contains(marginal));
+        for (String flow : flows) check("prototype omission preserves actual " + flow,
+                java.util.Arrays.equals(h.raw(flow), read.raw(flow)));
+        double[] nativePrices = read.raw("powerPrice:energy");
+        double laterPrice = nativePrices[nativePrices.length - 1];
+        List<Integer> axis = new ArrayList<>(read.getMonth());
+        int last = axis.get(axis.size() - 1);
+        check("all actual departure/rejoin events lie in the first calendar year to be folded",
+                CityCalendar.yearOf(axis.get(0)) == CityCalendar.yearOf(last));
+        Map<String, List<Double>> aging = new LinkedHashMap<>();
+        Map<String, Double> tails = new LinkedHashMap<>();
+        for (var entry : read.seriesByName().entrySet()) if (entry.getKey().startsWith("power")) {
+            List<Double> values = new ArrayList<>();
+            for (Number n : entry.getValue()) values.add(n.doubleValue());
+            aging.put(entry.getKey(), values);
+            tails.put(entry.getKey(), YearBook.kindOf(entry.getKey()) == YearBook.Kind.FLOW ? 0 : values.get(values.size() - 1));
+        }
+        for (int month = last + 1; month <= last + HistorySave.MONTHLY_KEPT + 12; month++) {
+            axis.add(month);
+            aging.forEach((key, values) -> values.add(tails.get(key)));
+        }
+        Map<String, Object> aged = new LinkedHashMap<>(); aged.put("month", axis); aged.put("powerSeries", aging);
+        HistorySave folded = JSON.fromJson(JSON.toJson(aged), HistorySave.class);
+        folded.foldOldYears();
+        check("the native departure/rejoin year actually folds", folded.yearlyPoints() > 0 && folded.monthsIn(0) > 1);
+        for (String flow : flows) check(flow + " yearly FLOW equals the actual monthly total including the absent gap",
+                YearBook.kindOf(flow) == YearBook.Kind.FLOW && near(folded.raw(flow)[0], java.util.Arrays.stream(h.raw(flow)).filter(Double::isFinite).sum()));
+        int fillerInYear = folded.monthsIn(0) - nativePrices.length;
+        double expectedPrice = (java.util.Arrays.stream(nativePrices).filter(Double::isFinite).sum() + laterPrice * fillerInYear)
+                / (java.util.Arrays.stream(nativePrices).filter(Double::isFinite).count() + fillerInYear);
+        check("the real global energy price retains its own annual RATE mean", near(folded.raw("powerPrice:energy")[0], expectedPrice));
+        check("no omitted marginal RATE is exposed by folds or folded JSON",
+                !folded.seriesByName().containsKey(marginal) && !JSON.toJson(folded).contains(marginal));
+    }
+
     public static void main(String[] args) {
-        dispatchCases(); meritMoves(); timingPurityAndFold();
+        dispatchCases(); meritMoves(); timingPurityAndFold(); rowLeaveRejoinHistory();
         System.out.println("--- actual save/load and missing old observations ---");
         check("power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books", saveChecks());
         check("the saved closing dispatch feeds the next native month without being rebuilt from ending state", pendingSaveChecks());

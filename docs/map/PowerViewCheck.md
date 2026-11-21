@@ -1,4 +1,4 @@
-# PowerViewCheck.java - 290 lines · 13 methods · 1 constants · harnesses
+# PowerViewCheck.java - 379 lines · 14 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PowerViewCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY. A screen can look plausible while showing next month's fleet or calling row receipts profit. The fixtures cause
 > each condition through the real utility, and compare projections with its retained records rather than a copied market.
 
-**Uses:** [UtilitiesHandler](UtilitiesHandler.md) (24), [PowerView](PowerView.md) (20), [PowerPriceCheck](PowerPriceCheck.md) (18), [PowerDispatch](PowerDispatch.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (8), [Game](Game.md) (7), [BuildAdvice](BuildAdvice.md) (6), [HistorySave](HistorySave.md) (5), [Good](Good.md) (4), [YearBook](YearBook.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [MoneyAudit](MoneyAudit.md) (2), [ReadPathCheck](ReadPathCheck.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [PowerView](PowerView.md) (27), [UtilitiesHandler](UtilitiesHandler.md) (24), [PowerPriceCheck](PowerPriceCheck.md) (22), [PowerDispatch](PowerDispatch.md) (17), [HistorySave](HistorySave.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [Game](Game.md) (8), [YearBook](YearBook.md) (8), [BuildAdvice](BuildAdvice.md) (6), [Good](Good.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [MoneyAudit](MoneyAudit.md) (2), [ReadPathCheck](ReadPathCheck.md) (2), [CityCalendar](CityCalendar.md) (2), [BuildingType](BuildingType.md) (1)
 
 **Used by (1):** [SaveFileCheck](SaveFileCheck.md)
 
@@ -26,7 +26,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 277 | **type** `public final class PowerViewCheck` | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. |
+| 14 | 366 | **type** `public final class PowerViewCheck` | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. |
 | 17 | 4 | `static void check(String label, boolean ok)` |  |
 | 21 | 1 | `static boolean near(double a, double b)` |  |
 | 22 | 3 | `static BuildingsTemplate row(String name)` |  |
@@ -39,5 +39,6 @@
 | 124 | 25 | `static boolean saveChecks()` |  |
 | 150 | 63 | `static boolean pendingSaveChecks()` |  |
 | 214 | 67 | `static void timingPurityAndFold()` |  |
-| 282 | 8 | `public static void main(String[] args)` |  |
+| 283 | 87 | `static void rowLeaveRejoinHistory()` | Fixed native months cause departure and rejoin; synthetic tail aging only puts that actual history through its yearly fold. |
+| 371 | 8 | `public static void main(String[] args)` |  |
 
