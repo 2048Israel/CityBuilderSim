@@ -10,3 +10,7 @@ and a station laid short is laid again longer each January where the ground allo
 train. Jerus's city (month 1,204: 29 trains, none run) runs 4 a month from the next January; the Bergen playtest 5 to 7 from its first
 station at month 840, where main ran none. MainLineCheck 17 and GatewayCheck 22 cause each and fail on main. Map only:
 the default playtest's eight trace files are byte-identical to main's.
+
+## queued
+| HWW1 | Jerus's fjord city at m1204 has no highway world line; trace the highway exit and world truck calls, then mend the cause with a fixture | [HWW1 brief](docs/queue/TN1-notes.md#hww1) |
+| STY1 | Bergen's station remains 15 plots long at m840-1322, holding 9.0 against an 80-wagon train's 41.4 plots; provide a valid longer station where ground allows | [STY1 brief](docs/queue/TN1-notes.md#sty1) |

@@ -114,3 +114,64 @@ On a3b9e8bef (the code as shipped), one harness per `./batch-check.sh` call:
   from the main arm reaches no yard. Not traced; for RR1 or a follow-up.
 - A station's single route: his city's 48-plot yard gives one route (siding 2), so 4 of 29 trains run a month and 11 stand for each
   drawn (`stands()`); the rest wait for a free siding. FX5's rule, left.
+
+## Authorized follow-ups (TN1c2 recovery)
+
+The orchestrator's 2026-11-21 05:24/05:25 ready go asked for both open faults to be recorded before readiness.
+Both are queued as their own batches: each needs a new causal fixture and a map mend beyond TN1's train-entry repair.
+HWW1 and STY1 passed `tools/batch-id.sh` after fetching origin; neither is an existing queue/brief/branch id.
+Their briefs are here so this recovery changes only TN1's notes and ship file; the publisher transfers the two rows to Queued.
+RR1 retains its existing drawing/dead-end brief. No other row is reassigned.
+
+### HWW1
+
+**The highway's line to the world on Jerus's fjord city.** TN1 observed no highway world line on the scratch copy of
+slot 10 at month 1,204 (421,561 people, gateway south/90 degrees). Its highway offers were deliberately unchanged.
+The measured 219-step rail arm ending at owned water and the 118-plot distance to an owned/unowned dry boundary above
+are railway evidence; TN1 did not measure the highway arms or count the missing truck calls. Do not treat those rail
+figures as a highway diagnosis. Source on 8e9630e2a: `CityMap.worldLine()`, lines 5171-5228, requires an arm to reach
+unowned dry ground and a dry run of `WORLD_PLOTS` (64); its extra corner offers at 5208-5215 apply only to railway.
+`CityMap.truckRoutes()`, lines 5841-5860, makes world truck routes only inside `if (line != null)`. Thus the observed
+missing highway line prevents those world routes by inspection; the truck schedule and local trips remain to be traced.
+
+**Brief.** On a scratch copy of that city, print the highway arms, owned-ground exit, offers and dry reach, world truck
+routes and scheduled world/local calls to find which highway condition prevents a line. Mend that cause in highway
+world entry/routes, with a GatewayCheck/TruckRouteCheck fixture that causes it and fails before the mend. Preserve
+working world routes and valid ground geometry; keep RR1's visual corners/stubs in RR1. Expected files:
+`CityMap.java`, `CityRuns.java` only if the exit cause needs it, `GatewayCheck.java`, `TruckRouteCheck.java`, and their
+generated maps. Expected `moves_playtest=no`: map/schedule pictures only; no freight-share or economy change.
+Done means the copy has a valid highway way to the world and world truck routes/calls where freight calls for them,
+with the harness asserting the actual cause rather than merely allowing any route. Never load or write the live slot.
+
+### STY1
+
+**Bergen's mixed-train station still excludes the 80-wagon train.** The final-code probe
+(`target/tn1-bergen-final.txt`, preserved locally) has yard 0 at [376840, 376834, 15, 7] from month 840 through 1,322,
+one station route with a 9.0-plot siding; the mixed train needs 8.9 plots, an 80-wagon unit train 41.4 (about 1.24 km).
+At month 840 the schedule draws 16 and marks 10 unfit; at 1,322 it draws 28 and marks 22 unfit. These are all-kind
+unfit totals, not counts of unit trains. The probe's candidate dump at each sampled month has only the 8- and
+15-plot quarter-line boxes. TN1's January reweigh finds no longer fitting box there. Source on 8e9630e2a:
+`CityRuns.reweighDue()`, lines 2417-2420, still reweighs a station short of `YARD_LONG`; `lengthenStation()`,
+lines 2442-2446, admits `spotsOffLine()` only when the station is shorter than the shortest tier. This 15-plot station
+holds mixed trains, so that second search is excluded. Whether a valid longer box exists elsewhere in Bergen is
+still to be measured; TN1 did not prove that merely widening that search suffices.
+
+**Brief.** Reproduce Bergen's station and trace longer-tier candidate rejection through the January reweighs. Find
+a valid way to accommodate the real unit train as the city grows, considering the spine beside the quarter line
+and the station approach/fan, without shortening trains or bypassing fit/ground rules. Add a MainLineCheck fixture
+starting at the mixed-train tier (distinct from TN1 section 17's no-train footprint) with a causally available
+longer site, and a route/schedule assertion that the unit train actually runs; fail it on the pre-mend code.
+Expected files: `CityRuns.java`, `CityMap.java` only if the approach needs it, `MainLineCheck.java`, relevant rail
+route checks, and their generated maps. Expected `moves_playtest=no`, map placement only. Done means Bergen can
+serve the 80-wagon train when suitable ground exists, while mixed trains keep running and the January/read-back
+calendar stays consistent. A further works yard stays beside its works; this brief concerns the station.
+
+### Recovery validation and readiness
+
+TN1c2 preserved all implementation, commits and existing evidence at 8e9630e2a. The original launcher input and
+TN1 out-1 result agree with the checks above; the completed named checks and byte-identical default trace were
+not repeated. Record validation is strict UTF-8/LF, the two fresh ids, `git diff --check` and
+`sh tools/known-reds.sh TN1 docs/queue/TN1-ship.md`. Review remains not needed; pick remains 22, not ALL.
+The recovery go authorizes dropping the provisional marker last in its own commit after these records are pushed.
+No dry run, ensemble, code/model/map change or main merge is owed here; the orchestrator gates the versioned TN1
+and resolves generated documentation at its merge.
