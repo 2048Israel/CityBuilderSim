@@ -444,7 +444,7 @@ finding; pairing was 64/64. The informational A2 inflation-spell criterion
 remains FAIL: longest spells have median 20 months [5 to 39], against the
 baseline's 15 [5 to 39]. H1 remains retired and excluded from the count. All
 other counted criteria pass. The full score table and raw summary are in
-the committed `docs/ensemble/MC2.md`; its publication version is `{next}`,
+the committed `docs/ensemble/MC2.md`; its publication version uses the publisher's next-version token,
 while its source snapshot and comparison retain their actual .177 provenance.
 
 Remote evidence folder:
