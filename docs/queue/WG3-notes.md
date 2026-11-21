@@ -617,10 +617,39 @@ description; no test logic or finding assertion was removed.
 
 Production model, save, UI, pom and ensemble-driver bytes remain identical
 to frozen 6ede2fa3a. This harness-only change retains the valid 80-run WG3
-ensemble. The authorized box verification will use one normal
-`batch-check.sh BuildAdviceCheck` call: its compile, maps and Stale supply
-the same checks as `--fast`, without a separate unchanged replay. No local
-JVM is permitted for this check. Results are not yet claimed.
+ensemble. The authorized box verification used exactly one normal
+`bash ./batch-check.sh BuildAdviceCheck` call on pushed source
+`8ff9577eb3764e60cb75a15bb2d36d631478ac7a`: **exit 0**. Its compile (8s),
+named suite (one harness, 7s), maps and Stale supply the same checks as
+`--fast`, without a separate unchanged replay. Stale reports **0 firm**,
+194 soft findings. No local JVM was started. The seven generated index/map
+changes were copied from that wrapper's regeneration, not hand-merged.
+
+The fixed setup succeeds at **month 9**, population **94**: rounded **26**
+would come, against the unchanged 25 floor, with the same **five** actual
+university posts and native hires **4.943570**. Native eligibility is
+**41.178934**, affordability **0.889129**, and both young/established native
+after-cost return curves are **1**. All new cause guards and original
+month/demand/no-row/no-card laws pass. Earlier section-9 cases also pass:
+the short city has 1,134 would-come and 164 hires against 600 first seats;
+offices raise hires to 632 and the university row appears. No input tuning
+or second harness run was needed.
+
+The box run is
+`/home/jerus/cbs/runs/WG3codex1-university-mend01`; foreground ownership was
+2026-11-21 **20:18:15–20:18:43 UTC**. Actual remote job/controller exits are
+**0**, PIDs 2197056/2197053 gone, active absent, no owned JVM and box lock
+released. **664/664** remote/home retained hashes match; the **2,444**
+compiled files verify, data hashes match and source-after diff is empty.
+Source-tree manifests excluding only the mended harness match frozen
+6ede2fa3a exactly, SHA256
+`9714f3e5340ada049928629e33d5ca80456aede3c9f6764f4328a3f2d4eeeb4e`.
+Native gate.env selected Temurin **21.0.13+9**, headless flags and the named
+box earth/world files. Empty-host and local Java/javac/Maven refusal proofs
+precede invocation. Wrapper, checks, class/source/data manifests and terminal/
+copy receipts are preserved in `target/wg3-university-mend`; no source or
+records changed during the live remote run. Prior pick **ALL 239** and review
+**not needed** remain applicable; no picked full suite was run.
 
 The housing evidence remains read-only and its hard red still blocks WG3.
 No housing mend, red classification, waiver, kept rejudge, full pick,

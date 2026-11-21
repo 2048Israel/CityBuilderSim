@@ -1,4 +1,4 @@
-# BuildAdviceCheck.java - 1,732 lines · 55 methods · 2 constants · harnesses
+# BuildAdviceCheck.java - 1,737 lines · 55 methods · 2 constants · harnesses
 
 `ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  11. THE RUN: "Build all three" places the cards' orders in their order,
 > ... (26 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (269), [CityNeeds](CityNeeds.md) (104), [Game](Game.md) (64), [BuildingsTemplate](BuildingsTemplate.md) (62), [BuildingType](BuildingType.md) (34), [Ports](Ports.md) (23), [CareType](CareType.md) (18), [Crime](Crime.md) (13), [JobType](JobType.md) (13), [LongPlaytest](LongPlaytest.md) (11), [GameFiles](GameFiles.md) (9), [SafetyType](SafetyType.md) (9), [PowerDispatch](PowerDispatch.md) (7), [EducationType](EducationType.md) (7), [Founding](Founding.md) (6), [BuildingManager](BuildingManager.md) (6), [Observation](Observation.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [UtilitiesHandler](UtilitiesHandler.md) (4), [Formats](Formats.md) (3), [StrategicReserve](StrategicReserve.md) (3), [AutoBuilder](AutoBuilder.md) (3), [Healthcare](Healthcare.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (2), [LandManager](LandManager.md) (2), [WageBand](WageBand.md) (2), [Health](Health.md) (2), [PortCheck](PortCheck.md) (2), [TempDirs](TempDirs.md) (1)... and 7 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (269), [CityNeeds](CityNeeds.md) (107), [Game](Game.md) (64), [BuildingsTemplate](BuildingsTemplate.md) (62), [BuildingType](BuildingType.md) (34), [Ports](Ports.md) (23), [CareType](CareType.md) (18), [JobType](JobType.md) (15), [Crime](Crime.md) (13), [LongPlaytest](LongPlaytest.md) (11), [GameFiles](GameFiles.md) (9), [SafetyType](SafetyType.md) (9), [PowerDispatch](PowerDispatch.md) (7), [EducationType](EducationType.md) (7), [Founding](Founding.md) (6), [BuildingManager](BuildingManager.md) (6), [Observation](Observation.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [UtilitiesHandler](UtilitiesHandler.md) (4), [AdultStage](AdultStage.md) (4), [Formats](Formats.md) (3), [StrategicReserve](StrategicReserve.md) (3), [AutoBuilder](AutoBuilder.md) (3), [Healthcare](Healthcare.md) (3), [TaxPolicy](TaxPolicy.md) (3), [Sector](Sector.md) (2), [LandManager](LandManager.md) (2), [WageBand](WageBand.md) (2), [Health](Health.md) (2), [PortCheck](PortCheck.md) (2)... and 10 more
 
 **Used by (3):** [BuildCardCheck](BuildCardCheck.md), [RoadCheck](RoadCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -81,17 +81,17 @@
 | 894 | 7. LAND COUNTED |
 | 1071 | 8. SLACK BUILT |
 | 1124 | 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE |
-| 1271 | 10. SIZED TO THE PROJECTION |
-| 1331 | 11. THE RUN |
-| 1385 | 12. THE BEDS LESS THE PRICED OUT |
-| 1450 | 13. A BERTH PAYS BACK (FR3) |
+| 1276 | 10. SIZED TO THE PROJECTION |
+| 1336 | 11. THE RUN |
+| 1390 | 12. THE BEDS LESS THE PRICED OUT |
+| 1455 | 13. A BERTH PAYS BACK (FR3) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1282 | `BuildAdviceCheck.RISE_A_MONTH` | `.03` | The share of its people the short city's rising history gains a month in section 10, over the businesses' window. |
-| 1633 | `BuildAdviceCheck.SHORT_ON_THE_AVERAGE` | `1.3` | How many times its production the powered city draws before the Wind Farms are added (section 15): short on the average, so the wind is what clears it. |
+| 1287 | `BuildAdviceCheck.RISE_A_MONTH` | `.03` | The share of its people the short city's rising history gains a month in section 10, over the businesses' window. |
+| 1638 | `BuildAdviceCheck.SHORT_ON_THE_AVERAGE` | `1.3` | How many times its production the powered city draws before the Wind Farms are added (section 15): short on the average, so the wind is what clears it. |
 
 ## Fields (state)
 
@@ -106,7 +106,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 103 | 1630 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
+| 103 | 1635 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
 | 109 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 114 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 120 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -187,44 +187,44 @@
 |---:|---:|---|---|
 | 1080 | 43 | `static void slackBuilt(Game g, List<BuildAdvice.Suggestion> advice)` | SLACK BUILT (0.7.51): a served card - power, water, the road, care, the schools - at 100% or more of its demand at its projection with SLACK on top, not just off NEEDS YOU's list; care's and a basic school's demand th... |
 
-### 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE (lines 1124-1270)
+### 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE (lines 1124-1275)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1136 | 54 | `static void thePipeline(Path root, Game g, List<CityNeeds.Need> all)` | NO HIGHER EDUCATION WITHOUT ITS PIPELINE (0.7.51). |
-| 1192 | 18 | `static void higherRows(Game g, List<CityNeeds.Need> all, String where, int[] rows)` | Every school row above the ladder: no more wanted than would come or be hired, to the bit; with no seats, a first school's. |
-| 1212 | 22 | `static void historicalPipeline()` | R1f: the young historical founding has no university class; its basic-school pipeline still gates advice. |
-| 1235 | 4 | `static CityNeeds.Need schoolRow(List<CityNeeds.Need> all, EducationType t)` |  |
-| 1240 | 6 | `static boolean suggests(Game g, List<CityNeeds.Need> all, EducationType t)` |  |
-| 1248 | 22 | `static Game founded(Path root, String name, int month)` | The default playtest's founding (LongPlaytest's own: Standard, its first houses, shops and fields), played to `month`. |
+| 1127 | 68 | `static void thePipeline(Path root, Game g, List<CityNeeds.Need> all)` | Pipeline caps: the short city adds graduate posts; the controlled-return founding still has too few. |
+| 1197 | 18 | `static void higherRows(Game g, List<CityNeeds.Need> all, String where, int[] rows)` | Every school row above the ladder: no more wanted than would come or be hired, to the bit; with no seats, a first school's. |
+| 1217 | 22 | `static void historicalPipeline()` | R1f: the young historical founding has no university class; its basic-school pipeline still gates advice. |
+| 1240 | 4 | `static CityNeeds.Need schoolRow(List<CityNeeds.Need> all, EducationType t)` |  |
+| 1245 | 6 | `static boolean suggests(Game g, List<CityNeeds.Need> all, EducationType t)` |  |
+| 1253 | 22 | `static Game founded(Path root, String name, int month)` | The default playtest's founding (LongPlaytest's own: Standard, its first houses, shops and fields), played to `month`. |
 
-### 10. SIZED TO THE PROJECTION (lines 1271-1330)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1295 | 35 | `static void sizedToTheProjection(Path root)` | SIZED TO THE PROJECTION (0.7.51): the short city's population history rising - RISE_A_MONTH a month over the businesses' window to the people it has - against the same history flat. |
-
-### 11. THE RUN (lines 1331-1384)
+### 10. SIZED TO THE PROJECTION (lines 1276-1335)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1342 | 42 | `static void theRun(Path root, Game g, List<BuildAdvice.Suggestion> advice)` | THE RUN (0.7.51): "Build all three" places BuildAdvice.run(), the cards' orders in their order. |
+| 1300 | 35 | `static void sizedToTheProjection(Path root)` | SIZED TO THE PROJECTION (0.7.51): the short city's population history rising - RISE_A_MONTH a month over the businesses' window to the people it has - against the same history flat. |
 
-### 12. THE BEDS LESS THE PRICED OUT (lines 1385-1449)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1398 | 51 | `static void thePricedOut(Game g)` | THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20 - 0.7.27's D16, "switch"). |
-
-### 13. A BERTH PAYS BACK (FR3) (lines 1450-1732)
+### 11. THE RUN (lines 1336-1389)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1462 | 103 | `static void aBerthPaysBack(Path root)` | A BERTH PAYS BACK (FR3, docs/queue/FR3.md 6 item 9): the advice offers a berth on its payback, Ports.berthPaysBack() - the kind's uncovered tonnes a month reaching WORTH_A_BERTH / the port dues dial of that berth's mo... |
-| 1566 | 65 | `static void powerForTheCalmPeak(Game fixture)` |  |
-| 1640 | 69 | `static void powerRowOnTheCalmPeak(Game fixture)` | 15. |
-| 1711 | 4 | `static CityNeeds.Need powerRow(List<CityNeeds.Need> all)` | The NEEDS YOU POWER row of a measure, or null when the city draws nothing. |
-| 1717 | 4 | `static BuildAdvice.Suggestion powerCard(List<BuildAdvice.Suggestion> advice)` | The card among the suggestions that is for power, or null. |
-| 1723 | 4 | `static void causeDryBulk(Game g, double tonnes)` | Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. |
-| 1729 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
+| 1347 | 42 | `static void theRun(Path root, Game g, List<BuildAdvice.Suggestion> advice)` | THE RUN (0.7.51): "Build all three" places BuildAdvice.run(), the cards' orders in their order. |
+
+### 12. THE BEDS LESS THE PRICED OUT (lines 1390-1454)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1403 | 51 | `static void thePricedOut(Game g)` | THE BEDS LESS THE PRICED OUT (0.7.106, batch P5; Jerus's A20 - 0.7.27's D16, "switch"). |
+
+### 13. A BERTH PAYS BACK (FR3) (lines 1455-1737)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1467 | 103 | `static void aBerthPaysBack(Path root)` | A BERTH PAYS BACK (FR3, docs/queue/FR3.md 6 item 9): the advice offers a berth on its payback, Ports.berthPaysBack() - the kind's uncovered tonnes a month reaching WORTH_A_BERTH / the port dues dial of that berth's mo... |
+| 1571 | 65 | `static void powerForTheCalmPeak(Game fixture)` |  |
+| 1645 | 69 | `static void powerRowOnTheCalmPeak(Game fixture)` | 15. |
+| 1716 | 4 | `static CityNeeds.Need powerRow(List<CityNeeds.Need> all)` | The NEEDS YOU POWER row of a measure, or null when the city draws nothing. |
+| 1722 | 4 | `static BuildAdvice.Suggestion powerCard(List<BuildAdvice.Suggestion> advice)` | The card among the suggestions that is for power, or null. |
+| 1728 | 4 | `static void causeDryBulk(Game g, double tonnes)` | Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. |
+| 1734 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
 
