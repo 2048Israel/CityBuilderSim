@@ -276,12 +276,16 @@ public final class HousingDoorCheck {
         a.quoteShut = company >= 0 && !g.getExchange().quoteSupportsIssue(company);
         double one = costOf.applyAsDouble(1);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplatesBySector(RE)) {
-            if (t.getCapacity() <= 0 || g.getBusinessInvestment().getCostOf(t, 1) != one) continue;
-            a.building = t.getName();
-            a.family = t.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
+            if (t.getCapacity() <= 0) continue;
             LandManager.Use use = Game.groundUse(t);
             // What buildFor() charges: the builders' quote and the ground at its zone's price.
-            a.doorOne = g.quoteBuild(t, 1).total + g.getLandManager().priceFor(t.getLandSqFt(), t.getSector(), use);
+            double doorOne = g.quoteBuild(t, 1).total + g.getLandManager().priceFor(t.getLandSqFt(), t.getSector(), use);
+            // The lender's price of one is the door's since FB15 (HN1-A, Game.doorPriceOf()), the planner's before: matched
+            // on the planner's alone, every order read as no building, no segment short and no door (REV-FB15).
+            if (doorOne != one && g.getBusinessInvestment().getCostOf(t, 1) != one) continue;
+            a.building = t.getName();
+            a.family = t.homeSize() > FamilyModel.STUDIO_MAX_SIZE;
+            a.doorOne = doorOne;
             a.groundForOne = g.getLandManager().canAllocate(t.getLandSqFt(), t.getSector(), use);
             a.shortfall = g.getSectors().realEstate().doorShortfall(a.family);
             return a;

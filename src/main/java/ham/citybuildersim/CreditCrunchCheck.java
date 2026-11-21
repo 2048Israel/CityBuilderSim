@@ -43,10 +43,13 @@ import java.util.Locale;
  *      few of the valve's ceiling;
  *   3. through the crunch the owners put in what the till lacked, homes are
  *      built, and no month leaves more than one household with no home
- *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved); where
- *      their issue fell short of the order, the door trimmed for the bank's
- *      capital what equity did not cover, and left no such month marked as
- *      held for it (HN1, REV-HN1-1; HousingDoorCheck's city covers its orders).
+ *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved), and no
+ *      month the door trimmed is left marked as held for the bank's capital;
+ *   4. where the owners' issue falls short of the order, the door trims for
+ *      the bank's capital what equity did not cover, builds what the till
+ *      buys, and leaves it unmarked (HN1, REV-HN1-1): an order of six caused
+ *      at the crunch's end (REV-FB15), since the played crunch asks for one
+ *      block at a time once the door prices it (FB15, HN1-A).
  */
 public final class CreditCrunchCheck {
 
@@ -341,20 +344,81 @@ public final class CreditCrunchCheck {
         check("...and homes were built in the crunch", homesTo > homesFrom);
         check("no month of the crunch leaves more than one household with no home (LongPlaytest's watch)", worst <= 1);
 
-        // The door's capital trim (HN1) where the owners' issue fell short of the order: what equity did not cover.
-        // A trim in a month the owners put nothing in is a shut quote or an issue nobody took: counted apart (REV-MC1-2).
-        int capitalTrims = 0, behindNoIssue = 0, leftMarked = 0;
+        // The played crunch's own capital trims (HN1), as it happened to ask: printed, and asserted on the order caused below.
+        int capitalTrims = 0, leftMarked = 0;
         for (Month r : months) {
             if (r.line == null || !r.line.contains("(trimmed from ") || !r.line.contains("the bank is short of capital")) continue;
             if (r.refusedForCapital) leftMarked++;
-            if (!(r.raised > 0)) { behindNoIssue++; continue; }
-            capitalTrims++;
-            if (capitalTrims <= 3) out.printf(Locale.ROOT, "   m%d: raised %.0f; %s%n", r.month, r.raised, r.line);
+            if (++capitalTrims <= 3) out.printf(Locale.ROOT, "   m%d: raised %.0f; %s%n", r.month, r.raised, r.line);
         }
-        out.printf("   %d order(s) the door trimmed for the bank's capital after the owners put in part of them, %d with nothing"
-                + " put in; %d left marked as held for it%n", capitalTrims, behindNoIssue, leftMarked);
-        check("the door trimmed an order the owners' issue did not cover, first refused for the bank's capital", capitalTrims > 0);
-        check("...and no month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)", leftMarked == 0);
+        out.printf("   the played crunch: %d order(s) the door trimmed for the bank's capital, %d left marked as held for it%n",
+                capitalTrims, leftMarked);
+        check("...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)", leftMarked == 0);
+
+        theShortIssue(g);
+    }
+
+    /* =====================================================================
+       4. AN ORDER THE OWNERS' ISSUE FALLS SHORT OF - caused at TO
+       ===================================================================== */
+
+    /** ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). */
+    static final long ORDER = 6;
+    /** ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. */
+    static final double TILL = 1.5;
+    /** The plots the fixture may buy for the order's ground. */
+    static final int MAX_PLOTS = 60;
+
+    /**
+     * Since FB15 the played crunch asks for one block at a time while the bank
+     * is short, and an order of one has no half to trim to: the door's trim
+     * for the capital where the owners' issue fell short (MC1, HN1) would be
+     * watched over no order at all. So the order is caused, at the crunch's
+     * end, the bank still in its band: ORDER blocks, put to Game.consider()
+     * (by reflection, as OrderDoorCheck does) on ground bought for them and a
+     * till of TILL blocks, the owners asked for what it lacks on the order.
+     */
+    static void theShortIssue(Game g) throws Exception {
+        out.println("\n--- 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital ---");
+        EconomyManager em = g.getEconomyManager();
+        BusinessDebtManager desk = em.getBusinessDebtManager();
+        BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
+        int plots = 0;
+        while (!ground(g, block, ORDER) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
+        em.setSectorCash(RE, TILL * door(g, block, 1));
+        double whole = door(g, block, ORDER), held = em.getSectorCash(RE) + em.getForeignAssets(RE);
+        double asked = desk.ownersAskOnMortgage(RE, whole, held), raisedBefore = em.getEquityRaised(RE);
+        int company = Equity.indexOf(RE);
+        boolean groundForAll = ground(g, block, ORDER), quote = company >= 0 && g.getExchange().quoteSupportsIssue(company);
+        askedThisMonth = 0;
+        shortThisMonth = false;
+        java.lang.reflect.Method investor = Game.class.getDeclaredMethod("sectorInvestor", String.class);
+        investor.setAccessible(true);
+        java.lang.reflect.Method consider = Game.class.getDeclaredMethod("consider", BusinessInvestment.Decision.class, Investor.class);
+        consider.setAccessible(true);
+        consider.invoke(g, new BusinessInvestment.Decision(RE, block, ORDER, "CreditCrunchCheck's order of " + ORDER, true),
+                investor.invoke(g, RE));
+        double raised = em.getEquityRaised(RE) - raisedBefore;
+        String line = g.getLastInvestment(RE);
+        out.printf(Locale.ROOT, "   m%d: %d %s at %.1f, the till %.1f (%d plots bought); the owners asked for %.1f and put in %.1f;"
+                + " the door asked for %d%s%n     \"%s\"%n", g.getMonth(), ORDER, block.getName(), whole, held, plots, asked, raised,
+                askedThisMonth, shortThisMonth ? ", the bank short of capital for its mortgage" : "", line);
+        check("fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage",
+                groundForAll && quote && askedThisMonth == ORDER && shortThisMonth);
+        check("fixture: the owners were asked for what the till lacked on the order, and their issue fell short of it",
+                asked > whole - held - 1e-6 && raised > 0 && raised < asked - 1e-6);
+        check("the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys",
+                line != null && line.startsWith("Built ") && line.contains("(trimmed from " + ORDER + " - the bank is short of capital"));
+        check("...and is not left marked as held for the bank's capital (REV-HN1-1)", !desk.wasMortgageRefusedForCapital(RE));
+    }
+
+    /** What buildFor() charges for n: the builders' quote and the ground at its zone's price (Game.doorPriceOf() since FB15). */
+    static double door(Game g, BuildingsTemplate t, long n) {
+        return g.quoteBuild(t, n).total + g.getLandManager().priceFor(t.getLandSqFt() * n, t.getSector(), Game.groundUse(t));
+    }
+
+    static boolean ground(Game g, BuildingsTemplate t, long n) {
+        return g.getLandManager().canAllocate(t.getLandSqFt() * n, t.getSector(), Game.groundUse(t));
     }
 
     /* =====================================================================
