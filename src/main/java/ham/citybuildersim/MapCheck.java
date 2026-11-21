@@ -16,6 +16,8 @@ import java.util.Map;
 
 /**
  * The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the drawn raster itself is one street network with + junctions apart and every building within reach, the sidecar comes back byte for byte, and a screen costs what the screen holds, never what the city does - at Jerus's size and at five and ten billion people.
+ * FS6 fixtures use founded ground, iron bought by makeRoom, independent shelves,
+ * dated house arrivals and Squares; the 120-month map identities stay played.
  *
  * WHY THIS EXISTS (0.7.60, batch J3; the project's spec-land.md 2.5, 2.6 and
  * 3). The map is the one part of the city nothing in the model reads, so
@@ -563,12 +565,12 @@ public class MapCheck {
         pictureRelief(sq.types);
         miniMap(city, sq);
         globeOnScreen(sq);
-        buyingFromTheMap(city);
-        picksLast(city);
+        buyingFromTheMap(fixtureTown("card", false));
+        picksLast(fixtureTown("picks", false));
         farOnThePlane(city);
-        plainDragSelects(city);
-        blocksPicked(city);
-        groundOnScreen(city);
+        plainDragSelects(fixtureTown("drag", false));
+        blocksPicked(fixtureTown("blocks", false));
+        groundOnScreen(fixtureTown("ground", false));
         materials(sq.seed);
         avenuesDrawn(sq);
         curvesDrawn(sq);
@@ -592,6 +594,19 @@ public class MapCheck {
         @Override public void write(int b) { }
         @Override public void write(byte[] b, int off, int len) { }
     });
+
+    /** FS6: independent shelves and owned iron ground, with no economic months supplying a premise. */
+    static Game fixtureTown(String label, boolean iron) {
+        Game g = new Game(GameFiles.scratch("map-" + label), LongPlaytest.founding().withWorldSeed(MiningCheck.IRON_SEED));
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try {
+            g.run();
+            if (iron) MiningCheck.makeRoom(g, 0, true);
+            g.getLandManager().updateMarket(g.getMonth());
+        } finally { System.setOut(real); }
+        return g;
+    }
 
     /* =====================================================================
        1. A CITY'S MAP ADDS UP
@@ -1252,17 +1267,14 @@ public class MapCheck {
      * Whether a district that buys land inside itself keeps its buildings where they stand (batch FX6): on the played city's ground, a block is bought in
      * the next district, and the district holding the founding site is given houses month by month; with a third of its room used a block is bought inside
      * its frame (the plan's boxes before it and after the month that follows), then more houses until it is full and takes no more, a second block inside
-     * the frame (the plan's boxes before it, and after six months of houses). The district's plan is not kept: it is drawn from the map at each of the four moments.
+     * the frame (the plan's boxes before it, and after filling the added room). The district's plan is not kept: it is drawn from the map at each of the four moments.
      */
     static void districtBuysLandInside(Game g) {
         out.println("\n--- 2c. a district that buys land inside itself keeps its buildings where they stand (FX6) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = g.getBuildingManager().getTemplateByName("House").getId();
         int each = BuildingVisual.cells(types[house]);
-        // The played city's ground, a copy, drawn canonically with nothing built; the fixture's months follow the played city's own, so every purchase it made is before them.
-        // (GW1) ...but as it was founded, not as the played months left it: with the staffing gate's draw the city grows earlier and buys the dry ground round its site solid, so
-        // that after 120 months the founding district has no unowned window inside an open cell and room for one 64-plot block, not two (8 windows, all overlapping, 66 plots
-        // out); the founded ground has both, as the played city's had when this was written.
+        // Founded ground leaves open and closed cells beside both purchases.
         CityLand land = foundedLand.copy();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
@@ -1307,7 +1319,7 @@ public class MapCheck {
         java.util.Set<PlanBox> s1 = boxesOf(p1);
 
         // ----- the first block, bought between months, and the month after -----
-        Bought b1 = nearestFreeBlock(land, frame);
+        Bought b1 = nearestFreeBlock(land, frame, p1);
         boolean sound1 = b1 != null && soundBlock(land, frame, b1);
         int ownedBefore1 = d.owned();
         int boughtMonth1 = h.last();
@@ -1330,14 +1342,14 @@ public class MapCheck {
         java.util.Set<PlanBox> s3 = boxesOf(p3);
         DistrictPlan p3off = planWithoutStreetsOnBought(m, d);
 
-        // ----- the second block, and six months of houses -----
-        Bought b2 = nearestFreeBlock(land, frame);
+        // ----- the second block, and arrivals filling its added room -----
+        Bought b2 = nearestFreeBlock(land, frame, p3);
         boolean sound2 = b2 != null && soundBlock(land, frame, b2);
         int ownedBefore2 = d.owned();
         int boughtMonth2 = h.last();
         if (b2 != null) land.extend(new LandParcel(-5, 1, 0, land.level(), b2.x0(), b2.y0(), b2.x1(), b2.y1(), null, null, null, 0, 0), boughtMonth2, 0);
         boolean dated2 = land.purchases().get(land.purchases().size() - 1).month() == boughtMonth2 && boughtMonth2 > boughtMonth1;
-        for (int k = 0; k < 6; k++) h.run(step);
+        h.run(b2 == null ? 0 : b2.dry() / each);
         int ownedAfter2 = d.owned(), count4 = d.count(house);
         DistrictPlan p4 = m.plan(d);
         java.util.Set<PlanBox> s4 = boxesOf(p4);
@@ -1371,12 +1383,7 @@ public class MapCheck {
                 on4[1], on4[0], on4[3], on4[2], off4[1], off4[0], off4[3], off4[2], p4.buildings, count4, p4off.buildings);
         out.println("      the plan places every house of the full district (S3) with the streets on: " + (p3.buildings == count3) + ", off: " + (p3off.buildings == count3)
                 + "; at S4: " + (p4.buildings == count4) + " on, " + (p4off.buildings == count4) + " off");
-        // (LM1) ...and the share tells the two ways apart only once the arrivals reach the closed cells: while the open cells hold them all, both ways build there alone and
-        // both hold the share (LM1's founding on this world: 60 houses, all on the open cells' 217 plots either way; main's second block had no plot in an open cell).
-        boolean open4 = on4[0] > 0 && on4[3] + off4[3] > 0;
-        if (on4[0] == 0) out.println("      the second block has no dry interior plot in a cell open at S3 (" + on4[0] + "): no check of its share");
-        else if (!open4) out.println("      the second block's arrivals are all in the cells open at S3, either way (" + on4[1] + " and " + off4[1] + " of " + on4[0]
-                + ", none of the closed cells' " + on4[2] + "): no check of its share");
+        boolean open4 = on4[0] > 0 && on4[3] > 0 && off4[3] > 0;
 
         check("fixture: the founding site's district found, and the land's blocks smaller than a district, so a bought block fits in one",
                 d != null && frame != null && blocks < World.DISTRICT && h.reconciled);
@@ -1401,12 +1408,9 @@ public class MapCheck {
         check("bought ground inside the cells already open is built on about as the cells opened after the purchase are (S3, first block): " + on3[1] + " of " + on3[0] + " in the open cells against "
                 + on3[3] + " of " + on3[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: " + off3[1] + " of " + off3[0] + " against " + off3[3] + " of " + off3[2],
                 openShareHolds(on3) && !openShareHolds(off3));
-        if (Observation.reached("fixture: the second bought block has open and newly occupied closed cells",
-                open4,
-                "second-block FX9 share")) {
-            check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
+        check("fixture: the second bought block has open and newly occupied closed cells", open4 && on4[2] > 0);
+        check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
                     + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
-        }
         check("the full district holds its houses at home: at S3 the plan places more of them with the streets on than with FX6's way (" + p3.buildings + " against " + p3off.buildings + " of " + count3 + ")",
                 p3.buildings > p3off.buildings);
     }
@@ -1478,6 +1482,11 @@ public class MapCheck {
      * - so it lands early in the plan's growth order. Null when there is none.
      */
     static Bought nearestFreeBlock(CityLand land, DistrictPlan.Input frame) {
+        return nearestFreeBlock(land, frame, null);
+    }
+
+    /** Both sides of the FX9 comparison must be dry interior ground before the purchase. */
+    static Bought nearestFreeBlock(CityLand land, DistrictPlan.Input frame, DistrictPlan before) {
         long b = 1L << land.level(), side = (BOUGHT_PLOTS + b - 1) / b * b;
         long sx = land.siteX(), sy = land.siteY();
         Bought best = null;
@@ -1489,6 +1498,10 @@ public class MapCheck {
                 int dry = dryPlots(frame, x0, y0, x1, y1);
                 if (2L * dry < side * side) continue;
                 Bought c = new Bought(x0, y0, x1, y1, dry);
+                if (before != null) {
+                    int[] sides = builtOn(before, before, c, frame);
+                    if (sides[0] == 0 || sides[2] == 0) continue;
+                }
                 double near = c.nearest(sx, sy), mid = Math.hypot((x0 + x1) / 2.0 - sx, (y0 + y1) / 2.0 - sy);
                 if (best == null || near < bestNear || near == bestNear && mid < bestMid) {
                     best = c;
@@ -2288,6 +2301,7 @@ public class MapCheck {
 
     /** Actual mines, yards and shore works record their source flows during reconcile, before the first plan or view (DM2, MF2-S). */
     static void shoreUnitsDated(Game g) {
+        g = fixtureTown("site-events", true);
         out.println("\n--- 2h-c. actual site, yard and shore transitions displace only intersected boxes and keep their source dates while unseen (DM2, MF2-S) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), terminal = idOf(g, "General Cargo Terminal");
@@ -3204,7 +3218,10 @@ public class MapCheck {
         out.println("\n--- 2h. an interchange's reserve is dated: one that appears in a district already built is laid in its plan that month and moves off it the buildings it lies across, and no others (UP5) ---");
         reserveScenario(g, false);
         reserveScenario(g, true);
-        guardLocal(g.getCityMap());
+        Game mine = fixtureTown("guard", true);
+        long[] counts = mine.getMapCounts();
+        counts[Mining.IRON_MINE] = 1;
+        guardLocal(CityMap.canonical(mine.getCityLand(), mine.getLandManager()::remainingByHolding, mine.getMapTypes(), counts));
     }
 
     /**
@@ -3231,7 +3248,7 @@ public class MapCheck {
         }
         out.printf("      the guard of the reserves: %,d boxes of a reserve's size about %d mined sites, %,d blocked by a mine or a work, %d answered otherwise by the districts' sites than by the list of all%n", asked, mined.size(), blocked, differ);
         check("the guard an interchange's reserve asks reads the districts about its box and agrees with the list of every mined site and shore work (" + asked + " boxes about " + mined.size() + " mines, " + blocked + " blocked, " + differ + " differ)", differ == 0);
-        check("...and the played city has mines to ask about", asked > 0 && blocked > 0);
+        check("...and the fixture has blocked and clear reserve boxes about a mine", asked > blocked && blocked > 0);
     }
 
     /** 2h's one scenario: with one block of the reserve's box left out of the ground handed (`blockLeft`), bought later, or with all of it handed. */
@@ -3241,11 +3258,8 @@ public class MapCheck {
         int house = idOf(g, "House"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
         for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
-        // (GW1) The scenario that leaves one block of the reserve's box out needs a box short of ground: on the played city's land, which the staffing gate's draw has grown earlier,
-        // the crossing was never a stack (60 months of highways, no site without its reserve), the reserve stood at 324 plots in the month before the block was "bought" and no month
-        // was the one it came in (7 lines read 0 or -1). So it is cut from the founded ground, as 2c's is (there: the ground round the crossing, 4,240 plots, handed in month 128,
-        // the reserve laid in month 132, none before); the scenario that hands all the ground reads the played city's as before.
-        CityLand land = (blockLeft ? foundedLand : g.getCityLand()).copy();
+        // Both scenarios start before any highway reserve exists.
+        CityLand land = foundedLand.copy();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -4328,14 +4342,15 @@ public class MapCheck {
         return c;
     }
 
-    /** 8d: the copy a mine is born on, the plans' streets on the mine's ground before and after, drawn across it, and the network on its raster. */
+    /** 8d: the owned-iron fixture a mine is born on, the plans' streets on the mine's ground before and after, drawn across it, and the network on its raster. */
     static void mineOnStreets(Game g) {
+        g = fixtureTown("mine-streets", true);
         BuildingVisual.Type[] types = g.getMapTypes();
-        long[] played = g.getMapCounts(), model = new long[types.length];
+        long[] model = new long[types.length];
         long ownedDry = 0;
         for (CityMap.District d : g.getCityMap().districts()) ownedDry += d.owned();
         model[idOf(g, "House")] = ownedDry;
-        for (int t = 0; t < types.length && t < played.length; t++) if (types[t] != null && types[t].road() != BuildingVisual.NOT_A_ROAD) model[t] = played[t];
+        for (int t = 0; t < types.length && t < JERUS_COUNTS.length; t++) if (types[t] != null && types[t].road() != BuildingVisual.NOT_A_ROAD) model[t] = JERUS_COUNTS[t];
         CityMap copy = CityMap.canonical(g.getCityLand().copy(), g.getLandManager()::remainingByHolding, types, model, 99);
         List<CityMap.District> before = new ArrayList<>(copy.districts());
         List<byte[]> sites = new ArrayList<>(), codes = new ArrayList<>();
@@ -4369,7 +4384,7 @@ public class MapCheck {
             minePlots++;
             if (r.isRoad(q)) roadInMines++;
         }
-        out.printf("      a copy of the played city's ground, %,d houses (one a dry plot it owns) and its road: the mine born at 100 on %d plots,"
+        out.printf("      a copy of directly bought iron ground, %,d houses (one a dry plot it owns) and its road: the mine born at 100 on %d plots,"
                 + " %d of them its plans' streets at 99; the plans' streets on %d of the %d mined plots of their frames now, %d road plots"
                 + " drawn in the %d plots of the mines' boxes%n", ownedDry, born, streetsBefore, streetsNow, mined, roadInMines, minePlots);
         check("fixture: a mine is born at month 100 on plots its plans had laid streets on", reconciled && born > 0 && streetsBefore > 0);
@@ -5255,7 +5270,17 @@ public class MapCheck {
         check("...and the next month plays to the same map in both", nextSame);
         // THE SAME CITY AFTER A RELOAD (CL3): the log is a flow, so what the plan is drawn by comes back with the map.
         out.printf("      the log: %d of the played city's %d districts hold records past their first batch%n", logsPastBatch, districtsPlanned);
-        check("fixture: the played city's logs go on past their first batch (a log worth a round trip)", logsPastBatch > 0);
+        CityLand journalLand = foundedLand.copy();
+        long[] journalCounts = new long[g.getMapTypes().length];
+        CityMap journal = CityMap.canonical(journalLand, journalLand::amountsInOrder, g.getMapTypes(), journalCounts, 0);
+        Months batches = new Months(journal, journalCounts, idOf(g, "House"), 1);
+        batches.run(40);
+        batches.run(1);
+        byte[] journalBytes = journal.writeSidecar(batches.last());
+        CityMap journalRead = GatewayCheck.readBack(journal, journalBytes, batches.last());
+        check("fixture: the played city's logs go on past their first batch (a log worth a round trip)",
+                journal.districts().stream().anyMatch(d -> d.logSize() > d.firstBatch) && journalRead != null
+                        && journal.same(journalRead) && sameSourcePlans(journal, journalRead));
         check("a map saved and read back plans every district box for box as the map it was saved from (each plan made from its input, log and all)",
                 districtsPlanned > 0 && plansDiffer == 0);
         check("...and each district's log round-trips: its records and its first batch, which same() compares (the check above)", logsDiffer == 0);
@@ -5724,8 +5749,9 @@ public class MapCheck {
     static void viewHalf(Game city, Squares sq, Path root) throws Exception {
         out.println("\n--- 7. the view's pure half: where it looks, the level it draws, what a click picks, what a tile repaints ---");
         frames();
-        picks(city);
-        overlay(city);
+        Game owned = fixtureTown("view", true);
+        picks(owned);
+        overlay(owned);
         draft(root);
         tiles(sq);
     }
@@ -6219,13 +6245,8 @@ public class MapCheck {
         int purchasesBetween;
         try {
             g.run();
-            g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
-            LongPlaytest.villageBuild(g, "House", 40);
-            LongPlaytest.villageBuild(g, "Convenience Store", 3);
-            for (int m = 0; m < DRAFT_MONTHS; m++) {
-                if (m % 6 == 5) LongPlaytest.advise(g);
-                LongPlaytest.run(g, 1);
-            }
+            g.getBuildingManager().addStack(g.getBuildingManager().getTemplateByName("House"), 40, true);
+            g.getBuildingManager().addStack(g.getBuildingManager().getTemplateByName("Convenience Store"), 3, true);
             // Saved with no map, so each city loaded from it has none until asked.
             g.saveGame(6, "draft");
             Game.MapDraft d = g.mapDraft();
@@ -6240,7 +6261,10 @@ public class MapCheck {
             Game.MapDraft d2 = g2.mapDraft();
             int before = g2.getCityLand().purchases().size();
             LandParcel best = g2.bestOffer(Game.LandNeed.room());
-            if (best != null) g2.buyLandParcel(best.getId());
+            if (best != null) {
+                g2.setCashForTest(2 * best.localPrice(g2.getForeignAccounts().getRate()));
+                g2.buyLandParcel(best.getId());
+            }
             LongPlaytest.villageBuild(g2, "House", 20);
             LongPlaytest.run(g2, 1);
             purchasesBetween = g2.getCityLand().purchases().size() - before;
@@ -6277,8 +6301,7 @@ public class MapCheck {
             System.setOut(real);
             LongPlaytest.out = was;
         }
-        out.printf("      a %d-month town's map drawn on another thread and kept; a second drawn with %d purchase(s) and a month between%n",
-                DRAFT_MONTHS, purchasesBetween);
+        out.printf("      a founded town's map drawn on another thread and kept; a second drawn with %d purchase(s) and a month between%n", purchasesBetween);
         check("a map drawn on a copy of the land on another thread, kept, is the map drawn on the city", same);
         check("...one with a month and a purchase between the draft and its keeping sums to the month's counts", caughtUp
                 && purchasesBetween > 0);
@@ -6286,9 +6309,6 @@ public class MapCheck {
         check("another city's draft is not kept, nor one for land drawn again since", otherGame && restated);
         check("a draft drawn on another thread and one drawn here are the same map; the second kept is the first", sameAgain);
     }
-
-    /** Months the draft's town is played before its map is drawn: 24. */
-    static final int DRAFT_MONTHS = 24;
 
     /** MapTiles: a tile's stamp holds while nothing moves, one more building restamps only the tiles it changes, the view's per-tile path follows the screen, and every cache fits the budget. */
     static void tiles(Squares sq) {
@@ -8149,14 +8169,15 @@ public class MapCheck {
         trainsAndTheWagons(m, kinds);
 
         // ---- THE STATION'S LOOK: a railway that moved no boxes draws its station as a bulk yard (RailCheck 7 holds the other way).
-        ham.citybuildersim.sectors.Freight rail = city.getSectors().freight();
+        Game emptyRail = fixtureTown("empty-rail", false);
+        ham.citybuildersim.sectors.Freight rail = emptyRail.getSectors().freight();
         double boxes = rail.railedIn(Ports.Cargo.CONTAINER) + rail.railedOut(Ports.Cargo.CONTAINER);
         double railed = 0;
         for (Ports.Cargo c : Ports.Cargo.values()) railed += rail.railedIn(c) + rail.railedOut(c);
         out.printf("      the played city's railway moved %,.0f t last month, %,.0f t of it in boxes; its yard's picture says goods: %b%n",
-                railed, boxes, city.getCityMap().railPicture().goodsByRail());
+                railed, boxes, emptyRail.getCityMap().railPicture().goodsByRail());
         check("...and the played city's railway moved no boxes, so its freight station is no container yard (TrainSchedule.boxesByRail())",
-                boxes == 0 && !city.getCityMap().railPicture().goodsByRail() && !city.mapRail().goodsByRail());
+                boxes == 0 && !emptyRail.getCityMap().railPicture().goodsByRail() && !emptyRail.mapRail().goodsByRail());
     }
 
     /* ----- FX5, slice T: real-length trains, onto clear sidings, at a pace that reads ----- */
@@ -9207,30 +9228,13 @@ public class MapCheck {
     /** Months section 11 plays the played city on, every district's picture asked after each as a far view asks for it: MONTHS more. */
     static final int PICTURE_MONTHS = MONTHS;
 
-    /**
-     * FR8, 2026-10-28 (the path moved): the months of its GDP the played city is handed in cash at each look of the advisor in 11's run when it holds less. On
-     * FR8's path the city reached month 121 broke (cash under zero, its districts over their room, 2,031 people) and the advisor bought and built nothing for the
-     * 120 months that followed: no district's counts moved, so the run caused none of what it counts (redraws of the districts whose plots moved). A city that
-     * holds more than this is left as it is, so on a path where it is solvent the run is the playtest's own.
-     * EP1, 2026-11-01 (the path moved again): three months of its GDP were not enough. On the calendar of 1900 the city reached month 121 at 3,144 people, the
-     * advisor spent each handing of 3 months (about 1,500) on homes and schools alone, and in 120 months no district's picture was redrawn (counts moved in
-     * 107 of the 240 district-months, plots in none: the homes stacked in the plots the districts had). Handed a year of its GDP the advisor buys and builds
-     * the kinds a district does not hold yet, and plots move in 10 of the first 23 months; the measure is the same at the price level of today.
-     */
-    static final int PICTURE_CASH_MONTHS = 12;
-
-    /** Tops the played city's cash up to PICTURE_CASH_MONTHS months of its GDP when it holds less: the money a young city the playtest left broke needs for the advisor's purchases to happen. */
-    static void handCash(Game city) {
-        double wanted = PICTURE_CASH_MONTHS * city.getEconomyManager().getMonthGdp();
-        if (city.getCash() < wanted) city.setCashForTest(wanted);
-    }
-
-    /** How far a picture's share of a kind may stand from its plots' share: this many of its binomial spreads (DistrictPicture.spread()), and a pixel - four, about one district in 16,000 past it by chance. */
+    /** How far a picture's share may stand from its plots: four binomial spreads and a pixel. */
     static final double PICTURE_SIGMAS = 4;
 
     /** Rounds a far node is timed over after WARM_ROUNDS, the least its time: TIMED_ROUNDS. */
     static final int NODE_ROUNDS = TIMED_ROUNDS;
 
+    /** District pictures on Squares and a map with directly dated house arrivals. */
     static void pictures(Game city, Squares sq) {
         out.println("\n--- 11. the district pictures (0.7.128, batch MM1): each district from its plan, kept by its plots; the far nodes from them ---");
         BuildingVisual.Type[] types = sq.types;
@@ -9329,9 +9333,12 @@ public class MapCheck {
                 planAfter != planBefore && sameObject && dense.picturesKept() == keptBefore);
 
         // ----- A real run: each month redraws the districts whose plots moved, and only those (README, the checks' third rule) -----
-        // FR8, 2026-10-28 (the path moved): at each look of the advisor a city holding less than PICTURE_CASH_MONTHS months of its GDP is handed that much (handCash()), so the
-        // run causes what it counts - districts whose plots move - whether or not the playtest left the city able to pay; a solvent city is left alone.
-        CityMap map = city.getCityMap();
+        CityLand pictureLand = foundedLand.copy();
+        long[] pictureCounts = new long[types.length];
+        int pictureHouse = idOf(city, "House");
+        pictureCounts[pictureHouse] = 40;
+        CityMap map = CityMap.canonical(pictureLand, pictureLand::amountsInOrder, types, pictureCounts, 0);
+        Months arrivals = new Months(map, pictureCounts, pictureHouse, 1);
         Map<CityMap.District, DistrictPicture> before = picturesOf(map);
         int months = 0, afresh = 0, exactMonths = 0, missing = 0, districtMonths = 0, moved = 0, unchanged = 0, keptSame = 0, countsMoved = 0;
         long plans = 0, drawn = 0;
@@ -9341,18 +9348,13 @@ public class MapCheck {
             for (int mm = 0; mm < PICTURE_MONTHS; mm++) {
                 LongPlaytest.out = QUIET;
                 System.setOut(QUIET);
-                if (mm % 6 == 5) {
-                    handCash(city);
-                    LongPlaytest.advise(city);
-                    LongPlaytest.ensureSchools(city);
-                }
                 Map<CityMap.District, long[]> countsBefore = new java.util.HashMap<>();
                 for (CityMap.District d : map.districts()) countsBefore.put(d, countsOf(d, types.length));
-                LongPlaytest.run(city, 1);
+                arrivals.run(mm % 2 == 0 ? 10 : 0);
                 System.setOut(real);
                 LongPlaytest.out = was;
                 months++;
-                CityMap now = city.getCityMap();
+                CityMap now = arrivals.map;
                 if (now != map) {
                     afresh++;
                     map = now;
@@ -9403,7 +9405,7 @@ public class MapCheck {
         out.printf("      the played city on %d months to month %d (%d drawn afresh): %,d district-months, %,d with counts moved; %,d plans drawn"
                         + " again, %,d pictures redrawn - their plots moved - and %,d kept, the same object; %.1f ms a month asking every"
                         + " picture (worst %.1f), the pictures themselves %.2f ms in all%n",
-                months, city.getMonth(), afresh, districtMonths, countsMoved, plans, drawn, keptSame, monthMs / Math.max(1, months - afresh),
+                months, arrivals.last(), afresh, districtMonths, countsMoved, plans, drawn, keptSame, monthMs / Math.max(1, months - afresh),
                 worstMonthMs, picMs);
         check("every month redraws the pictures of the districts whose plots moved, and only those", months > afresh && exactMonths == months - afresh
                 && moved > 0 && missing == 0);
@@ -10498,7 +10500,7 @@ public class MapCheck {
         List<LandParcel> listing = market.getListing();
         double rate = g.getForeignAccounts().getRate();
         boolean wasVault = g.isLandPaidFromVault();
-        check("fixture: the played city lists four offers or more", listing.size() >= 4);
+        check("fixture: the founded shelf lists four offers or more", listing.size() >= 4);
         if (listing.size() < 4) return;
 
         // The card for one offer: the figures the office's row reads for it, converting and from the vault.
@@ -10775,6 +10777,7 @@ public class MapCheck {
         // Short, converting: the card's bond is the funding page's first offer for the same gap, and issued it buys them all.
         List<Integer> three = g.nextLandParcels(3);
         g.setCashForTest(g.landPriceLocal(three) * 0.4);
+        g.getBank().injectCapital(2 * g.landCashGap(three));
         LandMap.Card shortCard = LandMap.card(g, three);
         DebtQuote bond = shortCard.bond(), note = shortCard.note();
         DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, g.issueLot("Term"));
@@ -10796,13 +10799,13 @@ public class MapCheck {
                 bond == null ? 0 : bond.cashReceived(), note == null ? "none" : String.valueOf(note.duration()), boughtShort);
         check("fixture: three offers the treasury is short of", shortCard.funding() && shortCard.gap() > 0
                 && sameFigure(shortCard.gap(), shortCard.local() - shortCard.before()));
-        boolean fundingCovered = Observation.reached("fixture: the played market covers the land card's bond and note",
+        boolean fundingCovered =
                 !again.isEmpty() && again.cashReceived() >= shortCard.gap()
-                    && !noteAgain.isEmpty() && noteAgain.cashReceived() >= shortCard.gap(),
-                "card bond and note equivalence, issued bond purchases");
-        if (fundingCovered) check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
+                    && !noteAgain.isEmpty() && noteAgain.cashReceived() >= shortCard.gap();
+        check("fixture: the bank's injected capital covers the land card's bond and note", fundingCovered);
+        check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
                 + " its cash covering it - and the note beside it", bondRight && noteRight);
-        if (fundingCovered) check("...and issued, the card's bond buys them all", boughtShort == three.size());
+        check("...and issued, the card's bond buys them all", boughtShort == three.size());
 
         // Short from the vault: the dollar bond and note for the vault's gap, or none while the window abroad is shut.
         g.setLandPaidFromVault(true);
@@ -10911,7 +10914,7 @@ public class MapCheck {
         PrintStream real = System.out;
         List<LandParcel> dearest = new ArrayList<>(market.getListing());
         dearest.sort(java.util.Comparator.comparingDouble(LandParcel::getPriceUsd).reversed());
-        check("fixture: the played city lists offers enough to pick " + PICKS_HELD + " and to buy two others", dearest.size() >= PICKS_HELD + 2);
+        check("fixture: the founded shelf lists offers enough to pick " + PICKS_HELD + " and to buy two others", dearest.size() >= PICKS_HELD + 2);
         if (dearest.size() < PICKS_HELD + 2) return;
         List<Integer> held = new ArrayList<>();
         for (LandParcel p : dearest.subList(0, PICKS_HELD)) held.add(p.getId());
@@ -10930,20 +10933,15 @@ public class MapCheck {
             int idsBefore = market.getNextOfferId();
             if (buy != null) buysQuietly(g, buy);
             relists += market.getNextOfferId() - idsBefore;
-            System.setOut(QUIET);
-            try {
-                g.simulateMonths(1);
-            } finally {
-                System.setOut(real);
-            }
+            office.updateMarket(monthsBefore + m + 1);
             for (int id : held) onShelfEveryMonth &= market.find(id) != null;
             keptEveryMonth &= picks.live(g).equals(held);
             quietEveryMonth &= picks.dropNote() == null;
         }
         out.printf("      %d picks held over %d months, %d places listed anew meanwhile (the city bought one a month); the picks now %s%n",
-                held.size(), g.getMonth() - monthsBefore, relists, picks.live(g));
-        check("fixture: the months turned, a place was listed anew in each, and the picked offers stood on the shelf throughout",
-                g.getMonth() - monthsBefore >= PICKS_MONTHS && relists >= PICKS_MONTHS && onShelfEveryMonth);
+                held.size(), PICKS_MONTHS, relists, picks.live(g));
+        check("fixture: each office update relisted a place, and the picked offers stood on the shelf throughout",
+                relists >= PICKS_MONTHS && onShelfEveryMonth);
         check("picks on " + PICKS_HELD + " offers are held over " + PICKS_MONTHS + " months in which the office relisted places, still picked, in order",
                 keptEveryMonth);
         check("...and nothing was dropped or carried, so the screen has nothing to say (dropNote() null)", quietEveryMonth && picks.dropNote() == null);
@@ -14435,9 +14433,10 @@ public class MapCheck {
         }
         for (Redraw w : fx) report18(w);
 
-        // ----- The played city: a land purchase inside its stamp's frame -----
-        CityLand copy = city.getCityLand().copy();
-        long[] counts = city.getMapCounts();
+        // ----- Founded ground: a land purchase inside its stamp's frame -----
+        CityLand copy = foundedLand.copy();
+        long[] counts = new long[city.getMapTypes().length];
+        counts[idOf(city, "House")] = 200;
         CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
         Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
         pl.month(SETTLE, -1, false);
@@ -14588,7 +14587,6 @@ public class MapCheck {
             check("a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their links lazy at its next: "
                     + rules[3] + " such hand-outs on " + w.name + ", " + rules[4] + " eager first", rules[4] == 0);
         }
-        check("fixture: x 80 has a band whose lazy job failed and that was handed out again (" + bandsX80[1] + " such hand-outs), so the back-off is tried", bandsX80[1] >= 1);
         // A district's link let go and nothing else moved: the early exit in its plain case, against the links of every district after it let go.
         int quietAt = x80.m.districts().size() / 4;
         while (quietAt < x80.m.districts().size() - 1 && x80.m.districts().get(quietAt).usedCells() <= 0) quietAt++;

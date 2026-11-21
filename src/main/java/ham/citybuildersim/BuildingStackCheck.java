@@ -10,6 +10,8 @@ import java.util.Locale;
 /**
  * A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through
  * the save and the load, through ScaleCheck's scaler, and in the sums a city is read by.
+ * FS6 finishes the ordered House stack directly before saving the standing town;
+ * its known count supplies both sides of the integer ceiling.
  *
  * WHY (SQ1, found by ST3). BuildingsStacks kept its quantity, its on-site count and its unfitted counts in
  * an int, and a building type's units merge into one stack. Jerus's plans are cities of 5 and 10 billion
@@ -63,9 +65,6 @@ public class BuildingStackCheck {
     static int fails = 0;
     static PrintStream out;
     static PrintStream quiet;
-
-    /** The fixture's months before it is saved with its houses finished: a young town, which keeps the run short. */
-    static final int FIXTURE_MONTHS = 3;
 
     /** The House order the fixture's town has on site when its first save is written. */
     static final int ORDER_HOUSES = 40;
@@ -135,7 +134,9 @@ public class BuildingStackCheck {
                     Files.copy(small.saveFile(10), ordered.saveFile(10));
                     Files.copy(small.historyFile(10), ordered.historyFile(10));
                 } catch (java.io.IOException e) { throw new IllegalStateException(e); }
-                founded.simulateMonths(FIXTURE_MONTHS);
+                BuildingsStacks built = stackOf(founded, "House");
+                built.advanceConstruction(2.0 * ORDER_HOUSES * built.getBuilding().getConstructionPoints());
+                same("fixture: the ordered Houses finish before the standing save", built.getQuantity(), ORDER_HOUSES);
                 founded.saveGame(10, "buildingstack");
             });
         } finally {
