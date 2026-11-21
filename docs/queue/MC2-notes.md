@@ -484,3 +484,11 @@ run. Both ensemble comparisons are preserved, the final baseline is committed
 before readiness, and readiness GO is requested with the provisional marker
 still present on the pushed ship file. The orchestrator alone gates and
 publishes; this recovery has neither edited main's records nor run ship.sh.
+
+
+The required gameplay project write-up is
+[The bank's share under its target](../../claude/mc2-band-share.md). It follows
+the existing prose files under `claude/`; no `claude/index.md` exists in this
+checkout to update. This publication-record completion changes docs only;
+the existing checks, final ensemble and review were retained without reruns,
+and the provisional marker remains pending readiness GO.
