@@ -1263,7 +1263,8 @@ public final class AutoBuilder {
         remember(game);
         // The player's setting at work, not a decision (the rollover's rule).
         game.getDecisions().hold();
-        try {
+        // The site's completion schedule and draws held for the pass (AP1, WorksValue.hold()): read afresh once what is on site moves.
+        try (WorksValue.Scope works = WorksValue.hold(game)) {
             List<CityNeeds.Need> all = CityNeeds.measure(game, CityNeeds.PLAIN);
             List<BuildAdvice.Measure> kept = remit(game, all);
             for (BuildAdvice.Measure m : kept) rememberPending(game, m, false);
