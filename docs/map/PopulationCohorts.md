@@ -1,6 +1,6 @@
 # PopulationCohorts.java - 835 lines · 53 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 

@@ -1,6 +1,6 @@
 # LicenceFees.java - 592 lines · 49 methods · 5 constants · model
 
-`ham/citybuildersim/LicenceFees.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LicenceFees.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > The patent rent on discoveries imported by a city founded the 1900 way.
 > 

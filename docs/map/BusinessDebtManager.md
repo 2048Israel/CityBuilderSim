@@ -1,6 +1,6 @@
-# BusinessDebtManager.java - 3,813 lines · 251 methods · 28 constants · model
+# BusinessDebtManager.java - 3,814 lines · 251 methods · 28 constants · model
 
-`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
 
 > Private-sector credit. The counterpart to DebtManager, which handles the
 > city's own borrowing.
@@ -69,20 +69,20 @@
 | 1930 | ...AND WHAT THE NEXT SETTLE WOULD DO, ASKED AHEAD (0.7.12, round 6) |
 | 2051 | THE LANDLORDS' MORTGAGES (0.7.11) |
 | 2481 | ...AND WHAT THE BANK'S CAPITAL LETS IT LEND (0.7.8) |
-| 2682 | THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3) |
-| 2885 | · insolvency |
-| 3163 | CAN'T PAY MEANS DEFAULT (0.7.12, round 4) |
-| 3261 | INTERIM FINANCING (0.7.12, round 5) |
+| 2683 | THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3) |
+| 2886 | · insolvency |
+| 3164 | CAN'T PAY MEANS DEFAULT (0.7.12, round 4) |
+| 3262 | INTERIM FINANCING (0.7.12, round 5) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 3221 | `BusinessDebtManager.ShortReason.PAST_DEFAULT_POINT` |  |
-| 3221 | `BusinessDebtManager.ShortReason.BANNED` |  |
-| 3221 | `BusinessDebtManager.ShortReason.BANK_SHUT` |  |
-| 3221 | `BusinessDebtManager.ShortReason.CEILING` |  |
-| 3221 | `BusinessDebtManager.ShortReason.AFTER_SETTLE` |  |
+| 3222 | `BusinessDebtManager.ShortReason.PAST_DEFAULT_POINT` |  |
+| 3222 | `BusinessDebtManager.ShortReason.BANNED` |  |
+| 3222 | `BusinessDebtManager.ShortReason.BANK_SHUT` |  |
+| 3222 | `BusinessDebtManager.ShortReason.CEILING` |  |
+| 3222 | `BusinessDebtManager.ShortReason.AFTER_SETTLE` |  |
 
 ## Constants
 
@@ -112,10 +112,10 @@
 | 2144 | `BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT` | `"past the default point"` | ...when the deal would leave the borrower owing past INSOLVENCY_TRIGGER times what it owns. |
 | 2146 | `BusinessDebtManager.MORTGAGE_CAPITAL` | `"the bank's capital"` | ...when the bank's capital rule has no room for it: only while the leverage requirement binds (round 2; setCapitalRule()). |
 | 2148 | `BusinessDebtManager.MORTGAGE_NOTHING` | `"nothing to borrow"` | ...when there is nothing to borrow. |
-| 2735 | `BusinessDebtManager.STATEMENT_MONTHS` | `3` | How many month-end readings the bank averages a borrower over: a quarter, as a real lender reads its statements. |
-| 3328 | `BusinessDebtManager.INTERIM_PAST_LINE` | `"past the default point after the write-down"` | Why the interim lender would not lend: the sector still past the default point after the write-down. |
-| 3330 | `BusinessDebtManager.INTERIM_BANK_SHUT` | `"the bank is shut"` | ...or the bank that would lend it has failed or is frozen in resolution. |
-| 3763 | `BusinessDebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2736 | `BusinessDebtManager.STATEMENT_MONTHS` | `3` | How many month-end readings the bank averages a borrower over: a quarter, as a real lender reads its statements. |
+| 3329 | `BusinessDebtManager.INTERIM_PAST_LINE` | `"past the default point after the write-down"` | Why the interim lender would not lend: the sector still past the default point after the write-down. |
+| 3331 | `BusinessDebtManager.INTERIM_BANK_SHUT` | `"the bank is shut"` | ...or the bank that would lend it has failed or is frozen in resolution. |
+| 3764 | `BusinessDebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -173,39 +173,39 @@
 | 2557 | `private Bank projectBank` |  |
 | 2558 | `private boolean projectBookSettled` |  |
 | 2559 | `private double projectSettledLent, projectSettledRepaid` |  |
-| 2596 | `private final Map<String, Double> principalAtRule` |  |
-| 2598 | `private final java.util.Set<String> refusedForCapital` | Sectors whose project the capital rule refused this month, so the investor can say so. |
-| 2600 | `private final java.util.Set<String> refusedProjectForCapital` | ...by door (round 5): a building's loan, and a new mortgage - the two GROWTH doors. |
-| 2601 | `private final java.util.Set<String> refusedMortgageForCapital` |  |
-| 2635 | `private boolean insuredRationed` | True this month when the capital rule rations the insured mortgages too - the bank's leverage requirement binding. |
-| 2738 | `private final Map<String, double[]> statements` | Each sector's last month-end readings, oldest first: {owed, owned, owed, owned, ...}, at most STATEMENT_MONTHS pairs. |
-| 2857 | `private final List<Written> writtenThisMonth` |  |
-| 3224 | `private final Map<String, ShortReason> shortReason` | Why the shortfall desk left each sector short this month, and what the month asked each to pay - both from the credit settle, read at the month's defaults; the month's, not saved. |
-| 3225 | `private final Map<String, Double> monthObligations` |  |
-| 3237 | `private final Map<String, Double> cannotPayShort` | The month's cash-flow defaults, per sector: what was still unpaid, the share of the sector that could not pay, and why nobody lent. |
-| 3238 | `private final Map<String, Double> cannotPayShareThisMonth` |  |
-| 3239 | `private final Map<String, ShortReason> cannotPayReason` |  |
-| 3333 | `private final Map<String, Double> interimLentThisMonth` | The month's interim financing, per sector: lent (at face), handed to the till (the overdraft it closed), refused and why, fallen due, and written off in a backstop. |
-| 3334 | `private final Map<String, Double> interimHanded` |  |
-| 3335 | `private final Map<String, String> interimRefused` |  |
-| 3336 | `private final Map<String, Double> interimMaturedThisMonth` |  |
-| 3337 | `private final Map<String, Double> interimWrittenOffThisMonth` |  |
-| 3339 | `private int monthNow` | The month an interim loan is written in: the credit settle's (coverShortfall()). |
-| 3351 | `private final Map<String, Double> backstopInBanThisMonth` | The overdraft the backstop closed this month in a sector already inside its ban, which nobody would make an interim loan to: forgiven, nothing new written off (restructure(sector, true)). |
-| 3570 | `private final Map<String, Double> loansDefaultedThisMonth` | What defaulted this month in each class, per sector (0.7.12): the loans' and the bonds' share of the slice, or all of both in the backstop - before what was recovered, so recovered over defaulted is each class's recov... |
-| 3571 | `private final Map<String, Double> bondsDefaultedThisMonth` |  |
-| 3578 | `private final Map<String, Double> bondWrittenOffThisMonth` | The bondholders' side of the month's defaults (0.7.12), per sector: the face written off its bonds, every holder together. |
-| 3579 | `private final Map<String, Double> bondWrittenOffTotal` |  |
-| 3619 | `private final Map<String, Double> defaultedThisMonth` | The month's defaults, per sector, for the notice and the playtest - struck by restructureInsolventSectors() and read in the same month (Inbox.takeMonth()), so not saved: the bank's own record of the month's write-off ... |
-| 3620 | `private final Map<String, Double> defaultShareThisMonth` |  |
-| 3621 | `private final java.util.Set<String> restructuredThisMonth` |  |
-| 3667 | `private final Map<String, Double> principalJudged` | What each sector owed when the month's insolvency check judged it, against the assets it judged it on (getAssets(), struck at the same check). |
+| 2597 | `private final Map<String, Double> principalAtRule` |  |
+| 2599 | `private final java.util.Set<String> refusedForCapital` | Sectors whose project the capital rule refused this month, so the investor can say so. |
+| 2601 | `private final java.util.Set<String> refusedProjectForCapital` | ...by door (round 5): a building's loan, and a new mortgage - the two GROWTH doors. |
+| 2602 | `private final java.util.Set<String> refusedMortgageForCapital` |  |
+| 2636 | `private boolean insuredRationed` | True this month when the capital rule rations the insured mortgages too - the bank's leverage requirement binding. |
+| 2739 | `private final Map<String, double[]> statements` | Each sector's last month-end readings, oldest first: {owed, owned, owed, owned, ...}, at most STATEMENT_MONTHS pairs. |
+| 2858 | `private final List<Written> writtenThisMonth` |  |
+| 3225 | `private final Map<String, ShortReason> shortReason` | Why the shortfall desk left each sector short this month, and what the month asked each to pay - both from the credit settle, read at the month's defaults; the month's, not saved. |
+| 3226 | `private final Map<String, Double> monthObligations` |  |
+| 3238 | `private final Map<String, Double> cannotPayShort` | The month's cash-flow defaults, per sector: what was still unpaid, the share of the sector that could not pay, and why nobody lent. |
+| 3239 | `private final Map<String, Double> cannotPayShareThisMonth` |  |
+| 3240 | `private final Map<String, ShortReason> cannotPayReason` |  |
+| 3334 | `private final Map<String, Double> interimLentThisMonth` | The month's interim financing, per sector: lent (at face), handed to the till (the overdraft it closed), refused and why, fallen due, and written off in a backstop. |
+| 3335 | `private final Map<String, Double> interimHanded` |  |
+| 3336 | `private final Map<String, String> interimRefused` |  |
+| 3337 | `private final Map<String, Double> interimMaturedThisMonth` |  |
+| 3338 | `private final Map<String, Double> interimWrittenOffThisMonth` |  |
+| 3340 | `private int monthNow` | The month an interim loan is written in: the credit settle's (coverShortfall()). |
+| 3352 | `private final Map<String, Double> backstopInBanThisMonth` | The overdraft the backstop closed this month in a sector already inside its ban, which nobody would make an interim loan to: forgiven, nothing new written off (restructure(sector, true)). |
+| 3571 | `private final Map<String, Double> loansDefaultedThisMonth` | What defaulted this month in each class, per sector (0.7.12): the loans' and the bonds' share of the slice, or all of both in the backstop - before what was recovered, so recovered over defaulted is each class's recov... |
+| 3572 | `private final Map<String, Double> bondsDefaultedThisMonth` |  |
+| 3579 | `private final Map<String, Double> bondWrittenOffThisMonth` | The bondholders' side of the month's defaults (0.7.12), per sector: the face written off its bonds, every holder together. |
+| 3580 | `private final Map<String, Double> bondWrittenOffTotal` |  |
+| 3620 | `private final Map<String, Double> defaultedThisMonth` | The month's defaults, per sector, for the notice and the playtest - struck by restructureInsolventSectors() and read in the same month (Inbox.takeMonth()), so not saved: the bank's own record of the month's write-off ... |
+| 3621 | `private final Map<String, Double> defaultShareThisMonth` |  |
+| 3622 | `private final java.util.Set<String> restructuredThisMonth` |  |
+| 3668 | `private final Map<String, Double> principalJudged` | What each sector owed when the month's insolvency check judged it, against the assets it judged it on (getAssets(), struck at the same check). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 3755 | **type** `public class BusinessDebtManager` | Private-sector credit. |
+| 59 | 3756 | **type** `public class BusinessDebtManager` | Private-sector credit. |
 | 73 | 9 | `public void setSectors(String[] keys)` | The registry's names, in its order. |
 | 83 | 1 | `public String[] sectors()` |  |
 
@@ -419,118 +419,118 @@
 | 2454 | 8 | `private void writeDownInterim(String sector, double scale)` | One sector's interim loans alone, to this share of what they were. |
 | 2464 | 16 | `private double writeDownSector(String sector, double scale, boolean interimToo)` | ...its interim loans with the rest, or (false) every loan but them - they rank first (INTERIM FINANCING). |
 
-### ...AND WHAT THE BANK'S CAPITAL LETS IT LEND (0.7.8) (lines 2481-2681)
+### ...AND WHAT THE BANK'S CAPITAL LETS IT LEND (0.7.8) (lines 2481-2682)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 2562 | 4 | `public void setProjectBudget(double room)` | Struck before lending, and again after defaults, net of lending still awaiting the bank's settle. |
 | 2568 | 4 | `public void setProjectBudget(Bank bank)` | Read immediate bank claims too: bonds, securities and carry settle before loans do. |
-| 2574 | 5 | `public double projectRoom()` | New borrowing and claims already on the bank's books consume one allowance. |
-| 2579 | 5 | `private double insuredProjectRoom()` |  |
-| 2585 | 3 | `private double pendingProjectLoans()` |  |
-| 2590 | 5 | `public void projectLoansSettled()` | The bank has refreshed its loan book: these claims are now counted there, not pending too. |
-| 2609 | 3 | `public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly)` | The bank's capital rule for the month, from Bank.lendingGrowthLimit() and lendsOnlyToKeepBorrowersGoing(). |
-| 2619 | 14 | `public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly, boolean insuredToo)` | ...and whether it rations the insured mortgages too: true when the bank's leverage requirement is the larger (Bank.leverageBinds(), 0.7.11 round 2), because a mortgage then uses the capital the bank is short of. |
-| 2637 | 1 | `public boolean isInsuredRationed()` |  |
-| 2640 | 3 | `private double rationedPrincipal(String sector)` | The debt the capital rule reads: what the sector owes the bank, uninsured, or all of it while insuredRationed. |
-| 2650 | 6 | `public double capitalRoom(String sector)` | What the bank's capital lets this sector borrow this month, over what it owes now: its debt when the rule was set, grown by the month's limit (none under the minimum), less what it owes - so what matured is room to re... |
-| 2658 | 1 | `public double getCapitalGrowth()` | The month's limit on a borrower's growth, a share a month: infinite with none. |
-| 2661 | 1 | `public boolean isKeepGoingOnly()` | True when the bank lends only to keep its borrowers going this month. |
-| 2664 | 1 | `public boolean wasRefusedForCapital(String sector)` | True when the capital rule refused this sector a project this month. |
-| 2667 | 1 | `public boolean wasProjectRefusedForCapital(String sector)` | ...a building's loan, this month (round 5, the growth doors counted apart). |
-| 2669 | 1 | `public boolean wasMortgageRefusedForCapital(String sector)` | ...a new mortgage, this month. |
-| 2677 | 4 | `public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore)` | ...and a capital no taken back (HN1, REV-HN1-1): a smaller order then got past the door, so the sector was trimmed, not held. |
+| 2574 | 5 | `public double projectRoom()` | New borrowing and claims already on the bank's books consume one allowance: the room to the target over it, the band's share under it (MC2, Bank.projectHeadroom()). |
+| 2580 | 5 | `private double insuredProjectRoom()` | ...and the insured mortgages' own, while the leverage ratio binds: the exposure room to the leverage target over it, the band's share under it, net of pending loans (BF1, MC2); capitalRoom() binds beside it. |
+| 2586 | 3 | `private double pendingProjectLoans()` |  |
+| 2591 | 5 | `public void projectLoansSettled()` | The bank has refreshed its loan book: these claims are now counted there, not pending too. |
+| 2610 | 3 | `public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly)` | The bank's capital rule for the month, from Bank.lendingGrowthLimit() and lendsOnlyToKeepBorrowersGoing(). |
+| 2620 | 14 | `public void setCapitalRule(double monthlyGrowth, boolean keepGoingOnly, boolean insuredToo)` | ...and whether it rations the insured mortgages too: true when the bank's leverage requirement is the larger (Bank.leverageBinds(), 0.7.11 round 2), because a mortgage then uses the capital the bank is short of. |
+| 2638 | 1 | `public boolean isInsuredRationed()` |  |
+| 2641 | 3 | `private double rationedPrincipal(String sector)` | The debt the capital rule reads: what the sector owes the bank, uninsured, or all of it while insuredRationed. |
+| 2651 | 6 | `public double capitalRoom(String sector)` | What the bank's capital lets this sector borrow this month, over what it owes now: its debt when the rule was set, grown by the month's limit (none under the minimum), less what it owes - so what matured is room to re... |
+| 2659 | 1 | `public double getCapitalGrowth()` | The month's limit on a borrower's growth, a share a month: infinite with none. |
+| 2662 | 1 | `public boolean isKeepGoingOnly()` | True when the bank lends only to keep its borrowers going this month. |
+| 2665 | 1 | `public boolean wasRefusedForCapital(String sector)` | True when the capital rule refused this sector a project this month. |
+| 2668 | 1 | `public boolean wasProjectRefusedForCapital(String sector)` | ...a building's loan, this month (round 5, the growth doors counted apart). |
+| 2670 | 1 | `public boolean wasMortgageRefusedForCapital(String sector)` | ...a new mortgage, this month. |
+| 2678 | 4 | `public void takeBackCapitalRefusal(String sector, boolean refusedBefore, boolean mortgageRefusedBefore)` | ...and a capital no taken back (HN1, REV-HN1-1): a smaller order then got past the door, so the sector was trimmed, not held. |
 
-### THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3) (lines 2682-2884)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2758 | 11 | `public void recordStatement(String sector, double owed, double owned)` | One month-end reading of a sector: what it owed and what it owned, as the bank read them (Game.sectorPositions()). |
-| 2771 | 7 | `public double quarterPrincipal(String sector)` | What the sector owed, averaged over its last quarter of readings - what it owes now, with none. |
-| 2780 | 7 | `public double quarterAssets(String sector)` | ...and what it owned. |
-| 2789 | 4 | `public double getQuarterLeverage(String sector)` | The leverage the bank reads the sector at: its quarter's average debt over its average assets, 0 with no assets. |
-| 2795 | 3 | `public double getQuarterDefaultRate(String sector)` | The sector's default rate a year at the leverage its last quarter reads (getQuarterLeverage()) - the reading its price is struck on (getRiskSpread()), which the screens print beside that price. |
-| 2800 | 4 | `public int getStatementCount(String sector)` | How many readings a sector has, up to STATEMENT_MONTHS. |
-| 2806 | 5 | `public Map<String, double[]> getStatementsToSave()` | The readings, for the save: a copy, by sector name. |
-| 2813 | 10 | `public void restoreStatements(Map<String, double[]> saved)` | ...and back on load. |
-| 2825 | 3 | `public void setLendingOpen(boolean open)` | Game tells the lender each month whether the bank behind it is standing. |
-| 2829 | 3 | `public boolean isLendingOpen()` |  |
-| 2839 | 3 | `public BusinessLoan issueLoan(String sector, double faceValue, int month)` | Writes a loan of this principal - a shortfall loan, priced at what the sector will owe over the assets it has. |
-| 2844 | 3 | `public BusinessLoan issueProjectLoan(String sector, double faceValue, int month)` | ...a project's: priced with the building it buys counted in the assets, at the loan's value (projectRate()). |
-| 2855 | 1 | **type** `public record Written(String sector, double amount, double leverage, double rate, boolean project)` | One loan written this month: to whom, how much, the leverage it left the borrower at, the rate it was written at, and whether it bought a building (0.7.8, for the playtest's count of loans written past the watch line ... |
-| 2860 | 1 | `public List<Written> getWrittenThisMonth()` | Every loan written this month, in the order written. |
-| 2862 | 22 | `private BusinessLoan write(String sector, double faceValue, int month, double extraAssets, boolean project)` |  |
-
-### insolvency (lines 2885-3162)
+### THE BANK READS A BORROWER FROM ITS LAST QUARTER (0.7.8, round 3) (lines 2683-2885)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2887 | 3 | `public boolean isBorrowingBlocked(String sector)` |  |
-| 2891 | 3 | `public int getBlockedMonths(String sector)` |  |
-| 2895 | 3 | `public double getWrittenOffThisMonth(String sector)` |  |
-| 2899 | 3 | `public double getWrittenOffTotal(String sector)` |  |
-| 2903 | 3 | `public int getRestructureCount(String sector)` |  |
-| 2915 | 9 | `public void restoreWriteOffs(java.util.Map<String, Double> totals)` | Puts the write-off history back on load. |
-| 2925 | 3 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
-| 2952 | 3 | `public java.util.Map<String, Integer> getRestructureCounts()` | THE BORROWER'S RECORD IS STATE, AND IT WAS NOT CARRIED. |
-| 2956 | 3 | `public java.util.Map<String, Integer> getBlockedMonthsAll()` |  |
-| 2960 | 19 | `public void restoreCreditRecord(java.util.Map<String, Integer> counts, java.util.Map<String, Integer> blocked)` |  |
-| 2980 | 7 | `public double getTotalWrittenOff()` |  |
-| 3004 | 4 | `public boolean isInsolvent(String sector)` | Is every firm in this sector under water at once - the backstop's case? |
-| 3024 | 3 | `public double restructure(String sector)` | THE BACKSTOP: writes a sector with nothing left down to what its assets can support - RESTRUCTURE_TARGET of nothing - forgives its overdraft, counts the default on its record and shuts it out for exclusionFor(). |
-| 3037 | 125 | `public double restructure(String sector, boolean forced)` | ...or, `forced`, a sector nobody would make an interim loan to - still past the default point after the month's write-down, or its bank shut - whatever its assets read (INTERIM FINANCING, round 5): the whole sector to... |
+| 2759 | 11 | `public void recordStatement(String sector, double owed, double owned)` | One month-end reading of a sector: what it owed and what it owned, as the bank read them (Game.sectorPositions()). |
+| 2772 | 7 | `public double quarterPrincipal(String sector)` | What the sector owed, averaged over its last quarter of readings - what it owes now, with none. |
+| 2781 | 7 | `public double quarterAssets(String sector)` | ...and what it owned. |
+| 2790 | 4 | `public double getQuarterLeverage(String sector)` | The leverage the bank reads the sector at: its quarter's average debt over its average assets, 0 with no assets. |
+| 2796 | 3 | `public double getQuarterDefaultRate(String sector)` | The sector's default rate a year at the leverage its last quarter reads (getQuarterLeverage()) - the reading its price is struck on (getRiskSpread()), which the screens print beside that price. |
+| 2801 | 4 | `public int getStatementCount(String sector)` | How many readings a sector has, up to STATEMENT_MONTHS. |
+| 2807 | 5 | `public Map<String, double[]> getStatementsToSave()` | The readings, for the save: a copy, by sector name. |
+| 2814 | 10 | `public void restoreStatements(Map<String, double[]> saved)` | ...and back on load. |
+| 2826 | 3 | `public void setLendingOpen(boolean open)` | Game tells the lender each month whether the bank behind it is standing. |
+| 2830 | 3 | `public boolean isLendingOpen()` |  |
+| 2840 | 3 | `public BusinessLoan issueLoan(String sector, double faceValue, int month)` | Writes a loan of this principal - a shortfall loan, priced at what the sector will owe over the assets it has. |
+| 2845 | 3 | `public BusinessLoan issueProjectLoan(String sector, double faceValue, int month)` | ...a project's: priced with the building it buys counted in the assets, at the loan's value (projectRate()). |
+| 2856 | 1 | **type** `public record Written(String sector, double amount, double leverage, double rate, boolean project)` | One loan written this month: to whom, how much, the leverage it left the borrower at, the rate it was written at, and whether it bought a building (0.7.8, for the playtest's count of loans written past the watch line ... |
+| 2861 | 1 | `public List<Written> getWrittenThisMonth()` | Every loan written this month, in the order written. |
+| 2863 | 22 | `private BusinessLoan write(String sector, double faceValue, int month, double extraAssets, boolean project)` |  |
 
-### CAN'T PAY MEANS DEFAULT (0.7.12, round 4) (lines 3163-3260)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3221 | 1 | **type** `public enum ShortReason` | Why the shortfall desk left a sector short (round 4). |
-| 3228 | 1 | `public ShortReason getShortReason(String sector)` | Why the shortfall desk left this sector short this month - the tighter of its limits, or its reason to refuse - or null if it was not asked. |
-| 3231 | 3 | `public void setMonthObligations(String sector, double amount)` | What the month asked this sector to pay: its costs, interest and taxes on this month's statement and the principal that fell due (EconomyManager.settleBusinessCredit()). |
-| 3234 | 1 | `public double getMonthObligations(String sector)` |  |
-| 3242 | 1 | `public double getCannotPayShort(String sector)` | What the month's bills still left unpaid in one sector when the cash-flow test struck (round 4) - lent as interim financing since round 5, or the backstop's; 0 if it did not default for want of cash. |
-| 3244 | 1 | `public double getCannotPayShare(String sector)` | ...the share of it that could not pay, h. |
-| 3246 | 1 | `public ShortReason getCannotPayReason(String sector)` | ...and why no lender stood behind it, or null. |
-| 3254 | 6 | `double cannotPayShare(String sector)` | THE CASH-FLOW TEST'S SHARE: the part of a sector whose till is short that cannot pay - its shortfall over what the month asked it to pay, all of it when that is more than the month's bills. |
-
-### INTERIM FINANCING (0.7.12, round 5) (lines 3261-3813)
+### insolvency (lines 2886-3163)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3342 | 1 | `public double getInterimLentThisMonth(String sector)` | What the interim lender lent this sector this month, at face (round 5). |
-| 3344 | 1 | `public String getInterimRefusal(String sector)` | Why the interim lender would not lend to this sector this month, or null. |
-| 3346 | 1 | `public double getInterimMaturedThisMonth(String sector)` | The interim principal that fell due this month in this sector: repaid, or rolled by the shortfall desk. |
-| 3348 | 1 | `public double getInterimWrittenOffThisMonth(String sector)` | The interim principal a backstop wrote off this month in this sector. |
-| 3353 | 1 | `public double getBackstopInBanThisMonth(String sector)` | ...one sector's. |
-| 3356 | 4 | `public double takeInterimHanded(String sector)` | The interim loan's cash this sector's till is owed from the month's defaults, handed over once (EconomyManager.settleInsolvency()). |
-| 3362 | 5 | `public double getInterimPrincipal(String sector)` | What one sector owes on interim financing. |
-| 3369 | 5 | `public double getInterimPrincipal()` | ...every sector's. |
-| 3376 | 5 | `public int getInterimCount(String sector)` | How many interim loans one sector has outstanding. |
-| 3383 | 5 | `public int getInterimCount()` | ...every sector's. |
-| 3396 | 10 | `String interimRefusal(String sector, double cash, double loan, double handed, double writtenDown)` | THE INTERIM LENDER'S TEST: null to lend, or why not. |
-| 3408 | 7 | `double priceInterim(String sector, double faceValue)` | What an interim loan of this face would be written at: prime, the curve at the leverage its rank sees, the record and the concentration (INTERIM FINANCING). |
-| 3417 | 16 | `private InterimLoan writeInterim(String sector, double faceValue)` | Writes an interim loan: counted in the month's lending and fees like any loan, the bank paying it out at the settle. |
-| 3445 | 62 | `public double restructureInsolventSectors()` | THE MONTH'S DEFAULTS, every sector: the backstop for a sector with nothing left (restructure()), and for every other the slice of its debt whose firms fell through the default point (defaultSlice()) - or, since round ... |
-| 3523 | 3 | `public double defaultSlice(String sector)` | THE SLICE: the share of this sector's debt whose firms fell through the default point this month, monthlyDefaultShare() of it at the leverage the month's check reads (principal over getAssets(), struck after the balan... |
-| 3528 | 40 | `public double defaultSlice(String sector, double atLeast)` | ...or, if more, this share: the part of it that cannot pay this month (round 4, CAN'T PAY MEANS DEFAULT). |
-| 3574 | 1 | `public double getLoansDefaultedThisMonth(String sector)` | The loans and the bonds that defaulted this month in one sector, before recovery (0.7.12). |
-| 3575 | 1 | `public double getBondsDefaultedThisMonth(String sector)` |  |
-| 3581 | 6 | `private void recordBondWriteOff(String sector, double face)` |  |
-| 3589 | 1 | `public double getBondWrittenOffThisMonth(String sector)` | What this month's defaults took off one sector's bonds, every holder together (0.7.12). |
-| 3592 | 1 | `public double getBondWrittenOffTotal(String sector)` | ...over the city's life. |
-| 3595 | 5 | `public double getBondWrittenOffTotal()` | ...every sector's, over the city's life. |
-| 3602 | 1 | `public Map<String, Double> getBondWrittenOffTotals()` | The bondholders' losses over the city's life, by sector, for the save. |
-| 3605 | 7 | `public void restoreBondWrittenOff(Map<String, Double> totals)` | ...and back on load; an older save has none. |
-| 3624 | 1 | `public double getDefaultedThisMonth(String sector)` | The debt whose firms defaulted this month in the slice, before what its creditors recover - each instrument's write-off is its own loss given default of its part (getLoansDefaultedThisMonth(), getBondsDefaultedThisMon... |
-| 3627 | 1 | `public double getDefaultShareThisMonth(String sector)` | The share of the sector's debt that defaulted this month in the slice, h. |
-| 3630 | 1 | `public boolean wasRestructuredThisMonth(String sector)` | True when the backstop wrote this sector down whole this month. |
-| 3633 | 3 | `public double getDefaultRate(String sector)` | The sector's default rate a year at its leverage now, PD(L) - what the Bank tab shows beside its leverage. |
-| 3653 | 4 | `public boolean defaultsAreNews(String sector)` | WHETHER THIS MONTH'S DEFAULTS ARE NEWS: the backstop, or a slice at least the share that defaults a month at the default point itself - monthlyDefaultShare(INSOLVENCY_TRIGGER), 5.6% of its debt, where half the sector'... |
-| 3669 | 4 | `public double getPrincipalJudged(String sector)` |  |
-| 3675 | 8 | `public void advanceBlocks()` | Counts down the borrowing bans. |
-| 3685 | 3 | `public void setLoans(List<BusinessDebt> loans)` | save / load |
-| 3689 | 42 | `public void clearLoans()` |  |
-| 3733 | 29 | `public void printBusinessDebtInfo(int currentMonth)` | printers |
-| 3765 | 4 | `static { ... }` |  |
-| 3771 | 41 | `public void redenominate(double scale)` | Every business loan and this month's lending, in the new unit. |
+| 2888 | 3 | `public boolean isBorrowingBlocked(String sector)` |  |
+| 2892 | 3 | `public int getBlockedMonths(String sector)` |  |
+| 2896 | 3 | `public double getWrittenOffThisMonth(String sector)` |  |
+| 2900 | 3 | `public double getWrittenOffTotal(String sector)` |  |
+| 2904 | 3 | `public int getRestructureCount(String sector)` |  |
+| 2916 | 9 | `public void restoreWriteOffs(java.util.Map<String, Double> totals)` | Puts the write-off history back on load. |
+| 2926 | 3 | `public java.util.Map<String, Double> getWriteOffTotals()` |  |
+| 2953 | 3 | `public java.util.Map<String, Integer> getRestructureCounts()` | THE BORROWER'S RECORD IS STATE, AND IT WAS NOT CARRIED. |
+| 2957 | 3 | `public java.util.Map<String, Integer> getBlockedMonthsAll()` |  |
+| 2961 | 19 | `public void restoreCreditRecord(java.util.Map<String, Integer> counts, java.util.Map<String, Integer> blocked)` |  |
+| 2981 | 7 | `public double getTotalWrittenOff()` |  |
+| 3005 | 4 | `public boolean isInsolvent(String sector)` | Is every firm in this sector under water at once - the backstop's case? |
+| 3025 | 3 | `public double restructure(String sector)` | THE BACKSTOP: writes a sector with nothing left down to what its assets can support - RESTRUCTURE_TARGET of nothing - forgives its overdraft, counts the default on its record and shuts it out for exclusionFor(). |
+| 3038 | 125 | `public double restructure(String sector, boolean forced)` | ...or, `forced`, a sector nobody would make an interim loan to - still past the default point after the month's write-down, or its bank shut - whatever its assets read (INTERIM FINANCING, round 5): the whole sector to... |
+
+### CAN'T PAY MEANS DEFAULT (0.7.12, round 4) (lines 3164-3261)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3222 | 1 | **type** `public enum ShortReason` | Why the shortfall desk left a sector short (round 4). |
+| 3229 | 1 | `public ShortReason getShortReason(String sector)` | Why the shortfall desk left this sector short this month - the tighter of its limits, or its reason to refuse - or null if it was not asked. |
+| 3232 | 3 | `public void setMonthObligations(String sector, double amount)` | What the month asked this sector to pay: its costs, interest and taxes on this month's statement and the principal that fell due (EconomyManager.settleBusinessCredit()). |
+| 3235 | 1 | `public double getMonthObligations(String sector)` |  |
+| 3243 | 1 | `public double getCannotPayShort(String sector)` | What the month's bills still left unpaid in one sector when the cash-flow test struck (round 4) - lent as interim financing since round 5, or the backstop's; 0 if it did not default for want of cash. |
+| 3245 | 1 | `public double getCannotPayShare(String sector)` | ...the share of it that could not pay, h. |
+| 3247 | 1 | `public ShortReason getCannotPayReason(String sector)` | ...and why no lender stood behind it, or null. |
+| 3255 | 6 | `double cannotPayShare(String sector)` | THE CASH-FLOW TEST'S SHARE: the part of a sector whose till is short that cannot pay - its shortfall over what the month asked it to pay, all of it when that is more than the month's bills. |
+
+### INTERIM FINANCING (0.7.12, round 5) (lines 3262-3814)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3343 | 1 | `public double getInterimLentThisMonth(String sector)` | What the interim lender lent this sector this month, at face (round 5). |
+| 3345 | 1 | `public String getInterimRefusal(String sector)` | Why the interim lender would not lend to this sector this month, or null. |
+| 3347 | 1 | `public double getInterimMaturedThisMonth(String sector)` | The interim principal that fell due this month in this sector: repaid, or rolled by the shortfall desk. |
+| 3349 | 1 | `public double getInterimWrittenOffThisMonth(String sector)` | The interim principal a backstop wrote off this month in this sector. |
+| 3354 | 1 | `public double getBackstopInBanThisMonth(String sector)` | ...one sector's. |
+| 3357 | 4 | `public double takeInterimHanded(String sector)` | The interim loan's cash this sector's till is owed from the month's defaults, handed over once (EconomyManager.settleInsolvency()). |
+| 3363 | 5 | `public double getInterimPrincipal(String sector)` | What one sector owes on interim financing. |
+| 3370 | 5 | `public double getInterimPrincipal()` | ...every sector's. |
+| 3377 | 5 | `public int getInterimCount(String sector)` | How many interim loans one sector has outstanding. |
+| 3384 | 5 | `public int getInterimCount()` | ...every sector's. |
+| 3397 | 10 | `String interimRefusal(String sector, double cash, double loan, double handed, double writtenDown)` | THE INTERIM LENDER'S TEST: null to lend, or why not. |
+| 3409 | 7 | `double priceInterim(String sector, double faceValue)` | What an interim loan of this face would be written at: prime, the curve at the leverage its rank sees, the record and the concentration (INTERIM FINANCING). |
+| 3418 | 16 | `private InterimLoan writeInterim(String sector, double faceValue)` | Writes an interim loan: counted in the month's lending and fees like any loan, the bank paying it out at the settle. |
+| 3446 | 62 | `public double restructureInsolventSectors()` | THE MONTH'S DEFAULTS, every sector: the backstop for a sector with nothing left (restructure()), and for every other the slice of its debt whose firms fell through the default point (defaultSlice()) - or, since round ... |
+| 3524 | 3 | `public double defaultSlice(String sector)` | THE SLICE: the share of this sector's debt whose firms fell through the default point this month, monthlyDefaultShare() of it at the leverage the month's check reads (principal over getAssets(), struck after the balan... |
+| 3529 | 40 | `public double defaultSlice(String sector, double atLeast)` | ...or, if more, this share: the part of it that cannot pay this month (round 4, CAN'T PAY MEANS DEFAULT). |
+| 3575 | 1 | `public double getLoansDefaultedThisMonth(String sector)` | The loans and the bonds that defaulted this month in one sector, before recovery (0.7.12). |
+| 3576 | 1 | `public double getBondsDefaultedThisMonth(String sector)` |  |
+| 3582 | 6 | `private void recordBondWriteOff(String sector, double face)` |  |
+| 3590 | 1 | `public double getBondWrittenOffThisMonth(String sector)` | What this month's defaults took off one sector's bonds, every holder together (0.7.12). |
+| 3593 | 1 | `public double getBondWrittenOffTotal(String sector)` | ...over the city's life. |
+| 3596 | 5 | `public double getBondWrittenOffTotal()` | ...every sector's, over the city's life. |
+| 3603 | 1 | `public Map<String, Double> getBondWrittenOffTotals()` | The bondholders' losses over the city's life, by sector, for the save. |
+| 3606 | 7 | `public void restoreBondWrittenOff(Map<String, Double> totals)` | ...and back on load; an older save has none. |
+| 3625 | 1 | `public double getDefaultedThisMonth(String sector)` | The debt whose firms defaulted this month in the slice, before what its creditors recover - each instrument's write-off is its own loss given default of its part (getLoansDefaultedThisMonth(), getBondsDefaultedThisMon... |
+| 3628 | 1 | `public double getDefaultShareThisMonth(String sector)` | The share of the sector's debt that defaulted this month in the slice, h. |
+| 3631 | 1 | `public boolean wasRestructuredThisMonth(String sector)` | True when the backstop wrote this sector down whole this month. |
+| 3634 | 3 | `public double getDefaultRate(String sector)` | The sector's default rate a year at its leverage now, PD(L) - what the Bank tab shows beside its leverage. |
+| 3654 | 4 | `public boolean defaultsAreNews(String sector)` | WHETHER THIS MONTH'S DEFAULTS ARE NEWS: the backstop, or a slice at least the share that defaults a month at the default point itself - monthlyDefaultShare(INSOLVENCY_TRIGGER), 5.6% of its debt, where half the sector'... |
+| 3670 | 4 | `public double getPrincipalJudged(String sector)` |  |
+| 3676 | 8 | `public void advanceBlocks()` | Counts down the borrowing bans. |
+| 3686 | 3 | `public void setLoans(List<BusinessDebt> loans)` | save / load |
+| 3690 | 42 | `public void clearLoans()` |  |
+| 3734 | 29 | `public void printBusinessDebtInfo(int currentMonth)` | printers |
+| 3766 | 4 | `static { ... }` |  |
+| 3772 | 41 | `public void redenominate(double scale)` | Every business loan and this month's lending, in the new unit. |
 
