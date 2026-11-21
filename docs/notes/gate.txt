@@ -1,8 +1,16 @@
-# gate of Merge batch/FS4: sweep: KeptCheck below section 55 causes what its pages read, KRT1 traced first, its timed sections a harness of their own; takes KS1-rest's KeptCheck parts and KRT1's 49 and 50 (after SZ1; a dry run), 0.9.174
+# gate of Merge batch/FB15: hN1's three leftovers in one batch, each the recommended way (from Pending on 2026-11-20): the landlord's order and its equity raise sized at the door's own price, the no-mortgage order's halving once a fixture shows it, and the ensemble's stop looking once more for survivors; not beside a batch changing `Game.consider()`, 0.9.177
 # date: 2026-11-21
 # earth-2.bin: named
-# nightly: 2026-11-20 22:02 0.9.172 ac224abf3 4,000 months: OK in 363 s; nightly tier OK; observations: 6 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-20-ac224abf3-qgxpSQry
-# suite: 221 harnesses run in 636s: 213 passed, 8 failed
+# nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
+# suite: 224 harnesses run in 938s: 214 passed, 10 failed
+MortgageCheck | exit 1
+MortgageCheck | fixture: a month whose income beat the principal its mortgages took, and one it did not FAIL
+MortgageCheck | ...and a month that earned 0.00 against 0.00 of principal pays nothing, where the old rule paid 0.00 FAIL
+MortgageCheck | 2 FAILED
+CreditCrunchCheck | exit 1
+CreditCrunchCheck | FAIL fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
+CreditCrunchCheck | FAIL fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+CreditCrunchCheck | CreditCrunchCheck: 2 FAILED
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED
@@ -13,13 +21,13 @@ RoadCheck | 2 FAILED
 BankCheck | exit 1
 BankCheck | it pays its savers something                               FAIL
 BankCheck | 1 FAILED
-PassThroughCheck | exit 1
-PassThroughCheck | fixture: the imported cost sets the shelf in both twins in each of the 12 months: the floor over the opening price and the clearing price not over the floor (11 of 12) FAIL
-PassThroughCheck | 1 FAILED
 ReloadCheck | exit 1
 ReloadCheck | Danzik, caused month 1211, reloaded and a month on: every figure in the save is the live city's, to the cent     FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
 ReloadCheck | Danzik, caused month 1211, reloaded and two months on: every figure in the save is the live city's, to the cent  FAIL  1 differ, in 1 kind: .sectors[*].extras.strandedDebtShare x1
 ReloadCheck | 2 FAILED
+MapCheck | exit 1
+MapCheck | ...and every building drawn, one for one                                       FAIL
+MapCheck | 1 FAILED
 DistressBleedCheck | exit 2
 DistressBleedCheck | fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in FAIL
 DistressBleedCheck | ...and the rule is not dead: the centres go when the operating streak reaches the dial FAIL

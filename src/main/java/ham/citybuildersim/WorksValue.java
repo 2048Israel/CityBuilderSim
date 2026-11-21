@@ -220,7 +220,10 @@ public final class WorksValue {
         double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0, used = 0, weights = 0;
         boolean power = m.kind() == BuildAdvice.Kind.POWER;
         Map<BuildingsTemplate, PendingWork> schedule = power ? completionSchedule(g, site) : Map.of();
-        Map<BuildingsTemplate, PendingWork> loads = power ? completionSchedule(g, pendingLoads(g)) : Map.of();
+        // The works on site and their draws: held while a scope is open (AP1), else built afresh as before.
+        Loads held = power ? held(g) : null;
+        Map<BuildingsTemplate, PendingWork> loads = held != null ? held.schedule() : power ? loadSchedule(g) : Map.of();
+        Map<BuildingsTemplate, Double> draws = held != null ? held.draws() : null;
         double powerPotential = 0;
         if (power) for (Sector sector : g.getSectors().all()) {
             Sector.Statement book = sector.statement();
@@ -297,7 +300,7 @@ public final class WorksValue {
                     previousReady = ready;
                     previousWith = with;
                 }
-                double demand = basePowerDemand * at.scale() + pendingPowerLoad(g, loads, months);
+                double demand = basePowerDemand * at.scale() + pendingPowerLoad(g, loads, draws, months);
                 before = new double[] {powerBefore[0], demand + (powerBefore[1] - basePowerDemand)};
                 after = new double[] {powerAfter[0], demand + (powerAfter[1] - basePowerDemand)};
                 result += weight * powerPotential * Math.max(0, cover(after) - cover(before));
@@ -315,24 +318,120 @@ public final class WorksValue {
 
     /** Electrical draw of already ordered non-power works that their present queue opens by this date. */
     public static double pendingPowerLoad(Game g, double months) {
-        return months > 0 ? pendingPowerLoad(g, completionSchedule(g, pendingLoads(g)), months) : 0;
+        if (!(months > 0)) return 0;
+        Loads held = held(g);
+        return held != null ? pendingPowerLoad(g, held.schedule(), held.draws(), months)
+                : pendingPowerLoad(g, loadSchedule(g), null, months);
     }
 
     private static Map<BuildingsTemplate, Long> pendingLoads(Game g) {
+        return pendingLoads(g, null);
+    }
+
+    /** ...each one's new unit's draw put in `draws` as it is read, when given (the held scope's, AP1). */
+    private static Map<BuildingsTemplate, Long> pendingLoads(Game g, Map<BuildingsTemplate, Double> draws) {
         Map<BuildingsTemplate, Long> loads = new LinkedHashMap<>();
         for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {
             BuildingsTemplate t = stack.getBuilding();
-            if (t.getCategory() != BuildingType.ELECTRICITY && NewUnit.of(g, t).getElectricityConsumption() > 0)
+            if (t.getCategory() == BuildingType.ELECTRICITY) continue;
+            int draw = NewUnit.of(g, t).getElectricityConsumption();
+            if (draw > 0) {
                 loads.put(t, stack.getUnderConstruction());
+                if (draws != null) draws.put(t, (double) draw);
+            }
         }
         return loads;
     }
 
-    private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months) {
+    /** The draw ahead on a schedule: each template's new unit's draw from `draws` when held (AP1), else read afresh. */
+    private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule,
+                                           Map<BuildingsTemplate, Double> draws, double months) {
         double load = 0;
         for (Map.Entry<BuildingsTemplate, Long> e : completedAt(g, schedule, months).entrySet())
-            load += e.getValue() * (double) NewUnit.of(g, e.getKey()).getElectricityConsumption();
+            load += e.getValue() * (draws != null ? draws.get(e.getKey())
+                    : (double) NewUnit.of(g, e.getKey()).getElectricityConsumption());
         return load;
+    }
+
+    /* ----- HELD FOR ONE PASS (AP1, 2026-11-20) -----
+       Jerus's slot 10 (m1204, 421,561 people, 57 stacks on site) took 7.5-17 s a month against 1x's 5 s: the
+       auto-builder's search asked pendingPowerLoad() about 1,100 times a month, and each built the site's whole
+       completion schedule (siteUnitMonths() for every stack, its builders-first staffing included) and every
+       template's new-unit draw afresh, for a site nothing in the pass had changed. A scope (hold()) holds the
+       schedule and the draws while it is open, on its own thread and for its own city; AutoBuilder.pass() opens it
+       around its loop and the Build screen's Overview around its draw. What is held is keyed on the site's stamp
+       (BuildingManager.siteStamp(), with the month and the output on site), read at every call, so an order, a
+       cancel, a rush or a priority, by whatever path, is read afresh at the next call; the same order and products,
+       so the figure is the bare one to the bit (NewUnitCheck 13). Closed, every call computes as before. ----- */
+
+    /** One open scope: the city it is for, how deep it is opened, the stamp its loads were built at, and the loads. */
+    public static final class Scope implements AutoCloseable {
+        private final Game game;
+        private int depth = 1;
+        private java.util.List<Object> stamp;
+        private Loads loads;
+        /** Schedules built while it was open (NewUnitCheck 13: one with no change on site). */
+        long built;
+
+        private Scope(Game game) { this.game = game; }
+
+        /** Closes it at its outermost close: nothing is held after. */
+        @Override public void close() {
+            if (--depth == 0 && HELD.get() == this) HELD.remove();
+        }
+    }
+
+    /** The schedule of the non-power works on site and each one's new unit's draw, built together. */
+    private record Loads(Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> draws) { }
+
+    private static final ThreadLocal<Scope> HELD = new ThreadLocal<>();
+
+    /** Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. */
+    static final java.util.concurrent.atomic.AtomicLong SCHEDULES = new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * Opens a scope for this city on this thread, closed by try-with-resources. A scope already open on the thread is
+     * opened deeper and stays the one (a scope for another city then holds nothing for this one).
+     */
+    public static Scope hold(Game g) {
+        Scope open = HELD.get();
+        if (open != null) {
+            open.depth++;
+            return open;
+        }
+        Scope s = new Scope(g);
+        HELD.set(s);
+        return s;
+    }
+
+    /** The open scope on this thread, for tests; null when none is. */
+    static Scope open() { return HELD.get(); }
+
+    /**
+     * The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside
+     * a pricing that reads every template as it stands (NewUnit.of() reads the template there, not the new unit).
+     */
+    private static Loads held(Game g) {
+        Scope s = HELD.get();
+        if (s == null || s.game != g || NewUnit.resolving() || LicenceFees.pricing()) return null;
+        java.util.List<Object> stamp = g.getBuildingManager().siteStamp();
+        stamp.add(g.getMonth());
+        stamp.add(g.getBuildingOutputAtEveryPost());
+        if (s.loads == null || !stamp.equals(s.stamp)) {
+            Map<BuildingsTemplate, Double> draws = new java.util.HashMap<>();
+            Map<BuildingsTemplate, PendingWork> schedule = completionSchedule(g, pendingLoads(g, draws));
+            SCHEDULES.incrementAndGet();
+            s.built++;
+            s.loads = new Loads(schedule, draws);
+            s.stamp = stamp;
+        }
+        return s.loads;
+    }
+
+    /** The schedule of the non-power works on site, as it stands: built afresh, outside a scope. */
+    private static Map<BuildingsTemplate, PendingWork> loadSchedule(Game g) {
+        SCHEDULES.incrementAndGet();
+        return completionSchedule(g, pendingLoads(g));
     }
 
     private record PendingWork(long units, double first, double interval, boolean rushed) { }

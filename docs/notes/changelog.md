@@ -18,6 +18,40 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.177 — FB15, HN1's three leftovers — 2026-11-21, ready, see docs/queue/FB15-notes.md
+A landlord's order is sized at the door's own price (HN1-A): `Game.doorPriceOf()`, the quote and the land as
+`buildFor()` charges them, prices its equity raise, the lender's test and the build card, so a down payment raised
+to the plan's figure no longer fails at the door (HousingDoorCheck's seed 12 window: nine such cuts on main, none
+now). A project's order the lender refuses for the bank's capital or a ban is asked again of half (HN1-B): the till
+builds what it buys, the line says why it was trimmed, and the capital marks are taken back (seed 12 to m900: 18
+such month-ends, none on main); past the default point or with the bank shut it holds, as before.
+`tools/ensemble/stop.ps1` makes the Git Bash form of the run's folder itself, since Git Bash hands it C:/..., then
+looks once more and names what outlived the stop, exit 1; with no folder or label it stops nothing, exit 2 (HN1-C,
+its selftest). The new OrderDoorCheck causes HN1-A and HN1-B, eight lines red on main. HousingDoorCheck names the
+landlords' homes by the door's price too (68 orders with the segment short, none cut for the down payment), and
+CreditCrunchCheck 4 causes an order the owners' issue falls short of. The played cities of MortgageCheck 12 and
+CreditCrunchCheck 2 moved, their fixtures known reds under FS9. ForeignDebtCheck 7 asserts a reloaded city's first
+month against its twin's, not 5% of the principal, which a month's own move crossed in the moved city.
+
+### 0.9.176 — RB3, the fund's over-limit sale and the fixed point — 2026-11-20, ready, see docs/queue/RB3-notes.md
+FS13 found FundCheck 9e's town holding 11.17% of Construction against the fixed point of 10.92%. The book had last traded under fair value,
+the leavers asked 230 to 400 shares a month at the desk's bid, a buyback buying 200 took theirs first, and the fund's over-limit ask at fair
+value rested 34 months running. That ask is now the market's (Exchange.limitAsk()): the last trade held between the desk's bid and fair value,
+so fair value while the book trades at or over it or on a trade older than the fund's stale mark, and it is posted before the leavers, so
+a buyback meets it first at its price. The fixed
+point does not bend, since an unsold tenth has no rest. ExchangeCheck 7c causes the month (20 owners leaving with 2,000 shares, the fund at the
+fixed point, the last trade under fair value), and each of its lines but the other sides fails on main's rule. FundCheck 9e drops FS13's
+world bid and holds 10.28% on the town's own sale (10.31% and 10.30% on 60 and 84 months of founding, where main reached 11.17% and 11.14%).
+The default playtest never puts the fund over its cap, and its eight trace files are byte-identical to main's, at the base and merged.
+
+### 0.9.175 — AP1, the auto-builder's month at 400,000 people — 2026-11-21, ready, see docs/queue/AP1-notes.md
+On Jerus's slot 10 (421,561 people, 57 stacks on site) the auto-builder's search asked the power ahead (`WorksValue.pendingPowerLoad`) about 1,100 times a month, and each call rebuilt the site's whole completion schedule, with the builders' staffing for every stack and every template's new-unit draw.
+`WorksValue.hold()` holds the schedule and the draws in a scope, for one city on its own thread, opened by `AutoBuilder.pass` around its loop and by the Build screen's Overview around its draw.
+What is held is keyed on `BuildingManager.siteStamp()` with the month and the output on site, read at every call, so an order, a cancel, a rush or a priority is read afresh at the next call. Closed, every call computes as before.
+The same order and products are kept, so every figure is the same to the bit. NewUnitCheck 13 proves it at every horizon and for `relief`'s avoided loss, and proves that an order, a rush and a priority inside a scope are read, one schedule is built a scope (a count), and nothing is held once it is closed.
+On slot 10 over 24 months the month went from a mean of 43.6 s and a median of 40.1 s to 4.5 s and 4.3 s, on a busy laptop, and the schedules built from 38,262 to 24. The cash, people and spending at the end are equal to the bit.
+The default trace does not move: all eight playtest CSVs are byte-identical to main's over 2,405 months. The run took 660 s, against 1,116 s.
+
 ### FS4 (untagged) — KeptCheck I causes what its pages read — 2026-11-20, ready, see docs/queue/FS4-notes.md
 KeptCheck's sections below 55 (the city, the chrome, People, History and the KP2-KP4 pages) cause what they read on its scratch city, not what Danzik's months happen to hold.
 Each page's kept rule is the identity, its share taken against what each redraw draws again, at HANDED_BACK: a page that grows or shrinks loses nothing it did not draw.
