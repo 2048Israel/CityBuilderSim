@@ -465,3 +465,25 @@ before any records push. Conditional readiness requires true reused-dry exit 0, 
 source/base and no pending concern. Then the successful box path goes first in the provisional ship file,
 records are committed/pushed, and the readiness marker is removed in its own final commit and verified on origin.
 No builder publication, override, full pick, playtest or ensemble rerun is authorized.
+
+
+**Reused dry run: PASS.** `/home/jerus/cbs/runs/cbs-gate-PW1-PW1r1324` reached true remote exit 0 at
+17:23:03Z, branch `ce7695793`, base `2b049188b`. The local client and refusal watcher both exited 0; remote
+inactivity, exit, completion seal, no cancellation and successful-clone cleanup were then verified independently.
+Before/after refs show the same branch and main throughout. There was no source change or push while it ran.
+
+The publisher explicitly reused `cbs-gate-PW1-0qipiwLf`; its rejudge took 0 seconds, exit 3, with 14 known-red
+harnesses and zero new/unnamed lines. No compiler or harness suite was replayed and the refusal watcher never
+triggered. The original 236-run suite (222 passed, 14 known) is retained byte-for-byte: SHA-256
+`b6d7d41422bb98dc0870ca02abcf74b1c3aadaf54b5dd3eba02f3a7dbd04c43d`. All 870 entries in the successful
+run's manifest were verified after its normal copy to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW1-PW1r1324`; verification receipt is
+`target/PW1c2-recovery/reused-copy-verification.json`, with owner/watcher logs under `target/`.
+The original run, its clone/source archive, final ensemble and historical PW1d/Oil evidence remain unchanged.
+
+The successful box path is the ship file's first line. Main is still `2b049188b`, model/publisher bytes still
+`7a06097bc`, and no pending concern or new row/design change arose. The pick is ALL 237; the review floor is
+saves (`DataSave.java`), covered by the retained REV-PW1c-2 SHIP, with upstream MC2 independently reviewed.
+The orchestrator's conditional readiness go is met. These notes and the ship file are first committed/pushed
+with the provisional marker, then marker removal is its own final commit, verified absent on origin. Exact
+ready SHA/base/source-file list/run are recorded through the bus. Publication remains the orchestrator's.

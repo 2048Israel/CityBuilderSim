@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW1-PW1r1324 -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — PW1, power by the merit order at the market's price — 2026-11-21, ready, see docs/queue/PW1-notes.md
