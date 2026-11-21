@@ -1,4 +1,4 @@
-# OE1 - a first plant weighed at the rate it will run at
+
 
 The order's estimate for a sector with nothing running (`QUEUE.md`; the brief is DQ1's notes §7). Built by a
 Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.162).
@@ -49,6 +49,11 @@ Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.16
   and two snaps under it: a match pass whose need ends under it at the doors' size or the pass's places everyone,
   and `noteUnplaced()`'s families' leftover (the seekers' part taken off the whole) is nobody under it. Every reader
   of `getDoubledUpHouseholds()` and `getStillUnplaced()` reads 0 when the packing is exact.
+- **A car drawn is a car paid for** (b16fd8a5d, the orchestrator's call after the ensemble's F1, §11):
+  `HouseholdBalance.takeCars(units, price, wantPrice, ceiling)` reads each household's want in whole cars at
+  `wantPrice` and bills it at `price`; `Motoring.month` passes the quote's per-car price, the price the draw was
+  sized at, so the take's want is the draw's units and every car drawn is placed and paid for at the draw's own
+  price. The three-argument form (the second-hand market's, one price for both) reads both at `price`, as before.
 
 ## 3. The calls (★ = the recommended way, taken)
 
@@ -71,6 +76,16 @@ Claude session, headless, on `batch/OE1`, cut from origin/main e2f399d7c (0.9.16
   of a band never carried its interest and never asked (WantedPostsCheck, §9). Whole, not the fill of its other
   bands: a band with spare hands fills its posts, so the two differ by little, and whole is main's own read for a
   first plant there. A running sector's hold reads its own rate, as on main.
+- ★ **The take reads its want at the draw's price, rather than handing the refused car back** (the orchestrator:
+  "pick the one that keeps every identity named"). The draw stays one booking: Markets.draw() has already struck
+  the market's record and the draw log, the seller's sale (Automotive's pending sales to households, the line the
+  households' in-transit reads), its stock and the world's import, and the month's drawn count. A hand-back would
+  reverse each of the five, and each is read by an identity (the households', the pools' DOMESTIC and TRADE scopes,
+  `tradeByGood`, the shelf). Read at the price the draw was sized at, the take's want is `affordable` by
+  construction (`carsWanted()` is the same sum over the same cells, unchanged between the two), so the scale is 1
+  and nothing is left over. The bill stays the draw's own per-car price, so the households pay what the sellers
+  booked; where that price is a few bits dearer than the want's, the excess over a household's cash is lent, which
+  the bank is told as before.
 - **ExtractionSector 314** is a local `rate` nothing reads; left as it is.
 
 ## 4. The measure: YoungBankCheck
@@ -143,6 +158,16 @@ The AUTO2 measure (the bank's months under `CAPITAL_RATIO` to m600, sixteen seed
   without the two snaps (2.842e-14 doubled up; the snaps commented out, compiled, run, put back) and passes with
   them. The month's path runs the sharing valve between its two passes, which absorbed this dust; the played
   city's was the families' and the seekers' both (4.1e-15 and 1.0e-14 at DenominationCheck's m21).
+
+- **CarCheck, a new section, "a car drawn is a car placed and paid for, on the whole-car edge"**, at the end of the
+  harness on the buying city. Every household is at its cushion but one, a 352-household cell, whose money is
+  set (a bisection over its spare money, then over the doubles) so that it can buy one car at the price the draw
+  is sized at and none at the price it is struck at. The shelf is empty and the world's price is put at that edge
+  (0.99000020493000010), so the quote for 3 cars at the shelf's price reads a car a bit cheaper (…000000).
+  The fixture line holds it, and a second checks that the month played is the one found: the probe's ceiling,
+  one car drawn, the edge's price imported. Its law, the car placed and the households' money moved by the
+  import less the bank's loan to the cent, failed on the old call (0 placed of 1 drawn; held +0.000000 against
+  -0.990000; Motoring's line put back, compiled, run, restored) and passes with the mend.
 
 ## 6. Left
 
@@ -325,3 +350,9 @@ is 11.1654 against 11.1772, so 25 are drawn and 25 placed, and the residual is 1
 market 0.1% on the way to m655 and put one cell on a whole-car edge. The gap is Motoring's: the draw and the take
 are struck at two prices with whole cars between them, so the units the market books need not be the units the
 households take. It sits on the same lines as CarCheck's red (CI1).
+
+**The mend** (b16fd8a5d, the orchestrator's call: "a car drawn is a car paid for"; §2, §3 ★). The take reads each
+household's want at the quote's per-car price, the price `affordable` was read at, so it wants the draw's units
+and places them all, billed at the draw's own price. CarCheck's new section causes the edge and fails on the old
+call (§5). CarCheck's red (CI1's, `## known-reds`) is unmoved: the mend leaves the paid-vs-imported dust to CI1.
+The ensemble reruns on the mend.

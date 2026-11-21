@@ -1225,7 +1225,7 @@ public class CarCheck {
         /*
          * The price the edge is put at: a hundredth under the power of two below the world's price. A price whose leading binary
          * digits are near two is one whose product with a few cars rounds by most of a bit, which is what the quote's price per
-         * car has to do to miss the draw's; at a mantissa near one (1.16 at AUTO2 6's 296.84) a handful of cars never rounds so.
+         * car has to do to miss the draw's; at a mantissa near one a handful of cars, all from the world, never rounds so.
          */
         double target = .99 * Math.pow(2, Math.floor(Math.log(carMarket.importPrice()) / Math.log(2)));
         double[] ceiling = new double[1];

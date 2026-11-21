@@ -10,7 +10,9 @@ spell under the bank's minimum, begun by a lone plant's write-off, is gone. A st
 staffed (`Sector.staffed()`), so it still asks for the wage that would staff it. The household match no longer books
 its own rounding as households doubled up (`FamilyModel.packingRounding()`; HousingCheck), which had let one of
 DenominationCheck's twins' landlords sell and not the other's. BuildAdvice's field earnings stay on the mines' own
-rate (OE1-A).
+rate (OE1-A). A car drawn is a car paid for: the take reads each household's want at the price the draw was
+sized at (`HouseholdBalance.takeCars()`), where a household on the whole-car edge had had a car drawn, booked to
+its seller and never placed (the ensemble's F1, AUTO2 seed 6 m655; CarCheck).
 ## pending
 | OE1-A | BuildAdvice.fieldEarnings() (lines 2199 and 2247) weighs an offer's iron fields at the mines' own rate, not plannedRate(): a field offered to a city with no mine reads the empty sector ({next}) | R1g and FB13 hold BuildAdvice; a one-word change when they have shipped | [OE1's notes §6](docs/queue/OE1-notes.md#6-left) |
 ## queued
