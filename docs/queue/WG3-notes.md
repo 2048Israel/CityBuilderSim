@@ -655,6 +655,192 @@ The housing evidence remains read-only and its hard red still blocks WG3.
 No housing mend, red classification, waiver, kept rejudge, full pick,
 playtest, ensemble replay, dry restart or readiness is authorized.
 
+## Housing checkpoint: recorded refusal and the next public look
+
+Mail `20261121-162526-137-orchestrator-ae4b` authorizes only saved-evidence/
+source analysis. This checkpoint reads the retained cause02 JSONL and native
+house/build/pop/labour/month CSVs locally. It starts no JVM, accesses no box,
+changes no model/player/harness, and rejudges no kept result. The university
+mend at a48e1f6a9 is accepted; the housing finding still blocks WG3.
+
+The four requested months have the following **stored** placement ledger.
+The shape entries are the last native match's unplaced matrix, before
+[noteUnplaced](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1804)
+absorbs up to its native half-households-plus-one allowance. These are
+recorded fields, not placements reconstructed from current shapes.
+
+| Month | Family households now | Stored matrix unplaced | Native doubling allowance, exhausted | Stored raw residual | Original `>1` law |
+|---:|---:|---:|---:|---:|---|
+| 379 | 1,208.636542 | 605.563780 | 605.318271 | 0.245509 | last good |
+| 380 | 1,215.507976 | 609.821972 | 608.753988 | 1.067984 | first bad |
+| 386 | 1,249.124206 | 630.484471 | 625.562103 | 4.922369 | worst |
+| 395 | 1,259.671893 | 631.788381 | 630.835947 | 0.952435 | below threshold again |
+
+Every row has **80 size-2, 63 size-4 and 501 size-6 doors**, in both stored
+match stock and current stock. Stored seeker-unplaced arrays are zero.
+Fourteen owners remain outside this native match. The parity-checked
+**CURRENT-fit hypothetical**, separately from that stored ledger, places
+61.096781/61.488754/63.745715/65.716481 size-2 doors at these four months,
+leaving 18.903219/18.511246/16.254285/14.283519 free; all 63 size-4 and 501
+size-6 doors are used in each query. Actual historical by-size placed counts
+were not recorded. The hypothetical cannot supply that missing flow.
+
+The native family counters below are booked by
+[rebuild/keepFormed](../../src/main/java/ham/citybuildersim/FamilyModel.java#L877)
+and [bringHome](../../src/main/java/ham/citybuildersim/FamilyModel.java#L1027),
+including the retired-band builder. They precede the housing valves and are
+not a reconciliation of end-of-month household snapshots.
+
+| Month | Kept | Re-formed | Newly formed | Adults booked back | Children booked back | Student census snapshot | Current adult-student snapshot |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 379 | 1,285.790009 | 12.987778 | 20.601382 | 11.047097 | 9.676667 | 110.120094 | 99.013750 |
+| 380 | 1,293.327477 | 13.063914 | 20.562505 | 11.106344 | 9.727485 | 99.013750 | 88.356301 |
+| 386 | 1,332.206037 | 13.456627 | 18.911313 | 7.900261 | 6.915147 | 45.529903 | 39.427841 |
+| 395 | 1,352.354746 | 13.660149 | 12.463516 | 0 | 0 | 9.164844 | 7.115371 |
+
+`getLastBackAdults` is specifically the model's bounded allocation when
+adults at home decrease: it includes the at-home groups, not solely students
+or graduates. Its children use the previous at-home dependants rate. The
+driver did not log `getLastBackChildrenHome`, so even the children-booked-
+back figure is not substituted for that separately recorded placement.
+The census uses the prior education step's students; the later
+[education step](../../src/main/java/ham/citybuildersim/Game.java#L16106)
+then applies band flows and replaces PopulationManager's studying snapshot.
+There is no student-exit or household-creation flow inferred by subtracting
+those snapshots. In particular, the saved trace omitted Education's native
+`getFinished`, net graduate/licence flows, local per-course intake and the
+applied attrition components. Cohort arrays and labour supply/filled counts
+are stocks; they do not fill that gap.
+
+Recorded arrivals/room are 0.442251/2.211319 at 379, then zero at the other
+three months. Recorded departures are 2.557566, 2.566615, 2.609898 and
+15.562608; births are 10.293083, 10.306077, 10.374242 and 10.355633. At 395
+the native declining-share field is 0.6863, against zero at the first three
+months. These are actual demographic/migration fields. They do not isolate
+how much household reformation belongs to course completion, ageing,
+employment or any other input.
+
+### Which decision prevented a new home?
+
+The native house CSV's `why` is **not a fresh query**:
+[traceHouse](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L3049)
+reads `Game.getLastInvestment(Real Estate)`. At every saved month 350–400 it
+records the same actual decision, with CSV comma escaping:
+`Holding: no land - needs 5;570 m²; 3;060 m² free`.
+[The monthly private pass](../../src/main/java/ham/citybuildersim/Game.java#L3984)
+asks RealEstate.plan and [consider's holding branch](../../src/main/java/ham/citybuildersim/Game.java#L7053)
+records the reason and returns **before** the credit/equity/mortgage tests.
+The primary playtest does not hold Real Estate out of that pass. Thus the
+recorded private no-order reason is land, not a lender refusal inferred from
+a cash balance.
+
+[RealEstate.plan](../../src/main/java/ham/citybuildersim/sectors/RealEstate.java#L668)
+first ranks templates by fillable income/cost after the native rent hurdle.
+Only after selecting `best` does it ask
+[`plotsAvailableFor(best)`](../../src/main/java/ham/citybuildersim/sectors/RealEstate.java#L714);
+zero plots returns `Decision.noLand`, whose actual area wording comes from
+[BusinessInvestment.landReason](../../src/main/java/ham/citybuildersim/BusinessInvestment.java#L537).
+The shipped catalogue's Low-Rise Apartments need **60,000 ft²** (about
+5,570 m²), matching that refused footprint. A House needs **8,000 ft²** and
+a Studio block **25,000 ft²**; both are physically smaller than the rounded
+3,060 m² free. House is family-sized; Studio's adults-only rule cannot be
+treated as a family alternative. The trace has no per-template hurdle,
+fillable-income/cost or alternative-finance result, so it does **not** prove
+that a House was profitable or could have been financed in this city.
+
+| Month | Recorded private hold | Landlord cash snapshot | City cash snapshot | Real-estate sites/owed points | Total queued points |
+|---:|---|---:|---:|---:|---:|
+| 379 | selected footprint does not fit | 284.876 | -211.286 | 0 / 0 | 0 |
+| 380 | selected footprint does not fit | 285.571 | -207.910 | 0 / 0 | 0 |
+| 386 | selected footprint does not fit | 290.547 | -116.739 | 0 / 0 | 0 |
+| 395 | selected footprint does not fit | 302.397 | -144.777 | 0 / 0 | 0 |
+
+The build CSV proves no queued housing was waiting for completion in this
+window. Landlord cash is not proof of its ability to pay for a block, and
+negative city cash is not an actual failed borrowing decision. The `noMoney`
+CSV value is a **cumulative** sum of build refusals, six throughout this
+window ([traceMonth](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L2836));
+it is not six new housing refusals each month.
+
+For the public player, there is a source-backed control-flow deduction from
+an executed anchor, not a reconstructed money flow. The first original
+round trip is recorded at **373**, slot 1; in the unchanged
+[main loop](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L6933)
+that is stop 7. The saved launch has no attentive-player flag, so the next
+stop is 8, whose [24-month skip](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L6841)
+runs 374–397 **before** its `advise` calls. The whole 380–394 failure interval,
+and recovery below one at 395, are inside that skip. The housing branch of
+`advise` is therefore not visited during the failure interval. No shortened
+skip or extra public intervention is proposed to make the audit pass.
+
+The last look's exact move ranking/attempts and land/funding quotes were not
+captured: main buffers those decisions for its final report, and the planned
+bound ends before that report. Source says
+[keepGroundAhead](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L4530)
+has a nonnegative-cash budget, while [public build](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L5651)
+tries land and then, if needed,
+[canService](../../src/main/java/ham/citybuildersim/LongPlaytest.java#L5804)
+tests quoted interest against `DEBT_SERVICE_LIMIT`. Those are possible
+constraints, not proof of which one rejected a move at the preceding look.
+
+### WG3's mechanical ownership and the smallest next fixture
+
+The source comparison against inherited published .180 `d1d70f0ae` is exact:
+FamilyModel, Migration, RealEstate, BusinessInvestment, SimulationEngine and
+the production LongPlaytest are unchanged. That fact grants no latent-fault
+waiver. Game adds one construction-time live finance/stage binding at
+[508](../../src/main/java/ham/citybuildersim/Game.java#L508); no housing-phase
+call moved. Education now reads fees/duration/forgone pay, actual wages,
+live discount and stage-specific life through the pure helper; it also
+refreshes the existing stage reference on advance. Pipeline shifting,
+attrition, the intake cap and the later band/studying updates are inherited.
+
+This matters on the **observed inputs**, not just a moved town: at 386 the
+paid college wage 0.435162 exceeds diploma 0.278522, which makes inherited
+[gross returnOn](https://github.com/2048Israel/CityBuilderSim/blob/d1d70f0aee8312bb86c888f8cf9831c71322754b/src/main/java/ham/citybuildersim/Education.java#L680)'s
+old branch positive. WG3's native young after-cost college row is 0.264681
+against diploma 0.273943; established is 0.263221 against 0.273903. Both
+now give zero. The native discount is **13.389654%**, exactly the live policy
+rate, with loan rate zero. The college's native return is 0.026333 at 379,
+0.017447 at 380 and zero at 386/395; adult college body is respectively
+99.013750/88.356301/39.427841/7.115371. This identifies WG3's changed decision
+mechanism on this state, **not** a claim that inherited .180 would reach the
+same state, or a measured completion-to-family causal decomposition.
+
+Existing evidence supports **one controlled real-API planner fixture** as
+the next narrow test, not a housing mend yet: test whether ranking a home
+that cannot fit suppresses a profitable family-sized alternative that can.
+Use the native House/Low-Rise templates, `RealEstate.setSegments`/rent
+setters, `BusinessInvestment.setLandAvailable`, `plotsAvailableFor`,
+`getCostOf`, `Game`'s native housing hurdle and `RealEstate.plan`. Declare
+the family demand/rent/finance inputs once, without threshold search. Hard
+guards must establish unmet family demand and positive cost/native rent
+hurdle acceptance for **both** templates; a House must have a plot.
+
+First give enough land for the Low-Rise and require the native plan to
+select it. Change **only available land**, keeping its unit price and all
+other inputs fixed, to one House's footprint: House still has a native
+plot, Low-Rise has none. Capture the real plan result. A land hold then
+isolates the pre-finance selection gate without copying the planner's score
+formula. If any fixed precondition fails, stop and report; do not tune until
+red/green. This would establish a planner issue only, not that the retained
+city's House finance would succeed or that its home red is resolved.
+
+Recommend static preparation/review of that one target fixture first. Any
+later execution needs explicit central slot GO: one fresh scratch-only JVM,
+target-only empty-sourcepath compile against untouched frozen 6ede model/
+dependencies on **gatebox**, native gate.env/Temurin 21.0.13+9/headless and
+named box data, source/class/data pins before/after, local fallback blocked,
+**30 seconds remote / 60 total including copy**, no seed replay/retry.
+No such fixture source, compile or execution was created in this checkpoint.
+If a native feasible-alternative guard cannot be established, the exact
+missing observation is the rejected House's native hurdle/filled doors/
+cost/plot result **inside RealEstate.plan before selecting best**, alongside
+the selected Low-Rise's same fields; end-state cash cannot replace it.
+Do not replay a seed merely to retrieve the whole education or player log.
+No production/player/harness mend or red classification is selected here;
+the original `home > 1` law, 15 raw findings and provisional marker remain.
+
 All local worktree JVMs have named main's absolute earth-2.bin and world-1.bin
 through JDK_JAVA_OPTIONS; the box ensemble/gate name their own main copies.
 Game checks use scratch saves only. No baseline suite of main, standalone
