@@ -136,9 +136,63 @@ complete baseline must be committed and hard M1/F1 reported. No dry run,
 full pick, separate playtest or readiness GO is implied by this authorization.
 R1g rebases its future work on WG3 later, rather than holding WG3 now.
 
-All worktree JVMs name main's absolute earth-2.bin and world-1.bin through
-JDK_JAVA_OPTIONS. Game checks use scratch saves only. No baseline suite of main,
-full pick, LongPlaytest, ensemble or dry run has been started by this builder.
+## Final ensemble result: hard PASS
+
+The authorized unique label `WG3codex1-final180` ran the pushed source
+`6ede2fa3a76fc700e03bb7cb326ff5edcf6565f9`, against .180, on gatebox
+(OpenJDK 21.0.13), eight at once, from 2026-11-21T18:22:01Z to
+18:36:49Z including home copy and scoring. All **80/80** runs completed,
+none missing or short, with **64/64** before-switch policy twins identical.
+The wrapper exited **0**, batch **PASS**, **10/10 M1/F1 hard criteria**,
+24/26 criteria overall (one retired criterion excluded). Every policy has
+zero failed and zero unread money-audit months, and zero runs with a
+LongPlaytest finding. Validation read all 80 CSVs and found no finding rows.
+
+The complete report and summary JSON are in [the baseline](../ensemble/WG3.md).
+The snapshot names the box's main earth-2.bin and world-1.bin. Runs took
+14.3 minutes on the box, 113.2 summed run minutes; median seconds were
+AUTO2 198.65, ZERO_SLACK 163.1, ZERO_HOT 18.35, SHOCK 41.65 and HIGH 34.3.
+The remote run is under
+`/home/jerus/cbs/tools/6ede2fa3a76fc700e03bb7cb326ff5edcf6565f9/target/ensemble/WG3codex1-final180`,
+copied home to `target/ensemble/WG3codex1-final180`. All CSVs, logs, 80
+timings, progress, snapshot, score, baseline and summary remain there.
+
+One information verdict changed: **AUTO2 A1 PASS → FAIL**, 11/16 seeds
+in the inflation band against at least 12; median 2.86% [2.32% to 3.15%],
+against .180's 2.87% [2.03% to 3.29%] and 12/16. A2 remains an
+information FAIL: longest high-inflation spell 14 [6 to 36] months against
+under 12 in every seed (.180: 15 [4 to 36]). AUTO2 T2 remains PASS:
+final population median 2,294,876 [36,437 to 4,806,932], against .180's
+2,532,050 [28,685 to 4,208,078]. These readings are retained as information,
+as EI1 requires; no threshold or premise was changed to pass the batch.
+
+The ignored local invocation and proofs are under `target/wg3-ensemble/`.
+Java, javac and Maven PATH guards were exercised, then the production box
+wrapper's no-host path was exercised with a fake SSH command and mail
+disabled. It reached the guarded Maven command and stopped before any
+local compile/JVM. The first proof expected Maven's 75 to propagate; the
+wrapper deliberately converts compile refusal to setup exit 1. That proof
+expectation was corrected and the proof passed, with the first output kept.
+The actual ensemble never fell back: its guard log hash stayed exactly
+`df93202346808639a97d0e93d2ff7a7727fa135535d4f0086ac71e6f8ab13835`.
+Preflight confirmed unused local/remote labels and safe worktree destinations.
+
+Post-run validation requires all 80 unique CSVs, timing entries and DONE
+markers, matching final months, all hard readings, all 64 twins, exact
+baseline/summary JSON, host/data provenance, source/proof/pom/runner byte
+identity to the frozen commit, and the retained provisional marker.
+`target/wg3-ensemble/validated-result.json` and `validation.txt` retain the
+results. The baseline differs from the runner's complete report only in
+the publisher's version tokens and trailing-whitespace cleanup. No source
+changed during the run, home copy or scoring; the remote owned JVM count
+was zero after completion. The baseline and these notes are committed
+before requesting the separate ALL-pick dry-run GO.
+
+All local worktree JVMs name main's absolute earth-2.bin and world-1.bin through
+JDK_JAVA_OPTIONS; the box ensemble names its own main copies. Game checks use
+scratch saves only. No baseline suite of main, full pick, separate LongPlaytest
+or dry run has been started by this builder. The one authorized ensemble is
+complete as recorded above.
 The ship file remains provisional until the orchestrator's readiness GO.
 
 For the optional PC eye check: open Policy → Wages → The ladder, switch both
