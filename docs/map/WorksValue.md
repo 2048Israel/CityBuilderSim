@@ -1,4 +1,4 @@
-# WorksValue.java - 476 lines · 28 methods · 0 constants · model
+# WorksValue.java - 575 lines · 35 methods · 2 constants · model
 
 `ham/citybuildersim/WorksValue.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
@@ -6,9 +6,22 @@
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (62), [BuildingsTemplate](BuildingsTemplate.md) (43), [Game](Game.md) (25), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (6), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (62), [BuildingsTemplate](BuildingsTemplate.md) (52), [Game](Game.md) (31), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (7), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
 
 **Used by (8):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [NewUnitCheck](NewUnitCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+
+## Sections
+
+| line | section |
+|---:|---|
+| 356 | · HELD FOR ONE PASS (AP1, 2026-11-20) |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 387 | `WorksValue.HELD` | `new ThreadLocal<>()` |  |
+| 390 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
 
 ## Fields (state)
 
@@ -19,12 +32,17 @@
 | 131 | `private final LandManager.Use use` |  |
 | 132 | `private double owned, slope, forest, allocated, works, runs` |  |
 | 133 | `private double free, paid` |  |
+| 369 | `private final Game game` |  |
+| 370 | `private int depth` |  |
+| 371 | `private java.util.List<Object> stamp` |  |
+| 372 | `private Loads loads` |  |
+| 374 | `long built` | Schedules built while it was open (NewUnitCheck 13: one with no change on site). |
 
-## Methods, in file order
+## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 466 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
+| 11 | 565 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
 | 12 | 1 | `private WorksValue()` |  |
 | 15 | 19 | **type** `public record Value(double capital, double land, double futureCapital, long futureUnits, double financing, ...` | Present values in local thousands; jobs and payroll are shown separately from their tax return. |
 | 18 | 1 | `public double cost()` _(in WorksValue.Value)_ |  |
@@ -47,16 +65,30 @@
 | 168 | 35 | `double take(double area)` _(in WorksValue.GroundPlan)_ |  |
 | 205 | 4 | `private static double annuity(double monthlyRate, double months)` |  |
 | 211 | 4 | `public static double avoided(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> ord...` | Power at monthly resolution and other services at yearly midpoints, with the same real rate and long city trend. |
-| 217 | 98 | `private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> ord...` | Compare every plan to the same date, LIFE_MONTHS from now. |
-| 317 | 3 | `public static double pendingPowerLoad(Game g, double months)` | Electrical draw of already ordered non-power works that their present queue opens by this date. |
-| 321 | 9 | `private static Map<BuildingsTemplate, Long> pendingLoads(Game g)` |  |
-| 331 | 6 | `private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` |  |
-| 338 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |
-| 341 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Long> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
-| 357 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
-| 385 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
-| 389 | 3 | `private static double cover(double[] sd)` |  |
-| 393 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
-| 405 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
-| 418 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
+| 217 | 101 | `private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> ord...` | Compare every plan to the same date, LIFE_MONTHS from now. |
+| 320 | 6 | `public static double pendingPowerLoad(Game g, double months)` | Electrical draw of already ordered non-power works that their present queue opens by this date. |
+| 327 | 3 | `private static Map<BuildingsTemplate, Long> pendingLoads(Game g)` |  |
+| 332 | 13 | `private static Map<BuildingsTemplate, Long> pendingLoads(Game g, Map<BuildingsTemplate, Double> draws)` | ...each one's new unit's draw put in `draws` as it is read, when given (the held scope's, AP1). |
+| 347 | 8 | `private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> dra...` | The draw ahead on a schedule: each template's new unit's draw from `draws` when held (AP1), else read afresh. |
+
+### HELD FOR ONE PASS (AP1, 2026-11-20) (lines 356-575)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 368 | 15 | **type** `public static final class Scope implements AutoCloseable` | One open scope: the city it is for, how deep it is opened, the stamp its loads were built at, and the loads. |
+| 376 | 1 | `private Scope(Game game)` _(in WorksValue.Scope)_ |  |
+| 379 | 3 | `public void close()` _(in WorksValue.Scope)_ | Closes it at its outermost close: nothing is held after. |
+| 385 | 1 | **type** `private record Loads(Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> draws)` | The schedule of the non-power works on site and each one's new unit's draw, built together. |
+| 396 | 10 | `public static Scope hold(Game g)` | Opens a scope for this city on this thread, closed by try-with-resources. |
+| 408 | 1 | `static Scope open()` | The open scope on this thread, for tests; null when none is. |
+| 414 | 16 | `private static Loads held(Game g)` | The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside a pricing that reads every template as it stands (NewUnit.of() reads the template there, not the new ... |
+| 432 | 4 | `private static Map<BuildingsTemplate, PendingWork> loadSchedule(Game g)` | The schedule of the non-power works on site, as it stands: built afresh, outside a scope. |
+| 437 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |
+| 440 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Long> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
+| 456 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
+| 484 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
+| 488 | 3 | `private static double cover(double[] sd)` |  |
+| 492 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
+| 504 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
+| 517 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
 

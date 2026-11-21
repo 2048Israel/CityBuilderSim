@@ -1,8 +1,8 @@
-# gate of Merge batch/FS4: sweep: KeptCheck below section 55 causes what its pages read, KRT1 traced first, its timed sections a harness of their own; takes KS1-rest's KeptCheck parts and KRT1's 49 and 50 (after SZ1; a dry run), 0.9.174
+# gate of Merge batch/AP1: (Jerus, 2026-11-20: "next definitly"; his city is unplayable at 1x) The auto-builder's month at 400,000 people: `WorksValue.pendingPowerLoad` rebuilds the site's completion schedule (`BuildingManager.siteUnitMonths`, whose `firstOn` -> `buildersOwnOnSite` runs the builders' staffing for every stack on site) and every template's `NewUnit` power draw at each of ~1,100 calls a month, from `BuildAdvice.figure` and `supplyDemand` inside `BuildAdvice.count`'s search. Jerus's slot 10 (m1204, 421,561 people, 57 stacks and 6,188 units on site) took 7.5-17 s a month against 1x's 5 s (`AutoBuilder.pass` 95% of it). Hold the schedule and the draws for one pass, and for one Build-screen draw, cleared by any order; to the bit, the playtest unmoved, 0.9.175
 # date: 2026-11-21
 # earth-2.bin: named
-# nightly: 2026-11-20 22:02 0.9.172 ac224abf3 4,000 months: OK in 363 s; nightly tier OK; observations: 6 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-20-ac224abf3-qgxpSQry
-# suite: 221 harnesses run in 636s: 213 passed, 8 failed
+# nightly: 2026-11-21 03:01 0.9.174 4f1056f11 4,000 months: RED, exit 1 in 682 s: FAIL a building on the map moved 1 time(s), months 3992-3992; nightly tier OK; observations: 7 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-21-4f1056f11-99PEFqiX
+# suite: 223 harnesses run in 612s: 215 passed, 8 failed
 BuildAdviceCheck | exit 1
 BuildAdviceCheck | the streets' card has the least complete maintained-service plan at every price of ground (Gravel Road, Gravel Road, Light Rail Line) FAIL
 BuildAdviceCheck | 1 FAILED

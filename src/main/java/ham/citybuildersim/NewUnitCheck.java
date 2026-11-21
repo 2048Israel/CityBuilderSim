@@ -69,6 +69,12 @@ import static ham.citybuildersim.HistoricalRecipeCheck.silent;
  *      its group's heading say it; a new Logging Camp without its chainsaw cuts less, and the card's outlets and its
  *      sentences say that cut; and a tripwire that no piece changes which goods are made, nor what a building on typed
  *      ground makes, where the heading's made words and stands() would read a new unit and the fleet alike.
+ *  13. Held for one pass (AP1, WorksValue.hold()), on section 9's queued plants: inside a scope the power ahead at every
+ *      horizon, and a power plant's avoided loss, are the bare figures to the bit; an order, a rush and a priority placed
+ *      inside it, and the progress and the builders-first switch moved by hand, are read at the next call; one schedule is
+ *      built for the scope with nothing changed on site (a count, WorksValue.SCHEDULES); a second city (saved and loaded),
+ *      a second thread, and the second city's hold nested in g's read their own bare figures and leave g's scope as it
+ *      was; closed, nothing is held.
  *
  * Sections 7 and 12 draw on the JavaFX toolkit (ui.KeptBench, KeptCheck's way); where it cannot start, their card parts
  * are said to be skipped, section 7 orders through buildStack() and says so, and the rest runs: the harness exits 0
@@ -637,7 +643,7 @@ public final class NewUnitCheck {
 
     /* ---------------- 9 ---------------- */
 
-    static void changedDraw() throws Exception {
+    static Queued changedDraw() throws Exception {
         section("9. the power ahead: two queued Cement Plants without their rotary kiln draw the shaft kilns' power, from their completion");
         Game g = HistoricalLicenceCheck.town("QN1-kilns", true);
         allExcept(g, "");
@@ -683,6 +689,255 @@ public final class NewUnitCheck {
                 exact && loads[1] == 0 && loads[3] == 2.0 * actual.electricity, said.toString());
         check("...and not the fleet's draw", apart(loads[3], 2.0 * fleet.electricity) && apart(loads[2], done[2] * (double) fleet.electricity),
                 "fleet's " + 2.0 * fleet.electricity + " for two");
+        return new Queued(g, kiln);
+    }
+
+    /* ---------------- 13 ---------------- */
+
+    /** Section 9's city after it: two Cement Plants queued on the plant's own stack, their new units' draw not the fleet's. */
+    record Queued(Game g, BuildingsTemplate kiln) { }
+
+    /** Every reading equal to the other to the bit (Double.doubleToLongBits). */
+    static boolean sameBits(double[] a, double[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) if (Double.doubleToLongBits(a[i]) != Double.doubleToLongBits(b[i])) return false;
+        return true;
+    }
+
+    static boolean sameBits(double a, double b) { return Double.doubleToLongBits(a) == Double.doubleToLongBits(b); }
+
+    /** The power ahead at each horizon, read as the caller's scope (or none) has it. */
+    static double[] loads(Game g, double[] horizons) {
+        double[] out = new double[horizons.length];
+        for (int i = 0; i < horizons.length; i++) out[i] = WorksValue.pendingPowerLoad(g, horizons[i]);
+        return out;
+    }
+
+    /** Horizons from now to a month past the last unit on the kilns' site, by its own quotes: every completion inside them. */
+    static double[] horizons(Game g, BuildingsTemplate kiln, int steps) {
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost(), last = 0;
+        long on = bm.getStack(kiln).getUnderConstruction();
+        for (long n = 1; n <= on; n++) last = Math.max(last, bm.siteUnitMonths(kiln, n, output));
+        double[] out = new double[steps + 1];
+        for (int i = 0; i <= steps; i++) out[i] = (last + 1) * (i + 1) / (steps + 1);
+        return out;
+    }
+
+    static void heldForAPass(Queued q) throws Exception {
+        section("13. held for one pass (AP1): inside WorksValue.hold() the power ahead is the bare figure to the bit; an order, a rush"
+                + " and a priority on site are read afresh; one schedule is built with nothing changed; closed, nothing is held");
+        Game g = q.g();
+        BuildingsTemplate kiln = q.kiln();
+        BuildingManager bm = g.getBuildingManager();
+        String key = ConstructionControl.keyOf(kiln);
+        double[] at = horizons(g, kiln, 24);
+        double[] bare = loads(g, at);
+        double far = at[at.length - 1] * 4;
+        check("fixture: no scope open, two plants queued on the city's own site, and the power ahead some draw by the last horizon",
+                WorksValue.open() == null && bm.getStack(kiln).getUnderConstruction() == 2 && bm.isCitySite(key) && bare[at.length - 1] > 0,
+                "power ahead " + Arrays.toString(bare));
+
+        // 1 and 4: to the bit, with one schedule built for the scope.
+        long before = WorksValue.SCHEDULES.get();
+        double[] inside, again;
+        long built;
+        boolean nested;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            inside = loads(g, at);
+            try (WorksValue.Scope inner = WorksValue.hold(g)) { nested = inner == s; }
+            again = loads(g, at);
+            built = s.built;
+            nested &= WorksValue.open() == s;
+        }
+        long schedules = WorksValue.SCHEDULES.get() - before;
+        check("inside a scope the power ahead at each of " + at.length + " horizons is the bare figure to the bit, at the first and second reading",
+                sameBits(inside, bare) && sameBits(again, bare), Arrays.toString(inside));
+        check("one schedule is built for the scope's " + 2 * at.length + " readings with nothing changed on site, and a scope opened"
+                + " inside it is the same one, open past the inner close", built == 1 && schedules == 1 && nested,
+                built + " built in the scope, " + schedules + " counted");
+        before = WorksValue.SCHEDULES.get();
+        loads(g, at);
+        long bareBuilt = WorksValue.SCHEDULES.get() - before;
+        check("premise: outside a scope each reading builds its own schedule", bareBuilt == at.length, bareBuilt + " for " + at.length);
+
+        // Another city, another thread, and another city's hold nested in g's: none of them reads g's held loads (REV-AP1).
+        GameFiles.Result saved = RecipeCheck.save10(g, "AP1 second city");
+        Game other = RecipeCheck.load10(g);
+        BuildingsTemplate otherKiln = other.getBuildingManager().getTemplateByName(kiln.getName());
+        Game.BuildResult[] otherOrder = new Game.BuildResult[1];
+        silent(() -> other.setCashForTest(Founding.WEALTHY_CASH * 100));
+        silent(() -> otherOrder[0] = other.buildStack(otherKiln, 1, false));
+        double[] wide = Arrays.copyOf(at, at.length + 1);   // the 25 horizons and far, past every unit on both sites
+        wide[at.length] = far;
+        double[] gWide = loads(g, wide);
+        double[] otherBare = loads(other, wide);
+        check("premise: a second city, g saved and loaded, a third plant ordered there: its power ahead is its own, not g's",
+                saved != null && saved.ok && other != g && otherOrder[0] == Game.BuildResult.SUCCESS
+                        && other.getBuildingManager().getStack(otherKiln).getUnderConstruction() == 3 && !sameBits(otherBare, gWide),
+                otherOrder[0] + ": " + Arrays.toString(otherBare));
+        double[] otherInside, gAround;
+        long otherBuilt, builtAround;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            loads(g, wide);
+            long b0 = WorksValue.SCHEDULES.get();
+            otherInside = loads(other, wide);
+            otherBuilt = WorksValue.SCHEDULES.get() - b0;
+            gAround = loads(g, wide);
+            builtAround = s.built;
+        }
+        check("the second city read inside g's scope reads its own bare figure to the bit, built afresh at each reading, and g's scope"
+                + " builds nothing more", sameBits(otherInside, otherBare) && otherBuilt == wide.length && sameBits(gAround, gWide)
+                && builtAround == 1, otherBuilt + " built for the second city's " + wide.length + " readings, " + builtAround + " in g's scope");
+        double bareFar = WorksValue.pendingPowerLoad(g, far);
+        double[] onThread = new double[1];
+        long threadBuilt, builtThread;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            WorksValue.pendingPowerLoad(g, far);
+            long b0 = WorksValue.SCHEDULES.get();
+            Thread reader = new Thread(() -> onThread[0] = WorksValue.pendingPowerLoad(g, far), "AP1 second thread");
+            reader.start();
+            reader.join();
+            threadBuilt = WorksValue.SCHEDULES.get() - b0;
+            builtThread = s.built;
+        }
+        check("g read on a second thread while g's scope is open on this one: the bare figure, from a schedule of its own"
+                + " (SCHEDULES +1), and the scope builds nothing more", sameBits(onThread[0], bareFar) && threadBuilt == 1 && builtThread == 1,
+                onThread[0] + " against " + bareFar + ", " + threadBuilt + " built on the thread, " + builtThread + " in the scope");
+        double[] nestedOther, gNested;
+        long nestedBuilt, builtNested;
+        boolean sameScope, stillOpen;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            loads(g, wide);
+            try (WorksValue.Scope o = WorksValue.hold(other)) {
+                sameScope = o == s;
+                long b0 = WorksValue.SCHEDULES.get();
+                nestedOther = loads(other, wide);
+                nestedBuilt = WorksValue.SCHEDULES.get() - b0;
+            }
+            stillOpen = WorksValue.open() == s;
+            gNested = loads(g, wide);
+            builtNested = s.built;
+        }
+        check("the second city's hold nested in g's is g's scope one deeper: the second city reads bare, built afresh at each"
+                + " reading, and g's scope stays open and held past the inner close", sameScope && sameBits(nestedOther, otherBare)
+                && nestedBuilt == wide.length && stillOpen && sameBits(gNested, gWide) && builtNested == 1 && WorksValue.open() == null,
+                nestedBuilt + " built for the second city, " + builtNested + " in g's scope");
+
+        // 2: an order inside the scope.
+        silent(() -> g.setCashForTest(Founding.WEALTHY_CASH * 100));
+        Game.BuildResult[] ordered = new Game.BuildResult[1];
+        double heldBefore, afterOrder;
+        long builtOrder;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            heldBefore = WorksValue.pendingPowerLoad(g, far);
+            silent(() -> ordered[0] = g.buildStack(kiln, 1, false));
+            afterOrder = WorksValue.pendingPowerLoad(g, far);
+            builtOrder = s.built;
+        }
+        double bareAfter = WorksValue.pendingPowerLoad(g, far);
+        check("premise: a third plant ordered moves the power ahead", ordered[0] == Game.BuildResult.SUCCESS
+                && bm.getStack(kiln).getUnderConstruction() == 3 && apart(bareAfter, heldBefore), heldBefore + " -> " + bareAfter);
+        check("an order inside a scope: the next reading is the bare one after the order, to the bit, from a schedule built anew",
+                sameBits(afterOrder, bareAfter) && builtOrder == 2, afterOrder + " against " + bareAfter + ", " + builtOrder + " built");
+
+        // 3: a rush, and then a priority, inside the scope.
+        at = horizons(g, kiln, 48);
+        double[] unrushed, rushedInside;
+        long builtRush;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            unrushed = loads(g, at);
+            g.rushSite(key, true);
+            rushedInside = loads(g, at);
+            builtRush = s.built;
+        }
+        double[] rushedBare = loads(g, at);
+        check("premise: the city's site is rushed, and the rush moves the power ahead", bm.getControl().isRushed(key)
+                && !sameBits(rushedBare, unrushed), Arrays.toString(unrushed) + " -> " + Arrays.toString(rushedBare));
+        check("a rush inside a scope: the readings after it are the bare ones to the bit", sameBits(rushedInside, rushedBare)
+                && builtRush == 2, builtRush + " built");
+        g.rushSite(key, false);
+        BuildingsTemplate depot = bm.getTemplateByName("Construction Depot");
+        Game.BuildResult[] second = new Game.BuildResult[1];
+        silent(() -> second[0] = g.buildStack(depot, 1, false));
+        int kilnAt = bm.cityOrder().indexOf(key), depotAt = bm.cityOrder().indexOf(ConstructionControl.keyOf(depot));
+        double[] unordered, orderedInside;
+        long builtPriority;
+        boolean moved;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            unordered = loads(g, at);
+            moved = g.moveSite(key, kilnAt < depotAt ? 1 : -1);
+            orderedInside = loads(g, at);
+            builtPriority = s.built;
+        }
+        double[] orderedBare = loads(g, at);
+        check("premise: a second city site, the kilns moved past it in the city's order, and the priority moves the power ahead",
+                second[0] == Game.BuildResult.SUCCESS && moved && bm.getControl().isPrioritySet() && !sameBits(orderedBare, unordered),
+                second[0] + ", kilns " + kilnAt + " depot " + depotAt + ": " + Arrays.toString(unordered) + " -> " + Arrays.toString(orderedBare));
+        check("a priority inside a scope: the readings after it are the bare ones to the bit", sameBits(orderedInside, orderedBare)
+                && builtPriority == 2, builtPriority + " built");
+
+        // Two stamped inputs moved inside a scope, by no order: the kilns' progress, and the builders-first switch (REV-AP1).
+        BuildingsStacks kilns = bm.getStack(kiln);
+        double progress = kilns.getConstructionProgress();
+        double[] unmoved, movedInside;
+        long builtProgress;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            unmoved = loads(g, at);
+            kilns.setConstructionProgress(progress + (kilns.pointsOnSite() - progress) / 2);
+            movedInside = loads(g, at);
+            builtProgress = s.built;
+        }
+        double[] movedBare = loads(g, at);
+        check("premise: the kilns' work half done moves the power ahead", !sameBits(movedBare, unmoved),
+                Arrays.toString(unmoved) + " -> " + Arrays.toString(movedBare));
+        check("progress moved inside a scope: the readings after it are the bare ones to the bit, from a schedule built anew",
+                sameBits(movedInside, movedBare) && builtProgress == 2, builtProgress + " built");
+        kilns.setConstructionProgress(progress);
+        double[] firstOn, offInside;
+        long builtSwitch;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            firstOn = loads(g, at);
+            bm.setBuildersFirstForTest(false);
+            offInside = loads(g, at);
+            builtSwitch = s.built;
+        }
+        double[] offBare = loads(g, at);
+        bm.setBuildersFirstForTest(true);
+        check("builders first turned off inside a scope: the readings after it are the bare ones to the bit, from a schedule"
+                + " built anew", sameBits(offInside, offBare) && builtSwitch == 2 && sameBits(firstOn, loads(g, at)),
+                builtSwitch + " built; " + Arrays.toString(firstOn) + " -> " + Arrays.toString(offBare));
+
+        // 5: closed, nothing is held.
+        double first = WorksValue.pendingPowerLoad(g, far);
+        g.resetSiteOrder();
+        silent(() -> g.buildStack(kiln, 1, false));
+        double then = WorksValue.pendingPowerLoad(g, far), fresh;
+        try (WorksValue.Scope s = WorksValue.hold(g)) { fresh = WorksValue.pendingPowerLoad(g, far); }
+        check("closed, nothing is held: no scope open, and a reading after a fourth plant ordered reads it, as a scope opened then does",
+                WorksValue.open() == null && bm.getStack(kiln).getUnderConstruction() == 4 && apart(then, first) && sameBits(then, fresh),
+                first + " -> " + then);
+
+        // relief()'s own reading of the held schedule and draws: a power plant's avoided loss on a rationed grid, to the bit
+        // (EssentialWorksCheck's rationing: twice the production asked, the sectors on half their power), with builders enough
+        // that the plants on site open inside the plant's life. Last, as it moves the grid and the crews.
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
+        HistoricalLicenceCheck.stand(g, "Construction Depot", 40);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(Math.max(u.getProduction(), then) * 2);
+        for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.5);
+        double avoidedBare = WorksValue.avoided(g, power, Map.of(), Map.of(coal, 1L), 0), avoidedHeld;
+        long builtAvoided;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            avoidedHeld = WorksValue.avoided(g, power, Map.of(), Map.of(coal, 1L), 0);
+            builtAvoided = s.built;
+        }
+        check("premise: on the rationed grid a Coal Power Plant prevents some output loss, with the plants on site drawing ahead",
+                avoidedBare > 0 && WorksValue.pendingPowerLoad(g, BuildAdvice.LIFE_MONTHS) > 0,
+                "avoided " + avoidedBare + ", production " + u.getProduction() + ", power ahead " + WorksValue.pendingPowerLoad(g, BuildAdvice.LIFE_MONTHS));
+        check("...and its avoided loss read inside a scope, from the held schedule and draws, is the bare figure to the bit",
+                sameBits(avoidedHeld, avoidedBare) && builtAvoided == 1, avoidedHeld + " against " + avoidedBare + ", " + builtAvoided + " built");
     }
 
     /* ---------------- 10 ---------------- */
@@ -929,10 +1184,11 @@ public final class NewUnitCheck {
             bankClerks();
             matching(cars);
             identitiesAndSite();
-            changedDraw();
+            Queued kilns = changedDraw();
             crewDemand();
             powerAhead();
             cardGoods();
+            heldForAPass(kilns);
         } catch (Throwable t) {
             // Once sections 7 and 12 have started the JavaFX toolkit, its thread holds the JVM open past a throw: say it, red, and go.
             out.println("FAIL: " + t);
