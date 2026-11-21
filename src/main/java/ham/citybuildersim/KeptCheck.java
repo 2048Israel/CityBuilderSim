@@ -9708,13 +9708,19 @@ public class KeptCheck {
     }
 
     /**
-     * KeptCheck's city, Danzik: LongPlaytest's probe city played CITY_MONTHS by the advisor, on its own floor. KeptTimingCheck costs its pages on
-     * the same city. WHY (FS5): WG1-D (2026-11-10) pinned this city's minimum wage at the going rate for two lines that read what its path gave
-     * (section 68's Government Overview, 46 nodes made in a month of 395, and a Trade pixel line); since FS4 and FS5 every section causes its
-     * premise on the city it is given and judges a month's redraw by the share it hands back (HANDED_BACK), so the city's floor is its own again.
+     * KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor.
+     * KeptTimingCheck costs its pages on the same city. WHY the pin (WG1-D, 2026-11-10; FS5): it was put there for two lines that read what
+     * this city's path gave (section 68's Government Overview, now KeptTimingCheck's, and a Trade pixel line, now BF1-K's caused probe), and
+     * since FS4 and FS5 no section's premise is the city's; it stays for the city's size. On its own floor the city reaches month 605 with
+     * 7,066 people, against 2,682 pinned, and KeptCheck ran past AllChecks's limit before section 50 on a busy PC, while KeptTimingCheck's
+     * budgets were set on the pinned city's pages.
      */
     static Game playedCity(GameFiles files) throws Exception {
         Game g = fx(() -> LongPlaytest.probeCity(files, null));
+        fx(() -> {
+            g.getLabourMarket().setMinimumWage(g.getLabourMarket().getGoingRate());
+            return null;
+        });
         fx(() -> {
             LongPlaytest.probePlay(g, CITY_MONTHS);
             return null;
