@@ -1461,3 +1461,71 @@ readiness follows. Four vetoes, full four Healthcare hard looks,1536MiB bound,
 53.6MiB unattributed residual and cache-root uncertainty remain unchanged.
 Process counts/pick/review are unchanged. The provisional marker stays.
 Awaiting the orchestrator's next scoped decision; no further JVM is owned.
+
+## Static 1028 owner and original-leaf capture feasibility
+
+GO `20261121-150833-721-orchestrator-2879`: static saved-artifact/source review
+only, no compile/JVM/month/Stage/calibration/source mend. The production
+minimum path is now identified: spendingPage's three percentage columns
+contain servicesCard, whose serviceLine care coverage bar is fixed300 by
+Pieces.bar. Card padding14 plus1px border snap15.2 per side at the observed
+1.25 scale, requiring330.4. JavaFX21's percentage-column minimum bound
+requires330.4*3=991.2, exactly the saved grid width. widePage's18.4 snapped
+side insets give991.2+36.8=1028, exactly the observed page. This path is
+sufficient; no ablation or claim of uniqueness against every co-limiter.
+
+The prefWidth binding was working. UI.scrolled's fitToWidth and maxWidth
+USE_PREF_SIZE do not cancel the content's computed minimum. OpenJFX21
+ScrollPaneSkin bounds the requested width by min/max, with minimum winning
+a conflict. That explains preferred873.6/865.6 and actual1028, hence label991.2.
+No constraint stripping is recommended. Both original widths1454/1446 are
+above this bound, so it does not explain their16px full-fault delta. The
+version21 graphics/controls source artifacts were read as text only, with
+URL/SHA256 provenance under target/fs5c2-jfx21-static. Exact source path,
+formula and saved-row references are in target/FS5c2-1028-owner-static.md.
+
+Original capture provenance is source0446cec5e on main.179, nativeWin/SW,
+2048MiB, Government's unstaged1456x900 scene. Current.180 contains PW1 model
+changes and the later parent walk; a current rebuild is not exact history.
+playedCity first uses probeCity18/end19, then pins minimum wage and calls
+probePlay(g,600). Static nuance:600 is a toMonth TARGET, not600 additional
+advances; advisor/post-look months can overshoot. Sealed full6 began at605/
+3365 people and entered Government at2364 after the preceding mainSections
+mutations. The full original main/Government source prefixes are archived
+from that commit under target, with blob/tree hashes in the static audit.
+
+Government's own pre-choice prefix has four25-month69 runs, four25-month70
+runs, five page-pick months, line-add/release UI controls, then Overview13,
+Revenue31 and Spending11 choices before Healthcare opens. That is260 month
+calls after2364 before the target hand;2624/2625 are a source-derived candidate
+only if every call advances once, not observed fault-month records. The old
+clipped four-look report exposes only containing rows59/60, not a leaf.
+
+The old PID27100 scratch root/autosave are absent, consistent with TempDirs
+shutdown cleanup; no target hprof was found. Logs/source constrain intent
+but cannot restore full model/pool/scrollbar/callback state; a model-only
+save would not reproduce live JavaFX history. There is no demonstrated cheap
+retained-state shortcut. The original data paths are recorded, but their
+then-byte hashes and JDK patch were not sealed; those limits stay explicit.
+
+target/FS5c2-original-leaf-capture-feasibility.md defines the smallest payload:
+retain the EXISTING full kept/fresh signature arrays at both primary and
+held capture sites, emit indexed JSON after existing restores, and identify
+the actual changed leaf offline. Tag the first false-debt Healthcare choice
+and both before/after-month phases; preserve all existing hard looks without
+extra layout, redraw or retry. A prefix diagnostic would stop nonzero only
+after that choice's existing hard verdict; absent reproduction is LIMIT,
+never a pass or later-label substitution. It is not a completed heap/full check.
+
+Prefix duration was not separately measured; the only corresponding full
+cost is1294s/21m34s. A faithful attempt requires the city plus full earlier
+model/UI prefix and69/70 warmup, native Windows/SW/2048MiB and an explicit
+long laptop slot; BOX Monocle is not the original display provenance.
+No new/historical replay is requested merely to find one assertion. Recommend
+a small read-only observer piggybacked on a future independently-required,
+specifically authorized final-source check; any recurrence has that new
+source/model provenance, not automatic attribution of an identical old leaf.
+
+All prior raw hashes were rechecked unchanged. Four vetoes, full53.6MiB
+residual/1536MiB bound, cache-root uncertainty, source and marker stay hard.
+No new row, waiver, readiness or execution request. Waiting for next explicit GO.
