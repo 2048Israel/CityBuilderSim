@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-20 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**233 harness files, 26,853 labelled assertions.** AllChecks runs 233 of them.
+**233 harness files, 26,867 labelled assertions.** AllChecks runs 233 of them.
 
 ## Which harnesses read which class
 
@@ -1621,90 +1621,108 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L4879 fixture: a missing opening leaves a residual that is not a number, which `>` against the old $5 hid
   - L4881 ...and it shows the alert, \"worth reporting\" being what it says
 
-## BankFailureCheck.java - 68 labelled assertions
+## BankFailureCheck.java - 82 labelled assertions
 
 > The hands-off bank's failures, caused separately and counted across Random cities.
 > WHY. BF1 follows LD2's sawmill loans: a warehouse with no buyers, an empty
 > borrower still owing its plant, growth credit after losses, and an apparent
 > disappearance of shares which must be distinguished from a consolidation.
+> MC2 (section 9): BF1's room to the target is none under it, so a bank in
+> its band lent no growth; under the target the growth limit's share now
+> is the room, over it the room to the target.
 
-- **L37 1. a lightly staffed mill exports to its buyers instead of filling an unwanted shed**
-  - L49 fixture: no city demand, export price pays the inputs, and output fits below the dump line
-  - L57 fixture: the mill made a positive first month's stock below the dump line
-  - L61 the pellet mill sells its stock in the following month
-  - L62 with no local buyers the world buys the opening stock
-  - L63 the market counts the mill's shipment
-  - L65 the seller books the world's invoice
-- **L70 2. the last mill closes through the borrower's debt books**
-  - L90 the demolished shed's stock is written off before creditors value it
-  - L91 fixture: the only mill was retired and its creditor suffered a loss
-  - L93 cash from closing repays the bank before its remaining claim is resolved
-  - L94 the empty defaulter serves the model's borrowing exclusion
-  - L96 it cannot borrow for a replacement mill
-  - L102 partial retirement pays the interim claim before ordinary loans
-  - L103 the senior interim claim was paid whole
-  - L104 the remaining plant carries the unpaid ordinary claim
-  - L105 repayment reaches the bank's cash settlement
-  - L106 repayment is recorded separately from creditor losses
-  - L107 a partial retirement alone does not ban a continuing borrower
-- **L116 7. retained oil is recoverable before a closing haircut**
-  - L136 fixture: the bullet matures in the invoice's pending month
-  - L151 fixture: retained oil covers the loan but the ordinary asset haircut would not
-  - L155 closing keeps a claim fully recoverable from retained oil
-  - L156 recoverable oil causes no creditor loss at closure
-  - L164 a city save and reload retain the retirement repayment obligation
-  - L166 the reloaded maturing claim stays marked until liquidation cash lands
-  - L168 the reloaded liquidation invoice covers the carried claim before cash is banked
-  - L170 the reloaded claim takes no haircut while the invoice waits
-  - L172 the reloaded retired bullet is repaid whole when the sale cash lands
-  - L173 the reloaded claim never takes a later haircut
-  - L175 a maturing retired claim stays on its liquidation path without refinancing
-  - L178 the liquidation invoice covers the carried claim before cash is banked
-  - L180 the live claim takes no haircut while the invoice waits
-  - L182 banked oil proceeds repay the retired bullet in full
-  - L183 no later haircut substitutes for that retirement repayment
-  - L184 the regular liquidation line still empties the retired tanks
-- **L189 8. a written-off retired bullet leaves the loan book at maturity**
-  - L196 fixture: the marked claim has no principal or interest and no cash to sweep it
-  - L200 a written-off retired claim leaves the loan list at maturity
-  - L201 Loans running no longer counts the written-off retired claim
-- **L205 3. a new project cannot spend capital the bank does not have**
-  - L216 fixture: the bank stands above target and the requested project exceeds its capital headroom
-  - L219 new project credit is refused at the bank's own capital limit
-  - L226 fixture: an affordable project is still lent
-  - L229 one sector's commitment consumes the shared room
-  - L230 another sector cannot spend the same capital again
-  - L247 fixture: the bank actually buys the corporate issue
-  - L251 corporate bonds and pending loans share the bank's remaining capital
-  - L254 a later project cannot reuse the capital spent on corporate bonds
-  - L263 fixture: a pending loan leaves positive but smaller room for a second bond
-  - L265 a later bond purchase cannot reuse a pending loan's capital
-  - L281 fixture: the settled loan leaves positive capital room on the bank's books
-  - L283 settlement does not subtract the same loans from the live book twice
-  - L303 a bond can use capital left after loan settlement without a second loan deduction
-  - L306 new debt after settlement still consumes room once
-  - L309 uncovered defaults reach the growth desk before the bank's month-end settle
-  - L316 fixture: insured mortgages carry the model's zero risk weight
-  - L317 the uninsured project budget does not ration a zero-risk insured mortgage
-  - L327 fixture: leverage binds above target while the old growth rule is infinite
-  - L330 an insured mortgage cannot exceed finite leverage room above target
-  - L334 a zero-risk insured mortgage still uses available leverage room despite zero uninsured room
-  - L337 the leverage rule still rations that same insured mortgage
-- **L348 4. a consolidation changes the unit, preserving every holder's value**
-- **L378 5. a repayment's rounding does not draw a loss buffer**
-  - L393 fixture: no liquid foreign assets or bonds can cover the shortfall
-  - L398 fixture: a shortfall would draw a positive loss buffer
-  - L399 fixture:
-  - L403 rounding borrows no loss buffer
-  - L404 the repaid borrower's till is empty
-  - L406 a real shortfall still draws the working-capital line and its loss buffer
-- **L413 5b. a bond's face floor is money at the founding price level**
-  - L423 a face above the same real dust trades at unit
-  - L426 a face below the same real dust is ignored at unit
-- **L431 6. 24 default Random cities, button unpressed, every one of 120 months audited**
-  - L459 MoneyAudit closes in every month of every seed at its own tolerance
-  - L462 every bank's equity movement is explained by its books, including failures
-  - L463 pellet mills actually sell in played cities
+- **L40 1. a lightly staffed mill exports to its buyers instead of filling an unwanted shed**
+  - L52 fixture: no city demand, export price pays the inputs, and output fits below the dump line
+  - L60 fixture: the mill made a positive first month's stock below the dump line
+  - L64 the pellet mill sells its stock in the following month
+  - L65 with no local buyers the world buys the opening stock
+  - L66 the market counts the mill's shipment
+  - L68 the seller books the world's invoice
+- **L73 2. the last mill closes through the borrower's debt books**
+  - L93 the demolished shed's stock is written off before creditors value it
+  - L94 fixture: the only mill was retired and its creditor suffered a loss
+  - L96 cash from closing repays the bank before its remaining claim is resolved
+  - L97 the empty defaulter serves the model's borrowing exclusion
+  - L99 it cannot borrow for a replacement mill
+  - L105 partial retirement pays the interim claim before ordinary loans
+  - L106 the senior interim claim was paid whole
+  - L107 the remaining plant carries the unpaid ordinary claim
+  - L108 repayment reaches the bank's cash settlement
+  - L109 repayment is recorded separately from creditor losses
+  - L110 a partial retirement alone does not ban a continuing borrower
+- **L119 7. retained oil is recoverable before a closing haircut**
+  - L139 fixture: the bullet matures in the invoice's pending month
+  - L154 fixture: retained oil covers the loan but the ordinary asset haircut would not
+  - L158 closing keeps a claim fully recoverable from retained oil
+  - L159 recoverable oil causes no creditor loss at closure
+  - L167 a city save and reload retain the retirement repayment obligation
+  - L169 the reloaded maturing claim stays marked until liquidation cash lands
+  - L171 the reloaded liquidation invoice covers the carried claim before cash is banked
+  - L173 the reloaded claim takes no haircut while the invoice waits
+  - L175 the reloaded retired bullet is repaid whole when the sale cash lands
+  - L176 the reloaded claim never takes a later haircut
+  - L178 a maturing retired claim stays on its liquidation path without refinancing
+  - L181 the liquidation invoice covers the carried claim before cash is banked
+  - L183 the live claim takes no haircut while the invoice waits
+  - L185 banked oil proceeds repay the retired bullet in full
+  - L186 no later haircut substitutes for that retirement repayment
+  - L187 the regular liquidation line still empties the retired tanks
+- **L192 8. a written-off retired bullet leaves the loan book at maturity**
+  - L199 fixture: the marked claim has no principal or interest and no cash to sweep it
+  - L203 a written-off retired claim leaves the loan list at maturity
+  - L204 Loans running no longer counts the written-off retired claim
+- **L208 3. a new project cannot spend capital the bank does not have**
+  - L219 fixture: the bank stands above target and the requested project exceeds its capital headroom
+  - L222 new project credit is refused at the bank's own capital limit
+  - L229 fixture: an affordable project is still lent
+  - L232 one sector's commitment consumes the shared room
+  - L233 another sector cannot spend the same capital again
+  - L250 fixture: the bank actually buys the corporate issue
+  - L254 corporate bonds and pending loans share the bank's remaining capital
+  - L257 a later project cannot reuse the capital spent on corporate bonds
+  - L266 fixture: a pending loan leaves positive but smaller room for a second bond
+  - L268 a later bond purchase cannot reuse a pending loan's capital
+  - L284 fixture: the settled loan leaves positive capital room on the bank's books
+  - L286 settlement does not subtract the same loans from the live book twice
+  - L306 a bond can use capital left after loan settlement without a second loan deduction
+  - L309 new debt after settlement still consumes room once
+  - L312 uncovered defaults reach the growth desk before the bank's month-end settle
+  - L319 fixture: insured mortgages carry the model's zero risk weight
+  - L320 the uninsured project budget does not ration a zero-risk insured mortgage
+  - L330 fixture: leverage binds above target while the old growth rule is infinite
+  - L333 an insured mortgage cannot exceed finite leverage room above target
+  - L337 a zero-risk insured mortgage still uses available leverage room despite zero uninsured room
+  - L340 the leverage rule still rations that same insured mortgage
+- **L395 9. a bank in its leverage band lends each borrower the band's share; over its target, the room to it (MC2)**
+  - L403 fixture: four banks whose leverage ratio binds, at the minimum, halfway down the band, just under the target and just over it
+  - L411 the band's share rises from none at the minimum to RATIONED_GROWTH of the exposure halfway down the band
+  - L414 just under the target the insured room is the growth limit's share of the exposure, more than none
+  - L416 ...and every building's loan reads the same share, before the book settles and after
+  - L421 fixture: the leverage rule rations the landlords, and its growth limit allows their debt a share smaller than the bank's
+  - L427 just under the target the door writes a mortgage within the landlords' share of the band
+  - L430 ...what it wrote comes off their share, and one past what is left is refused for the bank's capital
+  - L435 halfway down the band the landlords' share is RATIONED_GROWTH of their debt, and a mortgage within it is written
+  - L441 just under the target a building's loan within the works' share is lent, and one past it refused
+  - L449 the band's share is one allowance: another sector's loan this month leaves the rest of it
+  - L452 ...so a mortgage within the landlords' own share but past that rest is refused, and one within the rest written
+  - L463 fixture: the month's default is the bank's loss before its book settles, and leaves it in its band
+  - L465 the month's known losses come off the band's share before the book settles: the share on the equity they leave
+  - L473 on both sides of the target the door writes what the rule allows and refuses past it: the room to the target just over it (BF1's bound, kept), the band's sha...
+- **L486 4. a consolidation changes the unit, preserving every holder's value**
+- **L516 5. a repayment's rounding does not draw a loss buffer**
+  - L531 fixture: no liquid foreign assets or bonds can cover the shortfall
+  - L536 fixture: a shortfall would draw a positive loss buffer
+  - L537 fixture:
+  - L541 rounding borrows no loss buffer
+  - L542 the repaid borrower's till is empty
+  - L544 a real shortfall still draws the working-capital line and its loss buffer
+- **L551 5b. a bond's face floor is money at the founding price level**
+  - L561 a face above the same real dust trades at unit
+  - L564 a face below the same real dust is ignored at unit
+- **L569 6. 24 default Random cities, button unpressed, every one of 120 months audited**
+  - L597 MoneyAudit closes in every month of every seed at its own tolerance
+  - L600 every bank's equity movement is explained by its books, including failures
+  - L601 pellet mills actually sell in played cities
 
 ## BasketYearCheck.java - 109 labelled assertions
 
