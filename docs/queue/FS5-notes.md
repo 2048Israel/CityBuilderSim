@@ -12,8 +12,9 @@ The batch is harness-only. The diff touches only harness code and records:
   left in it, and ObservationCheck asserts the list is exactly its users);
 - `docs/notes/known-reds.txt`, this file, the ship file and the generated maps.
 
-No model class and no screen is touched, `ui/KeptBench.java` included, and the
-trace does not move (`moves_playtest=no`); no ensemble is needed.
+No model class or screen is touched. `ui/KeptBench.java` is check machinery
+and adds the render-target measurement. The default game trace does not move
+(`moves_playtest=no`); no ensemble is owed.
 
 ## The rows
 
@@ -188,6 +189,64 @@ ship file):
     law alone.
 
 ## The checks
+
+Current recovery status (FS5c2, 2026-11-21): source is on main 5790d0506
+(TN1, 0.9.178), merged at 0ba94a55e after GB5. The final `--fast` passed,
+exit 0: compile 51 s, maps regenerated, zero firm stale findings (193 soft).
+Log: `target/FS5c2-fast1.log`. All checks name main's earth-2.bin and
+world-1.bin with C:/ paths; the isolated city uses GameFiles.scratch.
+
+`target/FS5c2FixtureProbe.java` ran once against that source in Monocle with
+SWPipeline, exit 0 in eight seconds (`target/FS5c2-fixture-proof.log`):
+
+- The real book filled `city:hand` from `world`, face 100 at price
+  1.087910948267. Cash fell 1087.910948267 to 979.119853440; world face fell
+  10000 to 9900; city face, ledger cost and posted hand filled by 100.
+  An earlier rule bid was withdrawn, a missing bid invented no settlement,
+  and a fully filled bid bought nothing again. The bond outlasts the watch.
+- Seventeen ledger-only cells were set just above the grid's .5 threshold.
+  The real month closed all seventeen before the complete hold; after it,
+  zero closed. All 71 surviving tooltip nodes kept the same Tooltip; none
+  lost one. Each cell's before/after result is in the log.
+- Healthcare on this small town compared equal. This does not resolve its
+  previous played-state failure. The target walk found two canvases, one
+  actual software heap target, 4096 bytes; that proves detection only and
+  does not account for the full run's unexplained heap excess.
+
+The read-only picker selects 24/235, not ALL, against 5790d0506:
+AutoBuildCheck, BankCheck, BuildAdviceCheck, CapitalFlowCheck, ChartFitCheck,
+ConstructionControlCheck, FittingCheck, HealthCheck, HousingCheck, KeptCheck,
+KeptTimingCheck, MapCheck, MoneyWordsCheck, NewUnitCheck, ObservationCheck,
+PriceLevelCheck, PrizeCheck, ResearchViewCheck, SaveFileCheck, ScaleCheck,
+ShortSellingCheck, StepsCheck, TimingCheck and ToastCheck. No selected run
+has been started. Review line: not needed; no money, saves or threading in
+the diff. The harness fixture changes no model/screen source or default
+trace, so no ensemble is owed.
+
+Exact `git diff --numstat origin/main` process files, generated indexes,
+notes and ship file excluded:
+
+| File | Added | Removed |
+|---|---:|---:|
+| src/main/java/ham/citybuildersim/KeptCheck.java | 442 | 540 |
+| src/main/java/ham/citybuildersim/Observation.java | 1 | 1 |
+| src/main/java/ham/citybuildersim/ui/KeptBench.java | 100 | 0 |
+| docs/notes/known-reds.txt | 0 | 16 |
+| Total | 543 | 557 |
+
+Java machinery alone is 543 added / 541 removed. The duplicated class-header
+assertion catalog is reduced to a section map; complete premises and laws
+remain beside their methods and in their assertion labels. No assertion was
+deleted to balance this count.
+
+The 11:04 orchestrator mail conditionally authorizes one direct software
+KeptCheck after these proofs and after R1gc2's focused checks finish. Slot
+clearance has been requested because R1gc2 was still active; no full rerun
+has started. The old run's four settlement failures and grid failure have
+isolated fixture mends but await final played-state validation. Healthcare
+and the 1743.1 MiB objects result remain unresolved and hard, with no new
+known-red exemption. No full pick, ensemble or dryrun has a go. The
+provisional ship marker remains; no readiness or ship is claimed.
 
 Recovery audit (FS5c2, Codex, 2026-11-21): this draft was recovered with the
 uncommitted book-settlement mend. Earlier "run 1" results above refer only to
