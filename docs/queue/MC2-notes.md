@@ -462,3 +462,25 @@ changes CityMap/CityRuns display, GatewayCheck/MainLineCheck and the version;
 the orchestrator confirmed that it changes no model trace and does not require
 a repeat ensemble. Conflicts were only `docs/dials.md`, `docs/harnesses.md`
 and `docs/map/README.md`, taken from main for regeneration on the merged tree.
+
+
+Final integration merge commit: `479b01676` (parents `fe42a4567` and
+`5790d0506`). After the merge, `./batch-check.sh --fast` exited 0: compile
+54 seconds, maps regenerated, Stale 0 firm (194 soft). Log:
+`target/MC2c2-postTN1-fast.txt`. MC2's three source files and the historical
+MC2m archive compare identically to `fe42a4567`.
+
+The final baseline adds `EnsembleCheck` to the pick: **52 of 235, not ALL**
+against main `5790d0506`, the previous 51 names listed above plus
+`EnsembleCheck`. It ran as one focused call and passed, including runner and
+driver compilation, policies and stored-baseline parsing. Its wrapper also
+regenerated maps and reported Stale 0 firm; no source changed afterward.
+Log: `target/MC2c2-EnsembleCheck-suite.txt`.
+
+Final review line remains **needed - money: Bank.java**; the disjoint source
+merge does not reopen REV-MC2-2's SHIP. No save or threading changes, publisher
+edits, full pick or dry run were added. Contract 5.5 still requires no dry
+run. Both ensemble comparisons are preserved, the final baseline is committed
+before readiness, and readiness GO is requested with the provisional marker
+still present on the pushed ship file. The orchestrator alone gates and
+publishes; this recovery has neither edited main's records nor run ship.sh.
