@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS10 (untagged) — the currency, the gold and the central bank cause their conditions — 2026-11-20, ready, see docs/queue/FS10-notes.md
 The sweep for the currency, the gold and the central bank (the FS1 study): ten harnesses now cause the premises they had read off played cities.
