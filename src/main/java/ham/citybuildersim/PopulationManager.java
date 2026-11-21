@@ -1116,7 +1116,7 @@ public class PopulationManager {
      *
      * @param comingOfAge the teens who became adults this month (PopulationCohorts.getPromoted(TEEN))
      * @param tradeShare the year's share of a trade (ArrivalMix.tradeShareAt())
-     * @param schooled the month's net flow into the diploma band from the schools (Education.getGraduates()), counted first
+     * @param schooled the month's gross school-leaver diplomas (Education.getNewDiplomas()), before diploma-holders leave for degrees
      */
     public double apprentice(double comingOfAge, double tradeShare, double schooled) {
         lastApprentices = 0;

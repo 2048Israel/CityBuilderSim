@@ -39,9 +39,13 @@ import java.io.PrintStream;
  *      fresh Game from its scratch folder stands where it stood, and a month on, where the unsaved one does, to the bit
  *   9. THE LAST HORSE: a farm's crop feeds its horses, then fitting every tractor takes the horse share to zero and the reused output
  *      row clears its captive feed (the 1900 played city's reload fault, mended in Sector).
+ *  10. SCHOOL DIPLOMAS COVER THE QUOTA BEFORE DEGREE OUTFLOW: on the actual Game month, gross school completions cover the apprentice
+ *      quota while college/university completions take net diploma movement below it; apprentices add nobody and the skilled heads
+ *      equal an identically founded control's month with apprentices off.
  *
  * Every fixture CAUSES its condition: the cities are founded on scratch folders by the playtest's own founding and played by the
- * playtest's own advisor and automatic works; only the switches and section 9's fitted counts are set by hand. Figures are asserted against the
+ * playtest's own advisor and automatic works; section 9 sets fitted counts and section 10 seeds a funded school town and finishing
+ * students through the existing fixtures' model restores. Figures are asserted against the
  * model's own constants and methods (RealEstate.TARGET_RENT_BURDEN, Sector.MIN_STAFFABLE_TO_ORDER, Recipes.homeScale(),
  * ArrivalMix.tradeShareAt()) and the twins' figures, with the margins below stated once.
  */
@@ -133,6 +137,7 @@ public class Village1900Check {
         todayUnmoved(todayOn, today);
         walk(home);
         lastHorse(home.g);
+        schoolPlusDegrees();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -430,7 +435,7 @@ public class Village1900Check {
             seen.apprentices += g.getPopulationManager().getLastApprentices();
             if (seen.the1900Way && PopulationManager.APPRENTICES_1900) seen.apprenticesExpected += Math.max(0,
                     g.getCohorts().getPromoted(AgeBand.TEEN) * ArrivalMix.tradeShareAt(g.getMonth())
-                            - Math.max(0, g.getEducation().getGraduates()[WageBand.DIPLOMA.ordinal()]));
+                            - Math.max(0, g.getEducation().getNewDiplomas()));
             if (g.getMonth() == GATE_MONTH) weigh(seen);
             if (g.getMonth() > MONTHS - QUIET_MONTHS) seen.arrivalsLate += g.getMigration().getLastArrivals();
         }
@@ -481,6 +486,71 @@ public class Village1900Check {
         farms.produceStock(Good.CROPS, null);
         check("the next crop keeps none of the last horse's feed", crops != null && crops.captive == 0,
                 crops == null ? "no crop row" : "feed " + crops.captive);
+    }
+
+    /** REV-R1gc2-1: gross school leavers cover the quota even when degrees make the diploma band's net flow smaller. */
+    static void schoolPlusDegrees() {
+        out.println("\n--- 10. school diplomas cover the apprentice quota before degree outflow ---");
+        boolean wasApprentices = PopulationManager.APPRENTICES_1900;
+        Game[] twins = new Game[2];
+        boolean[] seeded = new boolean[4];
+        try {
+            // A six-month school town, not the long played village. EducationCheck's normal pipeline restore causes the completions.
+            PopulationManager.APPRENTICES_1900 = false;
+            quietly(() -> { for (int i = 0; i < twins.length; i++) {
+                LongPlaytest.resetTheFloat();
+                Game g = new Game(GameFiles.scratch("village1900-school-degrees-" + i), LongPlaytest.founding().withUnfitted(true));
+                twins[i] = g;
+                g.run();
+                g.getGovernmentInvestor().spend(-900_000_000 * PriceLevel.FACTOR);
+                g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
+                for (String sector : Sectors.KEYS) g.getBusinessInvestment().holdSector(sector);
+                EducationCheck.build(g, "Low-Rise Apartments", 120);
+                EducationCheck.build(g, "General Hospital", 3);
+                EducationCheck.build(g, "Small Grocery Store", 14);
+                EducationCheck.build(g, "Coal Power Plant", 4);
+                EducationCheck.build(g, "Water Treatment Plant", 4);
+                EducationCheck.build(g, "Paved Road", 60);
+                EducationCheck.build(g, "Construction Depot", 6);
+                EducationCheck.schools(g);
+                g.getEconomyManager().getTaxPolicy().setTuitionScale(0);
+                g.simulateMonths(EducationCheck.TOWN_MONTHS - 1);
+                EducationCheck.skillsSet(g);
+                double leavers = g.getCohorts().get(AgeBand.TEEN) / AgeBand.TEEN.spanMonths();
+                seeded[2 * i] = EducationCheck.seeded(g, EducationType.COLLEGE, leavers, 1);
+                seeded[2 * i + 1] = EducationCheck.seeded(g, EducationType.UNIVERSITY, leavers, 1);
+            } });
+            Game g = twins[0], off = twins[1];
+            check("fixture: both school towns are founded the 1900 way with the same skilled heads", g.foundedUnfitted() && off.foundedUnfitted()
+                    && java.util.Arrays.equals(g.getPopulationManager().getSkilledHeads(), off.getPopulationManager().getSkilledHeads()));
+            check("fixture: college and university students are due to finish next month", seeded[0] && seeded[1] && seeded[2] && seeded[3]
+                    && g.getEducation().cohortsInFlight(EducationType.COLLEGE)[0] > 0
+                    && g.getEducation().cohortsInFlight(EducationType.UNIVERSITY)[0] > 0);
+            PopulationManager.APPRENTICES_1900 = true;
+            quietly(() -> g.simulateMonths(1));
+            PopulationManager.APPRENTICES_1900 = false;
+            quietly(() -> off.simulateMonths(1));
+            Education school = g.getEducation();
+            double gross = school.getNewDiplomas(), net = school.getGraduates()[WageBand.DIPLOMA.ordinal()];
+            double degrees = school.getGraduates()[WageBand.COLLEGE.ordinal()] + school.getGraduates()[WageBand.UNIVERSITY.ordinal()];
+            double quota = g.getCohorts().getPromoted(AgeBand.TEEN) * ArrivalMix.tradeShareAt(g.getMonth());
+            out.printf("   m%d: gross school diplomas %.6f, degree completions %.6f, net diploma movement %.6f, apprentice quota %.6f%n",
+                    g.getMonth(), gross, degrees, net, quota);
+            check("fixture: gross school diplomas already cover a positive apprentice quota", quota > 0 && gross >= quota);
+            check("fixture: college and university completions leave the diploma band and put net movement below the quota",
+                    school.getGraduates()[WageBand.COLLEGE.ordinal()] > 0 && school.getGraduates()[WageBand.UNIVERSITY.ordinal()] > 0 && net < quota
+                    && Math.abs(gross - net - degrees) < 1e-9 * Math.max(1, degrees));
+            check("fixture: both controls have the same gross diplomas and net school/degree flows", off.getEducation().getNewDiplomas() == gross
+                    && java.util.Arrays.equals(school.getGraduates(), off.getEducation().getGraduates()));
+            check("Game adds no extra trade qualification after the schools cover the quota", g.getPopulationManager().getLastApprentices() == 0,
+                    "added " + g.getPopulationManager().getLastApprentices());
+            check("the actual Game month keeps the school-only control's skilled heads, including degree outflow",
+                    java.util.Arrays.equals(g.getPopulationManager().getSkilledHeads(), off.getPopulationManager().getSkilledHeads()),
+                    java.util.Arrays.toString(g.getPopulationManager().getSkilledHeads()) + " against "
+                            + java.util.Arrays.toString(off.getPopulationManager().getSkilledHeads()));
+        } finally {
+            PopulationManager.APPRENTICES_1900 = wasApprentices;
+        }
     }
 
     /** How many buildings of a sector stand. */

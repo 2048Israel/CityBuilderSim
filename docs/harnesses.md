@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**236 harness files, 26,996 labelled assertions.** AllChecks runs 236 of them.
+**236 harness files, 27,003 labelled assertions.** AllChecks runs 236 of them.
 
 ## Which harnesses read which class
 
@@ -101,8 +101,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
-| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
+| [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck, Village1900Check |
+| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck, Village1900Check |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
@@ -264,7 +264,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, ScaleCheck, StepsCheck |
-| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, StepsCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, StepsCheck, TradeCostCheck, TreasuryCheck, VanCheck, Village1900Check, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, LicenceFeesCheck, MaterialsCheck, RecipeCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
@@ -317,7 +317,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HistoricalLicenceCheck, HomeRailCheck, LicenceFeesCheck, PortCheck, RailCheck, SectorStatementCheck, TradeBandCheck, TruckRouteCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, VanCheck, Village1900Check, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -32396,7 +32396,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1077 ...and puts spend / rate / price in ounces in the vault
   - L1078 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
-## Village1900Check.java - 44 labelled assertions
+## Village1900Check.java - 51 labelled assertions
 
 > Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
 > playtest's way for five years beside its twin founded today's way. Not part of the game.
@@ -32412,59 +32412,67 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
 > ...
 
-- **L116 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
-  - L117 the 1900 village is founded the 1900 way
-  - L118 today's twin is founded today's way
-  - L119 both are played to month
-- **L144 2. the rent: 1901's wages pay for today's homes**
-  - L153 the 1900 village's households pay over
-  - L155 today's twin's households pay under
-  - L157 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
-  - L160 and the city the 1900 village's conditions support is smaller than the people already in it
-  - L163 while today's twin's supports more than its people
-- **L170 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
-  - L176 the 1900 village's diploma posts outnumber its diploma workers over
-  - L178 today's twin's diploma workers cover its diploma posts
-  - L183 the 1900
-  - L186 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
-  - L188 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
-- **L195 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
-  - L201 the 1900 village draws under
-  - L204 while people still arrive in today's twin
-  - L205 no
-  - L206 and its
-  - L211 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
-  - L215 and it holds more cash a head than today's twin, which grows on less
-- **L222 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
-  - L228 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
-  - L230 the village's
-  - L233 its materials and its points are today's times the scale, rounded
-  - L237 and its plot is today's
-  - L238 the city knows the home is dated
-  - L245 the 1900 home's households pay at most
-  - L247 and it draws at least
-- **L254 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
-  - L259 the young learn trades in the 1900 village
-  - L260 as many as came of age times the year's trade share, there being no school
-  - L263 so the village holds more diploma workers than the stalled one
-  - L265 and the stalled village, the switch off, made none
-- **L271 7. today's city does not move: both switches on and both off, the same city to the bit**
-  - L273 the same people
-  - L275 the same cash and the same month's GDP
-  - L278 the same rent burden and the same workers by band
-  - L280 the same
-  - L283 and no apprentice
-- **L290 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
-  - L301 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
-  - L305 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
-  - L310 the
-  - L312 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
-  - L321 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
-  - L327 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
-- **L461 9. the last horse: fitting every farm clears the captive crop**
-  - L471 fixture: unfitted farms feed their horses from the crop
-  - L479 fixture: every farm now has its tractor, so no crop is captive
-  - L482 the next crop keeps none of the last horse's feed
+- **L120 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
+  - L121 the 1900 village is founded the 1900 way
+  - L122 today's twin is founded today's way
+  - L123 both are played to month
+- **L149 2. the rent: 1901's wages pay for today's homes**
+  - L158 the 1900 village's households pay over
+  - L160 today's twin's households pay under
+  - L162 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
+  - L165 and the city the 1900 village's conditions support is smaller than the people already in it
+  - L168 while today's twin's supports more than its people
+- **L175 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
+  - L181 the 1900 village's diploma posts outnumber its diploma workers over
+  - L183 today's twin's diploma workers cover its diploma posts
+  - L188 the 1900
+  - L191 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
+  - L193 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
+- **L200 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
+  - L206 the 1900 village draws under
+  - L209 while people still arrive in today's twin
+  - L210 no
+  - L211 and its
+  - L216 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
+  - L220 and it holds more cash a head than today's twin, which grows on less
+- **L227 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
+  - L233 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
+  - L235 the village's
+  - L238 its materials and its points are today's times the scale, rounded
+  - L242 and its plot is today's
+  - L243 the city knows the home is dated
+  - L250 the 1900 home's households pay at most
+  - L252 and it draws at least
+- **L259 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
+  - L264 the young learn trades in the 1900 village
+  - L265 as many as came of age times the year's trade share, there being no school
+  - L268 so the village holds more diploma workers than the stalled one
+  - L270 and the stalled village, the switch off, made none
+- **L276 7. today's city does not move: both switches on and both off, the same city to the bit**
+  - L278 the same people
+  - L280 the same cash and the same month's GDP
+  - L283 the same rent burden and the same workers by band
+  - L285 the same
+  - L288 and no apprentice
+- **L295 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
+  - L306 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
+  - L310 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
+  - L315 the
+  - L317 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
+  - L326 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
+  - L332 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
+- **L466 9. the last horse: fitting every farm clears the captive crop**
+  - L476 fixture: unfitted farms feed their horses from the crop
+  - L484 fixture: every farm now has its tractor, so no crop is captive
+  - L487 the next crop keeps none of the last horse's feed
+- **L493 10. school diplomas cover the apprentice quota before degree outflow**
+  - L524 fixture: both school towns are founded the 1900 way with the same skilled heads
+  - L526 fixture: college and university students are due to finish next month
+  - L539 fixture: gross school diplomas already cover a positive apprentice quota
+  - L540 fixture: college and university completions leave the diploma band and put net movement below the quota
+  - L543 fixture: both controls have the same gross diplomas and net school/degree flows
+  - L545 Game adds no extra trade qualification after the schools cover the quota
+  - L547 the actual Game month keeps the school-only control's skilled heads, including degree outflow
 
 ## WageLadderCheck.java - 63 labelled assertions
 

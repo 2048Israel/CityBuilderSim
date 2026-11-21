@@ -62,7 +62,7 @@
 
 **Uses:** [EducationType](EducationType.md) (103), [TaxPolicy](TaxPolicy.md) (74), [WageBand](WageBand.md) (45), [Education](Education.md) (40), [Game](Game.md) (38), [JobType](JobType.md) (31), [PriceLevel](PriceLevel.md) (15), [Migration](Migration.md) (11), [LabourCheck](LabourCheck.md) (9), [GameFiles](GameFiles.md) (8), [PopulationManager](PopulationManager.md) (8), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (6), [AgeBand](AgeBand.md) (5), [LabourMarket](LabourMarket.md) (4), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
 
-**Used by (3):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md), [OutsideCheck](OutsideCheck.md)
+**Used by (4):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md), [OutsideCheck](OutsideCheck.md), [Village1900Check](Village1900Check.md)
 
 ## Sections
 

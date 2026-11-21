@@ -23,7 +23,9 @@ measurement after later main merges.
 
 Without a school, young adults now learn trades at the year's historical
 share. School graduates count toward that share first, so an apprentice
-does not duplicate a graduate. The twelve pay observations are saved and
+does not duplicate a graduate. This counts gross school diplomas: degree
+completions move existing diploma-holders out of their band without reopening
+apprentice places. The twelve pay observations are saved and
 restored before homes are priced on load. Homes are always struck from
 their catalogue figures, keeping a loaded city's costs equal to the city
 that kept running. A separate reload fault found by the growing city was

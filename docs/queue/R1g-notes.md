@@ -797,3 +797,70 @@ the provisional marker and absence of a stale gate-run, known-red row syntax,
 and coverage of all eight captured HDC/CCC failing assertions by main's
 registry plus this ship file. These are focused results; the ALL gate
 remains owed after review and the approved final ensemble.
+
+## 8. REV-R1gc2-1: gross school diplomas before degree outflow
+
+The fresh review returned NOT SHIP with one P2, an R1g fault. Game passed
+Education.getGraduates()[DIPLOMA] to apprentice(). That is net movement:
+college and university completions take existing diploma-holders out of
+the band. Those departures do not undo the school leavers' diplomas and
+must not create more apprentice places. The review found no further issue
+in the pay window/save/month order, cache lifetime, captive/3b mends or
+supplied named-red dispositions.
+
+Game now passes Education.getNewDiplomas(), the gross school-leaver flow.
+The preceding PopulationManager.applyBandFlow(education.getGraduates())
+is retained, so degree completions still move people out of the diploma
+band and into the degree bands. PopulationManager's parameter documentation
+now says gross completions. The existing school-less apprentice control
+is retained; its accounting read now uses the gross getter too. Today's
+founding still bypasses the apprentice call. The model delta is fewer
+extra qualifications in 1900 cities where schools and degree courses
+finish together; no saved field or format changes.
+
+Village1900Check section 10 is a causing control through the actual Game
+month, including advanceDemographics and its production qualification
+call. Two identical 1900 school towns use EducationCheck's short funded
+school fixture and real course-queue restore helpers. After five setup
+months, each has college and university cohorts due to finish in its next
+month. Schools charge no tuition, and both towns start that month with
+identical skilled heads. One runs with apprentices on, one off. The test
+requires positive gross school diplomas covering a positive apprentice
+quota, positive college and university completions, and net diploma
+movement below that quota. It also requires identical gross/degree flows
+in both controls, zero extra apprentices and exactly equal skilled heads.
+Thus the expectation is zero, not a copy of apprentice()'s formula.
+
+The measured month, m7: gross school diplomas 10.300621; college and
+university completions together 18.559080; net diploma movement -8.258459;
+apprentice quota 2.169946. All five fixture premises pass. Current production
+wiring adds zero apprentices and matches the school-only control to the bit.
+
+**Negative proof, only production wiring reverted.** A generated copy of
+the current Game.java replaces just the apprentice argument with the old
+getGraduates()[DIPLOMA] expression. It is compiled into an isolated class
+directory, ahead of the same current test and other model classes; no
+worktree source is replaced. All five premises still pass, but the old
+call adds 2.169945527808767 apprentices and the diploma heads become
+851.8747566130132 against the control's 849.7048110852045. College and
+university heads remain equal. Both semantic assertions fail. The current
+proof exits 0 and the old-wiring-only proof exits 1 (two failed assertions).
+
+Evidence: `target/r1g/review-qualification-positive.txt`,
+`review-qualification-negative.txt`, and `review-qualification-negative.diff`
+in that directory (a one-line production-argument diff). The short driver
+is `R1gSchoolQualificationProof`, calling only the committed section 10;
+`target/r1g/review-qualification-negative.sh` builds and runs the paired
+proofs. Compilation and both proof JVMs together took 9.1 seconds. Every
+JVM named the C:/ main-worktree earth/world paths. `--fast` regenerates
+the indexes for the final source. Full Village1900Check, ReloadCheck and
+all other long checks remain held for FS5's software slot; section 7's
+long-harness results predate this review mend. No by-name waiver is added
+for this own-code fault. The marker remains, and a fresh delta review is
+requested before the MC2 merge and final ensemble on the approved slot.
+
+The final `./batch-check.sh --fast` exited 0: compile 51 seconds, indexes
+regenerated, Stale zero firm findings (`review-qualification-final-fast.txt`).
+Source/record whitespace and UTF-8/LF validation passed; the regenerated
+month-order retains its canonical 25 two-space Markdown hard breaks.
+Known-red syntax and the provisional marker also passed validation.

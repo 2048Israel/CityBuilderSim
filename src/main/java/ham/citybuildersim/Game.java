@@ -16087,7 +16087,8 @@ public class Game {
 
         populationManager.applyBandFlow(education.getGraduates());
         // ...and in a city founded the 1900 way the young who came of age learn the year's trade at work (R1g; PopulationManager, THE APPRENTICES).
-        if (foundedUnfitted()) populationManager.apprentice(cohorts.getPromoted(AgeBand.TEEN), ArrivalMix.tradeShareAt(getMonth()), education.getGraduates()[WageBand.DIPLOMA.ordinal()]);
+        // Gross school completions cover the quota; degree graduates leaving the diploma band do not reopen it (REV-R1gc2-1).
+        if (foundedUnfitted()) populationManager.apprentice(cohorts.getPromoted(AgeBand.TEEN), ArrivalMix.tradeShareAt(getMonth()), education.getNewDiplomas());
         populationManager.addLicences(education.getLicences());
         // And whoever is in a lecture theatre is out of the labour supply
         // until they come out of it - see PopulationManager.workforceByBand().
