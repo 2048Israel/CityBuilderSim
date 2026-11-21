@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — TN1, the trains run again — 2026-11-21, ready, see docs/queue/TN1-notes.md
 Jerus: "trains no longer show up... sometimes only briefly for a few years and then disappear forever". The tonnes were railed; the
