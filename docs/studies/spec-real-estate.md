@@ -187,6 +187,8 @@ added to game data by this docs branch.
 | [Nova Scotia, condominium owners](https://www.novascotia.ca/condominium-owners-your-rights-and-responsibilities) | Common property and exclusive-use rights differ from the unit; fees go to the condominium corporation, assessments follow declared shares, and a manager is a separate service. | An automatic permanent rent to the developer after sale, or a management profit percentage for the game |
 | [Vancouver, 2023 parking study, appendix E section 4.2](https://council.vancouver.ca/20231115/documents/cfsc1.pdf) | Its underground parking construction estimate is CAD 60,000-80,000 per stall including aisles but excluding other service areas; CAD 80,000-120,000 includes those areas. Ramps and layout make costs nonlinear. | A 2026 universal garage price, the cost of a driveway, or a reason to count storage/plant rooms twice |
 | [Reserve Bank of Australia, The Apartment Shortage, section 4](https://www.rba.gov.au/publications/rdp/2020/2020-04/full.html) | Its Australian 2013-18 building data show a modest positive average cost/height relationship; they do not support making height alone overwhelmingly expensive. | A Canadian tower recipe, a universal height multiplier, or the economics of every luxury tower |
+| [432 Park Avenue, sponsor's residence schedule](https://www.432parkavenue.com/assets/data/432_availability.pdf) | The published full-floor residence has approximately 751 sq m of interior space (8,088 sq ft). Individual apartments can substantially exceed the first 110/140 sq m examples. | A normal apartment size, a recommended luxury share, or a game construction/management price |
+| [NYC-hosted, 2020 Lower East Side planning submission, pages 2-3](https://www.nyc.gov/html/mancb3/downloads/calendar/2020/RWCDS-form-3rd%20draft-7.9.20.pdf) | It describes One Manhattan Square as 72 storeys and 815 dwellings. The previous 20-storey/160-home example is not a maximum residential form. | A universal relationship between height and unit count; marketing floor numbers; a recipe for an 815-home game template |
 
 The NOS and mortgage figures above are facts about their sources, not new
 rules being imposed on this game. CMHC's actual cash budget and its qualifying
@@ -270,9 +272,36 @@ when building the accepted recipes, and never renumber existing ones.
 | Duplex / terrace | 2-3 storeys; 2 or 6 homes | Attached family housing with less land per door; unit schedules can remain uniform |
 | Walk-up | 3-4 storeys; test 12-24 homes | Lower common-service burden; family-only and mixed variants |
 | Mid-rise apartment | Test 8 storeys, 64 homes | A mixed variant: 16 compact, 40 family and 8 large homes |
-| Taller apartment | Test 20 storeys, 160 homes | A mixed variant: 48 compact, 96 family, 12 large and 4 penthouses, with penthouses limited to the top floor |
+| Mixed tower example | Test 20 storeys, 160 homes | A worked mix: 48 compact, 96 family, 12 large and 4 penthouses; one ordinary-sized tower variant, not the top of the catalogue |
+| Large apartment block | Test 8-15 storeys, 200-500 homes | A wider footprint can provide many homes without extreme height; mix and site area still to test |
+| Larger high-rise | Test 30-50 storeys, 250-600 homes | Higher-capacity variants, plus lower-unit-count variants with larger homes |
+| Very tall residential tower | Test 60-90 storeys, 500-1,000 homes for denser mixes | A larger-scale option requiring its own core, services, construction/maintenance and site costing; large-apartment variants may contain fewer homes |
 
-For the two mixed examples, start geometric probes with compact 40 sq m /
+Jerus pointed out that larger apartments exist after reviewing the initial
+table. Expand both axes: the number/height of homes in a building and the
+interior size of a dwelling. Neither 160 homes nor 140 sq m is a cap. The new
+ranges are candidate envelopes for discussion, not approved/calibrated recipes
+or measured model capacities. The worked 64/160-home mixes below remain
+ordinary examples whose geometry was checked; the larger forms need the same
+physical and economic checks before activation.
+
+| Dwelling size/variant | Broader candidate internal area | Role in the menu |
+|---|---:|---|
+| Small apartment | 35-60 sq m | Compact accommodation; the 40 sq m worked example remains available |
+| Family apartment | 70-110 sq m | Family layouts with distinct bedroom/room-sharing targets |
+| Large apartment | 110-180 sq m | More family or personal space; ordinary and premium finishes can differ |
+| Very large apartment | 180-300 sq m | Spacious homes, including premium variants; not restricted to one household tier |
+| Full-floor / exceptionally large apartment | 300-800+ sq m | A low-count option where the building's floorplate and costs support it |
+| Penthouse / top-floor variant | For example 140-800+ sq m | Floor position/amenities are separate from size; can span several size bands and, where designed, more than one floor |
+
+These are bounded catalogue categories represented by aggregate counts and
+representative sizes. They do not create custom floorplans or a record per
+home. Bigger area is not automatically more residents or better finishes;
+normal occupancy, layout and quality stay separate. Penthouses need not be
+larger than every other apartment. The source examples establish existence,
+not that exceptional sizes should become common or universally cheapest.
+
+For the original two mixed examples, start geometric probes with compact 40 sq m /
 2 normal places, family 75 / 4, large 110 / 6, penthouse 140 / 6. The mid-rise
 has 4,520 sq m of private home area; at 80% net/gross efficiency it needs
 5,650 sq m gross, about 706 sq m footprint across eight floors. The taller
@@ -673,6 +702,8 @@ parking assumptions it moves to 132.76. At zero/50% structure premium, the
 no-parking crossover is respectively 0/179.14. The result is the formula
 `extra structure cost / land saved`, not evidence for a particular premium.
 Full game quotes, lead times and operating bills must decide the recipe.
+In particular, the toy 25% structure premium does not price the newly proposed
+30-90-storey forms or exceptionally large apartments.
 
 ### 7.2 Fees across sold and unsold units
 
@@ -772,6 +803,11 @@ bedroom suitability as a target where data supports it, distinct from the
 current studio eligibility rule. Calibrate construction/work/utilities through
 model quotes. A geographic neighbourhood simulation is optional further
 scope: current zoning allocates amounts, not neighbourhood locations.
+
+On reviewing the first catalogue table, Jerus noted that bigger apartments
+exist. Section 4.2 now expands both building capacity/height and dwelling
+area, keeping the original geometric examples as examples rather than caps.
+The additional numerical ranges remain candidates, not accepted recipes.
 
 **★8 Occupied units offered for sale — open; recommended tenant retention.**
 Offer the sitting tenant a purchase; keep renting to them if they cannot or
