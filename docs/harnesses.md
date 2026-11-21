@@ -1715,24 +1715,24 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L506 fixture: the bank its default leaves over the target buys part of a works' issue
   - L508 ...and the bank its default takes under the target bids nothing for the same issue before its book settles
   - L521 at x = .99, where the growth limit's share would pass the bank's minimum, the room is the room to the minimum, insured and not
-  - L524 ...so the bank lent the whole of it stands at its minimum, not under it: the next month is not one of keeping borrowers going
-  - L531 fixture: a bank whose risk weights bind, halfway down its band on them and over its leverage target
-  - L535 its uninsured room is RATIONED_GROWTH of its weighted book, and a works' loan within the works' share is lent
-- **L585 4. a consolidation changes the unit, preserving every holder's value**
-- **L615 5. a repayment's rounding does not draw a loss buffer**
-  - L630 fixture: no liquid foreign assets or bonds can cover the shortfall
-  - L635 fixture: a shortfall would draw a positive loss buffer
-  - L636 fixture:
-  - L640 rounding borrows no loss buffer
-  - L641 the repaid borrower's till is empty
-  - L643 a real shortfall still draws the working-capital line and its loss buffer
-- **L650 5b. a bond's face floor is money at the founding price level**
-  - L660 a face above the same real dust trades at unit
-  - L663 a face below the same real dust is ignored at unit
-- **L668 6. 24 default Random cities, button unpressed, every one of 120 months audited**
-  - L696 MoneyAudit closes in every month of every seed at its own tolerance
-  - L699 every bank's equity movement is explained by its books, including failures
-  - L700 pellet mills actually sell in played cities
+  - L524 ...so the bank lent all but a hair of it stands over its minimum, the next month not one of keeping borrowers going, and a hair past it would stand under
+  - L533 fixture: a bank whose risk weights bind, halfway down its band on them and over its leverage target
+  - L537 its uninsured room is RATIONED_GROWTH of its weighted book, and a works' loan within the works' share is lent
+- **L599 4. a consolidation changes the unit, preserving every holder's value**
+- **L629 5. a repayment's rounding does not draw a loss buffer**
+  - L644 fixture: no liquid foreign assets or bonds can cover the shortfall
+  - L649 fixture: a shortfall would draw a positive loss buffer
+  - L650 fixture:
+  - L654 rounding borrows no loss buffer
+  - L655 the repaid borrower's till is empty
+  - L657 a real shortfall still draws the working-capital line and its loss buffer
+- **L664 5b. a bond's face floor is money at the founding price level**
+  - L674 a face above the same real dust trades at unit
+  - L677 a face below the same real dust is ignored at unit
+- **L682 6. 24 default Random cities, button unpressed, every one of 120 months audited**
+  - L710 MoneyAudit closes in every month of every seed at its own tolerance
+  - L713 every bank's equity movement is explained by its books, including failures
+  - L714 pellet mills actually sell in played cities
 
 ## BasketYearCheck.java - 109 labelled assertions
 

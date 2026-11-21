@@ -512,17 +512,19 @@ public final class BankFailureCheck {
         Bank edge = leverageBankAt(.99, BAND_EXPOSURE);
         double toMinimum = edge.equity() / Bank.LEVERAGE_RATIO_MIN - edge.exposure();
         double room = edge.leverageHeadroom();
-        Bank lent = new Bank();
-        lent.refresh(1, 0, 0, 0, 0, 0);
-        lent.setCash(edge.exposure() + room);
-        lent.setForeignDeposits(edge.exposure() + room - edge.equity());
+        // Lent a margin either side of the room, never on its edge: the minimum's test is a strict <.
+        Bank lent = lentFrom(edge, room * (1 - BAND_EDGE)), overLent = lentFrom(edge, room * (1 + BAND_EDGE));
         out.printf("   at x = .99 the growth limit %.4f a month, %.0f of the exposure; the room to the minimum %.0f; lent, the leverage ratio %.6f%n",
                 edge.lendingGrowthLimit(), edge.lendingGrowthLimit() * edge.exposure(), toMinimum, lent.leverageRatio());
+        out.printf("   lent the room less %.0e of it, the leverage ratio %.9f; %.0e past it, %.9f; the minimum %.9f%n",
+                BAND_EDGE, lent.leverageRatio(), BAND_EDGE, overLent.leverageRatio(), Bank.LEVERAGE_RATIO_MIN);
         check("at x = .99, where the growth limit's share would pass the bank's minimum, the room is the room to the minimum, insured and not",
                 edge.lendingGrowthLimit() * edge.exposure() > toMinimum && toMinimum > 0
                 && near(room, toMinimum) && near(edge.projectHeadroom(), toMinimum));
-        check("...so the bank lent the whole of it stands at its minimum, not under it: the next month is not one of keeping borrowers going",
-                near(lent.equity(), edge.equity()) && !lent.isInsolvent() && !lent.lendsOnlyToKeepBorrowersGoing());
+        check("...so the bank lent all but a hair of it stands over its minimum, the next month not one of keeping borrowers going, and a hair past it would stand under",
+                near(lent.equity(), edge.equity()) && near(overLent.equity(), edge.equity()) && !lent.isInsolvent()
+                && lent.leverageRatio() > Bank.LEVERAGE_RATIO_MIN && !lent.lendsOnlyToKeepBorrowersGoing()
+                && overLent.leverageRatio() < Bank.LEVERAGE_RATIO_MIN && overLent.lendsOnlyToKeepBorrowersGoing());
 
         // REV-MC2 P4: a bank whose risk weights bind reads the band on the weighted book.
         Bank risk = riskBankAt(.5, BAND_EXPOSURE);
@@ -536,6 +538,18 @@ public final class BankFailureCheck {
                 near(risk.projectHeadroom(), riskShare) && near(risk.settledProjectHeadroom(), riskShare)
                 && riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * .5)
                 && !riskDesk.canFundProject(works, riskDesk.capitalRoom(works) * 2));
+    }
+
+    /** The margin, a share of the room, by which section 9 lends either side of the room to the minimum. */
+    static final double BAND_EDGE = 1e-6;
+
+    /** A bank with this one's equity and its exposure grown by what it lent, by its restore setters. */
+    static Bank lentFrom(Bank bank, double lent) {
+        Bank after = new Bank();
+        after.refresh(1, 0, 0, 0, 0, 0);
+        after.setCash(bank.exposure() + lent);
+        after.setForeignDeposits(bank.exposure() + lent - bank.equity());
+        return after;
     }
 
     /**

@@ -117,9 +117,9 @@ lines and 6 assertions (12-17 below): 23 lines.
 
 - With the mend: all 23 pass.
 - On main's rule (main's `Bank.java` and `BusinessDebtManager.java` of 0.9.174 put back, with
-  `settledProjectHeadroom()` returning `headroom()` as main's settled branch reads): **13 of the
-  17 assertions FAIL**, 1-11, 15 and 17, and the 6 fixture lines pass. 12-14 and 16 pass on main,
-  which gives none there: they hold the mend to it against the rule REV-MC2 reviewed.
+  `settledProjectHeadroom()` returning `headroom()` as main's settled branch reads): **14 of the
+  17 assertions FAIL**, 1-11 and 15-17, and the 6 fixture lines pass. 12-14 pass on main, which
+  gives none there: they hold the mend to it against the rule REV-MC2 reviewed.
 - On that rule (`Bank.java` at f5452977d, 207704ac8's merged with 0.9.174): **12-16 FAIL**. 17
   passes on it: it is the risk-weighted cover the review asked for.
 
@@ -156,8 +156,10 @@ What REV-MC2's lines prove:
     `BondMarket.issue()` with fixed readings, as in section 3).
 15. At x = .99, where the growth limit's share (99% of the exposure) passes the bank's minimum, the
     room is the room to the minimum (31%), insured and not (P2).
-16. ...so the bank lent the whole of it stands at its minimum, not under it: the next month is not
-    one of keeping borrowers going.
+16. ...so the bank lent all but a hair of it (`BAND_EDGE`, a millionth of the room) stands over its
+    minimum, the next month not one of keeping borrowers going, and a hair past it would stand
+    under: the cap is the minimum's own edge. The two banks stand a margin either side of it,
+    never on it, since the minimum's test is a strict < (REV-MC2-2's note).
 17. A bank whose risk weights bind, halfway down its band on them and over its leverage target:
     its uninsured room is `RATIONED_GROWTH` of its weighted book, and a works' loan within the
     works' share is lent, one past it refused (P4: `growthLimitOn()`'s weighted branch and
@@ -174,7 +176,8 @@ Figures the section prints:
 - just under, the landlords' share is 96,192 of the bank's 900,000;
 - just over, the room to the target is 238,095;
 - at x = .99 the growth limit is .99 a month, 9,900,000 of the exposure; the room to the minimum
-  is 3,093,750; lent it, the bank's leverage ratio is .030000.
+  is 3,093,750; lent it less a millionth, the bank's leverage ratio is .030000007, and a
+  millionth past it, .029999993.
 
 ## Checks
 
@@ -302,7 +305,8 @@ file of this batch's, nor `BondMarket`.
 The round's checks, on that merge:
 
 - `BankFailureCheck`: all 23 lines of section 9 and every other section pass. On the rule REV-MC2
-  reviewed, 12-16 FAIL; on main's, 1-11, 15 and 17 (The harness).
+  reviewed, 12-16 FAIL; on main's, 1-11 and 15-17 (The harness), measured again after line 16's
+  margin (below).
 - `./batch-check.sh --fast`: green; Stale 0 firm.
 - `sh tools/pick.sh origin/main HEAD`: 50 of 234 (not ALL); review: needed - money (`Bank.java`).
   The 50 ran in one sequential call (`-Dcbs.parallel=1`, 5,744 s, 53 with the suite's own): 49
@@ -322,6 +326,12 @@ The round's checks, on that merge:
   and which takes KBP1. The brief said FS1; FS1's study folded KeptCheck's rows into FS5, and FS4
   named FS5 for section 89's row the same way. On main's rule KeptCheck also failed five lines
   that MC2's path passes: KFP1's four (known-reds rows 47-50) and section 78's held slider.
+
+REV-MC2-2 on e204cbb5a said SHIP, all four closed, with one harness note: line 16's bank ended
+exactly at its minimum, where `lendsOnlyToKeepBorrowersGoing()` tests a strict <, so a rounding
+bit could flip it. Taken: the bank is lent a millionth of the room under it and a millionth past
+it, and the line asserts both sides. It passes; it fails on the reviewed rule as before, and now
+on main's too (main's room is none, so a hair past it is still over the minimum).
 
 ## The ensemble
 

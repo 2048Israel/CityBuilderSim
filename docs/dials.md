@@ -2,7 +2,7 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,432 constants in 611 files.**
+**6,433 constants in 611 files.**
 
 ## model (2963 constants)
 
@@ -5856,7 +5856,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1975 constants)
+## harnesses (1976 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5945,6 +5945,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 20 | `BankFailureCheck.out` | `System.out` |  |
 | 21 | `BankFailureCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 | 358 | `BankFailureCheck.BAND_OWED` | `1_000_000, BAND_OWNED = 100_000_000, BAND_EXPOSURE = 10_000_000` | What the landlords and the works owe before the month, what each owns, and the hand-built banks' exposure. |
+| 544 | `BankFailureCheck.BAND_EDGE` | `1e-6` | The margin, a share of the room, by which section 9 lends either side of the room to the minimum. |
 
 ### BasketYearCheck.java ([map](map/BasketYearCheck.md))
 

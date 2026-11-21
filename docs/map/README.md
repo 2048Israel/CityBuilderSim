@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 611 files, 665,808 lines, 28,980 methods, 6,432 constants. `GameVersion.VERSION` is "0.9.174", `SAVE_FORMAT` 58.
+**The tree:** 611 files, 665,822 lines, 28,981 methods, 6,433 constants. `GameVersion.VERSION` is "0.9.174", `SAVE_FORMAT` 58.
 
 ## model (272 files)
 
@@ -386,7 +386,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AuctionCheck.java](AuctionCheck.md) | 1,823 | 45 | The city's paper sold at auction: one clearing yield, and what it costs. | 1 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 2,135 | 49 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
 | [BankCheck.java](BankCheck.md) | 4,883 | 33 | The commercial bank, and the families it discharges. | 2 |
-| [BankFailureCheck.java](BankFailureCheck.md) | 712 | 22 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
+| [BankFailureCheck.java](BankFailureCheck.md) | 726 | 23 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 807 | 37 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
 | [BondCheck.java](BondCheck.md) | 1,760 | 43 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |

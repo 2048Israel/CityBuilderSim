@@ -10,7 +10,7 @@ book, on the equity the month's known defaults leave, and never past the room to
 At or over the target it is BF1's room to the target, as before, and none while the month's
 default takes the bank under it before its book settles; the carry trade still gets nothing under
 it. BankFailureCheck section 9 causes both sides, the cap and the default with hand-built banks,
-and 13 of its 17 assertions fail on the old rule. In MC1's played crunch the landlords took 6
+and 14 of its 17 assertions fail on the old rule. In MC1's played crunch the landlords took 6
 mortgages, where none were written before.
 
 ## known-reds
