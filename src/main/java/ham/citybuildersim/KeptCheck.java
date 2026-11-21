@@ -1,5 +1,6 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.ui.FollowBench;
 import ham.citybuildersim.ui.KeptBench;
 import ham.citybuildersim.ui.Money;
 import ham.citybuildersim.ui.Palette;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -364,20 +364,8 @@ public class KeptCheck {
         return t.get(10, TimeUnit.MINUTES);
     }
 
-    /** The toolkit started, or why not (then this harness has nothing to run on). */
-    static String startJavaFx() {
-        try {
-            if (java.awt.GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
-            Platform.setImplicitExit(false);
-            CountDownLatch up = new CountDownLatch(1);
-            Platform.startup(up::countDown);
-            if (!up.await(60, TimeUnit.SECONDS)) return "the toolkit did not come up in 60 s";
-            return null;
-        } catch (Throwable t) {
-            String why = t.getMessage() == null ? "" : ": " + t.getMessage().replaceAll("\\s+", " ").trim();
-            return t.getClass().getSimpleName() + why;
-        }
-    }
+    /** The toolkit started, or why not (then this harness has nothing to run on): the one start, FollowBench's (GB5). */
+    static String startJavaFx() { return FollowBench.startJavaFx(); }
 
     /** What is done after every month played, with the log off, while a fixture has to be held through the months (KP3: the city's sites); null for nothing. */
     static Runnable afterMonth;

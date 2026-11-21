@@ -40,6 +40,16 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        <!-- GB5: JavaFX's Monocle, the headless glass the gate box draws the display harnesses on
+             (tools/gate-box.sh names it; nothing else does). TestFX's build for JavaFX 21, GPL 2 with
+             the Classpath Exception as OpenJFX; test scope, so the shaded jar and the exe never hold it. -->
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <version>21.0.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

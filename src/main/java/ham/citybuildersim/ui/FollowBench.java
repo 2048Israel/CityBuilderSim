@@ -95,13 +95,27 @@ public final class FollowBench {
         System.exit(failures);
     }
 
+    /** GB5: set on the runs of a machine with no screen (the gate box's, tools/gate-box.sh), it names the display they draw on. */
+    public static final String DISPLAY_PROPERTY = "cbs.display";
+
     /**
-     * Why JavaFX cannot start here, in a few words, or null when it is up. It starts the toolkit if no check before this one has
-     * (ReplayMoveProbe's way: a second start is told the toolkit is already there, and that is an answer of yes).
+     * Why JavaFX cannot start here, in a few words, or null when it is up; every display harness starts the toolkit here. It starts
+     * it if no check before this one has (ReplayMoveProbe's way: a second start is told the toolkit is already there, and that is
+     * an answer of yes). Where -Dcbs.display names a display (the gate box's Monocle, GB5), AWT's headless says nothing of it, and
+     * a toolkit that does not come up is a FAIL and exit 1, never a skip: the box's gates judge every display harness.
      */
     public static String startJavaFx() {
+        String display = System.getProperty(DISPLAY_PROPERTY, "");
+        String down = start(display.isEmpty());
+        if (down == null || display.isEmpty()) return down;
+        System.out.println("FAIL: the JavaFX toolkit cannot start here (" + down + "), where -D" + DISPLAY_PROPERTY + "=" + display + " names a display (GB5)");
+        System.exit(1);
+        return down;
+    }
+
+    private static String start(boolean askAwt) {
         try {
-            if (GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
+            if (askAwt && GraphicsEnvironment.isHeadless()) return "this JVM is headless (no display)";
             Platform.setImplicitExit(false);
             CountDownLatch up = new CountDownLatch(1);
             try {
