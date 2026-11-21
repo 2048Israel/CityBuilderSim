@@ -1238,3 +1238,105 @@ released. Keep the original immutable classes/driver, data and JDK;
 one AUTO2 seed-1 JVM, end 1145/exception/stuck/180 seconds total, no retry
 or extension, no laptop fallback. All source, prior reviews/proofs,
 baseline and provisional marker remain frozen. Await explicit slot GO.
+
+## 14. One bounded component trace completed; construction term identified
+
+The orchestrator released the box slot at 14:38 after WG3's ensemble
+was terminal. Ran exactly the adopted diagnostic, label
+`R1gc2-gdp1-1145`, using the original 627174320 classes and driver without
+compiling or scoring. Preflight verified the retained source HEAD and
+clean source/driver, original snapshot, dependency files, JDK release
+21.0.13+9, original data paths and data mtimes before that snapshot,
+unused label across the box, and output containment. No gate, nightly or
+other JVM was active/announced; nonblocking heavy, ensemble and box locks
+were acquired. Original bytecode trees were hashed before and after:
+2,395 model classes and four driver classes unchanged. No fallback ran.
+
+The single JVM, PID 1921652, started **2026-11-21T18:44:57.179404Z** and
+exited **0** at **18:45:43.550164Z**, **46.370757 seconds** including
+founding. The 180-second total timeout was not reached. Its terminal
+line is DONE AUTO2 seed 1 months 1145 of 1145, with no exception or stuck
+month. The supervisor waited for real exit, released its locks and
+copied all diagnostic records home except its private tmp folder.
+The local foreground session also exited 0. No owned job remains, and
+the orchestrator was told the trace was terminal before analysis.
+
+The pinned checker (SHA-256 96a718c228900da956206ec082158a1909733a708eece32396868ae4a69ffe7f)
+returned **MATCHED_COMPONENT_READINGS**: all **1,144 rows**, months
+**2-1145**, match **all 68 original columns exactly**; every one of the
+29 extras is finite in every row. All 72 window identities (inventory,
+NX and GDP in months 1122-1145) and both annual identities passed their
+serialization/floating precision bounds. The maximum absolute window
+identity residual is 0.0000137. This validates the recorded component
+readings, not a shipping verdict or a model mend.
+
+### The struck GDP identity, 1133-1135
+
+| struck NA component | m1133 | m1134 | m1135 |
+|---|---:|---:|---:|
+| C goods | 91.7734056 | 95.6487074 | 93.8596883 |
+| C housing | 1456.48665 | 1481.82657 | 1472.89221 |
+| I construction | 3735.29957 | 3615.84480 | 0 |
+| I inventories | 27.4921481 | -676.059792 | 44.8876654 |
+| I valuables | 0 | 0 | 0 |
+| G services | 2175.95783 | 2167.51867 | 2164.69979 |
+| NX | -4938.04966 | -5376.04776 | -4137.23171 |
+| GDP | 2548.95993 | 1308.73119 | -360.892347 |
+
+The 1133-to-1134 GDP fall is 1240.22874: inventory contributes
+-703.5519401, NX -437.99810, construction -119.45477, G -8.43916,
+and the two consumption lines together +29.2152218.
+
+The 1134-to-1135 GDP fall is 1669.623537. Its largest negative term is
+**I construction -3615.84480**, disappearing entirely. Inventory improves
+by +720.9474574 and NX by +1238.81605; goods consumption changes
+-1.7890191, housing -8.93436 and G -2.81888. Construction remains exactly
+zero in every captured month 1135-1145. Inventory's food, materials and
+luxuries parts are zero at these three strike points; the displayed
+inventory amounts are HELD. The first negative monthly GDP is therefore
+not caused by a new negative inventory swing at that crossing.
+
+At 1135 the struck trade components are imports food 77.9512665,
+materials **3474.95812**, raw 808.965714 and exports 224.643397. Their net
+is the recorded NX -4137.23171 within serialization precision. Material
+imports continue while the recognized construction contribution is zero:
+3861.81953 at 1145, whose total monthly GDP is -268.652449. The trace
+locates the accounting component responsible for the crossing; it does
+not establish why construction recognition stopped, what those imports
+served, or whether that pairing is a missing flow, timing error, repair
+cost, fitting/site distinction or an upstream/batch behavioral effect.
+Those questions still require the production-path trace. No own-versus-
+latent attribution, correction or waiver is asserted.
+
+### Annual readings and limits
+
+| month | actual NA annual GDP | sum of twelve original CSV GDPs | residual | precision bound |
+|---|---:|---:|---:|---:|
+| 1144 | 112.829003 | 112.8290019 | +0.0000011 | 0.000015050007 |
+| 1145 | -2704.78338 | -2704.7833771 | -0.0000029 | 0.000015050005 |
+
+Thus the annual finding follows the same monthly deficit window. The
+22 retained NA readings above remain distinct from the seven supporting
+end-state inputs. All seven supporting inputs are zero throughout
+1122-1145. That gives no positive measurement supporting the earlier
+utility-import hypothesis, and these end-state zeros alone cannot prove
+that the strike saw no utility/trade flow. The cause is narrowed to the
+construction-recognition/material-import channel, not finally assigned.
+
+Evidence is `target/ensemble/R1gc2-gdp1-1145/`: full 97-column CSV,
+log, terminal, original snapshot, command, JDK/data/bytecode provenance,
+exact extra paths, checked.json and checked.window.csv. Invocation and
+terminal validation are `target/r1g/gdp1-*`; the launcher created exactly
+one JVM, with a kill-and-wait timeout and no retry. CSV SHA-256:
+`e789995361092b8a915cde4e988314fd059b22e1e9caf51348543ff39d516785`.
+Checker report SHA-256:
+`fe321d9ce9df83ea7e5d94926be0167d16334e2957bd906aaeb972ce41105bc7`.
+The failed full ensemble baseline is preserved unchanged. No model,
+review, proof or ship-marker change, second policy/run, clamp, threshold,
+dry run or ready action followed this trace. R1g stays Pending.
+
+Recommended next step is static tracing of the actual construction
+recognized/fitting values into Game.startOfMonthUpdate and the builders'
+material-import ledger, including repair work, to explain the 1134/1135
+split. No further JVM or source mend is authorized by this completed GO;
+report the component evidence and await the orchestrator's next instruction.
