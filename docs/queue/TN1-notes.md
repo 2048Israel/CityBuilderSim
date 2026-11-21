@@ -69,7 +69,9 @@ target/tn1-slot-offline.txt) the same station took [376801, 376929, 7, 48] and r
 
 **The Bergen playtest** with mends 1 and 2 (target/tn1-bergen-mend.txt): the line leaves at 315 from month 840, its first station
 (a mixed train's 15 x 7, holds 9.0), and trains run every decade after: drawn and unfit 16/10 at 840, 15/10 at 960, 26/19 at
-1,080, 23/17 at 1,200, 28/22 at 1,322 - 5 to 7 run a month where main ran none. BERGEN_FINAL
+1,080, 23/17 at 1,200, 28/22 at 1,322 - 5 to 7 run a month where main ran none. With the final code
+(target/tn1-bergen-final.txt) the same, decade by decade: its station stays 15 x 7, no longer box on the quarter line fitting in any
+January to month 1,322 (it holds a mixed train, so the boxes beside the line are not its); its unit trains stay unfit.
 
 ## Checks
 
