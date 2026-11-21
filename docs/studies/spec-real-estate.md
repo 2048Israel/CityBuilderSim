@@ -1,206 +1,1011 @@
-# Real Estate: homes, buildings and the households choosing them
+# Real Estate: buildings, dwellings and the households choosing them
 
-RES1, opened 2026-11-20. **Working draft: scope discussion, not ready to ship.**
-Branch `study/real-estate`, cut from `origin/main` at `a9bfcd070`.
-`sh tools/batch-id.sh RES1` passed. Jerus is describing the upgrade; neither
-the economic design nor the implementation batches have been settled.
+RES1, opened 2026-11-20; completed study draft 2026-11-21, **ready for
+Jerus's review, not implementation or shipping approval**. Branch
+`study/real-estate`, model base `a9bfcd070`; fetched `origin/main` through
+`e9dadb540` before measuring. The later queue clarification at `4f1056f11`
+records RES1 as docs only and carries the planner finding into OG1. Only
+this study and its index change here.
+RES1 names the docs study; RES2-RES5 below are proposed implementation
+batches. The earlier REU1 note called RES1 the future model batch; update
+that dependency rather than reuse a shipped study's ID.
 
-## 1. What the model does now
+## 1. The recommendation
 
-These are source findings, not new playtest measurements. The catalogue at
-this base has three residential buildings:
+Separate a physical building from its homes, and a home's owner from its
+occupant. Offer houses, attached homes, walk-ups and taller apartments, with
+several layouts and quality levels. Some apartment forms have a mix of homes;
+a penthouse is a limited top-floor home, not a synonym for every expensive
+apartment. Space, private outdoor space, quality, amenities and parking can
+matter differently to households that can afford them. No tier is confined
+to a form.
 
-| Building | Dwellings | People per dwelling |
-|---|---:|---:|
-| House | 1 | 6 |
-| Studio Apartments | 80 | 2 |
-| Low-Rise Apartments | 63 | 4 |
+First establish that inventory, then fit households and price the actual
+homes, then account for parking. HO1 must buy and sell those homes and fund
+their common costs from its first apartment sale. After HO1, intentional
+disposal lists standing homes for sale and progressively lowers unsold asks.
+It never scraps housing to leave an investment. Keep tenants housed while
+their homes are marketed. Give the common building an account that survives
+the landlord selling its last unit.
 
-Source: `src/main/resources/buildings.json`, residential ids 0, 1 and 6;
-`BuildingsTemplate.homeSize()` divides capacity by dwellings. A building
-currently supplies a single dwelling size.
+This changes the interfaces in HO1 substantially, but keeps its accepted
+credit rules and rate experiment. It does not solve the builders' backlog by
+adding building pictures: the current planner already orders quantities.
+OG1 owns that investigation. REU1 follows the model and draws its saved
+figures, as Jerus requested.
 
-`FamilyModel.match()` places larger households first, in the smallest available
-home that fits. Households with dependants cannot enter studios, even when
-their headcount fits. A small household can take a larger dwelling; a household
-can crowd into a smaller family dwelling when its fitting homes are gone.
-This placement pools income tiers by household shape: it does not choose a
-better home for a richer household.
+Accepted instructions are separated from recommendations in section 8.
+The proposed catalogue is concrete enough to test, but its quantities,
+areas, heights, quality premiums and parking ratios are **candidates, not
+Jerus's decisions or calibrated game data**.
 
-`RealEstate.mayRetire()` prevents retirement while households are unplaced or
-doubled up and otherwise asks whether the building's segment has spare doors.
-When an allowed decision reaches `Game.retire()`, the building is physically
-scrapped, its land is released, materials are sold and financing is settled.
-The message saying "Sold" therefore does not describe a standing home
-transferred to a household. This is the disposal path Jerus now wants replaced
-for Real Estate after home ownership exists.
+## 2. What was observed in the model
 
-`RealEstate` owns the homes. Its two rents cover studios and family dwellings,
-per person of dwelling capacity. `rentRequired()` uses the cheapest new supply
-cost and `LANDLORD_YIELD`; `rentBreakEven()` measures the standing stock's
-carry. `targetFor()` combines segment scarcity and the company's carry lift,
-waiving the lift in a glut. `repriceRent()` moves prices over `LEASE_MONTHS`.
-The planner orders quantities against jobs, coming jobs, family-door shortages,
-and homes already on site. More residential types alone do not establish what
-currently holds completions back.
+### 2.1 Inventory and construction inputs
 
-`EconomyManager.repriceHousingCosts()` selects the cheapest cost per person
-overall and within the two size segments; `RealEstate.priceForSegment()`
-returns only the studio or family price. Adding a luxury building to the
-catalogue therefore does not give its dwellings a distinct quality market.
+The shipped residential IDs are 0, 1 and 6. `BuildingsTemplate.homeSize()`
+divides capacity by dwellings; each template supplies one size. There is no
+bedroom count, mixed-unit schedule, dwelling quality market or residential
+parking capacity in this base.
 
-Cars already have new and used markets, borrowing, fuel, road effects and a
-transit alternative (`Motoring`). `Household.cars` is capped at one car per
-household. Residential parking supply is not a tracked capacity; the comment
-beside that stock explicitly leaves garages and additional cars for later work.
+The first table is measured from `BuildingCatalog.load()` and template
+getters. Structure is cash plus materials at `Good.MATERIALS.worldImportPrice()`;
+the second money column divides out the model's founding price-level factor
+to show the catalogue's present-day benchmark. It is not a live city quote:
+land, local wages/material prices, construction tax/rebates, finance and
+waiting time are excluded.
 
-The initial `./batch-check.sh --fast` passed (compile, maps, zero firm Stale
-findings). Generated date-only changes were restored. No measuring JVM or
-ensemble has been started by this study.
+| Form | Doors | Capacity per door | Structure per door, model thousands | Present-day benchmark dollars | Lot sq ft per door | Work points per door |
+|---|---:|---:|---:|---:|---:|---:|
+| House, id 0 | 1 | 6 | 11.544025 | 446,000 | 8,000.00 | 10.00 |
+| Studio Apartments, id 1 | 80 | 2 | 4.655141 | 179,850 | 312.50 | 8.50 |
+| Low-Rise Apartments, id 6 | 63 | 4 | 6.977031 | 269,556 | 952.38 | 38.10 |
 
-## 2. Design being discussed
+The model's delivered materials price in this probe was 0.465902349 world
+thousands; its present-day table value is 18. The different money units must
+not be mixed when proposing new costs. Power per door is respectively
+1.0000, 0.1000 and 0.3968 model units; water is 0.2000, 0.0250 and 0.0952.
+These are model inputs, not measured household kWh or water efficiency.
 
-Jerus asks for more residential forms, including bigger and taller buildings;
-household fit and preferences, including the elite's; and garage/parking
-provision. Exact forms, quantities, costs, heights, preference rules, parking
-rules and price formation still require discussion and measurement.
+An apartment is cheaper per door here, but the low-rise consumes 3.81 times
+a House's construction points per door. That is evidence to examine its work
+recipe, not proof that every real apartment takes longer. Construction points
+also compete for the shared queue; no template has a guaranteed completion
+time. Existing lot figures alone reveal neither floor area nor storeys.
 
-The distinction accepted so far is between a building and the dwellings it
-contains. Some apartment buildings may contain multiple dwelling types. A
-studio, a family apartment and a penthouse were examples, not an approved
-catalogue or a measured unit mix. Size, quality and height are separate ideas;
-no income group has been assigned an exclusive building type.
+`BuildingManager` keeps quantities in `BuildingsStacks`, not an object for
+every standing home. Its total capacity also includes 100 founding places
+per endowment, which its `homesBySize()` door census does not contain. Do not
+turn that difference into saleable houses or duplicate it in a new registry.
 
-### Questions the study should examine next
+### 2.2 Caused placement and pricing probes
 
-These are recommendations for discussion, not accepted mechanics or calibrated
-rules:
+These call the current `FamilyModel.house()` after restoring explicit counts
+through its public named-shape save interface. They are small model fixtures,
+not a reimplementation of matching. All use one household unless stated.
 
-- Home layout and space as well as headcount: which households fit, which
-  merely prefer a home, and how affordability limits the choice.
-- Prices by the housing actually supplied and demanded: quality and size must
-  have an economic meaning beyond the existing two rents. Included parking
-  and separately rented parking must be counted once in household and landlord
-  books, and consistently in HO1's purchase valuation and mortgage test.
-- Density's full cost: land and surface parking saved, construction work and
-  time, upkeep, staffing, power and water. Measure the tradeoff before choosing
-  building quantities, heights or a cheapest form.
-- Builders' choice and vacancies: a shortage of affordable family dwellings
-  can coexist with empty dwellings of another kind. Distinguish unsuitable,
-  unaffordable and still-under-construction supply, coordinating with OG1.
-- Stable homes and tenure: mixed buildings may contain rented and owned homes.
-  Household changes need defined stay/move/sell outcomes that preserve capacity,
-  equity and mortgage balances; coordinate with HO1/HO2 rather than taking over
-  their household-transition work without an explicit decision.
-- Historical availability and costs: tie forms and features to the existing
-  year/technology framework where justified, and retain the wage-following
-  1900-home instruction measured against take-home pay.
+| Fixture | Current result |
+|---|---|
+| Single parent and child; one size-2 door | 1 unplaced; 1 refused by the studio rule; no rent weight |
+| Same household; one size-3 door | Fits; family rent weight 3 |
+| Same household; one size-4 door | Fits; family rent weight 4 |
+| Six-person large family; one size-4 door | Fits in the crowding pass; 1 crowded household; rent weight 4 |
+| 200 single adults, all lowest tier; 100 size-2 and 100 size-6 doors | Studio weight 200, family weight 600; none unplaced |
+| Same stock, all elite, or 100 lowest and 100 elite | Exactly the same weights and placement totals |
 
-## 3. Jerus's calls
+The source explains why: `FamilyModel.match()` pools each household SHAPE's
+tiers, places larger shapes first, takes the smallest fitting home and then
+crowds into remaining homes. Dependants cannot enter size <= 2 in either
+pass. The probe does not show which individual tier got a particular door;
+the current matching does not retain that assignment.
 
-**★1 Mixed dwellings in some buildings — accepted.** Jerus asked whether some
-buildings should have mixed dwelling types, and answered the explanation with
-"thats a great idea". Recommendation given: permit a mix in some apartment
-buildings while retaining buildings that supply one type. The mixes are open.
+With the family per-capacity rent set to 2 solely to identify the pricing
+path, `RealEstate.priceForSegment()` returned 2 for the House, Low-Rise and a
+synthetic expensive four-place family template alike. The latter is a probe
+object, not a new catalogue entry. The studio returned its separate price.
+An expensive or luxury template alone therefore creates no quality rent.
 
-**★2 Household preferences — open.** His words: "the elite may prefer different
-types". Recommendation discussed: households can compromise on preferences
-when money or availability limits them. Whether the elite prefer large houses,
-luxury apartments, penthouses or combinations remains unanswered. Existing
-hard suitability rules must be distinguished from preferences.
+### 2.3 A scratch city: shortages, affordability and cars
 
-**★3 Garages and parking — requested scope, mechanics open.** His words:
-"garage/parking lot factored in, cause cars are a thing right". The discussion
-distinguished driveways, private garages, surface lots and underground parking.
-He accepted the recommended billing arrangement with "ok": private provision
-belonging to a dwelling is included in its housing price; shared spaces are
-rented separately unless a space is included with that dwelling, and extra
-spaces are separately charged. Quantities, allocation and prices remain open.
-Recommendation: measure the existing car stock and its one-car ceiling before
-settling parking quantities or changing car ownership; charge physical provision
-through the model's land, construction and upkeep flows.
+One bounded measuring JVM, `-Xmx1024m`, ran after the orchestrator cleared
+the laptop and committed memory was 72.2%, below its 75% start limit. It used
+`GameFiles.scratch("res1-housing")`, the supplied main data paths,
+`LongPlaytest.probeCity()` and `probePlay()` with today's founding and default
+path seed 48,213. The helper's advice/extra months pass its requested targets
+60/240/600, so the actual sample months are **65/245/605**. This observation
+run is not the default full playtest trace or an ensemble. Exit 0 says the
+probe completed; it is not a suite verdict.
 
-**★4 Real Estate pictogram UI — accepted as later work.** His words:
-"after this also a ui update for real estate right? such that you know how
-industyr has pictograms and stuff, i feel like it would be good to implement
-one for real estate as well, but thats later after this study". Recommendation:
-a separate follow-up batch, REU1, after the study and the model figures it will
-display are settled. Use the industry's pictogram presentation as a reference;
-the screen must read the housing model's figures. No UI is being implemented
-in this study.
+| Actual month | People | Door seekers | Finished doors | Doors on site | Doubled households | Crowded households | Cars | Rent / aggregate take-home | Proposed build quantity |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 65 | 568 | 187.34 | 139 | 0 | 48.34 | 0 | 6.45 | 24.02% | 1 |
+| 245 | 2,027 | 600.12 | 520 | 0 | 107.77 | 0 | 23.38 | 26.15% | 2 |
+| 605 | 7,441 | 2,771.06 | 2,867 | 273 | 0 | 84.48 | 522.26 | 27.85% | 142 |
 
-**★5 The 1900 home — standing instruction.** The initiating brief chooses costs
-that follow wages, measured against take-home pay too, revisited after HO1.
-`batch/R1g:docs/queue/R1g-notes.md` sections 2, 3 and 5 are the prior evidence;
-its `homeScale` of 0.289185 is a branch finding, not this study's measurement
-or a calibration for every new building.
+Unplaced after the current valves was zero at all three samples. The finished
+size census at 605 was 960 size-2, 1,701 size-4 and 206 size-6 doors. It can
+have more doors than seekers and still crowd some large households: one city
+total is not a sufficient measure of fit. At 245 the corresponding counts
+were 80, 252 and 188.
 
-**★6 Sell housing instead of demolishing it — requested after home ownership.**
-Jerus: "after HO real estate instead of demolishing it should just sell either
-the units of the apartment and charge a monthly fee like a condo but not rent,
-or sell its houses"; "if no one then lower and lower prices, but not demolish".
-This is the required outcome for the company's disposal of housing: list houses
-or apartment dwellings for sale, reduce unsold asking prices over time, and
-preserve the standing homes rather than scrap them to exit a holding.
-Apartment buyers become owners and pay a condo-style shared-cost fee instead
-of rent. Houses are sold as homes; their owners bear their ownership costs.
+The last column calls the actual `RealEstate.plan()` on each snapshot. It is
+**proposed demand, not an accepted, financed or completed order**. At 605 its
+reason was 850 capacity needed for demand plus headroom against 10,060
+capacity. The 142 proposal disproves the supposed one-building housing cap;
+it does not identify which downstream gate would accept that proposal.
 
-Recommendation: account for common building costs explicitly across owned and
-rented units, preserving the agreed parking billing. The fee's recipient and
-any management remuneration must be specified; an owner's existing upkeep
-must not also pay the same shared repairs. An unsold holding still has an
-owner and carrying costs. Markdown pace is to be measured, not a literal
-chosen in this discussion. Listing/asking prices must be distinguished from
-cleared transaction prices. Reconcile intended disposal with HO1's rule that
-the company buys below its rental value, so it does not buy back the stock it
-is trying to sell. The outcome for an occupied rental being offered for sale
-also needs an explicit rule, not an accidental displacement by the transfer.
+At 605 the working unskilled row's rent/take-home was 25.58%, the skilled
+row's 21.87%, college's 9.19% and elite's 2.91%. These are ratios of row
+totals, not medians or the share of families in hardship. Aggregate take-home
+is `HouseholdAccounts.getDisposableIncome()`: wages less tax/contributions/
+premiums plus pensions, benefits and grants. Neither this ratio nor a gross
+income threshold replaces a household's actual residual budget.
 
-## 4. Batches and their proofs
+Cars were 3.44, 3.90 and 18.85 per 100 door-seeking households at these
+samples. `Household.cars` remains capped at one per household. The city
+already has new/used car trading, car credit, fuel, transit choice and road
+effects, but no residential bay stock to compare with those cars. One growing
+city at 605 cannot calibrate mature parking demand. Extra parking capacity
+does not authorize inventing extra cars to fill it.
 
-This order is provisional; model batches and their harnesses are not yet
-allocated. First settle the scope and measure the current model, then prototype
-the proposed mechanics beside the study and specify the model batches and
-their caused harnesses. New catalogue ids must be appended, not renumbered.
+### 2.4 Rent and disposal paths read from source
 
-REU1 is the requested later UI batch (`sh tools/batch-id.sh REU1` passed).
-Its scope is a Real Estate pictogram in the spirit of the industry picture,
-with its exact figures and placement derived from the completed study. Its
-model/view checks must reconcile pictured quantities with the model, and its
-screen must preserve the existing kept redraw behaviour. Its final brief and
-position relative to HO1 will be completed with the implementation order.
+`EconomyManager.repriceHousingCosts()` selects the cheapest per-capacity
+new supply overall and within studio/family segments. `rentRequired()` uses
+`LANDLORD_YIELD = .058`; carry includes maintenance, property tax, interest
+and payroll over owned capacity. `targetFor()` applies scarcity and a carry
+lift, except that a glut can waive the lift; `LEASE_MONTHS = 12` moves rents
+gradually. `BUILD_MARGIN = .33` and `MAINTENANCE_PER_YEAR = .01` already exist.
+None is a new calibration from this study.
 
-The later instruction "after HO" makes the sale/condo-fee disposal mechanic
-depend on home ownership. Separate changes that must precede HO1 from changes
-that use HO1; the initiating instruction to queue the study's batches before
-HO1 cannot place this dependent implementation ahead of ownership itself.
-Its harness must cause both ordinary and distressed disposal, exercise an
-unsold listing's markdown, and prove that a sale preserves dwellings/capacity,
-transfers ownership and relevant debt correctly, conserves money, replaces
-rent by the proper owner/shared costs, and survives a save/load. A mixed
-building and the last unit sold must be included so common costs always have
-an accountable payer.
+`RealEstate.mayRetire()` blocks while families are unplaced or doubled and
+otherwise checks spare doors in the holding's segment. `Game.retire()` then
+scraps the building, releases/sells its land, sells material and settles its
+financing. Its "Sold" message does not mean a standing house changed owner.
+The orchestrator queued the wording correction separately as SD1; this study
+specifies the later change in economic behavior.
 
-## 5. HO1 and work already in flight
+## 3. Outside evidence and its limits
 
-HO1's home-price anchor is the landlord's net monthly rent times twelve over
-the cap rate. It also assumes builders build for sale beyond
-`RealEstate.BUILD_MARGIN`, owners pay `MAINTENANCE_PER_YEAR`, and renters alone
-pay rent. New dwelling types, preferences and parking can change those costs,
-the rental segments and the landlord's value. Exactly which parts this study
-takes over remains open; do not silently implement HO1 here.
+These sources ground distinctions, not universal prices or preferences.
+They were checked on 2026-11-21. No external dataset or copied publication is
+added to game data by this docs branch.
 
-HO1's brief will also need condo/shared-cost obligations in owner budgets and
-mortgage eligibility, a way to preserve dwelling identity/type within a mixed
-building, and an explicit interface for the later sale-instead-of-demolition
-rule. HO2's owner transitions must use actual sale proceeds and timing.
+| Source | What it supports here | What it does not establish |
+|---|---|---|
+| [CMHC, National Occupancy Standard](https://www.cmhc-schl.gc.ca/professionals/industry-innovation-and-leadership/industry-expertise/affordable-housing/provincial-territorial-agreements/investment-in-affordable-housing/national-occupancy-standard) | Bedrooms, relationships and ages affect suitability; a lone parent normally needs a bedroom separate from children. CMHC explicitly treats this as a suitability indicator, not a rule excluding tenants. | An exact NOS for model families that have no children's sex or individual room-sharing data; a new legal studio ban |
+| [Statistics Canada, shelter costs and affordability](https://www150.statcan.gc.ca/n1/daily-quotidien/171025/dq171025c-eng.htm?indgeo=0&indid=14429-2) | The Canadian 30% indicator uses total before-tax income and includes housing utilities, taxes and condo fees. | A rent ceiling, a 30% take-home target, or a mortgage approval rule |
+| [CMHC, GDS/TDS calculation](https://www.cmhc-schl.gc.ca/professionals/project-funding-and-mortgage-financing/mortgage-loan-insurance/calculating-gds-tds) | Its limits are 39%/44%; qualifying payments include insurance-financed principal, taxes, heat and 50% of condo fees. | Permission to charge only half the actual fee to owners, or to double-count heating included in a fee |
+| [Nova Scotia, condominium owners](https://www.novascotia.ca/condominium-owners-your-rights-and-responsibilities) | Common property and exclusive-use rights differ from the unit; fees go to the condominium corporation, assessments follow declared shares, and a manager is a separate service. | An automatic permanent rent to the developer after sale, or a management profit percentage for the game |
+| [Vancouver, 2023 parking study, appendix E section 4.2](https://council.vancouver.ca/20231115/documents/cfsc1.pdf) | Its underground parking construction estimate is CAD 60,000-80,000 per stall including aisles but excluding other service areas; CAD 80,000-120,000 includes those areas. Ramps and layout make costs nonlinear. | A 2026 universal garage price, the cost of a driveway, or a reason to count storage/plant rooms twice |
+| [Reserve Bank of Australia, The Apartment Shortage, section 4](https://www.rba.gov.au/publications/rdp/2020/2020-04/full.html) | Its Australian 2013-18 building data show a modest positive average cost/height relationship; they do not support making height alone overwhelmingly expensive. | A Canadian tower recipe, a universal height multiplier, or the economics of every luxury tower |
 
-The study has recommended through the bus that HO1 wait until those assumptions
-are settled. The orchestrator owns `QUEUE.md` and decides the queue action.
-HT1, HS3 and HC1 precede HO1 at this base; HO4, HO2 and LP1 follow it.
+The NOS and mortgage figures above are facts about their sources, not new
+rules being imposed on this game. CMHC's actual cash budget and its qualifying
+ratio must remain distinct. If later batches import data, check and record
+the dataset's commercial-use licence then; a citation here is not a licence
+for redistributing tables or plans.
 
-Coordinate with FB15's order pricing/equity funding, MC2's mortgage headroom,
-RN2's unsaved `RealEstate.ownedCapacity`, and BO1-H's business-owner housing
-match. OG1 already investigates quantity planners and the builders' backlog:
-housing completions held by that queue must not be attributed to a lack of
-residential forms. No files belonging to these model batches have been edited.
+## 4. The proposed housing model
+
+### 4.1 Buildings, homes, ownership and occupancy
+
+Use a housing registry beside `BuildingManager`, with the physical stacks
+remaining authoritative for completed structures and construction. A holding
+has a stable key, template, completed quantity/vintage, land, shared facilities
+and its schedule of dwelling types. A dwelling type carries bedroom/layout
+category, normal capacity, internal area, quality/amenities and included
+parking rights. Height belongs to the building; penthouse/floor band belongs
+to eligible homes within it.
+
+Keep identical all-rental buildings compact. Split a holding when ownership,
+fees or a unit mix require a distinct common-cost account; partially sold
+buildings must retain a stable building key through the last sale. Keep
+counts of identical homes in lots and sparse household-cell assignments,
+rather than one Java object for every person or front door. A fractional
+household count is the existing aggregate model's expected count, not a
+proposal for several unrelated households to co-own each apartment.
+
+For every physical dwelling lot, ownership, occupancy and listing status are
+separate fields. A listed rental is still owned and may still be occupied;
+a listing never adds another home. Owned vacant units and estate listings
+still have owners and bills. Before HO1, all ordinary homes are RE-owned;
+business-owner families are occupants, not homeowners.
+
+Required invariants, also asserted after save/load:
+
+- Sum of homes by type equals each building's dwelling schedule; capacity is
+  the sum of each type's count times its normal capacity. The founding
+  endowment remains a separately named, non-saleable capacity adjustment.
+- RE-owned plus household/estate-owned homes equals physical homes. Occupied
+  plus vacant equals physical homes. Listed is a subset of those states.
+- Assignments consume one home per household, apart from the explicitly
+  recorded sharing/crowding valves. A home or parking right cannot be used
+  by two matches.
+- A unit sale changes title, the allocated asset/debt books and the relevant
+  fee payer. It changes no building quantity, capacity, land or material.
+- Building common shares are fixed and sum to one across ALL its units;
+  selling a unit never enlarges the remaining units' shares.
+
+The existing two size totals become derived compatibility/reporting views.
+Do not keep an independently mutable owned-capacity total beside a registry
+that can disagree with it. Retain RN2's first-month-after-load debt-share
+regression when replacing that field's authority.
+
+### 4.2 Forms and layouts worth offering
+
+Recommended first design menu below. Areas are internal home areas; storeys
+and counts are experiment candidates. The same size may have ordinary or
+premium finishes. No new catalogue IDs are assigned by a study: append IDs
+when building the accepted recipes, and never renumber existing ones.
+
+| Form | Candidate envelope | Homes and intended distinction |
+|---|---|---|
+| Compact house | 1-2 storeys; one 45-75 sq m home | A small household can buy private space without buying a six-place house |
+| Family house | 1-2 storeys; one 90-160 sq m home | Two/three bedrooms, garden/driveway choice; retain the existing House as the measured comparator |
+| Large house | 2-3 storeys; one 180-280 sq m home | More bedrooms/private space and larger plot; high comfort does not have to mean more occupants |
+| Duplex / terrace | 2-3 storeys; 2 or 6 homes | Attached family housing with less land per door; unit schedules can remain uniform |
+| Walk-up | 3-4 storeys; test 12-24 homes | Lower common-service burden; family-only and mixed variants |
+| Mid-rise apartment | Test 8 storeys, 64 homes | A mixed variant: 16 compact, 40 family and 8 large homes |
+| Taller apartment | Test 20 storeys, 160 homes | A mixed variant: 48 compact, 96 family, 12 large and 4 penthouses, with penthouses limited to the top floor |
+
+For the two mixed examples, start geometric probes with compact 40 sq m /
+2 normal places, family 75 / 4, large 110 / 6, penthouse 140 / 6. The mid-rise
+has 4,520 sq m of private home area; at 80% net/gross efficiency it needs
+5,650 sq m gross, about 706 sq m footprint across eight floors. The taller
+example has 11,000 sq m private area. A 760 sq m gross floorplate with at most
+75% private area leaves 570 sq m per floor: four 140 sq m penthouses fit on
+the top floor. A small packing prototype fits the other homes into nineteen
+floors, maximum private area 565 sq m: two floors with five large homes;
+thirteen with seven family and one compact; one with two large, four family
+and one compact; one with one family and twelve compact; and two with fourteen
+and eight compact respectively. It is an area-feasible schedule, not a
+structural, access or building-code design. The mid-rise can repeat one large,
+five family and two compact homes per floor, exactly 565 sq m private area.
+
+Every accepted recipe must reconcile unit area + circulation/core/plant,
+floor-by-floor capacity where constrained, building footprint, plot and open
+space. Surface parking must fit the remaining plot including aisles/access;
+underground parking needs excavated levels, ramps and construction work.
+"Height x footprint" cannot silently become all rentable floor area.
+
+Bedrooms distinguish normal suitability from a simple headcount. Recommend
+studio, one-, two-, three- and four-plus-bedroom categories, with room-sharing
+targets inferred only as far as `FamilyStructure` supports them. A couple
+and two children need a different layout from four unrelated adults. Report
+known bedroom shortfalls and uncertain cases; do not invent sexes or exact
+NOS compliance. Keep the existing adults-only studio rule until its
+replacement is explicitly accepted. A less suitable home can remain a
+recorded emergency compromise, as current crowding already is.
+
+### 4.3 Choice, affordability and stability
+
+Match by household cell (shape, tier and available stage), retaining the
+assignment's dwelling type and tenure. First keep valid incumbent tenants
+and owners. New households and required movers then compete for available
+homes; maximize placements with suitable affordable homes before using
+preferences to distinguish alternatives. Continue explicit sharing/crowding
+outcomes and their reasons. Pro-rata ties and deterministic keys must not
+make enum order or a rich tier's early pass a hidden entitlement.
+
+For a voluntary move, compare the FULL recurring housing bill with regular
+take-home left after the household's essential basket and existing fixed
+obligations/debt service. Count separately charged parking and utilities;
+avoid counting anything already in rent or the common fee again. Wealth
+can supply a down payment and a finite cash buffer; it is not permanent
+monthly income. Existing shortfalls use the household funding/arrears paths,
+not a rule that evicts every household on the first unaffordable month.
+
+Among feasible homes, preferences trade space/layout, private garden,
+quality, accessibility and shared amenities against cost. Recommend a small
+set of preference profiles within cells rather than an elite-only housing
+class. Higher resources permit more space or quality; a wealthy retired
+couple can prefer an accessible apartment while an affluent family prefers
+a garden. A penthouse preference can fall back to a luxury apartment or
+ordinary home. Profile shares, utility weights and voluntary move pace are
+open parameters; none has been fitted here.
+
+Owners keep their homes when their tier or stage changes. A household change
+may make a move desirable; it does not automatically sell a fraction of
+capacity and credit cash. HO2 carries the actual ownership and mortgage lots
+and closes a trade only when another party buys. Keep the current home
+until a feasible move or the existing forced-sale process resolves it.
+
+At death or departure, put an unsold home's title, mortgage and carrying cash
+in an estate/outbound-seller holding until closing. Do not leave those stocks
+in an empty household cell where normal folding would hand them to unrelated
+residents. An outbound seller receives the actual net across the border when
+paid. A holding without cash accrues the proper arrears/default claim; its
+fees are not invented income for the common account.
+
+Measure unmatched demand separately as no suitable layout, no affordable
+offer, no physical vacancy, or a home still on site. Also show crowding,
+voluntary movers and vacant premium stock. A household considering three
+alternatives is one household's demand, not three shortages.
+
+### 4.4 Rents and sale values by the home offered
+
+Use a bounded set of comparable dwelling classes, including size/layout,
+quality and included rights. Buildings can contain several classes. Quote
+rent and sale price **per dwelling**, with per-capacity figures as derived
+comparisons; charging by residents would make babies pay rent again.
+
+Allocate structure, land, shared facilities and included parking to homes
+with explicit, reconciled weights. Replacement-cost comparisons must retain
+costly quality and yard differences. The current gross rent anchor is cost
+times `.058 / 12`; preserve it as the initial comparator, rather than silently
+redefining `.058` as a net yield and adding every existing operating cost on
+top. Fit any replacement anchor against the measured current burdens first.
+
+Each comparable class has its own effective demand/vacancy signal and lagged
+rent, with substitution through the choice model. Keep the current principle
+that scarcity can raise rents beyond affordability and a glut can lower them
+below cost. Actual budgets limit purchases and voluntary moves; they do not
+cap the landlord's asking rent. Check any carry lift by comparable stock and
+retain the glut waiver, so empty premium units cannot force unrelated
+ordinary tenants to cover their target return.
+
+For HO1's value, use the rent the particular home could earn less its actual
+operating burden, property tax, vacancy allowance and allocated management
+cost. Deduct shared costs once. Do not subtract mortgage interest before
+capitalizing this net operating income; the cap rate already prices the
+investment and its rate sensitivity. Separate optional parking cash flows
+from the dwelling unless the relevant space/right is transferred with it.
+Keep HO1's chosen cap-rate pass-through of 0.4 as its experiment baseline.
+
+Recommend offer-level settlement first: allocate eligible buyers to actual
+listed homes at their posted asks, respecting credit, budgets, preferences,
+incumbency and parking rights. Unmatched offers stay listed; allocation must
+not count one buyer against several classes. Every closing price is the
+accepted offer, and the transaction index is calculated only from closures.
+HO1's supply/demand calculation can guide normal offer formation, but must
+not force all offered stock to sell. Its estimated twelve-month price lag
+belongs to normal quote updates, not to changing an agreed closing price or
+raising an unsold exit ask. Re-measure HO1's rate experiment with this market;
+the old homogeneous prototype's elasticity is not a new model result.
+
+### 4.5 What builders choose, and what density costs
+
+Start with finite, physically checked unit-mix and parking variants, not an
+optimizer free to create an arbitrary number of tiny homes. Evaluate how many
+homes of each type could actually fill, including competing existing vacant
+homes, tenure and the pipeline at expected opening. Price the complete mix's
+expected occupied rent or sale proceeds against the complete project's cost.
+Count an unlet penthouse as carrying stock, not full rent at completion.
+
+Cost every variant through the real builder quote, materials, local wages,
+land, construction points, queue wait/interest, staffing, utilities, tax/
+rebates and maintenance. Check lifts, pumps, corridors and shared facilities
+where a recipe includes them; do not add a generic tower penalty on top of
+costs already in those inputs. The density experiment in section 7 shows
+why neither "tall is cheapest" nor "tall is always uneconomic" follows.
+
+Retain quantity planning. If a single template selection per month becomes
+a measured barrier to serving different shortages, coordinate a portfolio
+decision with OG1 instead of rewriting the common order API speculatively.
+OG1 traces queue, depot-on-site, backlog, staff, land and foreign crews;
+FB15 owns door-price order sizing/funding, and MC2 mortgage headroom. A study
+of forms must not claim their fixes as its own.
+
+### 4.6 Year, technology and the wage-following home
+
+Use the existing `since`/research and recipe framework for availability;
+do not create a second year system. Distinguish whether a form can be built
+from what equipment/amenities it currently includes. A taller building does
+not automatically mean luxury; a modern calendar does not retrofit every
+old home's plumbing, lift or finish for free.
+
+Jerus's controlling choice is housing costs following wages, measured against
+take-home too, then revisited after HO1. Apply the selected R1g path to new
+residential recipes without a second scaling pass. Land remains the land
+market's price. Keep physical vintage/features distinct from indexed
+replacement costs.
+
+Prior evidence, not a measurement rerun here: `batch/R1g` notes sections 2,
+3 and 5 derive founding `homeScale` 0.289185, scaling residential cash,
+materials, points and upkeep, **not land**. Section 3 describes the held
+founding scale; section 5 also compares a calendar walk and a posted-wage
+walk. The latter's documented run stopped at month 2292 (exit 143), had
+roughly .32 rent/take-home at 60, and warns that posted wages ran ahead of
+households' pay. Those alternatives and the incomplete run do not override
+Jerus's wage-following choice or establish a final take-home calibration.
+This study inspected R1g at `6e6834c47`; later branch results must be refreshed
+before implementing recipes.
+
+## 5. Parking: physical supply and the agreed bill
+
+Track private bays belonging to a home, included exclusive rights to shared
+bays, and separately let shared bays. A driveway/garage uses plot or built
+space and construction/repair inputs. A shared garage/lot also has access,
+operating costs and a payer. Neither building height nor a car automatically
+creates a parking space.
+
+| Provision | Housing/parking bill | Capacity treatment |
+|---|---|---|
+| Private driveway/garage belonging to a home | Included in rent or purchase price; owner bears its ownership costs | Attached to that home; cannot also be let from the shared pool |
+| Shared space explicitly included with a dwelling | Right included in its housing price; no second space rent | Reserved from physical shared supply whether used or not |
+| Other shared space | Separately rented | Allocated from the remaining pool |
+| Additional space | Separately rented if demanded and available | Uses another physical bay; current one-car stock supplies no automatic extra-car demand |
+
+For a shared physical supply S, included reservations I, separately leased
+spaces L and unallocated spaces V, require **S = I + L + V**, all nonnegative.
+Private bays are a separate stock. An unused included right remains reserved
+unless an explicit release/subletting policy is later chosen. Never sell or
+lease that same right twice.
+
+In a wholly rented building, RE owns the shared facility and receives its
+optional parking rent. On condominium formation, the shared facility and
+those receipts follow the common account unless a separately owned parking
+asset was explicitly created and priced. Recommend common ownership first;
+do not leave RE collecting all parking income after the owners inherit all
+its expenses.
+
+Rent parking against actual shared capacity/demand with its own carrying
+cost and construction alternatives. A scarce bay can be dear; a vacant bay
+still costs its owner. Test parking variants at several demand levels, not
+one obligatory free bay per apartment. No parking ratio, stall footprint or
+garage price is accepted yet. A builder can provide a surface lot only if it
+fits the site's remaining land; already purchased plot area is paid for once.
+
+Feed the recurring parking quote into housing and Motoring's affordability
+comparisons, and reserve a bay atomically when a new car or move needs one.
+Keep the one-car ceiling in this work. Do not delete existing cars when bays
+are insufficient: report unserved parking demand and let ordinary household
+choices/stock turnover adjust. Whether to refuse a new car without secured
+parking is an **open behavior call**, not a hidden extension of RES4. It needs
+a caused car/parking/transit fixture if selected. A street-parking market or
+additional-car market would be further scope, not free overflow capacity.
+
+## 6. Ownership, common costs and disposal after HO1
+
+### 6.1 The common account from the first apartment sale
+
+Recommend a ring-fenced building account, owned by its unit owners. It is a
+book in the housing model, not a new sector in `Sectors.KEYS`. RE can manage
+it for a disclosed fee. Common expense receipts are not all RE's income;
+only the management service paid to RE is its management revenue.
+
+Allocate common cost with fixed declared shares, initially based on unit
+area and explicitly assigned rights/cost groups. Ordinary upkeep of the
+building is split into common structure/facilities and private unit work;
+their sum must equal the physical repair order. Private garages/interiors
+stay with their home. Do not charge HO1's `.01 * entire unit value` plus a
+fee paying for the same roof, lift or shared garage. Property tax similarly
+has one assessed asset and one payment path, with common land allocated once.
+
+The account pays shared repair orders, common utilities and the contracted
+management service. Dedicated variable parking costs can be assigned to the
+parking cost group. Other shared parking receipts reduce the remaining
+common call. For shares alpha_i summing to 1, a simple first version is:
+
+`total owner fees = max(0, shared expense budget + management - parking receipts)`
+
+`unit fee_i = alpha_i * total owner fees`.
+
+Show gross expenses, parking receipts, fees and account cash separately.
+If receipts exceed the call, retain the surplus in the account and lower
+subsequent calls; do not silently pay it to RE. A reserve contribution can
+later be a distinct saved line; the numerical prototype uses zero reserve
+accumulation. Existing monthly repairs are not a second reserve contribution.
+Start management remuneration from the actual service/staffing cost; a profit
+markup is an open calibration, not an invented permanent fraction of value.
+
+Every title holder pays its share, including RE for **all unsold units**, vacant
+or rented. A renter pays RE the agreed gross rent; RE pays that unit's common
+fee. An apartment owner pays their common fee, unit-specific tax/private work,
+mortgage and applicable optional parking, with zero rent. A house buyer owns
+the house/plot/private provision and pays its actual owner bills.
+
+After the last unit sells the account still exists, every common bill remains
+funded, and its manager is still paid for the agreed service. RE loses the
+last owner's obligation and any rent on it; it does not demolish or erase
+the building, its common fund, shared parking, staffing requirement or bills.
+If RE ceases managing, obligations transfer to another explicit payer/operator
+before removing its management payroll. Unpaid common fees remain receivables
+and cash shortfalls; do not pretend an unpaid assessment funded a repair.
+
+### 6.2 Sale instead of scrapping
+
+Give financial retirement a distinct disposal action. It creates or maintains
+a listing for a house or individual apartment lot, with seller, title key,
+occupancy status, reason, initial/current ask, listing age and exit intent.
+Ordinary and distressed exits go through it. Neither an asking reduction nor
+an unsuccessful sale releases land, produces salvage or changes homes.
+
+Initialize an ask from comparable offers/trades and the home's attributes,
+not a mandatory rental-value floor. Reduce an unsold ask on successive
+marketing reviews. An illustrative rule is `ask[t+1] = ask[t] * (1 - m)`;
+the 0.5/1/2% monthly experiments below are sensitivities, **not a selected
+markdown rate**. An inflation update must not keep raising an exiting unit's
+ask while the policy says lower it. Currency redenomination scales its money
+and tick together. At the smallest positive transaction tick an unsold home
+remains held and maintained; there is no demolition timeout or salvage floor.
+Even a very low ask does not remove a buyer's common-fee burden or credit
+constraint, so the market must permit the holding to remain unsold.
+
+Listing asks and cleared transaction prices are different series. A month
+with no trade has zero transactions and no new transaction-price observation.
+An ask markdown alone cannot lower every homeowner's cleared price, increase
+an estate's cash, or pay a bank. Use an explicit stale-price indicator rather
+than inventing a trade in a thin segment.
+
+Keep HO1's normal landlord buying below net rental value and selling above it
+for investment decisions. An **intentional exit** may accept less than that
+value; it must not then bid against its own listing. Freeze acquisitions of
+that exiting holding, including a round trip through a household in the same
+clearing. Keep its exit intent until the holding has been disposed of or a
+separate, explained strategy decision changes it. A later genuine investment
+in other homes remains possible; no automatic buyback undoes the disposal.
+
+Seller proceeds pay the released secured debt first. Selling a unit requires
+the lender to release that unit's collateral and the allocated land/common
+interest. Allocate book value and outstanding building debt coherently, then
+remove the seller's corresponding asset/liability once. A short sale needs
+seller cash or the lender's agreed loss/default resolution. **A voluntary
+markdown is not automatically a city insurance claim.** Existing insured-loss
+eligibility must be checked. Remaining RE debt cannot become a condo fee or
+an undisclosed liability of unit buyers. The last sale closes the last
+collateral allocation without deleting shared assets.
+
+Existing-home sale payments are asset transfers, not new building output.
+Management is a service; mortgage principal and reserve transfers are not
+rent or profit. Include new accounts/flows in `MoneyAudit` and the saved
+statements. Do not manufacture cash rent for owner-occupiers to keep the old
+housing sales total unchanged.
+
+### 6.3 Occupied homes and monthly timing
+
+Recommended initial scope: the sitting tenant can buy at the current offer
+if eligible; otherwise the tenancy continues at its rental terms. External
+owner-occupier buyers use vacant units. An occupied listing can keep marking
+down while its tenant cannot buy. RE keeps its carrying bills. Marketing or
+a change of title must never silently evict a tenant or let two households
+consume the same unit. Selling tenanted homes to new private landlords would
+require a separate rental-owner model; HO1 does not already provide it.
+
+For monthly accounting, bill the opening tenure/parking positions for that
+period. Close purchases/moves at the housing-market seam after Motoring and
+before luxury; the resulting positions face the next period's recurring
+bills. Verify the actual call graph when implementing: in this base that
+cash seam is inside `Game.startOfMonthUpdate()`, reached by `nextMonth()`.
+`nextMonth()` then calls `SimulationEngine.simulateMonth(this)`: these are
+consecutive phases of one month, so do **not** put a second purchase settlement
+in the engine. Update its housing synchronization/derived figures and the
+load rebuild consistently. The old HO1 brief's instruction to add the action
+in both places needs that correction. A load rebuilds state, never settles a
+sale, advances a markdown or renews a lease.
+
+Reserve/release housing and parking together at closing. A tenant who buys
+their home stops rent and starts owner bills at the same boundary. Use the
+same common budget for owners and RE; do not bill both for the same unit-month.
+HO1 must disable physical financial demolition of residential holdings on
+shipping, even if RES5's full listing policy follows in the next batch. During
+that short interval, hold the housing and its bills. Do not leave a shipping
+gap where ownership exists but financial exit still scraps people's homes.
+
+## 7. Arithmetic prototypes and what they establish
+
+These are separate from the model probes. They check the proposed accounting
+and sensitivities with explicit inputs; they predict neither city growth nor
+market-clearing prices.
+
+### 7.1 A density tradeoff, not a fitted tower
+
+Use the current Low-Rise's present-day structure cost per door, 269,555.56,
+and plot per door, 952.38 sq ft, as a comparator. Assume another form needs
+200 sq ft of plot per door and costs 25% more structure per door. These tower
+inputs are estimates for the experiment, not sourced recipes. Exclude tax,
+waiting/finance, utilities and operating cost from both columns.
+
+| Land dollars per sq ft | Low-rise comparator | Denser form, +25% structure | Comparator with 0.5 assumed surface bays/home | Denser form with 0.5 assumed underground bays/home |
+|---:|---:|---:|---:|---:|
+| 0 | 269,556 | 336,944 | 272,056 | 371,944 |
+| 50 | 317,175 | 346,944 | 319,675 | 381,944 |
+| 150 | 412,413 | 366,944 | 414,913 | 401,944 |
+
+Parking columns assume 5,000 per surface bay and 70,000 per underground bay;
+the surface figure is an uncalibrated input. Both variants must still fit
+their site geometrically; the current catalogue does not establish that.
+Existing plot area is not bought again in the calculation. The underground
+example lies within the 2023 Vancouver parking-only range, which does not
+make it a transferable current construction quote.
+
+Without parking, equal capital cost occurs at land 89.57/sq ft. With these
+parking assumptions it moves to 132.76. At zero/50% structure premium, the
+no-parking crossover is respectively 0/179.14. The result is the formula
+`extra structure cost / land saved`, not evidence for a particular premium.
+Full game quotes, lead times and operating bills must decide the recipe.
+
+### 7.2 Fees across sold and unsold units
+
+Invent four homes of areas 40, 40, 80 and 120. Common expenses are 280/month,
+management service 28 and separate shared-parking receipts 16; no reserve is
+accumulated. The fee call is 292, divided by fixed area shares. The same
+users' 16 parking payment is not also billed as an included-space charge.
+
+| Homes sold, in that order | Household owner fees | RE fees for unsold homes | Parking receipts | Paid to manager | Common-account net after 280 expenses |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 0 | 292 | 16 | 28 | 0 |
+| 1 | 41.714286 | 250.285714 | 16 | 28 | 0 |
+| 2 | 83.428571 | 208.571429 | 16 | 28 | 0 |
+| 3 | 166.857143 | 125.142857 | 16 | 28 | 0 |
+| 4 | 292 | 0 | 16 | 28 | 0 |
+
+The last unit's sale shifts its 125.142857 fee to its buyer; other units'
+fees do not jump. The manager's 28 remains a service receipt, not 292 of
+rent. If it costs the manager 28 to provide the service, that receipt is not
+28 of profit. The common account pays each underlying bill once.
+
+An illustrative unit sale at 120, buyer cash 6, new loan 114, released seller
+loan 100 and book value 80 gives buyer cash -6, bank cash -14 and seller cash
++20: sum zero. Seller gain is 40; net proceeds after debt are 20. One dwelling
+exists before and after. This identity does not prove the game's insurance,
+tax or collateral release paths; HO1/RES5 must cause those in the model.
+
+### 7.3 Unsold asks
+
+| Illustrative monthly markdown | Initial ask | After 6 months | After 12 | After 24 |
+|---|---:|---:|---:|---:|
+| 0.5% | 100 | 97.0373 | 94.1623 | 88.6654 |
+| 1% | 100 | 94.1480 | 88.6385 | 78.5678 |
+| 2% | 100 | 88.5842 | 78.4717 | 61.5780 |
+
+With no buyer, all have zero trades, unchanged physical homes, no realized
+sale proceeds and no fresh transaction price. Holding costs continue. Select
+a pace from a caused and played listing experiment in RES5; the table alone
+does not show a buyer's willingness, the right starting ask or a safe fee.
+
+## 8. Jerus's calls, accepted and open
+
+**★1 Mixed dwellings in some buildings — accepted.** Jerus answered the
+explanation with "thats a great idea". Permit some mixed apartment forms and
+some uniform ones. The schedules and counts in section 4.2 remain candidates.
+
+**★2 Preferences including the elite — requested; exact rule open.** His
+words: "the elite may prefer different types". Recommend flexible preferences
+for space/garden, quality and amenities subject to real budgets, with several
+profiles within tiers. No exclusive elite type. Neither "elite always buys a
+mansion" nor fixed profile shares has been accepted or measured.
+
+**★3 Garages/parking — scope and billing accepted; quantities/effects open.**
+His words: "garage/parking lot factored in, cause cars are a thing right";
+he accepted the explained billing with "ok". Private provision is in the
+home's price; shared spaces are separately let except explicit included
+rights; extras separately charged. Recommend the conserved rights ledger,
+physical costing and one-car ceiling in section 5. Ratios, stall dimensions,
+prices, overflow and a no-parking refusal for new car purchases remain open.
+
+**★4 The pictogram UI — accepted later.** Jerus: "after this also a ui update
+for real estate right? such that you know how industyr has pictograms and
+stuff, i feel like it would be good to implement one for real estate as well,
+but thats later after this study". REU1 follows the settled model. No UI work
+is included in this docs branch.
+
+**★5 The 1900 home — standing choice.** Costs follow wages, measured against
+take-home too; revisit after HO1. Recommend retaining that choice and R1g's
+unscaled land distinction, not substituting its held/calendar alternatives
+or fitting every new form to the historical 0.289185 founding figure.
+
+**★6 Disposal after home ownership — accepted requirement.** Jerus: "after
+HO real estate instead of demolishing it should just sell either the units
+of the apartment and charge a monthly fee like a condo but not rent, or sell
+its houses"; "if no one then lower and lower prices, but not demolish".
+List standing houses/units, mark down unsold asks and preserve them. Owners
+pay owner/common bills, not rent. Exact exit triggers, listing pace and
+financial resolution are recommendations to calibrate, not accepted literals.
+
+**★7 Layout, forms, density and year — authorized study questions; mechanics
+open.** Recommend the explicit room/area/quality model and finite form menu,
+with physically checked mixes and the current recipe/year framework. Treat
+bedroom suitability as a target where data supports it, distinct from the
+current studio eligibility rule. Calibrate construction/work/utilities through
+model quotes. A geographic neighbourhood simulation is optional further
+scope: current zoning allocates amounts, not neighbourhood locations.
+
+**★8 Occupied units offered for sale — open; recommended tenant retention.**
+Offer the sitting tenant a purchase; keep renting to them if they cannot or
+do not buy. External owner-occupiers buy vacant homes. No forced move merely
+to facilitate disposal. The consequence is that an occupied holding may stay
+on RE's books for a long time. A private buy-to-let buyer would require more
+ownership scope than HO1 currently has.
+
+**★9 Common-fee recipient and last sale — open; recommended common account.**
+Owners, including RE on unsold units, fund fixed shares of the building's
+common account. It pays costs and an explicit RE management service. Owners
+do not keep paying rent after purchase; the manager does not take the whole
+common fee as profit. Start from actual service cost and make any profit
+markup a separately justified parameter. Section 7 proves the bookkeeping,
+not an accepted management price or reserve policy.
+
+**★10 Implementation boundary — recommended.** RES2-RES4 establish the
+foundations before HO1. HO1 includes the first owner's actual common-cost
+bills and the residential demolition guard. RES5 then supplies deliberate
+disposal/markdown policy; HO2 uses its real listing/closing outcomes. This
+honors the later "after HO" instruction. Review this order with the design,
+including the proposed posted-offer closing rule in section 4.4; these are
+not instructions to start HO1 or implementation tonight.
+
+For morning review, the main new choices are ★8 tenant retention, ★9 the
+common account/manager, and the candidate form/layout direction in ★2/★7.
+Exact mixes, costs, preference shares and markdown rates should come back
+with their model calibration evidence; they are not silently approved here.
+
+## 9. Ordered implementation and caused proofs
+
+IDs RES1, REU1 and RES2-RES5 pass `tools/batch-id.sh`; no implementation row is
+being inserted by this study branch. The orchestrator owns the queue, gates
+and global lanes. Before starting, refresh the listed moving branches and
+the applicable baseline, and resolve overlaps by the contract.
+
+| Order / batch | Scope and likely source changes | What its caused harness must prove |
+|---|---|---|
+| **RES1, this study** | This file and `docs/studies/README.md`; docs only, no trace change | Source/probe provenance, physical/accounting examples, dependency and acceptance consistency; docs fast checks |
+| **RES2, physical housing foundations** | `BuildingsTemplate`, `BuildingCatalog`, `BuildingManager`/`BuildingsStacks`; new housing registry/lot definitions; `DataSave`/load; `RealEstate` compatibility getters | Existing three schedules reproduce their exact door/capacity censuses including the separate founding adjustment; an explicitly mixed fixture preserves every type through completion, splitting and save/load; sale/title primitives move no structure/land/material; owned totals and RN2's first-month debt share cannot diverge |
+| **RES3, home choice, typed rents and forms** | `FamilyModel`, `HouseholdBalance`/accounts, `RealEstate`, `EconomyManager`, finite new `buildings.json` recipes and their actual builder/utility inputs; registry assignments | Same headcount/different layout outcomes; scarce family stock with empty compact homes; unaffordable premium vacancy; a high-resource household choosing quality and compromising when unavailable; incumbent stability; fair ties; no demand counted across alternatives twice; per-class rent differs where justified and falls in glut; an empty premium project does not earn full rent; mixed project's inputs/area/floor limits reconcile |
+| **RES4, parking supply and bills** | Housing registry/templates/recipes; `HouseholdBalance`, `Motoring` budget inputs, shared-parking quote/leases, saved flows and audit | Private/included/shared/extra cases charge once; unused included rights cannot also be rented; exact S=I+L+V; full lot refuses another lease; bay acquisition/release on move or sale is atomic; construction consumes land/work/cash; recurring parking reaches budgets and optional receipts the owner; existing car stock is conserved and the one-car cap unchanged; low/high car demand and no-car households |
+| **HO1, owning these homes** | Existing HO1 classes plus title/assignment/common-account interfaces described below | Canadian credit tests on actual unit price and bills; owners pay zero rent and all owner/common obligations; normal landlord buys/sells around unit-specific net rental value; first/partial/last unit sales; lender collateral release and gain/loss; common costs still paid; no financial housing demolition; exact money and save/reload |
+| **RES5, deliberate disposal after HO1** | `RealEstate` exit decisions, `HomeMarket` listings/clearing, central financial-disposal paths in `Game`/credit, fee/parking/title books and history | Ordinary and distressed exits preserve buildings/land/capacity and produce no salvage; unsold asks fall without fictitious trades; tenant purchase/refusal/vacancy outcomes; no own-listing bid/buyback loop; a sale below rental value still closes when funded; a short sale cannot silently use insurance or pass RE debt to owners; last-unit costs and management survive; reload during unsold marketing gives the same next markdown and transaction |
+| **HO4, HO2, LP1** | Existing credit levers, owner life transitions/screens, then loan packages | Keep their accepted order constraints; HO2 trades/estates/leavers wait for actual closing and pay mortgage first; failed sale leaves title/carry with its owner; LP1 packages the actual resulting loans after those prerequisites |
+| **REU1, housing pictogram** | Pure housing view/picture and `ui/SectorScreen` kept Real Estate card/pane, using `IndustryView`/`IndustryPicture` and `industryCard`/`IndustryPane` as references | Public model figures reconcile to registry, cash statements and saved flows; empty, mixed, parking-short and fully sold fixtures; kept nodes/scroll survive month redraw; render/page adds no simulation changes |
+
+RES2 builds data/compatibility first; activate new forms only with RES3's
+matching and prices, not as luxury pictures earning the old undifferentiated
+rent. RES3 and RES4 move the trace. RES2 must measure whether its compatibility
+path is identical, and say so rather than assume it. HO1/RES5 also move the
+trace and require their appropriate money/save review and ensemble. Run one
+measurement JVM at a time, obey local gate/dry-run restrictions and memory
+limits, and send gates/ensembles to the box under the contract.
+
+Each fixture must cause both sides of its threshold against the model's own
+constants. Include `HousingCheck`, `HousingDoorCheck`, `BuildingDataCheck`,
+`HouseholdCheck`, `CarCheck`, `MortgageCheck`, `InvestCheck`, `MoneyAudit`,
+`SaveFileCheck`, `ReadPathCheck` and RN2's reload premise where affected;
+actual picks and nightly requirements follow the final diff. A 142-building
+proposal is not a replacement for proving funded completion through OG1.
+
+Use sparse assignments and compact identical holdings. Measure allocation,
+pricing, fee settlement, save size and reload on a small and a large model
+city before choosing a flow solver or expanding preference profiles. No
+runtime or memory improvement is claimed by the arithmetic prototypes.
+
+### REU1's concrete replacement brief
+
+The `4f1056f11` queue note already distinguishes the docs study from the
+future model batches. Once reviewed, make its tentative dependencies precise:
+wait for this reviewed study, RES2-RES4, HO1 and RES5, then show the whole
+requested housing model.
+It need not wait on LP1. Coordinate the common screen file with HO2's screens;
+its position among unrelated queue lanes remains the orchestrator's.
+
+Draw buildings containing the actual dwelling-type mix and tenure split,
+with proportional/count-labelled home pictograms; distinguish vacant,
+occupied, listed and on-site homes without counting listings as extra doors.
+Show layout shortages, affordability exclusions and crowding, class rents,
+actual sale transactions separately from unsold asks/age, owner common fees
+and who receives them, plus private/included/let/free parking. Explain costs
+with the actual receipts/expenses and manager income, including the last
+unit sold. Avoid a tile per resident/door in a large city: aggregate counts
+and provide the exact legend. Every number comes from a model/view getter;
+`Kept` changes the month on the existing nodes. No neighbourhood map or new
+economic formula belongs in the screen.
+
+## 10. Precise amendments and takeovers in HO1
+
+The existing authority is [spec-credit-housing section 2.3 and section 7](spec-credit-housing.md#23-owning-a-home-household-householdbalance-new-homemarket-realestate-bank).
+The following is a replacement contract for the affected parts, not an edit
+to that brief or an implementation in this docs branch.
+
+| Existing HO1 assumption | Required replacement / ownership of the change |
+|---|---|
+| An owned home is a studio/family segment capacity share; physical doors stay solely the landlord's portfolio | RES2 supplies physical identity/mix; HO1 records title and household assignment by dwelling lot. All homes remain in physical totals, but only RE-owned assets/cash flows remain its investment portfolio. Segment capacity is a derived summary. |
+| One home price per capacity in each of two segments | RES3 supplies comparable dwelling classes; HO1 offers/clears actual homes with their included rights and common obligations. Preserve a city transaction index only as an observed summary, not another independently traded price. |
+| P* makes buyers' capacity equal everything offered; the price lags toward it | Recommend matched posted offers: only eligible, funded buyers close, at accepted asks. The old equilibrium calculation can guide ordinary quotes; its lag is not a fictitious transaction and does not make every listing sell. Actual transactions alone update the cleared-price index. Re-measure the rate response. |
+| Household cells gain seven averaged owner slots | Carry owner counts and mortgage balance/rate-weight/month-weight/arrears by the assigned ownership lots, aggregate to cells for reporting, and move them with the right people. Seven slots alone cannot distinguish two homes' fees/rights or collateral. Choose the saved schema with the registry; do not duplicate authoritative debt. |
+| Owners pay `.01 * home value` upkeep, and landlord bills fall by owned capacity | Partition physical private/common repairs and shared payroll/utilities once. HO1 creates/funds the common account on the first apartment sale; RE pays unsold shares and renters pay gross rent only. RES5 extends the exit/listing policy, not the first existence of condo fees. |
+| `V_L = net monthly rent * 12 / cap rate` | Keep the formula and chosen pass-through, but use the actual comparable home's net operating income, correctly allocated expenses/tax and transferable included parking rights. Do not capitalize a free common-cost liability or subtract financing interest twice. |
+| Landlord sells above and buys below V_L | HO1 keeps normal investment behavior; add an explicit exit-intent interface. RES5 allows intentional exits below V_L and suppresses self-bidding/reacquisition of that exiting holding. |
+| Builders sell beyond cheapest cost plus BUILD_MARGIN, finishing in 18 months | Use the actual mix/parking quote and profit test with the existing margin as the baseline; completed, funded physical pipeline only. The 18-month estimate is superseded by real builder work/queue completion, coordinated with OG1/FB15. Never create a second set of finished homes by a timer. |
+| GDS/TDS on payment, tax and heat | Keep accepted 5% down, insurance under 20%, 39%/44%, +2 stress and the agreed term rules. Add 50% of the actual condo fee to qualifying ratios per CMHC; the household CASH budget pays 100%, plus full applicable optional parking/private costs. Identify heat included in a fee so the same heat is not also billed separately. Do not reinterpret gross income as take-home. |
+| Selling a home credits the landlord's till / estate cash at the month's price | Close an identified title against a real buyer; release seller collateral, pay secured debt first, allocate book gain/loss, transfer common/parking rights and then pay net proceeds. A listing or markdown pays nobody. |
+| Owners' exits trade capacity immediately on ageing, death or leaving | HO2 lists/trades their actual homes and carries title/costs until closing; estates pay the mortgage first, leavers take actual net proceeds. No cash is invented for an unsold listing. |
+| HO1 requires no save bump because old owners are zero | Reassess against the new inventory, assignments, common/parking accounts and saved monthly flows. Zero owners alone no longer proves correct reading. Follow the existing rule: bump SAVE_FORMAT and OLDEST_LOADABLE_FORMAT if the new schema would read an old save wrongly; no conversion code. |
+| After `motoring.month()` at the old Game.nextMonth step 34; also add the action to SimulationEngine | Settle once inside `startOfMonthUpdate()`, after cars and before luxury. `nextMonth()` then runs `SimulationEngine`, which must synchronize derived housing data without a second trade. Save/rebuild only restore state. Opening-period bills and closing transfers follow section 6.3. |
+
+### Work already queued or in flight
+
+- **HT1, HS3, HC1** are the queue's existing prerequisites before HO1. HS1/HS2
+  household/stage machinery already exists in this source base; use available
+  stages rather than restoring the old study's temporary shape-only model.
+  HO4 and HO2 still follow HO1, LP1 follows its loan/lifecycle prerequisites.
+- **BO1-H:** include business-owner families in RES3's actual housing match
+  and rental bills. It is not home ownership. If BO1-H ships first, preserve
+  its seeker group; otherwise explicitly agree the takeover with its owner.
+- **RN2:** let its owned-capacity persistence fix ship independently if ready.
+  RES2 retains its reload finding and replaces/derives that total coherently;
+  never erase its first-month debt-allocation proof as redundant.
+- **FB15:** local tip `5eb55e7c5` changes Game order pricing/equity funding,
+  door refusal trimming and its credit/harness support, not RealEstate. Its
+  door quote is the price the later builder-mix experiments must use.
+- **MC2:** inspected tip `a7ab9dfba` changes Bank/BusinessDebtManager growth
+  headroom and BankFailureCheck, not RealEstate. Do not fit housing recipes
+  around a mortgage refusal this batch is already repairing.
+- **R1g:** refresh its selected wage-following cost path and new founding
+  default before recipe/era calibration; this study's city probe deliberately
+  pins today's founding. Its stopped posted-wage run is prior evidence.
+- **OG1:** owns the backlog/depot/staff/land/quantity bottleneck investigation.
+  Share typed gaps, project quotes and measured completion reasons with it;
+  do not independently alter the builders' queue from a housing-form study.
+- **SD1:** owns the misleading generic "Sold" message. It is separate from
+  RES5's real housing transfer and must not run beside its disposal edits.
+
+Do not run overlapping model batches on the shared month, matching, credit
+or screen paths. The dependency order here is architectural, not permission
+to edit main, QUEUE.md, versions, changelog or gate records. The complete
+study is for Jerus's satisfaction first; then request docs-only untagged
+shipping with `gate --no-tag` and the agreed ordering. No model, UI, ensemble
+or user save has been changed by this study.
+
+## 11. Reproduction and validation record
+
+The originating session's `./batch-check.sh --fast` passed on this worktree
+(compile, maps, zero firm Stale findings); only generated date changes were
+restored. No code change justified repeating that baseline. Study probes
+compiled separately into `target/res1/classes`, ahead of existing
+`target/classes` on the runtime classpath, without replacing model classes.
+Raw short-row logs are `target/res1/pure.txt` and `city.txt`; they are not
+tracked deliverables. The portable model probe below is included so the
+findings survive cleanup of scratch files. It uses no user save slots.
+
+Save as `target/res1/RealEstateProbe.java`, compile with the existing
+`target/classes` and jars from `target/classpath.txt`, and run its no-argument
+mode for fixtures or `city` for the observation run. On Windows quote each
+`-D` argument in PowerShell. Before EACH compiler/measuring JVM, check
+`Get-Counter '\Memory\% Committed Bytes In Use'` is below 75%; wait otherwise.
+Use only one probe JVM, never beside a local gate/dry run or ensemble.
+
+```powershell
+New-Item -ItemType Directory -Force target/res1/classes | Out-Null
+function Assert-ProbeMemory {
+  if ((Get-Counter '\Memory\% Committed Bytes In Use').CounterSamples.CookedValue -ge 75) {
+    throw 'Wait for committed memory below 75% before starting a JVM'
+  }
+}
+$cp = 'target/classes;' + (Get-Content target/classpath.txt -Raw).Trim()
+Assert-ProbeMemory
+javac -J-Xmx256m -cp $cp -d target/res1/classes target/res1/RealEstateProbe.java
+if ($LASTEXITCODE -ne 0) { throw 'Probe compilation failed' }
+$runCp = 'target/res1/classes;' + $cp
+Assert-ProbeMemory
+java -Xmx256m -cp $runCp ham.citybuildersim.RealEstateProbe > target/res1/pure.txt
+if ($LASTEXITCODE -ne 0) { throw 'Pure probe failed' }
+Assert-ProbeMemory
+java -Xmx1024m '-Dplaytest.founded=today' '-Dplaytest.pathSeed=48213' `
+  '-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin' `
+  '-Dcbs.world=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin' `
+  -cp $runCp ham.citybuildersim.RealEstateProbe city > target/res1/city.txt
+if ($LASTEXITCODE -ne 0) { throw 'City probe failed' }
+```
+
+```java
+package ham.citybuildersim;
+
+import ham.citybuildersim.sectors.RealEstate;
+import java.util.*;
+
+/** Study only. No user saves; current model calls, no replacement model. */
+public class RealEstateProbe {
+    static void row(String format, Object... xs) {
+        System.out.printf(Locale.ROOT, "RES1 " + format + "%n", xs);
+    }
+    static FamilyModel fixture(FamilyStructure shape, double poor, double rich) {
+        String[] shapes = FamilyModel.saveShapes();
+        int tiers = PayTier.values().length;
+        double[] saved = new double[shapes.length * tiers + 2];
+        int index = Arrays.asList(shapes).indexOf(shape.name());
+        saved[index * tiers] = poor;
+        saved[index * tiers + tiers - 1] = rich;
+        FamilyModel f = new FamilyModel();
+        f.restore(PopulationCohorts.saveBands(), shapes, saved);
+        return f;
+    }
+    static void match(String label, FamilyStructure shape, double poor, double rich,
+                      int smallSize, long smallCount, int bigSize, long bigCount) {
+        FamilyModel f = fixture(shape, poor, rich);
+        long[] homes = new long[Math.max(7, Math.max(smallSize, bigSize) + 1)];
+        homes[smallSize] += smallCount;
+        homes[bigSize] += bigCount;
+        double left = f.house(homes);
+        row("match,%s,heads=%d,households=%.3f,unplaced=%.3f,refusedStudio=%.3f,crowded=%.3f,studioWeight=%.3f,familyWeight=%.3f",
+            label, shape.size(), f.totalHouseholds(), left, f.getRefusedByStudio(),
+            f.getCrowdedHouseholds(), f.studioRentWeight(), f.familyRentWeight());
+    }
+    static void pure() {
+        List<BuildingsTemplate> all = new BuildingCatalog().load();
+        double m = Good.MATERIALS.worldImportPrice();
+        row("material,worldImport=%.9f,todaysImport=%.9f", m, Good.MATERIALS.todaysImportPrice());
+        RealEstate re = new RealEstate();
+        re.setRentPrice(2);
+        for (BuildingsTemplate t : all) if (t.getSector().equals(re.key())) {
+            double structure = t.getCashCost() + t.getConstructionMaterials() * m;
+            row("catalogue,%d,%s,doors=%d,capacity=%d,size=%d,cash=%.6f,materials=%d,structureDoor=%.6f,landDoor=%.6f,pointsDoor=%.6f,powerDoor=%.6f,waterDoor=%.6f,segmentRent=%.6f",
+                t.getId(), t.getName(), t.getDwellings(), t.getCapacity(), t.homeSize(),
+                t.getCashCost(), t.getConstructionMaterials(), structure / t.getDwellings(),
+                t.getLandSqFt() / t.getDwellings(), (double)t.getConstructionPoints() / t.getDwellings(),
+                (double)t.getElectricityConsumption() / t.getDwellings(),
+                t.getWaterConsumption() / t.getDwellings(), re.priceForSegment(t));
+        }
+        BuildingsTemplate premium = new BuildingsTemplate("Study premium", BuildingType.RESIDENTIAL)
+            .setCapacity(4).setDwellings(1).setCashCost(2000);
+        row("premium,segmentRent=%.6f", re.priceForSegment(premium));
+        match("parent-two", FamilyStructure.SINGLE_PARENT, 1, 0, 2, 1, 6, 0);
+        match("parent-three", FamilyStructure.SINGLE_PARENT, 1, 0, 3, 1, 6, 0);
+        match("parent-four", FamilyStructure.SINGLE_PARENT, 1, 0, 4, 1, 6, 0);
+        match("large-four", FamilyStructure.LARGE_FAMILY, 1, 0, 4, 1, 6, 0);
+        match("poor-only", FamilyStructure.SINGLE_ADULT, 200, 0, 2, 100, 6, 100);
+        match("elite-only", FamilyStructure.SINGLE_ADULT, 0, 200, 2, 100, 6, 100);
+        match("poor-elite", FamilyStructure.SINGLE_ADULT, 100, 100, 2, 100, 6, 100);
+    }
+    static void city() {
+        Game g = LongPlaytest.probeCity(GameFiles.scratch("res1-housing"), null);
+        for (int target : new int[]{60, 240, 600}) {
+            LongPlaytest.probePlay(g, target);
+            FamilyModel f = g.getFamilies();
+            BuildingManager b = g.getBuildingManager();
+            RealEstate re = g.getSectors().realEstate();
+            HouseholdAccounts a = g.getHouseholds();
+            BusinessInvestment.Decision decision = re.plan(g.getBusinessInvestment(), g);
+            row("city,month=%d,pop=%d,households=%.6f,seekers=%.6f,doors=%d,capacity=%d,pipelineDoors=%d,unplaced=%.6f,doubled=%.6f,crowded=%.6f,cars=%.6f,rent=%.6f,disposable=%.6f,rentRatio=%.6f,planQty=%d,build=%s",
+                g.getMonth(), g.getPopulationManager().getPopulation(), f.totalHouseholds(), f.householdsSeekingDoors(),
+                b.getTotalHomes(), b.getTotalHouseCapacity(), b.getHomesUnderConstruction(),
+                f.getStillUnplaced(), f.getDoubledUpHouseholds(), f.getCrowdedHouseholds(),
+                g.getHouseholdBalance().totalCars(), a.getRent(), a.getDisposableIncome(),
+                a.getRent() / a.getDisposableIncome(), decision == null ? 0 : decision.quantity,
+                decision != null && decision.build);
+            row("sizeCensus,month=%d,%s", g.getMonth(), Arrays.toString(b.homesBySize()));
+            for (int r = 0; r < PayTier.values().length; r++)
+                row("tier,month=%d,tier=%s,households=%.6f,rent=%.6f,disposable=%.6f,ratio=%.6f",
+                    g.getMonth(), PayTier.values()[r], a.getRowHouseholds(r), a.getRowRent(r),
+                    a.getRowDisposable(r), a.getRowRent(r) / a.getRowDisposable(r));
+            row("planReason,month=%d,%s", g.getMonth(), decision == null ? "null" : decision.reason);
+        }
+    }
+    public static void main(String[] args) {
+        Locale.setDefault(Locale.ROOT);
+        if (args.length > 0 && args[0].equals("city")) city(); else pure();
+    }
+}
+```
+
+The arithmetic tables can be reproduced independently, without a game or JVM:
+
+```python
+from decimal import Decimal as D
+K = (D(10196) + D(377)*18)*1000/63  # catalogue id 6, present-day dollars
+L = D(60000)/63
+for p in (D(0), D(50), D(150)):
+    print(p, K+p*L, K*D('1.25')+200*p,
+          K+2500+p*L, K*D('1.25')+35000+200*p)
+for premium in (D(0), D('.25'), D('.50')):
+    print('land crossover', K*premium/(L-200))
+print('parking crossover', (K*D('.25')+32500)/(L-200))
+areas = list(map(D, (40,40,80,120)))
+for sold in range(5):
+    owners = D(292)*sum(areas[:sold])/sum(areas)
+    re = D(292)-owners
+    assert owners+re+16-280-28 == 0
+    print(sold, owners, re)
+for rate in (D('.005'), D('.01'), D('.02')):
+    print(rate, [D(100)*(1-rate)**m for m in (0,6,12,24)])
+assert -D(6)+(D(100)-D(114))+(D(120)-D(100)) == 0
+```
+
+Validation completed for this draft: both model probe modes exited 0; the
+separate arithmetic prototype balances the common account for 0-4 sales and
+the sale cash flows; new IDs passed the repository checker. Review checks
+also verify candidate floor-area arithmetic, cited amounts, accepted/open
+labels, the HO1 prerequisite split and the two-file-only diff. The final
+Stale scan exited 0 with zero firm findings at `-Xmx1024m`; its first 256 MB
+attempts exhausted heap while parsing the source tree, so it was rerun after
+checking committed memory (64.2%) with the larger permitted heap. Whitespace
+and LF checks passed. No ensemble was owed by this docs-only change. Shipping
+awaits Jerus's review.
