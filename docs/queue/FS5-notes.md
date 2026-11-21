@@ -2563,3 +2563,62 @@ proofs preserved; source/classes/registry/ship/marker/four vetoes/KHL1Pending
 unchanged. Process counts819/809(registry819/829) unchanged. Only notes
 are pushed. FS5 blocked/Pending, no owned job; awaiting separate root
 runtime/disk/deadline review/GO.
+
+
+## Root 7f46: two static controller corrections
+
+Root's v4 review found an inner-finally leader-only release if OwnedGroup
+construction failed, and final local completion that ignored controller and
+native post-seals. STATIC corrections only, not a controller/model rehearsal.
+New canonical ignored set: target/fs5c2-7f46-final-runtime-v5. V4 and all
+historical drafts are preserved byte-for-byte. Exact sources, diff, scope
+and remaining execution limits are in its REVIEW.md and manifest.
+
+Final plan SHA256 e9db0ade0a7dd463496c78ac802322e746539bc563d367a079e368197f4737c3;
+artifact manifest8caa18953221adb7556cd96d3f480e7f88ea6c809226284bd339c48884dfe7a8;
+controller diff3307307b0fd187a0047aba0fed29a76fa9c642a665794b367d3b9014dcb49b26.
+local.py9bad667245c27c639323821a4f0bd7d1a421541ade227db033679955aea10db6;
+remote.py081de536b69f3784328960264f3ba1906f6800dce7025c4f70c165e168efd6de;
+recover.py30f46d3645cf045276bc7818ba1e51c154623625c68eef46f6bf9008a1198deb;
+fs5_logic.pyc135dcc5dd5e75ca5dce0221943af450ef610f3797b1bf6b58439996d284385f.
+
+Both inner-finally and outer-exception child-without-proved-group branches
+now call retain_unproved_child. It reports INCONCLUSIVE/root assistance and
+retains ownership/locks indefinitely, including after exact leader exit;
+no guessed signal, post-seals, lock release or group-gone terminal claim.
+Reporting failure does not permit release. Existing trusted-ledger recovery
+is unchanged. With no trusted identity, root assistance remains required;
+cleanup-only hold may outlast the work ceiling, never a ceiling-met result
+or automatic slot release. No OS/lifetime execution proof is claimed.
+
+Local pre/post coverage now explicitly records all five controller/template
+files (local, remote, recovery, logic, launch template), plus the exact plan
+and actual root-review bindings. Cached initial raw plan/review bytes are
+uploaded unchanged; verified copied control/plan.json and control/review.json
+must also hash to those initial bytes. Remote pinned input pre/post coverage
+still includes all five controller/template files. The native copied post
+map must exactly match the actual nonempty measured pre-set, availability,
+matches_pre and SHA. Missing/unavailable/changed/malformed data stays false.
+No claim of loaded native linkage or old gate native bytes follows.
+
+Final complete status and return now require controller/binding pre/post,
+copied binding match and native match alongside the existing handoff, full
+input seals, model continuation/summary/103 and total ceiling. Each premise
+has separate receipt fields. Unresolved provenance returns75/incomplete;
+actual model exit/hard heap verdict, diagnostic classification and verified
+raw-copy status remain separate. A complete failing model still returns its
+actual failure exit. No dump or provenance status changes hard FAIL.
+
+14 pure in-memory policy checks and AST inspection of four modules/two
+embedded sources passed. These execute no controller import/rehearsal,
+subprocess, signal, BOX access, JVM, compile, dump or model measurement.
+Reviewed Java overlay/helper/manifest,19 outputs,29 copy hashes and accepted
+base capsule archive still match. Both v4/v5 review tokens remain FALSE.
+Ignored controller delta is75 additions/22 removals (local46/14, remote16/8,
+logic13/0, recovery0/0); these are unshipped target drafts, not invented
+production removals. Actual process counts819/809(registry819/829) unchanged.
+Source aa570/src c518908bbc58374df1b680830be6990f7067aa63, classes, data,
+registry, ship marker, four vetoes/1536 and KHL1Pending are unchanged.
+Old native1502.8 pass and BOX1711.9 hard failure remain distinct, with no
+attribution of the old209.1MiB difference. No owned job. FS5 blocked/Pending; notes-only
+checkpoint awaiting separate root review/runtime/disk/deadline GO.
