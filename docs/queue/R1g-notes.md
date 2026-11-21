@@ -864,3 +864,22 @@ regenerated, Stale zero firm findings (`review-qualification-final-fast.txt`).
 Source/record whitespace and UTF-8/LF validation passed; the regenerated
 month-order retains its canonical 25 two-space Markdown hard breaks.
 Known-red syntax and the provisional marker also passed validation.
+
+### REV-R1gc2-2: SHIP on the immutable source
+
+Reviewer **REV-R1gc2-2** returned **SHIP, no blocking findings**, on
+`8a1348fb82a60caf9dda6409d8907628fb95e475` (orchestrator mail
+20261121-115125-749-orchestrator-975e, 2026-11-21 11:51). The reviewer
+accepted gross getNewDiplomas wiring, retained applyBandFlow degree outflow,
+and the actual-Game positive/revert causal control; there is no new
+save/thread delta. The source, provisional marker and all existing checks
+and proofs are preserved. This update records the verdict only; no checks
+are replayed.
+
+The same mail reports MC2's publication gate stopped on one new Kept
+paper-fixture premise, with no publication and main still 5790d0506
+(0.9.178). MC2's builder is tracing the smallest proof. The final ensemble
+and dry run remain held for the orchestrator's current-main/model ordering
+GO after that trace, avoiding a duplicate ensemble if MC2 can ship through
+records-only reuse. No extra long check or foreground wait is started,
+and Jerus's accepted pace/design decisions remain settled.
