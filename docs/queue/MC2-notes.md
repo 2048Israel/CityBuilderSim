@@ -571,3 +571,33 @@ paper. FS5's owner can separately validate its own fallback against that
 same condition. It would prove the fixture gap, not replay month 4327.
 The scope was sent for GO; it has not run. No known-red row, rejudge,
 red override or renewed readiness was added pending that decision.
+
+
+### Disposition and copied-suite judge
+
+On the orchestrator's disposition GO (2026-11-21 11:58), the traced
+section 92 empty-paper premise is classified to the existing FS5/CD9-K,
+rather than an own Bank-rule fault. Only that exact assertion was added
+as ONE known-red row in MC2's provisional ship file. The retained facts
+above and unchanged auction path are the grounds; no claim is made about
+zero bids versus a tiny fill, nor that FS5's full software run exercised
+its added fallback. The proposed fresh zero-month probe was not needed
+for this disposition and has not run.
+
+The kept `checks/suite.txt` was copied into this worktree's
+`target/checks/suite.txt`, then rejudged ONLY as a saved log with
+`CBS_REJUDGE=--rejudge sh batch-check.sh --judge target/checks/suite.txt`.
+Result: **exit 3, known red only - 11 harnesses; zero new red lines**.
+The one assertion row automatically covers KeptCheck's exit 3 and
+`3 FAILED`; no exit/count rows were added. Judge evidence is retained in
+`target/MC2c2-gate-stop/rejudge.txt`, `rejudge-exit.txt`,
+`rejudge-new-reds.txt` (empty), `rejudge-reds.txt` and
+`rejudge-used-reds.txt`.
+
+No harness or model JVM, full suite, bounded fixture probe, ensemble or
+source change followed the stop. The only JVM was the authorized saved-log
+judge. The kept box and local run remain untouched; the copied suite
+still compares byte-for-byte with the retained log. The earlier final
+ensemble and REV-MC2-2 SHIP remain applicable. Mends are provisional;
+the marker stays pending the orchestrator's renewed readiness GO and
+planned publication reuse of `cbs-gate-MC2-eaV6vYID`.
