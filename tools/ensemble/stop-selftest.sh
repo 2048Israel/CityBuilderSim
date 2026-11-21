@@ -1,9 +1,6 @@
 #!/bin/bash
-# The ensemble's stop on Windows (HN1-C): `sh tools/ensemble/stop-selftest.sh` after stop.ps1 edits.
-# WHY (HN1-C): `ensemble.sh --stop HN1` left the run's xargs, which started five runs at 11:12, and
-# stop.ps1 said nothing of it. It now looks once more after its passes: a run with nothing left says
-# so (exit 0), and one with a survivor names it (exit 1). The survivor here is a process of the run
-# that a parent outside the run's folder starts again whenever it goes. Elsewhere pkill stops a run.
+# The ensemble's stop on Windows (HN1-C): `sh tools/ensemble/stop-selftest.sh` after stop.ps1 edits. A run with
+# nothing left says so (exit 0); a survivor, here one a parent outside the run's folder restarts, is named (exit 1).
 cd "$(dirname "$0")/../.." || exit 1
 command -v powershell.exe > /dev/null 2>&1 || { echo "stop-selftest: no PowerShell here, skipped"; exit 0; }
 fails=0

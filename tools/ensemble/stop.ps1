@@ -1,15 +1,11 @@
 # Stops one ensemble run on Windows: its shell, its xargs, the runs' shells and their JVMs.
-# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL (the label) and ENS_B (the run's
-# folder as Java writes it, C:/...) in the environment. A process is the run's when its command line holds
-# the run's folder, as Java writes it (the JVMs) or as Git Bash does, /c/... (the runs' shells, xargs), or
-# `ensemble.sh <label>` (the script's own shell), or, for a run on the gate box, `--ensemble <label>` and
-# `--serve ensemble <label>` (its half here and the ssh, whose end stops the box's runs; GB3); nothing else
-# on the machine, the suite and other runs included, matches.
-# The shells and xargs go first so that no run starts after the JVMs are gone; twice, for the one that was
-# starting while the first pass looked. Then it looks once more and names what is left, exit 1.
-# WHY (HN1-C): Git Bash hands a Windows program a /c/... value as C:/..., so ENS_A, the Git Bash form, came
-# here as C:/... too and no shell or xargs matched: HN1's xargs outlived the stop and started five runs, and
-# the stop said nothing of it. The Git Bash form is now made here; tools/ensemble/stop-selftest.sh tests it.
+# Called by `tools/ensemble/ensemble.sh --stop <label>` with ENS_LABEL (the label) and ENS_B (the run's folder,
+# C:/...). A process is the run's when its command line holds that folder as Java or Git Bash (/c/...) writes it,
+# or `ensemble.sh <label>`, or, for a run on the gate box, `--ensemble <label>` and `--serve ensemble <label>`
+# (GB3); nothing else on the machine, the suite and other runs included, matches. The shells and xargs go
+# first, twice, for the one starting while the first pass looked; then a last look names what is left, exit 1.
+# WHY (HN1-C): Git Bash hands a Windows program /c/... as C:/..., so no shell or xargs matched, and HN1's xargs
+# outlived the stop and started five runs unsaid. tools/ensemble/stop-selftest.sh tests it.
 $label = $env:ENS_LABEL
 $w = $env:ENS_B -replace '\\', '/'
 $bash = if ($w -match '^([A-Za-z]):(/.*)$') { '/' + $matches[1].ToLower() + $matches[2] } else { $w }
