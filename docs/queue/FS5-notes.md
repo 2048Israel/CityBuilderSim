@@ -2622,3 +2622,123 @@ registry, ship marker, four vetoes/1536 and KHL1Pending are unchanged.
 Old native1502.8 pass and BOX1711.9 hard failure remain distinct, with no
 attribution of the old209.1MiB difference. No owned job. FS5 blocked/Pending; notes-only
 checkpoint awaiting separate root review/runtime/disk/deadline GO.
+
+
+## Root d868: one authorized BOX attempt stopped before model start
+
+Root independently completed v5 static review (main target/FS5-v5-root-review.json)
+and separately authorized ONE exact new-provenance BOX diagnostic. Canonical
+plan e9db0ade0a7dd463496c78ac802322e746539bc563d367a079e368197f4737c3 and
+16 sealed files were verified, with root token target/FS5-runtime-root-review-v5-e9db.json
+SHA18ab04a3ff9f428a0d8c2aafafb3017bd2ae54e0dcb241b896501c46e1184e35.
+That external token is true; historical/canonical false templates remain
+unchanged. No sealed script/plan/Java/compiled artifact was edited.
+
+Exactly ONE local.py invocation entered2026-11-21T23:02:45.363318Z, nonce
+c4fd6d5117554b15e3d7cef0fe6b5433. It STOPPED at BOX disk preflight because
+/home/jerus/cbs/evidence does not exist (FileNotFoundError). No directory
+provisioning/repair, retry, alternate label or local fallback was attempted.
+Authoritative local exit75/INCOMPLETE_OR_UNPROVEN_PROVENANCE_OR_HANDOFF;
+controller1.6460333s, enclosing shell1.838s, original foreground SSH exit0.
+No model JVM, model child identity/ledger, new month, heap reading, original
+hard-heap verdict, section103/full summary, capture parent or dump was made.
+This is NOT model PASS/NOT_TRIGGERED or FAIL measurement. Old native1502.8
+and BOX1711.9 remain the last distinct heap results, without causal attribution.
+
+Remote owner PID2667098/start15889487/pgrp2667098/session2667098/UID1000.
+Direct foreground remote owner emitted HANDOFF_COMPLETE; actual SSH wait
+returned0 after heavy lock/output lease release. Model child was never
+created, so there is no surviving model group. No owned process remains.
+New remote control path: /home/jerus/cbs/runs/FS5-runtime-c4fd6d5117554b15e3d7cef0fe6b5433.
+Verified local homecopy: target/FS5-runtime-c4fd6d5117554b15e3d7cef0fe6b5433.
+15 raw control snapshot files plus2 transfer/snapshot footers independently
+hash/size verified,1568115B total; original and snapshot.tar.partial retained.
+Copy/handoff verification is true while overall/runtime completeness is false.
+There is no HPROF copy/dump timing or throughput evidence from this attempt;
+copy stage has no separately recorded elapsed interval, only the total above.
+
+Fresh local receiver64992219136B(60.52872086GiB), clock uncertainty bound
+0.2573797703s. Priority/nonblocking lock and native read-only inventory passed
+before the missing-base stop. BOX free-space requirement remains UNAVAILABLE,
+not a claim of insufficient bytes or completed>=12GiB preflight. Runtime
+input pre-hash loop was not reached:2484 post entries explicitly unavailable,
+zero available, so no complete current remote JDK/class/dependency/data hash
+provenance is claimed. Local5 controller/template pre/post, local/copy exact
+plan+actual-review bindings and measured native read-only file pre/post match.
+Actual recorded selected path /home/jerus/cbs/jdk/bin/java; no JVM/version
+probe executed. Native file /usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0.5700.0,
+129184B, SHAe80bafce7e827bc43dd5d519a6332786943ee167dddb698cdcbef15387c97dc2,
+pre/post equal; no loaded native-linkage or historical library provenance claim.
+
+Terminal audit target/FS5c2-d868-terminal-audit.json SHA
+83d8f69cb10a316420dea74a099e0ad2445f2f09ab51cf5a83e72b29ecfc10be
+contains exact copied artifact sizes/hashes, clock/disk/identity/terminal
+receipts and explicit missing premises. Snapshot SHA
+ab838dd5712949f13aa7389d34927d915bd219b15fb1b9fb339f21b549f511f6.
+controller.terminal.json SHA636a16786426fc11a3e2ff3dbde3e2eb0692b59649abdf1d8245ca127d8788df (5753B).
+copy.verified.json SHAfed1ce85a484d1635bb84687924f34d8c9e1266f41a3307b5ad2f7cd02ea1c6f (2694B).
+snapshot.tar.partial SHAcce5b22488fa653f3d7f64037d879a20520a54fb4ceb8bb82b6f21e860df03e6 (1587200B).
+
+
+Tracked branch/source/registry/marker stayed frozen166a5c13b1bae47077229bde48ab909a42a84f6a
+through real terminal/homecopy; src c518908bbc58374df1b680830be6990f7067aa63
+still aa570. Post audit reverified canonical16/v4, Java sources,19 compiled
+classes/29 copied hashes, accepted base archive and native kept7 log hash.
+No historical evidence was modified. This notes-only checkpoint is after
+terminal; source/ship/registry/four vetoes/1536/KHL1Pending and process counts
+819/809(registry819/829) stay unchanged. FS5 blocked/Pending, provisional
+marker retained. No model/heap/Healthcare cause or waiver follows this stop;
+no further runtime or path repair is authorized. Await separate root decision.
+
+
+## Root 4715: setup-only evidence parent and new path-bound proposal
+
+Root confirmed the original c4fd/v5 attempt terminal75/no model and its
+runtime GO SPENT. It then separately authorized ONE bounded setup SSH call
+and a new static nonce/path proposal only. No controller/model retry GO.
+The setup command exited0 in0.329265s within30s, direct remote Python
+PID2678284/start15913874/pgrp2678284/session2678284/UID1000 and actual SSH0.
+It verified /home/jerus/cbs is the expected real nonsymlink directory,
+UID1000/mode0775/dev66306/inode47972380; that parent stayed unchanged.
+Only absent child /home/jerus/cbs/evidence was created (anchored mkdir,
+mode0700), then verified real/nonsymlink/UID1000/dev66306/inode52699586.
+No recursive creation, chmod, overwrite, deletion/move, other path mutation,
+JVM/version/smoke/compile/helper/controller/heap or priority/lock claim.
+
+Raw before/after lstat/realpath/UID/mode and disk receipts are retained in
+target/FS5c2-4715-setup; receipt SHA
+a407e6d0f4c8a828d86f8e12047ec288d61c3012bf6b65ffc46c80382c3202bd.
+BOX free before888536203264B/after888536199168B on actual existing parent/
+new evidence filesystem. Local receiver before64986120192B/after64986099712B.
+Setup stdout SHAce8c094b791b51de044535fc92c145e7cfac54aebf5f72c945d3bc9651de1a3e,
+stderr empty. Exact executed LF source SHA
+17aa1329271d4c120602d627575ae1147418e9b47e6c7fc67b5a1fe919f590bf
+is also retained as target/FS5c2-4715-setup-executed-source.lf.py; the original
+saved CRLF source/its separate file hash are preserved. These are setup-time
+observations, not fresh future runtime-space/priority authorization.
+
+New canonical proposal target/fs5c2-4715-next-runtime-plan-v6; nonce
+81baaeb148240981693fd410f148c35d. Plan SHA
+25c0fbe0e2e8c99521e43c76ea5f008fdbddd7f167ae769bff320aeaa93b55e7;
+artifact manifest904e0fbc07111cfa9b1b29900a04b8793d43b82b309257e90602a03120d62fea;
+path-only-v5-to-v6.patch476de152b9b32fa596acc5945f71e5b9e8b6c14ed4fa308d6005e24a5d1c7ef8;
+launch templateb7a0c569452da8ee3aef07cc52e50d2fc0a71ebd22cce058a537a15c3eb4d135.
+All four reviewed Python files are byte-identical to v5. Only nonce-bound
+control/capture/local paths, template references and resulting template/
+plan/review hashes change. Inverse nonce/template-pin normalization exactly
+restores the v5 plan object; all2484 input entries and controller/capture
+properties/argv pins are consistent. JDK/dependency/data manifests and
+reviewed Java/19 classes/base capsule are unchanged. No logic/deadline edit.
+
+Planned remote control /home/jerus/cbs/runs/FS5-runtime-81baaeb148240981693fd410f148c35d;
+planned capture /home/jerus/cbs/evidence/FS5-heap-71c5-81baaeb148240981693fd410f148c35d;
+planned local target/FS5-runtime-81baaeb148240981693fd410f148c35d. New local
+destination is absent. Remote nonce paths were neither created nor probed;
+fresh nonce is unused by us, with actual exclusive-new-path enforcement
+still required by future controller. No capture leaf or HPROF was created.
+New review template is FALSE; old c4fd token/output/source/nonce remain
+immutable and cannot authorize this new plan. Setup and original owner are
+terminal; no owned job. Only notes are pushed. FS5 remains blocked/Pending,
+marker/four vetoes/1536/KHL1Pending/source/registry/ship/counts unchanged.
+Await separate exact root review and NEW runtime/disk/deadline/ordering GO;
+no second diagnostic invocation, compile, gate or readiness was run.
