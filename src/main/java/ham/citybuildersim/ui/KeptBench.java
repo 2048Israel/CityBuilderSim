@@ -1702,6 +1702,7 @@ public final class KeptBench {
             if (!seen.add(o)) continue;
             if (o instanceof javafx.scene.canvas.Canvas c) canvases.add(c);
             if (o instanceof Node n) {
+                push.accept(n.getParent());
                 if (n instanceof javafx.scene.Parent pa) for (Node k : pa.getChildrenUnmodifiable()) push.accept(k);
                 if (n instanceof Labeled l) push.accept(l.getGraphic());
                 if (n instanceof ScrollPane sp) push.accept(sp.getContent());

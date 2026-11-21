@@ -4949,11 +4949,11 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 750 | `KeptBench.SETTLED_HEIGHT` | `"keptbench.settledHeight"` | The key a scroller keeps the height its content had when the page was last settled, in its properties. |
 | 779 | `KeptBench.SETTLE_PASSES` | `10, QUIET_PASSES = 2` | The most layout passes settle() runs, and the quiet ones in a row it takes to stop. |
 | 1444 | `KeptBench.SETS_NAMED` | `Integer.getInteger("keptbench.named", 12)` | The most sources redrawSets names. |
-| 2371 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
-| 2556 | `KeptBench.FUNDING_CAP_TITLE` | `"THE HIGHEST YIELD YOU WILL TAKE"` | The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. |
-| 2690 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
-| 3966 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
-| 5821 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
+| 2372 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
+| 2557 | `KeptBench.FUNDING_CAP_TITLE` | `"THE HIGHEST YIELD YOU WILL TAKE"` | The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. |
+| 2691 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
+| 3967 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 5822 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
 
 ### Ladder.java ([map](map/Ladder.md))
 

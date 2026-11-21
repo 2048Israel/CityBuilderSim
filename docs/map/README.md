@@ -4,7 +4,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 612 files, 667,506 lines, 29,042 methods, 6,458 constants. `GameVersion.VERSION` is "0.9.179", `SAVE_FORMAT` 58.
+**The tree:** 612 files, 667,507 lines, 29,042 methods, 6,458 constants. `GameVersion.VERSION` is "0.9.179", `SAVE_FORMAT` 58.
 
 ## model (272 files)
 
@@ -343,7 +343,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InputRecorder.java](InputRecorder.md) | 207 | 14 | The window's input kept for the replay's ghost (TR1, 2026-10-31): while "Record this city" is on, the mouse and the keys of the sitting - and the m... | 1 |
 | [IslandChip.java](IslandChip.md) | 48 | 2 | The chip the map draws on a landmass no port links: its lines of amber mono caption on a dark rounded plate the width of the longer line (MT1, BK1-L). | 2 |
 | [Kept.java](Kept.md) | 899 | 90 | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the... | 31 |
-| [KeptBench.java](KeptBench.md) | 5,886 | 604 | The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck. | 6 |
+| [KeptBench.java](KeptBench.md) | 5,887 | 604 | The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck. | 6 |
 | [Ladder.java](Ladder.md) | 449 | 31 | One dial, drawn the one way: a "−" worth one step, a slider that snaps to the step, a "+" worth one step, the reading, and a line under them saying... | 16 |
 | [LandScreen.java](LandScreen.md) | 2,586 | 105 | The land office: whether the city has room to grow, and which ground to buy - since 0.7.61 round the city's map (batch J4; the project's spec-land.... | 4 |
 | [Levers.java](Levers.md) | 166 | 4 | The pieces a policy lever is drawn with: the dial card (dialCard(), 0.7.36) - the dial on a card with what it does beside it, which every dial on t... | 3 |
