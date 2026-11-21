@@ -36,305 +36,71 @@ import java.util.concurrent.TimeUnit;
  * (ui.KeptBench). Where the toolkit cannot start (the cloud has no display) it says so in one line
  * and exits 0.
  *
- * What it has to prove:
- *   1. the page is kept: after its first draw a month's redraw hands back last month's nodes and
- *      keeps the same page in the column; the nodes made new in a month are few, and on most months
- *      none (counted over the stretch);
- *   2. it shows what a page built new shows: for MONTHS months of a played city the kept page's
- *      signature - every node's class, words, inline style, the values code set, handlers, tooltip
- *      and where layout put it - equals that of the page built new at the same month, line for line;
- *   3. and looks it: at three of those months the two pages are the same picture - no pixel more
- *      than SHADE_LEVELS apart in a channel, and at most SHADED_SHARE of them apart at all (the
- *      renderer shades a moved shape's edge a level or two apart; the count of months with the very
- *      same pixels is printed);
- *   4. what reshapes the page keeps it right: a details fold opened and closed, the month card's
- *      year view on and off - each redraw after the change equals a page built new;
- *   5. (its cost: KeptTimingCheck's, FS4)
+ * What it has to prove (FS5: the detailed premises live beside their sections and in their assertion labels):
  *
- * Since UP2 the window's chrome too - the header and the tab rail, drawn by the real
- * refreshHeader() and refreshTabRail() on scenes of their own (the header at the window's width,
- * the rail at its height), the envelope drawn on its own as well:
- *   6. the chrome is kept: after its first draw a month's chrome draw keeps the header's and the
- *      rail's top nodes, hands back nine in ten of the nodes the first draw made, and makes few or
- *      none;
- *   7. it shows what a chrome built new shows: for MONTHS months the kept header's and rail's
- *      signature equals that of a chrome built new (every pool swapped for an empty one), line for
- *      line, the first difference printed with both lines, while the states change among the
- *      months - the clock running and stopped, a "stopped because" line shown and gone, the speed's
- *      rung, the screen on show (so the rail's lit tab, and a game menu with no clock), a notice
- *      raised, read and put away (the envelope's count, redrawn on its own);
- *   8. and looks it: at three of those months the header and the rail are the same pictures as the
- *      new ones (alike(): SHADE_LEVELS, SHADED_SHARE); one figure in the kept header made wrong by
- *      hand parts the signature and the picture, and the next kept draw sets it right; and what the
- *      rebuild did by being one is put back: a node that had the focus loses it, a button or tile
- *      drawn again under the pointer keeps its hover look and loses it when the pointer goes;
- *   9. a city opened forgets the chrome: the next draw makes every node new; and a draw of one pool
- *      inside a draw of another (the envelope inside the header) gives each its own nodes;
- *  10. (its cost: KeptTimingCheck's, FS4)
+ * The kept law is common to every page: the same top nodes, no allocation on an unchanged draw,
+ * HANDED_BACK of the nodes drawn again, and equality to a page built new. The signature includes
+ * words, styles, values, handlers, tooltips and layout. Pixels use SHADE_LEVELS and SHADED_SHARE.
+ * A deliberately spoiled figure must differ, and the following kept redraw must repair it.
+ * Choices exercise folds, views, controls and model actions; opened folds must add to the page.
+ * Controls keep the same node and the player's typed or dragged value until release commits it.
+ * Hover looks persist under a still pointer and clear when it leaves; tooltips keep their identity.
+ * KBP1 blocks and KRT1 layout differences are traced with the model and clock held still:
+ * recurring faults stay hard, and permitted nonrepeating readings are printed and counted.
  *
- * ...and the three panels (slice 2b), each on a scene of its own: the city panel, the construction
- * panel and the inbox's list, drawn by refreshCityPanel(), refreshConstructionPanel() and
- * refreshInboxList():
- *  11. the panels are kept: with the inbox open, the drawer open on every section and buildings on
- *      site, a month's draw keeps their top nodes, hands back nine in ten of the first draw's nodes
- *      and makes few (a row for a log entry or a notice that is new);
- *  12. they show what panels built new show, signature line for line, for MONTHS months, with the
- *      states changing: Dashboard with every section open, some, none, Summary, the chip's NEEDS YOU
- *      view, a section folded and unfolded, the drawer open and pinned, the inbox dropped down and
- *      put away, a notice raised, unfolded, read and taken away, buildings put on site and finishing,
- *      a building opened and one demolished; the same pictures at three months; one figure spoiled
- *      by hand is seen and set right; the city panel's scroller stays where it was put; a summary
- *      row keeps its hover look under a still pointer; an inbox button loses the focus;
- *  13. (the whole chrome's cost: KeptTimingCheck's, FS4)
+ * Sections (each method gives its fixture and each assertion gives the complete law):
+ *   1-4. People: retention, signatures, pictures and reshaping.
+ *   5. Cost: KeptTimingCheck.
+ *   6-9. Chrome: header and rail retention, signatures, pictures and changing screens.
+ *  10. Cost: KeptTimingCheck.
+ *  11-12. The header and the three panels kept and equal to freshly built panels.
+ *  13. Cost: KeptTimingCheck.
+ *  14-19. City History: kept pages, signatures, pictures, charts, controls and changing views.
+ *  20. Cost: KeptTimingCheck.
+ *  21-23. Infrastructure: kept pages, equality and reshaping.
+ *  24. Cost: KeptTimingCheck.
+ *  25-27. Services: kept pages, equality and reshaping.
+ *  28. Cost: KeptTimingCheck.
+ *  29-31. Land: kept pages, equality and reshaping.
+ *  32. Cost: KeptTimingCheck.
+ *  33-34. Land's shortfall pages and controls keep the player's hand.
+ *  35-38. Build: kept pages, equality, pictures and changing choices on caused building states.
+ *  39. Cost: KeptTimingCheck.
+ *  40-42. Construction: kept pages, equality and reshaping, with works deliberately on site.
+ *  43. Cost: KeptTimingCheck.
+ *  44-45. Build's refused orders, funding pages and held controls.
+ *  46-49. Sectors: kept pages, signatures, pictures and reshaping of the businesses and statements.
+ *  50-51. Industry pictures retain identity, repaint only changed figures, and count up by speed.
+ *  52. Cost: KeptTimingCheck.
+ *  53-54. Sectors' controls and hover; the clock redraws the screen shown.
+ *  55-57. Bank: kept pages, signatures, pictures, statements, folds and views; KBP1 traced held still.
+ *  58-60. Finances: kept pages, equality and choices; the fixture books every kind of paper.
+ *  61-63. Fund: kept pages, equality, portfolios, lots, tickets, search and activity.
+ *         A new lot settles through the book; its page and both reviews are watched past settlement.
+ *  64-67. Money pictures, count-up, held boxes, hover and tooltips.
+ *  68. Cost: KeptTimingCheck.
+ *  69-71. Government: kept pages, equality, folds, lines and policy doors.
+ *  72-74. Trade: kept pages, equality, nations, folds, controls and the currency warning's bound.
+ *  75-77. Policy: kept pages, equality and all choices, with a zone caused when needed.
+ *  78-80. Policy's held dials, Trade's count-up, and the three screens' hover and tooltip identity.
+ *  81. Cost: KeptTimingCheck.
+ *  82-84. Household money: kept pages, pictures, signatures, cells, folds and views.
+ *  85-87. Rankings: kept pages, pictures, signatures and every choice; the read awaits its worker.
+ *  88-89. The clock never rebuilds a rail screen; Household money and Rankings keep hover and tooltips.
+ *  90. Cost: KeptTimingCheck.
+ *  91. Door cards set their hand style once per draw, whole.
+ *  92-93. Unchanged pages set no property twice; real show methods retain their page and pool.
+ *  94-96. Research equipment and grants: kept pages, signatures, pictures, folds and choices.
+ *  97-98. Research wording and count-up at the clock's speed.
+ *  99-101. Research Overview and Funding: equality and reshaping on caused research states.
+ * 102. Optional state and constraints reset once; handlers, cursors and held thumbs survive redraws.
+ *      Retired pages and comparison roots release; objects leave KEPT_HEAP_SHARE's suite-heap margin,
+ *      with software canvas render targets measured separately, without moving the heap dial.
+ * 103. Caused FB2 regressions: buyback resolution, header geometry, bar labels, Partners and Search,
+ *      and Government's recurring lines retained after one-off lines fill a parked scope.
  *
- * ...and City History (KP1), its page drawn kept from a pool of its own, the big chart and the two pins'
- * charts the screen's own and shared by the kept page and the one built new (the bench puts them back):
- *  14. City History is kept: each month's redraw keeps the page's top nodes and hands back nine in ten
- *      of the first draw's nodes, most months make none, and the big chart, both pins' charts, the
- *      legend's chips and the range buttons are the same nodes in the same boxes, in the scene;
- *  15. it shows what a page built new shows: for MONTHS months the kept page's signature equals that of the
- *      page built new (the pool, and the big chart's chips' pool, swapped for empty ones), line for line;
- *  16. and looks it: the same pictures at three of those months (alike()); one figure made wrong by hand parts
- *      signature and picture, and the next kept draw sets it right;
- *  17. what reshapes the page keeps it right: a line picked and unpicked, a preset, a picker group closed and
- *      opened, a word typed in the filter, the hard times' and the goods' folds, the log scale, real GDP alone
- *      in layers, a line hidden in the legend, the chart's window moved (a range, an episode's span, by hand),
- *      a line pinned and a pin taken off, the chart's full screen, the year book's card - the redraw after each
- *      and the one after that equal a page built new;
- *  18. the crosshair and the window survive a month: a window on the newest month follows it and one put by
- *      hand stays; the crosshair a MOUSE_MOVED set on the big chart's plot is there after a kept redraw and gone
- *      from a page built new (which takes the chart off the scene); a legend chip under the pointer is still the
- *      same chip, under it, with the same tooltip;
- *  19. the count-up only at 1x-10x: with the clock running at each rung of the speed ladder, a month that lands on
- *      People starts LIVING HERE's count-up, and on City History the left pin's, exactly at the rungs
- *      UserInterface.countsUp() allows (COUNT_UP_TOP) and always when the clock is paused; a count-up still
- *      running when a month lands past COUNT_UP_TOP is stopped;
- *  20. (its cost: KeptTimingCheck's, FS4)
- *
- * ...and Infrastructure, Services and the land office (KP2), each page drawn kept from the screen's own pool and built
- * new from an empty one (the land office's map, which both hold, put back after), four sections each - the kept page, what
- * it shows, what reshapes it, what it costs - and the three that cut across them:
- *  21. Infrastructure is kept: on its Roads page, with transit built (a Bus Network ordered through the model if the city
- *      has none, so that the Transit page's fare card is there), each month's redraw keeps the top nodes, hands back nine
- *      in ten of the first draw's nodes, and on most months makes none;
- *  22. it shows what a page built new shows: for MONTHS months the signatures are equal line for line, the pictures the
- *      same at three of them, one figure made wrong by hand parts both and the next kept draw sets it right;
- *  23. what reshapes it keeps it right: every page, the Freight divisions, the roads', transit, freight and railway folds
- *      opened (each has to add to the page) and closed - the redraw after each and the one after a month lands equal a
- *      page built new, and the month's redraw hands back nine in ten of the page;
- *  24. (its cost: KeptTimingCheck's, FS4);
- *  25 to 28. the same three for Services (28, the cost, KeptTimingCheck's), on every sub-page of the four systems and every fold on them (the Health overview's
- *      sick rate to the safety books);
- *  29 to 32. the same three for the land office (32, the cost, KeptTimingCheck's), on its sides and places, the best-N count, its fold, the way of paying, and
- *      a plot bought (the receipt, the offers that came onto the shelf: all from the model); the page says if the city
- *      owns ground on a second landmass, whose table is kept since KP4 (SectorScreen.oilTable: its rows are scopes), and how many sectors wait on ground;
- *  33. the land office's other pages: the city is brought to the end of its cash by buying through the model, so that the
- *      funding page exists; it and the page for when the city fell short, each an arrival, are drawn and a month later again,
- *      equal to pages built new;
- *  34. a control keeps the player's hand: on Transit's fare dial, through the screen's real show method, a slider pressed is
- *      held, and a month landing under it leaves the same node, its thumb, its reading (in the month's money, as a dial built
- *      at the thumb reads) and its ladder's shown value where the player put them; released, the fare is staged at the thumb
- *      and the page equals a page built new; after several kept months a value set outside any draw reaches the reading of
- *      the latest draw; the fare is unstaged at the end. And City History's filter box, with the focus on it (through
- *      Node.setFocused when this scene has no window to give it one - the line says which), keeps its node, text, caret and
- *      focus across a month through the real show method, and Kept.text sets a field that has none and leaves one that has;
- *  35. the hover is kept: on City History's row that moves the chart and chart card's head, on a door, a vitals cell that
- *      is a door, Services' door card and the land office's offer row and ore card, a pointer put over the node (a page may
- *      have none this month: the line says so) and the page drawn kept again leave the same node in the look its own
- *      mouse-entered gives it, and with the pointer off, the look its mouse-exited gives it.
- *
- * ...and Build and the construction page (KP3), each page drawn kept from the screen's own pool and built new from an
- * empty one, the same sections as KP2's and the stopped pages, the controls and the hover:
- *  36 to 39. the Build screen: kept on the Overview and on a city category with two orders dialled up (so that its order bar
- *      shows); shown as a page built new shows it for MONTHS months, the pixels at three and the spoil proof; reshaped by
- *      every category in turn, every ring of the two city categories with the most of them, an order dialled and cleared
- *      with a card's own steppers on a city and on a market category, a card's stats pinned and unpinned, automatic
- *      building on and off (the Overview's cards; a category's head chip) - the redraw after each and the one after a
- *      month equal a page built new (39, the cost on both pages, is KeptTimingCheck's since FS4);
- *  40 to 43. the same three for the construction page, with the city's sites held on through the months (SITE_ROWS: a
- *      row each, a bar each on the timeline): its three tabs in turn, a building picked to demolish and a business's to buy
- *      out, two of it, a word typed in the find box and emptied (43, the cost on Sites, is KeptTimingCheck's since FS4);
- *  44. the pages a build is stopped on (no deposit, coast, river, bridge, licence, land) and the run's funding and
- *      fell-short pages: each caused where the model can cause it (Game.buildRunStop() refuses the count; a run larger than
- *      the cash) and else drawn for a building that merely names the page - the line says which - drawn as an arrival and a
- *      month later again, equal to a page built new;
- *  45. the controls keep the player's hand: automatic building's dial pressed and held across a month (the same node,
- *      thumb, reading and Ladder.shown()), released and the page equal to one built new; the cap chips' yield box and the
- *      construction page's find box, with the focus, keep node, text, caret and focus across a month through the real
- *      show methods; a stepper pressed between draws refills the order bar in place and the next kept draw equals a page
- *      built new;
- *  46. the hover: a card's (i) hovered keeps its stat cover shown across a kept draw and hides it when the hover goes, and
- *      the Overview's tiles, a category's door and a small ring card keep the look their own mouse-entered gives them.
- *
- * ...and the Sectors tab (KP4), the list and a business's five pages in both views, each page drawn kept from the screen's pool and
- * built new from an empty one, the clock paused so that every month counts up (a month stepped by hand does) and the pages' animations
- * are finished where a signature is read:
- *  47. the list and a plain business's Operations page are kept: the top nodes stay, nine in ten handed back, most months make none;
- *  48. they show what a page built new shows, for MONTHS months with the pixels at three and the spoil proof - on the list, a plain
- *      business's Operations, its Income in both views and its Balance sheet as a statement;
- *  49. what reshapes them keeps them right: Show more and less; every sector of Sectors.KEYS on its Operations page; one business of
- *      each kind (a plain one, the shops, the landlords, a materials industry, Freight) on all five pages in both views; Freight's four
- *      divisions; the fold of every line, the goods fold, the order book and a statement's notes opened (each has to add to the page)
- *      and closed; the Statement view's change and common-size columns off and on - each redraw, and the one after a month lands,
- *      equal to a page built new;
- *  50. the pictures a page holds are kept: a materials industry's (IndustryPane), the legs' bars (LegBar) and, in a refinery's town
- *      (RefineryViewCheck's), the refinery's (RefineryPicture) stay the nodes they were from month to month, repaint only where the
- *      month's view moved, keep nine in ten of their parts, are not painted by a redraw in the same month, and equal a page built new;
- *  51. the count-up only at 1x-10x: with the clock at each rung of the speed ladder (and paused) a month that lands starts a count on
- *      the list's KEPT figure and its cards', a business's KEPT, the Income page's waterfall and the Operations page's ring exactly at
- *      the rungs UserInterface.countsUp() allows (COUNT_UP_TOP); past it nothing counts, the page is the page the month's figures
- *      draw, and a count still running from the month before is stopped;
- *  52. (the list's and the business pages' cost: KeptTimingCheck's, FS4);
- *  53. the controls keep the player's hand: the oil reserve's FILL and RELEASE dials (in OilViewCheck's sea town), pressed and held
- *      across a month (the same node, its thumb, its reading and its ladder's shown value), released and equal to a page built new;
- *  54. the hover: a list card, a door and the crumb under a still pointer keep their look across a kept redraw.
- *
- * ...and the money screens (KP5), the Bank tab, the Finances tab and the city's fund, each page drawn kept from the screen's pool and built new from an
- * empty one, the clock paused so that every month counts up, a city that has paper of every kind on its books and a fund that holds:
- *  55. the Bank is kept: the Overview and the Profit page - the top nodes stay, an unchanged draw makes none, and nine in ten of what each month's
- *      redraw draws again is handed back (FS5: a block a month makes is drawn again held still, KBP1);
- *  56. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof: the Overview, Profit in both views, the
- *      Balance sheet as a statement;
- *  57. what reshapes it keeps it right: every page in both views, a statement fold and the lines inside it opened and closed, the waterfall's year, the
- *      statement's two columns - each redraw, and the one after a month lands, equal to a page built new; and a chip picked lands at the top of its page
- *      (the scroller of a kept page is put back to 0 by a pick of its own chip, left alone by a month);
- *  58. Finances is kept: the hub and a page of the position; 59. it shows what a page built new shows (the same as 56);
- *  60. what reshapes it: every area and page, the bond market's fold and the book of two bonds, Borrow's every kind and term and ask, callable, the highest
- *      yield, the typed ask and every money abroad, paper sold of every kind and its line's page and Close it now from each (the boxes typed in), and the
- *      foreign default and debt result menus, each an arrival and a month later;
- *  61 to 63. the same three for the city's fund, paid into when it holds nothing (FS5): Portfolio kept (its months make the month's events) and shown;
- *      its four pages, the rows that fold, a security opened with the ticket's every choice, Search's words and chips, Activity's groups and months, and
- *      a holding the let-go months settle, ordered by hand until one does (KFP1);
- *  64. the pictures are kept: CurveChart, DeskCurve, DeskBars, PathChart, BuybackLadder, AuctionChart, Columns, RankBar and the TimeCharts stay the nodes they
- *      were, draw again only where the month's figures moved, draw nothing on a second redraw in the same month (a TimeChart: no more than the two frames it is
- *      told), and equal a page built new;
- *  65. the count-up only at 1x-10x: at each rung of the speed ladder and paused a month that lands pops Bank's PROFIT figure, grows its capital gauge and
- *      counts the fund's worth and pops a payment, exactly at the rungs countsUp() allows; past it nothing animates and a running animation is stopped;
- *  66. the boxes keep the player's hand: Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips and the fund's search box, with the
- *      focus and typed into, a month landed through the real show method - the same node, text, caret and focus - and a chip pressed under the focus; and
- *      (KP2b) Enter fired in each yield box with "4.5" typed: the same node, the text a page built new shows ("4.500"), the caret at the end, the focus kept;
- *  67. the hover: a Bank door card, a rung's name on the ladder, a Finances card and a row of the book, a fund holding's row;
- *  68. (their cost: KeptTimingCheck's, FS4).
- *
- * ...and the Government tab, Trade & the World with its partners page and Policy with zoning's pages (KP6), each page drawn kept from the
- * screen's pool and built new from an empty one, the clock paused so that every month counts up:
- *  69. Government is kept: each of its four pages, the top nodes stay, nine in ten of what each redraw draws again handed back (the Overview's lists show
- *      a line in the months it took in or paid out something: a block of the month's content, traced held still);
- *  70. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof, on every page;
- *  71. what reshapes it keeps it right: every page, every fold (the treasury's month, the paper, the output's months, the bridge's two columns' "N more")
- *      and every line that opens into who pays, each opened and closed, and a door's target - each redraw, and the one after a month lands, equal to a page
- *      built new - in the city as it is, owing paper of every kind (the debt fold and the paper's lines have to add), and in a deficit made by hand with the
- *      central bank printing for the treasury and arrears owed (the cards the Overview draws only then; the dials put back after);
- *  72 to 74. the same three for Trade & the World, on its six pages and a nation's page behind Partners: every page and sub-page, every fold and line (the
- *      month's ledger and the eight moneys over the years have to add), the river and the steps, what we trade by good and by business, the table of the month
- *      and of the year, a good's board, three nations' pages and back to the table, the exchange's ask and buying and selling, each of the eight moneys, the
- *      vault's mix, and a door's target; the eight over the years' two charts are as wide as the card they sit in, on the kept draw and the month after;
- *  75 to 77. the same three for Policy, on the hub, Taxes' Profit page, Money's policy rate, Promises' Schools and Food, zoning's ground and a zone's page:
- *      every fixed page of the five areas and a zone's page for every sector, zoned or not, the forest law, every fold and line (a tax's table, a payer's
- *      own move, the zero payers, the floor's table, the rate's history, a course's own price, the food rows), a change staged on every page that takes
- *      one and dropped (the tray, and the dial cards drawn at the thumb), and the currency page and the reform page under every regime; and People's WHO
- *      GOES SHORT card, which Policy's Food page shares, with people short of food;
- *  78. the controls on Policy keep the player's hand: on a tax page, the policy rate and a zone's ground dial, and (KP2b) the policy rate page's target
- *      ladder and HOW STRICT (which apply at once: the model put back) and a zone's ITS TAXES second dial, through the real show method, a slider
- *      pressed and dragged two steps and a month landed is the same node, still held, the thumb where the hand left it, the reading and the dial card's
- *      effects at the thumb (HOW STRICT's line under it the held step's words, not the city's); a draw with nothing changed sets no reading's text or
- *      style; released, the change is staged at the thumb, the tray shows it and the page equals a page built new; dropped, equal again;
- *      and a dial card that comes in front of a held dial (a course's own price on the Schools page, a payer's own move on Profit) leaves the held slider
- *      the same node, at its thumb, with no dial in front of it carrying the thumb;
- *  79. the count-up only at 1x-10x: at each rung of the speed ladder and paused a month that lands counts Trade's SOLD ABROAD and BOUGHT ABROAD up from last
- *      month's and grows the bars of the Overview and of What we trade exactly at the rungs countsUp() allows; past it nothing animates, each figure reads
- *      this month's words and the page is the page built new, and a count still running is stopped; the Government and Policy pages start no animation at
- *      any rung (they have none);
- *  80. the hover: on Government a door, a status cell, a key row of the split ring, a bridge row and a ranked bar's row; on Trade a door card, a mirror
- *      row's ground and a status cell; on Policy an area card and the tall rows of a payer, a course and a zone - each keeps the look its own mouse-entered
- *      gives it under a still pointer across a kept redraw, and loses it with the pointer; and the tooltips are kept: a node a month's redraw keeps keeps
- *      its own Tooltip (Kept.tip) on every page of the three screens;
- *  81. (their cost: KeptTimingCheck's, FS4).
- *
- * ...and Household money and the Rankings tab (KP7), the last two screens on the rail, so that no screen on it is rebuilt by the clock; each page drawn kept
- * from the screen's pool and built new from an empty one, the clock paused so that every month counts up:
- *  82. Household money is kept: the top nodes stay, nine in ten of what each redraw draws again handed back;
- *  83. it shows what a page built new shows, for MONTHS months with the pixels at three and the spoil proof;
- *  84. what reshapes it keeps it right: each view, every cell of the grid opened (a family cell of each shape and tier with anybody in it, and every row below
- *      the rule), none, the city's month as a statement opened and closed, the books stacked under the grid (the page 1000 wide) and beside it again, and the
- *      page shown through the real show method - each redraw, and the one after a month lands (a cell stays open across it), equal to a page built new;
- *  85 to 87. the same three for the Rankings tab, which paints its table on canvases that no signature holds, so every choice's redraw, and the one after a
- *      month, is also the same picture as a page built new: each board (Your world where the city has nations), money, prices and conversion, every fifth
- *      measure, each filter and Around you, Browse all, a measure pinned, a place's drawer; then the city saved into slot 10 of the harness's own folder, a
- *      read of the saved cities waited for, and Your cities at Now and at Your age, their prices and moneys and drawers;
- *  88. the clock never rebuilds a rail screen: a page drawn the old way twice under one name moves UserInterface.rebuiltInPlace by one, and an arrival by none
- *      (the condition caused); then every tab of the rail, Household money, the construction page and the city's fund on Finances, each shown through its real
- *      show method and then given three months with the screen's own redraw after each (what the clock does), moves the count by none, keeps the page's top
- *      nodes the same nodes, keeps the same screen on show, and hands back nodes of the page it redraws over;
- *  89. the hover and the tooltips: on Household money a vitals cell that is a door; on the Rankings tab a measure line, which keeps its hover look under a
- *      still pointer across a redraw and loses it with the pointer, and the table's picture, which lights the row under a pointer that has not moved and none
- *      once it has gone; and a node a month's redraw keeps keeps its own Tooltip (Kept.tip) on both pages, with a cell open, a drawer open and every measure open;
- *  90. (their cost: KeptTimingCheck's, FS4);
- *  91. (KP2b) a slider greyed while held lets go: the policy rate's dial pressed (and, the second time, dragged a step), then greyed, is not held; ungreyed,
- *      a draw with another value staged under it puts the thumb on that value and the page equals a page built new, and dropped the thumb is back;
- *      and a door card's style is set once a draw: on the Policy hub and the Taxes page, a draw with nothing changed hears no change of it;
- *  92. a redraw with nothing new sets nothing (KP2b): a second kept draw of a page in the same month writes no style, text, graphic, padding or width on a
- *      node it hands back - the condition caused (a style set to what it is moves no listener, and set to another and back moves it twice), a berth kind
- *      gone to none drawn as a row built new (a hand-made berth: no city has the page), then the Sectors list and a business's five pages, the statements
- *      with a note open, the Bank's seven pages, Finances' hub and every page of its six areas (a line's page, Close it now, the window abroad shut), the
- *      fund's security, Trade's six and a nation's, Policy's hub and pages with Zoning's, Infrastructure's four, Services' sub-pages, the land office,
- *      Household money (each view, every cell of the grid opened, the statement, the books stacked) and the Rankings tab (each board, money, prices and
- *      conversion, some measures (every tenth), each filter, Around you, Browse all, a pin, a place's drawer, Your cities), each with where the writes that are left come
- *      from; every screen is counted, including the frame, Services and Infrastructure (KP2c);
- *  93. the Rankings table's picture (KP2b): a kept draw of the page writes its cursor none (the hand is in its style, which Kept leaves alone), and the band
- *      that lights the row under the pointer follows a pointer a wheel leaves still - a ScrollEvent through the table's canvas moves the page, no
- *      mouse-moved follows, and after it, and after a month's draw, the band is on the row the pointer is over now and not on the one it was over before;
- *  94. (UP7) the drawer's pinned bar and the construction tab are kept: two boxes made once, on scenes of their own, drawn by the real refreshDrawerBar() and
- *      refreshConstructionTab(inCity, open) - after the first draw each hands back every node and makes none; in every state (pinned and not, the panel open and
- *      folded, a city on show and a game menu, no site, one and three) the kept signature equals one built new (the pools swapped for empty ones), and at three
- *      states the same pixels; the tab's count made wrong by hand is seen and set right by the next draw; a second draw with nothing new writes no style, text,
- *      graphic, padding or width (and one after the pin is flipped does, so the counter sees the bar); the tab drawn under a still pointer keeps its hover look and
- *      loses it with the pointer; the tooltips are the same objects across draws, their words following the count and the pin; the click handlers are there after a
- *      kept draw on both sides, and fired (the scratch city's prefs file) they pin, unpin, open and fold.
- * ...and the research screens on the Sectors and Build tabs (R5, slice B2), on ResearchViewCheck.researchTown(), a city founded the 1900 way (a played
- * city has nothing of either to draw, and says so):
- *  96. a sector's Investors page with its equipment, kept: the sector of the fixture's unfitted stack has ITS EQUIPMENT with the piece's card, the
- *      stack's row, how many carry it and the model's verdict; the page kept over last month's nodes is the page built new for R5_MONTHS months and hands
- *      back nine in ten of its nodes; the farms' page keeps its known binder while the tractor is unknown, then adds the tractor with its origin, what it does and "its gain
- *      cannot be had yet", and the find lost and found again reshapes it as a page built new is reshaped; a played city has no ITS EQUIPMENT;
- *  97. a NEW build card, kept: the category page holding the fixture's new furnace shows the chip and the violet edge, where it came from, the strip
- *      under the head and the dot on the category's chip; the seen rule from both sides (NEW the month the card is first drawn, a redraw in that month
- *      too, and not the month after while the model alone still says NEW; the dot on another page follows it; a reload shows NEW again; the rule alone
- *      on a seen map and two months); a lab's card says what a lab is for, in either kind of city; a played city has no NEW anywhere.
- * ...and the header's speed reading (UP7):
- *  98. (UP7) the speed's reading is the speed reached alone: the header's pace swapped for ones on a clock moved by hand, through the real refreshHeader() and
- *      paintSpeed() at every rung - short, the label reads pace.reached() with no rung beside it, in amber (WARN); at pace and stopped, the rung in the header's
- *      colour; the label is the one measured width at every rung, short and at pace, and no reading is clipped; at pace it is laid out exactly as a label made
- *      the old way (min width 34, the old style, the same words); the clock block and the tiles beside it do not move between pace and short; the kept header's
- *      signature equals a header built new, short and at pace; a second header draw, and paintSpeed() with the reading unchanged, write nothing on the label,
- *      and a flip from pace to short and back sets its words and its style once each.
- * ...and Policy > Research's Overview and Funding pages (R3b, slice B), in a city founded the default way and, on ResearchViewCheck.fundedTown() (two
- * Universities, an Institute of technology and a Medical school, grants that bought posts, a lab and a prize), a city founded the 1900 way:
- *  99. the Overview, the hub's sixth card: in a default city one quiet card, the area's first page the Overview, a door to the area landing on it; in the
- *      town four figures (the researchers at work with the idle and to each 1,000 workers, a month, found here with from abroad, in reach by field), a row a
- *      field (its schools, researchers with the labs' and the idle, what is in reach, finds, a door to Funding) and a row a kind of school (the posts it carries
- *      of each field, the room it has), each held to the model's reads; the page kept over last month's nodes is the page built new, a second draw in a
- *      month writes nothing (92's rule), and the hub's Research card (a door to the Overview) is held to the reads the same way;
- * 100. Funding: a card a field with its grant and prize dials, the room and where labs come, rows before and after and the sentence the reads choose - in a
- *      default city (nothing to find; a grant staged still buys posts) and in the town; a staged grant, a grant past the room, a prize under a lab's
- *      threshold, two dials at once, each equal to a page built new and shown from the model's reads (the posts of the room, the researchers, the bill, the
- *      preview, THE BUDGET); Apply all through the tray sets the grants and prizes in the model and logs them as the promises are; a thumb held through a
- *      month's landing keeps its place and its rows (a grant dial and a prize dial);
- * 101. the schools' research posts on Services > Education (the University, the Institute of technology and the Medical school say the field, the posts filled
- *      and the room; a school not built or hosting none says nothing), Government's Spending list with the Research line (the lines add up to the total, a
- *      door to Funding, who is paid), its payroll and the wage floor's naming the research staff (the floor in force shows no change of the payroll), each
- *      kept against a page built new with 92's rule.
- * ...and the remaining kept sweep (KP2c):
- * 102. unchanged optional state and grid constraints stay put; omitted state resets once; a foreign vitals cell gets the bar's look;
- *      real Rankings and History redraws keep their handlers and cursors; equal raw size and margin setters are counted, guarded ones skipped;
- *      a policy thumb holds across greying, ungreying and temporary reparenting in one drag, and releases at the player's snapped value;
- *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free by the objects
- *      (the live heap less the canvases' render targets a software renderer keeps on it, FS5).
- * ...and the geometry and retention repairs of FB2, each caused on its own whatever the played city does:
- * 103. the buyback ladder stays the same picture while its quote moves under the picture's resolution and draws again when it moves past it (KL1); a header
- *      tile's hidden wordings and sparkline stand where a tile built new leaves them, and a bar's tick name that comes and goes leaves no label behind it
- *      (KS1-UI, HW1's Your rate); Partners' buyer-entry triangles and Search's empty price, move and held words equal a picture and rows built new (BF1-K);
- *      the lines of the Government Overview that leave and come back make no node on their return (KS1-Gov).
+ * WHY (FS5): the old header repeated several hundred lines of these methods' premises and labels;
+ * this section map keeps the assertions discoverable while paying for the new checks machinery.
  */
 public class KeptCheck {
 
@@ -1520,7 +1286,15 @@ public class KeptCheck {
         if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);
         if (d == null) return null;
         String content = firstDifference(unplaced(kept), unplaced(fresh));
-        if (content != null) return d;
+        if (content != null) {
+            // FS5: trace content differences too, but keep them hard; only unchanged content may be a KRT1 reading.
+            for (int i = 1; i <= HELD_STILL; i++) {
+                String again = againstNew(bench, page, pixels);
+                System.out.println("  " + page.name() + ": content difference held still, look " + i + ": "
+                        + (again == null ? "did not repeat (the original content difference still fails)" : again));
+            }
+            return d;
+        }
         for (int i = 1; i <= HELD_STILL; i++) {
             String again = againstNew(bench, page, pixels);
             if (again == null) {
@@ -1750,11 +1524,11 @@ public class KeptCheck {
         });
         double worst = Double.MAX_VALUE;
         String worstAt = "";
-        int worstMade = 0, worstKept = 0, repeated = 0, counted = 0, readings = 0, acted = 0;
+        int worstMade = 0, worstKept = 0, repeated = 0, counted = 0, readings = 0, acted = 0, refused = 0;
         for (Choice c : choices) {
             Object[] r = fx(() -> {
                 String premise = c.hand().on(bench);
-                if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, 1.0, 0, 0, false, false};
+                if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, Double.NaN, 0, 0, false, false};
                 bench.drawKept(page);
                 int[] chosen = bench.counts(page);
                 String a = againstNewHeld(bench, page, pixels);
@@ -1777,7 +1551,9 @@ public class KeptCheck {
             }
             size = (int) r[1] == 0 ? size : (int) r[1];
             if ((boolean) r[5]) repeated++;
-            if (c.acts()) {
+            if (Double.isNaN((double) r[2])) {
+                refused++;
+            } else if (c.acts()) {
                 acted++;
                 System.out.printf("  %s: the month after handed back %.1f%% of the page's nodes (the model acted: not counted below)%n", c.name(), (double) r[2] * 100);
             } else if ((boolean) r[6]) {
@@ -1795,8 +1571,8 @@ public class KeptCheck {
                 }
             }
         }
-        System.out.printf("  the share counts %d of the %d choices' months (%d a block of the month's content, a reading; %d the model acted)%n",
-                counted, choices.size(), readings, acted);
+        System.out.printf("  the share counts %d of the %d choices' months (%d a block of the month's content, a reading; %d the model acted; %d refused, no month played)%n",
+                counted, choices.size(), readings, acted, refused);
         if (worst == Double.MAX_VALUE) System.out.println("  no choice's month was counted (each acted, or made a block of the month's content)");
         else System.out.printf("  the month's redraw after a choice handed back %.1f%% of the nodes it drew again at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
@@ -4752,16 +4528,12 @@ public class KeptCheck {
             CorporateBond cb = g.getBondMarket().bond(id);
             TreasuryFund.HandOrder bid = null;
             for (TreasuryFund.HandOrder o : g.getFund().getPosted()) if (o.bond() && o.buy() && o.bondId() == id) bid = o;
-            String seller = cb.world() > FundLedger.DUST ? BondMarket.WORLD : BondMarket.BANK;
-            double holds = BondMarket.WORLD.equals(seller) ? cb.world() : cb.bank();
-            double price = bid != null ? bid.price : g.getBondMarket().modelPrice(cb, g.getMonth());
-            double q = Math.min(holds, bid != null ? Math.max(0, bid.units - bid.filled) : cb.face() / 100);
-            List<OrderBook.Fill> fills = q > FundLedger.DUST ? g.getBondMarket().tradeForCheck(cb, seller, OrderBook.Side.SELL, price, q) : List.of();
+            List<OrderBook.Fill> fills = settleFundBid(g.getBondMarket(), cb, bid);
             List<String> came = new ArrayList<>(b.fundHoldings());
             came.removeAll(letGoFrom);
-            System.out.printf("  the rule let go; the hand bid for %s (%d months left; %s), the %s sold %.4g of face into it: %d fills; lots it did not hold: %s%n",
-                    free, most, bid == null ? "no bid posted" : String.format("posted %.4g at %.4f", bid.units, bid.price), seller, q, fills.size(),
-                    came.size() > 4 ? came.subList(0, 4) + "..." : came);
+            System.out.printf("  the rule let go; the hand bid for %s (%d months left; %s): %s; lots it did not hold: %s%n",
+                    free, most, bid == null ? "no bid posted" : String.format("posted %.4g at %.4f", bid.units(), bid.price()), fills, came);
+            if (came.isEmpty()) return "the book's seller settled no new holding for the fund";
             b.fundPage("Portfolio");
             b.fundUnfold();
             return null;
@@ -4827,6 +4599,18 @@ public class KeptCheck {
             bench.fundPage("Portfolio");
             return null;
         });
+    }
+
+    /** FS5/KFP1: isolate the posted hand bid from rival bids, then cause its counterparty through the book's real settlement. */
+    static List<OrderBook.Fill> settleFundBid(BondMarket market, CorporateBond bond, TreasuryFund.HandOrder bid) {
+        if (bond == null || bid == null) return List.of();
+        OrderBook book = market.bookOf(bond);
+        for (String who : book.bids().stream().map(OrderBook.Order::who).distinct().toList())
+            if (!BondMarket.FUND_HAND.equals(who)) book.withdraw(who);
+        String seller = bond.world() > FundLedger.DUST ? BondMarket.WORLD : BondMarket.BANK;
+        double held = BondMarket.WORLD.equals(seller) ? bond.world() : bond.bank();
+        double quantity = Math.min(held, Math.max(0, bid.units() - bid.filled()));
+        return quantity > FundLedger.DUST ? market.tradeForCheck(bond, seller, OrderBook.Side.SELL, bid.price(), quantity) : List.of();
     }
 
     /** The screen's own paging dials, also used by the bench's package-private hands. */
@@ -8424,15 +8208,22 @@ public class KeptCheck {
             List<String> cells = bench.householdCells();
             double[] held = families.toSaveArray();
             double owners = families.getOwnerAdults();
+            List<Household> ledgerCells = g.getHouseholdBalance().cells();
+            double[] households = ledgerCells.stream().mapToDouble(Household::households).toArray();
             month(g);
             List<String> unheld = bench.householdCells();
             g.getFamilies().restore(PopulationCohorts.saveBands(), FamilyModel.saveShapes(), held);
             g.getFamilies().restoreOwnerAdults(owners);
+            // FS5/KP7-N: below-the-rule cells are counted by the ledger, not FamilyModel; hold their counts too.
+            for (int i = 0; i < households.length; i++) ledgerCells.get(i).households = households[i];
             List<String> kept = bench.householdCells();
             int emptied = 0, wouldHave = 0;
             for (String cell : cells) {
                 if (!kept.contains(cell)) emptied++;
-                if (!unheld.contains(cell)) wouldHave++;
+                if (!unheld.contains(cell)) {
+                    wouldHave++;
+                    System.out.println("  household grid cell " + cell + " closed in the month; after holding its counts: " + kept.contains(cell));
+                }
             }
             bench.drawKept(page);
             bench.passes();
