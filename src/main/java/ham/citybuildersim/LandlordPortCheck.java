@@ -33,7 +33,9 @@ import java.util.Map;
  *   4. HANDLING, EACH LEG ONCE. A city landing and shipping dry bulk by sea over a Bulk Terminal: each
  *      shipper's "Port handling" line is its sea tonnes of each kind x the quote it was billed at, to the
  *      cent; Freight's "Port handling billed" is the shippers' lines summed; a sector that only buys at
- *      home and a kind with no berth pay none.
+ *      home and a kind with no berth pay none. (FS7: the fixture is the Haulage chain's 14 months, a Bulk
+ *      Terminal laid on it and the berths' shares handed to Ports at a set share - handShares - not three
+ *      more months played for them to be found in force.)
  *   5. THE DUES. Freight's "Port dues" are the tonnes x each kind's dues rate x the dial, to the cent, and
  *      the treasury's and the national accounts' lines equal them; twins but for the dial: none at 0, twice at 2.
  *   6. THE DUES' DEFAULT. duesRateOf() is the annuity worked here by hand (the kind's terminals at cash cost
@@ -41,7 +43,10 @@ import java.util.Map;
  *      DESIGN_USE), and a city owing more pays a dearer due.
  *   7. THE PRICE. The first crew quote is the target itself, the next walks REPRICE_SPEED of the way, the dues passed through at the month's rate; the
  *      scarcity is 1 to the berths' month and the cap at twice; a berth below DESIGN_USE bills less than
- *      its crew and its dues.
+ *      its crew and its dues. (FS7: the fixture is the Bulk Terminals laid in the number whose berths' month
+ *      at DESIGN_USE is more than the whole of the chain's dry bulk across the boundary, the shares handed
+ *      to Ports - handShares - and the first quote's month played once it has a crew: DESIGN_USE, REPRICE_SPEED
+ *      the model's.)
  *   8. THE MONEY. The money audit closes every month of a city working a port that pays dues.
  *   9. THE SAVE. The dial crosses the policy state (and a short array reads the default); the quotes, the
  *      month's dues and handling and the treasury's lines cross a save and a reload, to the bit.
@@ -357,6 +362,68 @@ public class LandlordPortCheck {
         return g;
     }
 
+    /**
+     * FS7: the tonnes of each good across the boundary, both ways, as the rows the last month left have them (every sector but the
+     * railway: units landed and shipped x the good's tonnes a unit), by Good ordinal - what Freight.haul() sums as the month's tonnes.
+     */
+    static double[] boundaryTonnes(Game g) {
+        double[] t = new double[Good.values().length];
+        Freight fr = g.getSectors().freight();
+        for (Sector s : g.getSectors().all()) {
+            if (s == fr) continue;
+            for (Good good : Good.values()) {
+                Traffic stream = good.traffic();
+                if (stream == null || !stream.isFreight() || good.cargo() == null) continue;
+                t[good.ordinal()] += (s.unitsImported(good) + s.unitsExported(good)) * good.tonnesPerUnit();
+            }
+        }
+        return t;
+    }
+
+    /** FS7: a kind's tonnes across the boundary in boundaryTonnes(). */
+    static double kindTonnes(double[] t, Ports.Cargo kind) {
+        double sum = 0;
+        for (Good good : Good.values()) if (good.cargo() == kind) sum += t[good.ordinal()];
+        return sum;
+    }
+
+    /**
+     * FS7: the berths' shares in force for the month about to be billed, handed to Ports instead of waited for: the plan Freight.haul() makes
+     * at the end of a month (planFirst, planAfter, commit at the railway's quote and carried shares in force), run on the chain's boundary tonnes
+     * with each standing kind's berths set to `share` of its tonnes - so a kind with a berth goes by sea in exactly that share
+     * (a kind with none in none) - and the road told both shares (Game.chargeFreight).
+     */
+    static void handShares(Game g, double share) {
+        Freight fr = g.getSectors().freight();
+        Ports ports = g.getPorts();
+        double[] t = boundaryTonnes(g);
+        double[] stream = new double[Traffic.values().length];
+        for (Good good : Good.values()) {
+            Traffic s = good.traffic();
+            if (s != null && s.isFreight() && good.cargo() != null) stream[s.ordinal()] += t[good.ordinal()];
+        }
+        double[] standing = Ports.berths(g.getBuildingManager()), berths = new double[K];
+        for (Ports.Cargo kind : Ports.Cargo.values()) {
+            if (standing[kind.ordinal()] > 0) berths[kind.ordinal()] = share * kindTonnes(t, kind);
+        }
+        double[] carried = fr.getCarried();
+        quietly(() -> {
+            ports.planFirst(t, new double[t.length], fr.getQuote(), berths, 0);
+            ports.planAfter(t, carried);
+            ports.commit(t, stream, carried);
+            g.getInfrastructureManager().setRailShare(ports.railOfStream(carried));
+            g.getInfrastructureManager().setSeaShare(ports.seaOfStream());
+        });
+    }
+
+    /** FS7: the Haulage chain's 14 months, a Bulk Terminal laid on it and its berths' share in force by hand (handShares): seaBase()'s city without the three months played for them. */
+    static Game seaHanded(GameFiles files, double share) {
+        Game g = HaulageCheck.played(files, 14);
+        quietly(() -> HaulageCheck.lay(g, "Bulk Terminal", 1));
+        handShares(g, share);
+        return g;
+    }
+
     /** The month about to be billed, worked out from the model's own getters before the haul runs: each shipper's sea tonnes by kind, and the quotes in force. */
     static final class Plan {
         final Map<Sector, double[]> sea = new LinkedHashMap<>();
@@ -432,7 +499,11 @@ public class LandlordPortCheck {
 
     static void handling() {
         System.out.println("\n--- 4. handling, each leg once: a shipper pays its sea tonnes at the quote, Freight bills the sum ---");
-        Game g = seaBase(GameFiles.scratch("landlordport-handling"));
+        // FS7: this played 17 months (the chain's 14, a Bulk Terminal laid, three more) and found dry bulk going by sea in a share in force with a
+        // quote struck. It is caused now: the Bulk Terminal laid and Ports handed its share (SEA: a set half of the chain's dry bulk), the month
+        // billed once; with no quote struck yet the bill is the rule's own crew target (billedAt), the same law.
+        final double SEA = .5;
+        Game g = seaHanded(GameFiles.scratch("landlordport-handling"), SEA);
         Freight fr = g.getSectors().freight();
         PortDivision pd = fr.portDivision();
         BuildingManager bm = g.getBuildingManager();
@@ -456,7 +527,8 @@ public class LandlordPortCheck {
         double[] homeTonnes = new double[K];
         for (Good good : Good.values()) if (good.cargo() != null && good.traffic() != null) homeTonnes[good.cargo().ordinal()] += plant.unitsBoughtLocal(good) * good.tonnesPerUnit() * g.getPorts().seaShareOf(good, fr.getCarried()[good.traffic().ordinal()]);
         report("fixture: a Bulk Terminal stands, dry bulk goes by sea in a share in force, and shippers both land and ship by sea",
-                berths[bulk] > 0 && g.getPorts().share(Ports.Cargo.DRY_BULK) > 0 && landsBySea > 0 && shipsBySea > 0 && pd.isQuoteKnown(Ports.Cargo.DRY_BULK),
+                berths[bulk] > 0 && Math.abs(g.getPorts().share(Ports.Cargo.DRY_BULK) - SEA) <= 1e-12 && landsBySea > 0 && shipsBySea > 0
+                        && !pd.isQuoteKnown(Ports.Cargo.DRY_BULK),
                 String.format("%,.0f t to land and %,.0f t to ship by sea, %d shippers; berths %,.0f t a month", landsBySea, shipsBySea, p.sea.size(), berths[bulk]));
         report("fixture: kinds with no berth cross the boundary too (their tonnes are never billed handling), and the plant buys ore at home as well",
                 noBerth > 0 && homeTonnes[bulk] > 0 && p.sea.containsKey(plant),
@@ -623,8 +695,19 @@ public class LandlordPortCheck {
         Freight fr = g.getSectors().freight();
         PortDivision pd = fr.portDivision();
         Ports.Cargo kind = Ports.Cargo.DRY_BULK;
-        quietly(() -> HaulageCheck.lay(g, "Bulk Terminal", 1));
-        assertTrue("fixture: a berth standing and no quote struck yet", Ports.berths(g.getBuildingManager())[kind.ordinal()] > 0 && !pd.isQuoteKnown(kind));
+        // FS7: this laid one Bulk Terminal on the chain's 14 months and played until a quote was struck, FINDING its berth worked below DESIGN_USE.
+        // The berths are laid now in the number whose month at DESIGN_USE is more than the whole of the chain's dry bulk across the boundary (so
+        // whatever goes by sea is under it), the shares handed to Ports (a set half, handShares) so there are sea tonnes, and the month's crew and
+        // the first strike are played for the one month the division closes in (PortDivision.closeMonth is the haul's: no door to it), bounded
+        // at the fixture.
+        double dry = kindTonnes(boundaryTonnes(g), kind);
+        double perBerth = Ports.berthMonth(g.getBuildingManager().getTemplateByName("Bulk Terminal")) * PortDivision.DESIGN_USE;
+        int terminals = 1 + (int) Math.ceil(dry / perBerth);
+        quietly(() -> HaulageCheck.lay(g, "Bulk Terminal", terminals));
+        handShares(g, .5);
+        assertTrue("fixture: berths standing whose design month is over all the dry bulk that crosses, and no quote struck yet",
+                Ports.berths(g.getBuildingManager())[kind.ordinal()] * PortDivision.DESIGN_USE > dry && dry > 0 && !pd.isQuoteKnown(kind)
+                        && g.getPorts().share(kind) > 0);
         int months = 0;
         while (!pd.isQuoteKnown(kind) && months < 4) {
             quietly(g::toggleNextMonth);

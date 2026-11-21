@@ -1,6 +1,6 @@
 # EarthCheck.java - 1,066 lines · 33 methods · 17 constants · harnesses
 
-`ham/citybuildersim/EarthCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and
 > 8): EarthProj's projection, blend and areas held to the spec's measures,
@@ -66,7 +66,7 @@
 
 **Uses:** [EarthData](EarthData.md) (120), [World](World.md) (63), [EarthProj](EarthProj.md) (44), [Timing](Timing.md) (3)
 
-**Used by (15):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldDataCheck](WorldDataCheck.md)
+**Used by (16):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [GlobeCheck](GlobeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldDataCheck](WorldDataCheck.md)
 
 ## Sections
 

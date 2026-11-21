@@ -46,7 +46,7 @@ package ham.citybuildersim;
  *     because a household with no tier has nowhere to sit in the matrix.
  *   - Households do not persist. Nobody has a family they keep.
  */
-public class FamilyModel {
+public class FamilyModel implements HouseholdBalance.Census {
 
     /**
      * How many households of each shape, at each pay tier.
@@ -60,6 +60,62 @@ public class FamilyModel {
 
     /** Adults left over with no household, which should be zero. */
     private double unhoused;
+
+    /* =====================================================================
+       THE TWO ADULT STAGES FORM THEIR OWN HOUSEHOLDS (HS2, 2026-11-19)
+
+       The pyramid holds its adults in two stages (AdultStage: the young,
+       18-34, and the established, 35-69), and each forms households out of
+       its own people. The young take the shapes a young life has - alone, a
+       couple, a baby, a child, a baby and a child, a single parent, the
+       flatshare - and the established all of them; Jerus's "large family
+       would be older adults", and the study's 3.4.
+
+       THE MATRIX ABOVE STAYS THE WHOLE CITY. households[shape][tier] is both
+       stages together, so every reader of a shape or a tier - the doors, the
+       rent, the screens - reads what it read before; young[shape][tier] is
+       the young part of each cell, and the established are the rest. Only
+       the households' books ask for a stage (get(shape, tier, stage)).
+
+       THE PEOPLE SPLIT BY STAGE BEFORE THE BUILDER. The families' adults
+       pro rata to the pyramid's own two stages (the adults outside the
+       families - the out of work, the students, the prisoners, the owners -
+       were taken from both alike); their children by the shares a young
+       parent has, below. Each stage then keeps its own households, brings
+       its own adults home with their children, builds out of what it has
+       left in its own order, and is refitted to the jobs on its own. The
+       young build first, and the children their builder leaves are offered
+       to the established's before the orphan section (offerChildren(), and
+       its WHY); what the established's leaves of them is the orphans', and
+       the adults left over the unhoused, as they were the one builder's.
+       ===================================================================== */
+
+    /** Of the babies in the families, the share with a young parent (under 35): half. A first birth comes at 31 in Canada, and two in five mothers are under 30 at a birth (the study's [S1]); a baby is under six, so half its parents are under 35. */
+    public static final double YOUNG_SHARE_OF_BABIES = .5;
+    /** Of the children (6-12), the share with a young parent: a quarter, the parents being six to twelve years older than at the birth. */
+    public static final double YOUNG_SHARE_OF_CHILDREN = .25;
+    /** Of the teens (13-17), the share with a young parent: none, so the young form no shape with a teen in it (AdultStage.forms). */
+    public static final double YOUNG_SHARE_OF_TEENS = 0;
+
+    /** The young part of each cell of the matrix: households[shape][tier] less this is the established. Zero for the retired shapes. */
+    private final double[][] young =
+            new double[FamilyStructure.values().length][PayTier.values().length];
+
+    /** Of the dependants of a band, the share living with a young parent; the adults split by the pyramid, not by this. */
+    public static double youngShareOf(AgeBand band) {
+        return switch (band) {
+            case BABY  -> YOUNG_SHARE_OF_BABIES;
+            case CHILD -> YOUNG_SHARE_OF_CHILDREN;
+            case TEEN  -> YOUNG_SHARE_OF_TEENS;
+            default    -> 0;
+        };
+    }
+
+    /** ...and of a stage: the young's share, or the rest for the established. */
+    private static double shareOfStage(AgeBand band, AdultStage stage) {
+        double y = youngShareOf(band);
+        return stage == AdultStage.YOUNG ? y : 1 - y;
+    }
 
     /* =====================================================================
        THE HOUSEHOLDS REMEMBER (2026-09-11)
@@ -105,6 +161,27 @@ public class FamilyModel {
     /** What the builder formed last month, before the valves. The reference. */
     public double getFormed(FamilyStructure shape, PayTier tier) {
         return formed[shape.ordinal()][tier.ordinal()];
+    }
+
+    /** ...the young part of it (HS2): the established are getFormed less this. */
+    private final double[][] formedYoung =
+            new double[FamilyStructure.values().length][PayTier.values().length];
+
+    /** What one stage formed last month (HS2). */
+    public double getFormed(FamilyStructure shape, PayTier tier, AdultStage stage) {
+        double all = formed[shape.ordinal()][tier.ordinal()];
+        double y = Math.max(0, Math.min(all, formedYoung[shape.ordinal()][tier.ordinal()]));
+        return stage == AdultStage.YOUNG ? y : all - y;
+    }
+
+    /** One stage's part of last month's record, a matrix of its own. */
+    private double[][] formedOf(AdultStage stage) {
+        double[][] out = new double[FamilyStructure.values().length][PayTier.values().length];
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            for (PayTier tier : PayTier.values()) out[shape.ordinal()][tier.ordinal()] = getFormed(shape, tier, stage);
+        }
+        return out;
     }
 
     /** Households kept from last month's record this month. */
@@ -280,6 +357,28 @@ public class FamilyModel {
 
     public double get(FamilyStructure shape, PayTier tier) {
         return households[shape.ordinal()][tier.ordinal()];
+    }
+
+    /** The households of one adult stage in a cell (HS2): the two add to get(shape, tier). The retired shapes are all established's, being nobody's. */
+    public double get(FamilyStructure shape, PayTier tier, AdultStage stage) {
+        double all = households[shape.ordinal()][tier.ordinal()];
+        double y = Math.max(0, Math.min(all, young[shape.ordinal()][tier.ordinal()]));
+        return stage == AdultStage.YOUNG ? y : all - y;
+    }
+
+    /** The census the households' books are struck by, a stage at a time (HS2): get(shape, tier, stage). */
+    @Override public double households(FamilyStructure shape, PayTier tier, AdultStage stage) {
+        return get(shape, tier, stage);
+    }
+
+    /** The working households of one adult stage, every shape and tier (HS2). */
+    public double workingHouseholdsOf(AdultStage stage) {
+        double sum = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            for (PayTier tier : PayTier.values()) sum += get(shape, tier, stage);
+        }
+        return sum;
     }
 
     public double totalOf(FamilyStructure shape) {
@@ -508,6 +607,7 @@ public class FamilyModel {
         double hadInFamilies = adultsFormed();
 
         for (double[] row : households) java.util.Arrays.fill(row, 0);
+        for (double[] row : young) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
         pricedOutShares = 0;
@@ -606,67 +706,218 @@ public class FamilyModel {
             tierShare[PayTier.UNSKILLED.ordinal()] = 1;   // a city with no jobs yet
         }
 
-        /* ---- 3. households with dependants, largest first ---- */
-        double[] remaining = { babies, children, teens, adults };
-
-        FamilyStructure[] order = formableShapes();
-
         /*
-         * ---- 2b. last month's working households, kept ----
+         * ---- 3. households with dependants, largest first, stage by stage ----
          *
-         * Every cell less the share that re-forms. Then the people check: a
-         * band the kept households need more of than the pyramid has - the
-         * babies who turned six, the adults who lost their jobs and left the
-         * families - shrinks every shape that needs it by the shortfall, and a
-         * shape short of two bands shrinks by the worse. That is always
-         * enough: each band's need falls to at most what exists. What it
-         * frees goes back to the pool below.
+         * Each adult stage out of its own people (HS2; the banner on the
+         * stages, above): the families' adults at the pyramid's own split,
+         * their children by youngShareOf. The stages share nothing but the
+         * jobs' tier mix, so each is the whole builder run on its own pool.
          */
-        double keptBefore = 0;
-        if (keep) {
-            double[][] kept = new double[FamilyStructure.values().length][PayTier.values().length];
-            double[] need = new double[remaining.length];
-            for (FamilyStructure shape : order) {
-                for (PayTier tier : PayTier.values()) {
-                    double had = formed[shape.ordinal()][tier.ordinal()];
-                    lastReformed += had * REFORMING_EACH_MONTH;
-                    kept[shape.ordinal()][tier.ordinal()] = had * (1 - REFORMING_EACH_MONTH);
-                    keptBefore += kept[shape.ordinal()][tier.ordinal()];
-                }
-                double count = 0;
-                for (double v : kept[shape.ordinal()]) count += v;
-                for (int b = 0; b < remaining.length; b++) need[b] += count * shape.membersOf(AgeBand.values()[b]);
+        AdultStage[] stages = AdultStage.values();
+        double youngShare = allAdults > 0
+                ? Math.max(0, Math.min(1, cohorts.get(AdultStage.YOUNG) / allAdults)) : 0;
+        double[][] rem = new double[stages.length][];
+        /*
+         * The children who may come home with their parents this month (2c),
+         * at most: bringHome() brings back no more adults than left the
+         * at-home count and joined the families. Kept out of what the
+         * established's kept households may draw of the young's (HS2).
+         */
+        double[] comingHome = new double[3];
+        if (keep && hadAtHome > 0) {
+            double back = Math.max(0, Math.min(hadAtHome - this.atHomeAdults, adults - hadInFamilies));
+            for (int b = 0; b < comingHome.length && b < hadWithThem.length; b++) {
+                comingHome[b] = Math.max(0, hadWithThem[b]) * Math.min(1, back / hadAtHome);
             }
-            double[] fits = new double[remaining.length];
-            for (int b = 0; b < remaining.length; b++) {
-                fits[b] = need[b] > remaining[b] && need[b] > 0 ? Math.max(0, remaining[b]) / need[b] : 1;
+        }
+        double[][][] built = new double[stages.length][][];
+        FamilyStructure[][] orders = new FamilyStructure[stages.length][];
+        double[] keptBefore = new double[stages.length];
+        for (AdultStage g : stages) {
+            int k = g.ordinal();
+            rem[k] = new double[] {
+                    babies   * shareOfStage(AgeBand.BABY, g),
+                    children * shareOfStage(AgeBand.CHILD, g),
+                    teens    * shareOfStage(AgeBand.TEEN, g),
+                    adults   * (g == AdultStage.YOUNG ? youngShare : 1 - youngShare) };
+            built[k] = new double[FamilyStructure.values().length][PayTier.values().length];
+            orders[k] = formableShapes(g);
+
+            /*
+             * ---- 2b. last month's working households, kept ----
+             *
+             * Every cell less the share that re-forms. Then the people check: a
+             * band the kept households need more of than the pyramid has - the
+             * babies who turned six, the adults who lost their jobs and left the
+             * families - shrinks every shape that needs it by the shortfall, and a
+             * shape short of two bands shrinks by the worse. That is always
+             * enough: each band's need falls to at most what exists. What it
+             * frees goes back to the pool below. Stage by stage since HS2: the
+             * young who turned 35 left the young's people, and the established's
+             * kept households have them back only as the pool's.
+             */
+            if (keep) {
+                keptBefore[k] = g == AdultStage.YOUNG
+                        ? keepFormed(formedOf(g), orders[k], built[k], rem[k])
+                        : keepDrawing(formedOf(g), orders[k], built[k], rem[k], rem[AdultStage.YOUNG.ordinal()], comingHome);
             }
-            double keptAfter = 0;
-            for (FamilyStructure shape : order) {
-                double f = 1;
-                for (int b = 0; b < remaining.length; b++) {
-                    if (shape.membersOf(AgeBand.values()[b]) > 0) f = Math.min(f, fits[b]);
-                }
-                double count = 0;
-                for (PayTier tier : PayTier.values()) {
-                    double v = kept[shape.ordinal()][tier.ordinal()] * f;
-                    households[shape.ordinal()][tier.ordinal()] += v;
-                    count += v;
-                }
-                keptAfter += count;
-                for (int b = 0; b < remaining.length; b++) {
-                    remaining[b] -= count * shape.membersOf(AgeBand.values()[b]);
-                }
-            }
-            for (int b = 0; b < remaining.length; b++) remaining[b] = Math.max(0, remaining[b]);
-            lastNoLongerFit += keptBefore - keptAfter;
-            lastKept += keptAfter;
-            keptBefore = keptAfter;
         }
 
         // ---- 2c. the adults back in the families bring their children home (OX1; the banner below) ----
-        if (keep) bringHome(hadAtHome, hadWithThem, adults - hadInFamilies, order, tierShare, remaining);
+        if (keep) bringHome(hadAtHome, hadWithThem, adults - hadInFamilies, youngShare,
+                orders, tierShare, rem, built);
 
+        for (AdultStage g : stages) {
+            int k = g.ordinal();
+            build(orders[k], tierShare, rem[k], built[k]);
+            // ...and what the young's builder leaves of the children is the established's before the orphan section's (below).
+            if (g.next() != null) offerChildren(rem[k], rem[g.next().ordinal()]);
+            if (keep) {
+                double working = 0;
+                for (FamilyStructure shape : orders[k]) for (double v : built[k][shape.ordinal()]) working += v;
+                lastNew += Math.max(0, working - keptBefore[k]);
+                fitTiers(orders[k], tierShare, built[k]);
+            } else {
+                // The seniors were counted where they were formed.
+                for (FamilyStructure shape : orders[k]) for (double v : built[k][shape.ordinal()]) lastNew += v;
+            }
+        }
+
+        // The two stages together are the families' matrix, and the young part is kept beside it.
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            if (shape.isRetired()) continue;
+            int s = shape.ordinal();
+            for (int t = 0; t < PayTier.values().length; t++) {
+                double y = built[AdultStage.YOUNG.ordinal()][s][t];
+                households[s][t] = y + built[AdultStage.ESTABLISHED.ordinal()][s][t];
+                young[s][t] = y;
+            }
+        }
+
+        /* ---- 4. whoever is left over ---- */
+        unhoused = 0;
+        for (double[] r : rem) unhoused += Math.max(0, r[AgeBand.ADULT.ordinal()]);
+
+        /*
+         * ---- 5. and the children nobody took: the orphan section ----
+         *
+         * Jerus: "they dont even get ei, and its named the orphan section,
+         * yes they get sick and die for now." The builder is left as it is;
+         * what it leaves is who they are - the established's builder's, the
+         * young's leftovers offered to it first, and nothing the young's left
+         * (offerChildren()), with the unplaced of a stage with no adults.
+         */
+        for (double[] r : rem) {
+            orphans[AgeBand.BABY.ordinal()]  += Math.max(0, r[AgeBand.BABY.ordinal()]);
+            orphans[AgeBand.CHILD.ordinal()] += Math.max(0, r[AgeBand.CHILD.ordinal()]);
+            orphans[AgeBand.TEEN.ordinal()]  += Math.max(0, r[AgeBand.TEEN.ordinal()]);
+        }
+
+        recordFormed();
+    }
+
+    /* ----- the children one stage cannot place (HS2, 2026-11-19) -----
+
+       WHY. Each stage's builder is the one builder's greedy pass - every
+       shape half of what it can take, the singles last - and a pass leaves
+       some children over, which are the orphan section. Two passes left two
+       remainders, and the young's, seven shapes with fewer to take a baby,
+       the larger: DeathRecordCheck's mill town had 7.79 orphans before its
+       closing against main's 2.61, children with adults in the city to take
+       them. So the young build first and the children their builder leaves
+       are offered to the established's, which forms every shape, before any
+       is an orphan; and next month the established keep the households they
+       formed with them out of what the young's kept households leave,
+       rather than dissolving them for the share the dial gives the
+       established. The dial's shares are where a child is placed first. */
+
+    /** The bands of the children in a stage's pool, in its order (babies, children, teens). */
+    private static final int CHILD_BANDS = 3;
+
+    /** Moves the children a stage's builder left (`from`) into the next stage's pool (`to`), before the orphan section. */
+    private static void offerChildren(double[] from, double[] to) {
+        for (int b = 0; b < CHILD_BANDS; b++) {
+            double left = Math.max(0, from[b]);
+            to[b] += left;
+            from[b] -= left;
+        }
+    }
+
+    /**
+     * The established's kept households (2b), out of their own people and, for
+     * the children, what the young's kept households left of theirs (`young`)
+     * beyond the children who may come home with young parents this month
+     * (2c; `comingHome`, every stage's, by band). Their own first, then the
+     * young's, and the established's own children coming home last, so they
+     * find room as before HS2's offer.
+     */
+    private double keepDrawing(double[][] had, FamilyStructure[] order, double[][] m, double[] own, double[] young,
+                               double[] comingHome) {
+        double[] spare = new double[CHILD_BANDS], pool = own.clone();
+        for (int b = 0; b < CHILD_BANDS; b++) {
+            double mayComeHome = comingHome[b] * shareOfStage(AgeBand.values()[b], AdultStage.YOUNG);
+            spare[b] = Math.max(0, young[b] - mayComeHome);
+            pool[b] = Math.max(0, own[b]) + spare[b];
+        }
+        double kept = keepFormed(had, order, m, pool);
+        for (int b = 0; b < own.length; b++) {
+            if (b >= CHILD_BANDS) { own[b] = pool[b]; continue; }
+            double o = Math.max(0, own[b]), used = Math.max(0, o + spare[b] - pool[b]);
+            double ownFree = Math.max(0, o - comingHome[b] * shareOfStage(AgeBand.values()[b], AdultStage.ESTABLISHED));
+            double fromOwn = Math.min(used, ownFree);
+            double fromSpare = Math.min(spare[b], used - fromOwn);
+            young[b] -= fromSpare;
+            own[b] = Math.max(0, o - (used - fromSpare));
+        }
+        return kept;
+    }
+
+    /** One stage's kept households (2b): last month's record of the stage less the share that re-forms, shrunk to the people the stage has; returns the households kept, and takes their people out of the stage's pool. */
+    private double keepFormed(double[][] had, FamilyStructure[] order, double[][] m, double[] remaining) {
+        double keptBefore = 0;
+        double[][] kept = new double[FamilyStructure.values().length][PayTier.values().length];
+        double[] need = new double[remaining.length];
+        for (FamilyStructure shape : order) {
+            for (PayTier tier : PayTier.values()) {
+                double h = had[shape.ordinal()][tier.ordinal()];
+                lastReformed += h * REFORMING_EACH_MONTH;
+                kept[shape.ordinal()][tier.ordinal()] = h * (1 - REFORMING_EACH_MONTH);
+                keptBefore += kept[shape.ordinal()][tier.ordinal()];
+            }
+            double count = 0;
+            for (double v : kept[shape.ordinal()]) count += v;
+            for (int b = 0; b < remaining.length; b++) need[b] += count * shape.membersOf(AgeBand.values()[b]);
+        }
+        double[] fits = new double[remaining.length];
+        for (int b = 0; b < remaining.length; b++) {
+            fits[b] = need[b] > remaining[b] && need[b] > 0 ? Math.max(0, remaining[b]) / need[b] : 1;
+        }
+        double keptAfter = 0;
+        for (FamilyStructure shape : order) {
+            double f = 1;
+            for (int b = 0; b < remaining.length; b++) {
+                if (shape.membersOf(AgeBand.values()[b]) > 0) f = Math.min(f, fits[b]);
+            }
+            double count = 0;
+            for (PayTier tier : PayTier.values()) {
+                double v = kept[shape.ordinal()][tier.ordinal()] * f;
+                m[shape.ordinal()][tier.ordinal()] += v;
+                count += v;
+            }
+            keptAfter += count;
+            for (int b = 0; b < remaining.length; b++) {
+                remaining[b] -= count * shape.membersOf(AgeBand.values()[b]);
+            }
+        }
+        for (int b = 0; b < remaining.length; b++) remaining[b] = Math.max(0, remaining[b]);
+        lastNoLongerFit += keptBefore - keptAfter;
+        lastKept += keptAfter;
+        return keptAfter;
+    }
+
+    /** The builder proper (3): every shape in the order takes half of what is still possible, and the last takes the rest. */
+    private static void build(FamilyStructure[] order, double[] tierShare, double[] remaining, double[][] m) {
         for (int i = 0; i < order.length; i++) {
             FamilyStructure shape = order[i];
 
@@ -693,40 +944,15 @@ public class FamilyModel {
             boolean last = (i == order.length - 1);
             double take = last ? possible : possible * SHAPE_TAKE;
 
-            place(shape, take, tierShare, remaining);
+            place(shape, take, tierShare, remaining, m);
         }
-
-        if (keep) {
-            double working = 0;
-            for (FamilyStructure shape : order) for (double v : households[shape.ordinal()]) working += v;
-            lastNew += Math.max(0, working - keptBefore);
-            fitTiers(order, tierShare);
-        } else {
-            // The seniors were counted where they were formed.
-            for (FamilyStructure shape : order) for (double v : households[shape.ordinal()]) lastNew += v;
-        }
-
-        /* ---- 4. whoever is left over ---- */
-        unhoused = Math.max(0, remaining[AgeBand.ADULT.ordinal()]);
-
-        /*
-         * ---- 5. and the children nobody took: the orphan section ----
-         *
-         * Jerus: "they dont even get ei, and its named the orphan section,
-         * yes they get sick and die for now." The builder is left as it is;
-         * what it leaves is who they are.
-         */
-        orphans[AgeBand.BABY.ordinal()]  = Math.max(0, remaining[AgeBand.BABY.ordinal()]);
-        orphans[AgeBand.CHILD.ordinal()] = Math.max(0, remaining[AgeBand.CHILD.ordinal()]);
-        orphans[AgeBand.TEEN.ordinal()]  = Math.max(0, remaining[AgeBand.TEEN.ordinal()]);
-
-        recordFormed();
     }
 
     /** What this month's builder formed, before the valves: next month's reference. */
     private void recordFormed() {
         for (int s = 0; s < households.length; s++) {
             System.arraycopy(households[s], 0, formed[s], 0, households[s].length);
+            System.arraycopy(young[s], 0, formedYoung[s], 0, young[s].length);
         }
         haveFormed = true;
     }
@@ -794,27 +1020,42 @@ public class FamilyModel {
     /** ...of whom this many were placed in a household with them: all, while their adults last. */
     public double getLastBackChildrenHome() { return lastBackChildrenHome; }
 
-    /** Places the adults back in the families with their children, after the kept households and before the pool; see the banner above. */
-    private void bringHome(double hadAtHome, double[] hadWithThem, double familiesGrew, FamilyStructure[] order,
-                           double[] tierShare, double[] remaining) {
+    /**
+     * Places the adults back in the families with their children, after the
+     * kept households and before the pool; see the banner above. Stage by
+     * stage since HS2: the adults back split as the adults at home did, pro
+     * rata to the pyramid's stages, and their children by youngShareOf, each
+     * stage's group placed in its own shapes.
+     */
+    private void bringHome(double hadAtHome, double[] hadWithThem, double familiesGrew, double youngShare,
+                           FamilyStructure[][] orders, double[] tierShare, double[][] rem, double[][][] built) {
         int adult = AgeBand.ADULT.ordinal();
-        double back = Math.min(Math.min(hadAtHome - atHomeAdults, familiesGrew), remaining[adult]);
+        double free = 0;
+        for (double[] r : rem) free += Math.max(0, r[adult]);
+        double back = Math.min(Math.min(hadAtHome - atHomeAdults, familiesGrew), free);
         if (back <= 0 || hadAtHome <= 0) return;
-        double[] group = new double[remaining.length];
-        group[adult] = back;
-        double children = 0;
-        for (int b = 0; b < adult; b++) {
-            group[b] = Math.max(0, Math.min(remaining[b], hadWithThem[b] * back / hadAtHome));
-            children += group[b];
+        double adultsBack = 0, children = 0, home = 0;
+        for (AdultStage g : AdultStage.values()) {
+            int k = g.ordinal();
+            double[] group = new double[rem[k].length];
+            group[adult] = Math.max(0, Math.min(rem[k][adult],
+                    back * (g == AdultStage.YOUNG ? youngShare : 1 - youngShare)));
+            for (int b = 0; b < adult; b++) {
+                group[b] = Math.max(0, Math.min(rem[k][b],
+                        hadWithThem[b] * back / hadAtHome * shareOfStage(AgeBand.values()[b], g)));
+                children += group[b];
+            }
+            adultsBack += group[adult];
+            home += placeTogether(group, orders[k], tierShare, rem[k], built[k]);
         }
-        double home = placeTogether(group, order, tierShare, remaining);
-        lastBackAdults = back;
+        lastBackAdults = adultsBack;
         lastBackChildren = children;
         lastBackChildrenHome = home;
     }
 
     /** Forms a group's households by the builder's order and half a shape, pass after pass, until its children are placed; returns the children placed and takes the group's placed people out of the pool. */
-    private double placeTogether(double[] group, FamilyStructure[] order, double[] tierShare, double[] remaining) {
+    private static double placeTogether(double[] group, FamilyStructure[] order, double[] tierShare, double[] remaining,
+                                        double[][] m) {
         double[] came = group.clone();
         for (int pass = 0; pass < HOME_PASSES && childrenIn(group) > 0; pass++) {
             double formed = 0;
@@ -822,7 +1063,7 @@ public class FamilyModel {
                 if (shape.dependants() <= 0) continue;
                 double take = capacityFor(shape, group) * SHAPE_TAKE;
                 if (take <= 0) continue;
-                place(shape, take, tierShare, group);
+                place(shape, take, tierShare, group, m);
                 formed += take;
             }
             if (formed <= 0) break;
@@ -861,8 +1102,10 @@ public class FamilyModel {
      * A tier with jobs and nobody in it is seeded with the city's shape mix;
      * a shape that finds every one of its tiers emptied is seeded with the
      * jobs' mix. Both are the fresh builder's answer for a cell with no past.
+     * One stage's matrix at a time since HS2, so each stage is at the jobs'
+     * mix and the two together are too.
      */
-    private void fitTiers(FamilyStructure[] shapes, double[] tierShare) {
+    private static void fitTiers(FamilyStructure[] shapes, double[] tierShare, double[][] households) {
         int tiers = PayTier.values().length;
         double[] row = new double[shapes.length];
         double total = 0;
@@ -1298,6 +1541,21 @@ public class FamilyModel {
     }
 
     /**
+     * What the packing's own arithmetic may leave of households it placed
+     * exactly, at a size of `households` (OE1): MoneyAudit's rule in
+     * households for dollars, RELATIVE_TOLERANCE of the size and never under
+     * ULP_STEPS of a double's steps at it. A city that migration parks on its
+     * doors sums its households to the door count and a few steps over, and
+     * the match booked the steps as households with nowhere: a doubled-up
+     * 7.1e-15 that kept one twin's landlords from selling and not the
+     * other's (DenominationCheck; HousingCheck, the dust of an exact packing).
+     */
+    static double packingRounding(double households) {
+        double size = Math.abs(households);
+        return Math.max(MoneyAudit.ULP_STEPS * Math.ulp(size), MoneyAudit.RELATIVE_TOLERANCE * size);
+    }
+
+    /**
      * The match itself: house() when it records, and the room the placement
      * has left when it does not (roomLeft(), 0.7.17) - one loop, so the two
      * cannot come to disagree about who fits where.
@@ -1309,7 +1567,8 @@ public class FamilyModel {
      *         were the matrix's, then the seekers' (as doors count them)
      */
     private double[] match(long[] homesBySize, double[] free, boolean record) {
-        for (int s = 1; s < homesBySize.length; s++) free[s] = homesBySize[s];
+        double doors = 0;
+        for (int s = 1; s < homesBySize.length; s++) { free[s] = homesBySize[s]; doors += homesBySize[s]; }
         int widest = homesBySize.length - 1;
 
         // Largest households first.
@@ -1384,6 +1643,12 @@ public class FamilyModel {
                 crowdedHouseholds += take;
                 bill(s, take);
             }
+
+            // ...and what the takes leave of a pass the doors held whole is their rounding, not a household (OE1): under
+            // packingRounding() at the doors' size or the pass's it is nobody, so nobody doubles up for it and no landlord
+            // is kept from selling by it (getDoubledUpHouseholds(), RealEstate.mayRetire(); DenominationCheck's twins
+            // parted on 7.1e-15 of one).
+            if (need <= packingRounding(Math.max(asked, doors))) need = 0;
 
             if (need > 0 && !record) {
                 unplaced += need;
@@ -1494,8 +1759,7 @@ public class FamilyModel {
                     double fromTier = households[singles][tier.ordinal()];
                     double portion = singleCount > 0 ? fromTier / singleCount : 0;
                     double moved = shares * 5 * portion;
-                    households[singles][tier.ordinal()] -= moved;
-                    households[shared][tier.ordinal()] += moved / 5;
+                    shareSingles(tier.ordinal(), moved);
                 }
                 excess -= shares * 4;
             }
@@ -1585,6 +1849,8 @@ public class FamilyModel {
             seekersStill += seekersUnhoused[g];
         }
         left = Math.max(0, left - seekersLeft);
+        // ...the seekers' part of the same passes taken off their whole: their rounding is no family (OE1).
+        if (left <= packingRounding(left + seekersLeft)) left = 0;
 
         if (left <= 0) { stillUnplaced = seekersStill; return; }
 
@@ -1801,10 +2067,21 @@ public class FamilyModel {
 
             // Five to a home, so five singles become one household.
             double moving = alone * share;
-            households[singles][t] -= moving;
-            households[shared][t]  += moving / 5;
+            shareSingles(t, moving);
             pricedOutShares += moving / 5;
         }
+    }
+
+    /** Five singles at a tier into one flatshare, the young among them in the share they hold of the tier's singles, so each stage's flatshares are its own singles' (HS2). */
+    private void shareSingles(int t, double moving) {
+        int singles = FamilyStructure.SINGLE_ADULT.ordinal();
+        int shared  = FamilyStructure.SHARED_ADULTS.ordinal();
+        double alone = households[singles][t];
+        double y = alone > 0 ? young[singles][t] * Math.max(0, Math.min(1, moving / alone)) : 0;
+        households[singles][t] -= moving;
+        households[shared][t]  += moving / 5;
+        young[singles][t] -= y;
+        young[shared][t]  += y / 5;
     }
 
     /**
@@ -1872,7 +2149,7 @@ public class FamilyModel {
     }
 
     /** How many of this shape the remaining people could fill. */
-    private double capacityFor(FamilyStructure shape, double[] remaining) {
+    private static double capacityFor(FamilyStructure shape, double[] remaining) {
         double limit = Double.MAX_VALUE;
         for (AgeBand b : AgeBand.values()) {
             if (b.isRetirementAge()) continue;
@@ -1883,14 +2160,14 @@ public class FamilyModel {
         return limit == Double.MAX_VALUE ? 0 : Math.max(0, limit);
     }
 
-    /** Commits a number of households of one shape, split across the tiers. */
-    private void place(FamilyStructure shape, double count,
-                       double[] tierShare, double[] remaining) {
+    /** Commits a number of households of one shape, split across the tiers, to one stage's matrix. */
+    private static void place(FamilyStructure shape, double count,
+                              double[] tierShare, double[] remaining, double[][] m) {
 
         if (count <= 0) return;
 
         for (PayTier tier : PayTier.values()) {
-            households[shape.ordinal()][tier.ordinal()] += count * tierShare[tier.ordinal()];
+            m[shape.ordinal()][tier.ordinal()] += count * tierShare[tier.ordinal()];
         }
 
         for (AgeBand b : AgeBand.values()) {
@@ -1932,10 +2209,16 @@ public class FamilyModel {
      * "last after the skips" is not something a loop with continues can say.
      */
     private static FamilyStructure[] formableShapes() {
+        return formableShapes(AdultStage.ESTABLISHED);
+    }
+
+    /** ...the shapes one adult stage forms, in the same order (HS2): the young form none with a teen and no two-child family, and SINGLE_ADULT stays last in both. */
+    private static FamilyStructure[] formableShapes(AdultStage stage) {
         java.util.List<FamilyStructure> out = new java.util.ArrayList<>();
         for (FamilyStructure shape : byDependantsDescending()) {
             if (shape.isRetired()) continue;
             if (shape == FamilyStructure.SHARED_ADULTS) continue;
+            if (!stage.forms(shape)) continue;
             out.add(shape);
         }
         return out.toArray(new FamilyStructure[0]);
@@ -2051,7 +2334,7 @@ public class FamilyModel {
      */
     public double[] toSaveArray() {
         double[] out = new double[households.length * PayTier.values().length + 5 + OUTSIDE_SLOTS
-                + MEMORY_SLOTS + KIN_SLOTS];
+                + MEMORY_SLOTS + KIN_SLOTS + STAGE_SLOTS];
         int i = 0;
         for (double[] row : households) {
             for (double v : row) out[i++] = v;
@@ -2124,19 +2407,36 @@ public class FamilyModel {
          */
         out[i++] = atHomeAdults;
         for (double v : outsideDependants) out[i++] = v;
+        /*
+         * ...AND THE YOUNG PART OF BOTH MATRICES, appended by HS2 (SAVE_FORMAT
+         * 58): the households of the young and last month's record of them,
+         * shapes by tiers each. The established are the matrices less them.
+         */
+        for (double[] cells : young) for (double v : cells) out[i++] = v;
+        for (double[] cells : formedYoung) for (double v : cells) out[i++] = v;
         return out;
+    }
+
+    /** ...and the young part of the matrix and of the record (HS2): shapes by tiers, twice. */
+    private static final int STAGE_SLOTS = 2 * FamilyStructure.values().length * PayTier.values().length;
+
+    /** The stages' block, at a save's own shape count. */
+    static int stageSlots(int shapes) {
+        return 2 * shapes * PayTier.values().length;
     }
 
     /**
      * Puts the households back.
      *
-     * SIX LENGTHS ACCEPTED, deliberately. The array has grown five times, and
+     * SEVEN LENGTHS ACCEPTED, deliberately. The array has grown six times, and
      * refusing every older save whole would have thrown away the entire
      * household mix of every city written before each of those dates to gain
      * the counters those cities never had. A short array restores what it
      * carries and leaves the rest at zero, which is exactly the state those
-     * saves loaded in anyway. Anything that is none of the six is still
-     * refused whole.
+     * saves loaded in anyway. Anything that is none of the seven is still
+     * refused whole. (Since HS2 the save floor is format 58, so a save the
+     * game opens is always the longest; the shorter lengths stay for the
+     * tools that read an old file, and cost nothing.)
      *
      * Shortest first, each one the length before it plus a block, and every
      * width measured against the SAVE's own band and shape counts:
@@ -2156,6 +2456,9 @@ public class FamilyModel {
      *   + kinSlots()              ...and the children who left work with their
      *                             parent: the at-home adults and the dependants
      *                             by band (2026-09-15)
+     *   + stageSlots()            ...and the young part of the matrix and of
+     *                             the formed memory, shapes by tiers each (HS2,
+     *                             2026-11-19)
      *
      * Families saved before the names travelled with them. Read as five bands, thirteen shapes.
      */
@@ -2192,12 +2495,15 @@ public class FamilyModel {
         if (saved == null || (saved.length != base && saved.length != base + 2
                 && saved.length != base + 3 && saved.length != base + 3 + outside
                 && saved.length != base + 3 + outside + memory
-                && saved.length != base + 3 + outside + memory + kin)) {
+                && saved.length != base + 3 + outside + memory + kin
+                && saved.length != base + 3 + outside + memory + kin + stageSlots(shapeNames.length))) {
             return;   // refused whole, per the standing rule on state arrays
         }
         carriedUnplaced = -1;
         int i = 0;
         for (double[] row : households) java.util.Arrays.fill(row, 0);
+        for (double[] row : young) java.util.Arrays.fill(row, 0);
+        for (double[] row : formedYoung) java.util.Arrays.fill(row, 0);
         for (int s = 0; s < shapeNames.length; s++) {
             FamilyStructure target = shapeNamed(shapeNames[s]);
             for (int t = 0; t < tiers; t++) {
@@ -2275,6 +2581,28 @@ public class FamilyModel {
                 double v = saved[i++];
                 AgeBand target = bandNamed(bandNames[b]);
                 if (target != null) outsideDependants[target.ordinal()] = Math.max(0, v);
+            }
+        }
+        /*
+         * ...and the young part of the two matrices (HS2), by name like the
+         * matrices, each cell no more than the whole and none in a retired
+         * shape. A save without them is all established: the floor refuses
+         * any such save from the game (GameVersion's OLDEST_LOADABLE_FORMAT
+         * 58), so only a harness's array reads it.
+         */
+        if (saved.length >= base + 3 + outside + memory + kin + stageSlots(shapeNames.length)) {
+            for (int which = 0; which < 2; which++) {
+                double[][] into  = which == 0 ? young : formedYoung;
+                double[][] whole = which == 0 ? households : formed;
+                for (int s = 0; s < shapeNames.length; s++) {
+                    FamilyStructure target = shapeNamed(shapeNames[s]);
+                    for (int t = 0; t < tiers; t++) {
+                        double v = saved[i++];
+                        if (target != null && !target.isRetired()) {
+                            into[target.ordinal()][t] = Math.max(0, Math.min(whole[target.ordinal()][t], v));
+                        }
+                    }
+                }
             }
         }
     }
@@ -2364,6 +2692,8 @@ public class FamilyModel {
         java.util.Arrays.fill(unhousedByShape, 0);
         java.util.Arrays.fill(unplacedByShape, 0);
         for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
+        for (double[] cells : young) java.util.Arrays.fill(cells, 0);
+        for (double[] cells : formedYoung) java.util.Arrays.fill(cells, 0);
         haveFormed = false;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
         lastBackAdults = 0; lastBackChildren = 0; lastBackChildrenHome = 0;

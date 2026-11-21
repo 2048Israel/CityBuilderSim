@@ -103,7 +103,7 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   main; BP1, 2026-10-24); `Batch check.bat` is the same on Windows without
   `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
-  run nightly on main, alone and hard, by `tools/nightly.sh`.
+  run nightly on main, alone and hard, by `tools/nightly.sh` on the gate box.
 - `-Dcbs.timing=soft` skips sections whose only verdict is a clock (HA1).
   Mixed correctness sections keep their work and make timing soft: a timing figure over its budget says
   `SOFT`, with the figure and the budget, and is not counted; every other
@@ -142,7 +142,8 @@ before.** A batch has more than once landed in the Java and not in
 **The ensemble is not in the suite.** Sixteen seeds under five monetary
 policies, 80 runs of up to 2,400 months, scored against the inflation
 roadmap's criteria: `tools/ensemble/ensemble.sh <label>`, about twenty
-minutes five at a time (`tools/ensemble/README.md`). It runs only for a
+minutes on the gate box, eight at a time, and nearly two hours on the laptop
+(`tools/ensemble/README.md`). It runs only for a
 batch whose playtest trace moves (EN1, 2026-10-20), once, on the batch's
 final model, against the newest stored score in `docs/ensemble/`, and that
 batch commits its own score there, under its id; `ship.sh` names it by the

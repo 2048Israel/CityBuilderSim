@@ -30,9 +30,19 @@ adds its line here, not in `CLAUDE.md`.
         CopperBufferCheck.java     CPB1's empty-yard refinery regression: no feed for an undemanded
                                    loss-making buffer, with domestic/captive demand, stock sales,
                                    recipe identity and the national accounts kept intact
+        UndemandedFeedCheck.java   CPB2: no feed for undemanded output that cannot cover it - the
+                                   allocated-cost export spare beside a rod mill and the plants of
+                                   goods with no world buyer, with demand, stock sales and sunk feed kept
+        GroundInputCheck.java      NG1: a works the ground limits buys the inputs of what its ground
+                                   gives - iron diesel, coal diesel, leach acid, a gold mill's acid and
+                                   diesel - none on worked-out ground, ample ground kept to the bit, held vans in HELD
         HousingDoorCheck.java      HN1's landlords at the lender's door: the ensemble's AUTO2 seed 12
                                    played to m500, no landlord whose till buys one of the homes the
                                    plan passed held with none, and LongPlaytest's homeless watch
+        CreditCrunchCheck.java     MC1's credit crunch: the bank's leverage ratio binding, a
+                                   mortgage desk with no room, and the landlords' owners asked
+                                   for the whole order (the ensemble's seed 13, its bank held in
+                                   its band from m150), no month with over one household homeless
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
@@ -378,7 +388,8 @@ adds its line here, not in `CLAUDE.md`.
                                    recipes in use, the equipment rows with each verdict, a building's
                                    origin and NEW, City History's discovery flags; empty in a default city
                                    (R3b: also the Overview and Funding pages' reads - a field's reach,
-                                   its card, a staged grant - and the cached preview with its words)
+                                   its card, a staged grant - and the cached preview with its words; since FB13 the
+                                   licence line a building's card draws, from LicenceFees' own reads)
         ResearchViewCheck.java     R5's reads on a default city and a 1900 one, the series kept, and
                                    researchTown(), the 1900 city the research screens' KeptCheck shares
                                    (R3b: sections 11-19, the Overview, the Funding card, the preview, the dials, the schools, R5's
@@ -970,8 +981,10 @@ adds its line here, not in `CLAUDE.md`.
                                    takes a bottom padding as tall as the toasts while one shows and gives
                                    it back, the scroller keeping its pixel offset; ToastCheck lays the
                                    same nodes out on a scene of its own). The model never imports it.
-        *Check.java                143 harnesses, each a main() with static helpers
+        *Check.java                144 harnesses, each a main() with static helpers
         HouseholdFlowCheck.java    HS1's money follows people: each flow's stocks to the cent, the estates, the leavers, a real run
+        HouseholdStageCheck.java   HS2's two adult stages: residence of 204 and 420 months, ageing carries the money, no teen shape
+                                   among the young, the pool's group (tier, stage), the 108 working cells
         Credits.java               the Credits page's sections (CR1, 2026-11-09): the Earth and nations attribution files and the
                                    fonts' OFL notice read from the jar, as the exe ships them, and cut into paragraphs for the
                                    screen (UserInterface.showCreditsMenu(), from the title screen and the Esc menu); no JavaFX
@@ -1000,6 +1013,11 @@ adds its line here, not in `CLAUDE.md`.
                                    on its money's curve (its bank's policy rate, the country premium, the term premium), kept in
                                    its own money and read in D$ at the month's rate, its coupons paid, revalued, bought back,
                                    rolled and held as reserves in it, over a save and a load; US$ paper as it was, to the bit
+        ForeignCouponView.java     what the Government screen says of the coupons the city pays abroad (batch FB13, CD9-G): the
+                                   note on its "...of which paid abroad" row, D$ and the moneys the foreign paper is written in
+        FB13Check.java             FB13's three texts asked of the model that says them: the island's words (table, chip, notice,
+                                   door, the Build tab's card) naming a bridge where the survey allows one, the coupons' note, and
+                                   the build card's licence line; a screen's read moves nothing of the rule's
         InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
                                    interventionMove() and its inverse equal the old linear expressions to the bit up to
                                    INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;
@@ -1085,7 +1103,8 @@ adds its line here, not in `CLAUDE.md`.
     tools/ensemble/                      the 16-seed x 5-policy ensemble (EN1, 2026-10-20; until then only in
                                          workbench/workbench-delta-20261010.zip and each session's copy):
                                          the driver (class Ensemble), compiled at run time against a snapshot of
-                                         target/classes; ensemble.sh the runner, five runs at once on the PC;
+                                         target/classes; ensemble.sh the runner, on the gate box first, eight
+                                         at once, else five on the laptop (GB3, 2026-11-20, "Gatebox first");
                                          score.py the scorer (pandas); README.md. Its scores, one a version
                                          whose trace moved, are docs/ensemble/<version>.md; EnsembleCheck keeps
                                          the driver compiling against the tree and the newest score readable

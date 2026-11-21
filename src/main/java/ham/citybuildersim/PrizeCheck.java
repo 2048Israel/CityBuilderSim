@@ -1427,6 +1427,21 @@ public class PrizeCheck {
         return sb.toString().trim();
     }
 
+    /**
+     * BF1: a prize does not give its owners cash. `amount` credited to the city's owners who could take up an offering (HouseholdBalance.subscribe()'s
+     * test: not empty, investing, trading shares, owing nothing, not locked out or going short), by their households; what was credited.
+     */
+    static double creditOwners(Game village, double amount) {
+        java.util.List<Household> cells = village.getHouseholdBalance().cells();
+        double[] weight = new double[cells.size()];
+        for (int i = 0; i < weight.length; i++) {
+            Household cell = cells.get(i);
+            if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && cell.debt <= 0
+                    && cell.lockout <= 0 && !cell.isGoingShort()) weight[i] = cell.households();
+        }
+        return village.getHouseholdBalance().creditByWeight(amount, weight);
+    }
+
     /** The labs the city has in all fields, standing and on site. */
     static long labsInAll(Game g) {
         long n = 0;
@@ -1560,16 +1575,8 @@ public class PrizeCheck {
             // BF1: a prize does not give its owners cash. Supply the liquidity
             // this ordering fixture requires, equally in all three villages.
             for (Game village : new Game[] { a, b, c }) {
-                java.util.List<Household> cells = village.getHouseholdBalance().cells();
-                double[] weight = new double[cells.size()];
-                for (int i = 0; i < weight.length; i++) {
-                    Household cell = cells.get(i);
-                    if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && cell.debt <= 0
-                            && cell.lockout <= 0 && !cell.isGoingShort()) weight[i] = cell.households();
-                }
                 double supplied = 2 * (cost + stake) / HouseholdBalance.SHARE_OF_EXCESS;
-                check("fixture: eligible owners receive the lab's liquidity buffer",
-                        village.getHouseholdBalance().creditByWeight(supplied, weight) == supplied);
+                check("fixture: eligible owners receive the lab's liquidity buffer", creditOwners(village, supplied) == supplied);
             }
 
             // BF1: the growing village can use up hand()'s college heads.
@@ -1612,9 +1619,17 @@ public class PrizeCheck {
         handMore(d);
         Sector.Staffing staffsALab = d.getSectors().businessServices().staffing(d.labTemplate(Field.MEDICINE));
         check("fixture: the village, handed its heads, can staff a medical lab", staffsALab.passes(), staffsALab.why("lab"));
+        // PZ1, 2026-11-20: BF1's buffer, for every lab the model wants. With the owner line on (BO1-S) the founders' shares and their dividends are
+        // the owner cell's, which takes no offering (HouseholdBalance.subscribe()): at month 174 the trading households put up $962,726 of the $3.3M
+        // the first medical lab needed (its cost 973 and stake 2,304, thousands; the world declined), the order held and the line read no lab, not one
+        // (with the line off the same village raised the whole $4.5M and ordered one). "Never two" needs a purse that could pay for two.
+        double medCost = d.getBusinessInvestment().getCostOf(d.labTemplate(Field.MEDICINE), 1), medStake = rd.labStake(Field.MEDICINE, md, wd);
+        double medSupplied = 2 * wanted * (medCost + medStake) / HouseholdBalance.SHARE_OF_EXCESS;
+        check("fixture: eligible owners receive the liquidity buffer of the " + wanted + " medical labs the model wants, so the purse could pay for each",
+                medCost > 0 && medStake > 0 && creditOwners(d, medSupplied) == medSupplied);
         playHandedMore(d, 1);
         long first = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
-        check("...yet the investors order one that month, never two: at most one lab a field a month", first == 1, labsOf(d));
+        check("...yet the investors order one that month, never two: at most one lab a field a month", first == 1, labsOf(d) + " | " + d.getLastInvestment(Game.LABS_SLOT));
         int wantedNext = rd.labsWanted(Field.MEDICINE, d.getMonth() + 1, d.getPopulationManager().getWagesPerType().clone());
         playHandedMore(d, 1);
         long second =d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);

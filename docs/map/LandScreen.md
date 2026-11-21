@@ -1,6 +1,6 @@
 # LandScreen.java - 2,586 lines · 105 methods · 22 constants · interface
 
-`ham/citybuildersim/ui/LandScreen.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/LandScreen.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The land office: whether the city has room to grow, and which ground to
 > buy - since 0.7.61 round the city's map (batch J4; the project's
@@ -62,7 +62,7 @@
 > pages, NEEDS YOU's GROUND row, HOW THE CITY IS's GROUND USED and the
 > inbox's landlock notice.
 
-**Uses:** [Palette](Palette.md) (318), [Kept](Kept.md) (224), [LandParcel](LandParcel.md) (45), [Pieces](Pieces.md) (41), [LandManager](LandManager.md) (35), [LandmassView](LandmassView.md) (23), [Game](Game.md) (23), [CityLand](CityLand.md) (21), [LandMap](LandMap.md) (18), [LandMarket](LandMarket.md) (15), [Resource](Resource.md) (15), [Icons](Icons.md) (15), [SectorScreen](SectorScreen.md) (14), [MapView](MapView.md) (13), [HistoryScreen](HistoryScreen.md) (10), [World](World.md) (7), [TileRaster](TileRaster.md) (6), [UserInterface](UserInterface.md) (5), [OreView](OreView.md) (5), [Sector](Sector.md) (5), [OilView](OilView.md) (5), [DebtQuote](DebtQuote.md) (5), [Money](Money.md) (5), [CityNeeds](CityNeeds.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [SummaryScreen](SummaryScreen.md) (2), [LandClassView](LandClassView.md) (2), [Statement](Statement.md) (2), [BondMarket](BondMarket.md) (2)... and 10 more
+**Uses:** [Palette](Palette.md) (318), [Kept](Kept.md) (224), [LandParcel](LandParcel.md) (45), [Pieces](Pieces.md) (41), [LandManager](LandManager.md) (35), [LandmassView](LandmassView.md) (23), [Game](Game.md) (23), [CityLand](CityLand.md) (21), [LandMap](LandMap.md) (18), [LandMarket](LandMarket.md) (15), [Resource](Resource.md) (15), [Icons](Icons.md) (15), [SectorScreen](SectorScreen.md) (14), [MapView](MapView.md) (13), [HistoryScreen](HistoryScreen.md) (10), [World](World.md) (7), [TileRaster](TileRaster.md) (6), [UserInterface](UserInterface.md) (5), [OreView](OreView.md) (5), [Sector](Sector.md) (5), [OilView](OilView.md) (5), [DebtQuote](DebtQuote.md) (5), [Money](Money.md) (5), [CityNeeds](CityNeeds.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [SummaryScreen](SummaryScreen.md) (2), [LandClassView](LandClassView.md) (2), [BuildAdvice](BuildAdvice.md) (2), [Statement](Statement.md) (2)... and 10 more
 
 **Used by (4):** [KeptBench](KeptBench.md), [MapView](MapView.md), [PeopleScreen](PeopleScreen.md), [UserInterface](UserInterface.md)
 

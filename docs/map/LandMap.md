@@ -1,6 +1,6 @@
 # LandMap.java - 2,722 lines · 163 methods · 60 constants · model
 
-`ham/citybuildersim/LandMap.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMap.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The city's land as the map view sees it: the outlines it draws - the centre's blocks, the city's edge as runs along block lines, an offer's rectangle - what lies under a plot (its ground, whose it is, the fields there), the box the land office opens on, and the hover card's words; pure, so MapCheck holds the hit-testing.
 > 
@@ -38,7 +38,7 @@
 
 **Uses:** [World](World.md) (79), [CityLand](CityLand.md) (64), [LandParcel](LandParcel.md) (44), [LandMarket](LandMarket.md) (38), [BuildingVisual](BuildingVisual.md) (27), [TilePainter](TilePainter.md) (26), [Game](Game.md) (23), [Resource](Resource.md) (20), [TileRaster](TileRaster.md) (19), [Deposit](Deposit.md) (17), [LandManager](LandManager.md) (15), [LandGrid](LandGrid.md) (14), [EarthData](EarthData.md) (9), [Landmasses](Landmasses.md) (6), [GridOffers](GridOffers.md) (5), [MapFrame](MapFrame.md) (5), [CityMap](CityMap.md) (5), [ShipShapes](ShipShapes.md) (4), [EarthTerrain](EarthTerrain.md) (3), [GlobeFrame](GlobeFrame.md) (3), [DebtQuote](DebtQuote.md) (3), [GlobePicture](GlobePicture.md) (2), [Currency](Currency.md) (2), [Geology](Geology.md) (2), [Sectors](Sectors.md) (2), [LandmassView](LandmassView.md) (2), [EarthProj](EarthProj.md) (2), [BondMarket](BondMarket.md) (2), [Formats](Formats.md) (1), [TrainShapes](TrainShapes.md) (1)... and 3 more
 
-**Used by (21):** [BuildScreen](BuildScreen.md), [DepositMarks](DepositMarks.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (22):** [BuildScreen](BuildScreen.md), [DepositMarks](DepositMarks.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [HydroCheck](HydroCheck.md), [LandCheck](LandCheck.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 

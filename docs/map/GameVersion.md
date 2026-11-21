@@ -1,6 +1,6 @@
-# GameVersion.java - 8,454 lines · 6 methods · 4 constants · model
+# GameVersion.java - 8,475 lines · 6 methods · 4 constants · model
 
-`ham/citybuildersim/GameVersion.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GameVersion.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > What build this is, and what shape its saves are.
 > 
@@ -46,20 +46,20 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.161"` | Bump on release. |
-| 8338 | `GameVersion.SAVE_FORMAT` | `57` | The save shape. |
-| 8394 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `57` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
-| 8402 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 7372 | `GameVersion.VERSION` | `"0.9.174"` | Bump on release. |
+| 8357 | `GameVersion.SAVE_FORMAT` | `58` | The save shape. |
+| 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `58` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
+| 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 8413 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
-| 8404 | 1 | `private GameVersion()` |  |
-| 8407 | 3 | `public static String title()` | For the window title. |
-| 8417 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
-| 8426 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
-| 8435 | 6 | `public static String fromNewerBuild(String savedBy)` | What the player is told about a save from a newer build (FW1): which build wrote it, so they know the build that opens it, as noLongerReadable() names the older one. |
-| 8448 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
+| 42 | 8434 | **type** `public final class GameVersion` | What build this is, and what shape its saves are. |
+| 8425 | 1 | `private GameVersion()` |  |
+| 8428 | 3 | `public static String title()` | For the window title. |
+| 8438 | 3 | `public static boolean isFromNewerBuild(int saveFormat)` | True when a save claims a format this build does not know how to read. |
+| 8447 | 3 | `public static boolean isNoLongerReadable(int saveFormat)` | True when a save is older than this build loads, below OLDEST_LOADABLE_FORMAT: refused as a newer build's is, its file left as it was, the player told in noLongerReadable()'s words. |
+| 8456 | 6 | `public static String fromNewerBuild(String savedBy)` | What the player is told about a save from a newer build (FW1): which build wrote it, so they know the build that opens it, as noLongerReadable() names the older one. |
+| 8469 | 6 | `public static String noLongerReadable(String savedBy)` | What the load screen's slot list, a refused load and the log tell the player when a save is older than this build loads: the build that saved the city, which still opens it, and this one, which cannot. |
 

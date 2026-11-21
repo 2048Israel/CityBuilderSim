@@ -1,6 +1,6 @@
 # CoalMiningCheck.java - 674 lines · 16 methods · 17 constants · harnesses
 
-`ham/citybuildersim/CoalMiningCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CoalMiningCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1,
 > 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md -
@@ -66,7 +66,7 @@
 
 **Uses:** [Good](Good.md) (72), [CoalMining](CoalMining.md) (57), [Resource](Resource.md) (42), [Deposit](Deposit.md) (30), [BuildingManager](BuildingManager.md) (14), [World](World.md) (14), [Geology](Geology.md) (14), [Sectors](Sectors.md) (13), [Game](Game.md) (10), [BusinessInvestment](BusinessInvestment.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [LandManager](LandManager.md) (8), [Equity](Equity.md) (6), [PriceLevel](PriceLevel.md) (6), [CityLand](CityLand.md) (5), [SpreadPlanner](SpreadPlanner.md) (5), [MoneyAudit](MoneyAudit.md) (4), [LandCheck](LandCheck.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Markets](Markets.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1), [PayTier](PayTier.md) (1)... and 2 more
 
-**Used by (2):** [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md)
+**Used by (3):** [GroundInputCheck](GroundInputCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md)
 
 ## Sections
 

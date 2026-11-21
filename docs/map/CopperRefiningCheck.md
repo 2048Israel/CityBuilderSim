@@ -1,6 +1,6 @@
 # CopperRefiningCheck.java - 1,456 lines · 31 methods · 24 constants · harnesses
 
-`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -167,7 +167,7 @@
 |---:|---:|---|---|
 | 572 | 31 | `static void plannerWeighsOldCopper()` |  |
 | 605 | 10 | `static SpreadPlanner.Values oldValues(SpreadPlanner.Values plain, double spare, double price)` | The planner's values with `spare` t of old copper at `price` in front of the market's scrap (CopperRefining, THE OLD COPPER), built by hand. |
-| 617 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost. |
+| 617 | 5 | `static SpreadPlanner.Candidate weigh(CopperRefining cr, BuildingsTemplate t, SpreadPlanner.Values v, BusinessInvestment plans, ...` | One works of `cr` weighed at `v`, as ProcessingSector weighs it: its freight in its earnings and its vans in its cost, at the rate the frame weighs one new works at (city.rate(unit), OE1: a first plant's own in a sect... |
 
 ### 7. the wire works' estimate (lines 623-650)
 

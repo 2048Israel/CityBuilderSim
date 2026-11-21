@@ -8,6 +8,12 @@ package ham.citybuildersim;
  * exist rather than a second, differently-computed version of them. If the
  * people can be shown paying a different rent from the one landlords are shown
  * receiving, the statement is worse than useless.
+ *
+ * Three sections CAUSE their conditions (FS16) where they once read them off a
+ * played town: the flatshare section on a one-tier town's family model and
+ * hand-struck books (flatshareTown(), flatshareBooks()), the real deposit
+ * rate on a founding handed the rate savers are paid (handSavingAReturn()),
+ * and the commute on a bus town whose homes are handed cars (Household.cars).
  */
 public class HouseholdCheck {
 
@@ -44,6 +50,56 @@ public class HouseholdCheck {
         double sold = Math.floor(b.groceriesWanted(price) * delivered);
         b.allocateGroceries(sold, price, price);
         return sold * price;
+    }
+
+    /** Adults in the flatshare fixture's town, all in the unskilled tier: enough that its singles divide into fives. */
+    static final double FLATSHARE_ADULTS = 600;
+
+    /** The rent a door pays in the flatshare fixture's books, in the game's thousands. */
+    static final double FLATSHARE_RENT = 400;
+
+    /** ...and the basket a head buys: living alone costs FLATSHARE_RENT + FLATSHARE_BASKET. */
+    static final double FLATSHARE_BASKET = 300;
+
+    /** The income tax of the flatshare fixture, 60% as the town this replaced had it. */
+    static final double FLATSHARE_TAX = .60;
+
+    /** What one earner takes home in the flatshare fixture: a basket paid and not a home, so a single adult is priced out of living alone and five of them are not. */
+    static final double FLATSHARE_TAKE_HOME = 500;
+
+    /** A town whose adults all work unskilled jobs: its households as the family model builds them, before any is priced out. */
+    static FamilyModel flatshareTown() {
+        FamilyModel town = new FamilyModel();
+        double[] jobs = new double[PayTier.values().length];
+        jobs[PayTier.UNSKILLED.ordinal()] = FLATSHARE_ADULTS;
+        town.rebuild(HouseholdMemoryCheck.staged(0, 0, 0, FLATSHARE_ADULTS, 0), jobs);
+        return town;
+    }
+
+    /** That town's books struck by hand: the rent a door and the basket a head set, and a wage that takes an earner home takeHomeEach after FLATSHARE_TAX. */
+    static HouseholdAccounts flatshareBooks(FamilyModel town, double takeHomeEach) {
+        int un = PayTier.UNSKILLED.ordinal();
+        int rows = HouseholdAccounts.RETIRED + 1;
+        double earners = 0, households = 0, people = 0;
+        for (FamilyStructure s : FamilyStructure.values()) {
+            if (s.isRetired()) continue;
+            double n = town.get(s, PayTier.UNSKILLED);
+            earners += n * s.earners();
+            households += n;
+            people += n * s.size();
+        }
+        double gross = earners * takeHomeEach / (1 - FLATSHARE_TAX);
+        double[] wages = new double[PayTier.values().length], tax = new double[PayTier.values().length];
+        wages[un] = gross;
+        tax[un] = gross * FLATSHARE_TAX;
+        double[] peopleRow = new double[rows], homesRow = new double[rows];
+        peopleRow[un] = people;
+        homesRow[un] = households;
+        HouseholdAccounts books = new HouseholdAccounts();
+        books.refresh(gross, tax[un], FLATSHARE_RENT * households, FLATSHARE_BASKET * people, 0, 0, 0, 0, 0,
+                (long) people, (long) earners, (long) earners);
+        books.updateByTier(wages, tax, peopleRow, homesRow);
+        return books;
     }
 
     public static void main(String[] args) {
@@ -789,8 +845,9 @@ public class HouseholdCheck {
         // senior shapes and the two elder ones, one cell each; six each since
         // HS1, one a tier the retired left.
         // And the owner families' ledger since BO1 (2026-11-10), one cell after the prisoners'.
-        assertTrue("ninety-nine cells: eleven working shapes by six tiers, four retired by six former tiers, nine outside the families",
-                cellsBal.cellCount() == 11 * 6 + 4 * 6 + 3 + 1 + 3 + 1 + 1);
+        // And the young's since HS2: seven working shapes by six tiers, after the established's eleven.
+        assertTrue("a hundred and forty-one cells: eleven established working shapes and seven young by six tiers, four retired by six former tiers, nine outside the families",
+                cellsBal.cellCount() == 11 * 6 + 7 * 6 + 4 * 6 + 3 + 1 + 3 + 1 + 1);
         Household one = cellsBal.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
         Household two = cellsBal.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
         Household six = cellsBal.cell(FamilyStructure.LARGE_FAMILY, PayTier.UNSKILLED);
@@ -1241,51 +1298,37 @@ public class HouseholdCheck {
         check("no household model, no pressure", flat[PayTier.UNSKILLED.ordinal()], 0);
 
         /*
-         * AND THE WHOLE THING, IN A CITY. The unit checks above say the valve
-         * opens; this says it is worth opening - a flatshare has to leave its
-         * members BETTER OFF than living alone, or the mechanic is a costume.
+         * AND THE WHOLE THING, ON A TOWN'S BOOKS. The unit checks above say the
+         * valve opens; this says it is worth opening - a flatshare has to leave
+         * its members BETTER OFF than living alone, or the mechanic is a
+         * costume. CAUSED (FS16): the town this was struck on was built with
+         * the income tax at its ceiling and played 120 months for an unskilled
+         * adult to be unable to afford a home, and the note it carried records
+         * the city that stopped being poor on 2026-09-09 (a full-time wage on
+         * real Job Bank medians left a single adult $366 clear) and the
+         * flatshares asserted "however they got there". The family model is
+         * built for one tier of adults and its books struck by hand
+         * (flatshareBooks()): a rent a door and a basket a head set, and a
+         * wage that takes an earner home FLATSHARE_TAKE_HOME after the tax - a
+         * basket paid, a home not. The priced-out state is the fixture's, and
+         * the rule's threshold is tried from both sides.
          */
-        java.io.PrintStream realOut = System.out;
-        java.io.PrintStream hush = new java.io.PrintStream(new java.io.OutputStream() {
-            @Override public void write(int b) { }
-        });
-
-        Game poor = new Game(GameFiles.scratch("householdcheck"));
-        System.setOut(hush);
-        try {
-            poor.newGame();
-            // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
-            // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
-            // D$2.5B it assumed - so it is given that, the Wealthy preset's, explicitly.
-            poor.setCashForTest(Founding.WEALTHY_CASH);
-            /*
-             * CAUSED, since 2026-09-10. The block below records that this city
-             * stopped being poor on 2026-09-09 and that flatshares were being
-             * asserted "however they got there" - which on this build meant
-             * whichever households happened to migrate in, and after the
-             * material repricing none of them did. A fixture that depends on
-             * who happens to arrive is not a fixture. The one lever that still
-             * makes an unskilled adult unable to live alone is take-home pay,
-             * so the income tax is set to its ceiling: a full-time wage at 40%
-             * pays for a basket but not for a home of its own, and the valve
-             * has a reason to open.
-             */
-            poor.getEconomyManager().getTaxPolicy().setIncomeTaxRate(.60);
-            for (BuildingsTemplate t : poor.getBuildingManager().getTemplates()) {
-                if (t.getName().equals("Low-Rise Apartments")) poor.buildStack(t, 60, true);
-                if (t.getName().equals("Small Grocery Store"))  poor.buildStack(t, 8, true);
-                if (t.getName().equals("Coal Power Plant"))     poor.buildStack(t, 2, true);
-                if (t.getName().equals("Water Treatment Plant"))poor.buildStack(t, 2, true);
-                if (t.getName().equals("Paved Road"))           poor.buildStack(t, 20, true);
-                if (t.getName().equals("Industrial Bakery"))         poor.buildStack(t, 6, true);
-            }
-            poor.simulateMonths(120);
-        } finally { System.setOut(realOut); }
-
-        HouseholdAccounts books = poor.getHouseholds();
-        FamilyModel mix = poor.getFamilies();
-        double[] pressure = books.livingAlonePressure(mix);
         int un = PayTier.UNSKILLED.ordinal();
+        assertTrue("fixture: the take-home pays a basket but not a home and a basket",
+                FLATSHARE_BASKET < FLATSHARE_TAKE_HOME
+                        && FLATSHARE_TAKE_HOME < FLATSHARE_RENT + FLATSHARE_BASKET);
+        FamilyModel mix = flatshareTown();
+        assertTrue("fixture: the town holds single adults in the unskilled tier",
+                mix.get(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED) > 0);
+        HouseholdAccounts books = flatshareBooks(mix, FLATSHARE_TAKE_HOME);
+        check("fixture: living alone costs a home and a basket", books.costOfLivingAlone(),
+                FLATSHARE_RENT + FLATSHARE_BASKET);
+        double[] pressure = books.livingAlonePressure(mix);
+        check("fixture: the unskilled are priced out by the share of the cost the wage leaves short", pressure[un],
+                (FLATSHARE_RENT + FLATSHARE_BASKET - FLATSHARE_TAKE_HOME) / (FLATSHARE_RENT + FLATSHARE_BASKET));
+        mix.shareByAffordability(pressure);
+        assertTrue("fixture: the valve opened, flatshares formed because a wage could not cover a home",
+                mix.getPricedOutShares() > 0);
 
         HouseholdAccounts.Statement alone =
                 books.statementFor(mix, FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
@@ -1296,37 +1339,6 @@ public class HouseholdCheck {
                 + " alone leaves %.3f a month, sharing %.3f%n",
                 pressure[un] * 100, mix.getPricedOutShares(), alone.left(), sharing.left());
 
-        /* ===================================================================
-           THIS CITY IS NO LONGER POOR, AND THAT IS NOT A FAILURE (2026-09-09).
-
-           This asserted pressure[un] > 0 - an unskilled single adult who cannot
-           afford to live alone here - as the fixture for everything below it.
-           The 2026-09-09 rebalance put the wage ladder on real Job Bank medians
-           and the homes on real build costs, and the two together leave that
-           adult $366 a month clear after rent and a basket. Squeezing the
-           city's housing does not bring it back either: 22 Low-Rise instead of
-           60 moved it to $317, because rent here is cost-anchored and the
-           scarcity multiple is bounded.
-
-           So a single unskilled adult CAN live alone in a balanced city, which
-           is both correct - a full-time wage should house one person - and the
-           end of this line as a fixture.
-
-           What this block is actually for is the sentence above it: the unit
-           checks say the valve opens, this says it is WORTH opening. That
-           assertion does not need the city to be poor and is unchanged below.
-           The priced-out state itself is still tested, and tested properly, in
-           the unit checks further up, where the rent is set by hand rather than
-           hoped for - which is where a claim about a threshold belongs.
-           =================================================================== */
-        System.out.printf("   living-alone pressure on the unskilled: %.0f%%%n",
-                pressure[un] * 100);
-        /*
-         * Sharing, or nobody left to share. The fixture cannot guarantee single
-         * adults exist - a city where every one of them has ALREADY paired off
-         * is the mechanic having worked, not having failed - so the assertion
-         * is that flatshares exist, however they got there.
-         */
         assertTrue("...so some of them are sharing",
                 mix.totalOf(FamilyStructure.SHARED_ADULTS) > 0);
         assertTrue("A FLATSHARE IS BETTER OFF THAN LIVING ALONE",
@@ -1335,6 +1347,20 @@ public class HouseholdCheck {
                 sharing.rent() < alone.rent() * 5 - 1e-9);
         assertTrue("...and still five baskets",
                 Math.abs(sharing.shopping() - alone.shopping() * 5) < 1e-6);
+
+        /*
+         * THE THRESHOLD FROM BOTH SIDES: a wage a dollar short of a home and a
+         * basket opens the valve a little, and one that covers it opens none.
+         */
+        double costAlone = books.costOfLivingAlone();
+        FamilyModel justShort = flatshareTown();
+        justShort.shareByAffordability(flatshareBooks(justShort, costAlone - 1).livingAlonePressure(justShort));
+        assertTrue("a wage a dollar short of a home and a basket still prices some out",
+                justShort.getPricedOutShares() > 0);
+        FamilyModel covered = flatshareTown();
+        covered.shareByAffordability(flatshareBooks(covered, costAlone).livingAlonePressure(covered));
+        check("...and a wage that covers it prices none out", covered.getPricedOutShares(), 0);
+        check("...so nobody in that town is sharing", covered.totalOf(FamilyStructure.SHARED_ADULTS), 0);
 
         /* ============ A HOME IS A SIZE, AND A HOUSEHOLD HAS TO FIT ============
 
@@ -1474,6 +1500,17 @@ public class HouseholdCheck {
          - and the monetary page's figure, read between presses, is the one
            the next month's plan is struck at.
        ===================================================================== */
+    /** The real return the rate fixture hands savers: three points above nought, so the factor is one less SAVING_RESPONSE of it, well inside the floor and the ceiling. */
+    static final double HAND_REAL_RETURN = .03;
+
+    /** Months the rate fixture's city is stepped with savers handed their return before the month it is read at: the audit's months. */
+    static final int RATE_MONTHS = 3;
+
+    /** The bank is handed what it pays savers: the inflation they expect and HAND_REAL_RETURN over it. */
+    static void handSavingAReturn(Game city) {
+        city.getBank().setDepositRate(city.getExpectations().getExpectedInflation() + HAND_REAL_RETURN);
+    }
+
     static void whatItSpendsAnswersTheRealRate() {
         System.out.println("\n--- what a household spends above subsistence answers the real deposit rate ---");
 
@@ -1598,8 +1635,15 @@ public class HouseholdCheck {
         /*
          * AND IN A CITY: the monetary page's figure, read between presses, is
          * the factor the next month's plan is struck at. The playtest's
-         * founding with the dial held at 40% for a year, so that saving pays
-         * and the factor is not one.
+         * founding with the dial held at 40%, and CAUSED (FS16): the bank is
+         * handed the rate it pays savers and the page's real rate is set
+         * above nought by it, month by month, where a year at the dial was
+         * played for saving to pay - and on the founding's own path the
+         * bank paid savers 0.00% where on another it paid 2.9% (the comment
+         * this replaces: a plant on a bank loan the bank could not carry).
+         * The rule's threshold from both sides, on the city's page: a real
+         * rate of nought is a factor of one, and a real rate above it is a
+         * factor under one.
          */
         java.io.PrintStream loud = System.out;
         java.io.PrintStream hushed = new java.io.PrintStream(new java.io.OutputStream() {
@@ -1610,12 +1654,9 @@ public class HouseholdCheck {
         try {
             java.nio.file.Path root = TempDirs.create("householdcheck-rate");
             System.setOut(hushed);
-            // ...Cement & Concrete held (EP1): in the draws of 1900 its investor stood a plant on a bank loan of 1,326 (51,188 at today's prices), which
-            // put the bank's book at 2,059 beside deposits of 245; the bank funded it at the central bank's window at a dial of 40%, and its margin
-            // could not pay savers anything: they were paid 0.00%, where on main's path (a book of 790) saving paid 2.9%. The premise is a bank that
-            // pays savers, as WN3 held the sector in PolicyPreviewCheck.
             city = MonetaryCheck.founding(root, "saving-pays", false, Sectors.CEMENT_CONCRETE);
-            for (int m = 0; m < 12; m++) {
+            for (int m = 0; m < RATE_MONTHS; m++) {
+                handSavingAReturn(city);
                 MonetaryCheck.step(city, .40, 0);
                 worstAudit = Math.max(worstAudit, city.getLastMoneyAudit().relative());
             }
@@ -1626,11 +1667,19 @@ public class HouseholdCheck {
         } finally {
             System.setOut(loud);
         }
+        assertTrue("fixture: savers expect no fall in prices, so a bank can be handed a real return of nought",
+                city.getExpectations().getExpectedInflation() >= 0);
+        city.getBank().setDepositRate(city.getExpectations().getExpectedInflation());
+        check("a bank that pays savers what they expect prices to rise is a real rate of nought",
+                city.realDepositRate(), 0);
+        check("...and the page's factor is one", city.spendFactor(), 1);
+        handSavingAReturn(city);
         double pageReal = city.realDepositRate(), pageFactor = city.spendFactor();
-        System.out.printf("   a year at a dial of 40%%: savers are paid %.2f%%, expected inflation %+.2f%%,"
+        System.out.printf("   savers handed %.2f%% against expected inflation %+.2f%%,"
                         + " so %+.2f%% real and a factor of %.4f%n",
                 city.getBank().depositRate() * 100, city.getExpectations().getExpectedInflation() * 100,
                 pageReal * 100, pageFactor);
+        check("fixture: the bank was handed a real return of HAND_REAL_RETURN", pageReal, HAND_REAL_RETURN);
         // EX ANTE SINCE 0.7.42 (the anchor, spec-inflation.md 2.4): less the
         // inflation savers EXPECT (Expectations), where it was the year's.
         check("the page's real deposit rate is the deposit rate less expected inflation",
@@ -1649,13 +1698,28 @@ public class HouseholdCheck {
         assertTrue("every month of it passed the money audit", worstAudit < 1e-6);
     }
 
+    /** Cars the commute fixture hands every home: one, the ceiling of ownership a month's buyers meet (Motoring.getOwnershipCeiling() starts at 1). */
+    static final double HAND_CARS_PER_HOME = 1;
+
+    /** Months the commute town is played before its homes are handed cars: enough for the households to exist and the buses to be riding (fares read from the second month). */
+    static final int COMMUTE_MONTHS_BEFORE_CARS = 2;
+
+    /** ...and the months after, before it is read: the first strikes the drivers' fuel and the second reaches the books, which carry the month before's. */
+    static final int COMMUTE_MONTHS_AFTER_CARS = 2;
+
     /**
      * THE COMMUTE, BY ROW (0.7.49). The fare followed people, so the retired,
      * the out of work and the students paid for buses they never rode - and
-     * a car cost nothing to run. A bus town whose households have motorised,
-     * five years on: the fares fall on the rows that ride and the fuel on the
-     * rows that drive, each adding up to its bill, and both reach the
-     * waterfall with the clinic's fee (Game.getRowFeesSettled()).
+     * a car cost nothing to run. A bus town whose households have motorised:
+     * the fares fall on the rows that ride and the fuel on the rows that
+     * drive, each adding up to its bill, and both reach the waterfall with
+     * the clinic's fee (Game.getRowFeesSettled()).
+     *
+     * CAUSED (FS16). The town was played sixty months for the cars to come
+     * and the fuel bill read $0.02k at the end of them: a premise that rode
+     * on how fast a played town motorises. The cars are handed to the homes
+     * now (Household.cars, one in every home), and the fares and the fuel
+     * are read two months after - the books carry the month before's fuel.
      */
     static void theCommuteByRow() {
         System.out.println("\n--- the fares fall on the riders and the fuel on the drivers ---");
@@ -1675,13 +1739,16 @@ public class HouseholdCheck {
             town.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             town.buildStack(b.getTemplateByName("Construction Depot"), 3, true);
             town.buildStack(b.getTemplateByName("Bus Network"), 2, true);
-            town.simulateMonths(60);
+            town.simulateMonths(COMMUTE_MONTHS_BEFORE_CARS);
+            for (Household home : town.getHouseholdBalance().cells()) home.cars = HAND_CARS_PER_HOME;
+            town.simulateMonths(COMMUTE_MONTHS_AFTER_CARS);
         } finally {
             System.setOut(out);
         }
         HouseholdAccounts books = town.getHouseholds();
         double fares = books.getFares(), fuel = books.getFuel();
-        System.out.printf("   five years on: fares $%,.2fk and fuel $%,.2fk a month%n", fares, fuel);
+        System.out.printf("   %d months after every home was handed a car: fares $%,.2fk and fuel $%,.2fk a month%n",
+                COMMUTE_MONTHS_AFTER_CARS, fares, fuel);
         assertTrue("fixture: the town's buses carry people and its drivers burn fuel", fares > 0 && fuel > 0);
         double faresByRow = 0, fuelByRow = 0;
         boolean commutersOnly = true;

@@ -1,6 +1,6 @@
-# NewGameCheck.java - 1,452 lines · 18 methods · 5 constants · harnesses
+# NewGameCheck.java - 1,477 lines · 18 methods · 5 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -51,8 +51,16 @@
 > AND THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30), section 16: the
 > name field opens blank, a place searched fills it unless the player has
 > typed a name, and a blank name is the model's refusal.
+> 
+> FS17 (the flaky-suite sweep): section 2's used city is made used by hand
+> where it used to be found used. Its landlords' insured mortgage and the
+> premium on it are written by BusinessDebtManager.issueMortgage rather than
+> read off whatever the 120 played months let them borrow, and the vault is
+> sold and spent on a parcel by hand; the 120 months stay, the identity's
+> breadth, and section 3's comparison of the reset against a fresh Game is
+> untouched.
 
-**Uses:** [Game](Game.md) (156), [Founding](Founding.md) (149), [Currency](Currency.md) (41), [WorldEconomy](WorldEconomy.md) (27), [World](World.md) (13), [FoundingName](FoundingName.md) (10), [GameFiles](GameFiles.md) (8), [Nations](Nations.md) (7), [Rollover](Rollover.md) (7), [EarthData](EarthData.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [EarthCheck](EarthCheck.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [MoneyAudit](MoneyAudit.md) (3), [EarthSite](EarthSite.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1)... and 7 more
+**Uses:** [Game](Game.md) (156), [Founding](Founding.md) (149), [Currency](Currency.md) (41), [WorldEconomy](WorldEconomy.md) (27), [World](World.md) (13), [FoundingName](FoundingName.md) (10), [GameFiles](GameFiles.md) (8), [Nations](Nations.md) (7), [Rollover](Rollover.md) (7), [EarthData](EarthData.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [EarthCheck](EarthCheck.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [MoneyAudit](MoneyAudit.md) (3), [EarthSite](EarthSite.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1)... and 10 more
 
 **Used by (4):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
@@ -60,97 +68,97 @@
 
 | line | section |
 |---:|---|
-| 274 | · 1. what a city that never existed looks like |
-| 291 | · 2. live in one, hard |
-| 375 | · 3. start a new one |
-| 396 | · 4. and it is actually playable |
-| 422 | · 5. a new game after a LOAD, too |
-| 467 | · 6-11. FOUNDING A CITY (0.7.10) |
-| 470 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 473 | · 13. THE GROUND IT STANDS ON (0.7.56) |
-| 476 | · 14. THE REAL EARTH (0.7.121) |
-| 479 | · 15. A NEW CITY AFTER A REFORMED ONE (FX4) |
-| 482 | · 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1) |
-| 491 | 6-11. FOUNDING A CITY (0.7.10) |
-| 527 | · · 6 |
-| 670 | · · 7 |
-| 723 | · · 8 |
-| 778 | · · 9 |
-| 795 | · · 10 |
-| 826 | · · 11 |
-| 1039 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 1129 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
-| 1229 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
-| 1329 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
-| 1367 | 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove |
+| 282 | · 1. what a city that never existed looks like |
+| 299 | · 2. live in one, hard |
+| 400 | · 3. start a new one |
+| 421 | · 4. and it is actually playable |
+| 447 | · 5. a new game after a LOAD, too |
+| 492 | · 6-11. FOUNDING A CITY (0.7.10) |
+| 495 | · 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 498 | · 13. THE GROUND IT STANDS ON (0.7.56) |
+| 501 | · 14. THE REAL EARTH (0.7.121) |
+| 504 | · 15. A NEW CITY AFTER A REFORMED ONE (FX4) |
+| 507 | · 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1) |
+| 516 | 6-11. FOUNDING A CITY (0.7.10) |
+| 552 | · · 6 |
+| 695 | · · 7 |
+| 748 | · · 8 |
+| 803 | · · 9 |
+| 820 | · · 10 |
+| 851 | · · 11 |
+| 1064 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
+| 1154 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 1254 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
+| 1354 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
+| 1392 | 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 267 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1315 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1316 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1342 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1344 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 275 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
+| 1340 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1341 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1367 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1369 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 61 | `static int fails` |  |
+| 69 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1394 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
-| 63 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 68 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 76 | 189 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
-| 269 | 221 | `public static void main(String[] args) throws Exception` |  |
+| 67 | 1411 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 76 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 84 | 189 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
+| 277 | 238 | `public static void main(String[] args) throws Exception` |  |
 
-### 6-11. FOUNDING A CITY (0.7.10) (lines 491-1038)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 525 | 347 | `static void founding(GameFiles files) throws Exception` |  |
-| 877 | 138 | `static void endowmentBuysAndBorrows(GameFiles files, Founding.Buys buys, Nations.Path path) throws Exception` | Section 11's village and (c), the water plant's bond, on one path of the founding (EP2: Random and Historical, both at Nations.DEFAULT_SEED). |
-| 1017 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
-| 1023 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
-| 1033 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
-
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 1039-1128)
+### 6-11. FOUNDING A CITY (0.7.10) (lines 516-1063)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1062 | 66 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+| 550 | 347 | `static void founding(GameFiles files) throws Exception` |  |
+| 902 | 138 | `static void endowmentBuysAndBorrows(GameFiles files, Founding.Buys buys, Nations.Path path) throws Exception` | Section 11's village and (c), the water plant's bond, on one path of the founding (EP2: Random and Historical, both at Nations.DEFAULT_SEED). |
+| 1042 | 4 | `static double cost(Founding.Buys buys, String name)` | A first work's invoice, by name. |
+| 1048 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
+| 1058 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1129-1228)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1146 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
-
-### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1229-1328)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 1064-1153)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1248 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
-| 1308 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 1319 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 1324 | 4 | `static void quietly(Runnable work)` |  |
+| 1087 | 66 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
 
-### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1329-1366)
+### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1154-1253)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1346 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
+| 1171 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
 
-### 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove (lines 1367-1452)
+### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1254-1353)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1375 | 69 | `static void theNameOnThePage() throws Exception` |  |
-| 1445 | 7 | `static void cleanUp(Path root)` |  |
+| 1273 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
+| 1333 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 1344 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 1349 | 4 | `static void quietly(Runnable work)` |  |
+
+### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1354-1391)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1371 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
+
+### 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove (lines 1392-1477)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1400 | 69 | `static void theNameOnThePage() throws Exception` |  |
+| 1470 | 7 | `static void cleanUp(Path root)` |  |
 

@@ -380,7 +380,8 @@ public class Inbox {
         Landmasses lms = game.getLandManager().getLandmasses();
         List<Integer> unlinked = lms.unlinkedIds();
         for (int id : unlinked) {
-            take(game, month, LandmassView.noticeKey(id), true, LandmassView.noticeTitle(lms, id), LandmassView.noticeBody(lms, id));
+            take(game, month, LandmassView.noticeKey(id), true, LandmassView.noticeTitle(lms, id),
+                    LandmassView.noticeBody(lms, id, BuildAdvice.islandLink(game, id)));
         }
         for (Notice notice : new ArrayList<>(notices)) {
             int id = LandmassView.noticeId(notice.getKey());

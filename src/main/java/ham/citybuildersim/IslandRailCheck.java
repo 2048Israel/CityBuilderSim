@@ -49,7 +49,9 @@ import ham.citybuildersim.IslandNetCheck.Land;
  *
  *   8. THE ISLAND LINKED BY A PORT (a real map; RI1 slice B, ET5's "a linked island's hub at its port"). A real CityMap through a Game: Rotterdam's
  *      island (648) bought, a General Cargo Terminal ordered on it and a second on home's coast, the city given a railway (two Rail Terminals and
- *      Freight Lines handed to it), and home filled so that the houses once the island is linked are drawn there. The island's piece has the
+ *      Freight Lines handed to it), and home filled so that the houses once the island is linked are drawn there: filled in the instant of the
+ *      link, the ground free read in that instant (under half the island's buildable), and the map read in the one month that draws the fill
+ *      (FS7: no month between, no 36 months waited; LandmassCheck 12's FF1 hazard, a month that lets the town's own orders spend the ground). The island's piece has the
  *      terminal for its anchor - the middle of its box; its highway hub and its rail hub are the line crossings nearest the terminal (against a
  *      brute force over the piece's tiles) and nearer it than the crossing nearest the founding site was (the old rule, the premise); the island has
  *      track of its own, all on its ground, and a yard once the model has a second; a piece with no terminal (a second parcel of the island's, apart)
@@ -75,6 +77,12 @@ public class IslandRailCheck {
     static void check(String label, boolean ok) {
         if (!ok) fails++;
         System.out.printf("%-110s %s%n", label, ok ? "ok" : "FAIL");
+    }
+
+    /** A check with the figures it read after its verdict (FS7). */
+    static void report(String label, boolean ok, String detail) {
+        if (!ok) fails++;
+        System.out.printf("%-110s %s  (%s)%n", label, ok ? "ok" : "FAIL", detail);
     }
 
     static final long SITE = IslandNetCheck.SITE;
@@ -582,8 +590,6 @@ public class IslandRailCheck {
     /** The side, in squares of 64 plots, of the block of the island the city buys (its port's square is the north-west one): 3. */
     static final int ISLAND_SQUARES = 3;
 
-    /** Months after the link the fixture gives the island's piece to have weight and a railway hub. */
-    static final int LINK_MONTHS = 36;
 
     /** The city of sections 8 and 9, built once: LandmassCheck's section 10 city (Rotterdam, the island of 648, home's open coast), played through its unlinked month and its linked months. */
     static final class Port {
@@ -594,6 +600,8 @@ public class IslandRailCheck {
         /** The squares' boxes {x0, y0, x1, y1}, in plots. */
         long[] box, farBox, seaBox;
         boolean found, homeLandFound;
+        /** The linked ground the fill leaves free, read in the instant of its orders, and the half of the island's buildable ground it fills to (FS7). */
+        double filledFree = Double.NaN, half;
         // What the map was before the link (section 9).
         boolean islandPort, unlinked, railed;
         int piecesBefore, islandPieceBefore, farPieceBefore, seaPieceBefore;
@@ -669,11 +677,13 @@ public class IslandRailCheck {
         p.highwaysOnIsland = in(runs.highways(), p.box) + in(runs.highways(), p.farBox);
         p.homeAnchorBefore = Arrays.equals(map.pieces().anchor(0), map.pieces().hub(0));
         // The link: a terminal at home, standing at once. Then houses until the linked ground free is below half the island's buildable, so that the island's districts hold buildings (LandmassCheck 12's fill).
+        // FS7 (LandmassCheck 12's FF1 hazard): the fill is made in the instant of the link, no month between, and its ground read in that instant;
+        // then the one month that draws it (fillHome()'s), and the map is read: the draw is all that is waited for, not LINK_MONTHS (36, measured).
         p.linkOrdered = LandmassCheck.order(c, gc, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         p.linked = lms.linked(648);
-        LandmassCheck.quietly(() -> g.simulateMonths(1));
-        fillHome(c, house, lms.rows().get(1).buildableSqFt() / 2);
-        p.settled = LandmassCheck.until(c, () -> settled(c), LINK_MONTHS);
+        p.half = lms.rows().get(1).buildableSqFt() / 2;
+        p.filledFree = fillHome(c, house, p.half);
+        p.settled = settled(c);
         return p;
     }
 
@@ -725,14 +735,16 @@ public class IslandRailCheck {
         return false;
     }
 
-    /** Houses ordered at once until the linked ground free is below `left` square feet. */
-    static void fillHome(LandmassCheck.City c, BuildingsTemplate house, double left) {
+    /** Houses ordered at once until the linked ground free is below `left` square feet, then the month that draws them; the linked ground free read in the instant of the orders. */
+    static double fillHome(LandmassCheck.City c, BuildingsTemplate house, double left) {
         for (int round = 0; round < 40 && c.lm.getAvailableSqFt() >= left; round++) {
             LandmassCheck.quietly(() -> c.g.setCashForTest(Founding.WEALTHY_CASH * 100));
             int n = (int) Math.floor((c.lm.getAvailableSqFt() - left) / house.getLandSqFt()) + 1;
             if (LandmassCheck.order(c, house, n, true, Landmasses.RULE) != Game.BuildResult.SUCCESS) break;
         }
+        double free = c.lm.getAvailableSqFt();
         LandmassCheck.quietly(() -> c.g.simulateMonths(1));
+        return free;
     }
 
     /** Whether the island's piece has weight and a railway hub and a highway hub (a net of each on it) on the map the city has now. */
@@ -860,8 +872,9 @@ public class IslandRailCheck {
         Game g = p.c.g;
         World w = p.w;
         Landmasses lms = p.c.books();
-        check("the island's terminal and then home's are ordered, the island is linked (the books), and the island's piece has weight, a highway hub and a railway hub within "
-                + LINK_MONTHS + " months", p.islandPort && p.linkOrdered && p.linked && lms.linked(648) && p.settled);
+        report("the island's terminal and then home's are ordered, the island is linked (the books), home is filled in that instant to under half the island's buildable ground,"
+                + " and in the month that draws the fill the island's piece has weight, a highway hub and a railway hub", p.islandPort && p.linkOrdered && p.linked && lms.linked(648)
+                && p.filledFree < p.half && p.settled, String.format("linked free %,.0f sq ft of the half's %,.0f, read in the instant of the fill", p.filledFree, p.half));
         CityMap map = g.getCityMap();
         CityMap.MapPieces pieces = map.pieces();
         CityRuns runs = map.runs();

@@ -1,6 +1,6 @@
 # NewUnitCheck.java - 941 lines · 30 methods · 3 constants · harnesses
 
-`ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every
 > future-building figure.

@@ -51,6 +51,18 @@ import java.util.List;
  *      from the rule; its order a row from the step that posts it to the step
  *      that withdraws it, with what lapsed.
  *
+ * Every city here plays with the owner line off (BO1-S, ShortSellingCheck.lineOff): the fund buys
+ * the households' shares, and in this harness's town of nine adults, under OwnerHousehold.OWNER_ADULT_SHARE,
+ * no company lists and no household holds one. The line's own claims are OwnerCheck's.
+ *
+ * THE FIXTURE'S TOWN (FS13, 2026-11-20; PK1): a town whose bank is built at its founding (a Commercial Bank
+ * in the founding's order, its capital sold as shares, the households first and the world for the rest),
+ * played FOUNDING_MONTHS and saved. It is a stage of the founding and no more: every premise a section
+ * needs of it is caused and not read off what the months left - the households' holding of the company the
+ * sections trade in and of the bank (copy(): FundCheck.handTheHouseholds(), HOUSEHOLD_HOLDING of each), the
+ * desk's inventory handed away before the sections that play a step on a rule's bid (handCopy()), the seller
+ * on every book, the split's trigger sized from the wage at the month it is traded.
+ *
  * @author Jerus
  */
 public class FundLedgerCheck {
@@ -90,14 +102,43 @@ public class FundLedgerCheck {
 
     static GameFiles files;
 
-    /** A copy of the fixture city, loaded from its save: every section starts from the same city. */
+    /** The months the fixture town is played before it is saved: a stage of the founding, never a month picked because the town's path passes at it (PK1). */
+    static final int FOUNDING_MONTHS = 72;
+
+    /** What the founding's order for the bank answered: the fixture fails if it was not a built bank. */
+    static Game.BuildResult bankBuilt;
+
+    /** The share of the company the sections trade in, and of the bank, that the base hands the households: twice the fund's cap on a company, so the households can sell the fund the whole of the room under it (section 8's fillTheFundsBids()) and still hold the cap's worth. */
+    static final double HOUSEHOLD_HOLDING = 2 * TreasuryFund.OWNERSHIP_LIMIT;
+
+    /**
+     * A copy of the fixture city, loaded from its save: every section starts from the same city, and the holding the
+     * sections sell from is CAUSED (FS13, 2026-11-20; PK1) and not what the founding's months left: the households hold
+     * HOUSEHOLD_HOLDING of the company the sections trade in and of the bank, handed over from the desk's inventory and the
+     * world's (FundCheck.handTheHouseholds(): no money moved, the register's identity kept). The sections assert it.
+     */
     static Game copy() {
-        Game g = new Game(files);
+        Game g = ShortSellingCheck.lineOff(new Game(files));
+        g.holdCausesOfDeathOff();   // as the city (main()); the hold is not saved
         quietly(() -> g.loadGameSave(1));
+        int c = heldCompany(g);
+        if (c >= 0) FundCheck.handTheHouseholds(g, c, HOUSEHOLD_HOLDING);
+        FundCheck.handTheHouseholds(g, Equity.BANK, HOUSEHOLD_HOLDING);
         return g;
     }
 
-    /** The household cell holding the most of a company's shares: a seller the fixture can cause on the book. */
+    /**
+     * A copy whose desk holds nothing, for the sections that play a step on the rule's bid (section 8): a rule's bid at the
+     * desk's ask is met by the desk's inventory first, so a bid the section sizes rests only where the desk holds none
+     * (FundCheck.emptyTheDesk(): the desk's shares handed to the world, the register's identity kept).
+     */
+    static Game handCopy() {
+        Game g = copy();
+        FundCheck.emptyTheDesk(g);
+        return g;
+    }
+
+    /** The household cell holding the most of a company's shares: a seller the fixture can cause on the book (copy() hands the households their holding of the company and the bank). */
     static Household holder(Game g, int c) {
         Household best = null;
         for (Household h : g.getHouseholdBalance().cells()) {
@@ -118,9 +159,13 @@ public class FundLedgerCheck {
         quiet = new PrintStream(OutputStream.nullOutputStream());
 
         /* ================= the city ================= */
-        out.println("--- a city whose households own its companies and its bank (FundCheck's) ---");
+        out.println("--- a city with a bank built at its founding, its companies and bank held by the households (FundCheck's) ---");
         files = GameFiles.scratch("fundledgercheck");
-        Game city = new Game(files);
+        Game city = ShortSellingCheck.lineOff(new Game(files));
+        // FS13, 2026-11-20: THE CAUSES OF 1900 HELD OFF, here and in every city loaded from it (copy()), as FundCheck's (R0b call 7). This town starts with nine
+        // adults and plays 16 people at month 84 with the causes on: every household cell then stood under HouseholdBalance.EMPTY_CELL, so the base had no
+        // household to be handed a holding and no seller for the fund on any book. The hold is the model's own switch and is not saved.
+        city.holdCausesOfDeathOff();
         quietly(() -> {
             city.run();
             city.getForeignAccounts().pinRate(1.0);
@@ -130,9 +175,25 @@ public class FundLedgerCheck {
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.simulateMonths(72);
+            // FS13, 2026-11-20: THE BANK IS THE FIXTURE'S, BUILT AT THE FOUNDING WITH THE REST OF THE TOWN (PK1), as FundCheck's. The town builds no bank of its
+            // own at a month: its one branch was the investor's (BusinessInvestment.planBank(), when the branch is wanted and staffable), and the founding's months
+            // are a stage and no more. A Commercial Bank built here opens its branch when it is finished, and the branch's paid-in capital is sold as shares, the
+            // households first and the world for the rest (Game.capitaliseBank()), so the standing bank and its owners other than the city are caused.
+            bankBuilt = city.buildStack(template(city, "Commercial Bank"), 1, false);
+            city.simulateMonths(FOUNDING_MONTHS);
             city.saveGame(1);
         });
+        Bank b0 = city.getBank();
+        out.printf("   m%d: population %,d, %,.0f branch(es), equity $%,.0fk, %,.0f bank shares (households %,.0f, abroad %,.0f)%n",
+                city.getMonth(), city.getPopulationManager().getPopulation(), b0.getBranches(), b0.equity(), city.getEquity().getShares(Equity.BANK),
+                city.getHouseholdBalance().sharesHeld(Equity.BANK), city.getEquity().getForeignShares(Equity.BANK));
+        check("fixture: the founding's order for a Commercial Bank was placed", bankBuilt == Game.BuildResult.SUCCESS);
+        check("fixture: a standing bank, owned by somebody other than the city", b0.getBranches() >= 1 && !b0.isInsolvent()
+                && city.getHouseholdBalance().sharesHeld(Equity.BANK) + city.getEquity().getForeignShares(Equity.BANK) > 0
+                && city.getEquity().getCityShares(Equity.BANK) == 0);
+        double people = 0;
+        for (Household cell : city.getHouseholdBalance().cellsForMarket()) if (!cell.isEmpty()) people += cell.households;
+        check("fixture: the households' cells hold somebody - cells of at least HouseholdBalance.EMPTY_CELL households - to be handed a holding", people > 0);
         check("fixture: the city's fund holds nothing and its ledger tracks from the founding",
                 city.getFund().getLedger().getTrackingSince() == -1 && city.getFund().getLedger().acbHeld() == 0
                         && city.getBondMarket().faceHeldByCity() == 0);
@@ -149,14 +210,19 @@ public class FundLedgerCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /** A company the households hold shares of, other than the bank. */
+    /**
+     * THE COMPANY THE SECTIONS TRADE IN (FS13, 2026-11-20; PK1): the listed company, the bank apart, with the largest market cap
+     * (Exchange.marketCap()) - the model's own measure of the town's companies and not what the households or the fund happen to
+     * hold of them: the rule given money bids for a company by its part of the market, so the largest is the one whose bid is the
+     * most of the room under the cap (section 8). copy() hands the households their holding of it; -1 where none is listed.
+     */
     static int heldCompany(Game g) {
         int best = -1;
         double most = 0;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            if (c == Equity.BANK) continue;
-            double held = g.getHouseholdBalance().sharesHeld(c);
-            if (held > most) { most = held; best = c; }
+            if (c == Equity.BANK || !(g.getEquity().getShares(c) > 0) || !(g.getExchange().fair(c) > 0)) continue;
+            double cap = g.getExchange().marketCap(g.getEquity(), c);
+            if (cap > most) { most = cap; best = c; }
         }
         return best;
     }
@@ -167,14 +233,16 @@ public class FundLedgerCheck {
         out.println("\n--- 1. average cost: two buys at two prices, then a sale, on the book ---");
         Game g = copy();
         int c = heldCompany(g);
+        // FS13, 2026-11-20: the holding is caused by copy() (HOUSEHOLD_HOLDING of the company), so the seller's cell holds what it sells.
+        Household seller = c < 0 ? null : holder(g, c);
         check("fixture: a company the households hold more than 200 shares of", c >= 0
-                && g.getHouseholdBalance().sharesHeld(c) > 200);
-        if (c < 0) return;
+                && g.getHouseholdBalance().sharesHeld(c) >= HOUSEHOLD_HOLDING * g.getEquity().getShares(c) * (1 - 1e-9)
+                && g.getHouseholdBalance().sharesHeld(c) > 200 && seller != null && seller.shares[c] * seller.households() > 200);
+        if (c < 0 || seller == null) return;
         Exchange ex = g.getExchange();
         TreasuryFund f = g.getFund();
         f.receive(10_000);
         ex.bookOf(c).withdrawAll();
-        Household seller = holder(g, c);
         String cell = Exchange.CELL + seller.key();
         ex.tradeForCheck(c, cell, OrderBook.Side.SELL, 2, 100);
         double got = filled(ex.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, 2, 100));
@@ -237,13 +305,15 @@ public class FundLedgerCheck {
         // THE RESCUE: the fund holds the bank's shares on its market book first, bought from a household.
         int b = Equity.BANK;
         ex.bookOf(b).withdrawAll();
-        // The seller: the household cell holding the most of the bank, or the world if it holds more.
+        // FS13, 2026-11-20: THE SELLER IS CAUSED (PK1). The households hold HOUSEHOLD_HOLDING of the bank (copy() hands it over), so the household cell
+        // holding the most of it is the seller, and the fund buys half of what that cell holds: not the world's holding where the path left it more.
         Household bankHolder = holder(g, b);
         double cellHolds = bankHolder == null ? 0 : bankHolder.shares[b] * bankHolder.households();
-        double worldHolds = g.getEquity().getForeignShares(b);
-        String bankSeller = cellHolds >= worldHolds ? Exchange.CELL + bankHolder.key() : Exchange.WORLD;
-        double q = Math.max(cellHolds, worldHolds) / 2;
-        check("fixture: somebody other than the city holds the bank's shares", q > 0);
+        String bankSeller = bankHolder == null ? null : Exchange.CELL + bankHolder.key();
+        double q = cellHolds / 2;
+        check("fixture: somebody other than the city holds the bank's shares", q > 0
+                && g.getHouseholdBalance().sharesHeld(b) >= HOUSEHOLD_HOLDING * g.getEquity().getShares(b) * (1 - 1e-9)
+                && g.getEquity().getCityShares(b) == 0);
         if (!(q > 0)) return;
         double p0 = ex.price(b);
         f.receive(q * p0);
@@ -399,16 +469,18 @@ public class FundLedgerCheck {
         // ...and a trade past the wage dial, so the step's split takes it.
         double wage = g.getPopulationManager().getAverageWage();
         double high = 1.5 * Exchange.SPLIT_AT * wage;
-        double expectedSplit = Math.pow(10, Math.floor(Math.log10(
-                high / (wage * Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW)))));
         ex.tradeForCheck(c, cell, OrderBook.Side.SELL, high, 1);
         ex.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, high, 1);
         FundLedger.Lot lot = f.getLedger().lot(FundLedger.shareKey(Equity.COMPANIES[c]));
         if (lot == null) { check("fixture: a lot", false); return; }
         double acb = lot.acb(), units = reg.getCityMarketShares(c), avg = acb / units;
+        // FS13, 2026-11-20: THE TRIGGER FROM BOTH SIDES, AGAINST THE MODEL'S OWN CONSTANT (PK1), not a copy of the step's power-of-ten formula: the
+        // quote stood over SPLIT_AT of the wage (sized from the wage at this month, 1.5 times it) before the step, and the split put it under.
+        double quote = ex.price(c);
         ex.splitForCheck();
         double k = ex.getSplit(c);
-        close("fixture: the wage trigger split by the derived power of ten", k, expectedSplit, 1e-12);
+        check("fixture: the wage trigger split the company: the quote over SPLIT_AT of the wage before, under it after",
+                wage > 0 && quote > wage * Exchange.SPLIT_AT && k > 1 && ex.price(c) <= wage * Exchange.SPLIT_AT);
         close("a split leaves the lot's cost where it was", lot.acb(), acb, 0);
         close("...the register's count goes up by the factor", reg.getCityMarketShares(c), units * k, 1e-9 * units * k);
         close("...and the average a share falls by it", lot.acb() / reg.getCityMarketShares(c), avg / k, 1e-12 * avg);
@@ -454,7 +526,7 @@ public class FundLedgerCheck {
         g.fundBuyShares(c, 100);
         play(g);
         quietly(() -> g.saveGame(2));
-        Game back = new Game(files);
+        Game back = ShortSellingCheck.lineOff(new Game(files));
         quietly(() -> back.loadGameSave(2));
         FundLedger a = f.getLedger(), b = back.getFund().getLedger();
         boolean lots = a.getLots().size() == b.getLots().size();
@@ -552,7 +624,7 @@ public class FundLedgerCheck {
                         && g.getEquity().getCityMarketShares(b) > 0 && g.getEquity().getCityMarketShares(c) > 0);
         if (was == null) return;
         quietly(() -> g.saveGame(3));
-        Game seeded = new Game(files);
+        Game seeded = ShortSellingCheck.lineOff(new Game(files));
         try {
             com.google.gson.JsonObject json = com.google.gson.JsonParser
                     .parseString(java.nio.file.Files.readString(files.saveFile(3))).getAsJsonObject();
@@ -690,8 +762,13 @@ public class FundLedgerCheck {
 
     static void theHand() {
         out.println("\n--- 8. the hand: its cap, its cash held from the rule, its order on the record ---");
-        Game g = copy();
+        // FS13, 2026-11-20: THE DESK HOLDS NOTHING AND THE HOUSEHOLDS HOLD THE COMPANY, CAUSED (PK1): every game of this section is handCopy(), so the rule's bid
+        // at a step rests instead of being met by the desk's inventory (FundCheck.emptyTheDesk()), and the households it is filled from hold HOUSEHOLD_HOLDING.
+        Game g = handCopy();
         int c = heldCompany(g);
+        check("fixture: the desk holds nothing of the company and the households hold the holding they were handed",
+                c >= 0 && !(g.getEquity().getDealerShares(c) > 0)
+                        && g.getHouseholdBalance().sharesHeld(c) >= HOUSEHOLD_HOLDING * g.getEquity().getShares(c) * (1 - 1e-9));
         if (c < 0) return;
         TreasuryFund f = g.getFund();
         g.setCashForTest(g.getCash() + 100_000);
@@ -728,23 +805,28 @@ public class FundLedgerCheck {
         g.fundBuyShares(c, 1e15);
         double queued = f.getHandOrders().isEmpty() ? 0 : f.getHandOrders().get(0).amount();
         close("fixture: a buy far past the cap is queued at the free cash", queued, g.getFund().getCash(), 1e-6);
+        // FS13, 2026-11-20: a fund with no room is a premise the step must leave (companyAtTheCap()): the company's buyback is the one thing a fixture cannot
+        // switch off (a company's equity target has no setter), so where no company's step leaves the fund at its cap the fixture fails and says so.
         int cc = companyAtTheCap(c);
-        out.printf("   at the cap, on %s (section 8's: %s)%n", Equity.COMPANIES[cc], Equity.COMPANIES[c]);
-        Game full = fundAtTheCap(cc);
-        TreasuryFund ff = full.getFund();
-        play(full);
-        boolean said = false;
-        for (FundLedger.Activity a : ff.getLedger().getActivity()) {
-            if (a.kind().equals(FundLedger.LAPSED) && a.note() != null && a.note().contains("cap")) said = true;
+        check("fixture: a company whose step leaves a fund at its cap at the cap", cc >= 0);
+        if (cc >= 0) {
+            out.printf("   at the cap, on %s (section 8's: %s)%n", Equity.COMPANIES[cc], Equity.COMPANIES[c]);
+            Game full = fundAtTheCap(cc);
+            TreasuryFund ff = full.getFund();
+            play(full);
+            boolean said = false;
+            for (FundLedger.Activity a : ff.getLedger().getActivity()) {
+                if (a.kind().equals(FundLedger.LAPSED) && a.note() != null && a.note().contains("cap")) said = true;
+            }
+            check("a buy in a company the fund already holds 10% of is not posted, and its row says why", said
+                    && ff.getPosted().isEmpty());
         }
-        check("a buy in a company the fund already holds 10% of is not posted, and its row says why", said
-                && ff.getPosted().isEmpty());
         theCapCountsEveryBuy(c);
     }
 
     /** A city whose fund holds the cap of company c and has a buy of the hand's for it waiting for the next step. */
     static Game fundAtTheCap(int c) {
-        Game full = copy();
+        Game full = handCopy();
         full.setCashForTest(full.getCash() + 1_000);
         full.fundPayIn(1_000);
         full.getEquity().moveCity(c, TreasuryFund.OWNERSHIP_LIMIT * full.getEquity().getShares(c));
@@ -754,7 +836,7 @@ public class FundLedgerCheck {
 
     /**
      * The company a fund at the cap is still at the cap of when the step is over: section 8's, or the first other whose step leaves the
-     * fund's holding alone. Since EM1 (2026-10-29) the rule sells HOME_SPEED of a holding into a bid resting more than BAND over the
+     * fund's holding alone, or -1 where none does (FS13). Since EM1 (2026-10-29) the rule sells HOME_SPEED of a holding into a bid resting more than BAND over the
      * share's value, and a company with cash to spend bids for its own shares at value plus BUYBACK_TOLERANCE, so a fund at the cap in
      * one sold 498 of 9,392 shares into the buyback in the step - before the hand's order was posted - and the room that opened was the
      * order's. A fixture has to cause what it tests: a fund with no room.
@@ -770,7 +852,7 @@ public class FundLedgerCheck {
             double cap = TreasuryFund.OWNERSHIP_LIMIT * g.getEquity().getShares(c);
             if (g.getEquity().getCityMarketShares(c) >= cap * (1 - 1e-9)) return c;
         }
-        return c0;
+        return -1;
     }
 
     /** The market caps of every company with shares and a fair value, on a city. */
@@ -784,7 +866,7 @@ public class FundLedgerCheck {
 
     /** What the rule alone bids for company c at the step, given money for about a hundredth of the market and four orders' worth of 4% of c (theCapCountsEveryBuy()'s twin): its shares resting on c's book. */
     static double ruleAloneFor(int c) {
-        Game twin = copy();
+        Game twin = handCopy();
         if (!(twin.getEquity().getShares(c) > 0) || !(twin.getExchange().fair(c) > 0)) return 0;
         double each = .04 * twin.getEquity().getShares(c) * twin.getExchange().fair(c);
         double lump = .01 * capsOf(twin) + 4 * each;
@@ -807,24 +889,22 @@ public class FundLedgerCheck {
      */
     static void theCapCountsEveryBuy(int c0) {
         /*
-         * ...ON A COMPANY THE RULE BIDS FOR (0.7.106): the households' largest
-         * holding, section 8's; or, where the rule given the money bids
-         * nothing for it, the company it bids most for. A fixture has to cause
+         * ...ON A COMPANY THE RULE BIDS FOR (0.7.106): section 8's, the listed
+         * company with the largest market cap, which the rule given money bids
+         * for by its part of the market (heldCompany()). A fixture has to cause
          * what it tests: at 0.7.106 (a quarter of a scrapped plant's material
-         * salvaged, Jerus's A23) this city's rule bid nothing for section 8's
-         * company at the step, and 2,027 shares of it at 0.7.104.
+         * salvaged, Jerus's A23) this city's rule bid nothing for the company
+         * the households held most of, and 2,027 shares of it at 0.7.104. FS13,
+         * 2026-11-20: the company is no longer found by what the rule bid on a
+         * path - it is chosen by the model's own measure, and the rule's bid for
+         * it is a fixture below, failed and not worked around.
          */
         int c = c0;
         double ruleAlone = ruleAloneFor(c0);
-        if (!(ruleAlone > FundLedger.DUST)) {
-            for (int i = 0; i < Equity.COMPANIES.length; i++) {
-                if (i == Equity.BANK || i == c0) continue;
-                double bid = ruleAloneFor(i);
-                if (bid > ruleAlone) { ruleAlone = bid; c = i; }
-            }
-        }
+        check("fixture: the rule given the money bids for the company at the step, with the desk holding none", ruleAlone > FundLedger.DUST);
+        if (!(ruleAlone > FundLedger.DUST)) return;
         out.printf("   on %s (section 8's: %s)%n", Equity.COMPANIES[c], Equity.COMPANIES[c0]);
-        Game twin = copy();
+        Game twin = handCopy();
         Equity r0 = twin.getEquity();
         Exchange x0 = twin.getExchange();
         double caps = capsOf(twin);
@@ -833,14 +913,18 @@ public class FundLedgerCheck {
         double lump = .01 * caps + 4 * each;
 
         // The same city and money, with two orders for 4% each waiting for the step.
-        Game k = copy();
+        Game k = handCopy();
         TreasuryFund fk = k.getFund();
         Equity rk = k.getEquity();
         Exchange xk = k.getExchange();
         k.setCashForTest(k.getCash() + lump);
         k.fundPayIn(lump);
-        k.fundBuyShares(c, each);
-        k.fundBuyShares(c, each);
+        // FS13, 2026-11-20: THE ORDERS SIZED SO THE PREMISE HOLDS BY CONSTRUCTION (PK1), not 4% of the company each: the room under the cap less half of what the rule
+        // bids alone (measured on the twin above at this same money), shared by the two, so they fit the room whole and the rule's bid beside them comes to half
+        // of itself over the cap - where 4% each came to 10.2% of the company with the rule's bid on one path and 14.7% on another, the fixture's margin the path's.
+        double orderK = (TreasuryFund.OWNERSHIP_LIMIT * rk.getShares(c) - rk.getCityMarketShares(c) - ruleAlone / 2) / 2 * xk.fair(c);
+        k.fundBuyShares(c, orderK);
+        k.fundBuyShares(c, orderK);
         double mktBefore = rk.getCityMarketShares(c);
         play(k);
         OrderBook bk = xk.bookOf(c);
@@ -861,8 +945,10 @@ public class FundLedgerCheck {
                 (mkt + ruleAlone + asked1 + asked2) / rk.getShares(c) * 100, ruleBid);
         check("fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%",
                 asked1 <= cap - mkt && asked2 <= cap - mkt && mkt + ruleAlone + asked1 + asked2 > cap + 1);
+        // What of the orders filled at the step is in the market book already (HS2, 2026-11-20: on HS2's city the cells sell at
+        // the step, and the first order took 1,107 of its 3,628 there; on main neither fills, handTook 0, and this reads as before).
         check("the rule's bid makes way for the orders waiting: it rests on no more than the room they leave",
-                ruleBid < ruleAlone - 1 && ruleBid <= cap - mkt - asked1 - asked2 + 1e-9 * cap);
+                ruleBid < ruleAlone - 1 && ruleBid <= cap - mkt - (asked1 + asked2 - handTook) + 1e-9 * cap);
         check("...and both orders are posted whole", Math.abs(posted.get(0).units() - asked1) < 1e-9 * cap
                 && Math.abs(posted.get(1).units() - asked2) < 1e-9 * cap);
         check("...so the fund's market book and every bid of its on the book come to no more than the cap",
@@ -872,7 +958,7 @@ public class FundLedgerCheck {
                 rk.getCityMarketShares(c) <= cap * (1 + 1e-12));
 
         // Two orders past the room on their own: the rule bids nothing there, and the second order stops at the room.
-        Game m = copy();
+        Game m = handCopy();
         TreasuryFund fm = m.getFund();
         Equity rm = m.getEquity();
         Exchange xm = m.getExchange();
@@ -900,7 +986,7 @@ public class FundLedgerCheck {
                 rm.getCityMarketShares(c) <= capM * (1 + 1e-12) && rm.getCityMarketShares(c) >= capM * (1 - 1e-9));
 
         // The rule's bid resting at the whole room, and two orders placed after it: it makes way between steps too.
-        Game w = copy();
+        Game w = handCopy();
         TreasuryFund fw = w.getFund();
         Equity rw = w.getEquity();
         Exchange xw = w.getExchange();
@@ -946,7 +1032,7 @@ public class FundLedgerCheck {
                 rw.getCityMarketShares(c) <= TreasuryFund.OWNERSHIP_LIMIT * rw.getShares(c) * (1 + 1e-12));
 
         // The ticket reckons the room as the step does: the market book and the hand's order waiting; the rule's bid makes way.
-        Game t = copy();
+        Game t = handCopy();
         TreasuryFund ft = t.getFund();
         Equity rt = t.getEquity();
         Exchange xt = t.getExchange();

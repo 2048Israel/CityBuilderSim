@@ -1,6 +1,6 @@
 # LicenceFeesCheck.java - 530 lines · 15 methods · 0 constants · harnesses
 
-`ham/citybuildersim/LicenceFeesCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LicenceFeesCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Licence fees leave a running firm's money and enter this month's current account.
 > 

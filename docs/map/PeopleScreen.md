@@ -1,6 +1,6 @@
-# PeopleScreen.java - 4,808 lines · 167 methods · 27 constants · interface
+# PeopleScreen.java - 4,854 lines · 167 methods · 27 constants · interface
 
-`ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The People tab and its second page, Household money.
 > 
@@ -38,7 +38,7 @@
 > another. KeptCheck holds the kept page to one built new. Household money is
 > drawn as before.
 
-**Uses:** [Palette](Palette.md) (524), [Kept](Kept.md) (229), [AgeBand](AgeBand.md) (64), [Pieces](Pieces.md) (45), [Household](Household.md) (35), [PayTier](PayTier.md) (29), [HouseholdAccounts](HouseholdAccounts.md) (27), [WageBand](WageBand.md) (23), [Migration](Migration.md) (22), [FamilyStructure](FamilyStructure.md) (21), [HouseholdBalance](HouseholdBalance.md) (20), [FamilyModel](FamilyModel.md) (20), [BuildAdvice](BuildAdvice.md) (17), [CareType](CareType.md) (13), [Icons](Icons.md) (11), [PopulationManager](PopulationManager.md) (10), [Healthcare](Healthcare.md) (10), [UnemployedHousehold](UnemployedHousehold.md) (8), [PopulationCohorts](PopulationCohorts.md) (7), [JobType](JobType.md) (7), [Sickness](Sickness.md) (6), [LabourMarket](LabourMarket.md) (6), [EducationType](EducationType.md) (6), [Unemployment](Unemployment.md) (5), [Equity](Equity.md) (5), [Formats](Formats.md) (4), [BuildingManager](BuildingManager.md) (4), [Health](Health.md) (4), [Statement](Statement.md) (4), [LandScreen](LandScreen.md) (3)... and 17 more
+**Uses:** [Palette](Palette.md) (527), [Kept](Kept.md) (231), [AgeBand](AgeBand.md) (68), [Pieces](Pieces.md) (45), [Household](Household.md) (36), [PayTier](PayTier.md) (29), [HouseholdAccounts](HouseholdAccounts.md) (27), [WageBand](WageBand.md) (23), [Migration](Migration.md) (22), [FamilyStructure](FamilyStructure.md) (21), [HouseholdBalance](HouseholdBalance.md) (20), [FamilyModel](FamilyModel.md) (20), [BuildAdvice](BuildAdvice.md) (17), [CareType](CareType.md) (13), [Icons](Icons.md) (11), [PopulationManager](PopulationManager.md) (10), [Healthcare](Healthcare.md) (10), [AdultStage](AdultStage.md) (9), [PopulationCohorts](PopulationCohorts.md) (8), [UnemployedHousehold](UnemployedHousehold.md) (8), [JobType](JobType.md) (7), [Sickness](Sickness.md) (6), [LabourMarket](LabourMarket.md) (6), [EducationType](EducationType.md) (6), [Unemployment](Unemployment.md) (5), [Equity](Equity.md) (5), [Formats](Formats.md) (4), [BuildingManager](BuildingManager.md) (4), [Health](Health.md) (4), [Statement](Statement.md) (4)... and 19 more
 
 **Used by (4):** [KeptBench](KeptBench.md), [SectorScreen](SectorScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
@@ -58,22 +58,22 @@
 | 954 | THE DRAWING |
 | 1057 | · the vitals |
 | 1108 | · the pyramid |
-| 1240 | · the month |
-| 1441 | · why they come |
-| 1571 | · care |
-| 1643 | · homes |
-| 1693 | · households |
-| 2187 | · outside the families |
-| 2366 | · work |
-| 2551 | THE TABLES BEHIND "details", and the pieces they share with the |
-| 2899 | HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT? |
-| 3160 | HOUSEHOLD MONEY, DRAWN |
-| 3818 | · · the retired |
-| 3838 | · · and outside the families |
-| 4077 | THE MONEY BLOCKS BOTH PANELS SHARE |
-| 4481 | · · the month |
-| 4698 | THE TIER TABLE, AS A TABLE. |
-| 4804 | · Small helpers so the report screens stay readable. Shared by the sector |
+| 1248 | · the month |
+| 1449 | · why they come |
+| 1579 | · care |
+| 1651 | · homes |
+| 1701 | · households |
+| 2202 | · outside the families |
+| 2383 | · work |
+| 2568 | THE TABLES BEHIND "details", and the pieces they share with the |
+| 2919 | HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT? |
+| 3181 | HOUSEHOLD MONEY, DRAWN |
+| 3841 | · · the retired |
+| 3861 | · · and outside the families |
+| 4102 | THE MONEY BLOCKS BOTH PANELS SHARE |
+| 4506 | · · the month |
+| 4744 | THE TIER TABLE, AS A TABLE. |
+| 4850 | · Small helpers so the report screens stay readable. Shared by the sector |
 
 ## Constants
 
@@ -91,21 +91,21 @@
 | 543 | `PeopleScreen.LEFT_WORK` | `Palette.PEOPLE_DARK, LEFT_BROKE = Palette.MONEY, LEFT_CRIME = Palette.BUILDING` | The leavers by why: for want of work the dark teal, broke the blue, driven out by crime the pink. |
 | 967 | `PeopleScreen.CARD` | `"-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";" + "...` | The Build card ground every card on both pages stands on. |
 | 1111 | `PeopleScreen.PYRAMID_HALF` | `200` | How wide half of the widest band is drawn, at most. |
-| 1444 | `PeopleScreen.WHY_INFO` | `"The city draws people the way Migration strikes it each month: every post " ...` | WHY PEOPLE COME's (i): what the bridge is. |
-| 1840 | `PeopleScreen.TILE_MIN` | `56` | The narrowest a tile is drawn; anything smaller folds into "+n more". |
-| 1935 | `PeopleScreen.Strip.UNUSED` | `" "` | What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). |
-| 2006 | `PeopleScreen.Strip.TILE_TALL` | `62` | How tall a strip is. |
-| 2190 | `PeopleScreen.OUTSIDE_INFO` | `"Families are built from the adults who work, and their children." + "Everybo...` | OUTSIDE THE FAMILIES' (i): who they are, the old page's words. |
-| 2467 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips ...` | The ladder's (i): the old legend. |
-| 2956 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the "...` | The page's (i): what its money is counted in. |
-| 2961 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "th...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
-| 3165 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
-| 3534 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decid...` | The cars' (i): the old note. |
-| 3606 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
-| 3609 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
-| 3610 | `PeopleScreen.SHAPE_COL` | `168` |  |
-| 3617 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
-| 3794 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + ...` | The section captions' (i): who is below the rule, and what their one cell says. |
+| 1452 | `PeopleScreen.WHY_INFO` | `"The city draws people the way Migration strikes it each month: every post " ...` | WHY PEOPLE COME's (i): what the bridge is. |
+| 1855 | `PeopleScreen.TILE_MIN` | `56` | The narrowest a tile is drawn; anything smaller folds into "+n more". |
+| 1950 | `PeopleScreen.Strip.UNUSED` | `" "` | What the "+n more" label says while nothing folds: a space, never nothing (PT1-M4). |
+| 2021 | `PeopleScreen.Strip.TILE_TALL` | `62` | How tall a strip is. |
+| 2205 | `PeopleScreen.OUTSIDE_INFO` | `"Families are built from the adults who work, and their children." + "Everybo...` | OUTSIDE THE FAMILIES' (i): who they are, the old page's words. |
+| 2484 | `PeopleScreen.LADDER_INFO` | `"open = posts this band can be put into(licensed posts are on the " + "chips ...` | The ladder's (i): the old legend. |
+| 2976 | `PeopleScreen.IN_DOLLARS` | `"Every figure on this page is in dollars, not the thousands the rest of the "...` | The page's (i): what its money is counted in. |
+| 2981 | `PeopleScreen.PAID_IN_ORDER` | `"The order is fixed: the payslip first, then rent, then the fees, and " + "th...` | The order a household pays in, and what happens when it comes up short: the verdict's (i). |
+| 3186 | `PeopleScreen.BESIDE` | `1200` | The narrowest page that sets the open cell's books beside the grid; under it they stack. |
+| 3555 | `PeopleScreen.CARS_INFO` | `"Bought out of savings past the same cushion a share is, so income " + "decid...` | The cars' (i): the old note. |
+| 3627 | `PeopleScreen.BAR_ROOM` | `new javafx.geometry.Insets(8, 0, 0, 0)` | The room over the flow bar in a cell's statement: one object (KP2b), set where it is not that already (Pieces.vMargin). |
+| 3630 | `PeopleScreen.TIER_COL` | `88` | How wide a tier column is. |
+| 3631 | `PeopleScreen.SHAPE_COL` | `168` |  |
+| 3638 | `PeopleScreen.MATRIX_COLUMNS` | `"people.matrixColumns"` | The key a matrix grid keeps its columns under - the household's name, then the six tiers - made once in the grid's life (KP2b) and added to it at each draw as one list. |
+| 3815 | `PeopleScreen.BELOW_THE_RULE` | `"Below the rule: the retired, on a pension and no wage; the out of work, " + ...` | The section captions' (i): who is below the rule, and what their one cell says. |
 
 ## Fields (state)
 
@@ -118,37 +118,37 @@
 | 169 | `private Region monthCard, homesCard, workCard` | The cards the vitals' doors scroll to, as last drawn. |
 | 172 | `final Kept.Pool pool` | The People page's kept nodes (Kept; study UP4): the page is drawn over them on each redraw. |
 | 178 | `final Kept.Pool moneyPool` | Household money's kept nodes (KP7): a pool of its own, since the two pages are two screens to keepMenu() - an arrival at either forgets the pool it draws from, and People's nodes are never handed to Household money's. |
-| 1200 | `private double share, settled, widest` |  |
-| 1201 | `private final Region bar` |  |
-| 1920 | `private List<Piece> pieces` |  |
-| 1921 | `private double total, widest` |  |
-| 1923 | `private double[] counts` | The households' counts at the last set(), or null before the first. |
-| 1924 | `private final List<TileNodes> tiles` |  |
-| 1925 | `private final VBox more` |  |
-| 1926 | `private final Label moreLabel` |  |
-| 1927 | `private final Tooltip moreTip` |  |
-| 2083 | `final String shape` |  |
-| 2084 | `final VBox box` |  |
-| 2085 | `final Label name` |  |
-| 2086 | `final Tooltip tip` |  |
-| 2088 | `final HBox ramp` | Under a family's tile, else null. |
-| 2514 | `private double open, queue, scale` |  |
-| 2515 | `private final Region q` |  |
-| 2897 | `boolean householdPerFamily` | Whether the per-tier table shows one family or the whole city. |
-| 2946 | `String openCell` | Which cell of the grid is open, as "tier:shape", or "OUT:" and a ledger's key. |
-| 2949 | `boolean revealOpened` | Set by a click that opens a cell, so the panel it opened is brought into view. |
-| 2952 | `javafx.scene.Node revealTop` | What this draw should bring into view, once, when the books stack under the grid: the grid's top and the panel's foot. |
-| 2953 | `javafx.scene.Node revealBottom` |  |
-| 3168 | `private Books books` | The books' pane as last drawn, for the scroll to hold the panel at the top of the view. |
-| 3171 | `private boolean booksHooked` | Whether the scroll listener is on the menu's scroller yet: once, for the window's life. |
-| 3342 | `private VBox grid` |  |
-| 3343 | `private javafx.scene.Node panel` |  |
+| 1208 | `private double share, settled, widest` |  |
+| 1209 | `private final Region bar` |  |
+| 1935 | `private List<Piece> pieces` |  |
+| 1936 | `private double total, widest` |  |
+| 1938 | `private double[] counts` | The households' counts at the last set(), or null before the first. |
+| 1939 | `private final List<TileNodes> tiles` |  |
+| 1940 | `private final VBox more` |  |
+| 1941 | `private final Label moreLabel` |  |
+| 1942 | `private final Tooltip moreTip` |  |
+| 2098 | `final String shape` |  |
+| 2099 | `final VBox box` |  |
+| 2100 | `final Label name` |  |
+| 2101 | `final Tooltip tip` |  |
+| 2103 | `final HBox ramp` | Under a family's tile, else null. |
+| 2531 | `private double open, queue, scale` |  |
+| 2532 | `private final Region q` |  |
+| 2917 | `boolean householdPerFamily` | Whether the per-tier table shows one family or the whole city. |
+| 2966 | `String openCell` | Which cell of the grid is open, as "tier:shape", or "OUT:" and a ledger's key. |
+| 2969 | `boolean revealOpened` | Set by a click that opens a cell, so the panel it opened is brought into view. |
+| 2972 | `javafx.scene.Node revealTop` | What this draw should bring into view, once, when the books stack under the grid: the grid's top and the panel's foot. |
+| 2973 | `javafx.scene.Node revealBottom` |  |
+| 3189 | `private Books books` | The books' pane as last drawn, for the scroll to hold the panel at the top of the view. |
+| 3192 | `private boolean booksHooked` | Whether the scroll listener is on the menu's scroller yet: once, for the window's life. |
+| 3363 | `private VBox grid` |  |
+| 3364 | `private javafx.scene.Node panel` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 4752 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
+| 57 | 4798 | **type** `final class PeopleScreen` | The People tab and its second page, Household money. |
 | 62 | 1 | `PeopleScreen(UserInterface ui)` |  |
 
 ### PEOPLE (0.7.27) (lines 64-152)
@@ -262,193 +262,193 @@
 | 1085 | 15 | `void countUp(VBox vitals)` | LIVING HERE counts from last month's headcount to this one's (the history's population a month back to the model's now) over COUNT_MILLIS - only on a month that landed while the page was watched. |
 | 1102 | 5 | `static Label headcount(VBox vitals)` | LIVING HERE's figure in the vitals as drawn, or null. |
 
-### the pyramid (lines 1108-1239)
+### the pyramid (lines 1108-1247)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1118 | 4 | `static String bandColour(AgeBand b)` | A band's colour: who it is, not how it is doing - the dependants the light teal, the working age the teal, the retired the dark (0.7.27; the working bands were GOOD green before, a verdict on nothing). |
 | 1124 | 3 | `static String ages(AgeBand b)` | The ages a band holds, as its caption: "18–69", "85–120". |
-| 1134 | 63 | `VBox pyramidCard()` | WHO LIVES HERE: the six bands mirrored about an axis, widest at the top's scale, each with the shape a settled city would have as a 1 px outline behind it (PopulationCohorts.equilibriumShare()) - the city's 68% adults... |
-| 1199 | 40 | **type** `static final class Mirror extends javafx.scene.layout.Pane` | One band of the pyramid: a bar centred on the axis, `share` of the widest's scale, and the settled share's outline. |
-| 1204 | 11 | `Mirror()` _(in PeopleScreen.Mirror)_ | Its three bars, made once in its life (Kept: a kept Mirror is told each month's figures by set()). |
-| 1217 | 8 | `void set(double share, double settled, double widest, String colour)` _(in PeopleScreen.Mirror)_ | This band's share, the settled city's, the widest band's, and its colour: laid out again only when one moved. |
-| 1226 | 12 | `protected void layoutChildren()` _(in PeopleScreen.Mirror)_ |  |
+| 1134 | 71 | `VBox pyramidCard()` | WHO LIVES HERE: the six bands mirrored about an axis, widest at the top's scale, each with the shape a settled city would have as a 1 px outline behind it (PopulationCohorts.equilibriumShare()) - the city's 68% adults... |
+| 1207 | 40 | **type** `static final class Mirror extends javafx.scene.layout.Pane` | One band of the pyramid: a bar centred on the axis, `share` of the widest's scale, and the settled share's outline. |
+| 1212 | 11 | `Mirror()` _(in PeopleScreen.Mirror)_ | Its three bars, made once in its life (Kept: a kept Mirror is told each month's figures by set()). |
+| 1225 | 8 | `void set(double share, double settled, double widest, String colour)` _(in PeopleScreen.Mirror)_ | This band's share, the settled city's, the widest band's, and its colour: laid out again only when one moved. |
+| 1234 | 12 | `protected void layoutChildren()` _(in PeopleScreen.Mirror)_ |  |
 
-### the month (lines 1240-1440)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1243 | 3 | `static String signedPeople(double v)` | The people a waterfall column moves, signed: "+142", "−293", "under 1". |
-| 1253 | 86 | `VBox monthCard(Pieces.Waterfall[] grow)` | THIS MONTH: the headcount at the start and the end over the columns, and the waterfall - born, died (stacked by cause), moved in, moved out (stacked by why), and the net. |
-| 1345 | 6 | `String notStruck()` | What the bridge and the month's popovers say before the month's draw has been struck: a city that has not run its first month, or one saved before 0.7.27 kept the month, read before its first month here. |
-| 1353 | 5 | `static List<Slice> negated(List<Slice> parts)` | The same parts taken away: a waterfall's step down is negative, and so are its parts. |
-| 1360 | 14 | `VBox skillBar(double[] mix)` | A skill mix as a bar, in whole people, with its table under it. |
-| 1376 | 43 | `void arrivalsPopover(javafx.scene.Node anchor)` | Moved in's popover: who arrived by skill, which of them hold a licence, and why. |
-| 1421 | 19 | `void departuresPopover(javafx.scene.Node anchor)` | Moved out's popover: who left by skill, and why the educated go first. |
-
-### why they come (lines 1441-1570)
+### the month (lines 1248-1448)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1457 | 17 | `VBox bridgeBox(String caption, String value, String under, String tone, Runnable go, String tip)` | One box of the bridge: a caption over a figure, and what a click on it does. |
-| 1476 | 6 | `static Label op(String glyph)` | An operator between the bridge's boxes. |
-| 1483 | 87 | `VBox bridgeCard()` |  |
+| 1251 | 3 | `static String signedPeople(double v)` | The people a waterfall column moves, signed: "+142", "−293", "under 1". |
+| 1261 | 86 | `VBox monthCard(Pieces.Waterfall[] grow)` | THIS MONTH: the headcount at the start and the end over the columns, and the waterfall - born, died (stacked by cause), moved in, moved out (stacked by why), and the net. |
+| 1353 | 6 | `String notStruck()` | What the bridge and the month's popovers say before the month's draw has been struck: a city that has not run its first month, or one saved before 0.7.27 kept the month, read before its first month here. |
+| 1361 | 5 | `static List<Slice> negated(List<Slice> parts)` | The same parts taken away: a waterfall's step down is negative, and so are its parts. |
+| 1368 | 14 | `VBox skillBar(double[] mix)` | A skill mix as a bar, in whole people, with its table under it. |
+| 1384 | 43 | `void arrivalsPopover(javafx.scene.Node anchor)` | Moved in's popover: who arrived by skill, which of them hold a licence, and why. |
+| 1429 | 19 | `void departuresPopover(javafx.scene.Node anchor)` | Moved out's popover: who left by skill, and why the educated go first. |
 
-### care (lines 1571-1642)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1574 | 23 | `javafx.scene.layout.GridPane careRow()` | Four of Build's rings, with Build's verdicts: General care, Childcare, Senior care, Death care. |
-| 1599 | 43 | `List<javafx.scene.Node> careAlerts()` | Under the rings, only when they fire: death care's two alerts, and the unburied. |
-
-### homes (lines 1643-1692)
+### why they come (lines 1449-1578)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1646 | 46 | `VBox homesCard()` | HOMES: households wanting a door against the doors, what is on site, one verdict and one line. |
+| 1465 | 17 | `VBox bridgeBox(String caption, String value, String under, String tone, Runnable go, String tip)` | One box of the bridge: a caption over a figure, and what a click on it does. |
+| 1484 | 6 | `static Label op(String glyph)` | An operator between the bridge's boxes. |
+| 1491 | 87 | `VBox bridgeCard()` |  |
 
-### households (lines 1693-2186)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1696 | 20 | `static String shortShape(FamilyStructure s)` | A household shape's tile words: short, the full name in its tooltip (0.7.27; the members are drawn). |
-| 1724 | 9 | `static HBox members(int[] byBand)` | A household's members, drawn: an adult a full dot, a teen and a child smaller, a baby smaller still, a senior or an elder half filled - in the teal's steps, so "Large family" reads as two adults and four children and ... |
-| 1735 | 27 | `static javafx.scene.Node member(AgeBand b)` | One member's glyph. |
-| 1764 | 5 | `static int[] membersOf(FamilyStructure s)` | The members of a shape, as members() counts them. |
-| 1771 | 5 | `static int[] one(AgeBand b)` | One adult, for the outside strip's tiles: a household of one. |
-| 1778 | 1 | **type** `record Piece(String name, String full, double count, int[] members, double[] tiers, String cellKey)` | One tile of the mosaic: its members, its words, how many, its tier mix (families only) and where a click opens. |
-| 1781 | 57 | `List<List<Piece>> mosaic()` | The mosaic's three strips: the retired, the families, and the people outside them. |
-| 1843 | 53 | `VBox householdsCard()` | HOUSEHOLDS: the mosaic, the totals, the (i) and the matrix behind details. |
-| 1898 | 10 | `static HBox rampKey()` | The key to the ramp under a family's tile: a sample of the six steps and what they are. |
-| 1919 | 267 | **type** `static final class Strip extends javafx.scene.layout.Pane` | One strip of the mosaic, laid out at whatever width the card gives it. |
-| 1938 | 14 | `Strip()` _(in PeopleScreen.Strip)_ | The "+n more" tile and the strip's size, made once in its life (Kept: a kept Strip is told each month's households by set()). |
-| 1959 | 38 | `void set(List<Piece> pieces, double total, double widest, boolean families, PeopleScreen screen)` _(in PeopleScreen.Strip)_ | This strip's households: the tiles of the last draw kept, and filled again, for every shape of household still here (a tile is its shape's: same name, members and tier ramp, wherever the sort now puts it); one for a s... |
-| 1999 | 5 | `private static String shapeOf(Piece p, boolean families)` _(in PeopleScreen.Strip)_ | What a tile's nodes are made of: its members, its words, and under a family its tier ramp. |
-| 2008 | 68 | `protected void layoutChildren()` _(in PeopleScreen.Strip)_ |  |
-| 2082 | 51 | **type** `private static final class TileNodes` _(in PeopleScreen.Strip)_ | One tile's nodes: the members drawn, the short name, the count, and under a family the tier ramp. |
-| 2090 | 14 | `TileNodes(Piece p, boolean families, String shape)` _(in PeopleScreen.Strip.TileNodes)_ |  |
-| 2106 | 26 | `void fill(Piece p, PeopleScreen screen)` _(in PeopleScreen.Strip.TileNodes)_ | The piece's words, its click and its tooltip set again. |
-| 2135 | 4 | `static String hex(javafx.scene.paint.Color c)` _(in PeopleScreen.Strip)_ | A colour as the style sheets write it: "#93e2da". |
-| 2141 | 24 | `static HBox ramp(double[] tiers, boolean inDraw)` _(in PeopleScreen.Strip)_ | A family's tiers along its foot: six segments as wide as their households, unskilled light to elite dark. |
-| 2167 | 7 | `static String rampShape(double[] tiers)` _(in PeopleScreen.Strip)_ | Which of a ramp's segments exist: the tiers with households, as a mask. |
-| 2176 | 9 | `static void fillRamp(HBox r, double[] tiers)` _(in PeopleScreen.Strip)_ | A ramp's segments as wide as their households: the shape stands (rampShape), the widths move. |
-
-### outside the families (lines 2187-2365)
+### care (lines 1579-1650)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2195 | 28 | `List<javafx.scene.Node> outsideRow()` | The five tiles, the pool's month and EI, the orphans' alert, and the table by age behind details. |
-| 2225 | 17 | `VBox outsideTile(Tile t)` | One tile: its icon, name, count, split, and a sparkline of the last ten years. |
-| 2244 | 26 | `void openOutside(String name)` | Where an outside tile's click goes: Services for the students and the prisons, the books for the rest. |
-| 2272 | 44 | `javafx.scene.Node spark(double[] series, int months, double tall)` | A sparkline of the last `months` of a history series, in the people teal; a dash with no history. |
-| 2318 | 30 | `VBox poolCard()` | The pool's month, in against out, and EI: what it paid against what the premiums raised. |
-| 2350 | 15 | `VBox poolBar(String caption, List<Slice> parts, double scale)` | One of the pool's two bars, on the two's common scale, with its parts named under it. |
+| 1582 | 23 | `javafx.scene.layout.GridPane careRow()` | Four of Build's rings, with Build's verdicts: General care, Childcare, Senior care, Death care. |
+| 1607 | 43 | `List<javafx.scene.Node> careAlerts()` | Under the rings, only when they fire: death care's two alerts, and the unburied. |
 
-### work (lines 2366-2550)
+### homes (lines 1651-1700)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2369 | 70 | `VBox workCard()` | WORK: five figures, the labour line, the ladder drawn, the professions, three tables behind details. |
-| 2446 | 19 | `static String wantedNote(WantedPosts wanted)` | The posts the wages are priced on beyond the open ones (LD1): what the city's businesses wanted and the staffing gate would not let them open for want of these workers (WantedPosts), as a sentence to follow the minimu... |
-| 2476 | 3 | `static String capitalised(String s)` | "Doctors" from "doctors". |
-| 2481 | 4 | `static VBox mini(String caption, String value, String tone)` | A small figure under a caption, for the Work card's strip. |
-| 2487 | 24 | `HBox rung(Rung r, double scale, String pulled)` | One rung: its name, the queue as an outline with the open posts filled over it, the figures, the chips. |
-| 2513 | 37 | **type** `static final class Pair extends javafx.scene.layout.Pane` | The queue as a tinted outline and the open posts filled over it, on one scale. |
-| 2518 | 11 | `Pair()` _(in PeopleScreen.Pair)_ | Its three bars, made once in its life (Kept: a kept Pair is told each month's figures by set()). |
-| 2531 | 7 | `void set(double open, double queue, double scale)` _(in PeopleScreen.Pair)_ | The posts open, the queue for them, and the scale they share: laid out again only when one moved. |
-| 2539 | 10 | `protected void layoutChildren()` _(in PeopleScreen.Pair)_ |  |
+| 1654 | 46 | `VBox homesCard()` | HOMES: households wanting a door against the doors, what is on site, one verdict and one line. |
 
-### THE TABLES BEHIND "details", and the pieces they share with the (lines 2551-2898)
+### households (lines 1701-2201)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2557 | 18 | `javafx.scene.layout.GridPane mixTable(double[] mix, double total)` | Who arrived, or who left, by the skill they hold. |
-| 2578 | 37 | `javafx.scene.layout.GridPane outsideTable(Unemployment u, FamilyModel families, double[] noDoor)` | Everybody outside the families, by age. |
-| 2624 | 81 | `javafx.scene.layout.GridPane shapeMatrix(FamilyModel families)` | Household shape down the side, pay tier across the top. |
-| 2711 | 24 | `String oneMarketNote(PopulationManager pm)` | The bands this month's fill joined into one market, in a sentence, or null when none were (0.7.18): workers take the best-paid post they qualify for, so bands paying the same share the shortage. |
-| 2737 | 56 | `javafx.scene.layout.GridPane ladderTable(PopulationManager pm, LabourMarket market, double[] studying)` | The skill ladder: what each band has, what it can take, and what it costs. |
-| 2795 | 58 | `javafx.scene.layout.GridPane professionTable(PopulationManager pm, LabourMarket market)` | The posts only a licence can fill. |
-| 2855 | 32 | `javafx.scene.layout.GridPane jobTable(long[] jobs, long[] vacancies, double[] fillRates, double[] jobWage)` | Every kind of post the city has built, and how well it is staffed. |
+| 1704 | 20 | `static String shortShape(FamilyStructure s)` | A household shape's tile words: short, the full name in its tooltip (0.7.27; the members are drawn). |
+| 1732 | 9 | `static HBox members(int[] byBand)` | A household's members, drawn: an adult a full dot, a teen and a child smaller, a baby smaller still, a senior or an elder half filled - in the teal's steps, so "Large family" reads as two adults and four children and ... |
+| 1743 | 27 | `static javafx.scene.Node member(AgeBand b)` | One member's glyph. |
+| 1772 | 5 | `static int[] membersOf(FamilyStructure s)` | The members of a shape, as members() counts them. |
+| 1779 | 5 | `static int[] one(AgeBand b)` | One adult, for the outside strip's tiles: a household of one. |
+| 1786 | 1 | **type** `record Piece(String name, String full, double count, int[] members, double[] tiers, String cellKey)` | One tile of the mosaic: its members, its words, how many, its tier mix (families only) and where a click opens. |
+| 1789 | 64 | `List<List<Piece>> mosaic()` | The mosaic's three strips: the retired, the families, and the people outside them. |
+| 1858 | 53 | `VBox householdsCard()` | HOUSEHOLDS: the mosaic, the totals, the (i) and the matrix behind details. |
+| 1913 | 10 | `static HBox rampKey()` | The key to the ramp under a family's tile: a sample of the six steps and what they are. |
+| 1934 | 267 | **type** `static final class Strip extends javafx.scene.layout.Pane` | One strip of the mosaic, laid out at whatever width the card gives it. |
+| 1953 | 14 | `Strip()` _(in PeopleScreen.Strip)_ | The "+n more" tile and the strip's size, made once in its life (Kept: a kept Strip is told each month's households by set()). |
+| 1974 | 38 | `void set(List<Piece> pieces, double total, double widest, boolean families, PeopleScreen screen)` _(in PeopleScreen.Strip)_ | This strip's households: the tiles of the last draw kept, and filled again, for every shape of household still here (a tile is its shape's: same name, members and tier ramp, wherever the sort now puts it); one for a s... |
+| 2014 | 5 | `private static String shapeOf(Piece p, boolean families)` _(in PeopleScreen.Strip)_ | What a tile's nodes are made of: its members, its words, and under a family its tier ramp. |
+| 2023 | 68 | `protected void layoutChildren()` _(in PeopleScreen.Strip)_ |  |
+| 2097 | 51 | **type** `private static final class TileNodes` _(in PeopleScreen.Strip)_ | One tile's nodes: the members drawn, the short name, the count, and under a family the tier ramp. |
+| 2105 | 14 | `TileNodes(Piece p, boolean families, String shape)` _(in PeopleScreen.Strip.TileNodes)_ |  |
+| 2121 | 26 | `void fill(Piece p, PeopleScreen screen)` _(in PeopleScreen.Strip.TileNodes)_ | The piece's words, its click and its tooltip set again. |
+| 2150 | 4 | `static String hex(javafx.scene.paint.Color c)` _(in PeopleScreen.Strip)_ | A colour as the style sheets write it: "#93e2da". |
+| 2156 | 24 | `static HBox ramp(double[] tiers, boolean inDraw)` _(in PeopleScreen.Strip)_ | A family's tiers along its foot: six segments as wide as their households, unskilled light to elite dark. |
+| 2182 | 7 | `static String rampShape(double[] tiers)` _(in PeopleScreen.Strip)_ | Which of a ramp's segments exist: the tiers with households, as a mask. |
+| 2191 | 9 | `static void fillRamp(HBox r, double[] tiers)` _(in PeopleScreen.Strip)_ | A ramp's segments as wide as their households: the shape stands (rampShape), the widths move. |
 
-### HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT? (lines 2899-3159)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2968 | 21 | `Cell[] moneyCells()` | The four money vitals: what they keep, what rent takes, who goes short, and the income behind it. |
-| 2998 | 2 | **type** `record Verdict(String tone, String word, String words, String whole, int kinds, int shortKinds, List<String...` | The verdict over the grid (0.7.27), counting every row drawn: the working households' cells by what their month leaves; the rows below the rule - the retired, the out of work, the students, the orphans, the prison - b... |
-| 3001 | 36 | `Verdict verdict()` |  |
-| 3039 | 5 | `static String lowerFirst(String s)` | "out of work, EI run out": a label in a sentence, its first letter only lowered - and not an acronym's. |
-| 3055 | 4 | `static boolean hungry(Household own)` | Going hungry, for a row below the rule: the baskets it asked for at the price were fewer than it needs - the money half of the hunger, as getHungryAtFullShelves() counts it, but for the meals eaten out, which that fig... |
-| 3061 | 3 | `static double leftAgainstBasket(Household own)` | What a month leaves one of a row below the rule, against a basket (0.7.27; against what it wanted before). |
-| 3072 | 6 | `double rowLeft(Household own)` | What the grid's one wide cell says a month leaves one of a row below the rule, in thousands: the retired through their statement, as their pension and their rent make one, and everybody else against a basket. |
-| 3080 | 20 | `List<Household> belowTheRule(HouseholdBalance bal, FamilyModel families)` | The rows below the rule, in the grid's order: the retired, then everybody outside the families. |
-| 3102 | 4 | `static String gridKey(Household c)` | The grid's key for a cell: "tier:SHAPE" for a family, "OUT:" and its ledger's key for the rest. |
-| 3114 | 39 | `List<Pieces.Step> cityMonth()` | The city's month, as the waterfall's steps, in dollars: the wages, what comes off them and what is added, take-home, what it is spent on - the bank's account fees a step of their own (0.7.27; the statement left them o... |
-| 3155 | 4 | `static String signedMoney(double dollars)` | Money on the waterfall, signed and compact: "−$36.8M". |
-
-### HOUSEHOLD MONEY, DRAWN (lines 3160-4076)
+### outside the families (lines 2202-2382)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3182 | 6 | `void showHouseholdMenu()` | The residents' own books - the last participant in this economy that did not have any. |
-| 3194 | 51 | `void drawHousehold()` | The Household money page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the moneyPool, and what KeptBench runs kept and built new for KeptCheck. |
-| 3247 | 13 | `private VBox moneyVitals()` | The four money vitals as a bar, centred. |
-| 3262 | 24 | `private HBox verdictRow()` | The verdict over the grid, its chip and its words, and the two chips that say one household or all of them. |
-| 3288 | 1 | **type** `record ShortRow(int row, String name, double got, String gotWords, String chip)` | One kind of household's groceries at the last sale, worked out without drawing it (pure: the probe reads them). |
-| 3291 | 17 | `List<ShortRow> shortRows()` | Every kind of household with anybody in it, the hungriest first: its baskets got per basket needed, and how many hold a food voucher (0.7.45). |
-| 3310 | 15 | `VBox goesShortRows()` | ...as ranked bars: a row a kind, its bar the baskets it got per basket needed. |
-| 3327 | 7 | `VBox quietBooks()` | With no cell open, the books' place says what goes there. |
-| 3341 | 76 | **type** `static final class Books extends javafx.scene.layout.Pane` | The grid and the open cell's books: side by side at BESIDE and wider - the grid at its own width, the books in the rest, held at the top of the view while the grid scrolls past - and the books under the grid below that. |
-| 3346 | 1 | `Books()` _(in PeopleScreen.Books)_ | A picture on a kept page (KP7): made empty through Kept.of, and told its two children by set(). |
-| 3352 | 5 | `void set(VBox grid, javafx.scene.Node panel)` _(in PeopleScreen.Books)_ | The grid and the books it is told to lay out, put in as its children only where they differ (a layout is asked for then; a month that changes neither the nodes nor which are there lays out as its parts ask). |
-| 3358 | 1 | `boolean beside(double w)` _(in PeopleScreen.Books)_ |  |
-| 3361 | 3 | `public javafx.geometry.Orientation getContentBias()` _(in PeopleScreen.Books)_ | Its height follows its width: beside or stacked. |
-| 3365 | 8 | `protected double computePrefHeight(double width)` _(in PeopleScreen.Books)_ |  |
-| 3374 | 1 | `protected double computeMinHeight(double width)` _(in PeopleScreen.Books)_ |  |
-| 3376 | 1 | `protected double computePrefWidth(double height)` _(in PeopleScreen.Books)_ |  |
-| 3378 | 15 | `protected void layoutChildren()` _(in PeopleScreen.Books)_ |  |
-| 3395 | 13 | `private double held(double panelHeight)` _(in PeopleScreen.Books)_ | How far down the books sit so their top stays at the top of the view, within the grid's height. |
-| 3410 | 6 | `static javafx.scene.control.ScrollPane scrollerOf(javafx.scene.Node n)` _(in PeopleScreen.Books)_ | The scroll pane this sits in - up through its skin's viewport - or null. |
-| 3419 | 11 | `void hookBooks()` | The menu's scroll moves the books with it: one listener, for the window's life, laying the books out again. |
-| 3439 | 23 | `void reveal()` | THE GRID AND ITS BOOKS ARE WHAT GETS REVEALED, when they stack: the top of the grid to the top of the view and the panel landing under it, both on screen at once - or, when they do not both fit, the panel's foot, whic... |
-| 3464 | 13 | `VBox cityMonthCard(HouseholdAccounts hh)` | THE CITY'S MONTH: the waterfall, what was saved since the founding, and the statement behind details. |
-| 3479 | 53 | `VBox cityStatement(HouseholdAccounts hh)` | The city's month as the statement it was, with the bank's account fees on a line of their own (0.7.27). |
-| 3540 | 6 | `static VBox statCard(String caption, String value, String tone, String line, String info)` | A small figure card: a caption, the figure, a line, and its (i). |
-| 3548 | 19 | `javafx.scene.layout.GridPane putByCards(HouseholdBalance bal)` | WHAT THEY HAVE PUT BY: saved, owed, the month's dividends, and the cars. |
-| 3569 | 35 | `List<javafx.scene.Node> putByChips(HouseholdBalance bal, FamilyModel families)` | The two chips under the cards: who is at the credit ceiling, and who flatshares because one wage won't cover a home - each opens the cell. |
-| 3619 | 12 | `private static List<javafx.scene.layout.ColumnConstraints> matrixColumns()` |  |
-| 3636 | 86 | `VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | Household shape down the side, pay tier across the top, and in every cell what that household has left at the end of the month. |
-| 3724 | 24 | `private VBox tierHead(HouseholdAccounts hh, FamilyModel families, int t)` | A tier's head over its column: its name, and under it what one earner of the tier was paid. |
-| 3750 | 11 | `private Label tierCell(HouseholdAccounts hh, HouseholdBalance bal, int t)` | "Every household of that tier", one tier's cell: the average of the column above it, ringed when the tier is going short. |
-| 3766 | 7 | `private static Label moneyCell(String text, String tone, String more)` | A figure's cell in the grid (gridCell's, right-aligned) with a style of its own after the figure's: set whole, once, since a kept cell is never built on the style it was handed back with (KP7). |
-| 3775 | 17 | `int gridSectionRow(javafx.scene.layout.GridPane grid, String key, String caption, int line)` | A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. |
-| 3813 | 61 | `int otherRows(javafx.scene.layout.GridPane grid, HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families, int line)` | The retired, the out of work, the students, the orphans and the prison, as rows of the same matrix. |
-| 3876 | 16 | `int otherRow(javafx.scene.layout.GridPane grid, String label, Household own, double perHousehold, double homes, int line)` | One matrix row for a household with no tier: a name, then one wide cell. |
-| 3911 | 49 | `javafx.scene.Node wideCell(Household own, double perHousehold, double homes)` | cashCell's cell, one row wide: the same tint, the same ring, the same click - with the headcount inside it, because the six tier columns it spans have nothing of their own to say about this household. |
-| 3969 | 40 | `Label cashCell(HouseholdAccounts hh, FamilyModel families, FamilyStructure shape, PayTier tier, int tierIndex)` | One cell: what this household has left, and how badly. |
-| 4025 | 51 | `VBox basketBlock(Household cell)` | What a full basket would have been, what they planned to spend, and where the difference came from. |
+| 2212 | 28 | `List<javafx.scene.Node> outsideRow()` | The five tiles, the pool's month and EI, the orphans' alert, and the table by age behind details. |
+| 2242 | 17 | `VBox outsideTile(Tile t)` | One tile: its icon, name, count, split, and a sparkline of the last ten years. |
+| 2261 | 26 | `void openOutside(String name)` | Where an outside tile's click goes: Services for the students and the prisons, the books for the rest. |
+| 2289 | 44 | `javafx.scene.Node spark(double[] series, int months, double tall)` | A sparkline of the last `months` of a history series, in the people teal; a dash with no history. |
+| 2335 | 30 | `VBox poolCard()` | The pool's month, in against out, and EI: what it paid against what the premiums raised. |
+| 2367 | 15 | `VBox poolBar(String caption, List<Slice> parts, double scale)` | One of the pool's two bars, on the two's common scale, with its parts named under it. |
 
-### THE MONEY BLOCKS BOTH PANELS SHARE (lines 4077-4697)
+### work (lines 2383-2567)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4099 | 3 | `private static Label note(String text)` | A statement's note under a line, in a scope of its own (Kept, KP7): a note that comes and goes in a panel shifts no other label, and the notes are one kind, so any of them may be handed to any. |
-| 4104 | 4 | `String costMoney(double dollars)` | A cost, printed negative - but a cost of nothing reads "$0", never "-$0". |
-| 4110 | 7 | `static String stakePct(double share)` | A stake, with enough decimals left on it to still say something. |
-| 4125 | 7 | `static String shareOf(double part, double whole)` | What part is of whole - or a dash, when there is no whole to be part of. |
-| 4134 | 6 | `static String monthsRun(double months)` | A run of months, said the way a person would say it. |
-| 4142 | 9 | `Label panelBlockHead(String text)` | The small heading that divides a statement panel into blocks. |
-| 4153 | 20 | `Label panelWho(HouseholdBalance bal, Household cell)` | How many of them there are, how big each one is, and how much of the city that is. |
-| 4183 | 229 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
-| 4421 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
-| 4462 | 40 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
-| 4511 | 186 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
+| 2386 | 70 | `VBox workCard()` | WORK: five figures, the labour line, the ladder drawn, the professions, three tables behind details. |
+| 2463 | 19 | `static String wantedNote(WantedPosts wanted)` | The posts the wages are priced on beyond the open ones (LD1): what the city's businesses wanted and the staffing gate would not let them open for want of these workers (WantedPosts), as a sentence to follow the minimu... |
+| 2493 | 3 | `static String capitalised(String s)` | "Doctors" from "doctors". |
+| 2498 | 4 | `static VBox mini(String caption, String value, String tone)` | A small figure under a caption, for the Work card's strip. |
+| 2504 | 24 | `HBox rung(Rung r, double scale, String pulled)` | One rung: its name, the queue as an outline with the open posts filled over it, the figures, the chips. |
+| 2530 | 37 | **type** `static final class Pair extends javafx.scene.layout.Pane` | The queue as a tinted outline and the open posts filled over it, on one scale. |
+| 2535 | 11 | `Pair()` _(in PeopleScreen.Pair)_ | Its three bars, made once in its life (Kept: a kept Pair is told each month's figures by set()). |
+| 2548 | 7 | `void set(double open, double queue, double scale)` _(in PeopleScreen.Pair)_ | The posts open, the queue for them, and the scale they share: laid out again only when one moved. |
+| 2556 | 10 | `protected void layoutChildren()` _(in PeopleScreen.Pair)_ |  |
 
-### THE TIER TABLE, AS A TABLE. (lines 4698-4803)
+### THE TABLES BEHIND "details", and the pieces they share with the (lines 2568-2918)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4741 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
-| 4769 | 11 | `Region barPart(double width, String colour, String what)` | One segment. |
-| 4782 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
+| 2574 | 18 | `javafx.scene.layout.GridPane mixTable(double[] mix, double total)` | Who arrived, or who left, by the skill they hold. |
+| 2595 | 40 | `javafx.scene.layout.GridPane outsideTable(Unemployment u, FamilyModel families, double[] noDoor)` | Everybody outside the families, by age. |
+| 2644 | 81 | `javafx.scene.layout.GridPane shapeMatrix(FamilyModel families)` | Household shape down the side, pay tier across the top. |
+| 2731 | 24 | `String oneMarketNote(PopulationManager pm)` | The bands this month's fill joined into one market, in a sentence, or null when none were (0.7.18): workers take the best-paid post they qualify for, so bands paying the same share the shortage. |
+| 2757 | 56 | `javafx.scene.layout.GridPane ladderTable(PopulationManager pm, LabourMarket market, double[] studying)` | The skill ladder: what each band has, what it can take, and what it costs. |
+| 2815 | 58 | `javafx.scene.layout.GridPane professionTable(PopulationManager pm, LabourMarket market)` | The posts only a licence can fill. |
+| 2875 | 32 | `javafx.scene.layout.GridPane jobTable(long[] jobs, long[] vacancies, double[] fillRates, double[] jobWage)` | Every kind of post the city has built, and how well it is staffed. |
+
+### HOUSEHOLD MONEY: CAN THE PEOPLE OF THIS CITY AFFORD TO LIVE IN IT? (lines 2919-3180)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2988 | 21 | `Cell[] moneyCells()` | The four money vitals: what they keep, what rent takes, who goes short, and the income behind it. |
+| 3018 | 2 | **type** `record Verdict(String tone, String word, String words, String whole, int kinds, int shortKinds, List<String...` | The verdict over the grid (0.7.27), counting every row drawn: the working households' cells by what their month leaves; the rows below the rule - the retired, the out of work, the students, the orphans, the prison, th... |
+| 3021 | 36 | `Verdict verdict()` |  |
+| 3059 | 5 | `static String lowerFirst(String s)` | "out of work, EI run out": a label in a sentence, its first letter only lowered - and not an acronym's. |
+| 3075 | 4 | `static boolean hungry(Household own)` | Going hungry, for a row below the rule: the baskets it asked for at the price were fewer than it needs - the money half of the hunger, as getHungryAtFullShelves() counts it, but for the meals eaten out, which that fig... |
+| 3081 | 3 | `static double leftAgainstBasket(Household own)` | What a month leaves one of a row below the rule, against a basket (0.7.27; against what it wanted before). |
+| 3092 | 6 | `double rowLeft(Household own)` | What the grid's one wide cell says a month leaves one of a row below the rule, in thousands: the retired through their statement, as their pension and their rent make one, and everybody else against a basket. |
+| 3100 | 21 | `List<Household> belowTheRule(HouseholdBalance bal, FamilyModel families)` | The rows below the rule, in the grid's order: the retired, then everybody outside the families. |
+| 3123 | 4 | `static String gridKey(Household c)` | The grid's key for a cell: "tier:SHAPE" for a family, "OUT:" and its ledger's key for the rest. |
+| 3135 | 39 | `List<Pieces.Step> cityMonth()` | The city's month, as the waterfall's steps, in dollars: the wages, what comes off them and what is added, take-home, what it is spent on - the bank's account fees a step of their own (0.7.27; the statement left them o... |
+| 3176 | 4 | `static String signedMoney(double dollars)` | Money on the waterfall, signed and compact: "−$36.8M". |
+
+### HOUSEHOLD MONEY, DRAWN (lines 3181-4101)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3203 | 6 | `void showHouseholdMenu()` | The residents' own books - the last participant in this economy that did not have any. |
+| 3215 | 51 | `void drawHousehold()` | The Household money page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the moneyPool, and what KeptBench runs kept and built new for KeptCheck. |
+| 3268 | 13 | `private VBox moneyVitals()` | The four money vitals as a bar, centred. |
+| 3283 | 24 | `private HBox verdictRow()` | The verdict over the grid, its chip and its words, and the two chips that say one household or all of them. |
+| 3309 | 1 | **type** `record ShortRow(int row, String name, double got, String gotWords, String chip)` | One kind of household's groceries at the last sale, worked out without drawing it (pure: the probe reads them). |
+| 3312 | 17 | `List<ShortRow> shortRows()` | Every kind of household with anybody in it, the hungriest first: its baskets got per basket needed, and how many hold a food voucher (0.7.45). |
+| 3331 | 15 | `VBox goesShortRows()` | ...as ranked bars: a row a kind, its bar the baskets it got per basket needed. |
+| 3348 | 7 | `VBox quietBooks()` | With no cell open, the books' place says what goes there. |
+| 3362 | 76 | **type** `static final class Books extends javafx.scene.layout.Pane` | The grid and the open cell's books: side by side at BESIDE and wider - the grid at its own width, the books in the rest, held at the top of the view while the grid scrolls past - and the books under the grid below that. |
+| 3367 | 1 | `Books()` _(in PeopleScreen.Books)_ | A picture on a kept page (KP7): made empty through Kept.of, and told its two children by set(). |
+| 3373 | 5 | `void set(VBox grid, javafx.scene.Node panel)` _(in PeopleScreen.Books)_ | The grid and the books it is told to lay out, put in as its children only where they differ (a layout is asked for then; a month that changes neither the nodes nor which are there lays out as its parts ask). |
+| 3379 | 1 | `boolean beside(double w)` _(in PeopleScreen.Books)_ |  |
+| 3382 | 3 | `public javafx.geometry.Orientation getContentBias()` _(in PeopleScreen.Books)_ | Its height follows its width: beside or stacked. |
+| 3386 | 8 | `protected double computePrefHeight(double width)` _(in PeopleScreen.Books)_ |  |
+| 3395 | 1 | `protected double computeMinHeight(double width)` _(in PeopleScreen.Books)_ |  |
+| 3397 | 1 | `protected double computePrefWidth(double height)` _(in PeopleScreen.Books)_ |  |
+| 3399 | 15 | `protected void layoutChildren()` _(in PeopleScreen.Books)_ |  |
+| 3416 | 13 | `private double held(double panelHeight)` _(in PeopleScreen.Books)_ | How far down the books sit so their top stays at the top of the view, within the grid's height. |
+| 3431 | 6 | `static javafx.scene.control.ScrollPane scrollerOf(javafx.scene.Node n)` _(in PeopleScreen.Books)_ | The scroll pane this sits in - up through its skin's viewport - or null. |
+| 3440 | 11 | `void hookBooks()` | The menu's scroll moves the books with it: one listener, for the window's life, laying the books out again. |
+| 3460 | 23 | `void reveal()` | THE GRID AND ITS BOOKS ARE WHAT GETS REVEALED, when they stack: the top of the grid to the top of the view and the panel landing under it, both on screen at once - or, when they do not both fit, the panel's foot, whic... |
+| 3485 | 13 | `VBox cityMonthCard(HouseholdAccounts hh)` | THE CITY'S MONTH: the waterfall, what was saved since the founding, and the statement behind details. |
+| 3500 | 53 | `VBox cityStatement(HouseholdAccounts hh)` | The city's month as the statement it was, with the bank's account fees on a line of their own (0.7.27). |
+| 3561 | 6 | `static VBox statCard(String caption, String value, String tone, String line, String info)` | A small figure card: a caption, the figure, a line, and its (i). |
+| 3569 | 19 | `javafx.scene.layout.GridPane putByCards(HouseholdBalance bal)` | WHAT THEY HAVE PUT BY: saved, owed, the month's dividends, and the cars. |
+| 3590 | 35 | `List<javafx.scene.Node> putByChips(HouseholdBalance bal, FamilyModel families)` | The two chips under the cards: who is at the credit ceiling, and who flatshares because one wage won't cover a home - each opens the cell. |
+| 3640 | 12 | `private static List<javafx.scene.layout.ColumnConstraints> matrixColumns()` |  |
+| 3657 | 86 | `VBox affordabilityGrid(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | Household shape down the side, pay tier across the top, and in every cell what that household has left at the end of the month. |
+| 3745 | 24 | `private VBox tierHead(HouseholdAccounts hh, FamilyModel families, int t)` | A tier's head over its column: its name, and under it what one earner of the tier was paid. |
+| 3771 | 11 | `private Label tierCell(HouseholdAccounts hh, HouseholdBalance bal, int t)` | "Every household of that tier", one tier's cell: the average of the column above it, ringed when the tier is going short. |
+| 3787 | 7 | `private static Label moneyCell(String text, String tone, String more)` | A figure's cell in the grid (gridCell's, right-aligned) with a style of its own after the figure's: set whole, once, since a kept cell is never built on the style it was handed back with (KP7). |
+| 3796 | 17 | `int gridSectionRow(javafx.scene.layout.GridPane grid, String key, String caption, int line)` | A rule and a caption across the matrix, with the (i) that says who is below it: a different kind of household. |
+| 3836 | 63 | `int otherRows(javafx.scene.layout.GridPane grid, HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families, int line)` | The retired, the out of work, the students, the orphans, the prison and the owner families, as rows of the same matrix. |
+| 3901 | 16 | `int otherRow(javafx.scene.layout.GridPane grid, String label, Household own, double perHousehold, double homes, int line)` | One matrix row for a household with no tier: a name, then one wide cell. |
+| 3936 | 49 | `javafx.scene.Node wideCell(Household own, double perHousehold, double homes)` | cashCell's cell, one row wide: the same tint, the same ring, the same click - with the headcount inside it, because the six tier columns it spans have nothing of their own to say about this household. |
+| 3994 | 40 | `Label cashCell(HouseholdAccounts hh, FamilyModel families, FamilyStructure shape, PayTier tier, int tierIndex)` | One cell: what this household has left, and how badly. |
+| 4050 | 51 | `VBox basketBlock(Household cell)` | What a full basket would have been, what they planned to spend, and where the difference came from. |
+
+### THE MONEY BLOCKS BOTH PANELS SHARE (lines 4102-4743)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4124 | 3 | `private static Label note(String text)` | A statement's note under a line, in a scope of its own (Kept, KP7): a note that comes and goes in a panel shifts no other label, and the notes are one kind, so any of them may be handed to any. |
+| 4129 | 4 | `String costMoney(double dollars)` | A cost, printed negative - but a cost of nothing reads "$0", never "-$0". |
+| 4135 | 7 | `static String stakePct(double share)` | A stake, with enough decimals left on it to still say something. |
+| 4150 | 7 | `static String shareOf(double part, double whole)` | What part is of whole - or a dash, when there is no whole to be part of. |
+| 4159 | 6 | `static String monthsRun(double months)` | A run of months, said the way a person would say it. |
+| 4167 | 9 | `Label panelBlockHead(String text)` | The small heading that divides a statement panel into blocks. |
+| 4178 | 20 | `Label panelWho(HouseholdBalance bal, Household cell)` | How many of them there are, how big each one is, and how much of the city that is. |
+| 4208 | 229 | `void positionBlock(VBox panel, HouseholdBalance bal, Household own)` | What one of these households HAS, what it OWES, what it OWNS and what all of that leaves it worth. |
+| 4446 | 31 | `void ratioBlock(VBox panel, Household own, double income, double tax, String billsLabel, double bills, double fees, double shop...` | The same month again, as shares rather than figures. |
+| 4487 | 40 | `VBox outsideStatement(HouseholdBalance bal)` | One of the people outside the families, and what a month does to them. |
+| 4536 | 207 | `VBox openStatement(HouseholdAccounts hh, HouseholdBalance bal, FamilyModel families)` | The month of whichever cell is open, in full. |
+
+### THE TIER TABLE, AS A TABLE. (lines 4744-4849)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4787 | 26 | `HBox flowBar(double tax, double rent, double fees, double shops, double left, double width)` | Where a household's month went, as one bar. |
+| 4815 | 11 | `Region barPart(double width, String colour, String what)` | One segment. |
+| 4828 | 21 | `HBox flowKey()` | The key under the bar, so the colours mean something the first time. |
 

@@ -1,6 +1,6 @@
 # GoldMiningCheck.java - 268 lines · 12 methods · 2 constants · harnesses
 
-`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Gold Mining from geological fields through the mill to exports and the mint.
 > 
@@ -17,6 +17,8 @@
 > 7. A real city's months exercise the mechanic with a closing money audit.
 
 **Uses:** [Resource](Resource.md) (26), [Good](Good.md) (17), [Game](Game.md) (14), [GoldMining](GoldMining.md) (9), [ForeignAccounts](ForeignAccounts.md) (8), [Sectors](Sectors.md) (6), [Geology](Geology.md) (6), [Deposit](Deposit.md) (6), [BuildingManager](BuildingManager.md) (4), [GoldPrice](GoldPrice.md) (4), [GameVersion](GameVersion.md) (4), [Markets](Markets.md) (3), [Sector](Sector.md) (3), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (2), [LandManager](LandManager.md) (2), [NationalAccounts](NationalAccounts.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [GoodsMarket](GoodsMarket.md) (2), [DataSave](DataSave.md) (2), [CentralBank](CentralBank.md) (2), [Founding](Founding.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [WorldMoneys](WorldMoneys.md) (1), [SectorState](SectorState.md) (1), [CityLand](CityLand.md) (1)
+
+**Used by (1):** [GroundInputCheck](GroundInputCheck.md)
 
 ## Constants
 

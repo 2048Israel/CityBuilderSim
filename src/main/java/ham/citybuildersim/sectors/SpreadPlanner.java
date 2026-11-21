@@ -380,6 +380,8 @@ public final class SpreadPlanner {
         double standing(BuildingsTemplate t);
         /** The share of nameplate the sector's buildings run at. */
         double rate();
+        /** ...as an order weighs one new building at it (OE1; Sector.plannedRate()): the game's reads a first plant's own rate in a sector with nothing running; a frame that knows none, rate(). */
+        default double rate(NewUnit u) { return rate(); }
         /** Null when there is ground for one, else why not. */
         String land(BuildingsTemplate t);
         /** Null when the city could staff one, else why not. */
@@ -402,7 +404,7 @@ public final class SpreadPlanner {
 
     /** ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. */
     public static double earns(NewUnit t, double gross, City city) {
-        return gross * city.rate() - city.running(t) - city.standing(t.template());
+        return gross * city.rate(t) - city.running(t) - city.standing(t.template());
     }
 
     /**
@@ -575,6 +577,10 @@ public final class SpreadPlanner {
             // The plant's rate: the refiners' run is not in it (0.7.105; Refining.plantRate(), THE RUN) - an order is weighed at the run it would take.
             @Override public double rate() {
                 return BusinessInvestment.operatingRateOf(sector instanceof Refining r ? r.plantRate() : sector.getOperatingRate());
+            }
+            // ...and a first plant at its own (OE1, Sector.plannedRate()): a sector with nothing running reads the rate the building would open at.
+            @Override public double rate(NewUnit u) {
+                return sector.plannedRate(u, sector instanceof Refining r ? r.plantRate() : sector.getOperatingRate());
             }
             @Override public String land(BuildingsTemplate t) {
                 return plans.plotsAvailableFor(t) >= 1 ? null : plans.landReason(t);

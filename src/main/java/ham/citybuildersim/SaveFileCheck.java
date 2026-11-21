@@ -544,7 +544,12 @@ public class SaveFileCheck {
         // WN3: TWENTY DEPOTS, NOT TWO. On the world's band this city's investors have built the builders' depots by month 91
         // (Construction Capacity 4,080 a month at its start, 4,880 in the month after), and two depots of 400 points are 800: they
         // finished inside the one month, leaving nothing mid-build to save. Twenty are 8,000 points, two months of its capacity (forty are more than its cash buys).
-        final int depotsOrdered = 20;
+        // FS17: the twenty waited on the played city's builders (a month of 4,080 to 4,880 points on one band, and another band's city finishes
+        // twenty in the one month and leaves nothing mid-build to save). The order is sized from the model's own capacity now: the points of
+        // THREE of the builders' months, whatever the played city's depots can do, and one depot over.
+        final double monthsOfWorkOrdered = 3;
+        final double buildersMonth = city.getSectors().construction().getConstructionCapacity();
+        final int depotsOrdered = (int) Math.ceil(monthsOfWorkOrdered * buildersMonth / depot.getConstructionPoints()) + 1;
         LandManager room = city.getLandManager();
         room.setOwnedSqFt(room.getAllocatedSqFt() + depotsOrdered * depot.getLandSqFt() + 4 * store.getLandSqFt()
                 + Math.max(0, room.getOwnedSqFt() - room.getAllocatedSqFt()));
@@ -556,7 +561,12 @@ public class SaveFileCheck {
                 + city.quoteBuildOn(store, storesOrdered, Landmasses.CHOSEN).total);
         Game.BuildResult depotOrder = city.buildStack(depot, depotsOrdered, false);
         city.buildStack(store, storesOrdered, false);
-        assertTrue("fixture: the twenty depots were ordered (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
+        assertTrue("fixture: the depots were ordered, three of the builders' months and one over (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
+        // FS17: more points than the sites can have in the month at the very most - the builders' nameplate and the foreign contractor's
+        // month on top (BuildersShort.foreignCapacity()) - so the stack cannot finish in the one month and the work is on site by the model's rule.
+        assertTrue("fixture: the order is more than the sites' month can build",
+                depotsOrdered * (double) depot.getConstructionPoints() > buildersMonth
+                        + BuildersShort.foreignCapacity(buildersMonth, city.getBuildingManager().largestDepotPoints()));
         city.simulateMonths(1);
 
         long depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
@@ -565,9 +575,8 @@ public class SaveFileCheck {
                 .getConstructionProgressById()[depot.getId()];
         double footprint = city.getBuildingManager().getTotalLandFootprint();
 
-        boolean midBuild = Observation.reached("something is genuinely mid-build",
-                depotsUnderWay > 0,
-                "depot construction count and progress round trip");
+        // FS17: this was an Observation on the played city's depots; the order above is past the sites' month, so it is the fixture's now.
+        assertTrue("fixture: something is genuinely mid-build", depotsUnderWay > 0);
         System.out.printf("   %d depot(s) and %d store(s) on site, %.1f points in%n",
                 depotsUnderWay, storesUnderWay, depotProgress);
 
@@ -602,7 +611,7 @@ public class SaveFileCheck {
         long peopleAfter = reloaded.getPopulationManager().getPopulation();
 
         BuildingManager after = reloaded.getBuildingManager();
-        if (midBuild) assertEquals("depots still under construction",
+        assertEquals("depots still under construction",
                 after.getUnderConstructionById()[depot.getId()], depotsUnderWay);
         assertEquals("stores still under construction",
                 after.getUnderConstructionById()[store.getId()], storesUnderWay);
@@ -1025,21 +1034,26 @@ public class SaveFileCheck {
          * describes the city as it was before they arrived. Standing rule in
          * this codebase, hit again.
          */
+        // FS17: this dropped in thirty shops and read, as an Observation, whether the played town of 40 months happened to move in the
+        // month after - a town whose homes were full (or whose jobs were) took no one in and the readings below were skipped. The order
+        // is the cause now: the posts AND the room for the people they pull (the doors migration is bounded by, Game.updatePopulation()),
+        // both dropped in at once at the save's own month, and the premises are asserted at that month below.
         BuildingManager gbm = growing.getBuildingManager();
+        PopulationManager gp = growing.getPopulationManager();
+        final long peopleBeforeTheOrder = gp.getPopulation();
+        gbm.addStack(gbm.getTemplateByName("House"), 300, true);
         gbm.addStack(gbm.getTemplateByName("Convenience Store"), 30, true);
         growing.simulateMonths(1);
 
-        PopulationManager gp = growing.getPopulationManager();
         ham.citybuildersim.sectors.Retail gc = growing.getSectors().retail();
 
         // The city has to be genuinely mid-stride, or this proves nothing. Both
         // of these are the specific things that were being re-derived.
-        boolean midGrowth = Observation.reached("the city really is still growing",
-                gp.getWorkforce() != (int) (gp.getPopulation() * .5),
-                "mid-growth workforce round trip");
-        boolean midStatement = Observation.reached("...and its statement describes a smaller month than the one in progress",
-                Math.abs(gc.statement().revenue - gc.pending().revenue()) > 1e-9,
-                "closed and pending retail statement round trip");
+        assertTrue("fixture: the order's month moved the town's people", gp.getPopulation() != peopleBeforeTheOrder);
+        assertTrue("fixture: the city really is still growing",
+                gp.getWorkforce() != (int) (gp.getPopulation() * .5));
+        assertTrue("fixture: ...and its statement describes a smaller month than the one in progress",
+                Math.abs(gc.statement().revenue - gc.pending().revenue()) > 1e-9);
 
         EconomyManager ge = growing.getEconomyManager();
         double gIncome = growing.getIncome();
@@ -1059,14 +1073,14 @@ public class SaveFileCheck {
 
         System.out.printf("   income $%.4f -> $%.4f%n", gIncome, moved.getIncome());
 
-        if (midGrowth) assertEquals("the workforce that worked the month came back",
+        assertEquals("the workforce that worked the month came back",
                 moved.getPopulationManager().getWorkforce(), gWorkforce);
         assertEquals("wage tax", Math.round(me.getWageTax() * 10000),
                 Math.round(gWageTax * 10000));
-        if (midStatement) assertEquals("retail gross revenue",
+        assertEquals("retail gross revenue",
                 Math.round(moved.getSectors().retail().statement().revenue * 10000),
                 Math.round(gRetail * 10000));
-        if (midStatement) assertEquals("...and the month the shops are in",
+        assertEquals("...and the month the shops are in",
                 Math.round(moved.getSectors().retail().pending().revenue() * 10000),
                 Math.round(gRetailPending * 10000));
         assertEquals("industrial gross revenue",
@@ -1206,6 +1220,7 @@ public class SaveFileCheck {
 
         GameFiles abroadFiles = new GameFiles(root.resolve("abroad"), root.resolve("no-legacy"));
         Game abroad = new Game(abroadFiles);
+        double rateBeforeMove;
         java.io.PrintStream shown = System.out;
         System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
         try {
@@ -1216,14 +1231,18 @@ public class SaveFileCheck {
             // The months the fixture trades before its test month: 24, the currency's
             // settling months until XR1, kept so the fixture's city is the city it always was.
             final int tradingMonths = 24;
-            abroad.simulateMonths(tradingMonths + 2);
-            for (int extra = 0; extra < 120
-                    && Math.abs(abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain()) < 1e-6; extra++) {
-                abroad.simulateMonths(1);
-            }
+            abroad.simulateMonths(tradingMonths + 1);
+            // FS17: this waited, up to 120 more months, for a month in which the played currency happened to move the debt. The move is
+            // CAUSED now: the rate is pinned (ForeignAccounts.pinRate(), the lever fixtures use) a tenth off where the debt was last valued
+            // before the one month that revalues it, so the gain that month books is the pin's, not the market's.
+            final double rateMoveChosen = 1.10;
+            rateBeforeMove = abroad.getForeignAccounts().getRate();
+            abroad.getForeignAccounts().pinRate(rateBeforeMove * rateMoveChosen);
+            abroad.simulateMonths(1);
         } finally {
             System.setOut(shown);
         }
+        assertTrue("fixture: the rate was moved for the revaluing month", abroad.getForeignAccounts().getRate() != rateBeforeMove);
         double revalued = abroad.getEconomyManager().getNationalAccounts().getDebtExchangeGain();   // a gain positive (CD9: the booked line)
         System.out.printf("   US$%,.0fk owed; the currency moved it by $%,.4fk this month%n",
                 abroad.getDebtManager().getForeignPrincipalUsd(), revalued);
@@ -1314,6 +1333,27 @@ public class SaveFileCheck {
            deliberately built too poor to absorb one. Four Mixed Farms cover
            three fifths of what the mills eat and the rest is imported, which is
            an ordinary city rather than a broken one.
+
+           FS17 (2026-11-20): THE PREMISES ARE CAUSED, THE PLAYED MONTHS KEPT.
+           The 150 months stay played: they are the breadth of state the
+           saved = loaded comparisons below run over, and every one of those
+           comparisons is as it was. What the city used to be WAITED on for, in
+           two loops of up to 240 months each (the bank paying its savers, a
+           sector in loss, the shelves short, hunger, hunger at full shelves,
+           the hot money), is put in before the two months that strike it, by
+           what the model has: Bank.setDepositRate and resolveBank() for the
+           bank, the squeeze and the subsidy dial for the sector in loss, the
+           shelf at half of the want (setStoreInventory) for the short sale,
+           the household cell with the least after its fixed bills left with no
+           savings, no paper or dollars abroad and no credit room for the
+           cell that cannot buy a basket, CapitalFlows.setStockForTest and
+           placeArrivalForTest for the hot money, buyForeignCurrency for the
+           journal's line. The two Observations went with the waits. What is
+           still the played city's is each stock the 150 months built (the
+           mortgages and bonds outstanding, the bank's allowance and its year
+           of sheets, the month's deaths and moves), which no setter of the
+           model's reaches without writing the history this section tests the
+           save of.
            ================================================================= */
         System.out.println("\n--- and a freshly loaded city reads what the live one reads ---");
 
@@ -1419,30 +1459,32 @@ public class SaveFileCheck {
          * and survives the few months it takes the shelves to empty. Both
          * readings are transient and both are read at the save, which is all
          * this section is about.
+         *
+         * FS17: the order stays (150 months healthy, then the squeeze), but "run
+         * healthy until the bank is paying" is no wait now: the bank's rate is
+         * set by its setter after the squeeze's two months, below.
          */
         full.simulateMonths(150);
 
-        // ...A BANK THAT STANDS AND PAYS ITS SAVERS, a month on at least. GW1 waited for a year of paying (the
-        // staffing gate counting the draw, this young city's businesses built and borrowed earlier and its bank
-        // paid once and failed); DQ1 released it (2026-11-16): on 0.9.128 a paying month is enough for every
-        // line below.
         /*
-         * ...AND A FAILED BANK THE PLAYER HAS RESOLVED (WG2, {next}, 2026-11-10): senior care no longer lifts the jobs' draw, and this
-         * city's bank, standing at month 150 in the GW1 note above, now failed twice before month 51 (1,966 people at month 21) and was
-         * frozen at month 151 (equity -215), the treasury on its BUTTON setting that waits for the player: a frozen bank earns its way
-         * out only while its equity climbs, and this one's fell (-176 at month 162, -892 at month 382), so the 240 months below never
-         * saw it open. The city resolves it as the Bank tab's button does, when it stands failed (resolveBank(), the model's own
-         * call, the shares to the city), and the loop waits for it to pay.
+         * FS17 (2026-11-20): THE TWO WAITS THIS SECTION HAD ARE GONE, AND EACH PREMISE IT WAITED FOR IS CAUSED. After the 150 months a loop of
+         * up to 240 more waited for the bank to pay its savers (GW1, DQ1; then an Observation), and a second of up to 240 for hunger, the dial
+         * to pay out, the deposit rate and the shops' fall short of what was asked (0.7.43, 0.7.102), with a thousand of reserves bought and
+         * the shelf at half of the want before each month so the month had a journal line and a short sale (A15), and the hot money's stock
+         * at half its target so a month brought an arrival (BA1) - a played city another batch moved could turn any of them red, or run the
+         * bound out and read an empty city. Now what the played city has is what it has, and the state each premise reads is put in by what
+         * the model already has, then struck by two months (the first month's sale is what the second month's top reads: the hunger, the
+         * delivered share, the hunger at full shelves):
+         *   - a failed bank is resolved as the Bank tab's button does (resolveBank(), WG2: the shares to the city), not waited on;
+         *   - the squeeze below, with the subsidy dial on for every sector, is what puts a sector in loss and the dial paying out;
+         *   - the shelf at half of what the households want, before each month: the shops fall short of what was asked;
+         *   - the household cell with the least after its fixed bills has no savings, no dollars or paper abroad and has borrowed to its
+         *     ceiling (creditRoom()), so its plan has nothing to put to a basket: somebody cannot afford one even at full shelves, and
+         *     with the shelves short somebody is hungry;
+         *   - the hot money's stock at half its target before each month, and a month's arrival placed after them (placeArrivalForTest);
+         *   - the savers' rate by Bank.setDepositRate, after them, at the rate the bank's own rule chooses at the policy dial.
          */
-        final int MONTHS_PAYING_BEFORE_THE_SQUEEZE = 1;
-        int payingFor = 0;
-        for (int extra = 0; extra < 240 && payingFor < MONTHS_PAYING_BEFORE_THE_SQUEEZE; extra++) {
-            if (full.canResolveBank()) full.resolveBank();
-            full.simulateMonths(1);
-            payingFor = full.getBank().depositRate() > 0 && !full.getBank().isInResolution() ? payingFor + 1 : 0;
-        }
-        Observation.reached("fixture: the bank opened and started paying its savers",
-                full.getBank().depositRate() > 0 && !full.getBank().isInResolution());
+        if (full.canResolveBank()) full.resolveBank();
 
         TaxPolicy squeeze = full.getEconomyManager().getTaxPolicy();
         squeeze.setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
@@ -1451,94 +1493,42 @@ public class SaveFileCheck {
         // reload that forgot either would show (2026-09-19).
         squeeze.setHealthFeeScale(1.75);
         squeeze.setHealthPremiumRate(.02);
-        // A month at the new dials, so the service has charged at the scale
-        // and the premium has been collected once, whatever the loop below
-        // still has to wait for.
-        full.simulateMonths(1);
 
-        /*
-         * ...AND THEN UNTIL THE BANK IS ACTUALLY OPEN.
-         *
-         * The Commercial Bank above is ordered with the rest and goes into the
-         * same construction queue as four hundred houses, so when it opens is
-         * a function of how fast this particular city builds. At 150 months it
-         * opened in the same month the fixture stopped, which is not a fixture,
-         * it is a coincidence - the housing pass moved the city by a month and
-         * "savers really were being paid something" started failing, on a test
-         * about SAVE FILES.
-         *
-         * Rolled forward until the condition the assertions need is true, with
-         * a bound so a city that never opens one fails loudly rather than
-         * hanging. Same fix LabourCheck's arrivals month got, for the same
-         * reason: a fixture has to CAUSE the condition under test.
-         *
-         * IT WAITS FOR THE HUNGER TOO NOW. Both readings are set inside a tick
-         * and both are transient, and the rebalance moved the month each one
-         * lands in three separate times in one night - once for the wage
-         * ladder, once for the building costs and once for the endowment. A
-         * loop that waits for the state is the only version of this fixture
-         * that survives somebody moving a price.
-         *
-         * AND FOR THE DIAL TO PAY, since the crews started drawing material
-         * as they build (2026-09-11): the subsidy is this month's figure,
-         * and the sector that used to run a loss in the month the loop
-         * stopped was construction, buying an order's whole material the
-         * day it was placed. It no longer does; some sector still loses
-         * money in some month, and the loop waits for that month.
-         */
-        /*
-         * ...AND FOR THE SHOPS TO FALL SHORT AT THE PRICE (0.7.43): groceries
-         * are sold as baskets wanted at a price now, and a city whose shelf
-         * has climbed to what clears it can hand over every basket asked for
-         * while its poorest are priced out - hungry, with the delivered share
-         * at one. The share is read below, so the loop waits for it too.
-         */
-        /*
-         * ...AND A MOVE OF THE PLAYER'S IN EVERY MONTH IT WAITS (0.7.102): a
-         * thousand of reserves bought before each month, so the month the
-         * loop stops on has a line in the treasury's journal to lose. Its
-         * repairs were that line until Jerus's A15 made them a budget line;
-         * a fixture has to cause what it tests. At least one month, so the
-         * month after the dials is never the one read without it.
-         *
-         * ...AND THE SHOPS' SHELF AT HALF WHAT WAS ASKED FOR (0.7.102), for
-         * the same reason: once 0.7.102's books moved this city its shops
-         * handed over every basket asked for in every one of the 240 months
-         * the loop may wait (a probe, runs/fixP3-notes.md), so "the share the
-         * shops handed over" would cross the save at the whole - the value a
-         * save that forgot it loads with. Half of last month's ask on the
-         * shelf before each waited month makes the month the loop stops on
-         * one the shops fell short in.
-         */
-        // ...AND FOR HOT MONEY TO HAVE ARRIVED (WN3, after EM1): the section below asserts the month's
-        // arrival crosses the save, so the loop waits for a month the stock fell short of its target.
-        int extraMonths = 0;
-        do {
+        // FS17: two months at the dials, the second the one read: the first has the service charge at the scale and the premium
+        // collected once, and its sale is what the second's top reads.
+        final int STRIKE_MONTHS = 2;
+        for (int struck = 0; struck < STRIKE_MONTHS; struck++) {
             full.buyForeignCurrency(1);
             ham.citybuildersim.sectors.Retail shops = full.getSectors().retail();
             shops.setStoreInventory((int) Math.min(Integer.MAX_VALUE, shops.getHouseholdWant() / 2));
-            // ...AND THE HOT MONEY'S STOCK AT HALF OF LAST MONTH'S TARGET (BA1): the stock closes a fifth of
-            // its gap to a target that follows a year of output, and with the construction orders uncapped
-            // this city's path never once had the target over the stock in the 240 months the loop may wait
-            // (the squeeze pulls the output down and the stock is left standing over it), so the loop ran its
-            // whole bound, to month 392, and the bank failed, the bonds were repaid and the mortgages gone,
-            // and every fixture below read an empty city.
             full.getCapitalFlows().setStockForTest(Math.min(full.getCapitalFlows().getStock(), full.getCapitalFlows().getTarget() / 2));   // HZ1: by name
+            Household withoutMeans = null;
+            for (Household c : full.getHouseholdBalance().cells()) {
+                if (c.isEmpty() || c.households() < .5) continue;
+                if (withoutMeans == null || c.afterFixed() < withoutMeans.afterFixed()) withoutMeans = c;
+            }
+            assertTrue("fixture: the city has a household cell to leave without means", withoutMeans != null);
+            if (withoutMeans != null) {
+                withoutMeans.savings = 0;
+                withoutMeans.abroad = 0;
+                withoutMeans.paper = 0;
+                withoutMeans.debt += withoutMeans.creditRoom(withoutMeans.disposable());
+            }
             full.simulateMonths(1);
-        } while (++extraMonths < 240
-                && (full.getHealth().getHungerRate() <= 0
-                    || full.getTotalSubsidyPaid() <= 0
-                    || full.getBank().depositRate() <= 0
-                    || full.getHouseholdBalance().getDeliveredShare() >= 1));
-        // ...AND THE MONTH'S ARRIVAL PLACED when the month brought none (GW1).
-        final double PLACED_ARRIVAL = 40;
-        if (full.getCapitalFlows().getArrived() <= 0) {
-            // HZ1: the stock, the arrivals since founding and the month's, by name (once slots 0, 3 and 16 of toSaveArray()).
-            full.getCapitalFlows().placeArrivalForTest(PLACED_ARRIVAL);
-            // ...and into the bank it funds, as Game does when a month's stock grows (its cash, the month's hot money in, the foreign deposits): a load sets those deposits from the stock, so a stock the bank never took reloads 40k short in equity.
-            full.getBank().receiveHotMoney(PLACED_ARRIVAL);
-            full.getBank().setForeignDeposits(full.getCapitalFlows().getStock());
         }
+        // ...AND THE MONTH'S ARRIVAL PLACED (GW1), whatever the months brought, in the bank it funds as Game does when a month's stock grows
+        // (its cash, the month's hot money in, the foreign deposits): a load sets those deposits from the stock, so a stock the bank never
+        // took reloads short in equity. The placed arrival is on top of what the stock at half its target drew in.
+        final double PLACED_ARRIVAL = 40;
+        // HZ1: the stock, the arrivals since founding and the month's, by name (once slots 0, 3 and 16 of toSaveArray()).
+        full.getCapitalFlows().placeArrivalForTest(PLACED_ARRIVAL);
+        full.getBank().receiveHotMoney(PLACED_ARRIVAL);
+        full.getBank().setForeignDeposits(full.getCapitalFlows().getStock());
+        // ...AND THE SAVERS' RATE, the one the bank's rule 1 would choose at the policy dial (the flow Bank.setDepositRate() carries across a
+        // load): the bank stands, not in resolution, and what it pays is a nonzero rate a save that forgot it would read as 0.
+        full.getBank().setDepositRate(full.getBank().depositRateAt(full.getDebtManager().getPolicyRate()));
+        assertTrue("fixture: the bank opened and started paying its savers",
+                full.getBank().depositRate() > 0 && !full.getBank().isInResolution());
 
         // The treasury's rollover (0.7.13), set after the city has played to
         // the one setting no city founds with, so the round trip can fail.
@@ -1663,13 +1653,15 @@ public class SaveFileCheck {
         back.loadGameSave(1);
 
         /* --- the fixture has to be able to fail before it can pass --- */
-        boolean saversPaid = Observation.reached("fixture: savers really were being paid something",
-                full.getBank().depositRate() > 0,
-                "saved saver-rate equality");
+        // FS17: was an Observation on the played city's rate; the rate is set by Bank.setDepositRate above, so it is a premise and the law runs.
+        assertTrue("fixture: savers really were being paid something",
+                full.getBank().depositRate() > 0);
         assertTrue("fixture: the schools really were running",
                 full.getEducation().getPayroll() > 0);
+        // FS17: the squeeze puts a sector in loss, and the dial is on for every sector (above); nothing waits for a month that has one.
         assertTrue("fixture: the dial really did pay out",
                 full.getTotalSubsidyPaid() > 0);
+        // FS17: the shelf at half of the want and the cell left without means (above), struck by the two months: nothing waits for a hungry month.
         assertTrue("fixture: somebody really was hungry",
                 full.getHealth().getHungerRate() > 0);
         assertTrue("fixture: the tiers really were shopping",
@@ -1707,7 +1699,8 @@ public class SaveFileCheck {
         assertEquals("the investors' last word survives a save, slot for slot, word for word",
                 back.getLastInvestments(), full.getLastInvestments());
 
-        if (saversPaid) same("what savers are paid", back.getBank().depositRate(),
+        // FS17: unconditional now (it ran only "if saversPaid", the Observation's answer).
+        same("what savers are paid", back.getBank().depositRate(),
                 full.getBank().depositRate());
 
         // How the city was founded (0.7.10), read through the game's getters.
@@ -2247,9 +2240,14 @@ public class SaveFileCheck {
                 Math.abs(causes - died.getLastDeaths()) <= 1e-9 * Math.max(1, died.getLastDeaths()));
 
         HouseholdBalance fed = full.getHouseholdBalance(), fedAgain = back.getHouseholdBalance();
+        // FS17: the shelf at half of the want before each of the two months (above) is what leaves the delivered share under 1 at the second.
         assertTrue("fixture: the shops handed over less than the households planned",
                 fed.getDeliveredShare() < 1);
         same("the share the shops handed over", fedAgain.getDeliveredShare(), fed.getDeliveredShare());
+        // FS17 (known-reds row 105): this read what the played city happened to be, and on a path where every cell could afford a basket at full
+        // shelves in the month read it was 0. The household cell with the least after its fixed bills is left (above) with no savings, no
+        // dollars or paper abroad and no credit room before each of the two months, so the plan that month strikes cannot fund a basket
+        // (HouseholdBalance.groceryDemandOf(): the baskets it asks for are bounded by its food money), and the second month's top reads that sale.
         assertTrue("fixture: somebody could not afford a basket even at full shelves",
                 fed.getHungryAtFullShelves() > 0);
         same("...the hungry even at full shelves", fedAgain.getHungryAtFullShelves(), fed.getHungryAtFullShelves());
@@ -2390,6 +2388,7 @@ public class SaveFileCheck {
         CapitalFlows hotLive = full.getCapitalFlows(), hotBack = back.getCapitalFlows();
         System.out.printf("   the hot money's month in the live city: arrived %,.4fk, departed %,.4fk, on doubt %,.4fk, doubt's lifetime %,.4fk%n",
                 hotLive.getArrived(), hotLive.getDeparted(), hotLive.getDoubtDeparted(), hotLive.getDoubtDepartedLifetime());
+        // FS17: the stock at half its target before each month drew some in, and a month's arrival is placed on top (above): it is put in, not waited for.
         assertTrue("fixture: hot money arrived in the month the city is saved in (" + String.format("%,.4fk", hotLive.getArrived()) + ")", hotLive.getArrived() > 0);
         assertTrue("a freshly loaded city reads the hot money's month the live one read: arrived, departed, on doubt and the doubt's lifetime, to the bit",
                 Double.compare(hotBack.getArrived(), hotLive.getArrived()) == 0
@@ -2510,6 +2509,18 @@ public class SaveFileCheck {
         early.buildStack(template(early, "Coal Power Plant"), 2, true);
         early.buildStack(template(early, "Water Treatment Plant"), 1, true);
         early.simulateMonths(PriceIndex.SETTLING_MONTHS - 4);
+        // FS17: the save was taken at month SETTLING_MONTHS - 4 and the index was READ as based six months on, as an Observation, on the
+        // assumption that every one of those months had rent and groceries in it - which the played town decides (a month without both does
+        // not count towards the settling, PriceIndex.monthsUntilRate()). The save is taken now where the index itself says it is
+        // `monthsToBasing` shopping months short of its basing, so the basing falls inside the six months by the constant's count; a town that
+        // takes more than SETTLING_MONTHS more months to get there fails as the fixture.
+        final int monthsToBasing = 4;
+        for (int more = 0; more < PriceIndex.SETTLING_MONTHS
+                && early.getPriceIndex().monthsUntilRate() > PriceIndex.WINDOW + monthsToBasing; more++) {
+            early.simulateMonths(1);
+        }
+        assertTrue("fixture: the price index is four shopping months short of its basing when the city is saved",
+                early.getPriceIndex().monthsUntilRate() == PriceIndex.WINDOW + monthsToBasing);
 
         assertTrue("fixture: the shops handed over less than the households asked for",
                 early.getSectors().retail().getHouseholdShare() < 1);
@@ -2526,11 +2537,8 @@ public class SaveFileCheck {
 
         early.simulateMonths(6);
         replay.simulateMonths(6);
-        boolean indexBased = Observation.reached("main: fixture: the index was based in those six months, in the city saved",
-                "fixture: the index was based in those six months, in the city saved",
-                early.getPriceIndex().isBased(),
-                "based index save/load parity");
-        if (indexBased) assertTrue("...and in its reload", replay.getPriceIndex().isBased());
+        assertTrue("fixture: the index was based in those six months, in the city saved", early.getPriceIndex().isBased());
+        assertTrue("...and in its reload", replay.getPriceIndex().isBased());
         same("six months on: the price index", replay.getPriceIndex().getIndex(),
                 early.getPriceIndex().getIndex());
         same("...the sick rate", replay.getHealth().getSickRate(), early.getHealth().getSickRate());
@@ -3021,10 +3029,31 @@ public class SaveFileCheck {
         // city's treasury runs a surplus whose pay-in met the transfer every
         // month, so the fund never sold (its cash $136.6M after a year).
         drawing.setFundDial(0);
-        // A month for what it held to run short, and one to pay what it sold late: pressed until both, no more than a year.
-        for (int m = 0; m < 12 && !(drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0); m++) {
-            drawing.simulateMonths(1);
+        // FS17: this pressed up to twelve months for a month that ran short AND a month that paid what it sold late, and on a town where nobody
+        // bid for the fund's shares (the moved college town: 44,441 Retail shares, no bid standing, nothing sold in a year) it never did - the
+        // known red. Both months are caused now. The first runs short by the dial's own arithmetic (the cash is drawn out above, the transfer
+        // is due), and the step posts the fund's ask for what it owes (Exchange.postFund(): asked at the desk's bid, RULE_PREMIUM under fair
+        // value); between the steps the world bids for it, at the ask and for all that rests at or under it, the way a buyer arrives between
+        // the clearings (Exchange.tradeForCheck()); and the second month's top pays what the shares fetched, late.
+        drawing.simulateMonths(1);
+        assertTrue("fixture: the month's cash ran short and the fund owes what it sells for",
+                drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0);
+        double fundAsked = 0, worldBought = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            OrderBook shares = drawing.getExchange().bookOf(c);
+            double resting = shares.resting(Exchange.FUND, OrderBook.Side.SELL);
+            if (!(resting > OrderBook.DUST)) continue;
+            double asking = 0;
+            for (OrderBook.Order o : shares.asks()) if (o.who().equals(Exchange.FUND)) asking = Math.max(asking, o.price());
+            fundAsked += resting;
+            for (OrderBook.Fill f : drawing.getExchange().tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, asking,
+                    shares.depth(OrderBook.Side.SELL, asking))) {
+                if (f.seller().equals(Exchange.FUND)) worldBought += f.quantity();
+            }
         }
+        assertTrue("fixture: the step asked the market book for shares to pay the withdrawal with, and the world bought them (" + worldBought + " of " + fundAsked + ")",
+                fundAsked > OrderBook.DUST && worldBought > OrderBook.DUST);
+        drawing.simulateMonths(1);
         System.out.printf("   drawing %s a month: due $%,.2fk, paid $%,.2fk, to raise $%,.2fk, paid late $%,.2fk, cash $%,.2fk%n",
                 DecisionLog.pct2(drawing.getFundWithdrawal()), drawing.getFund().getTransferDue(), drawing.getFund().getTransferPaid(),
                 drawing.getFund().getToRaise(), drawing.getFund().getTransferPaidLate(), drawing.getFund().getCash());
@@ -4199,13 +4228,26 @@ public class SaveFileCheck {
             Game city = new Game(files);
             boolean[] unitsMatch = { true };
             int[] drawsBeyondTheTally = { 0 };
+            Game.BuildResult[] pastTheYard = { null };
+            double[] materialsBoughtInMonthOne = { 0 };
             quietly(() -> {
                 city.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
                 city.setCashForTest(Founding.WEALTHY_CASH);
                 city.buildStack(template(city, "House"), 120, true);
                 city.buildStack(template(city, "Convenience Store"), 2, true);
                 city.buildStack(template(city, "Water Treatment Plant"), 1, true);
-                for (int m = 0; m < 14; m++) {
+                // FS17: whether the town "traded with the world" was found on the played town (its imports of what it does not make), and the
+                // fourteen months were a count found against the calendar. The trade is caused now: a house order, built on site (not instant),
+                // of FOUR yards' worth of material (BuildingManager.BASE_MATERIALS a month is free), so the sites draw what the yard does not
+                // hold from the world's market, which the record books by partner from the first month and carries into the year that turns.
+                BuildingsTemplate orderedHouse = template(city, "House");
+                final int housesPastTheYard = (int) Math.ceil(4.0 * BuildingManager.BASE_MATERIALS / orderedHouse.getConstructionMaterials());
+                pastTheYard[0] = city.buildStack(orderedHouse, housesPastTheYard, false);
+                // ...and the months are the calendar's: the founding year's remaining months to its turn, then two past it.
+                final int monthsPastTheTurn = 2;
+                int monthsToTheTurn = 0;
+                while (CityCalendar.yearOf(city.getMonth() + monthsToTheTurn) == Nations.FIRST_YEAR) monthsToTheTurn++;
+                for (int m = 0; m < monthsToTheTurn + monthsPastTheTurn; m++) {
                     // WN4: from the tenth month the vault holds euros and pounds beside its dollars, on a chosen mix, so the vault's slots (105-141) carry something and the eight have moved against each other under it.
                     if (m == 9) {
                         city.buyForeignCurrency(40_000, "EUR");
@@ -4219,6 +4261,7 @@ public class SaveFileCheck {
                     city.simulateMonths(1);
                     PartnerTrade seen = city.partnerTradeForTest();
                     if (seen == null) continue;
+                    if (m == 0) materialsBoughtInMonthOne[0] = seen.monthImportUnits(Good.MATERIALS);
                     for (Good g : Good.values()) {
                         GoodsMarket gm = city.getMarkets().get(g);
                         double ex = 0, im = 0;
@@ -4243,6 +4286,12 @@ public class SaveFileCheck {
             if (market == null || record == null || snap == null) return;
             assertTrue("fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry): " + snap.monthTotal(),
                     snap.monthTotal() > 0 || !snap.yearCells().isEmpty() || !record.history().get(0).cells().isEmpty());
+            // FS17: ...and the trade it carries is the one the order caused: the materials bought past the yard, by nation, in the year that turned.
+            boolean materialsFromTheWorld = false;
+            for (PartnerTrade.Cell cell : record.history().get(0).cells()) materialsFromTheWorld |= cell.good() == Good.MATERIALS && cell.unitsIn() > 0;
+            assertTrue("fixture: the house order past the yard was placed (" + pastTheYard[0] + ") and its materials came from the world's nations in the first month ("
+                            + materialsBoughtInMonthOne[0] + " units), and the year that turned into the history carries them",
+                    pastTheYard[0] == Game.BuildResult.SUCCESS && materialsBoughtInMonthOne[0] > 0 && materialsFromTheWorld);
 
             assertTrue("saved", quietlyGet(() -> city.saveGame(1, "world")).ok);
             com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(1))).getAsJsonObject();
@@ -4302,6 +4351,48 @@ public class SaveFileCheck {
                 sameRates &= Double.compare(goldLive.getRate(), goldBack.getRate()) == 0 && Double.compare(goldLive.getMintPrice(), goldBack.getMintPrice()) == 0;
             }
             assertTrue("...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit", sameRates);
+            // FB14 (GD3's review, item 5): an array as GD2 wrote it, 152 slots (to gold's chosen share, 151), read as a load reads it, into accounts just reset.
+            final int gdTwoSlots = 152;
+            ForeignAccounts fromGdTwo = new ForeignAccounts();
+            fromGdTwo.restore(java.util.Arrays.copyOf(savedFx, gdTwoSlots));
+            assertTrue("a GD2-length array (152 slots) restores GD3's defaults: no mint price, no mint rate, not following, no event; no Canada episode and no gold's last break (156-158)",
+                    fromGdTwo.getMintPrice() == 0 && fromGdTwo.getMintRate() == 0 && !fromGdTwo.isMintFollowing() && fromGdTwo.getGoldEvent() == ForeignAccounts.GoldEvent.NONE
+                            && !fromGdTwo.isCanadaGold() && !fromGdTwo.lastBreakWasGold());
+            assertTrue("...and its gold as GD2 saved it: the balance and the price (slots 149-150)",
+                    fromGdTwo.getHolding(ForeignAccounts.GOLD) == savedAccounts.getHolding(ForeignAccounts.GOLD) && fromGdTwo.getMoneyUsd(ForeignAccounts.GOLD) == savedAccounts.getMoneyUsd(ForeignAccounts.GOLD));
+            double[] gdTwoAgain = fromGdTwo.toSaveArray();
+            assertTrue("...and saved again it is a full array (" + gdTwoAgain.length + " slots), the mint's four and FB14's zero",
+                    gdTwoAgain.length == ForeignAccounts.SAVE_SLOTS && gdTwoAgain[152] == 0 && gdTwoAgain[153] == 0 && gdTwoAgain[154] == 0 && gdTwoAgain[155] == 0
+                            && gdTwoAgain[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 0);
+            // FB14 (GD3's review, item 4), slot 158: whether the last break was the gold's, so the screens say "came off gold" and not "the peg broke".
+            ForeignAccounts goldBreaks = GoldStandardCheck.onGold(.8 * CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE, 40_000, 1e-3, 0, 1.0);
+            GoldStandardCheck.month(goldBreaks, GoldStandardCheck.PRICE, .8 * CurrencyRegimeCheck.TRADE, CurrencyRegimeCheck.TRADE);
+            double[] brokeSlots = goldBreaks.toSaveArray();
+            ForeignAccounts brokeBack = new ForeignAccounts();
+            brokeBack.restore(brokeSlots);
+            assertTrue("a currency whose gold broke (" + goldBreaks.getLastBreakCause() + ", now " + goldBreaks.getRegime() + ") saves it in slot 158, and a restore returns it",
+                    goldBreaks.brokeThisMonth() && goldBreaks.lastBreakWasGold() && brokeSlots[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 1 && brokeBack.lastBreakWasGold());
+            ForeignAccounts brokeOld = new ForeignAccounts();
+            brokeOld.restore(java.util.Arrays.copyOf(brokeSlots, ForeignAccounts.LAST_BREAK_GOLD_SLOT));
+            assertTrue("...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before", !brokeOld.lastBreakWasGold());
+            assertTrue("...and the city's own, which never broke off gold, saves 0", savedFx[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 0 && !savedAccounts.lastBreakWasGold());
+            // FB14 (GD3's review, item 6): the bank's two figures for the gold's sales, at the end of its array: what is due back at the next month's top, and what was
+            // retired for gold since the founding (vaultInNewMoney() is the dollars bought less it).
+            CentralBank bank = new CentralBank();
+            bank.goldPaidOut(7.25);
+            double[] bankSaved = bank.toSaveArray();
+            final int dueSlot = bankSaved.length - 2, retiredSlot = bankSaved.length - 1;
+            assertTrue("the central bank's array ends with the gold's two figures: due back at the next top (" + bankSaved[dueSlot] + ") and retired for gold since founding (" + bankSaved[retiredSlot] + ")",
+                    bankSaved[dueSlot] == bank.getGoldRedeemDue() && bankSaved[dueSlot] == 7.25 && bankSaved[retiredSlot] == bank.getGoldRedeemedLifetime());
+            bankSaved[retiredSlot] = 41.5;
+            CentralBank bankBack = new CentralBank();
+            bankBack.restore(bankSaved);
+            assertTrue("...a restore returns both to the bit, and what it saves is what it read",
+                    bankBack.getGoldRedeemDue() == 7.25 && bankBack.getGoldRedeemedLifetime() == 41.5 && java.util.Arrays.equals(bankBack.toSaveArray(), bankSaved));
+            CentralBank bankOld = new CentralBank();
+            bankOld.restore(java.util.Arrays.copyOf(bankSaved, dueSlot));
+            assertTrue("...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold",
+                    bankOld.getGoldRedeemDue() == 0 && bankOld.getGoldRedeemedLifetime() == 0 && bankOld.vaultInNewMoney() == bankOld.getDollarsBoughtLifetime());
             assertTrue("fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22",
                     savedAccounts.getHolding(1) > 0 && savedAccounts.getHolding(3) > 0 && savedAccounts.getHolding(0) > 0 && savedAccounts.getReserveMix() == ForeignAccounts.Mix.CHOSEN
                             && savedAccounts.getLastVaultCrossUsd() != 0 && savedFx[22] == savedAccounts.getReservesUsd() && savedFx[105 + 1] == savedAccounts.getHolding(1)

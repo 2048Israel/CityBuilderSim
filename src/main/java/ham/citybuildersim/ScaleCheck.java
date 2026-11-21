@@ -69,8 +69,11 @@ import java.util.regex.Pattern;
  *      history records what the screens show;
  *   5. a save gives every one of those figures back, and the city it loads
  *      plays its next month as the one that was saved;
- *   6. a growing city - this check's own town (ownTown(), ST3) at
- *      FREE_FIXTURE_MONTHS, with ground free for a home - copied to 5
+ *   6. a growing city - this check's own town (ownTown(), ST3), struck at
+ *      the first month from FREE_FIXTURE_MONTHS that it is growing, has
+ *      ground free for a home and its rents price no migrant out in the
+ *      months after (FS2: not a picked month; none within
+ *      FREE_FIXTURE_SEARCH fails as a fixture) - copied to 5
  *      and to 10 billion with its sectors free, so they order: every month
  *      whole and adding up, money conserved to RELATIVE_RESIDUAL of what
  *      moved from the first month, the city's books agreeing within
@@ -91,8 +94,10 @@ import java.util.regex.Pattern;
  *      exactly the floor at every size the other harnesses read it at; a cent
  *      never moves;
  *   9. a copy K = TRACK_TIMES times over tracks its city month by month (FW9,
- *      2026-10-25): the grown city of section 6 read through scale() at K = 1
- *      and at K = 1,000 and played FREE_MONTHS, the copy's people, treasury,
+ *      2026-10-25): the grown city of section 6 read through scale() at
+ *      TRACK_CITY_TIMES copies (FS2: the city's whole units a tenth as
+ *      heavy, and the parting with them) and at TRACK_TIMES times that,
+ *      and played FREE_MONTHS, the copy's people, treasury,
  *      savings, GDP, bank deposits, price level, unemployment rate and policy
  *      rate each K times the city's (or equal to it) within its TRACK_ dial in
  *      every month, and the shares', the corporate bonds' and the city's paper
@@ -101,7 +106,12 @@ import java.util.regex.Pattern;
  *      size at any K, so a free copy's planners order what its city's
  *      decline, which is not scaling), and both read from the grown city once
  *      its building sites are empty (BA1: scale() consolidates a partly built
- *      unit, which is not what a copy asks).
+ *      unit, which is not what a copy asks); and a copy whose treasury the
+ *      scaler left at its city's size misses the law (FS2);
+ *  10. the 1900 city (R1f): its unfitted plant scales, whole horse posts
+ *      and carters are bounded by half a post, and a larger copy of it
+ *      tracks its K-times copy by the TRACK_ dials, both on the literals
+ *      (FS2: the world's band is the world's, which no K scales).
  */
 public class ScaleCheck {
 
@@ -121,8 +131,11 @@ public class ScaleCheck {
     /** Jerus's two plans, in people: the copies whose sectors are free (section 6). */
     static final double[] FREE_PEOPLE = { 5e9, 1e10 };
 
-    /** QB1's quoted-borrowing town at month 225: growing, ground free, affordable rents and million-building interest decisions; the same copy laws as before. */
+    /** The least age section 6's town is copied at: QB1's quoted-borrowing town, grown by then to million-building interest decisions; since FS2 the copy is struck at the first month from it with the premises, not at it. */
     static final int FREE_FIXTURE_MONTHS = 225;
+
+    /** The most months past FREE_FIXTURE_MONTHS section 6's town plays on for a month that has its premises (FS2; HL1-R's scan found them in 7 of 36). */
+    static final int FREE_FIXTURE_SEARCH = 60;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -142,6 +155,18 @@ public class ScaleCheck {
 
     /** The copy section 9 reads against its city: its factor, K (FW9, 2026-10-25). */
     static final long TRACK_TIMES = 1000;
+
+    /**
+     * The copies of the grown city section 9's city side is, read against TRACK_TIMES times as many (FS2, 2026-11-20): 10. The copy and
+     * the city part by the city's whole units - a post, a vehicle, a load, a building's month - which are a K-th of the figures at K, so
+     * the parting falls with the city side's copies: on today's town the worst savings miss was 1.12e-2 at one copy, 9.05e-4 at ten and
+     * 1.11e-4 at a hundred, GDP's 7.04e-2, 1.03e-2 and 1.21e-3. The TRACK_ dials were measured at one copy, on whatever town the path
+     * grew (LX1's missed savings by 2.83e-2), so at ten the law holds them with a margin of ten and more that a moved path does not eat,
+     * and still reads FW9's scaler, which missed by multiples of them (and section 9's fault line shows it caught). Not a hundred: a
+     * figure the scaler left at one city's size is a K-th of the city side too, so each copy more blunts the law for it; sections 3 and
+     * 4 count those exactly.
+     */
+    static final long TRACK_CITY_TIMES = 10;
 
     /** The most months section 9 plays the grown city, its sectors held, to see its building sites empty before it is copied (BA1, 2026-11-04). */
     static final int TRACK_SITE_MONTHS = 60;
@@ -204,6 +229,19 @@ public class ScaleCheck {
         try { r.run(); } finally { System.setOut(real); }
     }
 
+    /**
+     * Every game here plays with the owner line off (BO1-S), set at its construction, before a founding is played or a
+     * save loaded. WHY: the owner families are a fixed count by design - two adults a company, at most a share of the
+     * adults (OwnerHousehold) - not K times the city's, so a copy K times over carries its city's five families where
+     * the law wants five K, and their dividends and savings cannot scale. With the line on, the copy's savings missed by
+     * 3.54e-2 against TRACK_SAVINGS and section 10's 1900 town broke the savings law in all six months (BO1-S's notes,
+     * section 8). What this check proves is the rest of the model's scaling, which the line does not touch.
+     */
+    static Game lineOff(Game g) {
+        g.getHouseholdBalance().setOwnerLine(false);
+        return g;
+    }
+
     /** The property tax rate, a year, that section 6's town sets in place of the founding's .015 (ST3). */
     static final double OWN_PROPERTY_TAX = .04;
 
@@ -226,6 +264,19 @@ public class ScaleCheck {
             LongPlaytest.build(g, "House", 40);
             LongPlaytest.build(g, "Convenience Store", 3);
             LongPlaytest.build(g, "Mixed Farm", 2);
+        } finally {
+            LongPlaytest.out = was;
+            System.setOut(real);
+        }
+        playTown(g, months);
+    }
+
+    /** Section 6's town played on by keepAhead()'s plan to its month, a month at a time and quietly (ST3; FS2 split it from ownTown() for the strike). */
+    static void playTown(Game g, int months) {
+        PrintStream was = LongPlaytest.out, real = System.out;
+        LongPlaytest.out = quiet;
+        System.setOut(quiet);
+        try {
             while (g.getMonth() < months) {
                 int before = g.getMonth();
                 keepAhead(g);
@@ -276,7 +327,7 @@ public class ScaleCheck {
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
 
         GameFiles small = new GameFiles(root.resolve("small"), root.resolve("small-no-legacy"));
-        Game founded = new Game(small, LongPlaytest.founding());
+        Game founded = lineOff(new Game(small, LongPlaytest.founding()));
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {
@@ -299,7 +350,7 @@ public class ScaleCheck {
 
         // The founded city as its own save loads it, so both sides of every
         // comparison below come through the same load.
-        Game one = new Game(small);
+        Game one = lineOff(new Game(small));
         quietly(() -> one.loadGameSave(10));
         long pop1 = one.getPopulationManager().getPopulation();
         long workforce1 = one.getPopulationManager().getWorkforce();
@@ -324,7 +375,7 @@ public class ScaleCheck {
         assertTrue("the slot header of a save past 2^31 people reads (an int could not parse it)", header != null);
         if (header != null) same("...and its population is K times the founded city's", header.getPopulation(), k * pop1);
 
-        Game g = new Game(big);
+        Game g = lineOff(new Game(big));
         quietly(() -> g.loadGameSave(10));
         for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
         PopulationManager people = g.getPopulationManager();
@@ -398,7 +449,7 @@ public class ScaleCheck {
         assertTrue("its header reads", again != null);
         if (again != null) same("...with the population it was saved with", again.getPopulation(), people.getPopulation());
 
-        Game back = new Game(big);
+        Game back = lineOff(new Game(big));
         quietly(() -> back.loadGameSave(10));
         for (Sector s : back.getSectors().all()) back.getBusinessInvestment().holdSector(s.key());
         PopulationManager backPeople = back.getPopulationManager();
@@ -426,10 +477,10 @@ public class ScaleCheck {
         same("...and the same people out of work", backPeople.getUnemployed(), people.getUnemployed());
 
         /* ============== 6. the sectors free, at 5 and 10 billion ============== */
-        out.println("\n--- a growing city to copy with its sectors free: this check's own town, at month " + FREE_FIXTURE_MONTHS
+        out.println("\n--- a growing city to copy with its sectors free: this check's own town, struck from month " + FREE_FIXTURE_MONTHS
                 + " ---");
         GameFiles grown = new GameFiles(root.resolve("grown"), root.resolve("grown-no-legacy"));
-        Game city = new Game(grown, LongPlaytest.founding());
+        Game city = lineOff(new Game(grown, LongPlaytest.founding()));
         // R0b call 7: the causes of 1900 held off, before a month, in this city and in every copy loaded from its save (free(), tracks()).
         // The section reads a city that builds and tracks its K-times copy, sized on today's deaths; on 1900's causes the 5-billion copy's
         // fixture "the free copy ordered - an order sized from more than a million needed, and one judged on its interest" failed, and the
@@ -446,24 +497,45 @@ public class ScaleCheck {
         // founding's from the first month.
         city.getForeignAccounts().pinRate(city.getForeignAccounts().getRate());
         ownTown(city, FREE_FIXTURE_MONTHS);
-        quietly(() -> city.saveGame(10, "scalecheck grown"));
-        long popGrown = city.getPopulationManager().getPopulation();
-        out.printf("      month %d, %,d people in %,d household places%n", city.getMonth(), popGrown, city.getHouseholdCapacity());
-        Observation.reached("fixture: the city is growing - more people than a year before",
-                popGrown > city.getHistorySave().getPopulation().get(city.getHistorySave().months() - 13));
+        // THE STRIKE (FS2, 2026-11-20; PK1, HL1-R item 2). The copy was struck at a picked month (172, then 165, then 225, each re-picked
+        // when a path moved the town; 165 had its premises in 7 of 36 months on HL1's path), its premises observed. Now the town plays on
+        // from FREE_FIXTURE_MONTHS by its own plan until a month has them all - growing, ground free for a home, and its own rents pricing
+        // no migrant out in the FREE_MONTHS its copies are read against - and the copy is struck there. A month that misses the last has
+        // played those months, so the search goes on from where they end. No month is picked, and a town that has none within
+        // FREE_FIXTURE_SEARCH months fails as a fixture.
         BuildingsTemplate home = city.getBuildingManager().getTemplateByName("House");
-        out.printf("      %,.0f sq ft free at that month%n", city.getLandManager().getAvailableSqFt());
-        Observation.reached("fixture: ...with ground free for a home",
-                home != null
-                    && city.getLandManager().getAvailableSqFt() >= home.getLandSqFt());
-        // ...and its own next FREE_MONTHS, which the copies are read against (0.7.55).
-        Original original = new Original(city);
-        Observation.reached("run: fixture: ...and its own rents price no migrant out in the months its copies are read against",
-                "fixture: ...and its own rents price no migrant out in the months its copies are read against"
-                    + " (the affordability pull 1 in all " + FREE_MONTHS + ")",
-                original.calm(),
-                "the free copies rent-pull tolerance");
-        for (double target : FREE_PEOPLE) free(root, grown, popGrown, target, original);
+        Original original = null;
+        long popGrown = 0;
+        int struck = -1, tried = 0;
+        while (city.getMonth() <= FREE_FIXTURE_MONTHS + FREE_FIXTURE_SEARCH) {
+            long townPeople = city.getPopulationManager().getPopulation();
+            boolean growing = townPeople > city.getHistorySave().getPopulation().get(city.getHistorySave().months() - 13);
+            boolean ground = home != null && city.getLandManager().getAvailableSqFt() >= home.getLandSqFt();
+            if (!growing || !ground) {
+                int before = city.getMonth();
+                playTown(city, before + 1);
+                if (city.getMonth() == before) break;
+                continue;
+            }
+            int month = city.getMonth();
+            double free = city.getLandManager().getAvailableSqFt();
+            long places = city.getHouseholdCapacity();
+            quietly(() -> city.saveGame(10, "scalecheck grown"));
+            tried++;
+            // ...and its own next FREE_MONTHS, which the copies are read against (0.7.55).
+            Original o = new Original(city);
+            if (o.calm()) {
+                original = o;
+                popGrown = townPeople;
+                struck = month;
+                out.printf("      month %d, %,d people in %,d household places, %,.0f sq ft free%n", month, townPeople, places, free);
+                break;
+            }
+        }
+        assertTrue("fixture: the town has, within " + FREE_FIXTURE_SEARCH + " months of month " + FREE_FIXTURE_MONTHS + ", a month it is growing"
+                + " (more people than a year before) with ground free for a home, and its own rents price no migrant out in the " + FREE_MONTHS
+                + " months after (the affordability pull 1 in all; struck at month " + struck + ", " + tried + " tried)", original != null);
+        if (original != null) for (double target : FREE_PEOPLE) free(root, grown, popGrown, target, original);
 
         /* ============== 7. money at that size reads ============== */
         reads();
@@ -472,7 +544,7 @@ public class ScaleCheck {
         auditFloor();
 
         /* ============== 9. a copy tracks its city month by month ============== */
-        tracks(root, grown);
+        if (original != null) tracks(root, grown);   // FS2: section 9 reads the struck save
         historicalScale(root);
     }
 
@@ -481,7 +553,12 @@ public class ScaleCheck {
         out.println("\n--- 10. the 1900 city: unfitted plant scales; whole horse posts are bounded ---");
         Path historical = root.resolve("1900");
         GameFiles files = new GameFiles(historical.resolve("town"), historical.resolve("no-legacy"));
-        Game g = new Game(files, LongPlaytest.founding().withUnfitted(true));
+        Game g = lineOff(new Game(files, LongPlaytest.founding().withUnfitted(true)));
+        // FS2: on the literals, as section 6's town and its copies are (WN3). On the world's band a K-times copy buys K times the food from
+        // the same world and moves its price as the city does not - the world's depth is the world's, which no K scales - so the copies'
+        // price levels parted by 1.09e-3 by month 3 on main's classes, and by 2e-5 on the literals. R1e's dry run read 6.9e-2 on that band
+        // (a food-short town, the K = 1 copy's step a month before the K = 1,000 copy's).
+        g.playOnLiterals();
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {
@@ -574,7 +651,8 @@ public class ScaleCheck {
             GameFiles files = new GameFiles(root.resolve("bounded" + k), root.resolve("bounded-no-legacy" + k));
             scale(saved.saveFile(10), files.saveFile(10), k);
             Files.copy(saved.historyFile(10), files.historyFile(10));
-            Game g = cities[c] = new Game(files);
+            Game g = cities[c] = lineOff(new Game(files));
+            g.playOnLiterals();   // FS2: as its town does (historicalScale())
             quietly(() -> g.loadGameSave(10));
             assertTrue("the historical copy at K = " + k + " loads", g.getLoadFailure() == null);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
@@ -611,8 +689,8 @@ public class ScaleCheck {
                     small.getLabourMarket().getLadder() == WageLadder.Y1901 && big.getLabourMarket().getLadder() == WageLadder.Y1901);
             assertTrue("1900 month " + month + ": registers still equal their holders", Math.max(registersMiss(small), registersMiss(big)) <= REGISTER_WITHIN);
             double[] miss = new Figures(big).missAgainst(new Figures(small), TRACK_TIMES);
-            out.printf("   1900 month %d: largest horse-post miss %d / K; people %.2e, savings %.2e, GDP %.2e, prices %.2e%n",
-                    month, most, miss[0], miss[2], miss[3], miss[5]);
+            out.printf("   1900 month %d: largest horse-post miss %d / K; people %.2e, savings %.2e, GDP %.2e, prices %.2e; the food basket D$%.6f and D$%.6f a person-month (FS2)%n",
+                    month, most, miss[0], miss[2], miss[3], miss[5], small.getEconomyManager().getFoodLocalPrice(), big.getEconomyManager().getFoodLocalPrice());
             for (int f = 0; f < miss.length; f++) assertTrue("1900 month " + month + ": " + Figures.NAMES[f]
                     + " obeys the existing TRACK law", miss[f] <= Figures.WITHIN[f]);
             if (month < FREE_MONTHS) for (Game g : cities) quietly(() -> g.simulateMonths(1));
@@ -753,7 +831,7 @@ public class ScaleCheck {
         GameFiles files = new GameFiles(root.resolve("free" + k), root.resolve("free" + k + "-no-legacy"));
         scale(small.saveFile(10), files.saveFile(10), k);
         Files.copy(small.historyFile(10), files.historyFile(10));
-        Game g = new Game(files);
+        Game g = lineOff(new Game(files));
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
         g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
@@ -828,8 +906,10 @@ public class ScaleCheck {
     /**
      * Section 9 (FW9, 2026-10-25): a copy K = TRACK_TIMES times over plays its
      * city's months. The grown city's save (section 6's, in slot 10 of
-     * `grown`) is read twice through scale() and the same load: once at K = 1,
-     * which is the city but for the slot's name, and once at TRACK_TIMES. Both
+     * `grown`) is read twice through scale() and the same load: once at
+     * TRACK_CITY_TIMES, the city side (FS2; it was K = 1, the city but for the
+     * slot's name, whose whole units parted it from its copy by what the path
+     * grew), and once at TRACK_TIMES times that. Both
      * play FREE_MONTHS, and every month the copy's figures are read against K
      * times the city's (or the city's own, for a price level or a rate): the
      * people, the treasury's cash, the households' savings, the month's GDP,
@@ -912,22 +992,14 @@ public class ScaleCheck {
         out.printf("%n--- a copy %,d times over tracks its city month by month ---%n", TRACK_TIMES);
         GameFiles sites = emptySites(root, grown);
         if (sites == null) return;
-        long[] times = { 1, TRACK_TIMES };
+        // THE CITY SIDE (FS2): TRACK_CITY_TIMES copies of the grown city, read against TRACK_TIMES times that.
+        long[] times = { TRACK_CITY_TIMES, TRACK_CITY_TIMES * TRACK_TIMES };
+        out.printf("      the city side: %,d copies of the grown city, its copy %,d%n", times[0], times[1]);
         Figures[][] seen = new Figures[2][FREE_MONTHS];
         double[][] registers = new double[2][FREE_MONTHS + 1];
         for (int c = 0; c < 2; c++) {
-            GameFiles files = new GameFiles(root.resolve("track" + times[c]), root.resolve("track" + times[c] + "-no-legacy"));
-            scale(sites.saveFile(10), files.saveFile(10), times[c]);
-            Files.copy(sites.historyFile(10), files.historyFile(10));
-            Game g = new Game(files);
-            g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
-            g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
-            quietly(() -> g.loadGameSave(10));
+            Game g = trackCopy(root, sites, times[c], "track" + times[c], null);
             assertTrue("the copy at K = " + times[c] + " loads", g.getLoadFailure() == null);
-            // Every sector held in both copies (SK1, above): a planner's order is a whole building, which no K scales.
-            for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
-            // ...and the bank's branches (ST3): a branch is one building at any K, and the copy's closed 975 of 1,000 in month 1.
-            g.getBusinessInvestment().holdBranches();
             registers[c][0] = registersMiss(g);
             for (int i = 0; i < FREE_MONTHS; i++) {
                 quietly(() -> g.simulateMonths(1));
@@ -955,6 +1027,40 @@ public class ScaleCheck {
         assertTrue(String.format("...and the registers add up to their holders, the city's and the copy's, at the load and in all %d"
                 + " months (shares, of the issue; corporate bonds, the city's paper; worst %.1e of the register)", FREE_MONTHS, worstRegister),
                 worstRegister <= REGISTER_WITHIN);
+
+        // ...and the law reads the fault it is for (FS2): a copy whose treasury the scaler left at its city's size, as main's scaler left
+        // much of the money state before FW9, misses its cash beyond TRACK_CASH in its first month. (Not the bank's household deposits: the
+        // load rebuilds them from the households, so a copy with them left at the city's size missed by 9.6e-5, which is no fault.)
+        Game faulty = trackCopy(root, sites, times[1], "track-fault",
+                d -> d.addProperty("cash", d.get("cash").getAsDouble() / TRACK_TIMES));
+        quietly(() -> faulty.simulateMonths(1));
+        double faultMiss = new Figures(faulty).missAgainst(seen[0][0], TRACK_TIMES)[1];
+        assertTrue(String.format("the fault: a copy whose treasury the scaler left at its city's size misses its cash beyond %.3g in its first"
+                + " month (%.2e)", TRACK_CASH, faultMiss), faulty.getLoadFailure() == null && faultMiss > TRACK_CASH);
+    }
+
+    /**
+     * A copy section 9 reads (FW9; FS2 made it one method for the city side, its copy and the fault): the sites-empty save through
+     * scale() at k, the save then changed by fault where one is given, loaded on the literals with 1900's causes held off as its city
+     * is, and every sector and the bank's branches held (SK1, ST3: a planner's order and a branch are whole buildings, which no K scales;
+     * the copy's bank closed 975 of its 1,000 branches in month 1).
+     */
+    static Game trackCopy(Path root, GameFiles sites, long k, String name, java.util.function.Consumer<JsonObject> fault) throws Exception {
+        GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
+        scale(sites.saveFile(10), files.saveFile(10), k);
+        if (fault != null) {
+            JsonObject d = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(10))).getAsJsonObject();
+            fault.accept(d);
+            Files.writeString(files.saveFile(10), d.toString());
+        }
+        Files.copy(sites.historyFile(10), files.historyFile(10));
+        Game g = lineOff(new Game(files));
+        g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
+        g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
+        quietly(() -> g.loadGameSave(10));
+        for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+        g.getBusinessInvestment().holdBranches();
+        return g;
     }
 
     /**
@@ -967,7 +1073,7 @@ public class ScaleCheck {
         Files.createDirectories(files.saveFile(10).getParent());
         Files.copy(grown.saveFile(10), files.saveFile(10));
         Files.copy(grown.historyFile(10), files.historyFile(10));
-        Game g = new Game(files);
+        Game g = lineOff(new Game(files));
         g.playOnLiterals();   // WN3: as its city does (section 6's fixture)
         g.holdCausesOfDeathOff();   // R0b call 7: as its city does (section 6's fixture); the hold is not saved
         quietly(() -> g.loadGameSave(10));
@@ -980,11 +1086,9 @@ public class ScaleCheck {
         }
         int left = g.getBuildingManager().getStacksUnderConstruction().size();
         out.printf("      %d stacks on site at the load, %d after %d months with every sector held%n", onSite, left, months);
-        boolean sitesEmpty = Observation.reached("emptySites: fixture: ...and nothing is under construction when the copies are taken",
-                "fixture: ...and nothing is under construction when the copies are taken (within " + TRACK_SITE_MONTHS
-                    + " months)",
-                left == 0,
-                "section 9 empty-site scaling comparisons");
+        // FS2: the sites are emptied by this fixture's own months, every sector held, so a town that keeps one on site fails as a fixture (no Observation)
+        boolean sitesEmpty = left == 0;
+        assertTrue("fixture: ...and nothing is under construction when the copies are taken (within " + TRACK_SITE_MONTHS + " months)", sitesEmpty);
         quietly(() -> g.saveGame(10, "scalecheck grown, sites empty"));
         return sitesEmpty ? files : null;
     }
@@ -1354,9 +1458,8 @@ public class ScaleCheck {
             int plots = plans.plotsAvailableFor(t);
             if (plots >= 1 && (roomiest == null || plots > plans.plotsAvailableFor(roomiest))) roomiest = t;
         }
-        if (!Observation.reached("fixture: the free copy has ground for some building",
-                roomiest != null,
-                "orderSize overflow, million-building gap and capacity laws")) return;
+        // FS2: caused, so no Observation: the town is struck with ground free for a home, and the copy holds K times its ground
+        assertTrue("fixture: the free copy has ground for some building", roomiest != null);
         if (roomiest == null) return;
         int plots = plans.plotsAvailableFor(roomiest);
         out.printf("      %s: room for %,d%n", roomiest.getName(), plots);

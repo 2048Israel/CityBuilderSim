@@ -734,14 +734,15 @@ final class BankScreen {
                                 + "Trade tab is where that is priced.", m(bank.getForeignDeposits()), hot * 100), null);
             }));
         }
-        if (bank.knowsEquitySplit() && Math.abs(bank.equitySplitResidual()) > .005) {
+        // BI1: the model's verdict (MoneyAudit.tolerance of the book's size), not an absolute $5 that float dust passes on a big city's books.
+        if (!bank.equitySplitAddsUp()) {
             out.add(Kept.scope("split", () -> actionCard(Icons.ALERT, Palette.BAD, "Its two parts do not add up to its equity",
                     String.format("%s of its equity is neither paid in nor retained.", m(Math.abs(bank.equitySplitResidual()))),
                     String.format("%s of its equity is neither paid in nor retained. That should be impossible - worth "
                             + "reporting.", m(Math.abs(bank.equitySplitResidual()))), null)));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        if (Math.abs(off) > .005 || (bank.knowsYearAgo() && Math.abs(offThen) > .005)) {
+        if (!bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp()) {
             out.add(Kept.scope("residual", () -> actionCard(Icons.ALERT, Palette.BAD, "Its lines do not add up",
                     String.format("Not accounted for: %s now, %s a year ago.", mFull(off), mFull(offThen)),
                     "Something on its books is not on this page, or is on it twice. That should be impossible - worth "
@@ -2660,7 +2661,7 @@ final class BankScreen {
                     + "shown whole, what it owns less what it owes."));
         }
         double off = bank.sheetResidual(), offThen = bank.yearAgoResidual();
-        boolean unexplained = Math.abs(off) > .005 || (known && Math.abs(offThen) > .005);
+        boolean unexplained = !bank.sheetAddsUp() || !bank.yearAgoSheetAddsUp();   // BI1: the model's verdict, as the card's
         if (unexplained) {
             column.getChildren().add(bookLine("Not accounted for", off, offThen, known, Palette.BAD));
         }
@@ -4052,7 +4053,7 @@ final class BankScreen {
             steps.add(Step.of((String) c[0], a, a < 0 ? Palette.MONEY_DARK : Palette.MONEY));
         }
         double residual = mv.residual();
-        steps.add(Step.of("Not accounted for", residual, Math.abs(residual) > .005 ? Palette.BAD : Palette.TEXT_SPENT)
+        steps.add(Step.of("Not accounted for", residual, mv.addsUp() ? Palette.TEXT_SPENT : Palette.BAD)
                 .tip("Not accounted for\n" + mv(residual) + "\n\n" + MOVED_INFO));
         return steps;
     }
@@ -4067,7 +4068,7 @@ final class BankScreen {
         Bank.EquityMovement mv = bank.equityMovement();
         c.getChildren().add(Kept.scope("opened", () -> line("opened the month at " + m(mv.opening()) + " · closed it at " + m(mv.closing()))));
         c.getChildren().add(Kept.scope("fall", () -> waterfall(equitySteps(), v -> (v < 0 ? "−" : "") + money(Math.abs(v)), 0, 170)));
-        if (Math.abs(mv.residual()) > .005) {
+        if (!mv.addsUp()) {
             c.getChildren().add(Kept.scope("residual", () -> noteLine("Something moved its equity without telling it",
                     String.format("%s of the month's change in its equity is none of the causes above. That should be "
                             + "impossible - worth reporting.", m(Math.abs(mv.residual()))), 560)));
@@ -4221,7 +4222,7 @@ final class BankScreen {
             moved(column, "A reopened line's discount, re-struck", m.discountRestruck());
             moved(column, "Set aside when this older save was opened", -m.allowanceOpened());
             double residual = m.residual();
-            boolean off = Math.abs(residual) > .005;
+            boolean off = !m.addsUp();
             column.getChildren().add(statementLine("Not accounted for", signed(residual, false),
                     off ? Palette.BAD : Palette.TEXT_SPENT));
             column.getChildren().add(statementTotal("At the end of it", moneyFull(m.closing()),

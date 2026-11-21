@@ -35,10 +35,13 @@ import java.util.List;
  *      asks up to the most it can pay (the break price), and a short the lenders can no longer lend buys in the difference the same way, each
  *      counted; neither pays the break price where the market is under it.
  *   6. A SAVE IN THE MIDDLE OF A SHORT: the shorts, their lenders, their collateral and their fees round-trip a save and a load, and the month after
- *      is the month a city that never saved would have had.
+ *      is the month a city that never saved would have had. FS14: openShort()'s short, held standing (the world's own orders off) through the
+ *      months it waits for its fee and a dividend.
  *   7. HOW OFTEN: over a real run, the months a short opened, the months one was covered and the bubbles the quote stood against, counted - a
  *      mechanic that never fires proves nothing. LF1b: and the months the cells traded shares with the world, each month's audit lines for
- *      them read against the exchange's figures.
+ *      them read against the exchange's figures; SX2 (FS14): in the run's first month (TRADE_ABROAD_MONTH) a cell's sale to the world and
+ *      purchase from it are caused as section 9 causes them, so those lines are read on a month with both over nought. The 2,000 months'
+ *      audit, register and shorts-off identities stay played.
  *   8. THE FEE ON THE LENDERS' BOOKS (LF1): the households' fee is a pair of lines in the audit, income from the world and banked; the fund's is
  *      its own income counter and a row in its ledger; the fee is charged on the shares the lenders hold and no more; emigrants are not dropped
  *      while a short is open; a short at a company with no shares in issue takes what it sold with it; a short at a company worth nothing is
@@ -485,11 +488,18 @@ public class ShortSellingCheck {
         sectionEnd();
     }
 
+    /**
+     * The city with the owner line off (BO1-S): this harness's subject is the shorts, and its towns are young - under
+     * OwnerHousehold.OWNER_ADULT_SHARE a founding town of a few adults has an empty owner cell, so its companies would wait to
+     * list and no household would hold a share to lend. The line's own claims are OwnerCheck's.
+     */
+    static Game lineOff(Game g) { g.getHouseholdBalance().setOwnerLine(false); return g; }
+
     /** The playtest's town, as FundLedgerCheck builds it, `months` months old. */
     static Game town(String label, int months) {
         Path root;
         try { root = TempDirs.create(label); } catch (java.io.IOException e) { throw new IllegalStateException(e); }
-        Game g = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        Game g = lineOff(new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy"))));
         PrintStream real = System.out;
         System.setOut(quiet);
         try {
@@ -989,11 +999,17 @@ public class ShortSellingCheck {
         final int f = opened.firm;
         Exchange ex = live.getExchange();
         // Months until the short has been paid a dividend on and charged a fee, and still stands: the state a save has to carry.
+        // FS14: the world's own orders held off while it waits (Exchange.setShortSelling(false) stops postShorts() alone: the margin call,
+        // the recall, shorting more and the cover; the lending fee and the dividend on what is short are charged as ever), so the short the
+        // fixture opened is the one that stands. On HS2's path the world covered it in the month the fixture read (Construction, 16,116
+        // shares), and nothing stood to save. Switched on again before the save: the loaded city's switch is the default, on, as the live one's.
+        ex.setShortSelling(false);
         for (int m = 0; m < 8 && !(live.getEquity().getLifetimeShortPays(f) > 0 && ex.shortShares(f) > 0 && ex.lendingFeeThisMonth(f) > 0); m++) {
             PrintStream real = System.out;
             System.setOut(quiet);
             try { live.simulateMonths(1); } finally { System.setOut(real); }
         }
+        ex.setShortSelling(true);
         assertTrue("fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on",
                 ex.shortShares(f) > 0 && ex.lentByCells(f) > 0 && ex.lentByFund(f) > 0 && ex.lendingFeeToCells(f) > 0 && ex.lendingFeeToFund(f) > 0
                         && ex.shortCollateral(f) > 0 && live.getEquity().getLifetimeShortPays(f) > 0);
@@ -1009,7 +1025,7 @@ public class ShortSellingCheck {
         Game back;
         try {
             saved[0] = live.saveGame(10, "shortsellingcheck: a short open").ok;
-            back = new Game(live.getGameFiles());
+            back = lineOff(new Game(live.getGameFiles()));
             back.loadGameSave(10);
         } finally {
             System.setOut(real);
@@ -1043,6 +1059,46 @@ public class ShortSellingCheck {
 
     static final int RUN_START = 60, RUN_MONTHS = 1000;
 
+    /**
+     * SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the
+     * ordinary cell holding the most of the company the cells hold most of by value (the bank's own aside) sells the world half of it inside
+     * the spread, and buys half of that back at the same price. On LX1's path the run's city never bought a share from the world in 1,000
+     * months (63 months before it), so the audit's four lines were read against figures that were never more than nought on one side.
+     */
+    static final int TRADE_ABROAD_MONTH = RUN_START + 1;
+
+    /** SX2: the settle probe that makes section 7's caused trades with the world (TRADE_ABROAD_MONTH): [0] the shares sold, [1] bought, [2] the company. */
+    static java.util.function.Consumer<Boolean> tradeAbroad(Game city, double[] done) {
+        return after -> {
+            if (after || done[2] >= 0) return;
+            Equity reg = city.getEquity();
+            Exchange ex = city.getExchange();
+            HouseholdBalance hb = city.getHouseholdBalance();
+            int f = -1;
+            double most = 0;
+            for (int k = 0; k < Equity.COMPANIES.length; k++) {
+                double v = hb.sharesHeld(k) * ex.price(k);
+                if (k != Equity.BANK && reg.getShares(k) > 0 && v > most) { most = v; f = k; }
+            }
+            if (f < 0) return;
+            Household cell = null;
+            for (Household h : hb.cells()) {
+                if (h instanceof OwnerHousehold || h.households() <= 0) continue;
+                if (h.shares[f] > 0 && (cell == null || h.shares[f] * h.households() > cell.shares[f] * cell.households())) cell = h;
+            }
+            if (cell == null) return;
+            done[2] = f;
+            double bid = ex.bestBid(f), ask = ex.bestAsk(f);
+            double p = !Double.isNaN(bid) && !Double.isNaN(ask) ? (bid + ask) / 2
+                    : !Double.isNaN(bid) ? 1.05 * bid : !Double.isNaN(ask) ? .95 * ask : ex.price(f);
+            double q1 = .5 * cell.shares[f] * cell.households(), q2 = .5 * q1;
+            ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.BUY, p, q1);
+            done[0] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.SELL, p, q1));
+            ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.SELL, p, q2);
+            done[1] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.BUY, p, q2));
+        };
+    }
+
     /** What a run of the playtest's city counted. */
     static final class Run {
         Exchange ex;
@@ -1052,6 +1108,9 @@ public class ShortSellingCheck {
         // ...and the cells' share trades with the world (LF1b): the months each was made, what it came to, and the months a line was not its figure.
         int abroadSoldMonths, abroadBoughtMonths, abroadLinesBad;
         double abroadSold, abroadBought;
+        // ...and SX2's caused month (TRADE_ABROAD_MONTH): the shares the cell sold the world and bought back, and the company (-1 if none was traded).
+        final double[] causedAbroad = {0, 0, -1};
+        double causedSold, causedBought;
         String worstWhere = "";
         long seconds;
     }
@@ -1061,9 +1120,14 @@ public class ShortSellingCheck {
      * audited and every company's register checked: the holdings against the shares in issue plus what is short.
      */
     static Run play(boolean shorts, String label) {
+        return play(shorts, false, label);
+    }
+
+    /** ...and with SX2's trades with the world caused in TRADE_ABROAD_MONTH when `tradeAbroad`. */
+    static Run play(boolean shorts, boolean tradeAbroad, String label) {
         Path root;
         try { root = TempDirs.create(label); } catch (java.io.IOException e) { throw new IllegalStateException(e); }
-        Game g = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")), LongPlaytest.founding());
+        Game g = lineOff(new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")), LongPlaytest.founding()));
         g.getExchange().setShortSelling(shorts);
         Run r = new Run();
         long started = System.currentTimeMillis();
@@ -1076,8 +1140,15 @@ public class ShortSellingCheck {
             LongPlaytest.out = quiet;
             PrintStream real = System.out;
             System.setOut(quiet);
+            boolean caused = tradeAbroad && g.getMonth() + 1 == TRADE_ABROAD_MONTH;
+            if (caused) g.settleProbeForTest = tradeAbroad(g, r.causedAbroad);
             try {
                 LongPlaytest.run(g, 1);
+                if (caused) {
+                    g.settleProbeForTest = null;
+                    r.causedSold = r.ex.getHouseholdsSoldAbroad();
+                    r.causedBought = r.ex.getHouseholdsBoughtAbroad();
+                }
                 if (g.getMonth() % 12 == 0) {
                     LongPlaytest.ensureSchools(g);
                     for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
@@ -1350,8 +1421,14 @@ public class ShortSellingCheck {
 
     static void howOften() {
         section("7. how often, in a real run: " + RUN_MONTHS + " months of the playtest's city, every month audited and every register checked");
-        Run on = play(true, "shortsellingcheck-run");
+        Run on = play(true, true, "shortsellingcheck-run");
         out.printf("   %d months played in %d s (the first %d by the founding script)%n", on.months, on.seconds, RUN_START);
+        // SX2: the month the cells' trades with the world are caused in, as section 9 causes them, so the audit's four lines are read on a
+        // month with both of them over nought, whatever the played city does by itself.
+        int tradedIn = (int) on.causedAbroad[2];
+        assertTrue("fixture: in month " + TRADE_ABROAD_MONTH + " an ordinary cell sold the world " + (tradedIn < 0 ? "nothing" : Equity.COMPANIES[tradedIn])
+                + " and bought half of it back (SX2, as section 9 causes it)", tradedIn >= 0 && on.causedAbroad[0] > 0 && on.causedAbroad[1] > 0);
+        assertTrue("fixture: ...over the audit's cent each, so a line left out of that month's audit would show", on.causedSold > MoneyAudit.CENT && on.causedBought > MoneyAudit.CENT);
         out.printf("   company-months a short's ask was posted: %d; a short stood open: %d; most short at once: %.2f%% of the shares outstanding%n",
                 on.ex.getLifeShortAsks(), on.shortCompanyMonths, 100 * on.mostShort);
         out.printf("   shares sold short %,.0f for $%,.0f, covered %,.0f for $%,.0f; margin calls %d, recalls %d%n",

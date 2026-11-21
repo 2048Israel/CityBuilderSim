@@ -46,7 +46,8 @@ import java.util.Map;
  *
  * Every fixture CAUSES its condition: the cities are founded through newGame(Founding.withUnfitted(true)) as the player's door founds them,
  * a default twin on the same village beside each, the car town is CarCheck's (900 houses, 60 roads) with a control whose cap is lifted by
- * editing the packaged file's years, and the synthetic files are written here. Figures are asserted against the model's own constants and
+ * editing the packaged file's years and its households handed a car's price over their cushion before every month (FS17: the money for a
+ * car is the fixture's, not the played town's), and the synthetic files are written here. Figures are asserted against the model's own constants and
  * methods; a harness city lives in GameFiles.scratch(), never in a slot of the player's.
  */
 public class BasketYearCheck {
@@ -603,11 +604,20 @@ public class BasketYearCheck {
             step(g, 1);
             Consumption.YearPoint year = g.basketYear();
             shares &= year != null && hf.getLampShare() == year.lampShare() && hf.getCoalShare() == year.coalShare();
+            /*
+             * FS17: ONE QUANTITY, BY ONE PATH. The homes' ask is the model's own (lampOilLitres, coalTonnes, at the strike's homes) and is held
+             * to the law, the homes x the year's share x the constant; what HomeFuel struck is that ask as the market's draw delivered it; and
+             * what Retail's ledger sold the homes is the struck quantity. The tolerance, a part in a billion, is the draw's split of the ask
+             * between the shelf and the world (Markets.draw adds the two), not anything measured on a path.
+             */
             double homes = hf.getHomes();
-            double wantLitres = homes * hf.getLampShare() * HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH;
-            double wantTonnes = homes * hf.getCoalShare() * HomeFuel.COAL_TONNES_A_HOME_MONTH;
-            boolean l = homes > 0 && Math.abs(Forms1900Check.unitsSold(retail, Good.JET) - wantLitres) <= 1e-9 * wantLitres && Math.abs(hf.getLitres() - wantLitres) <= 1e-9 * wantLitres;
-            boolean t = Math.abs(Forms1900Check.unitsSold(retail, Good.THERMAL_COAL) - wantTonnes) <= 1e-9 * wantTonnes && Math.abs(hf.getTonnes() - wantTonnes) <= 1e-9 * wantTonnes;
+            double wantLitres = hf.lampOilLitres(homes), wantTonnes = hf.coalTonnes(homes);
+            boolean law = Math.abs(wantLitres - homes * hf.getLampShare() * HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH) <= 1e-9 * wantLitres
+                    && Math.abs(wantTonnes - homes * hf.getCoalShare() * HomeFuel.COAL_TONNES_A_HOME_MONTH) <= 1e-9 * wantTonnes;
+            boolean l = law && homes > 0 && Math.abs(hf.getLitres() - wantLitres) <= 1e-9 * wantLitres
+                    && Math.abs(Forms1900Check.unitsSold(retail, Good.JET) - hf.getLitres()) <= 1e-9 * hf.getLitres();
+            boolean t = law && Math.abs(hf.getTonnes() - wantTonnes) <= 1e-9 * wantTonnes
+                    && Math.abs(Forms1900Check.unitsSold(retail, Good.THERMAL_COAL) - hf.getTonnes()) <= 1e-9 * hf.getTonnes();
             litres &= l && wantLitres > 0;
             tonnes &= t && wantTonnes > 0;
             boolean c = Double.doubleToLongBits(g.getHouseholds().getHomeFuel()) == Double.doubleToLongBits(paid) && paid > 0;
@@ -625,7 +635,10 @@ public class BasketYearCheck {
 
     /* ============================ 7. no car in 1900 ============================ */
 
-    /** CarCheck's town (900 houses, 60 roads, shops, power, water, depots) founded as given, the consumption file replaced if one is given, then played. */
+    /**
+     * CarCheck's town (900 houses, 60 roads, shops, power, water, depots) founded as given, the consumption file replaced if one is given, then
+     * played, its households handed a car's price over their cushion before every month (affordable()).
+     */
     static Game carTown(String label, Founding founding, String consumption, int months, double[] ceilings) {
         Game g = new Game(GameFiles.scratch(label));
         quietly(() -> {
@@ -643,6 +656,7 @@ public class BasketYearCheck {
             g.buildStack(b.getTemplateByName("Construction Depot"), 4, true);
         });
         for (int i = 0; i < months; i++) {
+            affordable(g);
             step(g, 1);
             // The ceiling the car market ran under this month (Motoring.month()) and the cap the month's year puts on it, 1 where there is none.
             Consumption.YearPoint year = g.basketYear();
@@ -651,6 +665,24 @@ public class BasketYearCheck {
             if (year != null && g.getMotoring().getOwnershipCeiling() > year.carCeiling() * (1 + 1e-12) + 1e-12) ceilings[2]++;
         }
         return g;
+    }
+
+    /**
+     * FS17: THE MONEY FOR A CAR, CAUSED. Section 7 read whether the played towns' households could afford a car, and on BO1-S's path (the
+     * founders' dividends the owner families', 0.9.161) they hardly could: 0.0485 cars a household in the default town after 24 months and
+     * none in the 1900 town with the cap lifted, so the control that shows the cap is what holds the 1900 town back had nothing to show. The
+     * money is given now, as CarCheck's section gives it (FS7): before each month every household cell is handed what the car market's buyer
+     * weighs (HouseholdBalance.wantOf: savings over SHARE_CUSHION_MONTHS of take-home) plus two cars at the local price, and a discharge's
+     * lockout is lifted. Its debt is left: owing is no bar to buying a car (CAR_DEPOSIT). What binds the three towns then is the ceiling alone,
+     * the year's cap in the one and the transit ceiling in the other two, which is the section's law.
+     */
+    static void affordable(Game g) {
+        double car = g.getMarkets().get(Good.CARS).getLocalPrice();
+        for (Household c : g.getHouseholdBalance().cells()) {
+            if (c.isEmpty()) continue;
+            c.lockout = 0;
+            c.savings = Math.max(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * car);
+        }
     }
 
     static void sectionSeven() {

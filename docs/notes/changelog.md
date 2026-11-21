@@ -18,6 +18,265 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.174 — OE1, a first plant weighed at the rate it will run at — 2026-11-20, ready, see docs/queue/OE1-notes.md
+An order for a sector with nothing running weighed its first plant at the empty sector's rate, its staffing at 1:
+BankCheck 19's Lime Kiln at 0.97, which ran at 0.52-0.61, and AUTO2's Fabrication Shop at 0.81 (0.51-0.81).
+`Sector.plannedRate()` now weighs it at the rate the month will give it (`firstPlantRate()`): the city's fill over its
+own posts, the roads for its own traffic, its freight at Haulage's opening share. A running sector weighs its own rate,
+as before; every reader of the estimate takes it, and YoungBankCheck section 3 fails on the old one. The young town's
+spell under the bank's minimum, begun by a lone plant's write-off, is gone. A staffing hold weighs a first plant
+staffed (`Sector.staffed()`), so it still asks for the wage that would staff it. The household match no longer books
+its own rounding as households doubled up (`FamilyModel.packingRounding()`; HousingCheck), which had let one of
+DenominationCheck's twins' landlords sell and not the other's. BuildAdvice's field earnings stay on the mines' own
+rate (OE1-A). A car drawn is a car paid for: the take reads each household's want at the price the draw was
+sized at (`HouseholdBalance.takeCars()`), where a household on the whole-car edge had had a car drawn, booked to
+its seller and never placed (the ensemble's F1, AUTO2 seed 6 m655; CarCheck).
+
+### FS14 (untagged) — the Exchange and the bond desk cause their conditions — 2026-11-20, ready, see docs/queue/FS14-notes.md
+The sweep of the Exchange and the bond desk (FS1 study 6.13): FloatLink, Desk, Call, Holders, Bond, Equity, Exchange and ShortSelling (each
+...Check) now cause the premises they used to read off a played city. The households' savings, the bank's room, the tills, the dials and the
+due dates are set by hand between months; the waits go (FloatLink's 60 months for room, Call's 24 for the central bank, Desk's loop of rate
+rises, Bond's year of steps). SX2: ShortSelling 7's city sells the world shares and buys half back in month 61, caused as section 9 causes it,
+and the 2,000 months' audit, register and shorts-off identities stay played. Holders, Bond, Desk, FloatLink and Call drop 29 Observations and
+leave Observation.HARNESSES; Equity 9 and Exchange 10 count every holder and print their found counts. All twelve FS14 known-reds rows go
+green. Harness-only: the model and the trace do not move.
+
+### 0.9.173 — NG1, imported inputs the ground does not give are not bought — 2026-11-20, ready, see docs/queue/NG1-notes.md
+HL1's ensemble found a month (AUTO2 seed 12, m902) in which the works imported 2.6 times a month's inputs as their exports went. That month was GDP1's January stale price, closed in 0.9.97, and the seed no longer reaches it.
+The class still live was the ground: a works the ground limits ordered its inputs for its whole plant. An Iron Mine on a worked-out field bid a month's diesel after the dig had given it no ore. A surface coal mine's diesel,
+a leach plant's acid and a gold mill's acid and diesel went the same way, because an empty lift reads an order share of 1. What nothing made was imported and became nothing, and GDP fell by its value. Each building's
+inputs are now ordered for the share of its run its ground gives (Sector.groundShare). The share is exactly 1 wherever the ground holds the month, so the default playtest's eight trace files are byte-identical to main's.
+The inputs are not bought rather than held as stock: acid is a flow good nothing holds, and diesel kept by a worked-out mine would never be burned. Kept: a falling gold grade still mills its whole ore, the fleet's diesel and
+the consumables are standing bills, and inputs held over the month's end are counted in GDP's inventory term. GroundInputCheck proves the mends and what is kept.
+
+### FS17 (untagged) — the saves, the history and the previews cause their conditions — 2026-11-20, ready, see docs/queue/FS17-notes.md
+The sweep of the saves, the history and the previews (FS1 study 6.16): SaveFile, ReadPath, Reload, History, Gdp, NewGame, PolicyPreview,
+MoneyDates, Calendar and BasketYear (each ...Check) now cause the premises they used to read off a played city; SkipReport's one section is an
+identity and stays. The waits go (SaveFile's two of 240 months, its 120 for a moved rate, ReadPath's 60): the savers' rate, the poorest cell
+without means, the world's bid for the fund's shares, the pinned rate, the depots past the builders' month are set by the model's own calls.
+PolicyPreview gives the bank its profit, lays workers off past the vacancies and reads the floor on a hand-made ladder; its 19 Observations and
+SaveFile's 8 go, and both leave Observation.HARNESSES. BasketYear hands its car towns a car's price over their cushion. The 15 saved-equals-loaded
+identities stay played. All four FS17 known-reds rows go green. Harness-only: the model and the trace do not move.
+
+### FS10 (untagged) — the currency, the gold and the central bank cause their conditions — 2026-11-20, ready, see docs/queue/FS10-notes.md
+The sweep for the currency, the gold and the central bank (the FS1 study): ten harnesses now cause the premises they had read off played cities.
+GoldStandardCheck 9 asserts the dial at the cover the month's top holds still (HP1 item 1), and 7 holds its town's cover by gold bought by name.
+ExchangeRateCheck 8b's dated peg is held solvent by dollars bought by name, its shadow gap set at the eve of August 1914; 6 and 8 read the market's dials on a bare float.
+PassThroughCheck's shelf is traced to its floor, and a dear goods' D$ makes its input cost bind; the base gap is struck, not inherited.
+CentralBankCheck's towns are stood whole so their cells shop, 7 restores a year of prices, and 21's rule is shown half by half on bare objects.
+CurrencyRegimeCheck's six Observations go: pegs struck at their gaps, hot money and doubt placed, a year of prices restored; the seed searches are removed.
+ForeignCheck reads its trade in the months its cause stands; CurrencyCheck 4 and InterventionCheck 5 cause the defence's sale; InterestAbroadCheck 9 sets the hot stock.
+MonetaryCheck (MQ1) holds the D$ so a month's delay cannot move its rows, read over three calendar years with its premises hard; four harnesses leave Observation.HARNESSES.
+The twenty FS10 known reds are retired, none a model fault. The batch is harness-only: the model and the trace do not move.
+
+### 0.9.172 — GY1, the graph's GDP by the year, and debt to GDP — 2026-11-20, ready, see docs/queue/GY1-notes.md
+The graph's "GDP" line is now a rolling year of output ("GDP (yr)", nominal, the twelve months summed the way real GDP's
+year is, drawn from the end of the first year), so it reads on the same axis as the public debt; the month it used to
+draw is still there as "GDP (month)" under the real and per-capita lines. A new line, "Debt to GDP", is the public debt
+over that year of output as a per cent (205% is a debt of two years of output), the measure the debt limit reads,
+blank where there is no year of output behind the month. A pin, a preset or the header GDP tile's door that named GDP now
+draws the year. Both figures come from `YearBook` (`gdpYear`, `debtToGdp`) and are derived from the history already kept:
+no saved field, no save format change. `YearBookCheck`'s new section builds the history by hand and asserts the
+twelve-month sum, the first-year rule, and the ratio at chosen months with a year of nothing giving no figure; each
+fails with the getter swapped for the month. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
+### FS13 (untagged) — the fund, the treasury and the trading city cause their conditions — 2026-11-20, ready, see docs/queue/FS13-notes.md
+The sweep for the fund, the treasury and the trading city (the FS1 study, 6.12, with PK1's FundCheck half): seven harnesses now cause the premises they had read off played cities.
+TreasuryCheck's rollovers set the year's surplus by the tax and take the notes' due months from the pieces issued. The window is set by the share of exports on both sides of WINDOW_SHUT_SERVICE_SHARE, with no press to month 60.
+ForeignDebtCheck, RestructureCheck and BuybackCheck set the exports, the dial over the world and the auction's holders (the savers' rate, the bank's room, the sale's size). Their guard and borrowing loops are gone.
+CurveCheck sets the inflation and the expectation through their save arrays, and its one-ulp line states MoneyAudit.tolerance (row 114 retired).
+FundCheck and FundLedgerCheck build their bank at the founding and play a named 72 months, and are green at 60 and 84 too. The desk's room, the holders and the split unit are caused. Row 82 is retired: the town's sellers used up the desk's bid before the fund's ask.
+CurveCheck and FundCheck leave Observation.HARNESSES. Queued: RB3, the fund's limit ask at fair resting when a company trades under fair. The batch is harness-only: the model and the trace do not move.
+
+### FS16 (untagged) — schools, work and the households' books cause their conditions — 2026-11-20, ready, see docs/queue/FS16-notes.md
+The nine schools, work and household-books harnesses cause what they used to find by playing (the flaky-suite study's FS16
+rows), harness-only: no model class moves. EducationCheck's fourteen played sections set the licensed heads, posts and
+students directly and seed the courses (seeded, finishing); LabourCheck's staffing, rent, arrivals and doctor sections run
+on hand-fed people and markets priced by the labour market's own months, and LabourCheck leaves Observation. The ties
+and the staffing draw are seated by hand in a month, not waited 328 months for; the flatshares, the real deposit rate and
+the commute are struck on set books, rates and cars; the EI city is handed its adults, the college town its students;
+the 1900 arrivals are drawn by hand; the owners' listing is read at the month the founding causes it. LabourCheck's
+known red ("...and not the whole mix") goes green: a departures-dominated month, not a model fault. The nine run in 96 s
+where they took 267.
+
+### 0.9.171 — MC1, a crunch no longer leaves households without a home — 2026-11-20, ready, see docs/queue/MC1-notes.md
+While the bank's leverage ratio binds and it stands in its band, the mortgage desk has no capital room for a landlord's block, so it refuses the mortgage. The landlord's owners had been asked only for the down payment, which buys nothing once the loan is refused: on CU2's SHOCK seed 13, Real Estate built one block in 70 months while up to 174 households had no home. Now, while the desk would refuse the order's mortgage for the bank's capital and for nothing else (`BusinessDebtManager.mortgageShortOfCapital`, the door asked first on its own loan, recording nothing; never for a landlord banned or past its default point), `Game.consider()` asks the owners for all the till lacks on the order (`ownersAskOnMortgage`). The shares are sold households first and the world for the rest, as before. HN1's halving then finds an order the till covers outright. The bank's books and rules are untouched. `CreditCrunchCheck` plays the ensemble's seed 13, cuts the landlords' homes at m150 to the doubling valve's last 12 households, and holds the bank halfway up its leverage band for 120 months through its restore setters. With the mend the owners put in 13,431, homes go 497 to 1,522 and nobody is left with no home. Without it homes stand at 497 for a hundred months and 5.45 households are left with no home (m252). BF1's room to the leverage target, which leaves the band no insured share at all, is queued as MC2.
+
+### RN1-H-M (untagged) — the old-works watch counts the works sent on — 2026-11-20, ready, see docs/queue/RN1-H-M-notes.md
+Untagged: a harness and one map accessor, no model file. LongPlaytest's oldest-works watch named district (0,0)'s Industrial Bakery at m2400 on 2026-11-19's gates (RN1-H's city): the one box standing at m601 gone. No box had moved. The district's first bakery (m43) found no estate cell and its plan sent it on at its arrival; the second (m365) was the box drawn at m601; when the count fell 4 to 1 at m906-908, CL3's newest-first rule took m745, m744 and m365 and left m43, still sent on. The watch took the oldest of the district's own count to be drawn boxes. Now, of those oldest, the ones its plan had sent on are not its to stand (`CityMap.carriedOnLog`, read by the watch alone); the run and spill exclusions, the seed and the hard finding are as they were. MapCheck 26 causes the event on a one-district city: the law as it stood flags it, the law as it stands does not, and a drawn old box moved while the count holds is flagged by both. Main's playtest has not named the line since OP1's gate; the RN1-H-M known-reds row goes with this merge. The default playtest's trace is unmoved. And LongPlaytest.cleanUp, which harnesses call to delete their scratch cities, no longer throws when a file is renamed under its walk (the gate's EarthFoundingCheck: an autosave's .tmp, renamed by its writer); it walks again, up to 3 times.
+
+### 0.9.170 — CPB2, no feed bought for undemanded output that cannot cover it — 2026-11-20, ready, see docs/queue/CPB2-notes.md
+After CPB1's buffer gate, three paths still let a works buy imported feed for output that no one at home wanted and that the world paid less for than it cost. Sector now closes all three.
+The export spare: a refused buffer became spare, and the spare was priced on the joint bill split by sales value. Beside a rod mill, an Electrolytic Refinery therefore ordered anode
+for 1,684 t of cathode that shipped at 9, against 11.06 of anode a unit. While the month's feed is ordered, the spare must now cover its recipe too; feed already in hand still ships at
+the marginal cost. No world outlet: vans, trucks, rolling stock and luxuries have no export price, and a NaN price never refused the feed. A buffer the world will not buy is now worth
+nothing, so an undemanded van plant plans none where it planned 150 and bid 2,040 units of feed. Committed recovered copper: the order share is solved over each building's committed
+floor, so no anode is bought for cathode the scrap already covers. In the default playtest the spare call changes in months 3-25 and the trucks' buffer from month 1,139.
+Kept: demand, captive use, profitable runs, co-products, committed feed and sales from the shed. UndemandedFeedCheck proves both the mends and what is kept.
+
+### FS7 (untagged) — freight, ports and the island ground cause their conditions — 2026-11-20, ready, see docs/queue/FS7-notes.md
+The fifteen freight, port and island harnesses cause what they used to find by playing (the flaky-suite study's FS7 rows),
+harness-only: no model class moves. A terminal, a bridge or a demolition is waited for in the builders' own work, twice the
+points owed on site when the wait began (LandmassCheck.Wait), not 400, 600, 800 or 1,200 months measured once; the home fill
+is read in the instant it is ordered (FF1's red, LandmassCheck 12 and IslandRail 8); Slope 9 buys its steep ground; the
+railway's spurs are sized from the bulk the city offers, the sized railway's bill read off its quote's own step, the ports'
+month handed to Ports, the trucks' legs to Haulage, the vans' and cars' buyers given their money. HomeRailCheck leaves
+Observation (its run's railway counted, its identity asserted every month). Every FS7 known red goes green, CarCheck's five
+from HS2's households among them.
+
+### 0.9.169 — BI2, the Bank page's equity-movement alert relative to the movement — 2026-11-20, ready, see docs/queue/BI2-notes.md
+The Bank page's third absolute $5 (BI1 took it off the two cards): "Something moved its equity without telling it", the waterfall's red "Not accounted for" step and the Statement page's line and alert tested the month's equity-movement residual against `.005`, so float dust lit them on a city of 1e13 and more (a double's step is .002 to .008 there, and the residual is a signed sum of seventeen figures), and the same $5 let a small bank's miss of a few dollars by. The verdict is now the model's, `Bank.EquityMovement.addsUp()`: `MoneyAudit.tolerance` of the movement's `scale()` (a cent, or a part in a trillion of the figures' size, never under 64 steps of a double there), BI1's rule with its finite guard, so a residual that is infinite or not a number shows. The screen reads it at its three sites and recomputes nothing; the figures it prints are unchanged. BankCheck causes it at both sizes with hand-built movements (a small one out by twice its bound shows; 4.5e13 with float dust only does not; the same truly out, and out by $1 billion, shows; an infinite and a missing residual show) and holds the played bank's 72 months to never showing it. The default playtest's trace is byte for byte main's, so no ensemble. A cent now bounds a small bank (about $0.26).
+
+### FS15 (untagged) — the works and the services' town cause their conditions — 2026-11-20, ready, see docs/queue/FS15-notes.md
+The sweep for the works and the services' town (the FS1 study, 6.14): five harnesses now cause the premises they had read off played towns.
+ChildcareCheck's sections 2 and 4 stand on a founding built with no months, and its weighing asks the advice itself. The old copy predated HW1's fixed point (row 82).
+WorksFinanceCheck's sections stand on foundings: two months struck, then their people, trend and year of GDP set by hand.
+EssentialWorksCheck now sets five premises. The highway forecast's traffic is scaled between its two edges, found by bisection; the old calibration moved nothing in a town with modes.
+It also sets the streets' share, the spare care (people scaled, workforce held) and the staff-short plant's workforce.
+BusinessServicesCheck holds the sector whose two centres it places. AuctionCheck hands the households their spare and stands depots until the builders are not short.
+AuctionCheck's Observations are hard fixtures now, and it leaves Observation.HARNESSES. Section 11's 1,200 months stay played.
+The nine FS15 known reds are retired, none a model fault. The batch is harness-only: the model and the trace do not move.
+
+### HL1-M — the railway the map draws is the railway the city holds — 2026-11-20, ready, see docs/queue/HL1-M-notes.md
+Untagged: the map's runs and a harness, no model file. MapCheck 1's hard assertion called a city with one Rail Depot and no Rail Spur wrong (HL1's 120-month town at m121: 83 railway plots drawn, no model track, `trackSurplus()` 0). The map was right and the law was short a term: `CityRuns.layRail()` lays the main line to the city's edge for any city with a station whatever track the model has (FX5, "there is a railwawy depot but no rails"), so the railway drawn is the model's track less what the runs could not lay plus that line, the station's own. `CityRuns.stationLine(track)` names it (the mirror of `trackSurplus()`, derived, nothing saved) and `MapCheck.Drawn` counts it as the station's, exactly and only where a station stands: the painter draws every plot the runs lay, `rail + trackSurplus == track + stationLine`, and a line past the track needs a yard laid; no tolerance, no observation. MapCheck's new section 25 causes the case (one district owned whole, one Rail Depot: 132 plots, no siding, branch or quay spur; one Rail Spur: the track is the line's first 72 plots; 4 spurs: the surplus 156 and no station's line; the depot gone: the idle yard holds the line, then both go) and finds `Drawn.drawn()` counting a Rail Depot's yard once a tile it spans (3 for one), as the painter's `bpart` and the raster already do not. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
+### 0.9.168 — BI1, the Bank page's integrity cards relative to the book — 2026-11-20, ready, see docs/queue/BI1-notes.md
+The Bank page's two red cards, "Its lines do not add up" and "Its two parts do not add up to its equity", and the Balance sheet page's "Not accounted for" line tested the books' residual against an absolute $5, so float dust lit them on a big city: a double's own step is .002 to .008 at 1e13, and KeptCheck's city of 4,820 months holds books of 1e13 and more. The test is the suite's rule for comparing money now, `MoneyAudit.tolerance` (a cent, or a part in a trillion of the figures' size, never under 64 steps of a double there), and it lives in `Bank` behind public getters (`sheetAddsUp`, `yearAgoSheetAddsUp`, `equitySplitAddsUp`) that the screen reads and recomputes nothing. On a small bank the floor is a cent ($0.26) where it was $5, so a few dollars out of a book under $260 billion now shows. `BankCheck`'s new section builds a small bank $6 out (the cards show), a book of 1e13 and more with float dust only (they do not), the same book truly out (they do) and a $1 billion line left off a 5.8e13 sheet (they do: a part in ten million of it would not); with the old absolute test back, eight of its assertions fail. The default playtest's trace is main's, byte for byte (eight files, 2,405 months).
+
+### GB3 — ensembles run on the gate box first, and BW2 — 2026-11-20, ready, see docs/queue/GB3-notes.md
+A builder's 80-run ensemble (`tools/ensemble/ensemble.sh <label>`) runs on `gatebox` first, with the laptop as the overflow
+(Jerus, 2026-11-20, "Gatebox first"). It hands its runs to `tools/gate-box.sh --ensemble`, GB1's road: the box plays the
+branch's pushed commit eight runs at once (BO1-S's 80 in 17.5 min, against 116 on the laptop), and the runs come home to
+`target/ensemble/<label>/` to be scored here as before. Gates and the nightly come first: an ensemble waits for them and
+holds `~/cbs/box.lock` whole while it plays; when one comes, the runs started finish (277 s at the longest), the rest
+give way, and it resumes after. It runs on the laptop and says why when two heavy jobs already run or wait on the box,
+when the box is down (`jerus` mailed), or when it names its own data files. Measured first: the box's scores equal the
+laptop's in 47 of 50 rows, the other three one ZERO_SLACK seed's minimums, within the ensemble's noise. With it, BW2: a
+gate says "published" only when origin's main holds the batch's tip, and never on a dry run (HS2's dry run beside
+FB13's ship was told "HS2 shipped"). Scripts and docs only.
+
+### GB4 — the gate box's measurements on record — 2026-11-20, ready, see docs/queue/GB4-notes.md
+`docs/gatebox.md` holds what the gate box is and what its first night measured (Jerus, 2026-11-20: "put it on github
+so that if other sessions ask its there"). It covers the machine, its 7-hour soak (every test passed, 83.8 °C at
+most), one job alone (3% from best core to worst, +30% beside its own core's other thread) and many at once. 16 jobs
+at once run about 40% slower each, yet finish about 30% sooner than two rounds of 8. A gate someone waits on runs at
+most 8 at once, one per core; a pile of independent runs fills all 16 threads. The contract's gate box bullet points
+to it. Docs only.
+
+### 0.9.167 — HS2, two adult stages — 2026-11-20, ready, see docs/queue/HS2-notes.md
+The adults are two stages: the young, 18-34, who move up at 1/204 a month, and the established, 35-69, who retire at
+1/420 (at 70, as before). The young form seven of the eleven household shapes and carry half the babies, a quarter of
+the children and no teens. The books keep the young in 42 working cells beside the established's 66, the pool's group
+is (tier, stage), and the young who turn 35 carry their money with them, HL1's identity closing every month. A theft
+no household could take home is no longer taken. Saves are format 58 (57 no longer loads). The 80 pass every hard
+criterion but end smaller, the final population 0.748 of BO1-S's in AUTO2 and 0.745 in ZERO_SLACK, so both T2 lines
+(soft) now FAIL. Why: a young city's adults are mostly young and the young do not retire, so it keeps fewer seniors
+(9% of the people against 11%) and more adults want the same jobs (unemployment 9.3% against 6.7% in m720-1440, where
+the size is lost). The retired are richer (0.74 of the workers' net worth against 0.56). Twice the cells need twice
+the households before each holds half of one and shops: the 1900 village keeps 13% of its households in such cells at
+m12 (main 9%), 3% at m60 (2%), and is no smaller (544 people at m120 against 504).
+
+### EDU1 — the poverty trap's gap in EducationCheck — 2026-11-20, ready, no tag (harness), see docs/queue/EDU1-notes.md
+EducationCheck's "a poor city at x3 enrols fewer than at x1: the trap is back" was red on main from CU2 (0.9.130), seen only at R6b's pick, the harness being nightly.
+Bisected on the kept gate runs and probes: green at SQ1's and DQ1's merges (x1 1,673, x3 1,438), red at CU2's (1,652 / 1,632). The model did not move: at x3 the
+willing share still falls from .72 to .35 and the month's intake to about half of x1's. The chained world prices make the fixture city a sixth larger at five years
+(23,011 people at x3 against 19,779), so x3's half-rate intake filled the one university that x1 and x0 already filled. Section 15's three cities now build three
+universities, as the rest of the harness does, stepped by the month, with a fixture line that none filled at x1 or x3 (at most .72 and .32 of the staffed seats).
+The trap line is unchanged: 3,307 at x1, 1,543 at x3, 3,867 at x0. It goes red with one university, where the fixture line names why, and with the fee kept out of
+affordability. EducationCheck's known red is retired.
+
+### 0.9.166 — R2e-PE4, the Cement Plant calibrated rotary-first — 2026-11-20, ready, see docs/queue/R2e-PE4-notes.md
+The Cement Plant's PE4 (Edison's long kiln, 1902) is defined against its rotary kiln now, as R2e and R1d recommended: a
+plant on the rotary kiln without PE4 burns the study's 30% of its cement in coal (7,500 t a month, was 6,160), the long
+kiln saves 394 t of it (to E2's exact 7.0/3.3 wet form, 7,106 t) and E2's preheater the rest, to today's 3,350 t. Every
+kiln step saves on the one before in either learning order, so a 1900 plant fits its long kiln from June 1902 and pays
+PE4's royalty on the saving, where the refit was a loss before and was refused. Today's figures, the Large Cement Plant
+and the Lime Kiln do not move; the shaft kilns keep R1c's 1,340 t over the rotary (8,840 t before PE4, was 7,500).
+PostwarRecipeCheck's kiln controls follow the new calibration, each red on the old one (15 of 228), and a new section
+fits a standing plant's long kiln through the crews' months and reads its royalty. The default playtest's trace is
+main's, byte for byte (eight files, 2,405 months).
+
+### FS2 (untagged) — the twins and the scale cause their conditions — 2026-11-20, ready, see docs/queue/FS2-notes.md
+ScaleCheck, PriceLevelCheck and DenominationCheck cause their conditions; harness-only, the model and the trace unmoved. All fifteen
+FS2 rows of known-reds.txt go green. PriceLevelCheck runs three nudges a level and compares each twin through the month before any two
+cities of one level part (a parting across the levels alone fails); its history is cut by what each list held, the town's reload is
+read by a rerun to that month, and the lanes are given (twice and half the floor), not found. DenominationCheck's card gives its
+partner twice the floor. ScaleCheck strikes its copy at the first month from 225 that has its premises (none in 60 fails as a
+fixture), reads section 9 at ten copies a side (the K = 1 city's whole units fall with them: savings 1.12e-2 to 9.05e-4) with a
+treasury left unscaled shown caught, and plays the 1900 town on the literals (the world's band is no K's: prices 1.09e-3 to 2e-5).
+
+### SB1 — a template has one stack, the premise closed — 2026-11-20, ready, see docs/queue/SB1-notes.md
+SB1 queued `BuildingManager.retire()` to scrap from every stack of a template, not only the first, after HS1's OutsideCheck fixture read its early return as a fault. It is not one: `addStack` is the only place a stack is made, and it merges an order into the stack of the template's name, so a second order, a building wave, an order on site and every load add to the one stack, and a save keys a stack by its id. No city has a template with two stacks, `retire()`'s return is exact, and the model and its default trace are unchanged. `BuildingStackCheck` section 10 is the finding and its tripwire: every template of the catalogue ordered three ways stands in one stack; a played city's stack count read at the end of each of 24 months, saved and loaded, never has two of a template; and the closing path (`Game.demolish`, the next month's close) and the shedding path (`Game.retire`) take the count asked, up to what stands, leave the emptied stack in place and book the count, the ground, the posts, the log line and the salvage at what was scrapped. Run with `addStack` not merging and `retire` returning the count asked, 18 lines go red. The day a second stack of one template can stand, it goes red there, and `retire()` is the first thing to mend.
+
+### 0.9.165 — FB14, gold: GD3's review and the start-on-gold box — 2026-11-20, ready, see docs/queue/FB14-notes.md
+The founding screen has a "Start on gold" box under the money: the city opens on Gold, Defend the gold its bank's aim, with
+the law's 40% of its treasury in gold and never more than the vault, so every preset's whole vault (Standard's covers 25%, and
+the box's line says so; a deeper custom vault keeps the rest in dollars). Selling gold now shrinks M0: the next month's top
+retires what the mint paid out, from the reserves, and the audit says it twice; until now the bank's equity paid it and the
+cover drained faster than a real gold standard's. Gold's cover test retires only what the reserves can, and the cover, the free
+gold and the pace read M0 after the last sale's retirement. A gold break reads "came off gold", not "the peg broke", and Gold
+has a thin-cover flag. Known, and opened by the box: a city founded on gold the default way can take M0 under zero from about
+month 161 (GM1). Saves: no format bump; older saves read nothing retired for gold and every break a peg's. The playtest does not
+move: its city is on Lean.
+
+### 0.9.164 — SQ1b, a month's material draw past 2^31 and buildStack's harness — 2026-11-20, ready, see docs/queue/SQ1b-notes.md
+`Game.drawMaterials` rounded a month's draw of material into an int, so a draw past 2^31 units wrapped (3 x 2^31 became
+a negative count): the whole draw went unbought and unbooked. The draw is a long end to end now: the yard
+(`BuildingManager.takeFromYard`), the yard's delivery to a new order's sites, the run invoice's reduction of the yard,
+the quote's yard, and the month's tally `materialsConsumed`, which is saved (the yard's stock and the tally are longs
+in `DataSave`; an old save's int reads into one, no format bump). `BuildingStackCheck` sections 7 and 8 order 3.2e8
+Houses through `Game.buildStack` on a copy whose stack stands just under the ceiling and read back its quote, its
+ground, the cash it charged, the receipt, the yard's share and the run's invoice, then draw 6.4e9 units twice (the sites'
+and a repair's, yard first); each old int put back turns its own assertions red. The default playtest's trace is main's,
+byte for byte (eight files, 2,405 months).
+
+### 0.9.163 — FB13, the island's words, the Government screen's coupons and the build card's licence line — 2026-11-20, ready, see docs/queue/FB13-notes.md
+Three screens that kept words from before the model changed under them now say what it says. Where AL1's rule would link an unlinked island by a bridge, the Land tab's "linked" cell and tooltip, the map's chip (a third line), the island's notice and its door ("Build a bridge there ›", "See the bridge ›" while one is built) and the not-enough-land page name the bridge and its crossing first and the port after it, and the Build tab's Overview gains AN ISLAND TO LINK, a card for the link the rule would order (the island and its ground, the bridge or the two terminals, the quote's price and wait, a door to the building's card with the island chosen); where the rule links by port, or cannot, every word is the old one. The screens read the rule through its own fresh memory of a refusal and a memory of their own keyed by ground, so they say what it will order and an open screen never moves when it surveys. The Government screen's "...of which paid abroad" row says "in D$, at the month's rates · paper held now in US dollars, euros and yen", not "in dollars". The build card gains the licence line of research-design mockup 5, drawn from the patents the planners' licence is made of (the building's, its recipe's, a fitted piece's; LicenceFees.rentOnNew()): a quarter of what it adds goes abroad until the month the patent ends, or on N patents with the first and last ending, with the monthly fee, or none (found here, found since, not patented, ended). The default trace is byte for byte main's. FB13Check holds all of it.
+
+### GB2 — the nightly runs on the gate box — 2026-11-20, ready, see docs/queue/GB2-notes.md
+The nightly (`tools/nightly.sh`: the 4,000-month playtest, the nightly tier and the hard timing) runs on `gatebox`,
+the quiet box that judges speed best (Jerus, 2026-11-20: "the nightly timing run needs to also move to the gatebox").
+It hands its night to `tools/gate-box.sh --nightly`, GB1's way to the box: this checkout's commit of `tools/` runs
+there, and its red mail comes home through GB1's relay. The box is held whole: a gate holds `~/cbs/box.lock` shared
+and the night exclusive, so whichever comes first runs and the other waits. A second night is refused. The verdict,
+log, tier and observation records come home, where `day.sh` reads them, and the timing figures stay per machine. The
+box's first night is its baseline. The box, on UTC, runs a night in the caller's time zone, so it is dated as `day.sh`
+asks. When no box answers, `jerus` is mailed and the night runs on the laptop. It starts by itself, a laptop task at
+02:30 on `day.sh`'s `nightly due`, now only while the last night ran on another `VERSION` (Jerus, 2026-11-20: "it
+should run every night IF the version number has changed"). GB1's relay passes the box's paths to MemWatch unconverted
+(Git Bash had made `/home/jerus/...` `C:/Program Files/Git/home/jerus/...`). Scripts and docs only.
+
+### PZ1 — PrizeCheck 12: one lab a field a month, caused again — 2026-11-20, ready, see docs/queue/PZ1-notes.md
+PrizeCheck section 12's medical village, which must want two labs and order one, ordered none in its month since
+BO1-S: with the owner line on the founders' shares and dividends are the owner cell's, which takes no offering, so the
+trading households put up $962,726 of the $3.3M the lab needed and the order held, as the model's "owners first, never
+a loan" says. The model never orders two (one order a field a month); the fixture no longer caused a purse that could
+pay. The village now gets the liquidity buffer the section's other villages already had, for each lab it wants: one
+the first month, the second the next. Harness only.
+
+### 0.9.162 — BO1-S, the owner line switched on — 2026-11-20, ready, see docs/queue/BO1-S-notes.md
+The owner families are on in every city: one two-adult household for each listed company, holding
+its founders' shares alone, living on its dividends and selling a twentieth of each stake a year;
+everyone else buys at the offerings and on the exchange. They take no job, and in a small town
+they are fewer: never more than one adult in twenty, so a town under 20 adults forms no family
+(under one adult is still kept for it, off work) and its companies list once it has grown to
+their families. The People screen shows them outside the families: a piece of the mosaic, a
+column of the outside table, a row below the rule on Household money. A theft no offender could
+be handed is no longer taken (it unbalanced a tiny town's books). Saves: no format bump; an older
+save's companies keep their founders' shares with the households; the year book takes the owners off
+its labour force, as the model does (a new history series, the owners' adults).
+Ensemble (docs/ensemble/0.9.162.md): M1 and F1 pass in every policy; AUTO2 ends at 2.44 million
+people (OP1 2.85); the playtest city with the line on is a fifth smaller at month 121.
+
+### GB1 — the gate runs on the gate box — 2026-11-20, ready, see docs/queue/GB1-notes.md
+The gate and its dry runs run on `gatebox`, the quiet Ryzen box beside the laptop (Jerus, 2026-11-20). `tools/gate.sh`
+hands its whole call to the new `tools/gate-box.sh`, which runs this checkout's commit of `tools/` there over SSH, its
+runs in `~/cbs/runs`, started headless exactly as before. Its output comes back as written and its bus calls are posted
+here, so MemWatch's gate and batch state read as before, with `machine=gatebox`. The run's files, but not its clone, are
+copied home at the end. A dropped connection stops the gate there, as its caller's exit does. When no box answers,
+`jerus` is mailed and the gate runs on the laptop ("notify me then run on laptop"). The box pushes with its own write
+deploy key. The heavy slot is per machine. Scripts and docs only.
+
 ### 0.9.161 — OP1, every policy open from the first month — 2026-11-19, ready, see docs/queue/OP1-notes.md
 Every Policy lever is open from a city's founding, in every city. The profit, wage and sales taxes
 open at 15%; the pension, its contribution, EI, student aid and the health premium open at zero. The

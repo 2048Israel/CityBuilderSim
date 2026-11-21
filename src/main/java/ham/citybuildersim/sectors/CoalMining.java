@@ -259,6 +259,32 @@ public final class CoalMining extends ExtractionSector {
     }
 
     /**
+     * The share of a mine's ask its type's ground holds this month (Sector.groundShare(), NG1): its kind's dig (dug()) over its
+     * ask at the sector's rate - exactly 1 where the seam holds the whole ask, as dug() then returns the ask itself, and 0 once its
+     * type is out - so its diesel is ordered for the coal the lift makes of it, and none for a worked-out mine. ExtractionSector's
+     * for a building that digs no coal.
+     */
+    @Override
+    protected double groundShare(BuildingsTemplate t) {
+        if (!(t.makes(Good.THERMAL_COAL) > 0)) return super.groundShare(t);
+        BuildingsTemplate.Site site = t.site();
+        boolean on = site != null && site.resource() == Resource.COAL;
+        Deposit.FieldType type = on ? site.type() : null;
+        double dig = on ? site.dig() : 1;
+        boolean raw = digsRaw(t);
+        List<Kind> kinds = kinds();
+        double[] dug = dug(kinds);
+        double rate = getOperatingRate();
+        for (int i = 0; i < dug.length; i++) {
+            Kind k = kinds.get(i);
+            if (k.type != type || k.dig != dig || k.raw != raw) continue;
+            double ask = k.capacity * rate;
+            return ask > 0 ? dug[i] / ask : 1;
+        }
+        return 1;
+    }
+
+    /**
      * The month's coal at the sector's rate, as far as the ground holds it
      * (pure): each kind's dig (dug()) through the flow, the plants washing
      * their wash at the same rate. What the market is priced on and the
@@ -343,7 +369,7 @@ public final class CoalMining extends ExtractionSector {
         BuildingsTemplate t = u == null ? null : u.template();
         if (t == null || plans == null || !key().equals(t.getSector())) return super.estimatedMonthlyProfit(u, plans);
         Map<Good, Double> made = madeBy(u), gains = new EnumMap<>(Good.class);
-        double rate = BusinessInvestment.operatingRateOf(getOperatingRate());
+        double rate = plannedRate(u);
         double lost = 0;
         for (Map.Entry<Good, Double> e : made.entrySet()) {
             if (e.getValue() > 0) gains.put(e.getKey(), e.getValue());

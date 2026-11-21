@@ -184,7 +184,7 @@ public final class FitoutCheck {
 
     /* ---------------- the 1900 farm town ---------------- */
 
-    /** A 1900 town where every discovery but the autonomy kit's is found, past the combine's date, with a builders' depot, its yard full (no material is bought, so no escalation). */
+    /** A 1900 town where every discovery but the autonomy kit's is found, past the combine's date, with two builders' depots, their yard full (no material is bought, so no escalation). */
     static final class Farms {
         Game game;
         BuildingsTemplate farm;
@@ -197,7 +197,9 @@ public final class FitoutCheck {
         f.game = HistoricalLicenceCheck.town(label, true);
         allExcept(f.game, KIT_ENTRY);
         at(f.game, ResearchCatalog.knownFrom("PE17") + 1);
-        HistoricalLicenceCheck.stand(f.game, "Construction Depot", 1);
+        // Two depots (BO1-S): one left the builders 173 points a month against 174 of repairs with the owners off the
+        // labour force, so nothing for the sites and every wait endless; on main it left them a few, a wait of 61.67 months.
+        HistoricalLicenceCheck.stand(f.game, "Construction Depot", 2);
         f.farm = f.game.getBuildingManager().getTemplateByName("Grain Farm");
         f.stack = f.game.getBuildingManager().getStack(f.farm);
         Game g = f.game;

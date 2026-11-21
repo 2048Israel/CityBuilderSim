@@ -1,6 +1,6 @@
-# Offending.java - 169 lines · 5 methods · 0 constants · model
+# Offending.java - 182 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/Offending.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Offending.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Who is at risk of offending, sorted by reason, and the thefts handed to
 > them.
@@ -52,10 +52,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 124 | **type** `public final class Offending` | Who is at risk of offending, sorted by reason, and the thefts handed to them. |
+| 46 | 137 | **type** `public final class Offending` | Who is at risk of offending, sorted by reason, and the thefts handed to them. |
 | 54 | 46 | `Crime.Causes causes(Game game, double coverage, double[] cellWeight)` | Was Game.crimeCauses(); the body is that one, through Game's getters. |
 | 102 | 10 | `private static void sortHoused(Crime.Causes into, double adults, double noDoor, double shortShare, double crowded)` | A cell's adults with a door or without: no home, then short of money, then crowded, then no reason. |
 | 114 | 4 | `private static double shortOfMoney(Household c)` | How far one of a cell's households is from a basket it can afford, 0-1: last month's plan against subsistence. |
-| 129 | 29 | `void steal(Game game, double[] offenderWeight)` | THE THEFTS: taken half from the households by what they have saved and half from the businesses by what is in their tills, and handed to the offenders' households by how much of the crime is theirs. |
-| 160 | 9 | `public double unhousedShareOfCity(Game game)` | The share of the city with no home: the unhoused, and the orphans. |
+| 140 | 31 | `void steal(Game game, double[] offenderWeight)` | THE THEFTS: taken half from the households by what they have saved and half from the businesses by what is in their tills, and handed to the offenders' households by how much of the crime is theirs. |
+| 173 | 9 | `public double unhousedShareOfCity(Game game)` | The share of the city with no home: the unhoused, and the orphans. |
 

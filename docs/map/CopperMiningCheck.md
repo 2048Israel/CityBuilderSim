@@ -1,6 +1,6 @@
 # CopperMiningCheck.java - 525 lines · 13 methods · 21 constants · harnesses
 
-`ham/citybuildersim/CopperMiningCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperMiningCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.md -
@@ -62,7 +62,7 @@
 
 **Uses:** [Good](Good.md) (62), [CopperMining](CopperMining.md) (31), [World](World.md) (14), [Deposit](Deposit.md) (13), [Sectors](Sectors.md) (11), [BuildingManager](BuildingManager.md) (10), [Game](Game.md) (8), [Traffic](Traffic.md) (7), [Ports](Ports.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (5), [Equity](Equity.md) (5), [CityLand](CityLand.md) (5), [LandCheck](LandCheck.md) (5), [MoneyAudit](MoneyAudit.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1)... and 5 more
 
-**Used by (3):** [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
+**Used by (4):** [CopperRefiningCheck](CopperRefiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
 ## Sections
 

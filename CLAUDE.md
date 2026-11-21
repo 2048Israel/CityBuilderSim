@@ -22,7 +22,7 @@ every call after it.
 
 - **Checks:** `./batch-check.sh [harness names]` - compile, suite, maps,
   Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
-  runs the timing harnesses alone and hard, judged nightly by `tools/nightly.sh`, `--pick` runs the harnesses that
+  runs the timing harnesses alone and hard, judged nightly on the gate box by `tools/nightly.sh`, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
   are exact lines in `docs/notes/gate.txt` or harness-scoped parts in
   `docs/notes/known-reds.txt` (GR2, the approvals left in temp scripts). Logs go to
@@ -36,7 +36,7 @@ every call after it.
   poll it, and never rerun a red harness in full to find its assertion.
 - **Ship:** `sh tools/gate.sh <id>` is the orchestrator's merge, checks, tag
   and push: `ship.sh` in a fresh clone with its logs kept (`--dry-run` gates
-  alone). It writes the batch's records and sets the version, both from the
+  alone), on the gate box (`tools/gate-box.sh`; here when it is down). It writes the batch's records and sets the version, both from the
   branch's ship file, `docs/queue/<id>-ship.md`.
 - **Source:** `Where Name -print` prints one method. Never open `Game.java`
   or a large screen whole.

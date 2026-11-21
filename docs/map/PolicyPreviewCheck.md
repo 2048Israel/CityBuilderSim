@@ -1,6 +1,6 @@
-# PolicyPreviewCheck.java - 1,263 lines · 23 methods · 3 constants · harnesses
+# PolicyPreviewCheck.java - 1,406 lines · 28 methods · 11 constants · harnesses
 
-`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made
 > of, held to the month's own books in a played city.
@@ -62,9 +62,9 @@
 >  10. THE PORT DUES (FR4; the dial is FR3's): in a city whose berth has
 >      worked, the dues previewed at the city's own dial are the month's,
 >      Freight's and the treasury's, to the bit; at 2 twice that, which is
-> ... (6 more lines in the source)
+> ... (14 more lines in the source)
 
-**Uses:** [PolicyPreview](PolicyPreview.md) (95), [FloorView](FloorView.md) (56), [Sectors](Sectors.md) (28), [JobType](JobType.md) (28), [Game](Game.md) (27), [LabourMarket](LabourMarket.md) (26), [TaxPolicy](TaxPolicy.md) (23), [TreasuryFund](TreasuryFund.md) (23), [WageBand](WageBand.md) (19), [Observation](Observation.md) (19), [Formats](Formats.md) (14), [EconomyManager](EconomyManager.md) (7), [HouseholdAccounts](HouseholdAccounts.md) (7), [CentralBank](CentralBank.md) (7), [WorldMeasures](WorldMeasures.md) (7), [Ports](Ports.md) (7), [GameFiles](GameFiles.md) (6), [Zoning](Zoning.md) (5), [PriceLevel](PriceLevel.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingType](BuildingType.md) (4), [LongPlaytest](LongPlaytest.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [Unemployment](Unemployment.md) (2), [PopulationManager](PopulationManager.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Research](Research.md) (2), [LandManager](LandManager.md) (2), [HaulageCheck](HaulageCheck.md) (2)... and 10 more
+**Uses:** [PolicyPreview](PolicyPreview.md) (95), [FloorView](FloorView.md) (56), [Game](Game.md) (40), [JobType](JobType.md) (31), [LabourMarket](LabourMarket.md) (30), [Sectors](Sectors.md) (28), [TaxPolicy](TaxPolicy.md) (27), [TreasuryFund](TreasuryFund.md) (23), [WageBand](WageBand.md) (19), [Formats](Formats.md) (14), [Ports](Ports.md) (8), [GameFiles](GameFiles.md) (7), [EconomyManager](EconomyManager.md) (7), [HouseholdAccounts](HouseholdAccounts.md) (7), [CentralBank](CentralBank.md) (7), [WorldMeasures](WorldMeasures.md) (7), [PriceLevel](PriceLevel.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [Zoning](Zoning.md) (5), [PopulationManager](PopulationManager.md) (4), [Unemployment](Unemployment.md) (4), [BuildingType](BuildingType.md) (4), [LandlordPortCheck](LandlordPortCheck.md) (4), [LongPlaytest](LongPlaytest.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [PortDivision](PortDivision.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [Research](Research.md) (2), [LandManager](LandManager.md) (2)... and 9 more
 
 **Used by (1):** [GovernmentViewCheck](GovernmentViewCheck.md)
 
@@ -72,115 +72,128 @@
 
 | line | section |
 |---:|---|
-| 256 | 1. THE COPY |
-| 309 | 2. AT THE CITY'S OWN POLICY |
-| 387 | 7. A DIAL AT ZERO |
-| 429 | 6. APPLIED, THE PREVIEW IS THE MODEL |
-| 491 | 3. THE BUDGET |
-| 550 | 4. THE OTHER READS |
-| 709 | 11. THE MINIMUM-WAGE PAGE (WS1) |
-| 1034 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
-| 1106 | 5. AFTER A LOAD |
-| 1126 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
-| 1182 | 10. THE PORT DUES (FR4) |
+| 294 | 1. THE COPY |
+| 347 | 2. AT THE CITY'S OWN POLICY |
+| 425 | 7. A DIAL AT ZERO |
+| 478 | 6. APPLIED, THE PREVIEW IS THE MODEL |
+| 543 | 3. THE BUDGET |
+| 635 | 4. THE OTHER READS |
+| 840 | 11. THE MINIMUM-WAGE PAGE (WS1) |
+| 1162 | 8. THE FUND'S WITHDRAWAL (0.7.48) |
+| 1241 | 5. AFTER A LOAD |
+| 1261 | 9. ZONING'S BEFORE AND AFTER (0.7.107) |
+| 1317 | 10. THE PORT DUES (FR4) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 91 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 177 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
-| 243 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 99 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
+| 185 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Con...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 281 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 481 | `PolicyPreviewCheck.BANK_PROFIT` | `10_000` | FS17: the profit the bank is given to be taxed on in section 6 (D$ thousands, founding money): the month just closed's, as Bank.chargeTax() reads it at the top of the next. |
+| 546 | `PolicyPreviewCheck.BUDGET_FUEL_DUTY` | `.0000215 * PriceLevel.FACTOR` | FS17: the fuel duty the budget twin's city charges, a dial set by hand (a tenth of the 21.5 cents the section stages over it), so the month's duty is a line with something in it. |
+| 549 | `PolicyPreviewCheck.BUDGET_SLOT` | `12, FLOORS_SLOT = 13, WAGES_SLOT = 11` | FS17: the slot of the scratch folder a twin is saved to (slots 1-9 are never written; these are the scratch folder's own). |
+| 638 | `PolicyPreviewCheck.HAND_DEPOSITS` | `1_000` | FS17: the deposits the bank is given by hand where a section needs depositors, each book's share (D$ thousands, founding money). |
+| 681 | `PolicyPreviewCheck.LADDER_POSTS` | `100` | FS17: the posts every job has on the hand-made ladder (the city's workforce is thousands, so every post is filled), and the one job the ladder gives none. |
+| 682 | `PolicyPreviewCheck.LADDER_NO_POSTS` | `JobType.UNIV_POLICY` |  |
+| 1320 | `PolicyPreviewCheck.PORT_SEA_SHARE` | `.5` | FS17: the share of the chain's dry bulk the berths are handed (LandlordPortCheck.handShares()), and the most months the berth is worked for a crew to be hired and a quote struck. |
+| 1321 | `PolicyPreviewCheck.PORT_MONTHS` | `6` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 81 | `static int fails` |  |
-| 82 | `static PrintStream out` |  |
-| 83 | `static PrintStream quiet` |  |
+| 89 | `static int fails` |  |
+| 90 | `static PrintStream out` |  |
+| 91 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 1185 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
-| 85 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 93 | 1 | `static boolean near(double a, double b)` |  |
-| 95 | 5 | `static void quietly(Runnable r)` |  |
-| 143 | 32 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
-| 183 | 24 | `public static void main(String[] args) throws Exception` |  |
-| 214 | 27 | `static void anEiPool(Game g)` | An EI pool that stays, caused. |
-| 246 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
+| 87 | 1320 | **type** `public class PolicyPreviewCheck` | The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made of, held to the month's own books in a played city. |
+| 93 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 101 | 1 | `static boolean near(double a, double b)` |  |
+| 103 | 5 | `static void quietly(Runnable r)` |  |
+| 151 | 32 | `static Game city(Path root)` | A played city with every line of the Policy tab in it: homes, shops, a diner and builders; a mine, a foundry and a fabrication shop; power, water and roads; a commercial bank (its profit tax), clinics (their fees) and... |
+| 191 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 222 | 21 | `static void anEiPool(Game g)` | An EI pool that stays, caused. |
+| 245 | 10 | `static BuildingsTemplate largestEmployer(Game g)` | The city's largest employer by its posts, or null when it has none. |
+| 261 | 18 | `static boolean layOff(Game g)` | FS17: retires half of the largest employer, and of the next largest after it, until the posts retired are more than twice the city's vacancies (the posts it has, PopulationManager.getJobs(), less the posts filled, get... |
+| 284 | 9 | `static void printCity(Game g)` | The city as the previews read it, for the record. |
 
-### 1. THE COPY (lines 256-308)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 258 | 50 | `static void theCopy(Game g)` |  |
-
-### 2. AT THE CITY'S OWN POLICY (lines 309-386)
+### 1. THE COPY (lines 294-346)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 311 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
-| 381 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
+| 296 | 50 | `static void theCopy(Game g)` |  |
 
-### 7. A DIAL AT ZERO (lines 387-428)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 389 | 39 | `static void aDialAtZero(Game g)` |  |
-
-### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 429-490)
+### 2. AT THE CITY'S OWN POLICY (lines 347-424)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 431 | 59 | `static void appliedIsTheModel(Game g)` |  |
+| 349 | 69 | `static void atTheCitysOwn(Game g, String section)` |  |
+| 419 | 5 | `static double sum(java.util.Map<String, Double> m)` |  |
 
-### 3. THE BUDGET (lines 491-549)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 493 | 56 | `static void theBudget(Game g)` |  |
-
-### 4. THE OTHER READS (lines 550-708)
+### 7. A DIAL AT ZERO (lines 425-477)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 552 | 36 | `static void theOtherReads(Game g)` |  |
-| 596 | 112 | `static void theFloorsMove(Game g)` | THE FLOOR LIFTS ONLY THE WAGES UNDER IT (WG1; it moved every wage by its own ratio until then): a job's target at a floor is its own, or the floor in today's money where that is more (LabourMarket.targetWageAt() has t... |
+| 427 | 50 | `static void aDialAtZero(Game g)` |  |
 
-### 11. THE MINIMUM-WAGE PAGE (WS1) (lines 709-1033)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 712 | 3 | `static boolean same(double a, double b)` | Equal to a part in a billion, or to a billionth outright: the shares and sums of a played city. |
-| 717 | 9 | `static double filledWhere(Game g, java.util.function.Predicate<JobType> which)` | The posts filled in the jobs that pass `which`, as PopulationManager.getJobsFilled() counts them (posts x fill rate, unrounded): the hand sum. |
-| 734 | 299 | `static void theMinimumWagePage(Path root, Game g)` | THE MINIMUM-WAGE PAGE'S FIGURES (WS1): FloorView is what the page draws and the screen recomputes nothing, so every figure is held to a hand sum of the model's own getters in the played city, and each state the page's... |
-
-### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 1034-1105)
+### 6. APPLIED, THE PREVIEW IS THE MODEL (lines 478-542)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1036 | 69 | `static void theWithdrawal(Game g)` |  |
+| 483 | 59 | `static void appliedIsTheModel(Game g)` |  |
 
-### 5. AFTER A LOAD (lines 1106-1125)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1108 | 18 | `static void afterALoad(Path root, Game g)` |  |
-
-### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 1126-1181)
+### 3. THE BUDGET (lines 543-634)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1128 | 53 | `static void zoning(Game g)` |  |
+| 556 | 12 | `static Game budgetTwin(Path root, Game city)` | FS17: a twin of the played city whose every policy line has its base set by hand and is struck by a month at it: the dials put back to the model's defaults (TaxPolicy.reset(), as city() does) and the fuel duty, which ... |
+| 569 | 65 | `static void theBudget(Path root, Game city)` |  |
 
-### 10. THE PORT DUES (FR4) (lines 1182-1263)
+### 4. THE OTHER READS (lines 635-839)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1185 | 8 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it and three months played on, so a berth has worked and Freight has billed its tonnes (LandlordPortCheck.seaBase()'s recipe). |
-| 1194 | 69 | `static void portDues()` |  |
+| 640 | 39 | `static void theOtherReads(Path root, Game g)` |  |
+| 692 | 22 | `static Game laddered(Path root, Game city, int slot)` | FS17: a twin of the played city (saved to a slot of the scratch folder and loaded) whose wage ladder is made by hand, so the sections that read the floor against the ladder cause what they read: every job has LADDER_P... |
+| 716 | 6 | `static void ladderMonth(Game twin)` | FS17: the labour market's own month on the ladder's figures, every band's posts at par with its supply: the wages walk to their bases and none stays under the floor in force. |
+| 733 | 106 | `static void theFloorsMove(Path root, Game city)` | THE FLOOR LIFTS ONLY THE WAGES UNDER IT (WG1; it moved every wage by its own ratio until then): a job's target at a floor is its own, or the floor in today's money where that is more (LabourMarket.targetWageAt() has t... |
+
+### 11. THE MINIMUM-WAGE PAGE (WS1) (lines 840-1161)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 843 | 3 | `static boolean same(double a, double b)` | Equal to a part in a billion, or to a billionth outright: the shares and sums of a played city. |
+| 848 | 9 | `static double filledWhere(Game g, java.util.function.Predicate<JobType> which)` | The posts filled in the jobs that pass `which`, as PopulationManager.getJobsFilled() counts them (posts x fill rate, unrounded): the hand sum. |
+| 865 | 296 | `static void theMinimumWagePage(Path root, Game city)` | THE MINIMUM-WAGE PAGE'S FIGURES (WS1): FloorView is what the page draws and the screen recomputes nothing, so every figure is held to a hand sum of the model's own getters in the played city, and each state the page's... |
+
+### 8. THE FUND'S WITHDRAWAL (0.7.48) (lines 1162-1240)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1164 | 76 | `static void theWithdrawal(Game g)` |  |
+
+### 5. AFTER A LOAD (lines 1241-1260)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1243 | 18 | `static void afterALoad(Path root, Game g)` |  |
+
+### 9. ZONING'S BEFORE AND AFTER (0.7.107) (lines 1261-1316)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1263 | 53 | `static void zoning(Game g)` |  |
+
+### 10. THE PORT DUES (FR4) (lines 1317-1406)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1328 | 9 | `static Game portCity(String label)` | A city with a Bulk Terminal handed to it, the berths' share in force by hand (LandlordPortCheck.seaHanded()), and months played until its berth has a crew and a bulk quote is struck, the share handed again before each... |
+| 1338 | 68 | `static void portDues()` |  |
 

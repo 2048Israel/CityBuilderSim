@@ -1,6 +1,6 @@
 # OldMetal.java - 418 lines · 40 methods · 10 constants · model
 
-`ham/citybuildersim/OldMetal.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OldMetal.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The city's old steel: what it throws out each month that a Scrap Yard can
 > buy and sort into scrap - its scrapped cars, its demolitions, its
@@ -62,7 +62,7 @@
 
 **Uses:** [Trade](Trade.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (20):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessInvestment](BusinessInvestment.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [DistressBleedCheck](DistressBleedCheck.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md)
+**Used by (22):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingStackCheck](BuildingStackCheck.md), [BusinessInvestment](BusinessInvestment.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [DistressBleedCheck](DistressBleedCheck.md), [Game](Game.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SpreadPlanner](SpreadPlanner.md), [UndemandedFeedCheck](UndemandedFeedCheck.md)
 
 ## Sections
 

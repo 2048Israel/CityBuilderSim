@@ -20,7 +20,7 @@ against the last version tag, main's recorded reds, the next queued ids, the
 Pending ids, and each unmerged `batch/` branch on origin as ready (a ship file
 pushed without its provisional marker; with the conflicts a merge would meet),
 working, stuck (no commit for a day) or off-queue. `--due` prints only the
-ready and the stuck, and `nightly due` once a day between 01:00 and 07:00.
+ready and the stuck, and `nightly due` (below).
 
 **Waking** (lesson b: batches sat unshipped 9 hours on 2026-10-24): mail
 resumes a headless orchestrator, and MemWatch draws the batches' and the gate's
@@ -30,10 +30,17 @@ when replaced: two may gate one branch), and `sh tools/wait.sh --ship [--skip
 HELD...]` running, which ends when a ship file lands without its marker.
 
 **The nightly**, `sh tools/nightly.sh` on main's tip (4,000 months, the nightly
-tier, hard timing; GT1, GR1), is due once a night, started by hand or a
-scheduled task (a daily one is Jerus's call, asked 2026-11-17). Its verdict is
-in the next `day.sh` and `$HOME/.cbs-nightly.log`; a red playtest or a slower
-line is mailed to `jerus` and the gate's keeper, naming the batch (BW1).
+tier, hard timing; GT1, GR1), starts by itself: the laptop's task "CBS nightly"
+at 02:30 (its line in GB2's notes) runs it on `nightly due`, once a night and
+only while the last night ran on another `VERSION` (Jerus, 2026-11-20, his
+answer to 11-17's question: "it should run every night IF the version number
+has changed"; WHY: an untagged process batch leaves the game and its `VERSION`
+alone, so its night would time the same game again). By hand on `nightly due`
+when the task missed it; a second start is refused while one runs. It runs on
+the gate box and holds it whole, a gate there waiting for it and it for a gate
+(GB2). Its verdict comes home: the next `day.sh`, `$HOME/.cbs-nightly.log`, and
+a red playtest or a slower line mailed to `jerus` and the gate's keeper, naming
+the batch (BW1).
 
 ## Dispatch
 
@@ -46,7 +53,12 @@ line is mailed to `jerus` and the gate's keeper, naming the batch (BW1).
   three builders, and a fourth on study, docs or process rows while the plan
   is behind pace: the week's % used plus the last six hours' rate times the
   hours to the reset under 95 (2026-11-07: "Yes, standing rule").
-- **The heavy slot:** never two dry runs or two ensembles at once, and no
+- **The heavy slot:** the gate box keeps its own (GB3; Jerus, 2026-11-20,
+  "Gatebox first"): gates and the nightly first, an ensemble behind them and
+  giving way to one that comes while it plays, the runs it started finishing
+  first; with two heavy jobs running or waiting there, or the box down, an
+  ensemble runs on the laptop and says why. The laptop's is the
+  orchestrator's: never two dry runs or two ensembles at once there, and no
   ensemble beside a dry run or a gate (2026-11-18: R2c-P's dry run went red
   when KeptCheck timed out at 1740 s beside HN1's 80-run ensemble; DQ1's died
   on a fork failure, 2026-11-17 20:05, with 1.4 GB free); no builder's full
@@ -115,7 +127,8 @@ text uses that the tree does not declare (`tools.Names`) are a warning only.
 `Batch check.bat` is Jerus's double-click (`--maps` regenerates the maps;
 without it it writes nothing git tracks, as the PC's copy pulls `main` and must
 stay clean); it times soft while another JVM or the game runs, decided once at
-its start (lesson d). Each gate run is a `cbs-gate-ID-*` folder under the temp
-directory (or `CBS_GATE_DIRECTORY`); a green run's clone is removed, its log,
-refs and checks kept, a stopped one kept whole (GF1, LM1: deleting gate clones
-erased the evidence of stops).
+its start (lesson d). Each gate run is a `cbs-gate-ID-*` folder (or
+`CBS_GATE_DIRECTORY`'s name) in `~/cbs/runs` on the gate box, its files but the
+clone copied to the temp directory here at the end (GB1; here alone when the box
+is down); a green run's clone is removed, its log, refs and checks kept, a
+stopped one kept whole (GF1, LM1: deleting gate clones erased the evidence of stops).

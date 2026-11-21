@@ -1,6 +1,6 @@
 # Bridges.java - 321 lines · 31 methods · 4 constants · model
 
-`ham/citybuildersim/Bridges.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Bridges.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the
 > landmass at each end, its length, the depth of the water under it, the chain of plots it runs along as its corner plots,
@@ -21,7 +21,7 @@
 
 **Uses:** [BridgeWorks](BridgeWorks.md) (3), [Landmasses](Landmasses.md) (1), [BridgeSurvey](BridgeSurvey.md) (1)
 
-**Used by (10):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
+**Used by (11):** [AutoBuilder](AutoBuilder.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [DataSave](DataSave.md), [FB13Check](FB13Check.md), [Game](Game.md), [IslandLinkCheck](IslandLinkCheck.md), [LandManager](LandManager.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md)
 
 ## Sections
 

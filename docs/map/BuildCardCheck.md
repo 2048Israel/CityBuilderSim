@@ -1,6 +1,6 @@
 # BuildCardCheck.java - 2,318 lines · 41 methods · 1 constants · harnesses
 
-`ham/citybuildersim/BuildCardCheck.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildCardCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The build card (0.7.25): BuildCard's figures for every building in
 > buildings.json (143 since FR3, the Bulk Berth) held to
@@ -65,6 +65,8 @@
 > ... (60 more lines in the source)
 
 **Uses:** [BuildCard](BuildCard.md) (418), [BuildAdvice](BuildAdvice.md) (113), [CityNeeds](CityNeeds.md) (91), [Game](Game.md) (64), [BuildingsTemplate](BuildingsTemplate.md) (57), [Good](Good.md) (34), [Resource](Resource.md) (31), [Deposit](Deposit.md) (27), [Formats](Formats.md) (21), [CareType](CareType.md) (16), [Sectors](Sectors.md) (13), [BusinessInvestment](BusinessInvestment.md) (13), [SpreadPlanner](SpreadPlanner.md) (13), [Ports](Ports.md) (12), [ExtractionSector](ExtractionSector.md) (11), [World](World.md) (11), [Sector](Sector.md) (10), [Forestry](Forestry.md) (10), [BuildingManager](BuildingManager.md) (9), [Mining](Mining.md) (9), [BuildAdviceCheck](BuildAdviceCheck.md) (7), [GameFiles](GameFiles.md) (6), [Founding](Founding.md) (6), [HeavyIndustry](HeavyIndustry.md) (6), [Refining](Refining.md) (5), [LandManager](LandManager.md) (5), [ProcessingSector](ProcessingSector.md) (5), [JobType](JobType.md) (4), [WageBand](WageBand.md) (4), [InfrastructureManager](InfrastructureManager.md) (4)... and 30 more
+
+**Used by (1):** [BuildingStackCheck](BuildingStackCheck.md)
 
 ## Sections
 

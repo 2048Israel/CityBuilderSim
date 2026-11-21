@@ -579,6 +579,8 @@ public class MapCheck {
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
         frontageDrawn(sq.types);
+        depotAloneRails();
+        oldWorksSentOn();
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -679,9 +681,12 @@ public class MapCheck {
                     boolean exact = dr.sameAs(model, map.types());
                     drawnSamples++;
                     if (exact) drawnExact++;
+                    long trackNow = Drawn.trackOf(model, map.types());
                     drawnLines.append(String.format("      month %d: %,d buildings of %d kinds drawn (the model %,d; %d packed at the city's edge),"
-                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d)%n", g.getMonth(),
-                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types())));
+                                    + " %,.1f plots of road as the streets' surface and %,.1f the streets do not carry (the model %,d),"
+                                    + " %,d plots of track (the model's %,d, %,d the runs could not lay, %,d the station's own line)%n", g.getMonth(),
+                            dr.total(), dr.kinds(), modelBuildings(model, map.types()), dr.packed, dr.surfaced(), dr.left(), modelRoadPlots(model, map.types()),
+                            dr.rail, trackNow, dr.trackSurplus, map.runs().stationLine(trackNow)));
                 }
             }
             bought = g.getCityLand().purchases().size() - purchases0;
@@ -791,13 +796,35 @@ public class MapCheck {
         final double[] surface = new double[4], leftover = new double[4];
         /** The railway's track laid, in plots (0.7.72), and (0.7.89) what the runs could not lay - since FR7 slice 3 the plots no train's way uses (CityRuns.trackSurplus()); buildings packed at the city's edge (R7); tiles painted; districts. */
         long rail, trackSurplus, packed, tiles, districts;
+        /** (HL1-M) The runs the map was drawn from: what they lay (rail().plots, less the quay's spurs, which no model track pays for), and whether a station stands (a yard laid, idle or not). */
+        CityRuns runs;
+        long laid;
+        boolean station;
 
         long total() { return Arrays.stream(buildings).sum(); }
         int kinds() { int n = 0; for (long b : buildings) if (b > 0) n++; return n; }
         double surfaced() { return surface[1] + surface[2] + surface[3]; }
         double left() { return leftover[1] + leftover[2] + leftover[3]; }
 
-        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72). */
+        /** The model's track plots: each track type's count x its own plots (BuildingVisual.cells()). */
+        static long trackOf(long[] model, BuildingVisual.Type[] types) {
+            long track = 0;
+            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
+            return track;
+        }
+
+        /**
+         * (HL1-M) Whether the railway drawn is the railway the city holds, exactly: the painter draws every plot the runs lay and no other (rail == laid), and what the runs
+         * lay is the model's track less what they could not lay, PLUS A STATION'S OWN LINE - the main line a Rail Depot or Rail Terminal has laid to the city's edge whatever
+         * track the model has (CityRuns.stationLine(); FX5). That line is the depot's, not the track budget's: it is nothing where the track is longer than the line, and
+         * it is nothing where no station stands, so track the model does not hold with no station standing is still a finding.
+         */
+        boolean trackAccounted(long track) {
+            long line = runs == null ? 0 : runs.stationLine(track);
+            return rail == laid && rail + trackSurplus == track + line && (line == 0 || station);
+        }
+
+        /** Whether it is exactly the model's: every drawn type as many as the model has (a kind it has none of not drawn); each road kind's plots its streets' surface and what they do not carry, to within half a plot a district (a street's least surface: DistrictPlan.HALF); every plot of its railway's track (0.7.72), the station's own line counted as the station's (HL1-M, trackAccounted()). */
         boolean sameAs(long[] model, BuildingVisual.Type[] types) {
             boolean same = true;
             for (int t = 0; t < types.length; t++) {
@@ -808,9 +835,7 @@ public class MapCheck {
             for (int kind = BuildingVisual.GRAVEL; kind <= BuildingVisual.HIGHWAY; kind++) {
                 same &= Math.abs(surface[kind] + leftover[kind] - roadPlotsOf(model, types, kind)) <= DistrictPlan.HALF * Math.max(1, districts);
             }
-            long track = 0;
-            for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].track()) track += model[t] * BuildingVisual.cells(types[t]);
-            return same && rail + trackSurplus == track;
+            return same && trackAccounted(trackOf(model, types));
         }
     }
 
@@ -845,6 +870,8 @@ public class MapCheck {
                 d.surface[BuildingVisual.HIGHWAY] += p.highwayPlots;
                 d.rail += p.railLaid;
                 for (int b = 0; b < p.buildings; b++) {
+                    // (HL1-M) A yard whose box spans tiles is one building, counted on the tile holding its first plot (TilePainter.Painted.bpart; the raster below counts so): its part on another tile is the same yard.
+                    if (p.bpart[b]) continue;
                     if (p.bsite[b] >= 0) {
                         if (sites.add(in.siteKey[p.bsite[b]])) d.siteCount[p.btype[b]]++;
                     } else d.buildings[p.btype[b]]++;
@@ -861,6 +888,9 @@ public class MapCheck {
         double[] left = m.leftoverByKind();
         System.arraycopy(left, 0, d.leftover, 0, 4);
         d.trackSurplus = m.runs().trackSurplus();
+        d.runs = m.runs();
+        d.laid = m.runs().rail().plots() - m.runs().quayPlots();
+        d.station = !m.runs().yards().isEmpty();
         return d;
     }
 
@@ -5064,7 +5094,8 @@ public class MapCheck {
         out.printf("      %s: %,d plots of track drawn of the model's %,d (%,d the runs could not lay), %d piece(s), %d crossed by streets, %d bridging a highway%n",
                 what, net.rail, model, shortBy, pieces[0], net.crossings, over);
         check(what + ": fixture: the city has a railway", model > 0);
-        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay", net.rail + shortBy == model && plots == net.rail);
+        // (HL1-M) ...and a station's own line past the model's track is the station's (CityRuns.stationLine(); section 25): none here, where the track is longer than the line.
+        check("...every plot of its track drawn, as the model has it, or counted as what its runs could not lay (a station's own line apart)", net.rail + shortBy == model + net.map.runs().stationLine(model) && plots == net.rail);
         check("...one railway network, no piece apart", pieces[0] == 1);
     }
 
@@ -16187,6 +16218,342 @@ public class MapCheck {
         check("both avenue strokes are continuous through every crossing, also on a tile corner (" + missing + " missing of " + samples + ")", samples > 0 && missing == 0);
         check("the crossing keeps each band wide to its street width less a pixel (" + sidesMissing + " missing side samples)", sidesMissing == 0);
         check("each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw", signals == 32 && disagreements == 0 && nondeterministic == 0);
+    }
+
+    /* =====================================================================
+       25. A RAIL DEPOT AND NO RAIL SPUR: THE STATION'S OWN LINE (HL1-M)
+       ===================================================================== */
+
+    /*
+     * WHY (HL1-M, found by HL1's dry run, 2026-11-19): section 1's hard assertion - the map draws what the city has, "every plot of its track" - failed on HL1's 120-month
+     * town at m121 although every building and road kind agreed: 83 railway plots drawn against no model track (one Rail Depot stood; trackSurplus() 0), and a map drawn
+     * afresh from the same counts drew the same 83. The law said "the plots drawn + what the runs could not lay = the model's track", and a city whose model holds a Rail
+     * Depot and no Rail Spur has no track to be drawn: yet CityRuns.layRail() lays the main line to the city's edge for any city with a station, whatever track the model
+     * has (FX5, Jerus 2026-10-20: "there is a railwawy depot but no rails" - a yard is no track, a depot alone is how the model rails freight). That line is the depot's,
+     * not the runs' track budget: the map was right and the law was short a term, CityRuns.stationLine(). Section 1's assertion stays as hard as it was (every count exact,
+     * Drawn.sameAs()); it now counts the station's line as the station's, and only there.
+     *
+     * The fixture causes the condition on one district owned whole on the default world's dry place, no Game: first nothing (no station, no line), then one Rail Depot and no
+     * track (the line, and nothing else: no siding, branch or quay spur), then the model's track meeting the line from below (the first plots of the line are the track's, the
+     * station's is what is past them) and from above (the track pays for the whole line, the rest is surplus, the station's own line nothing). Each time the law is asked
+     * of the painted map. (20's two-district city lays 4 plots of line, less than one Rail Spur's 72, so the track could not meet it from below there.)
+     */
+
+    /** 25's city: one district owned whole, CityMap.DISTRICT plots a side from its north-west corner, the founding site in its middle: the line the runs lay to its edge is some 130 plots, longer than a Rail Spur's 72. */
+    static final class DepotCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int depot = idNamed(catalog, "Rail Depot"), spur = idNamed(catalog, "Rail Spur");
+        final CityMap map;
+        final long[] model = new long[types.length];
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        DepotCity() {
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT;
+            long[] place = dryPlace(World.of(seed));
+            long x0 = Math.floorDiv(place[0], f) * f, y0 = Math.floorDiv(place[1], f) * f;
+            double[] centre = new double[CityLand.CENTRE_FIELDS];
+            centre[CityLand.CENTRE_FIELDS - 5] = -1;
+            centre[CityLand.CENTRE_FIELDS - 4] = -1;
+            centre[CityLand.CENTRE_FIELDS - 2] = x0 + f / 2;
+            centre[CityLand.CENTRE_FIELDS - 1] = y0 + f / 2;
+            CityLand land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x0, y0, x0 + f, y0 + f } }, null, null, null);
+            map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+    }
+
+    static void depotAloneRails() {
+        out.println("\n--- 25. a Rail Depot and no Rail Spur: the line the runs lay for the station is the station's, counted as such in the law (HL1-M; FX5) ---");
+        DepotCity c = new DepotCity();
+        CityRuns runs = c.map.runs();
+        int spur = c.spur, each = BuildingVisual.cells(c.types[spur]);
+
+        // ----- nothing standing: no station, no line, and the law holds on nothing -----
+        c.run();
+        Drawn none = drawn(c.map);
+        check("fixture: before any depot the city holds no track and the runs lay none (" + none.rail + " plots drawn, " + none.laid + " laid, no yard standing)",
+                Drawn.trackOf(c.model, c.types) == 0 && none.rail == 0 && none.laid == 0 && !none.station && runs.stationLine(0) == 0 && c.reconciled);
+
+        // ----- one Rail Depot, no track: the case section 1 met -----
+        c.model[c.depot] = 1;
+        c.run();
+        Drawn one = drawn(c.map);
+        long line = one.laid, track = Drawn.trackOf(c.model, c.types);
+        boolean spines = true;
+        for (CityRuns.Arm a : runs.rail.arms) if (a.steps > 0 && !CityRuns.isSpine(runs.rail, a.corridor)) spines = false;
+        out.printf("      one Rail Depot, no Rail Spur (a spur is %d plots): the runs lay %,d plots and the painter draws %,d; the model's track %,d, what the runs could not lay %,d, the station's line past the track %,d%n",
+                each, line, one.rail, track, one.trackSurplus, runs.stationLine(track));
+        check("fixture: one Rail Depot and no model track lays a yard, a railway and no surplus (" + runs.yards().size() + " yard, " + one.rail + " plots drawn, track " + track + ", surplus " + one.trackSurplus + ")",
+                runs.yards().size() == 1 && c.model[c.depot] == 1 && track == 0 && one.rail > 0 && one.trackSurplus == 0 && c.reconciled);
+        check("...the case the old law had no place for: the plots drawn and the surplus (" + (one.rail + one.trackSurplus) + ") are not the model's track (" + track + ")", one.rail + one.trackSurplus != track);
+        check("the railway is the depot's main line and nothing else: every plot laid is on a spine, no siding, no branch, no quay spur - and the painter draws every plot of it (" + one.rail + " of " + line + ")",
+                spines && runs.sidings().isEmpty() && runs.branches().isEmpty() && runs.quayPlots() == 0 && one.rail == line);
+        check("the law counts that line as the station's: stationLine() is all of it (" + runs.stationLine(track) + " of " + line + ") and the map is exactly the city's, Drawn.sameAs()",
+                runs.stationLine(track) == line && one.station && one.sameAs(c.model, c.types));
+
+        // ----- the law is no slacker for it: no station to own the line, a plot short or a plot over, is not the model's railway -----
+        one.station = false;
+        boolean unowned = one.sameAs(c.model, c.types);
+        one.station = true;
+        one.rail--;
+        boolean fewer = one.sameAs(c.model, c.types);
+        one.rail += 2;
+        boolean more = one.sameAs(c.model, c.types);
+        one.rail--;
+        check("...and exactly that: the same line with no station standing (" + unowned + "), one plot short (" + fewer + ") or one plot over (" + more + ") is not the model's railway; as it is, it is (" + one.sameAs(c.model, c.types) + ")",
+                !unowned && !fewer && !more && one.sameAs(c.model, c.types));
+
+        // ----- the model's track meets the line from below: its plots are the line's first, the station's is what is past them -----
+        boolean room = line > each;
+        check("fixture: the line is longer than one Rail Spur (" + line + " plots, a spur " + each + "), so one spur is track the line can take", room);
+        if (room) {
+            c.model[spur] = 1;
+            c.run();
+            Drawn part = drawn(c.map);
+            long t1 = Drawn.trackOf(c.model, c.types);
+            out.printf("      one Rail Depot, one Rail Spur: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", part.laid, part.rail, t1, part.trackSurplus, runs.stationLine(t1));
+            check("the first plots of the line are the model's track, the station's own is what is past it (" + runs.stationLine(t1) + " = " + line + " - " + t1 + "), none of the track left over, the line unmoved, and the map exact",
+                    t1 == each && part.laid == line && runs.stationLine(t1) == line - t1 && part.trackSurplus == 0 && runs.sidings().isEmpty() && runs.branches().isEmpty() && part.sameAs(c.model, c.types) && c.reconciled);
+        }
+
+        // ----- ...and from above: the track pays for the whole line, the rest is surplus, and the station's own line is nothing -----
+        c.model[spur] = (int) ((line + 2L * each) / each + 1);
+        c.run();
+        Drawn full = drawn(c.map);
+        long t2 = Drawn.trackOf(c.model, c.types);
+        out.printf("      one Rail Depot, %d Rail Spurs: the runs lay %,d plots, the painter draws %,d; the model's track %,d, surplus %,d, the station's line past it %,d%n", c.model[spur], full.laid, full.rail, t2, full.trackSurplus, runs.stationLine(t2));
+        check("with more track than the line holds the station's own line is nothing and the rest is the surplus (" + full.trackSurplus + " = " + t2 + " - " + full.laid + "), the old law's own count, the line unmoved and the map exact",
+                t2 > line && full.laid == line && runs.stationLine(t2) == 0 && full.trackSurplus == t2 - line && full.rail == line && full.sameAs(c.model, c.types) && c.reconciled);
+
+        // ----- the station gone: its yard stands idle and the line with it (MF1), the station's still; when its time is up the line goes, and the law holds on nothing -----
+        c.model[spur] = 0;
+        c.model[c.depot] = 0;
+        c.run();
+        Drawn idle = drawn(c.map);
+        check("the depot and the track gone, the yard stands idle, drawn still as the yard its building left (MF1), and holds the line, which is still the station's - the railway's own account exact (" + idle.rail + " plots, " + runs.yards().size() + " yard, " + runs.yardsActive() + " active)",
+                runs.yards().size() == 1 && runs.yardsActive() == 0 && idle.buildings[c.depot] == 1 && idle.laid == line && idle.rail == line && runs.stationLine(0) == line && idle.station
+                && idle.trackAccounted(Drawn.trackOf(c.model, c.types)) && c.reconciled);
+        c.month += CityRuns.YARD_IDLE_MONTHS;
+        c.run();
+        Drawn gone = drawn(c.map);
+        out.printf("      %d months on: %d yards, the runs lay %,d plots, the painter draws %,d%n", CityRuns.YARD_IDLE_MONTHS, runs.yards().size(), gone.laid, gone.rail);
+        check("...and once its time is up the yard is taken up and the line with it: no station, no plots of track the model does not hold, the law exact on nothing",
+                runs.yards().isEmpty() && gone.laid == 0 && gone.rail == 0 && runs.stationLine(0) == 0 && !gone.station && gone.sameAs(c.model, c.types) && c.reconciled);
+    }
+
+    /* =====================================================================
+       26. AN OLD WORKS ITS PLAN SENT ON IS NOT THE DISTRICT'S TO STAND (RN1-H-M)
+       ===================================================================== */
+
+    /*
+     * WHY (RN1-H-M, 2026-11-20): LongPlaytest's oldest-works watch (THE OLDEST WORKS, CL3) named district (0,0)'s Industrial Bakery at m2400 from RN1-H's gate
+     * to R1e's (2026-11-19): the one standing at m601 gone, the district holding 4 against 1 then. No box had moved. The district's first bakery (m43) found
+     * no estate cell, and its plan sent it on at its arrival (CL3: an arrival that finds no place goes on its overflow log); the second (m365) was placed, and
+     * was the one box drawn at m601. At m906-908 the count fell from 4 to 1, and CL3's rule took the newest, m745, m744 and m365, leaving m43, still sent on:
+     * the district drew none, and the bakeries that came after stood elsewhere. The watch's law - of the boxes standing then, no fewer than its own count then
+     * and its lowest since stand now - took the oldest of its own count to be drawn ones, and one of them had been sent on. The law gains that term
+     * (LongPlaytest, THE WORKS SENT ON): of the oldest `lowest since` of the district's own live instances, those its plan had sent on are not its to stand,
+     * a month's ties counted drawn as far as the month's numbers allow. The run and spill exclusions are untouched, and CL3's rule stays.
+     *
+     * The fixture causes it on one district, no Game: one cell owned round the founding site, opened for homes; a bakery that finds no estate cell and is
+     * sent on; the next cell bought and a second bakery placed in it; the oldest works kept; the count falling back to one (the placed one leaves, the sent-on
+     * one stays) while a works of its size takes its place, and a bakery coming again elsewhere. Judged by the law as it stood it is flagged (so the section
+     * fails before the fix) and by the law as it stands it is not; the control moves the drawn old box while the count holds, and is flagged by both.
+     */
+
+    /** 26's city: one district on the default world's dry ground, owned a cell at a time from the founding site's - the ground a city starts on, where its first works finds no estate cell. */
+    static final class SentOnCity {
+        final List<BuildingsTemplate> catalog = new BuildingCatalog().load();
+        final BuildingVisual.Type[] types = BuildingVisual.table(catalog);
+        final int house = idNamed(catalog, "House"), bakery = idNamed(catalog, "Industrial Bakery");
+        /** A works of the bakery's size bound to no site: what takes the place the placed bakery leaves. */
+        final int other;
+        CityLand land;
+        CityMap map;
+        final long[] model = new long[types.length];
+        /** The founding site's cell's north-west corner, and the next cell's east of it: each owned to its far ring line. */
+        long hx, hy, nx;
+        /** The month the next one is run in. */
+        int month = 10;
+        boolean reconciled = true;
+
+        SentOnCity() {
+            int[] size = BuildingVisual.footprint(types[bakery]);
+            int found = -1;
+            for (int t = 0; t < types.length && found < 0; t++) {
+                BuildingVisual.Type y = types[t];
+                if (t == bakery || y == null || LongPlaytest.layoutBand(y) != 1 || y.site() != null || y.track() || y.terminal() || y.sea() || y.campus() || y.shore() || y.siding()) continue;
+                if (java.util.Arrays.equals(BuildingVisual.footprint(y), size)) found = t;
+            }
+            other = found;
+            long seed = Founding.DEFAULT_WORLD_SEED, f = CityMap.DISTRICT, c = DistrictPlan.CELL;
+            World w = World.of(seed);
+            long[] dry = dryPlace(w);
+            long bx = Math.floorDiv(dry[0], f), by = Math.floorDiv(dry[1], f);
+            for (int ring = 0; ring < World.CELLS; ring++) {
+                for (int dy = -ring; dy <= ring; dy++) for (int dx = -ring; dx <= ring; dx++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                    long x = (bx + dx) * f + DistrictPlan.CELLS_A_SIDE / 2 * c, y = (by + dy) * f + DistrictPlan.CELLS_A_SIDE / 2 * c;
+                    if (!dryGround(w, x, y, x + 2 * c + 1, y + c + 1)) continue;
+                    hx = x;
+                    hy = y;
+                    nx = x + c + 1;
+                    double[] centre = new double[CityLand.CENTRE_FIELDS];
+                    centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+                    centre[CityLand.CENTRE_FIELDS - 2] = x + c / 2;
+                    centre[CityLand.CENTRE_FIELDS - 1] = y + c / 2;
+                    land = CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x, y, x + c + 1, y + c + 1 } }, null, null, null);
+                    map = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 0);
+                    return;
+                }
+            }
+            throw new IllegalStateException("no dry ground for 26's city");
+        }
+
+        /** Whether every plot of [x0, x1) x [y0, y1) can be built on. */
+        static boolean dryGround(World w, long x0, long y0, long x1, long y1) {
+            for (long y = y0; y < y1; y++) for (long x = x0; x < x1; x++) if (!World.buildable(w.terrainAt(x, y), w.reliefAt(x, y))) return false;
+            return true;
+        }
+
+        /** One month, the map reconciled to the model's counts as they stand. */
+        void run() {
+            reconciled &= map.reconcile(model, month++);
+        }
+
+        /** The month that last ran: what a purchase made between months is dated. */
+        int last() { return month - 1; }
+
+        /** The next cell east, bought between months. */
+        void buyNext() {
+            long c = DistrictPlan.CELL;
+            land.extend(new LandParcel(-5, 1, 0, land.level(), nx, hy, nx + c, hy + c + 1, null, null, null, 0, 0), last(), 0);
+        }
+
+        CityMap.District district() { return map.districts().get(0); }
+
+        /** The district's drawn boxes of type t. */
+        List<PlanBox> drawn(int t) {
+            List<PlanBox> list = new ArrayList<>();
+            for (PlanBox b : boxesOf(map.plan(district()))) if (b.type() == t) list.add(b);
+            return list;
+        }
+
+        /** How many of type t the district's plan has sent on and not taken back: its carry-out's arrivals less its departures of them. */
+        int sentOn(int t) {
+            int[] pairs = map.carriedOnLog(district());
+            return pairs == null ? 0 : LongPlaytest.layoutSentMonths(pairs, t).length;
+        }
+    }
+
+    /** The watch's finding, judged by the law as it stood before RN1-H-M or as it stands: whether it names an old works moved. */
+    static boolean oldWorksFlagged(CityMap m, int month, java.util.Map<Long, LongPlaytest.LayoutSnap> now, boolean countsSentOn) {
+        LongPlaytest.findings.remove("an old works moved");
+        LongPlaytest.layoutCountsSentOn = countsSentOn;
+        try {
+            LongPlaytest.layoutFinish(null, m, month, now);
+        } finally {
+            LongPlaytest.layoutCountsSentOn = true;
+        }
+        return LongPlaytest.findings.containsKey("an old works moved");
+    }
+
+    static void oldWorksSentOn() {
+        out.println("\n--- 26. an old works its plan sent on is not the district's to stand: the oldest-works watch counts the works sent on, and still names a drawn one that moves (RN1-H-M) ---");
+        java.util.Set<String> findingsBefore = new java.util.HashSet<>(LongPlaytest.findings.keySet());
+        LongPlaytest.layoutOldForget();
+        SentOnCity c = new SentOnCity();
+        int b = c.bakery;
+        CityMap m = c.map;
+
+        // ----- the city: homes first, a bakery with nowhere to stand, the next cell bought, a bakery in it -----
+        c.model[c.house] = 12;
+        c.run();
+        int homesMonth = c.last();
+        c.model[b] = 1;
+        c.run();
+        int firstMonth = c.last(), sentAtArrival = c.sentOn(b), drawnAtArrival = c.drawn(b).size();
+        c.buyNext();
+        c.model[b] = 2;
+        c.run();
+        int secondMonth = c.last();
+        c.run();
+        int keepMonth = c.last();
+        java.util.Map<Long, LongPlaytest.LayoutSnap> kept = LongPlaytest.layoutSnapshot(m);
+        List<PlanBox> keptBoxes = c.drawn(b);
+        int sentAtKeep = c.sentOn(b);
+        out.printf("      m%d %d houses; m%d a bakery, sent on (%d sent on, %d drawn); the next cell bought; m%d a second, drawn at %s; kept at m%d: %d sent on, %d drawn%n",
+                homesMonth, c.model[c.house], firstMonth, sentAtArrival, drawnAtArrival, secondMonth, keptBoxes, keepMonth, sentAtKeep, keptBoxes.size());
+        check("the fixture: the city's first bakery found no estate cell and its plan sent it on at its arrival; the second, on the cell bought, is the one drawn when the oldest works are kept",
+                c.other >= 0 && sentAtArrival == 1 && drawnAtArrival == 0 && sentAtKeep == 1 && keptBoxes.size() == 1 && c.reconciled);
+
+        // ----- the control: the count held, the drawn old box moved a plot - flagged by the law as it stood and as it stands -----
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> moved = new java.util.HashMap<>();
+        for (java.util.Map.Entry<Long, LongPlaytest.LayoutSnap> e : kept.entrySet()) {
+            LongPlaytest.LayoutSnap s = e.getValue(), t = new LongPlaytest.LayoutSnap();
+            t.boxes = s.boxes.clone();
+            t.dims = s.dims;
+            t.byType = s.byType;
+            t.carryIn = s.carryIn;
+            t.carryLog = s.carryLog;
+            t.counted = s.counted;
+            for (int i = 0; i < t.boxes.length; i++) if ((int) (t.boxes[i] >>> 40) == b) t.boxes[i]++;
+            java.util.Arrays.sort(t.boxes);
+            moved.put(e.getKey(), t);
+        }
+        boolean stillOld = oldWorksFlagged(m, keepMonth, kept, false), stillNew = oldWorksFlagged(m, keepMonth, kept, true);
+        boolean movedOld = oldWorksFlagged(m, keepMonth, moved, false), movedNew = oldWorksFlagged(m, keepMonth, moved, true);
+        // The term the watch takes for the bakery here (REV-RN1-H-M): the older one sent on, inside the lowest since (2), so 1 - and the drawn one is still kept.
+        long key = LongPlaytest.layoutKey(c.district());
+        int[][] liveKept = LongPlaytest.layoutOldLive.get(key), sentKept = LongPlaytest.layoutOldSent.get(key), countKept = LongPlaytest.layoutOldModel.get(key);
+        int controlTerm = liveKept == null || sentKept == null || countKept == null ? -1 : LongPlaytest.layoutSentAmongOldest(liveKept[b], sentKept[b], countKept[1][b]);
+        out.printf("      the control at m%d: the term %d (the older bakery sent on); as drawn, flagged %b by the law as it stood, %b as it stands; the bakery's box moved a plot, %b and %b%n",
+                keepMonth, controlTerm, stillOld, stillNew, movedOld, movedNew);
+        check("the control: the older bakery sent on is the term (1), and still the boxes as drawn are no finding by either law, and the drawn old bakery moved a plot while the count holds is named by both",
+                controlTerm == 1 && !stillOld && !stillNew && movedOld && movedNew);
+
+        // ----- the event: the count falls back to one and comes again, another works in the place the bakery left -----
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.layoutKeepOldWorks(m, keepMonth, kept);
+        c.model[b] = 1;
+        c.model[c.other] = 1;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int sentAtFall = c.sentOn(b), drawnAtFall = c.drawn(b).size();
+        List<PlanBox> others = c.drawn(c.other);
+        c.model[b] = 2;
+        c.run();
+        LongPlaytest.layoutTrackLow(m);
+        int endMonth = c.last();
+        List<PlanBox> endBoxes = c.drawn(b);
+        java.util.Map<Long, LongPlaytest.LayoutSnap> end = LongPlaytest.layoutSnapshot(m);
+        boolean oldLaw = oldWorksFlagged(m, endMonth, end, false), newLaw = oldWorksFlagged(m, endMonth, end, true);
+        out.printf("      m%d: the count back to 1 (%d sent on, %d drawn), another works at %s; m%d a bakery again, drawn at %s; flagged %b by the law as it stood, %b as it stands (%d of the oldest kept sent on)%n",
+                endMonth - 1, sentAtFall, drawnAtFall, others, endMonth, endBoxes, oldLaw, newLaw, LongPlaytest.layoutOldSentOn);
+        check("the event: the count fell to the one sent on, so the placed bakery left; the district draws a bakery again, not where the old one stood",
+                sentAtFall == 1 && drawnAtFall == 0 && endBoxes.size() == 1 && !endBoxes.get(0).equals(keptBoxes.get(0)) && c.reconciled);
+        check("...and the law as it stood names it an old works moved, its own count's oldest taken for drawn ones (the section fails before RN1-H-M)", oldLaw);
+        check("...and the law as it stands does not: the oldest of its own count was sent on, not its to stand, and no box moved", !newLaw && LongPlaytest.layoutOldSentOn > 0);
+
+        // ----- the term on its own: the sent on among the oldest, a month's ties counted drawn as far as its numbers allow -----
+        check("the term: the oldest sent on and the lowest since one, it is the one (1); the newer sent on, none (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 11 }, 1) == 1 && LongPlaytest.layoutSentAmongOldest(new int[] { 11, 12 }, new int[] { 12 }, 1) == 0);
+        check("...two of one month, one sent on: the oldest one counted drawn (0), the oldest two hold it (1); both sent on, the oldest is (1)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 1) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5 }, new int[] { 5 }, 2) == 1
+                && LongPlaytest.layoutSentAmongOldest(new int[] { 5, 5, 7 }, new int[] { 5, 5 }, 1) == 1);
+        check("...and none sent on, or a count fallen to none, is no term (0)",
+                LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5, 5 }, new int[0], 3) == 0 && LongPlaytest.layoutSentAmongOldest(new int[] { 3, 5 }, new int[] { 3 }, 0) == 0);
+
+        LongPlaytest.layoutOldForget();
+        LongPlaytest.findings.keySet().retainAll(findingsBefore);
     }
 
 }

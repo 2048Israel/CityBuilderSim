@@ -1,6 +1,6 @@
 # Oil.java - 1,759 lines · 117 methods · 20 constants · sectors
 
-`ham/citybuildersim/sectors/Oil.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Oil.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > Oil wells. THE SIXTEENTH SECTOR (0.7.62, batch K; the project's
 > spec-land.md 2.7).
@@ -37,7 +37,7 @@
 > Everything else - the books, the credit, the market, the payroll, the
 > export - is the template's.
 
-**Uses:** [LandManager](LandManager.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (33), [BusinessInvestment](BusinessInvestment.md) (32), [Good](Good.md) (25), [Deposit](Deposit.md) (8), [Game](Game.md) (7), [Resource](Resource.md) (4), [NewUnit](NewUnit.md) (3), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [BuildingsStacks](BuildingsStacks.md) (1), [World](World.md) (1), [Sectors](Sectors.md) (1)
+**Uses:** [LandManager](LandManager.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (33), [BusinessInvestment](BusinessInvestment.md) (31), [Good](Good.md) (25), [Deposit](Deposit.md) (8), [Game](Game.md) (7), [Resource](Resource.md) (4), [NewUnit](NewUnit.md) (3), [Sector](Sector.md) (2), [BuildingType](BuildingType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Formats](Formats.md) (2), [BuildingsStacks](BuildingsStacks.md) (1), [World](World.md) (1), [Sectors](Sectors.md) (1)
 
 **Used by (20):** [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessInvestment](BusinessInvestment.md), [EarthFoundingCheck](EarthFoundingCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [WellCheck](WellCheck.md)
 

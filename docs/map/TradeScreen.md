@@ -1,6 +1,6 @@
 # TradeScreen.java - 4,031 lines · 172 methods · 68 constants · interface
 
-`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-11-20 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
 
 > The Trade & the world tab: how the city stands against the world this
 > month - what it sells and buys abroad, the month's balance of payments,
@@ -48,7 +48,7 @@
 > the folds, the river's toggle, the goods' toggle and the exchange's ask
 > all survive a redraw.
 
-**Uses:** [Palette](Palette.md) (358), [Kept](Kept.md) (223), [ForeignAccounts](ForeignAccounts.md) (193), [Icons](Icons.md) (49), [TradeBand](TradeBand.md) (25), [Currency](Currency.md) (23), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (15), [CapitalFlows](CapitalFlows.md) (14), [SectorScreen](SectorScreen.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [Money](Money.md) (7), [HistorySave](HistorySave.md) (7), [BuildScreen](BuildScreen.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Sector](Sector.md) (5), [Pieces](Pieces.md) (4), [FreightView](FreightView.md) (4), [PolicyScreen](PolicyScreen.md) (3), [EconomyManager](EconomyManager.md) (3), [UserInterface](UserInterface.md) (2), [PartnersPage](PartnersPage.md) (2), [VaultTable](VaultTable.md) (2), [Statement](Statement.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [RealDollar](RealDollar.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2)... and 11 more
+**Uses:** [Palette](Palette.md) (358), [Kept](Kept.md) (223), [ForeignAccounts](ForeignAccounts.md) (192), [Icons](Icons.md) (49), [TradeBand](TradeBand.md) (25), [Currency](Currency.md) (23), [Sectors](Sectors.md) (18), [TimeChart](TimeChart.md) (15), [CapitalFlows](CapitalFlows.md) (14), [SectorScreen](SectorScreen.md) (10), [Good](Good.md) (8), [ChartModel](ChartModel.md) (8), [Money](Money.md) (7), [HistorySave](HistorySave.md) (7), [BuildScreen](BuildScreen.md) (7), [HistoryScreen](HistoryScreen.md) (7), [Sector](Sector.md) (5), [Pieces](Pieces.md) (4), [FreightView](FreightView.md) (4), [PolicyScreen](PolicyScreen.md) (3), [EconomyManager](EconomyManager.md) (3), [UserInterface](UserInterface.md) (2), [PartnersPage](PartnersPage.md) (2), [VaultTable](VaultTable.md) (2), [Statement](Statement.md) (2), [GoodsMarket](GoodsMarket.md) (2), [Retail](Retail.md) (2), [RealDollar](RealDollar.md) (2), [YearBook](YearBook.md) (2), [BondMarket](BondMarket.md) (2)... and 11 more
 
 **Used by (7):** [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md), [PartnersPage](PartnersPage.md), [PolicyScreen](PolicyScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md)
 
