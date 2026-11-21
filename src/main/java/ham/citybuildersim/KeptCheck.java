@@ -534,6 +534,7 @@ public class KeptCheck {
         System.out.printf("  the first draw made %d nodes through Kept (the header's %d, the envelope's %d, the rail's %d)%n",
                 firstMade, first[0], first[2], first[4]);
         int sameTops = 0, quiet = 0, madeMost = 0;
+        Redraws chromeMonths = new Redraws(first[0] + first[1] + first[2] + first[3] + first[4] + first[5]);
         long back = 0;
         for (int m = 1; m <= MONTHS; m++) {
             Object[] r = fx(() -> {
@@ -552,19 +553,50 @@ public class KeptCheck {
             if ((int) r[1] == 0) quiet++;
             madeMost = Math.max(madeMost, (int) r[1]);
             back += (int) r[2];
+            chromeMonths.add((int) r[1], (int) r[2]);
         }
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, back / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the nodes the header and the rail drew (the same top nodes, " + sameTops + " of " + MONTHS + ")",
                 sameTops == MONTHS);
-        Observation.reached("chrome: each month hands back nine in ten of the nodes the first draw made, or more",
-                "each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
-                back / MONTHS * 10 >= firstMade * 9L,
-                "");
-        Observation.reached("chrome: ), and none makes more than a tenth",
-                "most months make no node at all (" + quiet + " of " + MONTHS + "), and none makes more than a tenth (" + madeMost + ")",
-                quiet * 2 > MONTHS && madeMost * 10 <= firstMade,
-                "");
+        System.out.println("  " + chromeMonths.quietLine());
+        check("each month hands back nine in ten of the nodes it draws again, or more (" + chromeMonths.counts() + ")",
+                chromeMonths.holds(HANDED_BACK));
+        // FS4: the levers the header and the rail answer to, pulled one at a time with no month landing - the clock stopped with a line
+        // saying why, the speed's rung, the screen on show (and a game menu, with no clock and no rail), a notice raised - each redraw
+        // handing back nine in ten of what it draws again; and each put back the same way.
+        Notice lever = new Notice("keptcheck-lever", "Kept check lever", List.of("a lever"), g.getMonth());
+        String[][] levers = {{"the clock stopped, saying why", "stop"}, {"the speed's rung moved", "speed"},
+                {"another screen on show", "screen"}, {"a game menu on show", "menu"}, {"a notice raised", "notice"},
+                {"the notice put away", "unnotice"}, {"the clock running again, the first screen back", "back"}};
+        Redraws pulled = new Redraws(fx(() -> {
+            int[] c = bench.chromeCounts();
+            return c[0] + c[1] + c[2] + c[3] + c[4] + c[5];
+        }));
+        for (String[] l : levers) {
+            int[] c = fx(() -> {
+                switch (l[1]) {
+                    case "stop" -> bench.clock(false, "Kept check: a lever stopped the clock");
+                    case "speed" -> bench.speed(7);
+                    case "screen" -> bench.screen(CHROME_SCREENS[2]);
+                    case "menu" -> bench.screen(CHROME_SCREENS[CHROME_SCREENS.length - 1]);
+                    case "notice" -> g.getInbox().all().add(lever);
+                    case "unnotice" -> g.getInbox().all().remove(lever);
+                    default -> {
+                        bench.clock(true, null);
+                        bench.speed(3);
+                        bench.screen(CHROME_SCREENS[0]);
+                    }
+                }
+                bench.drawChromeKept();
+                bench.chromePasses();
+                return bench.chromeCounts();
+            });
+            pulled.add(c[0] + c[2] + c[4], c[1] + c[3] + c[5]);
+            System.out.printf("  %s: %d made, %d handed back%n", l[0], c[0] + c[2] + c[4], c[1] + c[3] + c[5]);
+        }
+        check("each lever the chrome answers to, pulled with no month landing, hands back nine in ten of the nodes it draws again, or more ("
+                + pulled.counts() + ")", pulled.holds(HANDED_BACK));
 
         System.out.println("\n--- 7 and 8: the kept chrome against a chrome built new, in every state ---");
         List<Integer> shotAt = List.of(1, MONTHS / 2, MONTHS);
@@ -793,6 +825,7 @@ public class KeptCheck {
         System.out.printf("  the first draw made %d nodes through Kept (the city panel's %d, the construction panel's %d, the inbox list's %d);"
                 + " %d building(s) under construction%n", firstMade, first[0], first[2], first[4], sitesNow);
         int sameTops = 0, quiet = 0, madeMost = 0, withSites = 0;
+        Redraws panelMonths = new Redraws(first[0] + first[1] + first[2] + first[3] + first[4] + first[5]);
         long back = 0, madeAll = 0;
         for (int m = 1; m <= MONTHS; m++) {
             final int at = m;
@@ -816,19 +849,36 @@ public class KeptCheck {
             madeAll += (int) r[1];
             back += (int) r[2];
             if ((boolean) r[3]) withSites++;
+            panelMonths.add((int) r[1], (int) r[2]);
         }
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d,"
                 + " %d in all; months with a building under construction: %d%n", MONTHS, back / MONTHS, quiet, madeMost, madeAll, withSites);
         check("each month's redraw keeps the nodes the three panels drew (the same top nodes, " + sameTops + " of " + MONTHS + ")",
                 sameTops == MONTHS);
-        Observation.reached("panels: each month hands back nine in ten of the nodes the first draw made, or more",
-                "each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
-                back / MONTHS * 10 >= firstMade * 9L,
-                "");
-        // A log gains a row when a building opens or is demolished, and the inbox a row when a notice is raised: the rows
-        // that come are made, the rest are handed back. "Few" is a fiftieth of the first draw a month, and no month a tenth.
-        check("the nodes made in a month are few (" + madeAll + " in all over " + MONTHS + " months, at most " + madeMost + " in one)",
-                madeAll * 50 <= (long) firstMade * MONTHS && madeMost * 10 <= firstMade);
+        System.out.println("  " + panelMonths.quietLine());
+        check("each month hands back nine in ten of the nodes it draws again, or more (" + panelMonths.counts() + ")", panelMonths.holds(HANDED_BACK));
+        // FS4: a log gains a row when a building opens and the inbox one when a notice is raised. Each caused here with no month landing,
+        // by the model's own calls: the redraw makes the row, and hands back nine in ten of what it draws again (the read of a played
+        // stretch's openings, "few" against the first draw, went with it).
+        Notice raised = new Notice("keptcheck-p-row", "Kept check panels row", List.of("a row"), g.getMonth());
+        String[][] rows = {{"a building's opening recorded in the build log", "log"}, {"a notice raised", "notice"}};
+        for (String[] row : rows) {
+            int[] c = fx(() -> {
+                int[] was = bench.panelCounts();
+                int before = was[0] + was[1] + was[2] + was[3] + was[4] + was[5];
+                if (row[1].equals("log")) g.getBuildLog().record("Kept Row Works", 1, g.getMonth());
+                else g.getInbox().all().add(raised);
+                bench.drawPanelsKept();
+                bench.panelPasses();
+                int[] now = bench.panelCounts();
+                return new int[]{before, now[0] + now[2] + now[4], now[1] + now[3] + now[5]};
+            });
+            Redraws one = new Redraws(c[0]);
+            one.add(c[1], c[2]);
+            check(row[0] + ": the redraw makes its row (" + c[1] + " made) and hands back nine in ten of the nodes it draws again (" + one.counts() + ")",
+                    c[1] > 0 && one.holds(HANDED_BACK));
+        }
+        fx(() -> g.getInbox().all().remove(raised));
 
         System.out.println("\n--- 12: the kept panels against panels built new, in every state ---");
         List<Integer> shotAt = List.of(2, 9, MONTHS);
@@ -1070,6 +1120,7 @@ public class KeptCheck {
         check("the page holds the big chart and the two pins' (" + charts.size() + " charts)", charts.size() == 3);
         int watched = fx(bench::watchGraphics);
         int sameTop = 0, quiet = 0, madeMost = 0, chartsKept = 0, chipsKept = 0, graphicMoves = 0;
+        Redraws historyMonths = new Redraws(firstMade);
         long handedBack = 0;
         for (int m = 1; m <= MONTHS; m++) {
             Object[] r = fx(() -> {
@@ -1092,6 +1143,7 @@ public class KeptCheck {
             if ((int) r[1] == 0) quiet++;
             madeMost = Math.max(madeMost, (int) r[1]);
             handedBack += (int) r[2];
+            historyMonths.add((int) r[1], (int) r[2]);
             if ((boolean) r[3]) chartsKept++;
             if ((boolean) r[4]) chipsKept++;
             graphicMoves += (int) r[5];
@@ -1099,15 +1151,8 @@ public class KeptCheck {
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
-        Observation.reached("history: each month hands back nine in ten of the nodes the first draw made, or more",
-                "each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
-                    + firstMade + ")",
-                handedBack / MONTHS * 10 >= firstMade * 9L,
-                "");
-        Observation.reached("history: most months make no node at all",
-                "most months make no node at all (" + quiet + " of " + MONTHS + ")",
-                quiet * 2 > MONTHS,
-                "");
+        System.out.println("  " + historyMonths.quietLine());
+        check("each month hands back nine in ten of the nodes it draws again, or more (" + historyMonths.counts() + ")", historyMonths.holds(HANDED_BACK));
         check("the big chart and both pins' stay in the scene, in the same box, after every redraw (" + chartsKept + " of " + MONTHS + ")",
                 chartsKept == MONTHS);
         check("the legend's chips and the range buttons are the same nodes after every redraw (" + chipsKept + " of " + MONTHS + ")",
@@ -1520,6 +1565,99 @@ public class KeptCheck {
     /** The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). */
     static final double HANDED_BACK = 0.9;
 
+    /**
+     * Kept's rule as a share, the same on any city (FS4): a redraw hands back HANDED_BACK of the nodes it draws again, that is of the
+     * smaller of the last draw and this one, summed over the redraws watched. WHY: the rule was read against the first draw over a
+     * played stretch, so what the stretch did to the page was counted as the pool's: the construction page handed back 499 of 559 on
+     * HS1's city, a page that had shrunk and made no node, and Construction's statement 89.8% on R1c's, a page that had grown. A row a
+     * month adds or takes away is the page's own change, which the city's path decides; a node made new in place of one the last draw
+     * had is the pool's, and only that lowers the share. A page drawn from a pool let go hands back none of what it draws again.
+     */
+    static final class Redraws {
+        long kept, again;
+        int redraws, quiet, madeMost;
+        private long last;
+
+        /** From a first draw of `first` nodes. */
+        Redraws(long first) {
+            last = first;
+        }
+
+        /** One redraw: the nodes it made and the nodes it handed back. */
+        void add(int made, int handed) {
+            long now = made + (long) handed;
+            kept += handed;
+            again += Math.min(last, now);
+            last = now;
+            redraws++;
+            if (made == 0) quiet++;
+            madeMost = Math.max(madeMost, made);
+        }
+
+        /** Whether the redraws handed back `share` of what they drew again, or more. */
+        boolean holds(double share) {
+            return kept >= share * again;
+        }
+
+        String counts() {
+            return String.format("%,d of %,d over %d redraws", kept, again, redraws);
+        }
+
+        String quietLine() {
+            return quiet + " of " + redraws + " redraws made no node; the most made in one: " + madeMost;
+        }
+    }
+
+    /** How many times a difference is looked at again with the model and the clock held still before it is a kept fault (KRT1). */
+    static final int HELD_STILL = 2;
+
+    /** The differences that did not repeat held still, with their content the same: a reading, printed, not failed (KRT1). */
+    static int heldReadings;
+
+    /** A signature line without where layout put it: its class, words, style, values, handlers and tooltip (KRT1). */
+    static List<String> unplaced(List<String> lines) {
+        List<String> out = new ArrayList<>(lines.size());
+        for (String l : lines) out.add(l.replaceFirst(" at -?[0-9.]+,-?[0-9.]+ -?[0-9.]+x-?[0-9.]+$", ""));
+        return out;
+    }
+
+    /**
+     * The page against the same page built new, as againstNew(), with a difference looked at again with the model and the clock held still
+     * (KRT1, FS4): no month and no kept draw, the kept page only laid out again as it stands and the new page built again, HELD_STILL times.
+     * A difference of words, style, values, handlers or tooltip is the page's at once. A difference only of place or size (a Text 15.0 high
+     * kept and 16.0 built new on Wood Products' Residues; a statement row 836x24 kept and 836x16 new on Construction) that repeats each time
+     * is a kept fault, and returned; one that does not repeat was a reading of the moment (a font read under load), printed and not returned,
+     * the content having been the same.
+     */
+    static String againstNewHeld(KeptBench bench, KeptBench.Page page, boolean pixels) throws Exception {
+        bench.passes();
+        bench.finishPageAnimations();
+        bench.settle();
+        List<String> kept = bench.signature();
+        int[] keptPx = pixels ? bench.canvasPixels() : null;
+        bench.showFresh(page);
+        bench.finishPageAnimations();
+        bench.settle();
+        List<String> fresh = bench.signature();
+        int[] freshPx = pixels ? bench.canvasPixels() : null;
+        bench.restoreKeptPage();
+        String d = firstDifference(kept, fresh);
+        if (d == null && pixels && !alike(keptPx, freshPx)) d = "the pixels differ: " + pixelDifference(keptPx, freshPx);
+        if (d == null) return null;
+        String content = firstDifference(unplaced(kept), unplaced(fresh));
+        if (content != null) return d;
+        for (int i = 1; i <= HELD_STILL; i++) {
+            String again = againstNew(bench, page, pixels);
+            if (again == null) {
+                heldReadings++;
+                System.out.println("  " + page.name() + ": held still, the difference did not repeat at look " + i + " of " + HELD_STILL
+                        + " (a reading of the moment; the content is the same): " + d.replace('\n', ' '));
+                return null;
+            }
+        }
+        return d + " (repeated held still " + HELD_STILL + " times: a kept fault)";
+    }
+
     /** The page as it stands (drawn kept, and laid out) against the same page built new: the first difference, or null. The animations a draw started are run to their ends first and the page laid out after, as the pulse does: a count-up's last word is another width. */
     static String againstNew(KeptBench bench, KeptBench.Page page) throws Exception {
         return againstNew(bench, page, false);
@@ -1565,16 +1703,30 @@ public class KeptCheck {
      * tenth of the nodes the first draw made is, and the months that made none are printed.
      */
     static void pageKept(Game g, KeptBench bench, KeptBench.Page page, int n, boolean eventful) throws Exception {
+        pageKept(g, bench, page, n, eventful, false);
+    }
+
+    /**
+     * Section n, as FS4 has it: the page is kept - a month's redraw keeps its top nodes, makes no node when drawn again unchanged, and
+     * hands back nine in ten of the nodes it draws again (Redraws), whatever the month did to the page.
+     */
+    static void pageKeptCaused(Game g, KeptBench bench, KeptBench.Page page, int n) throws Exception {
+        pageKept(g, bench, page, n, false, true);
+    }
+
+    static void pageKept(Game g, KeptBench bench, KeptBench.Page page, int n, boolean eventful, boolean again) throws Exception {
         System.out.println("\n--- " + n + ": " + page.name() + " is kept ---");
-        int firstMade = fx(() -> {
+        int[] first = fx(() -> {
             bench.home(page);
             bench.drawKept(page);
             for (int i = 0; i < 3; i++) bench.passes();
-            return bench.counts(page)[0];
+            return bench.counts(page);
         });
+        int firstMade = first[0];
         System.out.printf("  the first draw made %d nodes through Kept%n", firstMade);
         int sameTop = 0, quiet = 0, madeMost = 0;
         long handedBack = 0;
+        Redraws redraws = new Redraws(first[0] + first[1]);
         for (int m = 1; m <= MONTHS; m++) {
             Object[] r = fx(() -> {
                 List<javafx.scene.Node> before = bench.pageTop();
@@ -1591,10 +1743,16 @@ public class KeptCheck {
             if ((int) r[1] == 0) quiet++;
             madeMost = Math.max(madeMost, (int) r[1]);
             handedBack += (int) r[2];
+            redraws.add((int) r[1], (int) r[2]);
         }
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
+        if (again) {
+            check(page.name() + ": each month hands back nine in ten of the nodes it draws again, or more (" + redraws.counts() + ")",
+                    redraws.holds(HANDED_BACK));
+            return;
+        }
         // (The page named in the line, so that a known red can name one page's line and not every page's: KBP1, FB6.)
         check(page.name() + ": each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
                 + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
@@ -1704,6 +1862,20 @@ public class KeptCheck {
     }
 
     static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share, boolean pixels, boolean observeRetention) throws Exception {
+        pageReshaped(g, bench, page, n, choices, share, pixels, observeRetention, false);
+    }
+
+    /**
+     * Section n, as FS4 has it: every choice made in turn, the redraw after it and the one after a month lands each equal to a page built
+     * new, a difference looked at again held still (againstNewHeld, KRT1), and the month's redraw handing back nine in ten of the nodes it
+     * draws again (Redraws: what the choice or the month added or took away is the page's own change).
+     */
+    static void pageReshapedCaused(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices) throws Exception {
+        pageReshaped(g, bench, page, n, choices, HANDED_BACK, false, false, true);
+    }
+
+    static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share, boolean pixels, boolean observeRetention,
+                             boolean again) throws Exception {
         System.out.println("\n--- " + n + ": what reshapes " + page.name() + (pixels ? ", to the pixel" : "") + " ---");
         int size = fx(() -> {
             bench.home(page);
@@ -1720,13 +1892,16 @@ public class KeptCheck {
                 String premise = c.hand().on(bench);
                 if (premise != null) return new Object[]{"the choice could not be made: " + premise, 0, 1.0, 0, 0};
                 bench.drawKept(page);
-                String a = againstNew(bench, page, pixels);
+                int[] chosen = bench.counts(page);
+                String a = again ? againstNewHeld(bench, page, pixels) : againstNew(bench, page, pixels);
                 int grown = bench.signature().size();
                 java.util.Set<javafx.scene.Node> nodesBefore = bench.nodesOnPage();
                 month(g);
                 bench.drawKept(page);
                 int[] counts = bench.counts(page);
-                double handedBack = counts[1] / (double) Math.max(1, counts[0] + counts[1]);
+                double handedBack = again
+                        ? counts[1] / (double) Math.max(1, Math.min(chosen[0] + chosen[1], counts[0] + counts[1]))
+                        : counts[1] / (double) Math.max(1, counts[0] + counts[1]);
                 if (handedBack < share) {
                     List<String> addedLabels = bench.nodesOnPage().stream()
                             .filter(node -> !nodesBefore.contains(node) && node instanceof javafx.scene.control.Labeled)
@@ -1734,7 +1909,7 @@ public class KeptCheck {
                             .sorted().limit(12).toList();
                     System.out.println("  " + page.name() + " added labels after the month: " + addedLabels);
                 }
-                String b = againstNew(bench, page, pixels);
+                String b = again ? againstNewHeld(bench, page, pixels) : againstNew(bench, page, pixels);
                 return new Object[]{a != null ? a : b, grown, handedBack, counts[0], counts[1]};
             });
             String d = (String) r[0];
@@ -1755,6 +1930,10 @@ public class KeptCheck {
         }
         System.out.printf("  the month's redraw after a choice handed back %.1f%% of the page's nodes at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
+        if (again) {
+            check("a month's redraw after each choice hands back nine in ten of the nodes it draws again, or more", worst >= share);
+            return;
+        }
         pathCheck(observeRetention, "pageReshaped " + n + " " + page.name() + " retention",
                 "a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more",
                 worst >= share);
@@ -1838,7 +2017,7 @@ public class KeptCheck {
         System.out.println("\n=== Infrastructure (KP2) ===");
         System.out.println("  " + fx(() -> ensureTransit(g)));
         KeptBench.Page page = fx(bench::infrastructure);
-        pageKept(g, bench, page, 21);
+        pageKeptCaused(g, bench, page, 21);
         pageShows(g, bench, page, 22);
         List<Choice> choices = List.of(
                 new Choice("the roads' fold opened", b -> { b.infraFold("roads", true); return null; }, true),
@@ -1855,7 +2034,7 @@ public class KeptCheck {
                 new Choice("the railway fold closed", b -> { b.infraFold("railway", false); return null; }),
                 choice("the Ports page", b -> { b.infraOpen("Ports", "All"); return null; }),
                 choice("the Roads page again", b -> { b.infraOpen("Roads", "All"); return null; }));
-        pageReshaped(g, bench, page, 23, choices);
+        pageReshapedCaused(g, bench, page, 23, choices);
         pageCost(g, bench, page, 24, KEPT_INFRASTRUCTURE_MS, "KEPT_INFRASTRUCTURE_MS");
     }
 
@@ -1875,7 +2054,7 @@ public class KeptCheck {
     static void services(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== Services (KP2) ===");
         KeptBench.Page page = fx(bench::services);
-        pageKept(g, bench, page, 25);
+        pageKeptCaused(g, bench, page, 25);
         pageShows(g, bench, page, 26);
         List<Choice> choices = new ArrayList<>();
         for (String[] pageOf : KeptBench.servicesPages()) {
@@ -1890,7 +2069,7 @@ public class KeptCheck {
                 }
             }
         }
-        pageReshaped(g, bench, page, 27, choices);
+        pageReshapedCaused(g, bench, page, 27, choices);
         pageCost(g, bench, page, 28, KEPT_SERVICES_MS, "KEPT_SERVICES_MS");
     }
 
@@ -2004,7 +2183,7 @@ public class KeptCheck {
         System.out.printf("  %d offers listed; %d sectors waiting on ground; ground on a second landmass (the landmass table, kept since KP4 through SectorScreen.oilTable, as the oil industry's are): %s%n",
                 has[0], has[3], has[1]);
         boolean vault = (boolean) has[2];
-        pageKept(g, bench, page, 29);
+        pageKeptCaused(g, bench, page, 29);
         pageShows(g, bench, page, 30);
         List<Choice> choices = new ArrayList<>();
         for (int side = 0; side < 4; side++) {
@@ -2025,7 +2204,7 @@ public class KeptCheck {
         choices.add(choice("paid by converting cash", b -> { b.landPay(false); return null; }));
         choices.add(choice("the way of paying put back", b -> { b.landPay(vault); return null; }));
         choices.add(choice("a plot bought (its receipt, the plots that came onto the shelf)", b -> quietly(b::landBuy)));
-        pageReshaped(g, bench, page, 31, choices);
+        pageReshapedCaused(g, bench, page, 31, choices);
         pageCost(g, bench, page, 32, KEPT_LAND_MS, "KEPT_LAND_MS");
 
         // The two other pages of the office, each an arrival that forgets the pool: drawn, then a month later. The funding page
@@ -2043,7 +2222,7 @@ public class KeptCheck {
         others.add(fx(() -> bench.landFellShort(null, 0, 2)));
         for (KeptBench.Page other : others) {
             // (In the game the fell-short page is never redrawn over itself: a month landing draws the office. It is drawn so here, as every page is.)
-            pageReshaped(g, bench, other, 33, List.of(choice(other.name() + " opened", b -> null)));
+            pageReshapedCaused(g, bench, other, 33, List.of(choice(other.name() + " opened", b -> null)));
         }
     }
 
@@ -2181,6 +2360,9 @@ public class KeptCheck {
     static void hover(Game g, KeptBench bench) throws Exception {
         System.out.println("\n--- 35: the hover is kept ---");
         java.util.Map<String, Boolean> found = new java.util.LinkedHashMap<>();
+        // The premise caused: a decision recorded and its month played, so the hard times' right column has a row that moves the chart.
+        g.getDecisions().record(DecisionLog.TAX, "Kept check: a decision in view, to put the pointer on");
+        month(g);
         // City History: a row that moves the chart (the hard times open), and a chart card's head (a line pinned).
         fx(() -> {
             bench.historyPreset(0);
@@ -2239,8 +2421,7 @@ public class KeptCheck {
             hoverLine(found, "the land office", kind, d);
         }
         for (String kind : List.of("rowGoes", "door", "limitCell", "chartCardHead", "landRow", "oreCard", "doorCard")) {
-            Observation.reached("a " + kind + " was found on a page of this city, to put the pointer on",
-                    found.getOrDefault(kind, false));
+            check("a " + kind + " was found on a page of this city, to put the pointer on", found.getOrDefault(kind, false));
         }
     }
 
@@ -2382,8 +2563,8 @@ public class KeptCheck {
         });
         check("a kept draw fills the order bar once, after the last card (" + fills + " fills)", fills == 1);
 
-        pageKept(g, bench, overview, 36);
-        pageKept(g, bench, ordered, 36);
+        pageKeptCaused(g, bench, overview, 36);
+        pageKeptCaused(g, bench, ordered, 36);
         pageShows(g, bench, overview, 37);
         pageShows(g, bench, ordered, 37);
         // ...and a market category in its groups, two orders dialled up, the first card's stats pinned open.
@@ -2471,7 +2652,7 @@ public class KeptCheck {
         choices.add(choice("...and off", b -> { b.buildOpen(BuildAdvice.OVERVIEW); b.buildAuto(false); return null; }));
         choices.add(acting("automatic building turned on (" + cat + ": the head's chip)", b -> { b.buildOpen(cat); b.buildAuto(true); return null; }));
         choices.add(choice("...and off again", b -> { b.buildOpen(cat); b.buildAuto(false); return null; }));
-        pageReshaped(g, bench, page, 38, choices);
+        pageReshapedCaused(g, bench, page, 38, choices);
         fx(() -> {
             bench.buildAuto(autoWas);
             bench.home(page);
@@ -2492,7 +2673,7 @@ public class KeptCheck {
         check("the city has " + SITE_ROWS + " sites on to draw (" + rows + ")", rows >= SITE_ROWS);
         keepSites(g);
         KeptBench.Page page = fx(bench::construction);
-        pageKept(g, bench, page, 40);
+        pageKeptCaused(g, bench, page, 40);
         pageShows(g, bench, page, 41);
         String city = fx(() -> bench.constructionPickable(false));
         String theirs = fx(() -> bench.constructionPickable(true));
@@ -2546,7 +2727,7 @@ public class KeptCheck {
             return b.fieldState() != null ? (b.fieldType("").isEmpty() ? null : "the box did not empty") : "the Demolish tab has no find box";
         }));
         choices.add(choice("the Sites tab again", b -> { b.constructionTab("Sites"); return null; }));
-        pageReshaped(g, bench, page, 42, choices);
+        pageReshapedCaused(g, bench, page, 42, choices);
         pageCost(g, bench, page, 43, KEPT_CONSTRUCTION_MS, "KEPT_CONSTRUCTION_MS");
         int heldRows = fx(bench::sitesOn);
         check("the sites were held through the months: " + heldRows + " on at the end (SITE_ROWS " + SITE_ROWS + ")", heldRows >= SITE_ROWS);
@@ -2638,7 +2819,7 @@ public class KeptCheck {
                     shortLines.isEmpty() && !capShown);
         }
         for (KeptBench.Page p : pages) {
-            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+            pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
         }
     }
 
@@ -2940,7 +3121,7 @@ public class KeptCheck {
             hoverLine(found, "Build, " + city, "(i) cover", d);
         }
         for (String kind : List.of("jobTile", "marketTile", "door", "ringCard", "(i) cover")) {
-            Observation.reached("a " + kind + " was found on a Build page of this city, to put the pointer on",
+            check("a " + kind + " was found on a Build page of this city, to put the pointer on",
                     found.getOrDefault(kind, false));
         }
     }
@@ -3371,8 +3552,8 @@ public class KeptCheck {
 
         KeptBench.Page list = fx(bench::sectors);
         KeptBench.Page plainOps = fx(() -> bench.sectors(possessive(plainName) + " Operations page", plain, ops, false));
-        pageKept(g, bench, list, 47);
-        pageKept(g, bench, plainOps, 47);
+        pageKeptCaused(g, bench, list, 47);
+        pageKeptCaused(g, bench, plainOps, 47);
 
         List<KeptBench.Page> shown = new ArrayList<>(List.of(list, plainOps));
         shown.add(fx(() -> bench.sectors(possessive(plainName) + " Income page", plain, "Income", false)));
@@ -3385,12 +3566,12 @@ public class KeptCheck {
 
         // 49: what reshapes the Sectors tab.
         KeptBench.Page tab = fx(() -> bench.sectors("the Sectors tab", plain, ops, false));
-        pageReshaped(g, bench, list, 49, List.of(
+        pageReshapedCaused(g, bench, list, 49, List.of(
                 new Choice("Show more (every card open to its second row)", b -> { b.sectorsOpen(null, ops, false); b.sectorsMore(true); return null; }, true),
-                choice("Show less", b -> { b.sectorsMore(false); return null; })), true);
+                choice("Show less", b -> { b.sectorsMore(false); return null; })));
         List<Choice> every = new ArrayList<>();
         for (String key : Sectors.KEYS) every.add(choice(called(g, key) + " on its Operations page", on(key, ops, false)));
-        pageReshaped(g, bench, tab, 49, every, true);
+        pageReshapedCaused(g, bench, tab, 49, every);
         // One business of each kind on all five pages, in both views: Operations has no statement.
         List<Choice> pages = new ArrayList<>();
         for (String key : new String[]{plain, Sectors.RETAIL, Sectors.REAL_ESTATE, works, Sectors.FREIGHT}) {
@@ -3399,14 +3580,14 @@ public class KeptCheck {
                 if (!page.equals(ops)) pages.add(choice(called(g, key) + ", " + page + " as a statement", on(key, page, true)));
             }
         }
-        pageReshaped(g, bench, tab, 49, pages, true);
+        pageReshapedCaused(g, bench, tab, 49, pages);
         // Freight's four divisions, each a page of its own.
         List<Choice> divisions = new ArrayList<>();
         for (String division : KeptBench.freightDivisions()) {
             divisions.add(choice("Freight on its " + division + " division", b -> { b.sectorsOpen(Sectors.FREIGHT, ops, false); b.sectorsDivision(division); return null; }));
         }
         divisions.add(choice("Freight on All again", b -> { b.sectorsOpen(Sectors.FREIGHT, ops, false); b.sectorsDivision("All"); return null; }));
-        pageReshaped(g, bench, tab, 49, divisions, true);
+        pageReshapedCaused(g, bench, tab, 49, divisions);
         // A fold opened has to add to the page, and closed take it away; a note, every note, the toolbar's two columns.
         // The premise first: the note chosen is one the statement opens on lines this month (on 0.9.19 the builders' revenue,
         // note 1, came down to one named part, which draws no caret, and the fold chosen by "the first note" caused nothing).
@@ -3437,7 +3618,7 @@ public class KeptCheck {
         folds.add(choice("...the common-size column off too", b -> { b.sectorsColumns(false, false); return null; }));
         folds.add(choice("...the change column on again", b -> { b.sectorsColumns(true, false); return null; }));
         folds.add(choice("...and both on", b -> { b.sectorsColumns(true, true); return null; }));
-        pageReshaped(g, bench, tab, 49, folds, true);
+        pageReshapedCaused(g, bench, tab, 49, folds);
 
         sectorsPictures(g, bench, works, worksName);
         sectorsCountUp(g, bench, plain);
@@ -3547,7 +3728,7 @@ public class KeptCheck {
                     Object[] was = landed.get(p);
                     still &= was != null && KeptBench.painted(p) == was[0] && KeptBench.partsOf(p).equals(was[1]);
                 }
-                String d = againstNew(bench, page);
+                String d = againstNewHeld(bench, page, false);
                 return new Object[]{held, before.size(), repaints, keptShapes, hadShapes, still, d};
             });
             nodesKept += (int) r[0];
@@ -3584,8 +3765,14 @@ public class KeptCheck {
         return firstDifference(kept, fresh);
     }
 
-    /** Whether the figures the Sectors pages count have moved between last month and this: the list's KEPT, a business's, and some card's. */
+    /**
+     * Whether the figures a Sectors page counts have moved between last month and this: on the list its KEPT and some card's, on a
+     * business's page the business's KEPT, the one figure there that counts (countingFigures). FS4: a business's page waited on the
+     * list's KEPT as well, which no figure on it reads, and a city whose total is printed a unit above the business's (its "$1.2T" against
+     * a "$950.0M") can go a year with it still (BO1-S's moved city, section 51).
+     */
     private static boolean figuresMoved(String[][] words, boolean business) {
+        if (business) return !words[1][0].equals(words[1][1]);
         boolean cards = false;
         for (int i = 2; i < words.length; i++) cards |= !words[i][0].equals(words[i][1]);
         return !words[0][0].equals(words[0][1]) && cards && (!business || !words[1][0].equals(words[1][1]));
@@ -3603,17 +3790,12 @@ public class KeptCheck {
         Runnable before = afterMonth;
         TaxPolicy p = fx(() -> g.getEconomyManager().getTaxPolicy());
         double offset = fx(() -> p.getPropertyOffset(key)), rate = fx(() -> p.effectivePropertyRate(key));
-        double step = fx(() -> printedStep(bench.sectorsWords(key)[1][1]));
-        double assessed = fx(() -> g.getEconomyManager().getAssessedValue(g.getSectors().byKey(key)));
-        // The bill is the assessed value at the annual rate over the year's months (TaxPolicy.effectiveMonthlyPropertyRate).
-        double points = assessed > 0 ? SWING_STEPS * step * TreasuryFund.YEAR_MONTHS / assessed : TaxPolicy.MAX_PROPERTY_TAX;
-        double to = rate + points <= TaxPolicy.MAX_PROPERTY_TAX ? rate + points
-                : rate - points >= 0 ? rate - points : rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0;
-        double swung = offset + to - rate;
         boolean[] high = {false};
+        // FS4: the swing is sized again at each month it goes up, from the figure as printed then: sized once, a business that grew
+        // past a unit ("$950.0M" to "$1.0B") was swung by a thousandth of its new step, and no month in twelve moved it (BO1-S).
         Runnable swing = () -> {
             high[0] = !high[0];
-            g.setZoneTax(key, Zoning.Tax.PROPERTY, high[0] ? swung : offset);
+            g.setZoneTax(key, Zoning.Tax.PROPERTY, high[0] ? swungOffset(g, bench, key, offset) : offset);
         };
         String bills = fx(() -> {
             Sector s = g.getSectors().byKey(key);
@@ -3621,8 +3803,8 @@ public class KeptCheck {
             swing.run();
             return Money.money(was) + " and " + Money.money(g.getEconomyManager().getPropertyTaxFor(s));
         });
-        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of its net income's printed steps of %s): a bill of %s a month%n",
-                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, Money.money(step), bills);
+        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of its net income's printed steps, %s at the start, sized again each month): a bill of %s a month%n",
+                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, Money.money(fx(() -> printedStep(bench.sectorsWords(key)[1][1]))), bills);
         afterMonth = () -> {
             if (before != null) before.run();
             swing.run();
@@ -3631,6 +3813,22 @@ public class KeptCheck {
             afterMonth = before;
             g.setZoneTax(key, Zoning.Tax.PROPERTY, offset);
         };
+    }
+
+    /**
+     * The property offset that moves a business's net income by SWING_STEPS of the steps it is printed in this month, from the offset it
+     * has (KS2): up where the tax allows it and down otherwise. The bill is the assessed value at the annual rate over the year's months
+     * (TaxPolicy.effectiveMonthlyPropertyRate). Read with the business at `offset`, the swing's low month.
+     */
+    static double swungOffset(Game g, KeptBench bench, String key, double offset) {
+        TaxPolicy p = g.getEconomyManager().getTaxPolicy();
+        double rate = p.effectivePropertyRate(key);
+        double step = printedStep(bench.sectorsWords(key)[1][1]);
+        double assessed = g.getEconomyManager().getAssessedValue(g.getSectors().byKey(key));
+        double points = assessed > 0 ? SWING_STEPS * step * TreasuryFund.YEAR_MONTHS / assessed : TaxPolicy.MAX_PROPERTY_TAX;
+        double to = rate + points <= TaxPolicy.MAX_PROPERTY_TAX ? rate + points
+                : rate - points >= 0 ? rate - points : rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0;
+        return offset + to - rate;
     }
 
     /** How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. */
@@ -3944,7 +4142,7 @@ public class KeptCheck {
         hoverLine(found, possessive(called(g, plain)) + " page", "door", fx(() -> bench.hoverKept("door", bench::showSectors)));
         hoverLine(found, possessive(called(g, plain)) + " page", "crumb", fx(() -> bench.hoverCrumb(bench::showSectors)));
         for (String kind : List.of("sectorCard", "door", "crumb")) {
-            Observation.reached("a " + kind + " was found on a Sectors page of this city, to put the pointer on",
+            check("a " + kind + " was found on a Sectors page of this city, to put the pointer on",
                     found.getOrDefault(kind, false));
         }
     }
@@ -9885,6 +10083,7 @@ public class KeptCheck {
         });
         System.out.printf("  the first draw made %d nodes through Kept%n", firstMade);
         int sameTop = 0, quiet = 0, differ = 0, madeMost = 0;
+        Redraws people = new Redraws(firstMade);
         long handedBack = 0;
         String firstDiffer = null;
         List<Integer> shotAt = List.of(1, MONTHS / 2, MONTHS);
@@ -9914,6 +10113,7 @@ public class KeptCheck {
             if (made == 0) quiet++;
             madeMost = Math.max(madeMost, made);
             handedBack += (int) r[2];
+            people.add(made, (int) r[2]);
             if (r[3] != null) {
                 differ++;
                 if (firstDiffer == null) firstDiffer = "month " + g.getMonth() + ", " + r[3];
@@ -9935,15 +10135,20 @@ public class KeptCheck {
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top node, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
-        Observation.reached("main: each month hands back nine in ten of the nodes the first draw made, or more",
-                "each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
-                    + firstMade + ")",
-                handedBack / MONTHS * 10 >= firstMade * 9L,
-                "");
-        Observation.reached("main: most months make no node at all",
-                "most months make no node at all (" + quiet + " of " + MONTHS + ")",
-                quiet * 2 > MONTHS,
-                "");
+        System.out.println("  " + people.quietLine());
+        check("each month hands back nine in ten of the nodes it draws again, or more (" + people.counts() + ")", people.holds(HANDED_BACK));
+        // ...and the rule catches a page thrown away: People drawn after its pool is let go, as another city opened leaves it.
+        int[] thrown = fx(() -> {
+            int before = bench.lastMade() + bench.lastKept();
+            bench.forgetPeople();
+            bench.drawKept();
+            bench.passes();
+            return new int[]{before, bench.lastMade(), bench.lastKept()};
+        });
+        Redraws away = new Redraws(thrown[0]);
+        away.add(thrown[1], thrown[2]);
+        check("the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (" + away.counts() + ")",
+                thrown[0] > 0 && !away.holds(HANDED_BACK));
         if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
         check("the kept page's signature equals the new page's at every month (" + differ + " differ)", differ == 0);
 
@@ -10065,6 +10270,7 @@ public class KeptCheck {
         kp2cMends(g, bench);
         fb2Repairs(g, bench);
 
+        System.out.println("\nKRT1, held still: " + heldReadings + " differences only of place or size did not repeat with the model and the clock held still (each printed above, none failed)");
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
         System.exit(fails);
