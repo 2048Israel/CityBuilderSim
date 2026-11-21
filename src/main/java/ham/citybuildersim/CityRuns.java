@@ -2404,6 +2404,62 @@ public final class CityRuns {
         while (idleSince.size() > Math.max(0, from - wasActive)) idleSince.remove(idleSince.size() - 1);
     }
 
+    /* ----- the station's yard laid short is laid again longer (TN1, 2026-11-21) ----- */
+
+    /**
+     * How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, each
+     * January (a month that is a multiple of it), not each month the railway is laid, since each box is weighed against every mine. By
+     * the calendar, not by the last weighing, so a city read from its sidecar weighs in the months the city played on would have.
+     */
+    public static final int YARD_REWEIGH_MONTHS = 12;
+
+    /** Whether this is a month the station's yard, short of YARD_LONG, is weighed (lengthenStation()): layRail() runs for it though nothing it is stamped by moved. */
+    private boolean reweighDue() {
+        if (Math.floorMod(month, YARD_REWEIGH_MONTHS) != 0 || yards.isEmpty() || yardsActive() == 0) return false;
+        long[] y = yards.get(0);
+        return Math.max(y[2], y[3]) < YARD_LONG;
+    }
+
+    /**
+     * (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track
+     * longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fits (on home's ground with the railway in
+     * pieces), off every other yard; it keeps its ask. A station that holds no train (shorter than every tier's length) may go too, after
+     * every box on the quarter line, where the spine runs straight beside it (spotsOffLine()). Weighed in each month reweighDue() names while
+     * it is short of YARD_LONG.
+     * WHY: a yard is laid at the longest tier the ground allows the month it is laid and kept at its box after (keepYards()), so a young
+     * city's station, laid where its ground ran short of a train's length, or one read from a sidecar before FORMAT 10, laid at its
+     * footprint, stays short for good, and since FX5 a train runs only onto a siding that holds it (TrainSchedule.unfit()): Jerus's city
+     * at month 1,204 had its station's Rail Depot laid at its 8-plot footprint, a siding of one plot, and 29 trains a month, every one
+     * unfit; the Bergen playtest's, laid a mixed train's 15 plots long at month 840, never held a unit train. Only the station's yard: a
+     * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave.
+     */
+    private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces) {
+        if (sizes.isEmpty() || !reweighDue()) return;
+        long[] y = yards.get(0);
+        long had = Math.max(y[2], y[3]);
+        int[] asked = yardAsked(0);
+        List<long[]> others = yards.subList(1, yards.size());
+        List<List<long[]>> tiers = spotsOnTrack(asked[0], asked[1]);
+        // A station that holds no train (shorter than the shortest train's tier) may go too where the spine runs straight off the quarter line (spotsOffLine()).
+        int shortest = Integer.MAX_VALUE;
+        for (int l : TIER_LENGTHS) shortest = Math.min(shortest, l);
+        if (had < shortest) tiers.addAll(spotsOffLine(asked[0], asked[1]));
+        for (List<long[]> tier : tiers) {
+            List<long[]> fit = new ArrayList<>();
+            for (long[] b : tier) {
+                if (Math.max(b[2], b[3]) <= had || !yardFits(b, g, mines, others)) continue;
+                if (inPieces && pieces.pieceOf(b[0] + b[2] / 2, b[1] + b[3] / 2) != 0) continue;
+                fit.add(b);
+            }
+            if (fit.isEmpty()) continue;
+            long[] box = nearestMineFirst(fit, mines).get(0);
+            sawBox(witness, y[0], y[1], y[2], y[3]);
+            sawBox(witness, box[0], box[1], box[2], box[3]);
+            yards.set(0, box);
+            return;
+        }
+    }
+
     /** Every box a yard could take, the nearest a mine first: the YARD_LONG boxes, then (where none fits, in the order of the tiers) the cell's interior's, then the footprint's own; two a cell the track runs straight through on its line, one at either end of it. */
     List<long[]> yardSpots(int w, int h, List<long[]> mines) {
         List<long[]> all = new ArrayList<>();
@@ -2532,11 +2588,69 @@ public final class CityRuns {
      * longer than the interior (YARD_LONG) runs on over the ring plot into the next cell, or back into the one before.
      */
     static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along) {
+        spotsIn(out, cx, cy, row, w, h, along, RAIL_AT, false);
+    }
+
+    /**
+     * (TN1) The boxes a yard of footprint w x h could take on the spine's straight stretches that run off a cell's quarter line, by tier
+     * (TIER_LENGTHS, the longest first; not the footprint's own): spotsOnTrack()'s boxes, across the stretch's own line and on either side of it - a spine arm that
+     * turned a corner round water or a highway's verge and went on straight a plot or two beside the quarter line - where the track runs
+     * the box's whole length. Only lengthenStation()'s, for a station whose yard holds no train: Jerus's city's main line left the quarter
+     * line two plots west of its hub and ran 219 plots on beside it, and the track on the quarter line had room only for its station's
+     * 8-plot footprint.
+     */
+    List<List<long[]>> spotsOffLine(int w, int h) {
+        List<List<long[]>> tiers = new ArrayList<>(TIER_LENGTHS.length);
+        for (int t = 0; t < TIER_LENGTHS.length; t++) tiers.add(new ArrayList<>());
+        if (!rail.started) return tiers;
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        List<long[]> cell = new ArrayList<>(2);
+        for (Arm a : rail.arms) {
+            if (a.corridor >= BRANCH) continue;
+            for (int s = 0; s < a.segs; s++) {
+                int hd = a.segHead[s], dx = DX[hd], dy = DY[hd];
+                if (dx != 0 && dy != 0) continue;
+                boolean row = dy == 0;
+                long line = row ? a.segY[s] : a.segX[s];
+                int at = (int) Math.floorMod(line, CELL);
+                if (at == RAIL_AT || at == 0) continue;   // the quarter line is spotsOnTrack()'s; a ring plot is the street between two cells
+                int own = row ? w : h;
+                for (int k = 1; k <= a.segSteps[s]; k++) {
+                    long px = a.segX[s] + (long) dx * k, py = a.segY[s] + (long) dy * k;
+                    long cx = Math.floorDiv(px, CELL), cy = Math.floorDiv(py, CELL);
+                    if (!seen.add((cx << 33) ^ (cy << 1) ^ (row ? 1 : 0) ^ ((long) at << 58))) continue;
+                    for (int t = 0; t < TIER_LENGTHS.length; t++) {
+                        if (sameTier(own, t) || tierAlong(own, t) == own) continue;
+                        cell.clear();
+                        spotsIn(cell, cx, cy, row, w, h, tierAlong(own, t), at, false);
+                        spotsIn(cell, cx, cy, row, w, h, tierAlong(own, t), at, true);
+                        for (long[] b : cell) {
+                            int on = 0, len = row ? (int) b[2] : (int) b[3];
+                            for (int i = 0; i < len; i++) if (row ? covered(rail, b[0] + i, line) : covered(rail, line, b[1] + i)) on++;
+                            if (on == len) tiers.get(t).add(b);
+                        }
+                    }
+                }
+            }
+        }
+        return tiers;
+    }
+
+    /**
+     * ...across a line `at` plots into the cell (TN1: a stretch of the spine off the quarter line, spotsOffLine()); RAIL_AT is the quarter
+     * line. `far`: the box starts on the line instead and runs on across away from the cell's first plot, where the interior holds it (a
+     * yard's fan is read from wherever its line runs in the box: TileRaster.yardLayout()).
+     */
+    static void spotsIn(List<long[]> out, long cx, long cy, boolean row, int w, int h, int along, int at, boolean far) {
         int[] size = boxSize(row, w, h, along);
         int across = row ? size[1] : size[0];
         if (across > DistrictPlan.INTERIOR) return;
         // Across the line: from the interior's first plot where the box reaches the line from there, else ending on it.
-        int a0 = across >= RAIL_AT ? 1 : RAIL_AT - across + 1;
+        int a0 = across >= at ? 1 : at - across + 1;
+        if (far) {
+            if (at + across - 1 > DistrictPlan.INTERIOR || a0 == at) return;
+            a0 = at;
+        }
         for (int end = 0; end < 2; end++) {
             int b0 = end == 0 ? 1 : CELL - along;
             if (end == 1 && b0 == 1) break;
@@ -2779,7 +2893,8 @@ public final class CityRuns {
                          List<long[]> mines, List<long[]> works, Pieces pieces) {
         long stamp = railStampOf(trackPlots, sizes, spurs, g, rx, ry, mines, works, pieces);
         // (MF1) An idle yard whose time is up is taken up this month, though nothing the stamp holds has moved.
-        if (railStampSet && stamp == railStamp && !idleExpired()) return;
+        // (TN1) ...and a station laid short is weighed for a longer box each January (reweighDue()).
+        if (railStampSet && stamp == railStamp && !idleExpired() && !reweighDue()) return;
         dropWays();
         keepYards(sizes);
         // (RI1) The railway's other pieces open now, right after the ways are off, so a piece's arms always come before the run's way arms in rail.arms.
@@ -2799,6 +2914,8 @@ public final class CityRuns {
         if (trackPlots == 0 && sizes.isEmpty() && yards.isEmpty() && rail.plots == 0 && rail.started) rail.reset();
         long[] budget = { Math.max(0, trackPlots - rail.plots) };
         if (rail.started) {
+            // (TN1) The station's yard laid short is laid again longer where the ground now allows it (lengthenStation()).
+            lengthenStation(sizes, g, mines, pieces, deal != null);
             Ctx ctx = new Ctx(mines, works);
             if (!sizes.isEmpty() && yards.isEmpty()) {
                 long[] first = deal == null ? ctx.nearestMineSpot(sizes.get(0)[0], sizes.get(0)[1], g) : ctx.homeFirstSpot(sizes.get(0)[0], sizes.get(0)[1], g, pieces);

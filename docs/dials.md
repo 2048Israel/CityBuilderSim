@@ -2,9 +2,9 @@
 
 Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,451 constants in 612 files.**
+**6,453 constants in 612 files.**
 
-## model (2965 constants)
+## model (2967 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -643,41 +643,42 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4359 | `CityMap.INTERIOR_MOST` | `World.TILE - 1` | A tile's interior holds a box no larger than this a side: 31 plots, off its arterial lines. |
 | 4362 | `CityMap.LAID_CODE` | `(byte) DistrictPlan.TRACK` | The code a laid street is drawn with: an unmade street (TRACK), no width. |
 | 4778 | `CityMap.PICTURES_KEPT` | `128` | How many districts' pictures are kept, the last used: 128 (star MM1-2) - a far view of up to 128 built districts (Jerus's city has 93) in DistrictPicture.BYTES each, 0.14 MB, within the view's 48 M... |
-| 5116 | `CityMap.WORLD_GAP` | `2 * CityRuns.LOOK` | How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). |
-| 5119 | `CityMap.WORLD_REACH` | `4 * DISTRICT` | How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). |
-| 5122 | `CityMap.WORLD_STEP` | `0.25` | How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). |
-| 5748 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
-| 5751 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
-| 5754 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
-| 5932 | `CityMap.TRIP_REACH` | `DISTRICT` | The plots about a district's frame, on every side, its trips look for a ramp over: DISTRICT (256), the three districts across about it. |
-| 5935 | `CityMap.TRIP_STREET_COST` | `3` | What a truck pays to cross a street plot that is not an arterial's, boulevard's or access road's (those cost 1) in the trips' street search: 3, so a truck takes the arterials unless the other way i... |
-| 5938 | `CityMap.TRIP_BOX` | `DistrictPlan.FRAME + 2 * TRIP_REACH` | The side of the box a district's street search runs in, in plots: its frame grown by TRIP_REACH on every side. |
-| 5944 | `CityMap.NO_PLOT` | `Long.MIN_VALUE` |  |
-| 6376 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
-| 6379 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
-| 6576 | `CityMap.CHUNK_CACHE` | `256` | How many chunks of the pieces' tables are kept at hand (MapPieces.cacheChunk): 256 (a city of billions keeps about 250: its 4 MB of tables in chunks of 16 KB). |
-| 6579 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
-| 6581 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
-| 6584 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
-| 6587 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
-| 6593 | `CityMap.PIECE_PORT_REACH` | `2` | How many tiles round a sea terminal's box the piece it stands on is sought, ring by ring (RI1; ET5's "a linked island's hub at its port"): 2 - the box is blocked from the pieces with its clear verg... |
-| 7142 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
-| 7663 | `CityMap.SHORT_ANY` | `0x7fff_fffeL` | The landmass half of the key of a search that asked for no landmass: not any landmass's id (an int). |
-| 7868 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
-| 7972 | `CityMap.SHUT_REACH` | `SeaRoutes.OPEN_M / World.PLOT_M / SeaRoutes.CELL` | The flood's reach in cells (SeaRoutes.opensToSea()): a water whose cells all lie within it of one another opens to nothing, whichever of them a flood starts from. |
-| 8820 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
-| 8951 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
-| 9045 | `CityMap.BridgeRun.ROAD` | `0` | A street-sized deck that belongs to no net... |
-| 9047 | `CityMap.BridgeRun.HIGHWAY` | `1` | ...a highway's, which joins the highways... |
-| 9049 | `CityMap.BridgeRun.RAIL` | `2` | ...and the railway's. |
-| 9071 | `CityMap.ROAD_BRIDGE_STREET` | `(byte)(DistrictPlan.PAVED \|(1<<TilePainter.S_WIDTH_SHIFT))` | A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. |
-| 9345 | `CityMap.NO_PLAN` | `0x4E4F504C414EL` | tileKey()'s fixed mark for a district whose plan is not kept drawn. |
-| 10098 | `CityMap.KINDS_KEPT` | `16` | How many kinds arrays are kept: 16, eight districts' pair. |
-| 10200 | `CityMap.SITE_MARGIN` | `32` | How far a mine's site (a few plots across, centred in its district) can reach beyond its district's box: 32 plots. |
-| 10203 | `CityMap.RESERVE_PAD` | `InterchangeGround.REACH + 1` | How far a reserve's box can be from a plot that moves it: the longest reach of a box from its junction plot, and one for the highway beside the junction. |
-| 10853 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
-| 10856 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
-| 10859 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
+| 5117 | `CityMap.WORLD_GAP` | `2 * CityRuns.LOOK` | How far ahead of a track's end the city's edge may lie for its line to the world to start there, in plots: 12, twice CityRuns.LOOK - an arm waits LOOK short of the edge, a 45-degree arm sooner (FX2). |
+| 5120 | `CityMap.WORLD_REACH` | `4 * DISTRICT` | How far the world line is drawn at most, in plots: 1,024 (30.7 km), four districts; it stops sooner at the first plot that is not dry ground (FX2). |
+| 5123 | `CityMap.WORLD_STEP` | `0.25` | How finely a way out is read, in plots: a quarter, as MapCheck reads the trains' routes (FX2). |
+| 5375 | `CityMap.PORTAL_FADE` | `2` | How far a train fades in from the portal at the main line's end, where the railway has no line to the world (TN1), in plots: 2, about 60 m - a locomotive and a wagon or two out of the tunnel's mouth. |
+| 5811 | `CityMap.TRUCK_ROUTE_LEAST` | `4` | The least a highway route runs along the highways, in plots, past the world line's own: shorter is the arm the line leaves from, where the trucks have no road to drive. |
+| 5814 | `CityMap.TRUCK_ROUTES_MOST` | `40` | The most highway routes kept, 40: one to each ramp, the arms' order, a city of many arms is cut here (a route is a lane of trucks, and the legend would not read more). |
+| 5817 | `CityMap.TRUCK_ACCESS_FADE` | `3` | How far an access road's trucks fade in off the street grid, in plots: 3. |
+| 5995 | `CityMap.TRIP_REACH` | `DISTRICT` | The plots about a district's frame, on every side, its trips look for a ramp over: DISTRICT (256), the three districts across about it. |
+| 5998 | `CityMap.TRIP_STREET_COST` | `3` | What a truck pays to cross a street plot that is not an arterial's, boulevard's or access road's (those cost 1) in the trips' street search: 3, so a truck takes the arterials unless the other way i... |
+| 6001 | `CityMap.TRIP_BOX` | `DistrictPlan.FRAME + 2 * TRIP_REACH` | The side of the box a district's street search runs in, in plots: its frame grown by TRIP_REACH on every side. |
+| 6007 | `CityMap.NO_PLOT` | `Long.MIN_VALUE` |  |
+| 6439 | `CityMap.RUN_LINES_KEPT` | `4096` | Terrain lines (a tile's row or column, World.lineTerrain()) the runs' ground keeps: 4,096, about 460 KB - a corridor's way ahead and back, at any size. |
+| 6442 | `CityMap.RUN_TILES_KEPT` | `256` | ...whole tiles, for a 45-degree way: 256. |
+| 6639 | `CityMap.CHUNK_CACHE` | `256` | How many chunks of the pieces' tables are kept at hand (MapPieces.cacheChunk): 256 (a city of billions keeps about 250: its 4 MB of tables in chunks of 16 KB). |
+| 6642 | `CityMap.PIECE_CHUNK_SHIFT` | `6` | Tiles a side of a chunk of the pieces' tables (CL5): 2^6 = 64, a table of 4,096 per chunk, and a district (8 tiles) is never split by one. |
+| 6644 | `CityMap.PIECE_CHUNK_MASK` | `(1L<<PIECE_CHUNK_SHIFT) - 1` |  |
+| 6647 | `CityMap.PIECE_SAMPLE_AT` | `8, PIECE_SAMPLE_EVERY = 16` | Where in a tile its four samples lie (CL5; IslandProbe's tile rule): the first 8 plots in and each of the others 16 further, the centres of its four quarters. |
+| 6650 | `CityMap.PIECE_HOME_REACH` | `8` | How many tiles from the founding site's tile the home piece is looked for, ring by ring, when its own tile is not land (CL5). |
+| 6656 | `CityMap.PIECE_PORT_REACH` | `2` | How many tiles round a sea terminal's box the piece it stands on is sought, ring by ring (RI1; ET5's "a linked island's hub at its port"): 2 - the box is blocked from the pieces with its clear verg... |
+| 7205 | `CityMap.WAYS_WORKS_DISTRICTS` | `1000` | Up to this many districts the map weighs its mined sites each month for the railway's sidings and further yards: 1,000 (Jerus's city has 93). |
+| 7726 | `CityMap.SHORT_ANY` | `0x7fff_fffeL` | The landmass half of the key of a search that asked for no landmass: not any landmass's id (an int). |
+| 7931 | `CityMap.ANY_LANDMASS` | `Integer.MIN_VALUE` | ET5: no landmass asked for: the search runs as it always did, over the ground the runs can use. |
+| 8035 | `CityMap.SHUT_REACH` | `SeaRoutes.OPEN_M / World.PLOT_M / SeaRoutes.CELL` | The flood's reach in cells (SeaRoutes.opensToSea()): a water whose cells all lie within it of one another opens to nothing, whichever of them a flood starts from. |
+| 8883 | `CityMap.MASK_TILES_KEPT` | `1<<16` | The tiles whose masks are kept: 65,536 (a tile's mask is a reference, and a boolean array only for a tile holding masked ground). |
+| 9014 | `CityMap.AtSea.NONE` | `new AtSea(List.of(), List.of())` | None. |
+| 9108 | `CityMap.BridgeRun.ROAD` | `0` | A street-sized deck that belongs to no net... |
+| 9110 | `CityMap.BridgeRun.HIGHWAY` | `1` | ...a highway's, which joins the highways... |
+| 9112 | `CityMap.BridgeRun.RAIL` | `2` | ...and the railway's. |
+| 9134 | `CityMap.ROAD_BRIDGE_STREET` | `(byte)(DistrictPlan.PAVED \|(1<<TilePainter.S_WIDTH_SHIFT))` | A road bridge's plot as a plan's street code: paved, half a plot wide (a street's surface, so that its deck shows beside it), a cell's street, no bridge bit - the painter reads the water under it. |
+| 9408 | `CityMap.NO_PLAN` | `0x4E4F504C414EL` | tileKey()'s fixed mark for a district whose plan is not kept drawn. |
+| 10161 | `CityMap.KINDS_KEPT` | `16` | How many kinds arrays are kept: 16, eight districts' pair. |
+| 10263 | `CityMap.SITE_MARGIN` | `32` | How far a mine's site (a few plots across, centred in its district) can reach beyond its district's box: 32 plots. |
+| 10266 | `CityMap.RESERVE_PAD` | `InterchangeGround.REACH + 1` | How far a reserve's box can be from a plot that moves it: the longest reach of a box from its junction plot, and one for the highway beside the junction. |
+| 10916 | `CityMap.NODE_WIDTH` | `BuildingVisual.CLASSES + 2` | How many numbers a node sums: the ten classes, the ground used (in half square feet, exact) and the owned buildable plots. |
+| 10919 | `CityMap.NODE_USED` | `BuildingVisual.CLASSES` | Where a node keeps the ground used, in half square feet. |
+| 10922 | `CityMap.NODE_OWNED` | `BuildingVisual.CLASSES + 1` | ...and its owned buildable plots. |
 
 ### CityMeasures.java ([map](map/CityMeasures.md))
 
@@ -766,20 +767,21 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2263 | `CityRuns.TIER_LENGTHS` | `tierLengths()` | The lengths, longest first, a yard of footprint {w, h} is laid at along a row (w along) or a column (h along): each kind of train's length rounded up and its two ladders - a unit train's YARD_LONG ... |
 | 2266 | `CityRuns.TIERS` | `TIER_LENGTHS.length + 1` | ...how many: one for each length and one for the footprint's own. |
 | 2323 | `CityRuns.YARD_IDLE_MONTHS` | `120` | How many months a yard whose building has left stays laid, idle, before it is taken up: 120, ten years - the default playtest's Freight sector sold its only Rail Depot and bought another 3 to 93 mo... |
-| 2626 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
-| 2629 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
-| 2632 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
-| 2635 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
-| 2638 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
-| 2641 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
-| 2644 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
-| 3137 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
-| 3370 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
-| 3494 | `CityRuns.QUAY` | `Integer.MAX_VALUE` | The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading... |
-| 3497 | `CityRuns.QUAY_REACH` | `CityMap.DISTRICT / 2` | How far from the main line a quay spur's end may lie, in plots, counted along its way: half a district. |
-| 4468 | `CityRuns.BRIDGE_ROAD` | `CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RAIL = CityM...` | A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. |
-| 4471 | `CityRuns.BRIDGE_LEGS` | `1024, BRIDGE_LEG = 1<<20` | The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. |
-| 4474 | `CityRuns.BRIDGE_NET` | `new Net(RAILWAY, RAIL_AT, 0)` | A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. |
+| 2414 | `CityRuns.YARD_REWEIGH_MONTHS` | `12` | How often, in months, the freight station's yard laid short of YARD_LONG is weighed for a longer box on the track (TN1): 12, each January (a month that is a multiple of it), not each month the rail... |
+| 2740 | `CityRuns.BRANCH` | `2, SIDING = 3` | The corridors of the arms laid for a train's way: a branch to a further yard (2) and a siding into a works (3). |
+| 2743 | `CityRuns.SIDING_REACH` | `CityMap.DISTRICT` | A siding serves a works within this of the main line, in plots: one district (CityMap.DISTRICT, 256; spec-freight 4.3, "the largest BULK works within one district of the line"). |
+| 2746 | `CityRuns.MAIN_LINE_REACH` | `1L<<20` | How far past the plots it has the main line of a city with a station is grown, at most, in plots: 1,048,576 (2^20) - some four thousand districts, past any city's ground, so the line waits at the c... |
+| 2749 | `CityRuns.SERVED_WITHIN` | `1` | A works the main line touches or runs beside, within this many plots, has the railway at its door and needs no siding: 1. |
+| 2752 | `CityRuns.GROUP_LINK` | `CityMap.DISTRICT / 2` | A group of rail-served works is the works whose box middles lie within this of each other, link by link: half a district, 128 plots. |
+| 2755 | `CityRuns.YARD_APART` | `CityMap.DISTRICT` | A further yard goes beside a group of works that lies more than this from every yard laid: a district, 256 plots (FR7: "more than one district from every yard laid"). |
+| 2758 | `CityRuns.BRANCH_FROM` | `CityMap.DISTRICT` | A group of works farther than this from the track is reached by a branch off the main line, else the yard sits on the track nearest it: a district, 256 plots. |
+| 3254 | `CityRuns.BOX_GRID` | `64` | The boxes' grid: 64 plots a side. |
+| 3487 | `CityRuns.SIDING_TRIES` | `200` | The most works laySidings() tries in one run: 200. |
+| 3611 | `CityRuns.QUAY` | `Integer.MAX_VALUE` | The corridor of the arms laid to a harbour's quay lines: one the net never lists, so a quay spur is no siding, branch or spine to anything that reads the net (sidings(), the Rail Spurs, the loading... |
+| 3614 | `CityRuns.QUAY_REACH` | `CityMap.DISTRICT / 2` | How far from the main line a quay spur's end may lie, in plots, counted along its way: half a district. |
+| 4585 | `CityRuns.BRIDGE_ROAD` | `CityMap.BridgeRun.ROAD, BRIDGE_HIGHWAY = CityMap.BridgeRun.HIGHWAY, BRIDGE_RAIL = CityM...` | A long bridge's kinds (CityMap.BridgeRun's): a street-sized deck that belongs to no net, a highway's and the railway's. |
+| 4588 | `CityRuns.BRIDGE_LEGS` | `1024, BRIDGE_LEG = 1<<20` | The most corners a bridge's path may have and the longest leg of it, in plots: 1,024 legs of 1,048,576 plots, so that its steps fit an int. |
+| 4591 | `CityRuns.BRIDGE_NET` | `new Net(RAILWAY, RAIL_AT, 0)` | A net for a bridge's stretches to be read as, so that stretchInto() marks no highway's ramp on them: the railway's, which never takes one. |
 
 ### CityShore.java ([map](map/CityShore.md))
 
@@ -1698,7 +1700,7 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.177"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.178"` | Bump on release. |
 | 8357 | `GameVersion.SAVE_FORMAT` | `58` | The save shape. |
 | 8415 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `58` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8423 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -4947,11 +4949,11 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 768 | `KeptBench.SETTLED_HEIGHT` | `"keptbench.settledHeight"` | The key a scroller keeps the height its content had when the page was last settled, in its properties. |
 | 797 | `KeptBench.SETTLE_PASSES` | `10, QUIET_PASSES = 2` | The most layout passes settle() runs, and the quiet ones in a row it takes to stop. |
 | 1466 | `KeptBench.SETS_NAMED` | `Integer.getInteger("keptbench.named", 12)` | The most sources redrawSets names. |
-| 2314 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
-| 2499 | `KeptBench.FUNDING_CAP_TITLE` | `"THE HIGHEST YIELD YOU WILL TAKE"` | The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. |
-| 2633 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
-| 3909 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
-| 5764 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
+| 2214 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
+| 2399 | `KeptBench.FUNDING_CAP_TITLE` | `"THE HIGHEST YIELD YOU WILL TAKE"` | The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. |
+| 2533 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
+| 3809 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 5664 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
 
 ### Ladder.java ([map](map/Ladder.md))
 
@@ -6825,15 +6827,18 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 136 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
-| 139 | `GatewayCheck.COAST_SAVED_AT` | `100` | The month section 21 saves the coast city at: past the month its main line first runs on beyond an arm that waits at the sea, between 55 and 60 on this world (CC1-M's loads at every fifth month: th... |
-| 142 | `GatewayCheck.COAST_HELD` | `10` | The months section 21 plays past MapCheck.MONTHS with the counts held. |
-| 145 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
-| 148 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
-| 151 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
-| 193 | `GatewayCheck.GROUND_BEFORE_SL1` | `{ 430_556, 2_368_060, 2_152_782, 107_639 }` | The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk Terminal, a Container Terminal and a General Cargo Terminal. |
-| 860 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
-| 922 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
+| 144 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
+| 147 | `GatewayCheck.COAST_SAVED_AT` | `100` | The month section 21 saves the coast city at: past the month its main line first runs on beyond an arm that waits at the sea, between 55 and 60 on this world (CC1-M's loads at every fifth month: th... |
+| 150 | `GatewayCheck.COAST_HELD` | `10` | The months section 21 plays past MapCheck.MONTHS with the counts held. |
+| 153 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
+| 156 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
+| 159 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
+| 201 | `GatewayCheck.GROUND_BEFORE_SL1` | `{ 430_556, 2_368_060, 2_152_782, 107_639 }` | The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk Terminal, a Container Terminal and a General Cargo Terminal. |
+| 869 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
+| 931 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
+| 1147 | `GatewayCheck.HAUGESUND_LAT` | `59.4119, HAUGESUND_LON = 5.2775` | Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainS... |
+| 1148 | `GatewayCheck.HAUGESUND_SIDE` | `4` |  |
+| 1151 | `GatewayCheck.TN1_DRY_IN` | `360_000, TN1_GENERAL_OUT = 120_000` | Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. |
 
 ### GdpCheck.java ([map](map/GdpCheck.md))
 
@@ -7217,39 +7222,36 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 122 | `KeptCheck.CITY_MONTHS` | `600` | The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. |
-| 125 | `KeptCheck.MONTHS` | `25` | The months watched, kept against new: two years and a month, so a January and a year's turn are among them. |
-| 128 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where a month's log goes while month() runs it: nowhere. |
-| 211 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's... |
-| 214 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
-| 257 | `KeptCheck.CHROME_SCREENS` | `{ "showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu", "showHist...` | The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). |
-| 772 | `KeptCheck.TICKED` | `"unemployment"` | The first of these lines picked and not in the preset the page opens on: a line to tick and untick. |
-| 1207 | `KeptCheck.HANDED_BACK` | `0.9` | The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). |
-| 1253 | `KeptCheck.HELD_STILL` | `2` | How many times a difference is looked at again with the model and the clock held still before it is a kept fault (KRT1). |
-| 1339 | `KeptCheck.BLOCKS_TRACED` | `3` | The months a block a redraw made new is traced in (KBP1), at the most each section: what it made and what it dropped, in words. |
-| 1625 | `KeptCheck.SERVICES_FOLDS` | `{ { "Health/Overview", "health:sick" }, { "Health/General care", "health:general" }, { ...` | The folds each sub-page of Services has, by "system/page" (a page not named has none). |
-| 2026 | `KeptCheck.SITE_ROWS` | `6` | The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. |
-| 2029 | `KeptCheck.SITE_ORDER` | `{ "Gravel Road", "Walk-in Clinic", "Paved Road", "Bus Network", "Elementary School", "P...` | What is ordered, in turn, to put a site on: the cheap, quick works first. |
-| 2301 | `KeptCheck.FUNDING_SHORT_BY` | `4` | How many times over the funding page's run is short of what the market lends: each offer's bids reach at most this part of the gap (KBF1). |
-| 2399 | `KeptCheck.RANKINGS_WORKER` | `"rankings-saved-cities"` | The name of the Rankings tab's one thread for the saved cities (RankingsScreen's WORKER). |
-| 2700 | `KeptCheck.PICTURE_MONTHS` | `6` | The months the pictures are watched through (section 50): each month a repaint or not, and a page built new beside it. |
-| 2706 | `KeptCheck.NOT_PLAIN` | `java.util.Set.of(Sectors.RETAIL, Sectors.RESTAURANTS, Sectors.LUXURY_RETAIL, Sectors.RE...` | The keys a plain business is not taken from: the shops, the kitchens, the counters, the landlords, the haulier and the fuel's two. |
-| 2779 | `KeptCheck.R5_MONTHS` | `6` | The months each of the research sections plays on its page, kept over last month's nodes against a page built new. |
-| 3375 | `KeptCheck.SWING_STEPS` | `3` | How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. |
-| 3710 | `KeptCheck.BANK_FOLDS` | `{ { "Profit", "profit:statement", "Interest earned", "Fees", "Provisions for loans expe...` | What the Bank's folds hold, by page: the fold's key, then the lines a player opens inside it (each a key the page's own bookLine opens by). |
-| 3908 | `KeptCheck.PAPER` | `{ { "Note", "12", "" }, { "Float", "5", "" }, { "Serial", "10", "" }, { "Term", "10", "...` | The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. |
-| 3916 | `KeptCheck.SELL_ORDER` | `{ 4, 0, 1, 2, 3, 5 }` | The order sellPaper sells PAPER in: the 20-year bond first, the piece that falls due last, which sections 64, 66 and 67 draw for dozens of months, then the rest as PAPER has them. |
-| 4230 | `KeptCheck.SETTLED_WATCH` | `3` | The months a lot the let-go month settled is watched through in 63: its page and its two reviews, a month landing after each. |
-| 4234 | `KeptCheck.FUND_PAY_IN_ISSUES` | `200` | What 61 pays into a fund that holds nothing, in the city's smallest bond issues: a fund with something to buy whatever the treasury holds (FS5). |
-| 4237 | `KeptCheck.FUND_HELD_DUES` | `3` | How many months of the fund's transfer its cash is kept over while 63's choices are watched: the transfer is paid from cash, and nothing is sold for it (KF63). |
-| 4935 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
-| 4945 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
-| 5066 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "BuybackLadder")` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
-| 5654 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 7934 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 8728 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
-| 8840 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9444 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's s... |
+| 353 | `KeptCheck.CITY_MONTHS` | `600` | The months the city is played to before the page is watched: a city with a history, households of every shape, a full ladder. |
+| 356 | `KeptCheck.MONTHS` | `25` | The months watched, kept against new: two years and a month, so a January and a year's turn are among them. |
+| 359 | `KeptCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where a month's log goes while month() runs it: nowhere. |
+| 442 | `KeptCheck.SHADE_LEVELS` | `64` | The most a pixel of the kept page may differ from the new page's, in any channel, out of 255: the edge of a small shape a kept picture moved to another place on the page is shaded by the renderer's... |
+| 445 | `KeptCheck.SHADED_SHARE` | `0.001` | ...and at most this share of the page's pixels may differ at all (114 and 110 of 2.8 million measured). |
+| 488 | `KeptCheck.CHROME_SCREENS` | `{ "showPopulationInfoMenu", "showLandMenu", "showSectorMenu", "showBankMenu", "showHist...` | The screens the chrome is shown on, one a month: the tab lit on the rail follows, and the last is a game menu (no clock, no rail). |
+| 1003 | `KeptCheck.TICKED` | `"unemployment"` | The first of these lines picked and not in the preset the page opens on: a line to tick and untick. |
+| 1438 | `KeptCheck.HANDED_BACK` | `0.9` | The share of a page's nodes a month's redraw hands back, at least: nine in ten (the People page's rule). |
+| 1484 | `KeptCheck.HELD_STILL` | `2` | How many times a difference is looked at again with the model and the clock held still before it is a kept fault (KRT1). |
+| 1856 | `KeptCheck.SERVICES_FOLDS` | `{ { "Health/Overview", "health:sick" }, { "Health/General care", "health:general" }, { ...` | The folds each sub-page of Services has, by "system/page" (a page not named has none). |
+| 2257 | `KeptCheck.SITE_ROWS` | `6` | The rows the Sites tab and the timeline are kept at while Build and the construction page are watched: a site each. |
+| 2260 | `KeptCheck.SITE_ORDER` | `{ "Gravel Road", "Walk-in Clinic", "Paved Road", "Bus Network", "Elementary School", "P...` | What is ordered, in turn, to put a site on: the cheap, quick works first. |
+| 2532 | `KeptCheck.FUNDING_SHORT_BY` | `4` | How many times over the funding page's run is short of what the market lends: each offer's bids reach at most this part of the gap (KBF1). |
+| 2630 | `KeptCheck.RANKINGS_WORKER` | `"rankings-saved-cities"` | The name of the Rankings tab's one thread for the saved cities (RankingsScreen's WORKER). |
+| 2931 | `KeptCheck.PICTURE_MONTHS` | `6` | The months the pictures are watched through (section 50): each month a repaint or not, and a page built new beside it. |
+| 2937 | `KeptCheck.NOT_PLAIN` | `java.util.Set.of(Sectors.RETAIL, Sectors.RESTAURANTS, Sectors.LUXURY_RETAIL, Sectors.RE...` | The keys a plain business is not taken from: the shops, the kitchens, the counters, the landlords, the haulier and the fuel's two. |
+| 3010 | `KeptCheck.R5_MONTHS` | `6` | The months each of the research sections plays on its page, kept over last month's nodes against a page built new. |
+| 3603 | `KeptCheck.SWING_STEPS` | `3` | How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. |
+| 3938 | `KeptCheck.BANK_FOLDS` | `{ { "Profit", "profit:statement", "Interest earned", "Fees", "Provisions for loans expe...` | What the Bank's folds hold, by page: the fold's key, then the lines a player opens inside it (each a key the page's own bookLine opens by). |
+| 4136 | `KeptCheck.PAPER` | `{ { "Note", "12", "" }, { "Float", "5", "" }, { "Serial", "10", "" }, { "Term", "10", "...` | The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. |
+| 4144 | `KeptCheck.SELL_ORDER` | `{ 4, 0, 1, 2, 3, 5 }` | The order sellPaper sells PAPER in: the 20-year bond first, the piece that falls due last, which sections 64, 66 and 67 draw for dozens of months, then the rest as PAPER has them. |
+| 4434 | `KeptCheck.FUND_HELD_DUES` | `3` | How many months of the fund's transfer its cash is kept over while 63's choices are watched: the transfer is paid from cash, and nothing is sold for it (KF63). |
+| 5068 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
+| 5078 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
+| 5199 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "BuybackLadder")` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
+| 5784 | `KeptCheck.KP6_HANDED_BACK` | `.75` | The share of a KP6 page's nodes a month's redraw has to hand back after a choice, at least: three in four. |
+| 5797 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
+| 8077 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 8952 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
+| 9552 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). |
 
 ### KeptTimingCheck.java ([map](map/KeptTimingCheck.md))
 
@@ -7535,10 +7537,10 @@ Generated 2026-11-21 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 717 | `MainLineCheck.YARD_SIDE` | `24` | Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). |
-| 1571 | `MainLineCheck.COAST_AT` | `60, COAST_BAY = 125, COAST_SUM = 214, COAST_TIP = 40` | MF2, 2026-11-08. |
-| 1628 | `MainLineCheck.HIGHWAYS_GOLDEN` | `900` | What the highways' 900 plots on the coast above laid on main at 0.9.49 (MF2, 2026-11-08), before the railway's rules changed: their count and the hash of their stretches. |
-| 1629 | `MainLineCheck.HIGHWAYS_SHAPE` | `- 1584424669` |  |
+| 729 | `MainLineCheck.YARD_SIDE` | `24` | Plots: a yard's box a side in the fixture, his Rail Terminals' (CityRuns.spotsIn() lays one at either end of its cell: at 1, or CELL - side). |
+| 1583 | `MainLineCheck.COAST_AT` | `60, COAST_BAY = 125, COAST_SUM = 214, COAST_TIP = 40` | MF2, 2026-11-08. |
+| 1640 | `MainLineCheck.HIGHWAYS_GOLDEN` | `900` | What the highways' 900 plots on the coast above laid on main at 0.9.49 (MF2, 2026-11-08), before the railway's rules changed: their count and the hash of their stretches. |
+| 1641 | `MainLineCheck.HIGHWAYS_SHAPE` | `- 1584424669` |  |
 
 ### ManufacturingCheck.java ([map](map/ManufacturingCheck.md))
 

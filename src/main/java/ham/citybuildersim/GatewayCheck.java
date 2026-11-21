@@ -117,6 +117,14 @@ import java.util.TreeSet;
  *      COAST_HELD months past it - the two maps and the sidecars they write
  *      are the same every month. A sidecar of FORMAT 12, which has neither
  *      stoppedBy nor the required dated history, is refused.
+ *  22. THE TRAINS WHERE THE LINE TO THE WORLD IS HARD TO FIND (batch TN1,
+ *      Jerus 2026-11-20: "trains no longer show up"): section 16's coast with
+ *      no works has yards and no railway line, and its trains' routes start at
+ *      the portal (the main arm's end), fade in over PORTAL_FADE, keep to the
+ *      railway's ground and carry the month's trains; Haugesund on the Earth,
+ *      when earth-2.bin is named, whose arm meets water within WORLD_PLOTS
+ *      toward the gateway and straight on, has a line on its heading turned a
+ *      corner, over dry land. Both had no train before TN1.
  *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
@@ -562,6 +570,7 @@ public class GatewayCheck {
         undrawnSection();
         togetherSection();
         coastAcrossASave();
+        trainsWithoutALine();
 
         System.out.println();
         System.out.println(fails == 0 ? "The gateways are found." : fails + " FAILED");
@@ -1130,6 +1139,97 @@ public class GatewayCheck {
             for (int i = 0; i < p[k].arms.size(); i++) if (p[k].arms.get(i).stoppedBy != q[k].arms.get(i).stoppedBy) return false;
         }
         return true;
+    }
+
+    /* ----- the trains where the line to the world is hard to find (section 22, TN1) ----- */
+
+    /** Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainSchedule.WORLD_PLOTS toward the gateway and straight on. */
+    static final double HAUGESUND_LAT = 59.4119, HAUGESUND_LON = 5.2775;
+    static final int HAUGESUND_SIDE = 4;
+
+    /** Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. */
+    static final double TN1_DRY_IN = 360_000, TN1_GENERAL_OUT = 120_000;
+
+    /**
+     * Section 22 (TN1, 2026-11-21; Jerus: "trains no longer show up, they used too... sometimes only briefly for a few years and then disappear
+     * forever"). (a) Section 16's coast with no works has yards and no railway line to the world (every spine arm waits at the city's own water):
+     * the trains' routes start at the portal, the main arm's end, fade in over CityMap.PORTAL_FADE, reach the yards over the railway's ground,
+     * and the month's schedule draws trains on them - before TN1 a city with no line had no route and no train. (b) Haugesund on the Earth, when
+     * earth-2.bin is named: the railway's arm at the city's edge has water within WORLD_PLOTS toward the gateway and straight on, and its line
+     * leaves on its heading turned a corner (CityRuns.RAIL_CORNER), over dry land - before TN1, none.
+     */
+    static void trainsWithoutALine() {
+        System.out.println("\n--- the trains run where the railway's line to the world is hard to find (TN1) ---");
+        BuildingVisual.Type[] types = gatewayTypes();
+        World w = World.of(Founding.DEFAULT_WORLD_SEED);
+        long[] bare = coastCounts(types);
+        for (BuildingVisual.Type t : types) if (t != null && t.shore()) bare[t.id()] = 0;
+        CityMap m = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, bare);
+        CityRuns runs = m.runs();
+        boolean railLine = false;
+        for (CityMap.WorldLine l : m.worldLines()) railLine |= l.net() == CityRuns.RAILWAY;
+        check("fixture: the coast with no works (section 16's) has a gateway, yards and no railway line to the world",
+                m.gateway() >= 0 && !runs.yards().isEmpty() && !railLine);
+        long[] portal = m.portal();
+        CityRuns.Arm main = runs.mainArm() >= 0 ? runs.rail().arms.get(runs.mainArm()) : null;
+        List<TrainSchedule.Route> routes = m.trainRoutes();
+        System.out.printf("  the coast with no line: main arm %s, portal %s, %d route(s) to %d yard(s)%n", armText(runs.rail(), runs.mainArm()),
+                Arrays.toString(portal), routes.size(), runs.yards().size());
+        check("the portal is the main arm's end, where the main line stops", portal != null && main != null && main.steps > 0 && portal[0] == main.x && portal[1] == main.y);
+        check("the trains have routes though the railway has no line to the world (red before TN1: none without the line)", !routes.isEmpty());
+        boolean fromPortal = true, fade = true;
+        Set<Integer> reached = new TreeSet<>();
+        for (TrainSchedule.Route r : routes) {
+            fromPortal &= portal != null && r.xs()[0] == portal[0] + 0.5 && r.ys()[0] == portal[1] + 0.5;
+            fade &= r.fadeTo() == Math.min(CityMap.PORTAL_FADE, r.length());
+            if (r.yard() >= 0) reached.add(r.yard());
+        }
+        check("...every one starts at the portal, in the middle of its plot", fromPortal);
+        check("...and fades in over PORTAL_FADE (" + CityMap.PORTAL_FADE + " plots) of its track", fade);
+        check("...and they reach the railway's yards: " + reached.size() + " of " + runs.yards().size(), !reached.isEmpty());
+        int[] seen = new int[2];
+        check("...over the railway's ground: every quarter plot of every route dry or the railway's (MapCheck.worldWaysOk())", MapCheck.worldWaysOk(m, seen) && seen[1] == 1);
+        double[] in = new double[Ports.Cargo.values().length], out = new double[in.length];
+        in[Ports.Cargo.DRY_BULK.ordinal()] = TN1_DRY_IN;
+        out[Ports.Cargo.GENERAL.ordinal()] = TN1_GENERAL_OUT;
+        TrainSchedule sched = TrainSchedule.of(1, in, out, routes);
+        int drawn = sched.calls().size(), unfit = sched.unfit();
+        System.out.printf("  the month's schedule: %d train(s) drawn, %d of them unfit (no route's siding holds them, or none is free)%n", drawn, unfit);
+        check("the month's schedule runs trains on them, " + (drawn - unfit) + " of " + drawn + " (red before TN1: no route, every train unfit)", drawn > unfit);
+
+        // (b) Haugesund on the Earth.
+        Path file = EarthData.locate();
+        if (file == null || !Files.isRegularFile(file)) {
+            System.out.println("  earth-2.bin not named (-D" + EarthData.PROPERTY + "=<path>) nor at " + EarthData.DATA_FILE + ": Haugesund did not run");
+            return;
+        }
+        try (EarthData data = EarthData.open(file)) {
+            World hw = World.of(World.Key.earth(EarthTerrainCheck.SEED, HAUGESUND_LAT, HAUGESUND_LON, EarthTerrain.use(data)));
+            long[] counts = new long[types.length];
+            for (int t = 0; t < MapCheck.JERUS_COUNTS.length && t < counts.length; t++) counts[t] = Math.round(MapCheck.JERUS_COUNTS[t] * MapCheck.TIMES[0]);
+            counts[ham.citybuildersim.sectors.Mining.IRON_MINE] = 0;
+            for (BuildingVisual.Type t : types) {
+                if (t == null) continue;
+                if (t.terminal()) counts[t.id()] += MapCheck.YARDS_ADDED;
+                else if (t.track() && t.plots() > 100) counts[t.id()] += MapCheck.FREIGHT_ADDED;
+            }
+            CityMap h = CityMap.square(hw.key(), hw.foundingX(), hw.foundingY(), types, HAUGESUND_SIDE,
+                    (int) Math.round(MapCheck.JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), counts);
+            CityMap.WorldLine rail = null;
+            for (CityMap.WorldLine l : h.worldLines()) if (l.net() == CityRuns.RAILWAY) rail = l;
+            CityRuns.Arm arm = rail == null ? null : h.runs().rail().arms.get(rail.arm());
+            int heading = arm == null ? -1 : arm.head * 45;
+            int off = rail == null ? -1 : Math.floorMod(rail.way() - heading, 360);
+            if (off > 180) off = 360 - off;
+            System.out.printf("  Haugesund: gateway %d, railway line %s%n", h.gateway(),
+                    rail == null ? "none" : "way " + rail.way() + " from arm " + rail.arm() + " heading " + heading + ", reach " + Math.round(rail.reach()));
+            check("Haugesund: the railway has a line to the world (red before TN1: water within WORLD_PLOTS toward the gateway and straight on, so none)", rail != null);
+            check("...leaving on its arm's heading turned a corner, at most RAIL_CORNER 45-degree steps (neither the bearing nor the heading)",
+                    rail != null && rail.way() != rail.bearing() && off > 0 && off <= 45 * CityRuns.RAIL_CORNER);
+            if (rail != null) worldLinesOnLand("Haugesund", h);
+        } catch (IOException e) {
+            check("the Earth's file opens: " + e, false);
+        }
     }
 
     /**
