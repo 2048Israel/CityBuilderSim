@@ -70,7 +70,18 @@ import java.util.Set;
  * Each fixture causes its condition rather than finding a city in it, and checks it
  * was caused. The cities are FloatLinkCheck's (it is borrowed whole: its played city,
  * its bank-held fixtures and its index), so this harness hands that class the two
- * streams it prints through.
+ * streams it prints through, and counts its failures (a fixture that failed in a
+ * borrowed builder) into its own exit.
+ *
+ * How the played sections get theirs (FS14), one clause each:
+ *
+ * 2. the month the bill matured is set: after the first month the bill is dated to fall due at the next press (dueNextMonth()).
+ * 3. the line under carrying value is the dial's: raised by DIAL_RISE after the sale, its price read lower at each of the floor, where it was sold and DIAL_RISE up (dialLowersIt()).
+ * 4. the ten-year desk line is under carrying value as in 3: the dial raised by DIAL_RISE after the sales, its price read at the three dials.
+ * 6. the line is made and reopened by two sales at set months (four apart) of the same size, the households' spare lifted back to what it was for the first
+ *    and the bank handed its room for each; the rise is DIAL_RISE once, not a loop; the rollover's issues are given the bank's room (handRolloverRoom()).
+ * 7. the past is told apart by the dial's moves, put by setter at set months (DIAL_UP in month DIAL_UP_MONTH, DIAL_DOWN in month DIAL_DOWN_MONTH); the
+ *    book's dial a year ago and now are asserted against them and the shortest tenor's move against the model's A_POINT.
  *
  * @author Jerus
  */
@@ -108,6 +119,51 @@ public class DeskCheck {
         quietly(g::toggleNextMonth);
     }
 
+    /** FS14: a fixture assertion that counts its failure and says whether it held, so a section stops where what follows would read nonsense. */
+    static boolean fixture(String label, boolean ok) {
+        check(label, ok);
+        return ok;
+    }
+
+    /** FS14: the rise of the dial that puts a line sold near par under what it is carried at: five points, the model's A_POINT five times (sections 3, 4 and 6). */
+    static final double DIAL_RISE = 5 * DebtManager.A_POINT;
+
+    /** A line's carrying value per 100 of what is still owed on it. */
+    static double carriedPer100(Debt d) {
+        return d.getCarryingValue() / d.getOustandingPrincipal() * 100;
+    }
+
+    /**
+     * FS14: the dial is the cause, read from both sides of where it stands: the line's price per 100 with the dial cut to its floor
+     * (DebtManager.MIN_POLICY_RATE), where it stands, and raised by DIAL_RISE, the curve struck on each. A read: the dial is put back and the
+     * curve struck on it again. The raise lowers the price; the cut does not always raise it, because the curve's floor is the bank's cost of funds
+     * where that is over the dial (DebtManager.floorAt()), so the cut is asserted no lower. The played line trades under what it is carried at
+     * at the raised dial and, on the played path, at the others too (a sale struck at the auction's price is carried above where the curve prices
+     * it), so the dial does not cross a threshold here: it deepens a gap, which the sections assert against the carrying value once it is raised.
+     */
+    static void dialLowersIt(Game g, Debt d, String what) {
+        DebtManager dm = g.getDebtManager();
+        double was = dm.getPolicyRate();
+        double[] dials = {DebtManager.MIN_POLICY_RATE, was, was + DIAL_RISE};
+        double[] price = new double[dials.length];
+        for (int i = 0; i < dials.length; i++) {
+            dm.setPolicyRate(dials[i]);
+            g.strikeTheCurve();
+            price[i] = dm.priceOfPar(d);
+        }
+        dm.setPolicyRate(was);
+        g.strikeTheCurve();
+        check("fixture: the dial is the cause: " + what + " trades at " + String.format("%.2f, %.2f and %.2f per 100 (carried at %.2f) with the dial cut to its floor (no lower than where it is), where it is (%.2f%%) and %.0f points up",
+                price[0], price[1], price[2], carriedPer100(d), was * 100, DIAL_RISE * 100), price[0] >= price[1] && price[1] > price[2]);
+    }
+
+    /** FS14: the bank handed its room for this face (FloatLinkCheck.handBankRoom()) and the room asserted, between months. */
+    static void roomFor(Game g, double face, String what) {
+        double handed = FloatLinkCheck.handBankRoom(g, face);
+        if (handed > 0) out.printf("   fixture: the bank handed D$%,.0f of capital, for a room of D$%,.0f for %s%n", handed, face, what);
+        check("fixture: the bank has room for " + what + " (D$" + String.format("%,.0f", face) + ")", FloatLinkCheck.bankRoomOf(g) >= face);
+    }
+
     static boolean wanted(String[] args, int section) {
         if (args.length == 0) return true;
         for (String a : args) if (a.equals(String.valueOf(section))) return true;
@@ -131,6 +187,8 @@ public class DeskCheck {
         if (wanted(args, 7)) theCurvesPast();
         if (wanted(args, 8)) whatClosingBooks();
 
+        // FS14: a fixture of FloatLinkCheck's that failed inside a borrowed builder printed FAIL there and counted nowhere here.
+        fails += FloatLinkCheck.fails;
         out.printf("%n(%d assertions, %d s)%n", asserts, (System.currentTimeMillis() - t0 + 500) / 1000);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         if (fails > 0) System.exit(1);
@@ -265,18 +323,19 @@ public class DeskCheck {
                         && onBooks(dm, "LINKED") >= 1 && usd != null && usd.isForeign());
         check("fixture: ...and the D$ is held at " + r0 + " for the dollar paper", g.getForeignAccounts().getRate() == r0 && usd != null && usd.getExchangeRate() == r0);
 
-        // The months to the bill's maturity: each one's five kinds add up to the line, and the old sum matches it while no piece has fallen due.
-        int guard = 0;
+        // The month before the bill's maturity: the five kinds add up to the line, and the old sum matches it while no piece has fallen due.
+        // FS14: the maturing month is caused, not waited for: the bill is dated to fall due at the next press (FloatLinkCheck.dueNextMonth()).
         double worst = 0;
         int months = 0;
         boolean oldMatched = true;
-        while (onBooks(dm, "NOTE") > 0 && guard++ < 6) {
-            press(g);
-            if (onBooks(dm, "NOTE") == 0) break;
-            months++;
-            worst = Math.max(worst, Math.abs(kindsSum(dm) - na.getInterestExpense()));
-            oldMatched &= Math.abs(liveSum(dm) - na.getInterestExpense()) <= 1e-6;
-        }
+        press(g);
+        months++;
+        worst = Math.max(worst, Math.abs(kindsSum(dm) - na.getInterestExpense()));
+        oldMatched &= Math.abs(liveSum(dm) - na.getInterestExpense()) <= 1e-6;
+        FloatLinkCheck.dueNextMonth(bill);
+        if (!fixture("fixture: a month on, the bill is dated to fall due at the next press and is still on the list",
+                bill.getRemainingMonths() == 1 && !bill.isMatured() && dm.getDebt().contains(bill))) return;
+        press(g);
         check("fixture: the bill fell due (" + bill.getDuration() + " months) and is gone from the list", bill.isMatured() && onBooks(dm, "NOTE") == 0);
         near("(a) in each of the " + months + " months before it, the five kinds add up to the budget's interest line", worst, 0, 1e-6);
         check("...and while every piece was still on the list, so did the old sum of their last expenses", oldMatched);
@@ -361,17 +420,19 @@ public class DeskCheck {
         press(g);
 
         // The rates go up: the line trades under what it is carried at, and the city names the most it will pay, what it is carried at.
-        dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
+        // FS14: caused by the dial: its price read at the floor, where it is and DIAL_RISE up (each lower), then the dial raised by DIAL_RISE.
+        dialLowersIt(g, line, "the ten-year line");
+        double dialSold = dm.getPolicyRate();
+        dm.setPolicyRate(dialSold + DIAL_RISE);
         g.strikeTheCurve();
         press(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
+        check("fixture: the dial stands " + String.format("%.0f", DIAL_RISE * 100) + " points over where the line was sold", dm.getPolicyRate() == dialSold + DIAL_RISE);
         double carriedPer100 = line.getCarryingValue() / line.getOustandingPrincipal() * 100;
         Buyback.Result q = g.quoteBuyback(line, 1e12, carriedPer100);
-        if (Observation.reached("fixture: the played ten-year line is under carrying value",
-                q.fairPer100() < carriedPer100, "buyback gain on carrying value")) {
-            check("...and the city buys back at a gain on the carrying value",
-                    q.takenFace() > 0 && q.gainOnCarrying() > 0);
-        }
+        if (!fixture("fixture: the played ten-year line is under carrying value", q.fairPer100() < carriedPer100)) return;
+        check("...and the city buys back at a gain on the carrying value",
+                q.takenFace() > 0 && q.gainOnCarrying() > 0);
 
         // The journal.
         double principal = line.getOustandingPrincipal();
@@ -480,7 +541,9 @@ public class DeskCheck {
                 call instanceof LongTermBond c && c.isCallable() && usd.isForeign());
 
         // The rates go up after the sales: the paper sold near par now trades under what it is carried at (caused, and checked below).
-        dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
+        // FS14: caused by the dial: its price read at the floor, where it is and DIAL_RISE up (each lower), then the dial raised by DIAL_RISE.
+        dialLowersIt(g, term, "the ten-year line");
+        dm.setPolicyRate(dm.getPolicyRate() + DIAL_RISE);
         g.strikeTheCurve();
         press(g);
 
@@ -598,13 +661,12 @@ public class DeskCheck {
 
         // The case was caused: the paper sold near par trades under what it is carried at.
         BookDesk.Line termLine = lineOf(desk, term), serialLine = lineOf(desk, serial), floatLine = lineOf(desk, floater), linkLine = lineOf(desk, linker);
-        boolean termUnderPar = Observation.reached("fixture: the played ten-year desk line trades under carrying value",
-                termLine.worth() < termLine.carried(),
-                "positive desk gain and face discount");
-        if (termUnderPar) check("if closed now, the ten-year line is a gain: carried over worth (" + String.format("%,.2f", termLine.ifClosedNow()) + ")", termLine.ifClosedNow() > 0);
-        if (termUnderPar) check("...as is the amortizing bond (" + String.format("%,.2f", serialLine.ifClosedNow()) + "), and the book as a whole (" + String.format("%,.2f", desk.ifClosedNow()) + ")",
+        // FS14: caused by the dial raised above; a fixture, and the three laws that read the gain it causes run hard.
+        check("fixture: the played ten-year desk line trades under carrying value", termLine.worth() < termLine.carried());
+        check("if closed now, the ten-year line is a gain: carried over worth (" + String.format("%,.2f", termLine.ifClosedNow()) + ")", termLine.ifClosedNow() > 0);
+        check("...as is the amortizing bond (" + String.format("%,.2f", serialLine.ifClosedNow()) + "), and the book as a whole (" + String.format("%,.2f", desk.ifClosedNow()) + ")",
                 serialLine.ifClosedNow() > 0 && desk.ifClosedNow() > 0);
-        if (termUnderPar) check("vs face, the line is worth less than is owed on it (" + String.format("%,.2f", termLine.vsFace()) + ")", termLine.vsFace() > 0);
+        check("vs face, the line is worth less than is owed on it (" + String.format("%,.2f", termLine.vsFace()) + ")", termLine.vsFace() > 0);
 
         // The coupon on the paper.
         check("the coupon rate is the rate printed: the line's, the amortizing bond's, the linker's real coupon, the floater's margin, and a bill's nothing",
@@ -784,7 +846,10 @@ public class DeskCheck {
         DebtManager dm = g.getDebtManager();
         FloatLinkCheck.worldWantsPaper(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
-        double ask = Math.max(100 * PriceLevel.FACTOR, g.getHouseholdBalance().spareForPaper() * 3);
+        double spareFirst = g.getHouseholdBalance().spareForPaper();
+        double ask = Math.max(100 * PriceLevel.FACTOR, spareFirst * 3);
+        // FS14: the sale is caused to clear as the played sales do: the bank handed its room for it (the second, four months on, is handed the same).
+        roomFor(g, ask, "the first sale");
         Debt line = sold(g, "a ten-year line", () -> g.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR));
         if (line == null) return;
 
@@ -828,11 +893,19 @@ public class DeskCheck {
         double faceBefore = line.getFaceValue(), carriedBefore = line.getCarryingValue();
         int reopenMonth = g.getMonth();
         g.setCashForTest(Founding.WEALTHY_CASH);
-        // ...sized as the first was, by the households' purse at the time (EP1): the first ask, three times the purse of month 62, was the whole of the
-        // bids then, and four months on the purse had fallen to a third (1,804 against 5,353), so the same ask met bids that did not cover it and cleared
-        // at 89.44 per 100 with a 9-point tail, which dragged the line's carrying value to 94.95 under a market price that the five points of rates then
-        // took only to 95.13. Covered, as the first was, the second sale clears at 98.36 and the line is carried above where the rise leaves it.
-        final double reopening = Math.max(100 * PriceLevel.FACTOR, g.getHouseholdBalance().spareForPaper() * 3);
+        // ...sized as the first was (EP1): the first ask, three times the purse of month 62, was the whole of the bids then, and four months on the purse had
+        // fallen to a third (1,804 against 5,353), so the same ask met bids that did not cover it and cleared at 89.44 per 100 with a 9-point tail, which dragged
+        // the line's carrying value to 94.95 under a market price that the five points of rates then took only to 95.13. FS14: the second sale is the first's ask,
+        // covered as the first was by cause: the households' spare lifted back to what it was for the first (liftSpare(), raised never lowered) and the bank
+        // handed its room for it, where the sale used to be sized by the purse it found four months on.
+        final double reopening = ask;
+        if (FloatLinkCheck.liftSpare(g.getHouseholdBalance(), spareFirst)) {
+            out.printf("   fixture: the households' savings lifted back to a spare for paper of D$%,.0f, as the first sale had%n", g.getHouseholdBalance().spareForPaper());
+        }
+        check("fixture: the households' spare for paper is what it was for the first sale (D$" + String.format("%,.0f", spareFirst) + ")",
+                g.getHouseholdBalance().spareForPaper() >= spareFirst);
+        roomFor(g, reopening, "the second sale");
+        check("fixture: the second sale is made four months after the first, as set", reopenMonth == line.getMonthStarted() + 4);
         quietly(() -> g.handleLongBondLogic(reopening, 10, 100 * PriceLevel.FACTOR));
         check("fixture: the second sale reopened the line: one line, and more face on it (" + String.format("%,.0f to %,.0f", faceBefore, line.getFaceValue()) + ")",
                 dm.getDebt().size() == pieces && line.getFaceValue() > faceBefore + 1e-6);
@@ -843,17 +916,15 @@ public class DeskCheck {
         near("...for what it raised, which is what the line's carrying value grew by", second.getProceeds(), line.getCarryingValue() - carriedBefore, 1e-6);
         check("...and the path goes on as it was until the month closes", line.getPricePath().length == 4);
 
-        // The rates rise and the month closes: a fifth entry, trading under what it is carried at.
-        double monthlyMove = 0;
-        for (int i = 1; i < price.length; i++) monthlyMove = Math.max(monthlyMove, Math.abs(price[i] - price[i - 1]));
-        int fives = 0;
-        do {
-            dm.setPolicyRate(Math.min(DebtManager.MAX_POLICY_RATE, dm.getPolicyRate() + .05));
-            g.strikeTheCurve();
-            fives++;
-        } while (fives < 20 && dm.getPolicyRate() < DebtManager.MAX_POLICY_RATE
-                && dm.priceOfPar(line) > line.getCarryingValue() / line.getOustandingPrincipal() * 100 - monthlyMove);
-        out.printf("   the dial up %d times five points, to %.0f%%, before the month closed%n", fives, dm.getPolicyRate() * 100);
+        // The rates rise and the month closes: a fifth entry, trading under what it is carried at. FS14: caused by the dial (dialLowersIt()), raised
+        // DIAL_RISE once where it was raised five points at a time until the price stood under the carrying value by as much as a month had moved
+        // it; the line under what it is carried at is asserted before the month closes and then in the entry the month records.
+        dialLowersIt(g, line, "the reopened line");
+        dm.setPolicyRate(dm.getPolicyRate() + DIAL_RISE);
+        g.strikeTheCurve();
+        check("fixture: the dial raised " + String.format("%.0f", DIAL_RISE * 100) + " points puts the reopened line under what it is carried at, before the month closes ("
+                + String.format("%.2f against %.2f per 100", dm.priceOfPar(line), carriedPer100(line)) + ")", dm.priceOfPar(line) < carriedPer100(line));
+        out.printf("   the dial up five points, to %.0f%%, before the month closed%n", dm.getPolicyRate() * 100);
         press(g);
         check("a fifth month, the rates up: a fifth entry, and the line trades under what it is carried at ("
                 + String.format("%.2f against %.2f per 100", line.getPricePath()[4], line.getCarriedPath()[4]) + ")",
@@ -917,6 +988,8 @@ public class DeskCheck {
         FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureFloater(rg, 20_000 * PriceLevel.FACTOR, 24, .002));
         FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureLinker(rg, 20_000 * PriceLevel.FACTOR, 120, .02, rdm.priceIndexLevel()));
         rg.setCashForTest(0);
+        // FS14: the bank is handed its room for what the plan issues (FloatLinkCheck's section 8 does as much), so the rollover is not left to the room it found.
+        FloatLinkCheck.handRolloverRoom(rg, rg.rolloverPlan());
         java.util.Set<Debt> had = FloatLinkCheck.piecesOf(rdm);
         press(rg);
         java.util.List<Debt> fresh = new ArrayList<>();
@@ -1017,6 +1090,21 @@ public class DeskCheck {
                 dm.getTotalMarketValue(), g.getEconomyManager().getNationalAccounts().getInterestExpense()};
     }
 
+    /** FS14: the dial put up in month DIAL_UP_MONTH of the 26 pressed: seven per cent, five points over DIAL_DOWN. */
+    static final double DIAL_UP = .07;
+
+    /** FS14: the dial put down in month DIAL_DOWN_MONTH: two per cent, under the three the played city holds it at. */
+    static final double DIAL_DOWN = .02;
+
+    /** FS14: the least the shortest tenor of the curve a year before the last month must stand over the last's for the past to be told from the present: two points, of the five the dial moved between them. */
+    static final double PAST_TOLD_APART = 2 * DebtManager.A_POINT;
+
+    /** FS14: the month of the 26 pressed at which the dial is put up, before its press. */
+    static final int DIAL_UP_MONTH = 9;
+
+    /** FS14: the month of the 26 pressed at which the dial is put down, before its press. */
+    static final int DIAL_DOWN_MONTH = 17;
+
     static void theCurvesPast() throws Exception {
         out.println("\n--- the curve's past ---");
 
@@ -1040,8 +1128,8 @@ public class DeskCheck {
         int firstDifference = -1;
         for (int i = 1; i <= months; i++) {
             // The dial moves partway through, in both cities: up, then down.
-            if (i == 9) { quietly(() -> adm.takeTheDial(.07)); quietly(() -> bdm.takeTheDial(.07)); }
-            if (i == 17) { quietly(() -> adm.takeTheDial(.02)); quietly(() -> bdm.takeTheDial(.02)); }
+            if (i == DIAL_UP_MONTH) { quietly(() -> adm.takeTheDial(DIAL_UP)); quietly(() -> bdm.takeTheDial(DIAL_UP)); }
+            if (i == DIAL_DOWN_MONTH) { quietly(() -> adm.takeTheDial(DIAL_DOWN)); quietly(() -> bdm.takeTheDial(DIAL_DOWN)); }
             press(a);
             press(b);
             kept[i] = tenorsNow(adm);
@@ -1065,10 +1153,13 @@ public class DeskCheck {
                         + adm.getDebt().stream().filter(d -> d.getPricePath().length > 0).count() + " of " + adm.getDebt().size() + " pieces with a path)",
                 adm.curveBookSize() == DebtManager.CURVE_KEPT && adm.getDebt().stream().allMatch(d -> d.getPricePath().length >= 1));
 
-        // What was recorded.
-        double apart = 0;
-        for (int j = 0; j < kept[months].length; j++) apart = Math.max(apart, Math.abs(kept[months - 12][j] - kept[months][j]));
-        Observation.reached("fixture: the played dial moved enough to distinguish the past curve", apart > 1e-3);
+        // What was recorded. FS14: the past is told apart by cause, not found: the dial was put at DIAL_UP in month DIAL_UP_MONTH and at DIAL_DOWN in month
+        // DIAL_DOWN_MONTH, so the book's month a year before the last was struck on the higher dial and the last on the lower, and the curve moved with it.
+        // The shortest tenor follows the dial (the curve's floor), so it is told apart by at least PAST_TOLD_APART between the two months.
+        double apart = kept[months - 12][0] - kept[months][0];
+        check("fixture: the dial the book kept a year ago is the one put up in month " + DIAL_UP_MONTH + " and today's the one put down in month " + DIAL_DOWN_MONTH,
+                DIAL_UP_MONTH <= months - 12 && months - 12 < DIAL_DOWN_MONTH && DIAL_DOWN_MONTH <= months && keptDial[months - 12] == DIAL_UP && keptDial[months] == DIAL_DOWN);
+        check("fixture: ...so the shortest tenor of the curve a year ago stands over today's by more than " + String.format("%.0f", PAST_TOLD_APART * 100) + " points (" + String.format("%.4f", apart) + ")", apart > PAST_TOLD_APART);
         check("the curve book keeps the newest " + DebtManager.CURVE_KEPT + " months", adm.curveBookSize() == DebtManager.CURVE_KEPT);
         check("0 months ago is the curve now: the zero rates at the curve's tenors", Arrays.equals(adm.curveMonthsAgo(0), kept[months]) && Arrays.equals(adm.curveMonthsAgo(0), tenorsNow(adm)));
         check("12 months ago is the zero rates the harness read at that month's close", Arrays.equals(adm.curveMonthsAgo(12), kept[months - 12]));
