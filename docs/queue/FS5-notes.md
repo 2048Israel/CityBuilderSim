@@ -2264,3 +2264,92 @@ both the native pass and hard BOX failure are explicit. No registry removal,
 retarget, red waiver, passing gate-run, new row/ID, code/runtime/dial/model
 mend, readiness, merge, publication or main push. FS5 blocked/Pending;
 no owned process. Waiting for separate root review/GO of the ONE payload.
+
+
+## Root GO71c5: ignored post-hard-verdict HPROF prototype preparation
+
+STATIC TARGET-ONLY, UNCOMPILED and NOT RUN. Root accepted the stopped gate
+records4e87837e1 and saved audit9cd81d84a5ab9c851a8ae6f24b2b670cbb89e5d7e21163f11fb119f046289f59.
+FS5 stays blocked/Pending; marker/four vetoes/KHL1 shipPending and all prior
+raw/source/class/data/registry proofs remain untouched. No live original
+heap/profile/checkpoint exists. No source/harness/model mend or invented
+line removal; process counts remain Java819/809 and registry819/829.
+
+Actual ignored prototype directory: target/fs5c2-71c5-heap-capture-v2.
+It contains the exact aa570 base KeptCheck copy, modified target-only copy,
+separate FS5PostHeapCapture helper, minimal14-line insertion diff, inverse
+restored base, primary local JDK source/release copies, provenance-pins.json,
+static-overlay-audit.json and PREPARATION.md. Base src tree is
+c518908bbc58374df1b680830be6990f7067aa63; original source blob is
+f3c5c600c1e4239817f9b920a5843ad195fe90ca. Inverse overlay is byte AND token
+exact; the prefix through the unchanged original printed heap assertion is
+byte exact. No compiler/typecheck/driver/JVM success is claimed.
+
+Base KeptCheck SHA256:
+b5b5014db575c590e5d170baa25056c4606ff7f35ba43d304e8d38e6d5647aa3.
+Target overlay KeptCheck SHA256:
+a1fd6e15334e6a4d842f3dcf0be9c4106cd1bdaef4e49fd852ce4258677af5cb.
+Target helper SHA256:
+8d901ec8c78d10cbd1f2b7ae016aa2a2a0142bde64f16383700ab655c680f22e.
+Minimal overlay patch SHA256:
+f4df7d396da783095200bd60b29c344916fce7f46ae4bb445f45680b193aed10.
+
+The hook is strictly AFTER the existing102 reading AND unchanged evaluated/
+printed hard assertion. It repeats only pure predicate arithmetic from
+cached readings/constants, then requires explicit opt-in. Only there does
+Class.forName load the helper. Primitive/String arguments only; no earlier
+payload/Node/Game/signature/context root, extra model month/UI/draw/layout/
+settle/snapshot/GC/thread or altered threshold/tally/exit. Modified class
+constants/JIT/VM footprint are not asserted zero; this is new provenance.
+All metadata allocations are after verdict. Opt-in absent or hard pass
+does not capture. Reflection/helper/dump errors leave original FAIL and
+normal103/exit intact, subject to fatal VM/OS limits. Partial files remain.
+
+Helper requests native HotSpotDiagnosticMXBean.dumpHeap(fixedLeaf,false).
+Actual local Oracle21.0.4+8 primary API/implementation are copied and hashed:
+live=true means reachable-only; implementation checks suffix/security and
+calls native dumpHeap0. false includes unreachable objects; safepoints,
+VM collection/initialization/native pauses and helper debug objects are
+not promised absent. Offline roots/dominators, aliases, collector state,
+unreachable payload and object-layout/dump overhead must be distinguished.
+No retrospective byte/root assignment to pcPZSnVc follows a snapshot.
+
+Destination is ONE pre-existing private0700 launcher-owned directory
+/home/jerus/cbs/evidence/FS5-heap-71c5-<32hex nonce>, outside TempDirs;
+strict absolute normalized/real paths, fixed unused .hprof and before/after
+JSON leaves, matching bounded ownership/source pin receipt, no symlink/
+overwrite/arbitrary-save path or destructive cleanup. Private launcher lock
+and umask077 are required; helper alone does not prove live lock ownership
+or eliminate trusted-same-user path races. Proposed free space >=12GiB at
+both output/copy ends; ~2GiB heap plus substantial HPROF/copy overhead and
+latency are unknown. No45s promise/deadline is finalized or authorized.
+
+PREPARATION.md gives an isolated -sourcepath EMPTY/-implicit:none/-proc:none
+compile plan for ONLY overlay KeptCheck + helper, with frozen compiled-base
+capsule and dependency classpath. No model compilation/fallback or old gate
+clone mutation. Native class/data/JDK context is not substituted for BOX
+pins; future source/overlay/base classes/deps/data/JDK and exact-copy hashes
+must be sealed before/after. Missing capsule/pins means STOP, not rebuild.
+
+ONE future proposal only: separately reviewed/authorized purpose-specific
+BOX KeptCheck replay of the accepted workload solely to collect missing
+heap evidence on NEW provenance, not yet an independently required
+production measurement, not a225suite/gate replay or historical Healthcare
+replay. Foreground supervisor owns only its PID/group/lock, with root-set
+total/dump deadlines, real-terminal confirmation before lock release/copy
+completion, no retry/extension, partial preservation and verified homecopy.
+Hard pass means NOT_TRIGGERED/no retry/fishing/waiver; hard failure remains
+FAIL even with capture. Any forced stop is incomplete/nonzero; no success
+is inferred. Implementation/compile/execution/disk/time still need separate GO.
+
+The final review artifact is the v2 directory above:14 inserted lines place
+the opt-in property read inside the same post-verdict Throwable guard.
+The initial13-line ignored variant is retained at
+target/fs5c2-71c5-heap-capture; it is superseded for review, not executed.
+Final v2 artifact-manifest.json SHA256:
+fc825bfa7b455685076e6d51ad4c4223da0bd53fe9a4c33f48fc52341670ff10.
+
+Only these notes change in the versioned tree. No compile/JVM/BOXaccess/
+poll/measurement/dump/run/fast/pick/rejudge/ensemble/dry/readiness/publication
+or registry edit, no other process stopped. Notes-only provisional
+checkpoint; no owned job. Await root review/separate GO.
