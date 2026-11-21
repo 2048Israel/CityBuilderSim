@@ -417,20 +417,27 @@ The box's own PATH is unaffected. The normal command is `sh tools/gate.sh PW1 --
 7,200-second foreground timeout and unique log `target/PW1c2-dry.txt`. No source change or push is allowed while
 it runs. Only notes/ship may change afterward; the provisional marker stays until a separate readiness go.
 
-**Stopped by transport; no suite verdict.** The fresh launcher used branch `16e3ae4d0` and main `2b049188b`,
-model bytes unchanged from `7a06097bc`, in `/home/jerus/cbs/runs/cbs-gate-PW1-0qipiwLf`. The last successfully
-read `ship.log` records the uncommitted merge, the ALL-237 pick, publication records prepared for 0.9.180 with
-six Pending rows, suite start at 16:42:47Z and compilation OK in 9 seconds. While the suite was running, a
-read-only progress connection timed out; the original SSH connection then reset by peer. The launcher received
-no remote completion code, its attempt to retrieve the retained files timed out during banner exchange, and it
-exited 1. The configured `gatebox.local` alias also timed out. Both local foreground sessions have exited.
+**Client transport loss, followed by verified remote completion.** The fresh launcher used branch
+`16e3ae4d0` and main `2b049188b`, model bytes unchanged from `7a06097bc`, in
+`/home/jerus/cbs/runs/cbs-gate-PW1-0qipiwLf`. The local SSH connection reset and its attempted copy failed;
+that local exit did not cancel the remote run. I pushed the transport-stop note as `a36df3840` before verifying
+remote terminal state. That notes-only branch advance, while the original gate survived, caused its eventual
+branch-tip rejection. No model, publisher, row or design changed, but the earlier claim that no push occurred
+during the surviving run was wrong.
 
-This is not a judged harness/model failure: the suite verdict and new-red count are unknown. The kept final
-`ship.log`, `unnamed.txt` and manifests could not be retrieved while the box was unavailable. No source or push
-occurred during the run, no laptop compile/suite fallback ran, no other session was stopped, and no gate,
-ensemble, full pick or playtest was replayed. The provisional marker remains; no passing `gate-run` comment
-is inserted and no readiness is claimed. Recover the kept logs/manifests first when the box returns; inspect
-their actual verdict before the orchestrator decides any further ordering or renewed dry go.
+Read-only recovery verified the original run finished: its suite completed in 969 seconds with exit 3,
+236 harnesses run (222 passed and 14 with only known reds), nine Monocle display harnesses started with none
+skipped, zero new-red lines and zero unnamed lines. The gate exited 1 at 16:59:00Z solely because the branch
+advanced from `16e3ae4d0` to `a36df3840`. The active marker is absent, the original processes have ended,
+`checks.complete` is present and no cancellation is recorded. This is not a passing launcher verdict.
+
+The original ship log, checks, generated indexes, selection, refs and seal were copied without changing the
+remote run or clone to `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW1-0qipiwLf`. All 870 `checks.sha256`
+entries were independently verified, and the orchestrator independently verified the same evidence. Suite SHA-256:
+`b6d7d41422bb98dc0870ca02abcf74b1c3aadaf54b5dd3eba02f3a7dbd04c43d`.
+The raw sealed-run tar and verification receipt are under `target/PW1c2-recovery/`. No checks were replayed,
+no laptop fallback ran, and no other session was stopped. The provisional marker stays until the authorized
+reused dry run reaches a true passing terminal state.
 
 The fresh clone's source was preserved before the connection loss, without editing the gate run or clone:
 `/home/jerus/cbs/archives/cbs-gate-PW1-0qipiwLf-fresh-clone.tgz`, copied to
@@ -438,5 +445,23 @@ The fresh clone's source was preserved before the connection loss, without editi
 `53a5d692e4ee22259fc9bdbe2a6dae85cddfdab874266133e16087795ac82edd`, verified equal on both sides.
 It excludes transient `target/` and `data/`; the authoritative check outputs and manifest remain in the retained
 remote run, not in this source archive. The owner log is `target/PW1c2-dry.txt`, with the guard proof and archive
-hash receipts under `target/PW1c2-recovery/`. The attempted local retained-run directory is empty because the
-transfer failed. The accepted final ensemble, historical PW1d evidence and adopted PW1-E closure are unchanged.
+hash receipts under `target/PW1c2-recovery/`. The initial transfer failed; read-only recovery subsequently populated and verified the
+local retained-run directory as described above. The accepted final ensemble, historical PW1d evidence and adopted PW1-E closure are unchanged.
+
+
+## 10. One reused launcher dry run (PW1c2, 2026-11-21)
+
+The orchestrator's 13:12 go authorizes corrected notes and one normal box dry run reusing
+`/home/jerus/cbs/runs/cbs-gate-PW1-0qipiwLf`, with no suite replay. Preflight matches the exact selection
+(full plus its 14 nightly harnesses, version 0.9.180), source/publisher bytes, notes-only ancestry, main
+`2b049188b`, the box's exact origin URL, the original seal/no cancellation and all 870 hashes plus the suite SHA.
+The local checkout uses HTTPS transport while the box and kept origin use SSH; origin equality is checked in
+the box context where the publisher runs. No gate or model was launched by preflight.
+
+Only notes/ship records may advance. The box/local fallback guards remain; a separate watcher on the new run
+will stop that owned run if it prints a reuse refusal, before a fresh suite can start. A local transport exit
+alone is not terminal: source/base, remote exit, inactivity and sealed outputs must be observed and copied
+before any records push. Conditional readiness requires true reused-dry exit 0, zero new reds, unchanged
+source/base and no pending concern. Then the successful box path goes first in the provisional ship file,
+records are committed/pushed, and the readiness marker is removed in its own final commit and verified on origin.
+No builder publication, override, full pick, playtest or ensemble rerun is authorized.
